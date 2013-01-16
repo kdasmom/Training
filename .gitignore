@@ -1,0 +1,6 @@
+.buildpath
+.project
+.settings
+test.php
+*.log
+js/
