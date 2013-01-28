@@ -1,4 +1,6 @@
 Ext.define('NP.controller.Invoice', function() {
+	var invoiceRecord;
+	 
 	return {
 		extend: 'Ext.app.Controller',
 		
@@ -8,6 +10,8 @@ Ext.define('NP.controller.Invoice', function() {
 			'invoice.Register'
 			,'invoice.View'
 			,'invoice.Lines'
+			,'invoice.InvoiceLineGrid'
+			,'invoice.InvoiceLineForm'
 		],
 		models: [
 			'Invoice'
@@ -24,8 +28,8 @@ Ext.define('NP.controller.Invoice', function() {
 		],
 		
 		init: function() {
-			Ext.log('Invoice.init() running');
-			
+			var app = this.application;
+
 			this.control({
 				'#invoiceRegisterTabs': {
 					tabchange: onTabChange
@@ -33,6 +37,41 @@ Ext.define('NP.controller.Invoice', function() {
 				'registeropeninvoice': {
 					itemclick: function(gridView, record, item, index, e, eOpts) {
 						this.application.addHistory( 'Invoice:showView:' + record.get('invoice_id') );
+					}
+				},
+				'invoicelinegrid': {
+					itemclick: function(gridView, record, item, index, e, eOpts) {
+						// Get the invoice line form and show the panel
+						var formPanel = Ext.ComponentQuery.query('invoicelineform')[0];
+						formPanel.removeAll();
+						formPanel.buildView(invoiceRecord, record);
+						formPanel.show();
+					}
+				},
+				'#invoiceLineFormCancelBtn': {
+					click: function() {
+						var formPanel = Ext.ComponentQuery.query('invoicelineform')[0];
+						formPanel.hide();
+						formPanel.removeAll();
+					}
+				},
+				'toptoolbar': {
+					change: function(toolbar, filterType, selected) {
+						var contentView = app.getCurrentView();
+						// If user picks a different property/region and we're on a register, update the grid
+						if (contentView.getXType() == 'invoice.register') {
+							var activeTab = contentView.queryById('invoiceRegisterTabs').getActiveTab();
+							if (activeTab.getStore) {
+								var proxy = activeTab.getStore().getProxy();
+								Ext.apply(proxy.extraParams, {
+									propertyFilterType     : filterType,
+									propertyFilterSelection: selected
+								});
+								
+								activeTab.getStore().removeAll();
+								activeTab.getDockedItems()[0].moveFirst();
+							}
+						}
 					}
 				}
 			});
@@ -43,7 +82,7 @@ Ext.define('NP.controller.Invoice', function() {
 			if (!activeTab) var activeTab = 'open';
 			
 			// If the invoice register is not active, create the view and put it in the main content panel
-			if (this.application.getCurrentView().xtype != 'invoiceRegister') {
+			if (this.application.getCurrentViewType() != 'invoice.register') {
 				var vw = this.getView('invoice.Register').create();
 				this.application.setView(vw);
 			}
@@ -56,10 +95,16 @@ Ext.define('NP.controller.Invoice', function() {
 				tabPanel.setActiveTab(tab);
 			}
 			
-			if (activeTab == 'open') {
-				this.getStore('InvoiceRegisterOpen').load();
-			} else if (activeTab == 'rejected') {
-				this.getStore('InvoiceRegisterRejected').load();
+			if (tab.getStore) {
+				var propertyFilter = this.application.getPropertyFilterState();
+				var proxy = tab.getStore().getProxy();
+				Ext.apply(proxy.extraParams, {
+					propertyFilterType     : propertyFilter.propertyFilterType,
+					propertyFilterSelection: propertyFilter.selected
+				});
+				
+				tab.getStore().removeAll();
+				tab.getDockedItems()[0].moveFirst();
 			}
 		},
 		
@@ -74,6 +119,7 @@ Ext.define('NP.controller.Invoice', function() {
 			// Load everything needed to display the invoice view before showing it
 			app.getModel('Invoice').load(invoice_id, {
 				success: function(invoiceRec) {
+					invoiceRecord = invoiceRec;
 					app.remoteCall({
 						requests: [
 							// This request gets the accounting period for the current property
@@ -108,12 +154,9 @@ Ext.define('NP.controller.Invoice', function() {
 							
 							// Load the line grid store
 							var lineStore = app.getStore('InvoiceLines');
-							var lineTable = Ext.ComponentQuery.query('invoiceLineTable')[0];
+							var lineGrid = Ext.ComponentQuery.query('invoicelinepanel')[0];
 							lineStore.load({
-								params: { invoice_id: invoice_id },
-								callback: function() {
-									lineTable.buildView(invoiceRec, lineStore);
-								}
+								params: { invoice_id: invoice_id }
 							});
 							
 							// Load the forward grid store
@@ -166,4 +209,4 @@ Ext.define('NP.controller.Invoice', function() {
 		
 		return { startDate: startDate, endDate: endDate };
 	}
-});
+}());

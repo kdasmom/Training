@@ -3,6 +3,8 @@
 $__CONFIG = array(
 	// Application root path
 	'appRoot'			=> 'c:\\wwwroot\\NexusPayablesPHP\\',
+	// include path for the Zend Framework
+	'zendPath'			=> 'c:\\wwwroot\\Zend_2.0.4\\library\\Zend',
 	// Datasource configuration parameters
 	'datasource'		=> array(
 		    'driver'		=> 'Sqlsrv',

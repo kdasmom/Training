@@ -32,16 +32,16 @@ class InvoiceService extends AbstractService {
 		return $this->invoiceGateway->findForwards($invoice_id);
 	}
 	
-	public function findOpenInvoices($pageSize=null, $page=null, $sort="vendor_name") {
+	public function findOpenInvoices($propertyFilterType, $propertyFilterSelection, $pageSize=null, $page=null, $sort="vendor_name") {
 		$userprofile_id = $this->securityService->getUserId();
 		
-		return $this->invoiceGateway->findOpenInvoices($userprofile_id, $pageSize, $page, $sort);
+		return $this->invoiceGateway->findOpenInvoices($userprofile_id, $propertyFilterType, $propertyFilterSelection, $pageSize, $page, $sort);
 	}
 	
-	public function findRejectedInvoices($pageSize=null, $page=null, $sort="vendor_name") {
+	public function findRejectedInvoices($propertyFilterType, $propertyFilterSelection, $pageSize=null, $page=null, $sort="vendor_name") {
 		$userprofile_id = $this->securityService->getUserId();
 		
-		return $this->invoiceGateway->findRejectedInvoices($userprofile_id, $pageSize, $page, $sort);
+		return $this->invoiceGateway->findRejectedInvoices($userprofile_id, $propertyFilterType, $propertyFilterSelection, $pageSize, $page, $sort);
 	}
 	
 }

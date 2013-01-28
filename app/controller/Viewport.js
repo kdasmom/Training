@@ -4,10 +4,12 @@ Ext.define('NP.controller.Viewport', function() {
 		
 		requires: ['NP.core.Security'],
 		
+		stores: ['UserProperties','UserRegions'],
 		views: ['Home'],
 		
 		init: function() {
 			this.control({
+				// Clicking on Invoices, Invoice Register, or any of the subitems under Invoice Register
 				'viewport #invMenuBtn,viewport #invRegisterMenuBtn,viewport #invRegisterMenuBtn menuitem': {
 					click: function(itemClicked) {
 						var token = 'Invoice:showRegister';
@@ -25,4 +27,4 @@ Ext.define('NP.controller.Viewport', function() {
 			this.application.setView(vw);
 		}
 	}
-});
+}());

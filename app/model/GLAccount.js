@@ -1,6 +1,8 @@
 Ext.define('NP.model.GLAccount', {
 	extend: 'Ux.data.Model',
 	
+	requires: ['NP.core.Config'],
+	
 	statics: {
 		getFormattedName: function(glaccount_number, glaccount_name) {
 	    	if (glaccount_number != '' && glaccount_name != '') {

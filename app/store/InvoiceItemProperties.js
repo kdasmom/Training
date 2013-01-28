@@ -1,4 +1,4 @@
-Ext.define('NP.store.PropertyLineComboStore', {
+Ext.define('NP.store.InvoiceItemProperties', {
 	extend: 'Ext.data.Store',
 	
 	model: 'NP.model.Property',

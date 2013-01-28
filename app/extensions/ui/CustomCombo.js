@@ -5,10 +5,10 @@ Ext.define('Ux.ui.CustomCombo', {
 	constructor: function(cfg) {
 		Ext.applyIf(cfg, {
 			queryMode: 'local',
+			typeAhead: true,
 			forceSelection: true,
 			allowOnlyWhitespace: true,
 			editable: true,
-			typeAhead: true,
 			tpl: new Ext.XTemplate('<tpl for=".">' + '<li style="height:22px;" class="x-boundlist-item" role="option">' + '{'+cfg.displayField+'}' + '</li></tpl>'),
 			listeners: {} 
 		});

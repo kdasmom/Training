@@ -1,6 +1,6 @@
 Ext.define('NP.view.invoice.Register', {
 	extend: 'Ext.panel.Panel',
-    alias: 'widget.invoiceRegister',
+    alias: 'widget.invoice.register',
     
     requires: ['NP.view.invoice.RegisterOpenGrid','NP.view.invoice.RegisterRejectedGrid'],
     
@@ -11,6 +11,11 @@ Ext.define('NP.view.invoice.Register', {
         align: 'stretch'
    	},
     
+   	border: false,
+   	defaults: {
+   		border: false
+   	},
+
     items: [
     	{
     		tbar: [
@@ -28,7 +33,8 @@ Ext.define('NP.view.invoice.Register', {
     		flex: 1,
     		
     		defaults :{
-		        autoScroll: true
+		        autoScroll: true,
+		        border: false
 		    },
 		    
 		    items: [
@@ -40,7 +46,6 @@ Ext.define('NP.view.invoice.Register', {
 			    {
 			    	itemId: 'rejectedInvList',
 			    	xtype: 'registerrejectedinvoice',
-			    	//html: 'Test 2',
 			    	title: 'Rejected'
 			    },
 			    {

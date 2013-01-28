@@ -62,6 +62,10 @@ class SecurityService extends AbstractService {
 		$this->session->set("userprofile_id", $userprofile_id);
 	}
 	
+	public function getUser() {
+		return $this->userprofileGateway->findById($this->getUserId());
+	}
+	
 	public function getUserId() {
 		return $this->session->get("userprofile_id");
 	}

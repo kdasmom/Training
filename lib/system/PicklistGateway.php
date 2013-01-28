@@ -27,8 +27,8 @@ class PicklistGateway  extends AbstractGateway {
 			
 			
 			$sqlStr = "SELECT " .
-				$res['picklist_pk_column'] . "AS id," .
-				$res['picklist_data_column'] . "AS data,
+				$res['picklist_pk_column'] . " AS id," .
+				$res['picklist_data_column'] . " AS data,
 				universal_field_status AS status
 			FROM ";
 			

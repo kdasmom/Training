@@ -76,4 +76,4 @@ Ext.define('NP.core.Config', function() {
 			return 'm/d/Y';
 		}
 	}
-});
+}());

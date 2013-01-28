@@ -2,20 +2,20 @@
 use Zend\Loader\StandardAutoloader;
 use Zend\Di\Di;
 
-// Set include paths (add Zend to the path)
-set_include_path(get_include_path() . PATH_SEPARATOR . 'C:\\wwwroot\\Zend_2.0.4\\library\\Zend');
-require_once("lib\util\FirePHP.class.php");
-
 // Load appropriate config file for environment
 require_once("config/config.php");
+
+// Set include paths (add Zend to the path)
+set_include_path(get_include_path() . PATH_SEPARATOR . $__CONFIG['zendPath']);
+require_once("lib\util\FirePHP.class.php");
 
 // Setup the Zend Autoloader
 require_once('\Loader\StandardAutoloader.php');
 
 $autoLoader = new StandardAutoloader(array(
     'namespaces' => array(
-    	'Zend' => 'C:\\wwwroot\\Zend_2.0.4\\library\\Zend',
-        'NP' => 'C:\\wwwroot\\NexusPayablesPHP\\lib',
+    	'Zend' => $__CONFIG['zendPath'],
+        'NP' => $__CONFIG['appRoot'] . 'lib\\',
     )
 ));
 $autoLoader->register();

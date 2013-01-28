@@ -2,7 +2,7 @@ Ext.define('NP.view.invoice.Header', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.invoiceHeader',
 	
-	requires: ['Ux.ui.AutoComplete','NP.core.Config'],
+	requires: ['Ux.ui.ComboBox','NP.core.Config'],
 	
 	layout: 'hbox',
 	
@@ -71,12 +71,13 @@ Ext.define('NP.view.invoice.Header', {
 		var col3 = Ext.ComponentQuery.query('#invHeaderCol3')[0];
 		
 		col1.add({
-			xtype: 'autocomplete',
+			xtype: 'customcombo',
+			type: 'autocomplete',
 			itemId:'invVendorCombo',
 			fieldLabel: 'Vendor',
 			labelAlign: 'top',
 			name: 'vendorsite_id',
-			store: Ext.create('NP.store.VendorComboStore'),
+			store: Ext.create('NP.store.InvoiceVendors'),
 			queryParam: 'vendor_name',
 			allowBlank: false,
 			displayField: 'vendor_name',

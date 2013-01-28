@@ -21,11 +21,7 @@ Ext.application({
     
 	controllers: ['Viewport','Invoice'],
 
-	init: function(application) {
-		Deft.Injector.configure({
-			app: { value: this }
-		});
-		
+	launch: function(application) {
 		var that = this;
 		
 		this.loadInitialData(function() {
@@ -117,8 +113,12 @@ Ext.application({
 		ctl[action].apply(ctl, args);
 	},
     
-	setView: function(view) {
-		var pnl = Ext.ComponentQuery.query('#contentPanel');
+	setView: function(view, panel) {
+		if (arguments.length == 1) {
+			panel = 'contentPanel';
+			view.region = 'center';
+		}
+		var pnl = Ext.ComponentQuery.query('#'+panel);
 		pnl[0].removeAll();
 		pnl[0].add(view);
 	},
@@ -135,6 +135,18 @@ Ext.application({
 		return Ext.ComponentQuery.query('#contentPanel')[0].child();
 	},
 	
+	getCurrentViewId: function() {
+		return this.getCurrentView().getId();
+	},
+	
+	getCurrentViewType: function() {
+		return this.getCurrentView().getXType();
+	},
+	
+	getPropertyFilterState: function() {
+		return Ext.ComponentQuery.query('toptoolbar')[0].getState();
+	},
+
 	remoteCall: function(cfg) {
 		var that = this;
 		// Add the default authentication failure function if none is defined

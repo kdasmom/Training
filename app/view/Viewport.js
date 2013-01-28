@@ -1,17 +1,19 @@
 Ext.define('NP.view.Viewport', {
     extend: 'Ext.container.Viewport',
-    layout: 'fit',
     
     requires: [
     	'Ux.ui.HoverButton'
 		,'NP.core.Config'
 		,'NP.core.Security'
-		,'NP.view.PropertyPicker'
+		,'NP.view.TopToolbar'
 	],
+	
+	layout: 'border',
 	
 	initComponent: function() {
 		this.items = {
 	    	xtype: 'panel',
+	    	region: 'center',
 	    	dockedItems: {
 			    xtype: 'toolbar',
 			    dock: 'top',
@@ -21,7 +23,7 @@ Ext.define('NP.view.Viewport', {
 	            type: 'vbox',
 	            align: 'stretch'
 	       	},
-	       	border: 0,
+	       	border: false,
 	       	items: [
 		       	{
 			        xtype: 'panel',
@@ -33,17 +35,23 @@ Ext.define('NP.view.Viewport', {
 			        }
 			    },
 			    {
-			    	xtype: 'propertypicker'
+			    	xtype: 'toptoolbar',
+			    	itemId: 'viewportTopToolbar'
 			    },
 			    {
 					xtype: 'panel',
-					itemId: 'contentPanel',
-				    flex: 1,
+					flex: 1,
 			       	autoScroll: true,
 			       	border: false,
 			       	layout: 'fit',
-			       	items: { 
-			       		xtype: 'home' 
+			       	items: {
+			       		itemId: 'contentPanel',
+			       		layout: 'border',
+			       		border: false,
+			       		items: {
+			       			region:'center',
+			       			xtype: 'home'
+			       		}
 			       	}
 				}
 			]

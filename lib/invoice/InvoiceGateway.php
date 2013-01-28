@@ -3,19 +3,19 @@
 namespace NP\invoice;
 
 use NP\core\SqlSelect;
-use NP\invoice\AbstractPOInvoiceGateway;
-use NP\invoice\InvoiceSelect;
+use NP\property\PropertyGateway;
 
+use Zend\Db\Adapter\Adapter;
 use Zend\Db\Sql\Expression;
 
 class InvoiceGateway extends AbstractPOInvoiceGateway {
 	
-	public function canUserApprove($invoice_id, $userprofile_id) {
-		return parent::canUserApprove(
-			"invoice",
-			$invoice_id,
-			$userprofile_id
-		);
+	protected $propertyGateway;
+
+	public function __construct(Adapter $adapter, PropertyGateway $propertyGateway) {
+		$this->propertyGateway = $propertyGateway;
+		
+		parent::__construct($adapter);
 	}
 	
 	public function findById($id) {
@@ -70,7 +70,9 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 		return $res[0];
 	}
 	
-	public function findOpenInvoices($userprofile_id, $pageSize, $page=1, $sort='vendor_name') {
+	public function findOpenInvoices($userprofile_id, $propertyFilterType, $propertyFilterSelection, $pageSize, $page=1, $sort='vendor_name') {
+		$propertyFilter = $this->propertyGateway->getPropertyFilterSubSelect($userprofile_id, $propertyFilterType, $propertyFilterSelection);
+
 		$select = new InvoiceSelect();
 		$select->columns(array(
 					'invoice_id',
@@ -85,11 +87,11 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 				->where(
 					$this->table.".invoice_status = 'open'
 					AND vs.vendorsite_status IN ('active','inactive','rejected')
-					AND p.property_id IN (SELECT property_id FROM PropertyUserprofile WHERE userprofile_id = ?)
-				")
+					AND p.property_id " . $propertyFilter['sql']
+				)
 				->order($sort);
 		
-		$params = array($userprofile_id);
+		$params = $propertyFilter['params'];
 		
 		// If paging is needed
 		if ($pageSize !== null) {
@@ -99,7 +101,9 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 		}
 	}
 	
-	public function findRejectedInvoices($userprofile_id, $pageSize=null, $page=1, $sort='vendor_name') {
+	public function findRejectedInvoices($userprofile_id, $propertyFilterType, $propertyFilterSelection, $pageSize=null, $page=1, $sort='vendor_name') {
+		$propertyFilter = $this->propertyGateway->getPropertyFilterSubSelect($userprofile_id, $propertyFilterType, $propertyFilterSelection);
+
 		$select = new InvoiceSelect();
 		$select->columns(array(
 					'invoice_id',
@@ -117,11 +121,11 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 				->where(
 					$this->table.".invoice_status = 'rejected'
 					AND vs.vendorsite_status IN ('active','inactive','rejected')
-					AND p.property_id IN (SELECT property_id FROM PropertyUserprofile WHERE userprofile_id = ?)
-				")
+					AND p.property_id " . $propertyFilter['sql']
+				)
 				->order($sort);
 		
-		$params = array($userprofile_id);
+		$params = $propertyFilter['params'];
 		
 		// If paging is needed
 		if ($pageSize !== null) {
@@ -207,35 +211,15 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 		
 		return $this->executeSelectWithParams($select, array($invoice_id));
 	}
-	
-	/*
-	private function addVendorSiteJoin($select, $cols=array()) {
-		$select->join(array('vs' => 'vendorsite'),
-						$this->table.'.paytablekey_id = vs.vendorsite_id',
-						$cols);
+
+	public function canUserApprove($invoice_id, $userprofile_id) {
+		return parent::canUserApprove(
+			"invoice",
+			$invoice_id,
+			$userprofile_id
+		);
 	}
-	
-	private function addVendorJoin($select, $cols=array()) {
-		return $select->join(array('v' => 'vendor'),
-							'vs.vendor_id = v.vendor_id',
-							$cols);
-	}
-	
-	private function addPropertyJoin($select, $cols=array()) {
-		return $select->join(array('p' => 'property'),
-						$this->table.'.property_id = p.property_id',
-						$cols);
-	}
-	
-	private function addUserprofileJoin($select, $cols=array()) {
-		return $select->join(array('r' => 'recauthor'),
-							$this->table.".invoice_id = r.tablekey_id AND r.table_name = 'invoice'",
-							array())
-						->join(array('u' => 'userprofile'),
-							'r.userprofile_id = u.userprofile_id',
-							$cols);
-	}
-	*/
+
 }
 
 ?>

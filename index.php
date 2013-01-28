@@ -10,7 +10,7 @@ if (!$isAuth) {
 	header("Location: $loginUrl/login.php");
 } else {
 ?>
-
+<!DOCTYPE html>
 <html>
 <head>
 	<title>NexusPayables</title>

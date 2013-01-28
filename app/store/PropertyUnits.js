@@ -8,8 +8,8 @@ Ext.define('NP.store.PropertyUnits', {
         type: 'ajax',
         url: 'ajax.php',
 		extraParams: {
-			service: 'property.UnitService',
-			action: 'getByProperty'
+			service: 'property.PropertyService',
+			action: 'getUnits'
 		}
     }
 });

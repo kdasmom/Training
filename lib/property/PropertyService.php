@@ -9,10 +9,11 @@ class PropertyService extends AbstractService {
 	
 	protected $securityService, $propertyGateway, $fiscalcalGateway;
 	
-	public function __construct(SecurityService $securityService, PropertyGateway $propertyGateway, FiscalcalGateway $fiscalcalGateway) {
+	public function __construct(SecurityService $securityService, PropertyGateway $propertyGateway, FiscalcalGateway $fiscalcalGateway, UnitGateway $unitGateway) {
 		$this->securityService = $securityService;
 		$this->propertyGateway = $propertyGateway;
 		$this->fiscalcalGateway = $fiscalcalGateway;
+		$this->unitGateway = $unitGateway;
 	}
 	
 	public function get($property_id) {
@@ -35,11 +36,15 @@ class PropertyService extends AbstractService {
 	}
 	
 	public function getForInvoiceItemComboBox($property_keyword) {
-		return $this->propertyGateway->getForInvoiceItemComboBox(
+		return $this->propertyGateway->findForInvoiceItemComboBox(
 			$this->securityService->getUserId(),
 			$this->securityService->getDelegatedUserId(),
 			$property_keyword
 		);
+	}
+	
+	public function getUnits($property_id) {
+		return $this->unitGateway->find('property_id = ?', array($property_id), "unit_number");
 	}
 	
 }

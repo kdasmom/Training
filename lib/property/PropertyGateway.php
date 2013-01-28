@@ -7,28 +7,84 @@ use NP\core\SqlSelect;
 
 class PropertyGateway  extends AbstractGateway {
 	
-	/*
-	public function getForInvoiceItemComboBox($userprofile_id, $delegation_to_userprofile_id, $property_keyword) {
-		$property_type = "all";
-		$property_status = 1;
-		$property_keyword &= "%";
+	public function findByUser($userprofile_id) {
+		$select = new SqlSelect();
+		$select->from(array('p'=>'property'))
+				->join(array('pu'=>'propertyuserprofile'),
+						"p.property_id = pu.property_id",
+						array())
+				->where("
+					pu.userprofile_id = ?
+					AND p.property_status <> 0
+				")
+				->order("p.property_name");
 		
-		$sql = getBasePropertySQL(
-			argumentCollection=arguments,
-			returnFields="p.*"
-		);
-		
-		sql &= "
-				AND (
-					property_name LIKE :property_keyword
-					OR property_id_alt LIKE :property_keyword
-				)
-			ORDER BY p.property_name
-		";
-		
-		return runQuery(sql, arguments);
+		return $this->executeSelectWithParams($select, array($userprofile_id));
 	}
 	
+	public function findForInvoiceItemComboBox($userprofile_id, $delegation_to_userprofile_id, $property_keyword) {
+		$select = new SqlSelect();
+		$select->from(array('p'=>'property'))
+				->where('
+					EXISTS (
+						SELECT *
+						FROM propertyuserprofile pu
+						WHERE pu.property_id = p.property_id
+							AND pu.userprofile_id = ?
+					)
+					AND (
+						property_name LIKE ?
+						OR property_id_alt LIKE ?
+					)
+				')
+				->order('p.property_name');
+		
+		$property_keyword = $property_keyword . '%';
+		
+		return $this->executeSelectWithParams($select, array($userprofile_id,$property_keyword,$property_keyword));
+	}
+	
+	public function getPropertyFilterSubSelect($userprofile_id, $propertyFilterType, $propertyFilterSelection) {
+		if ($propertyFilterType == 'property') {
+			$sql = ' = ?';
+			$params = array($propertyFilterSelection);
+		} else if ($propertyFilterType == 'region') {
+			$sql = '
+				IN (
+					SELECT 
+						__prop.property_id 
+					FROM property __prop
+					WHERE __prop.region_id = ?
+						AND EXISTS (
+							SELECT *
+							FROM propertyuserprofile __propuser
+							WHERE __propuser.property_id = __prop.property_id
+								AND __propuser.userprofile_id = ?
+						)
+				)
+			';
+			$params = array($propertyFilterSelection, $userprofile_id);
+		} else if ($propertyFilterType == 'all') {
+			$sql = '
+				IN (
+					SELECT 
+						__prop.property_id 
+					FROM property __prop
+					WHERE EXISTS (
+						SELECT *
+						FROM propertyuserprofile __propuser
+						WHERE __propuser.property_id = __prop.property_id
+							AND __propuser.userprofile_id = ?
+					)
+				)
+			';
+			$params = array($userprofile_id);
+		}
+
+		return array('sql'=>$sql, 'params'=>$params);
+	}
+
+	/*
 	public function getBasePropertySQL($property_type,	// Can be 'all', 'region', 'multiple', 'single'
 										$property_status,	// Can be 1 (active), 0 (inactive), or -1 (on hold) (or a list with those)
 										$userprofile_id,

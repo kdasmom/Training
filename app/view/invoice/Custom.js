@@ -1,11 +1,8 @@
 Ext.define('NP.view.invoice.Custom', {
 	extend: 'Ext.panel.Panel',
-	mixins: [ 'Deft.mixin.Injectable' ],
 	alias: 'widget.invoiceCustom',
 	
-	inject: ['app'],
-	
-	requires: ['Ux.ui.CustomCombo','NP.core.Config'],
+	requires: ['Ux.ui.ComboBox','NP.core.Config'],
 	
 	title: 'Custom Fields',
 	

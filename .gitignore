@@ -2,5 +2,7 @@
 .project
 .settings
 test.php
+Invoice (backup).js
+Lines (backup).js
 *.log
 js/

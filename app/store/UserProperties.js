@@ -1,15 +1,17 @@
-Ext.define('NP.store.GLComboStore', {
+Ext.define('NP.store.UserProperties', {
 	extend: 'Ext.data.Store',
 	
-	model: 'NP.model.GLAccount',
+	model: 'NP.model.Property',
 	
+	autoLoad: true,
+
     // Overriding the model's default proxy
     proxy: {
         type: 'ajax',
         url: 'ajax.php',
 		extraParams: {
-			service: 'gl.GLService',
-			action: 'getForInvoiceItemComboBox'
+			service: 'user.UserService',
+			action: 'getProperties'
 		}
     }
 });

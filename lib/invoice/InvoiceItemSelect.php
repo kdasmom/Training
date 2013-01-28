@@ -28,7 +28,8 @@ class InvoiceItemSelect extends SqlSelect {
 	public function joinUtil($cols=array()) {
 		return $this->join(array('ua' => 'UTILITYACCOUNT'),
 							$this->table.".utilityaccount_id = ua.utilityaccount_id",
-							array());
+							array(),
+							static::JOIN_LEFT);
 	}
 	
 	public function joinJobcost($contractCols=array(), $changeorderCols=array(), $jobcodeCols=array(), $phasecodeCols=array(), $costcodeCols=array()) {

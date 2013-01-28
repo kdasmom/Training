@@ -6,8 +6,8 @@ Ext.define('Ux.ui.AutoComplete', {
 		Ext.applyIf(cfg, {
 			queryMode: 'remote',
 			typeAhead: false,
-			hideTrigger:true,
 			forceSelection: true,
+			hideTrigger:true,
 			tpl: new Ext.XTemplate('<tpl for=".">' + '<li style="height:22px;" class="x-boundlist-item" role="option">' + '{'+cfg.displayField+'}' + '</li></tpl>'),
 			listeners: {} 
 		});
@@ -42,6 +42,23 @@ Ext.define('Ux.ui.AutoComplete', {
 				}
 			}
 		});
+		
+		if (cfg.dependentCombos) {
+			Ext.apply(cfg.listeners, {
+				select: function(combo, recs) {
+					for (var i=0; i<cfg.dependentCombos.length; i++) {
+						var combo = Ext.ComponentQuery.query('#'+cfg.dependentCombos[i]);
+						if (combo.length) {
+							combo = combo[0];
+							var store = combo.getStore();
+							var proxy = store.getProxy();
+							proxy.extraParams[cfg.valueField] = recs[0].get(cfg.valueField);
+							store.load();
+						}
+					}
+				}
+			})
+		}
 		
 		this.callParent(arguments);
 	}

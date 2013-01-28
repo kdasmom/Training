@@ -11,44 +11,32 @@ Ext.define('NP.view.invoice.View', {
         'NP.view.invoice.Forwards'
     ],
     
-    layout: {
-        type: 'vbox',
-        align: 'stretch'
+    itemId: 'invoiceViewTitle',
+    title: 'Invoice: [status here]',
+    border: false,
+    autoScroll: true,
+    defaults: {
+    	margin: '5',
+    	border: false
     },
-    items: [{
-        xtype: 'panel',
-        itemId: 'invoiceViewTitle',
-        title: 'Invoice: [status here]',
-        layout: {
-            type: 'vbox',
-            align: 'stretch'
+    items: [
+        {
+        	xtype: 'invoiceHeader'
         },
-        border: false,
-        flex: 1,
-        autoScroll: true,
-        defaults: {
-        	margin: '5',
-        	border: false
+        {
+        	xtype: 'invoicelinepanel'
         },
-        items: [
-	        {
-	        	xtype: 'invoiceHeader'
-	        },
-	        {
-	        	xtype: 'invoiceLineTable'
-	        },
-	        {
-	        	xtype: 'invoiceCustom'
-	        },
-	        {
-	        	xtype: 'invoiceNotes'
-	        },
-	        {
-	        	xtype: 'invoiceHistory'
-	        },
-	        {
-	        	xtype: 'invoiceForwards'
-	        }
-        ]
-    }]
+        {
+        	xtype: 'invoiceCustom'
+        },
+        {
+        	xtype: 'invoiceNotes'
+        },
+        {
+        	xtype: 'invoiceHistory'
+        },
+        {
+        	xtype: 'invoiceForwards'
+        }
+	]
 });
