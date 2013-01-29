@@ -55,7 +55,7 @@ Ext.define('NP.controller.Invoice', function() {
 						formPanel.removeAll();
 					}
 				},
-				'toptoolbar': {
+				'#invoiceRegisterContextPicker': {
 					change: function(toolbar, filterType, selected) {
 						var contentView = app.getCurrentView();
 						// If user picks a different property/region and we're on a register, update the grid
@@ -96,7 +96,7 @@ Ext.define('NP.controller.Invoice', function() {
 			}
 			
 			if (tab.getStore) {
-				var propertyFilter = this.application.getPropertyFilterState();
+				var propertyFilter = Ext.ComponentQuery.query('#invoiceRegisterContextPicker')[0].getState();
 				var proxy = tab.getStore().getProxy();
 				Ext.apply(proxy.extraParams, {
 					propertyFilterType     : propertyFilter.propertyFilterType,

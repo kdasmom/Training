@@ -2,7 +2,7 @@ Ext.define('NP.view.invoice.Register', {
 	extend: 'Ext.panel.Panel',
     alias: 'widget.invoice.register',
     
-    requires: ['NP.view.invoice.RegisterOpenGrid','NP.view.invoice.RegisterRejectedGrid'],
+    requires: ['NP.view.shared.ContextPicker','NP.view.invoice.RegisterOpenGrid','NP.view.invoice.RegisterRejectedGrid'],
     
     title: 'Invoice Register',
     
@@ -18,13 +18,20 @@ Ext.define('NP.view.invoice.Register', {
 
     items: [
     	{
-    		tbar: [
-		    	{ xtype: 'button', text: 'Get PO' },
-		    	{ xtype: 'button', text: 'New Invoice' },
-		    	{ xtype: 'button', text: 'Invoice Reports' },
-		    	{ xtype: 'button', text: 'Search' },
-		    	{ xtype: 'button', text: 'Receipt Register' }
-		    ]
+    		dockedItems: [{
+				xtype: 'toolbar',
+				dock: 'top',
+				layout: 'hbox',
+				items: [
+					{ xtype: 'button', text: 'Get PO' },
+			    	{ xtype: 'button', text: 'New Invoice' },
+			    	{ xtype: 'button', text: 'Invoice Reports' },
+			    	{ xtype: 'button', text: 'Search' },
+			    	{ xtype: 'button', text: 'Receipt Register' },
+			    	{ flex: 1 },
+			    	{ xtype: 'shared.contextpicker', itemId: 'invoiceRegisterContextPicker' }
+				]
+			}]
     	},
     	{
     		xtype: 'tabpanel',
