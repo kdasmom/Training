@@ -4,7 +4,7 @@ Ext.define('NP.controller.Viewport', function() {
 		
 		requires: ['NP.core.Security'],
 		
-		stores: ['UserProperties','UserRegions'],
+		stores: ['UserProperties','UserRegions','user.UserDelegations'],
 		views: ['Home'],
 		
 		init: function() {
