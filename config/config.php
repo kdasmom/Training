@@ -1,6 +1,8 @@
 <?php
 
 $__CONFIG = array(
+	// Server type
+	'serverType'		=> 'dev',
 	// Application root path
 	'appRoot'			=> 'c:\\wwwroot\\NexusPayablesPHP\\',
 	// include path for the Zend Framework

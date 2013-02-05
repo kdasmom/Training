@@ -19,6 +19,7 @@ js/extjs/resources/themes/images/*
 !js/extjs/resources/
 !js/extjs/resources/css/
 !js/extjs/resources/css/ext-all.css
+!js/extjs/resources/css/ext-all-debug.css
 !js/extjs/resources/themes/
 !js/extjs/resources/themes/images/
 !js/extjs/resources/themes/images/default/
