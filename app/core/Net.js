@@ -23,53 +23,49 @@ Ext.define('NP.core.Net', {
 					config: Ext.JSON.encode(cfg.requests)
 				},
 				callback: function(options, success, response) {
-					if (response.responseText == 'badRequest' || response.responseText == 'authenticationFailure') {
-						window.location = 'login.php';
-					} else {
-						var res, returnStruct = false;
+					var res, returnStruct = false;
+					if (success) {
+						res = Ext.decode(response.responseText);
+					}
+					if ((res instanceof Array) == false) {
+						res = [res];
+						returnStruct = true;
+					}
+					for (var i=0; i<cfg.requests.length; i++) {
 						if (success) {
-							res = Ext.decode(response.responseText);
-						}
-						if ((res instanceof Array) == false) {
-							res = [res];
-							returnStruct = true;
-						}
-						for (var i=0; i<cfg.requests.length; i++) {
-							if (success) {
-								if (cfg.requests[i].model) {
-									
-									var store = Ext.create('Ext.data.Store', {
-										autoLoad: true,
-										model: cfg.requests[i].model,
-										data: res[i],
-										proxy: {
-											type: 'memory',
-											reader: {
-												type: 'json'
-											}
+							if (cfg.requests[i].model) {
+								
+								var store = Ext.create('Ext.data.Store', {
+									autoLoad: true,
+									model: cfg.requests[i].model,
+									data: res[i],
+									proxy: {
+										type: 'memory',
+										reader: {
+											type: 'json'
 										}
-									});
-									
-									res[i] = store;
-								}
-								if (cfg.requests[i].success) {
-									cfg.requests[i].success(res[i]);
-								}
-							} else {
-								if (cfg.requests[i].failure) {
-									cfg.requests[i].failure(response, options);
-								}
+									}
+								});
+								
+								res[i] = store;
 							}
-						}
-						if (success) {
-							if (returnStruct) {
-								cfg.success(res[0]);
-							} else {
-								cfg.success(res);
+							if (cfg.requests[i].success) {
+								cfg.requests[i].success(res[i]);
 							}
 						} else {
-							cfg.failure(response, options);
+							if (cfg.requests[i].failure) {
+								cfg.requests[i].failure(response, options);
+							}
 						}
+					}
+					if (success) {
+						if (returnStruct) {
+							cfg.success(res[0]);
+						} else {
+							cfg.success(res);
+						}
+					} else {
+						cfg.failure(response, options);
 					}
 				}
 			});

@@ -70,8 +70,8 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 		return $res[0];
 	}
 	
-	public function findOpenInvoices($userprofile_id, $propertyFilterType, $propertyFilterSelection, $pageSize, $page=1, $sort='vendor_name') {
-		$propertyFilter = $this->propertyGateway->getPropertyFilterSubSelect($userprofile_id, $propertyFilterType, $propertyFilterSelection);
+	public function findOpenInvoices($userprofile_id, $delegated_to_userprofile_id, $propertyFilterType, $propertyFilterSelection, $pageSize, $page=1, $sort='vendor_name') {
+		$propertyFilter = $this->propertyGateway->getPropertyFilterSubSelect($userprofile_id, $delegated_to_userprofile_id, $propertyFilterType, $propertyFilterSelection);
 
 		$select = new InvoiceSelect();
 		$select->columns(array(
@@ -101,8 +101,8 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 		}
 	}
 	
-	public function findRejectedInvoices($userprofile_id, $propertyFilterType, $propertyFilterSelection, $pageSize=null, $page=1, $sort='vendor_name') {
-		$propertyFilter = $this->propertyGateway->getPropertyFilterSubSelect($userprofile_id, $propertyFilterType, $propertyFilterSelection);
+	public function findRejectedInvoices($userprofile_id, $delegated_to_userprofile_id, $propertyFilterType, $propertyFilterSelection, $pageSize=null, $page=1, $sort='vendor_name') {
+		$propertyFilter = $this->propertyGateway->getPropertyFilterSubSelect($userprofile_id, $delegated_to_userprofile_id, $propertyFilterType, $propertyFilterSelection);
 
 		$select = new InvoiceSelect();
 		$select->columns(array(

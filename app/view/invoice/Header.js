@@ -77,7 +77,7 @@ Ext.define('NP.view.invoice.Header', {
 			fieldLabel: 'Vendor',
 			labelAlign: 'top',
 			name: 'vendorsite_id',
-			store: Ext.create('NP.store.InvoiceVendors'),
+			store: Ext.create('NP.store.invoice.Vendors'),
 			queryParam: 'vendor_name',
 			allowBlank: false,
 			displayField: 'vendor_name',
@@ -104,7 +104,7 @@ Ext.define('NP.view.invoice.Header', {
 		
 		// Conditionally add the pay by field depending on settings
 		if ( NP.core.Config.getSetting('CP.INVOICE_PAY_BY_FIELD') == 1 ) {
-			var paybyStore = Ext.create('NP.store.InvoicePaymentTypes');
+			var paybyStore = Ext.create('NP.store.invoice.PaymentTypes');
 			paybyStore.load();
 			
 			col2.add({

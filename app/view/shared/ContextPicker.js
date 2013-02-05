@@ -1,5 +1,6 @@
 Ext.define('NP.view.shared.ContextPicker', function () {
-	return {
+    
+    return {
         extend: 'Ext.panel.Panel',
         alias: 'widget.shared.contextpicker',
         
@@ -23,7 +24,12 @@ Ext.define('NP.view.shared.ContextPicker', function () {
             bodyStyle: 'background-color: transparent'
         },
 
-        items: [],
+        propertyComboText       : NP.core.Config.getSetting('PN.main.PropertyLabel'),
+        regionComboText         : NP.core.Config.getSetting('PN.Main.RegionLabel'),
+        currentPropertyRadioText: 'Current ' + NP.core.Config.getSetting('PN.main.PropertyLabel'),
+        regionRadioText         : NP.core.Config.getSetting('PN.Main.RegionLabel'),
+        allPropertiesRadioText  : 'All ' + NP.core.Config.getSetting('PN.Main.PropertiesLabel'),
+
         initComponent: function() {
             var that = this;
 
@@ -47,7 +53,13 @@ Ext.define('NP.view.shared.ContextPicker', function () {
                 default_region = null;
             }
 
-            this.items.push({
+            // Inner function for re-use below
+            function triggerChangeEvent() {
+                var state = that.getState();
+                that.fireEvent('change', that, state.propertyFilterType, state.selected);
+            }
+
+            this.items = [{
                 flex  : 1,
                 defaults: {
                     padding: 0,
@@ -56,8 +68,8 @@ Ext.define('NP.view.shared.ContextPicker', function () {
                 items: [{
                     xtype            : 'customcombo',
                     itemId           : '__contextPickerUserPropertiesCombo',
-                    store            : 'UserProperties',
-                    fieldLabel       : NP.core.Config.getSetting('PN.main.PropertyLabel'),
+                    store            : 'user.Properties',
+                    fieldLabel       : this.propertyComboText,
                     labelAlign       : 'right',
                     selectFirstRecord: true,
                     displayField     : 'property_name',
@@ -72,15 +84,14 @@ Ext.define('NP.view.shared.ContextPicker', function () {
                             filterTypeComp.queryById('__currentPropFilterType').setValue(true);
                             filterTypeComp.resumeEvents();
 
-                            var state = that.getState();
-                            that.fireEvent('change', that, state.propertyFilterType, state.selected);
+                            triggerChangeEvent();
                         }
                     }
                 },{
                     xtype            : 'customcombo',
                     itemId           : '__contextPickerUserRegionsCombo',
-                    store            : 'UserRegions',
-                    fieldLabel       : NP.core.Config.getSetting('PN.Main.RegionLabel'),
+                    store            : 'user.Regions',
+                    fieldLabel       : this.regionComboText,
                     labelAlign       : 'right',
                     selectFirstRecord: true,
                     displayField     : 'region_name',
@@ -89,13 +100,12 @@ Ext.define('NP.view.shared.ContextPicker', function () {
                     hidden           : hide_region,
                     listeners        : {
                         select: function() {
-                            var state = that.getState();
-                            that.fireEvent('change', that, state.propertyFilterType, state.selected);
+                            triggerChangeEvent();
                         }
                     }
                 }]
-            });
-
+            }];
+            
             // Left column displays the radio buttons for choosing to see Current Property, Region, or All Properties
             this.items.push({
                 xtype      : 'checkboxgroup',
@@ -119,27 +129,26 @@ Ext.define('NP.view.shared.ContextPicker', function () {
                             that.queryById(showComp).show();
                             that.queryById(hideComp).hide();
 
-                            var state = that.getState();
-                            that.fireEvent('change', that, state.propertyFilterType, state.selected);
+                            triggerChangeEvent();
                         }
                     }
                 },
                 items      : [
                     {
-                        boxLabel  : 'Current ' + NP.core.Config.getSetting('PN.main.PropertyLabel'),
+                        boxLabel  : this.currentPropertyRadioText,
                         itemId    : '__currentPropFilterType',
                         name      : 'propertyFilterType',
                         inputValue: 'property',
                         checked   : !hide_prop && !select_all
                     },
                     {
-                        boxLabel  : NP.core.Config.getSetting('PN.Main.RegionLabel'), 
+                        boxLabel  : this.regionRadioText, 
                         name      : 'propertyFilterType', 
                         inputValue: 'region',
                         checked   : !hide_region
                     },
                     {
-                        boxLabel  : 'All ' + NP.core.Config.getSetting('PN.Main.PropertiesLabel'), 
+                        boxLabel  : this.allPropertiesRadioText, 
                         name      : 'propertyFilterType', 
                         inputValue: 'all',
                         checked   : select_all

@@ -3,12 +3,12 @@ Ext.define('NP.view.invoice.View', {
     alias: 'widget.invoiceView',
     
     requires: [
-        'NP.view.invoice.Header',
-        'NP.view.invoice.Custom',
-        'NP.view.invoice.Lines',
-        'NP.view.invoice.Notes',
-        'NP.view.invoice.History',
-        'NP.view.invoice.Forwards'
+        'NP.view.invoice.Header'
+        ,'NP.view.invoice.Custom'
+        ,'NP.view.invoice.Lines'
+        ,'NP.view.invoice.Notes'
+        ,'NP.view.invoice.History'
+        ,'NP.view.invoice.Forwards'
     ],
     
     itemId: 'invoiceViewTitle',
@@ -24,10 +24,10 @@ Ext.define('NP.view.invoice.View', {
         	xtype: 'invoiceHeader'
         },
         {
-        	xtype: 'invoicelinepanel'
+        	xtype: 'invoiceCustom'
         },
         {
-        	xtype: 'invoiceCustom'
+            xtype: 'invoicelinepanel'
         },
         {
         	xtype: 'invoiceNotes'

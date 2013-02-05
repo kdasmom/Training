@@ -7,19 +7,37 @@ use NP\core\SqlSelect;
 
 class PropertyGateway  extends AbstractGateway {
 	
-	public function findByUser($userprofile_id) {
+	public function findByUser($userprofile_id, $delegation_to_userprofile_id) {
 		$select = new SqlSelect();
 		$select->from(array('p'=>'property'))
-				->join(array('pu'=>'propertyuserprofile'),
-						"p.property_id = pu.property_id",
-						array())
-				->where("
-					pu.userprofile_id = ?
-					AND p.property_status <> 0
-				")
 				->order("p.property_name");
-		
-		return $this->executeSelectWithParams($select, array($userprofile_id));
+		if ($userprofile_id == $delegation_to_userprofile_id) {
+			$select->join(array('pu'=>'propertyuserprofile'),
+							"p.property_id = pu.property_id",
+							array())
+					->where("
+						pu.userprofile_id = ?
+						AND p.property_status <> 0
+					");
+			$params = array($userprofile_id);
+		} else {
+			$select->join(array('dp'=>'delegationprop'),
+							"p.property_id = dp.property_id",
+							array())
+					->join(array('d'=>'delegation'),
+							"dp.delegation_id = d.delegation_id",
+							array())
+					->where('
+						d.userprofile_id = ?
+						AND d.delegation_to_userprofile_id = ?
+						AND d.delegation_status = 1
+						AND d.delegation_startdate <= getDate()
+						AND d.delegation_stopdate > getDate()
+					');
+			$params = array($userprofile_id, $delegation_to_userprofile_id);
+		}
+
+		return $this->executeSelectWithParams($select, $params);
 	}
 	
 	public function findForInvoiceItemComboBox($userprofile_id, $delegation_to_userprofile_id, $property_keyword) {
@@ -44,41 +62,87 @@ class PropertyGateway  extends AbstractGateway {
 		return $this->executeSelectWithParams($select, array($userprofile_id,$property_keyword,$property_keyword));
 	}
 	
-	public function getPropertyFilterSubSelect($userprofile_id, $propertyFilterType, $propertyFilterSelection) {
+	public function getPropertyFilterSubSelect($userprofile_id, $delegation_to_userprofile_id, $propertyFilterType, $propertyFilterSelection) {
 		if ($propertyFilterType == 'property') {
 			$sql = ' = ?';
 			$params = array($propertyFilterSelection);
 		} else if ($propertyFilterType == 'region') {
-			$sql = '
-				IN (
-					SELECT 
-						__prop.property_id 
-					FROM property __prop
-					WHERE __prop.region_id = ?
-						AND EXISTS (
+			if ($userprofile_id == $delegation_to_userprofile_id) {
+				$sql = '
+					IN (
+						SELECT 
+							__prop.property_id 
+						FROM property __prop
+						WHERE __prop.region_id = ?
+							AND EXISTS (
+								SELECT *
+								FROM propertyuserprofile __propuser
+								WHERE __propuser.property_id = __prop.property_id
+									AND __propuser.userprofile_id = ?
+							)
+					)
+				';
+				$params = array($propertyFilterSelection, $userprofile_id);
+			} else {
+				$sql = '
+					IN (
+						SELECT __delegProp.property_id
+						FROM delegation __deleg
+							INNER JOIN delegationprop __delegProp ON __deleg.delegation_id = __delegProp.delegation_id
+							INNER JOIN property __prop ON __delegProp.property_id = __prop.property_id
+						WHERE __deleg.userprofile_id = ?
+							AND __deleg.delegation_to_userprofile_id = ?
+							AND __deleg.delegation_status = 1
+							AND __deleg.delegation_startdate <= getDate()
+							AND __deleg.delegation_stopdate > getDate()
+							AND __prop.region_id = ?
+							AND EXISTS (
+								SELECT *
+								FROM PROPERTYUSERPROFILE pu
+								WHERE pu.property_id = __delegProp.property_id
+									AND pu.userprofile_id = __deleg.userprofile_id
+							)
+					)
+				';
+				$params = array($userprofile_id, $delegation_to_userprofile_id, $propertyFilterSelection);
+			}
+		} else if ($propertyFilterType == 'all') {
+			if ($userprofile_id == $delegation_to_userprofile_id) {
+				$sql = '
+					IN (
+						SELECT 
+							__prop.property_id 
+						FROM property __prop
+						WHERE EXISTS (
 							SELECT *
 							FROM propertyuserprofile __propuser
 							WHERE __propuser.property_id = __prop.property_id
 								AND __propuser.userprofile_id = ?
 						)
-				)
-			';
-			$params = array($propertyFilterSelection, $userprofile_id);
-		} else if ($propertyFilterType == 'all') {
-			$sql = '
-				IN (
-					SELECT 
-						__prop.property_id 
-					FROM property __prop
-					WHERE EXISTS (
-						SELECT *
-						FROM propertyuserprofile __propuser
-						WHERE __propuser.property_id = __prop.property_id
-							AND __propuser.userprofile_id = ?
 					)
-				)
-			';
-			$params = array($userprofile_id);
+				';
+				$params = array($userprofile_id);
+			} else {
+				$sql = '
+					IN (
+						SELECT __delegProp.property_id
+						FROM delegation __deleg
+							INNER JOIN delegationprop __delegProp ON __deleg.delegation_id = __delegProp.delegation_id
+						WHERE __deleg.userprofile_id = ?
+							AND __deleg.delegation_to_userprofile_id = ?
+							AND __deleg.delegation_status = 1
+							AND __deleg.delegation_startdate <= getDate()
+							AND __deleg.delegation_stopdate > getDate()
+							AND EXISTS (
+								SELECT *
+								FROM PROPERTYUSERPROFILE pu
+								WHERE pu.property_id = __delegProp.property_id
+									AND pu.userprofile_id = __deleg.userprofile_id
+							)
+					)
+				';
+				$params = array($userprofile_id, $delegation_to_userprofile_id);
+			}
 		}
 
 		return array('sql'=>$sql, 'params'=>$params);
@@ -98,7 +162,7 @@ class PropertyGateway  extends AbstractGateway {
 				&& listFindNoCase($property_status, "-1")) {
 			$statusSQL = "";
 		} else {
-			$statusSQL = " AND p.property_status IN ( :property_status )";
+			$statusSQL = " AND __prop.property_status IN ( :property_status )";
 		}
 		
 		// For multiple and single property, just use the property list passed
@@ -108,7 +172,7 @@ class PropertyGateway  extends AbstractGateway {
 		} else if (listFindNoCase('all,region', $property_type)) {
 			// First, define the fiscal calendar joins since they repeat for both region and all
 			$fiscalJoins = "
-				INNER JOIN fiscalcal f ON p.property_id = f.property_id
+				INNER JOIN fiscalcal f ON __prop.property_id = f.property_id
 				INNER JOIN fiscalcalmonth fm ON f.fiscalcal_id = fm.fiscalcal_id
 			";
 			
@@ -121,7 +185,7 @@ class PropertyGateway  extends AbstractGateway {
 					SELECT
 						#$returnFields#
 					FROM property p
-						INNER JOIN PROPERTYUSERPROFILE pu On p.property_id = pu.property_id
+						INNER JOIN PROPERTYUSERPROFILE pu On __prop.property_id = pu.property_id
 						#fiscalJoins#
 					WHERE pu.userprofile_id = :userprofile_id
 						#statusSQL#
@@ -133,7 +197,7 @@ class PropertyGateway  extends AbstractGateway {
 						#$returnFields#
 					FROM delegation d
 						INNER JOIN delegationprop dp ON d.delegation_id = dp.delegation_id
-						INNER JOIN property p ON dp.property_id = p.property_id
+						INNER JOIN property p ON dp.property_id = __prop.property_id
 						#fiscalJoins#
 					WHERE d.userprofile_id = :userprofile_id
 						AND d.delegation_to_userprofile_id = :delegation_to_userprofile_id
@@ -158,7 +222,7 @@ class PropertyGateway  extends AbstractGateway {
 			
 			// If dealing with regions, add the region_id filter to the query
 			if ($property_type == 'region') {
-				sql &= "AND p.region_id IN ( :region_id_list )";
+				sql &= "AND __prop.region_id IN ( :region_id_list )";
 			}
 		}
 		

@@ -1,7 +1,7 @@
 Ext.define('NP.store.PropertyUnits', {
 	extend: 'Ext.data.Store',
 	
-	model: 'NP.model.Unit',
+	model: 'NP.model.property.Unit',
 	
 	// Overriding the model's default proxy
     proxy: {

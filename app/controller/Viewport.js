@@ -4,8 +4,7 @@ Ext.define('NP.controller.Viewport', function() {
 		
 		requires: ['NP.core.Security'],
 		
-		stores: ['UserProperties','UserRegions','user.UserDelegations'],
-		views: ['Home'],
+		stores: ['user.Properties','user.Regions','user.Delegations'],
 		
 		init: function() {
 			this.control({
@@ -15,6 +14,8 @@ Ext.define('NP.controller.Viewport', function() {
 						var token = 'Invoice:showRegister';
 						if (itemClicked.itemId != 'invMenuBtn' && itemClicked.itemId != 'invRegisterMenuBtn') {
 							token += ':' + itemClicked.itemId.replace('InvRegisterMenuBtn', '');
+						} else {
+							token += ':open';
 						}
 						this.application.addHistory(token);
 					}
@@ -23,8 +24,7 @@ Ext.define('NP.controller.Viewport', function() {
 		},
 		
 		home: function() {
-			var vw = this.getView('Home').create();
-			this.application.setView(vw);
+			this.application.setView('NP.view.viewport.Home');
 		}
 	}
 }());

@@ -22,11 +22,17 @@ class UserService extends AbstractService {
 	}
 	
 	public function getProperties() {
-		return $this->propertyGateway->findByUser($this->securityService->getUserId());
+		$userprofile_id = $this->securityService->getUserId();
+		$delegated_to_userprofile_id = $this->securityService->getDelegatedUserId();
+
+		return $this->propertyGateway->findByUser($userprofile_id, $delegated_to_userprofile_id);
 	}
 	
 	public function getRegions() {
-		return $this->regionGateway->findByUser($this->securityService->getUserId());
+		$userprofile_id = $this->securityService->getUserId();
+		$delegated_to_userprofile_id = $this->securityService->getDelegatedUserId();
+		
+		return $this->regionGateway->findByUser($userprofile_id, $delegated_to_userprofile_id);
 	}
 	
 	public function getUserGLAccounts() {
@@ -34,7 +40,7 @@ class UserService extends AbstractService {
 	}
 	
 	public function getDelegations($toFrom, $delegation_status=null) {
-		return $this->delegationGateway->findUserDelegations($this->securityService->getUserId(), $toFrom, $delegation_status);
+		return $this->delegationGateway->findUserDelegations($this->securityService->getDelegatedUserId(), $toFrom, $delegation_status);
 	}
 	
 	public function getDelegationsTo($delegation_status=null) {

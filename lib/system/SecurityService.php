@@ -30,11 +30,8 @@ class SecurityService extends AbstractService {
 			$this->setUserId($userprofile_id);
 			$this->setDelegatedUserId($userprofile_id);
 			
-			// Retrieve the user permissions
-			$module_id_list = $this->modulePrivGateway->getModuleListByUser($userprofile_id);
-			
 			// Save the user permissions to the session
-			$this->setPermissions($module_id_list);
+			$this->setUserPermissions($userprofile_id);
 			
 			// Log the user's login
 			$this->userprofileLogonGateway->insert(array(
@@ -47,6 +44,12 @@ class SecurityService extends AbstractService {
 		} else {
 			return 0;
 		}
+	}
+	
+	public function changeUser($userprofile_id) {
+		$this->setUserId($userprofile_id);
+		$this->setUserPermissions($userprofile_id);
+		return $this->getUser();
 	}
 	
 	public function logout() {
@@ -64,6 +67,10 @@ class SecurityService extends AbstractService {
 	
 	public function getUser() {
 		return $this->userprofileGateway->findById($this->getUserId());
+	}
+	
+	public function getDelegatedToUser() {
+		return $this->userprofileGateway->findById($this->getDelegatedUserId());
 	}
 	
 	public function getUserId() {
@@ -90,6 +97,13 @@ class SecurityService extends AbstractService {
 		return array_key_exists($module_id, $this->session->get("module_id_list"));
 	}
 	
+	private function setUserPermissions($userprofile_id) {
+		// Retrieve the user permissions
+		$module_id_list = $this->modulePrivGateway->getModuleListByUser($userprofile_id);
+		
+		// Save the user permissions to the session
+		$this->setPermissions($module_id_list);
+	}
 }
 
 ?>

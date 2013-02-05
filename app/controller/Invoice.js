@@ -6,24 +6,17 @@ Ext.define('NP.controller.Invoice', function() {
 		
 		requires: ['NP.core.Config'],
 		
-		views: [
-			'invoice.Register'
-			,'invoice.View'
-			,'invoice.Lines'
-			,'invoice.InvoiceLineGrid'
-			,'invoice.InvoiceLineForm'
-		],
 		models: [
-			'Invoice'
-			,'InvoiceItem'
+			'invoice.Invoice'
+			,'invoice.InvoiceItem'
 			,'PNUniversalField'
 			,'PurchaseOrder'
 		],
 		stores: [
-			'InvoiceRegisterOpen'
-			,'InvoiceRegisterRejected'
-			,'InvoiceLines'
-			,'InvoiceForwards'
+			'invoice.RegisterOpen'
+			,'invoice.RegisterRejected'
+			,'invoice.Lines'
+			,'invoice.Forwards'
 			,'PNUniversalFields'
 		],
 		
@@ -83,8 +76,7 @@ Ext.define('NP.controller.Invoice', function() {
 			
 			// If the invoice register is not active, create the view and put it in the main content panel
 			if (this.application.getCurrentViewType() != 'invoice.register') {
-				var vw = this.getView('invoice.Register').create();
-				this.application.setView(vw);
+				this.application.setView('NP.view.invoice.Register');
 			}
 			
 			// Check if the tab to be selected is already active, if it isn't make it the active tab
@@ -111,13 +103,13 @@ Ext.define('NP.controller.Invoice', function() {
 		showView: function(invoice_id) {
 			Ext.log('Invoice.showView('+invoice_id+') running');
 			
-			var vw = this.getView('invoice.View').create();
+			var vw = Ext.create('NP.view.invoice.View');
 			
 			var app = this.application;
 			var ctler = this;
 			
 			// Load everything needed to display the invoice view before showing it
-			app.getModel('Invoice').load(invoice_id, {
+			app.getModel('invoice.Invoice').load(invoice_id, {
 				success: function(invoiceRec) {
 					invoiceRecord = invoiceRec;
 					app.remoteCall({
@@ -147,17 +139,17 @@ Ext.define('NP.controller.Invoice', function() {
 							var periods = getPeriods(current_period);
 							var headerVw = Ext.ComponentQuery.query('invoiceHeader')[0];
 							headerVw.buildView(invoiceRec, periods.startDate, periods.endDate, associatedPOStore);
-					
-							// Build the custom field panel
-							var customFieldVw = Ext.ComponentQuery.query('invoiceCustom')[0];
-							customFieldVw.buildView('header', 'inv', invoiceRec);
 							
 							// Load the line grid store
-							var lineStore = app.getStore('InvoiceLines');
+							var lineStore = app.getStore('invoice.Lines');
 							var lineGrid = Ext.ComponentQuery.query('invoicelinepanel')[0];
 							lineStore.load({
 								params: { invoice_id: invoice_id }
 							});
+					
+							// Build the custom field panel
+							var customFieldVw = Ext.ComponentQuery.query('invoiceCustom')[0];
+							customFieldVw.buildView('header', 'inv', invoiceRec);
 							
 							// Load the forward grid store
 							var forwardGrid = Ext.ComponentQuery.query('invoiceForwards')[0];

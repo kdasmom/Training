@@ -4,8 +4,6 @@ Ext.define('NP.view.invoice.Register', {
     
     requires: ['NP.view.shared.ContextPicker','NP.view.invoice.RegisterOpenGrid','NP.view.invoice.RegisterRejectedGrid'],
     
-    title: 'Invoice Register',
-    
     layout: {
         type: 'vbox',
         align: 'stretch'
@@ -16,91 +14,116 @@ Ext.define('NP.view.invoice.Register', {
    		border: false
    	},
 
-    items: [
-    	{
-    		dockedItems: [{
-				xtype: 'toolbar',
-				dock: 'top',
-				layout: 'hbox',
-				items: [
-					{ xtype: 'button', text: 'Get PO' },
-			    	{ xtype: 'button', text: 'New Invoice' },
-			    	{ xtype: 'button', text: 'Invoice Reports' },
-			    	{ xtype: 'button', text: 'Search' },
-			    	{ xtype: 'button', text: 'Receipt Register' },
-			    	{ flex: 1 },
-			    	{ xtype: 'shared.contextpicker', itemId: 'invoiceRegisterContextPicker' }
-				]
-			}]
-    	},
-    	{
-    		xtype: 'tabpanel',
-    		itemId: 'invoiceRegisterTabs',
-    		
-    		flex: 1,
-    		
-    		defaults :{
-		        autoScroll: true,
-		        border: false
-		    },
-		    
-		    items: [
-			    {
-			    	itemId: 'openInvList',
-			    	xtype: 'registeropeninvoice',
-			    	title: 'Open'
+	titleText             : 'Invoice Register',
+	getPOBtnText          : 'Get PO',
+	newInvoiceBtnText     : 'New Invoice',
+	reportsBtnText        : 'Invoice Reports',
+	searchBtnText         : 'Search',
+	receiptRegisterBtnText: 'Receipt Register',
+	openTabText           : 'Open',
+	rejectedTabText       : 'Rejected',
+	overdueTabText        : 'Overdue',
+	templateTabText       : 'Template',
+	holdTabText           : 'On Hold',
+	templateTabText       : 'Template',
+	pendingTabText        : 'Pending',
+	approvedTabText       : 'Approved',
+	submittedTabText      : 'Submitted for Payment',
+	transferredTabText    : 'Transferred to GL',
+	paidTabText           : 'Paid',
+	voidTabText           : 'Void',
+
+    initComponent: function() {
+    	this.title = this.titleText;
+
+    	this.items = [
+	    	{
+	    		dockedItems: [{
+					xtype: 'toolbar',
+					dock: 'top',
+					layout: 'hbox',
+					items: [
+						{ xtype: 'button', text: this.getPOBtnText }
+				    	,{ xtype: 'button', text: this.newInvoiceBtnText }
+				    	,{ xtype: 'button', text: this.reportsBtnText }
+				    	,{ xtype: 'button', text: this.searchBtnText }
+				    	,{ xtype: 'button', text: this.receiptRegisterBtnText }
+				    	,{ xtype: 'tbspacer', flex: 1 }
+				    	,{ xtype: 'shared.contextpicker', itemId: 'invoiceRegisterContextPicker' }
+					]
+				}]
+	    	},
+	    	{
+	    		xtype: 'tabpanel',
+	    		itemId: 'invoiceRegisterTabs',
+	    		
+	    		flex: 1,
+	    		
+	    		defaults :{
+			        autoScroll: true,
+			        border: false
 			    },
-			    {
-			    	itemId: 'rejectedInvList',
-			    	xtype: 'registerrejectedinvoice',
-			    	title: 'Rejected'
-			    },
-			    {
-			    	itemId: 'overdueInvList',
-			    	title: 'Overdue',
-			    	html: 'Test 3'
-			    },
-			    {
-			    	itemId: 'templateInvList',
-			    	title: 'Template',
-			    	html: 'Test 4'
-			    },
-			    {
-			    	itemId: 'onholdInvList',
-			    	title: 'On Hold',
-			    	html: 'Test 5'
-			    },
-			    {
-			    	itemId: 'pendingInvList',
-			    	title: 'Pending',
-			    	html: 'Test 6'
-			    },
-			    {
-			    	itemId: 'approvedInvList',
-			    	title: 'Approved',
-			    	html: 'Test 7'
-			    },
-			    {
-			    	itemId: 'submittedInvList',
-			    	title: 'Submitted for Payment',
-			    	html: 'Test 8'
-			    },
-			    {
-			    	itemId: 'transferredInvList',
-			    	title: 'Transferred to GL',
-			    	html: 'Test 9'
-			    },
-			    {
-			    	itemId: 'paidInvList',
-			    	title: 'Paid',
-			    	html: 'Test 10'
-			    },
-			    {
-			    	itemId: 'voidInvList',
-			    	title: 'Void',
-			    	html: 'Test 11'
-			    }
-    		]
-    	}
-    ]
+			    
+			    items: [
+				    {
+				    	itemId: 'openInvList',
+				    	xtype: 'registeropeninvoice',
+				    	title: this.openTabText
+				    },
+				    {
+				    	itemId: 'rejectedInvList',
+				    	xtype: 'registerrejectedinvoice',
+				    	title: this.rejectedTabText
+				    },
+				    {
+				    	itemId: 'overdueInvList',
+				    	title: this.overdueTabText,
+				    	html: 'Test 3'
+				    },
+				    {
+				    	itemId: 'templateInvList',
+				    	title: this.templateTabText,
+				    	html: 'Test 4'
+				    },
+				    {
+				    	itemId: 'onholdInvList',
+				    	title: this.holdTabText,
+				    	html: 'Test 5'
+				    },
+				    {
+				    	itemId: 'pendingInvList',
+				    	title: this.pendingTabText,
+				    	html: 'Test 6'
+				    },
+				    {
+				    	itemId: 'approvedInvList',
+				    	title: this.approvedTabText,
+				    	html: 'Test 7'
+				    },
+				    {
+				    	itemId: 'submittedInvList',
+				    	title: this.submittedTabText,
+				    	html: 'Test 8'
+				    },
+				    {
+				    	itemId: 'transferredInvList',
+				    	title: this.transferredTabText,
+				    	html: 'Test 9'
+				    },
+				    {
+				    	itemId: 'paidInvList',
+				    	title: this.paidTabText,
+				    	html: 'Test 10'
+				    },
+				    {
+				    	itemId: 'voidInvList',
+				    	title: this.voidTabText,
+				    	html: 'Test 11'
+				    }
+	    		]
+	    	}
+	    ];
+
+	    this.callParent(arguments);
+    }
 });

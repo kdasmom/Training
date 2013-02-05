@@ -2,26 +2,32 @@ Ext.define('NP.view.invoice.AbstractRegisterGrid', {
     extend: 'Ext.grid.Panel',
     store: '',
     
-    requires: 'NP.core.Util',
+    requires: ['NP.core.Util','NP.core.Config'],
     
+	vendorColumnText  : 'Vendor',
+	amountColumnText  : 'Amount',
+	propertyColumnText: NP.core.Config.getSetting('PN.main.PropertyLabel'),
+	numberColumnText  : 'Invoice Number',
+	dateColumnText    : 'Invoice Date',
+
     constructor: function(cfg) {
     	cfg.columns = {
 		    items: [
 		        {
-		            text: 'Vendor',
+		            text: this.vendorColumnText,
 		            dataIndex: 'vendor_name'
 		        },{
-		            text: 'Amount',
+		            text: this.amountColumnText,
 		            dataIndex: 'invoice_amount',
 		            renderer: NP.core.Util.currencyRenderer
 		        },{
-		            text: 'Property',
+		            text: this.propertyColumnText,
 		            dataIndex: 'property_name'
 		        },{
-		            text: 'Invoice Number',
+		            text: this.numberColumnText,
 		            dataIndex: 'invoice_ref'
 		        },{
-		            text: 'Invoice Date',
+		            text: this.dateColumnText,
 		            dataIndex: 'invoice_datetm',
 		            xtype:'datecolumn'
 		        }

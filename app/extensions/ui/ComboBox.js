@@ -66,7 +66,9 @@ Ext.define('Ux.ui.ComboBox', {
 					}
 				}
 			});
-		} else {
+		}
+
+		if (cfg.addBlankRecord) {
 			Ext.apply(cfg.listeners, {
 				beforerender: function(combo) {
 					// Add a blank record to the store
@@ -82,18 +84,21 @@ Ext.define('Ux.ui.ComboBox', {
 
 		// If selectFirstRecord option is included, select the first record when the field loads if value is blank
 		if (cfg.selectFirstRecord) {
+			function selectFirstRec(combo, valueField, value) {
+				// Get the store associated to this combo box
+				var store = combo.getStore();
+				if (!value || store.find(valueField, value) == -1) {
+					// Suspend events briefly to prevent change events from firing
+					combo.suspendEvents(false);
+					// Set the combo to the first value in the store
+					combo.setValue(store.getAt(0));
+					// Re-enable events
+					combo.resumeEvents();
+				}
+			}
 			Ext.apply(cfg.listeners, {
 				afterrender: function(combo) {
-					// Get the store associated to this combo box
-					var store = combo.getStore();
-					if (!cfg.value || store.find(cfg.valueField, cfg.value) == -1) {
-						// Suspend events briefly to prevent change events from firing
-						combo.suspendEvents(false);
-						// Set the combo to the first value in the store
-						combo.setValue(store.getAt(0));
-						// Re-enable events
-						combo.resumeEvents();
-					}
+					selectFirstRec(combo, cfg.valueField, cfg.value);
 				}
 			});
 		}
@@ -127,5 +132,14 @@ Ext.define('Ux.ui.ComboBox', {
 		}
 		
 		this.callParent(arguments);
+
+		if (cfg.selectFirstRecord) {
+			this.addListener('beforerender', function(combo) {
+				combo.getStore().addListener('load', function(store) {
+					var val = combo.getValue();
+					selectFirstRec(combo, cfg.valueField, val);
+				});
+			});
+		}
 	}
 });

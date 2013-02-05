@@ -5,17 +5,16 @@ Ext.define('NP.view.invoice.InvoiceLineGrid', {
     
     requires: [
     	'NP.core.Util'
-    	,'NP.model.GLAccount'
+    	,'NP.model.gl.GLAccount'
     ],
     
-    store: 'InvoiceLines',
-	
-	features: [{
+    store: 'invoice.Lines',
+
+    features: [{
 		ftype: 'summary'
 	}],
     
-    border: 0,
-    
+    border: 0, 
     columns: {
     	items: [
 	        {
@@ -34,7 +33,7 @@ Ext.define('NP.view.invoice.InvoiceLineGrid', {
 	            text: 'GL Account',
 	            dataIndex: 'glaccount_number',
 	            renderer: function(val, meta, rec) {
-	            	return NP.model.GLAccount.getFormattedName(val, rec.get('glaccount_name'));
+	            	return NP.model.gl.GLAccount.getFormattedName(val, rec.get('glaccount_name'));
 	            },
 	            flex: 2
 	        },{

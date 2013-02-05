@@ -2,7 +2,7 @@ Ext.define('NP.view.invoice.Forwards', {
 	extend: 'Ext.grid.Panel',
 	alias: 'widget.invoiceForwards',
 	
-	store: 'InvoiceForwards',
+	store: 'invoice.Forwards',
 	
 	title: 'Invoice Forwards',
 	viewConfig: {

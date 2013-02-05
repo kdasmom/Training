@@ -34,7 +34,7 @@ Ext.define('Ux.ui.HoverButton', {
   
         // add hide/show, if this is a button with menu
         var config = {}, menuConfig = {};
-        if (Ext.isDefined(this.initialConfig.menu)) {
+        if (Ext.isDefined(this.menu)) {
             config = {
                 listeners: {
                     mouseover: {
