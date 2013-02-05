@@ -18,7 +18,7 @@ if (!$isAuth) {
 	<link rel="stylesheet" type="text/css" href="js/extjs/resources/css/ext-all.css">
 	<script type="text/javascript" src="js/extjs/ext-all-dev.js"></script>
 	<script type="text/javascript" src="js/deftjs/deft-debug.js"></script>
-	<script type="text/javascript" src="js/CryptoJS/sha3.js"></script>
+	<script type="text/javascript" src="js/CryptoJS/sha1.js"></script>
 	<script type="text/javascript" src="app/Application.js"></script>
 </head>
 <body>

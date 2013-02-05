@@ -122,7 +122,7 @@ Ext.application({
 		// If token is null, go to home page; otherwise, hash the token (minus last item) 
 		// and compare with the hash that was embedded in the token (last item)
 		if (token) {
-			if (userHash == CryptoJS.SHA3(NP.core.Security.getUser().get('userprofile_id')+'') && tokenHash == CryptoJS.SHA3(newToken)) {
+			if (userHash == CryptoJS.SHA1(NP.core.Security.getUser().get('userprofile_id')+'') && tokenHash == CryptoJS.SHA1(newToken)) {
 				var args = newToken.split(':');
 				this.runAction.apply(this, args);
 			} else {
@@ -168,8 +168,8 @@ Ext.application({
 		
 		if (oldToken === null || oldToken !== newToken) {
 			// Hash the entire token
-			var tokenHash = CryptoJS.SHA3(newToken);
-			var userIdHash = CryptoJS.SHA3(NP.core.Security.getUser().get('userprofile_id')+'');
+			var tokenHash = CryptoJS.SHA1(newToken);
+			var userIdHash = CryptoJS.SHA1(NP.core.Security.getUser().get('userprofile_id')+'');
 			Ext.History.add(newToken+':'+tokenHash + ':' + userIdHash);
 		}
 	},

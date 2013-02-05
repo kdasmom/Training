@@ -23,6 +23,7 @@ Ext.define('NP.core.Security', function() {
 	Ext.Ajax.addListener('requestcomplete', function(conn, response, options, eOpts) {
 		if (response.responseText.indexOf('authenticationFailure') !== -1) {
 			window.location = 'login.php';
+			return false;
 		}
 	});
 
