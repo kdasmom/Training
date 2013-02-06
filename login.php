@@ -20,19 +20,37 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	}
 }
 
-echo $error;
+$siteService = $di->get("NP\system\SiteService");
 ?>
 
-<form action="login.php" method="post">
-	<div>
-		<label>Username:</label>
-		<input type="text" name="username" value="" />
-	</div>
-	<div>
-		<label>Password:</label>
-		<input type="password" name="pwd" />
-	</div>
-	<div>
-		<input type="submit" value="Login" />
-	</div>
-</form>
+<html>
+<head>
+	<title>NexusPayables Sign-on</title>
+</head>
+<body>
+
+<?php
+
+$customLoginPath = 'clients/'.$siteService->getAppName().'/login.php';
+if (file_exists($__CONFIG['appRoot'].$customLoginPath)) {
+	include $customLoginPath;
+} else {
+	echo $error;
+	?>
+	<form action="login.php" method="post">
+		<div>
+			<label>Username:</label>
+			<input type="text" name="username" value="" />
+		</div>
+		<div>
+			<label>Password:</label>
+			<input type="password" name="pwd" />
+		</div>
+		<div>
+			<input type="submit" value="Login" />
+		</div>
+	</form>
+<?php } ?>
+
+</body>
+</html>
