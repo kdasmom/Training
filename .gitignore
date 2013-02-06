@@ -4,6 +4,8 @@
 test.php
 Invoice (backup).js
 Lines (backup).js
+
+config/di_definition.php
 *.log
 js/deftjs/*
 js/extjs/*

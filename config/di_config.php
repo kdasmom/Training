@@ -5,6 +5,27 @@ if (array_key_exists("reloadconfiguration", $_GET)) {
 	$reloadCache = true;
 }
 
+// If on production server, compile definitions to a file
+if ($__CONFIG['serverType'] == 'prod') {
+	if (!file_exists(__DIR__ . '/di_definition.php')) {
+	    $compiler = new Zend\Di\Definition\CompilerDefinition();
+	    $compiler->addDirectory($__CONFIG['appRoot'] . 'lib');
+	    $compiler->addDirectory($__CONFIG['zendPath'] . '/db');
+	    $compiler->compile();
+	    $definition = $compiler->toArrayDefinition();
+	    
+	    file_put_contents(
+	        __DIR__ . '/di_definition.php',
+	        '<?php return ' . var_export($definition->toArray(), true) . '; ?>'
+	    );
+	} else {
+	    $definition = new Zend\Di\Definition\ArrayDefinition(
+	        include __DIR__ . '/di_definition.php'
+	    );
+	}
+	$di->setDefinitionList(new Zend\Di\DefinitionList(array($definition, new Zend\Di\Definition\RuntimeDefinition())));
+}
+
 $im = $di->instanceManager();
 
 $im->setParameters('NP\system\SiteService', array(
@@ -33,29 +54,3 @@ $im->setParameters('NP\system\LoggingService', array(
     'fileEnabled'		=> $__CONFIG['fileLogEnabled'],
     'debugEnabled'		=> $__CONFIG['debugLogEnabled'],
 ));
-
-/*
- * This is an example of setter injection in case needed
- * 
-$im->setInjections(
-	'NP\\invoice\\InvoiceItemGateway',
-	array('setInvoiceGateway'=>array('invoiceGateway'=>'NP\invoice\InvoiceGateway'))
-);
-*/
-
-// Function to loop through all files in a directory and inject some objects in them
-function __dependencyInjector($im, $dir, $config, $exclude=array()) {
-	$files = scandir($dir);
-	$ns = explode("\\", $dir);
-	$ns = 'NP\\' . $ns[sizeof($ns)-1] . '\\';
-	foreach($files as $file) {
-	    if ($file != '.' && $file != '..' && !in_array($file, $exclude)) {
-	    	$name = explode(".", $file);
-			$name = $name[0];
-			$im->setInjections(
-				$ns . $name,
-				$config
-			);
-	    }
-	}
-}
