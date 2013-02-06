@@ -4,9 +4,9 @@ $__CONFIG = array(
 	// Server type
 	'serverType'		=> 'dev',
 	// Application root path
-	'appRoot'			=> 'c:\\wwwroot\\NexusPayablesPHP\\',
+	'appRoot'			=> 'c:/wwwroot/NexusPayablesPHP/',
 	// include path for the Zend Framework
-	'zendPath'			=> 'c:\\wwwroot\\Zend_2.0.4\\library\\Zend',
+	'zendPath'			=> 'c:/wwwroot/Zend_2.0.4/library/Zend',
 	// Datasource configuration parameters
 	'datasource'		=> array(
 		    'driver'		=> 'Sqlsrv',

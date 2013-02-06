@@ -26,7 +26,7 @@
 	<client>
 		<name>SIMPSONDev</name>
 		<status>active</status>
-		<application_name>SIMPSONDev</application_name>
+		<application_name>simpson</application_name>
 		<access_url>*/NexusPayablesExt/</access_url>
 		<access_url>*/NexusPayablesPHP/</access_url>
 		<access_url>*/simpsonMobile/</access_url>
