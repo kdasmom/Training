@@ -1,11 +1,13 @@
 <?php
 namespace NP\core\validation;
 
+use NP\core\EntityInterface;
+
 use Zend\Validator\ValidatorChain;
 
 class EntityValidator implements EntityValidatorInterface {
 	
-	public function validate(AbstractEntity $entity) {
+	public function validate(EntityInterface $entity) {
 		$result = new EntityValidatorResult();
 
 		// Get the field definitions for the entity

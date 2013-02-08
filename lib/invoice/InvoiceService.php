@@ -4,20 +4,34 @@ namespace NP\invoice;
 
 use NP\core\AbstractService;
 use NP\system\SecurityService;
-//use \NP\db\gateways\InvoiceItemGateway;
 
 class InvoiceService extends AbstractService {
 	
 	protected $securityService, $invoiceGateway, $invoiceItemGateway;
 	
-	public function __construct(SecurityService $securityService, InvoiceGateway $invoiceGateway, InvoiceItemGateway $invoiceItemGateway) {
+	public function __construct(SecurityService $securityService, InvoiceGateway $invoiceGateway, 
+								InvoiceItemGateway $invoiceItemGateway, InvoiceValidator $invoiceValidator) {
 		$this->securityService = $securityService;
 		$this->invoiceGateway = $invoiceGateway;
 		$this->invoiceItemGateway = $invoiceItemGateway;
+		$this->invoiceValidator = $invoiceValidator;
 	}
 	
 	public function get($invoice_id) {
 		return $this->invoiceGateway->findById($invoice_id);
+	}
+	
+	public function save(Invoice $entity) {
+		$result = $this->invoiceValidator->validate();
+		if ($result->isValid()) {
+			$this->invoiceGateway->save($entity->toArray());
+			$lines = $entity->lines();
+			foreach($lines as $line) {
+				$this->invoiceItemGateway->save($line->toArray());
+			}
+		}
+
+		return $result->getErrors();
 	}
 	
 	public function getInvoiceLines($invoice_id) {

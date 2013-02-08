@@ -26,7 +26,8 @@ class InvoiceItem extends AbstractEntity {
 					'numeric'     =>array(),
 					'greaterThan' =>array(
 						'min'       => 0,
-						'inclusive' => true)
+						'inclusive' => true
+					)
 				)
 			)
 		),

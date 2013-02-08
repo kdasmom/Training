@@ -1,8 +1,10 @@
 <?php
 namespace NP\core\validation;
 
+use NP\core\EntityInterface;
+
 interface EntityValidatorInterface {
 	
-	public function validate(AbstractEntity $entity);
+	public function validate(EntityInterface $entity);
 }
 ?>

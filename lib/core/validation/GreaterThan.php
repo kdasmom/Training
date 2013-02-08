@@ -6,7 +6,7 @@ class GreaterThan extends \Zend\Validator\GreaterThan {
 
     public function __construct($options = null) {
         $this->messageTemplates[self::NOT_GREATER          ] = 'The field "%fieldName%" is not greater than "%min%"';
-        $this->messageTemplates[self::NOT_GREATER_INCLUSIVE] = 'The field "%fieldName%" is not greater or equal than "%min%"';
+        $this->messageTemplates[self::NOT_GREATER_INCLUSIVE] = 'The field "%fieldName%" is not greater than or equal to "%min%"';
 
         $this->messageVariables["fieldName"] = array("options" => "fieldName");
 

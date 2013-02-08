@@ -20,6 +20,14 @@ class Invoice extends AbstractEntity {
 				'uri' => array('allowRelative' => false)
 			)
 		),
+		'invoice_status' => array(
+			'default' => 'open',
+			'validation' => array(
+				'inArray' => array(
+					'haystack' => array('open','forapproval','saved','approved','rejected','sent','submitted','posted','paid','hold','draft','void')
+				)
+			),
+		),
 		'invoice_amount' => array(
 			'serializable' => false,
 			'setable'      => false
@@ -27,7 +35,7 @@ class Invoice extends AbstractEntity {
 		'lines' => array(
 			'default'      => array(),
 			'serializable' => false
-		)
+		),
 	);
 
 	public function setLines($lines) {
@@ -44,7 +52,7 @@ class Invoice extends AbstractEntity {
 	public function removeLine($index) {
 		$line = $this->values['lines'][$index];
 		$this->values['invoice_amount'] -= ($line->invoiceitem_amount + $line->invoiceitem_shipping + $line->invoiceitem_salestax);
-		unset($this->values['lines'][$index]);
+		array_splice($this->values['lines'], $index, 1);
 	}
 }
 

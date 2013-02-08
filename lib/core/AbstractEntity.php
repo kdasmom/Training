@@ -2,7 +2,7 @@
 
 namespace NP\core;
 
-abstract class AbstractEntity {
+abstract class AbstractEntity implements EntityInterface {
 	 
 	 protected $values;
 	 
@@ -71,10 +71,6 @@ abstract class AbstractEntity {
 			return true;
 		}
 		throw new Exception("The field '$name' has not been set for this entity yet.");
-	}
-	
-	public function getClassName() {
-		return get_called_class();
 	}
 
 	public function getFields() {
