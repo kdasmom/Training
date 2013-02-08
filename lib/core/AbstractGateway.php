@@ -13,22 +13,15 @@ abstract class AbstractGateway extends AbstractTableGateway {
 	// Override this in concrete class to specify table name; if not overriden, assumes Gateway name
 	protected $table;
 	
-	// Override this in concrete class to specify entity class name; if not overriden, assumes Gateway name
-	protected $entityClass;
-	
 	// Override this in concrete class to specify table primary key name; if not overriden, assumes table name followed by _id
 	protected $pk;
-	
+
 	public function __construct(Adapter $adapter) {
 		$this->adapter = $adapter;
 		
 		if ($this->table === null) {
 			$this->table = explode('\\', str_replace('Gateway', '', get_called_class()));
 			$this->table = strtolower($this->table[count($this->table)-1]);
-		}
-		
-		if ($this->entityClass === null) {
-			$this->entityClass = str_replace('Gateway', '', get_called_class());
 		}
 		
 		if ($this->pk === null) {
@@ -75,48 +68,6 @@ abstract class AbstractGateway extends AbstractTableGateway {
 		return $res;
 	}
 	
-	public function findEntityById($id) {
-		$res = $this->findById($id);
-		
-		return $this->createEntity($res);
-	}
-	
-	public function findEntity($where=null, $params=array(), $cols=null, $select=null) {
-		$res = $this->find($where, $params, $cols, $select);
-		
-		$entities = new EntityCollection(get_called_class());
-		foreach ($res as $fieldValues) {
-			$entities[] = $this->createEntity($fieldValues);
-		}
-		return $entities;
-	}
-	
-	public function updateEntity(AbstractEntity $entity) {
-		return $this->update($entity->toArray());
-	}
-	
-	public function insertEntity(AbstractEntity $entity) {
-		$res = $this->insert($entity->toArray());
-		$entity->$this->pk = $this->lastInsertValue;
-		return $res;
-	}
-	
-	public function saveEntity(AbstractEntity $entity) {
-		if ($entity->$this->pk === 0 || $entity->$this->pk === null) {
-			return $this->insertEntity($entity);
-		} else {
-			return $this->updateEntity($entity);
-		}
-	}
-	
-	public function deleteEntity(AbstractEntity $entity) {
-		return $this->delete(array($this->pk=>$entity->$this->pk));
-	}
-	
-	public function createEntity($fieldValues=array()) {
-		return new $this->entityClass($fieldValues);
-	}
-	
 	public function select($where=null) {
 		$select = $this->getSelect();
 		$select->where($where);
@@ -127,10 +78,6 @@ abstract class AbstractGateway extends AbstractTableGateway {
 	// This function can be overridden to specify a default select to use (if you want some joins by default, for example)
 	protected function getSelect() {
 		return $this->getSql()->select();
-	}
-	
-	public function getEntityClass() {
-		return $this->entityClass;
 	}
 	
 	public function executeSelectWithParams($select, $params) {

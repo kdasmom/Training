@@ -7,14 +7,40 @@ use NP\core\AbstractEntity;
 class InvoiceItem extends AbstractEntity {
 	
 	protected $fields = array(
-		'invoiceitem_id'		=> null,
-		'invoice_id'			=> null,
-		'property_id'			=> null,
-		'invoiceitem_linenum'	=> 0,
-		'invoiceitem_quantity'	=> 0,
-		'invoiceitem_amount'	=> 0,
-		'invoiceitem_shipping'	=> 0,
-		'invoiceitem_salestax'	=> 0
+		'invoiceitem_id'		=> array(),
+		'invoice_id'			=> array(),
+		'property_id'			=> array(),
+		'invoiceitem_linenum'	=> array(),
+		'invoiceitem_quantity'	=> array(
+			'default' => 1,
+			'validation' => array('numeric'=>array())
+		),
+		'invoiceitem_amount'	=> array(
+			'default' => 0,
+			'validation' => array('numeric'=>array())
+		),
+		'invoiceitem_shipping'	=> array(
+			'default' => 0,
+			'validation' => array(
+				array(
+					'numeric'     =>array(),
+					'greaterThan' =>array(
+						'min'       => 0,
+						'inclusive' => true)
+				)
+			)
+		),
+		'invoiceitem_salestax'	=> array(
+			'default'    => 0,
+			'validation' => array(
+				array(
+					'numeric'     =>array(),
+					'greaterThan' =>array(
+						'min'       => 0,
+						'inclusive' => true)
+				)
+			)
+		)
 	);
 	
 }

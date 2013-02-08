@@ -7,20 +7,45 @@ use NP\core\AbstractEntity;
 class Invoice extends AbstractEntity {
 	
 	protected $fields = array(
-		'invoice_id'=>null,
-		'property_id'=>null,
-		'invoice_ref'=>'',
-		'invoice_amount'=>0,
+		'invoice_id',
+		'property_id'    => array(
+			'required'   => true,
+			'displayName'=> 'Property ID',
+			'default'    => 2.5,
+			'validation' => array('int' => array())
+		),
+		'invoice_ref'    => array(
+			'default' => '',
+			'validation' => array(
+				'uri' => array('allowRelative' => false)
+			)
+		),
+		'invoice_amount' => array(
+			'serializable' => false,
+			'setable'      => false
+		),
+		'lines' => array(
+			'default'      => array(),
+			'serializable' => false
+		)
 	);
-	
-	public function toArray() {
-		return array(
-			'invoice_id'=>$this->invoice_id,
-			'property_id'=>$this->property_id,
-			'invoice_ref'=>$this->invoice_ref,
-		);
+
+	public function setLines($lines) {
+		foreach ($lines as $line) {
+			$this->addLine($line);
+		}
 	}
-	
+
+	public function addLine(InvoiceItem $line) {
+		$this->values['lines'][] = $line;
+		$this->values['invoice_amount'] += $line->invoiceitem_amount + $line->invoiceitem_shipping + $line->invoiceitem_salestax;
+	}
+
+	public function removeLine($index) {
+		$line = $this->values['lines'][$index];
+		$this->values['invoice_amount'] -= ($line->invoiceitem_amount + $line->invoiceitem_shipping + $line->invoiceitem_salestax);
+		unset($this->values['lines'][$index]);
+	}
 }
 
 ?>
