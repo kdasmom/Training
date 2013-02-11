@@ -8,13 +8,15 @@ use Zend\Db\Sql\Select;
 use Zend\Db\Sql\Expression;
 use Zend\Db\ResultSet\ResultSet;
 
-abstract class AbstractGateway extends AbstractTableGateway {
+abstract class AbstractGateway extends AbstractTableGateway implements LoggingAwareInterface {
 	
 	// Override this in concrete class to specify table name; if not overriden, assumes Gateway name
 	protected $table;
 	
 	// Override this in concrete class to specify table primary key name; if not overriden, assumes table name followed by _id
 	protected $pk;
+
+	protected $loggingService;
 
 	public function __construct(Adapter $adapter) {
 		$this->adapter = $adapter;
@@ -29,6 +31,10 @@ abstract class AbstractGateway extends AbstractTableGateway {
 		}
 		
 		$this->initialize();
+	}
+	
+	public function setLoggingService(\NP\system\LoggingService $loggingService) {
+		$this->loggingService = $loggingService;
 	}
 	
 	public function getTable() {

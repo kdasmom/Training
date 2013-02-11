@@ -2,11 +2,9 @@
 
 namespace NP\system;
 
-use NP\core\AbstractService;
-
 use Zend\Cache\Storage\Adapter\WinCache;
 
-class SiteService extends AbstractService {
+class SiteService {
 	
 	private $configPath, $cache, $appName = null;
 	
