@@ -3,8 +3,14 @@ namespace NP\core\validation;
 
 use Zend\Validator\AbstractValidator;
 
-class Int extends AbstractValidator
-{
+/**
+ * A validator to ensure a value is an integer
+ *
+ * This class is used to replace the Zend\Validator\Digits class which didn't really suit our needs
+ * 
+ * @author Thomas Messier
+ */
+class Int extends AbstractValidator {
     const NOT_INT   = 'notInt';
 
     /**
@@ -33,7 +39,7 @@ class Int extends AbstractValidator
     protected $options = array();
 
     /**
-     * Returns true if and only if $value only contains digit characters
+     * Returns true if and only if $value is an integer
      *
      * @param  string $value
      * @return bool
@@ -42,9 +48,15 @@ class Int extends AbstractValidator
     {
         $this->setValue($value);
 
-        if (!is_int($value)) {
+        if (!is_numeric($value)) {
             $this->error(self::NOT_INT);
             return false;
+        } else {
+            $value += 0;
+            if (!is_int($value)) {
+                $this->error(self::NOT_INT);
+                return false;
+            }
         }
 
         return true;

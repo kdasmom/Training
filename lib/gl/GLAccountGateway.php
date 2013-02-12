@@ -8,16 +8,33 @@ use NP\system\ConfigService;
 
 use Zend\Db\Adapter\Adapter;
 
+/**
+ * Gateway for the GL Account table
+ *
+ * @author Thomas Messier
+ */
 class GLAccountGateway extends AbstractGateway {
-	
+	/**
+	 * @var NP\system\ConfigService
+	 */
 	protected $configService;
 	
+	/**
+	 * @param Zend\Db\Adapter\Adapter $adapter       Database adapter object injected by Zend Di
+	 * @param NP\system\ConfigService $configService ConfigService object injected by Zend Di
+	 */
 	public function __construct(Adapter $adapter, ConfigService $configService) {
 		$this->configService = $configService;
 		
 		parent::__construct($adapter);
 	}
 	
+	/**
+	 * @param  int    $vendorsite_id
+	 * @param  int    $property_id
+	 * @param  string $glaccount_keyword
+	 * @return array
+	 */
 	public function findForInvoiceItemComboBox($vendorsite_id, $property_id, $glaccount_keyword='') {
 		$usePropGL = $this->configService->get('CP.PROPERTYGLACCOUNT_USE', 0);
 		$glaccount_keyword .= '%';
@@ -89,6 +106,12 @@ class GLAccountGateway extends AbstractGateway {
 		return $this->adapter->query($sqlStr, $params)->toArray();
 	}
 	
+	/**
+	 * Retrieves GL accounts that a specific user has access to
+	 * 
+	 * @param  int    $userprofile_id
+	 * @return array
+	 */
 	public function findUserGLAccounts($userprofile_id) {
 		$select = new SqlSelect();
 		$select->from(array('g'=>'glaccount'))

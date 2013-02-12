@@ -4,9 +4,23 @@ namespace NP\invoice;
 use NP\core\EntityInterface;
 use NP\core\validation\EntityValidator;
 
+/**
+ * A class to validate invoice entities
+ *
+ * This class validates an NP\invoice\Invoice entity. See NP\core\validation\EntityValidator.
+ * 
+ * @author Thomas Messier
+ */
 class InvoiceValidator extends EntityValidator {
 	
+	/**
+	 * Validates an invoice entity object
+	 *
+	 * @param  NP\invoice\Invoice $entity               The entity to validate
+	 * @return NP\core\validation\EntityValidatorResult An object containing the result of the validation
+	 */
 	public function validate(EntityInterface $entity) {
+		// Check if the entity passed in is an invoice
 		$validEntityType = 'NP\invoice\Invoice';
 		if (get_class($entity) != $validEntityType) {
 			throw new \NP\core\Exception("This function can only validate an entity of type {$validEntityType}");

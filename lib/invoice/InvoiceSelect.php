@@ -6,6 +6,11 @@ use NP\core\SqlSelect;
 
 use Zend\Db\Sql\Expression;
 
+/**
+ * A custom Select object for Invoice records with some shortcut methods
+ *
+ * @author Thomas Messier
+ */
 class InvoiceSelect extends SqlSelect {
 	
 	public function __construct() {
@@ -13,6 +18,13 @@ class InvoiceSelect extends SqlSelect {
 		$this->from('invoice');
 	}
 	
+	/**
+	 * Left joins vendor tables (VENDORSITE, VENDOR)
+	 *
+	 * @param  string[] $vendorsiteCols Columns to retrieve from the VENDORSITE table
+	 * @param  string[] $vendorCols     Columns to retrieve from the VENDOR table
+	 * @return NP\invoice\InvoiceSelect Returns caller object for easy chaining
+	 */
 	public function joinVendor($vendorsiteCols=array(), $vendorCols=array()) {
 		return $this->join(array('vs' => 'vendorsite'),
 						$this->table.'.paytablekey_id = vs.vendorsite_id',
@@ -22,12 +34,24 @@ class InvoiceSelect extends SqlSelect {
 							$vendorCols);
 	}
 	
+	/**
+	 * Joins the PROPERTY table
+	 *
+	 * @param  string[] $cols               Columns to retrieve from the table
+	 * @return NP\invoice\InvoiceSelect Returns caller object for easy chaining
+	 */
 	public function joinProperty($cols=array()) {
 		return $this->join(array('p' => 'property'),
 						$this->table.'.property_id = p.property_id',
 						$cols);
 	}
 	
+	/**
+	 * Joins the USERPROFILE table
+	 *
+	 * @param  string[] $cols               Columns to retrieve from the table
+	 * @return NP\invoice\InvoiceSelect Returns caller object for easy chaining
+	 */
 	public function joinUserprofile($cols=array()) {
 		return $this->join(array('r' => 'recauthor'),
 							new Expression($this->table.".invoice_id = r.tablekey_id AND r.table_name = 'invoice'"),
@@ -37,6 +61,11 @@ class InvoiceSelect extends SqlSelect {
 							$cols);
 	}
 	
+	/**
+	 * Adds the invoice amount subquery as a column
+	 *
+	 * @return NP\invoice\InvoiceSelect Returns caller object for easy chaining
+	 */
 	public function columnInvoiceAmount() {
 		$subSelect = new SqlSelect();
 		$subSelect->from(array('ii'=>'invoiceitem'))
@@ -47,6 +76,11 @@ class InvoiceSelect extends SqlSelect {
 		return $this->column($subSelect, 'invoice_amount');
 	}
 	
+	/**
+	 * Adds the rejected date subquery as a column
+	 *
+	 * @return NP\invoice\InvoiceSelect Returns caller object for easy chaining
+	 */
 	public function columnRejectedDate() {
 		$subSelect = new SqlSelect();
 		$subSelect->from(array('__a'=>'APPROVE_VIEW'))
@@ -63,6 +97,11 @@ class InvoiceSelect extends SqlSelect {
 		return $this->column($subSelect, 'rejected_datetm');
 	}
 	
+	/**
+	 * Adds the rejected by subquery as a column
+	 *
+	 * @return NP\invoice\InvoiceSelect Returns caller object for easy chaining
+	 */
 	public function columnRejectedBy() {
 		$subSelect = new SqlSelect();
 		$subSelect->from(array('__a'=>'APPROVE_VIEW'))
@@ -79,6 +118,11 @@ class InvoiceSelect extends SqlSelect {
 		return $this->column($subSelect, 'rejected_by');
 	}
 	
+	/**
+	 * Adds the created by subquery as a column
+	 *
+	 * @return NP\invoice\InvoiceSelect Returns caller object for easy chaining
+	 */
 	public function columnCreatedBy() {
 		$subSelect = new SqlSelect();
 		$subSelect->from(array('__ra'=>'recauthor'))

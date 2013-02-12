@@ -5,8 +5,25 @@ use NP\core\EntityInterface;
 
 use Zend\Validator\ValidatorChain;
 
+/**
+ * A class to validate entities
+ *
+ * This class validates an entity extending NP\core\AbstractEntity by inspecting its $fields
+ * property and using the definitions in there to determine the type of validation needed. This
+ * class can be extended to provide more complex validation in specific cases (for example, if you
+ * have validation that pertains to the entity as a whole and not just one field). The class (and
+ * extended classes) is meant to be used as a singleton, since it has no properties.
+ * 
+ * @author Thomas Messier
+ */
 class EntityValidator implements EntityValidatorInterface {
 	
+	/**
+	 * Validates an entity object
+	 *
+	 * @param  NP\core\EntityInterface $entity          The entity to validate
+	 * @return NP\core\validation\EntityValidatorResult An object containing the result of the validation
+	 */
 	public function validate(EntityInterface $entity) {
 		$result = new EntityValidatorResult();
 
@@ -67,6 +84,14 @@ class EntityValidator implements EntityValidatorInterface {
 		return $result;
 	}
 
+	/**
+	 * Utility function for creating a validator
+	 *
+	 * @param  string $validatorClass            The entity to validate
+	 * @param  array  $options                   The entity to validate
+	 * @param  string $displayName               The entity to validate
+	 * @return Zend\Validator\AbstractValidator
+	 */
 	protected function createValidator($validatorClass, $options, $displayName) {
 		$options['fieldName'] = $displayName;
 		$validatorClass = '\\NP\\core\\validation\\' . ucfirst($validatorClass);

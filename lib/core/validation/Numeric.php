@@ -3,8 +3,12 @@ namespace NP\core\validation;
 
 use Zend\Validator\AbstractValidator;
 
-class Numeric extends AbstractValidator
-{
+/**
+ * A validator to ensure a value is numeric
+ * 
+ * @author Thomas Messier
+ */
+class Numeric extends AbstractValidator {
     const NOT_NUMERIC   = 'notNumeric';
 
     /**

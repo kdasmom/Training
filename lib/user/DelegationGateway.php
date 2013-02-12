@@ -5,8 +5,21 @@ namespace NP\user;
 use NP\core\AbstractGateway;
 use NP\core\SqlSelect;
 
+/**
+ * Gateway for the DELEGATION table
+ *
+ * @author Thomas Messier
+ */
 class DelegationGateway extends AbstractGateway {
-		
+	
+	/**
+	 * Gets delegation to or from a user
+	 *
+	 * @param  int $userprofile_id    ID of user in relation to whom you want delegations
+	 * @param  int $toOrFrom          Whether you want to get delegations to a user or from a user; valid values are "to" or "from"
+	 * @param  int $delegation_status Retrieve only records with a specific delegation_status (optional); default is null, 1 and 0 are other valid values
+	 * @return array
+	 */
 	public function findUserDelegations($userprofile_id, $toOrFrom, $delegation_status=null) {
 		if ($toOrFrom != 'to' && $toOrFrom != 'from') {
 			throw new \NP\core\Exception("The value of the \$toOrFrom argument, '{$toOrFrom}', is invalid. It must be either 'to' or 'from'.");

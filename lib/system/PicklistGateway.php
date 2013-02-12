@@ -7,9 +7,22 @@ use NP\core\SqlSelect;
 
 use Zend\Db\ResultSet\ResultSet;
 
-class PicklistGateway  extends AbstractGateway {
-	
-	public function find($picklist_table_display, $getActiveOnly=null, $invoicepayment_type_id=null) {
+/**
+ * Gateway for the PICKLISTGATEWAY table
+ *
+ * @author Thomas Messier
+ */
+class PicklistGateway extends AbstractGateway {
+	/**
+	 * Overwrites the default find() method to provide a unified interface to retrieve any kind of pick list
+	 * type data
+	 *
+	 * @param  string  $picklist_table_display 
+	 * @param  boolean $getActiveOnly          Whether to get only active records or all records
+	 * @param  int     $invoicepayment_type_id 
+	 * @return array   An array of records
+	 */
+	public function find($picklist_table_display, $getActiveOnly=false, $invoicepayment_type_id=null) {
 		if ($picklist_table_display == 'Priority') {
 			return $this->getPriorityFlags();
 		} else {
@@ -45,7 +58,7 @@ class PicklistGateway  extends AbstractGateway {
 				$sqlStr .= " WHERE 1=1";
 			}
 			
-			if ($getActiveOnly != null) {
+			if ($getActiveOnly) {
 				$sqlStr .= " AND " . $res['table_name'] . ".universal_field_status > 0";
 			}
 			
@@ -69,6 +82,12 @@ class PicklistGateway  extends AbstractGateway {
 		}
 	}
 	
+	/**
+	 * Retrieves priority flags from the PRIORITYFLAG table and returns them in the same format as the one
+	 * used in the find() method
+	 *
+	 * @return array
+	 */
 	private function getPriorityFlags() {
 		$result = $this->adapter->query("
 			SELECT 

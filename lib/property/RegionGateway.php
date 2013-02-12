@@ -5,8 +5,20 @@ namespace NP\property;
 use NP\core\AbstractGateway;
 use NP\core\SqlSelect;
 
+/**
+ * Gateway for the REGION table
+ *
+ * @author Thomas Messier
+ */
 class RegionGateway  extends AbstractGateway {
 	
+	/**
+	 * Find regions for a given user
+	 *
+	 * @param  int    $userprofile_id              The active user ID, can be a delegated account
+	 * @param  int    $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
+	 * @return array                               Array of region records
+	 */
 	public function findByUser($userprofile_id, $delegation_to_userprofile_id) {
 		$select = new SqlSelect();
 		$select->from(array('r'=>'region'))

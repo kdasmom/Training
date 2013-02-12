@@ -57,8 +57,8 @@ Ext.define('NP.controller.Invoice', function() {
 							if (activeTab.getStore) {
 								var proxy = activeTab.getStore().getProxy();
 								Ext.apply(proxy.extraParams, {
-									propertyFilterType     : filterType,
-									propertyFilterSelection: selected
+									contextFilterType     : filterType,
+									contextFilterSelection: selected
 								});
 								
 								activeTab.getStore().removeAll();
@@ -88,11 +88,11 @@ Ext.define('NP.controller.Invoice', function() {
 			}
 			
 			if (tab.getStore) {
-				var propertyFilter = Ext.ComponentQuery.query('#invoiceRegisterContextPicker')[0].getState();
+				var contextFilter = Ext.ComponentQuery.query('#invoiceRegisterContextPicker')[0].getState();
 				var proxy = tab.getStore().getProxy();
 				Ext.apply(proxy.extraParams, {
-					propertyFilterType     : propertyFilter.propertyFilterType,
-					propertyFilterSelection: propertyFilter.selected
+					contextFilterType     : contextFilter.contextFilterType,
+					contextFilterSelection: contextFilter.selected
 				});
 				
 				tab.getStore().removeAll();

@@ -6,10 +6,21 @@ use NP\core\AbstractGateway;
 
 use Zend\Db\Sql\Select;
 
-class PNUniversalFieldGateway  extends AbstractGateway {
+/**
+ * Gateway for the PNUNIVERSALFIELD table
+ *
+ * @author Thomas Messier
+ */
+class PNUniversalFieldGateway extends AbstractGateway {
 	
-	public $table = 'pnuniversalfield';
-	
+	/**
+	 * Gets values for a custom field drop down 
+	 *
+	 * @param  int $universal_field_number The custom field number
+	 * @param  int $isLineItem             Whether or not it's a line or header custom field (0=header; 1=line)
+	 * @param  int $glaccount_id           Associated GL account ID (optional); defaults to null
+	 * @return array
+	 */
 	public function getCustomFieldDropDownValues($universal_field_number, $isLineItem, $glaccount_id=null) {
 		$params = array($universal_field_number, $isLineItem);
 		$useGL = ($glaccount_id != null);

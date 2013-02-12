@@ -6,8 +6,21 @@ use NP\core\AbstractGateway;
 use NP\core\SqlSelect;
 use NP\core\Exception;
 
+/**
+ * Gateway for the FISCALCAL table
+ *
+ * @author Thomas Messier
+ */
 class FiscalcalGateway  extends AbstractGateway {
 	
+	/**
+	 * Gets the cutoff day for a given property, month, and year
+	 *
+	 * @param  int $property_id ID of the property
+	 * @param  int $year        Year (4 digits) you want the cutoff day for
+	 * @param  int $month       Month (1-12) you want the cutoff day for
+	 * @return int              The cutoff day of the month
+	 */
 	public function getCutoffDay($property_id, $year, $month) {
 		$select = new SqlSelect(array('f'=>'fiscalcal'));
 		

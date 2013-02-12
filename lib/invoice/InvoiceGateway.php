@@ -8,17 +8,35 @@ use NP\property\PropertyGateway;
 use Zend\Db\Adapter\Adapter;
 use Zend\Db\Sql\Expression;
 
+/**
+ * Gateway for the INVOICE table
+ *
+ * @author Thomas Messier
+ */
 class InvoiceGateway extends AbstractPOInvoiceGateway {
 	
+	/**
+	 * @var NP\property\PropertyGateway
+	 */
 	protected $propertyGateway;
 
+	/**
+	 * @param Zend\Db\Adapter\Adapter     $adapter         Database adapter object injected by Zend Di
+	 * @param NP\property\PropertyGateway $propertyGateway PropertyGateway object injected by Zend Di
+	 */
 	public function __construct(Adapter $adapter, PropertyGateway $propertyGateway) {
 		$this->propertyGateway = $propertyGateway;
 		
 		parent::__construct($adapter);
 	}
 	
-	public function findById($id) {
+	/**
+	 * Overrides the default gateway function and returns a record for the specified invoice ID
+	 *
+	 * @param  int   $invoice_id ID of the invoice to be retrieved
+	 * @return array
+	 */
+	public function findById($invoice_id) {
 		$select = new InvoiceSelect();
 		$select->columns(array(
 					'invoice_id',
@@ -66,12 +84,24 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 				))
 				->where($this->table.'.invoice_id = ?');
 		
-		$res = $this->executeSelectWithParams($select, array($id));
+		$res = $this->executeSelectWithParams($select, array($invoice_id));
 		return $res[0];
 	}
 	
-	public function findOpenInvoices($userprofile_id, $delegated_to_userprofile_id, $propertyFilterType, $propertyFilterSelection, $pageSize, $page=1, $sort='vendor_name') {
-		$propertyFilter = $this->propertyGateway->getPropertyFilterSubSelect($userprofile_id, $delegated_to_userprofile_id, $propertyFilterType, $propertyFilterSelection);
+	/**
+	 * Find open invoices for a user given a certain context filter
+	 *
+	 * @param  int    $userprofile_id              The active user ID, can be a delegated account
+	 * @param  int    $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
+	 * @param  string $contextFilterType           The context filter type; valid values are 'property','region', and 'all'
+	 * @param  int    $contextFilterSelection      The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
+	 * @param  int    $pageSize                    The number of records per page; if null, all records are returned
+	 * @param  int    $page                        The page for which to return records
+	 * @param  string $sort                        Field(s) by which to sort the result; defaults to vendor_name
+	 * @return array                               Array of invoice records
+	 */
+	public function findOpenInvoices($userprofile_id, $delegated_to_userprofile_id, $contextFilterType, $contextFilterSelection, $pageSize, $page=1, $sort='vendor_name') {
+		$propertyFilter = $this->propertyGateway->getPropertyFilterSubSelect($userprofile_id, $delegated_to_userprofile_id, $contextFilterType, $contextFilterSelection);
 
 		$select = new InvoiceSelect();
 		$select->columns(array(
@@ -101,8 +131,20 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 		}
 	}
 	
-	public function findRejectedInvoices($userprofile_id, $delegated_to_userprofile_id, $propertyFilterType, $propertyFilterSelection, $pageSize=null, $page=1, $sort='vendor_name') {
-		$propertyFilter = $this->propertyGateway->getPropertyFilterSubSelect($userprofile_id, $delegated_to_userprofile_id, $propertyFilterType, $propertyFilterSelection);
+	/**
+	 * Find rejected invoices for a user given a certain context filter
+	 *
+	 * @param  int    $userprofile_id              The active user ID, can be a delegated account
+	 * @param  int    $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
+	 * @param  string $contextFilterType           The context filter type; valid values are 'property','region', and 'all'
+	 * @param  int    $contextFilterSelection      The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
+	 * @param  int    $pageSize                    The number of records per page; if null, all records are returned
+	 * @param  int    $page                        The page for which to return records
+	 * @param  string $sort                        Field(s) by which to sort the result; defaults to vendor_name
+	 * @return array                               Array of invoice records
+	 */
+	public function findRejectedInvoices($userprofile_id, $delegated_to_userprofile_id, $contextFilterType, $contextFilterSelection, $pageSize=null, $page=1, $sort='vendor_name') {
+		$propertyFilter = $this->propertyGateway->getPropertyFilterSubSelect($userprofile_id, $delegated_to_userprofile_id, $contextFilterType, $contextFilterSelection);
 
 		$select = new InvoiceSelect();
 		$select->columns(array(
@@ -135,6 +177,12 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 		}
 	}
 	
+	/**
+	 * Get purchase orders associated to an invoice, if any
+	 *
+	 * @param  int $invoice_id
+	 * @return array           An array filled with associative arrays with purchaseorder_id and purchaseorder_ref keys
+	 */
 	public function findAssociatedPOs($invoice_id) {
 		$select = new SqlSelect(array('ii'=>'invoiceitem'));
 		
@@ -151,6 +199,12 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 		return $this->executeSelectWithParams($select, array($invoice_id));
 	}
 	
+	/**
+	 * Get forwards associated to an invoice, if any
+	 *
+	 * @param  int $invoice_id
+	 * @return array           Array with forward records in a specific format
+	 */
 	public function findForwards($invoice_id) {
 		$select = new SqlSelect(array('ipf'=>'INVOICEPOFORWARD'));
 		
@@ -210,14 +264,6 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 				");
 		
 		return $this->executeSelectWithParams($select, array($invoice_id));
-	}
-
-	public function canUserApprove($invoice_id, $userprofile_id) {
-		return parent::canUserApprove(
-			"invoice",
-			$invoice_id,
-			$userprofile_id
-		);
 	}
 
 }

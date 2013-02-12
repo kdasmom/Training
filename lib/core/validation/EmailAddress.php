@@ -1,8 +1,19 @@
 <?php
 namespace NP\core\validation;
 
+/**
+ * A validator for email addresses
+ *
+ * This class extends the existing Zend\Validator\EmailAddress class to allow for a friendly field name based on an
+ * entity displayName definition.
+ * 
+ * @author Thomas Messier
+ */
 class EmailAddress extends \Zend\Validator\EmailAddress {
     
+    /**
+     * @param array $options Associative array of options for the class
+     */
     public function __construct($options = array()) {
         $this->messageTemplates[self::INVALID_FORMAT    ] = 'The field "%fieldName%" is not a valid email address. Use the basic format local-part@hostname';
         $this->messageTemplates[self::INVALID           ] = $this->messageTemplates[self::INVALID_FORMAT];
@@ -19,7 +30,11 @@ class EmailAddress extends \Zend\Validator\EmailAddress {
         parent::__construct($options);
     }
 
-    // Override this function so we don't get a whole bunch of different error messages for the host name
+    /**
+     * Overriden from parent class so we don't get a whole bunch of different error messages for the host name
+     *
+     * @return boolean Returns true if the host name is valid
+     */
     protected function validateHostnamePart() {
         $hostname = $this->getHostnameValidator()->setTranslator($this->getTranslator())
                          ->isValid($this->hostname);

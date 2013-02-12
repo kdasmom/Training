@@ -6,10 +6,17 @@ use NP\core\AbstractGateway;
 
 use Zend\Db\Sql\Select;
 
+/**
+ * Gateway for the MODULEPRIV table
+ *
+ * @author Thomas Messier
+ */
 class ModulePrivGateway extends AbstractGateway {
-		
-	public $table = 'modulepriv';
 	
+	/**
+	 * @param int $userprofile_id ID of the user for whom we want modules
+	 * @return string             A comma-delimited list of module_id values
+	 */
 	public function getModuleListByUser($userprofile_id) {
 		$table = $this->table;
 		$select = new Select();

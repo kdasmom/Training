@@ -6,10 +6,18 @@ use NP\core\AbstractGateway;
 
 use Zend\Db\Sql\Select;
 
+/**
+ * Gateway for the USERPROFILE table
+ *
+ * @author Thomas Messier
+ */
 class UserprofileGateway extends AbstractGateway {
 	
-	public $table = 'userprofile';
-	
+	/**
+	 * @param  string $username 
+	 * @param  string $pwd      
+	 * @return int    If authentication succeeds, returns the userprofile_id of the user, otherwise returns 0
+	 */
 	public function authenticate($username, $pwd) {
 		$select = new Select();
 		$select->from("userprofile")

@@ -56,7 +56,7 @@ Ext.define('NP.view.shared.ContextPicker', function () {
             // Inner function for re-use below
             function triggerChangeEvent() {
                 var state = that.getState();
-                that.fireEvent('change', that, state.propertyFilterType, state.selected);
+                that.fireEvent('change', that, state.contextFilterType, state.selected);
             }
 
             this.items = [{
@@ -79,7 +79,7 @@ Ext.define('NP.view.shared.ContextPicker', function () {
                     listeners        : {
                         select: function() {
                             // Suspend events briefly to prevent change event on radio buttons from firing
-                            var filterTypeComp = that.queryById('__contextPickerPropertyFilterType');
+                            var filterTypeComp = that.queryById('__contextPickercontextFilterType');
                             filterTypeComp.suspendEvents(false);
                             filterTypeComp.queryById('__currentPropFilterType').setValue(true);
                             filterTypeComp.resumeEvents();
@@ -109,14 +109,14 @@ Ext.define('NP.view.shared.ContextPicker', function () {
             // Left column displays the radio buttons for choosing to see Current Property, Region, or All Properties
             this.items.push({
                 xtype      : 'checkboxgroup',
-                itemId     : '__contextPickerPropertyFilterType', 
+                itemId     : '__contextPickercontextFilterType', 
                 defaults: {
                     xtype: 'radio',
                     style: 'white-space: nowrap;margin-right:12px;'
                 },
                 listeners: {
                     change: function(field, newValue, oldValue) {
-                        var selVal = newValue.propertyFilterType;
+                        var selVal = newValue.contextFilterType;
                         if (!(selVal instanceof Object)) {
                             if (selVal == 'property' || selVal == 'all') {
                                 var showComp = '__contextPickerUserPropertiesCombo';
@@ -137,19 +137,19 @@ Ext.define('NP.view.shared.ContextPicker', function () {
                     {
                         boxLabel  : this.currentPropertyRadioText,
                         itemId    : '__currentPropFilterType',
-                        name      : 'propertyFilterType',
+                        name      : 'contextFilterType',
                         inputValue: 'property',
                         checked   : !hide_prop && !select_all
                     },
                     {
                         boxLabel  : this.regionRadioText, 
-                        name      : 'propertyFilterType', 
+                        name      : 'contextFilterType', 
                         inputValue: 'region',
                         checked   : !hide_region
                     },
                     {
                         boxLabel  : this.allPropertiesRadioText, 
-                        name      : 'propertyFilterType', 
+                        name      : 'contextFilterType', 
                         inputValue: 'all',
                         checked   : select_all
                     }
@@ -163,19 +163,19 @@ Ext.define('NP.view.shared.ContextPicker', function () {
         },
 
         getState: function() {
-            var propertyFilterType = this.queryById('__contextPickerPropertyFilterType').getValue().propertyFilterType;
+            var contextFilterType = this.queryById('__contextPickercontextFilterType').getValue().contextFilterType;
             var selected;
-            if (propertyFilterType == 'region') {
+            if (contextFilterType == 'region') {
                 var combo = this.queryById('__contextPickerUserRegionsCombo');
                 selected = combo.getValue();
-            } else if (propertyFilterType == 'property') {
+            } else if (contextFilterType == 'property') {
                 var combo = this.queryById('__contextPickerUserPropertiesCombo');
                 selected = combo.getValue();
-            } else if (propertyFilterType == 'all') {
+            } else if (contextFilterType == 'all') {
                 var combo = this.queryById('__contextPickerUserRegionsCombo');
                 selected = null;
             }
-            return { propertyFilterType: propertyFilterType, selected: selected };
+            return { contextFilterType: contextFilterType, selected: selected };
         }
     }
 });

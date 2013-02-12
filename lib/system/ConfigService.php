@@ -7,12 +7,53 @@ use NP\core\Exception;
 
 use Zend\Cache\Storage\Adapter\WinCache;
 
+/**
+ * Service class for operations related to app configuration
+ *
+ * @author Thomas Messier
+ */
 class ConfigService extends AbstractService {
+	/**
+	 * @var Zend\Cache\Storage\Adapter\WinCache
+	 */
+	protected $cache;
+
+	/**
+	 * @var NP\system\SiteService
+	 */
+	protected $siteService;
 	
-	private $cache, $siteService, $configsysGateway, $intReqGateway, $appName, $cacheName;
+	/**
+	 * @var NP\system\ConfigsysGateway
+	 */
+	protected $configsysGateway;
 	
-	public function __construct(WinCache $cache, SiteService $siteService, ConfigsysGateway $configsysGateway, PNUniversalFieldGateway $pnUniversalFieldGateway, 
-								IntegrationRequirementsGateway $intReqGateway, $reloadCache) {
+	/**
+	 * @var NP\system\IntegrationRequirementsGateway
+	 */
+	protected $intReqGateway;
+	
+	/**
+	 * @var string
+	 */
+	protected $appName;
+	
+	/**
+	 * @var string
+	 */
+	protected $cacheName;
+	
+	/**
+	 * @param Zend\Cache\Storage\Adapter\WinCache      $cache                   WinCache object injected by Zend Di
+	 * @param NP\system\SiteService                    $siteService             SiteService object injected by Zend Di
+	 * @param NP\system\ConfigsysGateway               $configsysGateway        ConfigsysGateway object injected by Zend Di
+	 * @param NP\system\PNUniversalFieldGateway        $pnUniversalFieldGateway PNUniversalFieldGateway object injected by Zend Di
+	 * @param NP\system\IntegrationRequirementsGateway $intReqGateway           IntegrationRequirementsGateway object injected by Zend Di
+	 * @param boolean                                  $reloadCache             Whether to reload the cache at instantiation time (optional); defaults to false
+	 */
+	public function __construct(WinCache $cache, SiteService $siteService, ConfigsysGateway $configsysGateway, 
+								PNUniversalFieldGateway $pnUniversalFieldGateway,  IntegrationRequirementsGateway $intReqGateway, 
+								$reloadCache=false) {
 		$this->cache = $cache;
 		$this->siteService = $siteService;
 		$this->configsysGateway = $configsysGateway;
@@ -26,32 +67,50 @@ class ConfigService extends AbstractService {
 		}
 	}
 	
-	private function loadConfigCache() {
+	/**
+	 * Loads all config settings into the cache
+	 */
+	protected function loadConfigCache() {
 		if ($this->cache->hasItem($this->cacheName)) {
 			$this->cache->removeItem($this->cacheName);
 		}
-		if (!$this->cache->hasItem($this->cacheName)) {
-			$configs = array();
-			
-			// Get all config values from DB and cache them
-			$configRows = $this->configsysGateway->find();
-			
-			foreach ($configRows as $configRow) {
-				$configs[strtolower($configRow['configsys_name'])] = $configRow['configsysval_val'];
-			}
-			$this->cache->addItem($this->cacheName, $configs);
+		$configs = array();
+		
+		// Get all config values from DB and cache them
+		$configRows = $this->configsysGateway->find();
+		
+		foreach ($configRows as $configRow) {
+			$configs[strtolower($configRow['configsys_name'])] = $configRow['configsysval_val'];
 		}
+		$this->cache->addItem($this->cacheName, $configs);
 	}
 	
+	/**
+	 * Checks if the config cache is loaded
+	 *
+	 * @return boolean
+	 */
 	public function isCacheLoaded() {
 		return $this->cache->hasItem($this->cacheName);
 	}
 	
+	/**
+	 * Returns all items in the cache
+	 *
+	 * @return array
+	 */
 	public function getAll() {
 		return $this->cache->getItem($this->cacheName);
 	}
 	
-	public function get($key, $defaultVal="") {
+	/**
+	 * Get a specific item from the cache
+	 *
+	 * @param  string $key        The key for the item you want to retrieve
+	 * @param  mixed  $defaultVal Default value to use if $key is not found in the cache (optional); defaults to null
+	 * @return mixed
+	 */
+	public function get($key, $defaultVal=null) {
 		$val = "";
 		$key = strtolower($key);
 		if ( !$this->isCached($key) ) {
@@ -85,6 +144,12 @@ class ConfigService extends AbstractService {
 		return $val;
 	}
 	
+	/**
+	 * Checks if a specific item is in the cache
+	 *
+	 * @param  string $key        The key for the item you want to check
+	 * @return boolean
+	 */
 	public function isCached($key) {
 		$key = strtolower($key);
 		
@@ -105,6 +170,11 @@ class ConfigService extends AbstractService {
 		return $exists;
 	}
 	
+	/**
+	 * Get all custom field config data
+	 *
+	 * @return array An associative array with all the relevant configuration values for invoice/po header and line custom fields
+	 */
 	public function getCustomFields() {
 		$arCustomSettings = $this->configsysGateway->getCustomFieldSettings();
 		$arIntReqs = $this->intReqGateway->select();
@@ -182,6 +252,14 @@ class ConfigService extends AbstractService {
 		return $arFields;
 	}
 	
+	/**
+	 * Gets values for a custom field drop down 
+	 *
+	 * @param  int $universal_field_number The custom field number
+	 * @param  int $isLineItem             Whether or not it's a line or header custom field (0=header; 1=line)
+	 * @param  int $glaccount_id           Associated GL account ID (optional); defaults to null
+	 * @return array
+	 */
 	public function getCustomFieldDropDownValues($universal_field_number, $isLineItem, $glaccount_id=null) {
 		return $this->pnUniversalFieldGateway->getCustomFieldDropDownValues($universal_field_number, $isLineItem, $glaccount_id);
 	}

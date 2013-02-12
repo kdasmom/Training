@@ -6,6 +6,11 @@ use NP\core\SqlSelect;
 
 use Zend\Db\Sql\Expression;
 
+/**
+ * A custom Select object for Vendor records with some shortcut methods
+ *
+ * @author Thomas Messier
+ */
 class VendorSelect extends SqlSelect {
 	
 	public function __construct() {
@@ -13,12 +18,24 @@ class VendorSelect extends SqlSelect {
 		$this->from(array('v'=>'vendor'));
 	}
 	
+	/**
+	 * Joins VENDORSITE table
+	 *
+	 * @param  string[] $cols         Columns to retrieve
+	 * @return NP\vendor\VendorSelect Returns caller object for easy chaining
+	 */
 	public function joinVendorsite($cols=array()) {
 		return $this->join(array('vs' => 'vendorsite'),
 						'v.vendor_id = vs.vendor_id',
 						$cols);
 	}
 	
+	/**
+	 * Left joins ADDRESS table
+	 *
+	 * @param  string[] $cols         Columns to retrieve
+	 * @return NP\vendor\VendorSelect Returns caller object for easy chaining
+	 */
 	public function joinAddress($cols=array()) {
 		return $this->join(array('a' => 'address'),
 							new Expression("vs.vendorsite_id = a.tablekey_id

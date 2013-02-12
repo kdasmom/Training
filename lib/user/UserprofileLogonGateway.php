@@ -4,8 +4,9 @@ namespace NP\user;
 
 use NP\core\AbstractGateway;
 
-class UserprofileLogonGateway extends AbstractGateway {
-	
-	public $table = 'userprofilelogon';
-	
-}
+/**
+ * Gateway for the USERPROFILELOGON table
+ *
+ * @author Thomas Messier
+ */
+class UserprofileLogonGateway extends AbstractGateway {}
