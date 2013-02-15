@@ -8,7 +8,7 @@ Ext.define('NP.store.user.GLs', {
         type: 'ajax',
         url: 'ajax.php',
 		extraParams: {
-			service: 'user.UserService',
+			service: 'UserService',
 			action: 'getUserGLAccounts'
 		}
     }

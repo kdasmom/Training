@@ -10,7 +10,7 @@ Ext.define('NP.store.user.Regions', {
         type: 'ajax',
         url: 'ajax.php',
 		extraParams: {
-			service: 'user.UserService',
+			service: 'UserService',
 			action: 'getRegions'
 		}
     }

@@ -8,7 +8,7 @@ Ext.define('NP.store.invoice.Vendors', {
         type: 'ajax',
         url: 'ajax.php',
 		extraParams: {
-			service: 'vendor.VendorService',
+			service: 'VendorService',
 			action: 'getForComboBox'
 		}
     }

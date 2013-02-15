@@ -89,7 +89,7 @@ class SiteService {
 		return $this->appName;
 	}
 	
-	public function getDdName() {
+	public function getDatabaseName() {
 		$client = $this->getClient($this->getAppName());
 		return $client['pn.main.dsn'];
 	}

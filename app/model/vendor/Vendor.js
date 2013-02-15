@@ -17,7 +17,7 @@ Ext.define('NP.model.vendor.Vendor', {
         type: 'ajax',
         url: 'ajax.php',
 		extraParams: {
-			service: 'vendor.VendorService',
+			service: 'VendorService',
 			action: 'get'
 		}
     }

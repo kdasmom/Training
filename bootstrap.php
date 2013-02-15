@@ -20,15 +20,12 @@ $autoLoader = new StandardAutoloader(array(
 ));
 $autoLoader->register();
 
-// Init Zend DI
-$di = new Di();
-
 // Load DI configuration 
 require_once("config/di_config.php"); // Keep DI configs in a separate file to keep this one clean
 
 // Use this so config gets reinitialized if needed
 if ($reloadCache) {
-	$di->get('NP\\system\\ConfigService');
+	$di['ConfigService'];
 }
 
 ?>

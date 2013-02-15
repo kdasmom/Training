@@ -11,7 +11,7 @@ Ext.define('NP.model.jobcosting.JBChangeOrder', {
         type: 'ajax',
         url: 'ajax.php',
 		extraParams: {
-			service: 'jobcosting.JobCostingService',
+			service: 'JobCostingService',
 			action: 'getChangeOrders'
 		}
     }

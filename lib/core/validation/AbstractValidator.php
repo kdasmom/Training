@@ -1,37 +1,53 @@
 <?php
 namespace NP\core\validation;
 
-use NP\core\EntityInterface;
-
 use Zend\Validator\ValidatorChain;
 
 /**
- * A class to validate entities
+ * A class to validate data sets
  *
- * This class validates an entity extending NP\core\AbstractEntity by inspecting its $fields
- * property and using the definitions in there to determine the type of validation needed. This
- * class can be extended to provide more complex validation in specific cases (for example, if you
- * have validation that pertains to the entity as a whole and not just one field). The class (and
- * extended classes) is meant to be used as a singleton, since it has no properties.
+ * This class validates a data set by using the rules defined in its $rules class property
+ * (to be overriden in implementations) to determine the type of validation needed.
  * 
+ * @abstract
  * @author Thomas Messier
  */
-class EntityValidator implements EntityValidatorInterface {
+class AbstractValidator implements ValidatorInterface {
 	
+	/**
+	 * Definition of rules
+	 * 
+	 * This variable MUST be overridden by the extending class. Each array value represents a field of
+	 * the data set and can be either a string (if the field has no additional specifications) or an array
+	 * with the specifications for the field. The valid options for the array representing a single field
+	 * definition are "required", "displayName", and "validation".
+	 * 
+	 * - required (boolean): if the field is required or not (optional); defaults to false
+	 * - displayName (string): a friendly display value that the validator can use to generate error messages (optional); default will be field name if not provided
+	 * - validation (array): an associative array where the key is a valid validation rule name (rules in NP\core\validation) and the value is an array with the options for that validation rule
+	 * 
+	 * @abstract
+	 * @var array
+	 */
+	protected $rules = array();
+
+	/**
+	 * @var array An array of errors
+	 */
+	protected $errors;
+
 	/**
 	 * Validates an entity object
 	 *
-	 * @param  NP\core\EntityInterface $entity          The entity to validate
-	 * @return NP\core\validation\EntityValidatorResult An object containing the result of the validation
+	 * @param  array $dataSet The entity to validate
+	 * @return boolean        If data set is valid, returns true
 	 */
-	public function validate(EntityInterface $entity) {
-		$result = new EntityValidatorResult();
+	public function validate($dataSet) {
+		// Reset the errors array
+		$this->errors = array();
 
-		// Get the field definitions for the entity
-		$fields = $entity->getFields();
-
-		// Loop through the fields
-		foreach ($fields as $field=>$definition) {
+		// Loop through the rules
+		foreach ($this->rules as $field=>$definition) {
 			// Check if the field has no definition (if it's not an associative array)
 			if ( is_string($definition) ) {
    				$field = $definition;
@@ -39,13 +55,13 @@ class EntityValidator implements EntityValidatorInterface {
    			}
    			
    			// Get the value of the field we're currently validating
-			$fieldVal = $entity->$field;
+   			$fieldVal = array_key_exists($field, $dataSet) ? $dataSet[$field] : null;
 
 			// If field is blank, check that first because other validations won't be run
 			if ($fieldVal === null || $fieldVal === '') {
 				// If the field is required, add an error
 				if (array_key_exists('required', $definition) && $definition['required']) {
-					$result->addError($field, "The field $field is required.");
+					$this->addError($field, "The field $field is required.");
 				}
 				// Break out of the loop, validation is done for this field
 				continue;
@@ -75,13 +91,41 @@ class EntityValidator implements EntityValidatorInterface {
 
 					// Append the errors to the result object
 					foreach ($validator->getMessages() as $messageId => $message) {
-				        $result->addError($field, $message);
+				        $this->addError($field, $message);
 				    }
 				}
 			}
 		}
 
-		return $result;
+		return $this->isValid();
+	}
+
+	/**
+	 * Checks the state of the validator since validate() was last run
+	 *
+	 * @return boolean Returns true if the data set last validated is valid
+	 */
+	public function isValid() {
+		return (count($this->errors) == 0) ? true : false;
+	}
+
+	/**
+	 * Add an error
+	 *
+	 * @param string The field for which the error occurred
+	 * @param string The error message
+	 */
+	public function addError($field, $msg) {
+		$this->errors[] = array('field'=>$field, 'msg'=>$msg);
+	}
+
+	/**
+	 * Gets errors generated when validation was last run
+	 *
+	 * @return array
+	 */
+	public function getErrors() {
+		return $this->errors;
 	}
 
 	/**

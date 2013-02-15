@@ -13,7 +13,7 @@ Ext.define('NP.model.jobcosting.JBPhaseCode', {
         type: 'ajax',
         url: 'ajax.php',
 		extraParams: {
-			service: 'jobcosting.JobCostingService',
+			service: 'JobCostingService',
 			action: 'getPhaseCodes'
 		}
     }

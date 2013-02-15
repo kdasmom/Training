@@ -17,7 +17,7 @@ Ext.define('NP.core.Config', function() {
 				requests: [
 					// This request gets config settings for the app
 					{
-						service: 'system.ConfigService', 
+						service: 'ConfigService', 
 						action: 'getAll',
 						success: function(result) {
 							// Save settings in application
@@ -31,7 +31,7 @@ Ext.define('NP.core.Config', function() {
 					},
 					// This request gets custom field config for the app
 					{ 
-						service: 'system.ConfigService', 
+						service: 'ConfigService', 
 						action: 'getCustomFields',
 						success: function(result) {
 							// Save custom fields in application

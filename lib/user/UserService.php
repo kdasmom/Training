@@ -3,6 +3,7 @@
 namespace NP\user;
 
 use NP\core\AbstractService;
+use NP\invoice\InvoiceService;
 use NP\system\SecurityService;
 use NP\property\PropertyGateway;
 use NP\property\RegionGateway;
@@ -18,6 +19,10 @@ class UserService extends AbstractService {
 	 * @var NP\system\SecurityService
 	 */
 	protected $securityService;
+	/**
+	 * @var NP\system\InvoiceService
+	 */
+	protected $invoiceService;
 	
 	/**
 	 * @var NP\property\PropertyGateway
@@ -41,14 +46,16 @@ class UserService extends AbstractService {
 
 	/**
 	 * @param NP\system\SecurityService    $securityService   SecurityService object injected by Zend Di
+	 * @param NP\invoice\InvoiceService    $invoiceService    InvoiceService object injected by Zend Di
 	 * @param NP\property\PropertyGateway  $propertyGateway   PropertyGateway object injected by Zend Di
 	 * @param NP\invoice\RegionGateway     $regionGateway     RegionGateway object injected by Zend Di
 	 * @param NP\invoice\GLAccountGateway  $gLAccountGateway  GLAccountGateway object injected by Zend Di
 	 * @param NP\invoice\DelegationGateway $delegationGateway DelegationGateway object injected by Zend Di
 	 */
-	public function __construct(SecurityService $securityService, PropertyGateway $propertyGateway, RegionGateway $regionGateway, 
+	public function __construct(SecurityService $securityService, InvoiceService $invoiceService, PropertyGateway $propertyGateway, RegionGateway $regionGateway, 
 								GLAccountGateway $glaccountGateway, DelegationGateway $delegationGateway) {
 		$this->securityService = $securityService;
+		$this->invoiceService = $invoiceService;
 		$this->propertyGateway = $propertyGateway;
 		$this->regionGateway = $regionGateway;
 		$this->glaccountGateway = $glaccountGateway;
@@ -117,6 +124,24 @@ class UserService extends AbstractService {
 	 */
 	public function getDelegationsFrom($delegation_status=null) {
 		return $this->getDelegations('from' ,$delegation_status);
+	}
+
+	/**
+	 * Retrieve invoices for the different invoice registers for the current logged in user
+	 *
+	 * @param  string $tab                         The register tab to get
+	 * @param  string $contextFilterType           The context filter type; valid values are 'property','region', and 'all'
+	 * @param  int    $contextFilterSelection      The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
+	 * @param  int    $pageSize                    The number of records per page; if null, all records are returned
+	 * @param  int    $page                        The page for which to return records
+	 * @param  string $sort                        Field(s) by which to sort the result; defaults to vendor_name
+	 * @return array                               Array of invoice records
+	 */
+	public function getInvoiceRegister($tab, $contextFilterType, $contextFilterSelection, $pageSize=null, $page=null, $sort="vendor_name") {
+		$userprofile_id = $this->securityService->getUserId();
+		$delegated_to_userprofile_id = $this->securityService->getDelegatedUserId();
+		
+		return $this->invoiceService->getInvoiceRegister($tab, $userprofile_id, $delegated_to_userprofile_id, $contextFilterType, $contextFilterSelection, $pageSize, $page, $sort);
 	}
 	
 }

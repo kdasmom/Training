@@ -1,8 +1,6 @@
 <?php
 namespace NP\core\validation;
 
-use Zend\Validator\AbstractValidator;
-
 /**
  * A validator to ensure a value is an integer
  *
@@ -10,7 +8,7 @@ use Zend\Validator\AbstractValidator;
  * 
  * @author Thomas Messier
  */
-class Int extends AbstractValidator {
+class Int extends \Zend\Validator\AbstractValidator {
     const NOT_INT   = 'notInt';
 
     /**

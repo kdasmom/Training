@@ -7,7 +7,7 @@ Ext.define('NP.store.invoice.PaymentTypes', {
         type: 'ajax',
         url: 'ajax.php',
 		extraParams: {
-			service: 'system.PicklistService',
+			service: 'PicklistService',
 			action: 'find',
 			picklist_table_display: 'Pay By',
 			getActiveOnly: 1

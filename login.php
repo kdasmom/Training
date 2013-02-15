@@ -4,8 +4,8 @@ require_once("bootstrap.php");
 
 $error = "";
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-	$securityService = $di->get("NP\system\SecurityService");
-	$loginUrl = $di->get("NP\\system\\ConfigService")->get('PN.Main.LoginUrl');
+	$securityService = $di['SecurityService'];
+	$loginUrl = $di['ConfigService']->get('PN.Main.LoginUrl');
 	
 	// Attempt authentication
 	$userprofile_id = $securityService->login($_POST["username"], $_POST["pwd"]);
@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	}
 }
 
-$siteService = $di->get("NP\system\SiteService");
+$siteService = $di['SiteService'];
 ?>
 
 <html>

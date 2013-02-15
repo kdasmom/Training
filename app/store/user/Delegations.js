@@ -20,7 +20,7 @@ Ext.define('NP.store.user.Delegations', {
         type: 'ajax',
         url: 'ajax.php',
 		extraParams: {
-			service: 'user.UserService',
+			service: 'UserService',
 			action: 'getDelegationsTo',
 			delegation_status: 1
 		}

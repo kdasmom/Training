@@ -11,7 +11,7 @@ use NP\core\Exception;
  *
  * @author Thomas Messier
  */
-class FiscalcalGateway  extends AbstractGateway {
+class FiscalcalGateway extends AbstractGateway {
 	
 	/**
 	 * Gets the cutoff day for a given property, month, and year

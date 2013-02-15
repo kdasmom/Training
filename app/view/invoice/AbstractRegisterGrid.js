@@ -1,6 +1,6 @@
 Ext.define('NP.view.invoice.AbstractRegisterGrid', {
     extend: 'Ext.grid.Panel',
-    store: '',
+    store: 'invoice.Register',
     
     requires: ['NP.core.Util','NP.core.Config'],
     

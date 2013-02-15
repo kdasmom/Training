@@ -13,8 +13,7 @@ Ext.define('NP.controller.Invoice', function() {
 			,'PurchaseOrder'
 		],
 		stores: [
-			'invoice.RegisterOpen'
-			,'invoice.RegisterRejected'
+			'invoice.Register'
 			,'invoice.Lines'
 			,'invoice.Forwards'
 			,'PNUniversalFields'
@@ -91,6 +90,7 @@ Ext.define('NP.controller.Invoice', function() {
 				var contextFilter = Ext.ComponentQuery.query('#invoiceRegisterContextPicker')[0].getState();
 				var proxy = tab.getStore().getProxy();
 				Ext.apply(proxy.extraParams, {
+					tab                   : activeTab,
 					contextFilterType     : contextFilter.contextFilterType,
 					contextFilterSelection: contextFilter.selected
 				});
@@ -116,13 +116,13 @@ Ext.define('NP.controller.Invoice', function() {
 						requests: [
 							// This request gets the accounting period for the current property
 							{
-								service: 'property.PropertyService', 
+								service: 'PropertyService', 
 								action: 'getAccountingPeriod',
 								property_id: invoiceRec.get('property_id')
 							},
 							// This request gets the associated POs for this invoice
 							{ 
-								service: 'invoice.InvoiceService', 
+								service: 'InvoiceService', 
 								action: 'getAssociatedPOs',
 								invoice_id: invoiceRec.getId(),
 								model: 'NP.model.PurchaseOrder'

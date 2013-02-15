@@ -17,7 +17,7 @@ Ext.define('NP.model.PNUniversalField', {
         type: 'ajax',
         url: 'ajax.php',
 		extraParams: {
-			service: 'system.ConfigService',
+			service: 'ConfigService',
 			action: 'getCustomFieldDropDownValues'
 		}
     }

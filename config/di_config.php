@@ -5,52 +5,85 @@ if (array_key_exists("reloadconfiguration", $_GET)) {
 	$reloadCache = true;
 }
 
-// If on production server, compile definitions to a file
-if ($__CONFIG['serverType'] == 'prod') {
-	if (!file_exists(__DIR__ . '/di_definition.php')) {
-	    $compiler = new Zend\Di\Definition\CompilerDefinition();
-	    $compiler->addDirectory($__CONFIG['appRoot'] . 'lib');
-	    $compiler->addDirectory($__CONFIG['zendPath'] . '/db');
-	    $compiler->compile();
-	    $definition = $compiler->toArrayDefinition();
-	    
-	    file_put_contents(
-	        __DIR__ . '/di_definition.php',
-	        '<?php return ' . var_export($definition->toArray(), true) . '; ?>'
-	    );
-	} else {
-	    $definition = new Zend\Di\Definition\ArrayDefinition(
-	        include __DIR__ . '/di_definition.php'
-	    );
+// Initialize the DI Framework
+$di = new NP\util\Pimple();
+
+// DI Parameters
+$di['reloadCache'] = $reloadCache;
+$di['configPath'] = $__CONFIG['appRoot'] . 'config\\site_config.xml';
+
+$di['driver'] = $di->share(function($di) use ($__CONFIG) {
+	$__CONFIG['datasource']['database'] = $di['SiteService']->getDatabaseName();
+	return $__CONFIG['datasource'];
+});
+
+$di['logPath'] = $di->share(function($di) use ($__CONFIG) {
+	return $__CONFIG['logPath'].'\\'.$di['SiteService']->getAppName();
+});
+$di['enabledNamespaces'] = $__CONFIG['enabledNamespaces'];
+$di['fileEnabled']       = $__CONFIG['fileLogEnabled'];
+$di['debugEnabled']      = $__CONFIG['debugLogEnabled'];
+
+// DI Definitions
+$diDefinition = array(
+	'Zend\Cache\Storage\Adapter\WinCache',
+	'Zend\Db\Adapter\Adapter'                  => array('driver'),
+	'NP\gl\GLAccountGateway'                   => array('Adapter','ConfigService'),
+	'NP\gl\GLAccountService'                   => array('GLAccountGateway'),
+	'NP\invoice\InvoiceGateway'                => array('Adapter','PropertyGateway'),
+	'NP\invoice\InvoiceItemGateway'            => array('Adapter'),
+	'NP\invoice\InvoiceService'                => array('SecurityService','InvoiceGateway','InvoiceItemGateway'),
+	'NP\property\FiscalcalGateway'             => array('Adapter'),
+	'NP\property\PropertyGateway'              => array('Adapter'),
+	'NP\property\PropertyService'              => array('SecurityService','PropertyGateway','FiscalcalGateway','UnitGateway'),
+	'NP\property\RegionGateway'                => array('Adapter'),
+	'NP\property\UnitGateway'                  => array('Adapter'),
+	'NP\system\ConfigsysGateway'               => array('Adapter'),
+	'NP\system\ConfigService'                  => array('WinCache','SiteService','ConfigsysGateway','PNUniversalFieldGateway','IntegrationRequirementsGateway','reloadCache'),
+	'NP\system\PNUniversalFieldGateway'        => array('Adapter'),
+	'NP\system\IntegrationRequirementsGateway' => array('Adapter'),
+	'NP\system\PicklistGateway'                => array('Adapter'),
+	'NP\system\LoggingService'                 => array('logPath','enabledNamespaces','fileEnabled','debugEnabled'),
+	'NP\system\Session',
+	'NP\system\SecurityService'                => array('Session','UserprofileGateway','UserprofileLogonGateway','ModulePrivGateway'),
+	'NP\system\SiteService'                    => array('WinCache','configPath','reloadCache'),
+	'NP\user\DelegationGateway'                => array('Adapter'),
+	'NP\user\ModulePrivGateway'                => array('Adapter'),
+	'NP\user\UserprofileGateway'               => array('Adapter'),
+	'NP\user\UserService'                      => array('SecurityService','InvoiceService','PropertyGateway','RegionGateway','GLAccountGateway','DelegationGateway'),
+	'NP\user\UserprofileLogonGateway'          => array('Adapter'),
+	'NP\vendor\VendorGateway'                  => array('Adapter','ConfigService','PropertyService'),
+	'NP\vendor\VendorService'                  => array('VendorGateway'),
+);
+
+// Loop through all the definitions
+foreach($diDefinition as $classPath=>$dependencies) {
+	// If the item is not a key/value pair, assume there are no dependencies
+	if (is_numeric($classPath)) {
+		$classPath = $dependencies;
+		$dependencies = array();
 	}
-	$di->setDefinitionList(new Zend\Di\DefinitionList(array($definition, new Zend\Di\Definition\RuntimeDefinition())));
+	// Alias is the name of the class
+	$alias = array_pop(explode('\\', $classPath));
+
+	// Add each class to the dependecy injection container as a singleton
+	$di[$alias] = $di->share(function($di) use ($alias, $classPath, $dependencies) {
+		// Build an array of arguments for instantiating the class
+		$args = array();
+		foreach($dependencies as $dep) {
+			$args[] = $di[$dep];
+		}
+		
+		// Instantiate the class using reflection (due to variable number of arguments)
+		$r = new ReflectionClass($classPath);
+		$obj = $r->newInstanceArgs($args);
+
+		// Inject the Logging service via setter injection to all services and gateways
+		if ($r->hasMethod('setLoggingService')) {
+			$obj->setLoggingService($di['LoggingService']);
+		}
+
+		// Return object
+		return $obj;
+	});
 }
-
-$im = $di->instanceManager();
-
-$im->setParameters('NP\system\SiteService', array(
-	'configPath' => $__CONFIG['appRoot'] . 'config\\site_config.xml',
-    'reloadCache'=> $reloadCache,
-));
-
-// Append the DB name to the DSN (must be done here because the SiteService determines the DB based on URL)
-//$__CONFIG['datasource']['dsn'] .= $di->get('NP\system\SiteService')->getDdName();  // Use this if using PDO driver
-$__CONFIG['datasource']['database'] = $di->get('NP\system\SiteService')->getDdName();  // Use this if using native SQL Server driver
-$im->setParameters('Zend\Db\Adapter\Adapter', array(
-    'driver'	=> $__CONFIG['datasource']
-));
-
-$im->setParameters('NP\system\Session', array(
-	'sessionDuration'=> $__CONFIG['sessionDuration'],
-));
-
-$im->setParameters('NP\system\ConfigService', array(
-	'reloadCache'=> $reloadCache,
-));
-
-$im->setParameters('NP\system\LoggingService', array(
-    'logPath'			=> $__CONFIG['logPath'].'\\'.$di->get('NP\system\SiteService')->getAppName(),
-    'enabledNamespaces'	=> $__CONFIG['enabledNamespaces'],
-    'fileEnabled'		=> $__CONFIG['fileLogEnabled'],
-    'debugEnabled'		=> $__CONFIG['debugLogEnabled'],
-));

@@ -43,7 +43,7 @@ Ext.define('NP.model.gl.GLAccount', {
 		extraParams: {
 			returnFormat: 'json',
 			method: 'run',
-			service: 'gl.GLService',
+			service: 'GLService',
 			action: 'get'
 		}
     }

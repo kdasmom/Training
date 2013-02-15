@@ -15,7 +15,7 @@ Ext.define('NP.model.jobcosting.JBContract', {
         type: 'ajax',
         url: 'ajax.php',
 		extraParams: {
-			service: 'jobcosting.JobCostingService',
+			service: 'JobCostingService',
 			action: 'getContracts'
 		}
     }

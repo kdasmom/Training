@@ -20,7 +20,7 @@ Ext.define('NP.model.PurchaseOrder', {
         type: 'ajax',
         url: 'ajax.php',
 		extraParams: {
-			service: 'po.POService',
+			service: 'POService',
 			action: 'get'
 		}
     }

@@ -8,7 +8,7 @@ Ext.define('NP.store.invoice.Lines', {
         type: 'ajax',
         url: 'ajax.php',
 		extraParams: {
-			service: 'invoice.InvoiceService',
+			service: 'InvoiceService',
 			action: 'getInvoiceLines'
 		}
     }

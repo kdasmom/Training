@@ -1,7 +1,6 @@
 Ext.define('NP.view.invoice.RegisterRejectedGrid', {
     extend: 'NP.view.invoice.AbstractRegisterGrid',
     alias: 'widget.registerrejectedinvoice',
-    store: 'invoice.RegisterRejected',
     
     createdDateColumnText : 'Created Date',
     dueDateColumnText     : 'Due Date',

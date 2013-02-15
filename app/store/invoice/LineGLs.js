@@ -8,7 +8,7 @@ Ext.define('NP.store.invoice.LineGLs', {
         type: 'ajax',
         url: 'ajax.php',
 		extraParams: {
-			service: 'gl.GLService',
+			service: 'GLService',
 			action: 'getForInvoiceItemComboBox'
 		}
     }

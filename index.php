@@ -3,10 +3,10 @@
 // Bootstrap
 require_once("bootstrap.php");
 
-$isAuth = $di->get("NP\\system\\SecurityService")->isSessionAuthenticated();
+$isAuth = $di['SecurityService']->isSessionAuthenticated();
 
 if (!$isAuth) {
-	$loginUrl = $di->get("NP\\system\\ConfigService")->get('PN.Main.LoginUrl');
+	$loginUrl = $di['ConfigService']->get('PN.Main.LoginUrl');
 	header("Location: $loginUrl/login.php");
 } else {
 ?>

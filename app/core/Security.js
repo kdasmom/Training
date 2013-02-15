@@ -4,7 +4,7 @@ Ext.define('NP.core.Security', function() {
 	var delegatedToUser = null;
 	
 	var getPermissionAjaxRequestConfig = {
-		service: 'system.SecurityService', 
+		service: 'SecurityService', 
 		action: 'getPermissions',
 		success: function(result) {
 			// Save permissions
@@ -41,7 +41,7 @@ Ext.define('NP.core.Security', function() {
 				requests: [
 					getPermissionAjaxRequestConfig,
 					{
-						service: 'system.SecurityService', 
+						service: 'SecurityService', 
 						action: 'getUser',
 						success: function(result) {
 							user = Ext.create('NP.model.user.Userprofile', result);
@@ -51,7 +51,7 @@ Ext.define('NP.core.Security', function() {
 						}
 					},
 					{
-						service: 'system.SecurityService', 
+						service: 'SecurityService', 
 						action: 'getDelegatedToUser',
 						success: function(result) {
 							delegatedToUser = Ext.create('NP.model.user.Userprofile', result);
@@ -77,7 +77,7 @@ Ext.define('NP.core.Security', function() {
 		logout: function(callback) {
 			NP.core.Net.remoteCall({
 				requests: { 
-					service: 'system.SecurityService', 
+					service: 'SecurityService', 
 					action: 'logout',
 					success: function(result) {
 						permissions = null;
@@ -107,7 +107,7 @@ Ext.define('NP.core.Security', function() {
 			NP.core.Net.remoteCall({
 				requests: [
 					{
-						service       : 'system.SecurityService', 
+						service       : 'SecurityService', 
 						action        : 'changeUser',
 						userprofile_id: userprofile_id,
 						success: function(result) {

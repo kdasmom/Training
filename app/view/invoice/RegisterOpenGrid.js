@@ -1,7 +1,6 @@
 Ext.define('NP.view.invoice.RegisterOpenGrid', {
     extend: 'NP.view.invoice.AbstractRegisterGrid',
     alias: 'widget.registeropeninvoice',
-    store: 'invoice.RegisterOpen',
     
     createdDateColumnText: 'Created Date',
     dueDateColumnText    : 'Due Date',

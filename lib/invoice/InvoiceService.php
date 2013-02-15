@@ -38,11 +38,10 @@ class InvoiceService extends AbstractService {
 	 * @param NP\invoice\InvoiceValidator   $invoiceValidator   InvoiceValidator object injected by Zend Di
 	 */
 	public function __construct(SecurityService $securityService, InvoiceGateway $invoiceGateway, 
-								InvoiceItemGateway $invoiceItemGateway, InvoiceValidator $invoiceValidator) {
+								InvoiceItemGateway $invoiceItemGateway) {
 		$this->securityService = $securityService;
 		$this->invoiceGateway = $invoiceGateway;
 		$this->invoiceItemGateway = $invoiceItemGateway;
-		$this->invoiceValidator = $invoiceValidator;
 	}
 	
 	/**
@@ -56,27 +55,42 @@ class InvoiceService extends AbstractService {
 	}
 	
 	/**
-	 * Saves an invoice entity
+	 * Saves an invoice entity; invoices should always be saved through this method
 	 *
-	 * @param  NP\invoice\Invoice $entity The entity to save
-	 * @return array                      Errors that occurred while attempting to save the entity
+	 * @param  array $dataSet An associative array with the data to save; line items should be in a "lines" key
+	 * @return array          Errors that occurred while attempting to save the entity
 	 */
-	public function save(Invoice $entity) {
-		// Validate the entity
-		$result = $this->invoiceValidator->validate($entity);
-		// If the entity is valid, save it
-		if ($result->isValid()) {
-			// Save the invoice entity
-			$this->invoiceGateway->save($entity->toArray());
+	public function save($dataSet) {
+		// Get invoice validator
+		$invoiceValidator = new validation\InvoiceValidator();
 
-			// Loop through each line in the invoice and save them
-			$lines = $entity->lines();
-			foreach($lines as $line) {
-				$this->invoiceItemGateway->save($line->toArray());
+		// If the data is valid, save it
+		if ($invoiceValidator->validate($dataSet)) {
+			// Begin transaction
+			$connection = $this->invoiceGateway->getAdapter()->driver->getConnection()->beginTransaction();
+
+			try {
+				// Remove lines from the data set to save the invoice
+				$lines = $dataSet['lines'];
+				unset($dataSet['lines']);
+
+				// Save the invoice entity
+				$id = $this->invoiceGateway->save($dataSet);
+
+				// Loop through each line in the invoice and save them
+				foreach($lines as $line) {
+					$line['invoice_id'] = $id;
+					$this->invoiceItemGateway->save($line);
+				}
+
+				$connection->commit();
+			} catch(\Exception $e) {
+				$connection->rollback();
+				$invoiceValidator->addError('global', 'Unexpected database error');
 			}
 		}
 
-		return $result->getErrors();
+		return $invoiceValidator->getErrors();
 	}
 	
 	/**
@@ -110,37 +124,22 @@ class InvoiceService extends AbstractService {
 	}
 	
 	/**
-	 * Find open invoices for the current user given a certain context filter
+	 * Retrieve invoices for the different invoice registers
 	 *
-	 * @param  string $contextFilterType      The context filter type; valid values are 'property','region', and 'all'
-	 * @param  int    $contextFilterSelection The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
-	 * @param  int    $pageSize               The number of records per page; if null, all records are returned
-	 * @param  int    $page                   The page for which to return records
-	 * @param  string $sort                   Field(s) by which to sort the result; defaults to vendor_name
-	 * @return array                          Array of invoice records
+	 * @param  string $tab                         The register tab to get
+	 * @param  int    $userprofile_id              The active user ID, can be a delegated account
+	 * @param  int    $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
+	 * @param  string $contextFilterType           The context filter type; valid values are 'property','region', and 'all'
+	 * @param  int    $contextFilterSelection      The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
+	 * @param  int    $pageSize                    The number of records per page; if null, all records are returned
+	 * @param  int    $page                        The page for which to return records
+	 * @param  string $sort                        Field(s) by which to sort the result; defaults to vendor_name
+	 * @return array                               Array of invoice records
 	 */
-	public function findOpenInvoices($contextFilterType, $contextFilterSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-		$userprofile_id = $this->securityService->getUserId();
-		$delegated_to_userprofile_id = $this->securityService->getDelegatedUserId();
-		
-		return $this->invoiceGateway->findOpenInvoices($userprofile_id, $delegated_to_userprofile_id, $contextFilterType, $contextFilterSelection, $pageSize, $page, $sort);
-	}
-	
-	/**
-	 * Find rejected invoices for the current user given a certain context filter
-	 *
-	 * @param  string $contextFilterType      The context filter type; valid values are 'property','region', and 'all'
-	 * @param  int    $contextFilterSelection The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
-	 * @param  int    $pageSize               The number of records per page; if null, all records are returned
-	 * @param  int    $page                   The page for which to return records
-	 * @param  string $sort                   Field(s) by which to sort the result; defaults to vendor_name
-	 * @return array                          Array with invoice records
-	 */
-	public function findRejectedInvoices($contextFilterType, $contextFilterSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-		$userprofile_id = $this->securityService->getUserId();
-		$delegated_to_userprofile_id = $this->securityService->getDelegatedUserId();
-		
-		return $this->invoiceGateway->findRejectedInvoices($userprofile_id, $delegated_to_userprofile_id, $contextFilterType, $contextFilterSelection, $pageSize, $page, $sort);
+	public function getInvoiceRegister($tab, $userprofile_id, $delegated_to_userprofile_id, $contextFilterType, $contextFilterSelection, $pageSize=null, $page=null, $sort="vendor_name") {
+		$method = 'find'.ucfirst($tab).'Invoices';
+
+		return $this->invoiceGateway->$method($userprofile_id, $delegated_to_userprofile_id, $contextFilterType, $contextFilterSelection, $pageSize, $page, $sort);
 	}
 	
 }

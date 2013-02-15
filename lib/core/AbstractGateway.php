@@ -139,6 +139,16 @@ abstract class AbstractGateway extends AbstractTableGateway implements LoggingAw
 		return $res;
 	}
 	
+	public function save($set) {
+		if (array_key_exists($this->pk, $set) && is_numeric($this->pk)) {
+			$this->update($set);
+			return $this->{$this->pk};
+		} else {
+			$this->insert($set);
+			return $this->getLastInsertValue();
+		}
+	}
+
 	/**
 	 * This function can be overridden to specify a default select to use (if you want some joins by default, for example)
 	 */

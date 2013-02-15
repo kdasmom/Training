@@ -30,7 +30,7 @@ Ext.define('NP.model.property.Property', {
         type: 'ajax',
         url: 'ajax.php',
 		extraParams: {
-			service: 'property.PropertyService',
+			service: 'PropertyService',
 			action: 'get'
 		}
     }

@@ -8,7 +8,7 @@ Ext.define('NP.store.invoice.LineProperties', {
         type: 'ajax',
         url: 'ajax.php',
 		extraParams: {
-			service: 'property.PropertyService',
+			service: 'PropertyService',
 			action: 'getForInvoiceItemComboBox'
 		}
     }

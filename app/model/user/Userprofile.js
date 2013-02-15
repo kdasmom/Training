@@ -18,7 +18,7 @@ Ext.define('NP.model.user.Userprofile', {
         type: 'ajax',
         url: 'ajax.php',
 		extraParams: {
-			service: 'user.UserService',
+			service: 'UserService',
 			action: 'get'
 		}
     }

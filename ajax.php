@@ -8,7 +8,7 @@ require_once("bootstrap.php");
 //$di->get('NP\services\SecurityService')->logout();
 
 // Handle request
-$isAuth = $di->get("NP\\system\\SecurityService")->isSessionAuthenticated();
+$isAuth = $di["SecurityService"]->isSessionAuthenticated();
 
 if (!array_key_exists("config", $_REQUEST)) {
 	$isArrayRequest = false;
@@ -23,7 +23,7 @@ if ( is_array($config) && $isAuth ) {
 	// Loop through the batch of requests
 	foreach($config as $request) {
 		// Determine the correct service and action to run
-		$service = $di->get("NP\\" . str_replace(".", "\\", $request["service"]));
+		$service = $di[$request["service"]];
 		
 		$reflectionMethod = new ReflectionMethod($service, $request["action"]);
 		$params = $reflectionMethod->getParameters();

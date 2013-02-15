@@ -37,7 +37,7 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 	 * @return array
 	 */
 	public function findById($invoice_id) {
-		$select = new InvoiceSelect();
+		$select = new sql\InvoiceSelect();
 		$select->columns(array(
 					'invoice_id',
 					'invoicepayment_type_id',
@@ -103,7 +103,7 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 	public function findOpenInvoices($userprofile_id, $delegated_to_userprofile_id, $contextFilterType, $contextFilterSelection, $pageSize, $page=1, $sort='vendor_name') {
 		$propertyFilter = $this->propertyGateway->getPropertyFilterSubSelect($userprofile_id, $delegated_to_userprofile_id, $contextFilterType, $contextFilterSelection);
 
-		$select = new InvoiceSelect();
+		$select = new sql\InvoiceSelect();
 		$select->columns(array(
 					'invoice_id',
 					'invoice_ref',
@@ -146,7 +146,7 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 	public function findRejectedInvoices($userprofile_id, $delegated_to_userprofile_id, $contextFilterType, $contextFilterSelection, $pageSize=null, $page=1, $sort='vendor_name') {
 		$propertyFilter = $this->propertyGateway->getPropertyFilterSubSelect($userprofile_id, $delegated_to_userprofile_id, $contextFilterType, $contextFilterSelection);
 
-		$select = new InvoiceSelect();
+		$select = new sql\InvoiceSelect();
 		$select->columns(array(
 					'invoice_id',
 					'invoice_ref',

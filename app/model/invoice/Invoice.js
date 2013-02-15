@@ -55,7 +55,7 @@ Ext.define('NP.model.invoice.Invoice', {
         type: 'ajax',
         url: 'ajax.php',
 		extraParams: {
-			service: 'invoice.InvoiceService',
+			service: 'InvoiceService',
 			action: 'get'
 		}
     },
