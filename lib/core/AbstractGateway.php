@@ -2,12 +2,6 @@
 
 namespace NP\core;
 
-use Zend\Db\TableGateway\AbstractTableGateway;
-use Zend\Db\Adapter\Adapter;
-use Zend\Db\Sql\Select;
-use Zend\Db\Sql\Expression;
-use Zend\Db\ResultSet\ResultSet;
-
 /**
  * This is an abstract class that must be extended by all gateways in the system.
  *
@@ -17,7 +11,7 @@ use Zend\Db\ResultSet\ResultSet;
  * @abstract
  * @author Thomas Messier
  */
-abstract class AbstractGateway extends AbstractTableGateway implements LoggingAwareInterface {
+abstract class AbstractGateway implements LoggingAwareInterface {
 	
 	/**
 	 * Override this in class implementation to specify table name
@@ -99,9 +93,9 @@ abstract class AbstractGateway extends AbstractTableGateway implements LoggingAw
 	 */
 	public function findById($id) {
 		$select = $this->getSelect();
-		$select->where(array($this->table.".".$this->pk=>$id));
+		$select->where(array("{$this->table}.{$this->pk}"=>":{$this->pk}"));
 
-		$res = parent::selectWith($select)->toArray();
+		$res = $this->adapter->query($select, array("{$this->pk}"=>$id));
 		
 		return $res[0];
 	}
@@ -134,11 +128,19 @@ abstract class AbstractGateway extends AbstractTableGateway implements LoggingAw
 			$select->order($order);
 		}
 		
-		$res = $this->executeSelectWithParams($select, $params);
+		$res = $this->adapter->query($select, $params);
 		
 		return $res;
 	}
 	
+	public function insert($set) {
+		
+	}
+	
+	public function update($set) {
+		
+	}
+
 	public function save($set) {
 		if (array_key_exists($this->pk, $set) && is_numeric($this->pk)) {
 			$this->update($set);
@@ -147,6 +149,10 @@ abstract class AbstractGateway extends AbstractTableGateway implements LoggingAw
 			$this->insert($set);
 			return $this->getLastInsertValue();
 		}
+	}
+
+	public function lastInsertId() {
+		return $this->adapter->lastInsertId();
 	}
 
 	/**
@@ -164,12 +170,7 @@ abstract class AbstractGateway extends AbstractTableGateway implements LoggingAw
 	 * @return array                      Positional array filled with associative arrays of records
 	 */
 	public function executeSelectWithParams($select, $params) {
-		$statement = $this->sql->prepareStatementForSqlObject($select);
-		$result = $statement->execute($params);
-		$resultSet = new ResultSet();
-		$resultSet = $resultSet->initialize($result);
-		
-		return $resultSet->toArray();
+		return $this->adapter->query($select, $params);
 	}
 	
 	/**
@@ -185,25 +186,14 @@ abstract class AbstractGateway extends AbstractTableGateway implements LoggingAw
 	public function getPagingArray($select, $params, $pageSize, $page=1, $hasSubquery=false) {
 		$selectTotal = $this->getSelectCountForPaging($select);
 		
-		// If there's a subquery, we need to nest it in another SELECT to make sure it can be sorted by
-		if ($hasSubquery) {
-			$order = $select->getRawState(Select::ORDER);
-			$select->reset(Select::ORDER);
-			$oldSelect = $select;
-			
-			$select = new Select();
-			$select->from(array('wrapper_table'=>$oldSelect))
-					->order($order);
-		}
-		
 		// Limit the original query to the page needed
 		$select->limit($pageSize);
 		if ($page !== null) {
 			$select->offset($pageSize * ($page - 1));
 		}
 		
-		$selectRes = $this->executeSelectWithParams($select, $params);
-		$totalRes = $this->executeSelectWithParams($selectTotal, $params);
+		$selectRes = $this->adapter->query($select, $params);
+		$totalRes = $this->adapter->query($selectTotal, $params);
 		
 		return array('total'=>$totalRes[0]['totalRows'], 'data'=>$selectRes);
 	}
@@ -218,13 +208,13 @@ abstract class AbstractGateway extends AbstractTableGateway implements LoggingAw
 		// Clone the select statement passed to use it as a base
 		$selectTotal = clone $select;
 		// Remove the order by clause
-		$selectTotal->reset(Select::ORDER);
+		$selectTotal->order(null);
 		// Set a new column for the count
 		$selectTotal->columns(array('totalRows' => new Expression('count(*)'))); 
 		// Get all the existing joins
-		$joins = $selectTotal->getRawState(Select::JOINS);
+		$joins = $selectTotal->getRawState('joins');
 		// Remove existing joins
-		$selectTotal->reset(Select::JOINS);
+		$selectTotal->joins(null);
 		// Recreate the joins without the columns
 		foreach($joins as $join) {
 			$selectTotal->join($join['name'], $join['on'], array(), $join['type']);

@@ -1,12 +1,14 @@
 <?php
 
+require_once("lib/util/Pimple.php");
+
 $reloadCache = false;
 if (array_key_exists("reloadconfiguration", $_GET)) {
 	$reloadCache = true;
 }
 
 // Initialize the DI Framework
-$di = new NP\util\Pimple();
+$di = new Pimple();
 
 // DI Parameters
 $di['reloadCache'] = $reloadCache;
