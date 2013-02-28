@@ -3,9 +3,6 @@
 namespace NP\invoice;
 
 use NP\core\AbstractGateway;
-use NP\core\SqlSelect;
-
-use Zend\Db\Sql\Expression;
 
 class InvoiceItemGateway extends AbstractGateway {
 	
@@ -18,13 +15,13 @@ class InvoiceItemGateway extends AbstractGateway {
 	}
 	
 	public function getByInvoice($invoice_id, $invoiceitem_id=null) {
-		$select = new InvoiceItemSelect(array('ii'=>'invoiceitem'));
+		$select = new sql\InvoiceItemSelect(array('ii'=>'invoiceitem'));
 		
 		if ($invoiceitem_id != null) {
-			$where = "invoiceitem.invoiceitem_id = ?";
+			$where = "ii.invoiceitem_id = ?";
 			$params = array($invoiceitem_id);
 		} else {
-			$where = "invoiceitem.invoice_id = ?";
+			$where = "ii.invoice_id = ?";
 			$params = array($invoice_id);
 		}
 		
@@ -38,12 +35,12 @@ class InvoiceItemGateway extends AbstractGateway {
 					array("jbphasecode_id", "jbphasecode_name", "jbphasecode_desc"),
 					array("jbcostcode_id", "jbcostcode_name", "jbcostcode_desc")
 				)
-				->joinUnitTypeMaterial("unittype_material_id", "unittype_material_name")
-				->joinUnitTypeMeas("unittype_meas_id", "unittype_meas_name")
+				->joinUnitTypeMaterial(array('unittype_material_id','unittype_material_name'))
+				->joinUnitTypeMeas(array('unittype_meas_id','unittype_meas_name'))
 				->where($where)
-				->order("invoiceitem.invoiceitem_linenum, invoiceitem.invoiceitem_description, invoiceitem.invoiceitem_id");
+				->order("ii.invoiceitem_linenum, ii.invoiceitem_description, ii.invoiceitem_id");
 		
-		return $this->executeSelectWithParams($select, $params);
+		return $this->adapter->query($select, $params);
 	}
 	
 }

@@ -3,7 +3,7 @@
 namespace NP\system;
 
 use NP\core\AbstractGateway;
-use NP\core\SqlSelect;
+use NP\core\db\Select;
 
 use Zend\Db\ResultSet\ResultSet;
 
@@ -26,12 +26,12 @@ class PicklistGateway extends AbstractGateway {
 		if ($picklist_table_display == 'Priority') {
 			return $this->getPriorityFlags();
 		} else {
-			$select = new SqlSelect('picklist_table');
+			$select = new Select('picklist_table');
 			$select->where('picklist_table_display = ?');
-			$res = $this->executeSelectWithParams($select, array($picklist_table_display));
+			$res = $this->adapter->query($select, array($picklist_table_display));
 			$res = $res[0];
 			
-			$select = new SqlSelect($res['table_name']);
+			$select = new Select($res['table_name']);
 			$select->columns(array(
 				'id'=>$res['picklist_pk_column'],
 				'data'=>$res['picklist_data_column'],
@@ -99,12 +99,9 @@ class PicklistGateway extends AbstractGateway {
 				END AS universal_field_status
 			FROM PriorityFlag
 			ORDER BY PriorityFlag_ID_Alt
-		")->execute();
+		");
 		
-		$resultSet = new ResultSet();
-		$resultSet = $resultSet->initialize($result);
-		
-		return $resultSet->toArray();	
+		return $result;
 	}
 	
 }

@@ -17,7 +17,7 @@ class GLService extends AbstractService {
 	protected $glaccountGateway;
 	
 	/**
-	 * @param NP\gl\GLAccountGateway $glaccountGateway GLAccount gateway injected by Zend Di
+	 * @param NP\gl\GLAccountGateway $glaccountGateway GLAccount gateway injected
 	 */
 	public function __construct(GLAccountGateway $glaccountGateway) {
 		$this->glaccountGateway = $glaccountGateway;

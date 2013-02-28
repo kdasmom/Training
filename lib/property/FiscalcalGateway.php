@@ -3,7 +3,7 @@
 namespace NP\property;
 
 use NP\core\AbstractGateway;
-use NP\core\SqlSelect;
+use NP\core\db\Select;
 use NP\core\Exception;
 
 /**
@@ -22,19 +22,19 @@ class FiscalcalGateway extends AbstractGateway {
 	 * @return int              The cutoff day of the month
 	 */
 	public function getCutoffDay($property_id, $year, $month) {
-		$select = new SqlSelect(array('f'=>'fiscalcal'));
+		$select = new Select(array('f'=>'fiscalcal'));
 		
 		$select->columns(array())
 				->join(array('fm' => 'fiscalcalmonth'),
 						'f.fiscalcal_id = fm.fiscalcal_id',
-						'fiscalcalmonth_cutoff')
+						array('fiscalcalmonth_cutoff'))
 				->where("
 					f.property_id = ?
 					AND f.fiscalcal_year = ?
 					AND fm.fiscalcalmonth_num = ?
 				");
 		
-		$res = $this->executeSelectWithParams($select, array($property_id, $year, $month));
+		$res = $this->adapter->query($select, array($property_id, $year, $month));
 		
 		if (!count($res)) {
 			throw new Exception("No fiscal calendar was found for the year $year and month $month");

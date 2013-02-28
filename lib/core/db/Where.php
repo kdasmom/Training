@@ -14,7 +14,7 @@ class Where implements SQLElement {
 	/**
 	 * @var array Collection of criteria for WHERE clause
 	 */
-	protected $conditions = array();
+	protected $predicates = array();
 
 	/**
 	 * @var NP\core\db\Where Points to the current Where object in the nested object structure
@@ -50,7 +50,7 @@ class Where implements SQLElement {
 
 		// If a $where argument is defined, set it
 		if ($where !== null) {
-			// If $where is an array, loop throw the elements and set them all as "equals" conditions
+			// If $where is an array, loop throw the elements and set them all as "equals" predicates
 			if (is_array($where)) {
 				foreach($where as $col=>$val) {
 					if (is_numeric($col)) {
@@ -86,7 +86,7 @@ class Where implements SQLElement {
 		$this->currentWhere->previousWhere = $this;
 
 		// Add the new Where object as a condition
-		$this->conditions[] = $this->currentWhere;
+		$this->predicates[] = $this->currentWhere;
 
 		// Return the new Where object so that all subsequent operations are done against it
 		return $this->currentWhere;
@@ -144,9 +144,9 @@ class Where implements SQLElement {
 			$right2 = ($right2 instanceOf SQLElement) ? $right2 : new Expression($right2);
 		}
 		if ($operator == 'BETWEEN') {
-			$this->currentWhere->conditions[] = array('operator'=>$operator, 'left'=>$left, 'right'=>$right, 'right2'=>$right2);
+			$this->currentWhere->predicates[] = array('operator'=>$operator, 'left'=>$left, 'right'=>$right, 'right2'=>$right2);
 		} else {
-			$this->currentWhere->conditions[] = array('operator'=>$operator, 'left'=>$left, 'right'=>$right);	
+			$this->currentWhere->predicates[] = array('operator'=>$operator, 'left'=>$left, 'right'=>$right);	
 		}
 		
 		return $this->currentWhere;
@@ -159,7 +159,7 @@ class Where implements SQLElement {
 	 * @return NP\core\db\Where The current Where object
 	 */
 	public function expression($where) {
-		$this->currentWhere->conditions[] = new Expression($where);
+		$this->currentWhere->predicates[] = new Expression($where);
 
 		return $this->currentWhere;
 	}
@@ -222,12 +222,13 @@ class Where implements SQLElement {
 	/**
 	 * Shortcut for op('BETWEEN', $left, $right, $right2)
 	 *
-	 * @param  string|SQLElement $left  Left side of the comparison
-     * @param  string|SQLElement $right Right side of the comparison
-     * @return NP\core\db\Where         The current Where object
+	 * @param  string|SQLElement $left   Left side of the comparison
+     * @param  string|SQLElement $right  Right side of the comparison
+     * @param  string|SQLElement $right2 Second right side of the comparison
+     * @return NP\core\db\Where          The current Where object
 	 */
-	public function between($left, $first, $right2) {
-		return $this->currentWhere->op('BETWEEN', $left, $first, $right2);
+	public function between($left, $right, $right2) {
+		return $this->currentWhere->op('BETWEEN', $left, $right, $right2);
 	}
 
 	/**
@@ -284,44 +285,44 @@ class Where implements SQLElement {
 		$collection = array();
 
 		// Loop through every condition saved
-		foreach($this->conditions as $condition) {
+		foreach($this->predicates as $predicate) {
 			// If the condition is a Where object, it's because we have a nested condition
-			if ($condition instanceOf Where) {
-				$collection[] = $condition->toString();
+			if ($predicate instanceOf Where) {
+				$collection[] = $predicate->toString();
 			// Otherwise, we have a regular condition within this nested group
 			} else {
 				// If the condition is an Expression object, just convert it to a string
-				if ($condition instanceOf Expression) {
-					$collection[] = $condition->toString();
+				if ($predicate instanceOf Expression) {
+					$collection[] = $predicate->toString();
 				// Otherwise, we have an operator condition
 				} else {
-					$left = $condition['left']->toString();
+					$left = $predicate['left']->toString();
 					// If the left side of our condition is a Select object, it's a subquery 
 					// that we need to wrap in parentheses
-					if ($condition['left'] instanceOf Select) {
+					if ($predicate['left'] instanceOf Select) {
 						$left = "({$left})";
 					}
-					$right = $condition['right']->toString();
+					$right = $predicate['right']->toString();
 					// If the right side of our condition is a Select object, it's a subquery 
 					// that we need to wrap in parentheses
-					if ($condition['right'] instanceOf Select) {
-						$left = "({$right})";
+					if ($predicate['right'] instanceOf Select || in_array($predicate['operator'], array('IN','NOT IN'))) {
+						$right = "({$right})";
 					}
 					// If we're using a between operator, run special logic because it has two items on the right side
-					if ($condition['operator'] == 'BETWEEN') {
-						$right2 = $condition['right2']->toString();
-						if ($condition['right2'] instanceOf Select) {
+					if ($predicate['operator'] == 'BETWEEN') {
+						$right2 = $predicate['right2']->toString();
+						if ($predicate['right2'] instanceOf Select) {
 							$left = "({$right2})";
 						}
 						$collection[] = $left . " BETWEEN " . $right . " AND " . $right2;
 					// Otherwise, run the same thing for all other operators
 					} else {
-						$collection[] = $left . " {$condition['operator']} " . $right;
+						$collection[] = $left . " {$predicate['operator']} " . $right;
 					}
 				}
 			}
 		}
-		// Join all conditions using the logical operator for this Where object
+		// Join all predicates using the logical operator for this Where object
 		$sql .= implode(" {$this->logicalOperator} ", $collection);
 		$sql .= ')';
 

@@ -12,7 +12,7 @@ abstract class AbstractService implements LoggingAwareInterface {
 	/**
 	 * The logging service singleton
 	 * 
-	 * The logging service singleton gets automatically injected by Zend Di via setter injection
+	 * The logging service singleton gets automatically injected via setter injection
 	 * (setLoggingService() function).
 	 *
 	 * @var NP\system\LoggingService The logging service singleton

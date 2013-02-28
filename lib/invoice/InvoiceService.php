@@ -32,10 +32,10 @@ class InvoiceService extends AbstractService {
 	protected $invoiceValidator;
 	
 	/**
-	 * @param NP\system\SecurityService     $securityService    SecurityService object injected by Zend Di
-	 * @param NP\invoice\InvoiceGateway     $invoiceGateway     InvoiceGateway object injected by Zend Di
-	 * @param NP\invoice\InvoiceItemGateway $invoiceItemGateway InvoiceItemGateway object injected by Zend Di
-	 * @param NP\invoice\InvoiceValidator   $invoiceValidator   InvoiceValidator object injected by Zend Di
+	 * @param NP\system\SecurityService     $securityService    SecurityService object injected
+	 * @param NP\invoice\InvoiceGateway     $invoiceGateway     InvoiceGateway object injected
+	 * @param NP\invoice\InvoiceItemGateway $invoiceItemGateway InvoiceItemGateway object injected
+	 * @param NP\invoice\InvoiceValidator   $invoiceValidator   InvoiceValidator object injected
 	 */
 	public function __construct(SecurityService $securityService, InvoiceGateway $invoiceGateway, 
 								InvoiceItemGateway $invoiceItemGateway) {
@@ -61,24 +61,23 @@ class InvoiceService extends AbstractService {
 	 * @return array          Errors that occurred while attempting to save the entity
 	 */
 	public function save($dataSet) {
+		// Create an invoice entity
+		$invoiceEntity = new InvoiceEntity($dataSet);
+
 		// Get invoice validator
 		$invoiceValidator = new validation\InvoiceValidator();
 
 		// If the data is valid, save it
-		if ($invoiceValidator->validate($dataSet)) {
+		if ($invoiceValidator->validate($invoiceEntity)) {
 			// Begin transaction
 			$connection = $this->invoiceGateway->getAdapter()->driver->getConnection()->beginTransaction();
 
 			try {
-				// Remove lines from the data set to save the invoice
-				$lines = $dataSet['lines'];
-				unset($dataSet['lines']);
-
 				// Save the invoice entity
-				$id = $this->invoiceGateway->save($dataSet);
+				$id = $this->invoiceGateway->save($invoiceEntity);
 
 				// Loop through each line in the invoice and save them
-				foreach($lines as $line) {
+				foreach($dataSet['lines'] as $line) {
 					$line['invoice_id'] = $id;
 					$this->invoiceItemGateway->save($line);
 				}
@@ -90,7 +89,12 @@ class InvoiceService extends AbstractService {
 			}
 		}
 
-		return $invoiceValidator->getErrors();
+		$errors = $invoiceValidator->getErrors();
+		return array(
+			'success'    => (count($errors)) ? false : true,
+			'invoice_id' => $id,
+			'errors'     => $errors,
+		);
 	}
 	
 	/**

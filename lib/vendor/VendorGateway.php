@@ -3,12 +3,12 @@
 namespace NP\vendor;
 
 use NP\core\AbstractGateway;
-use NP\core\SqlSelect;
+use NP\core\db\Select;
 use NP\system\ConfigService;
 use NP\property\PropertyService;
 use NP\vendor\VendorSelect;
 
-use Zend\Db\Adapter\Adapter;
+use NP\core\db\Adapter;
 
 /**
  * Gateway for the VENDOR table
@@ -28,9 +28,9 @@ class VendorGateway extends AbstractGateway {
 	
 
 	/**
-	 * @param Zend\Db\Adapter\Adapter     $adapter         Database adapter object injected by Zend Di
-	 * @param NP\property\ConfigService   $configService   ConfigService object injected by Zend Di
-	 * @param NP\property\PropertyService $propertyService PropertyService object injected by Zend Di
+	 * @param NP\core\db\Adapter     $adapter         Database adapter object injected
+	 * @param NP\property\ConfigService   $configService   ConfigService object injected
+	 * @param NP\property\PropertyService $propertyService PropertyService object injected
 	 */
 	public function __construct(Adapter $adapter, ConfigService $configService, PropertyService $propertyService) {
 		$this->configService = $configService;
@@ -44,10 +44,10 @@ class VendorGateway extends AbstractGateway {
 	 *
 	 * @param  array $vendorCols     Columns to include from the VENDOR table
 	 * @param  array $vendorsiteCols Columns to include from the VENDORSITE table
-	 * @return NP\core\SqlSelect
+	 * @return NP\core\db\Select
 	 */
 	public function getSelect($vendorCols=array('*'), $vendorsiteCols=array('*')) {
-		$select = new SqlSelect();
+		$select = new Select();
 		$select->from('vendor')
 				->columns($vendorCols)
 				->join(array('vs' => 'vendorsite'),
@@ -135,7 +135,7 @@ class VendorGateway extends AbstractGateway {
 				->limit(50)
 				->offset(0);
 		
-		return $this->executeSelectWithParams($select, $params);
+		return $this->adapter->query($select, $params);
 	}
 	
 }

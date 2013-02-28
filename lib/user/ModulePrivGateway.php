@@ -4,7 +4,7 @@ namespace NP\user;
 
 use NP\core\AbstractGateway;
 
-use Zend\Db\Sql\Select;
+use NP\core\db\Select;
 
 /**
  * Gateway for the MODULEPRIV table
@@ -39,7 +39,7 @@ class ModulePrivGateway extends AbstractGateway {
 					)
 				");
 		
-		$resultSet = $this->executeSelectWithParams($select, array($userprofile_id, 'role'));
+		$resultSet = $this->adapter->query($select, array($userprofile_id, 'role'));
 		
 		$modules = array();
 		foreach($resultSet as $rec) {

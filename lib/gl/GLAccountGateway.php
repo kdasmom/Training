@@ -3,10 +3,10 @@
 namespace NP\gl;
 
 use NP\core\AbstractGateway;
-use NP\core\SqlSelect;
+use NP\core\db\Select;
 use NP\system\ConfigService;
 
-use Zend\Db\Adapter\Adapter;
+use NP\core\db\Adapter;
 
 /**
  * Gateway for the GL Account table
@@ -20,8 +20,8 @@ class GLAccountGateway extends AbstractGateway {
 	protected $configService;
 	
 	/**
-	 * @param Zend\Db\Adapter\Adapter $adapter       Database adapter object injected by Zend Di
-	 * @param NP\system\ConfigService $configService ConfigService object injected by Zend Di
+	 * @param NP\core\db\Adapter $adapter       Database adapter object injected
+	 * @param NP\system\ConfigService $configService ConfigService object injected
 	 */
 	public function __construct(Adapter $adapter, ConfigService $configService) {
 		$this->configService = $configService;
@@ -40,7 +40,7 @@ class GLAccountGateway extends AbstractGateway {
 		$glaccount_keyword .= '%';
 		$params = array($vendorsite_id, $glaccount_keyword, $glaccount_keyword);
 		
-		$select = new SqlSelect();
+		$select = new Select();
 		$select->from(array('g'=>'glaccount'))
 				->join(array('gt'=>'glaccounttype'),
 						'gt.glaccounttype_id = g.glaccounttype_id',
@@ -81,7 +81,7 @@ class GLAccountGateway extends AbstractGateway {
 		$sqlStr = $sql->getSqlStringForSqlObject($select);
 		
 		if ( $this->configService->get("PN.Budget.FixedAssetSpecial", 0) ) {
-			$select = new SqlSelect();
+			$select = new Select();
 			$select->from(array('g'=>'glaccount'))
 					->join(array('i'=>'integrationpackage'),
 						'g.integration_package_id = i.integration_package_id',
@@ -113,7 +113,7 @@ class GLAccountGateway extends AbstractGateway {
 	 * @return array
 	 */
 	public function findUserGLAccounts($userprofile_id) {
-		$select = new SqlSelect();
+		$select = new Select();
 		$select->from(array('g'=>'glaccount'))
 				->where("
 					EXISTS (
@@ -126,7 +126,7 @@ class GLAccountGateway extends AbstractGateway {
 				")
 				->order("g.glaccount_name");
 	
-		return $this->executeSelectWithParams($select, array($userprofile_id));
+		return $this->adapter->query($select, array($userprofile_id));
 	}
 	
 }

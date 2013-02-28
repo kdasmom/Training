@@ -2,16 +2,14 @@
 
 namespace NP\vendor;
 
-use NP\core\SqlSelect;
-
-use Zend\Db\Sql\Expression;
+use NP\core\db\Select;
 
 /**
  * A custom Select object for Vendor records with some shortcut methods
  *
  * @author Thomas Messier
  */
-class VendorSelect extends SqlSelect {
+class VendorSelect extends Select {
 	
 	public function __construct() {
 		parent::__construct();
@@ -38,9 +36,9 @@ class VendorSelect extends SqlSelect {
 	 */
 	public function joinAddress($cols=array()) {
 		return $this->join(array('a' => 'address'),
-							new Expression("vs.vendorsite_id = a.tablekey_id
+							"vs.vendorsite_id = a.tablekey_id
 							AND a.table_name = 'vendorsite'
-							AND a.addresstype_id = (SELECT addresstype_id FROM addresstype WHERE addresstype_name = 'Mailing')"),
+							AND a.addresstype_id = (SELECT addresstype_id FROM addresstype WHERE addresstype_name = 'Mailing')",
 						$cols,
 						static::JOIN_LEFT);
 	}

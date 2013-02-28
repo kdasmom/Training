@@ -14,11 +14,6 @@ $di = new Pimple();
 $di['reloadCache'] = $reloadCache;
 $di['configPath'] = $__CONFIG['appRoot'] . 'config\\site_config.xml';
 
-$di['driver'] = $di->share(function($di) use ($__CONFIG) {
-	$__CONFIG['datasource']['database'] = $di['SiteService']->getDatabaseName();
-	return $__CONFIG['datasource'];
-});
-
 $di['logPath'] = $di->share(function($di) use ($__CONFIG) {
 	return $__CONFIG['logPath'].'\\'.$di['SiteService']->getAppName();
 });
@@ -26,10 +21,17 @@ $di['enabledNamespaces'] = $__CONFIG['enabledNamespaces'];
 $di['fileEnabled']       = $__CONFIG['fileLogEnabled'];
 $di['debugEnabled']      = $__CONFIG['debugLogEnabled'];
 
+$di['dbServer'] = $__CONFIG['datasource']['hostname'];
+$di['dbName'] = $di->share(function($di) use ($__CONFIG) {
+	return $di['SiteService']->getDatabaseName();
+});
+$di['dbUsername'] = $__CONFIG['datasource']['username'];
+$di['dbPassword'] = $__CONFIG['datasource']['password'];
+
 // DI Definitions
 $diDefinition = array(
 	'Zend\Cache\Storage\Adapter\WinCache',
-	'Zend\Db\Adapter\Adapter'                  => array('driver'),
+	'NP\core\db\Adapter'                       => array('dbServer','dbName','dbUsername','dbPassword'),
 	'NP\gl\GLAccountGateway'                   => array('Adapter','ConfigService'),
 	'NP\gl\GLAccountService'                   => array('GLAccountGateway'),
 	'NP\invoice\InvoiceGateway'                => array('Adapter','PropertyGateway'),
@@ -45,6 +47,7 @@ $diDefinition = array(
 	'NP\system\PNUniversalFieldGateway'        => array('Adapter'),
 	'NP\system\IntegrationRequirementsGateway' => array('Adapter'),
 	'NP\system\PicklistGateway'                => array('Adapter'),
+	'NP\system\PicklistService'                => array('PicklistGateway'),
 	'NP\system\LoggingService'                 => array('logPath','enabledNamespaces','fileEnabled','debugEnabled'),
 	'NP\system\Session',
 	'NP\system\SecurityService'                => array('Session','UserprofileGateway','UserprofileLogonGateway','ModulePrivGateway'),

@@ -3,7 +3,7 @@
 namespace NP\user;
 
 use NP\core\AbstractGateway;
-use NP\core\SqlSelect;
+use NP\core\db\Select;
 
 /**
  * Gateway for the DELEGATION table
@@ -25,7 +25,7 @@ class DelegationGateway extends AbstractGateway {
 			throw new \NP\core\Exception("The value of the \$toOrFrom argument, '{$toOrFrom}', is invalid. It must be either 'to' or 'from'.");
 		}
 
-		$select = new SqlSelect();
+		$select = new Select();
 
 		if ($toOrFrom == "from") {
 			$joinField = "delegation_to_userprofile_id";
@@ -70,7 +70,7 @@ class DelegationGateway extends AbstractGateway {
 		
 		$select->where($where);
 
-		return $this->executeSelectWithParams($select, array($userprofile_id));
+		return $this->adapter->query($select, array($userprofile_id));
 	}
 	
 }

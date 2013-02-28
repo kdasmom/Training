@@ -16,7 +16,7 @@ class PicklistService extends AbstractService {
 	protected $picklistGateway;
 
 	/**
-	 * @param NP\system\PicklistGateway $picklistGateway PicklistGateway object injected by Zend Di
+	 * @param NP\system\PicklistGateway $picklistGateway PicklistGateway object injected
 	 */
 	public function __construct(PicklistGateway $picklistGateway) {
 		$this->picklistGateway = $picklistGateway;

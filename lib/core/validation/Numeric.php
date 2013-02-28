@@ -2,53 +2,23 @@
 namespace NP\core\validation;
 
 /**
- * A validator to ensure a value is numeric
- * 
- * @author Thomas Messier
+ * Numeric validator; basically wraps the Zend Float validator, forcing a en_US locale to ensure 
+ * float formatting comes through OK (commas for grouping and periods for decimal point)
  */
-class Numeric extends \Zend\Validator\AbstractValidator {
-    const NOT_NUMERIC   = 'notNumeric';
-
-    /**
-     * Validation failure message template definitions
+class Numeric extends \Zend\I18n\Validator\Float {
+	/**
+     * Constructor for the numeric validator
      *
-     * @var array
+     * @param array|Traversable $options
      */
-    protected $messageTemplates = array(
-        self::NOT_NUMERIC   => 'The field "%fieldName%", whose current value is "%value%", must be a number.',
-    );
-
-    /**
-     * Additional variables available for validation failure messages
-     *
-     * @var array
-     */
-    protected $messageVariables = array(
-        'fieldName' => array('options' => 'fieldName'),
-    );
-
-    /**
-     * Options for the Int validator
-     *
-     * @var array
-     */
-    protected $options = array();
-
-    /**
-     * Returns true if and only if $value only contains digit characters
-     *
-     * @param  string $value
-     * @return bool
-     */
-    public function isValid($value)
-    {
-        $this->setValue($value);
-
-        if (!is_numeric($value)) {
-            $this->error(self::NOT_NUMERIC);
-            return false;
+    public function __construct($options=array()) {
+        if ($options instanceof Traversable) {
+            $options = ArrayUtils::iteratorToArray($options);
         }
 
-        return true;
+        $options['locale'] = 'en_US';
+
+        parent::__construct($options);
     }
 }
+?>

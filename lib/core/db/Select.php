@@ -25,6 +25,11 @@ class Select implements SQLInterface, SQLElement {
 	 * @var boolean Whether to do a COUNT() in the SELECT clause
 	 */
 	protected $count = false;
+
+	/**
+	 * @var string Alias for the count column
+	 */
+	protected $countAlias = null;
 	
 	/**
 	 * @var boolean Whether to include DISTINCT
@@ -75,12 +80,12 @@ class Select implements SQLInterface, SQLElement {
 	/**
 	 * Sets the main table for the FROM clause
 	 *
-	 * @param  $table string|array|NP\core\db\Select Main table for FROM clause; can be a string with the table name, an associative array with alias=>tableName; if using an associative array, the value can also be a Select object to use as a subquery
-	 * @return NP\core\db\Select                     Caller object returned for easy chaining
+	 * @param  $table string|array Main table for FROM clause; can be a string with the table name or an associative array with alias=>tableName; if using an associative array, the value can also be a Select object to use as a subquery
+	 * @return NP\core\db\Select   Caller object returned for easy chaining
 	 */
 	public function from($table) {
-		if (!is_array($table)) {
-			$table = array($table=>$table);
+		if (!$table instanceOf Table) {
+			$table = new Table($table);
 		}
 		$this->table = $table;
 		return $this;
@@ -89,11 +94,16 @@ class Select implements SQLInterface, SQLElement {
 	/**
 	 * Adds a column to the list of columns to be fetched
 	 *
-	 * @param  $col string|array|NP\core\db\Expression|NP\core\db\Select Can be the name of a column from the main table as a string, a Expression object, or a Select object (subquery); each of these values can also be used as the column portion of an array in the format alias=>column
+	 * @param  $col string|array|NP\core\db\Expression|NP\core\db\Select Can be the name of a column from the main table as a string, an Expression object, or a Select object (subquery); each of these values can also be used as the column portion of an array in the format alias=>column
 	 * @return NP\core\db\Select                                         Caller object returned for easy chaining
 	 */
-	public function column($col) {
-		$this->cols[] = $col;
+	public function column($col, $alias=null) {
+		if ($alias === null) {
+			$this->cols[] = $col;
+		} else {
+			$this->cols[$alias] = $col;
+		}
+		
 		return $this;
 	}
 
@@ -114,7 +124,7 @@ class Select implements SQLInterface, SQLElement {
 	 * @param boolean $distinct
 	 * @return NP\core\db\Select Caller object returned for easy chaining
 	 */
-	public function distinct($distinct) {
+	public function distinct($distinct=true) {
 		$this->distinct = $distinct;
 		return $this;
 	}
@@ -123,20 +133,22 @@ class Select implements SQLInterface, SQLElement {
 	 * Sets if COUNT is included or not in the SELECT clause
 	 *
 	 * @param boolean $distinct
+	 * @param string  $alias    Alias for count()
 	 * @return NP\core\db\Select Caller object returned for easy chaining
 	 */
-	public function count($count) {
+	public function count($count=true, $alias=null) {
 		$this->count = $count;
+		$this->countAlias = $alias;
 		return $this;
 	}
 
 	/**
 	 * Adds a join to the statement
 	 *
-	 * @param  $table     string|array|NP\core\db\Select Can be the name of a table as a string or a Select object (subquery); each of these values can also be used as the table portion of an array in the format alias=>table
-	 * @param  $condition string                         The join condition
-	 * @param  $cols      array                          Columns from the join table to fetch
-	 * @param  $type      string                         Type of join (optional); valid values are INNER, LEFT, and RIGHT; defaults to INNER
+	 * @param  $table     string|array Can be the name of a table as a string or an associative array in the format alias=>table; if using array, the table part can be a Select object
+	 * @param  $condition string       The join condition
+	 * @param  $cols      array        Columns from the join table to fetch
+	 * @param  $type      string       Type of join (optional); valid values are INNER, LEFT, and RIGHT; defaults to INNER
 	 * @return NP\core\db\Select Caller object returned for easy chaining
 	 */
 	public function join($table, $condition, $cols=null, $type=self::JOIN_INNER) {
@@ -145,19 +157,18 @@ class Select implements SQLInterface, SQLElement {
 		if (!in_array($type, $validTypes)) {
 			throw new \NP\core\Exception('Invalid $values argument. Valid values are ' . implode(',', $validTypes));
 		}
+		if (!$table instanceOf Table) {
+			$table = new Table($table);
+		}
 		$this->joins[] = array('table'=>$table, 'condition'=>$condition, 'cols'=>$cols, 'type'=>$type);
 		return $this;
 	}
 
 	/**
-	 * Adds joins to the statement
-	 *
-	 * @param  $joins array      To see what type of values each array element can contain, see the join() method docs
-	 * @return NP\core\db\Select Caller object returned for easy chaining
+	 * Removes all joins
 	 */
-	public function joins($joins) {
-		$this->joins[] = $joins;
-		return $this;
+	public function resetJoins() {
+		$this->joins = array();
 	}
 
 	/**
@@ -249,8 +260,6 @@ class Select implements SQLInterface, SQLElement {
 	 * @return string
 	 */
 	public function toString() {
-		$mainTableAlias = key($this->table);
-		$mainTableName = current($this->table);
 		// Start building the SQL string
 		$sql = 'SELECT ';
 
@@ -275,14 +284,17 @@ class Select implements SQLInterface, SQLElement {
 				$sql .= "DISTINCT ";
 			}
 			// If we have a column specified, we need to add it to count()
-			if (is_array($this->cols)) {
+			if (is_array($this->cols) && count($this->cols)) {
 				$firstCol = $this->cols[0];
-				$sql .= "{$mainTableAlias}.{$firstCol}";
+				$sql .= "{$this->table->getColumnPrefix()}.{$firstCol}";
 			// If there are no columns, we can just do count(*)
 			} else {
 				$sql .= "*";
 			}
 			$sql .= ") ";
+			if ($this->countAlias !== null) {
+				$sql .= "AS {$this->countAlias} ";
+			}
 		// If distinct is set, add the distinct directive before the columns
 		} else if ($this->distinct) {
 			$sql .= 'DISTINCT ';
@@ -292,7 +304,7 @@ class Select implements SQLInterface, SQLElement {
 		$cols = array();
 		// If no columns have been specified for the "from" table, just include * for that table
 		if ($this->cols === null) {
-			$cols[] = "{$mainTableAlias}.*";
+			$cols[] = "{$this->table->getColumnPrefix()}.*";
 		// Otherwise, figure out which columns to include
 		} else {
 			// Loop through all the columsn to include
@@ -303,7 +315,7 @@ class Select implements SQLInterface, SQLElement {
 				}
 				// If the column is a string, assume we're dealing with a regular table column
 				if (is_string($col)) {
-					$colSql = "{$mainTableAlias}.{$col}";
+					$colSql = "{$this->table->getColumnPrefix()}.{$col}";
 				// If we have an Expression object, we just run the toString() method to get the value
 				} else if ($col instanceOf Expression) {
 					$colSql = $col->toString();
@@ -326,14 +338,9 @@ class Select implements SQLInterface, SQLElement {
 		$joins = array();
 		// Loop through all joins
 		foreach ($this->joins as $join) {
-			// Set some variables based on if we defined a table alias or not
-			$joinTable = (is_array($join['table'])) ? $join['table'] : array($join['table']=>$join['table']);
-			$joinTableName = current($join['table']);
-			$joinTableAlias = key($join['table']);
-
 			// If the columns are set to null, assume we're retrieving all of them
 			if ($join['cols'] === null) {
-				$cols[] = "{$joinTableAlias}.*";
+				$cols[] = "{$join['table']->getColumnPrefix()}.*";
 			// Otherwise, need to see which columns we need
 			} else {
 				// Loop through ever column for that join
@@ -342,38 +349,29 @@ class Select implements SQLInterface, SQLElement {
 					if (!is_numeric($alias)) {
 						$col .= "{$col} AS {$alias}";
 					}
-					$cols[] = "{$joinTableAlias}.{$col}";
+					$cols[] = "{$join['table']->getColumnPrefix()}.{$col}";
 				}
 			}
 			// build the join clause
-			$joinSql = "{$join['type']} JOIN ";
-			// If the join table is a Select object, we're dealing with a subquery
-			if ($joinTableName instanceOf Select) {
-				$joinSql .= "({$joinTableName->toString()}) AS ";
-			// Else, it's a regular string with a table name
-			} else {
-				$joinSql .= "{$joinTableName} ";
-			}
+			$joinSql = "{$join['type']} JOIN {$join['table']->toString()}";
+
 			// Add the alias and table join condition
-			$joinSql .= $joinTableAlias . " ON {$join['condition']}";
+			$joinSql .= " ON {$join['condition']}";
+			
 			// Append to the join array for joining later
 			$joins[] = $joinSql;
 		}
 
 		// Join all the columns separated by commas for the SELECT clause and add to the main $sql string
 		$sql .= implode(',', $cols);
+		
 		// Add the query FROM clause
-		$sql .= ' FROM ';
-		// Check if the from table is a Select object, meaning a subquery
-		if ($mainTableName instanceOf Select) {
-			$sql .= "({$mainTableName->toString()}) AS ";
-		} else {
-			$sql .= "{$mainTableName} ";
-		}
-		// Add the from table alias
-		$sql .= $mainTableAlias . ' ';
+		$sql .= " FROM {$this->table->toString()}";
+		
 		// Add all the joins to the query
-		$sql .= implode(' ', $joins);
+		if (count($joins)) {
+			$sql .= ' ' . implode(' ', $joins);
+		}
 
 		// If there's a where clause, add it
 		if ($this->where !== null) {

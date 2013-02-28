@@ -3,7 +3,7 @@
 namespace NP\property;
 
 use NP\core\AbstractGateway;
-use NP\core\SqlSelect;
+use NP\core\db\Select;
 
 /**
  * Gateway for the PROPERTY table
@@ -20,7 +20,7 @@ class PropertyGateway  extends AbstractGateway {
 	 * @return array                               Array of property records
 	 */
 	public function findByUser($userprofile_id, $delegation_to_userprofile_id) {
-		$select = new SqlSelect();
+		$select = new Select();
 		$select->from(array('p'=>'property'))
 				->order("p.property_name");
 		if ($userprofile_id == $delegation_to_userprofile_id) {
@@ -49,7 +49,7 @@ class PropertyGateway  extends AbstractGateway {
 			$params = array($userprofile_id, $delegation_to_userprofile_id);
 		}
 
-		return $this->executeSelectWithParams($select, $params);
+		return $this->adapter->query($select, $params);
 	}
 	
 	/**
@@ -59,7 +59,7 @@ class PropertyGateway  extends AbstractGateway {
 	 * @return array                               Array of property records
 	 */
 	public function findForInvoiceItemComboBox($userprofile_id, $delegation_to_userprofile_id, $property_keyword) {
-		$select = new SqlSelect();
+		$select = new Select();
 		$select->from(array('p'=>'property'))
 				->where('
 					EXISTS (
@@ -77,7 +77,7 @@ class PropertyGateway  extends AbstractGateway {
 		
 		$property_keyword = $property_keyword . '%';
 		
-		return $this->executeSelectWithParams($select, array($userprofile_id,$property_keyword,$property_keyword));
+		return $this->adapter->query($select, array($userprofile_id,$property_keyword,$property_keyword));
 	}
 	
 	/**

@@ -92,10 +92,16 @@ class Adapter {
 
 		// Create the SQL statement and execute it
 		$stmt = $this->conn->prepare($sql);
-		$stmt->execute($params);
-
-		// Fetch and return as an associative array
-		return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+		$res = $stmt->execute($params);
+		
+		// If we ran a select statement, return the data
+		if ($stmt->columnCount() > 0) {
+			// Fetch and return as an associative array
+			return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+		// Otherwise, if it was an insert or update, return the result of execute statement
+		} else {
+			return $res;
+		}
 	}
 
 	/**

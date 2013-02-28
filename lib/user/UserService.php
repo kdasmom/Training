@@ -45,12 +45,12 @@ class UserService extends AbstractService {
 	protected $delegationGateway;
 
 	/**
-	 * @param NP\system\SecurityService    $securityService   SecurityService object injected by Zend Di
-	 * @param NP\invoice\InvoiceService    $invoiceService    InvoiceService object injected by Zend Di
-	 * @param NP\property\PropertyGateway  $propertyGateway   PropertyGateway object injected by Zend Di
-	 * @param NP\invoice\RegionGateway     $regionGateway     RegionGateway object injected by Zend Di
-	 * @param NP\invoice\GLAccountGateway  $gLAccountGateway  GLAccountGateway object injected by Zend Di
-	 * @param NP\invoice\DelegationGateway $delegationGateway DelegationGateway object injected by Zend Di
+	 * @param NP\system\SecurityService    $securityService   SecurityService object injected
+	 * @param NP\invoice\InvoiceService    $invoiceService    InvoiceService object injected
+	 * @param NP\property\PropertyGateway  $propertyGateway   PropertyGateway object injected
+	 * @param NP\invoice\RegionGateway     $regionGateway     RegionGateway object injected
+	 * @param NP\invoice\GLAccountGateway  $gLAccountGateway  GLAccountGateway object injected
+	 * @param NP\invoice\DelegationGateway $delegationGateway DelegationGateway object injected
 	 */
 	public function __construct(SecurityService $securityService, InvoiceService $invoiceService, PropertyGateway $propertyGateway, RegionGateway $regionGateway, 
 								GLAccountGateway $glaccountGateway, DelegationGateway $delegationGateway) {

@@ -2,20 +2,18 @@
 
 namespace NP\invoice\sql;
 
-use NP\core\SqlSelect;
-
-use Zend\Db\Sql\Expression;
+use NP\core\db\Select;
 
 /**
  * A custom Select object for InvoiceItem records with some shortcut methods
  *
  * @author Thomas Messier
  */
-class InvoiceItemSelect extends SqlSelect {
+class InvoiceItemSelect extends Select {
 	
 	public function __construct() {
 		parent::__construct();
-		$this->from('invoiceitem');
+		$this->from(array('ii'=>'invoiceitem'));
 	}
 	
 	/**
@@ -26,7 +24,7 @@ class InvoiceItemSelect extends SqlSelect {
 	 */
 	public function joinGL($cols=array()) {
 		return $this->join(array('g' => 'glaccount'),
-						$this->table.'.glaccount_id = g.glaccount_id',
+						'ii.glaccount_id = g.glaccount_id',
 						$cols);
 	}
 	
@@ -38,7 +36,7 @@ class InvoiceItemSelect extends SqlSelect {
 	 */
 	public function joinProperty($cols=array()) {
 		return $this->join(array('p' => 'property'),
-						$this->table.'.property_id = p.property_id',
+						'ii.property_id = p.property_id',
 						$cols);
 	}
 	
@@ -50,7 +48,7 @@ class InvoiceItemSelect extends SqlSelect {
 	 */
 	public function joinUtil($cols=array()) {
 		return $this->join(array('ua' => 'UTILITYACCOUNT'),
-							$this->table.".utilityaccount_id = ua.utilityaccount_id",
+							"ii.utilityaccount_id = ua.utilityaccount_id",
 							array(),
 							static::JOIN_LEFT);
 	}
@@ -67,7 +65,7 @@ class InvoiceItemSelect extends SqlSelect {
 	 */
 	public function joinJobcost($contractCols=array(), $changeorderCols=array(), $jobcodeCols=array(), $phasecodeCols=array(), $costcodeCols=array()) {
 		return $this->join(array('jba' => 'JBJOBASSOCIATION'),
-							new Expression($this->table.".invoiceitem_id = jba.tablekey_id AND jba.table_name = 'invoiceitem'"),
+							"ii.invoiceitem_id = jba.tablekey_id AND jba.table_name = 'invoiceitem'",
 							array(),
 							static::JOIN_LEFT)
 					->join(array('jbct' => 'jbcontract'),
@@ -100,7 +98,7 @@ class InvoiceItemSelect extends SqlSelect {
 	 */
 	public function joinUnitTypeMaterial($cols=array()) {
 		return $this->join(array('uma' => 'unittype_material'),
-							$this->table.".unittype_material_id = uma.unittype_material_id",
+							"ii.unittype_material_id = uma.unittype_material_id",
 							$cols,
 							static::JOIN_LEFT);
 	}
@@ -113,7 +111,7 @@ class InvoiceItemSelect extends SqlSelect {
 	 */
 	public function joinUnitTypeMeas($cols=array()) {
 		return $this->join(array('ume' => 'unittype_meas'),
-							$this->table.'.unittype_meas_id = ume.unittype_meas_id',
+							'ii.unittype_meas_id = ume.unittype_meas_id',
 							$cols,
 							static::JOIN_LEFT);
 	}

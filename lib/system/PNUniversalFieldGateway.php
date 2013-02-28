@@ -3,8 +3,7 @@
 namespace NP\system;
 
 use NP\core\AbstractGateway;
-
-use Zend\Db\Sql\Select;
+use NP\core\db\Select;
 
 /**
  * Gateway for the PNUNIVERSALFIELD table
@@ -46,7 +45,7 @@ class PNUniversalFieldGateway extends AbstractGateway {
 		$select->where($where)
 				->order(array($table.'.universal_field_order',$table.'.universal_field_data'));
 		
-		return $this->executeSelectWithParams($select, $params);
+		return $this->adapter->query($select, $params);
 	}
 }
 

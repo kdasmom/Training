@@ -32,10 +32,10 @@ class SecurityService extends AbstractService {
 	protected $modulePrivGateway;
 	
 	/**
-	 * @param NP\system\Session               $session                 Session object injected by Zend Di
-	 * @param NP\user\UserprofileGateway      $userprofileGateway      UserprofileGateway object injected by Zend Di
-	 * @param NP\user\UserprofileLogonGateway $userprofileLogonGateway UserprofileLogonGateway object injected by Zend Di
-	 * @param NP\user\ModulePrivGateway       $modulePrivGateway       ModulePrivGateway object injected by Zend Di
+	 * @param NP\system\Session               $session                 Session object injected
+	 * @param NP\user\UserprofileGateway      $userprofileGateway      UserprofileGateway object injected
+	 * @param NP\user\UserprofileLogonGateway $userprofileLogonGateway UserprofileLogonGateway object injected
+	 * @param NP\user\ModulePrivGateway       $modulePrivGateway       ModulePrivGateway object injected
 	 */
 	public function __construct(Session $session, UserprofileGateway $userprofileGateway, 
 								UserprofileLogonGateway $userprofileLogonGateway, ModulePrivGateway $modulePrivGateway) {

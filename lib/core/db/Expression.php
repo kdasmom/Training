@@ -28,7 +28,7 @@ class Expression implements SQLElement {
 	 * @return string
 	 */
 	public function toString() {
-		return $this->sql;
+		return $this->sql."";
 	}
 }
 ?>

@@ -36,7 +36,7 @@ abstract class AbstractGateway implements LoggingAwareInterface {
 	/**
 	 * The logging service singleton
 	 * 
-	 * The logging service singleton gets automatically injected by Zend Di via setter injection
+	 * The logging service singleton gets automatically injected via setter injection
 	 * (setLoggingService() function).
 	 *
 	 * @var NP\system\LoggingService The logging service singleton
@@ -46,9 +46,9 @@ abstract class AbstractGateway implements LoggingAwareInterface {
 	/**
 	 * The constructor sets up defaults an calls parent initialize() function
 	 *
-	 * @param Zend\Db\Adapter\Adapter $adapter The DB adapter that is automatically injected by Zend Di (see config.php and di_config.php for configuration)
+	 * @param NP\core\db\Adapter $adapter The DB adapter that is automatically injected (see config.php and di_config.php for configuration)
 	 */
-	public function __construct(Adapter $adapter) {
+	public function __construct(db\Adapter $adapter) {
 		$this->adapter = $adapter;
 		
 		if ($this->table === null) {
@@ -59,8 +59,6 @@ abstract class AbstractGateway implements LoggingAwareInterface {
 		if ($this->pk === null) {
 			$this->pk = $this->table . '_id';
 		}
-		
-		$this->initialize();
 	}
 	
 	/**
@@ -107,7 +105,7 @@ abstract class AbstractGateway implements LoggingAwareInterface {
 	 * @param  array                                   $params  Parameters to bind to the query (optional)
 	 * @param  string|array                            $order   Ordering of the records (optional)
 	 * @param  array                                   $columns Columns to retrieve (optional)
-	 * @param  Zend\Db\Sql\Select                      $select  A custom Select object to use (optional)
+	 * @param  NP\core\db\Select                       $select  A custom Select object to use (optional)
 	 * @return array   An positional array filled with associative arrays of each record found
 	 */
 	public function find($where=null, $params=array(), $order=null,  $cols=null, $select=null) {
@@ -133,21 +131,92 @@ abstract class AbstractGateway implements LoggingAwareInterface {
 		return $res;
 	}
 	
-	public function insert($set) {
+	/**
+	 * Inserts a record in the database
+	 *
+	 * @param  array|\NP\core\AbstractEntity $data An associative array with key/value pairs for fields, or an Entity object
+	 * @return boolean                             Whether the operation succeeded or not
+	 */
+	public function insert($data) {
+		// If we passed in an entity, get the data for it
+		if ($data instanceOf \NP\core\AbstractEntity) {
+			$set = $data->toArray();
+		} else {
+			$set = $data;
+		}
 		
+		$values = $this->convertFieldsToBindParams($set);
+
+		$insert = new db\Insert($this->table, $values);
+
+		$res = $this->adapter->query($insert, $set);
+
+		if ($data instanceOf \NP\core\AbstractEntity) {
+			$data->{$this->pk} = $this->lastInsertId();
+		}
+
+		return $res;
 	}
 	
-	public function update($set) {
+	/**
+	 * Updates a record in the database
+	 *
+	 * @param  array|\NP\core\AbstractEntity $data An associative array with key/value pairs for fields, or an Entity object
+	 * @return boolean                             Whether the operation succeeded or not
+	 */
+	public function update($data) {
+		// If we passed in an entity, get the data for it
+		if ($data instanceOf \NP\core\AbstractEntity) {
+			$set = $data->toArray();
+		} else {
+			$set = $data;
+		}
+
+		$values = $this->convertFieldsToBindParams($set);
 		
+		$update = new db\Update($this->table, $values, array($this->pk => $set[$this->pk]));
+		
+		return $this->adapter->query($update, $set);
 	}
 
-	public function save($set) {
-		if (array_key_exists($this->pk, $set) && is_numeric($this->pk)) {
-			$this->update($set);
+	/**
+	 * Utility function that takes an associative array and uses the keys to return an array in the format 
+	 * array($key=>":{$key}") that can easily be used by a query with values to bind by name
+	 *
+	 * @param array|\NP\core\AbstractEntity $data       An associative array with key/value pairs for fields, or an Entity object
+	 * @param boolean                       $bindByName Whether you want to use named or positional parameters
+	 */
+	protected function convertFieldsToBindParams($set, $useNamedParams=true) {
+		$values = array();
+		foreach($set as $field=>$val) {
+			if ($field != $this->pk) {
+				$placeHolder = ($useNamedParams) ? ":{$field}" : "?";
+				$values[$field] = $placeHolder;
+			}
+		}
+		return $values;
+	}
+
+	/**
+	 * Utility function that calls insert if the primary key is null or doesn't exist and update if it does
+	 * 
+	 * @param  array|\NP\core\AbstractEntity $data An associative array with key/value pairs for fields, or an Entity object
+	 * @return int                                 The primary key value inserted or updated
+	 */
+	public function save($data) {
+		// If we passed in an entity, get the data for it
+		if ($data instanceOf \NP\core\AbstractEntity) {
+			$set = $data->toArray();
+		} else {
+			$set = $data;
+		}
+
+		if ( array_key_exists($this->pk, $set) && is_numeric($set[$this->pk]) ) {
+			$this->update($data);
 			return $this->{$this->pk};
 		} else {
-			$this->insert($set);
-			return $this->getLastInsertValue();
+			$this->insert($data);
+			return $this->lastInsertId();
 		}
 	}
 
@@ -159,24 +228,13 @@ abstract class AbstractGateway implements LoggingAwareInterface {
 	 * This function can be overridden to specify a default select to use (if you want some joins by default, for example)
 	 */
 	protected function getSelect() {
-		return $this->getSql()->select();
-	}
-	
-	/**
-	 * Utility function to run a query based on a select object and get an array back
-	 *
-	 * @param  Zend\Db\Sql\Select $select A select object
-	 * @param  array              $params An array of parameters to bind to the query
-	 * @return array                      Positional array filled with associative arrays of records
-	 */
-	public function executeSelectWithParams($select, $params) {
-		return $this->adapter->query($select, $params);
+		return new db\Select($this->table);
 	}
 	
 	/**
 	 * Utility function used to get an array with paging data from a Select object
 	 *
-	 * @param  Zend\Db\Sql\Select $select      A select object
+	 * @param  NP\core\db\Select  $select      A select object
 	 * @param  array              $params      An array of parameters to bind to the query
 	 * @param  int                $pageSize    The number of records per page
 	 * @param  int                $page        The page number to retrieve (optional); defaults to 1
@@ -201,8 +259,8 @@ abstract class AbstractGateway implements LoggingAwareInterface {
 	/**
 	 * Transforms a select query object to the equivalent select count(*) query
 	 *
-	 * @param  Zend\Db\Sql\Select $select      A select object
-	 * @return Zend\Db\Sql\Select              A select object like the one passed in but removing columns and doing a count(*) instead
+	 * @param  NP\core\db\Select  $select      A select object
+	 * @return NP\core\db\Select               A select object like the one passed in but removing columns and doing a count(*) instead
 	 */
 	public function getSelectCountForPaging($select) {
 		// Clone the select statement passed to use it as a base
@@ -210,14 +268,15 @@ abstract class AbstractGateway implements LoggingAwareInterface {
 		// Remove the order by clause
 		$selectTotal->order(null);
 		// Set a new column for the count
-		$selectTotal->columns(array('totalRows' => new Expression('count(*)'))); 
+		$selectTotal->columns(array())
+					->count(true, 'totalRows'); 
 		// Get all the existing joins
 		$joins = $selectTotal->getRawState('joins');
 		// Remove existing joins
-		$selectTotal->joins(null);
+		$selectTotal->resetJoins();
 		// Recreate the joins without the columns
 		foreach($joins as $join) {
-			$selectTotal->join($join['name'], $join['on'], array(), $join['type']);
+			$selectTotal->join($join['table'], $join['condition'], array(), $join['type']);
 		}
 		
 		// Return the new Select object

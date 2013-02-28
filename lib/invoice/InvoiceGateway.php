@@ -2,11 +2,11 @@
 
 namespace NP\invoice;
 
-use NP\core\SqlSelect;
+use NP\core\db\Select;
 use NP\property\PropertyGateway;
 
-use Zend\Db\Adapter\Adapter;
-use Zend\Db\Sql\Expression;
+use NP\core\db\Adapter;
+use NP\core\db\Expression;
 
 /**
  * Gateway for the INVOICE table
@@ -21,8 +21,8 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 	protected $propertyGateway;
 
 	/**
-	 * @param Zend\Db\Adapter\Adapter     $adapter         Database adapter object injected by Zend Di
-	 * @param NP\property\PropertyGateway $propertyGateway PropertyGateway object injected by Zend Di
+	 * @param NP\core\db\Adapter     $adapter         Database adapter object injected
+	 * @param NP\property\PropertyGateway $propertyGateway PropertyGateway object injected
 	 */
 	public function __construct(Adapter $adapter, PropertyGateway $propertyGateway) {
 		$this->propertyGateway = $propertyGateway;
@@ -72,7 +72,7 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 					'paytablekey_id'
 				))
 				->columnInvoiceAmount()
-				->joinVendor('*', '*')
+				->joinVendor(null, null)
 				->joinProperty(array(
 					'property_id',
 					'property_id_alt',
@@ -82,9 +82,9 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 					'userprofile_id',
 					'userprofile_username'
 				))
-				->where($this->table.'.invoice_id = ?');
+				->where('i.invoice_id = ?');
 		
-		$res = $this->executeSelectWithParams($select, array($invoice_id));
+		$res = $this->adapter->query($select, array($invoice_id));
 		return $res[0];
 	}
 	
@@ -115,7 +115,7 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 				->joinVendor(array('vendorsite_id'), array('vendor_name'))
 				->joinProperty(array('property_name'))
 				->where(
-					$this->table.".invoice_status = 'open'
+					"i.invoice_status = 'open'
 					AND vs.vendorsite_status IN ('active','inactive','rejected')
 					AND p.property_id " . $propertyFilter['sql']
 				)
@@ -127,7 +127,7 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 		if ($pageSize !== null) {
 			return $this->getPagingArray($select, $params, $pageSize, $page, true);
 		} else {
-			return $this->executeSelectWithParams($select, $params);
+			return $this->adapter->query($select, $params);
 		}
 	}
 	
@@ -161,7 +161,7 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 				->joinVendor(array('vendorsite_id'), array('vendor_name'))
 				->joinProperty(array('property_name'))
 				->where(
-					$this->table.".invoice_status = 'rejected'
+					"i.invoice_status = 'rejected'
 					AND vs.vendorsite_status IN ('active','inactive','rejected')
 					AND p.property_id " . $propertyFilter['sql']
 				)
@@ -173,7 +173,7 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 		if ($pageSize !== null) {
 			return $this->getPagingArray($select, $params, $pageSize, $page, true);
 		} else {
-			return $this->executeSelectWithParams($select, $params);
+			return $this->adapter->query($select, $params);
 		}
 	}
 	
@@ -184,19 +184,20 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 	 * @return array           An array filled with associative arrays with purchaseorder_id and purchaseorder_ref keys
 	 */
 	public function findAssociatedPOs($invoice_id) {
-		$select = new SqlSelect(array('ii'=>'invoiceitem'));
+		$select = new Select(array('ii'=>'invoiceitem'));
 		
-		$select->columns(array(new Expression("DISTINCT p.purchaseorder_id, p.purchaseorder_ref")))
+		$select->distinct()
+				->columns(array())
 				->join(array('pi' => 'poitem'),
 						'pi.reftablekey_id = ii.invoiceitem_id',
 						array())
 				->join(array('p' => 'purchaseorder'),
 						'p.purchaseorder_id = pi.purchaseorder_id',
-						array())
+						array('purchaseorder_id','purchaseorder_ref'))
 				->where("ii.invoice_id = ?")
 				->order('p.purchaseorder_id');
 		
-		return $this->executeSelectWithParams($select, array($invoice_id));
+		return $this->adapter->query($select, array($invoice_id));
 	}
 	
 	/**
@@ -206,7 +207,7 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 	 * @return array           Array with forward records in a specific format
 	 */
 	public function findForwards($invoice_id) {
-		$select = new SqlSelect(array('ipf'=>'INVOICEPOFORWARD'));
+		$select = new Select(array('ipf'=>'INVOICEPOFORWARD'));
 		
 		$select->columns(
 					array(
@@ -241,29 +242,29 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 				->join(array('upt' => 'USERPROFILE'),
 						'upt.userprofile_id = ipf.forward_to_userprofile_id',
 						array(),
-						SqlSelect::JOIN_LEFT)
+						Select::JOIN_LEFT)
 				->join(array('uprt' => 'USERPROFILEROLE'),
 						'uprt.userprofile_id = upt.userprofile_id',
 						array(),
-						SqlSelect::JOIN_LEFT)
+						Select::JOIN_LEFT)
 				->join(array('st' => 'staff'),
 						'uprt.tablekey_id = st.staff_id',
 						array(),
-						SqlSelect::JOIN_LEFT)
+						Select::JOIN_LEFT)
 				->join(array('pt' => 'person'),
 						'pt.person_id = st.person_id',
 						array(),
-						SqlSelect::JOIN_LEFT)
+						Select::JOIN_LEFT)
 				->join(array('u2' => 'userprofile'),
 						'ipf.from_delegation_to_userprofile_id = u2.userprofile_id',
 						array(),
-						SqlSelect::JOIN_LEFT)
+						Select::JOIN_LEFT)
 				->where("
 					ipf.table_name = 'invoice' 
 					AND ipf.tablekey_id = ?
 				");
 		
-		return $this->executeSelectWithParams($select, array($invoice_id));
+		return $this->adapter->query($select, array($invoice_id));
 	}
 
 }

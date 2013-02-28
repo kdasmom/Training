@@ -44,11 +44,11 @@ class ConfigService extends AbstractService {
 	protected $cacheName;
 	
 	/**
-	 * @param Zend\Cache\Storage\Adapter\WinCache      $cache                   WinCache object injected by Zend Di
-	 * @param NP\system\SiteService                    $siteService             SiteService object injected by Zend Di
-	 * @param NP\system\ConfigsysGateway               $configsysGateway        ConfigsysGateway object injected by Zend Di
-	 * @param NP\system\PNUniversalFieldGateway        $pnUniversalFieldGateway PNUniversalFieldGateway object injected by Zend Di
-	 * @param NP\system\IntegrationRequirementsGateway $intReqGateway           IntegrationRequirementsGateway object injected by Zend Di
+	 * @param Zend\Cache\Storage\Adapter\WinCache      $cache                   WinCache object injected
+	 * @param NP\system\SiteService                    $siteService             SiteService object injected
+	 * @param NP\system\ConfigsysGateway               $configsysGateway        ConfigsysGateway object injected
+	 * @param NP\system\PNUniversalFieldGateway        $pnUniversalFieldGateway PNUniversalFieldGateway object injected
+	 * @param NP\system\IntegrationRequirementsGateway $intReqGateway           IntegrationRequirementsGateway object injected
 	 * @param boolean                                  $reloadCache             Whether to reload the cache at instantiation time (optional); defaults to false
 	 */
 	public function __construct(WinCache $cache, SiteService $siteService, ConfigsysGateway $configsysGateway, 
@@ -65,6 +65,9 @@ class ConfigService extends AbstractService {
 		if ($reloadCache || !$this->isCacheLoaded()) {
 			$this->loadConfigCache();
 		}
+
+		// Defaulting locale to "en" for now until we implement this, will then probably come from session
+		$this->setLocale('en');
 	}
 	
 	/**
@@ -129,7 +132,7 @@ class ConfigService extends AbstractService {
 				$val = $siteConfigs[$key];
 			// Otherwise just pull it from the DB
 			} else {
-				$configRec = $this->configsysGateway->select(array("configsys_name"=>$key));
+				$configRec = $this->configsysGateway->find(array("configsys_name"=>$key));
 				if (sizeof($configRec)) {
 					$val = $configRec[0]["configsysval_val"];
 				}
@@ -177,7 +180,7 @@ class ConfigService extends AbstractService {
 	 */
 	public function getCustomFields() {
 		$arCustomSettings = $this->configsysGateway->getCustomFieldSettings();
-		$arIntReqs = $this->intReqGateway->select();
+		$arIntReqs = $this->intReqGateway->find();
 		
 		$arFields = array(
 			"header" => array("fields"=>array()),
@@ -262,6 +265,41 @@ class ConfigService extends AbstractService {
 	 */
 	public function getCustomFieldDropDownValues($universal_field_number, $isLineItem, $glaccount_id=null) {
 		return $this->pnUniversalFieldGateway->getCustomFieldDropDownValues($universal_field_number, $isLineItem, $glaccount_id);
+	}
+
+	/**
+	 * Sets the current locale for the app
+	 *
+	 * @param string $locale
+	 */
+	public function setLocale($locale) {
+		// Setup a Zend translator
+		$translator = new \Zend\I18n\Translator\Translator();
+
+		// Setup translation for Zend Validator module
+		$language = $locale;
+		// If no folder matches the locale name, just use the first part of the name (assuming it's in en_US format)
+		if (stream_resolve_include_path("resources/languages/{$locale}/Zend_Validate.php") === false) {
+			$language = array_shift(explode('_', $locale));
+		}
+		
+		$resourcePath = stream_resolve_include_path("resources/languages/{$language}/Zend_Validate.php");
+		if ($resourcePath === false) {
+			throw new \NP\core\Exception("The locale \"{$locale}\" is invalid.");
+		}
+
+		// Add the default translation file from the Zend library
+		$translator->addTranslationFile(
+		    'phpArray',
+		    $resourcePath,
+		    'default',
+		    $locale
+		);
+		// Set the locale on the translator
+		$translator->setLocale($locale);
+
+		// Make this the default translator for all validations
+		\Zend\Validator\AbstractValidator::setDefaultTranslator($translator);
 	}
 }
 

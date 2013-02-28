@@ -17,7 +17,7 @@ class VendorService extends AbstractService {
 	protected $vendorGateway;
 	
 	/**
-	 * @param NP\vendor\VendorGateway $vendorGateway VendorGateway object injected by Zend Di
+	 * @param NP\vendor\VendorGateway $vendorGateway VendorGateway object injected
 	 */
 	public function __construct(VendorGateway $vendorGateway) {
 		$this->vendorGateway = $vendorGateway;

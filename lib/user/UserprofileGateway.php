@@ -4,7 +4,7 @@ namespace NP\user;
 
 use NP\core\AbstractGateway;
 
-use Zend\Db\Sql\Select;
+use NP\core\db\Select;
 
 /**
  * Gateway for the USERPROFILE table
@@ -30,7 +30,7 @@ class UserprofileGateway extends AbstractGateway {
 					AND (userprofile_enddate IS NULL OR DATEDIFF(day, userprofile_enddate, getdate()) <= 0 )
 				");
 		
-		$resultSet = $this->executeSelectWithParams($select, array($username, $pwd));
+		$resultSet = $this->adapter->query($select, array($username, $pwd));
 		
 		if (count($resultSet)) {
 			return $resultSet[0]["userprofile_id"];

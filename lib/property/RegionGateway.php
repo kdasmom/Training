@@ -3,7 +3,7 @@
 namespace NP\property;
 
 use NP\core\AbstractGateway;
-use NP\core\SqlSelect;
+use NP\core\db\Select;
 
 /**
  * Gateway for the REGION table
@@ -20,7 +20,7 @@ class RegionGateway  extends AbstractGateway {
 	 * @return array                               Array of region records
 	 */
 	public function findByUser($userprofile_id, $delegation_to_userprofile_id) {
-		$select = new SqlSelect();
+		$select = new Select();
 		$select->from(array('r'=>'region'))
 				->order("r.region_name");
 
@@ -53,7 +53,7 @@ class RegionGateway  extends AbstractGateway {
 			$params = array($userprofile_id, $delegation_to_userprofile_id);
 		}
 
-		return $this->executeSelectWithParams($select, $params);
+		return $this->adapter->query($select, $params);
 	}
 	
 }

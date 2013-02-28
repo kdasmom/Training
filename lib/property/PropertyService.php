@@ -23,10 +23,10 @@ class PropertyService extends AbstractService {
 	protected $fiscalcalGateway;
 	
 	/**
-	 * @param NP\system\SecurityService    $securityService  SecurityService object injected by Zend Di
-	 * @param NP\property\PropertyGateway  $propertyGateway  PropertyGateway object injected by Zend Di
-	 * @param NP\property\FiscalcalGateway $fiscalcalGateway FiscalcalGateway object injected by Zend Di
-	 * @param NP\property\UnitGateway      $unitGateway      UnitGateway object injected by Zend Di
+	 * @param NP\system\SecurityService    $securityService  SecurityService object injected
+	 * @param NP\property\PropertyGateway  $propertyGateway  PropertyGateway object injected
+	 * @param NP\property\FiscalcalGateway $fiscalcalGateway FiscalcalGateway object injected
+	 * @param NP\property\UnitGateway      $unitGateway      UnitGateway object injected
 	 */
 	public function __construct(SecurityService $securityService, PropertyGateway $propertyGateway, 
 								FiscalcalGateway $fiscalcalGateway, UnitGateway $unitGateway) {
