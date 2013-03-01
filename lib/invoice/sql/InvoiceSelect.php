@@ -3,7 +3,7 @@
 namespace NP\invoice\sql;
 
 use NP\core\db\Select;
-
+use NP\core\db\Where;
 use NP\core\db\Expression;
 
 /**
@@ -81,14 +81,17 @@ class InvoiceSelect extends Select {
 	 * @return NP\invoice\InvoiceSelect Returns caller object for easy chaining
 	 */
 	public function columnRejectedDate() {
+		$approveTypeSubSelect = $this->getApproveTypeSubSelect('rejected');
+
+		$where = new Where();
+		$where->equals('__a.tablekey_id', 'i.invoice_id')
+			->equals('__a.table_name', "'invoice'")
+			->equals('__a.approvetype_id', $approveTypeSubSelect);
+
 		$subSelect = new Select();
 		$subSelect->from(array('__a'=>'APPROVE_VIEW'))
 					->column('approve_datetm')
-					->where("__a.tablekey_id = i.invoice_id 
-						AND __a.table_name = 'invoice' 
-						AND __a.approvetype_id = (
-							SELECT top 1 approvetype_id from approvetype where approvetype_name = 'rejected'
-						)")
+					->where($where)
 					->limit(1)
 					->order('__a.approve_id DESC');
 		
@@ -101,20 +104,33 @@ class InvoiceSelect extends Select {
 	 * @return NP\invoice\InvoiceSelect Returns caller object for easy chaining
 	 */
 	public function columnRejectedBy() {
+		$approveTypeSubSelect = $this->getApproveTypeSubSelect('rejected');
+		
+		$where = new Where();
+		$where->equals('__a.tablekey_id', 'i.invoice_id')
+			->equals('__a.table_name', "'invoice'")
+			->equals('__a.approvetype_id', $approveTypeSubSelect);
+				
 		$subSelect = new Select();
 		$subSelect->from(array('__a'=>'APPROVE_VIEW'))
 					->column('userprofile_username')
-					->where("__a.tablekey_id = i.invoice_id 
-						AND __a.table_name = 'invoice' 
-						AND __a.approvetype_id = (
-							SELECT top 1 approvetype_id from approvetype where approvetype_name = 'rejected'
-						)")
+					->where($where)
 					->limit(1)
 					->order('__a.approve_id DESC');
 		
 		return $this->column($subSelect, 'rejected_by');
 	}
 	
+	protected function getApproveTypeSubSelect($approvetype_name) {
+		$approveTypeSubSelect = new Select();
+		$approveTypeSubSelect->from('approvetype')
+							->column('approvetype_id')
+							->where("approvetype_name = '{$approvetype_name}'")
+							->limit(1);
+
+		return $approveTypeSubSelect;
+	}
+
 	/**
 	 * Adds the created by subquery as a column
 	 *
