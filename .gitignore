@@ -2,6 +2,9 @@
 test.php
 
 # Ignore composer files for now, not ready to use it yet
+vendor/composer/*
+vendor/bin/*
+vendor/autoload.php
 composer.json
 composer.lock
 
@@ -44,5 +47,6 @@ vendor/zendframework/zendframework/library/Zend/*
 
 # Ignore Phinx for now, not ready to use
 vendor/robmorgan/*
+vendor/symfony/*
 migrations/*
 phinx.yml
