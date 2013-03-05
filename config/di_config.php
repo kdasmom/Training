@@ -1,6 +1,6 @@
 <?php
 
-require_once("lib/util/Pimple.php");
+require_once("vendor/pimple/pimple/lib/Pimple.php");
 
 $reloadCache = false;
 if (array_key_exists("reloadconfiguration", $_GET)) {

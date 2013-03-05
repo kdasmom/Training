@@ -1,20 +1,20 @@
-.buildpath
-.project
-.settings
+# Ignore test file in root
 test.php
-Invoice (backup).js
-Lines (backup).js
 
-config/di_definition.php
+# Ignore composer files for now, not ready to use it yet
+composer.json
+composer.lock
+
+# Ignore all log files
 *.log
-js/deftjs/*
+
+# Ignore several Ext JS files we don't need
 js/extjs/*
 js/extjs/locale/*
 js/extjs/resources/*
 js/extjs/resources/css/*
 js/extjs/resources/themes/*
 js/extjs/resources/themes/images/*
-
 # Ext JS files to include (for locale, only include locale files for languages we support)
 !js/extjs/locale/
 !js/extjs/locale/ext-lang-en.js
@@ -27,3 +27,22 @@ js/extjs/resources/themes/images/*
 !js/extjs/resources/themes/images/default/
 !js/extjs/ext-all.js
 !js/extjs/ext-all-dev.js
+
+# Ignore Zend framework files we don't need (exceptions specified below)
+vendor/zendframework/bin/*
+vendor/zendframework/library/Zend/*
+# Exceptions to ignore rules for the Zend framework to include only the modules we need 
+!vendor/zendframework/library/Zend/Cache/
+!vendor/zendframework/library/Zend/EventManager/
+!vendor/zendframework/library/Zend/Filter/
+!vendor/zendframework/library/Zend/I18n/
+!vendor/zendframework/library/Zend/Loader/
+!vendor/zendframework/library/Zend/Log/
+!vendor/zendframework/library/Zend/ServiceManager/
+!vendor/zendframework/library/Zend/Stdlib/
+!vendor/zendframework/library/Zend/Validator/
+
+# Ignore Phinx for now, not ready to use
+vendor/robmorgan/*
+migrations/*
+phinx.yml

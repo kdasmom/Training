@@ -131,7 +131,6 @@ class Adapter {
 			throw new \NP\core\Exception('You have not begun a transaction');
 		}
 		$this->conn->commit();
-		$this->inTransaction = false;
 	}
 
 	/**
@@ -142,7 +141,6 @@ class Adapter {
 			throw new \NP\core\Exception('You have not begun a transaction');
 		}
 		$this->conn->rollback();
-		$this->inTransaction = false;
 	}
 }
 ?>
