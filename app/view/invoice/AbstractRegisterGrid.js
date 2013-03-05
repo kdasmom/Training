@@ -10,7 +10,7 @@ Ext.define('NP.view.invoice.AbstractRegisterGrid', {
 	numberColumnText  : 'Invoice Number',
 	dateColumnText    : 'Invoice Date',
 
-    constructor: function(cfg) {
+	constructor: function(cfg) {
     	cfg.columns = {
 		    items: [
 		        {
@@ -49,6 +49,8 @@ Ext.define('NP.view.invoice.AbstractRegisterGrid', {
     	if (this.extraCols) {
     		cfg.columns.items = cfg.columns.items.concat(this.extraCols);
     	}
+
+    	cfg.stateful = true;
     	
     	this.callParent(arguments);
     }

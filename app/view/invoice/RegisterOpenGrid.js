@@ -5,7 +5,10 @@ Ext.define('NP.view.invoice.RegisterOpenGrid', {
     createdDateColumnText: 'Created Date',
     dueDateColumnText    : 'Due Date',
 
+    stateId: 'invoice_register_open',
+
     constructor: function() {
+        console.log('Constructing the open grid');
         this.extraCols = [
             {
                 text: this.createdDateColumnText,

@@ -174,7 +174,7 @@ abstract class AbstractGateway implements LoggingAwareInterface {
 
 		$values = $this->convertFieldsToBindParams($set);
 		
-		$update = new db\Update($this->table, $values, array($this->pk => $set[$this->pk]));
+		$update = new db\Update($this->table, $values, array($this->pk => ":{$this->pk}"));
 		
 		return $this->adapter->query($update, $set);
 	}
@@ -213,7 +213,7 @@ abstract class AbstractGateway implements LoggingAwareInterface {
 
 		if ( array_key_exists($this->pk, $set) && is_numeric($set[$this->pk]) ) {
 			$this->update($data);
-			return $this->{$this->pk};
+			return $set[$this->pk];
 		} else {
 			$this->insert($data);
 			return $this->lastInsertId();

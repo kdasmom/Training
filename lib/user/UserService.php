@@ -45,6 +45,11 @@ class UserService extends AbstractService {
 	protected $delegationGateway;
 
 	/**
+	 * @var NP\user\UserSettingGateway
+	 */
+	protected $userSettingGateway;
+
+	/**
 	 * @param NP\system\SecurityService    $securityService   SecurityService object injected
 	 * @param NP\invoice\InvoiceService    $invoiceService    InvoiceService object injected
 	 * @param NP\property\PropertyGateway  $propertyGateway   PropertyGateway object injected
@@ -53,13 +58,14 @@ class UserService extends AbstractService {
 	 * @param NP\invoice\DelegationGateway $delegationGateway DelegationGateway object injected
 	 */
 	public function __construct(SecurityService $securityService, InvoiceService $invoiceService, PropertyGateway $propertyGateway, RegionGateway $regionGateway, 
-								GLAccountGateway $glaccountGateway, DelegationGateway $delegationGateway) {
-		$this->securityService = $securityService;
-		$this->invoiceService = $invoiceService;
-		$this->propertyGateway = $propertyGateway;
-		$this->regionGateway = $regionGateway;
-		$this->glaccountGateway = $glaccountGateway;
-		$this->delegationGateway = $delegationGateway;
+								GLAccountGateway $glaccountGateway, DelegationGateway $delegationGateway, UserSettingGateway $userSettingGateway) {
+		$this->securityService    = $securityService;
+		$this->invoiceService     = $invoiceService;
+		$this->propertyGateway    = $propertyGateway;
+		$this->regionGateway      = $regionGateway;
+		$this->glaccountGateway   = $glaccountGateway;
+		$this->delegationGateway  = $delegationGateway;
+		$this->userSettingGateway = $userSettingGateway;
 	}
 	
 	/**
@@ -142,6 +148,41 @@ class UserService extends AbstractService {
 		$delegated_to_userprofile_id = $this->securityService->getDelegatedUserId();
 		
 		return $this->invoiceService->getInvoiceRegister($tab, $userprofile_id, $delegated_to_userprofile_id, $contextFilterType, $contextFilterSelection, $pageSize, $page, $sort);
+	}
+
+	/**
+	 * Retrieve settings for the currently logged in user
+	 *
+	 * @return array
+	 */
+	public function getSettings() {
+		$userprofile_id = $this->securityService->getUserId();
+		
+		return $this->userSettingGateway->getForUser($userprofile_id);
+	}
+
+	/**
+	 * Save a setting for the currently logged in user
+	 *
+	 * @param  string $name
+	 * @param  string $value
+	 * @return 
+	 */
+	public function saveSetting($name, $value) {
+		$userprofile_id = $this->securityService->getUserId();
+		$dataSet = array(
+			'userprofile_id'    => $userprofile_id,
+			'usersetting_name'  => $name,
+			'usersetting_value' => $value
+		);
+		// Check if there's already a setting by that name saved
+		$recs = $this->userSettingGateway->find("userprofile_id = ? AND usersetting_name = ?", array($userprofile_id, $name));
+		// If there is a record, add the id to the data set so it gets updated
+		if (count($recs)) {
+			$dataSet['usersetting_id'] = $recs[0]['usersetting_id'];
+		}
+
+		return $this->userSettingGateway->save($dataSet);
 	}
 	
 }

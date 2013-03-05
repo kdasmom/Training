@@ -8,6 +8,8 @@ Ext.define('NP.view.invoice.RegisterRejectedGrid', {
     rejectedDateColumnText: 'Rejected Date',
     rejectedByColumnText  : 'Rejected By',
 
+    stateId: 'invoice_register_rejected',
+
     constructor: function() {
         this.extraCols = [
             {
