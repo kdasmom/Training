@@ -29,18 +29,18 @@ js/extjs/resources/themes/images/*
 !js/extjs/ext-all-dev.js
 
 # Ignore Zend framework files we don't need (exceptions specified below)
-vendor/zendframework/bin/*
-vendor/zendframework/library/Zend/*
+vendor/zendframework/zendframework/bin/*
+vendor/zendframework/zendframework/library/Zend/*
 # Exceptions to ignore rules for the Zend framework to include only the modules we need 
-!vendor/zendframework/library/Zend/Cache/
-!vendor/zendframework/library/Zend/EventManager/
-!vendor/zendframework/library/Zend/Filter/
-!vendor/zendframework/library/Zend/I18n/
-!vendor/zendframework/library/Zend/Loader/
-!vendor/zendframework/library/Zend/Log/
-!vendor/zendframework/library/Zend/ServiceManager/
-!vendor/zendframework/library/Zend/Stdlib/
-!vendor/zendframework/library/Zend/Validator/
+!vendor/zendframework/zendframework/library/Zend/Cache/
+!vendor/zendframework/zendframework/library/Zend/EventManager/
+!vendor/zendframework/zendframework/library/Zend/Filter/
+!vendor/zendframework/zendframework/library/Zend/I18n/
+!vendor/zendframework/zendframework/library/Zend/Loader/
+!vendor/zendframework/zendframework/library/Zend/Log/
+!vendor/zendframework/zendframework/library/Zend/ServiceManager/
+!vendor/zendframework/zendframework/library/Zend/Stdlib/
+!vendor/zendframework/zendframework/library/Zend/Validator/
 
 # Ignore Phinx for now, not ready to use
 vendor/robmorgan/*
