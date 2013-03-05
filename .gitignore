@@ -1,6 +1,9 @@
 # Ignore test file in root
 test.php
 
+# Ignore config.php file (people will modify the sample file)
+config/config.php
+
 # Ignore composer files for now, not ready to use it yet
 vendor/composer/*
 vendor/bin/*

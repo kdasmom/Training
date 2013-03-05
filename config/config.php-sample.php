@@ -1,0 +1,29 @@
+<?php
+
+$__CONFIG = array(
+	// Server type
+	'serverType'		=> 'dev',
+	// Application root path
+	'appRoot'			=> 'c:/wwwroot/NexusPayablesPHP/',
+	// include path for the Zend Framework
+	'zendPath'			=> 'c:/wwwroot/NexusPayablesPHP/vendor/zendframework/zendframework/',
+	// Datasource configuration parameters
+	'datasource'		=> array(
+		    'hostname'		=> 'your_host',
+		    //'database'		=> 'simpson', // NOTE: di_config.php sets the correct DB
+		    'username'		=> 'your_user',
+		    'password'		=> 'your_password'
+	),
+	// The length of a user session in minutes
+	'sessionDuration'	=> 480,
+	
+	// Set logs that are enabled
+	// Valid values are 'global','mail','fileupload','catalog','invoice','po'
+	'enabledNamespaces'		=> array('global','mail','fileupload','catalog','invoice','po'),
+	'fileLogEnabled'		=> false, 
+	'debugLogEnabled'		=> true,
+);
+
+$__CONFIG['logPath']		= $__CONFIG['appRoot'] . 'logs';
+
+?>
