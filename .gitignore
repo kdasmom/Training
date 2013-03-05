@@ -42,6 +42,7 @@ vendor/zendframework/zendframework/library/Zend/*
 !vendor/zendframework/zendframework/library/Zend/EventManager/
 !vendor/zendframework/zendframework/library/Zend/Filter/
 !vendor/zendframework/zendframework/library/Zend/I18n/
+!vendor/zendframework/zendframework/library/Zend/Json/
 !vendor/zendframework/zendframework/library/Zend/Loader/
 !vendor/zendframework/zendframework/library/Zend/Log/
 !vendor/zendframework/zendframework/library/Zend/ServiceManager/
