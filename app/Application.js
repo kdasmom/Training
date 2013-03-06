@@ -34,8 +34,7 @@ Ext.application({
 			that.initHistory();
 			 
 			// Initialize state manager
-			//Ext.state.Manager.setProvider( Ext.create('Ext.state.CookieProvider') );
-			Ext.state.Manager.setProvider( Ext.create('NP.DBProvider') );
+			Ext.state.Manager.setProvider( Ext.create('NP.core.DBProvider') );
 			
 			that.initState();
 		});

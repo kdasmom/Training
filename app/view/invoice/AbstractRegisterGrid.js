@@ -1,6 +1,5 @@
 Ext.define('NP.view.invoice.AbstractRegisterGrid', {
     extend: 'Ext.grid.Panel',
-    store: 'invoice.Register',
     
     requires: ['NP.core.Util','NP.core.Config'],
     
@@ -37,8 +36,9 @@ Ext.define('NP.view.invoice.AbstractRegisterGrid', {
 		    }
 		};
 		
+		this.store = Ext.create('NP.store.invoice.Register');
     	Ext.applyIf(cfg, {
-    		dockedItems: [{
+			dockedItems: [{
 				xtype: 'pagingtoolbar',
 				dock: 'top',
 				store: this.store,
