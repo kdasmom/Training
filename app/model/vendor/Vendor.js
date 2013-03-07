@@ -1,5 +1,5 @@
 Ext.define('NP.model.vendor.Vendor', {
-	extend: 'Ux.data.Model',
+	extend: 'NP.lib.data.Model',
 	
     idProperty: 'vendor_id',
     fields: [

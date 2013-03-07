@@ -1,4 +1,4 @@
-Ext.define("Ux.data.Store", {
+Ext.define("NP.lib.data.Store", {
 	extend: "Ext.data.Store",
 	
 	getSlave: function() {

@@ -2,7 +2,7 @@ Ext.define('NP.controller.Viewport', function() {
 	return {
 		extend: 'Ext.app.Controller',
 		
-		requires: ['NP.core.Security'],
+		requires: ['NP.lib.core.Security'],
 		
 		stores: ['user.Properties','user.Regions','user.Delegations'],
 		

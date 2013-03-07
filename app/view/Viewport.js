@@ -2,9 +2,9 @@ Ext.define('NP.view.Viewport', {
     extend: 'Ext.container.Viewport',
     
     requires: [
-    	'Ux.ui.HoverButton'
-		,'NP.core.Config'
-		,'NP.core.Security'
+    	'NP.lib.ui.HoverButton'
+		,'NP.lib.core.Config'
+		,'NP.lib.core.Security'
 		,'NP.view.viewport.TopToolbar'
 		,'NP.view.viewport.TopMenu'
 		,'NP.view.viewport.Home'

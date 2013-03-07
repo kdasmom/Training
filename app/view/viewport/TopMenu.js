@@ -3,7 +3,7 @@ Ext.define('NP.view.viewport.TopMenu', {
     alias: 'widget.viewport.topmenu',
 
     requires: [
-    	'NP.core.Security'
+    	'NP.lib.core.Security'
     	,'NP.view.viewport.VCMenu'
     	,'NP.view.viewport.POMenu'
     	,'NP.view.viewport.InvoiceMenu'
@@ -24,7 +24,7 @@ Ext.define('NP.view.viewport.TopMenu', {
     	this.items = [];
 
 	    // Vendor Catalog
-	    if ( NP.core.Config.getSetting('VC_isOn') == 1 && NP.core.Security.hasPermission(6067) ) {
+	    if ( NP.lib.core.Config.getSetting('VC_isOn') == 1 && NP.lib.core.Security.hasPermission(6067) ) {
 			this.items.push({
 				xtype: 'viewport.vcmenu',
 				itemId: 'vcMenuBtn'
@@ -32,14 +32,14 @@ Ext.define('NP.view.viewport.TopMenu', {
 	    }
 	    
 	    // Purchase Orders
-		if ( NP.core.Config.getSetting('PN.POOptions.POSwitch') == 1 && NP.core.Security.hasPermission(1026) ) {
+		if ( NP.lib.core.Config.getSetting('PN.POOptions.POSwitch') == 1 && NP.lib.core.Security.hasPermission(1026) ) {
 			this.items.push({
 				xtype: 'viewport.pomenu'
 			});
 		}
 	    
 	    // Invoice
-	    if ( NP.core.Security.hasPermission(1031) ) {
+	    if ( NP.lib.core.Security.hasPermission(1031) ) {
 	    	this.items.push({
 				xtype: 'viewport.invoicemenu',
 				itemId: 'invMenuBtn'
@@ -47,7 +47,7 @@ Ext.define('NP.view.viewport.TopMenu', {
 		}
 		
 		// Vendors
-		if ( NP.core.Security.hasPermission(1022) ) {
+		if ( NP.lib.core.Security.hasPermission(1022) ) {
 			this.items.push({
 				xtype: 'viewport.vendormenu',
 				itemId: 'vendorMenuBtn'
@@ -55,8 +55,8 @@ Ext.define('NP.view.viewport.TopMenu', {
 	    }
 		
 		// Image Management
-		if ( NP.core.Security.hasPermission(2086) && NP.core.Security.hasPermission(2039) && 
-				(NP.core.Config.getSetting('pn.main.WebDocumentz') == 1 || NP.core.Config.getSetting('pn.main.WebDocumentz') == 2) ) {
+		if ( NP.lib.core.Security.hasPermission(2086) && NP.lib.core.Security.hasPermission(2039) && 
+				(NP.lib.core.Config.getSetting('pn.main.WebDocumentz') == 1 || NP.lib.core.Config.getSetting('pn.main.WebDocumentz') == 2) ) {
 			this.items.push({
 				xtype: 'viewport.imagemenu',
 				itemId: 'imageMenuBtn'
@@ -64,7 +64,7 @@ Ext.define('NP.view.viewport.TopMenu', {
 	    }
 		
 		// Budgets
-		if ( NP.core.Security.hasPermission(1036) ) {
+		if ( NP.lib.core.Security.hasPermission(1036) ) {
 			this.items.push({
 				xtype: 'viewport.budgetmenu',
 				itemId: 'budgetMenuBtn'
@@ -72,7 +72,7 @@ Ext.define('NP.view.viewport.TopMenu', {
 	    }
 		
 		// Reports
-		if ( NP.core.Security.hasPermission(1070) ) {
+		if ( NP.lib.core.Security.hasPermission(1070) ) {
 			this.items.push({
 				xtype: 'viewport.reportmenu',
 				itemId: 'reportMenuBtn'
@@ -80,7 +80,7 @@ Ext.define('NP.view.viewport.TopMenu', {
 	    }
 		
 		// Administration
-		if ( NP.core.Security.hasPermission(3) ) {
+		if ( NP.lib.core.Security.hasPermission(3) ) {
 			this.items.push({
 				xtype: 'viewport.adminmenu',
 				itemId: 'adminMenuBtn'

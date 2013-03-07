@@ -1,8 +1,8 @@
 Ext.define('NP.view.viewport.VendorMenu', {
-    extend: 'Ux.ui.HoverButton',
+    extend: 'NP.lib.ui.HoverButton',
     alias: 'widget.viewport.vendormenu',
     
-    requires: ['NP.core.Config','NP.core.Security'],
+    requires: ['NP.lib.core.Config','NP.lib.core.Security'],
 
     vendorText      : 'Vendors',
     newText         : 'New Vendor',
@@ -16,19 +16,19 @@ Ext.define('NP.view.viewport.VendorMenu', {
         this.menu.showSeparator = false;
     	this.menu.items = [];
 
-	    if ( NP.core.Security.hasPermission(1023) ) {
+	    if ( NP.lib.core.Security.hasPermission(1023) ) {
     		this.menu.items.push({
 				text: this.newText
 			});
     	}
 		
-		if ( NP.core.Security.hasPermission(1024) ) {
+		if ( NP.lib.core.Security.hasPermission(1024) ) {
     		this.menu.items.push({
 				text: this.searchText
 			});
     	}
     	
-    	if ( NP.core.Config.getSetting('pn.vendoroptions.vendorportal') == 1 && NP.core.Security.hasPermission(2028 ) ) {
+    	if ( NP.lib.core.Config.getSetting('pn.vendoroptions.vendorportal') == 1 && NP.lib.core.Security.hasPermission(2028 ) ) {
     		this.menu.items.push({
 				text: this.connectUsersText
 			});

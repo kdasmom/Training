@@ -1,8 +1,8 @@
 Ext.define('NP.view.viewport.ReportMenu', {
-    extend: 'Ux.ui.HoverButton',
+    extend: 'NP.lib.ui.HoverButton',
     alias: 'widget.viewport.reportmenu',
     
-    requires: ['NP.core.Config','NP.core.Security'],
+    requires: ['NP.lib.core.Config','NP.lib.core.Security'],
 
 	reportText        : 'Reports',
 	customText        : 'Custom Reports',
@@ -15,7 +15,7 @@ Ext.define('NP.view.viewport.ReportMenu', {
 	jobText           : 'Job Costing Reports',
 	utilityText       : 'Utility Reports',
 	vendorText        : 'Vendor History Reports',
-	budgetText        : NP.core.Config.getSetting('pn.budget.BudgetForecastLabel') + 's',
+	budgetText        : NP.lib.core.Config.getSetting('pn.budget.BudgetForecastLabel') + 's',
 	adminText         : 'Admin Reports',
 
     menu: {},
@@ -25,7 +25,7 @@ Ext.define('NP.view.viewport.ReportMenu', {
     	this.menu.showSeparator = false;
     	this.menu.items = [];
 
-	    if ( NP.core.Security.hasPermission(2098) ) {
+	    if ( NP.lib.core.Security.hasPermission(2098) ) {
 			this.menu.items.push({
 				text: this.customText,
 				menu: {
@@ -39,51 +39,51 @@ Ext.define('NP.view.viewport.ReportMenu', {
 			});
 		}
 		
-		if ( NP.core.Config.getSetting('PN.POOptions.POSwitch') == 1 ) {
-			if ( NP.core.Security.hasPermission(1029) ) {
+		if ( NP.lib.core.Config.getSetting('PN.POOptions.POSwitch') == 1 ) {
+			if ( NP.lib.core.Security.hasPermission(1029) ) {
 				this.menu.items.push({
 					text: this.pOText
 				});
 			}
 			
-			if ( NP.core.Security.hasPermission(6040) && NP.core.Config.getSetting('CP.RECEIVING_ON') == 1 ) {
+			if ( NP.lib.core.Security.hasPermission(6040) && NP.lib.core.Config.getSetting('CP.RECEIVING_ON') == 1 ) {
 				this.menu.items.push({
 					text: this.receiptText
 				});
 			}
 		}
 		
-		if ( NP.core.Security.hasPermission(1034) ) {
+		if ( NP.lib.core.Security.hasPermission(1034) ) {
 			this.menu.items.push({
 				text: this.invoiceText
 			});
 		}
 		
-		if ( NP.core.Security.hasPermission(2048) ) {
+		if ( NP.lib.core.Security.hasPermission(2048) ) {
 			this.menu.items.push({
 				text: this.jobText
 			});
 		}
 		
-		if ( NP.core.Security.hasPermission(1063) ) {
+		if ( NP.lib.core.Security.hasPermission(1063) ) {
 			this.menu.items.push({
 				text: this.utilityText
 			});
 		}
 		
-		if ( NP.core.Security.hasPermission(2009) ) {
+		if ( NP.lib.core.Security.hasPermission(2009) ) {
 			this.menu.items.push({
 				text: this.vendorText
 			});
 		}
 		
-		if ( NP.core.Security.hasPermission(1039) ) {
+		if ( NP.lib.core.Security.hasPermission(1039) ) {
 			this.menu.items.push({
 				text: this.budgetText
 			});
 		}
 		
-		if ( NP.core.Security.hasPermission(1069) ) {
+		if ( NP.lib.core.Security.hasPermission(1069) ) {
 			this.menu.items.push({
 				text: this.adminText
 			});

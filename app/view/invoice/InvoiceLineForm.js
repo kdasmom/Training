@@ -5,8 +5,8 @@ Ext.define('NP.view.invoice.InvoiceLineForm', function() {
 		alias: 'widget.invoicelineform',
 		
 		requires: [
-			'Ux.ui.ComboBox'
-			,'NP.core.Config'
+			'NP.lib.ui.ComboBox'
+			,'NP.lib.core.Config'
 		],
 		
 		border: 0,
@@ -63,7 +63,7 @@ Ext.define('NP.view.invoice.InvoiceLineForm', function() {
 				xtype: 'customcombo',
 				type: 'autocomplete',
 				itemId: 'property_id',
-				fieldLabel: NP.core.Config.getSetting('PN.main.PropertyLabel', 'Property'),
+				fieldLabel: NP.lib.core.Config.getSetting('PN.main.PropertyLabel', 'Property'),
 				labelAlign: 'top',
 				name: 'property_id',
 				store: Ext.create('NP.store.invoice.LineProperties'),
@@ -78,13 +78,13 @@ Ext.define('NP.view.invoice.InvoiceLineForm', function() {
 				minChars: 1,
 				listConfig: {
 					loadingText: 'Searching...',
-					emptyText: 'No matching ' + NP.core.Config.getSetting('PN.main.PropertyLabel', 'Property') + ' found.'
+					emptyText: 'No matching ' + NP.lib.core.Config.getSetting('PN.main.PropertyLabel', 'Property') + ' found.'
 				},
 				dependentCombos: ['unit_id','glaccount_id']
 			});
 			
 			// Add unit field to the form if units are turned on
-			if ( NP.core.Config.getSetting('PN.InvoiceOptions.AllowUnitAttach', 0) ) {
+			if ( NP.lib.core.Config.getSetting('PN.InvoiceOptions.AllowUnitAttach', 0) ) {
 				var unitStore = Ext.create('NP.store.PropertyUnits');
 				unitStore.load({
 					params: { property_id: invoiceItemRec.get('property_id') }
@@ -195,7 +195,7 @@ Ext.define('NP.view.invoice.InvoiceLineForm', function() {
 			});
 			
 			// If job costing is on, add relevant fields
-			if (NP.core.Config.getSetting('PN.jobcosting.jobcostingEnabled') && NP.core.Security.hasPermission(2047)) {
+			if (NP.lib.core.Config.getSetting('PN.jobcosting.jobcostingEnabled') && NP.lib.core.Security.hasPermission(2047)) {
 				items.push({
 					xtype: 'panel',
 					title: 'Job Costing',
@@ -203,12 +203,12 @@ Ext.define('NP.view.invoice.InvoiceLineForm', function() {
 				});
 				
 				var row = items.length-1;
-				if (NP.core.Config.getSetting('pn.jobcosting.useContracts')) {
+				if (NP.lib.core.Config.getSetting('pn.jobcosting.useContracts')) {
 					items[row].items.items.push({
 						xtype: 'customcombo',
 						type: 'autocomplete',
 						itemId: 'jbcontract_id',
-						fieldLabel: NP.core.Config.getSetting('PN.jobcosting.contractTerm'),
+						fieldLabel: NP.lib.core.Config.getSetting('PN.jobcosting.contractTerm'),
 						labelAlign: 'top',
 						name: 'jbcontract_id',
 						store: Ext.create('NP.store.jobcosting.JBContracts'),
@@ -226,19 +226,19 @@ Ext.define('NP.view.invoice.InvoiceLineForm', function() {
 						minChars: 1,
 						listConfig: {
 							loadingText: 'Searching...',
-							emptyText: 'No matching ' + NP.core.Config.getSetting('PN.jobcosting.contractTerm') + ' found.'
+							emptyText: 'No matching ' + NP.lib.core.Config.getSetting('PN.jobcosting.contractTerm') + ' found.'
 						},
 						hidden: false,
 						dependentCombos: ['jbchangeorder_id','jbphasecode_id']
 					});
 				}
 				
-				if (NP.core.Config.getSetting('JB_UseChangeOrders')) {
+				if (NP.lib.core.Config.getSetting('JB_UseChangeOrders')) {
 					items[row].items.items.push({
 						xtype: 'customcombo',
 						type: 'autocomplete',
 						itemId: 'jbchangeorder_id',
-						fieldLabel: NP.core.Config.getSetting('PN.jobcosting.changeOrderTerm'),
+						fieldLabel: NP.lib.core.Config.getSetting('PN.jobcosting.changeOrderTerm'),
 						labelAlign: 'top',
 						name: 'jbchangeorder_id_',
 						store: Ext.create('NP.store.jobcosting.JBChangeOrders'),
@@ -253,19 +253,19 @@ Ext.define('NP.view.invoice.InvoiceLineForm', function() {
 						minChars: 1,
 						listConfig: {
 							loadingText: 'Searching...',
-							emptyText: 'No matching ' + NP.core.Config.getSetting('PN.jobcosting.changeOrderTerm') + ' found.'
+							emptyText: 'No matching ' + NP.lib.core.Config.getSetting('PN.jobcosting.changeOrderTerm') + ' found.'
 						},
 						hidden: false,
 						dependentCombos: ['jbphasecode_id']
 					});
 				}
 				
-				if (NP.core.Config.getSetting('pn.jobcosting.useJobCodes')) {
+				if (NP.lib.core.Config.getSetting('pn.jobcosting.useJobCodes')) {
 					items[row].items.items.push({
 						xtype: 'customcombo',
 						type: 'autocomplete',
 						itemId: 'jbjobcode_id',
-						fieldLabel: NP.core.Config.getSetting('PN.jobcosting.jobCodeTerm'),
+						fieldLabel: NP.lib.core.Config.getSetting('PN.jobcosting.jobCodeTerm'),
 						labelAlign: 'top',
 						name: 'jbjobcode_id_',
 						store: Ext.create('NP.store.jobcosting.JBJobCodes'),
@@ -284,20 +284,20 @@ Ext.define('NP.view.invoice.InvoiceLineForm', function() {
 						minChars: 1,
 						listConfig: {
 							loadingText: 'Searching...',
-							emptyText: 'No matching ' + NP.core.Config.getSetting('PN.jobcosting.jobCodeTerm') + ' found.'
+							emptyText: 'No matching ' + NP.lib.core.Config.getSetting('PN.jobcosting.jobCodeTerm') + ' found.'
 						},
 						hidden: false,
 						dependentCombos: ['jbphasecode_id']
 					});
 				}
 				
-				if (NP.core.Config.getSetting('JB_UsePhaseCodes')) {
-					var allowBlankPhase = (NP.core.Config.getSetting('PN.jobcosting.phaseCodeReq', 0)) ? false : true;
+				if (NP.lib.core.Config.getSetting('JB_UsePhaseCodes')) {
+					var allowBlankPhase = (NP.lib.core.Config.getSetting('PN.jobcosting.phaseCodeReq', 0)) ? false : true;
 					items[row].items.items.push({
 						xtype: 'customcombo',
 						type: 'autocomplete',
 						itemId: 'jbphasecode_id',
-						fieldLabel: NP.core.Config.getSetting('PN.jobcosting.phaseCodeTerm'),
+						fieldLabel: NP.lib.core.Config.getSetting('PN.jobcosting.phaseCodeTerm'),
 						labelAlign: 'top',
 						name: 'jbphasecode_id_',
 						store: Ext.create('NP.store.jobcosting.JBPhaseCodes'),
@@ -313,19 +313,19 @@ Ext.define('NP.view.invoice.InvoiceLineForm', function() {
 						minChars: 1,
 						listConfig: {
 							loadingText: 'Searching...',
-							emptyText: 'No matching ' + NP.core.Config.getSetting('PN.jobcosting.phaseCodeTerm') + ' found.'
+							emptyText: 'No matching ' + NP.lib.core.Config.getSetting('PN.jobcosting.phaseCodeTerm') + ' found.'
 						},
 						hidden: false,
 						dependentCombos: ['jbcostcode_id']
 					});
 				}
 				
-				if (NP.core.Config.getSetting('pn.jobcosting.useCostCodes')) {
+				if (NP.lib.core.Config.getSetting('pn.jobcosting.useCostCodes')) {
 					items[row].items.items.push({
 						xtype: 'customcombo',
 						type: 'autocomplete',
 						itemId: 'jbcostcode_id',
-						fieldLabel: NP.core.Config.getSetting('PN.jobcosting.costCodeTerm'),
+						fieldLabel: NP.lib.core.Config.getSetting('PN.jobcosting.costCodeTerm'),
 						labelAlign: 'top',
 						name: 'jbcostcode_id_',
 						store: Ext.create('NP.store.jobcosting.JBCostCodes'),
@@ -341,7 +341,7 @@ Ext.define('NP.view.invoice.InvoiceLineForm', function() {
 						minChars: 1,
 						listConfig: {
 							loadingText: 'Searching...',
-							emptyText: 'No matching ' + NP.core.Config.getSetting('PN.jobcosting.costCodeTerm') + ' found.'
+							emptyText: 'No matching ' + NP.lib.core.Config.getSetting('PN.jobcosting.costCodeTerm') + ' found.'
 						},
 						hidden: false
 					});

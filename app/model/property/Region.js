@@ -1,5 +1,5 @@
 Ext.define('NP.model.property.Region', {
-	extend: 'Ux.data.Model',
+	extend: 'NP.lib.data.Model',
 	
     idProperty: 'region_id',
     fields: [

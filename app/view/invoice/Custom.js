@@ -2,7 +2,7 @@ Ext.define('NP.view.invoice.Custom', {
 	extend: 'Ext.panel.Panel',
 	alias: 'widget.invoiceCustom',
 	
-	requires: ['Ux.ui.ComboBox','NP.core.Config'],
+	requires: ['NP.lib.ui.ComboBox','NP.lib.core.Config'],
 	
 	title: 'Custom Fields',
 	
@@ -26,7 +26,7 @@ Ext.define('NP.view.invoice.Custom', {
 	],
 	
 	buildView: function(position, entity, rec) {
-		var customFields = NP.core.Config.getCustomFields();
+		var customFields = NP.lib.core.Config.getCustomFields();
 		
 		var cols = { 1: [], 2: [] };
 		var cFields = customFields[position];

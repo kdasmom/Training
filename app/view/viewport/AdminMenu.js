@@ -1,22 +1,22 @@
 Ext.define('NP.view.viewport.AdminMenu', {
-    extend: 'Ux.ui.HoverButton',
+    extend: 'NP.lib.ui.HoverButton',
     alias: 'widget.viewport.adminmenu',
     
-    requires: ['NP.core.Config','NP.core.Security'],
+    requires: ['NP.lib.core.Config','NP.lib.core.Security'],
 
 	adminText          : 'Administration',
 	mySettingsText     : 'My Settings',
 	userText           : 'User Manager',
 	messageText        : 'Message Center',
 	integrationText    : 'Integration',
-	propertyText       : NP.core.Config.getSetting('PN.main.PropertyLabel', 'Property') + ' Setup',
+	propertyText       : NP.lib.core.Config.getSetting('PN.main.PropertyLabel', 'Property') + ' Setup',
 	systemText         : 'System Setup',
 	gLText             : 'GL Account Setup',
 	catalogText        : 'Catalog Maintenance',
 	importText         : 'Import/Export Utility',
 	importOverviewText : 'Overview',
 	importGLText       : 'GL',
-	importPropertyText : NP.core.Config.getSetting('PN.main.PropertyLabel', 'Property'),
+	importPropertyText : NP.lib.core.Config.getSetting('PN.main.PropertyLabel', 'Property'),
 	importVendorText   : 'Vendor',
 	importInvoiceText  : 'Invoice',
 	importUserText     : 'User',
@@ -35,49 +35,49 @@ Ext.define('NP.view.viewport.AdminMenu', {
 			]
 		};
 
-	    if ( NP.core.Security.hasPermission(4) ) {
+	    if ( NP.lib.core.Security.hasPermission(4) ) {
 			this.menu.items.push({
 				text: this.userText
 			});
 		}
 		
-		if ( NP.core.Security.hasPermission(6091) ) {
+		if ( NP.lib.core.Security.hasPermission(6091) ) {
 			this.menu.items.push({
 				text: this.messageText
 			});
 		}
 		
-		if ( NP.core.Security.hasPermission(6047) ) {
+		if ( NP.lib.core.Security.hasPermission(6047) ) {
 			this.menu.items.push({
 				text: this.integrationText
 			});
 		}
 		
-		if ( NP.core.Security.hasPermission(12) ) {
+		if ( NP.lib.core.Security.hasPermission(12) ) {
 			this.menu.items.push({
 				text: this.propertyText
 			});
 		}
 		
-		if ( NP.core.Security.hasPermission(1066) ) {
+		if ( NP.lib.core.Security.hasPermission(1066) ) {
 			this.menu.items.push({
 				text: this.systemText
 			});
 		}
 		
-		if ( NP.core.Security.hasPermission(6014) ) {
+		if ( NP.lib.core.Security.hasPermission(6014) ) {
 			this.menu.items.push({
 				text: this.gLText
 			});
 		}
 		
-		if ( NP.core.Security.hasPermission(6066) && NP.core.Config.getSetting('VC_isOn') == 1 ) {
+		if ( NP.lib.core.Security.hasPermission(6066) && NP.lib.core.Config.getSetting('VC_isOn') == 1 ) {
 			this.menu.items.push({
 				text: this.catalogText
 			});
 		}
 		
-		if ( NP.core.Security.hasPermission(6015) ) {
+		if ( NP.lib.core.Security.hasPermission(6015) ) {
 			var subsection = {
 				text: this.importText,
 				menu: {
@@ -88,37 +88,37 @@ Ext.define('NP.view.viewport.AdminMenu', {
 				}
 			};
 			
-			if ( NP.core.Security.hasPermission(6016) ) {
+			if ( NP.lib.core.Security.hasPermission(6016) ) {
 				subsection.menu.items.push({
 					text: this.importGLText
 				});
 			}
 			
-			if ( NP.core.Security.hasPermission(6017) ) {
+			if ( NP.lib.core.Security.hasPermission(6017) ) {
 				subsection.menu.items.push({
 					text: this.importPropertyText
 				});
 			}
 			
-			if ( NP.core.Security.hasPermission(6018) ) {
+			if ( NP.lib.core.Security.hasPermission(6018) ) {
 				subsection.menu.items.push({
 					text: this.importVendorText
 				});
 			}
 			
-			if ( NP.core.Security.hasPermission(6019) ) {
+			if ( NP.lib.core.Security.hasPermission(6019) ) {
 				subsection.menu.items.push({
 					text: this.importInvoiceText
 				});
 			}
 			
-			if ( NP.core.Security.hasPermission(6020) ) {
+			if ( NP.lib.core.Security.hasPermission(6020) ) {
 				subsection.menu.items.push({
 					text: this.importUserText
 				});
 			}
 			
-			if ( NP.core.Security.hasPermission(6021) ) {
+			if ( NP.lib.core.Security.hasPermission(6021) ) {
 				subsection.menu.items.push({
 					text: this.importCustomText
 				});
@@ -131,13 +131,13 @@ Ext.define('NP.view.viewport.AdminMenu', {
 			this.menu.items.push(subsection);
 		}
 		
-		if ( NP.core.Security.hasPermission(1043) ) {
+		if ( NP.lib.core.Security.hasPermission(1043) ) {
 			this.menu.items.push({
 				text: this.approvalBudgetsText
 			});
 		}
 		
-		if ( NP.core.Security.hasPermission(1057) ) {
+		if ( NP.lib.core.Security.hasPermission(1057) ) {
 			this.menu.items.push({
 				text: this.utilityText
 			});

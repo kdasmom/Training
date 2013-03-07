@@ -1,5 +1,5 @@
 Ext.define('NP.model.jobcosting.JBChangeOrder', {
-    extend: 'Ux.data.Model',
+    extend: 'NP.lib.data.Model',
     idProperty: 'jbchangeorder_id',
     fields: [
     	{ name: 'jbchangeorder_id', type: 'int' },

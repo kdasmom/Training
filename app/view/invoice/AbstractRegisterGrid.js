@@ -1,11 +1,11 @@
 Ext.define('NP.view.invoice.AbstractRegisterGrid', {
     extend: 'Ext.grid.Panel',
     
-    requires: ['NP.core.Util','NP.core.Config'],
+    requires: ['NP.lib.core.Util','NP.lib.core.Config'],
     
 	vendorColumnText  : 'Vendor',
 	amountColumnText  : 'Amount',
-	propertyColumnText: NP.core.Config.getSetting('PN.main.PropertyLabel'),
+	propertyColumnText: NP.lib.core.Config.getSetting('PN.main.PropertyLabel'),
 	numberColumnText  : 'Invoice Number',
 	dateColumnText    : 'Invoice Date',
 
@@ -18,7 +18,7 @@ Ext.define('NP.view.invoice.AbstractRegisterGrid', {
 		        },{
 		            text: this.amountColumnText,
 		            dataIndex: 'invoice_amount',
-		            renderer: NP.core.Util.currencyRenderer
+		            renderer: NP.lib.core.Util.currencyRenderer
 		        },{
 		            text: this.propertyColumnText,
 		            dataIndex: 'property_name'

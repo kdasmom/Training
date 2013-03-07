@@ -1,5 +1,5 @@
 Ext.define('NP.model.PurchaseOrder', {
-    extend: 'Ux.data.Model',
+    extend: 'NP.lib.data.Model',
     idProperty: 'purchaseorder_id',
     fields: [
     	{ name: 'purchaseorder_id', type: 'int' },

@@ -1,8 +1,8 @@
 Ext.define('NP.view.viewport.InvoiceMenu', {
-    extend: 'Ux.ui.HoverButton',
+    extend: 'NP.lib.ui.HoverButton',
     alias: 'widget.viewport.invoicemenu',
 
-    requires: ['NP.core.Config','NP.core.Security'],
+    requires: ['NP.lib.core.Config','NP.lib.core.Security'],
 
 	invoiceText            : 'Invoices',
 	registerText           : 'Invoice Register',
@@ -41,7 +41,7 @@ Ext.define('NP.view.viewport.InvoiceMenu', {
 
     	var subSection = this.menu.items[0].menu.items;
 
-	    if ( NP.core.Config.getSetting('PN.InvoiceOptions.OverDueOn') == 1 ) {
+	    if ( NP.lib.core.Config.getSetting('PN.InvoiceOptions.OverDueOn') == 1 ) {
     		subSection.push({
 				itemId: 'overdueInvRegisterMenuBtn',
 				text: this.registerOverdueText
@@ -53,7 +53,7 @@ Ext.define('NP.view.viewport.InvoiceMenu', {
 			text: this.registerTemplateText
 		});
     	
-    	if ( NP.core.Config.getSetting('PN.InvoiceOptions.HoldOn') == 1 ) {
+    	if ( NP.lib.core.Config.getSetting('PN.InvoiceOptions.HoldOn') == 1 ) {
     		subSection.push({
 				itemId: 'onholdInvRegisterMenuBtn',
 				text: this.registerHoldText
@@ -81,7 +81,7 @@ Ext.define('NP.view.viewport.InvoiceMenu', {
 			text: this.registerPaidText
 		});
     	
-    	if ( NP.core.Config.getSetting('PN.InvoiceOptions.VoidOn') == 1 ) {
+    	if ( NP.lib.core.Config.getSetting('PN.InvoiceOptions.VoidOn') == 1 ) {
     		subSection.push({
 				itemId: 'voidInvRegisterMenuBtn',
 				text: this.registerVoidText
@@ -93,13 +93,13 @@ Ext.define('NP.view.viewport.InvoiceMenu', {
 			text: this.registerRejectedText
 		});
     	
-    	if ( NP.core.Security.hasPermission(1032) ) {
+    	if ( NP.lib.core.Security.hasPermission(1032) ) {
     		this.menu.items.push({
 				text: this.newText
 			});
     	}
     	
-    	if ( NP.core.Security.hasPermission(1033) ) {
+    	if ( NP.lib.core.Security.hasPermission(1033) ) {
     		this.menu.items.push({
 				text: this.searchText
 			});

@@ -1,5 +1,5 @@
 Ext.define('NP.model.user.Userprofile', {
-	extend: 'Ux.data.Model',
+	extend: 'NP.lib.data.Model',
 	
     idProperty: 'userprofile_id',
     fields: [

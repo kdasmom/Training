@@ -1,5 +1,5 @@
 Ext.define('NP.model.jobcosting.JBCostCode', {
-    extend: 'Ux.data.Model',
+    extend: 'NP.lib.data.Model',
     idProperty: 'jbcostcode_id',
     fields: [
     	{ name: 'jbcostcode_id', type: 'int' },

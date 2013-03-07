@@ -4,18 +4,13 @@ Ext.Loader.setConfig({
 
 Ext.application({
 	name: 'NP',
-	paths: {
-		Ux:	'./app/extensions'
-		,Skirtle: './app/extensions/ui'
-		,'Ext.ux': './app/extensions/ui'
-	},
 	requires: [
 		'Ext.util.History'
 		,'Ext.state.*'
-		,'NP.core.Net'
-		,'NP.core.Util'
-		,'NP.core.Config'
-		,'NP.core.Security'
+		,'NP.lib.core.Net'
+		,'NP.lib.core.Util'
+		,'NP.lib.core.Config'
+		,'NP.lib.core.Security'
 		,'Ext.util.Format'
 	],
     
@@ -53,7 +48,7 @@ Ext.application({
 	},
    
     loadInitialData: function() {
-    	return Deft.Promise.all([NP.core.Config.loadConfigSettings(), NP.core.Security.loadPermissions()]);
+    	return Deft.Promise.all([NP.lib.core.Config.loadConfigSettings(), NP.lib.core.Security.loadPermissions()]);
     },
     
 	initHistory: function() {
@@ -95,7 +90,7 @@ Ext.application({
 		// If token is null, go to home page; otherwise, hash the token (minus last item) 
 		// and compare with the hash that was embedded in the token (last item)
 		if (token) {
-			if (userHash == CryptoJS.SHA1(NP.core.Security.getUser().get('userprofile_id')+'') && tokenHash == CryptoJS.SHA1(newToken)) {
+			if (userHash == CryptoJS.SHA1(NP.lib.core.Security.getUser().get('userprofile_id')+'') && tokenHash == CryptoJS.SHA1(newToken)) {
 				var args = newToken.split(':');
 				this.runAction.apply(this, args);
 			} else {
@@ -142,7 +137,7 @@ Ext.application({
 		if (oldToken === null || oldToken !== newToken) {
 			// Hash the entire token
 			var tokenHash = CryptoJS.SHA1(newToken);
-			var userIdHash = CryptoJS.SHA1(NP.core.Security.getUser().get('userprofile_id')+'');
+			var userIdHash = CryptoJS.SHA1(NP.lib.core.Security.getUser().get('userprofile_id')+'');
 			Ext.History.add(newToken+':'+tokenHash + ':' + userIdHash);
 		}
 	},
@@ -164,7 +159,7 @@ Ext.application({
 	},
 
 	remoteCall: function(cfg) {
-		NP.core.Net.remoteCall(cfg);
+		NP.lib.core.Net.remoteCall(cfg);
 	},
 
 	

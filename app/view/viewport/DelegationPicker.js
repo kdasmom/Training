@@ -3,7 +3,7 @@ Ext.define('NP.view.viewport.DelegationPicker', function () {
         extend: 'Ext.panel.Panel',
         alias: 'widget.viewport.delegationpicker',
         
-        requires: ['Ux.ui.ComboBox','NP.core.Config','NP.core.Security'],
+        requires: ['NP.lib.ui.ComboBox','NP.lib.core.Config','NP.lib.core.Security'],
 
         signedOnText: 'You are signed on as',
 
@@ -27,7 +27,7 @@ Ext.define('NP.view.viewport.DelegationPicker', function () {
             var delegationStore = Ext.StoreManager.lookup('user.Delegations');
             this.items.push({
                 flex  : 1,
-                html  : this.signedOnText + ': ' + NP.core.Security.getUser().get('userprofile_username'),
+                html  : this.signedOnText + ': ' + NP.lib.core.Security.getUser().get('userprofile_username'),
                 hidden: (delegationStore.getTotalCount() == 0) ? false : true,
                 margin: '4 0 4 0'
             },{
@@ -44,7 +44,7 @@ Ext.define('NP.view.viewport.DelegationPicker', function () {
                     selectFirstRecord: true,
                     displayField     : 'userprofile_username',
                     valueField       : 'userprofile_id',
-                    value            : NP.core.Security.getUser().get('userprofile_id'),
+                    value            : NP.lib.core.Security.getUser().get('userprofile_id'),
                     hidden           : (delegationStore.getTotalCount() == 0) ? true : false,
                     margin: '2 0 2 0',
                     listeners        : {
@@ -52,7 +52,7 @@ Ext.define('NP.view.viewport.DelegationPicker', function () {
                             // If the user is changed via delegation, change the user on the server and re-create the entire Viewport
                             // so that things like the top menu get re-rendered with the proper things showing based on permissions
                             var userprofile_id = combo.getValue();
-                            NP.core.Security.changeUser(userprofile_id, function() {
+                            NP.lib.core.Security.changeUser(userprofile_id, function() {
                                 var viewport = Ext.ComponentQuery.query('viewport')[0];
                                 Ext.destroy(viewport);
                                 Ext.create('NP.view.Viewport');

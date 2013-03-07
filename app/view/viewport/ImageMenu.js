@@ -1,8 +1,8 @@
 Ext.define('NP.view.viewport.ImageMenu', {
-    extend: 'Ux.ui.HoverButton',
+    extend: 'NP.lib.ui.HoverButton',
     alias: 'widget.viewport.imagemenu',
     
-    requires: ['NP.core.Config','NP.core.Security'],
+    requires: ['NP.lib.core.Config','NP.lib.core.Security'],
 
 	imgText       : 'Image Management',
 	indexedText   : 'Images To Be Indexed',
@@ -20,13 +20,13 @@ Ext.define('NP.view.viewport.ImageMenu', {
 			]
 		};
 
-    	if ( NP.core.Security.hasPermission(2081) ) {
+    	if ( NP.lib.core.Security.hasPermission(2081) ) {
 			this.menu.items.push({
 				text: this.invoiceText
 			});
 		}
 		
-		if ( NP.core.Config.getSetting('PN.POOptions.POSwitch') == 1 && NP.core.Security.hasPermission(2087) ) {
+		if ( NP.lib.core.Config.getSetting('PN.POOptions.POSwitch') == 1 && NP.lib.core.Security.hasPermission(2087) ) {
 			this.menu.items.push({
 				text: this.pOText
 			});
@@ -36,7 +36,7 @@ Ext.define('NP.view.viewport.ImageMenu', {
 			text: this.searchText
 		});
 		
-		if ( NP.core.Security.hasPermission(6050) ) {
+		if ( NP.lib.core.Security.hasPermission(6050) ) {
 			this.menu.items.push({
 				text: this.exceptionsText
 			});

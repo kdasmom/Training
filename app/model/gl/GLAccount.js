@@ -1,13 +1,13 @@
 Ext.define('NP.model.gl.GLAccount', {
-	extend: 'Ux.data.Model',
+	extend: 'NP.lib.data.Model',
 	
-	requires: ['NP.core.Config'],
+	requires: ['NP.lib.core.Config'],
 	
 	statics: {
 		getFormattedName: function(glaccount_number, glaccount_name) {
 	    	if (glaccount_number != '' && glaccount_name != '') {
 	    		var formatted;
-	    		var display = NP.core.Config.getSetting('PN.Budget.GLDisplayOrder').toLowerCase();
+	    		var display = NP.lib.core.Config.getSetting('PN.Budget.GLDisplayOrder').toLowerCase();
 	    		
 				if (display == 'number') {
 		    		formatted = glaccount_number + ' (' + glaccount_name + ')';

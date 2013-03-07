@@ -1,8 +1,8 @@
 Ext.define('NP.view.viewport.POMenu', {
-    extend: 'Ux.ui.HoverButton',
+    extend: 'NP.lib.ui.HoverButton',
     alias: 'widget.viewport.pomenu',
 
-    requires: ['NP.core.Config','NP.core.Security'],
+    requires: ['NP.lib.core.Config','NP.lib.core.Security'],
 
 	poText                      : 'Purchase Orders',
 	registerText                : 'PO Register',
@@ -45,7 +45,7 @@ Ext.define('NP.view.viewport.POMenu', {
 			]
 		};
 
-    	if ( NP.core.Config.getSetting('CP.RECEIVING_ON') == 1 ) {
+    	if ( NP.lib.core.Config.getSetting('CP.RECEIVING_ON') == 1 ) {
 			var subSection = { 
 				text: this.receiptRegisterText,
 				menu: {
@@ -58,7 +58,7 @@ Ext.define('NP.view.viewport.POMenu', {
 				}
 			};
 			
-			if ( NP.core.Config.getSetting('RECEIPT_postapproval') == 1 ) {
+			if ( NP.lib.core.Config.getSetting('RECEIPT_postapproval') == 1 ) {
 				subSection.menu.items.push({
 					text: this.receiptRegisterPendingstText
 				});
@@ -71,11 +71,11 @@ Ext.define('NP.view.viewport.POMenu', {
 			this.menu.items.push(subSection);
 		}
 		
-		if ( NP.core.Security.hasPermission(1027) ) {
+		if ( NP.lib.core.Security.hasPermission(1027) ) {
 			this.menu.items.push({ text: this.newText });
 		}
 		
-		if ( NP.core.Security.hasPermission(1028) ) {
+		if ( NP.lib.core.Security.hasPermission(1028) ) {
 			this.menu.items.push({ text: this.searchText });
 		}
 		

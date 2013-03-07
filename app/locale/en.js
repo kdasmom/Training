@@ -91,7 +91,7 @@ Ext.define('NP.locale.en.view.viewport.BudgetMenu', {
 Ext.define('NP.locale.en.view.viewport.ReportMenu', {
 	override: 'NP.view.viewport.ReportMenu',
 
-	requires: ['NP.core.Config'],
+	requires: ['NP.lib.core.Config'],
 
 	reportText        : 'Reports',
 	customText        : 'Custom Reports',
@@ -104,7 +104,7 @@ Ext.define('NP.locale.en.view.viewport.ReportMenu', {
 	jobText           : 'Job Costing Reports',
 	utilityText       : 'Utility Reports',
 	vendorText        : 'Vendor History Reports',
-	budgetText        : NP.core.Config.getSetting('pn.budget.BudgetForecastLabel') + 's',
+	budgetText        : NP.lib.core.Config.getSetting('pn.budget.BudgetForecastLabel') + 's',
 	adminText         : 'Admin Reports'
 });
 
@@ -112,21 +112,21 @@ Ext.define('NP.locale.en.view.viewport.ReportMenu', {
 Ext.define('NP.locale.en.view.viewport.AdminMenu', {
 	override: 'NP.view.viewport.AdminMenu',
 
-	requires: ['NP.core.Config'],
+	requires: ['NP.lib.core.Config'],
 
 	adminText          : 'Administration',
 	mySettingsText     : 'My Settings',
 	userText           : 'User Manager',
 	messageText        : 'Message Center',
 	integrationText    : 'Integration',
-	propertyText       : NP.core.Config.getSetting('PN.main.PropertyLabel', 'Property') + ' Setup',
+	propertyText       : NP.lib.core.Config.getSetting('PN.main.PropertyLabel', 'Property') + ' Setup',
 	systemText         : 'System Setup',
 	gLText             : 'GL Account Setup',
 	catalogText        : 'Catalog Maintenance',
 	importText         : 'Import/Export Utility',
 	importOverviewText : 'Overview',
 	importGLText       : 'GL',
-	importPropertyText : NP.core.Config.getSetting('PN.main.PropertyLabel', 'Property'),
+	importPropertyText : NP.lib.core.Config.getSetting('PN.main.PropertyLabel', 'Property'),
 	importVendorText   : 'Vendor',
 	importInvoiceText  : 'Invoice',
 	importUserText     : 'User',
@@ -152,13 +152,13 @@ Ext.define('NP.locale.en.view.viewport.DelegationPicker', {
 Ext.define('NP.locale.en.view.shared.ContextPicker', {
 	override: 'NP.view.shared.ContextPicker',
 	
-	requires: ['NP.core.Config'],
+	requires: ['NP.lib.core.Config'],
 
-	propertyComboText       : NP.core.Config.getSetting('PN.main.PropertyLabel'),
-    regionComboText         : NP.core.Config.getSetting('PN.Main.RegionLabel'),
-    currentPropertyRadioText: 'Current ' + NP.core.Config.getSetting('PN.main.PropertyLabel'),
-    regionRadioText         : NP.core.Config.getSetting('PN.Main.RegionLabel'),
-    allPropertiesRadioText  : 'All ' + NP.core.Config.getSetting('PN.Main.PropertiesLabel')
+	propertyComboText       : NP.lib.core.Config.getSetting('PN.main.PropertyLabel'),
+    regionComboText         : NP.lib.core.Config.getSetting('PN.Main.RegionLabel'),
+    currentPropertyRadioText: 'Current ' + NP.lib.core.Config.getSetting('PN.main.PropertyLabel'),
+    regionRadioText         : NP.lib.core.Config.getSetting('PN.Main.RegionLabel'),
+    allPropertiesRadioText  : 'All ' + NP.lib.core.Config.getSetting('PN.Main.PropertiesLabel')
 }); 
 
 /**
@@ -195,7 +195,7 @@ Ext.define('NP.locale.en.view.invoice.AbstractRegisterGrid', {
 
 	vendorColumnText  : 'Vendor',
 	amountColumnText  : 'Amount',
-	propertyColumnText: NP.core.Config.getSetting('PN.main.PropertyLabel'),
+	propertyColumnText: NP.lib.core.Config.getSetting('PN.main.PropertyLabel'),
 	numberColumnText  : 'Invoice Number',
 	dateColumnText    : 'Invoice Date'
 });

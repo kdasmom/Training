@@ -4,7 +4,7 @@ Ext.define('NP.view.shared.ContextPicker', function () {
         extend: 'Ext.panel.Panel',
         alias: 'widget.shared.contextpicker',
         
-        requires: ['NP.core.Config','NP.core.Security'],
+        requires: ['NP.lib.core.Config','NP.lib.core.Security'],
 
         layout: {
             type : 'hbox',
@@ -24,18 +24,18 @@ Ext.define('NP.view.shared.ContextPicker', function () {
             bodyStyle: 'background-color: transparent'
         },
 
-        propertyComboText       : NP.core.Config.getSetting('PN.main.PropertyLabel'),
-        regionComboText         : NP.core.Config.getSetting('PN.Main.RegionLabel'),
-        currentPropertyRadioText: 'Current ' + NP.core.Config.getSetting('PN.main.PropertyLabel'),
-        regionRadioText         : NP.core.Config.getSetting('PN.Main.RegionLabel'),
-        allPropertiesRadioText  : 'All ' + NP.core.Config.getSetting('PN.Main.PropertiesLabel'),
+        propertyComboText       : NP.lib.core.Config.getSetting('PN.main.PropertyLabel'),
+        regionComboText         : NP.lib.core.Config.getSetting('PN.Main.RegionLabel'),
+        currentPropertyRadioText: 'Current ' + NP.lib.core.Config.getSetting('PN.main.PropertyLabel'),
+        regionRadioText         : NP.lib.core.Config.getSetting('PN.Main.RegionLabel'),
+        allPropertiesRadioText  : 'All ' + NP.lib.core.Config.getSetting('PN.Main.PropertiesLabel'),
 
         initComponent: function() {
             var that = this;
 
             // Middle column displays the region and property combo boxes (only one active at a time)
-            var default_prop = NP.core.Security.getUser().get('userprofile_preferred_property');
-            var default_region = NP.core.Security.getUser().get('userprofile_preferred_region');
+            var default_prop = NP.lib.core.Security.getUser().get('userprofile_preferred_property');
+            var default_region = NP.lib.core.Security.getUser().get('userprofile_preferred_region');
             var hide_prop = true;
             var hide_region = true;
             var select_all = false;

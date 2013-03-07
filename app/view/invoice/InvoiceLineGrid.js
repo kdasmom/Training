@@ -4,7 +4,7 @@ Ext.define('NP.view.invoice.InvoiceLineGrid', {
     alias: 'widget.invoicelinegrid',
     
     requires: [
-    	'NP.core.Util'
+    	'NP.lib.core.Util'
     	,'NP.model.gl.GLAccount'
     ],
     
@@ -39,17 +39,17 @@ Ext.define('NP.view.invoice.InvoiceLineGrid', {
 	        },{
 	            text: 'Item price',
 	            dataIndex: 'invoiceitem_unitprice',
-	            renderer: NP.core.Util.currencyRenderer,
+	            renderer: NP.lib.core.Util.currencyRenderer,
 	            flex: 1,
 	            summaryType: 'average',
-				summaryRenderer: NP.core.Util.currencyRenderer
+				summaryRenderer: NP.lib.core.Util.currencyRenderer
 	        },{
 	            text: 'Amount',
 	            dataIndex: 'invoiceitem_amount',
-	            renderer: NP.core.Util.currencyRenderer,
+	            renderer: NP.lib.core.Util.currencyRenderer,
 	            flex: 1,
 	            summaryType: 'sum',
-				summaryRenderer: NP.core.Util.currencyRenderer
+				summaryRenderer: NP.lib.core.Util.currencyRenderer
 	        }
     	]
     }

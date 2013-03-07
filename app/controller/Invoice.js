@@ -4,7 +4,7 @@ Ext.define('NP.controller.Invoice', function() {
 	return {
 		extend: 'Ext.app.Controller',
 		
-		requires: ['NP.core.Config'],
+		requires: ['NP.lib.core.Config'],
 		
 		models: [
 			'invoice.Invoice'
@@ -185,14 +185,14 @@ Ext.define('NP.controller.Invoice', function() {
 	// This function figures out which periods to start and end on for the period combo box
 	function getPeriods(currentPeriod, callback) {
 		var startDate, endDate, periodObj = new Date(currentPeriod);
-		var invoice_post_date_back = NP.core.Config.getSetting('CP.invoice_post_date_back');
+		var invoice_post_date_back = NP.lib.core.Config.getSetting('CP.invoice_post_date_back');
 		if (invoice_post_date_back > 0) {
 			invoice_post_date_back *= -1;
 			startDate = Ext.Date.add(periodObj, Ext.Date.MONTH, invoice_post_date_back);
 		} else {
 			startDate = currentPeriod;
 		}
-		var invoice_post_date_forward = NP.core.Config.getSetting('CP.invoice_post_date_forward');
+		var invoice_post_date_forward = NP.lib.core.Config.getSetting('CP.invoice_post_date_forward');
 		if (invoice_post_date_forward > 0) {
 			endDate = Ext.Date.add(periodObj, Ext.Date.MONTH, invoice_post_date_forward);
 		} else {

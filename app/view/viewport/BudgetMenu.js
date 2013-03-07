@@ -1,8 +1,8 @@
 Ext.define('NP.view.viewport.BudgetMenu', {
-    extend: 'Ux.ui.HoverButton',
+    extend: 'NP.lib.ui.HoverButton',
     alias: 'widget.viewport.budgetmenu',
     
-    requires: ['NP.core.Security'],
+    requires: ['NP.lib.core.Security'],
 
 	budgetText  : 'Budget',
 	atGlanceText: 'At-a-Glance',
@@ -15,13 +15,13 @@ Ext.define('NP.view.viewport.BudgetMenu', {
     	this.menu.showSeparator = false;
     	this.menu.items = [];
 
-	    if ( NP.core.Security.hasPermission(1037) ) {
+	    if ( NP.lib.core.Security.hasPermission(1037) ) {
 			this.menu.items.push({
 				text: this.atGlanceText
 			});
 		}
 		
-		if ( NP.core.Security.hasPermission(1038) ) {
+		if ( NP.lib.core.Security.hasPermission(1038) ) {
 			this.menu.items.push({
 				text: this.searchText
 			});

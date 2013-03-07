@@ -1,4 +1,4 @@
-Ext.define('Ux.ui.ComboBox', {
+Ext.define('NP.lib.ui.ComboBox', {
 	extend : 'Ext.form.field.ComboBox',
 	alias : 'widget.customcombo',
 	

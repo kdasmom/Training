@@ -1,5 +1,5 @@
 Ext.define('NP.model.Picklist', {
-	extend: 'Ux.data.Model',
+	extend: 'NP.lib.data.Model',
 	idProperty: 'id',
 	fields: [
 		{ name: 'id', type: 'int' },

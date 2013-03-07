@@ -1,5 +1,5 @@
 Ext.define('NP.view.viewport.VCMenu', {
-    extend: 'Ux.ui.HoverButton',
+    extend: 'NP.lib.ui.HoverButton',
     alias: 'widget.viewport.vcmenu',
 
 	vcText        : 'Vendor Catalog',

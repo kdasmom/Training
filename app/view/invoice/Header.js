@@ -2,7 +2,7 @@ Ext.define('NP.view.invoice.Header', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.invoiceHeader',
 	
-	requires: ['Ux.ui.ComboBox','NP.core.Config'],
+	requires: ['NP.lib.ui.ComboBox','NP.lib.core.Config'],
 	
 	layout: 'hbox',
 	
@@ -103,7 +103,7 @@ Ext.define('NP.view.invoice.Header', {
 		});
 		
 		// Conditionally add the pay by field depending on settings
-		if ( NP.core.Config.getSetting('CP.INVOICE_PAY_BY_FIELD') == 1 ) {
+		if ( NP.lib.core.Config.getSetting('CP.INVOICE_PAY_BY_FIELD') == 1 ) {
 			var paybyStore = Ext.create('NP.store.invoice.PaymentTypes');
 			paybyStore.load();
 			
@@ -126,8 +126,8 @@ Ext.define('NP.view.invoice.Header', {
 		}];
 		
 		// Conditionally add the period field
-		if ( NP.core.Security.hasPermission(2082) && NP.core.Config.getSetting('PN.InvoiceOptions.InvoicePostDate') == 1) {
-			var loopEnd = NP.core.Util.dateDiff('m', endDate, startDate);
+		if ( NP.lib.core.Security.hasPermission(2082) && NP.lib.core.Config.getSetting('PN.InvoiceOptions.InvoicePostDate') == 1) {
+			var loopEnd = NP.lib.core.Util.dateDiff('m', endDate, startDate);
 			
 			var periodData = [], currentDate = startDate;
 			periodData.push({
@@ -149,7 +149,7 @@ Ext.define('NP.view.invoice.Header', {
 			col3Items.push({
 				xtype: 'customcombo',
 				itemId: 'invoice_period',
-				fieldLabel: 'Invoice ' + NP.core.Config.getSetting('PN.General.postPeriodTerm'),
+				fieldLabel: 'Invoice ' + NP.lib.core.Config.getSetting('PN.General.postPeriodTerm'),
 				name: 'invoice_period',
 				displayField: 'invoice_period_display',
 				valueField: 'invoice_period',
@@ -176,7 +176,7 @@ Ext.define('NP.view.invoice.Header', {
 		}
 		
 		// Add Priority and Needed By fields
-		if ( NP.core.Security.hasPermission(6007) ) {
+		if ( NP.lib.core.Security.hasPermission(6007) ) {
 			var priorityStore = Ext.create('NP.store.PriorityFlags');
 			priorityStore.load();
 			
@@ -198,7 +198,7 @@ Ext.define('NP.view.invoice.Header', {
 		}
 		
 		// Add Associated POs field
-		if (NP.core.Security.hasPermission(1026)) {
+		if (NP.lib.core.Security.hasPermission(1026)) {
 			col3Items.push({
 				xtype: 'displayfield',
 				fieldLabel: 'Associated POs',
@@ -217,7 +217,7 @@ Ext.define('NP.view.invoice.Header', {
 		}
 		
 		// Add Vendor Code field
-		if ( NP.core.Config.getSetting('PN.InvoiceOptions.AllowVendorCode') == 1 ) {
+		if ( NP.lib.core.Config.getSetting('PN.InvoiceOptions.AllowVendorCode') == 1 ) {
 			col3Items.push({
 				xtype: 'textfield',
 				name: 'vendor_code',

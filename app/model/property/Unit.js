@@ -1,5 +1,5 @@
 Ext.define('NP.model.property.Unit', {
-	extend: 'Ux.data.Model',
+	extend: 'NP.lib.data.Model',
 	
 	idProperty: 'unit_id',
     fields: [

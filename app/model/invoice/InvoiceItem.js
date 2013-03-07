@@ -1,5 +1,5 @@
 Ext.define('NP.model.invoice.InvoiceItem', {
-    extend: 'Ux.data.Model',
+    extend: 'NP.lib.data.Model',
     
     idProperty: 'invoiceitem_id',
     fields: [
@@ -16,14 +16,14 @@ Ext.define('NP.model.invoice.InvoiceItem', {
 		,{ name: 'invoiceitem_taxflag', type: 'string' }
 		,{ name: 'invoiceitem_split', type: 'int' }
 		,{ name: 'invoiceitem_jobflag', type: 'int' }
-		,{ name: 'universal_field1', type: 'string', convert: NP.core.Util.modelStringConverter }
-		,{ name: 'universal_field2', type: 'string', convert: NP.core.Util.modelStringConverter }
-		,{ name: 'universal_field3', type: 'string', convert: NP.core.Util.modelStringConverter }
-		,{ name: 'universal_field4', type: 'string', convert: NP.core.Util.modelStringConverter }
-		,{ name: 'universal_field5', type: 'string', convert: NP.core.Util.modelStringConverter }
-		,{ name: 'universal_field6', type: 'string', convert: NP.core.Util.modelStringConverter }
-		,{ name: 'universal_field7', type: 'string', convert: NP.core.Util.modelStringConverter }
-		,{ name: 'universal_field8', type: 'string', convert: NP.core.Util.modelStringConverter }
+		,{ name: 'universal_field1', type: 'string', convert: NP.lib.core.Util.modelStringConverter }
+		,{ name: 'universal_field2', type: 'string', convert: NP.lib.core.Util.modelStringConverter }
+		,{ name: 'universal_field3', type: 'string', convert: NP.lib.core.Util.modelStringConverter }
+		,{ name: 'universal_field4', type: 'string', convert: NP.lib.core.Util.modelStringConverter }
+		,{ name: 'universal_field5', type: 'string', convert: NP.lib.core.Util.modelStringConverter }
+		,{ name: 'universal_field6', type: 'string', convert: NP.lib.core.Util.modelStringConverter }
+		,{ name: 'universal_field7', type: 'string', convert: NP.lib.core.Util.modelStringConverter }
+		,{ name: 'universal_field8', type: 'string', convert: NP.lib.core.Util.modelStringConverter }
 		,{ name: 'vcitem_number', type: 'string' }
 		,{ name: 'vcitem_uom', type: 'string' }
 		,{ name: 'is_from_catalog', type: 'int' }
