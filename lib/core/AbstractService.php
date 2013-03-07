@@ -8,7 +8,7 @@ namespace NP\core;
  * @abstract
  * @author Thomas Messier
  */
-abstract class AbstractService implements LoggingAwareInterface {
+abstract class AbstractService {
 	/**
 	 * The logging service singleton
 	 * 

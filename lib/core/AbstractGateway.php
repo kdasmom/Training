@@ -11,7 +11,7 @@ namespace NP\core;
  * @abstract
  * @author Thomas Messier
  */
-abstract class AbstractGateway implements LoggingAwareInterface {
+abstract class AbstractGateway {
 	
 	/**
 	 * Override this in class implementation to specify table name
