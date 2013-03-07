@@ -9,7 +9,7 @@ Ext.define('NP.core.Config', function() {
 		
 		requires: ['NP.core.Net'],
 		
-		loadConfigSettings: function(callback) {
+		loadConfigSettings: function() {
 			Ext.log('Loading config settings');
 			
 			var deferred = Ext.create('Deft.Deferred');
@@ -54,7 +54,6 @@ Ext.define('NP.core.Config', function() {
 				],
 				success: function(results) {
 					deferred.resolve(results);
-					callback();
 				},
 				failure: function() {
 					Ext.log('Could not load config data');

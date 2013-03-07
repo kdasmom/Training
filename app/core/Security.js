@@ -32,7 +32,7 @@ Ext.define('NP.core.Security', function() {
 		
 		requires: ['NP.core.Net','NP.model.user.Userprofile'],
 		
-		loadPermissions: function(callback) {
+		loadPermissions: function() {
 			Ext.log('Loading permissions');
 			
 			var deferred = Ext.create('Deft.Deferred');
@@ -62,7 +62,6 @@ Ext.define('NP.core.Security', function() {
 					}
 				],
 				success: function(results) {
-					callback();
 					deferred.resolve(results);
 				},
 				failure: function() {

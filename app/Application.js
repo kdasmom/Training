@@ -26,39 +26,35 @@ Ext.application({
 	launch: function(application) {
 		var that = this;
 		
-		this.loadInitialData(function() {
-			// Create the ViewPort
-			Ext.create('NP.view.Viewport');
-			
-			// Init the history module so we can use the back and forward buttons
-			that.initHistory();
-			 
-			// Initialize state manager
-			Ext.state.Manager.setProvider( Ext.create('NP.core.DBProvider') );
-			
-			that.initState();
-		});
-		
-		/*
 		this.loadInitialData().then({
 			success: function(res) {
-				// Create the ViewPort
-				Ext.create('NP.view.Viewport');
-				
-				// Init the history module so we can use the back and forward buttons
-				that.initHistory();
-				 
-				// Initialize state manager
-				Ext.state.Manager.setProvider( Ext.create('Ext.state.CookieProvider') );
-				
-				that.initState();
+				// Language to load; static for now, will be updated in future when we offer more languages
+				var lang = 'en';
+				var time = new Date().getTime();
+				Ext.Loader.injectScriptElement('app/locale/'+lang+'.js?_dc='+time, function() {
+					that.getStore('user.Delegations').load(function() {
+						// Create the ViewPort
+						Ext.create('NP.view.Viewport');
+						
+						// Init the history module so we can use the back and forward buttons
+						that.initHistory();
+						 
+						// Initialize state manager
+						Ext.state.Manager.setProvider( Ext.create('Ext.state.CookieProvider') );
+						
+						that.initState();
+					});
+				});
 			},
 			failure: function(error) {
 				Ext.log(error);
 			}
 		});
-		*/
 	},
+   
+    loadInitialData: function() {
+    	return Deft.Promise.all([NP.core.Config.loadConfigSettings(), NP.core.Security.loadPermissions()]);
+    },
     
 	initHistory: function() {
 		Ext.log('Initializing Ext.History');
@@ -71,29 +67,6 @@ Ext.application({
 			app.gotoToken(token);
 		});
 	},
-   
-	loadInitialData: function(callback) {
-		var that = this;
-		// Language to load; static for now, will be updated in future when we offer more languages
-		var lang = 'en';
-		
-		NP.core.Config.loadConfigSettings(function() {
-			NP.core.Security.loadPermissions(function() {
-				var time = new Date().getTime();
-				Ext.Loader.injectScriptElement('app/locale/'+lang+'.js?_dc='+time, function() {
-					that.getStore('user.Delegations').load(function() {
-						callback();
-					});
-				});
-			});
-		});
-    },
-   
-    /*
-    loadInitialData: function() {
-    	return Deft.Promise.all([NP.core.Config.loadConfigSettings(), NP.core.Security.loadPermissions()]);
-    },
-    */
    
 	initState: function() {
 		var token = Ext.History.getToken();
