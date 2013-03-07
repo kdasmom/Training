@@ -27,6 +27,7 @@ $di['dbName'] = $di->share(function($di) use ($__CONFIG) {
 });
 $di['dbUsername'] = $__CONFIG['datasource']['username'];
 $di['dbPassword'] = $__CONFIG['datasource']['password'];
+$di['sessionDuration'] = $__CONFIG['sessionDuration'];
 
 // DI Definitions
 $diDefinition = array(
@@ -49,7 +50,7 @@ $diDefinition = array(
 	'NP\system\PicklistGateway'                => array('Adapter'),
 	'NP\system\PicklistService'                => array('PicklistGateway'),
 	'NP\system\LoggingService'                 => array('logPath','enabledNamespaces','fileEnabled','debugEnabled'),
-	'NP\system\Session',
+	'NP\system\Session'                        => array('sessionDuration'),
 	'NP\system\SecurityService'                => array('Session','UserprofileGateway','UserprofileLogonGateway','ModulePrivGateway'),
 	'NP\system\SiteService'                    => array('WinCache','configPath','reloadCache'),
 	'NP\user\DelegationGateway'                => array('Adapter'),
