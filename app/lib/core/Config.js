@@ -1,20 +1,48 @@
+/**
+ * The Config class is used to control everything that relates to configuration settings, either at the
+ * application level or the user level.
+ *
+ * @author Thomas Messier
+ * @singleton
+ * @requires NP.lib.core.Net
+ */
 Ext.define('NP.lib.core.Config', function() {
-	// Private variables
+	/**
+	 * @private
+	 * @property {Array}
+	 * Stores the application settings
+	 */
 	var settings = null;
-	var userSettings = null;
+	
+	/**
+	 * @private
+	 * @property {Array}
+	 * Stores custom field settings
+	 */
 	var customFields = null;
+	
+	/**
+	 * @private
+	 * @property {Array}
+	 * Stores the user settings
+	 */
+	var userSettings = null;
 	
 	return {
 		singleton: true,
 		
 		requires: ['NP.lib.core.Net'],
 		
+		/**
+		 * Loads all application configuration settings, custom field settings, and user settings with
+		 * one ajax request and uses the results to set
+		 * @return {Deft.Promise}
+		 */
 		loadConfigSettings: function() {
 			Ext.log('Loading config settings');
 			
-			var deferred = Ext.create('Deft.Deferred');
-			
-			NP.lib.core.Net.remoteCall({
+			// Make the ajax request
+			return NP.lib.core.Net.remoteCall({
 				requests: [
 					// This request gets config settings for the app
 					{
@@ -30,6 +58,15 @@ Ext.define('NP.lib.core.Config', function() {
 					        });
 						}
 					},
+					// This request gets custom field config for the app
+					{ 
+						service: 'ConfigService', 
+						action: 'getCustomFields',
+						success: function(result) {
+							// Save custom fields in application
+							customFields = result;
+						}
+					},
 					// This request gets config settings for the user
 					{
 						service: 'UserService', 
@@ -41,27 +78,18 @@ Ext.define('NP.lib.core.Config', function() {
 								userSettings[item['usersetting_name']] = Ext.JSON.decode(item['usersetting_value']);
 							});
 						}
-					},
-					// This request gets custom field config for the app
-					{ 
-						service: 'ConfigService', 
-						action: 'getCustomFields',
-						success: function(result) {
-							// Save custom fields in application
-							customFields = result;
-						}
 					}
 				],
-				success: function(results) {
+				success: function(results, deferred) {
+					// If all ajax requests are successful, resolve the deferred
 					deferred.resolve(results);
 				},
-				failure: function() {
+				failure: function(response, options, deferred) {
 					Ext.log('Could not load config data');
+					// If any of the ajax requests fails, reject the deferred
 					deferred.reject('Could not load config data');
 				}
 			});
-			
-			return deferred.promise;
 		},
 		
 		getSetting: function(name, defaultVal) {

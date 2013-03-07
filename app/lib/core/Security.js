@@ -35,9 +35,7 @@ Ext.define('NP.lib.core.Security', function() {
 		loadPermissions: function() {
 			Ext.log('Loading permissions');
 			
-			var deferred = Ext.create('Deft.Deferred');
-			
-			NP.lib.core.Net.remoteCall({
+			return NP.lib.core.Net.remoteCall({
 				requests: [
 					getPermissionAjaxRequestConfig,
 					{
@@ -61,16 +59,14 @@ Ext.define('NP.lib.core.Security', function() {
 						}
 					}
 				],
-				success: function(results) {
+				success: function(results, deferred) {
 					deferred.resolve(results);
 				},
-				failure: function() {
+				failure: function(response, options, deferred) {
 					Ext.log('Could not load security data');
 					deferred.reject('Could not load security data');
 				}
 			});
-			
-			return deferred.promise;
 		},
 		
 		logout: function(callback) {
