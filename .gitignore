@@ -18,24 +18,24 @@ phinx.yml
 *.log
 
 # Ignore several Ext JS files we don't need
-js/extjs/*
-js/extjs/locale/*
-js/extjs/resources/*
-js/extjs/resources/css/*
-js/extjs/resources/themes/*
-js/extjs/resources/themes/images/*
+vendor/extjs/*
+vendor/extjs/locale/*
+vendor/extjs/resources/*
+vendor/extjs/resources/css/*
+vendor/extjs/resources/themes/*
+vendor/extjs/resources/themes/images/*
 # Ext JS files to include (for locale, only include locale files for languages we support)
-!js/extjs/locale/
-!js/extjs/locale/ext-lang-en.js
-!js/extjs/resources/
-!js/extjs/resources/css/
-!js/extjs/resources/css/ext-all.css
-!js/extjs/resources/css/ext-all-debug.css
-!js/extjs/resources/themes/
-!js/extjs/resources/themes/images/
-!js/extjs/resources/themes/images/default/
-!js/extjs/ext-all.js
-!js/extjs/ext-all-dev.js
+!vendor/extjs/locale/
+!vendor/extjs/locale/ext-lang-en.js
+!vendor/extjs/resources/
+!vendor/extjs/resources/css/
+!vendor/extjs/resources/css/ext-all.css
+!vendor/extjs/resources/css/ext-all-debug.css
+!vendor/extjs/resources/themes/
+!vendor/extjs/resources/themes/images/
+!vendor/extjs/resources/themes/images/default/
+!vendor/extjs/ext-all.js
+!vendor/extjs/ext-all-dev.js
 
 # Ignore Zend framework files we don't need (exceptions specified below)
 vendor/zendframework/zendframework/bin/*
