@@ -11,6 +11,9 @@ vendor/autoload.php
 composer.json
 composer.lock
 
+# Ignore Phinx configuration file, the user should generate his/her own by running the command "phinx init"
+phinx.yml
+
 # Ignore all log files
 *.log
 
@@ -48,9 +51,3 @@ vendor/zendframework/zendframework/library/Zend/*
 !vendor/zendframework/zendframework/library/Zend/ServiceManager/
 !vendor/zendframework/zendframework/library/Zend/Stdlib/
 !vendor/zendframework/zendframework/library/Zend/Validator/
-
-# Ignore Phinx for now, not ready to use
-vendor/robmorgan/*
-vendor/symfony/*
-migrations/*
-phinx.yml
