@@ -15,10 +15,10 @@ if (!$isAuth) {
 <head>
 	<title>NexusPayables</title>
 	
-	<link rel="stylesheet" type="text/css" href="js/extjs/resources/css/ext-all<?php echo ($__CONFIG['serverType'] == 'dev') ? '-debug' : ''; ?>.css">
-	<script type="text/javascript" src="js/extjs/ext-all<?php echo ($__CONFIG['serverType'] == 'dev') ? '-dev' : ''; ?>.js"></script>
-	<script type="text/javascript" src="js/deftjs/deft<?php echo ($__CONFIG['serverType'] == 'dev') ? '-debug' : ''; ?>.js"></script>
-	<script type="text/javascript" src="js/CryptoJS/sha1.js"></script>
+	<link rel="stylesheet" type="text/css" href="vendor/extjs/resources/css/ext-all<?php echo ($__CONFIG['serverType'] == 'dev') ? '-debug' : ''; ?>.css">
+	<script type="text/javascript" src="vendor/extjs/ext-all<?php echo ($__CONFIG['serverType'] == 'dev') ? '-dev' : ''; ?>.js"></script>
+	<script type="text/javascript" src="vendor/deftjs/deft<?php echo ($__CONFIG['serverType'] == 'dev') ? '-debug' : ''; ?>.js"></script>
+	<script type="text/javascript" src="vendor/CryptoJS/sha1.js"></script>
 	<script type="text/javascript" src="app/Application.js"></script>
 </head>
 <body>
