@@ -6,7 +6,10 @@ require_once("config/config.php");
 
 // Set include paths (add Zend to the path)
 set_include_path(get_include_path() . PATH_SEPARATOR . $__CONFIG['zendPath']);
-require_once("lib\util\FirePHP.class.php");
+
+// Include a couple third party library files that aren't namespaced
+require_once("vendor\FirePHP\FirePHP.class.php");
+require_once("vendor\dBug\dBug.php");
 
 // Setup the Zend Autoloader
 require_once('library\Zend\Loader\StandardAutoloader.php');
