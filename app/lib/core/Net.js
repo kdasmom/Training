@@ -80,6 +80,20 @@ Ext.define('NP.lib.core.Net', {
 	requires: ['Deft.*'],
 	singleton: true,
 	
+	/**
+	 * Executes an Ajax call. Aside from the documented parameters, each request can take an arbitrary number of
+	 * parameter that will be passed as arguments to the service function called
+	 *
+	 * @param {Object} cfg                             See docs above for what can be passed as a config
+	 * @param {Object[]/Object} cfg.requests           Request(s) that need to be made to backend services
+	 * @param {string}          cfg.requests.service   PHP service to call
+	 * @param {string}          cfg.requests.action    Function to call in the service
+	 * @param {Function}        [cfg.requests.success] Function to call after this request is done running if ajax request is successful
+	 * @param {Function}        [cfg.requests.failure] Function to call after this request is done running if ajax request fails
+	 * @param {"GET"/"POST"}    [cfg.method]           Method to use for ajax request
+	 * @param {Function}        [cfg.success]          Function to call after all ajax requests have run if ajax request is successful
+	 * @param {Function}        [cfg.failure]          Function to call after all ajax requests have run if ajax request fails
+	 */
 	remoteCall: function(cfg) { // There can be more arguments, you can use either a config object or (success, method) as args
 		// Create a deferred object to be used later
 		var deferred = Ext.create('Deft.Deferred');

@@ -35,7 +35,7 @@ Ext.define('NP.lib.core.Config', function() {
 		
 		/**
 		 * Loads all application configuration settings, custom field settings, and user settings with
-		 * one ajax request and uses the results to set
+		 * one ajax request. This function runs at application startup.
 		 * @return {Deft.Promise}
 		 */
 		loadConfigSettings: function() {
@@ -92,6 +92,12 @@ Ext.define('NP.lib.core.Config', function() {
 			});
 		},
 		
+		/**
+		 * Gets the value of an application setting
+		 * @param  {string} name            Name of the setting to retrieve
+		 * @param  {Mixed}  [defaultVal=""] Default value to return in case the setting doesn't exist
+		 * @return {Mixed}
+		 */
 		getSetting: function(name, defaultVal) {
 			name = name.toLowerCase();
 			if (arguments.length < 2) {
@@ -104,34 +110,58 @@ Ext.define('NP.lib.core.Config', function() {
 			}
 		},
 		
+		/**
+		 * Returns all custom field configuration settings
+		 * @return {Object}
+		 */
 		getCustomFields: function() {
 			return customFields;
 		},
 		
+		/**
+		 * Returns the date format mask that the server returns dates as
+		 * @return {string}
+		 */
 		getServerDateFormat: function() {
 			return 'Y-m-d H:i:s.u';
 		},
 		
+		/**
+		 * Returns the default date format used when displaying dates in the app
+		 * @return {string}
+		 */
 		getDefaultDateFormat: function() {
 			return 'm/d/Y';
 		},
 
+		/**
+		 * Returns all settings for the currently logged in user
+		 * @return {Object}
+		 */
 		getUserSettings: function() {
 			return userSettings;
 		},
 
+		/**
+		 * Saves a user setting to the database via an ajax request
+		 * @param  {string} name  Name of the setting
+		 * @param  {Mixed}  value Value for the setting
+		 * @return {Deft.Promise}
+		 */
 		saveUserSetting: function(name, value) {
-			NP.lib.core.Net.remoteCall({
+			return NP.lib.core.Net.remoteCall({
 	            requests: {
 	                service: 'UserService', 
 	                action: 'saveSetting',
 	                name:   name,
 	                value:  Ext.JSON.encode(value),
-	                success: function() {
-	                    console.log('Setting was saved');
+	                success: function(result, deferred) {
+	                    Ext.log('Setting was saved');
+	                	deferred.resolve();
 	                },
-	                failure: function() {
-	                    console.log('Setting could not be saved');
+	                failure: function(response, options, deferred) {
+	                    Ext.log('Setting could not be saved');
+	                	deferred.reject('Setting could not be saved');
 	                }
 	            }
 	        });

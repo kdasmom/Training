@@ -1,23 +1,59 @@
+/**
+ * The Util class contains utility functions that don't belong in any other module
+ *
+ * @author Thomas Messier
+ * @singleton
+ * @requires Ext.util.Format
+ */
 Ext.define('NP.lib.core.Util', {
+	alternateClassName: ['NP.Util'],
 	singleton: true,
 	
 	requires: 'Ext.util.Format',
 	
+	/**
+	 * Checks if an object is a function or not
+	 @param  {Mixed} obj
+	 @return {boolean}
+	 */
 	isFunction: function(obj) {
 		return Object.prototype.toString.call(obj) == '[object Function]';
 	},
 	
+	/**
+	 * Checks if an object is an array or not
+	 @param  {Mixed} obj
+	 @return {boolean}
+	 */
 	isArray: function(obj) {
 		return Object.prototype.toString.call(obj) == '[object Array]';
 	},
 	
+	/**
+	 * Checks if an object is a javascript Object or not
+	 @param  {Mixed} obj
+	 @return {boolean}
+	 */
 	isObject: function(obj) {
 		return Object.prototype.toString.call(obj) == '[object Object]';
 	},
 	
+
+	/**
+	 * Calculates the difference in time between two dates
+	 *
+	 * Example usage:
+	 * var diff = NP.Util.dateDiff('m', '2013-02-01', '2013-01-01');
+	 * console.log(diff); // Outputs 1
+	 *
+	 @param  {"l"/"s"/"n"/"h"/"d"/"ww"/"m","yyyy"} part l=millisecond; s=seconds; n=minutes; h=hours; d=days; w=weeks; m=months; y=years
+	 @param  {Date} date1
+	 @param  {Date} date2
+	 @return {number}
+	 */
 	dateDiff: function(part, date1, date2) {
 		var diff = date1.getTime() - date2.getTime();
-		var l = 1, s = 1000, n = s*60, h = n*60, d = h*24, ww = d * 7, m = d*30, yyyy = d*365;
+		var l = 1, s = 1000, n = s*60, h = n*60, d = h*24, w = d * 7, m = d*30, y = d*365;
 		
 		var map = {
 			l: l,
@@ -25,9 +61,9 @@ Ext.define('NP.lib.core.Util', {
 			n: n,
 			h: h,
 			d: d,
-			ww: ww,
+			w: w,
 			m: m,
-			yyyy: yyyy
+			y: y
 		};
 		
 		diff = diff / map[part];
@@ -39,19 +75,11 @@ Ext.define('NP.lib.core.Util', {
 		}
 	},
 	
-	// This is to be used on model string fields; it ensures that the field is treated as a string (as opposed to a number or boolean)
-	//and trims it to remove whitespaces added to CF queries in order to serialize JSON properly for values like "Yes" and "No" 
-	modelStringConverter: function(val, rec) {
-		var newVal = val;
-		if (newVal == null) {
-			newVal = '';
-		}
-		if (typeof newVal != 'string') {
-			newVal = newVal.toString();
-		}
-		return Ext.String.trim(newVal);
-	},
-	
+	/**
+	 * Function to render currency values
+	 * @param  {number/string}
+	 * @return {string}
+	 */
 	currencyRenderer: function(val) {
 		return Ext.util.Format.currency(val);
 	}

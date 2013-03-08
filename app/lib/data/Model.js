@@ -1,3 +1,9 @@
+/**
+ * Model is a class that extends the base Ext.data.Model class to fix a bug in Ext JS 4.1 where idProperty
+ * is not properly used.
+ *
+ * @author Thomas Messier
+ */
 Ext.define("NP.lib.data.Model", {
 	extend: "Ext.data.Model",
 	

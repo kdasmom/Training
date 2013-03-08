@@ -4,7 +4,7 @@ Ext.define('NP.model.PNUniversalField', {
 	
 	fields: [
 		{ name: 'universal_field_id', type: 'int' },
-		{ name: 'universal_field_data', type: 'string', convert: NP.lib.core.Util.modelStringConverter },
+		{ name: 'universal_field_data', type: 'string' },
 		{ name: 'universal_field_number', type: 'int' },
 		{ name: 'universal_field_status', type: 'string' },
 		{ name: 'universal_field_order', type: 'int' },

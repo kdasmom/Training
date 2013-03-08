@@ -1,3 +1,8 @@
+/**
+ * Creates a menu button that will expand on mouseover instead of requiring to be clicked
+ *
+ * @author Thomas Messier
+ */
 Ext.define('NP.lib.ui.HoverButton', {
     extend: 'Ext.Button',
     alias: 'widget.hoverButton',
