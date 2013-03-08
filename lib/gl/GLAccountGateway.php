@@ -77,8 +77,7 @@ class GLAccountGateway extends AbstractGateway {
 		
 		$select->where($where);
 		
-		$sql = $this->getSql();
-		$sqlStr = $sql->getSqlStringForSqlObject($select);
+		$sqlStr = $select->toString();
 		
 		if ( $this->configService->get("PN.Budget.FixedAssetSpecial", 0) ) {
 			$select = new Select();
@@ -95,7 +94,7 @@ class GLAccountGateway extends AbstractGateway {
 						)
 					");
 			
-			$sqlStr .= ' UNION ' . $sql->getSqlStringForSqlObject($select);
+			$sqlStr .= ' UNION ' . $select->toString();
 			$params[] = $property_id;
 			$params[] = $glaccount_keyword;
 			$params[] = $glaccount_keyword;
@@ -103,7 +102,7 @@ class GLAccountGateway extends AbstractGateway {
 		
 		$sqlStr .= ' ORDER BY gt.glaccounttype_name,' . $this->configService->get("PN.Budget.GLCodeSort", "glaccount_number");
 		
-		return $this->adapter->query($sqlStr, $params)->toArray();
+		return $this->adapter->query($sqlStr, $params);
 	}
 	
 	/**

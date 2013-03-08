@@ -34,7 +34,7 @@ $diDefinition = array(
 	'Zend\Cache\Storage\Adapter\WinCache',
 	'NP\core\db\Adapter'                       => array('dbServer','dbName','dbUsername','dbPassword'),
 	'NP\gl\GLAccountGateway'                   => array('Adapter','ConfigService'),
-	'NP\gl\GLAccountService'                   => array('GLAccountGateway'),
+	'NP\gl\GLService'                          => array('GLAccountGateway'),
 	'NP\invoice\InvoiceGateway'                => array('Adapter','PropertyGateway'),
 	'NP\invoice\InvoiceItemGateway'            => array('Adapter'),
 	'NP\invoice\InvoiceService'                => array('SecurityService','InvoiceGateway','InvoiceItemGateway'),

@@ -1,7 +1,25 @@
+/**
+ * The Config class is used to control everything that relates to configuration settings, either at the
+ * application level or the user level.
+ *
+ * @author Thomas Messier
+ */
 Ext.define('NP.lib.ui.ComboBox', {
 	extend : 'Ext.form.field.ComboBox',
 	alias : 'widget.customcombo',
 	
+	/**
+	 * @cfg {"normal"/"autocomplete"} type The type of ComboBox; can be set to either "normal" or "autocomplete"; defaults to "normal"
+	 */
+	/**
+	 * @cfg {boolean}                 addBlankRecord    Set to true if you want a blank record to be added as the first record of this combo box's store
+	 */
+	/**
+	 * @cfg {boolean}                 selectFirstRecord Set to true if you want the first record of the store to be selected by default
+	 */
+	/**
+	 * @cfg {Array}                   dependentCombos   An array of IDs for combo boxes that depend on this combo; when the value of this combo is changed, the valueField will be added as a parameter to the proxy of the dependent combos specified and reload their stores
+	 */
 	constructor: function(cfg) {
 		Ext.applyIf(cfg, {
 		  type: 'normal'
@@ -9,76 +27,75 @@ Ext.define('NP.lib.ui.ComboBox', {
 
 		var defaultCfg = {
 			forceSelection: true,
-			tpl: new Ext.XTemplate('<tpl for=".">' + '<li style="height:22px;" class="x-boundlist-item" role="option">' + '{'+cfg.displayField+'}' + '</li></tpl>'),
-			listeners: {} 
+			tpl           : new Ext.XTemplate('<tpl for=".">' + '<li style="height:22px;" class="x-boundlist-item" role="option">' + '{'+cfg.displayField+'}' + '</li></tpl>'),
+			listeners     : {},
+			addBlankRecord: true 
 		};
 		if (cfg.type == 'autocomplete') {
 			Ext.apply(defaultCfg, {
-				queryMode: 'remote',
-				typeAhead: false,
+				queryMode  : 'remote',
+				typeAhead  : false,
 				hideTrigger:true
 			});
 		} else {
 			Ext.apply(defaultCfg, {
-				queryMode: 'local',
-				typeAhead: true,
+				queryMode          : 'local',
+				typeAhead          : true,
 				allowOnlyWhitespace: true,
-				editable: true
+				editable           : true
 			});
 		}
 		Ext.applyIf(cfg, defaultCfg);
-		
-		Ext.apply(cfg.listeners, {
-			keyup: function(field) {
-				var val = field.getRawValue();
-				if (val === '' || val === null) {
-					field.clearValue();
-				}
+
+		// Key events must be on
+		cfg.enableKeyEvents = true;
+
+		this.callParent(arguments);
+
+		// Add keyup listener so that value can be cleared
+		this.addListener('keyup', function(combo) {
+			var val = combo.getRawValue();
+			if (val === '' || val === null) {
+				combo.clearValue();
 			}
 		});
 
+		// If type is autocomplete
 		if (cfg.type == 'autocomplete') {
-			Ext.apply(cfg.listeners, {
-				beforerender: function(combo) {
-					// Add a blank record to the store
-					combo.getStore().addListener('load', function(store) {
-						var rec = {};
-						rec[combo.displayField] = '';
-						rec[combo.valueField] = '';
-						store.insert(0, rec);
-					});
+			// Disable the down arrow key; note that this is a private method
+			this.onDownArrow = Ext.emptyFn;
+
+			this.addListener('beforerender', function(combo) {
+				if ('defaultRec' in combo) {
+					// Add the current value to the store, otherwise you have an empty store
+					combo.getStore().add(combo.defaultRec);
 					
-					if ('defaultRec' in combo) {
-						// Add the current value to the store, otherwise you have an empty store
-						combo.getStore().add(combo.defaultRec);
-						
-						// Suspend events briefly to prevent change events from firing
-						combo.suspendEvents(false);
-						// Set the current value
-						combo.setValue( combo.defaultRec[combo.valueField] );
-						// Re-enable events
-						combo.resumeEvents();
-					}
-					
-					if ('extraParams' in combo) {
-						var proxy = combo.getStore().getProxy();
-						Ext.apply(proxy.extraParams, combo.extraParams);
-					}
+					// Suspend events briefly to prevent change events from firing
+					combo.suspendEvents(false);
+					// Set the current value
+					combo.setValue( combo.defaultRec[combo.valueField] );
+					// Re-enable events
+					combo.resumeEvents();
+				}
+				
+				if ('extraParams' in combo) {
+					var proxy = combo.getStore().getProxy();
+					Ext.apply(proxy.extraParams, combo.extraParams);
 				}
 			});
 		}
 
+		// If addBlankRecord is true, add a blank record at the beginning of the store to make it easy for the user to select
+		// a blank value
 		if (cfg.addBlankRecord) {
-			Ext.apply(cfg.listeners, {
-				beforerender: function(combo) {
-					// Add a blank record to the store
-					combo.getStore().addListener('load', function(store) {
-						var rec = {};
-						rec[combo.displayField] = '';
-						rec[combo.valueField] = '';
-						store.insert(0, rec);
-					});
-				}
+			this.addListener('beforerender', function(combo) {
+				// Add a blank record to the store
+				combo.getStore().addListener('load', function(store) {
+					var rec = {};
+					rec[combo.displayField] = '';
+					rec[combo.valueField] = '';
+					store.insert(0, rec);
+				});
 			});
 		}
 
@@ -96,49 +113,32 @@ Ext.define('NP.lib.ui.ComboBox', {
 					combo.resumeEvents();
 				}
 			}
-			Ext.apply(cfg.listeners, {
-				afterrender: function(combo) {
-					selectFirstRec(combo, cfg.valueField, cfg.value);
-				}
-			});
-		}
 
-		// If dependent combos are specified, add a select event to update them when the value of their parent combo is changed
-		if (cfg.dependentCombos) {
-			// If a function was already set for the select event, we need to make sure we still call it
-			var origSelect = (cfg.listeners.select) ? cfg.listeners.select : function() {};
-			Ext.apply(cfg.listeners, {
-				select: function(combo, recs) {
-					// Call the function originally set for that event
-					origSelect(combo, recs);
-
-					for (var i=0; i<cfg.dependentCombos.length; i++) {
-						var combo = Ext.ComponentQuery.query('#'+cfg.dependentCombos[i]);
-						if (combo.length) {
-							combo = combo[0];
-							var store = combo.getStore();
-							if (combo.queryMode == 'remote') {
-								var proxy = store.getProxy();
-								proxy.extraParams[cfg.valueField] = recs[0].get(cfg.valueField);
-								store.load();
-							} else {
-								store.clearFilter(true);
-								store.filter(cfg.valueField, recs[0].get(cfg.valueField));
-							}
-						}
-					}
-				}
-			});
-		}
-		
-		this.callParent(arguments);
-
-		if (cfg.selectFirstRecord) {
 			this.addListener('beforerender', function(combo) {
 				combo.getStore().addListener('load', function(store) {
 					var val = combo.getValue();
 					selectFirstRec(combo, cfg.valueField, val);
 				});
+			});
+
+			this.addListener('afterrender', function(combo) {
+				selectFirstRec(combo, cfg.valueField, cfg.value);
+			});
+		}
+
+		// If dependent combos are specified, add a select event to update them when the value of their parent combo is changed
+		if (cfg.dependentCombos) {
+			this.addListener('select', function(combo, recs) {
+				for (var i=0; i<cfg.dependentCombos.length; i++) {
+					var combo = Ext.ComponentQuery.query('#'+cfg.dependentCombos[i]);
+					if (combo.length) {
+						combo = combo[0];
+						var store = combo.getStore();
+						var proxy = store.getProxy();
+						proxy.extraParams[cfg.valueField] = recs[0].get(cfg.valueField);
+						store.load();
+					}
+				}
 			});
 		}
 	}
