@@ -1,0 +1,52 @@
+<!-- edited with XMLSPY v2004 rel. 3 U (http://www.xmlspy.com) by Chris Estes (Nexus Systems) -->
+<ServerConfiguration>	
+	<client>
+		<name>UStoreitQA</name>
+		<status>active</status>
+		<application_name>UStoreitQA</application_name>
+		<access_url>*/UStoreitQA/</access_url>
+		<CONFIG>
+			<asp>
+				<client_id>38</client_id>
+			</asp>
+			<PN>
+				<Main>
+					<LoginUrl>http://cfsites/UStoreitQA/</LoginUrl>
+					<dsn>UStoreitQA</dsn>
+				</Main>
+			</PN>
+			<main>
+				<DATASOURCE>
+					<main><![CDATA[ 'UStoreitQA' ]]></main>
+				</DATASOURCE>
+				<CLIENTTYPE>UStoreit QA</CLIENTTYPE>
+			</main>
+		</CONFIG>
+	</client>
+	<client>
+		<name>SIMPSONDev</name>
+		<status>active</status>
+		<application_name>simpson</application_name>
+		<access_url>*/NexusPayablesExt/</access_url>
+		<access_url>*/NexusPayablesPHP/</access_url>
+		<access_url>*/simpsonMobile/</access_url>
+		<access_url>simpson.nexusdev.com</access_url>
+		<CONFIG>
+			<asp>
+				<client_id>41</client_id>
+			</asp>
+			<PN>
+				<Main>
+					<LoginUrl>http://localhost/NexusPayablesPHP/</LoginUrl>
+					<dsn>SIMPSON</dsn>
+				</Main>
+			</PN>
+			<main>
+				<DATASOURCE>
+					<main><![CDATA[ 'SIMPSON' ]]></main>
+				</DATASOURCE>
+				<CLIENTTYPE>Development</CLIENTTYPE>	
+			</main>
+		</CONFIG>
+	</client>
+</ServerConfiguration>
