@@ -16,7 +16,7 @@ class ConfigsysGateway extends AbstractGateway {
 	/**
 	 * Modify the default Select object used to run queries on CONFIGSYS to include the CONFIGSYSVAL data as well
 	 *
-	 * @return NP\core\db\Select
+	 * @param \NP\core\db\Select
 	 */
 	public function getSelect() {
 		$select = new Select();

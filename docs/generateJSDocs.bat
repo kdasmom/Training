@@ -1,0 +1,1 @@
+jsduck ../vendor/extjs/src ../vendor/deftjs/deft-debug.js ../app  --output js

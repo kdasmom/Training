@@ -19,17 +19,17 @@ class ConfigService extends AbstractService {
 	protected $cache;
 
 	/**
-	 * @var NP\system\SiteService
+	 * @var \NP\system\SiteService
 	 */
 	protected $siteService;
 	
 	/**
-	 * @var NP\system\ConfigsysGateway
+	 * @var \NP\system\ConfigsysGateway
 	 */
 	protected $configsysGateway;
 	
 	/**
-	 * @var NP\system\IntegrationRequirementsGateway
+	 * @var \NP\system\IntegrationRequirementsGateway
 	 */
 	protected $intReqGateway;
 	
@@ -45,10 +45,10 @@ class ConfigService extends AbstractService {
 	
 	/**
 	 * @param Zend\Cache\Storage\Adapter\WinCache      $cache                   WinCache object injected
-	 * @param NP\system\SiteService                    $siteService             SiteService object injected
-	 * @param NP\system\ConfigsysGateway               $configsysGateway        ConfigsysGateway object injected
-	 * @param NP\system\PNUniversalFieldGateway        $pnUniversalFieldGateway PNUniversalFieldGateway object injected
-	 * @param NP\system\IntegrationRequirementsGateway $intReqGateway           IntegrationRequirementsGateway object injected
+	 * @param \NP\system\SiteService                    $siteService             SiteService object injected
+	 * @param \NP\system\ConfigsysGateway               $configsysGateway        ConfigsysGateway object injected
+	 * @param \NP\system\PNUniversalFieldGateway        $pnUniversalFieldGateway PNUniversalFieldGateway object injected
+	 * @param \NP\system\IntegrationRequirementsGateway $intReqGateway           IntegrationRequirementsGateway object injected
 	 * @param boolean                                  $reloadCache             Whether to reload the cache at instantiation time (optional); defaults to false
 	 */
 	public function __construct(WinCache $cache, SiteService $siteService, ConfigsysGateway $configsysGateway, 

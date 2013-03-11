@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<phpdoc>
+<title>NexusPayables</title>
+<parser>
+	<target>php</target>
+</parser>
+<transformer>
+	<target>php</target>
+</transformer>
+<files>
+	<directory>../lib</directory>
+</files>
+</phpdoc>

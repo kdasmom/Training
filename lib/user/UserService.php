@@ -16,46 +16,46 @@ use NP\gl\GLAccountGateway;
  */
 class UserService extends AbstractService {
 	/**
-	 * @var NP\system\SecurityService
+	 * @var \NP\system\SecurityService
 	 */
 	protected $securityService;
 	/**
-	 * @var NP\system\InvoiceService
+	 * @var \NP\system\InvoiceService
 	 */
 	protected $invoiceService;
 	
 	/**
-	 * @var NP\property\PropertyGateway
+	 * @var \NP\property\PropertyGateway
 	 */
 	protected $propertyGateway;
 	
 	/**
-	 * @var NP\property\RegionGateway
+	 * @var \NP\property\RegionGateway
 	 */
 	protected $regionGateway;
 	
 	/**
-	 * @var NP\gl\GLAccountGateway
+	 * @var \NP\gl\GLAccountGateway
 	 */
 	protected $glaccountGateway;
 
 	/**
-	 * @var NP\user\DelegationGateway
+	 * @var \NP\user\DelegationGateway
 	 */
 	protected $delegationGateway;
 
 	/**
-	 * @var NP\user\UserSettingGateway
+	 * @var \NP\user\UserSettingGateway
 	 */
 	protected $userSettingGateway;
 
 	/**
-	 * @param NP\system\SecurityService    $securityService   SecurityService object injected
-	 * @param NP\invoice\InvoiceService    $invoiceService    InvoiceService object injected
-	 * @param NP\property\PropertyGateway  $propertyGateway   PropertyGateway object injected
-	 * @param NP\invoice\RegionGateway     $regionGateway     RegionGateway object injected
-	 * @param NP\invoice\GLAccountGateway  $gLAccountGateway  GLAccountGateway object injected
-	 * @param NP\invoice\DelegationGateway $delegationGateway DelegationGateway object injected
+	 * @param \NP\system\SecurityService    $securityService   SecurityService object injected
+	 * @param \NP\invoice\InvoiceService    $invoiceService    InvoiceService object injected
+	 * @param \NP\property\PropertyGateway  $propertyGateway   PropertyGateway object injected
+	 * @param \NP\invoice\RegionGateway     $regionGateway     RegionGateway object injected
+	 * @param \NP\invoice\GLAccountGateway  $gLAccountGateway  GLAccountGateway object injected
+	 * @param \NP\invoice\DelegationGateway $delegationGateway DelegationGateway object injected
 	 */
 	public function __construct(SecurityService $securityService, InvoiceService $invoiceService, PropertyGateway $propertyGateway, RegionGateway $regionGateway, 
 								GLAccountGateway $glaccountGateway, DelegationGateway $delegationGateway, UserSettingGateway $userSettingGateway) {

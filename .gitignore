@@ -14,6 +14,12 @@ composer.lock
 # Ignore Phinx configuration file, the user should generate his/her own by running the command "phinx init"
 phinx.yml
 
+# Ignore docs except the files needed for generating them
+docs/*
+!docs/generateJSDocs.bat
+!docs/phpdoc.dist.xml
+!docs/readme.txt
+
 # Ignore all log files
 *.log
 

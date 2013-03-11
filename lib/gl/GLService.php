@@ -12,12 +12,12 @@ use NP\core\AbstractService;
 class GLService extends AbstractService {
 	
 	/**
-	 * @var NP\gl\GLAccountGateway
+	 * @var \NP\gl\GLAccountGateway
 	 */
 	protected $glaccountGateway;
 	
 	/**
-	 * @param NP\gl\GLAccountGateway $glaccountGateway GLAccount gateway injected
+	 * @param \NP\gl\GLAccountGateway $glaccountGateway GLAccount gateway injected
 	 */
 	public function __construct(GLAccountGateway $glaccountGateway) {
 		$this->glaccountGateway = $glaccountGateway;

@@ -17,25 +17,25 @@ use NP\util\Util;
 class SecurityService extends AbstractService {
 	
 	/**
-	 * @var NP\user\UserprofileGateway
+	 * @var \NP\user\UserprofileGateway
 	 */
 	protected $userprofileGateway;
 	
 	/**
-	 * @var NP\user\UserprofileLogonGateway
+	 * @var \NP\user\UserprofileLogonGateway
 	 */
 	protected $userprofileLogonGateway;
 	
 	/**
-	 * @var NP\user\ModulePrivGateway
+	 * @var \NP\user\ModulePrivGateway
 	 */
 	protected $modulePrivGateway;
 	
 	/**
-	 * @param NP\system\Session               $session                 Session object injected
-	 * @param NP\user\UserprofileGateway      $userprofileGateway      UserprofileGateway object injected
-	 * @param NP\user\UserprofileLogonGateway $userprofileLogonGateway UserprofileLogonGateway object injected
-	 * @param NP\user\ModulePrivGateway       $modulePrivGateway       ModulePrivGateway object injected
+	 * @param \NP\system\Session               $session                 Session object injected
+	 * @param \NP\user\UserprofileGateway      $userprofileGateway      UserprofileGateway object injected
+	 * @param \NP\user\UserprofileLogonGateway $userprofileLogonGateway UserprofileLogonGateway object injected
+	 * @param \NP\user\ModulePrivGateway       $modulePrivGateway       ModulePrivGateway object injected
 	 */
 	public function __construct(Session $session, UserprofileGateway $userprofileGateway, 
 								UserprofileLogonGateway $userprofileLogonGateway, ModulePrivGateway $modulePrivGateway) {

@@ -20,7 +20,7 @@ class InvoiceItemSelect extends Select {
 	 * Joins the GLACCOUNT table
 	 *
 	 * @param  string[] $cols               Columns to retrieve from the table
-	 * @return NP\invoice\InvoiceItemSelect Returns caller object for easy chaining
+	 * @param \NP\invoice\InvoiceItemSelect Returns caller object for easy chaining
 	 */
 	public function joinGL($cols=array()) {
 		return $this->join(array('g' => 'glaccount'),
@@ -32,7 +32,7 @@ class InvoiceItemSelect extends Select {
 	 * Joins the PROPERTY table
 	 *
 	 * @param  string[] $cols               Columns to retrieve from the table
-	 * @return NP\invoice\InvoiceItemSelect Returns caller object for easy chaining
+	 * @param \NP\invoice\InvoiceItemSelect Returns caller object for easy chaining
 	 */
 	public function joinProperty($cols=array()) {
 		return $this->join(array('p' => 'property'),
@@ -44,7 +44,7 @@ class InvoiceItemSelect extends Select {
 	 * Left joins the UTILITYACCOUNT table
 	 *
 	 * @param  string[] $cols               Columns to retrieve from the table
-	 * @return NP\invoice\InvoiceItemSelect Returns caller object for easy chaining
+	 * @param \NP\invoice\InvoiceItemSelect Returns caller object for easy chaining
 	 */
 	public function joinUtil($cols=array()) {
 		return $this->join(array('ua' => 'UTILITYACCOUNT'),
@@ -61,7 +61,7 @@ class InvoiceItemSelect extends Select {
 	 * @param  string[] $jobcodeCols        Columns to retrieve from the JBJOBCODE table
 	 * @param  string[] $phasecodeCols      Columns to retrieve from the JBPHASECODE table
 	 * @param  string[] $costcodeCols       Columns to retrieve from the JBCOSTCODE table
-	 * @return NP\invoice\InvoiceItemSelect Returns caller object for easy chaining
+	 * @param \NP\invoice\InvoiceItemSelect Returns caller object for easy chaining
 	 */
 	public function joinJobcost($contractCols=array(), $changeorderCols=array(), $jobcodeCols=array(), $phasecodeCols=array(), $costcodeCols=array()) {
 		return $this->join(array('jba' => 'JBJOBASSOCIATION'),
@@ -94,7 +94,7 @@ class InvoiceItemSelect extends Select {
 	 * Left joins the UNITTYPE_MATERIAL table
 	 *
 	 * @param  string[] $cols               Columns to retrieve from the table
-	 * @return NP\invoice\InvoiceItemSelect Returns caller object for easy chaining
+	 * @param \NP\invoice\InvoiceItemSelect Returns caller object for easy chaining
 	 */
 	public function joinUnitTypeMaterial($cols=array()) {
 		return $this->join(array('uma' => 'unittype_material'),
@@ -107,7 +107,7 @@ class InvoiceItemSelect extends Select {
 	 * Left joins the UNITTYPE_MEAS table
 	 *
 	 * @param  string[] $cols               Columns to retrieve from the table
-	 * @return NP\invoice\InvoiceItemSelect Returns caller object for easy chaining
+	 * @param \NP\invoice\InvoiceItemSelect Returns caller object for easy chaining
 	 */
 	public function joinUnitTypeMeas($cols=array()) {
 		return $this->join(array('ume' => 'unittype_meas'),

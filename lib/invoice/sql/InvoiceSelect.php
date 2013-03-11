@@ -23,7 +23,7 @@ class InvoiceSelect extends Select {
 	 *
 	 * @param  string[] $vendorsiteCols Columns to retrieve from the VENDORSITE table
 	 * @param  string[] $vendorCols     Columns to retrieve from the VENDOR table
-	 * @return NP\invoice\InvoiceSelect Returns caller object for easy chaining
+	 * @param \NP\invoice\InvoiceSelect Returns caller object for easy chaining
 	 */
 	public function joinVendor($vendorsiteCols=array(), $vendorCols=array()) {
 		return $this->join(array('vs' => 'vendorsite'),
@@ -38,7 +38,7 @@ class InvoiceSelect extends Select {
 	 * Joins the PROPERTY table
 	 *
 	 * @param  string[] $cols               Columns to retrieve from the table
-	 * @return NP\invoice\InvoiceSelect Returns caller object for easy chaining
+	 * @param \NP\invoice\InvoiceSelect Returns caller object for easy chaining
 	 */
 	public function joinProperty($cols=array()) {
 		return $this->join(array('p' => 'property'),
@@ -50,7 +50,7 @@ class InvoiceSelect extends Select {
 	 * Joins the USERPROFILE table
 	 *
 	 * @param  string[] $cols               Columns to retrieve from the table
-	 * @return NP\invoice\InvoiceSelect Returns caller object for easy chaining
+	 * @param \NP\invoice\InvoiceSelect Returns caller object for easy chaining
 	 */
 	public function joinUserprofile($cols=array()) {
 		return $this->join(array('r' => 'recauthor'),
@@ -64,7 +64,7 @@ class InvoiceSelect extends Select {
 	/**
 	 * Adds the invoice amount subquery as a column
 	 *
-	 * @return NP\invoice\InvoiceSelect Returns caller object for easy chaining
+	 * @param \NP\invoice\InvoiceSelect Returns caller object for easy chaining
 	 */
 	public function columnInvoiceAmount() {
 		$subSelect = new Select();
@@ -78,7 +78,7 @@ class InvoiceSelect extends Select {
 	/**
 	 * Adds the rejected date subquery as a column
 	 *
-	 * @return NP\invoice\InvoiceSelect Returns caller object for easy chaining
+	 * @param \NP\invoice\InvoiceSelect Returns caller object for easy chaining
 	 */
 	public function columnRejectedDate() {
 		$approveTypeSubSelect = $this->getApproveTypeSubSelect('rejected');
@@ -101,7 +101,7 @@ class InvoiceSelect extends Select {
 	/**
 	 * Adds the rejected by subquery as a column
 	 *
-	 * @return NP\invoice\InvoiceSelect Returns caller object for easy chaining
+	 * @param \NP\invoice\InvoiceSelect Returns caller object for easy chaining
 	 */
 	public function columnRejectedBy() {
 		$approveTypeSubSelect = $this->getApproveTypeSubSelect('rejected');
@@ -134,7 +134,7 @@ class InvoiceSelect extends Select {
 	/**
 	 * Adds the created by subquery as a column
 	 *
-	 * @return NP\invoice\InvoiceSelect Returns caller object for easy chaining
+	 * @param \NP\invoice\InvoiceSelect Returns caller object for easy chaining
 	 */
 	public function columnCreatedBy() {
 		$subSelect = new Select();

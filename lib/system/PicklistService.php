@@ -11,12 +11,12 @@ use NP\core\AbstractService;
  */
 class PicklistService extends AbstractService {
 	/**
-	 * @var NP\system\PicklistGateway
+	 * @var \NP\system\PicklistGateway
 	 */
 	protected $picklistGateway;
 
 	/**
-	 * @param NP\system\PicklistGateway $picklistGateway PicklistGateway object injected
+	 * @param \NP\system\PicklistGateway $picklistGateway PicklistGateway object injected
 	 */
 	public function __construct(PicklistGateway $picklistGateway) {
 		$this->picklistGateway = $picklistGateway;

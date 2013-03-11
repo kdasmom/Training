@@ -12,30 +12,30 @@ use NP\system\SecurityService;
  */
 class InvoiceService extends AbstractService {
 	/**
-	 * @var NP\system\SecurityService
+	 * @var \NP\system\SecurityService
 	 */
 	protected $securityService;
 	
 	/**
-	 * @var NP\invoice\InvoiceGateway
+	 * @var \NP\invoice\InvoiceGateway
 	 */
 	protected $invoiceGateway;
 	
 	/**
-	 * @var NP\invoice\InvoiceItemGateway
+	 * @var \NP\invoice\InvoiceItemGateway
 	 */
 	protected $invoiceItemGateway;
 	
 	/**
-	 * @var NP\invoice\InvoiceValidator
+	 * @var \NP\invoice\InvoiceValidator
 	 */
 	protected $invoiceValidator;
 	
 	/**
-	 * @param NP\system\SecurityService     $securityService    SecurityService object injected
-	 * @param NP\invoice\InvoiceGateway     $invoiceGateway     InvoiceGateway object injected
-	 * @param NP\invoice\InvoiceItemGateway $invoiceItemGateway InvoiceItemGateway object injected
-	 * @param NP\invoice\InvoiceValidator   $invoiceValidator   InvoiceValidator object injected
+	 * @param \NP\system\SecurityService     $securityService    SecurityService object injected
+	 * @param \NP\invoice\InvoiceGateway     $invoiceGateway     InvoiceGateway object injected
+	 * @param \NP\invoice\InvoiceItemGateway $invoiceItemGateway InvoiceItemGateway object injected
+	 * @param \NP\invoice\InvoiceValidator   $invoiceValidator   InvoiceValidator object injected
 	 */
 	public function __construct(SecurityService $securityService, InvoiceGateway $invoiceGateway, 
 								InvoiceItemGateway $invoiceItemGateway) {

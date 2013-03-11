@@ -17,12 +17,12 @@ class Where implements SQLElement {
 	protected $predicates = array();
 
 	/**
-	 * @var NP\core\db\Where Points to the current Where object in the nested object structure
+	 * @var \NP\core\db\Where Points to the current Where object in the nested object structure
 	 */
 	protected $currentWhere;
 
 	/**
-	 * @var NP\core\db\Where Points to the Where object one level below in the nested object structure
+	 * @var \NP\core\db\Where Points to the Where object one level below in the nested object structure
 	 */
 	protected $previousWhere;
 
@@ -72,7 +72,7 @@ class Where implements SQLElement {
 	 * Create a new nesting group in the WHERE clause
 	 *
 	 * @param  $logicalOperator string Logical operator to use (can be "AND" or "OR")
-	 * @return NP\core\db\Where        A newly created nested Where object for easy chaining
+	 * @param \NP\core\db\Where        A newly created nested Where object for easy chaining
 	 */
 	public function nest($logicalOperator=self::AND_OP) {
 		// Make sure the $logicalOperator arguments is valid
@@ -95,7 +95,7 @@ class Where implements SQLElement {
 	/**
 	 * Exit a nesting group in the WHERE clause
 	 *
-	 * @return NP\core\db\Where The Where object one level done in the nesting structure
+	 * @param \NP\core\db\Where The Where object one level done in the nesting structure
 	 */
 	public function unnest() {
 		// Move back down one level
@@ -110,7 +110,7 @@ class Where implements SQLElement {
 	 *
 	 * @param  $name      string Name of the method to call; valid values are "AND" or "OR"
 	 * @param  $arguments array  Arguments passed to the method
-	 * @return NP\core\db\Where  The Where object one level done in the nesting structure
+	 * @param \NP\core\db\Where  The Where object one level done in the nesting structure
 	 */
 	public function __call($name, $arguments) {
 		switch (strtolower($name)) {
@@ -133,7 +133,7 @@ class Where implements SQLElement {
      * @param  string|SQLElement $left     Left side of the comparison
      * @param  string|SQLElement $right    Right side of the comparison
      * @param  string|SQLElement $right2   Second right side of the comparison (optional); only used by BETWEEN operator
-     * @return NP\core\db\Where            The current Where object
+     * @param \NP\core\db\Where            The current Where object
      */
 	public function op($operator, $left, $right, $right2=null) {
 		$operator = strtoupper($operator);
@@ -156,7 +156,7 @@ class Where implements SQLElement {
 	 * Allows adding an arbitrary string expression as a condition
 	 *
 	 * @param  $where string    A string to be used in the WHERE clause
-	 * @return NP\core\db\Where The current Where object
+	 * @param \NP\core\db\Where The current Where object
 	 */
 	public function expression($where) {
 		$this->currentWhere->predicates[] = new Expression($where);
@@ -169,7 +169,7 @@ class Where implements SQLElement {
 	 *
 	 * @param  string|SQLElement $left  Left side of the comparison
      * @param  string|SQLElement $right Right side of the comparison
-     * @return NP\core\db\Where         The current Where object
+     * @param \NP\core\db\Where         The current Where object
 	 */
 	public function equals($left, $right) {
 		return $this->currentWhere->op('=', $left, $right);
@@ -180,7 +180,7 @@ class Where implements SQLElement {
 	 *
 	 * @param  string|SQLElement $left  Left side of the comparison
      * @param  string|SQLElement $right Right side of the comparison
-     * @return NP\core\db\Where         The current Where object
+     * @param \NP\core\db\Where         The current Where object
 	 */
 	public function notEquals($left, $right) {
 		return $this->currentWhere->op('<>', $left, $right);
@@ -191,7 +191,7 @@ class Where implements SQLElement {
 	 *
 	 * @param  string|SQLElement $left  Left side of the comparison
      * @param  string|SQLElement $right Right side of the comparison
-     * @return NP\core\db\Where         The current Where object
+     * @param \NP\core\db\Where         The current Where object
 	 */
 	public function in($left, $right) {
 		return $this->currentWhere->op('IN', $left, $right);
@@ -202,7 +202,7 @@ class Where implements SQLElement {
 	 *
 	 * @param  string|SQLElement $left  Left side of the comparison
      * @param  string|SQLElement $right Right side of the comparison
-     * @return NP\core\db\Where         The current Where object
+     * @param \NP\core\db\Where         The current Where object
 	 */
 	public function notIn($left, $right) {
 		return $this->currentWhere->op('NOT IN', $left, $right);
@@ -213,7 +213,7 @@ class Where implements SQLElement {
 	 *
 	 * @param  string|SQLElement $left  Left side of the comparison
      * @param  string|SQLElement $right Right side of the comparison
-     * @return NP\core\db\Where         The current Where object
+     * @param \NP\core\db\Where         The current Where object
 	 */
 	public function like($left, $right) {
 		return $this->currentWhere->op('LIKE', $left, $right);
@@ -225,7 +225,7 @@ class Where implements SQLElement {
 	 * @param  string|SQLElement $left   Left side of the comparison
      * @param  string|SQLElement $right  Right side of the comparison
      * @param  string|SQLElement $right2 Second right side of the comparison
-     * @return NP\core\db\Where          The current Where object
+     * @param \NP\core\db\Where          The current Where object
 	 */
 	public function between($left, $right, $right2) {
 		return $this->currentWhere->op('BETWEEN', $left, $right, $right2);
@@ -236,7 +236,7 @@ class Where implements SQLElement {
 	 *
 	 * @param  string|SQLElement $left  Left side of the comparison
      * @param  string|SQLElement $right Right side of the comparison
-     * @return NP\core\db\Where         The current Where object
+     * @param \NP\core\db\Where         The current Where object
 	 */
 	public function greaterThan($left, $right) {
 		return $this->currentWhere->op('>', $left, $right);
@@ -247,7 +247,7 @@ class Where implements SQLElement {
 	 *
 	 * @param  string|SQLElement $left  Left side of the comparison
      * @param  string|SQLElement $right Right side of the comparison
-     * @return NP\core\db\Where         The current Where object
+     * @param \NP\core\db\Where         The current Where object
 	 */
 	public function greaterThanOrEqual($left, $right) {
 		return $this->currentWhere->op('>=', $left, $right);
@@ -258,7 +258,7 @@ class Where implements SQLElement {
 	 *
 	 * @param  string|SQLElement $left  Left side of the comparison
      * @param  string|SQLElement $right Right side of the comparison
-     * @return NP\core\db\Where         The current Where object
+     * @param \NP\core\db\Where         The current Where object
 	 */
 	public function lessThan($left, $right) {
 		return $this->currentWhere->op('<', $left, $right);
@@ -269,7 +269,7 @@ class Where implements SQLElement {
 	 *
 	 * @param  string|SQLElement $left  Left side of the comparison
      * @param  string|SQLElement $right Right side of the comparison
-     * @return NP\core\db\Where         The current Where object
+     * @param \NP\core\db\Where         The current Where object
 	 */
 	public function lessThanOrEqual($left, $right) {
 		return $this->currentWhere->op('<=', $left, $right);

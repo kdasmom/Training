@@ -36,7 +36,7 @@ class Insert implements SQLInterface, SQLElement {
 	 * Sets the table to insert into
 	 *
 	 * @param  $table string     Table to isert into
-	 * @return NP\core\db\Insert Return caller object for easy chaining
+	 * @param \NP\core\db\Insert Return caller object for easy chaining
 	 */
 	public function into($table) {
 		$this->table = $table;
@@ -47,7 +47,7 @@ class Insert implements SQLInterface, SQLElement {
 	 * Adds a set of values to be inserted
 	 *
 	 * @param $values array      Values to insert in the table
-	 * @return NP\core\db\Insert Return caller object for easy chaining
+	 * @param \NP\core\db\Insert Return caller object for easy chaining
 	 */
 	public function values($values) {
 		$this->values = $values;
@@ -59,7 +59,7 @@ class Insert implements SQLInterface, SQLElement {
 	 *
 	 * @param $col   string        Column to insert in the table
 	 * @param $value number|string Value of the column to insert in the table
-	 * @return NP\core\db\Insert   Return caller object for easy chaining
+	 * @param \NP\core\db\Insert   Return caller object for easy chaining
 	 */
 	public function value($col, $value) {
 		$this->values[$col] = $value;

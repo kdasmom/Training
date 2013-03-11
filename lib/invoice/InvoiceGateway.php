@@ -16,13 +16,13 @@ use NP\core\db\Expression;
 class InvoiceGateway extends AbstractPOInvoiceGateway {
 	
 	/**
-	 * @var NP\property\PropertyGateway
+	 * @var \NP\property\PropertyGateway
 	 */
 	protected $propertyGateway;
 
 	/**
-	 * @param NP\core\db\Adapter     $adapter         Database adapter object injected
-	 * @param NP\property\PropertyGateway $propertyGateway PropertyGateway object injected
+	 * @param \NP\core\db\Adapter     $adapter         Database adapter object injected
+	 * @param \NP\property\PropertyGateway $propertyGateway PropertyGateway object injected
 	 */
 	public function __construct(Adapter $adapter, PropertyGateway $propertyGateway) {
 		$this->propertyGateway = $propertyGateway;

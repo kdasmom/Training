@@ -39,14 +39,14 @@ abstract class AbstractGateway {
 	 * The logging service singleton gets automatically injected via setter injection
 	 * (setLoggingService() function).
 	 *
-	 * @var NP\system\LoggingService The logging service singleton
+	 * @var \NP\system\LoggingService The logging service singleton
 	 */
 	protected $loggingService;
 
 	/**
 	 * The constructor sets up defaults an calls parent initialize() function
 	 *
-	 * @param NP\core\db\Adapter $adapter The DB adapter that is automatically injected (see config.php and di_config.php for configuration)
+	 * @param \NP\core\db\Adapter $adapter The DB adapter that is automatically injected (see config.php and di_config.php for configuration)
 	 */
 	public function __construct(db\Adapter $adapter) {
 		$this->adapter = $adapter;
@@ -62,8 +62,8 @@ abstract class AbstractGateway {
 	}
 	
 	/**
-	 * @internal Setter function required by Zend Di to set the logging service via setter injection
-	 * @param NP\system\LoggingService $loggingService
+	 * Setter function required by Zend Di to set the logging service via setter injection
+	 * @param \NP\system\LoggingService $loggingService
 	 */
 	public function setLoggingService(\NP\system\LoggingService $loggingService) {
 		$this->loggingService = $loggingService;
@@ -260,7 +260,7 @@ abstract class AbstractGateway {
 	 * Transforms a select query object to the equivalent select count(*) query
 	 *
 	 * @param  NP\core\db\Select  $select      A select object
-	 * @return NP\core\db\Select               A select object like the one passed in but removing columns and doing a count(*) instead
+	 * @param \NP\core\db\Select               A select object like the one passed in but removing columns and doing a count(*) instead
 	 */
 	public function getSelectCountForPaging($select) {
 		// Clone the select statement passed to use it as a base

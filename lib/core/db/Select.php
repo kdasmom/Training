@@ -42,17 +42,17 @@ class Select implements SQLInterface, SQLElement {
 	protected $joins = array();
 
 	/**
-	 * @var NP\core\db\Where WHERE clause for the SELECT statement
+	 * @var \NP\core\db\Where WHERE clause for the SELECT statement
 	 */
 	protected $where = null;
 
 	/**
-	 * @var NP\core\db\Group GROUP BY clause for the SELECT statement
+	 * @var \NP\core\db\Group GROUP BY clause for the SELECT statement
 	 */
 	protected $group = null;
 
 	/**
-	 * @var NP\core\db\Order ORDER BY clause for the SELECT statement
+	 * @var \NP\core\db\Order ORDER BY clause for the SELECT statement
 	 */
 	protected $order = null;
 	
@@ -81,7 +81,7 @@ class Select implements SQLInterface, SQLElement {
 	 * Sets the main table for the FROM clause
 	 *
 	 * @param  $table string|array Main table for FROM clause; can be a string with the table name or an associative array with alias=>tableName; if using an associative array, the value can also be a Select object to use as a subquery
-	 * @return NP\core\db\Select   Caller object returned for easy chaining
+	 * @return \NP\core\db\Select   Caller object returned for easy chaining
 	 */
 	public function from($table) {
 		if (!$table instanceOf Table) {
@@ -95,7 +95,7 @@ class Select implements SQLInterface, SQLElement {
 	 * Adds a column to the list of columns to be fetched
 	 *
 	 * @param  $col string|array|NP\core\db\Expression|NP\core\db\Select Can be the name of a column from the main table as a string, an Expression object, or a Select object (subquery); each of these values can also be used as the column portion of an array in the format alias=>column
-	 * @return NP\core\db\Select                                         Caller object returned for easy chaining
+	 * @return \NP\core\db\Select                                         Caller object returned for easy chaining
 	 */
 	public function column($col, $alias=null) {
 		if ($alias === null) {
@@ -111,7 +111,7 @@ class Select implements SQLInterface, SQLElement {
 	 * Adds columns to be fetched
 	 *
 	 * @param  $cols array       An array of columns; see the column($col) method for valid column definitions
-	 * @return NP\core\db\Select Caller object returned for easy chaining
+	 * @return \NP\core\db\Select Caller object returned for easy chaining
 	 */
 	public function columns($cols) {
 		$this->cols = $cols;
@@ -122,7 +122,7 @@ class Select implements SQLInterface, SQLElement {
 	 * Sets if DISTINCT is included or not in the SELECT clause
 	 *
 	 * @param boolean $distinct
-	 * @return NP\core\db\Select Caller object returned for easy chaining
+	 * @return \NP\core\db\Select Caller object returned for easy chaining
 	 */
 	public function distinct($distinct=true) {
 		$this->distinct = $distinct;
@@ -134,7 +134,7 @@ class Select implements SQLInterface, SQLElement {
 	 *
 	 * @param boolean $distinct
 	 * @param string  $alias    Alias for count()
-	 * @return NP\core\db\Select Caller object returned for easy chaining
+	 * @return \NP\core\db\Select Caller object returned for easy chaining
 	 */
 	public function count($count=true, $alias=null) {
 		$this->count = $count;
@@ -149,7 +149,7 @@ class Select implements SQLInterface, SQLElement {
 	 * @param  $condition string       The join condition
 	 * @param  $cols      array        Columns from the join table to fetch
 	 * @param  $type      string       Type of join (optional); valid values are INNER, LEFT, and RIGHT; defaults to INNER
-	 * @return NP\core\db\Select Caller object returned for easy chaining
+	 * @return \NP\core\db\Select Caller object returned for easy chaining
 	 */
 	public function join($table, $condition, $cols=null, $type=self::JOIN_INNER) {
 		$type = strtoupper($type);
@@ -175,7 +175,7 @@ class Select implements SQLInterface, SQLElement {
 	 * Adds a WHERE clause to the statement
 	 *
 	 * @param $where string|array|NP\core\db\Where
-	 * @return NP\core\db\Select                   Caller object returned for easy chaining
+	 * @return \NP\core\db\Select                   Caller object returned for easy chaining
 	 */
 	public function where($where) {
 		if (!is_string($where) && !is_array($where) && !$where instanceOf Where) {
@@ -193,7 +193,7 @@ class Select implements SQLInterface, SQLElement {
 	 * Adds a GROUP BY clause to the statement
 	 *
 	 * @param $group string|array|NP\core\db\Group
-	 * @return NP\core\db\Select                   Caller object returned for easy chaining
+	 * @return \NP\core\db\Select                   Caller object returned for easy chaining
 	 */
 	public function group($group) {
 		if ($group !== null && !$group instanceOf Group) {
@@ -207,7 +207,7 @@ class Select implements SQLInterface, SQLElement {
 	 * Adds an ORDER BY clause to the statement
 	 *
 	 * @param $group string|array|NP\core\db\Order
-	 * @return NP\core\db\Select                   Caller object returned for easy chaining
+	 * @return \NP\core\db\Select                   Caller object returned for easy chaining
 	 */
 	public function order($order) {
 		if ($order !== null && !$order instanceOf Order) {
@@ -221,7 +221,7 @@ class Select implements SQLInterface, SQLElement {
 	 * Makes statement return only a certain number of records
 	 *
 	 * @param $limit int         The maximum number of records to return
-	 * @return NP\core\db\Select Caller object returned for easy chaining
+	 * @return \NP\core\db\Select Caller object returned for easy chaining
 	 */
 	public function limit($limit) {
 		$this->limit = $limit;
@@ -232,7 +232,7 @@ class Select implements SQLInterface, SQLElement {
 	 * Makes statement start returning records starting on a certain row
 	 *
 	 * @param $offset int        Row to start returning records from
-	 * @return NP\core\db\Select Caller object returned for easy chaining
+	 * @return \NP\core\db\Select Caller object returned for easy chaining
 	 */
 	public function offset($offset) {
 		$this->offset = $offset;

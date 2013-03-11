@@ -46,7 +46,7 @@ class Update implements SQLInterface, SQLElement {
 	 * Sets the table to insert into
 	 *
 	 * @param  $table string     Table to isert into
-	 * @return NP\core\db\Insert Return caller object for easy chaining
+	 * @param \NP\core\db\Insert Return caller object for easy chaining
 	 */
 	public function table($table) {
 		$this->table = $table;
@@ -57,7 +57,7 @@ class Update implements SQLInterface, SQLElement {
 	 * Adds a set of values to be inserted
 	 *
 	 * @param $values array      Values to insert in the table
-	 * @return NP\core\db\Insert Return caller object for easy chaining
+	 * @param \NP\core\db\Insert Return caller object for easy chaining
 	 */
 	public function values($values) {
 		$this->values = $values;
@@ -69,7 +69,7 @@ class Update implements SQLInterface, SQLElement {
 	 *
 	 * @param $col   string        Column to insert in the table
 	 * @param $value number|string Value of the column to insert in the table
-	 * @return NP\core\db\Insert   Return caller object for easy chaining
+	 * @param \NP\core\db\Insert   Return caller object for easy chaining
 	 */
 	public function value($col, $value) {
 		$this->values[$col] = $value;
@@ -80,7 +80,7 @@ class Update implements SQLInterface, SQLElement {
 	 * Sets the criteria for the update
 	 *
 	 * @param $where string|array|NP\core\db\Where The update criteria
-	 * @return NP\core\db\Insert                   Return caller object for easy chaining
+	 * @param \NP\core\db\Insert                   Return caller object for easy chaining
 	 */
 	public function where($where) {
 		if (!is_string($where) && !is_array($where) && !$where instanceOf Where) {

@@ -15,13 +15,13 @@ use NP\core\db\Adapter;
  */
 class GLAccountGateway extends AbstractGateway {
 	/**
-	 * @var NP\system\ConfigService
+	 * @var \NP\system\ConfigService
 	 */
 	protected $configService;
 	
 	/**
-	 * @param NP\core\db\Adapter $adapter       Database adapter object injected
-	 * @param NP\system\ConfigService $configService ConfigService object injected
+	 * @param \NP\core\db\Adapter $adapter       Database adapter object injected
+	 * @param \NP\system\ConfigService $configService ConfigService object injected
 	 */
 	public function __construct(Adapter $adapter, ConfigService $configService) {
 		$this->configService = $configService;

@@ -8,25 +8,25 @@ use NP\system\SecurityService;
 class PropertyService extends AbstractService {
 	
 	/**
-	 * @var NP\system\SecurityService
+	 * @var \NP\system\SecurityService
 	 */
 	protected $securityService; 
 	
 	/**
-	 * @var NP\property\PropertyGateway
+	 * @var \NP\property\PropertyGateway
 	 */
 	protected $propertyGateway; 
 	
 	/**
-	 * @var NP\property\FiscalcalGateway
+	 * @var \NP\property\FiscalcalGateway
 	 */
 	protected $fiscalcalGateway;
 	
 	/**
-	 * @param NP\system\SecurityService    $securityService  SecurityService object injected
-	 * @param NP\property\PropertyGateway  $propertyGateway  PropertyGateway object injected
-	 * @param NP\property\FiscalcalGateway $fiscalcalGateway FiscalcalGateway object injected
-	 * @param NP\property\UnitGateway      $unitGateway      UnitGateway object injected
+	 * @param \NP\system\SecurityService    $securityService  SecurityService object injected
+	 * @param \NP\property\PropertyGateway  $propertyGateway  PropertyGateway object injected
+	 * @param \NP\property\FiscalcalGateway $fiscalcalGateway FiscalcalGateway object injected
+	 * @param \NP\property\UnitGateway      $unitGateway      UnitGateway object injected
 	 */
 	public function __construct(SecurityService $securityService, PropertyGateway $propertyGateway, 
 								FiscalcalGateway $fiscalcalGateway, UnitGateway $unitGateway) {
