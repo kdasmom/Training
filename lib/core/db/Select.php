@@ -365,8 +365,10 @@ class Select implements SQLInterface, SQLElement {
 		// Join all the columns separated by commas for the SELECT clause and add to the main $sql string
 		$sql .= implode(',', $cols);
 		
-		// Add the query FROM clause
-		$sql .= " FROM {$this->table->toString()}";
+		// Add the query FROM clause if there is one
+		if ($this->table !== null) {
+			$sql .= " FROM {$this->table->toString()}";
+		}
 		
 		// Add all the joins to the query
 		if (count($joins)) {

@@ -4,6 +4,8 @@ namespace NP\invoice;
 
 use NP\core\db\Select;
 use NP\property\PropertyGateway;
+use NP\property\PropertyContext;
+use NP\property\sql\PropertyFilterSelect;
 
 use NP\core\db\Adapter;
 use NP\core\db\Expression;
@@ -100,8 +102,9 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 	 * @param  string $sort                        Field(s) by which to sort the result; defaults to vendor_name
 	 * @return array                               Array of invoice records
 	 */
-	public function findOpenInvoices($userprofile_id, $delegated_to_userprofile_id, $contextFilterType, $contextFilterSelection, $pageSize, $page=1, $sort='vendor_name') {
-		$propertyFilter = $this->propertyGateway->getPropertyFilterSubSelect($userprofile_id, $delegated_to_userprofile_id, $contextFilterType, $contextFilterSelection);
+	public function findOpenInvoices($userprofile_id, $delegated_to_userprofile_id, $contextFilterType, $contextFilterSelection, $pageSize=null, $page=1, $sort='vendor_name') {
+		$propertyContext = new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextFilterType, $contextFilterSelection);
+		$propertyFilterSelect = new PropertyFilterSelect($propertyContext);
 
 		$select = new sql\InvoiceSelect();
 		$select->columns(array(
@@ -117,17 +120,15 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 				->where(
 					"i.invoice_status = 'open'
 					AND vs.vendorsite_status IN ('active','inactive','rejected')
-					AND p.property_id " . $propertyFilter['sql']
+					AND p.property_id IN (" . $propertyFilterSelect->toString() . ")"
 				)
 				->order($sort);
 		
-		$params = $propertyFilter['params'];
-		
 		// If paging is needed
 		if ($pageSize !== null) {
-			return $this->getPagingArray($select, $params, $pageSize, $page, true);
+			return $this->getPagingArray($select, array(), $pageSize, $page, true);
 		} else {
-			return $this->adapter->query($select, $params);
+			return $this->adapter->query($select);
 		}
 	}
 	
@@ -144,7 +145,8 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 	 * @return array                               Array of invoice records
 	 */
 	public function findRejectedInvoices($userprofile_id, $delegated_to_userprofile_id, $contextFilterType, $contextFilterSelection, $pageSize=null, $page=1, $sort='vendor_name') {
-		$propertyFilter = $this->propertyGateway->getPropertyFilterSubSelect($userprofile_id, $delegated_to_userprofile_id, $contextFilterType, $contextFilterSelection);
+		$propertyContext = new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextFilterType, $contextFilterSelection);
+		$propertyFilterSelect = new PropertyFilterSelect($propertyContext);
 
 		$select = new sql\InvoiceSelect();
 		$select->columns(array(
@@ -163,17 +165,15 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 				->where(
 					"i.invoice_status = 'rejected'
 					AND vs.vendorsite_status IN ('active','inactive','rejected')
-					AND p.property_id " . $propertyFilter['sql']
+					AND p.property_id IN (" . $propertyFilterSelect->toString() . ")"
 				)
 				->order($sort);
 		
-		$params = $propertyFilter['params'];
-		
 		// If paging is needed
 		if ($pageSize !== null) {
-			return $this->getPagingArray($select, $params, $pageSize, $page, true);
+			return $this->getPagingArray($select, array(), $pageSize, $page, true);
 		} else {
-			return $this->adapter->query($select, $params);
+			return $this->adapter->query($select);
 		}
 	}
 	

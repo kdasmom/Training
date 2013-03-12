@@ -1,5 +1,4 @@
 Ext.define('NP.view.shared.ContextPicker', function () {
-    
     return {
         extend: 'Ext.panel.Panel',
         alias: 'widget.shared.contextpicker',
@@ -23,6 +22,9 @@ Ext.define('NP.view.shared.ContextPicker', function () {
             style: 'background-color: transparent',
             bodyStyle: 'background-color: transparent'
         },
+        
+        stateful: true,
+        stateId: 'global_context_picker',
 
         propertyComboText       : NP.lib.core.Config.getSetting('PN.main.PropertyLabel'),
         regionComboText         : NP.lib.core.Config.getSetting('PN.Main.RegionLabel'),
@@ -53,12 +55,6 @@ Ext.define('NP.view.shared.ContextPicker', function () {
                 default_region = null;
             }
 
-            // Inner function for re-use below
-            function triggerChangeEvent() {
-                var state = that.getState();
-                that.fireEvent('change', that, state.contextFilterType, state.selected);
-            }
-
             this.items = [{
                 flex  : 1,
                 defaults: {
@@ -71,7 +67,6 @@ Ext.define('NP.view.shared.ContextPicker', function () {
                     store            : 'user.Properties',
                     fieldLabel       : this.propertyComboText,
                     labelAlign       : 'right',
-                    selectFirstRecord: true,
                     displayField     : 'property_name',
                     valueField       : 'property_id',
                     value            : default_prop,
@@ -84,7 +79,7 @@ Ext.define('NP.view.shared.ContextPicker', function () {
                             filterTypeComp.queryById('__currentPropFilterType').setValue(true);
                             filterTypeComp.resumeEvents();
 
-                            triggerChangeEvent();
+                            that.triggerChangeEvent();
                         }
                     }
                 },{
@@ -93,14 +88,13 @@ Ext.define('NP.view.shared.ContextPicker', function () {
                     store            : 'user.Regions',
                     fieldLabel       : this.regionComboText,
                     labelAlign       : 'right',
-                    selectFirstRecord: true,
                     displayField     : 'region_name',
                     valueField       : 'region_id',
                     value            : default_region,
                     hidden           : hide_region,
                     listeners        : {
                         select: function() {
-                            triggerChangeEvent();
+                            that.triggerChangeEvent();
                         }
                     }
                 }]
@@ -129,7 +123,7 @@ Ext.define('NP.view.shared.ContextPicker', function () {
                             that.queryById(showComp).show();
                             that.queryById(hideComp).hide();
 
-                            triggerChangeEvent();
+                            that.triggerChangeEvent();
                         }
                     }
                 },
@@ -142,13 +136,15 @@ Ext.define('NP.view.shared.ContextPicker', function () {
                         checked   : !hide_prop && !select_all
                     },
                     {
-                        boxLabel  : this.regionRadioText, 
+                        boxLabel  : this.regionRadioText,
+                        itemId    : '__regionFilterType',
                         name      : 'contextFilterType', 
                         inputValue: 'region',
                         checked   : !hide_region
                     },
                     {
                         boxLabel  : this.allPropertiesRadioText, 
+                        itemId    : '__allFilterType',
                         name      : 'contextFilterType', 
                         inputValue: 'all',
                         checked   : select_all
@@ -158,8 +154,14 @@ Ext.define('NP.view.shared.ContextPicker', function () {
 
             // Add custom event that can be listened to by other components
             this.addEvents('change');
+            this.addStateEvents('change');
 
             this.callParent(arguments);
+        },
+
+        triggerChangeEvent: function() {
+            var state = this.getState();
+            this.fireEvent('change', this, state.contextFilterType, state.selected);
         },
 
         getState: function() {
@@ -172,10 +174,32 @@ Ext.define('NP.view.shared.ContextPicker', function () {
                 var combo = this.queryById('__contextPickerUserPropertiesCombo');
                 selected = combo.getValue();
             } else if (contextFilterType == 'all') {
-                var combo = this.queryById('__contextPickerUserRegionsCombo');
-                selected = null;
+                var combo = this.queryById('__contextPickerUserPropertiesCombo');
+                selected = combo.getValue();
             }
             return { contextFilterType: contextFilterType, selected: selected };
-        }
+        },
+
+        applyState: function(state) {
+            this.suspendEvents(false);
+            var propCombo = this.queryById('__contextPickerUserPropertiesCombo');
+            var regionCombo = this.queryById('__contextPickerUserRegionsCombo');
+            if (state.contextFilterType == 'property') {
+                propCombo.show();
+                regionCombo.hide();
+                this.queryById('__currentPropFilterType').setValue(true);
+                this.queryById('__contextPickerUserPropertiesCombo').setValue(state.selected);
+            } else if (state.contextFilterType == 'region') {
+                regionCombo.show();
+                propCombo.hide();
+                this.queryById('__regionFilterType').setValue(true);
+                this.queryById('__contextPickerUserRegionsCombo').setValue(state.selected);
+            } else if (state.contextFilterType == 'all') {
+                regionCombo.hide();
+                this.queryById('__allFilterType').setValue(true);
+                this.queryById('__contextPickerUserPropertiesCombo').setValue(state.selected);
+            }
+            this.resumeEvents();
+        },
     }
 });

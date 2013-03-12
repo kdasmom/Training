@@ -131,23 +131,20 @@ class Where implements SQLElement {
      *
      * @param  string            $operator The operator to use
      * @param  string|SQLElement $left     Left side of the comparison
-     * @param  string|SQLElement $right    Right side of the comparison
+     * @param  string|SQLElement $right    Right side of the comparison; optional if $operator is "exists"
      * @param  string|SQLElement $right2   Second right side of the comparison (optional); only used by BETWEEN operator
      * @param \NP\core\db\Where            The current Where object
      */
-	public function op($operator, $left, $right, $right2=null) {
+	public function op($operator, $left, $right=null, $right2=null) {
 		$operator = strtoupper($operator);
 		$left = ($left instanceOf SQLElement) ? $left : new Expression($left);
-		$right = ($right instanceOf SQLElement) ? $right : new Expression($right);
-
+		if ($right !== null) {
+			$right = ($right instanceOf SQLElement) ? $right : new Expression($right);
+		}
 		if ($right2 !== null) {
 			$right2 = ($right2 instanceOf SQLElement) ? $right2 : new Expression($right2);
 		}
-		if ($operator == 'BETWEEN') {
-			$this->currentWhere->predicates[] = array('operator'=>$operator, 'left'=>$left, 'right'=>$right, 'right2'=>$right2);
-		} else {
-			$this->currentWhere->predicates[] = array('operator'=>$operator, 'left'=>$left, 'right'=>$right);	
-		}
+		$this->currentWhere->predicates[] = array('operator'=>$operator, 'left'=>$left, 'right'=>$right, 'right2'=>$right2);
 		
 		return $this->currentWhere;
 	}
@@ -276,6 +273,16 @@ class Where implements SQLElement {
 	}
 
 	/**
+	 * Shortcut for op('exists', $left)
+	 *
+	 * @param  \NP\core\db\Select $select  Select statement for EXISTS clause
+     * @param \NP\core\db\Where            The current Where object
+	 */
+	public function exists($select) {
+		return $this->currentWhere->op('exists', $select);
+	}
+
+	/**
 	 * Returns a string representation of the Where object
 	 *
 	 * @return string
@@ -302,11 +309,14 @@ class Where implements SQLElement {
 					if ($predicate['left'] instanceOf Select) {
 						$left = "({$left})";
 					}
-					$right = $predicate['right']->toString();
-					// If the right side of our condition is a Select object, it's a subquery 
-					// that we need to wrap in parentheses
-					if ($predicate['right'] instanceOf Select || in_array($predicate['operator'], array('IN','NOT IN'))) {
-						$right = "({$right})";
+					// Only work on the $right predicate if it's not null (it's null for exists operator, for example)
+					if ($predicate['right'] !== null) {
+						$right = $predicate['right']->toString();
+						// If the right side of our condition is a Select object, it's a subquery 
+						// that we need to wrap in parentheses
+						if ($predicate['right'] instanceOf Select || in_array($predicate['operator'], array('IN','NOT IN'))) {
+							$right = "({$right})";
+						}
 					}
 					// If we're using a between operator, run special logic because it has two items on the right side
 					if ($predicate['operator'] == 'BETWEEN') {
@@ -315,6 +325,9 @@ class Where implements SQLElement {
 							$left = "({$right2})";
 						}
 						$collection[] = $left . " BETWEEN " . $right . " AND " . $right2;
+					// If we're running EXISTS, use special logic because it has no right side
+					} else if ($predicate['operator'] == 'EXISTS') {
+						$collection[] = "EXISTS (" . $left . ")";
 					// Otherwise, run the same thing for all other operators
 					} else {
 						$collection[] = $left . " {$predicate['operator']} " . $right;
