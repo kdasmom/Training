@@ -34,6 +34,7 @@ Ext.define('NP.model.invoice.Invoice', {
 		{ name: 'invoice_budgetoverage_note' },
 		{ name: 'invoice_cycle_from', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
 		{ name: 'invoice_cycle_to', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
+		{ name: 'invoice_pending_days', type: 'int' },
 		{ name: 'universal_field1' },
 		{ name: 'universal_field2' },
 		{ name: 'universal_field3' },
@@ -48,7 +49,9 @@ Ext.define('NP.model.invoice.Invoice', {
 		{ name: 'remit_advice', type: 'int' },
 		{ name: 'created_by' },
 		{ name: 'rejected_datetm', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
-		{ name: 'rejected_by' }
+		{ name: 'rejected_by' },
+		{ name: 'invoice_onhold_by' },
+		{ name: 'invoice_days_onhold', type: 'int' }
     ],
 	
     proxy: {

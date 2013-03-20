@@ -1,6 +1,6 @@
-Ext.define('NP.view.viewport.AdminMenu', {
+Ext.define('NP.view.viewport.menu.AdminMenu', {
     extend: 'NP.lib.ui.HoverButton',
-    alias: 'widget.viewport.adminmenu',
+    alias: 'widget.viewport.menu.adminmenu',
     
     requires: ['NP.lib.core.Config','NP.lib.core.Security'],
 

@@ -1,6 +1,6 @@
-Ext.define('NP.view.viewport.BudgetMenu', {
+Ext.define('NP.view.viewport.menu.BudgetMenu', {
     extend: 'NP.lib.ui.HoverButton',
-    alias: 'widget.viewport.budgetmenu',
+    alias: 'widget.viewport.menu.budgetmenu',
     
     requires: ['NP.lib.core.Security'],
 

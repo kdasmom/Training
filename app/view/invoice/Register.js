@@ -9,7 +9,6 @@ Ext.define('NP.view.invoice.Register', {
         align: 'stretch'
    	},
     
-   	border: false,
    	defaults: {
    		border: false
    	},

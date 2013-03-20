@@ -19,7 +19,7 @@ class InvoiceSelect extends Select {
 	}
 	
 	/**
-	 * Left joins vendor tables (VENDORSITE, VENDOR)
+	 * Joins vendor tables (VENDORSITE, VENDOR)
 	 *
 	 * @param  string[] $vendorsiteCols Columns to retrieve from the VENDORSITE table
 	 * @param  string[] $vendorCols     Columns to retrieve from the VENDOR table
@@ -32,6 +32,32 @@ class InvoiceSelect extends Select {
 					->join(array('v' => 'vendor'),
 							'vs.vendor_id = v.vendor_id',
 							$vendorCols);
+	}
+	
+	/**
+	 * Joins VENDORONETIME table
+	 *
+	 * @param \NP\invoice\InvoiceSelect Returns caller object for easy chaining
+	 */
+	public function joinVendorOneTime($type=self::JOIN_LEFT) {
+		return $this->join(array('vone' => 'vendoronetime'),
+						"i.invoice_id = vone.tablekey_id AND vone.table_name = 'invoice'",
+						array(),
+						$type);
+	}
+	
+	/**
+	 * Adds the invoice amount subquery as a column
+	 *
+	 * @param \NP\invoice\InvoiceSelect Returns caller object for easy chaining
+	 */
+	public function columnSubjectName($alias='subject_name') {
+		return $this->column(new Expression('
+			CASE 
+				WHEN vone.vendoronetime_name IS NOT NULL THEN vone.vendoronetime_Name 
+				ELSE v.vendor_name
+			END
+		'), $alias);
 	}
 	
 	/**

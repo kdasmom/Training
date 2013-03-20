@@ -2,11 +2,15 @@
 
 namespace NP\invoice;
 
-use NP\core\db\Select;
 use NP\property\PropertyGateway;
+use NP\property\FiscalcalGateway;
 use NP\property\PropertyContext;
 use NP\property\sql\PropertyFilterSelect;
 
+use NP\user\RoleGateway;
+
+use NP\core\db\Select;
+use NP\core\db\Where;
 use NP\core\db\Adapter;
 use NP\core\db\Expression;
 
@@ -21,13 +25,20 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 	 * @var \NP\property\PropertyGateway
 	 */
 	protected $propertyGateway;
+	
+	/**
+	 * @var \NP\user\RoleGateway
+	 */
+	protected $roleGateway;
 
 	/**
-	 * @param \NP\core\db\Adapter     $adapter         Database adapter object injected
+	 * @param \NP\core\db\Adapter          $adapter         Database adapter object injected
 	 * @param \NP\property\PropertyGateway $propertyGateway PropertyGateway object injected
+	 * @param \NP\user\RoleGateway         $roleGateway     UserService object injected
 	 */
-	public function __construct(Adapter $adapter, PropertyGateway $propertyGateway) {
-		$this->propertyGateway = $propertyGateway;
+	public function __construct(Adapter $adapter, PropertyGateway $propertyGateway, RoleGateway $roleGateway) {
+		$this->propertyGateway  = $propertyGateway;
+		$this->roleGateway      = $roleGateway;
 		
 		parent::__construct($adapter);
 	}
@@ -89,94 +100,7 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 		$res = $this->adapter->query($select, array($invoice_id));
 		return $res[0];
 	}
-	
-	/**
-	 * Find open invoices for a user given a certain context filter
-	 *
-	 * @param  int    $userprofile_id              The active user ID, can be a delegated account
-	 * @param  int    $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
-	 * @param  string $contextFilterType           The context filter type; valid values are 'property','region', and 'all'
-	 * @param  int    $contextFilterSelection      The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
-	 * @param  int    $pageSize                    The number of records per page; if null, all records are returned
-	 * @param  int    $page                        The page for which to return records
-	 * @param  string $sort                        Field(s) by which to sort the result; defaults to vendor_name
-	 * @return array                               Array of invoice records
-	 */
-	public function findOpenInvoices($userprofile_id, $delegated_to_userprofile_id, $contextFilterType, $contextFilterSelection, $pageSize=null, $page=1, $sort='vendor_name') {
-		$propertyContext = new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextFilterType, $contextFilterSelection);
-		$propertyFilterSelect = new PropertyFilterSelect($propertyContext);
 
-		$select = new sql\InvoiceSelect();
-		$select->columns(array(
-					'invoice_id',
-					'invoice_ref',
-					'invoice_createddatetm',
-					'invoice_datetm',
-					'invoice_duedate'
-				))
-				->columnInvoiceAmount()
-				->joinVendor(array('vendorsite_id'), array('vendor_name'))
-				->joinProperty(array('property_name'))
-				->where(
-					"i.invoice_status = 'open'
-					AND vs.vendorsite_status IN ('active','inactive','rejected')
-					AND p.property_id IN (" . $propertyFilterSelect->toString() . ")"
-				)
-				->order($sort);
-		
-		// If paging is needed
-		if ($pageSize !== null) {
-			return $this->getPagingArray($select, array(), $pageSize, $page, true);
-		} else {
-			return $this->adapter->query($select);
-		}
-	}
-	
-	/**
-	 * Find rejected invoices for a user given a certain context filter
-	 *
-	 * @param  int    $userprofile_id              The active user ID, can be a delegated account
-	 * @param  int    $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
-	 * @param  string $contextFilterType           The context filter type; valid values are 'property','region', and 'all'
-	 * @param  int    $contextFilterSelection      The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
-	 * @param  int    $pageSize                    The number of records per page; if null, all records are returned
-	 * @param  int    $page                        The page for which to return records
-	 * @param  string $sort                        Field(s) by which to sort the result; defaults to vendor_name
-	 * @return array                               Array of invoice records
-	 */
-	public function findRejectedInvoices($userprofile_id, $delegated_to_userprofile_id, $contextFilterType, $contextFilterSelection, $pageSize=null, $page=1, $sort='vendor_name') {
-		$propertyContext = new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextFilterType, $contextFilterSelection);
-		$propertyFilterSelect = new PropertyFilterSelect($propertyContext);
-
-		$select = new sql\InvoiceSelect();
-		$select->columns(array(
-					'invoice_id',
-					'invoice_ref',
-					'invoice_createddatetm',
-					'invoice_datetm',
-					'invoice_duedate'
-				))
-				->columnInvoiceAmount()
-				->columnRejectedDate()
-				->columnRejectedBy()
-				->columnCreatedBy()
-				->joinVendor(array('vendorsite_id'), array('vendor_name'))
-				->joinProperty(array('property_name'))
-				->where(
-					"i.invoice_status = 'rejected'
-					AND vs.vendorsite_status IN ('active','inactive','rejected')
-					AND p.property_id IN (" . $propertyFilterSelect->toString() . ")"
-				)
-				->order($sort);
-		
-		// If paging is needed
-		if ($pageSize !== null) {
-			return $this->getPagingArray($select, array(), $pageSize, $page, true);
-		} else {
-			return $this->adapter->query($select);
-		}
-	}
-	
 	/**
 	 * Get purchase orders associated to an invoice, if any
 	 *
@@ -265,6 +189,367 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 				");
 		
 		return $this->adapter->query($select, array($invoice_id));
+	}
+	
+	/**
+	 * Find open invoices for a user given a certain context filter
+	 *
+	 * @param  int    $userprofile_id              The active user ID, can be a delegated account
+	 * @param  int    $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
+	 * @param  string $contextType                 The context filter type; valid values are 'property','region', and 'all'
+	 * @param  int    $contextSelection            The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
+	 * @param  int    $pageSize                    The number of records per page; if null, all records are returned
+	 * @param  int    $page                        The page for which to return records
+	 * @param  string $sort                        Field(s) by which to sort the result; defaults to vendor_name
+	 * @return array                               Array of invoice records
+	 */
+	public function findOpenInvoices($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=1, $sort='vendor_name') {
+		$propertyContext = new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection);
+		$propertyFilterSelect = new PropertyFilterSelect($propertyContext);
+
+		$select = new sql\InvoiceSelect();
+		$select->columns(array(
+					'invoice_id',
+					'invoice_ref',
+					'invoice_createddatetm',
+					'invoice_datetm',
+					'invoice_duedate'
+				))
+				->columnInvoiceAmount()
+				->joinVendor(array('vendorsite_id'), array('vendor_name'))
+				->joinProperty(array('property_name'))
+				->where(
+					"i.invoice_status = 'open'
+					AND vs.vendorsite_status IN ('active','inactive','rejected')
+					AND p.property_id IN (" . $propertyFilterSelect->toString() . ")"
+				)
+				->order($sort);
+		
+		// If paging is needed
+		if ($pageSize !== null) {
+			return $this->getPagingArray($select, array(), $pageSize, $page);
+		} else {
+			return $this->adapter->query($select);
+		}
+	}
+	
+	/**
+	 * Find rejected invoices for a user given a certain context filter
+	 *
+	 * @param  int    $userprofile_id              The active user ID, can be a delegated account
+	 * @param  int    $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
+	 * @param  string $contextType                 The context filter type; valid values are 'property','region', and 'all'
+	 * @param  int    $contextSelection            The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
+	 * @param  int    $pageSize                    The number of records per page; if null, all records are returned
+	 * @param  int    $page                        The page for which to return records
+	 * @param  string $sort                        Field(s) by which to sort the result; defaults to vendor_name
+	 * @return array                               Array of invoice records
+	 */
+	public function findRejectedInvoices($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=1, $sort='vendor_name') {
+		$propertyContext = new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection);
+		$propertyFilterSelect = new PropertyFilterSelect($propertyContext);
+
+		$select = new sql\InvoiceSelect();
+		$select->columns(array(
+					'invoice_id',
+					'invoice_ref',
+					'invoice_createddatetm',
+					'invoice_datetm',
+					'invoice_duedate'
+				))
+				->columnInvoiceAmount()
+				->columnRejectedDate()
+				->columnRejectedBy()
+				->columnCreatedBy()
+				->joinVendor(array('vendorsite_id'), array('vendor_name'))
+				->joinProperty(array('property_name'))
+				->where(
+					"i.invoice_status = 'rejected'
+					AND vs.vendorsite_status IN ('active','inactive','rejected')
+					AND p.property_id IN (" . $propertyFilterSelect->toString() . ")"
+				)
+				->order($sort);
+		
+		// If paging is needed
+		if ($pageSize !== null) {
+			return $this->getPagingArray($select, array(), $pageSize, $page);
+		} else {
+			return $this->adapter->query($select);
+		}
+	}
+	
+	/**
+	 * See getInvoicesToApprove() function in InvoiceService
+	 */
+	public function findInvoicesToApprove($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
+		$propertyFilterSelect = new PropertyFilterSelect(new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection));
+
+		$role = array_pop($this->roleGateway->getUserRole($userprofile_id));
+		$isAdmin = ($role['is_admin_role'] == 1) ? true : false;
+		$approveSubSelect = new Select();
+		$approveSubSelect->from(array('a'=>'approve'))
+						->columns(array(
+							'tablekey_id',
+							'approve_datetm',
+							'wftarget_id',
+							'forwardto_tablekeyid',
+							'forwardto_tablename'
+						))
+						->join(array('i2' => 'invoice'),
+							"a.tablekey_id = i2.invoice_id AND a.table_name = 'invoice'",
+							array())
+						->where("
+							a.approvetype_id = 1
+							AND a.approve_status = 'active'
+							AND i2.invoice_status = 'forapproval'
+						");
+
+		$select = new sql\InvoiceSelect();
+		$select->distinct();
+		$where = new Where();
+
+		if ($countOnly == 'true') {
+			$select->count(true, 'totalRecs')
+					->column('invoice_id');
+		} else {
+			$select->columns(array(
+								'invoice_id',
+								'invoice_ref',
+								'invoice_createddatetm',
+								'invoice_datetm',
+								'invoice_duedate'
+							))
+					->column(new Expression('DateDiff(day, a.approve_datetm, getDate())'), 'invoice_pending_days')
+					->columnSubjectName()
+					->columnInvoiceAmount()
+					->joinVendorOneTime()
+					->order($sort);
+		}
+
+		$targetSubSelect = new Select();
+		$targetSubSelect->from(array('wft'=>'WFRULETARGET'))
+						->column('tablekey_id')
+						->where("
+							wft.wfruletarget_id = a.wftarget_id 
+							AND wft.table_name = 'property'
+						");
+
+		$where->equals('i.invoice_status', "'forapproval'")
+			->nest('OR')
+			->isNull('a.wftarget_id')
+			->in($targetSubSelect, $propertyFilterSelect)
+			->unnest();
+
+		if ($isAdmin) {
+			$invoiceitemSubSelect = new Select();
+			$invoiceitemSubSelect->from(array('ii'=>'invoiceitem'))
+								->column(new Expression('1'))
+								->where("
+									ii.invoice_id = i.invoice_id 
+									AND ii.property_id IN (" . $propertyFilterSelect->toString() . ")
+								");
+
+			$where->nest('OR')
+				->exists($invoiceitemSubSelect)
+				->in('i.property_id', $propertyFilterSelect);
+		} else {
+			$where->nest('OR')
+				->nest()
+				->equals('a.forwardto_tablekeyid', $role['role_id'])
+				->equals('a.forwardto_tablename', "'role'")
+				->unnest()
+				->nest()
+				->in('a.forwardto_tablekeyid', $role['userprofilerole_id'])
+				->equals('a.forwardto_tablename', "'userprofilerole'");
+		}
+
+		$select->joinVendor(array('vendorsite_id'), array('vendor_name'))
+				->joinProperty(array('property_name'))
+				->join(array('a'=>$approveSubSelect),
+					'i.invoice_id = a.tablekey_id',
+					array())
+				->where($where);
+
+		// If paging is needed
+		if ($pageSize !== null && $countOnly == 'false') {
+			return $this->getPagingArray($select, array(), $pageSize, $page, 'invoice_id');
+		} else if ($countOnly == 'true') {
+			$res = $this->adapter->query($select);
+			return $res[0]['totalRecs'];
+		} else {
+			return $this->adapter->query($select);
+		}
+	}
+	
+	/**
+	 * See getInvoicesOnHold() function in InvoiceService
+	 */
+	public function findInvoicesOnHold($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
+		$propertyFilterSelect = new PropertyFilterSelect(new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection));
+
+		$select = new sql\InvoiceSelect();
+		$select->distinct();
+
+		if ($countOnly == 'true') {
+			$select->count(true, 'totalRecs')
+					->column('invoice_id');
+		} else {
+			$select->columns(array(
+								'invoice_id',
+								'invoice_ref',
+								'invoice_createddatetm',
+								'invoice_datetm',
+								'invoice_duedate'
+							))
+					->column(new Expression('DateDiff(day, a.approve_datetm, getDate())'), 'invoice_days_onhold')
+					->column(new Expression('(SELECT userprofile_username FROM USERPROFILE WHERE userprofile_id = a.userprofile_id)'), 'invoice_onhold_by')
+					->columnInvoiceAmount()
+					->order($sort);
+		}
+
+		$approvetypeSubSelect = new Select();
+		$approvetypeSubSelect->from('approvetype')
+						->column('approvetype_id')
+						->where("approvetype_name = 'hold'")
+						->limit(1);
+
+		$approveSubSelect = new Select();
+		$approveSubSelect->from(array('a'=>'approve'))
+						->column('approve_id')
+						->where("
+							tablekey_id = i.invoice_id 
+							AND table_name = 'invoice' 
+							AND approvetype_id = (" . $approvetypeSubSelect->toString() . ")
+						")
+						->order('approve_id DESC')
+						->limit(1);
+
+		$select->joinVendor(array('vendorsite_id'), array('vendor_name'))
+				->joinProperty(array('property_name'))
+				->join(array('a'=>'approve'),
+					'i.invoice_id = a.tablekey_id',
+					array('invoice_hold_datetm'=>'approve_datetm'))
+				->where("
+					i.invoice_status = 'hold'
+					AND a.approve_id = isNULL((" . $approveSubSelect->toString() . "),0)
+					AND (
+						i.property_id IN (" . $propertyFilterSelect->toString() . ")
+						OR EXISTS (
+							SELECT 1
+							FROM invoiceitem ii
+							WHERE ii.invoice_id = i.invoice_id
+								AND ii.property_id IN (" . $propertyFilterSelect->toString() . ")
+						)
+					)
+				");
+
+		// If paging is needed
+		if ($pageSize !== null && $countOnly == 'false') {
+			return $this->getPagingArray($select, array(), $pageSize, $page, 'invoice_id');
+		} else if ($countOnly == 'true') {
+			$res = $this->adapter->query($select);
+			return $res[0]['totalRecs'];
+		} else {
+			return $this->adapter->query($select);
+		}
+	}
+	
+	/**
+	 * See getInvoicesCompleted() function in InvoiceService
+	 */
+	public function findInvoicesCompleted($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
+		$propertyFilterSelect = new PropertyFilterSelect(new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection));
+
+		$select = new sql\InvoiceSelect();
+		
+		if ($countOnly == 'true') {
+			$select->count(true, 'totalRecs');
+		} else {
+			$jobcodeSubSelect = new Select();
+			$jobcodeSubSelect->from(array('jc'=>'jbjobcode'))
+							->column(new Expression('1'))
+							->join(array('ja'=>'jbjobassociation'),
+								'ja.jbjobcode_id = jc.jbjobcode_id',
+								array())
+							->join(array('ii'=>'invoiceitem'),
+								"ja.tablekey_id = ii.invoiceitem_id AND ja.table_name = 'invoiceitem'",
+								array())
+							->where("ii.invoice_id = i.invoice_id AND jc.jbjobcode_status = 'inactive'")
+							->limit(1);
+
+			$select->columns(array(
+								'invoice_id',
+								'invoice_ref',
+								'invoice_datetm',
+								'invoice_duedate',
+								'invoice_neededby_datetm',
+								'invoice_period',
+								'priorityflag_id_alt'
+							))
+					->column(new Expression("ISNULL((" . $jobcodeSubSelect->toString() . "), 0)"), 'invoice_inactive_jobcode')
+					->column(new Expression('DateDiff(day, i.invoice_createddatetm, getDate())'), 'invoice_pending_days')
+					->columnInvoiceAmount()
+					->order($sort);
+		}
+
+		$select->joinVendor(array('vendorsite_id'), array('vendor_name'))
+				->joinProperty(array('property_name'))
+				->where("
+					i.invoice_status = 'saved'
+					AND i.property_id IN (" . $propertyFilterSelect->toString() . ")
+				");
+
+		// If paging is needed
+		if ($pageSize !== null && $countOnly == 'false') {
+			return $this->getPagingArray($select, array(), $pageSize, $page, 'invoice_id');
+		} else if ($countOnly == 'true') {
+			$res = $this->adapter->query($select);
+			return $res[0]['totalRecs'];
+		} else {
+			return $this->adapter->query($select);
+		}
+	}
+	
+	/**
+	 * See getInvoicesRejected() function in InvoiceService
+	 */
+	public function findInvoicesRejected($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
+		$propertyFilterSelect = new PropertyFilterSelect(new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection));
+
+		$select = new sql\InvoiceSelect();
+		
+		if ($countOnly == 'true') {
+			$select->count(true, 'totalRecs');
+		} else {
+			$select->columns(array(
+								'invoice_id',
+								'invoice_ref',
+								'invoice_datetm',
+								'invoice_duedate',
+								'invoice_neededby_datetm',
+								'priorityflag_id_alt'
+							))
+					->column(new Expression('DateDiff(day, i.invoice_createddatetm, getDate())'), 'invoice_pending_days')
+					->columnInvoiceAmount()
+					->order($sort);
+		}
+
+		$select->joinVendor(array('vendorsite_id'), array('vendor_name'))
+				->joinProperty(array('property_name'))
+				->where("
+					i.invoice_status = 'rejected'
+					AND i.property_id IN (" . $propertyFilterSelect->toString() . ")
+				");
+
+		// If paging is needed
+		if ($pageSize !== null && $countOnly == 'false') {
+			return $this->getPagingArray($select, array(), $pageSize, $page, 'invoice_id');
+		} else if ($countOnly == 'true') {
+			$res = $this->adapter->query($select);
+			return $res[0]['totalRecs'];
+		} else {
+			return $this->adapter->query($select);
+		}
 	}
 
 }

@@ -4,7 +4,7 @@
 
 // Vendor Catalog Menu
 Ext.define('NP.locale.en.view.viewport.VCMenu', {
-	override: 'NP.view.viewport.VCMenu',
+	override: 'NP.view.viewport.menu.VCMenu',
 
 	vcText        : 'Vendor Catalog',
 	listingsText  : 'Vendor Catalog Listings',
@@ -14,7 +14,7 @@ Ext.define('NP.locale.en.view.viewport.VCMenu', {
 
 // PO Menu
 Ext.define('NP.locale.en.view.viewport.POMenu', {
-	override: 'NP.view.viewport.POMenu',
+	override: 'NP.view.viewport.menu.POMenu',
 
 	poText                      : 'Purchase Orders',
 	registerText                : 'PO Register',
@@ -37,7 +37,7 @@ Ext.define('NP.locale.en.view.viewport.POMenu', {
 
 // Invoice Menu
 Ext.define('NP.locale.en.view.viewport.InvoiceMenu', {
-	override: 'NP.view.viewport.InvoiceMenu',
+	override: 'NP.view.viewport.menu.InvoiceMenu',
 
 	invoiceText            : 'Invoices',
 	registerText           : 'Invoice Register',
@@ -58,7 +58,7 @@ Ext.define('NP.locale.en.view.viewport.InvoiceMenu', {
 
 // Vendor Menu
 Ext.define('NP.locale.en.view.viewport.VendorMenu', {
-	override: 'NP.view.viewport.VendorMenu',
+	override: 'NP.view.viewport.menu.VendorMenu',
 
 	vendorText      : 'Vendors',
     newText         : 'New Vendor',
@@ -68,7 +68,7 @@ Ext.define('NP.locale.en.view.viewport.VendorMenu', {
 
 // Image Menu
 Ext.define('NP.locale.en.view.viewport.ImageMenu', {
-	override: 'NP.view.viewport.ImageMenu',
+	override: 'NP.view.viewport.menu.ImageMenu',
 
 	imgText       : 'Image Management',
 	indexedText   : 'Images To Be Indexed',
@@ -80,7 +80,7 @@ Ext.define('NP.locale.en.view.viewport.ImageMenu', {
 
 // Budget Menu
 Ext.define('NP.locale.en.view.viewport.BudgetMenu', {
-	override: 'NP.view.viewport.BudgetMenu',
+	override: 'NP.view.viewport.menu.BudgetMenu',
 
 	budgetText  : 'Budget',
 	atGlanceText: 'At-a-Glance',
@@ -89,7 +89,7 @@ Ext.define('NP.locale.en.view.viewport.BudgetMenu', {
 
 // Report Menu
 Ext.define('NP.locale.en.view.viewport.ReportMenu', {
-	override: 'NP.view.viewport.ReportMenu',
+	override: 'NP.view.viewport.menu.ReportMenu',
 
 	requires: ['NP.lib.core.Config'],
 
@@ -110,7 +110,7 @@ Ext.define('NP.locale.en.view.viewport.ReportMenu', {
 
 // Admin Menu
 Ext.define('NP.locale.en.view.viewport.AdminMenu', {
-	override: 'NP.view.viewport.AdminMenu',
+	override: 'NP.view.viewport.menu.AdminMenu',
 
 	requires: ['NP.lib.core.Config'],
 
@@ -160,6 +160,105 @@ Ext.define('NP.locale.en.view.shared.ContextPicker', {
     regionRadioText         : NP.lib.core.Config.getSetting('PN.Main.RegionLabel'),
     allPropertiesRadioText  : 'All ' + NP.lib.core.Config.getSetting('PN.Main.PropertiesLabel')
 }); 
+
+/**
+ * VIEWPORT
+ */
+
+// Home
+Ext.define('NP.locale.en.view.viewport.Home', {
+	override: 'NP.view.viewport.Home',
+
+	title          : 'Home',
+	summaryStatText: 'Summary Statistics'
+});
+
+// Summary Stat Names
+Ext.define('NP.locale.en.lib.core.SummaryStatManager', {
+	override: 'NP.lib.core.SummaryStatManager',
+
+	invoicesToApproveText: 'Invoices to Approve',
+	invoicesOnHoldText   : 'Invoices on Hold',
+	invoicesCompletedText: 'Completed Invoices to Approve',
+	invoicesRejectedText : 'Rejected Invoices'
+});
+
+/**
+ * GRID COLUMNS
+ */
+
+Ext.define('NP.locale.en.view.shared.gridcol.InvoiceAmount', {
+	override: 'NP.view.shared.gridcol.InvoiceAmount',
+
+	text: 'Amount'
+});
+
+Ext.define('NP.locale.en.view.shared.gridcol.InvoiceDate', {
+	override: 'NP.view.shared.gridcol.InvoiceDate',
+
+	text: 'Date'
+});
+
+Ext.define('NP.locale.en.view.shared.gridcol.InvoiceDaysOnHold', {
+	override: 'NP.view.shared.gridcol.InvoiceDaysOnHold',
+
+	text: 'Number of Days On Hold'
+});
+
+Ext.define('NP.locale.en.view.shared.gridcol.InvoiceDueDate', {
+	override: 'NP.view.shared.gridcol.InvoiceDueDate',
+
+	text: 'Due Date'
+});
+
+Ext.define('NP.locale.en.view.shared.gridcol.InvoiceHoldDate', {
+	override: 'NP.view.shared.gridcol.InvoiceHoldDate',
+
+	text: 'On Hold Date'
+});
+
+Ext.define('NP.locale.en.view.shared.gridcol.InvoiceNeededByDate', {
+	override: 'NP.view.shared.gridcol.InvoiceNeededByDate',
+
+	text: 'Needed By'
+});
+
+Ext.define('NP.locale.en.view.shared.gridcol.InvoiceNumber', {
+	override: 'NP.view.shared.gridcol.InvoiceNumber',
+
+	text: 'Invoice Number'
+});
+
+Ext.define('NP.locale.en.view.shared.gridcol.InvoiceOnHoldBy', {
+	override: 'NP.view.shared.gridcol.InvoiceOnHoldBy',
+
+	text: 'On Hold By'
+});
+
+Ext.define('NP.locale.en.view.shared.gridcol.InvoicePendingDays', {
+	override: 'NP.view.shared.gridcol.InvoicePendingDays',
+
+	text: 'Days Pending'
+});
+
+Ext.define('NP.locale.en.view.shared.gridcol.InvoicePeriod', {
+	override: 'NP.view.shared.gridcol.InvoicePeriod',
+
+	text: 'Post Date'
+});
+
+Ext.define('NP.locale.en.view.shared.gridcol.PriorityFlag', {
+	override: 'NP.view.shared.gridcol.PriorityFlag',
+
+	text: 'Priority'
+});
+
+Ext.define('NP.locale.en.view.shared.gridcol.VendorName', {
+	override: 'NP.view.shared.gridcol.VendorName',
+
+	text: 'Vendor'
+});
+
 
 /**
  * INVOICE SECTION

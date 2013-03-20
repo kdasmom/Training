@@ -4,14 +4,14 @@ Ext.define('NP.view.viewport.TopMenu', {
 
     requires: [
     	'NP.lib.core.Security'
-    	,'NP.view.viewport.VCMenu'
-    	,'NP.view.viewport.POMenu'
-    	,'NP.view.viewport.InvoiceMenu'
-    	,'NP.view.viewport.VendorMenu'
-    	,'NP.view.viewport.ImageMenu'
-    	,'NP.view.viewport.BudgetMenu'
-    	,'NP.view.viewport.ReportMenu'
-    	,'NP.view.viewport.AdminMenu'
+    	,'NP.view.viewport.menu.VCMenu'
+    	,'NP.view.viewport.menu.POMenu'
+    	,'NP.view.viewport.menu.InvoiceMenu'
+    	,'NP.view.viewport.menu.VendorMenu'
+    	,'NP.view.viewport.menu.ImageMenu'
+    	,'NP.view.viewport.menu.BudgetMenu'
+    	,'NP.view.viewport.menu.ReportMenu'
+    	,'NP.view.viewport.menu.AdminMenu'
     ],
 
     dock: 'top',
@@ -26,7 +26,7 @@ Ext.define('NP.view.viewport.TopMenu', {
 	    // Vendor Catalog
 	    if ( NP.lib.core.Config.getSetting('VC_isOn') == 1 && NP.lib.core.Security.hasPermission(6067) ) {
 			this.items.push({
-				xtype: 'viewport.vcmenu',
+				xtype: 'viewport.menu.vcmenu',
 				itemId: 'vcMenuBtn'
 			});
 	    }
@@ -34,14 +34,14 @@ Ext.define('NP.view.viewport.TopMenu', {
 	    // Purchase Orders
 		if ( NP.lib.core.Config.getSetting('PN.POOptions.POSwitch') == 1 && NP.lib.core.Security.hasPermission(1026) ) {
 			this.items.push({
-				xtype: 'viewport.pomenu'
+				xtype: 'viewport.menu.pomenu'
 			});
 		}
 	    
 	    // Invoice
 	    if ( NP.lib.core.Security.hasPermission(1031) ) {
 	    	this.items.push({
-				xtype: 'viewport.invoicemenu',
+				xtype: 'viewport.menu.invoicemenu',
 				itemId: 'invMenuBtn'
 			});
 		}
@@ -49,7 +49,7 @@ Ext.define('NP.view.viewport.TopMenu', {
 		// Vendors
 		if ( NP.lib.core.Security.hasPermission(1022) ) {
 			this.items.push({
-				xtype: 'viewport.vendormenu',
+				xtype: 'viewport.menu.vendormenu',
 				itemId: 'vendorMenuBtn'
 			});
 	    }
@@ -58,7 +58,7 @@ Ext.define('NP.view.viewport.TopMenu', {
 		if ( NP.lib.core.Security.hasPermission(2086) && NP.lib.core.Security.hasPermission(2039) && 
 				(NP.lib.core.Config.getSetting('pn.main.WebDocumentz') == 1 || NP.lib.core.Config.getSetting('pn.main.WebDocumentz') == 2) ) {
 			this.items.push({
-				xtype: 'viewport.imagemenu',
+				xtype: 'viewport.menu.imagemenu',
 				itemId: 'imageMenuBtn'
 			});
 	    }
@@ -66,7 +66,7 @@ Ext.define('NP.view.viewport.TopMenu', {
 		// Budgets
 		if ( NP.lib.core.Security.hasPermission(1036) ) {
 			this.items.push({
-				xtype: 'viewport.budgetmenu',
+				xtype: 'viewport.menu.budgetmenu',
 				itemId: 'budgetMenuBtn'
 			});
 	    }
@@ -74,7 +74,7 @@ Ext.define('NP.view.viewport.TopMenu', {
 		// Reports
 		if ( NP.lib.core.Security.hasPermission(1070) ) {
 			this.items.push({
-				xtype: 'viewport.reportmenu',
+				xtype: 'viewport.menu.reportmenu',
 				itemId: 'reportMenuBtn'
 			});
 	    }
@@ -82,7 +82,7 @@ Ext.define('NP.view.viewport.TopMenu', {
 		// Administration
 		if ( NP.lib.core.Security.hasPermission(3) ) {
 			this.items.push({
-				xtype: 'viewport.adminmenu',
+				xtype: 'viewport.menu.adminmenu',
 				itemId: 'adminMenuBtn'
 			});
 	    }

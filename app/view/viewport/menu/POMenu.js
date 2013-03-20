@@ -1,6 +1,6 @@
-Ext.define('NP.view.viewport.POMenu', {
+Ext.define('NP.view.viewport.menu.POMenu', {
     extend: 'NP.lib.ui.HoverButton',
-    alias: 'widget.viewport.pomenu',
+    alias: 'widget.viewport.menu.pomenu',
 
     requires: ['NP.lib.core.Config','NP.lib.core.Security'],
 

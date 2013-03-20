@@ -50,7 +50,7 @@ class PropertyService extends AbstractService {
 	 * Returns the current accounting period for a property
 	 *
 	 * @param  int   $property_id ID of the property
-	 * @return date  The accounting period in a Y-n-1 0:00:00.0 format
+	 * @return date  The accounting period in a Y-m-01 format
 	 */
 	public function getAccountingPeriod($property_id) {
 		$now = time();
@@ -64,7 +64,9 @@ class PropertyService extends AbstractService {
 			date_add($cutoffDate, date_interval_create_from_date_string('1 month'));
 		}
 		
-		return date('Y', $cutoffDate) . '-' . date('n', $cutoffDate) . '-1 0:00:00.0';
+		$accountingPeriod = new \DateTime(date('Y', $cutoffDate) . '/' . date('n', $cutoffDate) . '/1');
+
+		return $accountingPeriod->format('Y-m-d');
 	}
 	
 	/**

@@ -1,6 +1,6 @@
-Ext.define('NP.view.viewport.VCMenu', {
+Ext.define('NP.view.viewport.menu.VCMenu', {
     extend: 'NP.lib.ui.HoverButton',
-    alias: 'widget.viewport.vcmenu',
+    alias: 'widget.viewport.menu.vcmenu',
 
 	vcText        : 'Vendor Catalog',
 	listingsText  : 'Vendor Catalog Listings',

@@ -13,7 +13,6 @@ Ext.define('NP.view.invoice.View', {
     
     itemId: 'invoiceViewTitle',
     title: 'Invoice: [status here]',
-    border: false,
     autoScroll: true,
     defaults: {
     	margin: '5',

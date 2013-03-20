@@ -54,12 +54,6 @@ Ext.define('NP.controller.Invoice', function() {
 						if (contentView.getXType() == 'invoice.register') {
 							var activeTab = contentView.queryById('invoiceRegisterTabs').getActiveTab();
 							if (activeTab.getStore) {
-								var proxy = activeTab.getStore().getProxy();
-								Ext.apply(proxy.extraParams, {
-									contextFilterType     : filterType,
-									contextFilterSelection: selected
-								});
-								
 								activeTab.getStore().removeAll();
 								activeTab.getDockedItems()[0].moveFirst();
 							}
@@ -87,13 +81,8 @@ Ext.define('NP.controller.Invoice', function() {
 			}
 			
 			if (tab.getStore) {
-				var contextFilter = Ext.ComponentQuery.query('#invoiceRegisterContextPicker')[0].getState();
 				var proxy = tab.getStore().getProxy();
-				Ext.apply(proxy.extraParams, {
-					tab                   : activeTab,
-					contextFilterType     : contextFilter.contextFilterType,
-					contextFilterSelection: contextFilter.selected
-				});
+				proxy.extraParams.tab = activeTab;
 				
 				tab.getStore().removeAll();
 				tab.getDockedItems()[0].moveFirst();

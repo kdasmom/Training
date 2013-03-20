@@ -1,6 +1,6 @@
-Ext.define('NP.view.viewport.ReportMenu', {
+Ext.define('NP.view.viewport.menu.ReportMenu', {
     extend: 'NP.lib.ui.HoverButton',
-    alias: 'widget.viewport.reportmenu',
+    alias: 'widget.viewport.menu.reportmenu',
     
     requires: ['NP.lib.core.Config','NP.lib.core.Security'],
 

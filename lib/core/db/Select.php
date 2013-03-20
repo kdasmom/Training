@@ -302,54 +302,62 @@ class Select implements SQLInterface, SQLElement {
 
 		// Track the columns to be included
 		$cols = array();
-		// If no columns have been specified for the "from" table, just include * for that table
-		if ($this->cols === null) {
-			$cols[] = "{$this->table->getColumnPrefix()}.*";
-		// Otherwise, figure out which columns to include
-		} else {
-			// Loop through all the columsn to include
-			foreach ($this->cols as $alias=>$col) {
-				// If $alias is numeric, means we didn't specify an alias
-				if (is_numeric($alias)) {
-					$alias = null;
+		
+		// Only add to the $cols array if not dealing with a count query
+		if (!$this->count) {
+			// If no columns have been specified for the "from" table, just include * for that table
+			if ($this->cols === null) {
+				$cols[] = "{$this->table->getColumnPrefix()}.*";
+			// Otherwise, figure out which columns to include
+			} else {
+				// Loop through all the columsn to include
+				foreach ($this->cols as $alias=>$col) {
+					// If $alias is numeric, means we didn't specify an alias
+					if (is_numeric($alias)) {
+						$alias = null;
+					}
+					// If the column is a string, assume we're dealing with a regular table column
+					if (is_string($col)) {
+						$colSql = "{$this->table->getColumnPrefix()}.{$col}";
+					// If we have an Expression object, we just run the toString() method to get the value
+					} else if ($col instanceOf Expression) {
+						$colSql = $col->toString();
+					// If we have a Select object, our column is a subquery so we wrap it in parentheses
+					} else if ($col instanceOf Select) {
+						$colSql = "({$col->toString()})";
+					// For any other case, throw an exception
+					} else {
+						throw new \NP\core\Exception('Invalid column definition');
+					}
+					// If there is a column alias, add it
+					if ($alias !== null) {
+						$colSql .= " AS {$alias}";
+					}
+					// Add the column SQL to the column array
+					$cols[] = $colSql;
 				}
-				// If the column is a string, assume we're dealing with a regular table column
-				if (is_string($col)) {
-					$colSql = "{$this->table->getColumnPrefix()}.{$col}";
-				// If we have an Expression object, we just run the toString() method to get the value
-				} else if ($col instanceOf Expression) {
-					$colSql = $col->toString();
-				// If we have a Select object, our column is a subquery so we wrap it in parentheses
-				} else if ($col instanceOf Select) {
-					$colSql = "({$col->toString()})";
-				// For any other case, throw an exception
-				} else {
-					throw new \NP\core\Exception('Invalid column definition');
-				}
-				// If there is a column alias, add it
-				if ($alias !== null) {
-					$colSql .= " AS {$alias}";
-				}
-				// Add the column SQL to the column array
-				$cols[] = $colSql;
 			}
 		}
+
 		// Now we need to look through the join columns
 		$joins = array();
 		// Loop through all joins
 		foreach ($this->joins as $join) {
-			// If the columns are set to null, assume we're retrieving all of them
-			if ($join['cols'] === null) {
-				$cols[] = "{$join['table']->getColumnPrefix()}.*";
-			// Otherwise, need to see which columns we need
-			} else {
-				// Loop through ever column for that join
-				foreach ($join['cols'] as $alias=>$col) {
-					// If $alias is not a number, means we set a column alias
-					if (!is_numeric($alias)) {
-						$col .= "{$col} AS {$alias}";
+			// Only add to the $cols array if not dealing with a count query
+			if (!$this->count) {
+				// If the columns are set to null, assume we're retrieving all of them
+				if ($join['cols'] === null) {
+					$cols[] = "{$join['table']->getColumnPrefix()}.*";
+				// Otherwise, need to see which columns we need
+				} else {
+					// Loop through ever column for that join
+					foreach ($join['cols'] as $alias=>$col) {
+						// If $alias is not a number, means we set a column alias
+						if (!is_numeric($alias)) {
+							$col .= " AS {$alias}";
+						}
+						$cols[] = "{$join['table']->getColumnPrefix()}.{$col}";
 					}
-					$cols[] = "{$join['table']->getColumnPrefix()}.{$col}";
 				}
 			}
 			// build the join clause

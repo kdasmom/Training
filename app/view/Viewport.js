@@ -30,7 +30,7 @@ Ext.define('NP.view.Viewport', {
 			        xtype: 'panel',
 			        height: 51,
 			        border: 0,
-			        html: '<a href="#Viewport:home"><img src="resources/images/payables-top.gif" /></a>',
+			        html: '<img id="npLogo" src="resources/images/payables-top.gif" />',
 			        bodyStyle: {
 			        	background: 'url(resources/images/headerspacer.gif) repeat-x'
 			        }
@@ -51,13 +51,24 @@ Ext.define('NP.view.Viewport', {
 			       		border: false,
 			       		items: {
 			       			region:'center',
-			       			xtype: 'viewport.home'
+			       			html: ''
 			       		}
 			       	}
 				}
 			]
 	    };
 	    
+	    this.addEvents('npLogoClicked');
+
+	    var that = this;
+
+	    // Add a listener for clicking on the NP logo
+	    this.addListener('afterrender', function() {
+	    	that.mon(Ext.get('npLogo'), 'click', function() {
+	    		that.fireEvent('npLogoClicked');
+			});
+	    });
+
 	    this.callParent(arguments);
 	}
 });

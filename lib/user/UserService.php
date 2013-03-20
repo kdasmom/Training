@@ -50,15 +50,28 @@ class UserService extends AbstractService {
 	protected $userSettingGateway;
 
 	/**
-	 * @param \NP\system\SecurityService    $securityService   SecurityService object injected
-	 * @param \NP\invoice\InvoiceService    $invoiceService    InvoiceService object injected
-	 * @param \NP\property\PropertyGateway  $propertyGateway   PropertyGateway object injected
-	 * @param \NP\invoice\RegionGateway     $regionGateway     RegionGateway object injected
-	 * @param \NP\invoice\GLAccountGateway  $gLAccountGateway  GLAccountGateway object injected
-	 * @param \NP\invoice\DelegationGateway $delegationGateway DelegationGateway object injected
+	 * @var \NP\user\UserprofileGateway
 	 */
-	public function __construct(SecurityService $securityService, InvoiceService $invoiceService, PropertyGateway $propertyGateway, RegionGateway $regionGateway, 
-								GLAccountGateway $glaccountGateway, DelegationGateway $delegationGateway, UserSettingGateway $userSettingGateway) {
+	protected $userprofileGateway;
+
+	/**
+	 * @var \NP\user\RoleGateway
+	 */
+	protected $roleGateway;
+
+	/**
+	 * @param \NP\system\SecurityService    $securityService    SecurityService object injected
+	 * @param \NP\invoice\InvoiceService    $invoiceService     InvoiceService object injected
+	 * @param \NP\property\PropertyGateway  $propertyGateway    PropertyGateway object injected
+	 * @param \NP\invoice\RegionGateway     $regionGateway      RegionGateway object injected
+	 * @param \NP\invoice\GLAccountGateway  $gLAccountGateway   GLAccountGateway object injected
+	 * @param \NP\invoice\DelegationGateway $delegationGateway  DelegationGateway object injected
+	 * @param \NP\user\UserprofileGateway   $userprofileGateway UserprofileGateway object injected
+	 * @param \NP\user\RoleGateway          $roleGateway        RoleGateway object injected
+	 */
+	public function __construct(SecurityService $securityService, InvoiceService $invoiceService, PropertyGateway $propertyGateway, 
+								RegionGateway $regionGateway, GLAccountGateway $glaccountGateway, DelegationGateway $delegationGateway,
+								UserSettingGateway $userSettingGateway, UserprofileGateway $userprofileGateway, RoleGateway $roleGateway) {
 		$this->securityService    = $securityService;
 		$this->invoiceService     = $invoiceService;
 		$this->propertyGateway    = $propertyGateway;
@@ -66,6 +79,43 @@ class UserService extends AbstractService {
 		$this->glaccountGateway   = $glaccountGateway;
 		$this->delegationGateway  = $delegationGateway;
 		$this->userSettingGateway = $userSettingGateway;
+		$this->userprofileGateway = $userprofileGateway;
+		$this->roleGateway        = $roleGateway;
+	}
+
+	/**
+	 * Retrieve settings for the currently logged in user
+	 *
+	 * @return array
+	 */
+	public function getSettings() {
+		$userprofile_id = $this->securityService->getUserId();
+		
+		return $this->userSettingGateway->getForUser($userprofile_id);
+	}
+
+	/**
+	 * Save a setting for the currently logged in user
+	 *
+	 * @param  string $name
+	 * @param  string $value
+	 * @return 
+	 */
+	public function saveSetting($name, $value) {
+		$userprofile_id = $this->securityService->getUserId();
+		$dataSet = array(
+			'userprofile_id'    => $userprofile_id,
+			'usersetting_name'  => $name,
+			'usersetting_value' => $value
+		);
+		// Check if there's already a setting by that name saved
+		$recs = $this->userSettingGateway->find("userprofile_id = ? AND usersetting_name = ?", array($userprofile_id, $name));
+		// If there is a record, add the id to the data set so it gets updated
+		if (count($recs)) {
+			$dataSet['usersetting_id'] = $recs[0]['usersetting_id'];
+		}
+
+		return $this->userSettingGateway->save($dataSet);
 	}
 	
 	/**
@@ -136,55 +186,37 @@ class UserService extends AbstractService {
 	 * Retrieve invoices for the different invoice registers for the current logged in user
 	 *
 	 * @param  string $tab                         The register tab to get
-	 * @param  string $contextFilterType           The context filter type; valid values are 'property','region', and 'all'
-	 * @param  int    $contextFilterSelection      The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
+	 * @param  string $contextType                 The context filter type; valid values are 'property','region', and 'all'
+	 * @param  int    $contextSelection            The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
 	 * @param  int    $pageSize                    The number of records per page; if null, all records are returned
 	 * @param  int    $page                        The page for which to return records
 	 * @param  string $sort                        Field(s) by which to sort the result; defaults to vendor_name
 	 * @return array                               Array of invoice records
 	 */
-	public function getInvoiceRegister($tab, $contextFilterType, $contextFilterSelection, $pageSize=null, $page=null, $sort="vendor_name") {
+	public function getInvoiceRegister($tab, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
 		$userprofile_id = $this->securityService->getUserId();
 		$delegated_to_userprofile_id = $this->securityService->getDelegatedUserId();
 		
-		return $this->invoiceService->getInvoiceRegister($tab, $userprofile_id, $delegated_to_userprofile_id, $contextFilterType, $contextFilterSelection, $pageSize, $page, $sort);
+		return $this->invoiceService->getInvoiceRegister($tab, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
 	}
 
-	/**
-	 * Retrieve settings for the currently logged in user
-	 *
-	 * @return array
-	 */
-	public function getSettings() {
+	public function getDashboardStat($statService, $stat, $countOnly, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
 		$userprofile_id = $this->securityService->getUserId();
+		$delegated_to_userprofile_id = $this->securityService->getDelegatedUserId();
+		$func = "get" . $stat;
+		$statService = lcfirst($statService);
 		
-		return $this->userSettingGateway->getForUser($userprofile_id);
-	}
-
-	/**
-	 * Save a setting for the currently logged in user
-	 *
-	 * @param  string $name
-	 * @param  string $value
-	 * @return 
-	 */
-	public function saveSetting($name, $value) {
-		$userprofile_id = $this->securityService->getUserId();
-		$dataSet = array(
-			'userprofile_id'    => $userprofile_id,
-			'usersetting_name'  => $name,
-			'usersetting_value' => $value
-		);
-		// Check if there's already a setting by that name saved
-		$recs = $this->userSettingGateway->find("userprofile_id = ? AND usersetting_name = ?", array($userprofile_id, $name));
-		// If there is a record, add the id to the data set so it gets updated
-		if (count($recs)) {
-			$dataSet['usersetting_id'] = $recs[0]['usersetting_id'];
-		}
-
-		return $this->userSettingGateway->save($dataSet);
+		return $this->{$statService}->{$func}($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
 	}
 	
+	public function isAdmin($userprofile_id) {
+		$res = $this->roleGateway->getUserRole($userprofile_id);
+		if (count($res) && $res[0]['is_admin_role']) {
+			return true;
+		}
+
+		return false;
+	}
 }
 
 ?>

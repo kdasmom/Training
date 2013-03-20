@@ -35,7 +35,8 @@ Ext.define('NP.lib.ui.ComboBox', {
 			Ext.apply(defaultCfg, {
 				queryMode  : 'remote',
 				typeAhead  : false,
-				hideTrigger:true
+				hideTrigger:true,
+				triggerAction:'query'
 			});
 		} else {
 			Ext.apply(defaultCfg, {
@@ -62,9 +63,6 @@ Ext.define('NP.lib.ui.ComboBox', {
 
 		// If type is autocomplete
 		if (cfg.type == 'autocomplete') {
-			// Disable the down arrow key; note that this is a private method
-			this.onDownArrow = Ext.emptyFn;
-
 			this.addListener('beforerender', function(combo) {
 				if ('defaultRec' in combo) {
 					// Add the current value to the store, otherwise you have an empty store

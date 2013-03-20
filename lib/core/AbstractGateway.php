@@ -238,11 +238,11 @@ abstract class AbstractGateway {
 	 * @param  array              $params      An array of parameters to bind to the query
 	 * @param  int                $pageSize    The number of records per page
 	 * @param  int                $page        The page number to retrieve (optional); defaults to 1
-	 * @param  boolean            $hasSubquery Indicates if the select query contains a subquery in the select clause
+	 * @param  string             $distinctCol Column to use for the count query if DISTINCT is used
 	 * @return array                           Associative array with 2 keys: 'total' has the total number of records for the query and 'data' has the records for the selected page and pagesize requested
 	 */
-	public function getPagingArray($select, $params, $pageSize, $page=1, $hasSubquery=false) {
-		$selectTotal = $this->getSelectCountForPaging($select);
+	public function getPagingArray($select, $params, $pageSize, $page=1, $distinctCol=null) {
+		$selectTotal = $this->getSelectCountForPaging($select, $distinctCol);
 		
 		// Limit the original query to the page needed
 		$select->limit($pageSize);
@@ -262,18 +262,29 @@ abstract class AbstractGateway {
 	 * @param  NP\core\db\Select  $select      A select object
 	 * @param \NP\core\db\Select               A select object like the one passed in but removing columns and doing a count(*) instead
 	 */
-	public function getSelectCountForPaging($select) {
+	public function getSelectCountForPaging($select, $distinctCol=null) {
 		// Clone the select statement passed to use it as a base
 		$selectTotal = clone $select;
+		
 		// Remove the order by clause
 		$selectTotal->order(null);
+
+		// If statement has DISTINCT, use only first column
+		$cols = array();
+		if ($selectTotal->getRawState('distinct')) {
+			$cols[] = $distinctCol;
+		}
+
 		// Set a new column for the count
-		$selectTotal->columns(array())
+		$selectTotal->columns($cols)
 					->count(true, 'totalRows'); 
+		
 		// Get all the existing joins
 		$joins = $selectTotal->getRawState('joins');
+		
 		// Remove existing joins
 		$selectTotal->resetJoins();
+		
 		// Recreate the joins without the columns
 		foreach($joins as $join) {
 			$selectTotal->join($join['table'], $join['condition'], array(), $join['type']);

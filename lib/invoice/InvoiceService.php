@@ -133,17 +133,85 @@ class InvoiceService extends AbstractService {
 	 * @param  string $tab                         The register tab to get
 	 * @param  int    $userprofile_id              The active user ID, can be a delegated account
 	 * @param  int    $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
-	 * @param  string $contextFilterType           The context filter type; valid values are 'property','region', and 'all'
-	 * @param  int    $contextFilterSelection      The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
+	 * @param  string $contextType                 The context filter type; valid values are 'property','region', and 'all'
+	 * @param  int    $contextSelection            The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
 	 * @param  int    $pageSize                    The number of records per page; if null, all records are returned
 	 * @param  int    $page                        The page for which to return records
 	 * @param  string $sort                        Field(s) by which to sort the result; defaults to vendor_name
 	 * @return array                               Array of invoice records
 	 */
-	public function getInvoiceRegister($tab, $userprofile_id, $delegated_to_userprofile_id, $contextFilterType, $contextFilterSelection, $pageSize=null, $page=null, $sort="vendor_name") {
+	public function getInvoiceRegister($tab, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
 		$method = 'find'.ucfirst($tab).'Invoices';
 
-		return $this->invoiceGateway->$method($userprofile_id, $delegated_to_userprofile_id, $contextFilterType, $contextFilterSelection, $pageSize, $page, $sort);
+		return $this->invoiceGateway->$method($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
+	}
+
+	/**
+	 * Get list of invoices to approve
+	 *
+	 * @param  boolean $countOnly                   Whether we want to retrieve only the number of records or all the data
+	 * @param  int     $userprofile_id              The active user ID, can be a delegated account
+	 * @param  int     $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
+	 * @param  string  $contextType                 The context filter type; valid values are 'property','region', and 'all'
+	 * @param  int     $contextSelection            The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
+	 * @param  int     $pageSize                    The number of records per page; if null, all records are returned
+	 * @param  int     $page                        The page for which to return records
+	 * @param  string  $sort                        Field(s) by which to sort the result; defaults to vendor_name
+	 * @return array                                Array of invoice records
+	 */
+	public function getInvoicesToApprove($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
+		return $this->invoiceGateway->findInvoicesToApprove($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
+	}
+
+	/**
+	 * Get list of invoices on hold
+	 *
+	 * @param  boolean $countOnly                   Whether we want to retrieve only the number of records or all the data
+	 * @param  int     $userprofile_id              The active user ID, can be a delegated account
+	 * @param  int     $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
+	 * @param  string  $contextType                 The context filter type; valid values are 'property','region', and 'all'
+	 * @param  int     $contextSelection            The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
+	 * @param  int     $pageSize                    The number of records per page; if null, all records are returned
+	 * @param  int     $page                        The page for which to return records
+	 * @param  string  $sort                        Field(s) by which to sort the result; defaults to vendor_name
+	 * @return array                                Array of invoice records
+	 */
+	public function getInvoicesOnHold($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
+		return $this->invoiceGateway->findInvoicesOnHold($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
+	}
+
+	/**
+	 * Get list of completed invoices
+	 *
+	 * @param  boolean $countOnly                   Whether we want to retrieve only the number of records or all the data
+	 * @param  int     $userprofile_id              The active user ID, can be a delegated account
+	 * @param  int     $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
+	 * @param  string  $contextType                 The context filter type; valid values are 'property','region', and 'all'
+	 * @param  int     $contextSelection            The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
+	 * @param  int     $pageSize                    The number of records per page; if null, all records are returned
+	 * @param  int     $page                        The page for which to return records
+	 * @param  string  $sort                        Field(s) by which to sort the result; defaults to vendor_name
+	 * @return array                                Array of invoice records
+	 */
+	public function getInvoicesCompleted($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
+		return $this->invoiceGateway->findInvoicesCompleted($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
+	}
+
+	/**
+	 * Get list of rejected invoices
+	 *
+	 * @param  boolean $countOnly                   Whether we want to retrieve only the number of records or all the data
+	 * @param  int     $userprofile_id              The active user ID, can be a delegated account
+	 * @param  int     $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
+	 * @param  string  $contextType                 The context filter type; valid values are 'property','region', and 'all'
+	 * @param  int     $contextSelection            The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
+	 * @param  int     $pageSize                    The number of records per page; if null, all records are returned
+	 * @param  int     $page                        The page for which to return records
+	 * @param  string  $sort                        Field(s) by which to sort the result; defaults to vendor_name
+	 * @return array                                Array of invoice records
+	 */
+	public function getInvoicesRejected($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
+		return $this->invoiceGateway->findInvoicesRejected($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
 	}
 	
 }

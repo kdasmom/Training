@@ -118,17 +118,30 @@ Ext.application({
 	},
     
 	setView: function(view, panel) {
+		var sameView = false;
 		// If a string was passed in, create a view object first
 		if (typeof view == 'string') {
-			view = Ext.create(view);
+			// Get the currently active view
+			var currentView = this.getCurrentView();
+
+			// Only create the view if dealing with a different one than the currently active one
+			if (Ext.ClassManager.getName(currentView) != view) {
+				view = Ext.create(view);
+			// otherwise just use the active view instead of re-creating it
+			} else {
+				sameView = true
+			}
 		}
-		if (arguments.length == 1) {
-			panel = 'contentPanel';
-			view.region = 'center';
+		// If we have a new view, let's add it to the parent panel
+		if (!sameView) {
+			if (arguments.length == 1) {
+				panel = 'contentPanel';
+				view.region = 'center';
+			}
+			var pnl = Ext.ComponentQuery.query('#'+panel);
+			pnl[0].removeAll();
+			pnl[0].add(view);
 		}
-		var pnl = Ext.ComponentQuery.query('#'+panel);
-		pnl[0].removeAll();
-		pnl[0].add(view);
 	},
     
 	addHistory: function(newToken) {

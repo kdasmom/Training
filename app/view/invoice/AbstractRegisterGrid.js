@@ -1,5 +1,5 @@
 Ext.define('NP.view.invoice.AbstractRegisterGrid', {
-    extend: 'Ext.grid.Panel',
+    extend: 'NP.lib.ui.Grid',
     
     requires: ['NP.lib.core.Util','NP.lib.core.Config'],
     
@@ -10,6 +10,8 @@ Ext.define('NP.view.invoice.AbstractRegisterGrid', {
 	dateColumnText    : 'Invoice Date',
 
 	constructor: function(cfg) {
+		cfg.contextPicker = 'invoiceRegisterContextPicker';
+
     	cfg.columns = {
 		    items: [
 		        {
