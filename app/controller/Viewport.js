@@ -44,6 +44,8 @@ Ext.define('NP.controller.Viewport', function() {
 				'#homeContextPicker': {
 					change: function(toolbar, filterType, selected) {
 						NP.lib.core.SummaryStatManager.updateCounts(filterType, selected);
+
+						this.loadSummaryStatGrid(filterType, selected);
 					}
 				},
 
@@ -119,7 +121,6 @@ Ext.define('NP.controller.Viewport', function() {
 			var grid = Ext.create('NP.view.viewport.dashboard.'+rec.get('name'), {
 				title        : rec.get('title'),
 				store        : store,
-				contextPicker: 'homeContextPicker',
 				paging       : true,
 				stateful     : true,
 				stateId      : 'dashboard_' + rec.get('name')
@@ -127,7 +128,21 @@ Ext.define('NP.controller.Viewport', function() {
 			
 			detailPanel.add(grid);
 			
-			grid.getStore().load();
+			this.loadSummaryStatGrid();
+		},
+
+		loadSummaryStatGrid: function() {
+			var state = Ext.ComponentQuery.query('#homeContextPicker')[0].getState();
+			var summaryStatGrid = Ext.ComponentQuery.query('#summaryStatDetailPanel')[0].child();
+			if (summaryStatGrid) {
+				var proxy = summaryStatGrid.getStore().getProxy();
+				Ext.apply(proxy.extraParams, {
+					contextType     : state.type,
+					contextSelection: state.selected
+				});
+				summaryStatGrid.getStore().removeAll();
+				summaryStatGrid.getDockedItems('pagingtoolbar')[0].moveFirst();
+			}
 		}
 	}
 }());

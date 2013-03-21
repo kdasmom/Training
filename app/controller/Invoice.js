@@ -1,6 +1,6 @@
 Ext.define('NP.controller.Invoice', function() {
 	var invoiceRecord;
-	 
+	
 	return {
 		extend: 'Ext.app.Controller',
 		
@@ -54,8 +54,7 @@ Ext.define('NP.controller.Invoice', function() {
 						if (contentView.getXType() == 'invoice.register') {
 							var activeTab = contentView.queryById('invoiceRegisterTabs').getActiveTab();
 							if (activeTab.getStore) {
-								activeTab.getStore().removeAll();
-								activeTab.getDockedItems()[0].moveFirst();
+								this.loadRegisterGrid(activeTab);
 							}
 						}
 					}
@@ -63,6 +62,17 @@ Ext.define('NP.controller.Invoice', function() {
 			});
 		},
 		
+		loadRegisterGrid: function(grid) {
+			var state = Ext.ComponentQuery.query('#invoiceRegisterContextPicker')[0].getState();
+			var proxy = grid.getStore().getProxy();
+			proxy.extraParams.contextType = state.type;
+			proxy.extraParams.contextSelection = state.selected;
+			proxy.extraParams.tab = grid.getItemId().replace('InvList', '');
+
+			grid.getStore().removeAll();
+			grid.getDockedItems('pagingtoolbar')[0].moveFirst();
+		},
+
 		showRegister: function(activeTab) {
 			// If no active tab is passed, default to Open
 			if (!activeTab) var activeTab = 'open';
@@ -81,11 +91,7 @@ Ext.define('NP.controller.Invoice', function() {
 			}
 			
 			if (tab.getStore) {
-				var proxy = tab.getStore().getProxy();
-				proxy.extraParams.tab = activeTab;
-				
-				tab.getStore().removeAll();
-				tab.getDockedItems()[0].moveFirst();
+				this.loadRegisterGrid(tab);
 			}
 		},
 		

@@ -114,7 +114,7 @@ Ext.define('NP.view.shared.ContextPicker', function () {
                 },
                 listeners: {
                     change: function(field, newValue, oldValue) {
-                        var selVal = newValue.contextFilterType;
+                        var selVal = newValue.contextPickerType;
                         if (!(selVal instanceof Object)) {
                             if (selVal == 'property' || selVal == 'all') {
                                 var showComp = '__contextPickerUserPropertiesCombo';
@@ -135,21 +135,21 @@ Ext.define('NP.view.shared.ContextPicker', function () {
                     {
                         boxLabel  : this.currentPropertyRadioText,
                         itemId    : '__currentPropFilterType',
-                        name      : 'contextFilterType',
+                        name      : 'contextPickerType',
                         inputValue: 'property',
                         checked   : !hide_prop && !select_all
                     },
                     {
                         boxLabel  : this.regionRadioText,
                         itemId    : '__regionFilterType',
-                        name      : 'contextFilterType', 
+                        name      : 'contextPickerType', 
                         inputValue: 'region',
                         checked   : !hide_region
                     },
                     {
                         boxLabel  : this.allPropertiesRadioText, 
                         itemId    : '__allFilterType',
-                        name      : 'contextFilterType', 
+                        name      : 'contextPickerType', 
                         inputValue: 'all',
                         checked   : select_all
                     }
@@ -165,23 +165,24 @@ Ext.define('NP.view.shared.ContextPicker', function () {
 
         triggerChangeEvent: function() {
             var state = this.getState();
-            this.fireEvent('change', this, state.contextFilterType, state.selected);
+            this.fireEvent('change', this, state.type, state.selected);
         },
 
         getState: function() {
-            var contextFilterType = this.queryById('__contextPickerType').getValue().contextFilterType;
+        getState: function() {
+            var contextPickerType = this.queryById('__contextPickerType').getValue().contextPickerType;
             var selected;
-            if (contextFilterType == 'region') {
+            if (contextPickerType == 'region') {
                 var combo = this.queryById('__contextPickerUserRegionsCombo');
                 selected = combo.getValue();
-            } else if (contextFilterType == 'property') {
+            } else if (contextPickerType == 'property') {
                 var combo = this.queryById('__contextPickerUserPropertiesCombo');
                 selected = combo.getValue();
-            } else if (contextFilterType == 'all') {
+            } else if (contextPickerType == 'all') {
                 var combo = this.queryById('__contextPickerUserPropertiesCombo');
                 selected = combo.getValue();
             }
-            return { contextFilterType: contextFilterType, selected: selected };
+            return { type: contextPickerType, selected: selected };
         },
 
         applyState: function(state) {
@@ -194,17 +195,17 @@ Ext.define('NP.view.shared.ContextPicker', function () {
             propCombo.suspendEvents(false);
             regionCombo.suspendEvents(false);
 
-            if (state.contextFilterType == 'property') {
+            if (state.type == 'property') {
                 propCombo.show();
                 regionCombo.hide();
                 this.queryById('__currentPropFilterType').setValue(true);
                 this.queryById('__contextPickerUserPropertiesCombo').setValue(state.selected);
-            } else if (state.contextFilterType == 'region') {
+            } else if (state.type == 'region') {
                 regionCombo.show();
                 propCombo.hide();
                 this.queryById('__regionFilterType').setValue(true);
                 this.queryById('__contextPickerUserRegionsCombo').setValue(state.selected);
-            } else if (state.contextFilterType == 'all') {
+            } else if (state.type == 'all') {
                 regionCombo.hide();
                 this.queryById('__allFilterType').setValue(true);
                 this.queryById('__contextPickerUserPropertiesCombo').setValue(state.selected);

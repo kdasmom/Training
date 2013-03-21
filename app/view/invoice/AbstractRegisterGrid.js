@@ -10,9 +10,8 @@ Ext.define('NP.view.invoice.AbstractRegisterGrid', {
 	dateColumnText    : 'Invoice Date',
 
 	constructor: function(cfg) {
-		cfg.contextPicker = 'invoiceRegisterContextPicker';
-
-    	cfg.columns = {
+		cfg.paging = true;
+		cfg.columns = {
 		    items: [
 		        {
 		            text: this.vendorColumnText,
@@ -39,14 +38,6 @@ Ext.define('NP.view.invoice.AbstractRegisterGrid', {
 		};
 		
 		this.store = Ext.create('NP.store.invoice.Register');
-    	Ext.applyIf(cfg, {
-			dockedItems: [{
-				xtype: 'pagingtoolbar',
-				dock: 'top',
-				store: this.store,
-				displayInfo: true
-			}]
-    	});
     	
     	if (this.extraCols) {
     		cfg.columns.items = cfg.columns.items.concat(this.extraCols);
