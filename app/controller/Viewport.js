@@ -73,6 +73,12 @@ Ext.define('NP.controller.Viewport', function() {
 							openInvoice(rec.get('invoice_id'));
 						}
                     }
+				},
+
+				'[xtype="viewport.dashboard.invoicesbyuser"]': {
+					itemclick: function(grid, rec) {
+                        openInvoice(rec.get('invoice_id'));
+                    }
 				}
 			});
 		},
@@ -120,7 +126,6 @@ Ext.define('NP.controller.Viewport', function() {
 			});
 			
 			detailPanel.add(grid);
-			//detailPanel.add(Ext.create('Ext.panel.Panel', { title: rec.get('title'), html: 'This is a test' }));
 			
 			grid.getStore().load();
 		}

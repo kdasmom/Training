@@ -180,7 +180,8 @@ Ext.define('NP.locale.en.lib.core.SummaryStatManager', {
 	invoicesToApproveText: 'Invoices to Approve',
 	invoicesOnHoldText   : 'Invoices on Hold',
 	invoicesCompletedText: 'Completed Invoices to Approve',
-	invoicesRejectedText : 'Rejected Invoices'
+	invoicesRejectedText : 'Rejected Invoices',
+	invoicesMyText       : 'My Invoices'
 });
 
 /**

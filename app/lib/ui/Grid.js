@@ -35,17 +35,23 @@ Ext.define('NP.lib.ui.Grid', {
 				});
 			}
 
+			function onContextChange(picker, filterType, selected) {
+				changeProxyParams(filterType, selected);
+				if (this.paging === true) {
+					this.getStore().removeAll();
+					this.getDockedItems('pagingtoolbar')[0].moveFirst();
+				}
+			}
+
 			var contextPicker = Ext.ComponentQuery.query('#'+this.contextPicker)[0];
 			var state = contextPicker.getState();
 			changeProxyParams(state.contextFilterType, state.selected);
 
-			contextPicker.addListener('change', function(picker, filterType, selected) {
-				changeProxyParams(filterType, selected);
-				if (that.paging === true) {
-					that.getStore().removeAll();
-					that.getDockedItems()[1].moveFirst();
-				}
-			});
+			this.addListener('destroy', function(comp) {
+				contextPicker.removeListener('change', onContextChange, this);
+			}, this);
+
+			contextPicker.addListener('change', onContextChange, this);
 		}
 	}
 });

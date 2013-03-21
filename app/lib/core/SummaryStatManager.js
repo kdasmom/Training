@@ -10,6 +10,7 @@ Ext.define('NP.lib.core.SummaryStatManager', function() {
 		invoicesOnHoldText   : 'Invoices on Hold',
 		invoicesCompletedText: 'Completed Invoices to Approve',
 		invoicesRejectedText : 'Rejected Invoices',
+		invoicesMyText       : 'My Invoices',
 
 	    constructor: function() {
 	    	this.addEvents('countreceive');
@@ -41,6 +42,12 @@ Ext.define('NP.lib.core.SummaryStatManager', function() {
 						model    : 'invoice.Invoice',
 						service  : 'InvoiceService',
 						module_id: 6036
+					},{
+						title    : this.invoicesMyText,
+						name     : 'InvoicesByUser',
+						model    : 'invoice.Invoice',
+						service  : 'InvoiceService',
+						module_id: 2060
 					}
 		        ],
 		        proxy : {
@@ -90,9 +97,6 @@ Ext.define('NP.lib.core.SummaryStatManager', function() {
 						contextSelection: selected,
 						success: function(result, deferred) {
 							that.fireEvent('countreceive', item.name, result);
-						},
-						failure: function(response, options, deferred) {
-
 						}
 					}
 				});

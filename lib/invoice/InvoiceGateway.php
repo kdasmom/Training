@@ -2,8 +2,7 @@
 
 namespace NP\invoice;
 
-use NP\property\PropertyGateway;
-use NP\property\FiscalcalGateway;
+use NP\system\ConfigService;
 use NP\property\PropertyContext;
 use NP\property\sql\PropertyFilterSelect;
 
@@ -22,9 +21,9 @@ use NP\core\db\Expression;
 class InvoiceGateway extends AbstractPOInvoiceGateway {
 	
 	/**
-	 * @var \NP\property\PropertyGateway
+	 * @var \NP\system\ConfigService
 	 */
-	protected $propertyGateway;
+	protected $configService;
 	
 	/**
 	 * @var \NP\user\RoleGateway
@@ -36,8 +35,8 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 	 * @param \NP\property\PropertyGateway $propertyGateway PropertyGateway object injected
 	 * @param \NP\user\RoleGateway         $roleGateway     UserService object injected
 	 */
-	public function __construct(Adapter $adapter, PropertyGateway $propertyGateway, RoleGateway $roleGateway) {
-		$this->propertyGateway  = $propertyGateway;
+	public function __construct(Adapter $adapter, ConfigService $configService, RoleGateway $roleGateway) {
+		$this->configService  = $configService;
 		$this->roleGateway      = $roleGateway;
 		
 		parent::__construct($adapter);
@@ -487,8 +486,8 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 								'priorityflag_id_alt'
 							))
 					->column(new Expression("ISNULL((" . $jobcodeSubSelect->toString() . "), 0)"), 'invoice_inactive_jobcode')
-					->column(new Expression('DateDiff(day, i.invoice_createddatetm, getDate())'), 'invoice_pending_days')
 					->columnInvoiceAmount()
+					->columnPendingDays()
 					->order($sort);
 		}
 
@@ -529,8 +528,8 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 								'invoice_neededby_datetm',
 								'priorityflag_id_alt'
 							))
-					->column(new Expression('DateDiff(day, i.invoice_createddatetm, getDate())'), 'invoice_pending_days')
 					->columnInvoiceAmount()
+					->columnPendingDays()
 					->order($sort);
 		}
 
@@ -539,6 +538,86 @@ class InvoiceGateway extends AbstractPOInvoiceGateway {
 				->where("
 					i.invoice_status = 'rejected'
 					AND i.property_id IN (" . $propertyFilterSelect->toString() . ")
+				");
+
+		// If paging is needed
+		if ($pageSize !== null && $countOnly == 'false') {
+			return $this->getPagingArray($select, array(), $pageSize, $page, 'invoice_id');
+		} else if ($countOnly == 'true') {
+			$res = $this->adapter->query($select);
+			return $res[0]['totalRecs'];
+		} else {
+			return $this->adapter->query($select);
+		}
+	}
+	
+	/**
+	 * See getInvoicesByUser() function in InvoiceService
+	 */
+	public function findInvoicesByUser($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
+		$propertyFilterSelect = new PropertyFilterSelect(new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection));
+
+		$rollOffType = $this->configService->get('PN.InvoiceOptions.rollOffType', 'currentPeriod');
+		switch ($rollOffType) {
+			case 'currentPeriod':
+				$rollIncrement = 0;
+				break;
+			case 'twoPeriods':
+				$rollIncrement = 1;
+				break;
+			case 'threePeriods':
+				$rollIncrement = 2;
+				break;
+		}
+
+		$select = new sql\InvoiceSelect();
+		
+		if ($countOnly == 'true') {
+			$select->count(true, 'totalRecs');
+		} else {
+			$select->columns(array(
+								'invoice_id',
+								'invoice_ref',
+								'invoice_datetm',
+								'invoice_status',
+								'priorityflag_id_alt'
+							))
+					->columnInvoiceAmount()
+					->columnPendingDays()
+					->order($sort);
+		}
+
+		$now = new \DateTime();
+		$nextMonth = new \DateTime();
+		$nextMonth->add(new \DateInterval('P1M'));
+		$cutoffDate = new \DateTime();
+		$interval = new \DateInterval('P45D');
+		$interval->invert = 1;
+		$cutoffDate->add($interval);
+
+		$select->joinVendor(array('vendorsite_id'), array('vendor_name'))
+				->joinProperty(array('property_name'))
+				->joinFiscalcal($now->format('Y'))
+				->joinFiscalcalMonth($now->format('n'))
+				->joinIntegrationPackage()
+				->joinIntegrationPackageType(array('integration_package_type_display_name'))
+				->where("
+					i.property_id IN (" . $propertyFilterSelect->toString() . ")
+					AND (
+						(
+							i.invoice_status NOT IN ('draft','paid') 
+							AND i.invoice_createddatetm BETWEEN '{$cutoffDate->format('Y-m-d H:i:s')}' AND '{$now->format('Y-m-d H:i:s')}'
+						)
+						OR (
+							i.invoice_status = 'paid' 
+							AND DATEADD(m, {$rollIncrement}, i.invoice_period) >= (
+								CASE
+									WHEN fm.fiscalcalmonth_cutoff >= {$now->format('j')} THEN '{$now->format('Y')}-{$now->format('m')}-01'
+									ELSE '{$nextMonth->format('Y')}-{$nextMonth->format('m')}-01'
+								END
+							)
+						)
+					)
 				");
 
 		// If paging is needed

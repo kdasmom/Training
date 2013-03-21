@@ -7,6 +7,7 @@ Ext.define('NP.model.invoice.Invoice', {
     fields: [
     	{ name: 'invoice_id', type: 'int' },
     	{ name: 'integration_package_id', type: 'int' },
+    	{ name: 'integration_package_type_display_name' },
 		{ name: 'invoicepayment_type_id', type: 'int' },
     	{ name: 'vendor_id', type: 'int' },
     	{ name: 'vendor_id_alt' },

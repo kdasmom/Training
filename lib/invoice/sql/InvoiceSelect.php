@@ -63,7 +63,7 @@ class InvoiceSelect extends Select {
 	/**
 	 * Joins the PROPERTY table
 	 *
-	 * @param  string[] $cols               Columns to retrieve from the table
+	 * @param  string[] $cols           Columns to retrieve from the table
 	 * @param \NP\invoice\InvoiceSelect Returns caller object for easy chaining
 	 */
 	public function joinProperty($cols=array()) {
@@ -75,7 +75,7 @@ class InvoiceSelect extends Select {
 	/**
 	 * Joins the USERPROFILE table
 	 *
-	 * @param  string[] $cols               Columns to retrieve from the table
+	 * @param  string[] $cols           Columns to retrieve from the table
 	 * @param \NP\invoice\InvoiceSelect Returns caller object for easy chaining
 	 */
 	public function joinUserprofile($cols=array()) {
@@ -84,6 +84,54 @@ class InvoiceSelect extends Select {
 							array())
 						->join(array('u' => 'userprofile'),
 							'r.userprofile_id = u.userprofile_id',
+							$cols);
+	}
+	
+	/**
+	 * Joins the INTEGRATIONPACKAGE table
+	 *
+	 * @param  string[] $cols           Columns to retrieve from the table
+	 * @param \NP\invoice\InvoiceSelect Returns caller object for easy chaining
+	 */
+	public function joinIntegrationPackage($cols=array()) {
+		return $this->join(array('ip' => 'integrationpackage'),
+							"p.integration_package_id = ip.integration_package_id",
+							$cols);
+	}
+	
+	/**
+	 * Joins the INTEGRATIONPACKAGETYPE table
+	 *
+	 * @param  string[] $cols           Columns to retrieve from the table
+	 * @param \NP\invoice\InvoiceSelect Returns caller object for easy chaining
+	 */
+	public function joinIntegrationPackageType($cols=array()) {
+		return $this->join(array('ipt' => 'integrationpacakgetype'),
+							"ip.integration_package_type_id = ipt.integration_package_type_id",
+							$cols);
+	}
+	
+	/**
+	 * Joins the FISCALCAL table
+	 *
+	 * @param  string[] $cols           Columns to retrieve from the table
+	 * @param \NP\invoice\InvoiceSelect Returns caller object for easy chaining
+	 */
+	public function joinFiscalcal($year, $cols=array()) {
+		return $this->join(array('f' => 'fiscalcal'),
+							"i.property_id = f.property_id AND f.fiscalcal_year = {$year}",
+							$cols);
+	}
+	
+	/**
+	 * Joins the FISCALCALMONTH table
+	 *
+	 * @param  string[] $cols           Columns to retrieve from the table
+	 * @param \NP\invoice\InvoiceSelect Returns caller object for easy chaining
+	 */
+	public function joinFiscalcalMonth($month, $cols=array()) {
+		return $this->join(array('fm' => 'fiscalcalmonth'),
+							"f.fiscalcal_id = fm.fiscalcal_id AND fm.fiscalcalmonth_num = {$month}",
 							$cols);
 	}
 	
@@ -99,6 +147,15 @@ class InvoiceSelect extends Select {
 					->where('ii.invoice_id = '.'i.invoice_id');
 		
 		return $this->column($subSelect, 'invoice_amount');
+	}
+	
+	/**
+	 * Adds the pending days column
+	 *
+	 * @param \NP\invoice\InvoiceSelect Returns caller object for easy chaining
+	 */
+	public function columnPendingDays() {
+		return $this->column(new Expression('DateDiff(day, i.invoice_createddatetm, getDate())'), 'invoice_pending_days');
 	}
 	
 	/**
