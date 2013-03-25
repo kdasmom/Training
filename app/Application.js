@@ -2,6 +2,12 @@ Ext.Loader.setConfig({
 	enabled: true
 });
 
+/**
+ * This call is responsible for creating and starting an application
+ *
+ * @author Thomas Messier
+ * @singleton
+ */
 Ext.application({
 	name: 'NP',
 	requires: [
@@ -11,23 +17,52 @@ Ext.application({
 		,'NP.lib.core.Util'
 		,'NP.lib.core.Config'
 		,'NP.lib.core.Security'
-		,'Ext.util.Format'
 	],
-    
-	controllers: ['Viewport','Invoice'],
+	
+	// We only want to define the Viewport controller since it's always needed to run main navigation
+	// Do not include any other controllers here, they will be lazy loaded as needed on dev
+	controllers: ['Viewport'],
 
-	stores: ['user.Delegations'],
+	// This is to track controllers that have already been initialized to make sure we don't initialize
+	// them twice
+	initializedControllers: { Viewport:true },
 
-	launch: function(application) {
+	/**
+	 * @param {Ext.app.Application} app The application object for the app being launched
+	 */
+	launch: function(app) {
 		var that = this;
 		
+		// Start loading the minimum inital data we need to be able to run the application
 		this.loadInitialData().then({
 			success: function(res) {
 				// Language to load; static for now, will be updated in future when we offer more languages
 				var lang = 'en';
 				var time = new Date().getTime();
+				// Inject the correct file for localization
 				Ext.Loader.injectScriptElement('app/locale/'+lang+'.js?_dc='+time, function() {
-					that.getStore('user.Delegations').load(function() {
+					// Create the delegation store because it's needed immediately on the Viewport top bar
+					var delegationStore = Ext.create('NP.store.user.Delegations', { 
+						storeId: 'user.Delegations',
+						service: 'UserService',
+			            action: 'getDelegationsTo',
+			            extraParams: {
+			                delegation_status: 1
+			            },
+			            // Adding a listener to add the current user to the store as the topmost user
+			            listeners: {
+					    	load: function(store, recs) {
+					    		var currentUser = NP.lib.core.Security.getDelegatedToUser();
+					    		store.insert(0, {
+									userprofile_username: currentUser.get('userprofile_username'),
+									userprofile_id      : currentUser.get('userprofile_id')
+					    		});
+					    	}
+					    }
+					});
+
+					// Make sure the store is populated before the app starts to run
+					delegationStore.load(function() {
 						// Create the ViewPort
 						Ext.create('NP.view.Viewport');
 						
@@ -37,6 +72,7 @@ Ext.application({
 						// Initialize state manager
 						Ext.state.Manager.setProvider( Ext.create('NP.lib.core.DBProvider') );
 						
+						// Initialize the UI state so that we start on whatever page is in the URL fragment
 						that.initState();
 					});
 				});
@@ -46,30 +82,53 @@ Ext.application({
 			}
 		});
 	},
-   
+   	
+	/**
+	 * Loads initial data using other classes that is needed to run the application
+	 * @return {Deft.promise.Promise}
+	 */
     loadInitialData: function() {
     	return Deft.Promise.all([NP.lib.core.Config.loadConfigSettings(), NP.lib.core.Security.loadPermissions()]);
     },
     
-	initHistory: function() {
+    /**
+	 * Initializes the Ext.History module so we can track where we are through the URL fragment
+	 */
+    initHistory: function() {
 		Ext.log('Initializing Ext.History');
 		
-		Ext.History.init();
-		 
 		var app = this;
+
+		// Initialize the  History module
+		Ext.History.init();
+		
+		// Setup the event that gets triggered whenever the URL fragment changes
 		Ext.History.on('change', function(token) {
 			Ext.log('History has changed to ' + token);
 			app.gotoToken(token);
 		});
 	},
-   
+
+	/**
+	 * Makes sure that the application opens on the page we currently have specified in the URL fragment
+	 */
 	initState: function() {
+		// Get the token that's in the URL fragment
 		var token = Ext.History.getToken();
+		
 		Ext.log('Initial token: ' + token);
 		
+		// Go to the initial token
 		this.gotoToken(token);
 	},
     
+    /**
+     * Examines the token and routes the application accordingly if appropriate. This also checks
+     * the token hash (last part of the token) to make sure it's valid, if it isn't it boots the
+     * user to the home page. This is to prevent URL tampering.
+     *
+     * Direct calls to this function should very rarely be needed
+     */
 	gotoToken: function(token) {
 		Ext.log('Going to token: ' + token);
 
@@ -102,9 +161,27 @@ Ext.application({
 		}
 	},
     
+    /**
+     * Calls a controller's init() method if it hasn't already been initialized
+     * @param {String} controller The name of the controller
+     */
+	initController: function(controller) {
+		if (!this.initializedControllers[controller]) {
+			this.getController(controller).init();
+			this.initializedControllers[controller] = true;
+		}
+	},
+
+	/**
+	 * This function runs an action from a controller.
+	 * @param {String} controller Name of the controller
+	 * @param {String} action     Name of the function to run
+	 * @param {String...} arg     Variable number of values that will be used as arguments when calling the function (optional)       
+	 */
 	runAction: function(controller, action) {
 		Ext.log('Running controller "' + controller + '" and action "' + action + '"');
 		
+		this.initController(controller);
 		var ctl = this.getController(controller);
 		
 		var args = [];
@@ -117,6 +194,15 @@ Ext.application({
 		ctl[action].apply(ctl, args);
 	},
     
+    /**
+     * Adds a view to a panel if it's not already its first child
+     *
+     * The purpose of this function is basically to dynamically load views into empty panels.
+     * It will usually be used to load views into the main content area, which is why the "panel"
+     * argument defaults to "#contentPanel", the main content area of the application.
+     * @param {Ext.Component}           view  The component to add to a panel if it's not already its first child
+     * @param {Ext.container.Container} panel The container in which to add the view
+     */
 	setView: function(view, panel) {
 		var sameView = false;
 		// If a string was passed in, create a view object first
@@ -135,15 +221,21 @@ Ext.application({
 		// If we have a new view, let's add it to the parent panel
 		if (!sameView) {
 			if (arguments.length == 1) {
-				panel = 'contentPanel';
+				panel = '#contentPanel';
 				view.region = 'center';
 			}
-			var pnl = Ext.ComponentQuery.query('#'+panel);
-			pnl[0].removeAll();
-			pnl[0].add(view);
+			var pnl = Ext.ComponentQuery.query(panel)[0];
+			pnl.removeAll();
+			pnl.add(view);
 		}
 	},
     
+    /**
+     * This is the equivalent of a PHP location redirect. The token specified gets added to the URL
+     * fragment, which triggers the Ext.History change event. This function should be called whenever
+     * navigating to a different view since it also takes care of adding the security hash to the token.
+     * @param {String} newToken The new token to navigate to
+     */
 	addHistory: function(newToken) {
 		var oldToken = Ext.History.getToken();
 		
@@ -155,25 +247,12 @@ Ext.application({
 		}
 	},
 	
+	/**
+	 * Utility function to return the first child view in the main content panel
+	 * @return {Ext.container.Container}
+	 */
 	getCurrentView: function() {
 		return Ext.ComponentQuery.query('#contentPanel')[0].child();
-	},
-	
-	getCurrentViewId: function() {
-		return this.getCurrentView().getId();
-	},
-	
-	getCurrentViewType: function() {
-		return this.getCurrentView().getXType();
-	},
-	
-	getPropertyFilterState: function() {
-		return Ext.ComponentQuery.query('viewport.toptoolbar')[0].getState();
-	},
-
-	remoteCall: function(cfg) {
-		NP.lib.core.Net.remoteCall(cfg);
-	},
-
+	}
 	
 });

@@ -1,28 +1,18 @@
+/**
+ * Store for Delegations. This store uses the Delegation model fields.
+ *
+ * @author Thomas Messier
+ */
 Ext.define('NP.store.user.Delegations', {
-	extend: 'Ext.data.Store',
+	extend: 'NP.lib.data.Store',
 	
-	requires: ['NP.lib.core.Security'],
+	requires: ['NP.model.user.Delegation'],
 
-	model: 'NP.model.user.UserDelegation',
-	
-	// Adding a listener to add the current user to the store as the topmost user
-	listeners: {
-    	load: function(store, recs) {
-    		var currentUser = NP.lib.core.Security.getDelegatedToUser();
-    		store.insert(0, {
-				userprofile_username: currentUser.get('userprofile_username'),
-				userprofile_id      : currentUser.get('userprofile_id')
-    		});
-    	}
-    },
+    constructor: function(cfg) {
+        Ext.apply(this, cfg);
 
-    proxy: {
-        type: 'ajax',
-        url: 'ajax.php',
-		extraParams: {
-			service: 'UserService',
-			action: 'getDelegationsTo',
-			delegation_status: 1
-		}
+        this.fields = NP.model.user.Delegation.getFields();
+
+        this.callParent(arguments);
     }
 });

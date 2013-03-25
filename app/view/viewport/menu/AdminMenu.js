@@ -1,3 +1,8 @@
+/**
+ * The Admin menu
+ *
+ * @author Thomas Messier
+ */
 Ext.define('NP.view.viewport.menu.AdminMenu', {
     extend: 'NP.lib.ui.HoverButton',
     alias: 'widget.viewport.menu.adminmenu',
@@ -31,46 +36,53 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 		this.menu = {
 			showSeparator: false,
 			items: [
+				// My Settings
 				{ text: this.mySettingsText }
 			]
 		};
 
+		// User Manager
 	    if ( NP.lib.core.Security.hasPermission(4) ) {
 			this.menu.items.push({
 				text: this.userText
 			});
 		}
 		
+		// Message Center
 		if ( NP.lib.core.Security.hasPermission(6091) ) {
 			this.menu.items.push({
 				text: this.messageText
 			});
 		}
-		
+		// Integration
 		if ( NP.lib.core.Security.hasPermission(6047) ) {
 			this.menu.items.push({
 				text: this.integrationText
 			});
 		}
 		
+		// Property Setup
 		if ( NP.lib.core.Security.hasPermission(12) ) {
 			this.menu.items.push({
 				text: this.propertyText
 			});
 		}
 		
+		// System Setup
 		if ( NP.lib.core.Security.hasPermission(1066) ) {
 			this.menu.items.push({
 				text: this.systemText
 			});
 		}
 		
+		// GL Account Setup
 		if ( NP.lib.core.Security.hasPermission(6014) ) {
 			this.menu.items.push({
 				text: this.gLText
 			});
 		}
 		
+		// Catalog Maintenance
 		if ( NP.lib.core.Security.hasPermission(6066) && NP.lib.core.Config.getSetting('VC_isOn') == 1 ) {
 			this.menu.items.push({
 				text: this.catalogText
@@ -79,51 +91,60 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 		
 		if ( NP.lib.core.Security.hasPermission(6015) ) {
 			var subsection = {
+				// Import/Export Utility
 				text: this.importText,
 				menu: {
 					showSeparator: false,
 					items: [{
+						// Overview
 						text: this.importOverviewText
 					}]
 				}
 			};
 			
+			// GL
 			if ( NP.lib.core.Security.hasPermission(6016) ) {
 				subsection.menu.items.push({
 					text: this.importGLText
 				});
 			}
-			
+
+			// Property
 			if ( NP.lib.core.Security.hasPermission(6017) ) {
 				subsection.menu.items.push({
 					text: this.importPropertyText
 				});
 			}
 			
+			// Vendor
 			if ( NP.lib.core.Security.hasPermission(6018) ) {
 				subsection.menu.items.push({
 					text: this.importVendorText
 				});
 			}
 			
+			// Invoice
 			if ( NP.lib.core.Security.hasPermission(6019) ) {
 				subsection.menu.items.push({
 					text: this.importInvoiceText
 				});
 			}
 			
+			// User
 			if ( NP.lib.core.Security.hasPermission(6020) ) {
 				subsection.menu.items.push({
 					text: this.importUserText
 				});
 			}
 			
+			// Custom Field
 			if ( NP.lib.core.Security.hasPermission(6021) ) {
 				subsection.menu.items.push({
 					text: this.importCustomText
 				});
 			}
 			
+			// Splits
 			subsection.menu.items.push({
 				text: this.importSplitsText
 			});
@@ -131,12 +152,14 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 			this.menu.items.push(subsection);
 		}
 		
+		// Set Approval Budget Overage
 		if ( NP.lib.core.Security.hasPermission(1043) ) {
 			this.menu.items.push({
 				text: this.approvalBudgetsText
 			});
 		}
 		
+		// Utility Setup
 		if ( NP.lib.core.Security.hasPermission(1057) ) {
 			this.menu.items.push({
 				text: this.utilityText

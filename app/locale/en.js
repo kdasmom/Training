@@ -174,8 +174,8 @@ Ext.define('NP.locale.en.view.viewport.Home', {
 });
 
 // Summary Stat Names
-Ext.define('NP.locale.en.lib.core.SummaryStatManager', {
-	override: 'NP.lib.core.SummaryStatManager',
+Ext.define('NP.locale.en.store.system.SummaryStats', {
+	override: 'NP.store.system.SummaryStats',
 
 	invoicesToApproveText: 'Invoices to Approve',
 	invoicesOnHoldText   : 'Invoices on Hold',
@@ -289,6 +289,17 @@ Ext.define('NP.locale.en.view.invoice.Register', {
 	voidTabText           : 'Void'
 });
 
+Ext.define('NP.locale.en.view.invoice.Register', {
+	override: 'NP.view.invoice.Register',
+
+	titleText             : 'Invoice Register',
+	getPOBtnText          : 'Get PO',
+	newInvoiceBtnText     : 'New Invoice',
+	reportsBtnText        : 'Invoice Reports',
+	searchBtnText         : 'Search',
+	receiptRegisterBtnText: 'Receipt Register'
+});
+
 // Abstract register grid
 Ext.define('NP.locale.en.view.invoice.AbstractRegisterGrid', {
 	override: 'NP.view.invoice.AbstractRegisterGrid',
@@ -301,20 +312,78 @@ Ext.define('NP.locale.en.view.invoice.AbstractRegisterGrid', {
 });
 
 // Open register grid
-Ext.define('NP.locale.en.view.invoice.RegisterOpenGrid', {
-	override: 'NP.view.invoice.RegisterOpenGrid',
+Ext.define('NP.locale.en.view.invoice.grid.RegisterOpen', {
+	override: 'NP.view.invoice.grid.RegisterOpen',
 
-	createdDateColumnText: 'Created Date',
-    dueDateColumnText    : 'Due Date',
+	title: 'Open'
 });
 
 // Rejected register grid
-Ext.define('NP.locale.en.view.invoice.RegisterRejectedGrid', {
-	override: 'NP.view.invoice.RegisterRejectedGrid',
+Ext.define('NP.locale.en.view.invoice.grid.RegisterRejected', {
+	override: 'NP.view.invoice.grid.RegisterRejected',
 
-	createdDateColumnText : 'Created Date',
-    dueDateColumnText     : 'Due Date',
-    createdByColumnText   : 'Created By',
-    rejectedDateColumnText: 'Rejected Date',
-    rejectedByColumnText  : 'Rejected By'
+	title: 'Rejected'
+});
+
+// Rejected register grid
+Ext.define('NP.locale.en.view.invoice.grid.RegisterApproved', {
+	override: 'NP.view.invoice.grid.RegisterApproved',
+
+	title: 'Approved'
+});
+
+// Rejected register grid
+Ext.define('NP.locale.en.view.invoice.grid.RegisterOnHold', {
+	override: 'NP.view.invoice.grid.RegisterOnHold',
+
+	title: 'On Hold'
+});
+
+// Rejected register grid
+Ext.define('NP.locale.en.view.invoice.grid.RegisterOverdue', {
+	override: 'NP.view.invoice.grid.RegisterOverdue',
+
+	title: 'Overdue'
+});
+
+// Rejected register grid
+Ext.define('NP.locale.en.view.invoice.grid.RegisterPaid', {
+	override: 'NP.view.invoice.grid.RegisterPaid',
+
+	title: 'Paid'
+});
+
+// Rejected register grid
+Ext.define('NP.locale.en.view.invoice.grid.RegisterPending', {
+	override: 'NP.view.invoice.grid.RegisterPending',
+
+	title: 'Pending'
+});
+
+// Rejected register grid
+Ext.define('NP.locale.en.view.invoice.grid.RegisterSubmitted', {
+	override: 'NP.view.invoice.grid.RegisterSubmitted',
+
+	title: 'Submitted for Payment'
+});
+
+// Rejected register grid
+Ext.define('NP.locale.en.view.invoice.grid.RegisterTemplate', {
+	override: 'NP.view.invoice.grid.RegisterTemplate',
+
+	title: 'Template'
+});
+
+// Rejected register grid
+Ext.define('NP.locale.en.view.invoice.grid.RegisterTransferred', {
+	override: 'NP.view.invoice.grid.RegisterTransferred',
+
+	title: 'Transferred to GL'
+});
+
+// Rejected register grid
+Ext.define('NP.locale.en.view.invoice.grid.RegisterVoid', {
+	override: 'NP.view.invoice.grid.RegisterVoid',
+
+	title: 'Void'
 });

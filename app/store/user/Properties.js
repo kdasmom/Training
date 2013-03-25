@@ -1,17 +1,30 @@
+/**
+ * Special store for user properties. This store autoloads and pulls all properties that the currently
+ * logged in user has access to. It uses the same fields as the Property model.
+ *
+ * @author Thomas Messier
+ */
 Ext.define('NP.store.user.Properties', {
-	extend: 'Ext.data.Store',
+	extend: 'NP.lib.data.Store',
 	
-	model: 'NP.model.property.Property',
+	requires: ['NP.model.property.Property'],
 	
 	autoLoad: true,
-
-    // Overriding the model's default proxy
-    proxy: {
+	
+	proxy: {
         type: 'ajax',
         url: 'ajax.php',
 		extraParams: {
 			service: 'UserService',
 			action: 'getProperties'
 		}
+    },
+
+    constructor: function(cfg) {
+    	Ext.apply(this, cfg);
+
+    	this.fields = NP.model.property.Property.getFields();
+
+    	this.callParent(arguments);
     }
 });

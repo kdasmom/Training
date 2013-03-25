@@ -1,3 +1,8 @@
+/**
+ * Grid column for Invoice Period
+ *
+ * @author Thomas Messier
+ */
 Ext.define('NP.view.shared.gridcol.InvoicePeriod', {
 	extend: 'Ext.grid.column.Date',
 	alias: 'widget.shared.gridcol.invoiceperiod',

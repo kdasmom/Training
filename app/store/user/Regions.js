@@ -1,11 +1,16 @@
+/**
+ * Special store for user regions. This store autoloads and pulls all regions that the currently
+ * logged in user has access to. It uses the same fields as the Region model.
+ *
+ * @author Thomas Messier
+ */
 Ext.define('NP.store.user.Regions', {
-	extend: 'Ext.data.Store',
+	extend: 'NP.lib.data.Store',
 	
-	model: 'NP.model.property.Region',
+	requires: ['NP.model.property.Region'],
 	
 	autoLoad: true,
 
-    // Overriding the model's default proxy
     proxy: {
         type: 'ajax',
         url: 'ajax.php',
@@ -13,5 +18,13 @@ Ext.define('NP.store.user.Regions', {
 			service: 'UserService',
 			action: 'getRegions'
 		}
+    },
+
+    constructor: function(cfg) {
+    	Ext.apply(this, cfg);
+
+    	this.fields = NP.model.property.Region.getFields();
+
+    	this.callParent(arguments);
     }
 });

@@ -1,3 +1,8 @@
+/**
+ * Model for a Userprofile entity
+ *
+ * @author Thomas Messier
+ */
 Ext.define('NP.model.user.Userprofile', {
 	extend: 'NP.lib.data.Model',
 	

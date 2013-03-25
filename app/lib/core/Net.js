@@ -86,8 +86,8 @@ Ext.define('NP.lib.core.Net', {
 	 *
 	 * @param  {Object} cfg                             See docs above for what can be passed as a config
 	 * @param  {Object[]/Object} cfg.requests           Request(s) that need to be made to backend services
-	 * @param  {string}          cfg.requests.service   PHP service to call
-	 * @param  {string}          cfg.requests.action    Function to call in the service
+	 * @param  {String}          cfg.requests.service   PHP service to call
+	 * @param  {String}          cfg.requests.action    Function to call in the service
 	 * @param  {Function}        [cfg.requests.success] Function to call after this request is done running if ajax request is successful
 	 * @param  {Function}        [cfg.requests.failure] Function to call after this request is done running if ajax request fails
 	 * @param  {"GET"/"POST"}    [cfg.method]           Method to use for ajax request

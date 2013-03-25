@@ -14,7 +14,7 @@ Ext.define('NP.lib.core.Util', {
 	/**
 	 * Checks if an object is a function or not
 	 @param  {Mixed} obj
-	 @return {boolean}
+	 @return {Boolean}
 	 */
 	isFunction: function(obj) {
 		return Object.prototype.toString.call(obj) == '[object Function]';
@@ -23,7 +23,7 @@ Ext.define('NP.lib.core.Util', {
 	/**
 	 * Checks if an object is an array or not
 	 @param  {Mixed} obj
-	 @return {boolean}
+	 @return {Boolean}
 	 */
 	isArray: function(obj) {
 		return Object.prototype.toString.call(obj) == '[object Array]';
@@ -32,7 +32,7 @@ Ext.define('NP.lib.core.Util', {
 	/**
 	 * Checks if an object is a javascript Object or not
 	 @param  {Mixed} obj
-	 @return {boolean}
+	 @return {Boolean}
 	 */
 	isObject: function(obj) {
 		return Object.prototype.toString.call(obj) == '[object Object]';
@@ -49,7 +49,7 @@ Ext.define('NP.lib.core.Util', {
 	 @param  {"l"/"s"/"n"/"h"/"d"/"ww"/"m","yyyy"} part l=millisecond; s=seconds; n=minutes; h=hours; d=days; w=weeks; m=months; y=years
 	 @param  {Date} date1
 	 @param  {Date} date2
-	 @return {number}
+	 @return {Number}
 	 */
 	dateDiff: function(part, date1, date2) {
 		var diff = date1.getTime() - date2.getTime();
@@ -77,8 +77,8 @@ Ext.define('NP.lib.core.Util', {
 	
 	/**
 	 * Function to render currency values
-	 * @param  {number/string}
-	 * @return {string}
+	 * @param  {Number/string}
+	 * @return {String}
 	 */
 	currencyRenderer: function(val) {
 		return Ext.util.Format.currency(val);

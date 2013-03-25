@@ -1,3 +1,8 @@
+/**
+ * Grid column for Invoice Amount
+ *
+ * @author Thomas Messier
+ */
 Ext.define('NP.view.shared.gridcol.InvoiceAmount', {
 	extend: 'Ext.grid.column.Column',
 	alias: 'widget.shared.gridcol.invoiceamount',

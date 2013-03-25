@@ -1,3 +1,8 @@
+/**
+ * Grid column for Invoice Pending Days
+ *
+ * @author Thomas Messier
+ */
 Ext.define('NP.view.shared.gridcol.InvoicePendingDays', {
 	extend: 'Ext.grid.column.Column',
 	alias: 'widget.shared.gridcol.invoicependingdays',

@@ -1,3 +1,8 @@
+/**
+ * The Vendor Catalog menu
+ *
+ * @author Thomas Messier
+ */
 Ext.define('NP.view.viewport.menu.VCMenu', {
     extend: 'NP.lib.ui.HoverButton',
     alias: 'widget.viewport.menu.vcmenu',
@@ -12,8 +17,11 @@ Ext.define('NP.view.viewport.menu.VCMenu', {
 		this.menu = {
 			showSeparator: false,
 			items: [
+				// Vendor Catalog Listings
 				{ text: this.listingsText },
+				// Open Orders
 				{ text: this.openOrdersText },
+				// Favorite Items
 				{ text: this.favoritesText }
 			]
 		};

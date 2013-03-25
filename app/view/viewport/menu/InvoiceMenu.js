@@ -1,3 +1,8 @@
+/**
+ * The Invoice menu
+ *
+ * @author Thomas Messier
+ */
 Ext.define('NP.view.viewport.menu.InvoiceMenu', {
     extend: 'NP.lib.ui.HoverButton',
     alias: 'widget.viewport.menu.invoicemenu',
@@ -25,12 +30,14 @@ Ext.define('NP.view.viewport.menu.InvoiceMenu', {
 		this.menu = {
 			showSeparator: false,
 			items: [
+				// Invoice Register
 				{
 					itemId: 'invRegisterMenuBtn',
 					text: this.registerText,
 					menu: {
 						showSeparator: false,
 						items: [{
+							// Open
 							itemId: 'openInvRegisterMenuBtn',
 							text: this.registerOpenText
 						}]
@@ -41,6 +48,7 @@ Ext.define('NP.view.viewport.menu.InvoiceMenu', {
 
     	var subSection = this.menu.items[0].menu.items;
 
+    	// Overdue
 	    if ( NP.lib.core.Config.getSetting('PN.InvoiceOptions.OverDueOn') == 1 ) {
     		subSection.push({
 				itemId: 'overdueInvRegisterMenuBtn',
@@ -48,11 +56,13 @@ Ext.define('NP.view.viewport.menu.InvoiceMenu', {
 			});
     	}
     	
+    	// Template
     	subSection.push({
 			itemId: 'templateInvRegisterMenuBtn',
 			text: this.registerTemplateText
 		});
     	
+    	// On Hold
     	if ( NP.lib.core.Config.getSetting('PN.InvoiceOptions.HoldOn') == 1 ) {
     		subSection.push({
 				itemId: 'onholdInvRegisterMenuBtn',
@@ -60,27 +70,34 @@ Ext.define('NP.view.viewport.menu.InvoiceMenu', {
 			});
     	}
     	
-    	subSection.push({
+    	subSection.push(
+    	// Pending
+    	{
 			itemId: 'pendingInvRegisterMenuBtn',
 			text: this.registerPendingText
 		},
+		// Approved
 		{
 			itemId: 'approvedInvRegisterMenuBtn',
 			text: this.registerApprovedText
 		},
+		// Submitted for Payment
 		{
 			itemId: 'submittedInvRegisterMenuBtn',
 			text: this.registerSubmittedText
 		},
+		// Transferred to GL
 		{
 			itemId: 'transferredInvRegisterMenuBtn',
 			text: this.registerTransferredText
 		},
+		// Paid
 		{
 			itemId: 'paidInvRegisterMenuBtn',
 			text: this.registerPaidText
 		});
     	
+    	// Void
     	if ( NP.lib.core.Config.getSetting('PN.InvoiceOptions.VoidOn') == 1 ) {
     		subSection.push({
 				itemId: 'voidInvRegisterMenuBtn',
@@ -88,17 +105,20 @@ Ext.define('NP.view.viewport.menu.InvoiceMenu', {
 			});
     	}
     	
+    	// Rejected
     	subSection.push({
 			itemId: 'rejectedInvRegisterMenuBtn',
 			text: this.registerRejectedText
 		});
     	
+    	// New Invoice
     	if ( NP.lib.core.Security.hasPermission(1032) ) {
     		this.menu.items.push({
 				text: this.newText
 			});
     	}
     	
+    	// Search Invoices
     	if ( NP.lib.core.Security.hasPermission(1033) ) {
     		this.menu.items.push({
 				text: this.searchText

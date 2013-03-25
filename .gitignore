@@ -8,11 +8,8 @@ config/config.php
 config/site_config.xml
 
 # Ignore composer files for now, not ready to use it yet
-vendor/composer/*
-vendor/bin/*
-vendor/autoload.php
-composer.json
-composer.lock
+/composer.json
+/composer.lock
 
 # Ignore Phinx configuration file, the user should generate his/her own by running the command "phinx init"
 phinx.yml

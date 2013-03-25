@@ -1,3 +1,8 @@
+/**
+ * The Image menu
+ *
+ * @author Thomas Messier
+ */
 Ext.define('NP.view.viewport.menu.ImageMenu', {
     extend: 'NP.lib.ui.HoverButton',
     alias: 'widget.viewport.menu.imagemenu',
@@ -16,26 +21,31 @@ Ext.define('NP.view.viewport.menu.ImageMenu', {
 		this.menu = {
 			showSeparator: false,
 			items: [
+				// Images to be Indexed
 				{ text: this.indexedText }
 			]
 		};
 
+		// Invoice Images
     	if ( NP.lib.core.Security.hasPermission(2081) ) {
 			this.menu.items.push({
 				text: this.invoiceText
 			});
 		}
 		
+		// Purchase Order Images
 		if ( NP.lib.core.Config.getSetting('PN.POOptions.POSwitch') == 1 && NP.lib.core.Security.hasPermission(2087) ) {
 			this.menu.items.push({
 				text: this.pOText
 			});
 		}
 		
+		// Search Images
 		this.menu.items.push({
 			text: this.searchText
 		});
 		
+		// Exceptions
 		if ( NP.lib.core.Security.hasPermission(6050) ) {
 			this.menu.items.push({
 				text: this.exceptionsText

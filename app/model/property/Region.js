@@ -1,3 +1,8 @@
+/**
+ * Model for a Region entity
+ *
+ * @author Thomas Messier
+ */
 Ext.define('NP.model.property.Region', {
 	extend: 'NP.lib.data.Model',
 	

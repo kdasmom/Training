@@ -1,13 +1,21 @@
+/**
+ * The home page, which shows dashboard summary stats.
+ *
+ * @author Thomas Messier
+ */
 Ext.define('NP.view.viewport.Home', {
 	extend: 'Ext.panel.Panel',
     alias: 'widget.viewport.home',
     
-    requires: ['NP.view.shared.ContextPicker','NP.view.viewport.SummaryStatList'],
+    requires: [
+        'NP.lib.core.Config',
+        'NP.view.shared.ContextPicker',
+        'NP.view.viewport.SummaryStatList',
+        'NP.view.viewport.SummaryDetailPanel'
+    ],
 
     title: 'Home',
     summaryStatText: 'Summary Statistics', 
-
-    itemId: 'homePanel',
 
     layout: {
     	type: 'vbox',
@@ -21,12 +29,12 @@ Ext.define('NP.view.viewport.Home', {
                 border: false,
                 bodyStyle: 'background-color: #DFE8F6',
                 items: [
-                    { flex: 1, border: false, padding: '0 0 0 8', bodyStyle: 'background-color: #DFE8F6', html: '<b>' + this.summaryStatText + '</b>' },
+                    { flex: 1, border: false, padding: '0 0 0 8', bodyStyle: 'background-color: ' + NP.lib.core.Config.getToolbarBg(), html: '<b>' + this.summaryStatText + '</b>' },
                     { xtype: 'shared.contextpicker', itemId: 'homeContextPicker' }
                 ]
             },
             { xtype: 'viewport.summarystatlist', padding: 8 },
-            { xtype: 'container', flex: 1, itemId: 'summaryStatDetailPanel', border: false, padding: 8, layout: 'fit' }
+            { xtype: 'viewport.summarydetailpanel', flex: 1, padding: 8 }
         ];
 
         this.callParent(arguments);

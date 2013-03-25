@@ -1,3 +1,8 @@
+/**
+ * This is the main component for the top menu and includes separate components for each one of the main menu sections
+ *
+ * @author Thomas Messier
+ */
 Ext.define('NP.view.viewport.TopMenu', {
     extend: 'Ext.toolbar.Toolbar',
     alias: 'widget.viewport.topmenu',

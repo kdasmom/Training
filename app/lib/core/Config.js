@@ -94,7 +94,7 @@ Ext.define('NP.lib.core.Config', function() {
 		
 		/**
 		 * Gets the value of an application setting
-		 * @param  {string} name            Name of the setting to retrieve
+		 * @param  {String} name            Name of the setting to retrieve
 		 * @param  {Mixed}  [defaultVal=""] Default value to return in case the setting doesn't exist
 		 * @return {Mixed}
 		 */
@@ -120,7 +120,7 @@ Ext.define('NP.lib.core.Config', function() {
 		
 		/**
 		 * Returns the date format mask that the server returns dates as
-		 * @return {string}
+		 * @return {String}
 		 */
 		getServerDateFormat: function() {
 			return 'Y-m-d H:i:s.u';
@@ -128,7 +128,7 @@ Ext.define('NP.lib.core.Config', function() {
 		
 		/**
 		 * Returns the default date format used when displaying dates in the app
-		 * @return {string}
+		 * @return {String}
 		 */
 		getDefaultDateFormat: function() {
 			return 'm/d/Y';
@@ -144,7 +144,7 @@ Ext.define('NP.lib.core.Config', function() {
 
 		/**
 		 * Saves a user setting to the database via an ajax request
-		 * @param  {string} name  Name of the setting
+		 * @param  {String} name  Name of the setting
 		 * @param  {Mixed}  value Value for the setting
 		 * @return {Deft.Promise}
 		 */
@@ -165,6 +165,14 @@ Ext.define('NP.lib.core.Config', function() {
 	                }
 	            }
 	        });
+		},
+
+		/**
+		 * Returns the background color used for non default toolbars
+		 * @return {String}
+		 */
+		getToolbarBg: function() {
+			return '#DFE8F6';
 		}
 	}
 }());

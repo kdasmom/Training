@@ -1,3 +1,8 @@
+/**
+ * Grid column for Invoice Number
+ *
+ * @author Thomas Messier
+ */
 Ext.define('NP.view.shared.gridcol.InvoiceNumber', {
 	extend: 'Ext.grid.column.Column',
 	alias: 'widget.shared.gridcol.invoicenumber',

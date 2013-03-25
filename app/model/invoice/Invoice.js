@@ -1,23 +1,20 @@
+/**
+ * Model for an Invoice entity
+ *
+ * @author Thomas Messier
+ */
 Ext.define('NP.model.invoice.Invoice', {
     extend: 'NP.lib.data.Model',
     
-    requires: 'NP.lib.core.Config',
+    requires: ['NP.lib.core.Config'],
     
     idProperty: 'invoice_id',
     fields: [
     	{ name: 'invoice_id', type: 'int' },
     	{ name: 'integration_package_id', type: 'int' },
-    	{ name: 'integration_package_type_display_name' },
-		{ name: 'invoicepayment_type_id', type: 'int' },
-    	{ name: 'vendor_id', type: 'int' },
-    	{ name: 'vendor_id_alt' },
-    	{ name: 'vendorsite_id', type: 'int' },
-    	{ name: 'vendor_name' },
+    	{ name: 'invoicepayment_type_id', type: 'int' },
+    	{ name: 'paytablekey_id', type: 'int' },
     	{ name: 'property_id', type: 'int' },
-    	{ name: 'property_id_alt' },
-    	{ name: 'property_name' },
-    	{ name: 'userprofile_id', type: 'int' },
-    	{ name: 'userprofile_username' },
     	{ name: 'invoice_amount', type: 'number' },
     	{ name: 'invoice_ref' },
     	{ name: 'invoice_datetm', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
@@ -35,7 +32,6 @@ Ext.define('NP.model.invoice.Invoice', {
 		{ name: 'invoice_budgetoverage_note' },
 		{ name: 'invoice_cycle_from', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
 		{ name: 'invoice_cycle_to', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
-		{ name: 'invoice_pending_days', type: 'int' },
 		{ name: 'universal_field1' },
 		{ name: 'universal_field2' },
 		{ name: 'universal_field3' },
@@ -47,12 +43,7 @@ Ext.define('NP.model.invoice.Invoice', {
 		{ name: 'priorityflag_id_alt', type: 'int' },
 		{ name: 'invoice_neededby_datetm', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
 		{ name: 'vendor_code' },
-		{ name: 'remit_advice', type: 'int' },
-		{ name: 'created_by' },
-		{ name: 'rejected_datetm', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
-		{ name: 'rejected_by' },
-		{ name: 'invoice_onhold_by' },
-		{ name: 'invoice_days_onhold', type: 'int' }
+		{ name: 'remit_advice', type: 'int' }
     ],
 	
     proxy: {
@@ -62,34 +53,5 @@ Ext.define('NP.model.invoice.Invoice', {
 			service: 'InvoiceService',
 			action: 'get'
 		}
-    },
-    
-    getFormattedStatus: function() {
-    	var status = this.get('invoice_status');
-		var newStatus;
-		
-		if (status == 'forapproval') {
-			newStatus = 'Pending Approval';
-		} else if (status == 'open') {
-			newStatus = 'In Progress';
-		} else if (status == 'saved') {
-			newStatus = 'Completed';
-		} else if (status == 'approved') {
-			newStatus = 'Approved';
-		} else if (status == 'draft') {
-			newStatus = 'TEMPLATE';
-		} else if (status == 'closed') {
-			newStatus = 'Invoiced';
-		} else if (status == 'void') {
-			newStatus = 'Void';
-		} else {
-			newStatus = status.toUpperCase();
-		}
-		
-		return newStatus;
-    },
-    
-    getFormattedRemitAdvice: function() {
-    	return (this.get('remit_advice') == 1) ? 'Yes' : 'No';
     }
 });

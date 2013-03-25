@@ -1,6 +1,5 @@
 /**
- * The Config class is used to control everything that relates to configuration settings, either at the
- * application level or the user level.
+ * A Combo Box component that extends the base Ext.form.field.ComboBox to provide some additional options.
  *
  * @author Thomas Messier
  */
@@ -21,17 +20,19 @@ Ext.define('NP.lib.ui.ComboBox', {
 	 * @cfg {Array}                   dependentCombos   An array of IDs for combo boxes that depend on this combo; when the value of this combo is changed, the valueField will be added as a parameter to the proxy of the dependent combos specified and reload their stores
 	 */
 	constructor: function(cfg) {
-		Ext.applyIf(cfg, {
+		Ext.apply(this, cfg);
+
+		Ext.applyIf(this, {
 		  type: 'normal'
 		});
 
 		var defaultCfg = {
 			forceSelection: true,
-			tpl           : new Ext.XTemplate('<tpl for=".">' + '<li style="height:22px;" class="x-boundlist-item" role="option">' + '{'+cfg.displayField+'}' + '</li></tpl>'),
+			tpl           : new Ext.XTemplate('<tpl for=".">' + '<li style="height:22px;" class="x-boundlist-item" role="option">' + '{'+this.displayField+'}' + '</li></tpl>'),
 			listeners     : {},
 			addBlankRecord: true 
 		};
-		if (cfg.type == 'autocomplete') {
+		if (this.type == 'autocomplete') {
 			Ext.apply(defaultCfg, {
 				queryMode  : 'remote',
 				typeAhead  : false,
@@ -46,10 +47,10 @@ Ext.define('NP.lib.ui.ComboBox', {
 				editable           : true
 			});
 		}
-		Ext.applyIf(cfg, defaultCfg);
+		Ext.applyIf(this, defaultCfg);
 
 		// Key events must be on
-		cfg.enableKeyEvents = true;
+		this.enableKeyEvents = true;
 
 		this.callParent(arguments);
 
@@ -62,7 +63,7 @@ Ext.define('NP.lib.ui.ComboBox', {
 		});
 
 		// If type is autocomplete
-		if (cfg.type == 'autocomplete') {
+		if (this.type == 'autocomplete') {
 			this.addListener('beforerender', function(combo) {
 				if ('defaultRec' in combo) {
 					// Add the current value to the store, otherwise you have an empty store
@@ -85,7 +86,7 @@ Ext.define('NP.lib.ui.ComboBox', {
 
 		// If addBlankRecord is true, add a blank record at the beginning of the store to make it easy for the user to select
 		// a blank value
-		if (cfg.addBlankRecord) {
+		if (this.addBlankRecord) {
 			this.addListener('beforerender', function(combo) {
 				// Add a blank record to the store
 				combo.getStore().addListener('load', function(store) {
@@ -98,7 +99,7 @@ Ext.define('NP.lib.ui.ComboBox', {
 		}
 
 		// If selectFirstRecord option is included, select the first record when the field loads if value is blank
-		if (cfg.selectFirstRecord) {
+		if (this.selectFirstRecord) {
 			function selectFirstRec(combo, valueField, value) {
 				// Get the store associated to this combo box
 				var store = combo.getStore();
@@ -115,25 +116,25 @@ Ext.define('NP.lib.ui.ComboBox', {
 			this.addListener('beforerender', function(combo) {
 				combo.getStore().addListener('load', function(store) {
 					var val = combo.getValue();
-					selectFirstRec(combo, cfg.valueField, val);
+					selectFirstRec(combo, this.valueField, val);
 				});
 			});
 
 			this.addListener('afterrender', function(combo) {
-				selectFirstRec(combo, cfg.valueField, cfg.value);
+				selectFirstRec(combo, this.valueField, this.value);
 			});
 		}
 
 		// If dependent combos are specified, add a select event to update them when the value of their parent combo is changed
-		if (cfg.dependentCombos) {
+		if (this.dependentCombos) {
 			this.addListener('select', function(combo, recs) {
-				for (var i=0; i<cfg.dependentCombos.length; i++) {
-					var combo = Ext.ComponentQuery.query('#'+cfg.dependentCombos[i]);
+				for (var i=0; i<this.dependentCombos.length; i++) {
+					var combo = Ext.ComponentQuery.query('#'+this.dependentCombos[i]);
 					if (combo.length) {
 						combo = combo[0];
 						var store = combo.getStore();
 						var proxy = store.getProxy();
-						proxy.extraParams[cfg.valueField] = recs[0].get(cfg.valueField);
+						proxy.extraParams[this.valueField] = recs[0].get(this.valueField);
 						store.load();
 					}
 				}

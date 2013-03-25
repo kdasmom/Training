@@ -74,9 +74,6 @@ class ConfigService extends AbstractService {
 	 * Loads all config settings into the cache
 	 */
 	protected function loadConfigCache() {
-		if ($this->cache->hasItem($this->cacheName)) {
-			$this->cache->removeItem($this->cacheName);
-		}
 		$configs = array();
 		
 		// Get all config values from DB and cache them
@@ -85,7 +82,7 @@ class ConfigService extends AbstractService {
 		foreach ($configRows as $configRow) {
 			$configs[strtolower($configRow['configsys_name'])] = $configRow['configsysval_val'];
 		}
-		$this->cache->addItem($this->cacheName, $configs);
+		$this->cache->setItem($this->cacheName, $configs);
 	}
 	
 	/**

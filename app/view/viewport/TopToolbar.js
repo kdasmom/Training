@@ -1,17 +1,22 @@
-Ext.define('NP.view.viewport.TopToolbar', function () {
-    var bgColor = 'background-color: #DFE8F6';
+/**
+ * The toolbar that sits right below the NP logo and shows who's logged in, etc.
+ *
+ * @author Thomas Messier
+ */
+Ext.define('NP.view.viewport.TopToolbar', {
+    extend: 'Ext.panel.Panel',
+    alias: 'widget.viewport.toptoolbar',
+    
+    requires: ['NP.lib.core.Config','NP.view.viewport.DelegationPicker'],
 
-	return {
-        extend: 'Ext.panel.Panel',
-        alias: 'widget.viewport.toptoolbar',
-        
-        requires: ['NP.view.viewport.DelegationPicker'],
+    border: false,
+    
+    initComponent: function() {
+        var bgColor = 'background-color: ' + NP.lib.core.Config.getToolbarBg();
 
-        border: false,
-        style: bgColor,
-        bodyStyle: bgColor,
-
-        items: [
+        this.style = bgColor;
+        this.bodyStyle = bgColor;
+        this.items = [
             {
                 xtype    : 'viewport.delegationpicker',
                 itemId   : 'topToolbarDelegationPicker',
@@ -20,6 +25,8 @@ Ext.define('NP.view.viewport.TopToolbar', function () {
                 style    : bgColor,
                 bodyStyle: bgColor
             }
-        ]
+        ];
+
+        this.callParent(arguments);
     }
 });

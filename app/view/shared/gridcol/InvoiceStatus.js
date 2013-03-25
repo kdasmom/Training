@@ -1,3 +1,8 @@
+/**
+ * Grid column for Invoice Status
+ *
+ * @author Thomas Messier
+ */
 Ext.define('NP.view.shared.gridcol.InvoiceStatus', {
 	extend: 'Ext.grid.column.Column',
 	alias: 'widget.shared.gridcol.invoicestatus',

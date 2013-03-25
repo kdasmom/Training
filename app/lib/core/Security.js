@@ -147,8 +147,8 @@ Ext.define('NP.lib.core.Security', function() {
 
 		/**
 		 * Checks if currently logged in user has rights to a certain module
-		 * @param  {number} module_id
-		 * @return {boolean}
+		 * @param  {Number} module_id
+		 * @return {Boolean}
 		 */
 		hasPermission: function(module_id) {
 			if (module_id in permissions) {
@@ -160,7 +160,7 @@ Ext.define('NP.lib.core.Security', function() {
 
 		/**
 		 * Changes the logged in user to a different user (used when there are active delegations)
-		 * @param  {number}   userprofile_id ID of the user
+		 * @param  {Number}   userprofile_id ID of the user
 		 * @param  {Function} [callback]     Function to call once user has been changed
 		 * @return {Deft.Promise}
 		 */

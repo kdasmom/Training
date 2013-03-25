@@ -1,3 +1,8 @@
+/**
+ * Grid column for Property
+ *
+ * @author Thomas Messier
+ */
 Ext.define('NP.view.shared.gridcol.PropertyName', {
 	extend: 'Ext.grid.column.Column',
 	alias: 'widget.shared.gridcol.propertyname',

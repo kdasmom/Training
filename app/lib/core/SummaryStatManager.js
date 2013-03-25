@@ -1,67 +1,36 @@
+/**
+ * The SummaryStatManager class is used to update Summary Stats on the dashboard
+ *
+ * @author Thomas Messier
+ * @singleton
+ * @requires NP.lib.core.Security
+ * @requires NP.store.system.SummaryStats
+ */
 Ext.define('NP.lib.core.SummaryStatManager', function() {
+	// Private variable to track valid summary stats for the logged in user
 	var userStats = null;
 
 	return {
 		extend   : 'Ext.util.Observable',
-		requires: ['NP.lib.core.Security'],
+		requires: ['NP.lib.core.Security','NP.store.system.SummaryStats'],
 		singleton: true,
 
-		invoicesToApproveText: 'Invoices to Approve',
-		invoicesOnHoldText   : 'Invoices on Hold',
-		invoicesCompletedText: 'Completed Invoices to Approve',
-		invoicesRejectedText : 'Rejected Invoices',
-		invoicesMyText       : 'My Invoices',
-
-	    constructor: function() {
+		constructor: function() {
+	    	// Add custom event
 	    	this.addEvents('countreceive');
 
-	    	this.summaryStatStore = Ext.create('Ext.data.Store', {
-		        fields: ['title','name','model','service','module_id'],
-		        data  : [
-		        	{
-						title    : this.invoicesToApproveText,
-						name     : 'InvoicesToApprove',
-						model    : 'invoice.Invoice',
-						service  : 'InvoiceService',
-						module_id: 1053
-					},{
-						title    : this.invoicesOnHoldText,
-						name     : 'InvoicesOnHold',
-						model    : 'invoice.Invoice',
-						service  : 'InvoiceService',
-						module_id: 6052
-					},{
-						title    : this.invoicesCompletedText,
-						name     : 'InvoicesCompleted',
-						model    : 'invoice.Invoice',
-						service  : 'InvoiceService',
-						module_id: 2004
-					},{
-						title    : this.invoicesRejectedText,
-						name     : 'InvoicesRejected',
-						model    : 'invoice.Invoice',
-						service  : 'InvoiceService',
-						module_id: 6036
-					},{
-						title    : this.invoicesMyText,
-						name     : 'InvoicesByUser',
-						model    : 'invoice.Invoice',
-						service  : 'InvoiceService',
-						module_id: 2060
-					}
-		        ],
-		        proxy : {
-		            type: 'memory',
-		            reader: {
-		                type: 'json'
-		            }
-		        }
-		    });
+	    	// Create a store with the different summary stats available
+	    	this.summaryStatStore = Ext.create('NP.store.system.SummaryStats', { storeId: 'system.SummaryStats' });
 
 	    	this.callParent(arguments);
 	    },
 
+		/**
+		 * Get the different summary stats available to the logged in user
+		 * @return {Object[]} An array of objects for the summary stats available to the user
+		 */
 		getStats: function() {
+			// If the stats have already been retrieved, don't bother doing it again, just get them from the private variable
 			if (userStats === null) {
 				userStats = [];
 				this.summaryStatStore.each(function(rec) {
@@ -75,32 +44,70 @@ Ext.define('NP.lib.core.SummaryStatManager', function() {
 			return userStats;
 		},
 
+		/**
+		 * Retrieve a specific summary stat from the store
+		 * @param  {String} name Name of the summary stat to retrieve
+		 * @return {Object}      Summary stat data that corresponds to the name passed
+		 */
 		getStat: function(name) {
 			return this.summaryStatStore.findRecord('name', name);
 		},
 
-		updateCounts: function(filterType, selected) {
+		/**
+		 * Runs through all the stats available to the user and runs Ajax requests to retrieve
+		 * a count for each summary stat.
+		 * @param {String} contextType      The context type (Current Property, Region, etc.)
+		 * @param {String} contextSelection The context selection (value of property or region drop down)
+		 */
+		updateCounts: function(contextType, contextSelection) {
 			Ext.log('Updating dashboard counts');
 
 			var that = this;
+
+			// Get the summary stats for the logged in user
 			var stats = this.getStats();
-			
+
+			// Track the ajax batches
+			var batches = [];
+
+			// Number of ajax call we want to make (we don't want to make 24 ajax calls if we have 24 summary stats)
+			// So we batch the service requests in a few calls
+			var ajaxCalls = 4;
+
+			// Get the number of requests to include in a batch
+			var reqsPerBatch = Math.ceil(stats.length / ajaxCalls);
+
+			var pos = -1;
 			Ext.each(stats, function(item, idx) {
-				NP.lib.core.Net.remoteCall({
-					requests: {
-						service         : 'UserService',
-						action          : 'getDashboardStat',
-						statService     : item.service,
-						stat            : item.name,
-						countOnly       : true,
-						contextType     : filterType,
-						contextSelection: selected,
-						success: function(result, deferred) {
-							that.fireEvent('countreceive', item.name, result);
-						}
+				if (idx == 0 || idx % reqsPerBatch == 0) {
+					pos++;
+					batches[pos] = [];
+				}
+				batches[pos].push({
+					service         : 'UserService',
+					action          : 'getDashboardStat',
+					statService     : item.service,
+					stat            : item.name,
+					countOnly       : true,
+					contextType     : contextType,
+					contextSelection: contextSelection,
+					success: function(result, deferred) {
+						/**
+						 * @event countreceive
+						 * Fired whenever a summary stat count is done being retrieved
+						 * @param {String} summaryStatName The name of the summary stat
+						 * @param {String} count           The number of items found for that stat
+						 */
+						that.fireEvent('countreceive', item.name, result);
 					}
 				});
 			});
+
+			for (var i=0; i<batches.length; i++) {
+				NP.lib.core.Net.remoteCall({
+					requests: batches[i]
+				});
+			}
 		}
 	}
 });

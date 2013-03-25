@@ -1,3 +1,8 @@
+/**
+ * Model for a Property entity
+ *
+ * @author Thomas Messier
+ */
 Ext.define('NP.model.property.Property', {
 	extend: 'NP.lib.data.Model',
 	
