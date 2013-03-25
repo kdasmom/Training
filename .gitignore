@@ -12,7 +12,7 @@ config/site_config.xml
 /composer.lock
 
 # Ignore Phinx configuration file, the user should generate his/her own by running the command "phinx init"
-phinx.yml
+/phinx.yml
 
 # Ignore docs except the files needed for generating them
 docs/*
