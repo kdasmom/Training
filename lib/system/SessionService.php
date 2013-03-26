@@ -2,7 +2,12 @@
 
 namespace NP\system;
 
-class Session {
+/**
+ * Service class for operations related to sessions. Basically a session facade
+ *
+ * @author Thomas Messier
+ */
+class SessionService {
 	
 	public function __construct($sessionDuration=30) {
 		session_start();

@@ -8,6 +8,7 @@ use NP\property\sql\PropertyFilterSelect;
 
 use NP\user\RoleGateway;
 
+use NP\core\AbstractGateway;
 use NP\core\db\Select;
 use NP\core\db\Where;
 use NP\core\db\Adapter;
@@ -18,7 +19,7 @@ use NP\core\db\Expression;
  *
  * @author Thomas Messier
  */
-class InvoiceGateway extends AbstractPOInvoiceGateway {
+class InvoiceGateway extends AbstractGateway {
 	
 	/**
 	 * @var \NP\system\ConfigService

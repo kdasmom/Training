@@ -18,33 +18,33 @@ Ext.define('NP.store.system.SummaryStats', {
 	constructor: function() {
 		this.data = [
 	    	{
-				title    : this.invoicesToApproveText,
-				name     : 'InvoicesToApprove',
-				model    : 'invoice.Invoice',
-				service  : 'InvoiceService',
-				module_id: 1053
+				title    : this.invoicesToApproveText,	// This is the name of the summary stat and title of the detail grid
+				name     : 'InvoicesToApprove',			// This is the name of the grid in /view/viewport/dashboard and the service function called (getInvoicesToApprove)
+				store    : 'invoice.Invoice',			// The name of the data store to use when retrieving the data from the service
+				service  : 'InvoiceService',			// The service to call to retrieve the data
+				module_id: 1053							// The module permission needed to see this summary stat
 			},{
 				title    : this.invoicesOnHoldText,
 				name     : 'InvoicesOnHold',
-				model    : 'invoice.Invoice',
+				store    : 'invoice.Invoice',
 				service  : 'InvoiceService',
 				module_id: 6052
 			},{
 				title    : this.invoicesCompletedText,
 				name     : 'InvoicesCompleted',
-				model    : 'invoice.Invoice',
+				store    : 'invoice.Invoice',
 				service  : 'InvoiceService',
 				module_id: 2004
 			},{
 				title    : this.invoicesRejectedText,
 				name     : 'InvoicesRejected',
-				model    : 'invoice.Invoice',
+				store    : 'invoice.Invoice',
 				service  : 'InvoiceService',
 				module_id: 6036
 			},{
 				title    : this.invoicesMyText,
 				name     : 'InvoicesByUser',
-				model    : 'invoice.Invoice',
+				store    : 'invoice.Invoice',
 				service  : 'InvoiceService',
 				module_id: 2060
 			}

@@ -118,7 +118,7 @@ Ext.define('NP.controller.Viewport', {
 		var detailPanel = Ext.ComponentQuery.query('[xtype="viewport.summarydetailpanel"]')[0];
 		detailPanel.removeAll();
 		
-		var store = Ext.create('NP.store.invoice.Invoice', {
+		var store = Ext.create('NP.store.' + rec.get('store'), {
 			service    : 'UserService',
 			action     : 'getDashboardStat',
 			paging     : true,

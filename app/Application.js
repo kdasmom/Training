@@ -28,6 +28,7 @@ Ext.application({
 	initializedControllers: { Viewport:true },
 
 	/**
+     * @private
 	 * @param {Ext.app.Application} app The application object for the app being launched
 	 */
 	launch: function(app) {
@@ -85,6 +86,7 @@ Ext.application({
    	
 	/**
 	 * Loads initial data using other classes that is needed to run the application
+     * @private
 	 * @return {Deft.promise.Promise}
 	 */
     loadInitialData: function() {
@@ -93,6 +95,7 @@ Ext.application({
     
     /**
 	 * Initializes the Ext.History module so we can track where we are through the URL fragment
+     * @private
 	 */
     initHistory: function() {
 		Ext.log('Initializing Ext.History');
@@ -111,6 +114,7 @@ Ext.application({
 
 	/**
 	 * Makes sure that the application opens on the page we currently have specified in the URL fragment
+     * @private
 	 */
 	initState: function() {
 		// Get the token that's in the URL fragment
@@ -126,8 +130,7 @@ Ext.application({
      * Examines the token and routes the application accordingly if appropriate. This also checks
      * the token hash (last part of the token) to make sure it's valid, if it isn't it boots the
      * user to the home page. This is to prevent URL tampering.
-     *
-     * Direct calls to this function should very rarely be needed
+     * @private
      */
 	gotoToken: function(token) {
 		Ext.log('Going to token: ' + token);
@@ -163,12 +166,30 @@ Ext.application({
     
     /**
      * Calls a controller's init() method if it hasn't already been initialized
+     * @private
      * @param {String} controller The name of the controller
      */
 	initController: function(controller) {
 		if (!this.initializedControllers[controller]) {
 			this.getController(controller).init();
 			this.initializedControllers[controller] = true;
+		}
+	},
+    
+    /**
+     * This is the equivalent of a PHP location redirect. The token specified gets added to the URL
+     * fragment, which triggers the Ext.History change event. This function should be called whenever
+     * navigating to a different view since it also takes care of adding the security hash to the token.
+     * @param {String} newToken The new token to navigate to
+     */
+	addHistory: function(newToken) {
+		var oldToken = Ext.History.getToken();
+		
+		if (oldToken === null || oldToken !== newToken) {
+			// Hash the entire token
+			var tokenHash = CryptoJS.SHA1(newToken);
+			var userIdHash = CryptoJS.SHA1(NP.lib.core.Security.getUser().get('userprofile_id')+'');
+			Ext.History.add(newToken+':'+tokenHash + ':' + userIdHash);
 		}
 	},
 
@@ -200,8 +221,8 @@ Ext.application({
      * The purpose of this function is basically to dynamically load views into empty panels.
      * It will usually be used to load views into the main content area, which is why the "panel"
      * argument defaults to "#contentPanel", the main content area of the application.
-     * @param {Ext.Component}           view  The component to add to a panel if it's not already its first child
-     * @param {Ext.container.Container} panel The container in which to add the view
+     * @param {Ext.Component/String} view  The component to add to a panel if it's not already its first child
+     * @param {String}               panel Any selector that can be used by Ext.ComponentQuery to get a container
      */
 	setView: function(view, panel) {
 		var sameView = false;
@@ -227,23 +248,6 @@ Ext.application({
 			var pnl = Ext.ComponentQuery.query(panel)[0];
 			pnl.removeAll();
 			pnl.add(view);
-		}
-	},
-    
-    /**
-     * This is the equivalent of a PHP location redirect. The token specified gets added to the URL
-     * fragment, which triggers the Ext.History change event. This function should be called whenever
-     * navigating to a different view since it also takes care of adding the security hash to the token.
-     * @param {String} newToken The new token to navigate to
-     */
-	addHistory: function(newToken) {
-		var oldToken = Ext.History.getToken();
-		
-		if (oldToken === null || oldToken !== newToken) {
-			// Hash the entire token
-			var tokenHash = CryptoJS.SHA1(newToken);
-			var userIdHash = CryptoJS.SHA1(NP.lib.core.Security.getUser().get('userprofile_id')+'');
-			Ext.History.add(newToken+':'+tokenHash + ':' + userIdHash);
 		}
 	},
 	

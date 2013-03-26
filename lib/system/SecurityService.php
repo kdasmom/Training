@@ -6,7 +6,7 @@ use NP\core\AbstractService;
 use NP\user\UserprofileGateway;
 use NP\user\UserprofileLogonGateway;
 use NP\user\ModulePrivGateway;
-use NP\system\Session;
+use NP\system\SessionService;
 use NP\util\Util;
 
 /**
@@ -32,14 +32,14 @@ class SecurityService extends AbstractService {
 	protected $modulePrivGateway;
 	
 	/**
-	 * @param \NP\system\Session               $session                 Session object injected
+	 * @param \NP\system\SessionService        $sessionService          SessionService object injected
 	 * @param \NP\user\UserprofileGateway      $userprofileGateway      UserprofileGateway object injected
 	 * @param \NP\user\UserprofileLogonGateway $userprofileLogonGateway UserprofileLogonGateway object injected
 	 * @param \NP\user\ModulePrivGateway       $modulePrivGateway       ModulePrivGateway object injected
 	 */
-	public function __construct(Session $session, UserprofileGateway $userprofileGateway, 
+	public function __construct(SessionService $sessionService, UserprofileGateway $userprofileGateway, 
 								UserprofileLogonGateway $userprofileLogonGateway, ModulePrivGateway $modulePrivGateway) {
-		$this->session = $session;
+		$this->sessionService = $sessionService;
 		$this->userprofileGateway = $userprofileGateway;
 		$this->userprofileLogonGateway = $userprofileLogonGateway;
 		$this->modulePrivGateway = $modulePrivGateway;
@@ -101,8 +101,8 @@ class SecurityService extends AbstractService {
 	 * Logs the user out of the application
 	 */
 	public function logout() {
-		$this->session->remove("userprofile_id");
-		$this->session->remove("module_id_list");
+		$this->sessionService->remove("userprofile_id");
+		$this->sessionService->remove("module_id_list");
 	}
 	
 	/**
@@ -111,11 +111,11 @@ class SecurityService extends AbstractService {
 	 * @return boolean 
 	 */
 	public function isSessionAuthenticated() {
-		return $this->session->exists("userprofile_id");
+		return $this->sessionService->exists("userprofile_id");
 	}
 	
 	public function setUserId($userprofile_id) {
-		$this->session->set("userprofile_id", $userprofile_id);
+		$this->sessionService->set("userprofile_id", $userprofile_id);
 	}
 	
 	/**
@@ -142,11 +142,11 @@ class SecurityService extends AbstractService {
 	 * @return int
 	 */
 	public function getUserId() {
-		return $this->session->get("userprofile_id");
+		return $this->sessionService->get("userprofile_id");
 	}
 	
 	public function setDelegatedUserId($userprofile_id) {
-		$this->session->set("delegation_to_userprofile_id", $userprofile_id);
+		$this->sessionService->set("delegation_to_userprofile_id", $userprofile_id);
 	}
 	
 	/**
@@ -155,7 +155,7 @@ class SecurityService extends AbstractService {
 	 * @return int
 	 */
 	public function getDelegatedUserId() {
-		return $this->session->get("delegation_to_userprofile_id");
+		return $this->sessionService->get("delegation_to_userprofile_id");
 	}
 	
 	/**
@@ -164,7 +164,7 @@ class SecurityService extends AbstractService {
 	 * @param string $module_id_list
 	 */
 	public function setPermissions($module_id_list) {
-		$this->session->set("module_id_list", $module_id_list);
+		$this->sessionService->set("module_id_list", $module_id_list);
 	}
 	
 	/**
@@ -173,7 +173,7 @@ class SecurityService extends AbstractService {
 	 * @return string
 	 */
 	public function getPermissions() {
-		return $this->session->get("module_id_list");
+		return $this->sessionService->get("module_id_list");
 	}
 	
 	/**
@@ -183,7 +183,7 @@ class SecurityService extends AbstractService {
 	 * @return boolean
 	 */
 	public function hasPermission($module_id) {
-		return array_key_exists($module_id, $this->session->get("module_id_list"));
+		return array_key_exists($module_id, $this->sessionService->get("module_id_list"));
 	}
 	
 	/**
