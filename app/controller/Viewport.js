@@ -9,8 +9,6 @@ Ext.define('NP.controller.Viewport', {
 	
 	requires: ['NP.lib.core.Security','NP.lib.core.SummaryStatManager'],
 	
-	stores: ['user.Properties','user.Regions','user.Delegations'],
-	
 	init: function() {
 		var that = this;
 		
@@ -119,13 +117,13 @@ Ext.define('NP.controller.Viewport', {
 		detailPanel.removeAll();
 		
 		var store = Ext.create('NP.store.' + rec.get('store'), {
-			service    : 'UserService',
-			action     : 'getDashboardStat',
+			service    : rec.get('service'),
+			action     : 'get' + rec.get('name'),
 			paging     : true,
 			extraParams: {
-				statService: rec.get('service'),
-				stat       : rec.get('name'),
-				countOnly  : false
+				userprofile_id             : NP.lib.core.Security.getUser().get('userprofile_id'),
+				delegated_to_userprofile_id: NP.lib.core.Security.getDelegatedToUser().get('userprofile_id'),
+				countOnly                  : false
 			}
 		});
 

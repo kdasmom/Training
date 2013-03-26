@@ -3,14 +3,14 @@
 namespace NP\property;
 
 use NP\core\AbstractService;
-use NP\system\SecurityService;
+use NP\security\SecurityService;
 
 class PropertyService extends AbstractService {
 	
 	/**
-	 * @var \NP\system\SecurityService
+	 * @var \NP\security\SecurityService
 	 */
-	protected $securityService; 
+	protected $securityService;
 	
 	/**
 	 * @var \NP\property\PropertyGateway
@@ -23,17 +23,19 @@ class PropertyService extends AbstractService {
 	protected $fiscalcalGateway;
 	
 	/**
-	 * @param \NP\system\SecurityService    $securityService  SecurityService object injected
+	 * @param \NP\security\SecurityService  $securityService  SecurityService object injected
 	 * @param \NP\property\PropertyGateway  $propertyGateway  PropertyGateway object injected
+	 * @param \NP\property\RegionGateway    $regionGateway    RegionGateway object injected
 	 * @param \NP\property\FiscalcalGateway $fiscalcalGateway FiscalcalGateway object injected
 	 * @param \NP\property\UnitGateway      $unitGateway      UnitGateway object injected
 	 */
-	public function __construct(SecurityService $securityService, PropertyGateway $propertyGateway, 
+	public function __construct(SecurityService $securityService, PropertyGateway $propertyGateway, RegionGateway $regionGateway,
 								FiscalcalGateway $fiscalcalGateway, UnitGateway $unitGateway) {
-		$this->securityService = $securityService;
-		$this->propertyGateway = $propertyGateway;
+		$this->securityService  = $securityService;
+		$this->propertyGateway  = $propertyGateway;
+		$this->regionGateway    = $regionGateway;
 		$this->fiscalcalGateway = $fiscalcalGateway;
-		$this->unitGateway = $unitGateway;
+		$this->unitGateway      = $unitGateway;
 	}
 	
 	/**
@@ -83,6 +85,28 @@ class PropertyService extends AbstractService {
 			$this->securityService->getDelegatedUserId(),
 			$property_keyword
 		);
+	}
+
+	/**
+	 * Get properties a user has permissions to
+	 *
+	 * @param  int   $userprofile_id              The active user ID, can be a delegated account
+	 * @param  int   $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
+	 * @return array                              Array of property records
+	 */
+	public function getUserProperties($userprofile_id, $delegated_to_userprofile_id) {
+		return $this->propertyGateway->findByUser($userprofile_id, $delegated_to_userprofile_id);
+	}
+	
+	/**
+	 * Get regions a user has permissions to
+	 *
+	 * @param  int   $userprofile_id              The active user ID, can be a delegated account
+	 * @param  int   $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
+	 * @return array                              Array of region records
+	 */
+	public function getUserRegions($userprofile_id, $delegated_to_userprofile_id) {
+		return $this->regionGateway->findByUser($userprofile_id, $delegated_to_userprofile_id);
 	}
 	
 	/**

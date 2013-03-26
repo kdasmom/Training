@@ -7,23 +7,19 @@
 Ext.define('NP.store.user.Regions', {
 	extend: 'NP.lib.data.Store',
 	
-	requires: ['NP.model.property.Region'],
+	requires: ['NP.lib.core.Security','NP.model.property.Region'],
 	
-	autoLoad: true,
-
-    proxy: {
-        type: 'ajax',
-        url: 'ajax.php',
-		extraParams: {
-			service: 'UserService',
-			action: 'getRegions'
-		}
-    },
+	service: 'PropertyService',
+	action : 'getUserRegions',
 
     constructor: function(cfg) {
     	Ext.apply(this, cfg);
 
     	this.fields = NP.model.property.Region.getFields();
+    	this.extraParams = {
+			userprofile_id             : NP.lib.core.Security.getUser().get('userprofile_id'),
+			delegated_to_userprofile_id: NP.lib.core.Security.getDelegatedToUser().get('userprofile_id')
+		};
 
     	this.callParent(arguments);
     }

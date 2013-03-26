@@ -38,11 +38,13 @@ $diDefinition = array(
 	'NP\invoice\InvoiceGateway'                => array('Adapter','ConfigService','RoleGateway'),
 	'NP\invoice\InvoiceItemGateway'            => array('Adapter'),
 	'NP\invoice\InvoiceService'                => array('SecurityService','InvoiceGateway','InvoiceItemGateway'),
+	'NP\invoice\InvoiceServiceInterceptor',
 	'NP\property\FiscalcalGateway'             => array('Adapter'),
 	'NP\property\PropertyGateway'              => array('Adapter'),
-	'NP\property\PropertyService'              => array('SecurityService','PropertyGateway','FiscalcalGateway','UnitGateway'),
+	'NP\property\PropertyService'              => array('SecurityService','PropertyGateway','RegionGateway','FiscalcalGateway','UnitGateway'),
 	'NP\property\RegionGateway'                => array('Adapter'),
 	'NP\property\UnitGateway'                  => array('Adapter'),
+	'NP\security\SecurityService'              => array('SessionService','UserprofileGateway','UserprofileLogonGateway','ModulePrivGateway'),
 	'NP\system\ConfigsysGateway'               => array('Adapter'),
 	'NP\system\ConfigService'                  => array('WinCache','SiteService','ConfigsysGateway','PNUniversalFieldGateway','IntegrationRequirementsGateway','reloadCache'),
 	'NP\system\PNUniversalFieldGateway'        => array('Adapter'),
@@ -51,14 +53,13 @@ $diDefinition = array(
 	'NP\system\PicklistService'                => array('PicklistGateway'),
 	'NP\system\LoggingService'                 => array('logPath','enabledNamespaces','fileEnabled','debugEnabled'),
 	'NP\system\SessionService'                 => array('sessionDuration'),
-	'NP\system\SecurityService'                => array('SessionService','UserprofileGateway','UserprofileLogonGateway','ModulePrivGateway'),
 	'NP\system\SiteService'                    => array('WinCache','configPath','reloadCache'),
 	'NP\user\DelegationGateway'                => array('Adapter'),
 	'NP\user\ModulePrivGateway'                => array('Adapter'),
 	'NP\user\RoleGateway'                      => array('Adapter'),
 	'NP\user\UserprofileGateway'               => array('Adapter'),
 	'NP\user\UserSettingGateway'               => array('Adapter'),
-	'NP\user\UserService'                      => array('SecurityService','InvoiceService','PropertyGateway','RegionGateway','GLAccountGateway','DelegationGateway','UserSettingGateway','UserprofileGateway','RoleGateway'),
+	'NP\user\UserService'                      => array('SecurityService','DelegationGateway','UserSettingGateway','UserprofileGateway','RoleGateway'),
 	'NP\user\UserprofileLogonGateway'          => array('Adapter'),
 	'NP\vendor\VendorGateway'                  => array('Adapter','ConfigService','PropertyService'),
 	'NP\vendor\VendorService'                  => array('VendorGateway'),
@@ -89,6 +90,11 @@ foreach($diDefinition as $classPath=>$dependencies) {
 		// Inject the Logging service via setter injection to all services and gateways
 		if ($r->hasMethod('setLoggingService')) {
 			$obj->setLoggingService($di['LoggingService']);
+		}
+
+		// Inject the Security service via setter injection to all interceptors
+		if ($r->hasMethod('setSecurityService')) {
+			$obj->setSecurityService($di['SecurityService']);
 		}
 
 		// Return object

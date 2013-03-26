@@ -7,23 +7,19 @@
 Ext.define('NP.store.user.Properties', {
 	extend: 'NP.lib.data.Store',
 	
-	requires: ['NP.model.property.Property'],
+	requires: ['NP.lib.core.Security','NP.model.property.Property'],
 	
-	autoLoad: true,
+	service: 'PropertyService',
+	action : 'getUserProperties',
 	
-	proxy: {
-        type: 'ajax',
-        url: 'ajax.php',
-		extraParams: {
-			service: 'UserService',
-			action: 'getProperties'
-		}
-    },
-
     constructor: function(cfg) {
     	Ext.apply(this, cfg);
 
     	this.fields = NP.model.property.Property.getFields();
+    	this.extraParams = {
+			userprofile_id             : NP.lib.core.Security.getUser().get('userprofile_id'),
+			delegated_to_userprofile_id: NP.lib.core.Security.getDelegatedToUser().get('userprofile_id')
+		};
 
     	this.callParent(arguments);
     }

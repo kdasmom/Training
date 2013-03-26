@@ -84,13 +84,13 @@ Ext.define('NP.lib.core.SummaryStatManager', function() {
 					batches[pos] = [];
 				}
 				batches[pos].push({
-					service         : 'UserService',
-					action          : 'getDashboardStat',
-					statService     : item.service,
-					stat            : item.name,
-					countOnly       : true,
-					contextType     : contextType,
-					contextSelection: contextSelection,
+					service                    : item.service,
+					action                     : 'get' + item.name,
+					userprofile_id             : NP.lib.core.Security.getUser().get('userprofile_id'),
+					delegated_to_userprofile_id: NP.lib.core.Security.getDelegatedToUser().get('userprofile_id'),
+					countOnly                  : true,
+					contextType                : contextType,
+					contextSelection           : contextSelection,
 					success: function(result, deferred) {
 						/**
 						 * @event countreceive

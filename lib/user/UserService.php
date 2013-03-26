@@ -3,11 +3,7 @@
 namespace NP\user;
 
 use NP\core\AbstractService;
-use NP\invoice\InvoiceService;
-use NP\system\SecurityService;
-use NP\property\PropertyGateway;
-use NP\property\RegionGateway;
-use NP\gl\GLAccountGateway;
+use NP\security\SecurityService;
 
 /**
  * Service class for operations related to application users
@@ -16,29 +12,10 @@ use NP\gl\GLAccountGateway;
  */
 class UserService extends AbstractService {
 	/**
-	 * @var \NP\system\SecurityService
+	 * @var \NP\security\SecurityService
 	 */
 	protected $securityService;
-	/**
-	 * @var \NP\system\InvoiceService
-	 */
-	protected $invoiceService;
 	
-	/**
-	 * @var \NP\property\PropertyGateway
-	 */
-	protected $propertyGateway;
-	
-	/**
-	 * @var \NP\property\RegionGateway
-	 */
-	protected $regionGateway;
-	
-	/**
-	 * @var \NP\gl\GLAccountGateway
-	 */
-	protected $glaccountGateway;
-
 	/**
 	 * @var \NP\user\DelegationGateway
 	 */
@@ -60,23 +37,14 @@ class UserService extends AbstractService {
 	protected $roleGateway;
 
 	/**
-	 * @param \NP\system\SecurityService    $securityService    SecurityService object injected
-	 * @param \NP\invoice\InvoiceService    $invoiceService     InvoiceService object injected
-	 * @param \NP\property\PropertyGateway  $propertyGateway    PropertyGateway object injected
-	 * @param \NP\invoice\RegionGateway     $regionGateway      RegionGateway object injected
-	 * @param \NP\invoice\GLAccountGateway  $gLAccountGateway   GLAccountGateway object injected
+	 * @param \NP\security\SecurityService  $securityService    SecurityService object injected
 	 * @param \NP\invoice\DelegationGateway $delegationGateway  DelegationGateway object injected
 	 * @param \NP\user\UserprofileGateway   $userprofileGateway UserprofileGateway object injected
 	 * @param \NP\user\RoleGateway          $roleGateway        RoleGateway object injected
 	 */
-	public function __construct(SecurityService $securityService, InvoiceService $invoiceService, PropertyGateway $propertyGateway, 
-								RegionGateway $regionGateway, GLAccountGateway $glaccountGateway, DelegationGateway $delegationGateway,
-								UserSettingGateway $userSettingGateway, UserprofileGateway $userprofileGateway, RoleGateway $roleGateway) {
+	public function __construct(SecurityService $securityService, DelegationGateway $delegationGateway, UserSettingGateway $userSettingGateway, 
+								UserprofileGateway $userprofileGateway, RoleGateway $roleGateway) {
 		$this->securityService    = $securityService;
-		$this->invoiceService     = $invoiceService;
-		$this->propertyGateway    = $propertyGateway;
-		$this->regionGateway      = $regionGateway;
-		$this->glaccountGateway   = $glaccountGateway;
 		$this->delegationGateway  = $delegationGateway;
 		$this->userSettingGateway = $userSettingGateway;
 		$this->userprofileGateway = $userprofileGateway;
@@ -119,94 +87,37 @@ class UserService extends AbstractService {
 	}
 	
 	/**
-	 * Get properties for the user signed in
-	 *
-	 * @return array Array of property records
-	 */
-	public function getProperties() {
-		$userprofile_id = $this->securityService->getUserId();
-		$delegated_to_userprofile_id = $this->securityService->getDelegatedUserId();
-
-		return $this->propertyGateway->findByUser($userprofile_id, $delegated_to_userprofile_id);
-	}
-	
-	/**
-	 * Get regions for the user signed in
-	 *
-	 * @return array Array of region records
-	 */
-	public function getRegions() {
-		$userprofile_id = $this->securityService->getUserId();
-		$delegated_to_userprofile_id = $this->securityService->getDelegatedUserId();
-		
-		return $this->regionGateway->findByUser($userprofile_id, $delegated_to_userprofile_id);
-	}
-	
-	/**
-	 * Get GL accounts for the user signed in
-	 *
-	 * @return array Array of glaccount records
-	 */
-	public function getUserGLAccounts() {
-		return $this->glaccountGateway->findUserGLAccounts($this->securityService->getUserId());
-	}
-	
-	/**
 	 * Get delegations for the user signed in
 	 *
+	 * @param int    $userprofile_id    Id of user to get delegation info for
 	 * @param string $toFrom            Whether to get delegations to the user or from (made by) the user; valid values are "from" and "to"
 	 * @param int    $delegation_status Filter the delegation records by delegation_status (optional); defaults to null, valid values are 1 and 0
 	 * @return array Array of delegation records
 	 */
-	public function getDelegations($toFrom, $delegation_status=null) {
-		return $this->delegationGateway->findUserDelegations($this->securityService->getDelegatedUserId(), $toFrom, $delegation_status);
+	public function getDelegations($userprofile_id, $toFrom, $delegation_status=null) {
+		return $this->delegationGateway->findUserDelegations($userprofile_id, $toFrom, $delegation_status);
 	}
 	
 	/**
-	 * Get delegations to user signed in; shortcut for getDelegations('to', ...)
+	 * Get delegations to user signed in; shortcut for getDelegations($userprofile_id, 'to', ...)
 	 *
+	 * @param int    $userprofile_id    Id of user to get delegation info for
 	 * @param int    $delegation_status Filter the delegation records by delegation_status (optional); defaults to null, valid values are 1 and 0
 	 * @return array Array of delegation records
 	 */
-	public function getDelegationsTo($delegation_status=null) {
-		return $this->getDelegations('to' ,$delegation_status);
+	public function getDelegationsTo($userprofile_id, $delegation_status=null) {
+		return $this->getDelegations($userprofile_id, 'to' ,$delegation_status);
 	}
 	
 	/**
-	 * Get delegations made by the user signed in; shortcut for getDelegations('from', ...)
+	 * Get delegations made by the user signed in; shortcut for getDelegations($userprofile_id, 'from', ...)
 	 *
+	 * @param int    $userprofile_id    Id of user to get delegation info for
 	 * @param int    $delegation_status Filter the delegation records by delegation_status (optional); defaults to null, valid values are 1 and 0
 	 * @return array Array of delegation records
 	 */
-	public function getDelegationsFrom($delegation_status=null) {
-		return $this->getDelegations('from' ,$delegation_status);
-	}
-
-	/**
-	 * Retrieve invoices for the different invoice registers for the current logged in user
-	 *
-	 * @param  string $tab                         The register tab to get
-	 * @param  string $contextType                 The context filter type; valid values are 'property','region', and 'all'
-	 * @param  int    $contextSelection            The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
-	 * @param  int    $pageSize                    The number of records per page; if null, all records are returned
-	 * @param  int    $page                        The page for which to return records
-	 * @param  string $sort                        Field(s) by which to sort the result; defaults to vendor_name
-	 * @return array                               Array of invoice records
-	 */
-	public function getInvoiceRegister($tab, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-		$userprofile_id = $this->securityService->getUserId();
-		$delegated_to_userprofile_id = $this->securityService->getDelegatedUserId();
-		
-		return $this->invoiceService->getInvoiceRegister($tab, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
-	}
-
-	public function getDashboardStat($statService, $stat, $countOnly, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-		$userprofile_id = $this->securityService->getUserId();
-		$delegated_to_userprofile_id = $this->securityService->getDelegatedUserId();
-		$func = "get" . $stat;
-		$statService = lcfirst($statService);
-		
-		return $this->{$statService}->{$func}($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
+	public function getDelegationsFrom($userprofile_id, $delegation_status=null) {
+		return $this->getDelegations($userprofile_id, 'from' ,$delegation_status);
 	}
 	
 	public function isAdmin($userprofile_id) {

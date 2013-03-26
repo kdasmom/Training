@@ -21,11 +21,11 @@ Ext.application({
 	
 	// We only want to define the Viewport controller since it's always needed to run main navigation
 	// Do not include any other controllers here, they will be lazy loaded as needed on dev
-	controllers: ['Viewport'],
+	controllers: [],
 
 	// This is to track controllers that have already been initialized to make sure we don't initialize
 	// them twice
-	initializedControllers: { Viewport:true },
+	initializedControllers: {},
 
 	/**
      * @private
@@ -42,12 +42,35 @@ Ext.application({
 				var time = new Date().getTime();
 				// Inject the correct file for localization
 				Ext.Loader.injectScriptElement('app/locale/'+lang+'.js?_dc='+time, function() {
+					// Create the region store because it's needed immediately on the Viewport top bar
+					var regionStore = Ext.create('NP.store.property.Regions', { 
+						storeId: 'user.Regions',
+						service: 'PropertyService',
+			            action: 'getUserRegions',
+			            extraParams: {
+			            	userprofile_id             : NP.lib.core.Security.getUser().get('userprofile_id'),
+							delegated_to_userprofile_id: NP.lib.core.Security.getDelegatedToUser().get('userprofile_id')
+			            }
+					});
+
+					// Create the region store because it's needed immediately on the Viewport top bar
+					var propertyStore = Ext.create('NP.store.property.Properties', { 
+						storeId: 'user.Properties',
+						service: 'PropertyService',
+			            action: 'getUserProperties',
+			            extraParams: {
+			            	userprofile_id             : NP.lib.core.Security.getUser().get('userprofile_id'),
+							delegated_to_userprofile_id: NP.lib.core.Security.getDelegatedToUser().get('userprofile_id')
+			            }
+					});
+
 					// Create the delegation store because it's needed immediately on the Viewport top bar
 					var delegationStore = Ext.create('NP.store.user.Delegations', { 
 						storeId: 'user.Delegations',
 						service: 'UserService',
 			            action: 'getDelegationsTo',
 			            extraParams: {
+			            	userprofile_id   : NP.lib.core.Security.getDelegatedToUser().get('userprofile_id'),
 			                delegation_status: 1
 			            },
 			            // Adding a listener to add the current user to the store as the topmost user
@@ -62,19 +85,26 @@ Ext.application({
 					    }
 					});
 
-					// Make sure the store is populated before the app starts to run
-					delegationStore.load(function() {
-						// Create the ViewPort
-						Ext.create('NP.view.Viewport');
-						
-						// Init the history module so we can use the back and forward buttons
-						that.initHistory();
-						 
-						// Initialize state manager
-						Ext.state.Manager.setProvider( Ext.create('NP.lib.core.DBProvider') );
-						
-						// Initialize the UI state so that we start on whatever page is in the URL fragment
-						that.initState();
+					// Make sure stores are populated before the app starts to run
+					regionStore.load(function() {
+						propertyStore.load(function() {
+							delegationStore.load(function() {
+								// Initialize the viewport controller
+								that.initController('Viewport');
+
+								// Create the ViewPort
+								Ext.create('NP.view.Viewport');
+								
+								// Init the history module so we can use the back and forward buttons
+								that.initHistory();
+								 
+								// Initialize state manager
+								Ext.state.Manager.setProvider( Ext.create('NP.lib.core.DBProvider') );
+								
+								// Initialize the UI state so that we start on whatever page is in the URL fragment
+								that.initState();
+							});
+						})
 					});
 				});
 			},

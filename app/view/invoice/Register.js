@@ -3,7 +3,7 @@ Ext.define('NP.view.invoice.Register', function() {
 	var grids = ['Open','Rejected','Overdue','Template','OnHold','Pending','Approved','Submitted','Transferred','Paid','Void'];
 	
 	// Build required classes list dynamically to avoid tedious typing
-	var reqs = ['NP.view.shared.ContextPicker'];
+	var reqs = ['NP.view.shared.ContextPicker','NP.lib.core.Security'];
 	for (var i=0; i<grids.length; i++) {
 		reqs.push('NP.view.invoice.grid.Register'+grids[i]);
 	}
@@ -46,9 +46,13 @@ Ext.define('NP.view.invoice.Register', function() {
 	    			stateId: 'invoice_register_' + item,
 	    			paging: true,
 	    			store: Ext.create('NP.store.invoice.Invoice', {
-				        service: 'UserService',
+				        service: 'InvoiceService',
 				        action : 'getInvoiceRegister',
-				        extraParams: { tab: item },
+				        extraParams: {
+							tab                        : item, 
+							userprofile_id             : NP.lib.core.Security.getUser().get('userprofile_id'),
+							delegated_to_userprofile_id: NP.lib.core.Security.getDelegatedToUser().get('userprofile_id')
+				       	},
 				        paging : true
 				    })
 	    		});

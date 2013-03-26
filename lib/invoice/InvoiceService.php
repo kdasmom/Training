@@ -3,7 +3,7 @@
 namespace NP\invoice;
 
 use NP\core\AbstractService;
-use NP\system\SecurityService;
+use NP\security\SecurityService;
 
 /**
  * Service class for operations related to Invoices
@@ -12,7 +12,7 @@ use NP\system\SecurityService;
  */
 class InvoiceService extends AbstractService {
 	/**
-	 * @var \NP\system\SecurityService
+	 * @var \NP\security\SecurityService
 	 */
 	protected $securityService;
 	
@@ -32,7 +32,7 @@ class InvoiceService extends AbstractService {
 	protected $invoiceValidator;
 	
 	/**
-	 * @param \NP\system\SecurityService     $securityService    SecurityService object injected
+	 * @param \NP\security\SecurityService   $securityService    SecurityService object injected
 	 * @param \NP\invoice\InvoiceGateway     $invoiceGateway     InvoiceGateway object injected
 	 * @param \NP\invoice\InvoiceItemGateway $invoiceItemGateway InvoiceItemGateway object injected
 	 * @param \NP\invoice\InvoiceValidator   $invoiceValidator   InvoiceValidator object injected

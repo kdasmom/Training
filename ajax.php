@@ -37,20 +37,33 @@ if ( is_array($config) && $isAuth ) {
 			}
 		}
 		
-		// Call the service function
-		$res = call_user_func_array(array($service, $request["action"]), $paramVals);
-		
-		// Add the result to the results array
-		array_push($results, $res);
+		// If there's a security interceptor for this service, secure the call
+		$interceptor = get_class($service) . 'Interceptor';
+		if (class_exists($interceptor)) {
+			$interceptor = array_pop(explode('\\', $interceptor));
+			$isAuth = $di[$interceptor]->secure($request["action"], $request);
+		}
+
+		if ($isAuth) {
+			// Call the service function
+			$res = call_user_func_array(array($service, $request["action"]), $paramVals);
+			
+			// Add the result to the results array
+			array_push($results, $res);
+		}
 	}
 	
 	// Return all results in JSON format
-	if ($isArrayRequest) {
-		echo Json::encode($results);
-	} else {
-		echo Json::encode($results[0]);
+	if ($isAuth) {
+		if ($isArrayRequest) {
+			echo Json::encode($results);
+		} else {
+			echo Json::encode($results[0]);
+		}
 	}
-} else {
+}
+
+if (!$isAuth) {
 	echo 'authenticationFailure';
 }
 

@@ -7,7 +7,7 @@
 Ext.define('NP.store.system.SummaryStats', {
 	extend: 'Ext.data.Store',
 	
-	fields: ['title','name','model','service','module_id'],
+	fields: ['title','name','store','service','module_id'],
 	
 	invoicesToApproveText: 'Invoices to Approve',
 	invoicesOnHoldText   : 'Invoices on Hold',
