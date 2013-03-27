@@ -8,7 +8,7 @@ Ext.define('NP.lib.ui.ComboBox', {
 	alias : 'widget.customcombo',
 	
 	/**
-	 * @cfg {"normal"/"autocomplete"} type The type of ComboBox; can be set to either "normal" or "autocomplete"; defaults to "normal"
+	 * @cfg {"normal"/"autocomplete"} type              The type of ComboBox; can be set to either "normal" or "autocomplete"; defaults to "normal"
 	 */
 	/**
 	 * @cfg {boolean}                 addBlankRecord    Set to true if you want a blank record to be added as the first record of this combo box's store
@@ -18,6 +18,12 @@ Ext.define('NP.lib.ui.ComboBox', {
 	 */
 	/**
 	 * @cfg {Array}                   dependentCombos   An array of IDs for combo boxes that depend on this combo; when the value of this combo is changed, the valueField will be added as a parameter to the proxy of the dependent combos specified and reload their stores
+	 */
+	/**
+	 * @cfg {Object}                  defaultRec        A default record to add to the store so that when the form loads the selected value shows up properly; only applies to type "autocomplete"
+	 */
+	/**
+	 * @cfg {Object}                  extraParams       Default parameters to add to the store proxy; only applies to type "autocomplete"
 	 */
 	constructor: function(cfg) {
 		Ext.apply(this, cfg);
