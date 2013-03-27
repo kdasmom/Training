@@ -33,7 +33,7 @@ Ext.define('NP.view.viewport.Home', {
                     { xtype: 'shared.contextpicker', itemId: 'homeContextPicker' }
                 ]
             },
-            { xtype: 'viewport.summarystatlist', padding: 8 },
+            { xtype: 'viewport.summarystatlist', stateful: true, stateId: 'summarystat_list', padding: 8 },
             { xtype: 'viewport.summarydetailpanel', flex: 1, padding: 8 }
         ];
 

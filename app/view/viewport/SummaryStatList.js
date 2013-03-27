@@ -32,6 +32,9 @@ Ext.define('NP.view.viewport.SummaryStatList', {
      * @private
      */
     grids: [],
+    
+    stateful: true,
+    stateId : 'summarystat_list',
 
     initComponent: function() {
         var that = this;
@@ -80,7 +83,7 @@ Ext.define('NP.view.viewport.SummaryStatList', {
                     { text: 'Count', dataIndex: 'count' }
                 ],
                 listeners : {
-                    itemclick: function(grid, rec) {
+                    itemclick: function(grid, rec, item, index, e) {
                         /**
                          * @event click
                          * Fires Whenever a row is clicked in any of the summary stat grids
@@ -88,26 +91,6 @@ Ext.define('NP.view.viewport.SummaryStatList', {
                          */
                         that.fireEvent('click', rec);
                     }
-                }
-            });
-
-            // We need to jump through hoops to manage the selection of the grids because there
-            // are two of them but they need to behave as if they were one
-            var selectionModel = grid.getSelectionModel();
-
-            // Listen for changes to the grid selection
-            selectionModel.addListener('selectionChange', function(selectionModel, selected, eOpts) {
-                // Loop through all the grids, suspend the events temporarily, and deselect everything
-                for (var j=0; j<that.grids.length; j++) {
-                    that.grids[j].getSelectionModel().suspendEvents(false);
-                    that.grids[j].getSelectionModel().deselectAll();
-                }
-                // Re-select the selected record
-                selectionModel.select(selected);
-
-                // Loop through grids again and resume events
-                for (var j=0; j<that.grids.length; j++) {
-                    that.grids[j].getSelectionModel().resumeEvents();
                 }
             });
 
@@ -120,12 +103,19 @@ Ext.define('NP.view.viewport.SummaryStatList', {
 
         // Add a custom click event for this component
         this.addEvents('click');
+        this.addStateEvents('click');
 
         // Create the component using the parent initializer
         this.callParent(arguments);
     },
 
+    /**
+     * Updates the count for one summary stat
+     * @param {String} name  Name of the summary stat whose count we want to update
+     * @param {Number} total The value of the count
+     */
     updateStatCount: function(name, total) {
+        var selection = this.getSelection();
         // Loop through the grids
         for (var i=0; i<this.grids.length; i++) {
             // Find the record that corresponds to the summary stat who's total we want to update
@@ -133,6 +123,61 @@ Ext.define('NP.view.viewport.SummaryStatList', {
             // If the record is found, update the count
             if (rec !== null) {
                 rec.set('count', total);
+                if (selection == name) {
+                    this.select(name);
+                }
+            }
+        }
+    },
+
+    /**
+     * Selects a summary stat in the grid
+     * @param {String} name  Name of the summary stat whose count we want to show selected
+     */
+    select: function(name) {
+        // Loop through all the grids
+        for (var i=0; i<this.grids.length; i++) {
+            // Deselect any row in the grid that may be selected
+            this.grids[i].getSelectionModel().deselectAll();
+            // Check the grid store to see if the record we want to select is in this grid
+            var recNum = this.grids[i].getStore().find('name', name);
+            // If the record is found, select the row in the grid
+            if (recNum !== -1) {
+                this.grids[i].getSelectionModel().select(recNum);
+            }
+        }
+    },
+
+    /**
+     * Returns the name of the summary stat currently selected
+     * @return {String} Name of the summary stat selected
+     */
+    getSelection: function() {
+        var selection = null;
+        for (var i=0; i<this.grids.length; i++) {
+            var rec = this.grids[i].getSelectionModel().getSelection();
+            if (rec.length) {
+                selection = rec[0].get('name');
+                break;
+            }
+        }
+        
+        return selection;
+    },
+
+    getState: function() {
+        return { selection: this.getSelection() };
+    },
+
+    applyState: function(state) {
+        if (state.selection != null) {
+            for (var i=0; i<this.grids.length; i++) {
+                var store = this.grids[i].getStore();
+                var rec = store.findRecord('name', state.selection);
+                if (rec != null) {
+                    this.fireEvent('click', rec);
+                    break;
+                }
             }
         }
     }

@@ -96,10 +96,6 @@ Ext.define('NP.controller.Viewport', {
 		// If a summary stat is being passed to the controller, select it
 		if (arguments.length == 1) {
 			this.selectSummaryStat(summaryStatName);
-		// Otherwise just clear the summarystat panel
-		} else {
-			var detailPanel = Ext.ComponentQuery.query('[xtype="viewport.summarydetailpanel"]')[0];
-			detailPanel.removeAll();
 		}
 	},
 
@@ -111,11 +107,14 @@ Ext.define('NP.controller.Viewport', {
 	selectSummaryStat: function(name) {
 		Ext.log('Selecting summary stat: ' + name);
 
+		// Make sure the summary stat is selected in the list
+		var listPanel = Ext.ComponentQuery.query('[xtype="viewport.summarystatlist"]')[0];
+		listPanel.select(name);
+
+		// Get the record for the summary stat
 		var rec = NP.lib.core.SummaryStatManager.getStat(name);
 
-		var detailPanel = Ext.ComponentQuery.query('[xtype="viewport.summarydetailpanel"]')[0];
-		detailPanel.removeAll();
-		
+		// Create the appropriate store for the summary stat selected
 		var store = Ext.create('NP.store.' + rec.get('store'), {
 			service    : rec.get('service'),
 			action     : 'get' + rec.get('name'),
@@ -127,6 +126,7 @@ Ext.define('NP.controller.Viewport', {
 			}
 		});
 
+		// Create a grid for the summary stat selected
 		var grid = Ext.create('NP.view.viewport.dashboard.'+rec.get('name'), {
 			title        : rec.get('title'),
 			store        : store,
@@ -135,8 +135,10 @@ Ext.define('NP.controller.Viewport', {
 			stateId      : 'dashboard_' + rec.get('name')
 		});
 		
-		detailPanel.add(grid);
+		// Set the grid to the detail panel
+		this.application.setView(grid, '[xtype="viewport.summarydetailpanel"]');
 		
+		// Load the store
 		this.loadSummaryStatGrid();
 	},
 
