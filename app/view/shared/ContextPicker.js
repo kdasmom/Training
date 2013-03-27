@@ -237,5 +237,5 @@ Ext.define('NP.view.shared.ContextPicker', {
             propCombo.resumeEvents();
             regionCombo.resumeEvents();
         }
-    },
+    }
 });
