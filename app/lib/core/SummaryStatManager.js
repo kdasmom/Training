@@ -86,8 +86,8 @@ Ext.define('NP.lib.core.SummaryStatManager', function() {
 				batches[pos].push({
 					service                    : item.service,
 					action                     : 'get' + item.name,
-					userprofile_id             : NP.lib.core.Security.getUser().get('userprofile_id'),
-					delegated_to_userprofile_id: NP.lib.core.Security.getDelegatedToUser().get('userprofile_id'),
+					userprofile_id             : NP.lib.core.Security.getUser().userprofile_id,
+					delegated_to_userprofile_id: NP.lib.core.Security.getDelegatedToUser().userprofile_id,
 					countOnly                  : true,
 					contextType                : contextType,
 					contextSelection           : contextSelection,

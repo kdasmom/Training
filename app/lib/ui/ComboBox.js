@@ -36,18 +36,20 @@ Ext.define('NP.lib.ui.ComboBox', {
 			forceSelection: true,
 			tpl           : new Ext.XTemplate('<tpl for=".">' + '<li style="height:22px;" class="x-boundlist-item" role="option">' + '{'+this.displayField+'}' + '</li></tpl>'),
 			listeners     : {},
-			addBlankRecord: true 
+			addBlankRecord: false
 		};
 		if (this.type == 'autocomplete') {
+			this.queryMode = 'remote';
+			
 			Ext.apply(defaultCfg, {
-				queryMode  : 'remote',
 				typeAhead  : false,
 				hideTrigger:true,
 				triggerAction:'query'
 			});
 		} else {
+			this.queryMode = 'local';
+
 			Ext.apply(defaultCfg, {
-				queryMode          : 'local',
 				typeAhead          : true,
 				allowOnlyWhitespace: true,
 				editable           : true

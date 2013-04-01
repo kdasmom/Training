@@ -42,70 +42,20 @@ Ext.application({
 				var time = new Date().getTime();
 				// Inject the correct file for localization
 				Ext.Loader.injectScriptElement('app/locale/'+lang+'.js?_dc='+time, function() {
-					// Create the region store because it's needed immediately on the Viewport top bar
-					var regionStore = Ext.create('NP.store.property.Regions', { 
-						storeId: 'user.Regions',
-						service: 'PropertyService',
-			            action: 'getUserRegions',
-			            extraParams: {
-			            	userprofile_id             : NP.lib.core.Security.getUser().get('userprofile_id'),
-							delegated_to_userprofile_id: NP.lib.core.Security.getDelegatedToUser().get('userprofile_id')
-			            }
-					});
+					// Initialize the viewport controller
+					that.initController('Viewport');
 
-					// Create the region store because it's needed immediately on the Viewport top bar
-					var propertyStore = Ext.create('NP.store.property.Properties', { 
-						storeId: 'user.Properties',
-						service: 'PropertyService',
-			            action: 'getUserProperties',
-			            extraParams: {
-			            	userprofile_id             : NP.lib.core.Security.getUser().get('userprofile_id'),
-							delegated_to_userprofile_id: NP.lib.core.Security.getDelegatedToUser().get('userprofile_id')
-			            }
-					});
-
-					// Create the delegation store because it's needed immediately on the Viewport top bar
-					var delegationStore = Ext.create('NP.store.user.Delegations', { 
-						storeId: 'user.Delegations',
-						service: 'UserService',
-			            action: 'getDelegationsTo',
-			            extraParams: {
-			            	userprofile_id   : NP.lib.core.Security.getDelegatedToUser().get('userprofile_id'),
-			                delegation_status: 1
-			            },
-			            // Adding a listener to add the current user to the store as the topmost user
-			            listeners: {
-					    	load: function(store, recs) {
-					    		var currentUser = NP.lib.core.Security.getDelegatedToUser();
-					    		store.insert(0, {
-									userprofile_username: currentUser.get('userprofile_username'),
-									userprofile_id      : currentUser.get('userprofile_id')
-					    		});
-					    	}
-					    }
-					});
-
-					// Make sure stores are populated before the app starts to run
-					regionStore.load(function() {
-						propertyStore.load(function() {
-							delegationStore.load(function() {
-								// Initialize the viewport controller
-								that.initController('Viewport');
-
-								// Create the ViewPort
-								Ext.create('NP.view.Viewport');
-								
-								// Init the history module so we can use the back and forward buttons
-								that.initHistory();
-								 
-								// Initialize state manager
-								Ext.state.Manager.setProvider( Ext.create('NP.lib.core.DBProvider') );
-								
-								// Initialize the UI state so that we start on whatever page is in the URL fragment
-								that.initState();
-							});
-						})
-					});
+					// Create the ViewPort
+					Ext.create('NP.view.Viewport');
+					
+					// Init the history module so we can use the back and forward buttons
+					that.initHistory();
+					 
+					// Initialize state manager
+					Ext.state.Manager.setProvider( Ext.create('NP.lib.core.DBProvider') );
+					
+					// Initialize the UI state so that we start on whatever page is in the URL fragment
+					that.initState();
 				});
 			},
 			failure: function(error) {
@@ -117,10 +67,10 @@ Ext.application({
 	/**
 	 * Loads initial data using other classes that is needed to run the application
      * @private
-	 * @return {Deft.promise.Promise}
+	 * @return  {Deft.promise.Promise}
 	 */
     loadInitialData: function() {
-    	return Deft.Promise.all([NP.lib.core.Config.loadConfigSettings(), NP.lib.core.Security.loadPermissions()]);
+    	return Deft.Promise.all([NP.lib.core.Security.loadPermissions(),NP.lib.core.Config.loadConfigSettings()]);
     },
     
     /**
@@ -182,7 +132,7 @@ Ext.application({
 		// If token is null, go to home page; otherwise, hash the token (minus last item) 
 		// and compare with the hash that was embedded in the token (last item)
 		if (token) {
-			if (userHash == CryptoJS.SHA1(NP.lib.core.Security.getUser().get('userprofile_id')+'') && tokenHash == CryptoJS.SHA1(newToken)) {
+			if (userHash == CryptoJS.SHA1(NP.lib.core.Security.getUser().userprofile_id+'') && tokenHash == CryptoJS.SHA1(newToken)) {
 				var args = newToken.split(':');
 				this.runAction.apply(this, args);
 			} else {
@@ -218,7 +168,7 @@ Ext.application({
 		if (oldToken === null || oldToken !== newToken) {
 			// Hash the entire token
 			var tokenHash = CryptoJS.SHA1(newToken);
-			var userIdHash = CryptoJS.SHA1(NP.lib.core.Security.getUser().get('userprofile_id')+'');
+			var userIdHash = CryptoJS.SHA1(NP.lib.core.Security.getUser().userprofile_id+'');
 			Ext.History.add(newToken+':'+tokenHash + ':' + userIdHash);
 		}
 	},

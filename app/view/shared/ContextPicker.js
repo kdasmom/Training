@@ -43,8 +43,8 @@ Ext.define('NP.view.shared.ContextPicker', {
         var that = this;
 
         // Middle column displays the region and property combo boxes (only one active at a time)
-        var default_prop = NP.lib.core.Security.getUser().get('userprofile_preferred_property');
-        var default_region = NP.lib.core.Security.getUser().get('userprofile_preferred_region');
+        var default_prop = NP.lib.core.Security.getUser().userprofile_preferred_property;
+        var default_region = NP.lib.core.Security.getUser().userprofile_preferred_region;
         var hide_prop = true;
         var hide_region = true;
         var select_all = false;

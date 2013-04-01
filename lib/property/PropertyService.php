@@ -94,8 +94,8 @@ class PropertyService extends AbstractService {
 	 * @param  int   $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
 	 * @return array                              Array of property records
 	 */
-	public function getUserProperties($userprofile_id, $delegated_to_userprofile_id) {
-		return $this->propertyGateway->findByUser($userprofile_id, $delegated_to_userprofile_id);
+	public function getUserProperties($userprofile_id, $delegated_to_userprofile_id, $cols=array('property_id','property_id_alt','property_name')) {
+		return $this->propertyGateway->findByUser($userprofile_id, $delegated_to_userprofile_id, $cols);
 	}
 	
 	/**

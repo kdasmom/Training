@@ -28,6 +28,13 @@ Ext.define('NP.lib.core.Security', function() {
 	 */
 	var delegatedToUser = null;
 	
+	/**
+	 * @private
+	 * @property {NP.model.user.Role}
+	 * Stores role currently logged in
+	 */
+	var role = null;
+	
 	// Store this configuration for an ajax request to avoid repetition as we need it in two places
 	var getPermissionAjaxRequestConfig = {
 		service: 'SecurityService', 
@@ -66,6 +73,8 @@ Ext.define('NP.lib.core.Security', function() {
 		loadPermissions: function() {
 			Ext.log('Loading permissions');
 			
+			var that = this;
+
 			return NP.lib.core.Net.remoteCall({
 				requests: [
 					// Load user permissions
@@ -76,7 +85,7 @@ Ext.define('NP.lib.core.Security', function() {
 						action: 'getUser',
 						success: function(result) {
 							// Save the current user
-							user = Ext.create('NP.model.user.Userprofile', result);
+							user = result;
 						},
 						failure: function() {
 							Ext.log('Could not load user');
@@ -88,15 +97,72 @@ Ext.define('NP.lib.core.Security', function() {
 						action: 'getDelegatedToUser',
 						success: function(result) {
 							// Save the user being delegated to by current user
-							delegatedToUser = Ext.create('NP.model.user.Userprofile', result);
+							delegatedToUser = result;
 						},
 						failure: function() {
 							Ext.log('Could not load delegated to user');
 						}
+					},
+					// Get the logged in user's role
+					{
+						service: 'SecurityService', 
+						action: 'getRole',
+						success: function(result) {
+							// Save the current user
+							role = Ext.create('NP.model.user.Role', result);
+						},
+						failure: function() {
+							Ext.log('Could not load user');
+						}
 					}
 				],
 				success: function(results, deferred) {
-					deferred.resolve(results);
+					// We need to run a second ajax request to get some settings that depend on the user info
+					NP.lib.core.Net.remoteCall({
+						requests: [
+							// This request gets regions for the user
+							{ 
+								service                    : 'PropertyService',
+								action                     : 'getUserRegions',
+								store                      : 'NP.store.property.Regions',
+								storeId                    : 'user.Regions',
+								userprofile_id             : that.getUser().userprofile_id,
+								delegated_to_userprofile_id: that.getDelegatedToUser().userprofile_id
+							},
+							// This request gets properties for the user
+							{ 
+								service                    : 'PropertyService',
+								action                     : 'getUserProperties',
+								store                      : 'NP.store.property.Properties',
+								storeId                    : 'user.Properties',
+								userprofile_id             : that.getUser().userprofile_id,
+								delegated_to_userprofile_id: that.getDelegatedToUser().userprofile_id
+							},
+							// This request gets delegations for the user
+							{ 
+								service          : 'UserService',
+								action           : 'getDelegationsTo',
+								store            : 'NP.store.user.Delegations',
+								storeId          : 'user.Delegations',
+								userprofile_id   : that.getDelegatedToUser().userprofile_id,
+								delegation_status: 1,
+								success: function(store) {
+									var currentUser = that.getDelegatedToUser();
+						    		store.insert(0, {
+										userprofile_username: currentUser.userprofile_username,
+										userprofile_id      : currentUser.userprofile_id
+						    		});
+								}
+							}
+						],
+						success: function(results) {
+							deferred.resolve(results);
+						},
+						failure: function(response, options, deferred) {
+							Ext.log('Could not load user data');
+							deferred.reject('Could not load user data');
+						}
+					});
 				},
 				failure: function(response, options, deferred) {
 					Ext.log('Could not load security data');
@@ -143,6 +209,14 @@ Ext.define('NP.lib.core.Security', function() {
 		 */
 		getDelegatedToUser: function() {
 			return delegatedToUser;
+		},
+		
+		/**
+		 * Returns role currently logged in
+		 * @return {NP.model.user.Role}
+		 */
+		getRole: function() {
+			return role;
 		},
 
 		/**

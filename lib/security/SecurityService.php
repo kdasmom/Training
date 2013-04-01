@@ -4,6 +4,7 @@ namespace NP\security;
 
 use NP\core\AbstractService;
 use NP\user\UserprofileGateway;
+use NP\user\RoleGateway;
 use NP\user\UserprofileLogonGateway;
 use NP\user\ModulePrivGateway;
 use NP\system\SessionService;
@@ -17,9 +18,19 @@ use NP\util\Util;
 class SecurityService extends AbstractService {
 	
 	/**
+	 * @var \NP\system\SessionService
+	 */
+	protected $sessionService;
+
+	/**
 	 * @var \NP\user\UserprofileGateway
 	 */
 	protected $userprofileGateway;
+
+	/**
+	 * @var \NP\user\RoleGateway
+	 */
+	protected $roleGateway;
 	
 	/**
 	 * @var \NP\user\UserprofileLogonGateway
@@ -34,13 +45,15 @@ class SecurityService extends AbstractService {
 	/**
 	 * @param \NP\system\SessionService        $sessionService          SessionService object injected
 	 * @param \NP\user\UserprofileGateway      $userprofileGateway      UserprofileGateway object injected
+	 * @param \NP\user\RoleGateway             $roleGateway             RoleGateway object injected
 	 * @param \NP\user\UserprofileLogonGateway $userprofileLogonGateway UserprofileLogonGateway object injected
 	 * @param \NP\user\ModulePrivGateway       $modulePrivGateway       ModulePrivGateway object injected
 	 */
-	public function __construct(SessionService $sessionService, UserprofileGateway $userprofileGateway, 
+	public function __construct(SessionService $sessionService, UserprofileGateway $userprofileGateway, RoleGateway $roleGateway,
 								UserprofileLogonGateway $userprofileLogonGateway, ModulePrivGateway $modulePrivGateway) {
 		$this->sessionService = $sessionService;
 		$this->userprofileGateway = $userprofileGateway;
+		$this->roleGateway = $roleGateway;
 		$this->userprofileLogonGateway = $userprofileLogonGateway;
 		$this->modulePrivGateway = $modulePrivGateway;
 	}
@@ -124,7 +137,16 @@ class SecurityService extends AbstractService {
 	 * @return array A user record
 	 */
 	public function getUser() {
-		return $this->userprofileGateway->findById($this->getUserId());
+		return $this->userprofileGateway->findUserDetails($this->getUserId());
+	}
+	
+	/**
+	 * Gets a record for the role of the actual user currently signed in
+	 *
+	 * @return array A role record
+	 */
+	public function getRole() {
+		return $this->roleGateway->findByUser($this->getUserId(), array('role_id','role_name','is_admin_role'));
 	}
 	
 	/**
@@ -133,7 +155,7 @@ class SecurityService extends AbstractService {
 	 * @return array A user record
 	 */
 	public function getDelegatedToUser() {
-		return $this->userprofileGateway->findById($this->getDelegatedUserId());
+		return $this->userprofileGateway->findUserDetails($this->getDelegatedUserId());
 	}
 	
 	/**

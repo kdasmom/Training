@@ -284,7 +284,7 @@ class InvoiceGateway extends AbstractGateway {
 	public function findInvoicesToApprove($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
 		$propertyFilterSelect = new PropertyFilterSelect(new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection));
 
-		$role = array_pop($this->roleGateway->getUserRole($userprofile_id));
+		$role = $this->roleGateway->findByUser($userprofile_id);
 		$isAdmin = ($role['is_admin_role'] == 1) ? true : false;
 		$approveSubSelect = new Select();
 		$approveSubSelect->from(array('a'=>'approve'))

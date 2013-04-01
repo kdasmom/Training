@@ -36,7 +36,7 @@ Ext.define('NP.view.viewport.DelegationPicker', {
         var delegationStore = Ext.StoreManager.lookup('user.Delegations');
         this.items.push({
             flex  : 1,
-            html  : this.signedOnText + ': ' + NP.lib.core.Security.getUser().get('userprofile_username'),
+            html  : this.signedOnText + ': ' + NP.lib.core.Security.getUser().userprofile_username,
             hidden: (delegationStore.getTotalCount() == 0) ? false : true,
             margin: '4 0 4 0'
         },{
@@ -53,7 +53,7 @@ Ext.define('NP.view.viewport.DelegationPicker', {
                 selectFirstRecord: true,
                 displayField     : 'userprofile_username',
                 valueField       : 'userprofile_id',
-                value            : NP.lib.core.Security.getUser().get('userprofile_id'),
+                value            : NP.lib.core.Security.getUser().userprofile_id,
                 hidden           : (delegationStore.getTotalCount() == 0) ? true : false,
                 margin           : '2 0 2 0',
                 listeners        : {

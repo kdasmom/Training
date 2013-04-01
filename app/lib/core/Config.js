@@ -31,7 +31,7 @@ Ext.define('NP.lib.core.Config', function() {
 	return {
 		singleton: true,
 		
-		requires: ['NP.lib.core.Net'],
+		requires: ['NP.lib.core.Net','NP.store.system.States'],
 		
 		/**
 		 * Loads all application configuration settings, custom field settings, and user settings with
@@ -41,6 +41,9 @@ Ext.define('NP.lib.core.Config', function() {
 		loadConfigSettings: function() {
 			Ext.log('Loading config settings');
 			
+			// Create the state store
+			Ext.create('NP.store.system.States', { storeId: 'system.States' });
+
 			// Make the ajax request
 			return NP.lib.core.Net.remoteCall({
 				requests: [

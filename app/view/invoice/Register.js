@@ -50,8 +50,8 @@ Ext.define('NP.view.invoice.Register', function() {
 				        action : 'getInvoiceRegister',
 				        extraParams: {
 							tab                        : item, 
-							userprofile_id             : NP.lib.core.Security.getUser().get('userprofile_id'),
-							delegated_to_userprofile_id: NP.lib.core.Security.getDelegatedToUser().get('userprofile_id')
+							userprofile_id             : NP.lib.core.Security.getUser().userprofile_id,
+							delegated_to_userprofile_id: NP.lib.core.Security.getDelegatedToUser().userprofile_id
 				       	},
 				        paging : true
 				    })

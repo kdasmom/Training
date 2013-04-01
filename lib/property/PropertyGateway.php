@@ -19,9 +19,10 @@ class PropertyGateway  extends AbstractGateway {
 	 * @param  int    $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
 	 * @return array                               Array of property records
 	 */
-	public function findByUser($userprofile_id, $delegation_to_userprofile_id) {
+	public function findByUser($userprofile_id, $delegation_to_userprofile_id, $cols=null) {
 		$select = new Select();
 		$select->from(array('p'=>'property'))
+				->columns($cols)
 				->order("p.property_name");
 		if ($userprofile_id == $delegation_to_userprofile_id) {
 			$select->join(array('pu'=>'propertyuserprofile'),

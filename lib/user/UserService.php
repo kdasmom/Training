@@ -121,8 +121,8 @@ class UserService extends AbstractService {
 	}
 	
 	public function isAdmin($userprofile_id) {
-		$res = $this->roleGateway->getUserRole($userprofile_id);
-		if (count($res) && $res[0]['is_admin_role']) {
+		$res = $this->roleGateway->findByUser($userprofile_id);
+		if ($res['is_admin_role'] == 1) {
 			return true;
 		}
 

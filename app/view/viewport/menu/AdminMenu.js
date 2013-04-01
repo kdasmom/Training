@@ -37,7 +37,10 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 			showSeparator: false,
 			items: [
 				// My Settings
-				{ text: this.mySettingsText }
+				{
+					itemId: 'mySettingsMenuBtn',
+					text: this.mySettingsText
+				}
 			]
 		};
 

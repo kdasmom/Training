@@ -27,7 +27,7 @@ Ext.define('NP.controller.Viewport', {
 			},
 
 			// Clicking on Invoices, Invoice Register, or any of the subitems under Invoice Register
-			'viewport #invMenuBtn,viewport #invRegisterMenuBtn,viewport #invRegisterMenuBtn menuitem': {
+			'#invMenuBtn,#invRegisterMenuBtn,#invRegisterMenuBtn menuitem': {
 				click: function(itemClicked) {
 					var token = 'Invoice:showRegister';
 					if (itemClicked.itemId != 'invMenuBtn' && itemClicked.itemId != 'invRegisterMenuBtn') {
@@ -36,6 +36,13 @@ Ext.define('NP.controller.Viewport', {
 						token += ':open';
 					}
 					this.application.addHistory(token);
+				}
+			},
+
+			// Clicking on the Administration > My Settings menu
+			'#mySettingsMenuBtn': {
+				click: function() {
+					this.application.addHistory('Admin:showMySettings');
 				}
 			},
 
@@ -120,8 +127,8 @@ Ext.define('NP.controller.Viewport', {
 			action     : 'get' + rec.get('name'),
 			paging     : true,
 			extraParams: {
-				userprofile_id             : NP.lib.core.Security.getUser().get('userprofile_id'),
-				delegated_to_userprofile_id: NP.lib.core.Security.getDelegatedToUser().get('userprofile_id'),
+				userprofile_id             : NP.lib.core.Security.getUser().userprofile_id,
+				delegated_to_userprofile_id: NP.lib.core.Security.getDelegatedToUser().userprofile_id,
 				countOnly                  : false
 			}
 		});

@@ -4,7 +4,7 @@
  * @author Thomas Messier
  */
 Ext.define('NP.store.property.Regions', {
-	extend: 'NP.lib.data.Store',
+	extend: 'Ext.data.Store',
 	
 	requires: ['NP.model.property.Region'],
 

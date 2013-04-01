@@ -34,6 +34,11 @@ class ConfigService extends AbstractService {
 	protected $intReqGateway;
 	
 	/**
+	 * @var \NP\system\LookupcodeGateway
+	 */
+	protected $lookupcodeGateway;
+	
+	/**
 	 * @var string
 	 */
 	protected $appName;
@@ -44,21 +49,23 @@ class ConfigService extends AbstractService {
 	protected $cacheName;
 	
 	/**
-	 * @param Zend\Cache\Storage\Adapter\WinCache      $cache                   WinCache object injected
+	 * @param Zend\Cache\Storage\Adapter\WinCache       $cache                   WinCache object injected
 	 * @param \NP\system\SiteService                    $siteService             SiteService object injected
 	 * @param \NP\system\ConfigsysGateway               $configsysGateway        ConfigsysGateway object injected
 	 * @param \NP\system\PNUniversalFieldGateway        $pnUniversalFieldGateway PNUniversalFieldGateway object injected
 	 * @param \NP\system\IntegrationRequirementsGateway $intReqGateway           IntegrationRequirementsGateway object injected
-	 * @param boolean                                  $reloadCache             Whether to reload the cache at instantiation time (optional); defaults to false
+	 * @param \NP\system\LookupcodeGateway              $lookupcodeGateway       LookupcodeGateway object injected
+	 * @param boolean                                   $reloadCache             Whether to reload the cache at instantiation time (optional); defaults to false
 	 */
 	public function __construct(WinCache $cache, SiteService $siteService, ConfigsysGateway $configsysGateway, 
 								PNUniversalFieldGateway $pnUniversalFieldGateway,  IntegrationRequirementsGateway $intReqGateway, 
-								$reloadCache=false) {
+								LookupcodeGateway $lookupcodeGateway, $reloadCache=false) {
 		$this->cache = $cache;
 		$this->siteService = $siteService;
 		$this->configsysGateway = $configsysGateway;
 		$this->pnUniversalFieldGateway = $pnUniversalFieldGateway;
 		$this->intReqGateway = $intReqGateway;
+		$this->lookupcodeGateway = $lookupcodeGateway;
 		$this->appName = $siteService->getAppName();
 		$this->cacheName = $this->appName . "_config";
 		
@@ -262,6 +269,21 @@ class ConfigService extends AbstractService {
 	 */
 	public function getCustomFieldDropDownValues($universal_field_number, $isLineItem, $glaccount_id=null) {
 		return $this->pnUniversalFieldGateway->getCustomFieldDropDownValues($universal_field_number, $isLineItem, $glaccount_id);
+	}
+
+	/**
+	 * Gets lookup codes for a specified type
+	 *
+	 * @param  string $lookupcode_type The type of lookup code to retrieve
+	 * @return array
+	 */
+	public function getLookupCodes($lookupcode_type) {
+		return $this->lookupcodeGateway->find(
+			array('lookupcode_type'=>"'{$lookupcode_type}'"), 
+			array(), 
+			'lookupcode_description ASC',
+			array('lookupcode_id','lookupcode_description')
+		);
 	}
 
 	/**
