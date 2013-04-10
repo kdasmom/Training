@@ -10,12 +10,16 @@ Ext.Loader.setConfig({
  */
 Ext.application({
 	name: 'NP',
+	paths: {
+		'Ext.ux': 'vendor/extjs/examples/ux'
+	},
 	requires: [
 		'Ext.util.History'
 		,'Ext.state.*'
+		,'NP.lib.core.Overrides'
+		,'NP.lib.core.Config'
 		,'NP.lib.core.Net'
 		,'NP.lib.core.Util'
-		,'NP.lib.core.Config'
 		,'NP.lib.core.Security'
 	],
 	
@@ -132,7 +136,7 @@ Ext.application({
 		// If token is null, go to home page; otherwise, hash the token (minus last item) 
 		// and compare with the hash that was embedded in the token (last item)
 		if (token) {
-			if (userHash == CryptoJS.SHA1(NP.lib.core.Security.getUser().userprofile_id+'') && tokenHash == CryptoJS.SHA1(newToken)) {
+			if (userHash == CryptoJS.SHA1(NP.lib.core.Security.getUser().get('userprofile_id')+'') && tokenHash == CryptoJS.SHA1(newToken)) {
 				var args = newToken.split(':');
 				this.runAction.apply(this, args);
 			} else {
@@ -168,7 +172,7 @@ Ext.application({
 		if (oldToken === null || oldToken !== newToken) {
 			// Hash the entire token
 			var tokenHash = CryptoJS.SHA1(newToken);
-			var userIdHash = CryptoJS.SHA1(NP.lib.core.Security.getUser().userprofile_id+'');
+			var userIdHash = CryptoJS.SHA1(NP.lib.core.Security.getUser().get('userprofile_id')+'');
 			Ext.History.add(newToken+':'+tokenHash + ':' + userIdHash);
 		}
 	},
@@ -205,28 +209,44 @@ Ext.application({
      * @param {String}               panel Any selector that can be used by Ext.ComponentQuery to get a container
      */
 	setView: function(view, panel) {
-		var sameView = false;
-		// If a string was passed in, create a view object first
-		if (typeof view == 'string') {
-			// Get the currently active view
-			var currentView = this.getCurrentView();
+		if (arguments.length == 1) {
+			panel = '#contentPanel';
+		}
+		var pnl = Ext.ComponentQuery.query(panel)[0];
+		var isNewView = true;
 
+		// Get the currently active view in the parent panel
+		var currentView = pnl.child();
+
+		// If a string was passed in, check if dealing with a new view or a
+		if (typeof view == 'string') {
 			// Only create the view if dealing with a different one than the currently active one
-			if (Ext.ClassManager.getName(currentView) != view) {
-				view = Ext.create(view);
-			// otherwise just use the active view instead of re-creating it
-			} else {
-				sameView = true
+			if (Ext.ClassManager.getName(currentView) == view) {
+				isNewView = false;
+			}
+		} else {
+			if (currentView == view) {
+				isNewView = false;
 			}
 		}
+
 		// If we have a new view, let's add it to the parent panel
-		if (!sameView) {
-			if (arguments.length == 1) {
-				panel = '#contentPanel';
+		if (isNewView) {
+			// Remove all child elements from the parent panel
+			pnl.removeAll();
+			
+			// If we passed view in as a string, we need to create the view object; the reason we do it this late in
+			// the process is that removeAll() has to run before it just to minimize the chance of naming conflicts
+			if (typeof view == 'string') {
+				view = Ext.create(view);
+			}
+
+			// If the parent panel is the main content area, we need to add the center region config option
+			if (panel == '#contentPanel') {
 				view.region = 'center';
 			}
-			var pnl = Ext.ComponentQuery.query(panel)[0];
-			pnl.removeAll();
+
+			// Add the view to the parent panel
 			pnl.add(view);
 		}
 	},
@@ -237,6 +257,35 @@ Ext.application({
 	 */
 	getCurrentView: function() {
 		return Ext.ComponentQuery.query('#contentPanel')[0].child();
+	},
+	
+	/**
+	 * Utility function to return a component for a specified xtype
+	 * @param  {String}                  comp The component xtype to retrieve
+	 * @return {Ext.container.Container}
+	 */
+	getComponent: function(comp) {
+		return Ext.ComponentQuery.query('[xtype="' + comp + '"]')[0];
+	},
+
+	/**
+	 * Utility function to load a store only once under a specified store ID
+	 * @param  {String}         store   The class path of the store
+	 * @param  {String}         storeId The unique Id for the store to be used byt the store manager to locate this store
+	 * @param  {String}         [cfg]   Additional configuration options for the store
+	 * @return {Ext.data.Store}
+	 */
+	loadStore: function(store, storeId, cfg) {
+		if (!cfg) cfg = {};
+
+		var storeObj = Ext.StoreManager.lookup(storeId);
+		if (!storeObj) {
+			cfg.storeId = storeId;
+			storeObj = Ext.create(store, cfg);
+			storeObj.load();
+		}
+
+		return storeObj;
 	}
 	
 });

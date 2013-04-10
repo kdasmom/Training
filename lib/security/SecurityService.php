@@ -137,7 +137,7 @@ class SecurityService extends AbstractService {
 	 * @return array A user record
 	 */
 	public function getUser() {
-		return $this->userprofileGateway->findUserDetails($this->getUserId());
+		return $this->userprofileGateway->findById($this->getUserId());
 	}
 	
 	/**
@@ -155,7 +155,7 @@ class SecurityService extends AbstractService {
 	 * @return array A user record
 	 */
 	public function getDelegatedToUser() {
-		return $this->userprofileGateway->findUserDetails($this->getDelegatedUserId());
+		return $this->userprofileGateway->findById($this->getDelegatedUserId());
 	}
 	
 	/**

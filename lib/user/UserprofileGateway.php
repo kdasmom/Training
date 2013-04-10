@@ -40,18 +40,27 @@ class UserprofileGateway extends AbstractGateway {
 	 * @param  int   $userprofile_id The ID of the user you want details for
 	 * @return array                 An array with data for the specified user, including userprofile, role, person, address, and email
 	 */
-	public function findUserDetails($userprofile_id) {
+	public function findProfileById($userprofile_id) {
 		$select = new sql\UserprofileSelect();
 		$cols = array(
 			'userprofile_id',
+			'asp_client_id',
 			'userprofile_username',
+			'userprofile_status',
+			'userprofile_session',
+			'oracle_authentication',
+			'userprofile_startdate',
+			'userprofile_enddate',
 			'userprofile_preferred_property',
 			'userprofile_default_dashboard',
 			'userprofile_splitscreen_size',
 			'userprofile_splitscreen_ishorizontal',
 			'userprofile_splitscreen_imageorder',
 			'userprofile_splitscreen_loadwithoutimage',
-			'userprofile_preferred_region'
+			'userprofile_ADguid',
+			'userprofile_preferred_region',
+			'userprofile_updated_by',
+			'userprofile_updated_datetm'
 		);
 		for ($i=1;$i<=6;$i++) {
 			$cols[] = "security_question{$i}";
@@ -59,17 +68,88 @@ class UserprofileGateway extends AbstractGateway {
 		}
 		
 		$select->columns($cols)
-				->joinUserprofilerole(array('userprofilerole_id'))
-				->joinRole(array('role_id','role_name','is_admin_role'))
-				->joinStaff(array())
-				->joinPerson(array('person_firstname','person_middlename','person_lastname'))
-				->joinEmail(array('email_address'))
-				->joinAddress(array('address_line1','address_line2','address_city','address_state','address_zip','address_zipext'))
-				->joinPhone('Home', array('home_phone_number'=>'phone_number'))
-				->joinPhone('Work', array('work_phone_number'=>'phone_number'))
+				->joinUserprofilerole(null)
+				->joinRole(null)
+				->joinStaff(null)
+				->joinPerson(null)
+				->joinEmail(null)
+				->joinAddress(null)
+				->joinPhone('Home', array(
+					'home_phone_id'=>'phone_id',
+					'home_tablekey_id'=>'tablekey_id',
+					'home_table_name'=>'table_name',
+					'home_phonetype_id'=>'phonetype_id',
+					'home_phone_countrycode'=>'phone_countrycode',
+					'home_phone_number'=>'phone_number'))
+				->joinPhone('Work', array(
+					'work_phone_id'=>'phone_id',
+					'work_tablekey_id'=>'tablekey_id',
+					'work_table_name'=>'table_name',
+					'work_phonetype_id'=>'phonetype_id',
+					'work_phone_countrycode'=>'phone_countrycode',
+					'work_phone_number'=>'phone_number'))
 				->where('u.userprofile_id = ?');
 
-		return array_pop($this->adapter->query($select, array($userprofile_id)));
+		$res = $this->adapter->query($select, array($userprofile_id));
+		return array_pop($res);
+	}
+
+	/**
+	 * Inserts a record in the database
+	 *
+	 * @param  array|\NP\core\AbstractEntity $data An associative array with key/value pairs for fields, or an Entity object
+	 * @return boolean                             Whether the operation succeeded or not
+	 */
+	public function insert($data) {
+		// If we passed in an entity, get the data for it
+		if ($data instanceOf \NP\core\AbstractEntity) {
+			$set = $data->toArray();
+		} else {
+			$set = $data;
+		}
+		
+		$values = $this->convertFieldsToBindParams($set);
+		$values['userprofile_password'] = 'PWDENCRYPT(?)';
+
+		$insert = new \NP\core\db\Insert($this->table, $values);
+
+		$res = $this->adapter->query($insert, $set);
+
+		if ($data instanceOf \NP\core\AbstractEntity) {
+			$data->{$this->pk} = $this->lastInsertId();
+		}
+
+		return $res;
+	}
+
+	/**
+	 * Updates a record in the database
+	 *
+	 * @param  array|\NP\core\AbstractEntity $data An associative array with key/value pairs for fields, or an Entity object
+	 * @return boolean                             Whether the operation succeeded or not
+	 */
+	public function update($data) {
+		// If we passed in an entity, get the data for it
+		if ($data instanceOf \NP\core\AbstractEntity) {
+			$set = $data->toArray();
+		} else {
+			$set = $data;
+		}
+
+		$values = $this->convertFieldsToBindParams($set);
+
+		// If a blank password was provided, we need to make sure it doesn't get saved
+		if (array_key_exists('userprofile_password', $set) &&
+				($set['userprofile_password'] === '' || $set['userprofile_password'] === null)) {
+			unset($set['userprofile_password']);
+			unset($values['userprofile_password']);
+		} else {
+			$values['userprofile_password'] = 'PWDENCRYPT(:userprofile_password)';
+		}
+
+		$update = new \NP\core\db\Update($this->table, $values, array($this->pk => ":{$this->pk}"));
+		
+		return $this->adapter->query($update, $set);
 	}
 	
 }

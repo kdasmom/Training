@@ -4,7 +4,7 @@
  * @author Thomas Messier
  */
 Ext.define('NP.store.property.Properties', {
-	extend: 'Ext.data.Store',
+	extend: 'NP.lib.data.Store',
 	
 	requires: ['NP.model.property.Property'],
 

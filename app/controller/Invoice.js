@@ -34,7 +34,7 @@ Ext.define('NP.controller.Invoice', {
 				}
 			},
 			// Making a change to the context picker (picking from drop-down or clicking radio button)
-			'[xtype="shared.contextpicker"]': {
+			'#invoiceRegisterContextPicker': {
 				change: function(toolbar, filterType, selected) {
 					var contentView = app.getCurrentView();
 					// If user picks a different property/region and we're on a register, update the grid

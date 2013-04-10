@@ -266,7 +266,7 @@ class SqlSrvPdoAdapter extends PdoAdapter implements AdapterInterface
         $rows = $this->fetchAll(sprintf('
             SELECT
                 *,
-                columnproperty(object_id(table_name), column_name,\'IsIdentity\') AS IsIdentity,
+                columnproperty(object_id(table_name), column_name,\'IsIdentity\') AS IsIdentity
             FROM INFORMATION_SCHEMA.COLUMNS 
             WHERE TABLE_NAME=\'%s\'
         ', $tableName));

@@ -6,10 +6,8 @@
 Ext.define('NP.controller.Admin', {
 	extend: 'Ext.app.Controller',
 	
-	requires: ['NP.lib.core.Security'],
+	requires: ['NP.lib.core.Security','NP.lib.core.Net','NP.lib.core.Util'],
 	
-	stores: ['system.SecurityQuestions'],
-
 	init: function() {
 		Ext.log('Admin controller initialized');
 
@@ -25,14 +23,26 @@ Ext.define('NP.controller.Admin', {
 					this.application.addHistory('Admin:showMySettings:' + activeTab);
 				}
 			},
-			'[xtype="admin.mysettings.userinformation"] [xtype="shared.button.save"]': {
-				click: function() {
-					alert('Saving!');
+			'[xtype="admin.mysettings.userinformation"]': {
+				dataloaded: function(formPanel, data) {
+					// Select properties in item selector
+					var userProps = Ext.getStore('user.Properties').getRange();
+					formPanel.getForm().findField('user_properties').setValue(userProps);
 				}
+			},
+			'[xtype="admin.mysettings.userinformation"] [xtype="shared.button.save"]': {
+				click: this.submitUserInfo
 			}
 		});
 
-		Ext.StoreManager.lookup('system.SecurityQuestions').load();
+		// Load the Security Questions store
+		this.application.loadStore('NP.store.system.SecurityQuestions', 'system.SecurityQuestions');
+
+		// Load the Property store
+		this.application.loadStore('NP.store.property.Properties', 'property.AllProperties', {
+			service: 'PropertyService',
+			action : 'getAllForSettings'
+		});
 	},
 	
 	/**
@@ -47,8 +57,8 @@ Ext.define('NP.controller.Admin', {
 		if (!activeTab) var activeTab = 'Overview';
 		
 		// Check if the tab to be selected is already active, if it isn't make it the active tab
-		var tab = Ext.ComponentQuery.query('[xtype="admin.mysettings.' + activeTab.toLowerCase() + '"]')[0];
-		var tabPanel = Ext.ComponentQuery.query('[xtype="admin.mysettings"]')[0];
+		var tab = this.application.getComponent('admin.mysettings.' + activeTab.toLowerCase());
+		var tabPanel = this.application.getComponent('admin.mysettings');
 		
 		// Set the active tab if it hasn't been set yet
 		if (tab.getXType() != tabPanel.getActiveTab().getXType()) {
@@ -63,13 +73,30 @@ Ext.define('NP.controller.Admin', {
 		}
 	},
 
-	/**
-	 * Populates the user information panel with data
-	 */
-	showUserInformation: function(tab) {
-		var user = NP.lib.core.Security.getUser();
-		var form = tab.getForm();
+	submitUserInfo: function() {
+		var form = this.application.getComponent('admin.mysettings.userinformation');
 		
-		form.setValues(user);
+		if (form.isValid()) {
+			form.submitWithBindings({
+				service: 'UserService',
+				action : 'saveUserInfo',
+				extraFields: {
+					userprofile_password_current: 'userprofile_password_current',
+					userprofile_password_confirm: 'userprofile_password_confirm',
+					user_properties             : 'user_properties'
+				},
+				success: function(result, deferred) {
+					// Clear passsord fields after save
+					if (form.findField('userprofile_password_current')) {
+						form.findField('userprofile_password_current').setValue('');
+					}
+					form.findField('userprofile_password').setValue('');
+					form.findField('userprofile_password_confirm').setValue('');
+
+					// Show info message
+					NP.Util.showFadingWindow({ html: 'Changes saved successfully' });
+				}
+			});
+		}
 	}
 });

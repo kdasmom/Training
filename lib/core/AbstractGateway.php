@@ -68,6 +68,13 @@ abstract class AbstractGateway {
 	public function setLoggingService(\NP\system\LoggingService $loggingService) {
 		$this->loggingService = $loggingService;
 	}
+
+	/**
+	 * @return \NP\core\db\Adapter The DB adapter for this gateway
+	 */
+	public function getAdapter() {
+		return $this->adapter;
+	}
 	
 	/**
 	 * @return string The table name for this gateway
@@ -177,6 +184,18 @@ abstract class AbstractGateway {
 		$update = new db\Update($this->table, $values, array($this->pk => ":{$this->pk}"));
 		
 		return $this->adapter->query($update, $set);
+	}
+	
+	/**
+	 * Deletes a record from the database
+	 *
+	 * @param  array|\NP\core\AbstractEntity $data An associative array with key/value pairs for fields, or an Entity object
+	 * @return boolean                             Whether the operation succeeded or not
+	 */
+	public function delete($where=null, $params=array()) {
+		$delete = new db\Delete($this->table, $where);
+		
+		return $this->adapter->query($delete, $params);
 	}
 
 	/**

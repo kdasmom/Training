@@ -63,7 +63,7 @@ abstract class AbstractEntity {
 		if (method_exists($this, $accessor)) {
 			return $this->$accessor();
 		} else {
-			return $this->fields[$field];
+			return $this->values[$field];
 		}
 	}
 
@@ -81,7 +81,7 @@ abstract class AbstractEntity {
 		if (method_exists($this, $mutator)) {
 			$this->$mutator($val);
 		} else {
-			$this->fields[$field] = $val;
+			$this->values[$field] = $val;
 		}
 	}
 

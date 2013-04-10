@@ -127,8 +127,8 @@ Ext.define('NP.controller.Viewport', {
 			action     : 'get' + rec.get('name'),
 			paging     : true,
 			extraParams: {
-				userprofile_id             : NP.lib.core.Security.getUser().userprofile_id,
-				delegated_to_userprofile_id: NP.lib.core.Security.getDelegatedToUser().userprofile_id,
+				userprofile_id             : NP.lib.core.Security.getUser().get('userprofile_id'),
+				delegated_to_userprofile_id: NP.lib.core.Security.getDelegatedToUser().get('userprofile_id'),
 				countOnly                  : false
 			}
 		});

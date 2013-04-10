@@ -97,12 +97,14 @@ Ext.define('NP.view.shared.Address', {
             name      : this.prefix + NP.view.shared.Address.LINE1,
             allowBlank: !this.required,
             width     : this.address_line1_width,
+            maxLength : 255,
             value     : this.address_line1
         },{
             xtype     : 'textfield',
             hideLabel : true,
             name      : this.prefix + NP.view.shared.Address.LINE2,
             width     : this.address_line2_width,
+            maxLength : 255,
             value     : this.address_line2
         },{
             xtype: 'container',
@@ -118,6 +120,7 @@ Ext.define('NP.view.shared.Address', {
                     name      : this.prefix + NP.view.shared.Address.CITY,
                     allowBlank: !this.required,
                     width     : this.address_city_width,
+                    maxLength : 100,
                     value     : this.address_city
                 },{
                     xtype         : 'customcombo',
@@ -131,22 +134,18 @@ Ext.define('NP.view.shared.Address', {
                     width         : this.address_state_width,
                     value         : this.address_state
                 },{
-                    xtype      : 'numberfield',
+                    xtype      : 'textfield',
                     fieldLabel : this.zipFieldText,
                     name       : this.prefix + NP.view.shared.Address.ZIP,
                     width      : this.address_zip_width,
                     allowBlank : !this.required,
-                    value      : this.address_zip,
-                    regex      : /^\d{5}$/,
-                    hideTrigger: true
+                    value      : this.address_zip
                 },{
-                    xtype      : 'numberfield',
+                    xtype      : 'textfield',
                     fieldLabel : 'Zip Ext', // This will be hidden after render
                     name       : this.prefix + NP.view.shared.Address.ZIPEXT,
                     width      : this.address_zipext_width,
-                    value      : this.address_zipext,
-                    regex      : /^\d{4}$/,
-                    hideTrigger: true
+                    value      : this.address_zipext
                 }
             ]
         });

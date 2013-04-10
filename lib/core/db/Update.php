@@ -8,12 +8,12 @@ namespace NP\core\db;
  */
 class Update implements SQLInterface, SQLElement {
 	/**
-	 * @var string The table to insert into
+	 * @var string The table to update
 	 */
 	protected $table = null;
 
 	/**
-	 * @var array An associative array of values to insert
+	 * @var array An associative array of values to update
 	 */
 	protected $values = array();
 
@@ -23,8 +23,8 @@ class Update implements SQLInterface, SQLElement {
 	protected $where = null;
 
 	/**
-	 * @param $table  string                        Name of the table to insert into (optional)
-	 * @param $values array                         Values to insert (optional)
+	 * @param $table  string                        Name of the table to update into (optional)
+	 * @param $values array                         Values to update (optional)
 	 * @param $where  string|array|NP\core\db\Where The update criteria
 	 */
 	public function __construct($table=null, $values=null, $where=null) {
@@ -43,10 +43,10 @@ class Update implements SQLInterface, SQLElement {
 	}
 
 	/**
-	 * Sets the table to insert into
+	 * Sets the table to update into
 	 *
 	 * @param  $table string     Table to isert into
-	 * @param \NP\core\db\Insert Return caller object for easy chaining
+	 * @param \NP\core\db\Update Return caller object for easy chaining
 	 */
 	public function table($table) {
 		$this->table = $table;
@@ -54,10 +54,10 @@ class Update implements SQLInterface, SQLElement {
 	}
 
 	/**
-	 * Adds a set of values to be inserted
+	 * Adds a set of values to be updated
 	 *
-	 * @param $values array      Values to insert in the table
-	 * @param \NP\core\db\Insert Return caller object for easy chaining
+	 * @param $values array      Values to update in the table
+	 * @param \NP\core\db\Update Return caller object for easy chaining
 	 */
 	public function values($values) {
 		$this->values = $values;
@@ -65,11 +65,11 @@ class Update implements SQLInterface, SQLElement {
 	}
 
 	/**
-	 * Adds a column value to be inserted
+	 * Adds a column value to be updated
 	 *
-	 * @param $col   string        Column to insert in the table
-	 * @param $value number|string Value of the column to insert in the table
-	 * @param \NP\core\db\Insert   Return caller object for easy chaining
+	 * @param $col   string        Column to update in the table
+	 * @param $value number|string Value of the column to update in the table
+	 * @param \NP\core\db\Update   Return caller object for easy chaining
 	 */
 	public function value($col, $value) {
 		$this->values[$col] = $value;
@@ -80,7 +80,7 @@ class Update implements SQLInterface, SQLElement {
 	 * Sets the criteria for the update
 	 *
 	 * @param $where string|array|NP\core\db\Where The update criteria
-	 * @param \NP\core\db\Insert                   Return caller object for easy chaining
+	 * @param \NP\core\db\Update                   Return caller object for easy chaining
 	 */
 	public function where($where) {
 		if (!is_string($where) && !is_array($where) && !$where instanceOf Where) {
@@ -95,7 +95,7 @@ class Update implements SQLInterface, SQLElement {
 	}
 
 	/**
-	 * @return string Return SQL string for the insert statement
+	 * @return string Return SQL string for the update statement
 	 */
 	public function toString() {
 		$cols = array_keys($this->values);

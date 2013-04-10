@@ -33,6 +33,10 @@ $di['sessionDuration'] = $__CONFIG['sessionDuration'];
 $diDefinition = array(
 	'Zend\Cache\Storage\Adapter\WinCache',
 	'NP\core\db\Adapter'                       => array('dbServer','dbName','dbUsername','dbPassword'),
+	'NP\contact\AddressGateway'                => array('Adapter'),
+	'NP\contact\EmailGateway'                  => array('Adapter'),
+	'NP\contact\PersonGateway'                 => array('Adapter'),
+	'NP\contact\PhoneGateway'                  => array('Adapter'),
 	'NP\gl\GLAccountGateway'                   => array('Adapter','ConfigService'),
 	'NP\gl\GLService'                          => array('GLAccountGateway'),
 	'NP\invoice\InvoiceGateway'                => array('Adapter','ConfigService','RoleGateway'),
@@ -57,10 +61,13 @@ $diDefinition = array(
 	'NP\system\SiteService'                    => array('WinCache','configPath','reloadCache'),
 	'NP\user\DelegationGateway'                => array('Adapter'),
 	'NP\user\ModulePrivGateway'                => array('Adapter'),
+	'NP\user\PropertyUserprofileGateway'       => array('Adapter'),
 	'NP\user\RoleGateway'                      => array('Adapter'),
+	'NP\user\StaffGateway'                     => array('Adapter'),
 	'NP\user\UserprofileGateway'               => array('Adapter'),
+	'NP\user\UserprofileroleGateway'           => array('Adapter'),
 	'NP\user\UserSettingGateway'               => array('Adapter'),
-	'NP\user\UserService'                      => array('SecurityService','DelegationGateway','UserSettingGateway','UserprofileGateway','RoleGateway'),
+	'NP\user\UserService'                      => array('SecurityService','DelegationGateway','UserSettingGateway','UserprofileGateway','RoleGateway','PersonGateway','AddressGateway','EmailGateway','PhoneGateway','PropertyUserprofileGateway'),
 	'NP\user\UserprofileLogonGateway'          => array('Adapter'),
 	'NP\vendor\VendorGateway'                  => array('Adapter','ConfigService','PropertyService'),
 	'NP\vendor\VendorService'                  => array('VendorGateway'),
@@ -74,7 +81,8 @@ foreach($diDefinition as $classPath=>$dependencies) {
 		$dependencies = array();
 	}
 	// Alias is the name of the class
-	$alias = array_pop(explode('\\', $classPath));
+	$alias = explode('\\', $classPath);
+	$alias = array_pop($alias);
 
 	// Add each class to the dependecy injection container as a singleton
 	$di[$alias] = $di->share(function($di) use ($alias, $classPath, $dependencies) {

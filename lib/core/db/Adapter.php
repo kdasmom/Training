@@ -42,6 +42,11 @@ class Adapter {
 	protected $options;
 
 	/**
+	 * @var int
+	 */
+	protected $transactionLevel = 0;
+
+	/**
 	 * @param $server   string Server address
 	 * @param $dbName   string Name of the database
 	 * @param $username string Username to connect to database
@@ -117,30 +122,41 @@ class Adapter {
 	 * Initiate a transaction
 	 */
 	public function beginTransaction() {
-		if ($this->conn->inTransaction()) {
-			throw new \NP\core\Exception('There is already an active transaction');
+		if ($this->transactionLevel == 0) {
+			$this->conn->beginTransaction();
 		}
-		$this->conn->beginTransaction();
+		$this->transactionLevel++;
+	}
+
+	/**
+	 * Check if a transaction has been started
+	 *
+	 * @return boolean
+	 */
+	public function inTransaction() {
+		return $this->conn->inTransaction();
 	}
 
 	/**
 	 * Commit a transaction
 	 */
 	public function commit() {
-		if (!$this->conn->inTransaction()) {
-			throw new \NP\core\Exception('You have not begun a transaction');
+		if ($this->transactionLevel == 1) {
+			$this->conn->commit();
 		}
-		$this->conn->commit();
+		if ($this->transactionLevel > 0) {
+			$this->transactionLevel--;
+		}
 	}
 
 	/**
 	 * Rollback a transaction
 	 */
 	public function rollback() {
-		if (!$this->conn->inTransaction()) {
-			throw new \NP\core\Exception('You have not begun a transaction');
+		if ($this->transactionLevel > 0) {
+			$this->conn->rollback();
+			$this->transactionLevel = 0;
 		}
-		$this->conn->rollback();
 	}
 }
 ?>

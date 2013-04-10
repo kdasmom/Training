@@ -12,9 +12,45 @@ Ext.define('NP.lib.core.Util', {
 	requires: 'Ext.util.Format',
 	
 	/**
+	 * Shows a window with a message for a certain amount of time that eventually fades out
+	 * @param  {Object} windowOptions      Supports all options for the window object, with certain defaults
+	 * @param  {String} windowOptions.html This is the only required option for this and is the text that will show in the main content area of the window. HTML is allowed.
+	 * @param  {Number} showDuration       How long the window should show before it starts fading
+	 * @param  {Number} fadeDuration       How long the fade should last until the window completely disappears
+	 */
+	showFadingWindow: function(windowOptions, showDuration, fadeDuration) {
+		if (!showDuration) var showDuration = 2000;
+		if (!fadeDuration) var fadeDuration = 2000;
+
+		Ext.applyIf(windowOptions, {
+			width      : 250,
+			height     : 80,
+			bodyPadding: 16,
+			closable   : false,
+			title      : 'Info'
+		});
+		windowOptions.html = '<div align="center">' + windowOptions.html + '</div>';
+
+		var win = new Ext.create('Ext.window.Window', windowOptions);
+		win.show();
+		
+		setTimeout(function() {
+			win.animate({
+				duration: fadeDuration,
+		        to: {
+		            opacity: 0
+		        },
+		        callback: function() {
+		    		win.destroy();
+		        }
+		    });
+		}, showDuration);
+	},
+
+	/**
 	 * Checks if an object is a function or not
-	 @param  {Mixed} obj
-	 @return {Boolean}
+	 * @param  {Mixed} obj
+	 * @return {Boolean}
 	 */
 	isFunction: function(obj) {
 		return Object.prototype.toString.call(obj) == '[object Function]';
@@ -22,8 +58,8 @@ Ext.define('NP.lib.core.Util', {
 	
 	/**
 	 * Checks if an object is an array or not
-	 @param  {Mixed} obj
-	 @return {Boolean}
+	 * @param  {Mixed} obj
+	 * @return {Boolean}
 	 */
 	isArray: function(obj) {
 		return Object.prototype.toString.call(obj) == '[object Array]';
@@ -31,8 +67,8 @@ Ext.define('NP.lib.core.Util', {
 	
 	/**
 	 * Checks if an object is a javascript Object or not
-	 @param  {Mixed} obj
-	 @return {Boolean}
+	 * @param  {Mixed} obj
+	 * @return {Boolean}
 	 */
 	isObject: function(obj) {
 		return Object.prototype.toString.call(obj) == '[object Object]';
@@ -46,10 +82,10 @@ Ext.define('NP.lib.core.Util', {
 	 * var diff = NP.Util.dateDiff('m', '2013-02-01', '2013-01-01');
 	 * console.log(diff); // Outputs 1
 	 *
-	 @param  {"l"/"s"/"n"/"h"/"d"/"ww"/"m","yyyy"} part l=millisecond; s=seconds; n=minutes; h=hours; d=days; w=weeks; m=months; y=years
-	 @param  {Date} date1
-	 @param  {Date} date2
-	 @return {Number}
+	 * @param  {"l"/"s"/"n"/"h"/"d"/"ww"/"m","yyyy"} part l=millisecond; s=seconds; n=minutes; h=hours; d=days; w=weeks; m=months; y=years
+	 * @param  {Date} date1
+	 * @param  {Date} date2
+	 * @return {Number}
 	 */
 	dateDiff: function(part, date1, date2) {
 		var diff = date1.getTime() - date2.getTime();

@@ -59,17 +59,20 @@ Ext.define('NP.view.shared.Person', {
                     name      : this.prefix + NP.view.shared.Person.FNAME,
                     allowBlank: !this.required,
                     width     : 150,
+                    maxLength : 50,
                     value     : this.person_firstname
                 },{
                     fieldLabel: this.middleNameFieldText,
                     name      : this.prefix + NP.view.shared.Person.MNAME,
                     width     : 80,
+                    maxLength : 50,
                     value     : this.person_middlename
                 },{
                     fieldLabel: this.lastNameFieldText,
                     name      : this.prefix + NP.view.shared.Person.LNAME,
                     allowBlank: !this.required,
                     width     : 150,
+                    maxLength : 50,
                     value     : this.person_lastname
                 }
             ]

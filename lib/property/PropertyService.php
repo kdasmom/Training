@@ -49,6 +49,15 @@ class PropertyService extends AbstractService {
 	}
 	
 	/**
+	 * Retrieves all active properties with limited column info for settings
+	 *
+	 * @return array
+	 */
+	public function getAllForSettings() {
+		return $this->propertyGateway->find("property_status = 1", array(), "property_name",  array('property_id','property_id_alt','property_name'));
+	}
+	
+	/**
 	 * Returns the current accounting period for a property
 	 *
 	 * @param  int   $property_id ID of the property

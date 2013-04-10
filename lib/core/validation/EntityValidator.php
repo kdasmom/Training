@@ -2,12 +2,8 @@
 namespace NP\core\validation;
 
 /**
- * A class to validate data sets
- *
- * This class validates a data set by using the rules defined in its $rules class property
- * (to be overriden in implementations) to determine the type of validation needed.
+ * A class to validate entities
  * 
- * @abstract
  * @author Thomas Messier
  */
 class EntityValidator implements ValidatorInterface {

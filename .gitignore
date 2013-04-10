@@ -25,6 +25,11 @@ docs/*
 
 # Ignore several Ext JS files we don't need
 vendor/extjs/*
+vendor/extjs/examples/*
+vendor/extjs/examples/ux/*
+vendor/extjs/examples/ux/css/*
+vendor/extjs/examples/ux/css/images/*
+vendor/extjs/examples/ux/form/*
 vendor/extjs/locale/*
 vendor/extjs/resources/*
 vendor/extjs/resources/css/*
@@ -42,6 +47,20 @@ vendor/extjs/resources/themes/images/*
 !vendor/extjs/resources/themes/images/default/
 !vendor/extjs/ext-all.js
 !vendor/extjs/ext-all-dev.js
+!vendor/extjs/examples/
+!vendor/extjs/examples/ux/
+!vendor/extjs/examples/ux/css/
+!vendor/extjs/examples/ux/css/ItemSelector.css
+!vendor/extjs/examples/ux/css/images/
+!vendor/extjs/examples/ux/css/images/bottom2.gif
+!vendor/extjs/examples/ux/css/images/down2.gif
+!vendor/extjs/examples/ux/css/images/left2.gif
+!vendor/extjs/examples/ux/css/images/right2.gif
+!vendor/extjs/examples/ux/css/images/top2.gif
+!vendor/extjs/examples/ux/css/images/up2.gif
+!vendor/extjs/examples/ux/form/
+!vendor/extjs/examples/ux/form/ItemSelector.js
+!vendor/extjs/examples/ux/form/MultiSelect.js
 
 # Ignore Zend framework files we don't need (exceptions specified below)
 vendor/zendframework/zendframework/bin/*

@@ -8,9 +8,9 @@ Ext.define('NP.view.shared.Phone', {
     alias: 'widget.shared.phone',
     
     statics: {
-        AREA : 'phone_area',
-        NUMBER : 'phone_number',
-        FIELDS: ['AREA','NUMBER']
+        COUNTRYCODE: 'phone_countrycode',
+        NUMBER     : 'phone_number',
+        FIELDS     : ['COUNTRYCODE','NUMBER']
     },
 
     label : 'Phone Number',
@@ -19,19 +19,19 @@ Ext.define('NP.view.shared.Phone', {
         // Apply default configuration
         Ext.applyIf(this, {
             /**
-             * @cfg {String} [phone_area=""]  Value to populate the area code
+             * @cfg {String} [phone_countrycode=""] Value to populate the area code
              */
-            phone_area  : '',
+            phone_countrycode  : '',
             /**
-             * @cfg {String} [phone_number=""] Value to populate the phone number
+             * @cfg {String} [phone_number=""]      Value to populate the phone number
              */
             phone_number: '',
             /**
-             * @cfg {Boolean} [required=false] Defines if the phone is required or not
+             * @cfg {Boolean} [required=false]      Defines if the phone is required or not
              */
             required    : false,
             /**
-             * @cfg {String}  [prefix=""]      Prefix for the fields' name config option
+             * @cfg {String}  [prefix=""]           Prefix for the fields' name config option
              */
             prefix      : ''
         });
@@ -46,25 +46,27 @@ Ext.define('NP.view.shared.Phone', {
                 xtype: 'container',
                 layout: 'hbox',
                 defaults: {
-                    xtype     : 'numberfield',
                     margin    : '0 5 0 0'
                 },
                 items: [
                     {
+                        xtype      : 'textfield',
                         hideLabel  : true,
-                        name       : this.prefix + NP.view.shared.Person.AREA,
+                        name       : this.prefix + NP.view.shared.Phone.COUNTRYCODE,
                         allowBlank : !this.required,
                         width      : 40,
-                        value      : this.phone_area,
+                        maxLength  : 25,
+                        value      : this.phone_countrycode,
                         regex      : /^\d{3}$/,
                         hideTrigger: true
                     },{
+                        xtype      : 'textfield',
                         hideLabel  : true,
-                        name       : this.prefix + NP.view.shared.Person.NUMBER,
-                        width      : 80,
+                        name       : this.prefix + NP.view.shared.Phone.NUMBER,
+                        width      : 120,
+                        maxLength  : 25,
                         value      : this.phone_number,
-                        regex      : /^\d{7}$/,
-                        hideTrigger: true
+                        maskRe     : /[()\d- ]/
                     }
                 ]
             }
@@ -77,8 +79,8 @@ Ext.define('NP.view.shared.Phone', {
         return this.query('[name="' + this.prefix + NP.view.shared.Phone[name] + '"]')[0];
     },
 
-    getArea: function() {
-        return this.getField('AREA');
+    getCountryCode: function() {
+        return this.getField('COUNTRYCODE');
     },
 
     getNumber: function() {

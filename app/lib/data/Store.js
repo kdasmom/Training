@@ -22,49 +22,51 @@ Ext.define('NP.lib.data.Store', {
 	constructor: function(cfg) {
 		Ext.apply(this, cfg);
 		
-		Ext.applyIf(this, {
-    		proxy: {
-				type: 'ajax',
-				url : 'ajax.php',
-				extraParams: {
-					service: this.service,
-					action : this.action
-				}
-			}
-    	});
-
-    	if (this.extraParams) {
-	    	Ext.apply(this.proxy.extraParams, this.extraParams);
-	    }
-
-	    if (this.paging === true) {
-	    	Ext.applyIf(this, {
-	    		remoteSort: true
-	    	});
-
-	    	Ext.applyIf(this.proxy, {
-				limitParam: 'pageSize',
-				pageParam : 'page',
-				sortParam : 'sort',
-				reader    : {
-					type         : 'json',
-					root         : 'data',
-					totalProperty: 'total'
-				},
-				encodeSorters: function(sorters) {
-					var length   = sorters.length,
-					sortStrs = [],
-					sorter, i;
-					
-					for (i = 0; i < length; i++) {
-						sorter = sorters[i];
-						sortStrs[i] = sorter.property + ' ' + sorter.direction;
+		if (this.service) {
+			Ext.applyIf(this, {
+	    		proxy: {
+					type: 'ajax',
+					url : 'ajax.php',
+					extraParams: {
+						service: this.service,
+						action : this.action
 					}
-					
-					return sortStrs.join(",");
 				}
 	    	});
-	    }
+
+	    	if (this.extraParams) {
+		    	Ext.apply(this.proxy.extraParams, this.extraParams);
+		    }
+
+		    if (this.paging === true) {
+		    	Ext.applyIf(this, {
+		    		remoteSort: true
+		    	});
+
+		    	Ext.applyIf(this.proxy, {
+					limitParam: 'pageSize',
+					pageParam : 'page',
+					sortParam : 'sort',
+					reader    : {
+						type         : 'json',
+						root         : 'data',
+						totalProperty: 'total'
+					},
+					encodeSorters: function(sorters) {
+						var length   = sorters.length,
+						sortStrs = [],
+						sorter, i;
+						
+						for (i = 0; i < length; i++) {
+							sorter = sorters[i];
+							sortStrs[i] = sorter.property + ' ' + sorter.direction;
+						}
+						
+						return sortStrs.join(",");
+					}
+		    	});
+		    }
+		}
 		
     	this.callParent(arguments);
     }

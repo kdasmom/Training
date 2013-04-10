@@ -10,7 +10,12 @@ Ext.define('NP.view.shared.ContextPicker', {
     extend: 'Ext.container.Container',
     alias: 'widget.shared.contextpicker',
     
-    requires: ['NP.lib.core.Config','NP.lib.core.Security'],
+    requires: ['NP.lib.core.Config','NP.lib.core.Security','NP.lib.ui.ComboBox'],
+
+    // We need a static variable to be able to give the radio buttons a different name per instance
+    statics: {
+        pickerInstanceId: 0
+    },
 
     layout: {
         type : 'hbox',
@@ -42,9 +47,15 @@ Ext.define('NP.view.shared.ContextPicker', {
     initComponent: function() {
         var that = this;
 
+        // Increment the static variable for instance ID
+        NP.view.shared.ContextPicker.pickerInstanceId++;
+
+        // Save this picker's ID in the instance
+        this.pickerId = NP.view.shared.ContextPicker.pickerInstanceId;
+
         // Middle column displays the region and property combo boxes (only one active at a time)
-        var default_prop = NP.lib.core.Security.getUser().userprofile_preferred_property;
-        var default_region = NP.lib.core.Security.getUser().userprofile_preferred_region;
+        var default_prop = NP.lib.core.Security.getUser().get('userprofile_preferred_property');
+        var default_region = NP.lib.core.Security.getUser().get('userprofile_preferred_region');
         var hide_prop = true;
         var hide_region = true;
         var select_all = false;
@@ -66,102 +77,97 @@ Ext.define('NP.view.shared.ContextPicker', {
             default_region = Ext.StoreManager.get('user.Regions').getAt(0).get('region_id');
         }
 
-        this.items = [{
-            flex  : 1,
-            defaults: {
-                padding: 0,
-                margin : 0
-            },
-            items: [{
-                xtype            : 'customcombo',
-                itemId           : '__contextPickerUserPropertiesCombo',
-                store            : 'user.Properties',
-                fieldLabel       : this.propertyComboText,
-                labelAlign       : 'right',
-                displayField     : 'property_name',
-                valueField       : 'property_id',
-                value            : default_prop,
-                hidden           : hide_prop,
-                listeners        : {
-                    select: function() {
-                        // Suspend events briefly to prevent change event on radio buttons from firing
-                        var filterTypeComp = that.queryById('__contextPickerType');
-                        filterTypeComp.suspendEvents(false);
-                        filterTypeComp.queryById('__currentPropFilterType').setValue(true);
-                        filterTypeComp.resumeEvents();
+        this.items = [
+            {
+                flex  : 1,
+                defaults: {
+                    padding: 0,
+                    margin : 0
+                },
+                items: [
+                    this.propertyCombo = Ext.create('NP.lib.ui.ComboBox', {
+                        store            : 'user.Properties',
+                        fieldLabel       : this.propertyComboText,
+                        labelAlign       : 'right',
+                        displayField     : 'property_name',
+                        valueField       : 'property_id',
+                        value            : default_prop,
+                        hidden           : hide_prop,
+                        listeners        : {
+                            select: function() {
+                                // Suspend events briefly to prevent change event on radio buttons from firing
+                                var filterTypeComp = that.radioGroup;
+                                filterTypeComp.suspendEvents(false);
+                                that.propertyRadioBtn.setValue(true);
+                                filterTypeComp.resumeEvents();
 
-                        that.triggerChangeEvent();
-                    }
-                }
-            },{
-                xtype            : 'customcombo',
-                itemId           : '__contextPickerUserRegionsCombo',
-                store            : 'user.Regions',
-                fieldLabel       : this.regionComboText,
-                labelAlign       : 'right',
-                displayField     : 'region_name',
-                valueField       : 'region_id',
-                value            : default_region,
-                hidden           : hide_region,
-                listeners        : {
-                    select: function() {
-                        that.triggerChangeEvent();
-                    }
-                }
-            }]
-        }];
-        
-        // Left column displays the radio buttons for choosing to see Current Property, Region, or All Properties
-        this.items.push({
-            xtype      : 'checkboxgroup',
-            itemId     : '__contextPickerType', 
-            defaults: {
-                xtype: 'radio',
-                style: 'white-space: nowrap;margin-right:12px;'
-            },
-            listeners: {
-                change: function(field, newValue, oldValue) {
-                    var selVal = newValue.contextPickerType;
-                    if (!(selVal instanceof Object)) {
-                        if (selVal == 'property' || selVal == 'all') {
-                            var showComp = '__contextPickerUserPropertiesCombo';
-                            var hideComp = '__contextPickerUserRegionsCombo';
-                        } else if (selVal == 'region') {
-                            var showComp = '__contextPickerUserRegionsCombo';
-                            var hideComp = '__contextPickerUserPropertiesCombo';
+                                that.triggerChangeEvent();
+                            }
                         }
-
-                        that.queryById(showComp).show();
-                        that.queryById(hideComp).hide();
-
-                        that.triggerChangeEvent();
-                    }
-                }
+                    }),
+                    this.regionCombo = Ext.create('NP.lib.ui.ComboBox', {
+                        store            : 'user.Regions',
+                        fieldLabel       : this.regionComboText,
+                        labelAlign       : 'right',
+                        displayField     : 'region_name',
+                        valueField       : 'region_id',
+                        value            : default_region,
+                        hidden           : hide_region,
+                        listeners        : {
+                            select: function() {
+                                that.triggerChangeEvent();
+                            }
+                        }
+                    })
+                ]
             },
-            items      : [
-                {
-                    boxLabel  : this.currentPropertyRadioText,
-                    itemId    : '__currentPropFilterType',
-                    name      : 'contextPickerType',
-                    inputValue: 'property',
-                    checked   : !hide_prop && !select_all
+            // Right column displays the radio buttons for choosing to see Current Property, Region, or All Properties
+            this.radioGroup = Ext.create('Ext.form.RadioGroup', {
+                defaults: {
+                    xtype: 'radio',
+                    style: 'white-space: nowrap;margin-right:12px;'
                 },
-                {
-                    boxLabel  : this.regionRadioText,
-                    itemId    : '__regionFilterType',
-                    name      : 'contextPickerType', 
-                    inputValue: 'region',
-                    checked   : !hide_region
+                listeners: {
+                    change: function(field, newValue, oldValue) {
+                        var selVal = newValue['contextPickerType' + that.pickerId];
+                        if (!(selVal instanceof Object)) {
+                            if (selVal == 'property' || selVal == 'all') {
+                                var showComp = that.propertyCombo;
+                                var hideComp = that.regionCombo;
+                            } else if (selVal == 'region') {
+                                var showComp = that.regionCombo;
+                                var hideComp = that.propertyCombo;
+                            }
+
+                            showComp.show();
+                            hideComp.hide();
+
+                            that.triggerChangeEvent();
+                        }
+                    }
                 },
-                {
-                    boxLabel  : this.allPropertiesRadioText, 
-                    itemId    : '__allFilterType',
-                    name      : 'contextPickerType', 
-                    inputValue: 'all',
-                    checked   : select_all
-                }
-            ]
-        });
+                items      : [
+                    this.propertyRadioBtn = Ext.create('Ext.form.field.Radio', {
+                        boxLabel  : this.currentPropertyRadioText,
+                        name      : 'contextPickerType' + this.pickerId, // Dynamic name to avoid errors when using multiple pickers
+                        inputValue: 'property',
+                        checked   : !hide_prop && !select_all
+                    }),
+                    this.regionRadioBtn = Ext.create('Ext.form.field.Radio', {
+                        boxLabel  : this.regionRadioText,
+                        name      : 'contextPickerType' + this.pickerId, // Dynamic name to avoid errors when using multiple pickers
+                        inputValue: 'region',
+                        checked   : !hide_region
+                    }),
+                    this.allRadioBtn = Ext.create('Ext.form.field.Radio', {
+                        boxLabel  : this.allPropertiesRadioText, 
+                        name      : 'contextPickerType' + this.pickerId, // Dynamic name to avoid errors when using multiple pickers
+                        inputValue: 'all',
+                        checked   : select_all
+                    })
+                ]
+            })
+        ];
 
         // Add custom event that can be listened to by other components
         this.addEvents('change');
@@ -190,52 +196,43 @@ Ext.define('NP.view.shared.ContextPicker', {
      * @return {String}                    return.selected The value of the item selected in the combo box
      */
     getState: function() {
-        var contextPickerType = this.queryById('__contextPickerType').getValue().contextPickerType;
+        var contextPickerType = this.radioGroup.getValue()['contextPickerType' + this.pickerId];
         var selected;
         if (contextPickerType == 'region') {
-            var combo = this.queryById('__contextPickerUserRegionsCombo');
-            selected = combo.getValue();
-        } else if (contextPickerType == 'property') {
-            var combo = this.queryById('__contextPickerUserPropertiesCombo');
-            selected = combo.getValue();
-        } else if (contextPickerType == 'all') {
-            var combo = this.queryById('__contextPickerUserPropertiesCombo');
-            selected = combo.getValue();
+            selected = this.regionCombo.getValue();
+        } else if (contextPickerType == 'property' || contextPickerType == 'all') {
+            selected = this.propertyCombo.getValue();
         }
         return { type: contextPickerType, selected: selected };
     },
 
     applyState: function(state) {
         if (state.selected != null) {
-            var filterType = this.queryById('__contextPickerType');
-            var propCombo = this.queryById('__contextPickerUserPropertiesCombo');
-            var regionCombo = this.queryById('__contextPickerUserRegionsCombo');
-
             // Suspend events on the combos and radio buttons
-            filterType.suspendEvents(false);
-            propCombo.suspendEvents(false);
-            regionCombo.suspendEvents(false);
+            this.radioGroup.suspendEvents(false);
+            this.propertyCombo.suspendEvents(false);
+            this.regionCombo.suspendEvents(false);
 
             if (state.type == 'property') {
-                propCombo.show();
-                regionCombo.hide();
-                this.queryById('__currentPropFilterType').setValue(true);
-                this.queryById('__contextPickerUserPropertiesCombo').setValue(state.selected);
+                this.propertyCombo.show();
+                this.regionCombo.hide();
+                this.propertyRadioBtn.setValue(true);
+                this.propertyCombo.setValue(state.selected);
             } else if (state.type == 'region') {
-                regionCombo.show();
-                propCombo.hide();
-                this.queryById('__regionFilterType').setValue(true);
-                this.queryById('__contextPickerUserRegionsCombo').setValue(state.selected);
+                this.regionCombo.show();
+                this.propertyCombo.hide();
+                this.regionRadioBtn.setValue(true);
+                this.regionCombo.setValue(state.selected);
             } else if (state.type == 'all') {
-                regionCombo.hide();
-                this.queryById('__allFilterType').setValue(true);
-                this.queryById('__contextPickerUserPropertiesCombo').setValue(state.selected);
+                this.regionCombo.hide();
+                this.allRadioBtn.setValue(true);
+                this.propertyCombo.setValue(state.selected);
             }
 
             // Resume events on the combos and radio buttons
-            filterType.resumeEvents();
-            propCombo.resumeEvents();
-            regionCombo.resumeEvents();
+            this.radioGroup.resumeEvents();
+            this.propertyCombo.resumeEvents();
+            this.regionCombo.resumeEvents();
         }
     }
 });

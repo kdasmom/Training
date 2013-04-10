@@ -27,7 +27,8 @@ class RoleGateway extends AbstractGateway {
 				->where("ur.userprofile_id = ?");
 		
 		// Since users can only have one role, we only need to return one record
-		return array_pop($this->adapter->query($select, array($userprofile_id)));
+		$res = $this->adapter->query($select, array($userprofile_id));
+		return array_pop($res);
 	}
 	
 }

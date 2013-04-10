@@ -63,7 +63,7 @@ Ext.define('NP.lib.core.Security', function() {
 	return {
 		singleton: true,
 		
-		requires: ['NP.lib.core.Net','NP.model.user.Userprofile'],
+		requires: ['NP.lib.core.Net'],
 		
 		/**
 		 * Loads all permissions for logged in user and gets information for the logged in user
@@ -85,7 +85,7 @@ Ext.define('NP.lib.core.Security', function() {
 						action: 'getUser',
 						success: function(result) {
 							// Save the current user
-							user = result;
+							user = Ext.create('NP.model.user.Userprofile', result);
 						},
 						failure: function() {
 							Ext.log('Could not load user');
@@ -97,7 +97,7 @@ Ext.define('NP.lib.core.Security', function() {
 						action: 'getDelegatedToUser',
 						success: function(result) {
 							// Save the user being delegated to by current user
-							delegatedToUser = result;
+							delegatedToUser = Ext.create('NP.model.user.Userprofile', result);
 						},
 						failure: function() {
 							Ext.log('Could not load delegated to user');
@@ -126,8 +126,8 @@ Ext.define('NP.lib.core.Security', function() {
 								action                     : 'getUserRegions',
 								store                      : 'NP.store.property.Regions',
 								storeId                    : 'user.Regions',
-								userprofile_id             : that.getUser().userprofile_id,
-								delegated_to_userprofile_id: that.getDelegatedToUser().userprofile_id
+								userprofile_id             : that.getUser().get('userprofile_id'),
+								delegated_to_userprofile_id: that.getDelegatedToUser().get('userprofile_id')
 							},
 							// This request gets properties for the user
 							{ 
@@ -135,8 +135,8 @@ Ext.define('NP.lib.core.Security', function() {
 								action                     : 'getUserProperties',
 								store                      : 'NP.store.property.Properties',
 								storeId                    : 'user.Properties',
-								userprofile_id             : that.getUser().userprofile_id,
-								delegated_to_userprofile_id: that.getDelegatedToUser().userprofile_id
+								userprofile_id             : that.getUser().get('userprofile_id'),
+								delegated_to_userprofile_id: that.getDelegatedToUser().get('userprofile_id')
 							},
 							// This request gets delegations for the user
 							{ 
@@ -144,7 +144,7 @@ Ext.define('NP.lib.core.Security', function() {
 								action           : 'getDelegationsTo',
 								store            : 'NP.store.user.Delegations',
 								storeId          : 'user.Delegations',
-								userprofile_id   : that.getDelegatedToUser().userprofile_id,
+								userprofile_id   : that.getDelegatedToUser().get('userprofile_id'),
 								delegation_status: 1,
 								success: function(store) {
 									var currentUser = that.getDelegatedToUser();

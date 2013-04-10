@@ -40,7 +40,8 @@ if ( is_array($config) && $isAuth ) {
 		// If there's a security interceptor for this service, secure the call
 		$interceptor = get_class($service) . 'Interceptor';
 		if (class_exists($interceptor)) {
-			$interceptor = array_pop(explode('\\', $interceptor));
+			$interceptor = explode('\\', $interceptor);
+			$interceptor = array_pop($interceptor);
 			$isAuth = $di[$interceptor]->secure($request["action"], $request);
 		}
 
