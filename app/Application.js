@@ -270,12 +270,12 @@ Ext.application({
 
 	/**
 	 * Utility function to load a store only once under a specified store ID
-	 * @param  {String}         store   The class path of the store
 	 * @param  {String}         storeId The unique Id for the store to be used byt the store manager to locate this store
+	 * @param  {String}         store   The class path of the store
 	 * @param  {String}         [cfg]   Additional configuration options for the store
 	 * @return {Ext.data.Store}
 	 */
-	loadStore: function(store, storeId, cfg) {
+	loadStore: function(storeId, store, cfg) {
 		if (!cfg) cfg = {};
 
 		var storeObj = Ext.StoreManager.lookup(storeId);

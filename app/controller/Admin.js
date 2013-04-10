@@ -36,10 +36,10 @@ Ext.define('NP.controller.Admin', {
 		});
 
 		// Load the Security Questions store
-		this.application.loadStore('NP.store.system.SecurityQuestions', 'system.SecurityQuestions');
+		this.application.loadStore('system.SecurityQuestions', 'NP.store.system.SecurityQuestions');
 
 		// Load the Property store
-		this.application.loadStore('NP.store.property.Properties', 'property.AllProperties', {
+		this.application.loadStore('property.AllProperties', 'NP.store.property.Properties', {
 			service: 'PropertyService',
 			action : 'getAllForSettings'
 		});
