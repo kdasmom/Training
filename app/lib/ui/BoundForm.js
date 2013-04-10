@@ -139,15 +139,6 @@ Ext.define('NP.lib.ui.BoundForm', {
 	},
 
 	/**
-	 * Shortcut for formPanel.getForm().findField()
-	 * @param  {String} name Name of the field to get
-	 * @return {Ext.form.field.Field}
-	 */
-	findField: function(name) {
-		return this.getForm().findField(name);
-	},
-
-	/**
 	 * Updates models bound to this form with the appropriate field values
 	 */
 	updateBoundModels: function() {
@@ -160,6 +151,23 @@ Ext.define('NP.lib.ui.BoundForm', {
 				}
 			});
 		});
+	},
+
+	/**
+	 * Returns all models bound to this form
+	 * @return {Array}
+	 */
+	getModels: function() {
+		return this.bind.models;
+	},
+
+	/**
+	 * Shortcut for formPanel.getForm().findField()
+	 * @param  {String} name Name of the field to get
+	 * @return {Ext.form.field.Field}
+	 */
+	findField: function(name) {
+		return this.getForm().findField(name);
 	},
 
 	/**
