@@ -75,6 +75,7 @@ class Select implements SQLInterface, SQLElement {
 			$this->from($table);
 		}
 		$this->columns($cols);
+		$this->where = new Where();
 	}
 
 	/**
@@ -161,6 +162,7 @@ class Select implements SQLInterface, SQLElement {
 			$table = new Table($table);
 		}
 		$this->joins[] = array('table'=>$table, 'condition'=>$condition, 'cols'=>$cols, 'type'=>$type);
+		
 		return $this;
 	}
 
@@ -174,7 +176,7 @@ class Select implements SQLInterface, SQLElement {
 	/**
 	 * Adds a WHERE clause to the statement
 	 *
-	 * @param $where string|array|NP\core\db\Where
+	 * @param  $where string|array|NP\core\db\Where
 	 * @return \NP\core\db\Select                   Caller object returned for easy chaining
 	 */
 	public function where($where) {
@@ -188,6 +190,30 @@ class Select implements SQLInterface, SQLElement {
 
 		return $this;
 	}
+
+	/**
+	 * Magic method to call different Where object methods directly from the Select object.
+	 * Just call a method named "where" followed by an operation method from the Where object.
+	 * For example, you can do things like $select->whereIsNotNull('col_name') or
+	 * $select->whereLessThanOrEqual('col_name', 20)
+	 *
+	 * @param  $name      string  Name of the method to call; valid values are "AND" or "OR"
+	 * @param  $arguments array   Arguments passed to the method
+	 * @return \NP\core\db\Select Caller object returned for easy chaining
+	 */
+	public function __call($name, $arguments) {
+		$operator = str_replace('where', '', $name);
+		$operator = lcfirst($operator);
+		if (count($arguments) == 1) {
+			$this->where->{$operator}($arguments[0]);
+		} else if (count($arguments) == 2) {
+			$this->where->{$operator}($arguments[0], $arguments[1]);
+		} else if (count($arguments) == 3) {
+			$this->where->{$operator}($arguments[0], $arguments[1], $arguments[2]);
+		}
+
+        return $this;
+    }
 
 	/**
 	 * Adds a GROUP BY clause to the statement
@@ -385,7 +411,10 @@ class Select implements SQLInterface, SQLElement {
 
 		// If there's a where clause, add it
 		if ($this->where !== null) {
-			$sql .= ' WHERE ' . $this->where->toString();
+			$where = $this->where->toString();
+			if ($where != '') {
+				$sql .= ' WHERE ' . $where;
+			}
 		}
 
 		// If there's a group by clause, add it

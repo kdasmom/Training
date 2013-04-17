@@ -1,3 +1,12 @@
 /* BUTTONS */
 .save-btn { background-image: url("../images/buttons/save.gif"); }
 .cancel-btn { background-image: url("../images/buttons/cancel.gif"); }
+.back-btn { background-image: url("../images/buttons/back.gif"); }
+.edit-btn { background-image: url("../images/buttons/edit.gif"); }
+.new-btn { background-image: url("../images/buttons/new.gif"); }
+.upload-btn { background-image: url("../images/buttons/upload.gif"); }
+.camera-btn { background-image: url("../images/buttons/camera.gif"); }
+
+/* STYLE FOR USING AN IMAGE AS A BUTTON IN A GRID BY SPECIFYING THIS AS tdCls CONFIG OPTION */
+.image-button-cell .x-grid-cell-inner { padding-bottom: 0; }
+	.image-button-cell .x-grid-cell-inner img { cursor: pointer; }

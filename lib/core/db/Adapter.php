@@ -122,6 +122,9 @@ class Adapter {
 	 * Initiate a transaction
 	 */
 	public function beginTransaction() {
+		// Make sure there's a connection to DB
+		$this->connect();
+		
 		if ($this->transactionLevel == 0) {
 			$this->conn->beginTransaction();
 		}
@@ -134,6 +137,9 @@ class Adapter {
 	 * @return boolean
 	 */
 	public function inTransaction() {
+		// Make sure there's a connection to DB
+		$this->connect();
+		
 		return $this->conn->inTransaction();
 	}
 

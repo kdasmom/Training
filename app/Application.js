@@ -205,13 +205,14 @@ Ext.application({
      * The purpose of this function is basically to dynamically load views into empty panels.
      * It will usually be used to load views into the main content area, which is why the "panel"
      * argument defaults to "#contentPanel", the main content area of the application.
-     * @param {Ext.Component/String} view  The component to add to a panel if it's not already its first child
-     * @param {String}               panel Any selector that can be used by Ext.ComponentQuery to get a container
+     * @param  {Ext.Component/String} view  The component to add to a panel if it's not already its first child
+     * @param  {String}               panel Any selector that can be used by Ext.ComponentQuery to get a container
+     * @return {Ext.Component}              Returns the component created (if any) or the existing view object
      */
-	setView: function(view, panel) {
-		if (arguments.length == 1) {
-			panel = '#contentPanel';
-		}
+	setView: function(view, cfg, panel) {
+		if (!cfg) var cfg = {};
+		if (!panel) var panel = '#contentPanel';
+		
 		var pnl = Ext.ComponentQuery.query(panel)[0];
 		var isNewView = true;
 
@@ -238,7 +239,7 @@ Ext.application({
 			// If we passed view in as a string, we need to create the view object; the reason we do it this late in
 			// the process is that removeAll() has to run before it just to minimize the chance of naming conflicts
 			if (typeof view == 'string') {
-				view = Ext.create(view);
+				view = Ext.create(view, cfg);
 			}
 
 			// If the parent panel is the main content area, we need to add the center region config option
@@ -248,7 +249,11 @@ Ext.application({
 
 			// Add the view to the parent panel
 			pnl.add(view);
+		} else {
+			view = currentView;
 		}
+
+		return view;
 	},
 	
 	/**

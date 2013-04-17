@@ -46,6 +46,13 @@ Ext.define('NP.controller.Viewport', {
 				}
 			},
 
+			// Clicking on the Administration > Catalog Maintenance menu
+			'#catalogMaintenanceMenuBtn': {
+				click: function() {
+					this.application.addHistory('CatalogMaintenance:showRegister');
+				}
+			},
+
 			// Runs after Home panel has been rendered
 			'[xtype="viewport.home"]': {
 				afterrender: function() {
@@ -143,7 +150,7 @@ Ext.define('NP.controller.Viewport', {
 		});
 		
 		// Set the grid to the detail panel
-		this.application.setView(grid, '[xtype="viewport.summarydetailpanel"]');
+		this.application.setView(grid, {}, '[xtype="viewport.summarydetailpanel"]');
 		
 		// Load the store
 		this.loadSummaryStatGrid();

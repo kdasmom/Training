@@ -7,6 +7,11 @@ config/config.php
 # Ignore site_config.xml file (people will copy the sample file)
 config/site_config.xml
 
+# Ignore some folders in the clients folder since they will contain user uploaded files
+clients/*/*
+!clients/*/login.php
+!clients/*/images/
+
 # Ignore composer files for now, not ready to use it yet
 /composer.json
 /composer.lock

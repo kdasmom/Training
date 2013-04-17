@@ -2,6 +2,18 @@
  * TOP MENU
  */
 
+// Validation messages
+Ext.define('Ext.locale.en.data.validations', {
+	override: 'Ext.data.validations',
+
+    presenceMessage: 'This field is required',
+    lengthMessage: 'This field is the wrong length',
+    formatMessage: 'This field is the wrong format',
+    inclusionMessage: 'This field is not included in the list of valid values',
+    exclusionMessage: 'This field is not an valid value',
+    emailMessage: 'This field is not a valid email address'
+});
+
 // Vendor Catalog Menu
 Ext.define('NP.locale.en.view.viewport.VCMenu', {
 	override: 'NP.view.viewport.menu.VCMenu',

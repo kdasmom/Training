@@ -14,21 +14,20 @@ use NP\core\db\Adapter;
  * @author Thomas Messier
  */
 class GLAccountGateway extends AbstractGateway {
+
 	/**
-	 * @var \NP\system\ConfigService
+	 * @var \NP\system\ConfigService The config service singleton
 	 */
 	protected $configService;
 	
 	/**
-	 * @param \NP\core\db\Adapter $adapter       Database adapter object injected
-	 * @param \NP\system\ConfigService $configService ConfigService object injected
+	 * Setter function required by DI to set the config service via setter injection
+	 * @param \NP\system\ConfigService $configService
 	 */
-	public function __construct(Adapter $adapter, ConfigService $configService) {
+	public function setConfigService(\NP\system\ConfigService $configService) {
 		$this->configService = $configService;
-		
-		parent::__construct($adapter);
 	}
-	
+
 	/**
 	 * @param  int    $vendorsite_id
 	 * @param  int    $property_id

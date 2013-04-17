@@ -14,6 +14,17 @@ Ext.define('NP.lib.core.Overrides', function() {
 		useNull: true
 	});
 
+	// Add a capitalize formatting function
+	Ext.apply(Ext.util.Format, {
+		capitalize: function(val) {
+		    var re = /(^|[^\w])([a-z])/g,
+		        fn = function(m, a, b) {
+		            return a + b.toUpperCase();
+		        };
+		    return val.toLowerCase().replace(re, fn);
+		}
+	});
+
 	// Add a password validation
 	Ext.apply(Ext.data.validations, {
 		passwordMessage: 'Password needs to have at least on letter, one number, one special character, and be 6 characters or more',

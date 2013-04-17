@@ -26,36 +26,31 @@ Ext.define('NP.lib.ui.ComboBox', {
 	 * @cfg {Object}                  extraParams       Default parameters to add to the store proxy; only applies to type "autocomplete"
 	 */
 	constructor: function(cfg) {
-		Ext.apply(this, cfg);
-
-		Ext.applyIf(this, {
-		  type: 'normal'
-		});
-
-		var defaultCfg = {
+		Ext.applyIf(cfg, {
+			type          : 'normal',
 			forceSelection: true,
-			tpl           : new Ext.XTemplate('<tpl for=".">' + '<li style="height:22px;" class="x-boundlist-item" role="option">' + '{'+this.displayField+'}' + '</li></tpl>'),
+			tpl           : new Ext.XTemplate('<tpl for=".">' + '<li style="height:22px;" class="x-boundlist-item" role="option">' + '{'+cfg.displayField+'}' + '</li></tpl>'),
 			listeners     : {},
 			addBlankRecord: false
-		};
-		if (this.type == 'autocomplete') {
-			this.queryMode = 'remote';
-			
-			Ext.apply(defaultCfg, {
-				typeAhead  : false,
-				hideTrigger:true,
-				triggerAction:'query'
+		});
+
+		if (cfg.type == 'autocomplete') {
+			Ext.applyIf(cfg, {
+				queryMode    : 'remote',
+				queryParam   : 'keyword',
+				typeAhead    : false,
+				hideTrigger  : true,
+				triggerAction: 'query'
 			});
 		} else {
-			this.queryMode = 'local';
-
-			Ext.apply(defaultCfg, {
+			Ext.applyIf(cfg, {
+				queryMode          : 'local',
 				typeAhead          : true,
 				allowOnlyWhitespace: true,
 				editable           : true
 			});
 		}
-		Ext.applyIf(this, defaultCfg);
+		Ext.apply(this, cfg);
 
 		// Key events must be on
 		this.enableKeyEvents = true;

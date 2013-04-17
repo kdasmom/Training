@@ -84,17 +84,19 @@ Ext.define('NP.lib.core.Net', {
 	 * Executes an Ajax call. Aside from the documented parameters, each request can take an arbitrary number of
 	 * parameter that will be passed as arguments to the service function called
 	 *
-	 * @param  {Object} cfg                             See docs above for what can be passed as a config
-	 * @param  {Object[]/Object} cfg.requests           Request(s) that need to be made to backend services
-	 * @param  {String}          cfg.requests.service   PHP service to call
-	 * @param  {String}          cfg.requests.action    Function to call in the service
-	 * @param  {String}          [cfg.requests.store]   Name of a store to automatically load with the data that the request returns
-	 * @param  {String}          [cfg.requests.storeId] Store Id for the store specified to be loaded (only applies if "store" config is set)
-	 * @param  {Function}        [cfg.requests.success] Function to call after this request is done running if ajax request is successful
-	 * @param  {Function}        [cfg.requests.failure] Function to call after this request is done running if ajax request fails
-	 * @param  {"GET"/"POST"}    [cfg.method]           Method to use for ajax request; defaults to "GET"
-	 * @param  {Function}        [cfg.success]          Function to call after all ajax requests have run if ajax request is successful
-	 * @param  {Function}        [cfg.failure]          Function to call after all ajax requests have run if ajax request fails
+	 * @param  {Object}                         cfg                    See docs above for what can be passed as a config
+	 * @param  {Object[]/Object}                cfg.requests           Request(s) that need to be made to backend services
+	 * @param  {String}                         cfg.requests.service   PHP service to call
+	 * @param  {String}                         cfg.requests.action    Function to call in the service
+	 * @param  {String}                         [cfg.requests.store]   Name of a store to automatically load with the data that the request returns
+	 * @param  {String}                         [cfg.requests.storeId] Store Id for the store specified to be loaded (only applies if "store" config is set)
+	 * @param  {Function}                       [cfg.requests.success] Function to call after this request is done running if ajax request is successful
+	 * @param  {Function}                       [cfg.requests.failure] Function to call after this request is done running if ajax request fails
+	 * @param  {"GET"/"POST"}                   [cfg.method]           Method to use for ajax request; defaults to "GET"
+	 * @param  {Ext.Element/HTMLElement/String} [cfg.form]             The <form> Element or the id of the <form> to pull parameters from.
+	 * @param  {Boolean}                        [cfg.isUpload]         Set to true if the form object is a file upload.
+	 * @param  {Function}                       [cfg.success]          Function to call after all ajax requests have run if ajax request is successful
+	 * @param  {Function}                       [cfg.failure]          Function to call after all ajax requests have run if ajax request fails
 	 * @return {Deft.Promise}
 	 */
 	remoteCall: function(cfg) { // There can be more arguments, you can use either a config object or (success, method) as args
@@ -108,15 +110,20 @@ Ext.define('NP.lib.core.Net', {
 		
 		// These are the possible options for the cfg argument
 		Ext.applyIf(cfg, {
-			method: 'GET',
-			success: function() {}, // default global success callback to empty function
-			failure: function() {}  // default global failure callback to empty function
+			method  : 'GET',
+			isUpload: false,
+			form    : '',
+			success : function() {}, // default global success callback to empty function
+			failure : function() {}  // default global failure callback to empty function
 		});
-		
+
+		// Run the ajax request
 		Ext.Ajax.request({
-			url: 'ajax.php',
-			method: cfg.method,
-			params: {
+			url     : 'ajax.php',
+			method  : cfg.method,
+			isUpload: cfg.isUpload,
+			form    : cfg.form,
+			params  : {
 				config: Ext.JSON.encode(cfg.requests)
 			},
 			callback: function(options, success, response) {

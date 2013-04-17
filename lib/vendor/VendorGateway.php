@@ -17,26 +17,26 @@ use NP\core\db\Adapter;
  */
 class VendorGateway extends AbstractGateway {
 	/**
-	 * @var NP\system\ConfigService
-	 */
-	protected $configService;
-
-	/**
 	 * @var NP\property\PropertyService
 	 */
 	protected $propertyService;
 	
-
 	/**
 	 * @param NP\core\db\Adapter     $adapter         Database adapter object injected
-	 * @param NP\property\ConfigService   $configService   ConfigService object injected
 	 * @param NP\property\PropertyService $propertyService PropertyService object injected
 	 */
-	public function __construct(Adapter $adapter, ConfigService $configService, PropertyService $propertyService) {
-		$this->configService = $configService;
+	public function __construct(Adapter $adapter, PropertyService $propertyService) {
 		$this->propertyService = $propertyService;
 		
 		parent::__construct($adapter);
+	}
+
+	/**
+	 * Setter function required by DI to set the config service via setter injection
+	 * @param \NP\system\ConfigService $configService
+	 */
+	public function setConfigService(\NP\system\ConfigService $configService) {
+		$this->configService = $configService;
 	}
 	
 	/**
@@ -72,68 +72,17 @@ class VendorGateway extends AbstractGateway {
 	/**
 	 * Retrieves vendor records based on some criteria. This function is used by autocomplete combos
 	 *
-	 * @param  string $vendor_name           Complete or partial vendor name
-	 * @param  int    $property_id           Property ID
-	 * @param  int    $expired_vendorsite_id An vendorsite_id for an expired vendor that you want to include in the list regardless (optional); defaults to null
-	 * @return array
+	 * @param  string $keyword Keyword to use to search for a vendor
+	 * @return array           Array of vendor records
 	 */
-	public function getForComboBox($vendor_name, $property_id, $expired_vendorsite_id=null) {
-		$allowExpiredInsurance = $this->configService->get('CP.AllowExpiredInsurance', 0);
-		$integration_package_id = $this->propertyService->get($property_id);
-		$integration_package_id = $integration_package_id['integration_package_id'];
-		
+	public function getForCatalogDropDown($keyword) {
 		// Add wildcard character for vendor name to search for vendors beginning with
-		$vendor_name .= '%';
+		$keyword .= '%';
 		
-		$params = array($vendor_name);
+		$params = array('vendor_name'=>$keyword);
 		
-		$select = new VendorSelect();
-		
-		$select->columns(array('vendor_id','vendor_id_alt','vendor_name'))
-				->joinVendorsite(array('vendorsite_id'))
-				->joinAddress(array('address_line1','address_city','address_state','address_zip'));
-		
-		$where = "
-			v.vendor_name LIKE ?
-				AND vs.vendorsite_status = 'active' 
-				AND v.vendor_status = 'active' 
-				AND (
-					(
-						(v.vendor_active_startdate <= GetDate() OR v.vendor_active_startdate IS NULL)
-						AND (v.vendor_active_enddate > GetDate() OR v.vendor_active_enddate IS NULL)
-					)
-		";
-		
-		if ($expired_vendorsite_id != null) {
-			$where .= " OR vs.vendorsite_id = ?";
-			$params[] = $expired_vendorsite_id;
-		}
-		
-		$where .= "
-			)
-			AND v.integration_package_id = ?
-		";
-		$params[] = $integration_package_id;
-		
-		if ($allowExpiredInsurance == 0) {
-			$where .= "
-				AND v.vendor_id NOT IN (
-					SELECT DISTINCT i.tablekey_id
-					FROM INSURANCE i
-						INNER JOIN LINK_INSURANCE_PROPERTY lip ON lip.insurance_id = i.insurance_id
-					WHERE i.insurancetype_id IS NOT NULL
-						AND i.table_name = 'vendor'
-						AND i.insurance_expdatetm <= GETDATE()
-						AND lip.property_id = ?
-				)
-			";
-			$params[] = $property_id;
-		}
-		
-		$select->where($where)
-				->order('v.vendor_name ASC')
-				->limit(50)
-				->offset(0);
+		$select = new sql\VendorSelect();
+		$select->populateForDropdown();
 		
 		return $this->adapter->query($select, $params);
 	}

@@ -16,19 +16,25 @@ Ext.define('NP.lib.ui.BoundForm', {
 	 * @cfg {String}            bind.service (required) The service to call to get data to populate the form
 	 */
 	/**
-	 * @cfg {String}            bind.action (required) The service action to call to get data to populate the form
+	 * @cfg {String}            bind.action (required)  The service action to call to get data to populate the form
 	 */
 	/**
-	 * @cfg {String[]/Object[]} bind.models (required) Model(s) to bind the form against; this can be specified as a single item or an array of item; each item can be just a string with the model class (omit NP.model part) or an object if you need to specify a prefix (see docs)
+	 * @cfg {String[]/Object[]} bind.models (required)  Model(s) to bind the form against; this can be specified as a single item or an array of item; each item can be just a string with the model class (omit NP.model part) or an object if you need to specify a prefix (see docs)
 	 */
 	/**
-	 * @cfg {String}            bind.models.class      The class path of the model to bind
+	 * @cfg {String}            bind.models.class       The class path of the model to bind
 	 */
 	/**
-	 * @cfg {String}            bind.models.prefix     A prefix used by the form field that when added to a model field name makes it match the form field name
+	 * @cfg {String}            bind.models.prefix      A prefix used by the form field that when added to a model field name makes it match the form field name
 	 */
 	/**
-	 * @cfg {String}            bind.extraParams       Extra parameters to pass to the service action
+	 * @cfg {Boolean}           bind.hasUpload=false    Whether or not the form uploads files
+	 */
+	/**
+	 * @cfg {String}            bind.extraParams        Extra parameters to pass to the service action
+	 */
+	/**
+	 * @cfg {String}            bind.evt="render"       Event that you want to use to trigger the binding of the form; usually "render" or "show"
 	 */
 	initComponent: function() {
 		var that = this;
@@ -41,37 +47,46 @@ Ext.define('NP.lib.ui.BoundForm', {
 
 		// Defaults
 		Ext.applyIf(this.bind, {
+			evt        : 'render',
 			extraParams: {}
 		});
 
 		// Check if models is an array or not; if it's not an array, convert it to one
 		if ((this.bind.models instanceof Array) == false) this.bind.models = [this.bind.models];
 
-		// Do the data binding once the form has been shown
-		this.on('show', function() {
-			// Create a loading mask
-			var mask = new Ext.LoadMask(that);
+		// Initialize models
+		that.bind.modelPointer = {};
+		Ext.each(that.bind.models, function(model, idx) {
+			// If model is not an object (just a string), make it an object for consistency
+			if ((model instanceof Object) == false) {
+				model = { class: model, prefix: '' };
+				that.bind.models[idx] = model;
+			}
+			// Create an empty model
+			that.bind.models[idx].instance = Ext.create('NP.model.' + model.class);
+			that.bind.modelPointer[model.class] = idx;
+		});
 
-			// Build the request object 
-			var req = {
-				service    : this.bind.service,
-				action     : this.bind.action,
-				success    : function(result, deferred) {
-					// Loop through bound models
-					Ext.each(that.bind.models, function(model, idx) {
-						// If model is not an object (just a string), make it an object for consistency
-						if ((model instanceof Object) == false) {
-							model = { class: model, prefix: '' };
-							that.bind.models[idx] = model;
-						}
-						
-						// If there's no prefix, we can just create a model using the constructor
-						if (model.prefix == '') {
-							var modelObj = Ext.create('NP.model.' + model.class, result);
-						// Otherwise, we need to populate the model one field at a time
-						} else {
-							// Create an empty model
-							var modelObj = Ext.create('NP.model.' + model.class);
+		// Only run ajax event if service/action has been provided, otherwise just bind the models
+		if (!this.bind.service) {
+			// Copy the model data to the form fields
+			this.updateBoundFields();
+		} else {
+			// Do the data binding once the form has been shown
+			this.on(this.bind.evt, function() {
+				// Create a loading mask
+				var mask = new Ext.LoadMask(that);
+
+				// Build the request object 
+				var req = {
+					service    : this.bind.service,
+					action     : this.bind.action,
+					success    : function(result, deferred) {
+						// Loop through bound models
+						Ext.each(that.bind.models, function(model, idx) {
+							// Get our model instance
+							modelObj = that.bind.models[idx].instance;
+
 							// Loop through all the model fields
 							modelObj.fields.each(function(col) {
 								// Field name must include the prefix
@@ -83,32 +98,30 @@ Ext.define('NP.lib.ui.BoundForm', {
 									modelObj.set(col.name, result[fieldName]);
 								}
 							});
-						}
-						// Save the model instance for use in other functions
-						that.bind.models[idx].instance = modelObj;
-					});
-					
-					// Copy the model data to the form fields
-					that.updateBoundFields();
+						});
+						
+						// Copy the model data to the form fields
+						that.updateBoundFields();
 
-					// Fire the dataloaded even which signals the data for the bound form is done loading
-					that.fireEvent('dataloaded', that, result);
+						// Fire the dataloaded even which signals the data for the bound form is done loading
+						that.fireEvent('dataloaded', that, result);
 
-					// Remove the loading mask
-					mask.destroy();
-				}
-			};
-			// Add extra parameters to the request if any
-			Ext.applyIf(req, this.bind.extraParams);
+						// Remove the loading mask
+						mask.destroy();
+					}
+				};
+				// Add extra parameters to the request if any
+				Ext.applyIf(req, this.bind.extraParams);
 
-			// Show the mask
-			mask.show();
+				// Show the mask
+				mask.show();
 
-			// Run the ajax request
-			NP.lib.core.Net.remoteCall({
-				requests: req
+				// Run the ajax request
+				NP.lib.core.Net.remoteCall({
+					requests: req
+				});
 			});
-		});
+		}
 	},
 
 	/**
@@ -147,10 +160,22 @@ Ext.define('NP.lib.ui.BoundForm', {
 			model.instance.fields.each(function(col) {
 				var field = that.findField(model.prefix + col.name);
 				if (field) {
-					model.instance.set(col.name, field.getValue());
+					var val = (field.getGroupValue) ? field.getGroupValue() : field.getValue();
+					model.instance.set(col.name, val);
 				}
 			});
 		});
+	},
+
+	/**
+	 * Returns a specific model
+	 * @param  {String} className The model class to retrieve (same way you declared it in the bind config option)
+	 * @return {Ext.data.Model}
+	 */
+	getModel: function(className) {
+		var idx = this.bind.modelPointer[className];
+
+		return this.bind.models[idx].instance;
 	},
 
 	/**
@@ -207,8 +232,8 @@ Ext.define('NP.lib.ui.BoundForm', {
 	 * @param  {Object}  options
 	 * @param  {String}  options.service             The service to submit the form to
 	 * @param  {String}  options.action              The service action to submit the form to
-	 * @param  {String}  [options.extraFields]       Extra fields to send that may not be a part of any bound models
-	 * @param  {String}  [options.extraParams]       Extra parameters to pass to the service action
+	 * @param  {Object}  [options.extraFields]       Extra fields to send that may not be a part of any bound models
+	 * @param  {Object}  [options.extraParams]       Extra parameters to pass to the service action
 	 * @param  {Boolean} [options.useMask=true]      Whether or not to mask the form when saving
 	 * @param  {String}  [options.maskText="Saving"] The text for the mask (only applies if useMask is true)
 	 * @param  {String}  [options.success]           The callback if submission is successful
@@ -227,14 +252,24 @@ Ext.define('NP.lib.ui.BoundForm', {
 			failure    : Ext.emptyFn
 		});
 
+		Ext.apply(options, {
+			isUpload: false,
+			form    : ''
+		});
+
 		// Setup the data object that will get sent with the ajax request
 		var data = options.extraParams;
 
 		// Add any extra fields specified to the data object
+		var fileFields = [];
 		Ext.Object.each(options.extraFields, function(key, val) {
 			var field = that.findField(val);
 			if (field) {
-				data[key] = field.getValue();
+				if (field.getXType() == 'filefield') {
+					fileFields.push(field);
+				} else {
+					data[key] = field.getValue();
+				}
 			}
 		});
 		
@@ -251,14 +286,27 @@ Ext.define('NP.lib.ui.BoundForm', {
 			mask.show();
 		}
 
+		// If dealing with a file upload, add a hiden form element in the body of the HTML document
+		if (fileFields.length) {
+			options.isUpload = true;
+			var time = new Date().getTime();
+			options.form = 'fileupload-form-' + time;
+			var formEl = Ext.DomHelper.append(Ext.getBody(), '<form id="'+options.form+'" method="POST" enctype="multipart/form-data" class="x-hide-display"></form>');
+			Ext.each(fileFields, function(fileField) {
+				formEl.appendChild(fileField.extractFileInput());
+			});
+		}
+
 		// Run ajax request to send the data
 		return NP.lib.core.Net.remoteCall({
 			method  : 'POST',
+			isUpload: options.isUpload,
+			form    : options.form,
 			requests: {
-				service: options.service,
-				action : options.action,
-				data   : data,
-				success: function(result, deferred) {
+				service : options.service,
+				action  : options.action,
+				data    : data,
+				success : function(result, deferred) {
 					// If save is successful, run success callback
 					if (result.success) {
 						options.success(result, deferred);
@@ -283,6 +331,11 @@ Ext.define('NP.lib.ui.BoundForm', {
 					// If mask option is on, remove the mask
 					if (options.useMask) {
 						mask.destroy();
+					}
+
+					// If there was a file upload, remove the form element
+					if (fileFields.length) {
+						Ext.removeNode(formEl);
 					}
 				},
 				failure: function() {

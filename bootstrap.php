@@ -25,7 +25,4 @@ $autoLoader->register();
 // Load DI configuration 
 require_once("config/di_config.php"); // Keep DI configs in a separate file to keep this one clean
 
-// Retrieve the Config service every time to make sure constructor runs
-$di['ConfigService'];
-
 ?>

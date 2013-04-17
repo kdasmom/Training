@@ -148,9 +148,10 @@ Ext.define('NP.lib.core.Security', function() {
 								delegation_status: 1,
 								success: function(store) {
 									var currentUser = that.getDelegatedToUser();
+
 						    		store.insert(0, {
-										userprofile_username: currentUser.userprofile_username,
-										userprofile_id      : currentUser.userprofile_id
+										userprofile_username: currentUser.get('userprofile_username'),
+										userprofile_id      : currentUser.get('userprofile_id')
 						    		});
 								}
 							}

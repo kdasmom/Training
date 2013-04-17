@@ -80,17 +80,20 @@ class Where implements SQLElement {
 		if (!in_array($logicalOperator, array(self::OR_OP, self::AND_OP))) {
 			throw new \NP\core\Exception('The $logicalOperator argument must be equal to "' . self::AND_OP . '" OR "' . self::OR_OP . '".');
 		}
+		// Store current Where object in a temporary variable
+		$previousWhere = $this->currentWhere;
+
 		// Create a new Where object for the nested group
 		$this->currentWhere = new Where(null, $logicalOperator);
 
-		// Point previousWhere to the current object
-		$this->currentWhere->previousWhere = $this;
+		// Add the new Where object as a condition for the one it's nested into
+		$previousWhere->predicates[] = $this->currentWhere;
 
-		// Add the new Where object as a condition
-		$this->predicates[] = $this->currentWhere;
+		// Add a pointer to the parent Where object
+		$this->currentWhere->previousWhere = $previousWhere;
 
 		// Return the new Where object so that all subsequent operations are done against it
-		return $this->currentWhere;
+		return $this;
 	}
 
 	/**
@@ -103,7 +106,7 @@ class Where implements SQLElement {
 		$this->currentWhere = $this->currentWhere->previousWhere;
 
 		// Return Where object so that all subsequent operations are done against it
-		return $this->currentWhere;
+		return $this;
 	}
 
 	/**
@@ -124,7 +127,7 @@ class Where implements SQLElement {
             default:
             	throw new \NP\core\Exception("You can only call and() or or(). No other magic methods are supported.");
         }
-        return $this->currentWhere;
+        return $this;
     }
 
     /**
@@ -147,7 +150,7 @@ class Where implements SQLElement {
 		}
 		$this->currentWhere->predicates[] = array('operator'=>$operator, 'left'=>$left, 'right'=>$right, 'right2'=>$right2);
 		
-		return $this->currentWhere;
+		return $this;
 	}
 
 	/**
@@ -159,7 +162,7 @@ class Where implements SQLElement {
 	public function expression($where) {
 		$this->currentWhere->predicates[] = new Expression($where);
 
-		return $this->currentWhere;
+		return $this;
 	}
 
 	/**
@@ -170,7 +173,7 @@ class Where implements SQLElement {
      * @return \NP\core\db\Where         The current Where object
 	 */
 	public function equals($left, $right) {
-		return $this->currentWhere->op('=', $left, $right);
+		return $this->op('=', $left, $right);
 	}
 
 	/**
@@ -181,7 +184,7 @@ class Where implements SQLElement {
      * @return \NP\core\db\Where         The current Where object
 	 */
 	public function notEquals($left, $right) {
-		return $this->currentWhere->op('<>', $left, $right);
+		return $this->op('<>', $left, $right);
 	}
 
 	/**
@@ -192,7 +195,7 @@ class Where implements SQLElement {
      * @return \NP\core\db\Where         The current Where object
 	 */
 	public function in($left, $right) {
-		return $this->currentWhere->op('IN', $left, $right);
+		return $this->op('IN', $left, $right);
 	}
 
 	/**
@@ -203,7 +206,7 @@ class Where implements SQLElement {
      * @return \NP\core\db\Where         The current Where object
 	 */
 	public function notIn($left, $right) {
-		return $this->currentWhere->op('NOT IN', $left, $right);
+		return $this->op('NOT IN', $left, $right);
 	}
 
 	/**
@@ -214,7 +217,7 @@ class Where implements SQLElement {
      * @return \NP\core\db\Where         The current Where object
 	 */
 	public function like($left, $right) {
-		return $this->currentWhere->op('LIKE', $left, $right);
+		return $this->op('LIKE', $left, $right);
 	}
 
 	/**
@@ -226,7 +229,7 @@ class Where implements SQLElement {
      * @return \NP\core\db\Where          The current Where object
 	 */
 	public function between($left, $right, $right2) {
-		return $this->currentWhere->op('BETWEEN', $left, $right, $right2);
+		return $this->op('BETWEEN', $left, $right, $right2);
 	}
 
 	/**
@@ -237,7 +240,7 @@ class Where implements SQLElement {
      * @return \NP\core\db\Where         The current Where object
 	 */
 	public function greaterThan($left, $right) {
-		return $this->currentWhere->op('>', $left, $right);
+		return $this->op('>', $left, $right);
 	}
 
 	/**
@@ -248,7 +251,7 @@ class Where implements SQLElement {
      * @return \NP\core\db\Where         The current Where object
 	 */
 	public function greaterThanOrEqual($left, $right) {
-		return $this->currentWhere->op('>=', $left, $right);
+		return $this->op('>=', $left, $right);
 	}
 
 	/**
@@ -259,7 +262,7 @@ class Where implements SQLElement {
      * @return \NP\core\db\Where         The current Where object
 	 */
 	public function lessThan($left, $right) {
-		return $this->currentWhere->op('<', $left, $right);
+		return $this->op('<', $left, $right);
 	}
 
 	/**
@@ -270,7 +273,7 @@ class Where implements SQLElement {
      * @return \NP\core\db\Where         The current Where object
 	 */
 	public function lessThanOrEqual($left, $right) {
-		return $this->currentWhere->op('<=', $left, $right);
+		return $this->op('<=', $left, $right);
 	}
 
 	/**
@@ -280,7 +283,7 @@ class Where implements SQLElement {
      * @return \NP\core\db\Where           The current Where object
 	 */
 	public function exists($select) {
-		return $this->currentWhere->op('exists', $select);
+		return $this->op('exists', $select);
 	}
 
 	/**
@@ -290,7 +293,17 @@ class Where implements SQLElement {
      * @return \NP\core\db\Where        The current Where object
 	 */
 	public function isNull($left) {
-		return $this->currentWhere->op('null', $left);
+		return $this->op('null', $left);
+	}
+
+	/**
+	 * Shortcut for op('notnull', $left)
+	 *
+	 * @param  string|SQLElement $left  Left side of the comparison
+     * @return \NP\core\db\Where        The current Where object
+	 */
+	public function isNotNull($left) {
+		return $this->op('notnull', $left);
 	}
 
 	/**
@@ -299,61 +312,68 @@ class Where implements SQLElement {
 	 * @return string
 	 */
 	public function toString() {
-		$sql = '(';
-		$collection = array();
+		if (!count($this->predicates)) {
+			return '';
+		} else {
+			$sql = '(';
+			$collection = array();
 
-		// Loop through every condition saved
-		foreach($this->predicates as $predicate) {
-			// If the condition is a Where object, it's because we have a nested condition
-			if ($predicate instanceOf Where) {
-				$collection[] = $predicate->toString();
-			// Otherwise, we have a regular condition within this nested group
-			} else {
-				// If the condition is an Expression object, just convert it to a string
-				if ($predicate instanceOf Expression) {
+			// Loop through every condition saved
+			foreach($this->predicates as $predicate) {
+				// If the condition is a Where object, it's because we have a nested condition
+				if ($predicate instanceOf Where) {
 					$collection[] = $predicate->toString();
-				// Otherwise, we have an operator condition
+				// Otherwise, we have a regular condition within this nested group
 				} else {
-					$left = $predicate['left']->toString();
-					// If the left side of our condition is a Select object, it's a subquery 
-					// that we need to wrap in parentheses
-					if ($predicate['left'] instanceOf Select) {
-						$left = "({$left})";
-					}
-					// Only work on the $right predicate if it's not null (it's null for exists operator, for example)
-					if ($predicate['right'] !== null) {
-						$right = $predicate['right']->toString();
-						// If the right side of our condition is a Select object, it's a subquery 
-						// that we need to wrap in parentheses
-						if ($predicate['right'] instanceOf Select || in_array($predicate['operator'], array('IN','NOT IN'))) {
-							$right = "({$right})";
-						}
-					}
-					// If we're using a between operator, run special logic because it has two items on the right side
-					if ($predicate['operator'] == 'BETWEEN') {
-						$right2 = $predicate['right2']->toString();
-						if ($predicate['right2'] instanceOf Select) {
-							$right2 = "({$right2})";
-						}
-						$collection[] = $left . " BETWEEN " . $right . " AND " . $right2;
-					// If we're running EXISTS, use special logic because it has no right side
-					} else if ($predicate['operator'] == 'EXISTS') {
-						$collection[] = "EXISTS (" . $left . ")";
-					// If we're running NULL, use special logic because it has no right side
-					} else if ($predicate['operator'] == 'NULL') {
-						$collection[] = "{$left} IS NULL";
-					// Otherwise, run the same thing for all other operators
+					// If the condition is an Expression object, just convert it to a string
+					if ($predicate instanceOf Expression) {
+						$collection[] = $predicate->toString();
+					// Otherwise, we have an operator condition
 					} else {
-						$collection[] = $left . " {$predicate['operator']} " . $right;
+						$left = $predicate['left']->toString();
+						// If the left side of our condition is a Select object, it's a subquery 
+						// that we need to wrap in parentheses
+						if ($predicate['left'] instanceOf Select) {
+							$left = "({$left})";
+						}
+						// Only work on the $right predicate if it's not null (it's null for exists operator, for example)
+						if ($predicate['right'] !== null) {
+							$right = $predicate['right']->toString();
+							// If the right side of our condition is a Select object, it's a subquery 
+							// that we need to wrap in parentheses
+							if ($predicate['right'] instanceOf Select || in_array($predicate['operator'], array('IN','NOT IN'))) {
+								$right = "({$right})";
+							}
+						}
+						// If we're using a between operator, run special logic because it has two items on the right side
+						if ($predicate['operator'] == 'BETWEEN') {
+							$right2 = $predicate['right2']->toString();
+							if ($predicate['right2'] instanceOf Select) {
+								$right2 = "({$right2})";
+							}
+							$collection[] = $left . " BETWEEN " . $right . " AND " . $right2;
+						// If we're running EXISTS, use special logic because it has no right side
+						} else if ($predicate['operator'] == 'EXISTS') {
+							$collection[] = "EXISTS (" . $left . ")";
+						// If we're running NULL, use special logic because it has no right side
+						} else if ($predicate['operator'] == 'NULL') {
+							$collection[] = "{$left} IS NULL";
+						// If we're running NOTNULL, use special logic because it has no right side
+						} else if ($predicate['operator'] == 'NOTNULL') {
+							$collection[] = "{$left} IS NOT NULL";
+						// Otherwise, run the same thing for all other operators
+						} else {
+							$collection[] = $left . " {$predicate['operator']} " . $right;
+						}
 					}
 				}
 			}
-		}
-		// Join all predicates using the logical operator for this Where object
-		$sql .= implode(" {$this->logicalOperator} ", $collection);
-		$sql .= ')';
+			// Join all predicates using the logical operator for this Where object
+			$sql .= implode(" {$this->logicalOperator} ", $collection);
+			$sql .= ')';
 
-		return $sql;
+			return $sql;
+		}
 	}
 }
 ?>

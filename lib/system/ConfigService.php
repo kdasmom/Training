@@ -14,6 +14,11 @@ use Zend\Cache\Storage\Adapter\WinCache;
  */
 class ConfigService extends AbstractService {
 	/**
+	 * @var array
+	 */
+	protected $config;
+
+	/**
 	 * @var Zend\Cache\Storage\Adapter\WinCache
 	 */
 	protected $cache;
@@ -49,6 +54,7 @@ class ConfigService extends AbstractService {
 	protected $cacheName;
 	
 	/**
+	 * @param array                                     $config                  Array with configuration options for the app
 	 * @param Zend\Cache\Storage\Adapter\WinCache       $cache                   WinCache object injected
 	 * @param \NP\system\SiteService                    $siteService             SiteService object injected
 	 * @param \NP\system\ConfigsysGateway               $configsysGateway        ConfigsysGateway object injected
@@ -57,9 +63,10 @@ class ConfigService extends AbstractService {
 	 * @param \NP\system\LookupcodeGateway              $lookupcodeGateway       LookupcodeGateway object injected
 	 * @param boolean                                   $reloadCache             Whether to reload the cache at instantiation time (optional); defaults to false
 	 */
-	public function __construct(WinCache $cache, SiteService $siteService, ConfigsysGateway $configsysGateway, 
+	public function __construct($config, WinCache $cache, SiteService $siteService, ConfigsysGateway $configsysGateway, 
 								PNUniversalFieldGateway $pnUniversalFieldGateway,  IntegrationRequirementsGateway $intReqGateway, 
 								LookupcodeGateway $lookupcodeGateway, $reloadCache=false) {
+		$this->config = $config;
 		$this->cache = $cache;
 		$this->siteService = $siteService;
 		$this->configsysGateway = $configsysGateway;
@@ -319,6 +326,32 @@ class ConfigService extends AbstractService {
 
 		// Make this the default translator for all validations
 		\Zend\Validator\AbstractValidator::setDefaultTranslator($translator);
+	}
+
+	/**
+	 * Returns a value from the $config array
+	 *
+	 * @param  string $key The name of the config option to retrieve
+	 * @return mixed       The value of the config option
+	 */
+	public function getConfig($key) {
+		return $this->config[$key];
+	}
+
+	/**
+	 * Shortcut for getConfig('appRoot')
+	 */
+	public function getAppRoot() {
+		return $this->getConfig('appRoot');
+	}
+
+	/**
+	 * Gets the name of the client
+	 *
+	 * @return string The name of the client's app
+	 */
+	public function getAppName() {
+		return $this->appName;
 	}
 }
 

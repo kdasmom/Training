@@ -23,7 +23,7 @@ Ext.define('NP.lib.data.Store', {
 		Ext.apply(this, cfg);
 		
 		if (this.service) {
-			Ext.applyIf(this, {
+			Ext.apply(this, {
 	    		proxy: {
 					type: 'ajax',
 					url : 'ajax.php',
@@ -39,33 +39,36 @@ Ext.define('NP.lib.data.Store', {
 		    }
 
 		    if (this.paging === true) {
-		    	Ext.applyIf(this, {
+		    	Ext.apply(this, {
 		    		remoteSort: true
 		    	});
 
-		    	Ext.applyIf(this.proxy, {
+		    	Ext.apply(this.proxy, {
 					limitParam: 'pageSize',
 					pageParam : 'page',
-					sortParam : 'sort',
 					reader    : {
 						type         : 'json',
 						root         : 'data',
 						totalProperty: 'total'
-					},
-					encodeSorters: function(sorters) {
-						var length   = sorters.length,
-						sortStrs = [],
-						sorter, i;
-						
-						for (i = 0; i < length; i++) {
-							sorter = sorters[i];
-							sortStrs[i] = sorter.property + ' ' + sorter.direction;
-						}
-						
-						return sortStrs.join(",");
 					}
 		    	});
 		    }
+
+		    Ext.apply(this.proxy, {
+				sortParam : 'sort',
+				encodeSorters: function(sorters) {
+					var length   = sorters.length,
+					sortStrs = [],
+					sorter, i;
+					
+					for (i = 0; i < length; i++) {
+						sorter = sorters[i];
+						sortStrs[i] = sorter.property + ' ' + sorter.direction;
+					}
+					
+					return sortStrs.join(",");
+				}
+	    	});
 		}
 		
     	this.callParent(arguments);

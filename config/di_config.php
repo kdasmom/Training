@@ -13,6 +13,7 @@ $di = new Pimple();
 // DI Parameters
 $di['reloadCache'] = $reloadCache;
 $di['configPath'] = $__CONFIG['appRoot'] . 'config\\site_config.xml';
+$di['config'] = $__CONFIG;
 
 $di['logPath'] = $di->share(function($di) use ($__CONFIG) {
 	return $__CONFIG['logPath'].'\\'.$di['SiteService']->getAppName();
@@ -33,13 +34,20 @@ $di['sessionDuration'] = $__CONFIG['sessionDuration'];
 $diDefinition = array(
 	'Zend\Cache\Storage\Adapter\WinCache',
 	'NP\core\db\Adapter'                       => array('dbServer','dbName','dbUsername','dbPassword'),
+	'NP\catalog\LinkVcitemcatGlGateway'        => array('Adapter'),
+	'NP\catalog\LinkVcPropertyGateway'         => array('Adapter'),
+	'NP\catalog\LinkVcVccatGateway'            => array('Adapter'),
+	'NP\catalog\LinkVcVendorGateway'           => array('Adapter'),
+	'NP\catalog\VcGateway'                     => array('Adapter'),
+	'NP\catalog\VcItemGateway'                 => array('Adapter'),
+	'NP\catalog\CatalogService'                => array('VcGateway','LinkVcitemcatGlGateway','LinkVcPropertyGateway','LinkVcVccatGateway','LinkVcVendorGateway','VcItemGateway','VendorGateway'),
 	'NP\contact\AddressGateway'                => array('Adapter'),
 	'NP\contact\EmailGateway'                  => array('Adapter'),
 	'NP\contact\PersonGateway'                 => array('Adapter'),
 	'NP\contact\PhoneGateway'                  => array('Adapter'),
-	'NP\gl\GLAccountGateway'                   => array('Adapter','ConfigService'),
+	'NP\gl\GLAccountGateway'                   => array('Adapter'),
 	'NP\gl\GLService'                          => array('GLAccountGateway'),
-	'NP\invoice\InvoiceGateway'                => array('Adapter','ConfigService','RoleGateway'),
+	'NP\invoice\InvoiceGateway'                => array('Adapter','RoleGateway'),
 	'NP\invoice\InvoiceItemGateway'            => array('Adapter'),
 	'NP\invoice\InvoiceService'                => array('SecurityService','InvoiceGateway','InvoiceItemGateway'),
 	'NP\invoice\InvoiceServiceInterceptor',
@@ -50,7 +58,7 @@ $diDefinition = array(
 	'NP\property\UnitGateway'                  => array('Adapter'),
 	'NP\security\SecurityService'              => array('SessionService','UserprofileGateway','RoleGateway','UserprofileLogonGateway','ModulePrivGateway'),
 	'NP\system\ConfigsysGateway'               => array('Adapter'),
-	'NP\system\ConfigService'                  => array('WinCache','SiteService','ConfigsysGateway','PNUniversalFieldGateway','IntegrationRequirementsGateway','LookupcodeGateway','reloadCache'),
+	'NP\system\ConfigService'                  => array('config','WinCache','SiteService','ConfigsysGateway','PNUniversalFieldGateway','IntegrationRequirementsGateway','LookupcodeGateway','reloadCache'),
 	'NP\system\PNUniversalFieldGateway'        => array('Adapter'),
 	'NP\system\IntegrationRequirementsGateway' => array('Adapter'),
 	'NP\system\LookupcodeGateway'              => array('Adapter'),
@@ -69,7 +77,7 @@ $diDefinition = array(
 	'NP\user\UserSettingGateway'               => array('Adapter'),
 	'NP\user\UserService'                      => array('SecurityService','DelegationGateway','UserSettingGateway','UserprofileGateway','RoleGateway','PersonGateway','AddressGateway','EmailGateway','PhoneGateway','PropertyUserprofileGateway'),
 	'NP\user\UserprofileLogonGateway'          => array('Adapter'),
-	'NP\vendor\VendorGateway'                  => array('Adapter','ConfigService','PropertyService'),
+	'NP\vendor\VendorGateway'                  => array('Adapter','PropertyService'),
 	'NP\vendor\VendorService'                  => array('VendorGateway'),
 );
 
@@ -99,6 +107,11 @@ foreach($diDefinition as $classPath=>$dependencies) {
 		// Inject the Logging service via setter injection to all services and gateways
 		if ($r->hasMethod('setLoggingService')) {
 			$obj->setLoggingService($di['LoggingService']);
+		}
+
+		// Inject the Config service via setter injection to all services and gateways
+		if ($r->hasMethod('setConfigService')) {
+			$obj->setConfigService($di['ConfigService']);
 		}
 
 		// Inject the Security service via setter injection to all interceptors

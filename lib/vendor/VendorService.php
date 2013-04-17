@@ -24,14 +24,13 @@ class VendorService extends AbstractService {
 	}
 	
 	/**
-	 * Retrieves vendor records based on some criteria. This function is used by autocomplete combos
+	 * Retrieves vendor records for the vendor autocomplete when creating catalogs
 	 *
-	 * @param  string $vendor_name           Complete or partial vendor name
-	 * @param  int    $property_id           Property ID
-	 * @return array                         Array of vendor records
+	 * @param  string $keyword Keyword to use to search for a vendor
+	 * @return array           Array of vendor records
 	 */
-	public function getForComboBox($vendor_name, $property_id) {
-		return $this->vendorGateway->getForComboBox($vendor_name, $property_id);
+	public function getForCatalogDropDown($keyword) {
+		return $this->vendorGateway->getForCatalogDropDown($keyword);
 	}
 	
 }

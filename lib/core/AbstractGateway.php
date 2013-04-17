@@ -62,7 +62,7 @@ abstract class AbstractGateway {
 	}
 	
 	/**
-	 * Setter function required by Zend Di to set the logging service via setter injection
+	 * Setter function required by DI to set the logging service via setter injection
 	 * @param \NP\system\LoggingService $loggingService
 	 */
 	public function setLoggingService(\NP\system\LoggingService $loggingService) {
@@ -152,6 +152,10 @@ abstract class AbstractGateway {
 			$set = $data;
 		}
 		
+		// If primary key is in the set remove it
+		if (array_key_exists($this->pk, $set)) {
+			unset($set[$this->pk]);
+		}
 		$values = $this->convertFieldsToBindParams($set);
 
 		$insert = new db\Insert($this->table, $values);

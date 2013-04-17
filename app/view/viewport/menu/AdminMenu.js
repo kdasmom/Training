@@ -88,6 +88,7 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 		// Catalog Maintenance
 		if ( NP.lib.core.Security.hasPermission(6066) && NP.lib.core.Config.getSetting('VC_isOn') == 1 ) {
 			this.menu.items.push({
+				itemId: 'catalogMaintenanceMenuBtn',
 				text: this.catalogText
 			});
 		}

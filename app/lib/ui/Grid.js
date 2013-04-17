@@ -16,11 +16,15 @@ Ext.define('NP.lib.ui.Grid', {
 	initComponent: function() {
 		if (this.paging === true) {
 			Ext.applyIf(this, {
+				pagingToolbarButtons: []
+			});
+			Ext.applyIf(this, {
 				dockedItems: [{
 					xtype: 'pagingtoolbar',
 					dock: 'top',
 					store: this.store,
-					displayInfo: true
+					displayInfo: true,
+					items: this.pagingToolbarButtons
 				}]
 	    	});
 		}

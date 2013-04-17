@@ -22,25 +22,31 @@ use NP\core\db\Expression;
 class InvoiceGateway extends AbstractGateway {
 	
 	/**
-	 * @var \NP\system\ConfigService
-	 */
-	protected $configService;
-	
-	/**
 	 * @var \NP\user\RoleGateway
 	 */
 	protected $roleGateway;
 
 	/**
+	 * @var \NP\system\ConfigService The config service singleton
+	 */
+	protected $configService;
+
+	/**
 	 * @param \NP\core\db\Adapter          $adapter         Database adapter object injected
-	 * @param \NP\property\PropertyGateway $propertyGateway PropertyGateway object injected
 	 * @param \NP\user\RoleGateway         $roleGateway     UserService object injected
 	 */
-	public function __construct(Adapter $adapter, ConfigService $configService, RoleGateway $roleGateway) {
-		$this->configService  = $configService;
+	public function __construct(Adapter $adapter, RoleGateway $roleGateway) {
 		$this->roleGateway      = $roleGateway;
 		
 		parent::__construct($adapter);
+	}
+	
+	/**
+	 * Setter function required by DI to set the config service via setter injection
+	 * @param \NP\system\ConfigService $configService
+	 */
+	public function setConfigService(\NP\system\ConfigService $configService) {
+		$this->configService = $configService;
 	}
 	
 	/**
