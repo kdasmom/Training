@@ -3,9 +3,9 @@
  *
  * @author Thomas Messier
  */
-Ext.define('NP.view.catalog.gridcol.Status', {
+Ext.define('NP.view.catalog.gridcol.VcStatus', {
 	extend: 'Ext.grid.column.Column',
-	alias: 'widget.catalog.gridcol.status',
+	alias: 'widget.catalog.gridcol.vcstatus',
 
 	text     : 'Status', 
 	dataIndex: 'vc_status',

@@ -41,12 +41,24 @@ class FileUpload {
 		}
 
 		$this->destination = $destination;
+
+		if (!array_key_exists('required', $options)) {
+			$options['required'] = true;
+		}
 		$this->options = $options;
 
 		// Store uploaded file parameters
 		foreach($_FILES[$fieldName] as $key=>$value) {
 			$this->file[$key] = $value;
 		}
+	}
+
+	/**
+	 * Returns the file object for this file upload
+	 * @return array
+	 */
+	public function getFile() {
+		return $this->file;
 	}
 
 	/**
@@ -66,7 +78,9 @@ class FileUpload {
 				$this->errors[] = 'File was not uploaded completely.';
 				break;
 			case UPLOAD_ERR_NO_FILE:
-				$this->errors[] = 'No file was uploaded.';
+				if ($this->options['required']) {
+					$this->errors[] = 'You must select a file to upload.';
+				}
 				break;
 			case UPLOAD_ERR_NO_TMP_DIR:
 				$this->errors[] = 'Missing a temporary folder.';
@@ -80,9 +94,7 @@ class FileUpload {
 		}
 
 		if (!count($this->errors)) {
-			if ($this->file['name'] == '') {
-				$this->errors[] = 'No file was uploaded.';
-			} else {
+			if ($this->file['name'] != '') {
 				if ( array_key_exists('allowedTypes', $this->options) && !in_array($this->file['type'], $this->options['allowedTypes']) ) {
 					$this->errors[] = "Files of type {$this->file['type']} are not allowed.";
 				}
@@ -103,14 +115,11 @@ class FileUpload {
 	 */
 	public function upload() {
 		$success = $this->isValid();
-		if ($success) {
+		if ($success && $this->file['name'] != '') {
 			// If the fileName option is specified, use it
-			if (array_key_exists('fileName', $this->options)) {
-				$filePath = $this->destination . '/' . $this->options['fileName'];
-			// Otherwise, the name of the uploaded file will be preserved
-			} else {
-				$filePath = $this->destination . '/' . $this->file['name'];
-			}
+			$filePath = (array_key_exists('fileName', $this->options)) ? $this->options['fileName'] : $this->file['name'];
+			$this->file['uploaded_name'] = $filePath;
+			$filePath = $this->destination . '/' . $filePath;
 
 			// If overwrite option is set to false, we need to make the file name unique
 			if (file_exists($filePath) && array_key_exists('overwrite', $this->options) && !$this->options['overwrite']) {
@@ -119,10 +128,11 @@ class FileUpload {
 				while(file_exists($filePath)){
 					$fileName = explode('.', $this->file['name']);
 					$fileExt = $fileName[1];
-					$fileName = $fileName[0];
-				    $filePath = "{$this->destination}/{$fileName}_{$i}.{$fileExt}";
+					$fileName = "{$fileName[0]}_{$i}";
+				    $filePath = "{$this->destination}/{$fileName}.{$fileExt}";
 				    $i++;
 				}
+				$this->file['uploaded_name'] = $fileName;
 				$this->isRenamed = true;
 			}
 			

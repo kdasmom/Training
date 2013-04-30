@@ -43,12 +43,12 @@ class UserprofileEntity extends \NP\core\AbstractEntity {
 		),
 		'userprofile_startdate' => array(
 			'validation' => array(
-				'date' => array('format'=>'Y-m-d H:i:s')
+				'date' => array('format'=>'Y-m-d\TH:i:s')
 			)
 		),
 		'userprofile_enddate' => array(
 			'validation' => array(
-				'date' => array('format'=>'Y-m-d H:i:s')
+				'date' => array('format'=>'Y-m-d\TH:i:s')
 			)
 		),
 		'userprofile_password' => array(
@@ -103,7 +103,7 @@ class UserprofileEntity extends \NP\core\AbstractEntity {
 		),
 		'userprofile_updated_datetm' => array(
 			'validation' => array(
-				'date' => array('format'=>'Y-m-d H:i:s')
+				'date' => array('format'=>'Y-m-d\TH:i:s')
 			)
 		),
 		'security_question1' => array(

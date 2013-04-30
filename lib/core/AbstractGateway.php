@@ -75,6 +75,27 @@ abstract class AbstractGateway {
 	public function getAdapter() {
 		return $this->adapter;
 	}
+
+	/**
+	 * Begins a transaction
+	 */
+	public function beginTransaction() {
+		$this->adapter->beginTransaction();
+	}
+
+	/**
+	 * Commits a transaction
+	 */
+	public function commit() {
+		$this->adapter->commit();
+	}
+
+	/**
+	 * Rolls back a transaction
+	 */
+	public function rollback() {
+		$this->adapter->rollback();
+	}
 	
 	/**
 	 * @return string The table name for this gateway
@@ -93,12 +114,17 @@ abstract class AbstractGateway {
 	/**
 	 * Utility function to retrieve a record for a specific record in the database based on primary key
 	 * 
-	 * @param  int $id The primary key value for which you want to retrieve a record
-	 * @return array   An associative array with the data
+	 * @param  int   $id     The primary key value for which you want to retrieve a record
+	 * @param  array [$cols] Columns to retrieve
+	 * @return array         An associative array with the data
 	 */
-	public function findById($id) {
+	public function findById($id, $cols=null) {
 		$select = $this->getSelect();
 		$select->where(array("{$this->table}.{$this->pk}"=>":{$this->pk}"));
+
+		if ($cols !== null) {
+			$select->columns($cols);
+		}
 
 		$res = $this->adapter->query($select, array("{$this->pk}"=>$id));
 		

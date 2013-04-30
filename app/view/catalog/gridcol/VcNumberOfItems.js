@@ -3,9 +3,9 @@
  *
  * @author Thomas Messier
  */
-Ext.define('NP.view.catalog.gridcol.NumberOfItems', {
+Ext.define('NP.view.catalog.gridcol.VcNumberOfItems', {
 	extend: 'Ext.grid.column.Number',
-	alias: 'widget.catalog.gridcol.numberofitems',
+	alias: 'widget.catalog.gridcol.vcnumberofitems',
 
 	text     : 'Number of Items', 
 	dataIndex: 'vc_total_items',

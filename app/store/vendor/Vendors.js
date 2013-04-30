@@ -4,7 +4,7 @@
  *
  * @author 
  */
-Ext.define('NP.store.vendor.Vendor', {
+Ext.define('NP.store.vendor.Vendors', {
     extend: 'NP.lib.data.Store',
 	
     requires: ['NP.model.vendor.Vendor'],

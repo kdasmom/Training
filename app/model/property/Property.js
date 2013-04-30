@@ -29,14 +29,5 @@ Ext.define('NP.model.property.Property', {
     	{ name: 'last_updated_by', type: 'int' },
     	{ name: 'property_nexusservices', type: 'int' },
     	{ name: 'property_vendorcatalog', type: 'int' }
-	],
-	
-    proxy: {
-        type: 'ajax',
-        url: 'ajax.php',
-		extraParams: {
-			service: 'PropertyService',
-			action: 'get'
-		}
-    }
+	]
 });

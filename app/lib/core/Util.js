@@ -48,6 +48,43 @@ Ext.define('NP.lib.core.Util', {
 	},
 
 	/**
+	 * Creates a form element in the body of the HTML document that can be used to append file fields when uploading
+	 * @param  {String}      [formCmpSelector] An optional component selector for a Ext.form.Panel object from which you want to extract file fields and add them to the form HTML element you are creating
+	 * @return {HTMLElement}                   The HTML element for the form node created in the document
+	 */
+	createFormForUpload: function(formCmpSelector) {
+		var time = new Date().getTime();
+		var formId = 'fileupload-form-' + time;
+		var formEl = Ext.DomHelper.append(Ext.getBody(), '<form id="'+formId+'" method="POST" enctype="multipart/form-data" class="x-hide-display"></form>');
+
+		if (formCmpSelector) {
+			var fields = Ext.ComponentQuery.query(formCmpSelector)[0].getForm().getFields();
+			fields.each(function(field) {
+				if (field.getXType() == 'filefield') {
+					formEl.appendChild(field.extractFileInput());
+				}
+			});
+		}
+
+		return formEl;
+	},
+
+	/**
+	 * Takes an array of objects and returns a simple array using the value of the specified field for each record
+	 * @param  {Object[]} records An array of objects 
+	 * @param  {String}   field   The field you want values for in the array
+	 * @return {Array}
+	 */
+	valueList: function(records, field) {
+		var list = [];
+		for (var i=0; i<records.length; i++) {
+			list.push(records[i][field]);
+		}
+
+		return list;
+	},
+
+	/**
 	 * Checks if an object is a function or not
 	 * @param  {Mixed} obj
 	 * @return {Boolean}

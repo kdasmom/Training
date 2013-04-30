@@ -35,7 +35,12 @@ class VcGateway extends AbstractGateway {
 			}
 		}
 		
-		return $this->adapter->query($select, $params);
+		// If paging is needed
+		if ($pageSize !== null) {
+			return $this->getPagingArray($select, $params, $pageSize, $page);
+		} else {
+			return $this->adapter->query($select, $params);
+		}
 	}
 
 }

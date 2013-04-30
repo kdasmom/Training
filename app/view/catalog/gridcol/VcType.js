@@ -3,9 +3,9 @@
  *
  * @author Thomas Messier
  */
-Ext.define('NP.view.catalog.gridcol.Type', {
+Ext.define('NP.view.catalog.gridcol.VcType', {
 	extend: 'Ext.grid.column.Column',
-	alias: 'widget.catalog.gridcol.type',
+	alias: 'widget.catalog.gridcol.vctype',
 
 	text     : 'Type', 
 	dataIndex: 'vc_catalogtype',

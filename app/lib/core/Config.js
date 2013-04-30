@@ -9,6 +9,12 @@
 Ext.define('NP.lib.core.Config', function() {
 	/**
 	 * @private
+	 * @property {String}
+	 * Stores the app name
+	 */
+	var appName = null;
+	/**
+	 * @private
 	 * @property {Array}
 	 * Stores the application settings
 	 */
@@ -47,6 +53,15 @@ Ext.define('NP.lib.core.Config', function() {
 			// Make the ajax request
 			return NP.lib.core.Net.remoteCall({
 				requests: [
+					// This request gets the app name
+					{
+						service: 'ConfigService', 
+						action: 'getAppName',
+						success: function(result) {
+							// Save app name in application
+							appName = result;
+						}
+					},
 					// This request gets config settings for the app
 					{
 						service: 'ConfigService', 
@@ -93,6 +108,14 @@ Ext.define('NP.lib.core.Config', function() {
 					deferred.reject('Could not load config data');
 				}
 			});
+		},
+
+		/**
+		 * Gets the name of the app
+		 * @return {String}
+		 */
+		getAppName: function() {
+			return appName;
 		},
 		
 		/**

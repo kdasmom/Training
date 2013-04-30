@@ -202,27 +202,31 @@ Ext.define('NP.lib.ui.BoundForm', {
 	isValid: function() {
 		var that = this;
 
+		this.updateBoundModels();
+		
 		var valid = this.getForm().isValid();
 		var modelValid = true;
+		
+		Ext.each(this.bind.models, function(model) {
+			var errors = model.instance.validate();
+			if (!errors.isValid()) {
+				modelValid = false;
+				errors.each(function(error) {
+					var field = that.findField(model.prefix + error.field);
+					if (field) {
+						field.markInvalid(error.message);
+					}
+				});
+			}
+		});
 
-		if (this.bind) {
-			this.updateBoundModels();
-
-			Ext.each(this.bind.models, function(model) {
-				var errors = model.instance.validate();
-				if (!errors.isValid()) {
-					modelValid = false;
-					errors.each(function(error) {
-						var field = that.findField(model.prefix + error.field);
-						if (field) {
-							field.markInvalid(error.message);
-						}
-					});
-				}
-			});
+		var isValid = (valid && modelValid);
+		// Make sure the first invalid field is showing on the screen
+		if (!isValid) {
+			this.findInvalid().getAt(0).ensureVisible();
 		}
 
-		return (valid && modelValid);
+		return isValid;
 	},
 
 	/**
@@ -324,6 +328,10 @@ Ext.define('NP.lib.ui.BoundForm', {
 									}
 								}
 							});
+							var invalidFields = that.findInvalid();
+							if (invalidFields.getCount()) {
+								invalidFields.getAt(0).ensureVisible();
+							}
 						}
 						// Run the failure callback
 						options.failure(result, deferred);

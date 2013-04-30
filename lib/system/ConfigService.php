@@ -353,6 +353,24 @@ class ConfigService extends AbstractService {
 	public function getAppName() {
 		return $this->appName;
 	}
+
+	/**
+	 * Get the client ID for the site currently being accessed
+	 *
+	 * @return int The id of the client
+	 */
+	public function getClientId() {
+		return $this->siteService->getClientId();
+	}
+	
+	/**
+	 * Get the login URL for the site currently being accessed
+	 *
+	 * @return int The id of the client
+	 */
+	public function getLoginUrl() {
+		return $this->siteService->getLoginUrl();
+	}
 }
 
 ?>

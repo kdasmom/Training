@@ -94,6 +94,16 @@ class SiteService {
 		return $client['pn.main.dsn'];
 	}
 	
+	public function getClientId() {
+		$client = $this->getClient($this->getAppName());
+		return $client['asp.client_id'];
+	}
+	
+	public function getLoginUrl() {
+		$client = $this->getClient($this->getAppName());
+		return $client['pn.main.loginurl'];
+	}
+	
 	public function getClient($appName) {
 		$clients = $this->getClients();
 		return $clients[$appName];

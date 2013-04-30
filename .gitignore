@@ -8,9 +8,9 @@ config/config.php
 config/site_config.xml
 
 # Ignore some folders in the clients folder since they will contain user uploaded files
-clients/*/*
-!clients/*/login.php
-!clients/*/images/
+clients/*/web/*/
+clients/*/web/images/logos/*
+!clients/*/web/images/
 
 # Ignore composer files for now, not ready to use it yet
 /composer.json

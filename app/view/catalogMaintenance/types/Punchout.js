@@ -3,9 +3,10 @@
  *
  * @author Thomas Messier
  */
-Ext.define('NP.lib.catalog.Punchout', {
-    
-	getFields: function() {
+Ext.define('NP.view.catalogMaintenance.types.Punchout', {
+	extend: 'NP.view.catalogMaintenance.types.AbstractCatalog',
+	
+    getFields: function() {
 		return [
 			{ 
 				xtype     : 'textfield',
@@ -58,8 +59,30 @@ Ext.define('NP.lib.catalog.Punchout', {
 		];
 	},
 
-	hasPOSubmit: function() {
-		return true;
+	getVisibleTabs: function() {
+		return ['categories','properties','vendors','posubmission'];
+	},
+
+	getView: function(vc) {
+		var deferred = NP.lib.core.Net.remoteCall({
+			requests: {
+				service: 'CatalogService',
+				action : 'getPunchoutUrl',
+				vc_id  : vc.get('vc_id'),
+				success: function(result, deferred) {
+					var view = Ext.create('Ext.container.Container', {
+						layout: 'fit',
+						autoEl: {
+							tag: 'iframe',
+							src: result
+						}
+					});
+					deferred.resolve(view);
+				}
+			}
+		});
+
+		return deferred;
 	}
 
 });

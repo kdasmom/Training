@@ -40,24 +40,6 @@ class VendorGateway extends AbstractGateway {
 	}
 	
 	/**
-	 * Overwrites the default getSelect() method to include a join to the VENDORSITE table by default
-	 *
-	 * @param  array $vendorCols     Columns to include from the VENDOR table
-	 * @param  array $vendorsiteCols Columns to include from the VENDORSITE table
-	 * @return NP\core\db\Select
-	 */
-	public function getSelect($vendorCols=array('*'), $vendorsiteCols=array('*')) {
-		$select = new Select();
-		$select->from('vendor')
-				->columns($vendorCols)
-				->join(array('vs' => 'vendorsite'),
-						'vendor.vendor_id = vs.vendor_id',
-						$vendorsiteCols);
-		
-		return $select;
-	}
-	
-	/**
 	 * Retrieves a vendor record looking it up by vendorsite ID
 	 *
 	 * @param  int $vendorsite_id

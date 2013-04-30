@@ -3,9 +3,9 @@
  *
  * @author Thomas Messier
  */
-Ext.define('NP.view.catalog.gridcol.CreatedOn', {
+Ext.define('NP.view.catalog.gridcol.VcCreatedOn', {
 	extend: 'Ext.grid.column.Column',
-	alias: 'widget.catalog.gridcol.createdon',
+	alias: 'widget.catalog.gridcol.vccreatedon',
 
 	text     : 'Created On', 
 	dataIndex: 'vc_createdt',

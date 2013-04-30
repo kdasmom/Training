@@ -32,6 +32,28 @@ class VendorService extends AbstractService {
 	public function getForCatalogDropDown($keyword) {
 		return $this->vendorGateway->getForCatalogDropDown($keyword);
 	}
+
+	/**
+	 * Retrieves vendor records matching a specified tax ID. A tax ID can be provided, otherwise a vendor ID can
+	 * be provided and all vendors with the same tax ID as the specified vendor will be returned.
+	 *
+	 * @param  string [$vendor_fedid] Tax ID to search for
+	 * @param  int    [$vendor_id]    ID for the vendor who's tax ID you want to find matching vendors for
+	 * @return array                  Array of vendor records
+	 */
+	public function getByTaxId($vendor_fedid=null, $vendor_id=null) {
+		if ($vendor_fedid === null) {
+			$rec = $this->vendorGateway->findById($vendor_id, array('vendor_fedid'));
+			$vendor_fedid = $rec['vendor_fedid'];
+		}
+
+		return $this->vendorGateway->find(
+			array('vendor_fedid'=>'?'),
+			array($vendor_fedid),
+			'vendor_name ASC',
+			array('vendor_id','vendor_id_alt','vendor_name')
+		);
+	}
 	
 }
 

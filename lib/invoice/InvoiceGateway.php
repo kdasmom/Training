@@ -55,7 +55,7 @@ class InvoiceGateway extends AbstractGateway {
 	 * @param  int   $invoice_id ID of the invoice to be retrieved
 	 * @return array
 	 */
-	public function findById($invoice_id) {
+	public function findById($invoice_id, $cols=null) {
 		$select = new sql\InvoiceSelect();
 		$select->columns(array(
 					'invoice_id',

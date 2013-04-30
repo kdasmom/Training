@@ -46,7 +46,7 @@ class {$docTable}Gateway extends AbstractGateway {}
  *
  * @author 
  */
-Ext.define('{$extStoreNameSpace}.{$extClassName}', {
+Ext.define('{$extStoreNameSpace}.{$extClassName}s', {
     extend: 'NP.lib.data.Store',
 	
     requires: ['{$extNameSpace}.{$extClassName}'],
@@ -116,7 +116,7 @@ Ext.define('{$extNameSpace}.{$extClassName}', {
 			$hasValidation = true;
 		} else if ($dataType == 'datetime') {
 			$validation .= "
-				'date' => array('format'=>'Y-m-d H:i:s')";
+				'date' => array('format'=>'Y-m-d\TH:i:s')";
 				$ext .= ", type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat()";
 			$hasValidation = true;
 		}

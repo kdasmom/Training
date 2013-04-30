@@ -58,7 +58,7 @@ class PersonEntity extends \NP\core\AbstractEntity {
 		),
 		'person_birthdate'	 => array(
 			'validation' => array(
-				'date' => array('format'=>'Y-m-d H:i:s')
+				'date' => array('format'=>'Y-m-d\TH:i:s')
 			)
 		),
 		'personmarital_id'	 => array(

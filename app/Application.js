@@ -10,13 +10,10 @@ Ext.Loader.setConfig({
  */
 Ext.application({
 	name: 'NP',
-	paths: {
-		'Ext.ux': 'vendor/extjs/examples/ux'
-	},
 	requires: [
-		'Ext.util.History'
+		'NP.lib.core.Overrides'
+		,'Ext.util.History'
 		,'Ext.state.*'
-		,'NP.lib.core.Overrides'
 		,'NP.lib.core.Config'
 		,'NP.lib.core.Net'
 		,'NP.lib.core.Util'

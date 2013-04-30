@@ -26,7 +26,7 @@ class VcEntity extends \NP\core\AbstractEntity {
 		),
 		'vc_createdt'	 => array(
 			'validation' => array(
-				'date' => array('format'=>'Y-m-d H:i:s')
+				'date' => array('format'=>'Y-m-d\TH:i:s')
 			)
 		),
 		'vc_createdby'	 => array(
@@ -36,7 +36,7 @@ class VcEntity extends \NP\core\AbstractEntity {
 		),
 		'vc_lastupdatedt'	 => array(
 			'validation' => array(
-				'date' => array('format'=>'Y-m-d H:i:s')
+				'date' => array('format'=>'Y-m-d\TH:i:s')
 			)
 		),
 		'vc_lastupdateby'	 => array(
@@ -49,8 +49,7 @@ class VcEntity extends \NP\core\AbstractEntity {
 				'digits' => array()
 			)
 		),
-		'vc_status'	 => array(),
-		'vc_unique_id'	 => array(
+		'vc_status'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>50),
 				'inArray' => array(
@@ -58,6 +57,7 @@ class VcEntity extends \NP\core\AbstractEntity {
 				)
 			)
 		),
+		'vc_unique_id'	 => array(),
 		'vc_catalogtype'	 => array(
 			'required' => true,
 			'validation' => array(

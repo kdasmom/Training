@@ -3,9 +3,9 @@
  *
  * @author Thomas Messier
  */
-Ext.define('NP.view.catalog.gridcol.LastUpdated', {
+Ext.define('NP.view.catalog.gridcol.VcLastUpdated', {
 	extend: 'Ext.grid.column.Column',
-	alias: 'widget.catalog.gridcol.lastupdated',
+	alias: 'widget.catalog.gridcol.vclastupdated',
 
 	text     : 'Last Updated', 
 	dataIndex: 'vc_lastupdatedt',
