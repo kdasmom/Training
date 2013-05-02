@@ -420,8 +420,8 @@ Ext.define('NP.locale.en.view.invoice.grid.RegisterVoid', {
  */
 
 // My Settings
-Ext.define('NP.locale.en.view.admin.mysettings.Overview', {
-	override: 'NP.view.admin.mysettings.Overview',
+Ext.define('NP.locale.en.view.mySettings.Overview', {
+	override: 'NP.view.mySettings.Overview',
 
 	introText         : 'My Settings allows users to change their personal user information as well as manage certain system settings. The following tabs contain information to allow the user to manage the following information:',
 	userInfoText      : '<b>User Information</b> - allows the user to change their password and update personal information such as their contact information and email address.',

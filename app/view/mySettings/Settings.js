@@ -1,13 +1,13 @@
 /**
- * My Settings: Display section
+ * My Settings: Settings section
  *
  * @author Thomas Messier
  */
-Ext.define('NP.view.admin.mysettings.Display', {
+Ext.define('NP.view.mySettings.Settings', {
     extend: 'Ext.panel.Panel',
-    alias: 'widget.admin.mysettings.display',
+    alias: 'widget.mysettings.settings',
     
-    title: 'Display',
+    title: 'Settings',
 
     html: 'Coming soon...',
 

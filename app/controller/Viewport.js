@@ -42,7 +42,7 @@ Ext.define('NP.controller.Viewport', {
 			// Clicking on the Administration > My Settings menu
 			'#mySettingsMenuBtn': {
 				click: function() {
-					this.application.addHistory('Admin:showMySettings');
+					this.application.addHistory('MySettings:showMySettings');
 				}
 			},
 

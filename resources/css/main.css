@@ -12,3 +12,6 @@
 /* STYLE FOR USING AN IMAGE AS A BUTTON IN A GRID BY SPECIFYING THIS AS tdCls CONFIG OPTION */
 .image-button-cell .x-grid-cell-inner { padding-bottom: 0; }
 	.image-button-cell .x-grid-cell-inner img { cursor: pointer; }
+
+/* FORM ITEMS */
+.x-form-item-label { font-weight: bold; }

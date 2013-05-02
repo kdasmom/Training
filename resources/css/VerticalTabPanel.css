@@ -1,0 +1,32 @@
+.x-vertical-tab {
+    background-color:#DEECFD; 
+    border-color: #99BCE8;
+}
+
+.x-vertical-tab .x-btn-inner {
+	font-weight: bold;
+}
+
+.x-vertical-tab-left {
+    border-radius: 3px 0 0 3px;
+}
+
+.x-vertical-tab-right {
+    border-radius: 0 3px 3px 0;
+}
+
+.x-vertical-tab-active {
+	background-image: -moz-linear-gradient(center top , #FFFFFF, #F5F9FE 25%, #DEECFD 45%);
+}
+
+.x-vertical-tab-active .x-btn-inner {
+	color: #15498B;
+}
+
+.x-vertical-tab-inactive {
+	background-image: -moz-linear-gradient(center top , #CCDEF6, #D6E6FA 25%, #DEECFD 45%);
+}
+
+.x-vertical-tab-inactive .x-btn-inner {
+	color: #416DA3;
+}

@@ -3,9 +3,9 @@
  *
  * @author Thomas Messier
  */
-Ext.define('NP.view.admin.mysettings.EmailNotification', {
+Ext.define('NP.view.mySettings.EmailNotification', {
     extend: 'Ext.panel.Panel',
-    alias: 'widget.admin.mysettings.emailnotification',
+    alias: 'widget.mysettings.emailnotification',
     
     title: 'Email Notification',
 

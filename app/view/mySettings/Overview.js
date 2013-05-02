@@ -3,9 +3,9 @@
  *
  * @author Thomas Messier
  */
-Ext.define('NP.view.admin.mysettings.Overview', {
+Ext.define('NP.view.mySettings.Overview', {
     extend: 'Ext.panel.Panel',
-    alias: 'widget.admin.mysettings.overview',
+    alias: 'widget.mysettings.overview',
     
     requires: ['NP.lib.core.Config'],
 

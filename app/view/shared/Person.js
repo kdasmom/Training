@@ -47,7 +47,8 @@ Ext.define('NP.view.shared.Person', {
 
         this.items.push({
             xtype: 'container',
-            layout: 'hbox',
+            layout: 'column',
+            width: 400,
             defaults: {
                 xtype     : 'textfield',
                 labelAlign: 'top',
@@ -59,12 +60,14 @@ Ext.define('NP.view.shared.Person', {
                     name      : this.prefix + NP.view.shared.Person.FNAME,
                     allowBlank: !this.required,
                     width     : 150,
+                    columnWidth: 0.4,
                     maxLength : 50,
                     value     : this.person_firstname
                 },{
                     fieldLabel: this.middleNameFieldText,
                     name      : this.prefix + NP.view.shared.Person.MNAME,
                     width     : 80,
+                    columnWidth: 0.2,
                     maxLength : 50,
                     value     : this.person_middlename
                 },{
@@ -72,6 +75,7 @@ Ext.define('NP.view.shared.Person', {
                     name      : this.prefix + NP.view.shared.Person.LNAME,
                     allowBlank: !this.required,
                     width     : 150,
+                    columnWidth: 0.4,
                     maxLength : 50,
                     value     : this.person_lastname
                 }

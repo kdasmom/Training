@@ -1,13 +1,13 @@
 /**
- * My Settings: Settings section
+ * My Settings: Mobile Settings section
  *
  * @author Thomas Messier
  */
-Ext.define('NP.view.admin.mysettings.Settings', {
+Ext.define('NP.view.mySettings.MobileSettings', {
     extend: 'Ext.panel.Panel',
-    alias: 'widget.admin.mysettings.settings',
+    alias: 'widget.mysettings.mobilesettings',
     
-    title: 'Settings',
+    title: 'Mobile Settings',
 
     html: 'Coming soon...',
 

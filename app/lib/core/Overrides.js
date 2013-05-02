@@ -57,12 +57,14 @@ Ext.define('NP.lib.core.Overrides', function() {
 	    ensureVisible: function(stopAt) {
 	        var p, me = this;
 	        this.ownerCt.bubble(function(c) {
-	        	if (c instanceof Ext.tab.Panel) {
+	        	if (c instanceof Ext.tab.Panel || c instanceof NP.lib.ui.VerticalTabPanel) {
 	        		c.setActiveTab(me);
+	        		return false;
 	        	} else {
 		            if (p = c.ownerCt) {
-		                if (p instanceof Ext.tab.Panel) {
-		                    p.setActiveTab(c);
+		                if (p instanceof Ext.tab.Panel || p instanceof NP.lib.ui.VerticalTabPanel) {
+		                	p.setActiveTab(c);
+		                	return false;
 		                }
 		            }
 		        }
