@@ -57,45 +57,41 @@ class SecurityService extends AbstractService {
 		$this->userprofileLogonGateway = $userprofileLogonGateway;
 		$this->modulePrivGateway = $modulePrivGateway;
 	}
-	
+
 	/**
-	 * Authenticates a user using credentials
+	 * Gets the authentication implementation for the site being accessed
 	 *
-	 * @param  string $username 
-	 * @param  string $pwd      
-	 * @return int    If authentication succeeds, returns the userprofile_id of the user, otherwise returns 0
+	 * @return \NP\security\auth\AuthenticationInterface 
 	 */
-	public function authenticate($username, $pwd) {
-		return $this->userprofileGateway->authenticate($username, $pwd);
+	public function getAuthenticator() {
+		return new auth\StandardAuthenticator($this->userprofileGateway);
 	}
 	
 	/**
 	 * Logs a user into the application 
 	 *
-	 * @param  string $username 
-	 * @param  string $pwd      
+	 * @param  string $username
 	 * @return int    If authentication succeeds, returns the userprofile_id of the user, otherwise returns 0
 	 */
-	public function login($username, $pwd) {
-		if ($userprofile_id = $this->authenticate($username, $pwd)) {
-			// Save the user ID to the session
-			$this->setUserId($userprofile_id);
-			$this->setDelegatedUserId($userprofile_id);
-			
-			// Save the user permissions to the session
-			$this->setUserPermissions($userprofile_id);
-			
-			// Log the user's login
-			$this->userprofileLogonGateway->insert(array(
-				"userprofile_id"			=> $userprofile_id,
-				"userprofilelogon_datetm"	=> Util::formatDateForDB(time()),
-				"userprofilelogon_ip"		=> $_SERVER["REMOTE_ADDR"],
-			));
-			
-			return $userprofile_id;
-		} else {
-			return 0;
-		}
+	public function login($username) {
+		$user = $this->userprofileGateway->find(array('userprofile_username'=>'?'), array($username));
+		$userprofile_id = $user[0]['userprofile_id'];
+
+		// Save the user ID to the session
+		$this->setUserId($userprofile_id);
+		$this->setDelegatedUserId($userprofile_id);
+		
+		// Save the user permissions to the session
+		$this->setUserPermissions($userprofile_id);
+		
+		// Log the user's login
+		$this->userprofileLogonGateway->insert(array(
+			"userprofile_id"			=> $userprofile_id,
+			"userprofilelogon_datetm"	=> Util::formatDateForDB(time()),
+			"userprofilelogon_ip"		=> $_SERVER["REMOTE_ADDR"],
+		));
+		
+		return $userprofile_id;
 	}
 	
 	/**

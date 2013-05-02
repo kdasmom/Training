@@ -12,9 +12,9 @@ use NP\core\AbstractGateway;
 class UserprofileGateway extends AbstractGateway {
 	
 	/**
-	 * @param  string $username 
-	 * @param  string $pwd      
-	 * @return int    If authentication succeeds, returns the userprofile_id of the user, otherwise returns 0
+	 * @param  string  $username 
+	 * @param  string  $pwd      
+	 * @return boolean True if authentication succeeds, false otherwise
 	 */
 	public function authenticate($username, $pwd) {
 		$select = new sql\UserprofileSelect();
@@ -30,9 +30,9 @@ class UserprofileGateway extends AbstractGateway {
 		$resultSet = $this->adapter->query($select, array($username, $pwd));
 		
 		if (count($resultSet)) {
-			return $resultSet[0]["userprofile_id"];
+			return true;
 		} else {
-			return 0;
+			return false;
 		}
 	}
 

@@ -1,4 +1,7 @@
 Simpson Custom Login Page
+<?php foreach ($errors as $error) { ?>
+	<div style="color:red"><?= $error ?></div>
+<?php } ?>
 <form action="login.php" method="post">
 	<div>
 		<label>Username:</label>
