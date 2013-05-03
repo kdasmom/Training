@@ -42,11 +42,6 @@ Ext.define('Ext.ux.form.ItemSelector', {
         bottom: "Move to Bottom"
     },
 
-    layout: {
-        type: 'hbox',
-        align: 'stretch'
-    },
-
     initComponent: function() {
         var me = this;
 
@@ -62,16 +57,7 @@ Ext.define('Ext.ux.form.ItemSelector', {
         var me = this;
 
         return Ext.create('Ext.ux.form.MultiSelect', {
-            // We don't want the multiselects themselves to act like fields,
-            // so override these methods to prevent them from including
-            // any of their values
             submitValue: false,
-            getSubmitData: function(){
-                return null;
-            },
-            getModelData: function(){
-                return null;    
-            },
             flex: 1,
             dragGroup: me.ddGroup,
             dropGroup: me.ddGroup,
@@ -81,7 +67,6 @@ Ext.define('Ext.ux.form.ItemSelector', {
                 data: []
             },
             displayField: me.displayField,
-            valueField: me.valueField,
             disabled: me.disabled,
             listeners: {
                 boundList: {
@@ -99,22 +84,30 @@ Ext.define('Ext.ux.form.ItemSelector', {
         me.fromField = me.createList(me.fromTitle);
         me.toField = me.createList(me.toTitle);
 
-        return [
-            me.fromField,
-            {
-                xtype: 'container',
-                margins: '0 4',
-                layout: {
-                    type: 'vbox',
-                    pack: 'center'
-                },
-                items: me.createButtons()
+        return {
+            border: false,
+            layout: {
+                type: 'hbox',
+                align: 'stretch'
             },
-            me.toField
-        ];
+            items: [
+                me.fromField,
+                {
+                    xtype: 'container',
+                    margins: '0 4',
+                    width: 22,
+                    layout: {
+                        type: 'vbox',
+                        pack: 'center'
+                    },
+                    items: me.createButtons()
+                },
+                me.toField
+            ]
+        };
     },
 
-    createButtons: function() {
+    createButtons: function(){
         var me = this,
             buttons = [];
 
