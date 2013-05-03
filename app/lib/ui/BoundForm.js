@@ -75,7 +75,7 @@ Ext.define('NP.lib.ui.BoundForm', {
 			// Do the data binding once the form has been shown
 			this.on(this.bind.evt, function() {
 				// Create a loading mask
-				var mask = new Ext.LoadMask(that);
+				var mask = new Ext.LoadMask({ target: that });
 
 				// Build the request object 
 				var req = {
@@ -286,7 +286,7 @@ Ext.define('NP.lib.ui.BoundForm', {
 
 		// Create a mask if option is on
 		if (options.useMask) {
-			var mask = new Ext.LoadMask(this, options.maskText);
+			var mask = new Ext.LoadMask({ target: this, msg: options.maskText });
 			mask.show();
 		}
 

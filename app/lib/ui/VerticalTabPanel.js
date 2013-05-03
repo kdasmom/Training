@@ -146,6 +146,10 @@ Ext.define('NP.lib.ui.VerticalTabPanel', {
         // Add the dock that will hold the tabs on the left or right
         this.dockedItems = {
             xtype: 'toolbar',
+            layout: {
+                type: 'vbox',
+                align: 'stretch'
+            },
             dock : this.tabPosition,
             width: this.tabWidth,
             items: this.tabs
