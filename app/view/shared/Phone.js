@@ -38,13 +38,18 @@ Ext.define('NP.view.shared.Phone', {
 
         this.items = [];
 
+        var countryCodeWidth = 40, numberWidth = 120, totalWidth = countryCodeWidth + numberWidth + 10;
+        this.width = totalWidth;
+
         this.items.push(
             {
                 xtype: 'label',
-                text:  this.label
+                text:  this.label + ':',
+                cls: 'x-form-item-label x-unselectable x-form-item-label-top'
             },{
                 xtype: 'container',
-                layout: 'hbox',
+                layout: 'column',
+                width: totalWidth,
                 defaults: {
                     margin    : '0 5 0 0'
                 },
@@ -54,7 +59,7 @@ Ext.define('NP.view.shared.Phone', {
                         hideLabel  : true,
                         name       : this.prefix + NP.view.shared.Phone.COUNTRYCODE,
                         allowBlank : !this.required,
-                        width      : 40,
+                        width      : countryCodeWidth,
                         maxLength  : 25,
                         value      : this.phone_countrycode,
                         regex      : /^\d{3}$/,
@@ -63,7 +68,7 @@ Ext.define('NP.view.shared.Phone', {
                         xtype      : 'textfield',
                         hideLabel  : true,
                         name       : this.prefix + NP.view.shared.Phone.NUMBER,
-                        width      : 120,
+                        width      : numberWidth,
                         maxLength  : 25,
                         value      : this.phone_number,
                         maskRe     : /[()\d- ]/

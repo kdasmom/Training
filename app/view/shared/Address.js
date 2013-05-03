@@ -108,7 +108,8 @@ Ext.define('NP.view.shared.Address', {
             value     : this.address_line2
         },{
             xtype: 'container',
-            layout: 'hbox',
+            layout: 'column',
+            width : this.address_city_width + this.address_state_width + this.address_zip_width + this.address_zipext_width + 20,
             defaults: {
                 labelAlign: 'top',
                 margin: '0 5 0 0'

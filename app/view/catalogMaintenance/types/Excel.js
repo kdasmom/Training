@@ -7,6 +7,7 @@ Ext.define('NP.view.catalogMaintenance.types.Excel', {
 	extend: 'NP.view.catalogMaintenance.types.AbstractCatalog',
 
     getFields: function() {
+    	var fieldWidth = 400;
 		return [
 			{
 				xtype     : 'fieldcontainer',
@@ -15,12 +16,13 @@ Ext.define('NP.view.catalogMaintenance.types.Excel', {
 					{
 						xtype     : 'filefield',
 						name      : 'catalog_file',
-						width     : 450,
+						width     : fieldWidth,
 						hideLabel : true
 					},
 					{
 						xtype: 'container',
-						html: '<b>Upload Instructions</b>' +
+						width: fieldWidth,
+						html : '<b>Upload Instructions</b>' +
 							'<ul>' +
 								'<li>The file uploaded must match the upload template exactly as defined</li>' +
 								'<li>All items included MUST include either a UNSPSC Code or have a custom Category assigned or the item will not be included in the catalog upload</li>' +
