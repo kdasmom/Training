@@ -148,7 +148,7 @@ Ext.define('NP.lib.ui.VerticalTabPanel', {
             xtype: 'toolbar',
             layout: {
                 type: 'vbox',
-                align: (me.tabPosition == 'left') ? 'right' : 'left'
+                align: 'stretch'
             },
             dock : this.tabPosition,
             width: this.tabWidth,
