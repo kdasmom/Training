@@ -82,8 +82,7 @@ Ext.define('NP.controller.CatalogMaintenance', {
 			// Clicking the Edit catalog button
 			'[xtype="catalogmaintenance.catalogview"] [xtype="shared.button.edit"]': {
 				click: function() {
-					var vc = this.application.getComponent('catalogmaintenance.catalogview').vc;
-					this.application.addHistory('CatalogMaintenance:showCatalogForm:' + vc.get('vc_id'));
+					this.application.addHistory('CatalogMaintenance:showCatalogForm:' + this.vc.get('vc_id'));
 				}
 			},
 
@@ -374,16 +373,16 @@ Ext.define('NP.controller.CatalogMaintenance', {
 				action     : 'get',
 				vc_id      : vc_id,
 				success: function(result, deferred) {
-					var vc = Ext.create('NP.model.catalog.Vc', result);
+					that.vc = Ext.create('NP.model.catalog.Vc', result);
 					var view = that.application.setView('NP.view.catalogMaintenance.CatalogView', {
-						title: vc.get('vc_catalogname')
+						title: that.vc.get('vc_catalogname')
 					});
-					var type = Ext.util.Format.capitalize(vc.get('vc_catalogtype'));
+					var type = Ext.util.Format.capitalize(that.vc.get('vc_catalogtype'));
         			var catalogImpl = Ext.create('NP.view.catalogMaintenance.types.' + type);
-        			catalogImpl.getView(vc).then({
+        			catalogImpl.getView(that.vc).then({
         				success: function(subView) {
         					view.add(subView);
-        					that.updateActivationButton(vc);
+        					that.updateActivationButton(that.vc);
         				}
         			});
 				}
