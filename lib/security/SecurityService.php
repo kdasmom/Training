@@ -8,6 +8,8 @@ use NP\user\RoleGateway;
 use NP\user\UserprofileLogonGateway;
 use NP\user\ModulePrivGateway;
 use NP\system\SessionService;
+use NP\property\RegionGateway;
+use NP\property\PropertyGateway;
 use NP\util\Util;
 
 /**
@@ -17,30 +19,8 @@ use NP\util\Util;
  */
 class SecurityService extends AbstractService {
 	
-	/**
-	 * @var \NP\system\SessionService
-	 */
-	protected $sessionService;
-
-	/**
-	 * @var \NP\user\UserprofileGateway
-	 */
-	protected $userprofileGateway;
-
-	/**
-	 * @var \NP\user\RoleGateway
-	 */
-	protected $roleGateway;
-	
-	/**
-	 * @var \NP\user\UserprofileLogonGateway
-	 */
-	protected $userprofileLogonGateway;
-	
-	/**
-	 * @var \NP\user\ModulePrivGateway
-	 */
-	protected $modulePrivGateway;
+	protected $sessionService, $userprofileGateway, $roleGateway, $userprofileLogonGateway, $modulePrivGateway,
+				$regionGateway, $propertyGateway;
 	
 	/**
 	 * @param \NP\system\SessionService        $sessionService          SessionService object injected
@@ -48,14 +28,19 @@ class SecurityService extends AbstractService {
 	 * @param \NP\user\RoleGateway             $roleGateway             RoleGateway object injected
 	 * @param \NP\user\UserprofileLogonGateway $userprofileLogonGateway UserprofileLogonGateway object injected
 	 * @param \NP\user\ModulePrivGateway       $modulePrivGateway       ModulePrivGateway object injected
+	 * @param \NP\property\RegionGateway       $regionGateway           RegionGateway object injected
+	 * @param \NP\property\PropertyGateway     $propertyGateway         PropertyGateway object injected
 	 */
 	public function __construct(SessionService $sessionService, UserprofileGateway $userprofileGateway, RoleGateway $roleGateway,
-								UserprofileLogonGateway $userprofileLogonGateway, ModulePrivGateway $modulePrivGateway) {
-		$this->sessionService = $sessionService;
-		$this->userprofileGateway = $userprofileGateway;
-		$this->roleGateway = $roleGateway;
+								UserprofileLogonGateway $userprofileLogonGateway, ModulePrivGateway $modulePrivGateway,
+								RegionGateway $regionGateway, PropertyGateway $propertyGateway) {
+		$this->sessionService          = $sessionService;
+		$this->userprofileGateway      = $userprofileGateway;
+		$this->roleGateway             = $roleGateway;
 		$this->userprofileLogonGateway = $userprofileLogonGateway;
-		$this->modulePrivGateway = $modulePrivGateway;
+		$this->modulePrivGateway       = $modulePrivGateway;
+		$this->regionGateway           = $regionGateway;
+		$this->propertyGateway         = $propertyGateway;
 	}
 
 	/**
@@ -75,7 +60,8 @@ class SecurityService extends AbstractService {
 	 */
 	public function login($username) {
 		$user = $this->userprofileGateway->find(array('userprofile_username'=>'?'), array($username));
-		$userprofile_id = $user[0]['userprofile_id'];
+		$user = $user[0];
+		$userprofile_id = $user['userprofile_id'];
 
 		// Save the user ID to the session
 		$this->setUserId($userprofile_id);
@@ -83,6 +69,9 @@ class SecurityService extends AbstractService {
 		
 		// Save the user permissions to the session
 		$this->setUserPermissions($userprofile_id);
+
+		// Set the initial property context
+		$this->setContextForUser();
 		
 		// Log the user's login
 		$this->userprofileLogonGateway->insert(array(
@@ -92,6 +81,26 @@ class SecurityService extends AbstractService {
 		));
 		
 		return $userprofile_id;
+	}
+
+	/**
+	 * Sets the context for the user currently logged in
+	 */
+	public function setContextForUser() {
+		$user = $this->getUser();
+		$preferredProp = $user['userprofile_preferred_property'];
+		$preferredRegion = $user['userprofile_preferred_region'];
+		$regions = $this->regionGateway->findByUser($this->getUserId(), $this->getDelegatedUserId());
+		$props = $this->propertyGateway->findByUser($this->getUserId(), $this->getDelegatedUserId(), array('property_id'));
+		if (is_numeric($preferredRegion) && $preferredRegion) {
+			$this->setContext('region', $props[0]['property_id'], $preferredRegion);
+		} else if (is_numeric($preferredProp) && $preferredProp) {
+			$this->setContext('property', $preferredProp, $regions[0]['region_id']);
+		} else {
+			$this->setContext('all', $props[0]['property_id'], $regions[0]['region_id']);
+		}
+		
+		return $user;
 	}
 	
 	/**
@@ -103,7 +112,11 @@ class SecurityService extends AbstractService {
 	public function changeUser($userprofile_id) {
 		$this->setUserId($userprofile_id);
 		$this->setUserPermissions($userprofile_id);
-		return $this->getUser();
+
+		// Set the initial property context
+		$user = $this->setContextForUser();
+
+		return $user;
 	}
 	
 	/**
@@ -215,6 +228,26 @@ class SecurityService extends AbstractService {
 		
 		// Save the user permissions to the session
 		$this->setPermissions($module_id_list);
+	}
+	
+	/**
+	 * Sets the property context
+	 *
+	 * @param string $type
+	 * @param int    $property_id
+	 * @param int    $region_id
+	 */
+	public function setContext($type, $property_id, $region_id) {
+		$this->sessionService->set('global_context', array('type'=>$type, 'property_id'=>$property_id, 'region_id'=>$region_id));
+	}
+	
+	/**
+	 * Gets the property context
+	 *
+	 * @return array
+	 */
+	public function getContext() {
+		return $this->sessionService->get('global_context');
 	}
 }
 

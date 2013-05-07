@@ -35,6 +35,13 @@ Ext.define('NP.lib.core.Security', function() {
 	 */
 	var role = null;
 	
+	/**
+	 * @private
+	 * @property {Object}
+	 * Stores the property context user is currently logged into
+	 */
+	var currentContext = null;
+	
 	// Store this configuration for an ajax request to avoid repetition as we need it in two places
 	var getPermissionAjaxRequestConfig = {
 		service: 'SecurityService', 
@@ -61,6 +68,8 @@ Ext.define('NP.lib.core.Security', function() {
 	});
 
 	return {
+		alternateClassName: 'NP.Security',
+
 		singleton: true,
 		
 		requires: ['NP.lib.core.Net'],
@@ -86,6 +95,8 @@ Ext.define('NP.lib.core.Security', function() {
 						success: function(result) {
 							// Save the current user
 							user = Ext.create('NP.model.user.Userprofile', result);
+
+							// Set the default property/region
 						},
 						failure: function() {
 							Ext.log('Could not load user');
@@ -113,6 +124,18 @@ Ext.define('NP.lib.core.Security', function() {
 						},
 						failure: function() {
 							Ext.log('Could not load user');
+						}
+					},
+					// Get the logged in user's property context
+					{
+						service: 'SecurityService', 
+						action: 'getContext',
+						success: function(result) {
+							// Save the current user
+							currentContext = result;
+						},
+						failure: function() {
+							Ext.log('Could not load property context');
 						}
 					}
 				],
@@ -157,6 +180,7 @@ Ext.define('NP.lib.core.Security', function() {
 							}
 						],
 						success: function(results) {
+							// Resolve the deferred to indicate Ajax request successful
 							deferred.resolve(results);
 						},
 						failure: function(response, options, deferred) {
@@ -263,6 +287,34 @@ Ext.define('NP.lib.core.Security', function() {
 				},
 				failure: function(response, options, deferred) {
 					deferred.reject('Could not change user');	
+				}
+			});
+		},
+
+		/**
+		 * Returns the property context for the user
+		 * @return {Object}
+		 */
+		getCurrentContext: function() {
+			return currentContext;
+		},
+
+		/**
+		 * Sets the property context for the user
+		 * @param {Object}
+		 */
+		setCurrentContext: function(context) {
+			currentContext = context;
+			NP.lib.core.Net.remoteCall({
+				requests: {
+					service    : 'SecurityService',
+					action     : 'setContext',
+					type       : context.type,
+					property_id: context.property_id,
+					region_id  : context.region_id,
+					failure    : function(response, options, deferred) {
+						Ext.log('Failed to save context');
+					}
 				}
 			});
 		}
