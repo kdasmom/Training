@@ -150,11 +150,28 @@ Ext.define('NP.lib.core.Util', {
 	
 	/**
 	 * Function to render currency values
-	 * @param  {Number/string}
+	 * @param  {Number/String}
 	 * @return {String}
 	 */
 	currencyRenderer: function(val) {
 		return Ext.util.Format.currency(val);
-	}
+	},
 	
+	/**
+	 * Returns an array with the list of values checked for a group of checkboxes using the same name.
+	 * Useful in the case where you can't use an Ext checkbox group for some reason (checkboxes span)
+	 * multiple tabs, for example.
+	 * @param  {String} name The value of the "name" field of the checkboxes
+	 * @return {Array}       An array with all the inputValue values for the fields that are checked
+	 */
+	getCheckboxValue: function(name) {
+		var checkboxes = Ext.ComponentQuery.query('checkbox[name="'+name+'"]');
+		var value = [];
+		Ext.Array.each(checkboxes, function(checkbox) {
+			if (checkbox.getValue()) {
+				value.push(checkbox.getSubmitValue());
+			}
+		});
+		return value;
+	}
 });

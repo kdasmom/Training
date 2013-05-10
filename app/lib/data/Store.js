@@ -72,5 +72,12 @@ Ext.define('NP.lib.data.Store', {
 		}
 		
     	this.callParent(arguments);
+    },
+
+    getCopy: function() {
+    	var store = Ext.create(Ext.getClassName(this));
+    	store.loadRawData(this.getProxy().getReader().rawData);
+    	
+    	return store;
     }
 });

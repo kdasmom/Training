@@ -8,6 +8,8 @@ Ext.define('NP.view.mySettings.Main', {
     alias: 'widget.mysettings.main',
     
     requires: [
+        'NP.lib.core.Config',
+        'NP.lib.core.Security',
     	'NP.view.mySettings.Overview',
     	'NP.view.mySettings.UserInformation',
     	'NP.view.mySettings.Settings',
@@ -30,18 +32,21 @@ Ext.define('NP.view.mySettings.Main', {
 	    	}
     	];
 
-    	var settingVal = NP.lib.core.Config.getSetting('pn.main.WebDocumentz', 0);
+    	var settingVal = NP.Config.getSetting('pn.main.WebDocumentz', 0);
 		if (settingVal == 1 || settingVal == 2) {
 			this.items.push({
 	    		xtype: 'mysettings.display'
 	    	});
 		}
 
+        if (NP.Security.hasPermission(2095)) {
+            this.items.push({
+                xtype: 'mysettings.emailnotification'
+            });
+        }
+
 		this.items.push(
 			{
-	    		xtype: 'mysettings.emailnotification'
-	    	},
-	    	{
 	    		xtype: 'mysettings.mobilesettings'
 	    	},
 	    	{

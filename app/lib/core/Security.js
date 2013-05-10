@@ -245,6 +245,14 @@ Ext.define('NP.lib.core.Security', function() {
 		},
 
 		/**
+		 * Returns the permissions the logged in user has
+		 * @return {Object}
+		 */
+		getPermissions: function() {
+			return permissions;
+		},
+
+		/**
 		 * Checks if currently logged in user has rights to a certain module
 		 * @param  {Number} module_id
 		 * @return {Boolean}

@@ -15,7 +15,8 @@ Ext.define('NP.model.notification.EmailAlertType', {
 		{ name: 'emailalerttype_function', type: 'int' },
 		{ name: 'emailalerttype_category' },
 		{ name: 'emailalerttype_module_id_list' },
-		{ name: 'emailalerttype_id_alt', type: 'int' }
+		{ name: 'emailalerttype_id_alt', type: 'int' },
+		{ name: 'emailalerttype_showdays', type: 'int' }
 	],
 
 	validations: [

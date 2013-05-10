@@ -272,19 +272,28 @@ Ext.application({
 
 	/**
 	 * Utility function to load a store only once under a specified store ID
-	 * @param  {String}         storeId The unique Id for the store to be used byt the store manager to locate this store
-	 * @param  {String}         store   The class path of the store
-	 * @param  {String}         [cfg]   Additional configuration options for the store
+	 * @param  {String}         storeId      The unique Id for the store to be used byt the store manager to locate this store
+	 * @param  {String}         store        The class path of the store
+	 * @param  {String}         [cfg]        Additional configuration options for the store
+	 * @param  {Function}       [callbackFn] Options callback function for when the operation has run and data is loaded in the store
 	 * @return {Ext.data.Store}
 	 */
-	loadStore: function(storeId, store, cfg) {
+	loadStore: function(storeId, store, cfg, callbackFn) {
 		if (!cfg) cfg = {};
 
 		var storeObj = Ext.StoreManager.lookup(storeId);
 		if (!storeObj) {
 			cfg.storeId = storeId;
 			storeObj = Ext.create(store, cfg);
-			storeObj.load();
+			storeObj.load({
+				callback: function() {
+					if (callbackFn) { 
+						callbackFn(); 
+					}
+				}
+			});
+		} else if (callbackFn) { 
+			callbackFn();
 		}
 
 		return storeObj;

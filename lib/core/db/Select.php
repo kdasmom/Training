@@ -204,7 +204,9 @@ class Select implements SQLInterface, SQLElement {
 	public function __call($name, $arguments) {
 		$operator = str_replace('where', '', $name);
 		$operator = lcfirst($operator);
-		if (count($arguments) == 1) {
+		if (count($arguments) == 0) {
+			$this->where->{$operator}();
+		} else if (count($arguments) == 1) {
 			$this->where->{$operator}($arguments[0]);
 		} else if (count($arguments) == 2) {
 			$this->where->{$operator}($arguments[0], $arguments[1]);

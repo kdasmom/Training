@@ -10,7 +10,7 @@ namespace NP\core;
 class Exception extends \Exception {
 	
 	public function __construct($message, $code=0, $previous=null) {
-		parent::__construct("<b>".$message."</b>", $code, $previous);
+		parent::__construct($message, $code, $previous);
 	}
 	
 }

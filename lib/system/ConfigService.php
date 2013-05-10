@@ -371,6 +371,16 @@ class ConfigService extends AbstractService {
 	public function getLoginUrl() {
 		return $this->siteService->getLoginUrl();
 	}
+
+	/**
+	 * Returns the Timezone abbreviation for the server
+	 *
+	 * @return string
+	 */
+	public function getTimezoneAbr() {
+		$date = new \DateTime();
+		return $date->format('T');
+	}
 }
 
 ?>

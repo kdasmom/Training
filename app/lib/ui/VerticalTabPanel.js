@@ -42,7 +42,7 @@ Ext.define('NP.lib.ui.VerticalTabPanel', {
      * @cfg {Object} layout
      * Optional configuration object for the internal card layout. If present, this is passed straight through to the layout's constructor
      */
-    deferredRender: true,
+    layout: {},
 
     /**
      * @cfg {String} barConfig
@@ -102,11 +102,11 @@ Ext.define('NP.lib.ui.VerticalTabPanel', {
     initComponent: function() {
         var me = this;
 
-    	this.layout = Ext.applyIf({
-            type          : 'card',
+        this.layout = new Ext.layout.container.Card(Ext.apply({
+            owner: me,
             deferredRender: this.deferredRender,
-            activeItem    : this.activeTab
-        }, this.layout);
+            activeItem: this.activeTab
+        }, this.layout));
 
         this.tabs = [];
         this.panels = [];

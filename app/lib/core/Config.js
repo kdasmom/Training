@@ -34,7 +34,16 @@ Ext.define('NP.lib.core.Config', function() {
 	 */
 	var userSettings = null;
 	
+	/**
+	 * @private
+	 * @property {String}
+	 * Stores the timezone abbreviation
+	 */
+	var timezone = null;
+	
 	return {
+		alternateClassName: 'NP.Config',
+		
 		singleton: true,
 		
 		requires: ['NP.lib.core.Net','NP.store.system.States'],
@@ -95,6 +104,15 @@ Ext.define('NP.lib.core.Config', function() {
 							Ext.each(result, function(item, idx) {
 								userSettings[item['usersetting_name']] = Ext.JSON.decode(item['usersetting_value']);
 							});
+						}
+					},
+					// This request gets config settings for the user
+					{
+						service: 'ConfigService', 
+						action: 'getTimezoneAbr',
+						success: function(result) {
+							// Save timezone
+							timezone = result;
 						}
 					}
 				],
@@ -199,6 +217,14 @@ Ext.define('NP.lib.core.Config', function() {
 		 */
 		getToolbarBg: function() {
 			return '#DFE8F6';
+		},
+
+		/**
+		 * Returns the timezone abbreviation
+		 * @return {String}
+		 */
+		getTimezoneAbr: function() {
+			return timezone;
 		}
 	}
 }());

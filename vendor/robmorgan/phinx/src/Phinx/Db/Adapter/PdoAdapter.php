@@ -152,7 +152,6 @@ abstract class PdoAdapter implements AdapterInterface
      */
     public function execute($sql)
     {
-        echo $sql;
         return $this->getConnection()->exec($sql);
     }
     

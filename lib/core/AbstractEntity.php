@@ -37,7 +37,11 @@ abstract class AbstractEntity {
 			if (array_key_exists($field, $data)) {
 				$this->values[$field] = $data[$field];
 			} else {
-				$this->values[$field] = null;
+				if (array_key_exists('defaultValue', $definition))  {
+					$this->values[$field] = $definition['defaultValue'];
+				} else {
+					$this->values[$field] = null;
+				}
 			}
 		}
 	}
