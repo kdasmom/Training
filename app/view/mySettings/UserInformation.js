@@ -41,7 +41,8 @@ Ext.define('NP.view.mySettings.UserInformation', {
                 class: 'contact.Phone',
                 prefix: 'work_'
             }
-        ]
+        ],
+        evt: 'show'
     },
 
     initComponent: function() {
