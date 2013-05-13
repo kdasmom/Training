@@ -18,7 +18,11 @@ class Util {
 		if ($timestamp === null) {
 			$timestamp = time();
 		}
-		return date("Y-m-d\Th:i:s", $timestamp);
+		$ret = date("Y-m-d h:i:s.u", $timestamp);
+		
+		// Trim out extra characters at the end that can be created if using time() function which
+		// generates 00000 for microseconds instead of a 3 digit number
+		return substr(date("Y-m-d h:i:s.u", $timestamp), 0, 23);
 	}
 	
 	/**

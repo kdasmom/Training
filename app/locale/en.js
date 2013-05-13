@@ -6,15 +6,15 @@
 Ext.define('Ext.locale.en.data.validations', {
 	override: 'Ext.data.validations',
 
-	presenceMessage         : 'This field is required',
-	lengthMessage           : 'This field is the wrong length',
-	formatMessage           : 'This field is the wrong format',
-	inclusionMessage        : 'This field is not included in the list of valid values',
-	exclusionMessage        : 'This field is not an valid value',
-	emailMessage            : 'This field is not a valid email address',
-	passwordMessage         : 'Password needs to have at least on letter, one number, one special character, and be 6 characters or more',
-	dependentPresenceMessage: 'This field is required',
-	dependentGroupMessage   : 'This field is required'
+	presenceMessage : 'This field is required',
+	lengthMessage   : 'This field is the wrong length',
+	formatMessage   : 'This field is the wrong format',
+	inclusionMessage: 'This field is not included in the list of valid values',
+	exclusionMessage: 'This field is not an valid value',
+	emailMessage    : 'This field is not a valid email address',
+	passwordMessage : 'Password needs to have at least on letter, one number, one special character, and be 6 characters or more',
+	digitsMessage   : 'This field only accepts digits',
+	numericMessage  : 'This field must be a number'
 });
 
 // Vendor Catalog Menu

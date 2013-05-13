@@ -82,23 +82,10 @@ Ext.define('NP.lib.ui.BoundForm', {
 					service    : this.bind.service,
 					action     : this.bind.action,
 					success    : function(result, deferred) {
-						// Loop through bound models
-						Ext.each(that.bind.models, function(model, idx) {
-							// Get our model instance
-							modelObj = that.bind.models[idx].instance;
-
-							// Loop through all the model fields
-							modelObj.fields.each(function(col) {
-								// Field name must include the prefix
-								var fieldName = model.prefix + col.name;
-
-								// If the field is found in data received from our ajax request, proceed
-								if (result[fieldName]) {
-									// Set the value in the model
-									modelObj.set(col.name, result[fieldName]);
-								}
-							});
-						});
+						// If data is returned, set the field values on the models
+						if (result !== null) {
+							that.updateModels(result);
+						}
 						
 						// Copy the model data to the form fields
 						that.updateBoundFields();
@@ -176,6 +163,42 @@ Ext.define('NP.lib.ui.BoundForm', {
 		var idx = this.bind.modelPointer[className];
 
 		return this.bind.models[idx].instance;
+	},
+
+	/**
+	 * Sets a model record as the bound model
+	 * @param  {String}         className The model class to retrieve (same way you declared it in the bind config option)
+	 * @param  {Ext.data.Model} rec       The record to set as the bound model
+	 */
+	setModel: function(className, rec) {
+		var idx = this.bind.modelPointer[className];
+
+		this.bind.models[idx].instance = rec;
+	},
+
+	/**
+	 * Saves data from an object into the models associated with the form
+	 * @param  {Object} data Data to save to the model
+	 */
+	updateModels: function(data) {
+		var that = this;
+
+		Ext.each(this.bind.models, function(model, idx) {
+			// Get our model instance
+			var modelObj = that.bind.models[idx].instance;
+
+			// Loop through all the model fields
+			modelObj.fields.each(function(col) {
+				// Field name must include the prefix
+				var fieldName = model.prefix + col.name;
+
+				// If the field is found in the data object, proceed
+				if (fieldName in data) {
+					// Set the value in the model
+					modelObj.set(col.name, data[fieldName]);
+				}
+			});
+		});
 	},
 
 	/**
@@ -313,6 +336,10 @@ Ext.define('NP.lib.ui.BoundForm', {
 				success : function(result, deferred) {
 					// If save is successful, run success callback
 					if (result.success) {
+						// Update models if relevant data is returned
+						if (result.updatedData) {
+							that.updateModels(result.updatedData);
+						}
 						options.success(result, deferred);
 					// If there's a failure, process the errors
 					} else {
@@ -321,6 +348,7 @@ Ext.define('NP.lib.ui.BoundForm', {
 							Ext.each(result.errors, function(error) {
 								if (error.field == 'global') {
 									Ext.MessageBox.alert('Error', error.msg);
+									return false;
 								} else {
 									var field = that.findField(error.field);
 									if (field) {
@@ -347,7 +375,7 @@ Ext.define('NP.lib.ui.BoundForm', {
 					}
 				},
 				failure: function() {
-					Ext.log('Error saving user information');
+					Ext.log('Error submitting bound form');
 				}
 			}
 		});

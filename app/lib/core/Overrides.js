@@ -4,6 +4,11 @@
  * @author Thomas Messier
  */
 Ext.define('NP.lib.core.Overrides', function() {
+	// Override the default format used by Ext to encode dates
+	Ext.JSON.encodeDate = function(d) {
+		return Ext.Date.format(d, '"Y-m-d H:i:s.u"');
+	};
+
 	// Override ItemSelector so we can use templates in them
 	Ext.override(Ext.ux.form.ItemSelector, {
 		createList: function(title){
@@ -116,7 +121,7 @@ Ext.define('NP.lib.core.Overrides', function() {
 	                // Only validate non blank/null values with rules other than presence
 	                if (type && (type == 'presence' || (this.get(field) !== '' && this.get(field) !== null))) {
 	                	valid = validators[type](validation, this.get(field), this);
-
+	                	
 		                if (!valid) {
 		                    errors.add({
 		                        field  : field,
@@ -133,6 +138,14 @@ Ext.define('NP.lib.core.Overrides', function() {
 	
 	// Add validation types for Models
 	Ext.override(Ext.data.validations, {
+		digits: function(config, value) {
+			return value.search(/^-?\d+$/) != -1;
+		},
+
+		numeric: function(config, value) {
+			return value.search(/^-?((\d+(\.\d+)?)|(\.?\d+))$/) != -1;
+		},
+
 		password: function(config, value) {
 			return (/\d/.test(value) && /[a-z]/i.test(value) && /[!@#$%&*?]/.test(value) && value.length >= 6);
 		},

@@ -16,55 +16,9 @@ use NP\contact\PhoneGateway;
  * @author Thomas Messier
  */
 class UserService extends AbstractService {
-	/**
-	 * @var \NP\security\SecurityService
-	 */
-	protected $securityService;
-	
-	/**
-	 * @var \NP\user\DelegationGateway
-	 */
-	protected $delegationGateway;
-
-	/**
-	 * @var \NP\user\UserSettingGateway
-	 */
-	protected $userSettingGateway;
-
-	/**
-	 * @var \NP\user\UserprofileGateway
-	 */
-	protected $userprofileGateway;
-
-	/**
-	 * @var \NP\user\RoleGateway
-	 */
-	protected $roleGateway;
-
-	/**
-	 * @var \NP\contact\PersonGateway
-	 */
-	protected $personGateway;
-
-	/**
-	 * @var \NP\contact\AddressGateway
-	 */
-	protected $addressGateway;
-
-	/**
-	 * @var \NP\contact\EmailGateway
-	 */
-	protected $emailGateway;
-
-	/**
-	 * @var \NP\contact\PhoneGateway
-	 */
-	protected $phoneGateway;
-
-	/**
-	 * @var \NP\user\PropertyUserprofileGateway
-	 */
-	protected $propertyUserprofileGateway;
+	protected $securityService, $delegationGateway, $userSettingGateway, $userprofileGateway, $roleGateway,
+			  $personGateway, $addressGateway, $emailGateway, $phoneGateway, $propertyUserprofileGateway,
+			  $mobInfoGateway;
 
 	/**
 	 * @param \NP\security\SecurityService        $securityService            SecurityService object injected
@@ -80,7 +34,7 @@ class UserService extends AbstractService {
 	public function __construct(SecurityService $securityService, DelegationGateway $delegationGateway, UserSettingGateway $userSettingGateway, 
 								UserprofileGateway $userprofileGateway, RoleGateway $roleGateway, PersonGateway $personGateway,
 								AddressGateway $addressGateway, EmailGateway $emailGateway, PhoneGateway $phoneGateway,
-								PropertyUserprofileGateway $propertyUserprofileGateway) {
+								PropertyUserprofileGateway $propertyUserprofileGateway, MobInfoGateway $mobInfoGateway) {
 		$this->securityService            = $securityService;
 		$this->delegationGateway          = $delegationGateway;
 		$this->userSettingGateway         = $userSettingGateway;
@@ -91,6 +45,7 @@ class UserService extends AbstractService {
 		$this->emailGateway               = $emailGateway;
 		$this->phoneGateway               = $phoneGateway;
 		$this->propertyUserprofileGateway = $propertyUserprofileGateway;
+		$this->mobInfoGateway             = $mobInfoGateway;
 	}
 
 	/**
@@ -313,6 +268,93 @@ class UserService extends AbstractService {
 		}
 
 		return $success;
+	}
+
+	public function getMobileInfo($userprofile_id) {
+		$res = $this->mobInfoGateway->find(
+			array('userprofile_id'=>'?','mobinfo_status'=>'?'), 
+			array($userprofile_id,'active'),
+			null,
+			array('mobinfo_id','mobinfo_phone','userprofile_id','mobinfo_activated_datetm','mobinfo_deactivated_datetm','mobinfo_status')
+		);
+		if (count($res)) {
+			return $res[0];
+		} else {
+			return null;
+		}
+	}
+
+	public function saveMobileInfo($data) {
+		// Begin transaction
+		$this->mobInfoGateway->beginTransaction();
+
+		$errors = array();
+		try {
+			// Create the entity
+			$mobInfo = new MobInfoEntity($data['mobinfo']);
+
+			// Check if somebody else already registered this number
+			if ($this->mobInfoGateway->isDuplicate($mobInfo->userprofile_id, $mobInfo->mobinfo_phone)) {
+				$errors[] = array('field'=>'mobinfo_phone', 'msg'=>'This mobile number is already in use by another user. Please enter another number.');
+			}
+
+			// Validate the record
+			$validator = new EntityValidator();
+			$validator->validate($mobInfo);
+			$errors    = array_merge($errors, $validator->getErrors());
+
+			// If not errors, we can save and commit the transaction
+			if (!count($errors)) {
+				// Only do this if registering a new device
+				if ($data['isNewDevice']) {
+					// Disable the current device
+					$this->disableMobileDevices($mobInfo->mobinfo_id);
+
+					// Clear out the ID from the entity so a new record gets saved
+					$mobInfo->mobinfo_id = null;
+				}
+
+				// Add activated date if dealing with new record
+				if ($mobInfo->mobinfo_id === null) {
+					$mobInfo->mobinfo_activated_datetm = \NP\util\Util::formatDateForDB(time());
+				}
+
+				$this->mobInfoGateway->save($mobInfo);
+
+				$this->mobInfoGateway->commit();	
+			}
+		} catch(\Exception $e) {
+			$this->mobInfoGateway->rollback();
+			$errors[] = array('field'=>'global', 'msg'=>'Unexpected error');
+		}
+
+		// Blank out the pin from the returned data so it gets cleared out
+		$updatedData = $mobInfo->toArray();
+		$updatedData['mobinfo_pin'] = '';
+
+		return array(
+			'success'     => (count($errors)) ? false : true,
+			'updatedData' => $updatedData,
+			'errors'      => $errors
+		);
+	}
+
+	/**
+	 * Disables one or more mobile numbers
+	 *
+	 * @param int|array $mobinfo_id_list Array of mobinfo_id to be disabled; can be an integer if disabling a single number
+	 */
+	public function disableMobileDevices($mobinfo_id_list) {
+		if (!is_array($mobinfo_id_list)) {
+			$mobinfo_id_list = array($mobinfo_id_list);
+		}
+		foreach ($mobinfo_id_list as $mobinfo_id) {
+			$this->mobInfoGateway->update(array(
+				'mobinfo_id'                 => $mobinfo_id,
+				'mobinfo_deactivated_datetm' => \NP\util\Util::formatDateForDB(time()),
+				'mobinfo_status'             => 'inactive'
+			));
+		}
 	}
 }
 

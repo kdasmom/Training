@@ -45,14 +45,13 @@ Ext.define('NP.view.mySettings.Main', {
             });
         }
 
-		this.items.push(
-			{
-	    		xtype: 'mysettings.mobilesettings'
-	    	},
-	    	{
-	    		xtype: 'mysettings.userdelegation'
-    		}
-    	);
+        if (NP.Security.hasPermission(6049)) {
+            this.items.push({
+                xtype: 'mysettings.mobilesettings'
+            });
+        }
+
+		this.items.push({ xtype: 'mysettings.userdelegation' });
 
     	this.callParent(arguments);
     }

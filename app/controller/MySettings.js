@@ -43,6 +43,25 @@ Ext.define('NP.controller.MySettings', {
 			'[xtype="mysettings.emailnotification"] [xtype="shared.button.save"]': {
 				// Run this whenever the save button is clicked
 				click: this.saveEmailNotification
+			},
+			// The Save button on the Mobile Settings page
+			'[xtype="mysettings.mobilesettings"] [xtype="shared.button.save"]': {
+				// Run this whenever the save button is clicked
+				click: function() {
+					this.saveMobileSettings(false);
+				}
+			},
+			// The Register New Device button on the Mobile Settings page
+			'[xtype="mysettings.mobilesettings"] [xtype="shared.button.new"]': {
+				// Run this whenever the Register New Device button is clicked
+				click: function() {
+					this.saveMobileSettings(true);
+				}
+			},
+			// The Disable button on the Mobile Settings page
+			'[xtype="mysettings.mobilesettings"] [xtype="shared.button.inactivate"]': {
+				// Run this whenever the Disable button is clicked
+				click: this.disableMobileNumber
 			}
 		});
 
@@ -118,11 +137,10 @@ Ext.define('NP.controller.MySettings', {
 	showEmailNotification: function() {
 		// Mask the form while we load the data
 		var comp = this.application.getComponent('mysettings.emailnotification');
-		var mask = new Ext.LoadMask(comp);
-		mask.show();
-
+		
 		// Load the data we need to populate the form
 		NP.lib.core.Net.remoteCall({
+			mask: comp,
 			requests: [
 				{
 					service: 'NotificationService',
@@ -158,11 +176,7 @@ Ext.define('NP.controller.MySettings', {
 						Ext.log('Failed to load user email frequencies')
 					}
 				}
-			],
-			success: function() {
-				// Once we're done loading the data, remove the mask
-				mask.destroy();
-			}
+			]
 		});
 	},
 
@@ -220,5 +234,109 @@ Ext.define('NP.controller.MySettings', {
 				}
 			}
 		});
+	},
+
+	showMobileSettings: function() {
+		var that = this;
+		var form = this.application.getComponent('mysettings.mobilesettings');
+
+		form.on('dataloaded', function(boundForm, data) {
+			that.updateUI();
+		});
+	},
+
+	saveMobileSettings: function(isNewDevice) {
+		var that = this;
+		var form = this.application.getComponent('mysettings.mobilesettings');
+		if (!isNewDevice) isNewDevice = false;
+
+		// If the form is valid, save the mobile settings
+		if (form.isValid()) {
+			// Re-usable function since we need to use the call in a call back in one case
+			function saveSettings() {
+				var mobInfo = form.getModel('user.MobInfo');
+				if (mobInfo.get('mobinfo_id') === null) {
+					mobInfo.set('userprofile_id', NP.Security.getUser().get('userprofile_id'));
+				}
+				form.submitWithBindings({
+					service: 'UserService',
+					action : 'saveMobileInfo',
+					extraParams: {
+						isNewDevice: isNewDevice
+					},
+					success: function(result, deferred) {
+						// Show info message
+						NP.Util.showFadingWindow({ html: 'Changes saved successfully' });
+
+						// Update the button bar
+						that.updateUI();
+					}
+				});
+			}
+
+			// If we're registering a new device, we want to show a confirmation box
+			if (isNewDevice) {
+				Ext.MessageBox.confirm('Register New Device?', 'Registering a new device will disable the active one. Do you still want to proceed anyway?', function(btn) {
+					if (btn == 'yes') {
+						saveSettings();
+					}
+				});
+			// Otherwise we just save
+			} else {
+				saveSettings();
+			}
+		}
+	},
+
+	disableMobileNumber: function() {
+		var that = this;
+		var form = this.application.getComponent('mysettings.mobilesettings');
+
+		// Show confirm dialog
+		Ext.MessageBox.confirm('Disable Mobile Number?', 'Are you sure you want to disable this mobile number?', function(btn) {
+			if (btn == 'yes') {
+				// Make the request to disable the mobile number
+				NP.lib.core.Net.remoteCall({
+					mask    : form,
+					requests: {
+						service        : 'UserService',
+						action         : 'disableMobileDevices',
+						mobinfo_id_list: form.getModel('user.MobInfo').get('mobinfo_id'),
+						success: function(result, deferred) {
+							form.setModel('user.MobInfo', Ext.create('NP.model.user.MobInfo'));
+
+							// Update the button bar
+							that.updateUI();
+						},
+						failure: function(response, options, deferred) {
+							Ext.log('Failed to disable mobile number');
+						}
+					}
+				});
+			}
+		});
+	},
+
+	/**
+	 * Function to update the button bar depending on if there' an active mobile number or not
+	 * @private
+	 */
+	updateUI: function() {
+		var form = this.application.getComponent('mysettings.mobilesettings');
+
+		var mobInfo = form.getModel('user.MobInfo');
+
+		if (mobInfo.get('mobinfo_id') === null) {
+			form.query('[xtype="shared.button.save"]')[0].setText('Save and Activate');
+			form.query('[xtype="shared.button.new"]')[0].hide();
+			form.query('[xtype="shared.button.inactivate"]')[0].hide();
+		} else {
+			form.query('[xtype="shared.button.save"]')[0].setText('Save Changes');
+			form.query('[xtype="shared.button.new"]')[0].show();
+			form.query('[xtype="shared.button.inactivate"]')[0].show();
+		}
+		form.updateBoundFields();
+		// We need to manually clear out the Confirm Pin field since it's not in the model
+		form.findField('mobinfo_pin_confirm').setValue('');
 	}
 });
