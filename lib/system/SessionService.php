@@ -9,10 +9,8 @@ namespace NP\system;
  */
 class SessionService {
 	
-	public function __construct($sessionDuration=30) {
-		session_start();
-		if (isset($_SESSION['__LAST_ACTIVITY']) && (time() - $_SESSION['__LAST_ACTIVITY'] > ($sessionDuration*60))) {
-			// last request was more than 30 minutes ago
+	public function __construct($sessionDuration=1800) {
+		if (isset($_SESSION['__LAST_ACTIVITY']) && (time() - $_SESSION['__LAST_ACTIVITY'] > $sessionDuration)) {
 			session_unset();     // unset $_SESSION variable for the run-time 
 			session_destroy();   // destroy session data in storage
 		}

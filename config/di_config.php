@@ -28,7 +28,9 @@ $di['dbName'] = $di->share(function($di) use ($__CONFIG) {
 });
 $di['dbUsername'] = $__CONFIG['datasource']['username'];
 $di['dbPassword'] = $__CONFIG['datasource']['password'];
-$di['sessionDuration'] = $__CONFIG['sessionDuration'];
+$di['sessionDuration'] = $di->share(function($di) use ($__CONFIG) {
+	return $di['ConfigService']->get('main.util.logofftime', 1800);
+});
 
 // DI Definitions
 $diDefinition = array(

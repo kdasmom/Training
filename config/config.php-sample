@@ -14,9 +14,6 @@ $__CONFIG = array(
 		    'username'		=> 'your_user',
 		    'password'		=> 'your_password'
 	),
-	// The length of a user session in minutes
-	'sessionDuration'	=> 480,
-	
 	// Set logs that are enabled
 	// Valid values are 'global','mail','fileupload','catalog','invoice','po'
 	'enabledNamespaces'		=> array('global','mail','fileupload','catalog','invoice','po'),
