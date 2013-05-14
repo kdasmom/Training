@@ -24,11 +24,32 @@ interface AuthenticatorInterface {
 	public function authenticate();
 
 	/**
-	 * Returns username of the user that was successfully authenticated
+	 * Returns username used for authentication
 	 *
 	 * @return string The username
 	 */
-	public function getUser();
+	public function getUsername();
+
+	/**
+	 * Sets the username for authentication
+	 *
+	 * @param string $username The username to set
+	 */
+	public function setUsername($username);
+
+	/**
+	 * Sets the password for authentication
+	 *
+	 * @param string $password The username to set
+	 */
+	public function setPassword($password);
+
+	/**
+	 * Returns password used for authentication
+	 *
+	 * @return string The password
+	 */
+	public function getPassword();
 
 	/**
 	 * Returns authentication errors

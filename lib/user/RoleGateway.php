@@ -23,7 +23,7 @@ class RoleGateway extends AbstractGateway {
 				->columns($cols)
 				->join(array('ur'=>'userprofilerole'),
 					'r.role_id = ur.role_id',
-					array())
+					array('userprofilerole_id'))
 				->where("ur.userprofile_id = ?");
 		
 		// Since users can only have one role, we only need to return one record

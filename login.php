@@ -9,18 +9,27 @@ $errors = array();
 
 // If the authenticator says to not show login, move to authentication
 if (!$authenticator->showLogin()) {
+	if (array_key_exists('username', $_POST)) {
+		$authenticator->setUsername($_POST['username']);
+		$authenticator->setPassword($_POST['pwd']);
+	}
+
 	// Authenticate the user
 	$success = $authenticator->authenticate();
 	
 	// If there were no errors, proceed
 	if ($success) {
 		// Log the user in
-		$securityService->login($authenticator->getUser());
-		// Get the URL to enter the app from configuration
-		$loginUrl = $di['ConfigService']->get('PN.Main.LoginUrl');
-		// Redirect to the NexusPayables home
-		header("Location: $loginUrl") ;
-		die;
+		$userprofile_id = $securityService->login($authenticator->getUsername());
+		if ($userprofile_id) {
+			// Get the URL to enter the app from configuration
+			$loginUrl = $di['ConfigService']->get('PN.Main.LoginUrl');
+			// Redirect to the NexusPayables home
+			header("Location: $loginUrl") ;
+			die;
+		} else {
+			$errors = array('Authentication failed');
+		}
 	// If authentication failed, get the errors
 	} else {
 		$errors = $authenticator->getErrors();

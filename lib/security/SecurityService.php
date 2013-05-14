@@ -7,6 +7,7 @@ use NP\user\UserprofileGateway;
 use NP\user\RoleGateway;
 use NP\user\UserprofileLogonGateway;
 use NP\user\ModulePrivGateway;
+use NP\system\ConfigService;
 use NP\system\SessionService;
 use NP\property\RegionGateway;
 use NP\property\PropertyGateway;
@@ -20,7 +21,7 @@ use NP\util\Util;
 class SecurityService extends AbstractService {
 	
 	protected $sessionService, $userprofileGateway, $roleGateway, $userprofileLogonGateway, $modulePrivGateway,
-				$regionGateway, $propertyGateway;
+				$regionGateway, $propertyGateway, $configService;
 	
 	/**
 	 * @param \NP\system\SessionService        $sessionService          SessionService object injected
@@ -31,9 +32,10 @@ class SecurityService extends AbstractService {
 	 * @param \NP\property\RegionGateway       $regionGateway           RegionGateway object injected
 	 * @param \NP\property\PropertyGateway     $propertyGateway         PropertyGateway object injected
 	 */
-	public function __construct(SessionService $sessionService, UserprofileGateway $userprofileGateway, RoleGateway $roleGateway,
-								UserprofileLogonGateway $userprofileLogonGateway, ModulePrivGateway $modulePrivGateway,
-								RegionGateway $regionGateway, PropertyGateway $propertyGateway) {
+	public function __construct(SessionService $sessionService, UserprofileGateway $userprofileGateway,
+								RoleGateway $roleGateway, UserprofileLogonGateway $userprofileLogonGateway,
+								ModulePrivGateway $modulePrivGateway, RegionGateway $regionGateway,
+								PropertyGateway $propertyGateway, ConfigService $configService) {
 		$this->sessionService          = $sessionService;
 		$this->userprofileGateway      = $userprofileGateway;
 		$this->roleGateway             = $roleGateway;
@@ -41,6 +43,7 @@ class SecurityService extends AbstractService {
 		$this->modulePrivGateway       = $modulePrivGateway;
 		$this->regionGateway           = $regionGateway;
 		$this->propertyGateway         = $propertyGateway;
+		$this->configService           = $configService;
 	}
 
 	/**
@@ -49,7 +52,21 @@ class SecurityService extends AbstractService {
 	 * @return \NP\security\auth\AuthenticationInterface 
 	 */
 	public function getAuthenticator() {
-		return new auth\StandardAuthenticator($this->userprofileGateway);
+		$configPath = $this->configService->getClientFolder() . '/authentication_config.php';
+		if (file_exists($configPath)) {
+			$config = include $configPath;
+			$className = '\\NP\\security\\auth\\' . ucfirst($config['type']) . 'Authenticator';
+			$authenticator = new $className();
+			foreach ($config as $key=>$val) {
+				if ($key != 'type') {
+					$fn = 'set' . ucfirst($key);
+					$authenticator->$fn($val);
+				}
+			}
+			return $authenticator;
+		} else {
+			return new auth\StandardAuthenticator($this->userprofileGateway);
+		}
 	}
 	
 	/**
@@ -59,28 +76,43 @@ class SecurityService extends AbstractService {
 	 * @return int    If authentication succeeds, returns the userprofile_id of the user, otherwise returns 0
 	 */
 	public function login($username) {
-		$user = $this->userprofileGateway->find(array('userprofile_username'=>'?'), array($username));
-		$user = $user[0];
-		$userprofile_id = $user['userprofile_id'];
+		// Get the user record
+		$user = $this->userprofileGateway->find(
+			array(
+				'userprofile_username' => '?',
+				'userprofile_status'   => '?'
+			),
+			array($username, 'active')
+		);
 
-		// Save the user ID to the session
-		$this->setUserId($userprofile_id);
-		$this->setDelegatedUserId($userprofile_id);
+		// If we find the user, proceed with login
+		if (count($user)) {
+			$user = $user[0];
 		
-		// Save the user permissions to the session
-		$this->setUserPermissions($userprofile_id);
+			$userprofile_id = $user['userprofile_id'];
 
-		// Set the initial property context
-		$this->setContextForUser();
-		
-		// Log the user's login
-		$this->userprofileLogonGateway->insert(array(
-			"userprofile_id"			=> $userprofile_id,
-			"userprofilelogon_datetm"	=> Util::formatDateForDB(time()),
-			"userprofilelogon_ip"		=> $_SERVER["REMOTE_ADDR"],
-		));
-		
-		return $userprofile_id;
+			// Save the user ID to the session
+			$this->setUserId($userprofile_id);
+			$this->setDelegatedUserId($userprofile_id);
+			
+			// Save the user permissions to the session
+			$this->setUserPermissions($userprofile_id);
+
+			// Set the initial property context
+			$this->setContextForUser();
+			
+			// Log the user's login
+			$this->userprofileLogonGateway->insert(array(
+				"userprofile_id"			=> $userprofile_id,
+				"userprofilelogon_datetm"	=> Util::formatDateForDB(time()),
+				"userprofilelogon_ip"		=> $_SERVER["REMOTE_ADDR"],
+			));
+			
+			return $userprofile_id;
+		// Otherwise return false to indicate login failed
+		} else {
+			return 0;
+		}
 	}
 
 	/**

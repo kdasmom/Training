@@ -355,6 +355,13 @@ class ConfigService extends AbstractService {
 	}
 
 	/**
+	 * Returns path to the root client folder
+	 */
+	public function getClientFolder() {
+		return $this->getAppRoot() . '/clients/' . $this->getAppName();
+	}
+
+	/**
 	 * Get the client ID for the site currently being accessed
 	 *
 	 * @return int The id of the client
