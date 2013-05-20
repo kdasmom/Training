@@ -52,6 +52,8 @@ Ext.define('{$extStoreNameSpace}.{$extClassName}s', {
     requires: ['{$extNameSpace}.{$extClassName}'],
 
     constructor: function(cfg) {
+    	var that = this;
+    	
     	Ext.apply(this, cfg);
 
     	this.fields = [];
