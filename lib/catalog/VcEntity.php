@@ -26,7 +26,7 @@ class VcEntity extends \NP\core\AbstractEntity {
 		),
 		'vc_createdt'	 => array(
 			'validation' => array(
-				'date' => array('format'=>'Y-m-d\TH:i:s')
+				'date' => array('format'=>'Y-m-d H:i:s.u')
 			)
 		),
 		'vc_createdby'	 => array(
@@ -36,7 +36,7 @@ class VcEntity extends \NP\core\AbstractEntity {
 		),
 		'vc_lastupdatedt'	 => array(
 			'validation' => array(
-				'date' => array('format'=>'Y-m-d\TH:i:s')
+				'date' => array('format'=>'Y-m-d H:i:s.u')
 			)
 		),
 		'vc_lastupdateby'	 => array(

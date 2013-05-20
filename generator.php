@@ -96,7 +96,8 @@ Ext.define('{$extNameSpace}.{$extClassName}', {
 		$ext .= "
 		{ name: '{$col['COLUMN_NAME']}'";
 
-		if ($col['IS_NULLABLE'] == 'NO') {
+		// Make field required if it's not nullable and is not the primary key
+		if ($col['IS_NULLABLE'] == 'NO' && $i > 0) {
 			$php .= "
 			'required' => true";
 			$extValidation[] = "{ field: '{$col['COLUMN_NAME']}', type: 'presence' }";
@@ -116,8 +117,13 @@ Ext.define('{$extNameSpace}.{$extClassName}', {
 			$hasValidation = true;
 		} else if ($dataType == 'datetime') {
 			$validation .= "
-				'date' => array('format'=>'Y-m-d\TH:i:s')";
-				$ext .= ", type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat()";
+				'date' => array('format'=>'Y-m-d H:i:s.u')";
+				$ext .= ", type: 'date', dateFormat: NP.Config.getServerDateFormat()";
+			$hasValidation = true;
+		} else if ($dataType == 'smalldatetime') {
+			$validation .= "
+				'date' => array('format'=>'Y-m-d H:i:s')";
+				$ext .= ", type: 'date', dateFormat: NP.Config.getServerSmallDateFormat()";
 			$hasValidation = true;
 		}
 
