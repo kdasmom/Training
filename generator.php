@@ -54,7 +54,14 @@ Ext.define('{$extStoreNameSpace}.{$extClassName}s', {
     constructor: function(cfg) {
     	Ext.apply(this, cfg);
 
-    	this.fields = {$extNameSpace}.{$extClassName}.getFields();
+    	this.fields = [];
+    	Ext.Array.each({$extNameSpace}.{$extClassName}.getFields(), function(field) {
+            that.fields.push({
+                name: field.name,
+                type: field.type.type,
+                dateFormat: field.dateFormat
+            });
+        });
 
     	this.callParent(arguments);
     }    
