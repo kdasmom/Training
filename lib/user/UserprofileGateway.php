@@ -108,12 +108,12 @@ class UserprofileGateway extends AbstractGateway {
 			$set = $data;
 		}
 		
-		$values = $this->convertFieldsToBindParams($set);
-		$values['userprofile_password'] = 'PWDENCRYPT(?)';
+		$params = $this->convertFieldsToBindParams($set);
+		$params['fields']['userprofile_password'] = 'PWDENCRYPT(?)';
 
-		$insert = new \NP\core\db\Insert($this->table, $values);
+		$insert = new \NP\core\db\Insert($this->table, $params['fields']);
 
-		$res = $this->adapter->query($insert, $set);
+		$res = $this->adapter->query($insert, $params['values']);
 
 		if ($data instanceOf \NP\core\AbstractEntity) {
 			$data->{$this->pk} = $this->lastInsertId();
@@ -136,20 +136,24 @@ class UserprofileGateway extends AbstractGateway {
 			$set = $data;
 		}
 
-		$values = $this->convertFieldsToBindParams($set);
-
 		// If a blank password was provided, we need to make sure it doesn't get saved
-		if (array_key_exists('userprofile_password', $set) &&
-				($set['userprofile_password'] === '' || $set['userprofile_password'] === null)) {
-			unset($set['userprofile_password']);
-			unset($values['userprofile_password']);
+		if ( array_key_exists('userprofile_password', $set) ) {
+			if ($set['userprofile_password'] === '' || $set['userprofile_password'] === null) {
+				unset($set['userprofile_password']);
+				$params = $this->convertFieldsToBindParams($set);
+			} else {
+				$params = $this->convertFieldsToBindParams($set);
+				$params['values']['userprofile_password'] = 'PWDENCRYPT(?)';
+			}
 		} else {
-			$values['userprofile_password'] = 'PWDENCRYPT(:userprofile_password)';
+			$params = $this->convertFieldsToBindParams($set);
 		}
 
-		$update = new \NP\core\db\Update($this->table, $values, array($this->pk => ":{$this->pk}"));
+		$update = new \NP\core\db\Update($this->table, $params['fields'], array($this->pk=>'?'));
 		
-		return $this->adapter->query($update, $set);
+		return $this->adapter->query($update, $params['values']);
 	}
 	
 }
+
+?>

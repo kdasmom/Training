@@ -7,11 +7,9 @@ Ext.define('NP.view.mySettings.UserDelegation', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.mysettings.userdelegation',
     
+    requires: ['NP.view.mySettings.UserDelegationMain'],
+
     title: 'User Delegation',
 
-    html: 'Coming soon...',
-
-    initComponent: function() {
-    	this.callParent(arguments);
-    }
+    layout: 'fit'
 });

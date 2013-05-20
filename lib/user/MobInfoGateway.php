@@ -41,12 +41,12 @@ class MobInfoGateway extends AbstractGateway {
 			unset($set[$this->pk]);
 		}
 		
-		$values = $this->convertFieldsToBindParams($set);
-		$values['mobinfo_pin'] = 'PWDENCRYPT(:mobinfo_pin)';
+		$params = $this->convertFieldsToBindParams($set);
+		$params['fields']['mobinfo_pin'] = 'PWDENCRYPT(?)';
 
-		$insert = new \NP\core\db\Insert($this->table, $values);
+		$insert = new \NP\core\db\Insert($this->table, $params['fields']);
 
-		$res = $this->adapter->query($insert, $set);
+		$res = $this->adapter->query($insert, $params['values']);
 
 		if ($data instanceOf \NP\core\AbstractEntity) {
 			$data->{$this->pk} = $this->lastInsertId();
@@ -69,21 +69,20 @@ class MobInfoGateway extends AbstractGateway {
 			$set = $data;
 		}
 
-		$values = $this->convertFieldsToBindParams($set);
-
 		// If a blank password was provided, we need to make sure it doesn't get saved
 		if ( array_key_exists('mobinfo_pin', $set) ) {
 			if ($set['mobinfo_pin'] === '' || $set['mobinfo_pin'] === null) {
 				unset($set['mobinfo_pin']);
-				unset($values['mobinfo_pin']);
+				$params = $this->convertFieldsToBindParams($set);
 			} else {
-				$values['mobinfo_pin'] = 'PWDENCRYPT(:mobinfo_pin)';
+				$params = $this->convertFieldsToBindParams($set);
+				$params['values']['mobinfo_pin'] = 'PWDENCRYPT(?)';
 			}
 		}
 
-		$update = new \NP\core\db\Update($this->table, $values, array($this->pk => ":{$this->pk}"));
+		$update = new \NP\core\db\Update($this->table, $params['fields'], array($this->pk=>'?'));
 		
-		return $this->adapter->query($update, $set);
+		return $this->adapter->query($update, $params['values']);
 	}
 
 }

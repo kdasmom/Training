@@ -3,7 +3,6 @@
 namespace NP\user;
 
 use NP\core\AbstractGateway;
-
 use NP\core\db\Select;
 
 /**
@@ -29,6 +28,24 @@ class RoleGateway extends AbstractGateway {
 		// Since users can only have one role, we only need to return one record
 		$res = $this->adapter->query($select, array($userprofile_id));
 		return array_pop($res);
+	}
+
+	public function getNextLevelUp($role_id) {
+		$select = new Select();
+		$select->columns(array())
+				->from(array('t'=>'tree'))
+				->join(array('t2'=>'tree'),
+						't.tree_parent = t2.tree_id',
+						array('role_id'=>'tablekey_id'))
+				->whereEquals('t.table_name', "'role'")
+				->whereEquals('t.tablekey_id', '?');
+
+		$res = $this->adapter->query($select, array($role_id));
+		if (count($res)) {
+			return $res[0];
+		} else {
+			return null;
+		}
 	}
 	
 }

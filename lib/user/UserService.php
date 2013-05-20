@@ -18,23 +18,13 @@ use NP\contact\PhoneGateway;
 class UserService extends AbstractService {
 	protected $securityService, $delegationGateway, $userSettingGateway, $userprofileGateway, $roleGateway,
 			  $personGateway, $addressGateway, $emailGateway, $phoneGateway, $propertyUserprofileGateway,
-			  $mobInfoGateway;
+			  $mobInfoGateway, $delegationPropGateway;
 
-	/**
-	 * @param \NP\security\SecurityService        $securityService            SecurityService object injected
-	 * @param \NP\invoice\DelegationGateway       $delegationGateway          DelegationGateway object injected
-	 * @param \NP\user\UserprofileGateway         $userprofileGateway         UserprofileGateway object injected
-	 * @param \NP\user\RoleGateway                $roleGateway                RoleGateway object injected
-	 * @param \NP\contact\PersonGateway           $personGateway              PersonGateway object injected
-	 * @param \NP\contact\AddressGateway          $addressGateway             AddressGateway object injected
-	 * @param \NP\contact\EmailGateway            $emailGateway               EmailGateway object injected
-	 * @param \NP\contact\PhoneGateway            $phoneGateway               PhoneGateway object injected
-	 * @param \NP\user\PropertyUserprofileGateway $propertyUserprofileGateway PropertyUserprofileGateway object injected
-	 */
 	public function __construct(SecurityService $securityService, DelegationGateway $delegationGateway, UserSettingGateway $userSettingGateway, 
 								UserprofileGateway $userprofileGateway, RoleGateway $roleGateway, PersonGateway $personGateway,
 								AddressGateway $addressGateway, EmailGateway $emailGateway, PhoneGateway $phoneGateway,
-								PropertyUserprofileGateway $propertyUserprofileGateway, MobInfoGateway $mobInfoGateway) {
+								PropertyUserprofileGateway $propertyUserprofileGateway, MobInfoGateway $mobInfoGateway,
+								DelegationPropGateway $delegationPropGateway) {
 		$this->securityService            = $securityService;
 		$this->delegationGateway          = $delegationGateway;
 		$this->userSettingGateway         = $userSettingGateway;
@@ -46,6 +36,7 @@ class UserService extends AbstractService {
 		$this->phoneGateway               = $phoneGateway;
 		$this->propertyUserprofileGateway = $propertyUserprofileGateway;
 		$this->mobInfoGateway             = $mobInfoGateway;
+		$this->delegationPropGateway      = $delegationPropGateway;
 	}
 
 	/**
@@ -96,35 +87,44 @@ class UserService extends AbstractService {
 	/**
 	 * Get delegations for the user signed in
 	 *
-	 * @param int    $userprofile_id    Id of user to get delegation info for
-	 * @param string $toFrom            Whether to get delegations to the user or from (made by) the user; valid values are "from" and "to"
-	 * @param int    $delegation_status Filter the delegation records by delegation_status (optional); defaults to null, valid values are 1 and 0
+	 * @param  int    $userprofile_id    Id of user to get delegation info for
+	 * @param  string $toOrFrom          Whether to get delegations to the user or from (made by) the user; valid values are "from" and "to"
+	 * @param  int    $delegation_status Filter the delegation records by delegation_status (optional); defaults to null, valid values are 1 and 0
+	 * @param  int    $pageSize          The number of records per page; if null, all records are returned
+	 * @param  int    $page              The page for which to return records
+	 * @param  string $sort              Field(s) by which to sort the result; defaults to delegation_startdate
 	 * @return array Array of delegation records
 	 */
-	public function getDelegations($userprofile_id, $toFrom, $delegation_status=null) {
-		return $this->delegationGateway->findUserDelegations($userprofile_id, $toFrom, $delegation_status);
+	public function getDelegations($userprofile_id, $toOrFrom, $delegation_status=null, $pageSize=null, $page=1, $sort='delegation_startdate') {
+		return $this->delegationGateway->findUserDelegations($userprofile_id, $toOrFrom, $delegation_status, $pageSize, $page, $sort);
 	}
 	
 	/**
 	 * Get delegations to user signed in; shortcut for getDelegations($userprofile_id, 'to', ...)
 	 *
-	 * @param int    $userprofile_id    Id of user to get delegation info for
-	 * @param int    $delegation_status Filter the delegation records by delegation_status (optional); defaults to null, valid values are 1 and 0
+	 * @param  int    $userprofile_id    Id of user to get delegation info for
+	 * @param  int    $delegation_status Filter the delegation records by delegation_status (optional); defaults to null, valid values are 1 and 0
+	 * @param  int    $pageSize          The number of records per page; if null, all records are returned
+	 * @param  int    $page              The page for which to return records
+	 * @param  string $sort              Field(s) by which to sort the result; defaults to delegation_startdate
 	 * @return array Array of delegation records
 	 */
-	public function getDelegationsTo($userprofile_id, $delegation_status=null) {
-		return $this->getDelegations($userprofile_id, 'to' ,$delegation_status);
+	public function getDelegationsTo($userprofile_id, $delegation_status=null, $pageSize=null, $page=1, $sort='delegation_startdate') {
+		return $this->getDelegations($userprofile_id, 'to' ,$delegation_status, $pageSize, $page, $sort);
 	}
 	
 	/**
 	 * Get delegations made by the user signed in; shortcut for getDelegations($userprofile_id, 'from', ...)
 	 *
-	 * @param int    $userprofile_id    Id of user to get delegation info for
-	 * @param int    $delegation_status Filter the delegation records by delegation_status (optional); defaults to null, valid values are 1 and 0
+	 * @param  int    $userprofile_id    Id of user to get delegation info for
+	 * @param  int    $delegation_status Filter the delegation records by delegation_status (optional); defaults to null, valid values are 1 and 0
+	 * @param  int    $pageSize          The number of records per page; if null, all records are returned
+	 * @param  int    $page              The page for which to return records
+	 * @param  string $sort              Field(s) by which to sort the result; defaults to delegation_startdate
 	 * @return array Array of delegation records
 	 */
-	public function getDelegationsFrom($userprofile_id, $delegation_status=null) {
-		return $this->getDelegations($userprofile_id, 'from' ,$delegation_status);
+	public function getDelegationsFrom($userprofile_id, $delegation_status=null, $pageSize=null, $page=1, $sort='delegation_startdate') {
+		return $this->getDelegations($userprofile_id, 'from' ,$delegation_status, $pageSize, $page, $sort);
 	}
 	
 	/**
@@ -270,6 +270,39 @@ class UserService extends AbstractService {
 		return $success;
 	}
 
+	public function saveDisplaySettings($data) {
+		// Begin transaction
+		$this->userprofileGateway->beginTransaction();
+		$errors = array();
+
+		try {
+			$userprofile = new \NP\user\UserprofileEntity($data['userprofile']);
+			$validator = new EntityValidator();
+			$validator->validate($userprofile);
+			$errors    = $validator->getErrors();
+
+			if (!count($errors)) {
+				$this->userprofileGateway->save(array(
+					'userprofile_id'                           => $userprofile->userprofile_id,
+					'userprofile_splitscreen_size'             => $userprofile->userprofile_splitscreen_size,
+					'userprofile_splitscreen_isHorizontal'     => $userprofile->userprofile_splitscreen_isHorizontal,
+					'userprofile_splitscreen_ImageOrder'       => $userprofile->userprofile_splitscreen_ImageOrder,
+					'userprofile_splitscreen_LoadWithoutImage' => $userprofile->userprofile_splitscreen_LoadWithoutImage
+				));
+
+				$this->userprofileGateway->commit();
+			}
+		} catch(\Exception $e) {
+			$this->userprofileGateway->rollback();
+			$errors[] = array('field'=>'global', 'msg'=>'Unexpected error');
+		}
+
+		return array(
+			'success' => (count($errors)) ? false : true,
+			'errors'  => $errors
+		);
+	}
+
 	public function getMobileInfo($userprofile_id) {
 		$res = $this->mobInfoGateway->find(
 			array('userprofile_id'=>'?','mobinfo_status'=>'?'), 
@@ -353,6 +386,99 @@ class UserService extends AbstractService {
 				'mobinfo_id'                 => $mobinfo_id,
 				'mobinfo_deactivated_datetm' => \NP\util\Util::formatDateForDB(time()),
 				'mobinfo_status'             => 'inactive'
+			));
+		}
+	}
+
+	/**
+	 * Cancels an active/future delegation
+	 *
+	 * @param int $delegation_id The ID of the delegation to cancel
+	 */
+	public function cancelDelegation($delegation_id) {
+		$this->delegationGateway->update(array(
+			'delegation_id'     => $delegation_id,
+			'delegation_status' => 0
+		));
+	}
+
+	public function getAllowedDelegationUsers($userprofile_id) {
+		return $this->delegationGateway->findAllowedDelegationUsers($userprofile_id);
+	}
+
+	public function getDelegation($delegation_id) {
+		// We can't use findById because of case issues
+		$res = $this->delegationGateway->find(
+			array('delegation_id'=>'?'),
+			array($delegation_id),
+			null,
+			array('delegation_id','userprofile_id','delegation_to_userprofile_id','delegation_startdate',
+				'delegation_stopdate','delegation_status','delegation_createddate','delegation_createdby')
+		);
+
+		$res[0]['delegation_properties'] = \NP\util\Util::valueList($this->getDelegationProperties($delegation_id), 'property_id');
+
+		return $res[0];
+	}
+
+	public function getDelegationProperties($delegation_id) {
+		return $this->delegationPropGateway->findDelegationProperties($delegation_id);
+	}
+
+	public function hasActiveDelegation($userprofile_id) {
+		$activeDelegs = $this->getDelegationsTo($userprofile_id, 1);
+		return (count($activeDelegs)) ? true : false;
+	}
+
+	public function saveDelegation($data) {
+		$this->delegationGateway->beginTransaction();
+
+		$errors = array();
+		try {
+			// Create the entity
+			$delegation = new DelegationEntity($data['delegation']);
+
+			// If dealing with a new delegation, set created values
+			if ($delegation->delegation_id === null) {
+				$delegation->delegation_createdby = $this->securityService->getUserId();
+				$delegation->delegation_createddate = \NP\util\Util::formatDateForDB();
+			}
+
+			// Validate the entity
+			$validator = new EntityValidator();
+			$validator->validate($delegation);
+			$errors    = $validator->getErrors();
+
+			// Validate to make sure at least one property is assigned
+			if (!array_key_exists('delegation_properties', $data) || !is_array($data['delegation_properties']) || !count($data['delegation_properties'])) {
+				$errors[] = array('field'=>'delegation_properties', 'msg'=>'You must delegate at least one property.');
+			}
+
+			// If there are no errors we can save everything
+			if (!count($errors)) {
+				$this->delegationGateway->save($delegation);
+
+				$this->saveDelegationProperties($delegation->delegation_id, $data['delegation_properties']);
+
+				$this->delegationGateway->commit();	
+			}
+		} catch(\Exception $e) {
+			$this->delegationGateway->rollback();
+			$errors[] = array('field'=>'global', 'msg'=>'Unexpected database error');
+		}
+
+		return array(
+			'success' => (count($errors)) ? false : true,
+			'errors'  => $errors
+		);
+	}
+
+	public function saveDelegationProperties($delegation_id, $delegation_properties) {
+		$this->delegationPropGateway->delete(array('delegation_id'=>'?'), array($delegation_id));
+		foreach ($delegation_properties as $property_id) {
+			$this->delegationPropGateway->save(array(
+				'delegation_id' => $delegation_id,
+				'property_id'   => $property_id
 			));
 		}
 	}

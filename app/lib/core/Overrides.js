@@ -4,6 +4,65 @@
  * @author Thomas Messier
  */
 Ext.define('NP.lib.core.Overrides', function() {
+	// Fixes current bug with ExtJS where suspendEvents() doesn't affect events set by the controller
+	// in Controller.control() method
+	Ext.define('Ext.override.app.EventBus', {
+		override: 'Ext.app.EventBus',
+
+		constructor: function()
+		{
+			var me = this;
+			me.callParent(arguments);
+			// Queue für pausierte Events pro Component-ID
+			me.eventQueue = {};
+
+			Ext.override(Ext.Component, {
+				// bei resumeEvents wird nur continueFireEvent für die Queue-Elemente aufgerufen,
+				// sodass wir hier nochmal selbst dispatch aufrufen müssen
+				resumeEvents: function()
+				{
+					// ACHTUNG: this ist die Component
+					Ext.util.Observable.prototype.resumeEvents.apply(this, arguments);
+					if (!this.eventsSuspended)
+						me.resumeQueuedEvents(this);
+				}
+			});
+		},
+		dispatch: function(ev, target, args)
+		{
+			// Events nicht dispatchen, wenn pausiert
+			if (target.eventsSuspended)
+			{
+				// Events in die Queue packen, wenn target.suspendEvents(true) aufgerufen wurde
+				if (!!target.eventQueue)
+				{
+					var id = target.getId();
+					this.eventQueue[id] = this.eventQueue[id] || [];
+					this.eventQueue[id].push([ev, target, args]);
+				}
+				return true;
+			}
+			return this.callParent(arguments);
+		},
+		/**
+		 * Funktion wird bei resumeEvents einer Component aufgerufen
+		 * -> alle gequeueten Events jetzt auslösen
+		 * @private
+		 */
+		resumeQueuedEvents: function(target)
+		{
+			var me = this,
+				id = target.getId(),
+				queue = me.eventQueue[id],
+				i = 0,
+				len;
+			if (queue)
+				for (len = queue.length; i < len; i++)
+					me.dispatch.apply(me, queue[i]);
+			delete me.eventQueue[id];
+		}
+	});
+
 	// Override the default format used by Ext to encode dates
 	Ext.JSON.encodeDate = function(d) {
 		return Ext.Date.format(d, '"Y-m-d H:i:s.u"');

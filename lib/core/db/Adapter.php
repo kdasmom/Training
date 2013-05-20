@@ -47,6 +47,11 @@ class Adapter {
 	protected $transactionLevel = 0;
 
 	/**
+	 * @var int
+	 */
+	protected $lastInsertId = null;
+
+	/**
 	 * @param $server   string Server address
 	 * @param $dbName   string Name of the database
 	 * @param $username string Username to connect to database
@@ -67,14 +72,15 @@ class Adapter {
 	public function connect() {
 		// Only try to connect if a connection hasn't been established yet
 		if ($this->conn === null) {
+			// Set error mode to make sure errors throw exceptions
+			sqlsrv_configure('WarningsReturnAsErrors', 1);
+
 			// Try to connect
-			try {
-				$this->conn = new \PDO("sqlsrv:Server={$this->server};Database={$this->dbName}", $this->username, $this->pwd);
-				// Set error mode to make sure errors throw exceptions
-				$this->conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-			// If connection fails, catch the exception and throw a custom error with it
-			} catch(\PDOException $e) {
-				throw new \NP\core\Exception("Connection failed: {$e->getMessage()}");
+			$connectionInfo = array('Database'=>$this->dbName, 'UID'=>$this->username, 'PWD'=>$this->pwd, 'ReturnDatesAsStrings'=>true);
+			$this->conn = sqlsrv_connect($this->server, $connectionInfo);
+
+			if (!$this->conn) {
+				die( print_r( sqlsrv_errors(), true) );
 			}
 		}
 	}
@@ -95,18 +101,40 @@ class Adapter {
 			$sql = $sql->toString();
 		}
 
+		$sql = trim($sql);
+		$beginSql = strtolower(substr($sql, 0, 6));
+
+		// If dealing with an insert statement, append SCOPE_IDENTITY QUERY at the end
+		if ($beginSql == 'insert') {
+			$sql .= ';SELECT SCOPE_IDENTITY() AS last_id;';
+		}
+
 		// Create the SQL statement and execute it
-		$stmt = $this->conn->prepare($sql);
-		$res = $stmt->execute($params);
+		$stmt = sqlsrv_query($this->conn, $sql, $params);
+		if (!$stmt) {
+			echo "Error running query. SQL was the following:<br/><br/>{$sql}<br/><br/>";
+			print_r( sqlsrv_errors(), true);
+			var_dump(debug_backtrace());
+			die;
+		}
 		
 		// If we ran a select statement, return the data
-		if ($stmt->columnCount() > 0) {
+		if (!in_array($beginSql, array('insert','update','delete'))) {
 			// Fetch and return as an associative array
-			return $stmt->fetchAll(\PDO::FETCH_ASSOC);
-		// Otherwise, if it was an insert or update, return the result of execute statement
-		} else {
+			$res = array();
+			while( $row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC) ) {
+				$res[] = $row;
+			}
+
 			return $res;
+		// If dealing with an insert statement, we need to get the last insert ID and store it
+		} else if ($beginSql == 'insert') {
+			sqlsrv_next_result($stmt);
+     		sqlsrv_fetch($stmt);
+			$this->lastInsertId = sqlsrv_get_field($stmt, 0);
 		}
+
+		return true;
 	}
 
 	/**
@@ -115,7 +143,7 @@ class Adapter {
 	 * @return int
 	 */
 	public function lastInsertId() {
-		return $this->conn->lastInsertId();
+		return $this->lastInsertId;
 	}
 
 	/**
@@ -126,7 +154,7 @@ class Adapter {
 		$this->connect();
 		
 		if ($this->transactionLevel == 0) {
-			$this->conn->beginTransaction();
+			sqlsrv_begin_transaction($this->conn);
 		}
 		$this->transactionLevel++;
 	}
@@ -140,7 +168,7 @@ class Adapter {
 		// Make sure there's a connection to DB
 		$this->connect();
 		
-		return $this->conn->inTransaction();
+		return ($this->transactionLevel) ? true : false;
 	}
 
 	/**
@@ -148,7 +176,7 @@ class Adapter {
 	 */
 	public function commit() {
 		if ($this->transactionLevel == 1) {
-			$this->conn->commit();
+			sqlsrv_commit($this->conn);
 		}
 		if ($this->transactionLevel > 0) {
 			$this->transactionLevel--;
@@ -160,7 +188,7 @@ class Adapter {
 	 */
 	public function rollback() {
 		if ($this->transactionLevel > 0) {
-			$this->conn->rollback();
+			sqlsrv_rollback($this->conn);
 			$this->transactionLevel = 0;
 		}
 	}

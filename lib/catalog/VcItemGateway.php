@@ -20,23 +20,23 @@ class VcItemGateway extends AbstractGateway {
 			          array('unspsc_commodity_familytitle','unspsc_commodity_commoditytitle'),
 			          Select::JOIN_LEFT)
 			   ->where(array(
-			   		'vc_id'=>':vc_id'
+			   		'vc_id'=>'?'
 			   	))
 			   ->order($sort);
 
-		$params = array('vc_id'=>$vc_id);
+		$params = array($vc_id);
 		
 		if (in_array($filter_type, ['active','inactive','category'])) {
-			$select->whereEquals('vi.vcitem_status', ':vcitem_status');
-			$params['vcitem_status'] = ($filter_type == 'inactive') ? 0 : 1;
+			$select->whereEquals('vi.vcitem_status', '?');
+			$params[] = ($filter_type == 'inactive') ? 0 : 1;
 		}
 		if ($filter_type == 'category') {
 			$select->nest('OR')		
-					->whereEquals('vi.vcitem_category_name', ':category');
+					->whereEquals('vi.vcitem_category_name', '?');
 			if (is_int($category)) {
-				$select->whereEquals('vi.UNSPSC_Commodity_Commodity', ':category');
+				$select->whereEquals('vi.UNSPSC_Commodity_Commodity', '?');
 			}
-			$params['category'] = $category;
+			$params[] = $category;
 		}
 
 		// If paging is needed

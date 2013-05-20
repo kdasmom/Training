@@ -8,6 +8,17 @@ Ext.define('NP.controller.MySettings', {
 	
 	requires: ['NP.lib.core.Security','NP.lib.core.Net','NP.lib.core.Util'],
 	
+	changesSavedText                : 'Changes saved successfully',
+	errorDialogTitleText            : 'Error',
+	registerNewDeviceDialogTitleText: 'Register New Device?',
+	registerNewDeviceDialogText     : 'Registering a new device will disable the active one. Do you still want to proceed anyway?',
+	disableMobileDialogTitleText    : 'Disable Mobile Number?',
+	disableMobileDialogText         : 'Are you sure you want to disable this mobile number?',
+	cancelDelegDialogTitleText      : 'Cancel Delegation?',
+	cancelDelegDialogText           : 'Are you sure you want to cancel this delegation?',
+	activeDelegErrorTitleText       : 'Active Delegation',
+	activeDelegErrorText            : 'You have an active delegation. You cannot delegate to another user until that delegation expires or is cancelled.',
+
 	init: function() {
 		Ext.log('MySettings controller initialized');
 
@@ -39,6 +50,11 @@ Ext.define('NP.controller.MySettings', {
 				// Run this whenever the save button is clicked
 				click: this.saveUserInfo
 			},
+			// The Save button on the Display page
+			'[xtype="mysettings.display"] [xtype="shared.button.save"]': {
+				// Run this whenever the save button is clicked
+				click: this.saveDisplay
+			},
 			// The Save button on the Email Notification page
 			'[xtype="mysettings.emailnotification"] [xtype="shared.button.save"]': {
 				// Run this whenever the save button is clicked
@@ -62,6 +78,40 @@ Ext.define('NP.controller.MySettings', {
 			'[xtype="mysettings.mobilesettings"] [xtype="shared.button.inactivate"]': {
 				// Run this whenever the Disable button is clicked
 				click: this.disableMobileNumber
+			},
+			// The delegation grids
+			'[xtype="mysettings.userdelegationgrid"]': {
+				// Clicking on Cancel or View on one of the delegation grids
+				cellclick: function(grid, td, cellIndex, record, tr, rowIndex, e, eOpts) {
+					// Only take action if the click happened on an image (button)
+					if (e.target.tagName == 'IMG') {
+						// Get the delegation ID for the record
+						var delegation_id = record.get('delegation_id');
+						var el = Ext.get(e.target);
+						// If Cancel button was clicked
+						if (el.hasCls('cancel')) {
+							this.cancelDelegation(delegation_id, grid);
+						// If View button was clicked
+						} else if (el.hasCls('view')) {
+							this.application.addHistory('MySettings:showMySettings:UserDelegation:Form:' + delegation_id);
+						}
+					}
+				}
+			},
+			// The Add a Delegation button on User Delegations
+			'[xtype="mysettings.userdelegation"] [xtype="shared.button.new"]': {
+				// Run this whenever the button is clicked
+				click: this.addUserDelegation
+			},
+			// The Cancel button on the Add Delegation form
+			'[xtype="mysettings.userdelegationform"] [xtype="shared.button.cancel"]': {
+				// Run this whenever the button is clicked
+				click: function() { this.application.addHistory('MySettings:showMySettings:UserDelegation:Main'); }
+			},
+			// The Save button on the Add Delegation form
+			'[xtype="mysettings.userdelegationform"] [xtype="shared.button.save"]': {
+				// Run this whenever the button is clicked
+				click: this.saveUserDelegationForm
 			}
 		});
 
@@ -78,8 +128,10 @@ Ext.define('NP.controller.MySettings', {
 	/**
 	 * Shows the my settings page
 	 * @param {String} [activeTab="open"] The tab currently active
+	 * @param {String} [subSection]       The seubsection of the tab to open
+	 * @param {String} [id]               Id for an item being viewed
 	 */
-	showMySettings: function(activeTab) {
+	showMySettings: function(activeTab, subSection, id) {
 		var that = this;
 
 		// Load the Email Alert Types store
@@ -95,19 +147,26 @@ Ext.define('NP.controller.MySettings', {
 			
 			// Set the active tab if it hasn't been set yet
 			if (tab.getXType() != tabPanel.getActiveTab().getXType()) {
+				tabPanel.suspendEvents(false);
 				tabPanel.setActiveTab(tab);
+				tabPanel.resumeEvents();
 			}
 
 			// Check if there's a show method for this tab
 			var showMethod = 'show' + activeTab;
 			if (that[showMethod]) {
 				// If the show method exists, run it
-				that[showMethod](tab);
+				that[showMethod](subSection, id);
 			}
 		});
 	},
 
+	/**
+	 * Saves user info from the form
+	 */
 	saveUserInfo: function() {
+		var that = this;
+
 		var form = this.application.getComponent('mysettings.userinformation');
 		
 		if (form.isValid()) {
@@ -128,12 +187,62 @@ Ext.define('NP.controller.MySettings', {
 					form.findField('userprofile_password_confirm').setValue('');
 
 					// Show info message
-					NP.Util.showFadingWindow({ html: 'Changes saved successfully' });
+					NP.Util.showFadingWindow({ html: that.changesSavedText });
 				}
 			});
 		}
 	},
 
+	/**
+	 * Displays the page for the Display tab
+	 */
+	showDisplay: function() {
+		var form = this.application.getComponent('mysettings.display');
+
+		// Bind the form to a model that's the same as the current logged in user's model
+		var formModel = NP.Security.getUser().copy();
+		form.setModel('user.Userprofile', formModel);
+
+		// Now update the fields to set the correct values
+		form.updateBoundFields();
+		var screenSize = formModel.get('userprofile_splitscreen_size');
+		if ( screenSize !== null && !Ext.Array.contains([25,50,60], screenSize) ) {
+			form.findField('userprofile_splitscreen_size').setValue(-1);
+			form.findField('userprofile_splitscreen_size_custom').setValue(screenSize);
+		}
+	},
+
+	saveDisplay: function() {
+		var that = this;
+		var form = this.application.getComponent('mysettings.display');
+
+		if (form.isValid()) {
+			var values = form.getValues();
+			var userprofile_splitscreen_size = (values['userprofile_splitscreen_size'] == -1) ? values['userprofile_splitscreen_size_custom'] : values['userprofile_splitscreen_size'];
+			form.getModel('user.Userprofile').set('userprofile_splitscreen_size', userprofile_splitscreen_size);
+
+			form.submitWithBindings({
+				service: 'UserService',
+				action : 'saveDisplaySettings',
+				success: function(result, deferred) {
+					// Show info message
+					NP.Util.showFadingWindow({ html: that.changesSavedText });
+
+					// Update the local user model
+					var user = NP.Security.getUser();
+					
+					user.set('userprofile_splitscreen_size', userprofile_splitscreen_size);
+					user.set('userprofile_splitscreen_isHorizontal', values['userprofile_splitscreen_isHorizontal']);
+					user.set('userprofile_splitscreen_ImageOrder', values['userprofile_splitscreen_ImageOrder']);
+					user.set('userprofile_splitscreen_LoadWithoutImage', values['userprofile_splitscreen_LoadWithoutImage']);
+				}
+			});
+		}
+	},
+
+	/**
+	 * Displays the page for the Email Notification tab
+	 */
 	showEmailNotification: function() {
 		// Mask the form while we load the data
 		var comp = this.application.getComponent('mysettings.emailnotification');
@@ -180,7 +289,12 @@ Ext.define('NP.controller.MySettings', {
 		});
 	},
 
+	/**
+	 * Saves Email Notification settings entered in the form
+	 */
 	saveEmailNotification: function() {
+		var that = this;
+
 		var userprofile_id = NP.Security.getUser().get('userprofile_id');
 
 		// Get the value for the alert checkboxes
@@ -224,9 +338,9 @@ Ext.define('NP.controller.MySettings', {
 				success: function(result, deferred) {
 					if (result.success) {
 						// Show info message
-						NP.Util.showFadingWindow({ html: 'Changes saved successfully' });
+						NP.Util.showFadingWindow({ html: that.changesSavedText });
 					} else {
-						Ext.MessageBox.alert('Error', result.error);
+						Ext.MessageBox.alert(that.errorDialogTitleText, result.error);
 					}
 				},
 				failure: function(response, options, deferred) {
@@ -236,6 +350,9 @@ Ext.define('NP.controller.MySettings', {
 		});
 	},
 
+	/**
+	 * Displays the page for the Mobile Settings tab
+	 */
 	showMobileSettings: function() {
 		var that = this;
 		var form = this.application.getComponent('mysettings.mobilesettings');
@@ -245,6 +362,9 @@ Ext.define('NP.controller.MySettings', {
 		});
 	},
 
+	/**
+	 * Saves mobile settings entered in the form
+	 */
 	saveMobileSettings: function(isNewDevice) {
 		var that = this;
 		var form = this.application.getComponent('mysettings.mobilesettings');
@@ -266,7 +386,7 @@ Ext.define('NP.controller.MySettings', {
 					},
 					success: function(result, deferred) {
 						// Show info message
-						NP.Util.showFadingWindow({ html: 'Changes saved successfully' });
+						NP.Util.showFadingWindow({ html: that.changesSavedText });
 
 						// Update the button bar
 						that.updateUI();
@@ -276,7 +396,7 @@ Ext.define('NP.controller.MySettings', {
 
 			// If we're registering a new device, we want to show a confirmation box
 			if (isNewDevice) {
-				Ext.MessageBox.confirm('Register New Device?', 'Registering a new device will disable the active one. Do you still want to proceed anyway?', function(btn) {
+				Ext.MessageBox.confirm(that.registerNewDeviceDialogTitleText, that.registerNewDeviceDialogText, function(btn) {
 					if (btn == 'yes') {
 						saveSettings();
 					}
@@ -288,12 +408,15 @@ Ext.define('NP.controller.MySettings', {
 		}
 	},
 
+	/**
+	 * Disables a mobile number
+	 */
 	disableMobileNumber: function() {
 		var that = this;
 		var form = this.application.getComponent('mysettings.mobilesettings');
 
 		// Show confirm dialog
-		Ext.MessageBox.confirm('Disable Mobile Number?', 'Are you sure you want to disable this mobile number?', function(btn) {
+		Ext.MessageBox.confirm(that.disableMobileDialogTitleText, that.disableMobileDialogText, function(btn) {
 			if (btn == 'yes') {
 				// Make the request to disable the mobile number
 				NP.lib.core.Net.remoteCall({
@@ -338,5 +461,142 @@ Ext.define('NP.controller.MySettings', {
 		form.updateBoundFields();
 		// We need to manually clear out the Confirm Pin field since it's not in the model
 		form.findField('mobinfo_pin_confirm').setValue('');
+	},
+
+	/**
+	 * Shows the page for the User Delegation tab
+	 * @param {String} [subSection="Main"] The page currently active within the tab
+	 * @param {Number} [delegation_id]     Id for the delegation being viewed if any
+	 */
+	showUserDelegation: function(subSection, delegation_id) {
+		if (!subSection) subSection = 'Main';
+
+		console.debug('Showing User Deleg section: ' + subSection);
+
+		this['showUserDelegation' + subSection](delegation_id);
+	},
+
+	/**
+	 * Displays the main user delegation page (the one with the two grids)
+	 */
+	showUserDelegationMain: function() {
+		this.application.setView('NP.view.mySettings.UserDelegationMain', {}, '[xtype="mysettings.userdelegation"]');
+
+		var grids = Ext.ComponentQuery.query('[xtype="mysettings.userdelegationgrid"]');
+
+		Ext.Array.each(grids, function(grid) {
+			grid.addExtraParams({ userprofile_id: NP.Security.getUser().get('userprofile_id') });
+			grid.getStore().load();
+		});
+	},
+
+	/**
+	 * Cancels a delegation
+	 * @param {Number}         delegation_id Id for the delegation to Cancel
+	 * @param {Ext.grid.Panel} grid          The grid on which the delegation to cancel is
+	 */
+	cancelDelegation: function(delegation_id, grid) {
+		Ext.MessageBox.confirm(this.cancelDelegDialogTitleText, this.cancelDelegDialogText, function(btn) {
+			if (btn == 'yes') {
+				NP.lib.core.Net.remoteCall({
+					requests: {
+						service      : 'UserService',
+						action       : 'cancelDelegation',
+						delegation_id: delegation_id,
+						success      : function(result, deferred) {
+							var rec = grid.getStore().query('delegation_id', delegation_id).getAt(0);
+							rec.set('delegation_status', 0);
+							rec.set('delegation_status_name', 'Inactive');
+						},
+						failure      : function(response, options, deferred) {
+							Ext.log('Failed to cancel delegation')
+						}
+					}
+				});
+			}
+		});
+	},
+
+	/**
+	 * Runs when clicking to the Add a Delegation button; checks first to see if user is allowed to perform
+	 * this action.
+	 */
+	addUserDelegation: function() {
+		var that = this;
+		// Check if there's an active delegation for this user
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service: 'UserService',
+				action : 'hasActiveDelegation',
+				userprofile_id: NP.Security.getUser().get('userprofile_id'),
+				success: function(result, deferred) {
+					// If user has an active delegation, then they can't add a delegation
+					if (result) {
+						Ext.MessageBox.alert(that.activeDelegErrorTitleText, that.activeDelegErrorText);
+					// Otherwise, it's find and redirect them to the add delegation form	
+					} else {
+						that.application.addHistory('MySettings:showMySettings:UserDelegation:Form');
+					}
+				},
+				failure: function(response, options, deferred) {
+					Ext.log('Error checking if user has active delegation');
+				}
+			}
+		});
+	},
+
+	showUserDelegationForm: function(delegation_id) {
+		var viewCfg = {
+			title: 'Add a Delegation',
+			bind: {
+				models   : ['user.Delegation']
+			}
+	    };
+
+	    if (delegation_id) {
+	    	Ext.apply(viewCfg.bind, {
+				service    : 'UserService',
+				action     : 'getDelegation',
+				extraParams: {
+					delegation_id: delegation_id
+		        },
+		        extraFields: ['delegation_properties']
+	    	});
+	    	viewCfg.title = 'Update a Delegation';
+	    	viewCfg.listeners = {
+	    		dataloaded: function(boundForm, data) {
+					boundForm.findField('delegation_to_userprofile_id').setRawValue(data['delegation_to_userprofile_id']);
+				}
+			};
+	    }
+
+		var form = this.application.setView('NP.view.mySettings.UserDelegationForm', viewCfg, '[xtype="mysettings.userdelegation"]');
+		var userField = form.findField('delegation_to_userprofile_id');
+		if (delegation_id) {
+			userField.hide();
+			form.findField('delegation_startdate').disable();
+		} else {
+			userField.getStore().load();
+		}
+	},
+
+	saveUserDelegationForm: function() {
+		var that = this;
+		var form = this.application.getComponent('mysettings.userdelegationform');
+		form.getModel('user.Delegation').set('userprofile_id', NP.Security.getUser().get('userprofile_id'));
+
+		if (form.isValid()) {
+			form.submitWithBindings({
+				service: 'UserService',
+				action : 'saveDelegation',
+				extraFields: {
+					delegation_properties: 'delegation_properties'
+				},
+				success: function(result, deferred) {
+					// Relocate to the main page
+					that.application.addHistory('MySettings:showMySettings:UserDelegation:Main');
+				}
+			});
+		}
 	}
 });

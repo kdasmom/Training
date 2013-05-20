@@ -120,13 +120,13 @@ abstract class AbstractGateway {
 	 */
 	public function findById($id, $cols=null) {
 		$select = $this->getSelect();
-		$select->where(array("{$this->table}.{$this->pk}"=>":{$this->pk}"));
+		$select->where(array("{$this->table}.{$this->pk}"=>"?"));
 
 		if ($cols !== null) {
 			$select->columns($cols);
 		}
 
-		$res = $this->adapter->query($select, array("{$this->pk}"=>$id));
+		$res = $this->adapter->query($select, array($id));
 		
 		return $res[0];
 	}
@@ -182,11 +182,11 @@ abstract class AbstractGateway {
 		if (array_key_exists($this->pk, $set)) {
 			unset($set[$this->pk]);
 		}
-		$values = $this->convertFieldsToBindParams($set);
+		$params = $this->convertFieldsToBindParams($set);
 
-		$insert = new db\Insert($this->table, $values);
+		$insert = new db\Insert($this->table, $params['fields']);
 
-		$res = $this->adapter->query($insert, $set);
+		$res = $this->adapter->query($insert, $params['values']);
 
 		if ($data instanceOf \NP\core\AbstractEntity) {
 			$data->{$this->pk} = $this->lastInsertId();
@@ -209,11 +209,18 @@ abstract class AbstractGateway {
 			$set = $data;
 		}
 
-		$values = $this->convertFieldsToBindParams($set);
+		// Save primary key value and remove from set
+		$id = $set[$this->pk];
+		unset($set[$this->pk]);
+
+		$params = $this->convertFieldsToBindParams($set);
+
+		// Append primary key value for the where statement at the end
+		$params['values'][] = $id;
 		
-		$update = new db\Update($this->table, $values, array($this->pk => ":{$this->pk}"));
+		$update = new db\Update($this->table, $params['fields'], array($this->pk=>'?'));
 		
-		return $this->adapter->query($update, $set);
+		return $this->adapter->query($update, $params['values']);
 	}
 	
 	/**
@@ -235,15 +242,26 @@ abstract class AbstractGateway {
 	 * @param array|\NP\core\AbstractEntity $data       An associative array with key/value pairs for fields, or an Entity object
 	 * @param boolean                       $bindByName Whether you want to use named or positional parameters
 	 */
-	protected function convertFieldsToBindParams($set, $useNamedParams=true) {
+	protected function convertFieldsToBindParams($set) {
+		$fields = array();
 		$values = array();
 		foreach($set as $field=>$val) {
 			if ($field != $this->pk) {
-				$placeHolder = ($useNamedParams) ? ":{$field}" : "?";
-				$values[$field] = $placeHolder;
+				$placeHolder = '?';
+				$fields[$field] = $placeHolder;
+				$values[] = $val;
 			}
 		}
-		return $values;
+
+		// Append the primary key at the end (used by UPDATE statement)
+		if (array_key_exists($this->pk, $set)) {
+			$values[] = $set[$this->pk];
+		}
+
+		return array(
+			'fields' => $fields,
+			'values' => $values
+		);
 	}
 
 	/**

@@ -420,6 +420,21 @@ Ext.define('NP.locale.en.view.invoice.grid.RegisterVoid', {
  */
 
 // My Settings
+Ext.define('NP.locale.en.controller.MySettings', {
+	override: 'NP.controller.MySettings',
+
+	changesSavedText                : 'Changes saved successfully',
+	errorDialogTitleText            : 'Error',
+	registerNewDeviceDialogTitleText: 'Register New Device?',
+	registerNewDeviceDialogText     : 'Registering a new device will disable the active one. Do you still want to proceed anyway?',
+	disableMobileDialogTitleText    : 'Disable Mobile Number?',
+	disableMobileDialogText         : 'Are you sure you want to disable this mobile number?',
+	cancelDelegDialogTitleText      : 'Cancel Delegation?',
+	cancelDelegDialogText           : 'Are you sure you want to cancel this delegation?',
+	activeDelegErrorTitleText       : 'Active Delegation',
+	activeDelegErrorText            : 'You have an active delegation. You cannot delegate to another user until that delegation expires or is cancelled.'
+});
+
 Ext.define('NP.locale.en.view.mySettings.Overview', {
 	override: 'NP.view.mySettings.Overview',
 
@@ -430,4 +445,107 @@ Ext.define('NP.locale.en.view.mySettings.Overview', {
 	emailNotifText    : '<b>Email Notification</b>- allows the user to manage specific email alert frequencies for Purchase Orders and/or Invoices that require approval and for budget overage notifications.',
 	mobileSettingsText: '<b>Mobile Settings</b>- allows users to register their mobile phone to begin using the Mobile Application for PO, Receipt and Invoice approvals. If you do not see this tab display, your role right has not been granted access to this section.',
 	userDelegText     : '<b>User Delegation</b> - allows the user to delegate approval authority to another user while they are away.  Please note this will appear only on the Settings tab and for users who have been given rights to this functionality.'
+});
+
+Ext.define('NP.locale.en.view.mySettings.Display', {
+	override: 'NP.view.mySettings.Display',
+
+	title                      : 'Display',
+	viewingSizeLabelText       : 'Split Screen Viewing Size',
+	customBoxText              : 'Custom',
+	viewingOrientationLabelText: 'Split Screen Viewing Orientation',
+	verticalLabelText          : 'Vertical',
+	horizontalLabelText        : 'Horizontal',
+	imagePositionLabelText     : 'Split Screen Image Position',
+	leftPositionText           : 'Left (Bottom for Horizontal View)',
+	rightPositionText          : 'Right (Top for Horizontal View)',
+	defaultViewLabelText       : 'Default View',
+	splitScreenViewText        : 'Split Screen',
+	poReceiptInvoiceViewText   : 'PO / Receipt / Invoice',
+});
+
+Ext.define('NP.locale.en.view.mySettings.UserDelegation', {
+	override: 'NP.view.mySettings.UserDelegation',
+
+	title: 'User Delegation'
+});
+
+Ext.define('NP.locale.en.view.mySettings.UserDelegationMain', {
+	override: 'NP.view.mySettings.UserDelegationMain',
+
+	addDelegationText : 'Add a Delegation',
+	delegationFromText: 'Users you delegated to',
+	delegationToText  : 'Users who delegated to you'
+});
+
+Ext.define('NP.locale.en.view.mySettings.UserDelegationGrid', {
+	override: 'NP.view.mySettings.UserDelegationGrid',
+
+	emptyText: 'No delegations found.'
+});
+
+Ext.define('NP.locale.en.view.mySettings.UserDelegationForm', {
+	override: 'NP.view.mySettings.UserDelegationForm',
+
+	requires: ['NP.lib.core.Config'],
+
+	startDateLabelText      : 'Start Date',
+    stopDateLabelText       : 'Stop Date',
+    delegateToLabelText     : 'Delegate to Whom',
+    delegPropertiesLabelText: NP.Config.getSetting('PN.Main.PropertiesLabel') + ' to Delegate',
+    delegPropertiesEmptyText: 'Select ' + NP.Config.getSetting('PN.Main.PropertiesLabel') + '...'
+});
+
+
+/**
+ * USER MANAGER SECTION
+ */
+
+// Delegation grid columns
+Ext.define('NP.locale.en.view.user.gridcol.DelegationCreatedBy', {
+	override: 'NP.view.user.gridcol.DelegationCreatedBy',
+
+	text: 'Setup By'
+});
+
+Ext.define('NP.locale.en.view.user.gridcol.DelegationEndDate', {
+	override: 'NP.view.user.gridcol.DelegationEndDate',
+
+	text: 'End Date'
+});
+
+Ext.define('NP.locale.en.view.user.gridcol.DelegationFromName', {
+	override: 'NP.view.user.gridcol.DelegationFromName',
+
+	text: 'Name'
+});
+
+Ext.define('NP.locale.en.view.user.gridcol.DelegationStartDate', {
+	override: 'NP.view.user.gridcol.DelegationStartDate',
+
+	text: 'Start Date'
+});
+
+Ext.define('NP.locale.en.view.user.gridcol.DelegationStatus', {
+	override: 'NP.view.user.gridcol.DelegationStatus',
+
+	text: 'Status'
+});
+
+Ext.define('NP.locale.en.view.user.gridcol.DelegationToName', {
+	override: 'NP.view.user.gridcol.DelegationToName',
+
+	text: 'Name'
+});
+
+Ext.define('NP.locale.en.view.user.gridcol.DelegationCancel', {
+	override: 'NP.view.user.gridcol.DelegationToName',
+
+	text: 'Cancel'
+});
+
+Ext.define('NP.locale.en.view.user.gridcol.DelegationView', {
+	override: 'NP.view.user.gridcol.DelegationToName',
+
+	text: 'View'
 });

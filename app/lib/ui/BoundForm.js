@@ -34,6 +34,9 @@ Ext.define('NP.lib.ui.BoundForm', {
 	 * @cfg {String}            bind.extraParams        Extra parameters to pass to the service action
 	 */
 	/**
+	 * @cfg {Array}             bind.extraFields        Extra field values that are not part of any model but will also be returned
+	 */
+	/**
 	 * @cfg {String}            bind.evt="render"       Event that you want to use to trigger the binding of the form; usually "render" or "show"
 	 */
 	initComponent: function() {
@@ -41,7 +44,7 @@ Ext.define('NP.lib.ui.BoundForm', {
 
 		// Add custom event
 		this.addEvents('dataloaded');
-
+		
 		// Load the parent init function
 		this.callParent(arguments);
 
@@ -89,6 +92,18 @@ Ext.define('NP.lib.ui.BoundForm', {
 						
 						// Copy the model data to the form fields
 						that.updateBoundFields();
+
+						// Set the fields that are not part of models if any
+						if (that.bind.extraFields) {
+							Ext.Array.each(that.bind.extraFields, function(fieldName) {
+								var field = that.findField(fieldName);
+
+								// If the field exists and a value was returned for it, set its value too
+								if (field && result[fieldName]) {
+									field.setValue(result[fieldName]);
+								}
+							});
+						}
 
 						// Fire the dataloaded even which signals the data for the bound form is done loading
 						that.fireEvent('dataloaded', that, result);
@@ -246,7 +261,10 @@ Ext.define('NP.lib.ui.BoundForm', {
 		var isValid = (valid && modelValid);
 		// Make sure the first invalid field is showing on the screen
 		if (!isValid) {
-			this.findInvalid().getAt(0).ensureVisible();
+			var invalidFields = this.findInvalid();
+			if (invalidFields.getCount()) {
+				invalidFields.getAt(0).ensureVisible();
+			}
 		}
 
 		return isValid;

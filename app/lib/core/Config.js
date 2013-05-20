@@ -171,6 +171,14 @@ Ext.define('NP.lib.core.Config', function() {
 		},
 		
 		/**
+		 * Returns the date format mask that the server returns dates as for smalldatetime
+		 * @return {String}
+		 */
+		getServerSmallDateFormat: function() {
+			return 'Y-m-d H:i:s';
+		},
+		
+		/**
 		 * Returns the default date format used when displaying dates in the app
 		 * @return {String}
 		 */

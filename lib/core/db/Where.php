@@ -135,7 +135,7 @@ class Where implements SQLElement {
      *
      * @param  string            $operator The operator to use
      * @param  string|SQLElement $left     Left side of the comparison
-     * @param  string|SQLElement $right    Right side of the comparison; optional if $operator is "exists"
+     * @param  string|SQLElement $right    Right side of the comparison; optional if $operator is "exists" or "no exists"
      * @param  string|SQLElement $right2   Second right side of the comparison (optional); only used by BETWEEN operator
      * @return \NP\core\db\Where            The current Where object
      */
@@ -287,6 +287,16 @@ class Where implements SQLElement {
 	}
 
 	/**
+	 * Shortcut for op('not exists', $left)
+	 *
+	 * @param  \NP\core\db\Select $select  Select statement for NOT EXISTS clause
+     * @return \NP\core\db\Where           The current Where object
+	 */
+	public function notExists($select) {
+		return $this->op('not exists', $select);
+	}
+
+	/**
 	 * Shortcut for op('null', $left)
 	 *
 	 * @param  string|SQLElement $left  Left side of the comparison
@@ -355,6 +365,9 @@ class Where implements SQLElement {
 						// If we're running EXISTS, use special logic because it has no right side
 						} else if ($predicate['operator'] == 'EXISTS') {
 							$collection[] = "EXISTS (" . $left . ")";
+						// If we're running NOT EXISTS, use special logic because it has no right side
+						} else if ($predicate['operator'] == 'NOT EXISTS') {
+							$collection[] = "NOT EXISTS (" . $left . ")";
 						// If we're running NULL, use special logic because it has no right side
 						} else if ($predicate['operator'] == 'NULL') {
 							$collection[] = "{$left} IS NULL";
