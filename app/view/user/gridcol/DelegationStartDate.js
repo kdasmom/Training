@@ -8,5 +8,5 @@ Ext.define('NP.view.user.gridcol.DelegationStartDate', {
 	alias: 'widget.user.gridcol.delegationstartdate',
 
 	text     : 'Start Date',
-	dataIndex: 'delegation_startdate'
+	dataIndex: 'Delegation_StartDate'
 });

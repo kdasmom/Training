@@ -397,8 +397,8 @@ class UserService extends AbstractService {
 	 */
 	public function cancelDelegation($delegation_id) {
 		$this->delegationGateway->update(array(
-			'delegation_id'     => $delegation_id,
-			'delegation_status' => 0
+			'Delegation_Id'     => $delegation_id,
+			'Delegation_Status' => 0
 		));
 	}
 
@@ -408,17 +408,11 @@ class UserService extends AbstractService {
 
 	public function getDelegation($delegation_id) {
 		// We can't use findById because of case issues
-		$res = $this->delegationGateway->find(
-			array('delegation_id'=>'?'),
-			array($delegation_id),
-			null,
-			array('delegation_id','userprofile_id','delegation_to_userprofile_id','delegation_startdate',
-				'delegation_stopdate','delegation_status','delegation_createddate','delegation_createdby')
-		);
+		$res = $this->delegationGateway->findById($delegation_id);
 
-		$res[0]['delegation_properties'] = \NP\util\Util::valueList($this->getDelegationProperties($delegation_id), 'property_id');
+		$res['delegation_properties'] = \NP\util\Util::valueList($this->getDelegationProperties($delegation_id), 'property_id');
 
-		return $res[0];
+		return $res;
 	}
 
 	public function getDelegationProperties($delegation_id) {
@@ -439,9 +433,9 @@ class UserService extends AbstractService {
 			$delegation = new DelegationEntity($data['delegation']);
 
 			// If dealing with a new delegation, set created values
-			if ($delegation->delegation_id === null) {
+			if ($delegation->Delegation_Id === null) {
 				$delegation->delegation_createdby = $this->securityService->getUserId();
-				$delegation->delegation_createddate = \NP\util\Util::formatDateForDB();
+				$delegation->Delegation_CreatedDate = \NP\util\Util::formatDateForDB();
 			}
 
 			// Validate the entity
@@ -458,7 +452,7 @@ class UserService extends AbstractService {
 			if (!count($errors)) {
 				$this->delegationGateway->save($delegation);
 
-				$this->saveDelegationProperties($delegation->delegation_id, $data['delegation_properties']);
+				$this->saveDelegationProperties($delegation->Delegation_Id, $data['delegation_properties']);
 
 				$this->delegationGateway->commit();	
 			}

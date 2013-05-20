@@ -86,7 +86,7 @@ Ext.define('NP.controller.MySettings', {
 					// Only take action if the click happened on an image (button)
 					if (e.target.tagName == 'IMG') {
 						// Get the delegation ID for the record
-						var delegation_id = record.get('delegation_id');
+						var delegation_id = record.get('Delegation_Id');
 						var el = Ext.get(e.target);
 						// If Cancel button was clicked
 						if (el.hasCls('cancel')) {
@@ -471,8 +471,6 @@ Ext.define('NP.controller.MySettings', {
 	showUserDelegation: function(subSection, delegation_id) {
 		if (!subSection) subSection = 'Main';
 
-		console.debug('Showing User Deleg section: ' + subSection);
-
 		this['showUserDelegation' + subSection](delegation_id);
 	},
 
@@ -504,8 +502,8 @@ Ext.define('NP.controller.MySettings', {
 						action       : 'cancelDelegation',
 						delegation_id: delegation_id,
 						success      : function(result, deferred) {
-							var rec = grid.getStore().query('delegation_id', delegation_id).getAt(0);
-							rec.set('delegation_status', 0);
+							var rec = grid.getStore().query('Delegation_Id', delegation_id).getAt(0);
+							rec.set('Delegation_Status', 0);
 							rec.set('delegation_status_name', 'Inactive');
 						},
 						failure      : function(response, options, deferred) {
@@ -565,16 +563,16 @@ Ext.define('NP.controller.MySettings', {
 	    	viewCfg.title = 'Update a Delegation';
 	    	viewCfg.listeners = {
 	    		dataloaded: function(boundForm, data) {
-					boundForm.findField('delegation_to_userprofile_id').setRawValue(data['delegation_to_userprofile_id']);
+					boundForm.findField('Delegation_To_UserProfile_Id').setRawValue(data['Delegation_To_UserProfile_Id']);
 				}
 			};
 	    }
 
 		var form = this.application.setView('NP.view.mySettings.UserDelegationForm', viewCfg, '[xtype="mysettings.userdelegation"]');
-		var userField = form.findField('delegation_to_userprofile_id');
+		var userField = form.findField('Delegation_To_UserProfile_Id');
 		if (delegation_id) {
 			userField.hide();
-			form.findField('delegation_startdate').disable();
+			form.findField('Delegation_StartDate').disable();
 		} else {
 			userField.getStore().load();
 		}
@@ -583,7 +581,7 @@ Ext.define('NP.controller.MySettings', {
 	saveUserDelegationForm: function() {
 		var that = this;
 		var form = this.application.getComponent('mysettings.userdelegationform');
-		form.getModel('user.Delegation').set('userprofile_id', NP.Security.getUser().get('userprofile_id'));
+		form.getModel('user.Delegation').set('UserProfile_Id', NP.Security.getUser().get('userprofile_id'));
 
 		if (form.isValid()) {
 			form.submitWithBindings({

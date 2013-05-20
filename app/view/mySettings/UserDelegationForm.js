@@ -41,18 +41,18 @@ Ext.define('NP.view.mySettings.UserDelegationForm', {
             {
                 xtype     : 'datefield',
                 fieldLabel: this.startDateLabelText,
-                name      : 'delegation_startdate'
+                name      : 'Delegation_StartDate'
             },{
                 xtype     : 'datefield',
                 fieldLabel: this.stopDateLabelText,
-                name      : 'delegation_stopdate'
+                name      : 'Delegation_StopDate'
             },{
                 xtype       : 'combo',
                 fieldLabel  : this.delegateToLabelText,
                 forceSelection: true,
                 queryMode   : 'local',
                 width       : 600,
-                name        : 'delegation_to_userprofile_id',
+                name        : 'Delegation_To_UserProfile_Id',
                 displayField: 'userprofile_username',
                 valueField  : 'userprofile_id',
                 store       : Ext.create('NP.store.user.Userprofiles', {
@@ -92,14 +92,15 @@ Ext.define('NP.view.mySettings.UserDelegationForm', {
 
         var delegation = this.getModel('user.Delegation');
         var now = new Date();
-        var startDate = this.findField('delegation_startdate');
+        now = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        var startDate = this.findField('Delegation_StartDate');
         // Only do this validation for a new delegation
-        if (delegation.get('delegation_id') == null) {
+        if (delegation.get('Delegation_Id') == null) {
             if (startDate.getValue() < now) {
                 startDate.markInvalid('The Start Date must be today or later.');
             }
         }
-        var stopDate = this.findField('delegation_stopdate');
+        var stopDate = this.findField('Delegation_StopDate');
         if (stopDate.getValue() < now) {
             stopDate.markInvalid('The Stop Date must be today or later.');
         }

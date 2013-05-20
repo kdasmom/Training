@@ -8,23 +8,23 @@ Ext.define('NP.model.user.Delegation', {
     
     requires: ['NP.lib.core.Config','NP.lib.core.Security'],
 
-    idProperty: 'delegation_id',
+    idProperty: 'Delegation_Id',
     fields: [
-        { name: 'delegation_id', type: 'int' },
-        { name: 'userprofile_id', type: 'int' },
-        { name: 'delegation_to_userprofile_id', type: 'int' },
-        { name: 'delegation_startdate', type: 'date', dateFormat: NP.lib.core.Config.getServerSmallDateFormat() },
-        { name: 'delegation_stopdate', type: 'date', dateFormat: NP.lib.core.Config.getServerSmallDateFormat() },
-        { name: 'delegation_status', type: 'int', defaultValue: 1 },
-        { name: 'delegation_createddate', type: 'date', dateFormat: NP.lib.core.Config.getServerSmallDateFormat() },
+        { name: 'Delegation_Id', type: 'int' },
+        { name: 'UserProfile_Id', type: 'int' },
+        { name: 'Delegation_To_UserProfile_Id', type: 'int' },
+        { name: 'Delegation_StartDate', type: 'date', dateFormat: NP.lib.core.Config.getServerSmallDateFormat() },
+        { name: 'Delegation_StopDate', type: 'date', dateFormat: NP.lib.core.Config.getServerSmallDateFormat() },
+        { name: 'Delegation_Status', type: 'int', defaultValue: 1 },
+        { name: 'Delegation_CreatedDate', type: 'date', dateFormat: NP.lib.core.Config.getServerSmallDateFormat() },
         { name: 'delegation_createdby', type: 'int', defaultValue: NP.Security.getUser().get('userprofile_id') }
     ],
 
     validations: [
-        { field: 'userprofile_id', type: 'presence' },
-        { field: 'delegation_to_userprofile_id', type: 'presence' },
-        { field: 'delegation_startdate', type: 'presence' },
-        { field: 'delegation_stopdate', type: 'presence' },
-        { field: 'delegation_status', type: 'presence' }
+        { field: 'UserProfile_Id', type: 'presence' },
+        { field: 'Delegation_To_UserProfile_Id', type: 'presence' },
+        { field: 'Delegation_StartDate', type: 'presence' },
+        { field: 'Delegation_StopDate', type: 'presence' },
+        { field: 'Delegation_Status', type: 'presence' }
     ]
 });

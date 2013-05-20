@@ -52,7 +52,7 @@ Ext.define('NP.view.viewport.DelegationPicker', {
                 store            : delegationStore,
                 selectFirstRecord: true,
                 displayField     : 'userprofile_username',
-                valueField       : 'userprofile_id',
+                valueField       : 'UserProfile_Id',
                 value            : NP.lib.core.Security.getUser().get('userprofile_id'),
                 hidden           : (delegationStore.getTotalCount() == 0) ? true : false,
                 margin           : '2 0 2 0',

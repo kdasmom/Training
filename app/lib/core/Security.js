@@ -174,7 +174,7 @@ Ext.define('NP.lib.core.Security', function() {
 
 						    		store.insert(0, {
 										userprofile_username: currentUser.get('userprofile_username'),
-										userprofile_id      : currentUser.get('userprofile_id')
+										UserProfile_Id      : currentUser.get('userprofile_id')
 						    		});
 								}
 							}

@@ -15,6 +15,8 @@ use NP\core\db\Expression;
  */
 class DelegationGateway extends AbstractGateway {
 	
+	protected $pk = 'Delegation_Id';
+
 	protected $roleGateway;
 
 	public function __construct(Adapter $adapter, RoleGateway $roleGateway) {
@@ -42,28 +44,28 @@ class DelegationGateway extends AbstractGateway {
 		$select = new Select();
 
 		if ($toOrFrom == 'from') {
-			$whereField = 'userprofile_id';
+			$whereField = 'UserProfile_Id';
 		} else if ($toOrFrom == 'to') {
-			$whereField = 'delegation_to_userprofile_id';
+			$whereField = 'Delegation_To_UserProfile_Id';
 		} else {
 			throw new \NP\core\Exception("Invalid argument \$toOrFrom. Valid values for \$toOrFrom are 'to' and 'from'. Current value is '{$toOrFrom}'");
 		}
 
 		$select->columns(array(
-					'delegation_id',
-					'userprofile_id',
-					'delegation_to_userprofile_id',
-					'delegation_startdate',
-					'delegation_stopdate',
-					'delegation_status',
-					'delegation_createddate',
+					'Delegation_Id',
+					'UserProfile_Id',
+					'Delegation_To_UserProfile_Id',
+					'Delegation_StartDate',
+					'Delegation_StopDate',
+					'Delegation_Status',
+					'Delegation_CreatedDate',
 					'delegation_createdby',
 					'delegation_status_name' => new Expression("
 						CASE
-							WHEN d.delegation_status = 1 THEN
+							WHEN d.Delegation_Status = 1 THEN
 								CASE
-									WHEN d.delegation_startdate <= getDate() AND d.delegation_stopdate > getDate() THEN 'Active'
-									WHEN d.delegation_startdate > getDate() THEN 'Future'
+									WHEN d.Delegation_StartDate <= getDate() AND d.Delegation_StopDate > getDate() THEN 'Active'
+									WHEN d.Delegation_StartDate > getDate() THEN 'Future'
 									ELSE 'Expired'
 								END
 							ELSE 'Inactive'

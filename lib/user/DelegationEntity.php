@@ -9,31 +9,31 @@ namespace NP\user;
 class DelegationEntity extends \NP\core\AbstractEntity {
 	
 	protected $fields = array(
-		'delegation_id'	 => array(
+		'Delegation_Id'	 => array(
 			'validation' => array(
 				'digits' => array()
 			)
 		),
-		'userprofile_id'	 => array(
+		'UserProfile_Id'	 => array(
 			'required' => true,
 			'validation' => array(
 				'digits' => array()
 			)
 		),
-		'delegation_to_userprofile_id'	 => array(
+		'Delegation_To_UserProfile_Id'	 => array(
 			'validation' => array(
 				'digits' => array()
 			)
 		),
-		'delegation_startdate'	 => array(),
-		'delegation_stopdate'	 => array(),
-		'delegation_status'	 => array(
+		'Delegation_StartDate'	 => array(),
+		'Delegation_StopDate'	 => array(),
+		'Delegation_Status'	 => array(
 			'required' => true,
 			'validation' => array(
 				'digits' => array()
 			)
 		),
-		'delegation_createddate'	 => array(),
+		'Delegation_CreatedDate'	 => array(),
 		'delegation_createdby'	 => array(
 			'validation' => array(
 				'digits' => array()
