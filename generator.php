@@ -104,10 +104,12 @@ Ext.define('{$extNameSpace}.{$extClassName}', {
 		{ name: '{$col['COLUMN_NAME']}'";
 
 		// Make field required if it's not nullable and is not the primary key
+		$isRequired = false;
 		if ($col['IS_NULLABLE'] == 'NO' && $i > 0) {
 			$php .= "
 			'required' => true";
 			$extValidation[] = "{ field: '{$col['COLUMN_NAME']}', type: 'presence' }";
+			$isRequired = true;
 		}
 
 		$hasValidation = false;
@@ -142,7 +144,7 @@ Ext.define('{$extNameSpace}.{$extClassName}', {
 		}
 
 		if ($hasValidation) {
-			if ($col['IS_NULLABLE'] == 'NO') {
+			if ($isRequired) {
 				$php .= ",";
 			}
 			$php .= "
