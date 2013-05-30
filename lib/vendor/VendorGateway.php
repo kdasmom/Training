@@ -61,7 +61,7 @@ class VendorGateway extends AbstractGateway {
 		// Add wildcard character for vendor name to search for vendors beginning with
 		$keyword .= '%';
 		
-		$params = array('vendor_name'=>$keyword);
+		$params = array($keyword);
 		
 		$select = new sql\VendorSelect();
 		$select->populateForDropdown();
