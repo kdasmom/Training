@@ -3,6 +3,7 @@
 namespace NP\user;
 
 use NP\core\AbstractGateway;
+use NP\core\db\Update;
 
 /**
  * Gateway for the USERPROFILE table
@@ -125,10 +126,12 @@ class UserprofileGateway extends AbstractGateway {
 	/**
 	 * Updates a record in the database
 	 *
-	 * @param  array|\NP\core\AbstractEntity $data An associative array with key/value pairs for fields, or an Entity object
-	 * @return boolean                             Whether the operation succeeded or not
+	 * @param  array|\NP\core\AbstractEntity $data   An associative array with key/value pairs for fields, or an Entity object
+	 * @param  NP\core\db\Where|string|array $where  The criteria for which records to delete
+	 * @param  array                         $params Parameters to bind to the where clause (the $data parameters are automatically bound) (optional)
+	 * @return boolean                               Whether the operation succeeded or not
 	 */
-	public function update($data) {
+	public function update($data, $where=null, $params=array()) {
 		// If we passed in an entity, get the data for it
 		if ($data instanceOf \NP\core\AbstractEntity) {
 			$set = $data->toArray();
@@ -136,22 +139,51 @@ class UserprofileGateway extends AbstractGateway {
 			$set = $data;
 		}
 
+		// If primary key is in set, process it
+		if (array_key_exists($this->pk, $set)) {
+			// If no where clause was provided, assume the primary key is the where clause
+			if ($where === null) {
+				$where = array($this->pk=>'?');
+				$params = array($set[$this->pk]);
+			}
+			unset($set[$this->pk]);
+		}
+
 		// If a blank password was provided, we need to make sure it doesn't get saved
 		if ( array_key_exists('userprofile_password', $set) ) {
 			if ($set['userprofile_password'] === '' || $set['userprofile_password'] === null) {
 				unset($set['userprofile_password']);
-				$params = $this->convertFieldsToBindParams($set);
+				$paramsNew = $this->convertFieldsToBindParams($set);
 			} else {
-				$params = $this->convertFieldsToBindParams($set);
-				$params['values']['userprofile_password'] = 'PWDENCRYPT(?)';
+				$paramsNew = $this->convertFieldsToBindParams($set);
+				$paramsNew['fields']['userprofile_password'] = 'PWDENCRYPT(?)';
 			}
 		} else {
-			$params = $this->convertFieldsToBindParams($set);
+			$paramsNew = $this->convertFieldsToBindParams($set);
 		}
 
-		$update = new \NP\core\db\Update($this->table, $params['fields'], array($this->pk=>'?'));
+		$paramsNew['values'] = array_merge($paramsNew['values'], $params);
+
+		$update = new \NP\core\db\Update($this->table, $paramsNew['fields'], $where);
 		
-		return $this->adapter->query($update, $params['values']);
+		return $this->adapter->query($update, $paramsNew['values']);
+	}
+
+	/**
+	 * Removes properties from being the preferred properties for users
+	 */
+	public function removePropertiesAsUserPreferred($property_id_list) {
+		$update = new Update();
+
+		// Create an placeholders for the IN clause
+		$propertyPlaceHolders = $this->createPlaceholders($property_id_list);
+
+		// Add the where clause
+		$update->table('userprofile')
+				->values(array('userprofile_preferred_property' => 0))
+				->whereIn('userprofile_preferred_property', $propertyPlaceHolders);
+
+		return $this->adapter->query($update, $property_id_list);
 	}
 	
 }

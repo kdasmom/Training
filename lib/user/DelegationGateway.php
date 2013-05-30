@@ -124,7 +124,7 @@ class DelegationGateway extends AbstractGateway {
 						->whereLessThanOrEqual('d.delegation_startdate', '?')
 						->whereGreaterThan('d.delegation_stopdate', '?');
 			} else if ($delegation_status == 0) {
-				$select->nest('OR')
+				$select->whereNest('OR')
 					    ->whereEquals('d.delegation_status', '?')
 						->whereGreaterThan('d.delegation_startdate', '?')
 						->whereLessThanOrEqual('d.delegation_stopdate', '?');

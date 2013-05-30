@@ -11,18 +11,17 @@ class Util {
 	/**
 	 * Formats a date in a format that can be used to save to the database and returns it
 	 * 
-	 * @param  int $timestamp An integer representing time measured in the number of seconds since the Unix Epoch (January 1 1970 00:00:00 GMT)
-	 * @return string         A date formatted string
+	 * @param  DateTime  $date An integer representing time measured in the number of seconds since the Unix Epoch (January 1 1970 00:00:00 GMT)
+	 * @return string          A formatted date
 	 */
-	public static function formatDateForDB($timestamp=null) {
-		if ($timestamp === null) {
-			$timestamp = time();
+	public static function formatDateForDB($date=null) {
+		if ($date === null) {
+			$date = new \DateTime();
 		}
-		$ret = date("Y-m-d h:i:s.u", $timestamp);
 		
 		// Trim out extra characters at the end that can be created if using time() function which
 		// generates 00000 for microseconds instead of a 3 digit number
-		return substr(date("Y-m-d h:i:s.u", $timestamp), 0, 23);
+		return substr($date->format("Y-m-d H:i:s.u"), 0, 23);
 	}
 	
 	/**

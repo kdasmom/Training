@@ -6,7 +6,7 @@ namespace NP\core\db;
  *
  * @author Thomas Messier
  */
-class Update implements SQLInterface, SQLElement {
+class Update extends AbstractFilterableSql implements SQLInterface, SQLElement {
 	/**
 	 * @var string The table to update
 	 */
@@ -16,11 +16,6 @@ class Update implements SQLInterface, SQLElement {
 	 * @var array An associative array of values to update
 	 */
 	protected $values = array();
-
-	/**
-	 * @var string|array|NP\core\db\Where The update criteria
-	 */
-	protected $where = null;
 
 	/**
 	 * @param $table  string                        Name of the table to update into (optional)
@@ -73,24 +68,6 @@ class Update implements SQLInterface, SQLElement {
 	 */
 	public function value($col, $value) {
 		$this->values[$col] = $value;
-		return $this;
-	}
-
-	/**
-	 * Sets the criteria for the update
-	 *
-	 * @param $where string|array|NP\core\db\Where The update criteria
-	 * @param \NP\core\db\Update                   Return caller object for easy chaining
-	 */
-	public function where($where) {
-		if (!is_string($where) && !is_array($where) && !$where instanceOf Where) {
-			throw new \NP\core\Exception('The $where argument must be a string, array, or NP\core\db\Where object');
-		}
-		if (!$where instanceOf Where) {
-			$where = new Where($where);
-		}
-		$this->where = $where;
-
 		return $this;
 	}
 

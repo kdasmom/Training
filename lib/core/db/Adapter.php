@@ -112,9 +112,9 @@ class Adapter {
 		// Create the SQL statement and execute it
 		$stmt = sqlsrv_query($this->conn, $sql, $params);
 		if (!$stmt) {
-			echo "Error running query. SQL was the following:<br/><br/>{$sql}<br/><br/>";
-			print_r( sqlsrv_errors(), true);
-			var_dump(debug_backtrace());
+			$error = "Error running query. SQL was the following:\n\n{$sql}\n\nError was the following:\n\n";
+			$error .= print_r( sqlsrv_errors(), true);
+			throw new \NP\core\Exception($error);
 			die;
 		}
 		

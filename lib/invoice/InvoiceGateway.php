@@ -10,6 +10,7 @@ use NP\user\RoleGateway;
 
 use NP\core\AbstractGateway;
 use NP\core\db\Select;
+use NP\core\db\Update;
 use NP\core\db\Where;
 use NP\core\db\Adapter;
 use NP\core\db\Expression;
@@ -638,6 +639,22 @@ class InvoiceGateway extends AbstractGateway {
 		}
 	}
 
+	public function rollPeriod($property_id, $newAccountingPeriod, $oldAccountingPeriod) {
+		$update = new Update();
+
+		$newAccountingPeriod = \NP\util\Util::formatDateForDB($newAccountingPeriod);
+		$oldAccountingPeriod = \NP\util\Util::formatDateForDB($oldAccountingPeriod);
+
+		$update->table('invoice')
+				->values(array('invoice_period'=>'?'))
+				->whereEquals('invoice_period', '?')
+				->whereEquals('property_id', '?')
+				->whereNotIn('invoice_status', '?,?,?,?,?');
+
+		$params = array($newAccountingPeriod, $oldAccountingPeriod, $property_id, 'posted', 'paid','sent','submitted', 'void');
+
+		$this->adapter->query($update, $params);
+	}
 }
 
 ?>

@@ -4,14 +4,23 @@
  * @author Thomas Messier
  */
 Ext.define('NP.store.property.Regions', {
-	extend: 'Ext.data.Store',
+	extend: 'NP.lib.data.Store',
 	
 	requires: ['NP.model.property.Region'],
 
     constructor: function(cfg) {
-    	Ext.apply(this, cfg);
+    	var that = this;
 
-    	this.fields = NP.model.property.Region.getFields();
+        Ext.apply(this, cfg);
+
+    	this.fields = [];
+    	Ext.Array.each(NP.model.property.Region.getFields(), function(field) {
+            that.fields.push({
+                name: field.name,
+                type: field.type.type,
+                dateFormat: field.dateFormat
+            });
+        });
 
     	this.callParent(arguments);
     }

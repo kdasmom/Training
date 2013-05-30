@@ -107,7 +107,11 @@ class CatalogService extends AbstractService {
 	 */
 	public function setCatalogStatus($vc_id, $vc_status) {
 		$this->validateCatalogStatus($vc_status);
-		$this->vcGateway->update(array('vc_id'=>$vc_id, 'vc_status'=>$vc_status));
+		$this->vcGateway->update(
+			array('vc_status'=>$vc_status),
+			array('vc_id'=>'?'),
+			array($vc_id)
+		);
 	}
 
 	/**

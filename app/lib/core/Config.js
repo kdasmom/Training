@@ -46,7 +46,7 @@ Ext.define('NP.lib.core.Config', function() {
 		
 		singleton: true,
 		
-		requires: ['NP.lib.core.Net','NP.store.system.States'],
+		requires: ['NP.lib.core.Net','NP.store.system.States','NP.store.system.Countries'],
 		
 		/**
 		 * Loads all application configuration settings, custom field settings, and user settings with
@@ -58,6 +58,9 @@ Ext.define('NP.lib.core.Config', function() {
 			
 			// Create the state store
 			Ext.create('NP.store.system.States', { storeId: 'system.States' });
+			
+			// Create the country store
+			Ext.create('NP.store.system.Countries', { storeId: 'system.Countries' });
 
 			// Make the ajax request
 			return NP.lib.core.Net.remoteCall({
@@ -93,6 +96,27 @@ Ext.define('NP.lib.core.Config', function() {
 							// Save custom fields in application
 							customFields = result;
 						}
+					},
+					// This request gets all integration packages for the app
+					{ 
+						service: 'ConfigService',
+						action : 'getIntegrationPackages',
+						store  : 'NP.store.system.IntegrationPackages',
+						storeId: 'system.IntegrationPackages'
+					},
+					// This request gets all integration packages for the app
+					{ 
+						service: 'PropertyService',
+						action : 'getFiscalDisplayTypes',
+						store  : 'NP.store.property.FiscalDisplayTypes',
+						storeId: 'property.FiscalDisplayTypes'
+					},
+					// This request gets all regions for the app
+					{ 
+						service: 'PropertyService',
+						action : 'getRegions',
+						store  : 'NP.store.property.Regions',
+						storeId: 'property.Regions'
 					},
 					// This request gets config settings for the user
 					{
@@ -161,6 +185,21 @@ Ext.define('NP.lib.core.Config', function() {
 		getCustomFields: function() {
 			return customFields;
 		},
+
+		/**
+		 * Shortcut for NP.Config.getSetting('PN.main.PropertyLabel', 'Property') and plural equivalent
+		 * @param {Boolean} [isPlural=false] Whether or not you want the plural setting value or the singular one
+		 */
+		 getPropertyLabel: function(isPlural) {
+		 	if (arguments.length == 0) {
+		 		isPlural = false;
+		 	}
+		 	if (isPlural) {
+		 		return NP.Config.getSetting('PN.Main.PropertiesLabel', 'Properties');
+		 	} else {
+		 		return NP.Config.getSetting('PN.main.PropertyLabel', 'Property');
+		 	}
+		 },
 		
 		/**
 		 * Returns the date format mask that the server returns dates as

@@ -159,7 +159,7 @@ class UserService extends AbstractService {
 
 		// Update the userprofile object
 		$userprofile->userprofile_updated_by = $this->securityService->getUserId();
-		$userprofile->userprofile_updated_datetm = \NP\util\Util::formatDateForDB(time());
+		$userprofile->userprofile_updated_datetm = \NP\util\Util::formatDateForDB();
 
 		// Run validation
 		$validator = new EntityValidator();
@@ -349,7 +349,7 @@ class UserService extends AbstractService {
 
 				// Add activated date if dealing with new record
 				if ($mobInfo->mobinfo_id === null) {
-					$mobInfo->mobinfo_activated_datetm = \NP\util\Util::formatDateForDB(time());
+					$mobInfo->mobinfo_activated_datetm = \NP\util\Util::formatDateForDB();
 				}
 
 				$this->mobInfoGateway->save($mobInfo);
@@ -382,11 +382,14 @@ class UserService extends AbstractService {
 			$mobinfo_id_list = array($mobinfo_id_list);
 		}
 		foreach ($mobinfo_id_list as $mobinfo_id) {
-			$this->mobInfoGateway->update(array(
-				'mobinfo_id'                 => $mobinfo_id,
-				'mobinfo_deactivated_datetm' => \NP\util\Util::formatDateForDB(time()),
-				'mobinfo_status'             => 'inactive'
-			));
+			$this->mobInfoGateway->update(
+				array(
+					'mobinfo_deactivated_datetm' => \NP\util\Util::formatDateForDB(),
+					'mobinfo_status'             => 'inactive'
+				),
+				array('mobinfo_id' => '?'),
+				array($mobinfo_id)
+			);
 		}
 	}
 

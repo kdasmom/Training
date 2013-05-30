@@ -1,0 +1,65 @@
+/**
+ * Property Setup > Properties section > Form
+ *
+ * @author Thomas Messier
+ */
+Ext.define('NP.view.property.PropertiesForm', {
+    extend: 'NP.lib.ui.BoundForm',
+    alias: 'widget.property.propertiesform',
+    
+    requires: [
+    	'NP.lib.core.Config',
+        'NP.lib.core.Security',
+        'NP.view.shared.button.Cancel',
+        'NP.view.shared.button.Save',
+        'NP.lib.ui.VerticalTabPanel',
+        'NP.view.property.PropertiesFormInfo',
+        'NP.view.property.PropertiesFormAccounting',
+        'NP.view.property.PropertiesFormGl',
+        'NP.view.property.PropertiesFormCal',
+        'NP.view.property.PropertiesFormUnits',
+        'NP.view.property.PropertiesFormUnitMeasurements',
+        'NP.view.property.PropertiesFormUsers',
+        'NP.view.property.PropertiesFormUserReport'
+    ],
+
+    autoScroll: true,
+
+    layout: 'fit',
+
+    initComponent: function() {
+        var bar = [
+            { xtype: 'shared.button.cancel' },
+            { xtype: 'shared.button.save' }
+        ];
+        this.tbar = bar;
+        this.bbar = bar;
+
+        var tabs = [
+            { xtype: 'property.propertiesforminfo' },
+            { xtype: 'property.propertiesformaccounting' }
+        ];
+        if (NP.Config.getSetting('CP.PROPERTYGLACCOUNT_USE', 0) && NP.Security.hasPermission(12)) {
+            tabs.push({ xtype: 'property.propertiesformgl', hidden: true });
+        }
+        tabs.push(
+            { xtype: 'property.propertiesformcal', hidden: true },
+            { xtype: 'property.propertiesformunits', hidden: true },
+            { xtype: 'property.propertiesformunitmeasurements', hidden: true },
+            { xtype: 'property.propertiesformusers', hidden: true },
+            { xtype: 'property.propertiesformuserreport', hidden: true }
+        );
+
+        this.items = [{
+            xtype   : 'verticaltabpanel',
+            border  : false,
+            defaults: {
+                padding: 8
+            },
+            activeTab: 0,
+            items    : tabs
+        }];
+
+        this.callParent(arguments);
+    }
+});

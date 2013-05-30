@@ -43,6 +43,51 @@ class FiscalcalGateway extends AbstractGateway {
 		return $res[0]['fiscalcalmonth_cutoff'];
 	}
 
+	/**
+	 * Returns master closing calendars for the application
+	 *
+	 * @param  int $year The year to get master closing calendars for
+	 * @return array     Returns an array of fiscal calendars
+	 */
+	public function getMasterClosingCalendars($year) {
+		$select = new Select();
+
+		$select->from('fiscalcal')
+				->whereIsNull('property_id')
+				->whereEquals('fiscalcal_year', '?')
+				->order('fiscalcal_year DESC');
+		
+		return $this->adapter->query($select, array($year));
+	}
+
+	/**
+	 * Gets all master fiscal calendars not already used by a property
+	 *
+	 * @return int $property_id The property for which you want to get unused master calendars (optional); null if new property
+	 */
+	public function findUnusedFiscalCalendars($property_id) {
+		$select = new Select();
+		$subSelect = new Select();
+		$select->from(array('f'=>'fiscalcal'))
+				->whereIsNull('f.property_id')
+				->whereEquals('f.fiscalcal_type', '?')
+				->order('f.fiscalcal_year, f.fiscalcal_name');
+		
+		$params = array('template');
+
+		if ($property_id !== null) {
+			$select->whereNotExists(
+				$subSelect->from(array('f2'=>'fiscalcal'))
+							->whereEquals('f2.fiscalcal_name', 'f.fiscalcal_name')
+							->whereEquals('f2.fiscalcal_year', 'f.fiscalcal_year')
+							->whereEquals('f2.property_id', '?')
+			);
+			$params[] = $property_id;
+		}
+
+		return $this->adapter->query($select, $params);
+	}
+
 }
 
 ?>

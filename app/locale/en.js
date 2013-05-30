@@ -498,6 +498,105 @@ Ext.define('NP.locale.en.view.mySettings.UserDelegationForm', {
 
 
 /**
+ * PROPERTY SETUP SECTION
+ */
+Ext.define('NP.locale.en.controller.PropertySetup', {
+	override: 'NP.controller.PropertySetup',
+	
+	requires: ['NP.lib.core.Config'],
+
+	placeOnHoldDialogTitleText: 'Place On Hold?',
+	placeOnHoldDialogText     : 'Are you sure you want to place the selected ' + NP.Config.getPropertyLabel(true).toLowerCase() + ' on hold?',
+	onHoldSuccessText         : NP.Config.getPropertyLabel(true) + ' were placed on hold',
+	onHoldFailureText         : 'There was an error placing ' + NP.Config.getPropertyLabel(true) + ' on hold',
+	activateDialogTitleText : 'Activate?',
+	activateDialogText      : 'Are you sure you want to activate the selected ' + NP.Config.getPropertyLabel(true).toLowerCase() + '?',
+	activateSuccessText     : NP.Config.getPropertyLabel(true) + ' were activated',
+	activateFailureText     : 'There was an error activating ' + NP.Config.getPropertyLabel(true),
+	inactivateDialogTitleText : 'Inactivate?',
+	inactivateDialogText      : 'Are you sure you want to inactivate the selected ' + NP.Config.getPropertyLabel(true).toLowerCase() + '?',
+	inactivateSuccessText     : NP.Config.getPropertyLabel(true) + ' were inactivated',
+	inactivateFailureText     : 'There was an error inactivating ' + NP.Config.getPropertyLabel(true)
+});
+
+Ext.define('NP.locale.en.view.propertySetup.Overview', {
+	override: 'NP.view.property.Overview',
+	
+	requires: ['NP.lib.core.Config'],
+
+	introText         : 'The ' + NP.Config.getPropertyLabel() + ' Setup section lists all ' + NP.Config.getPropertyLabel(true).toLowerCase() +', broken into three tabs: Current, On Hold, and Inactive.  Current ' + NP.Config.getPropertyLabel(true).toLowerCase() + ' includes the full list of ' + NP.Config.getPropertyLabel(true).toLowerCase() + ' that are available for use in the system.  On Hold ' + NP.Config.getPropertyLabel(true).toLowerCase() + ' includes the full list of ' + NP.Config.getPropertyLabel(true).toLowerCase() + ' that are in the process of being set up in the system or are in the process of being made inactive.  On Hold ' + NP.Config.getPropertyLabel(true).toLowerCase() + ' can not be assigned to a PO or Invoice but their historical information can still be included on reports.  Inactive ' + NP.Config.getPropertyLabel(true).toLowerCase() + ' include the full list of ' + NP.Config.getPropertyLabel(true).toLowerCase() + ' that are no longer in use on the system.  Inactive ' + NP.Config.getPropertyLabel(true).toLowerCase() +  ' are not available to be included on any reports.',
+	reminderText      : '<b><i>Reminder</i></b>, the following fields are required to be completed before a new ' + NP.Config.getPropertyLabel().toLowerCase() + ' can be added to the system.',
+	propertyStatusText: '<b>' + NP.Config.getPropertyLabel() + ' Status: </b>defaults to &quot;On Hold&quot; once the ' + NP.Config.getPropertyLabel().toLowerCase() + ' has been saved',
+	propertyCodeText  : '<b>' + NP.Config.getPropertyLabel() + ' Code:</b> a unique code identifier for this ' + NP.Config.getPropertyLabel().toLowerCase() + ' found in your GL Package',
+	propertyApCodeText: '<b>' + NP.Config.getPropertyLabel() + ' AP Code:</b> use this to further identify the ' + NP.Config.getPropertyLabel().toLowerCase() + ' (this is not required)',
+	departmentCodeText: '<b>Department Code:</b> use this in conjunction with the AP Code to even further identify the ' + NP.Config.getPropertyLabel().toLowerCase() + ' (this is not required)',
+	propertyNameText  : '<b>' + NP.Config.getPropertyLabel() + ' Name:</b> enter the name that should be used to refer to the ' + NP.Config.getPropertyLabel().toLowerCase() + '',
+	totalUnitsText    : '<b>Total # of Units/Square Feet:</b> enter the number of units or square feet in the building',
+	attentionText     : '<b>Attention: </b>enter the name of the contact person for the ' + NP.Config.getPropertyLabel().toLowerCase() + '',
+	addressText       : '<b>Address, City, State, Zip: </b>enter the address of the ' + NP.Config.getPropertyLabel().toLowerCase() + '',
+	phoneNumberText   : '<b>Phone number: </b>enter the phone number of the ' + NP.Config.getPropertyLabel().toLowerCase() + '',
+	regionText        : '<b>' + NP.Config.getSetting('PN.main.RegionLabel', 'Region') + ': </b>use the drop down list to select the ' + NP.Config.getSetting('PN.main.RegionLabel', 'Region') + ' where the ' + NP.Config.getPropertyLabel().toLowerCase() + ' is located.  ',
+	syncText          : '<b>Sync ' + NP.Config.getPropertyLabel() + ':</b> Yes/No - indicate whether the ' + NP.Config.getPropertyLabel().toLowerCase() + ' should sync actuals, invoices, and budgets with the backend accounting package',
+	accrualCashText   : '<b>Accrual or Cash:</b> indicate whether the ' + NP.Config.getPropertyLabel().toLowerCase() + ' uses cash or accrual based accounting methods',
+	calendarText      : '<b>Closing Calendar:</b> indicates which closing calendar (which day of the month the fiscal period rolls) will be used by the ' + NP.Config.getPropertyLabel().toLowerCase() + ' ',
+	salesTaxText      : '<b>' + NP.Config.getPropertyLabel() + ' ' + NP.Config.getSetting('PN.General.salesTaxTerm', 'Sales Tax') + ':</b>  enter the default ' + NP.Config.getSetting('PN.General.salesTaxTerm', 'Sales Tax').toLowerCase() + ' for the ' + NP.Config.getPropertyLabel().toLowerCase() + ' that will be used to assist with the entry of ' + NP.Config.getSetting('PN.General.salesTaxTerm', 'Sales Tax').toLowerCase() + ' on new purchase orders and invoices; enter the ' + NP.Config.getSetting('PN.General.salesTaxTerm', 'Sales Tax').toLowerCase() + ' percentage as a decimal point (e.g., enter a 7% tax as .07)',
+	thresholdText     : '<b>Acceptable PO Matching Threshold:</b>  enter the percentage an Invoice amount can exceed its Purchase Order amount before the invoice is routed for approval; enter the percentage as a whole number (e.g., enter 5% as 5) ',
+	startMonthText    : '<b>Fiscal Calendar Start Month:</b>  indicates which month of the year the fiscal calendar begins'
+});
+
+Ext.define('NP.locale.en.view.property.PropertiesFormInfo', {
+	override: 'NP.view.property.PropertiesFormInfo',
+	
+	requires: ['NP.lib.core.Config'],
+
+	title                  : NP.Config.getPropertyLabel() + ' Info',
+	codeFieldText          : NP.Config.getPropertyLabel() + ' Code',
+	apCodeFieldText        : NP.Config.getPropertyLabel() + ' AP Code',
+	deptCodeFieldText      : 'Department Code',
+	propertyNameFieldText  : NP.Config.getPropertyLabel() + ' Name',
+	totalUnitsFieldText    : 'Total No. of ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + 's',
+	attnFieldText          : 'Attention',
+	addressFieldText       : 'Address',
+	phoneFieldText         : 'Phone Number',
+	faxFieldText           : 'Fax Number',
+	billToFieldText        : 'Bill To Address Option',
+	billToPropertyFieldText: 'Default Bill To Property',
+	shipToFieldText        : 'Ship To Address Option',
+	shipToPropertyFieldText: 'Default Ship To Property',
+	syncFieldText          : 'Sync ' + NP.Config.getPropertyLabel(),
+	accrualCashFieldText   : 'Accrual or Cash',
+	nexusServicesFieldText : 'Nexus Services',
+	vendorCatalogFieldText : 'Vendor Catalog',
+	intPackageFieldText    : 'Integration Package',
+	calendarFieldText      : 'Closing Calendar',
+	volumeTypeFieldText    : 'Volume Type'
+});
+
+Ext.define('NP.locale.en.view.property.PropertiesFormAccounting', {
+	override: 'NP.view.property.PropertiesFormAccounting',
+	
+	title: 'Accounting Info',
+    thresholdFieldText: 'Acceptable PO Matching Threshold (%)',
+    fiscalCalStartFieldText: 'Fiscal Calendar Start Month'
+});
+
+Ext.define('NP.locale.en.view.property.PropertiesFormGl', {
+	override: 'NP.view.property.PropertiesFormGl',
+	
+	requires: ['NP.lib.core.Config'],
+	
+	title        : 'GL Assignments',
+	fromTitleText: 'Assigned',
+	toTitleText  : 'Unassigned'
+});
+
+Ext.define('NP.locale.en.view.property.PropertiesFormCal', {
+	override: 'NP.view.property.PropertiesFormCal',
+	
+	title: 'Closing Calendars'
+});
+
+/**
  * USER MANAGER SECTION
  */
 

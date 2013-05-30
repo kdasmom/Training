@@ -18,6 +18,11 @@ class Insert implements SQLInterface, SQLElement {
 	protected $values = array();
 
 	/**
+	 * @var array Columns to insert; this is only used when using a Select object for $values
+	 */
+	protected $cols = null;
+
+	/**
 	 * @param $table  string Name of the table to insert into (optional)
 	 * @param $values array  Values to insert (optional)
 	 */
@@ -35,8 +40,8 @@ class Insert implements SQLInterface, SQLElement {
 	/**
 	 * Sets the table to insert into
 	 *
-	 * @param  $table string     Table to isert into
-	 * @param \NP\core\db\Insert Return caller object for easy chaining
+	 * @param  $table string      Table to isert into
+	 * @return \NP\core\db\Insert Return caller object for easy chaining
 	 */
 	public function into($table) {
 		$this->table = $table;
@@ -44,10 +49,21 @@ class Insert implements SQLInterface, SQLElement {
 	}
 
 	/**
+	 * Adds columns to be inserted into; this is only relevant when $values is set to a Select object
+	 *
+	 * @param  $cols array        An array of columns; see the column($col) method for valid column definitions
+	 * @return \NP\core\db\Insert Caller object returned for easy chaining
+	 */
+	public function columns($cols) {
+		$this->cols = $cols;
+		return $this;
+	}
+
+	/**
 	 * Adds a set of values to be inserted
 	 *
-	 * @param $values array      Values to insert in the table
-	 * @param \NP\core\db\Insert Return caller object for easy chaining
+	 * @param  $values array|\NP\core\db\Select Values to insert in the table
+	 * @return \NP\core\db\Insert               Return caller object for easy chaining
 	 */
 	public function values($values) {
 		$this->values = $values;
@@ -57,9 +73,9 @@ class Insert implements SQLInterface, SQLElement {
 	/**
 	 * Adds a column value to be inserted
 	 *
-	 * @param $col   string        Column to insert in the table
-	 * @param $value number|string Value of the column to insert in the table
-	 * @param \NP\core\db\Insert   Return caller object for easy chaining
+	 * @param  $col   string        Column to insert in the table
+	 * @param  $value number|string Value of the column to insert in the table
+	 * @return \NP\core\db\Insert   Return caller object for easy chaining
 	 */
 	public function value($col, $value) {
 		$this->values[$col] = $value;
@@ -70,11 +86,16 @@ class Insert implements SQLInterface, SQLElement {
 	 * @return string Return SQL string for the insert statement
 	 */
 	public function toString() {
-		$cols = array_keys($this->values);
-		$values = array_values($this->values);
-		$sqlCols = implode(',', $cols);
-		$sqlValues = implode(',', $values);
-		return "INSERT INTO {$this->table} ({$sqlCols}) VALUES ({$sqlValues})";
+		if (is_array($this->values)) {
+			$cols = array_keys($this->values);
+			$values = array_values($this->values);
+			$sqlCols = implode(',', $cols);
+			$sqlValues = implode(',', $values);
+			return "INSERT INTO {$this->table} ({$sqlCols}) VALUES ({$sqlValues})";
+		} else if ($this->values instanceOf Select) {
+			$sqlCols = implode(',', $this->cols);
+			return "INSERT INTO {$this->table} ({$sqlCols}) {$this->values->toString()}";
+		}
 	}
 }
 ?>

@@ -46,6 +46,13 @@ Ext.define('NP.controller.Viewport', {
 				}
 			},
 
+			// Clicking on the Administration > My Settings menu
+			'#propertySetupMenuBtn': {
+				click: function() {
+					this.application.addHistory('PropertySetup:showPropertySetup');
+				}
+			},
+
 			// Clicking on the Administration > Catalog Maintenance menu
 			'#catalogMaintenanceMenuBtn': {
 				click: function() {

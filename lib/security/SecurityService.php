@@ -104,7 +104,7 @@ class SecurityService extends AbstractService {
 			// Log the user's login
 			$this->userprofileLogonGateway->insert(array(
 				"userprofile_id"			=> $userprofile_id,
-				"userprofilelogon_datetm"	=> Util::formatDateForDB(time()),
+				"userprofilelogon_datetm"	=> Util::formatDateForDB(),
 				"userprofilelogon_ip"		=> $_SERVER["REMOTE_ADDR"],
 			));
 			

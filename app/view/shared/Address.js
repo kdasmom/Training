@@ -13,82 +13,96 @@ Ext.define('NP.view.shared.Address', {
         labelAlign: 'top'
     },
 
+    // FIELD VALUES
+    /**
+     * @cfg {String}  [address_line1=""]         Value to populate the first line of street address with
+     */
+    address_line1       : '',
+    /**
+     * @cfg {String}  [address_line2=""]         Value to populate the second line of street address with
+     */
+    address_line2       : '',
+    /**
+     * @cfg {String}  [address_city=""]          Value to populate the city field with
+     */
+    address_city        : '',
+    /**
+     * @cfg {String}  [address_state=""]         Value to populate the state field with
+     */
+    address_state       : '',
+    /**
+     * @cfg {String}  [address_zip=""]           Value to populate the zip field with
+     */
+    address_zip         : '',
+    /**
+     * @cfg {String}  [address_zipext=""]        Value to populate the zip +4 field with
+     */
+    address_zipext      : '',
+    /**
+     * @cfg {Number}  [address_country=null]       Value to populate the country field with
+     */
+    address_country      : null,
+
+    // OPTIONS
+    /**
+     * @cfg {Boolean} [required=false]           Defines if the address block is required or not
+     */
+    required            : false,
+    /**
+     * @cfg {Boolean} [showCountry=false]        Defines if the country field should show or not
+     */
+    showCountry         : false,
+    /**
+     * @cfg {String}  [prefix=""]                Prefix for the fields' name config option
+     */
+    prefix              : '',
+    /**
+     * @cfg {Number}  [address_line1_width=400]  Width of the first street address field
+     */
+    address_line1_width : 400,
+    /**
+     * @cfg {Number}  [address_line2_width=400]  Width of the second street address field
+     */
+    address_line2_width : 400,
+    /**
+     * @cfg {Number}  [address_city_width=200]   Width of the city field
+     */
+    address_city_width  : 200,
+    /**
+     * @cfg {Number}  [address_state_width=45]   Width of the state field
+     */
+    address_state_width : 45,
+    /**
+     * @cfg {Number}  [address_zip_width=75]     Width of the zip field
+     */
+    address_zip_width   : 75,
+    /**
+     * @cfg {Number}  [address_zipext_width=65] Width of the zip +4 field
+     */
+    address_zipext_width: 65,
+    /**
+     * @cfg {Number}  [address_country_width=200] Width of the country field
+     */
+    address_country_width: 200,
+
     statics: {
-        LINE1 : 'address_line1',
-        LINE2 : 'address_line2',
-        CITY  : 'address_city',
-        STATE : 'address_state',
-        ZIP   : 'address_zip',
-        ZIPEXT: 'address_zipext',
-        FIELDS: ['LINE1','LINE2','CITY','STATE','ZIP','ZIPEXT']
+        LINE1  : 'address_line1',
+        LINE2  : 'address_line2',
+        CITY   : 'address_city',
+        STATE  : 'address_state',
+        ZIP    : 'address_zip',
+        ZIPEXT : 'address_zipext',
+        COUNTRY: 'address_country',
+        FIELDS : ['LINE1','LINE2','CITY','STATE','ZIP','ZIPEXT','COUNTRY']
     },
 
-    streetFieldText: 'Street',
-    cityFieldText  : 'City',
-    stateFieldText : 'State',
-    zipFieldText   : 'Zip',
+    streetFieldText : 'Street',
+    cityFieldText   : 'City',
+    stateFieldText  : 'State',
+    zipFieldText    : 'Zip',
+    countryFieldText: 'Country',
 
     initComponent: function() {
-        // Apply default configuration
-        Ext.applyIf(this, {
-            /**
-             * @cfg {String}  [address_line1=""]         Value to populate the first line of street address with
-             */
-            address_line1       : '',
-            /**
-             * @cfg {String}  [address_line2=""]         Value to populate the second line of street address with
-             */
-            address_line2       : '',
-            /**
-             * @cfg {String}  [address_city=""]          Value to populate the city field with
-             */
-            address_city        : '',
-            /**
-             * @cfg {String}  [address_state=""]         Value to populate the state field with
-             */
-            address_state       : '',
-            /**
-             * @cfg {String}  [address_zip=""]           Value to populate the zip field with
-             */
-            address_zip         : '',
-            /**
-             * @cfg {String}  [address_zipext=""]        Value to populate the zip +4 field with
-             */
-            address_zipext      : '',
-            /**
-             * @cfg {Boolean} [required=false]           Defines if the address block is required or not
-             */
-            required            : false,
-            /**
-             * @cfg {String}  [prefix=""]                Prefix for the fields' name config option
-             */
-            prefix              : '',
-            /**
-             * @cfg {Number}  [address_line1_width=400]  Width of the first street address field
-             */
-            address_line1_width : 400,
-            /**
-             * @cfg {Number}  [address_line2_width=400]  Width of the second street address field
-             */
-            address_line2_width : 400,
-            /**
-             * @cfg {Number}  [address_city_width=200]   Width of the city field
-             */
-            address_city_width  : 200,
-            /**
-             * @cfg {Number}  [address_state_width=45]   Width of the state field
-             */
-            address_state_width : 45,
-            /**
-             * @cfg {Number}  [address_zip_width=75]     Width of the zip field
-             */
-            address_zip_width   : 75,
-            /**
-             * @cfg {Number}  [address_zipext_width=200] Width of the zip +4 field
-             */
-            address_zipext_width: 65
-        });
-
         this.items = [];
 
         this.items.push({
@@ -150,6 +164,21 @@ Ext.define('NP.view.shared.Address', {
                 }
             ]
         });
+        
+        if (this.showCountry) {
+            this.items.push({
+                xtype            : 'customcombo',
+                store            : 'system.Countries',
+                selectFirstRecord: true,
+                displayField     : 'name',
+                valueField       : 'id',
+                fieldLabel       : this.countryFieldText,
+                name             : this.prefix + NP.view.shared.Address.COUNTRY,
+                allowBlank       : !this.required,
+                width            : this.address_country_width,
+                value            : this.address_country
+            });
+        }
 
         this.callParent(arguments);
 
@@ -184,6 +213,10 @@ Ext.define('NP.view.shared.Address', {
 
     getZipExt: function() {
         return this.getField('ZIPEXT');
+    },
+
+    getCountry: function() {
+        return this.getField('COUNTRY');
     },
 
     validate: function() {

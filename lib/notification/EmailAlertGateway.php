@@ -26,9 +26,9 @@ class EmailAlertGateway extends AbstractGateway {
 		$select = new Select();
 		$select->from('emailalert')
 				->whereEquals('isActive', 1)
-				->nest('OR')
+				->whereNest('OR')
 				->whereEquals('userprofile_id', '?')
-				->nest()
+				->whereNest()
 				->whereEquals('role_id', $roleSubSelect)
 				->whereEquals($roleHourSubSelect, 0);
 		

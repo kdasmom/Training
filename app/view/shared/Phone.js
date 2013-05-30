@@ -13,50 +13,65 @@ Ext.define('NP.view.shared.Phone', {
         FIELDS     : ['COUNTRYCODE','NUMBER']
     },
 
-    label : 'Phone Number',
+    // FIELD VALUES
+    /**
+     * @cfg {String} [phone_countrycode=""] Value to populate the area code
+     */
+    phone_countrycode  : '',
+    /**
+     * @cfg {String} [phone_number=""]      Value to populate the phone number
+     */
+    phone_number: '',
+
+    // OPTIONS
+    /**
+     * @cfg {String} [label="Phone Number"] Label text
+     */
+    label     : 'Phone Number',
+    /**
+     * @cfg {Boolean} [showLabel=true] Whether or not to show the top label
+     */
+    hideLabel : false,
+    /**
+     * @cfg {Boolean} [showFieldDescriptions=false] Whether to show the country code and phone number field descriptions
+     */
+    showFieldDescriptions : false,
+    /**
+     * @cfg {Boolean} [required=false]      Defines if the phone is required or not
+     */
+    required    : false,
+    /**
+     * @cfg {String}  [prefix=""]           Prefix for the fields' name config option
+     */
+    prefix      : '',
 
     initComponent: function() {
-        // Apply default configuration
-        Ext.applyIf(this, {
-            /**
-             * @cfg {String} [phone_countrycode=""] Value to populate the area code
-             */
-            phone_countrycode  : '',
-            /**
-             * @cfg {String} [phone_number=""]      Value to populate the phone number
-             */
-            phone_number: '',
-            /**
-             * @cfg {Boolean} [required=false]      Defines if the phone is required or not
-             */
-            required    : false,
-            /**
-             * @cfg {String}  [prefix=""]           Prefix for the fields' name config option
-             */
-            prefix      : ''
-        });
-
         this.items = [];
 
-        var countryCodeWidth = 40, numberWidth = 120, totalWidth = countryCodeWidth + numberWidth + 10;
+        var countryCodeWidth = (this.showFieldDescriptions) ? 80 : 40,
+            numberWidth = 120, 
+            totalWidth = countryCodeWidth + numberWidth + 20;
         this.width = totalWidth;
 
         this.items.push(
             {
-                xtype: 'label',
-                text:  this.label + ':',
-                cls: 'x-form-item-label x-unselectable x-form-item-label-top'
+                xtype : 'label',
+                text  :  this.label + ':',
+                cls   : 'x-form-item-label x-unselectable x-form-item-label-top',
+                hidden: this.hideLabel
             },{
                 xtype: 'container',
                 layout: 'column',
                 width: totalWidth,
                 defaults: {
-                    margin    : '0 5 0 0'
+                    margin    : '0 5 0 0',
+                    labelAlign: 'top'
                 },
                 items: [
                     {
                         xtype      : 'textfield',
-                        hideLabel  : true,
+                        fieldLabel : 'Country Code',
+                        hideLabel  : !this.showFieldDescriptions,
                         name       : this.prefix + NP.view.shared.Phone.COUNTRYCODE,
                         allowBlank : !this.required,
                         width      : countryCodeWidth,
@@ -66,7 +81,8 @@ Ext.define('NP.view.shared.Phone', {
                         hideTrigger: true
                     },{
                         xtype      : 'textfield',
-                        hideLabel  : true,
+                        fieldLabel : 'Number',
+                        hideLabel  : !this.showFieldDescriptions,
                         name       : this.prefix + NP.view.shared.Phone.NUMBER,
                         width      : numberWidth,
                         maxLength  : 25,
