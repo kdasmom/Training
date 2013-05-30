@@ -77,6 +77,7 @@ Ext.define('NP.view.shared.ContextPicker', {
                     this.propertyCombo = Ext.create('NP.lib.ui.ComboBox', {
                         store            : 'user.Properties',
                         fieldLabel       : this.propertyComboText,
+                        width            : 325,
                         labelAlign       : 'right',
                         displayField     : 'property_name',
                         valueField       : 'property_id',
@@ -97,6 +98,7 @@ Ext.define('NP.view.shared.ContextPicker', {
                     this.regionCombo = Ext.create('NP.lib.ui.ComboBox', {
                         store            : 'user.Regions',
                         fieldLabel       : this.regionComboText,
+                        width            : 325,
                         labelAlign       : 'right',
                         displayField     : 'region_name',
                         valueField       : 'region_id',
