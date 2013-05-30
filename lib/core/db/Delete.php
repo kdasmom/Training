@@ -19,7 +19,7 @@ class Delete extends AbstractFilterableSql implements SQLInterface, SQLElement {
 	public function __construct($table=null, $where=null) {
 		// If table was passed, set it
 		if ($table !== null) {
-			$this->table($table);
+			$this->from($table);
 		}
 		// If criteria was passed, set it
 		if ($where !== null) {
