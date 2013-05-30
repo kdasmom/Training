@@ -32,14 +32,17 @@ Ext.define('NP.controller.CatalogMaintenance', {
 
 			'[xtype="catalogmaintenance.cataloggrid"]': {
 				// Clicking on an Activated Vendor Catalog grid inactivate/activate button
-				cellclick: function(grid, td, cellIndex, record, tr, rowIndex, e, eOpts) {
-					// Only take action if the click happened on the inactivate button
+				cellclick: function(gridView, td, cellIndex, record, tr, rowIndex, e, eOpts) {
+					var grid = this.application.getComponent('catalogmaintenance.cataloggrid');
+					
+					// Do this if click hapened on activate/inactivate button
 					if (e.target.tagName == 'IMG') {
 						if (grid.type == 'activated') {
 							this.toggleActivation(record);
 						} else if (grid.type == 'pending') {
 							this.deleteCatalog(grid, record);	
 						}
+					// Otherwise open the catalog
 					} else {
 						this.openCatalog(grid, record);
 					}
@@ -127,10 +130,9 @@ Ext.define('NP.controller.CatalogMaintenance', {
 			'[xtype="catalogmaintenance.catalogview"] [xtype="shared.button.activate"],[xtype="catalogmaintenance.catalogview"] [xtype="shared.button.inactivate"]': {
 				click: function() {
 					var that = this;
-					var vc = this.application.getComponent('catalogmaintenance.catalogview').vc;
-					this.toggleActivation(vc).then({
+					this.toggleActivation(this.vc).then({
 						success: function() {
-							that.updateActivationButton(vc);
+							that.updateActivationButton(that.vc);
 						}
 					});
 				}
