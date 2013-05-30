@@ -51,9 +51,9 @@ class VcEntity extends \NP\core\AbstractEntity {
 		),
 		'vc_status'	 => array(
 			'validation' => array(
-				'stringLength' => array('max'=>50),
+				'digits' => array(),
 				'inArray' => array(
-					'haystack' => array('-2','-1','0','1')
+					'haystack' => array(-2,-1,0,1)
 				)
 			)
 		),

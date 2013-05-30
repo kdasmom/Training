@@ -18,7 +18,7 @@ Ext.define('NP.model.catalog.Vc', {
 		{ name: 'vc_lastupdatedt', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
 		{ name: 'vc_lastupdateby', type: 'int', defaultValue: NP.lib.core.Security.getUser().get('userprofile_id') },
 		{ name: 'vc_totalItems', type: 'int', defaultValue: 0 },
-		{ name: 'vc_status', defaultValue: '-1' },
+		{ name: 'vc_status', type: 'int', defaultValue: -1 },
 		{ name: 'vc_unique_id' },
 		{ name: 'vc_catalogtype', defaultValue: 'excel' },
 		{ name: 'vc_url' },
