@@ -294,8 +294,8 @@ Ext.define('NP.controller.CatalogMaintenance', {
 		itemSelec.toField.getStore().removeAll();
 
 		// Now change the store parameters and reload the store; this will update the Vendor Assignment options
-		this.vendorAssignStore.getProxy().extraParams.vendor_id = records[0].get('vendor_id');
-		this.vendorAssignStore.load();
+		itemSelec.getStore().getProxy().extraParams.vendor_id = records[0].get('vendor_id');
+		itemSelec.getStore().load();
 	},
 
 	changeCatalogType: function(container, newCatalogType, oldCatalogType) {
