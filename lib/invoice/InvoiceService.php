@@ -4,6 +4,7 @@ namespace NP\invoice;
 
 use NP\core\AbstractService;
 use NP\security\SecurityService;
+use NP\budget\BudgetService;
 
 /**
  * Service class for operations related to Invoices
@@ -11,37 +12,20 @@ use NP\security\SecurityService;
  * @author Thomas Messier
  */
 class InvoiceService extends AbstractService {
-	/**
-	 * @var \NP\security\SecurityService
-	 */
-	protected $securityService;
 	
-	/**
-	 * @var \NP\invoice\InvoiceGateway
-	 */
-	protected $invoiceGateway;
-	
-	/**
-	 * @var \NP\invoice\InvoiceItemGateway
-	 */
-	protected $invoiceItemGateway;
-	
-	/**
-	 * @var \NP\invoice\InvoiceValidator
-	 */
-	protected $invoiceValidator;
+	protected $securityService, $invoiceGateway, $invoiceItemGateway, $budgetService;
 	
 	/**
 	 * @param \NP\security\SecurityService   $securityService    SecurityService object injected
 	 * @param \NP\invoice\InvoiceGateway     $invoiceGateway     InvoiceGateway object injected
 	 * @param \NP\invoice\InvoiceItemGateway $invoiceItemGateway InvoiceItemGateway object injected
-	 * @param \NP\invoice\InvoiceValidator   $invoiceValidator   InvoiceValidator object injected
 	 */
 	public function __construct(SecurityService $securityService, InvoiceGateway $invoiceGateway, 
-								InvoiceItemGateway $invoiceItemGateway) {
-		$this->securityService = $securityService;
-		$this->invoiceGateway = $invoiceGateway;
+								InvoiceItemGateway $invoiceItemGateway, BudgetService $budgetService) {
+		$this->securityService    = $securityService;
+		$this->invoiceGateway     = $invoiceGateway;
 		$this->invoiceItemGateway = $invoiceItemGateway;
+		$this->budgetService      = $budgetService;
 	}
 	
 	/**
@@ -229,6 +213,30 @@ class InvoiceService extends AbstractService {
 	 */
 	public function getInvoicesByUser($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
 		return $this->invoiceGateway->findInvoicesByUser($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
+	}
+
+	public function rollPeriod($property_id, $newAccountingPeriod, $oldAccountingPeriod) {
+		$this->invoiceGateway->beginTransaction();
+
+		try {
+			// Roll invoice Lines
+			$this->invoiceItemGateway->rollPeriod($property_id, $newAccountingPeriod, $oldAccountingPeriod);
+			
+			// Roll invoices
+			$this->invoiceGateway->rollPeriod($property_id, $newAccountingPeriod, $oldAccountingPeriod);
+
+			// Create new budgets if needed
+			$this->budgetService->createMissingBudgets('invoice');
+
+			// If dealing with a new year, update the GLACCOUNTYEAR records
+			if ($newAccountingPeriod->format('Y') != $oldAccountingPeriod->format('Y')) {
+				$this->budgetService->activateGlAccountYear($newAccountingPeriod->format('Y'));
+			}
+			
+			$this->invoiceGateway->commit();
+		} catch(\Exception $e) {
+			$this->invoiceGateway->rollback();
+		}
 	}
 	
 }

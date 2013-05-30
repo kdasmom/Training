@@ -23,7 +23,7 @@ Ext.define('NP.model.contact.Address', {
 		{ name: 'address_state' },
 		{ name: 'address_zip' },
 		{ name: 'address_zipext' },
-		{ name: 'address_country' },
+		{ name: 'address_country', type: 'int' },
 		{ name: 'address_id_alt' }
 	],
 

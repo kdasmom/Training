@@ -37,6 +37,15 @@ class GLService extends AbstractService {
 		return $this->glaccountGateway->findForInvoiceItemComboBox($vendorsite_id, $property_id, $glaccount_keyword);
 	}
 	
+	/**
+	 * Gets all GL accounts that belong to a specified integration package
+	 *
+	 * @param  int   $integration_package_id The integration package to get GL accounts for
+	 * @return array                         Array of GL account records
+	 */
+	public function getByIntegrationPackage($integration_package_id) {
+		return $this->glaccountGateway->findByIntegrationPackage($integration_package_id);
+	}
 }
 
 ?>

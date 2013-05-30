@@ -6,10 +6,11 @@ namespace NP\core\db;
  *
  * @author Thomas Messier
  */
-class Select implements SQLInterface, SQLElement {
+class Select extends AbstractFilterableSql implements SQLInterface, SQLElement {
 	const JOIN_INNER = 'INNER';
 	const JOIN_LEFT  = 'LEFT';
 	const JOIN_RIGHT = 'RIGHT';
+	const JOIN_CROSS = 'CROSS';
 
 	/**
 	 * @var array Associative array with table alias as key and table name as value
@@ -40,11 +41,6 @@ class Select implements SQLInterface, SQLElement {
 	 * @var array Joins for the SELECT statement
 	 */
 	protected $joins = array();
-
-	/**
-	 * @var \NP\core\db\Where WHERE clause for the SELECT statement
-	 */
-	protected $where = null;
 
 	/**
 	 * @var \NP\core\db\Group GROUP BY clause for the SELECT statement
@@ -152,9 +148,9 @@ class Select implements SQLInterface, SQLElement {
 	 * @param  $type      string       Type of join (optional); valid values are INNER, LEFT, and RIGHT; defaults to INNER
 	 * @return \NP\core\db\Select Caller object returned for easy chaining
 	 */
-	public function join($table, $condition, $cols=null, $type=self::JOIN_INNER) {
+	public function join($table, $condition=null, $cols=null, $type=self::JOIN_INNER) {
 		$type = strtoupper($type);
-		$validTypes = array(self::JOIN_INNER, self::JOIN_LEFT, self::JOIN_RIGHT);
+		$validTypes = array(self::JOIN_INNER, self::JOIN_LEFT, self::JOIN_RIGHT, self::JOIN_CROSS);
 		if (!in_array($type, $validTypes)) {
 			throw new \NP\core\Exception('Invalid $values argument. Valid values are ' . implode(',', $validTypes));
 		}
@@ -172,50 +168,6 @@ class Select implements SQLInterface, SQLElement {
 	public function resetJoins() {
 		$this->joins = array();
 	}
-
-	/**
-	 * Adds a WHERE clause to the statement
-	 *
-	 * @param  $where string|array|NP\core\db\Where
-	 * @return \NP\core\db\Select                   Caller object returned for easy chaining
-	 */
-	public function where($where) {
-		if (!is_string($where) && !is_array($where) && !$where instanceOf Where) {
-			throw new \NP\core\Exception('The $where argument must be a string, array, or NP\core\db\Where object');
-		}
-		if (!$where instanceOf Where) {
-			$where = new Where($where);
-		}
-		$this->where = $where;
-
-		return $this;
-	}
-
-	/**
-	 * Magic method to call different Where object methods directly from the Select object.
-	 * Just call a method named "where" followed by an operation method from the Where object.
-	 * For example, you can do things like $select->whereIsNotNull('col_name') or
-	 * $select->whereLessThanOrEqual('col_name', 20)
-	 *
-	 * @param  $name      string  Name of the method to call; valid values are "AND" or "OR"
-	 * @param  $arguments array   Arguments passed to the method
-	 * @return \NP\core\db\Select Caller object returned for easy chaining
-	 */
-	public function __call($name, $arguments) {
-		$operator = str_replace('where', '', $name);
-		$operator = lcfirst($operator);
-		if (count($arguments) == 0) {
-			$this->where->{$operator}();
-		} else if (count($arguments) == 1) {
-			$this->where->{$operator}($arguments[0]);
-		} else if (count($arguments) == 2) {
-			$this->where->{$operator}($arguments[0], $arguments[1]);
-		} else if (count($arguments) == 3) {
-			$this->where->{$operator}($arguments[0], $arguments[1], $arguments[2]);
-		}
-
-        return $this;
-    }
 
 	/**
 	 * Adds a GROUP BY clause to the statement
@@ -391,8 +343,10 @@ class Select implements SQLInterface, SQLElement {
 			// build the join clause
 			$joinSql = "{$join['type']} JOIN {$join['table']->toString()}";
 
-			// Add the alias and table join condition
-			$joinSql .= " ON {$join['condition']}";
+			// Add the table join condition if there is one
+			if (strtoupper($join['type']) != 'CROSS') {
+				$joinSql .= " ON {$join['condition']}";
+			}
 			
 			// Append to the join array for joining later
 			$joins[] = $joinSql;

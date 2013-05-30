@@ -31,7 +31,7 @@ class VcItemGateway extends AbstractGateway {
 			$params[] = ($filter_type == 'inactive') ? 0 : 1;
 		}
 		if ($filter_type == 'category') {
-			$select->nest('OR')		
+			$select->whereNest('OR')		
 					->whereEquals('vi.vcitem_category_name', '?');
 			if (is_int($category)) {
 				$select->whereEquals('vi.UNSPSC_Commodity_Commodity', '?');

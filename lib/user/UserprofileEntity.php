@@ -86,11 +86,6 @@ class UserprofileEntity extends \NP\core\AbstractEntity {
 				'digits' => array()
 			)
 		),
-		'userprofile_ADguid' => array(
-			'validation' => array(
-				'stringLength' => array('max'=>255)
-			)
-		),
 		'userprofile_preferred_region' => array(
 			'validation' => array(
 				'digits' => array()

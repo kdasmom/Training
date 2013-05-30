@@ -32,14 +32,17 @@ Ext.define('NP.controller.CatalogMaintenance', {
 
 			'[xtype="catalogmaintenance.cataloggrid"]': {
 				// Clicking on an Activated Vendor Catalog grid inactivate/activate button
-				cellclick: function(grid, td, cellIndex, record, tr, rowIndex, e, eOpts) {
-					// Only take action if the click happened on the inactivate button
+				cellclick: function(gridView, td, cellIndex, record, tr, rowIndex, e, eOpts) {
+					var grid = this.application.getComponent('catalogmaintenance.cataloggrid');
+					
+					// Do this if click hapened on activate/inactivate button
 					if (e.target.tagName == 'IMG') {
 						if (grid.type == 'activated') {
 							this.toggleActivation(record);
 						} else if (grid.type == 'pending') {
 							this.deleteCatalog(grid, record);	
 						}
+					// Otherwise open the catalog
 					} else {
 						this.openCatalog(grid, record);
 					}
@@ -127,10 +130,9 @@ Ext.define('NP.controller.CatalogMaintenance', {
 			'[xtype="catalogmaintenance.catalogview"] [xtype="shared.button.activate"],[xtype="catalogmaintenance.catalogview"] [xtype="shared.button.inactivate"]': {
 				click: function() {
 					var that = this;
-					var vc = this.application.getComponent('catalogmaintenance.catalogview').vc;
-					this.toggleActivation(vc).then({
+					this.toggleActivation(this.vc).then({
 						success: function() {
-							that.updateActivationButton(vc);
+							that.updateActivationButton(that.vc);
 						}
 					});
 				}
@@ -294,8 +296,8 @@ Ext.define('NP.controller.CatalogMaintenance', {
 		itemSelec.toField.getStore().removeAll();
 
 		// Now change the store parameters and reload the store; this will update the Vendor Assignment options
-		this.vendorAssignStore.getProxy().extraParams.vendor_id = records[0].get('vendor_id');
-		this.vendorAssignStore.load();
+		itemSelec.getStore().getProxy().extraParams.vendor_id = records[0].get('vendor_id');
+		itemSelec.getStore().load();
 	},
 
 	changeCatalogType: function(container, newCatalogType, oldCatalogType) {
@@ -405,12 +407,11 @@ Ext.define('NP.controller.CatalogMaintenance', {
 	},
 
 	showUploadLogo: function() {
-		var vc = this.application.getComponent('catalogmaintenance.catalogview').vc;
-		var win = Ext.create('NP.view.catalogMaintenance.CatalogFormUploadLogo', { vc_logo_filename: vc.get('vc_logo_filename') }).show();
+		var win = Ext.create('NP.view.catalogMaintenance.CatalogFormUploadLogo', { vc_logo_filename: this.vc.get('vc_logo_filename') }).show();
 	},
 
 	saveLogo: function() {
-		var vc = this.application.getComponent('catalogmaintenance.catalogview').vc;
+		var that = this;
 		var formSelector = '[xtype="catalogmaintenance.catalogformuploadlogo"] form';
 		var form = Ext.ComponentQuery.query(formSelector)[0];
 		
@@ -425,14 +426,14 @@ Ext.define('NP.controller.CatalogMaintenance', {
 				requests: {
 					service : 'CatalogService',
 					action  : 'saveCatalogLogo',
-					vc      : vc.getData(),
+					vc      : that.vc.getData(),
 					success : function(result, deferred) {
 						if (result.success) {
 							// Update the model
-							vc.set('vc_logo_filename', result.vc_logo_filename);
+							that.vc.set('vc_logo_filename', result.vc_logo_filename);
 
 							// Update the image
-							form.query('image')[0].setSrc('clients/' + NP.lib.core.Config.getAppName() + '/web/images/logos/' + vc.get('vc_logo_filename')); 
+							form.query('image')[0].setSrc('clients/' + NP.lib.core.Config.getAppName() + '/web/images/logos/' + that.vc.get('vc_logo_filename')); 
 							
 							// Make sure the image section is showing
 							form.query('container')[0].show();
@@ -455,7 +456,7 @@ Ext.define('NP.controller.CatalogMaintenance', {
 	},
 
 	removeLogo: function() {
-		var vc = this.application.getComponent('catalogmaintenance.catalogview').vc;
+		var that = this;
 
 		Ext.MessageBox.confirm('Delete Logo?', 'Are you sure you want to delete this logo?', function(btn) {
 			// If user clicks Yes, proceed with deleting
@@ -465,9 +466,9 @@ Ext.define('NP.controller.CatalogMaintenance', {
 					requests: {
 						service : 'CatalogService',
 						action  : 'removeCatalogLogo',
-						vc      : vc.getData(),
+						vc      : that.vc.getData(),
 						success : function(result, deferred) {
-							vc.set('vc_logo_filename', null);
+							that.vc.set('vc_logo_filename', null);
 							var container = Ext.ComponentQuery.query('[xtype="catalogmaintenance.catalogformuploadlogo"] form container')[0];
 							container.hide();
 							container.query('image')[0].setSrc('');
@@ -489,7 +490,6 @@ Ext.define('NP.controller.CatalogMaintenance', {
 	savePdf: function() {
 		var that = this;
 
-		var vc = this.application.getComponent('catalogmaintenance.catalogview').vc;
 		var formSelector = '[xtype="catalogmaintenance.catalogformuploadinfopdf"] form';
 		var form = Ext.ComponentQuery.query(formSelector)[0];
 		
@@ -504,7 +504,7 @@ Ext.define('NP.controller.CatalogMaintenance', {
 				requests: {
 					service : 'CatalogService',
 					action  : 'saveCatalogPdf',
-					vc      : vc.getData(),
+					vc      : that.vc.getData(),
 					success : function(result, deferred) {
 						if (result.success) {
 							// Change flag to indicate this catalog now has a PDF
@@ -531,14 +531,12 @@ Ext.define('NP.controller.CatalogMaintenance', {
 	},
 
 	viewPdf: function() {
-		var vc = this.application.getComponent('catalogmaintenance.catalogview').vc;
-		var pdfUrl = 'clients/' + NP.lib.core.Config.getAppName() + '/web/exim_uploads/catalog/pdf/' + vc.get('vc_id') + '.pdf';
+		var pdfUrl = 'clients/' + NP.lib.core.Config.getAppName() + '/web/exim_uploads/catalog/pdf/' + this.vc.get('vc_id') + '.pdf';
 		window.open(pdfUrl);
 	},
 
 	removePdf: function() {
 		var that = this;
-		var vc = this.application.getComponent('catalogmaintenance.catalogview').vc;
 		
 		Ext.MessageBox.confirm('Delete PDF?', 'Are you sure you want to delete this PDF?', function(btn) {
 			// If user clicks Yes, proceed with deleting
@@ -548,7 +546,7 @@ Ext.define('NP.controller.CatalogMaintenance', {
 					requests: {
 						service : 'CatalogService',
 						action  : 'removeCatalogPdf',
-						vc      : vc.getData(),
+						vc      : that.vc.getData(),
 						success : function(result, deferred) {
 							// Change flag to indicate this catalog no longer has a PDF
 							that.vc_has_pdf = false;

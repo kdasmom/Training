@@ -13,45 +13,9 @@ use Zend\Cache\Storage\Adapter\WinCache;
  * @author Thomas Messier
  */
 class ConfigService extends AbstractService {
-	/**
-	 * @var array
-	 */
-	protected $config;
-
-	/**
-	 * @var Zend\Cache\Storage\Adapter\WinCache
-	 */
-	protected $cache;
-
-	/**
-	 * @var \NP\system\SiteService
-	 */
-	protected $siteService;
 	
-	/**
-	 * @var \NP\system\ConfigsysGateway
-	 */
-	protected $configsysGateway;
-	
-	/**
-	 * @var \NP\system\IntegrationRequirementsGateway
-	 */
-	protected $intReqGateway;
-	
-	/**
-	 * @var \NP\system\LookupcodeGateway
-	 */
-	protected $lookupcodeGateway;
-	
-	/**
-	 * @var string
-	 */
-	protected $appName;
-	
-	/**
-	 * @var string
-	 */
-	protected $cacheName;
+	protected $config, $cache, $siteService, $configsysGateway, $intReqGateway, $intPkgGateway, $lookupcodeGateway,
+				$appName, $cacheName;
 	
 	/**
 	 * @param array                                     $config                  Array with configuration options for the app
@@ -60,21 +24,24 @@ class ConfigService extends AbstractService {
 	 * @param \NP\system\ConfigsysGateway               $configsysGateway        ConfigsysGateway object injected
 	 * @param \NP\system\PNUniversalFieldGateway        $pnUniversalFieldGateway PNUniversalFieldGateway object injected
 	 * @param \NP\system\IntegrationRequirementsGateway $intReqGateway           IntegrationRequirementsGateway object injected
+	 * @param \NP\system\IntegrationPackageGateway      $intPkgGateway           IntegrationPackageGateway object injected
 	 * @param \NP\system\LookupcodeGateway              $lookupcodeGateway       LookupcodeGateway object injected
 	 * @param boolean                                   $reloadCache             Whether to reload the cache at instantiation time (optional); defaults to false
 	 */
 	public function __construct($config, WinCache $cache, SiteService $siteService, ConfigsysGateway $configsysGateway, 
 								PNUniversalFieldGateway $pnUniversalFieldGateway,  IntegrationRequirementsGateway $intReqGateway, 
-								LookupcodeGateway $lookupcodeGateway, $reloadCache=false) {
-		$this->config = $config;
-		$this->cache = $cache;
-		$this->siteService = $siteService;
-		$this->configsysGateway = $configsysGateway;
+								IntegrationPackageGateway $intPkgGateway, LookupcodeGateway $lookupcodeGateway,
+								$reloadCache=false) {
+		$this->config                  = $config;
+		$this->cache                   = $cache;
+		$this->siteService             = $siteService;
+		$this->configsysGateway        = $configsysGateway;
 		$this->pnUniversalFieldGateway = $pnUniversalFieldGateway;
-		$this->intReqGateway = $intReqGateway;
-		$this->lookupcodeGateway = $lookupcodeGateway;
-		$this->appName = $siteService->getAppName();
-		$this->cacheName = $this->appName . "_config";
+		$this->intReqGateway           = $intReqGateway;
+		$this->intPkgGateway           = $intPkgGateway;
+		$this->lookupcodeGateway       = $lookupcodeGateway;
+		$this->appName                 = $siteService->getAppName();
+		$this->cacheName               = $this->appName . "_config";
 		
 		if ($reloadCache || !$this->isCacheLoaded()) {
 			$this->loadConfigCache();
@@ -387,6 +354,15 @@ class ConfigService extends AbstractService {
 	public function getTimezoneAbr() {
 		$date = new \DateTime();
 		return $date->format('T');
+	}
+
+	/**
+	 * Retrieves all integration packages for the app
+	 *
+	 * @return array Array of integration package records
+	 */
+	public function getIntegrationPackages() {
+		return $this->intPkgGateway->find(null, null, 'integration_package_name');
 	}
 }
 

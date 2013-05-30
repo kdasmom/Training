@@ -58,10 +58,12 @@ class MobInfoGateway extends AbstractGateway {
 	/**
 	 * Updates a record in the database
 	 *
-	 * @param  array|\NP\core\AbstractEntity $data An associative array with key/value pairs for fields, or an Entity object
-	 * @return boolean                             Whether the operation succeeded or not
+	 * @param  array|\NP\core\AbstractEntity $data   An associative array with key/value pairs for fields, or an Entity object
+	 * @param  NP\core\db\Where|string|array $where  The criteria for which records to delete
+	 * @param  array                         $params Parameters to bind to the where clause (the $data parameters are automatically bound) (optional)
+	 * @return boolean                               Whether the operation succeeded or not
 	 */
-	public function update($data) {
+	public function update($data, $where=null, $params=array()) {
 		// If we passed in an entity, get the data for it
 		if ($data instanceOf \NP\core\AbstractEntity) {
 			$set = $data->toArray();
@@ -69,20 +71,34 @@ class MobInfoGateway extends AbstractGateway {
 			$set = $data;
 		}
 
+		// If primary key is in set, process it
+		if (array_key_exists($this->pk, $set)) {
+			// If no where clause was provided, assume the primary key is the where clause
+			if ($where === null) {
+				$where = array($this->pk=>'?');
+				$params = array($set[$this->pk]);
+			}
+			unset($set[$this->pk]);
+		}
+
 		// If a blank password was provided, we need to make sure it doesn't get saved
 		if ( array_key_exists('mobinfo_pin', $set) ) {
 			if ($set['mobinfo_pin'] === '' || $set['mobinfo_pin'] === null) {
 				unset($set['mobinfo_pin']);
-				$params = $this->convertFieldsToBindParams($set);
+				$paramsNew = $this->convertFieldsToBindParams($set);
 			} else {
-				$params = $this->convertFieldsToBindParams($set);
-				$params['values']['mobinfo_pin'] = 'PWDENCRYPT(?)';
+				$paramsNew = $this->convertFieldsToBindParams($set);
+				$paramsNew['fields']['mobinfo_pin'] = 'PWDENCRYPT(?)';
 			}
+		} else {
+			$paramsNew = $this->convertFieldsToBindParams($set);
 		}
 
-		$update = new \NP\core\db\Update($this->table, $params['fields'], array($this->pk=>'?'));
-		
-		return $this->adapter->query($update, $params['values']);
+		$paramsNew['values'] = array_merge($paramsNew['values'], $params);
+
+		$update = new \NP\core\db\Update($this->table, $paramsNew['fields'], $where);
+
+		return $this->adapter->query($update, $paramsNew['values']);
 	}
 
 }

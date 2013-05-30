@@ -52,9 +52,18 @@ Ext.define('{$extStoreNameSpace}.{$extClassName}s', {
     requires: ['{$extNameSpace}.{$extClassName}'],
 
     constructor: function(cfg) {
+    	var that = this;
+    	
     	Ext.apply(this, cfg);
 
-    	this.fields = {$extNameSpace}.{$extClassName}.getFields();
+    	this.fields = [];
+    	Ext.Array.each({$extNameSpace}.{$extClassName}.getFields(), function(field) {
+            that.fields.push({
+                name: field.name,
+                type: field.type.type,
+                dateFormat: field.dateFormat
+            });
+        });
 
     	this.callParent(arguments);
     }    
@@ -96,10 +105,13 @@ Ext.define('{$extNameSpace}.{$extClassName}', {
 		$ext .= "
 		{ name: '{$col['COLUMN_NAME']}'";
 
-		if ($col['IS_NULLABLE'] == 'NO') {
+		// Make field required if it's not nullable and is not the primary key
+		$isRequired = false;
+		if ($col['IS_NULLABLE'] == 'NO' && $i > 0) {
 			$php .= "
 			'required' => true";
 			$extValidation[] = "{ field: '{$col['COLUMN_NAME']}', type: 'presence' }";
+			$isRequired = true;
 		}
 
 		$hasValidation = false;
@@ -116,8 +128,13 @@ Ext.define('{$extNameSpace}.{$extClassName}', {
 			$hasValidation = true;
 		} else if ($dataType == 'datetime') {
 			$validation .= "
-				'date' => array('format'=>'Y-m-d\TH:i:s')";
-				$ext .= ", type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat()";
+				'date' => array('format'=>'Y-m-d H:i:s.u')";
+				$ext .= ", type: 'date', dateFormat: NP.Config.getServerDateFormat()";
+			$hasValidation = true;
+		} else if ($dataType == 'smalldatetime') {
+			$validation .= "
+				'date' => array('format'=>'Y-m-d H:i:s')";
+				$ext .= ", type: 'date', dateFormat: NP.Config.getServerSmallDateFormat()";
 			$hasValidation = true;
 		}
 
@@ -129,7 +146,7 @@ Ext.define('{$extNameSpace}.{$extClassName}', {
 		}
 
 		if ($hasValidation) {
-			if ($col['IS_NULLABLE'] == 'NO') {
+			if ($isRequired) {
 				$php .= ",";
 			}
 			$php .= "

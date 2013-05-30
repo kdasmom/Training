@@ -134,12 +134,12 @@ abstract class AbstractGateway {
 	/**
 	 * Utility function to retrieve records based on criteria
 	 * 
-	 * @param  Zend\Db\Sql\Where|\Closure|string|array $where   The criteria by which to filter records
-	 * @param  array                                   $params  Parameters to bind to the query (optional)
-	 * @param  string|array                            $order   Ordering of the records (optional)
-	 * @param  array                                   $columns Columns to retrieve (optional)
-	 * @param  NP\core\db\Select                       $select  A custom Select object to use (optional)
-	 * @return array   An positional array filled with associative arrays of each record found
+	 * @param  NP\core\db\Where|string|array $where   The criteria by which to filter records
+	 * @param  array                         $params  Parameters to bind to the query (optional)
+	 * @param  string|array                  $order   Ordering of the records (optional)
+	 * @param  array                         $columns Columns to retrieve (optional)
+	 * @param  NP\core\db\Select             $select  A custom Select object to use (optional)
+	 * @return array                                  A positional array filled with associative arrays of each record found
 	 */
 	public function find($where=null, $params=array(), $order=null,  $cols=null, $select=null) {
 		// Allow for passing a custom select just in case
@@ -198,10 +198,12 @@ abstract class AbstractGateway {
 	/**
 	 * Updates a record in the database
 	 *
-	 * @param  array|\NP\core\AbstractEntity $data An associative array with key/value pairs for fields, or an Entity object
-	 * @return boolean                             Whether the operation succeeded or not
+	 * @param  array|\NP\core\AbstractEntity $data   An associative array with key/value pairs for fields, or an Entity object
+	 * @param  NP\core\db\Where|string|array $where  The criteria for which records to delete
+	 * @param  array                         $params Parameters to bind to the where clause (the $data parameters are automatically bound) (optional)
+	 * @return boolean                               Whether the operation succeeded or not
 	 */
-	public function update($data) {
+	public function update($data, $where=null, $params=array()) {
 		// If we passed in an entity, get the data for it
 		if ($data instanceOf \NP\core\AbstractEntity) {
 			$set = $data->toArray();
@@ -209,27 +211,35 @@ abstract class AbstractGateway {
 			$set = $data;
 		}
 
-		// Save primary key value and remove from set
-		$id = $set[$this->pk];
-		unset($set[$this->pk]);
+		// If primary key is in set, process it
+		if (array_key_exists($this->pk, $set)) {
+			// If no where clause was provided, assume the primary key is the where clause
+			if ($where === null) {
+				$where = array($this->pk=>'?');
+				$params = array($set[$this->pk]);
+			}
+			unset($set[$this->pk]);
+		}
 
-		$params = $this->convertFieldsToBindParams($set);
+		$paramsNew = $this->convertFieldsToBindParams($set);
+		$paramsNew['values'] = array_merge($paramsNew['values'], $params);
 
-		// Append primary key value for the where statement at the end
-		$params['values'][] = $id;
+		$update = new db\Update($this->table, $paramsNew['fields'], $where);
 		
-		$update = new db\Update($this->table, $params['fields'], array($this->pk=>'?'));
-		
-		return $this->adapter->query($update, $params['values']);
+		return $this->adapter->query($update, $paramsNew['values']);
 	}
 	
 	/**
 	 * Deletes a record from the database
 	 *
-	 * @param  array|\NP\core\AbstractEntity $data An associative array with key/value pairs for fields, or an Entity object
-	 * @return boolean                             Whether the operation succeeded or not
+	 * @param  NP\core\db\Where|string|array $where  The criteria for which records to delete
+	 * @param  array                         $params Parameters to bind to the query (optional)
+	 * @return boolean                               Whether the operation succeeded or not
 	 */
-	public function delete($where=null, $params=array()) {
+	public function delete($where, $params=array()) {
+		if ($where === null) {
+			throw new \NP\core\Exception('You must specificy a $where argument');
+		}
 		$delete = new db\Delete($this->table, $where);
 		
 		return $this->adapter->query($delete, $params);
@@ -253,15 +263,23 @@ abstract class AbstractGateway {
 			}
 		}
 
-		// Append the primary key at the end (used by UPDATE statement)
-		if (array_key_exists($this->pk, $set)) {
-			$values[] = $set[$this->pk];
-		}
-
 		return array(
 			'fields' => $fields,
 			'values' => $values
 		);
+	}
+
+	/**
+	 * Takes an array of values and returns a comma delimited list of placeholders (?). Useful for SQL IN/NO IN clauses
+	 *
+	 * @param  array  $values
+	 * @return string
+	 */
+	protected function createPlaceholders($values) {
+		// Create an placeholders for the IN clause
+		$placeHolders = array_fill(0, count($values), '?');
+		return implode(',', $placeHolders);
+
 	}
 
 	/**
@@ -279,8 +297,7 @@ abstract class AbstractGateway {
 		}
 
 		if ( array_key_exists($this->pk, $set) && is_numeric($set[$this->pk]) ) {
-			$this->update($data);
-			return $set[$this->pk];
+			return $this->update($data);
 		} else {
 			$this->insert($data);
 			return $this->lastInsertId();

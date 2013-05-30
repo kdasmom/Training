@@ -67,6 +67,7 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 		// Property Setup
 		if ( NP.lib.core.Security.hasPermission(12) ) {
 			this.menu.items.push({
+				itemId: 'propertySetupMenuBtn',
 				text: this.propertyText
 			});
 		}

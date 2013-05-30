@@ -43,7 +43,7 @@ Ext.define('NP.lib.ui.BoundForm', {
 		var that = this;
 
 		// Add custom event
-		this.addEvents('dataloaded');
+		this.addEvents('beforemodelupdate','beforefieldupdate','dataloaded');
 		
 		// Load the parent init function
 		this.callParent(arguments);
@@ -85,10 +85,14 @@ Ext.define('NP.lib.ui.BoundForm', {
 					service    : this.bind.service,
 					action     : this.bind.action,
 					success    : function(result, deferred) {
+						that.fireEvent('beforemodelupdate', that, result);
+
 						// If data is returned, set the field values on the models
 						if (result !== null) {
 							that.updateModels(result);
 						}
+
+						that.fireEvent('beforefieldupdate', that, result);
 						
 						// Copy the model data to the form fields
 						that.updateBoundFields();

@@ -26,7 +26,7 @@ class VendorSelect extends Select {
 		$this->columns(array('vendor_id','vendor_id_alt','vendor_name'))
 				->joinVendorsite(array('vendorsite_id'))
 				->joinAddress(array('address_line1','address_city','address_state','address_zip'))
-				->whereLike('v.vendor_name', ':vendor_name')
+				->whereLike('v.vendor_name', '?')
 				->whereEquals('vs.vendorsite_status', "'active'")
 				->whereEquals('v.vendor_status', "'active'")
 				->order('v.vendor_name ASC')
