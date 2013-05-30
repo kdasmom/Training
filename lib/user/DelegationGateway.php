@@ -203,19 +203,19 @@ class DelegationGateway extends AbstractGateway {
 				->whereEquals('wt.wfruletype_name', "'Delegation'")
 				->whereEquals('u.userprofile_status', "'active'")
 				->whereNotEquals('u.userprofile_id', '?')
-				->exists("
+				->whereExists("
 					SELECT *
 					FROM propertyuserprofile pu
 					WHERE pu.userprofile_id = ?
 						AND pu.property_id IN (SELECT tablekey_id FROM wfruletarget wft WHERE wft.wfrule_id = w.wfrule_id AND wft.table_name = 'property')
 				")
-				->exists("
+				->whereExists("
 					SELECT *
 					FROM propertyuserprofile pu
 					WHERE pu.userprofile_id = ur.userprofile_id
 						AND pu.property_id IN (SELECT tablekey_id FROM wfruletarget wft WHERE wft.wfrule_id = w.wfrule_id AND wft.table_name = 'property')
 				")
-				->notExists("
+				->whereNotExists("
 					SELECT *
 					FROM delegation d
 					WHERE d.userprofile_id = ur.userprofile_id
@@ -223,7 +223,7 @@ class DelegationGateway extends AbstractGateway {
 						AND d.delegation_startdate <= ?
 						AND d.delegation_stopdate > ?
 				")
-				->notExists("
+				->whereNotExists("
 					SELECT *
 					FROM delegation d
 					WHERE d.delegation_to_userprofile_id = ur.userprofile_id
