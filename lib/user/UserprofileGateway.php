@@ -58,7 +58,6 @@ class UserprofileGateway extends AbstractGateway {
 			'userprofile_splitscreen_ishorizontal',
 			'userprofile_splitscreen_imageorder',
 			'userprofile_splitscreen_loadwithoutimage',
-			'userprofile_ADguid',
 			'userprofile_preferred_region',
 			'userprofile_updated_by',
 			'userprofile_updated_datetm'
