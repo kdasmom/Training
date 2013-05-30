@@ -29,7 +29,7 @@ Ext.define('NP.lib.ui.ComboBox', {
 		Ext.applyIf(cfg, {
 			type          : 'normal',
 			forceSelection: true,
-			tpl           : new Ext.XTemplate('<tpl for=".">' + '<li style="height:22px;" class="x-boundlist-item" role="option">' + '{'+cfg.displayField+'}' + '</li></tpl>'),
+			tpl           : new Ext.XTemplate('<tpl for=".">' + '<li class="x-boundlist-item" role="option">' + '{'+cfg.displayField+'}' + '</li></tpl>'),
 			listeners     : {},
 			addBlankRecord: false
 		});
