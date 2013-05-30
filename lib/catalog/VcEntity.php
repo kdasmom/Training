@@ -51,7 +51,6 @@ class VcEntity extends \NP\core\AbstractEntity {
 		),
 		'vc_status'	 => array(
 			'validation' => array(
-				'digits' => array(),
 				'inArray' => array(
 					'haystack' => array(-2,-1,0,1)
 				)
