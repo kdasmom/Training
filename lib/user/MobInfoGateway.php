@@ -88,7 +88,7 @@ class MobInfoGateway extends AbstractGateway {
 				$paramsNew = $this->convertFieldsToBindParams($set);
 			} else {
 				$paramsNew = $this->convertFieldsToBindParams($set);
-				$paramsNew['values']['mobinfo_pin'] = 'PWDENCRYPT(?)';
+				$paramsNew['fields']['mobinfo_pin'] = 'PWDENCRYPT(?)';
 			}
 		} else {
 			$paramsNew = $this->convertFieldsToBindParams($set);
@@ -97,7 +97,7 @@ class MobInfoGateway extends AbstractGateway {
 		$paramsNew['values'] = array_merge($paramsNew['values'], $params);
 
 		$update = new \NP\core\db\Update($this->table, $paramsNew['fields'], $where);
-		
+
 		return $this->adapter->query($update, $paramsNew['values']);
 	}
 
