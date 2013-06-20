@@ -2,7 +2,7 @@
  * Store for EmailAlertTypes. This store uses the EmailAlertType fields from the model and adds onto them, allowing to use
  * different fields that come from joining tables to EmailAlertType.
  *
- * @author 
+ * @author Thomas Messier
  */
 Ext.define('NP.store.notification.EmailAlertTypes', {
     extend: 'NP.lib.data.Store',

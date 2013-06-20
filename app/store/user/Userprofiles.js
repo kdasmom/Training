@@ -2,7 +2,7 @@
  * Store for Userprofiles. This store uses the Userprofile fields from the model and adds onto them, allowing to use
  * different fields that come from joining tables to Userprofile.
  *
- * @author 
+ * @author Thomas Messier
  */
 Ext.define('NP.store.user.Userprofiles', {
     extend: 'NP.lib.data.Store',

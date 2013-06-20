@@ -43,10 +43,10 @@ class ModulePrivGateway extends AbstractGateway {
 		
 		$modules = array();
 		foreach($resultSet as $rec) {
-			array_push($modules, $rec["module_id"]);
+			$modules[$rec['module_id']] = true;
 		}
 		
-		return implode(",", $modules);
+		return $modules;
 	}
 	
 }

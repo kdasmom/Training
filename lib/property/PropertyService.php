@@ -3,24 +3,39 @@
 namespace NP\property;
 
 use NP\core\AbstractService;
+use NP\core\validation\EntityValidator;
 use NP\security\SecurityService;
 use NP\user\UserprofileGateway;
 use NP\user\PropertyUserprofileGateway;
+use NP\user\RecAuthorGateway;
 use NP\invoice\InvoiceService;
 use NP\po\PoService;
 use NP\workflow\WfRuleTargetGateway;
+use NP\contact\AddressGateway;
+use NP\contact\PhoneGateway;
+use NP\contact\PhoneTypeGateway;
+use NP\system\PnCustomFieldsGateway;
+use NP\system\PnCustomFieldDataGateway;
+use NP\system\ConfigService;
 
 class PropertyService extends AbstractService {
 	
 	protected $securityService, $propertyGateway, $regionGateway, $fiscalcalGateway, $propertyUserprofileGateway, 
 				$unitGateway, $userprofileGateway, $invoiceService, $poService, $wfRuleTargetGateway,
-				$fiscalDisplayTypeGateway, $fiscalcalMonthGateway;
+				$fiscalDisplayTypeGateway, $fiscalcalMonthGateway, $addressGateway, $phoneGateway, $pnCustomFieldsGateway,
+				$pnCustomFieldDataGateway, $propertyGlAccountGateway, $configService, $unitTypeGateway, $unitTypeValGateway,
+				$unitTypeMeasGateway;
 	
 	public function __construct(SecurityService $securityService, PropertyGateway $propertyGateway, RegionGateway $regionGateway,
 								FiscalcalGateway $fiscalcalGateway, PropertyUserprofileGateway $propertyUserprofileGateway,
 								UnitGateway $unitGateway, UserprofileGateway $userprofileGateway, InvoiceService $invoiceService,
 								PoService $poService, WfRuleTargetGateway $wfRuleTargetGateway,
-								FiscalDisplayTypeGateway $fiscalDisplayTypeGateway, FiscalcalMonthGateway $fiscalcalMonthGateway) {
+								FiscalDisplayTypeGateway $fiscalDisplayTypeGateway, FiscalcalMonthGateway $fiscalcalMonthGateway,
+								AddressGateway $addressGateway, PhoneGateway $phoneGateway, PhoneTypeGateway $phoneTypeGateway,
+								RecAuthorGateway $recAuthorGateway, PnCustomFieldsGateway $pnCustomFieldsGateway,
+								PnCustomFieldDataGateway $pnCustomFieldDataGateway, PropertyGlAccountGateway $propertyGlAccountGateway,
+								UnitTypeGateway $unitTypeGateway, UnitTypeValGateway $unitTypeValGateway,
+								UnitTypeMeasGateway $unitTypeMeasGateway) {
 		$this->securityService            = $securityService;
 		$this->propertyGateway            = $propertyGateway;
 		$this->regionGateway              = $regionGateway;
@@ -33,8 +48,25 @@ class PropertyService extends AbstractService {
 		$this->wfRuleTargetGateway        = $wfRuleTargetGateway;
 		$this->fiscalDisplayTypeGateway   = $fiscalDisplayTypeGateway;
 		$this->fiscalcalMonthGateway      = $fiscalcalMonthGateway;
+		$this->addressGateway             = $addressGateway;
+		$this->phoneGateway               = $phoneGateway;
+		$this->phoneTypeGateway           = $phoneTypeGateway;
+		$this->recAuthorGateway           = $recAuthorGateway;
+		$this->pnCustomFieldsGateway      = $pnCustomFieldsGateway;
+		$this->pnCustomFieldDataGateway   = $pnCustomFieldDataGateway;
+		$this->propertyGlAccountGateway   = $propertyGlAccountGateway;
+		$this->unitTypeGateway            = $unitTypeGateway;
+		$this->unitTypeValGateway         = $unitTypeValGateway;
+		$this->unitTypeMeasGateway        = $unitTypeMeasGateway;
 	}
-	
+
+	/**
+	 * Setter for ConfigService injection
+	 */
+	public function setConfigService(ConfigService $configService) {
+		$this->configService = $configService;
+	}
+
 	/**
 	 * Retrieves a record for the specified property ID
 	 *
@@ -42,7 +74,31 @@ class PropertyService extends AbstractService {
 	 * @return array
 	 */
 	public function get($property_id) {
-		return $this->propertyGateway->findById($property_id);
+		$res = $this->propertyGateway->findById($property_id);
+
+		if ($this->configService->get('CP.PROPERTYGLACCOUNT_USE', 0) && $this->securityService->hasPermission(12)) {
+			$res['property_gls'] = $this->propertyGlAccountGateway->find(
+												array('pg.property_id'=>'?'),
+												array($property_id),
+												'g.glaccount_number',
+												array('glaccount_id')
+											);
+			$res['property_gls'] = \NP\util\Util::valueList($res['property_gls'], 'glaccount_id');
+			$res['property_users'] = $this->propertyUserprofileGateway->find(
+												array('pu.property_id'=>'?'),
+												array($property_id),
+												'pe.person_lastname, pe.person_firstname',
+												array('userprofile_id')
+											);
+			$res['property_users'] = \NP\util\Util::valueList($res['property_users'], 'userprofile_id');
+			$res['accounting_period'] = $this->getAccountingPeriod($property_id);
+			// If no accounting period was found, set it to the first day of this month
+			if ($res['accounting_period'] === false) {
+				$res['accounting_period'] = new \DateTime(date('Y') . '-' . date('n') . '-01');
+			}
+		}
+
+		return $res;
 	}
 	
 	/**
@@ -70,24 +126,30 @@ class PropertyService extends AbstractService {
 	/**
 	 * Returns properties that are available for bill to/ship to
 	 *
-	 * @param string $type Whether to get bill to or ship to properties; valid values are 'bill' and 'ship'
+	 * @param string $type        Whether to get bill to or ship to properties; valid values are 'bill' and 'ship'
+	 * @param int    $property_id A property Id to include in the results
 	 */
-	public function getBillToShipToProperties($type) {
-		return $this->propertyGateway->getBillToShipToProperties($type);
+	public function getBillToShipToProperties($type, $property_id) {
+		return $this->propertyGateway->getBillToShipToProperties($type, $property_id);
 	}
 	
 	/**
 	 * Returns the current accounting period for a property
 	 *
 	 * @param  int   $property_id ID of the property
-	 * @return Date  The accounting period
+	 * @return DateTime  The accounting period; returns false if no accounting period is found
 	 */
 	public function getAccountingPeriod($property_id) {
 		$now = time();
 		$today = mktime(0, 0, 0, date('n', $now), date('j', $now), date('Y', $now));
 		$year = date('Y', $now);
 		$month = date('n', $now);
-		$cutoffDay = $this->fiscalcalGateway->getCutoffDay($property_id, $year, $month);
+		// Try to get a cutoff date; if an error is thrown, it's because there's no fiscal calendar for this year
+		try {
+			$cutoffDay = $this->fiscalcalGateway->getCutoffDay($property_id, $year, $month);
+		} catch(\NP\core\Exception $e) {
+			return false;
+		}
 		$cutoffDate = mktime(0, 0, 0, $month, $cutoffDay, $year);
 		
 		if ($today > $cutoffDate) {
@@ -125,6 +187,16 @@ class PropertyService extends AbstractService {
 	public function getUserProperties($userprofile_id, $delegated_to_userprofile_id, $cols=array('property_id','property_id_alt','property_name')) {
 		return $this->propertyGateway->findByUser($userprofile_id, $delegated_to_userprofile_id, $cols);
 	}
+
+	/**
+	 * Get users that have access to a property
+	 *
+	 * @param  int   $property_id The property Id
+	 * @return array              Array of property records
+	 */
+	public function getPropertyUsers($property_id) {
+		return $this->userprofileGateway->findByProperty($property_id);
+	}
 	
 	/**
 	 * Get all the regions in the system
@@ -149,11 +221,91 @@ class PropertyService extends AbstractService {
 	/**
 	 * Retrieves records for units for a property
 	 *
-	 * @param  int $property_id ID of the property
+	 * @param  int    $property_id ID of the property
+	 * @param  string $unit_status The status of units to retrieve
 	 * @return array            Array of unit records
 	 */
-	public function getUnits($property_id) {
-		return $this->unitGateway->find('property_id = ?', array($property_id), "unit_number");
+	public function getUnits($property_id, $unit_status=null) {
+		$fields = array('u.property_id'=>'?');
+		$vals = array($property_id);
+		if ($unit_status !== null) {
+			$fields['unit_status'] = '?';
+			$vals[] = $unit_status;
+		}
+		return $this->unitGateway->find($fields, $vals, "unit_number");
+	}
+
+	/**
+	 * Removes a unit from a property
+	 *
+	 * @param   array|int $unit_id An array of unit Ids or a single unit Id to remove
+	 * @return  array              Success status of the operation and any errors
+	 */
+	public function removeUnits($unit_id) {
+		$this->unitGateway->removeUnits($unit_id);
+
+		return array('success'=>true, 'errors'=>array());
+	}
+	
+	/**
+	 * Retrieves records for units for a unit type
+	 *
+	 * @param  int   $unittype_id ID of the unit type
+	 * @return array              Array of unit records
+	 */
+	public function getUnitsByUnitType($unittype_id) {
+		return $this->unitGateway->find('u.unittype_id = ?', array($unittype_id), "u.unit_number");
+	}
+	
+	/**
+	 * Retrieves records for units that have not been assigned a type for a property
+	 *
+	 * @param  int   $property_id ID of the property
+	 * @param  int   $unittype_id Optional id for a unit type if you want to also include records assigned to one
+	 * @return array              Array of unit records
+	 */
+	public function getUnitsWithoutType($property_id, $unittype_id=null) {
+		return $this->unitGateway->findUnitsWithoutType($property_id, $unittype_id);
+	}
+
+	/**
+	 * Retrieves unit types for a property
+	 *
+	 * @param  int     $property_id         ID of the property
+	 * @param  boolean $includeMeasurements Whether or not to include measurement data (optional); defaults to false
+	 * @param  boolean $includeUnits        Whether or not to include units assigned (optional); defaults to false
+	 * @return array                        Array of unit type records
+	 */
+	public function getUnitTypesByProperty($property_id, $includeMeasurements=false, $includeUnits=false) {
+		$unitTypes = $this->unitTypeGateway->find('ut.property_id = ?', array($property_id), 'unittype_name');
+		for ($i=0; $i<count($unitTypes); $i++) {
+			if ($includeMeasurements) {
+				$unitTypes[$i]['vals'] = $this->getUnitTypeVals($unitTypes[$i]['unittype_id']);
+			}
+			if ($includeUnits) {
+				$unitTypes[$i]['units'] = $this->getUnitsByUnitType($unitTypes[$i]['unittype_id']);
+			}
+		}
+		return $unitTypes;
+	}
+
+	/**
+	 * Retrieves values set for a unit type
+	 *
+	 * @param  int   $unittype_id The unit to get values for
+	 * @return array
+	 */
+	public function getUnitTypeVals($unittype_id) {
+		return $this->unitTypeValGateway->find('unittype_id = ?', array($unittype_id));
+	}
+
+	/**
+	 * Gets all unit type measurement options
+	 *
+	 * @return array
+	 */
+	public function getUnitTypeMeasurements() {
+		return $this->unitTypeMeasGateway->findAllMeasAndMaterials();
 	}
 
 	/**
@@ -300,20 +452,47 @@ class PropertyService extends AbstractService {
 	/**
 	 * Gets all master fiscal calendars not already used by a property
 	 *
-	 * @return int $property_id The property for which you want to get unused master calendars (optional); null if new property
+	 * @return int $property_id The property for which you want to get unused master calendars
 	 */
-	public function getUnusedFiscalCalendars($property_id=null) {
-		return $this->fiscalcalGateway->findUnusedFiscalCalendars($property_id);
+	public function getUnusedFiscalCalendars($property_id) {
+		return $this->addMonthsToFiscalCals(
+			$this->fiscalcalGateway->findUnusedFiscalCalendars($property_id)
+		);
 	}
 
 	/**
 	 * Returns fiscal calendars assigned to a property
+	 *
+	 * @param  int   $property_id
+	 * @return array
 	 */
 	public function getPropertyFiscalCalendars($property_id) {
-		return $this->fiscalcalGateway->find(
-			array('property_id'=>'?'),
-			array($property_id),
-			'fiscalcal_year');
+		return $this->addMonthsToFiscalCals(
+			$this->fiscalcalGateway->find(
+				array('property_id'=>'?'),
+				array($property_id),
+				'fiscalcal_year'
+			)
+		);
+	}
+
+	/**
+	 * Returns master fiscal calendars
+	 *
+	 * @return array
+	 */
+	public function getMasterFiscalCalendars() {
+		return $this->addMonthsToFiscalCals(
+			$this->fiscalcalGateway->findMasterFiscalCalendars()
+		);
+	}
+
+	protected function addMonthsToFiscalCals($fiscalcals) {
+		for ($i=0; $i<count($fiscalcals); $i++) {
+			$fiscalcals[$i]['months'] = $this->getFiscalCalMonths($fiscalcals[$i]['fiscalcal_id']);
+		}
+
+		return $fiscalcals;
 	}
 
 	/**
@@ -326,6 +505,323 @@ class PropertyService extends AbstractService {
 		return $this->fiscalcalMonthGateway->find(
 			array('fiscalcal_id'=>'?'),
 			array($fiscalcal_id)
+		);
+	}
+
+	/**
+	 * Saves a property
+	 *
+	 * @param  array $data An associative array with the data needed to save a property
+	 * @return array       An array with success status of the operation and any errors that happened
+	 */
+	public function saveProperty($data) {
+		try {
+			// Get entities
+			$property  = new PropertyEntity($data['property']);
+			$address   = new \NP\contact\AddressEntity($data['address']);
+			$phone     = new \NP\contact\PhoneEntity($data['phone']);
+			$fax       = new \NP\contact\PhoneEntity($data['fax_phone']);
+
+			// Run validation
+			$validator = new EntityValidator();
+			$validator->validate($property);
+			$errors    = $validator->getErrors();
+
+			$now = \NP\util\Util::formatDateForDB();
+
+			if (!count($errors)) {
+				$this->propertyGateway->beginTransaction();
+
+				// Check if dealing with a new or existing property
+				$isNew = ($property->property_id === null) ? true : false;
+
+				// Save the property record
+				$this->propertyGateway->save($property);
+
+				// If dealing with new property only
+				if ($isNew) {
+					// Update the billto/shipto property IDs to be the ones for this property and re-save the record
+					$this->property->default_billto_property_id = $property->property_id;
+					$this->property->default_shipto_property_id = $property->property_id;
+					$this->propertyGateway->save($property);
+
+					// Save the creator of the property
+					$this->recAuthorGateway->save(array(
+						'userprofile_id'               => $data['userprofile_id'],
+						'delegation_to_userprofile_id' => $data['delegation_to_userprofile_id'],
+						'table_name'                   => 'property',
+						'tablekey_id'                  => $property->property_id,
+						'recauthor_datetm'             => $now
+					));
+
+					// Give the creator of the property permissions to it
+					$this->propertyUserprofileGateway->save(array(
+						'property_id'    => $property->property_id,
+						'userprofile_id' => $data['userprofile_id']
+					));
+
+					// Make sure property is added to workflow rules that are set for "All Properties"
+					$this->wfRuleTargetGateway->addActivatedPropertiesToRules($property->property_id);
+				}
+
+				// Set the property ID on address, validates it, and save it
+				$address->table_name = 'property';
+				$address->tablekey_id = $property->property_id;
+				$validator->validate($address);
+				$errors    = array_merge($errors, $addressErrors = $validator->getErrors());
+				if (!count($addressErrors)) {
+					$this->addressGateway->save($address);
+				}
+
+				// Set the property ID on phone, validates it, and save it
+				$phone->table_name = 'property';
+				$phone->tablekey_id = $property->property_id;
+				$phone->phonetype_id = $this->phoneTypeGateway->find(array('phonetype_name'=>'?'), array('Main'));
+				$phone->phonetype_id = $phone->phonetype_id[0]['phonetype_id'];
+				$validator->validate($phone);
+				$errors    = array_merge($errors, $phoneErrors = $validator->getErrors());
+				if (!count($phoneErrors)) {
+					$this->phoneGateway->save($phone);
+				}
+
+				// Set the property ID on fax, validates it, and save it
+				$fax->table_name = 'property';
+				$fax->tablekey_id = $property->property_id;
+				$fax->phonetype_id = $this->phoneTypeGateway->find(array('phonetype_name'=>'?'), array('Fax'));
+				$fax->phonetype_id = $fax->phonetype_id[0]['phonetype_id'];
+				$validator->validate($fax);
+				$errors    = array_merge($errors, $faxErrors = $validator->getErrors());
+				if (!count($faxErrors)) {
+					$this->phoneGateway->save($fax);
+				}
+
+				// Save property custom field data
+				$customFields = $this->pnCustomFieldsGateway->findCustomFieldData('property', $property->property_id);
+				foreach ($customFields as $field) {
+					$formFieldName = $field['customfield_name'];
+					// Build the data array
+					$fieldData = array(
+						'customfielddata_id'           => $field['customfielddata_id'],
+						'customfield_id'               => $field['customfield_id'],
+						'customfielddata_table_id'     => $property->property_id,
+						'customfielddata_value'        => $data[$formFieldName],
+						'customfielddata_lastupdatedt' => $now,
+						'customfielddata_lastupdateby' => $data['userprofile_id']
+					);
+					// If the custom field data is new, also give it a created date and user
+					if ($field['customfielddata_id'] === null) {
+						$fieldData['customfielddata_createdt']  = $now;
+						$fieldData['customfielddata_createdby'] = $data['userprofile_id'];
+					}
+					// Save the custom field data
+					$this->pnCustomFieldDataGateway->save($fieldData);
+				}
+
+				// Save GL assignments if any
+				if (array_key_exists('property_gls', $data)) {
+					$success = $this->saveGlAssignment($property->property_id, $data['property_gls']);
+					if (!$success) {
+						$errors[] = array('field'=>'global', 'msg'=>'There was an error saving GL Assignments');
+					}
+				}
+
+				// Save user assignments if any
+				if (array_key_exists('property_users', $data)) {
+					$success = $this->saveUserAssignment($property->property_id, $data['property_users']);
+					if (!$success) {
+						$errors[] = array('field'=>'global', 'msg'=>'There was an error saving user assignments');
+					}
+				}
+
+				// Save fiscal calendars if any
+				if (array_key_exists('fiscalcals', $data)) {
+					foreach ($data['fiscalcals'] as $fiscalcalData) {
+						$fiscalcalData['property_id'] = $property->property_id;
+						$saveStatus = $this->saveFiscalCal($fiscalcalData);
+						if (!$saveStatus['success']) {
+							$errors[] = array('field'=>'global', 'msg'=>'There was an error saving fiscal calendars');
+							break;
+						}
+					}
+				}
+
+				// Save units if any
+				if (array_key_exists('units', $data)) {
+					foreach ($data['units'] as $unitData) {
+						// Save the unit
+						$unit = new UnitEntity($unitData);
+						$unit->property_id = $property->property_id;
+						$this->unitGateway->save($unit);
+					}
+				}
+
+				// Remove units if any were deleted
+				if (array_key_exists('removedUnits', $data) && count($data['removedUnits'])) {
+					$this->unitGateway->removeUnits(
+						\NP\util\Util::valueList($data['removedUnits'], 'unit_id')
+					);
+				}
+
+				// Save unit types if any
+				if (array_key_exists('unitTypes', $data)) {
+					foreach ($data['unitTypes'] as $unitTypeData) {
+						// Save the fiscal calendar
+						$unitType = new UnitTypeEntity($unitTypeData);
+						$unitType->property_id = $property->property_id;
+						$unitType->unittype_updated_by = $data['userprofile_id'];
+						$unitType->unittype_updated_date = $now;
+						$this->unitTypeGateway->save($unitType);
+
+						// Save the values for the unit type
+						if (array_key_exists('vals', $unitTypeData)) {
+							foreach ($unitTypeData['vals'] as $unitTypeValData) {
+								$unitTypeVal = new UnitTypeValEntity($unitTypeValData);
+								$unitTypeVal->unittype_id = $unitType->unittype_id;
+								$this->unitTypeValGateway->save($unitTypeVal);
+							}
+						}
+
+						// Save the unit assignments
+						$this->unitGateway->update(array('unittype_id'=>null), 'unittype_id = ?', array($unitType->unittype_id));
+						foreach ($unitTypeData['units'] as $unitData) {
+							$unit = new UnitEntity($unitData);
+							$unit->unittype_id = $unitType->unittype_id;
+							$this->unitGateway->save($unit);
+						}
+					}
+				}
+			}
+
+			if (!count($errors)) {
+				$this->propertyGateway->commit();
+			}
+		} catch(\Exception $e) {
+			// If there was an error, rollback the transaction
+			$this->propertyGateway->rollback();
+			// Add a global error to the error array
+			$errors[] = array('field'=>'global', 'msg'=>'Unexpected error. Please contact system administrator.', 'extra'=>null);
+		}
+
+		return array(
+			'success'    => (count($errors)) ? false : true,
+			'errors'     => $errors,
+		);
+	}
+
+	/**
+	 * Save GL accounts assigned to a property
+	 *
+	 * @param  int     $property_id       Id of the property to save GL accounts for
+	 * @param  array   $glaccount_id_list Array of GL account Ids to save
+	 * @return boolean                    Whether or not the operation was successful
+	 */
+	public function saveGlAssignment($property_id, $glaccount_id_list) {
+		// Start a DB transaction
+		$this->propertyGlAccountGateway->beginTransaction();
+
+		$success = true;
+		try {
+			// Remove all property associations for this user
+			$this->propertyGlAccountGateway->delete('property_id = ?', array($property_id));
+
+			// Insert new property associations for this user
+			foreach ($glaccount_id_list as $glaccount_id) {
+				$this->propertyGlAccountGateway->insert(array(
+					'property_id'  => $property_id,
+					'glaccount_id' => $glaccount_id
+				));
+			}
+
+			// Commit the data
+			$this->propertyGlAccountGateway->commit();
+		} catch(\Exception $e) {
+			// If there was an error, rollback the transaction
+			$this->propertyGlAccountGateway->rollback();
+			// Change success to indicate failure
+			$success = false;
+		}
+
+		return $success;
+	}
+
+	/**
+	 * Save users assigned to a property
+	 *
+	 * @param  int     $property_id         Id of the property to save GL accounts for
+	 * @param  array   $userprofile_id_list Array of user Ids to save
+	 * @return boolean                      Whether or not the operation was successful
+	 */
+	public function saveUserAssignment($property_id, $userprofile_id_list) {
+		// Start a DB transaction
+		$this->propertyUserprofileGateway->beginTransaction();
+
+		$success = true;
+		try {
+			// Remove all user associations for this property
+			$this->propertyUserprofileGateway->delete('property_id = ?', array($property_id));
+
+			// Insert new user associations for this property
+			foreach ($userprofile_id_list as $userprofile_id) {
+				$this->propertyUserprofileGateway->insert(array(
+					'property_id'  => $property_id,
+					'userprofile_id' => $userprofile_id
+				));
+			}
+
+			// Commit the data
+			$this->propertyUserprofileGateway->commit();
+		} catch(\Exception $e) {
+			// If there was an error, rollback the transaction
+			$this->propertyUserprofileGateway->rollback();
+			// Change success to indicate failure
+			$success = false;
+		}
+
+		return $success;
+	}
+
+	/**
+	 * Saves a fiscal calendar
+	 *
+	 * @param  array   $data
+	 * @return boolean
+	 */
+	public function saveFiscalCal($data) {
+		$this->fiscalcalGateway->beginTransaction();
+
+		$errors = array();
+		try {
+			$fiscalcal = new FiscalCalEntity($data);
+			$fiscalcal->asp_client_id = $this->configService->getClientId();
+			if ($this->fiscalcalGateway->isDuplicateCalendar(
+				$fiscalcal->fiscalcal_id, $fiscalcal->fiscalcal_name, $fiscalcal->fiscalcal_year, $fiscalcal->property_id
+			)) {
+				$errors[] = array('field'=>'global', 'msg'=>'There is already a Fiscal Calendar with that name and year. Please select a different date and/or year.', 'extra'=>null);
+			} else {
+				$this->fiscalcalGateway->save($fiscalcal);
+
+				// Save the months for the fiscal calendar if any
+				if (array_key_exists('months', $data)) {
+					foreach ($data['months'] as $fiscalcalMonthData) {
+						$fiscalcalMonth = new FiscalCalMonthEntity($fiscalcalMonthData);
+						$fiscalcalMonth->fiscalcal_id = $fiscalcal->fiscalcal_id;
+						$this->fiscalcalMonthGateway->save($fiscalcalMonth);
+					}
+				}
+
+				// Commit the transaction
+				$this->fiscalcalGateway->commit();
+			}
+		} catch(\Exception $e) {
+			// If there was an error, rollback the transaction
+			$this->fiscalcalGateway->rollback();
+			// Change success to indicate failure
+			$errors[] = array('field'=>'global', 'msg'=>'Unexpected error. Please contact system administrator.', 'extra'=>null);
+		}
+
+		return array(
+			'success'    => (count($errors)) ? false : true,
+			'errors'     => $errors,
 		);
 	}
 }

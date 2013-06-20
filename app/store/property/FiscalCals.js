@@ -9,20 +9,5 @@ Ext.define('NP.store.property.FiscalCals', {
 	
     requires: ['NP.model.property.FiscalCal'],
 
-    constructor: function(cfg) {
-    	var that = this;
-    	
-    	Ext.apply(this, cfg);
-
-    	this.fields = [];
-    	Ext.Array.each(NP.model.property.FiscalCal.getFields(), function(field) {
-            that.fields.push({
-                name: field.name,
-                type: field.type.type,
-                dateFormat: field.dateFormat
-            });
-        });
-
-    	this.callParent(arguments);
-    }    
+    model: 'NP.model.property.FiscalCal'
 });

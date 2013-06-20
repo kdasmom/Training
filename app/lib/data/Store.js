@@ -6,19 +6,28 @@
  */
 Ext.define('NP.lib.data.Store', {
 	extend: 'Ext.data.Store',
+
+	requires: ['NP.lib.data.JsonFlat'],
 	
 	/**
-	 * @cfg {string}  service (required) The service this store will use when making ajax requests
+	 * @cfg {String}  service (required)            The service this store will use when making ajax requests
 	 */
 	/**
-	 * @cfg {string}  action (required)  The action this store will use when making ajax requests
+	 * @cfg {String}  action (required)             The action this store will use when making ajax requests
 	 */
 	/**
-	 * @cfg {Object}  extraParams        Additional parameters that you want sent with the ajax request
+	 * @cfg {Object}  extraParams                   Additional parameters that you want sent with the ajax request
 	 */
+	extraParams: {},
 	/**
-	 * @cfg {boolean} paging             Whether or not paging will be used with this store
+	 * @cfg {Boolean} paging                        Whether or not paging will be used with this store
 	 */
+	paging: false,
+	/**
+	 * @cfg {"json"\"jsonflat"}  reader="jsonflat"  Which type of reader to use for this store
+	 */
+	reader: 'jsonflat',
+
 	constructor: function(cfg) {
 		Ext.apply(this, cfg);
 		
@@ -30,13 +39,14 @@ Ext.define('NP.lib.data.Store', {
 					extraParams: {
 						service: this.service,
 						action : this.action
+					},
+					reader: {
+						type: this.reader
 					}
 				}
 	    	});
 
-	    	if (this.extraParams) {
-		    	Ext.apply(this.proxy.extraParams, this.extraParams);
-		    }
+	    	Ext.apply(this.proxy.extraParams, this.extraParams);
 
 		    if (this.paging === true) {
 		    	Ext.apply(this, {
@@ -47,7 +57,7 @@ Ext.define('NP.lib.data.Store', {
 					limitParam: 'pageSize',
 					pageParam : 'page',
 					reader    : {
-						type         : 'json',
+						type         : this.reader,
 						root         : 'data',
 						totalProperty: 'total'
 					}
@@ -92,6 +102,8 @@ Ext.define('NP.lib.data.Store', {
 	addExtraParams: function(params) {
     	var proxy = this.getProxy();
 		Ext.apply(proxy.extraParams, params);
+
+		return this;
     },
 
     /**
@@ -100,6 +112,12 @@ Ext.define('NP.lib.data.Store', {
 	 * @param {String} action
 	 */
 	setServiceAndAction: function(service, action) {
+		if (Ext.ClassManager.getName(this.getProxy()) != 'Ext.data.proxy.Ajax') {
+			this.setProxy({
+				type: 'ajax',
+				url : 'ajax.php'
+			});
+		}
     	this.addExtraParams({
     		service: service,
 			action : action

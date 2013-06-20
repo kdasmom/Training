@@ -63,11 +63,11 @@ class PropertySelect extends Select {
 	public function joinCreatedByPerson($cols=array()) {
 		return $this->join(array('ur' => 'userprofilerole'),
 						'u.userprofile_id = ur.userprofile_id',
-						array(),
+						array('created_by_userprofilerole_id'=>'userprofilerole_id','created_by_tablekey_id'=>'tablekey_id'),
 						Select::JOIN_LEFT)
 					->join(array('s' => 'staff'),
 						'ur.tablekey_id = s.staff_id',
-						array(),
+						array('created_by_staff_id'=>'staff_id','created_by_person_id'=>'person_id'),
 						Select::JOIN_LEFT)
 					->join(array('pe' => 'person'),
 						's.person_id = pe.person_id',
@@ -97,11 +97,11 @@ class PropertySelect extends Select {
 	public function joinUpdatedByPerson($cols=array()) {
 		return $this->join(array('ur2' => 'userprofilerole'),
 						'u2.userprofile_id = ur2.userprofile_id',
-						array(),
+						array('last_updated_by_userprofilerole_id'=>'userprofilerole_id','last_updated_by_tablekey_id'=>'tablekey_id'),
 						Select::JOIN_LEFT)
 					->join(array('s2' => 'staff'),
 						'ur2.tablekey_id = s2.staff_id',
-						array(),
+						array('last_updated_by_staff_id'=>'staff_id','last_updated_by_person_id'=>'person_id'),
 						Select::JOIN_LEFT)
 					->join(array('pe2' => 'person'),
 						's2.person_id = pe2.person_id',

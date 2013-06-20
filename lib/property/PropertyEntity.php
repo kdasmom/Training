@@ -4,7 +4,7 @@ namespace NP\property;
 /**
  * Entity class for Property
  *
- * @author Thomas Messier
+ * @author 
  */
 class PropertyEntity extends \NP\core\AbstractEntity {
 	
@@ -35,12 +35,14 @@ class PropertyEntity extends \NP\core\AbstractEntity {
 			)
 		),
 		'property_name'	 => array(
+			'required'   => true,
 			'validation' => array(
 				'stringLength' => array('max'=>255)
 			)
 		),
 		'property_salestax'	 => array(),
 		'property_no_units'	 => array(
+			'required'   => true,
 			'validation' => array(
 				'stringLength' => array('max'=>50)
 			)
@@ -86,13 +88,18 @@ class PropertyEntity extends \NP\core\AbstractEntity {
 			)
 		),
 		'matching_threshold'	 => array(
+			'required'   => true,
 			'validation' => array(
 				'numeric' => array()
 			)
 		),
 		'property_status'	 => array(
+			'required'   => true,
 			'validation' => array(
-				'digits' => array()
+				'numeric' => array(),
+				'inArray' => array(
+					'haystack' => array(-1,0,1)
+				)
 			)
 		),
 		'property_download'	 => array(),
@@ -102,17 +109,23 @@ class PropertyEntity extends \NP\core\AbstractEntity {
 			)
 		),
 		'integration_package_id'	 => array(
+			'required'   => true,
 			'validation' => array(
 				'digits' => array()
 			)
 		),
-		'sync'	 => array(),
+		'sync'	 => array(
+			'validation' => array(
+				'digits' => array()
+			)
+		),
 		'fiscaldisplaytype_value'	 => array(
 			'validation' => array(
 				'digits' => array()
 			)
 		),
 		'cash_accural'	 => array(
+			'required'   => true,
 			'validation' => array(
 				'stringLength' => array('max'=>10)
 			)
@@ -162,8 +175,16 @@ class PropertyEntity extends \NP\core\AbstractEntity {
 				'digits' => array()
 			)
 		),
-		'property_NexusServices'	 => array(),
-		'property_VendorCatalog'	 => array()
+		'property_NexusServices'	 => array(
+			'validation' => array(
+				'digits' => array()
+			)
+		),
+		'property_VendorCatalog'	 => array(
+			'validation' => array(
+				'digits' => array()
+			)
+		)
 	);
 
 }

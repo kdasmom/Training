@@ -1,5 +1,6 @@
 /* BUTTONS */
 .save-btn { background-image: url("../images/buttons/save.gif"); }
+.save-and-add-btn { background-image: url("../images/buttons/save_and_add.gif"); }
 .cancel-btn { background-image: url("../images/buttons/cancel.gif"); }
 .back-btn { background-image: url("../images/buttons/back.gif"); }
 .edit-btn { background-image: url("../images/buttons/edit.gif"); }
@@ -10,6 +11,7 @@
 .inactivate-btn { background-image: url("../images/buttons/inactivate.gif"); }
 .view-btn { background-image: url("../images/buttons/view.gif"); }
 .hourglass-btn { background-image: url("../images/buttons/hourglass.gif"); }
+.delete-btn { background-image: url("../images/buttons/delete.gif"); }
 
 /* STYLE FOR USING AN IMAGE AS A BUTTON IN A GRID BY SPECIFYING THIS AS tdCls CONFIG OPTION */
 .image-button-cell .x-grid-cell-inner { padding-bottom: 0; }
@@ -17,3 +19,4 @@
 
 /* FORM ITEMS */
 .x-form-item-label { font-weight: bold; }
+.x-form-required-field { background: repeat-x scroll 0 0 #DFE8F6; }

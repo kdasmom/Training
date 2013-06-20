@@ -1,10 +1,10 @@
 /**
  * Model for a Vendor Catalog
  *
- * @author 
+ * @author Thomas Messier
  */
 Ext.define('NP.model.catalog.Vc', {
-	extend: 'NP.lib.data.Model',
+	extend: 'Ext.data.Model',
 	
 	requires: ['NP.lib.core.Config','NP.lib.core.Security'],
 

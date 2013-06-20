@@ -24,6 +24,15 @@ abstract class AbstractGateway {
 	protected $table;
 	
 	/**
+	 * Override this in class implementation to specify main table alias
+	 *
+	 * If this property is not overridden, the convention assumes that the alias is the same as the table name
+	 *
+	 * @var string Name of the table alias; useful if you override getSelect() and the select statement uses a certain table alias, that way findById can still work without ambiguous column name errors
+	 */
+	protected $tableAlias;
+	
+	/**
 	 * Override this in class implementation to specify table primary key name
 	 *
 	 * If this property is not overridden, the convention assumes that the primary key is the table name followed
@@ -54,6 +63,10 @@ abstract class AbstractGateway {
 		if ($this->table === null) {
 			$this->table = explode('\\', str_replace('Gateway', '', get_called_class()));
 			$this->table = strtolower($this->table[count($this->table)-1]);
+		}
+		
+		if ($this->tableAlias === null) {
+			$this->tableAlias = $this->table;
 		}
 		
 		if ($this->pk === null) {
@@ -120,7 +133,7 @@ abstract class AbstractGateway {
 	 */
 	public function findById($id, $cols=null) {
 		$select = $this->getSelect();
-		$select->where(array("{$this->table}.{$this->pk}"=>"?"));
+		$select->where(array("{$this->tableAlias}.{$this->pk}"=>"?"));
 
 		if ($cols !== null) {
 			$select->columns($cols);
@@ -275,7 +288,7 @@ abstract class AbstractGateway {
 	 * @param  array  $values
 	 * @return string
 	 */
-	protected function createPlaceholders($values) {
+	public function createPlaceholders($values) {
 		// Create an placeholders for the IN clause
 		$placeHolders = array_fill(0, count($values), '?');
 		return implode(',', $placeHolders);
@@ -312,7 +325,8 @@ abstract class AbstractGateway {
 	 * This function can be overridden to specify a default select to use (if you want some joins by default, for example)
 	 */
 	protected function getSelect() {
-		return new db\Select($this->table);
+		$table = ($this->tableAlias == $this->table) ? $this->table : array($this->tableAlias=>$this->table);
+		return new db\Select($table);
 	}
 	
 	/**

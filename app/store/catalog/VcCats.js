@@ -2,7 +2,7 @@
  * Store for VcCats. This store uses the VcCat fields from the model and adds onto them, allowing to use
  * different fields that come from joining tables to VcCat.
  *
- * @author 
+ * @author Thomas Messier
  */
 Ext.define('NP.store.catalog.VcCats', {
     extend: 'NP.lib.data.Store',

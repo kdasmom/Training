@@ -88,6 +88,49 @@ class FiscalcalGateway extends AbstractGateway {
 		return $this->adapter->query($select, $params);
 	}
 
+	/**
+	 * Returns master fiscal calendars (fiscal calendars not assigned to a property)
+	 *
+	 * @return array
+	 */
+	public function findMasterFiscalCalendars() {
+		$select = new Select();
+		$select->from('fiscalcal')
+				->whereIsNull('property_id')
+				->order('fiscalcal_year');
+
+		return $this->adapter->query($select);
+	}
+
+	/**
+	 * Checks for duplicate master calendars
+	 *
+	 */
+	public function isDuplicateCalendar($fiscalcal_id, $fiscalcal_name, $fiscalcal_year, $property_id) {
+		$select = new Select();
+		$select->count(true, 'total')
+				->from('fiscalcal')
+				->whereEquals('fiscalcal_name', '?')
+				->whereEquals('fiscalcal_year', '?')
+				->whereEquals('fiscalcal_type', '?');
+
+		$params = array($fiscalcal_name, $fiscalcal_year, 'template');
+		if ($fiscalcal_id !== null) {
+			$select->whereNotEquals('fiscalcal_id', '?');
+			$params[] = $fiscalcal_id;
+		}
+		if ($property_id !== null) {
+			$select->whereEquals('property_id', '?');
+			$params[] = $property_id;
+		} else {
+			$select->whereIsNull('property_id');
+		}
+		
+		$res = $this->adapter->query($select, $params);
+		
+		return ($res[0]['total']) ? true : false;
+	}
+
 }
 
 ?>

@@ -142,7 +142,6 @@ Ext.define('NP.view.shared.Address', {
                     store         : 'system.States',
                     displayField  : 'code',
                     valueField    : 'code',
-                    addBlankRecord: true,
                     fieldLabel    : this.stateFieldText,
                     name          : this.prefix + NP.view.shared.Address.STATE,
                     allowBlank    : !this.required,
@@ -174,7 +173,6 @@ Ext.define('NP.view.shared.Address', {
                 valueField       : 'id',
                 fieldLabel       : this.countryFieldText,
                 name             : this.prefix + NP.view.shared.Address.COUNTRY,
-                allowBlank       : !this.required,
                 width            : this.address_country_width,
                 value            : this.address_country
             });

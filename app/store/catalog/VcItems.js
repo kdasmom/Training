@@ -2,7 +2,7 @@
  * Store for VcItems. This store uses the VcItem fields from the model and adds onto them, allowing to use
  * different fields that come from joining tables to VcItem.
  *
- * @author 
+ * @author Thomas Messier
  */
 Ext.define('NP.store.catalog.VcItems', {
     extend: 'NP.lib.data.Store',

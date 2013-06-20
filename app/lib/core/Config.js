@@ -91,7 +91,7 @@ Ext.define('NP.lib.core.Config', function() {
 					// This request gets custom field config for the app
 					{ 
 						service: 'ConfigService', 
-						action: 'getCustomFields',
+						action: 'getInvoicePoCustomFields',
 						success: function(result) {
 							// Save custom fields in application
 							customFields = result;
@@ -117,6 +117,13 @@ Ext.define('NP.lib.core.Config', function() {
 						action : 'getRegions',
 						store  : 'NP.store.property.Regions',
 						storeId: 'property.Regions'
+					},
+					// This request gets all unit type measurement options for the app
+					{ 
+						service: 'PropertyService',
+						action : 'getUnitTypeMeasurements',
+						store  : 'NP.store.property.UnitTypeMeasurements',
+						storeId: 'property.UnitTypeMeasurements'
 					},
 					// This request gets config settings for the user
 					{

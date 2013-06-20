@@ -9,6 +9,8 @@ use NP\core\AbstractGateway;
  *
  * @author Thomas Messier
  */
-class IntegrationPackageGateway extends AbstractGateway {}
+class IntegrationPackageGateway extends AbstractGateway {
+	protected $pk = 'integration_package_id';
+}
 
 ?>

@@ -13,12 +13,6 @@ Ext.define('NP.lib.ui.BoundForm', {
 	 * @cfg {Object}            bind (required)         Bind this form to one or more models
 	 */
 	/**
-	 * @cfg {String}            bind.service (required) The service to call to get data to populate the form
-	 */
-	/**
-	 * @cfg {String}            bind.action (required)  The service action to call to get data to populate the form
-	 */
-	/**
 	 * @cfg {String[]/Object[]} bind.models (required)  Model(s) to bind the form against; this can be specified as a single item or an array of item; each item can be just a string with the model class (omit NP.model part) or an object if you need to specify a prefix (see docs)
 	 */
 	/**
@@ -28,7 +22,10 @@ Ext.define('NP.lib.ui.BoundForm', {
 	 * @cfg {String}            bind.models.prefix      A prefix used by the form field that when added to a model field name makes it match the form field name
 	 */
 	/**
-	 * @cfg {Boolean}           bind.hasUpload=false    Whether or not the form uploads files
+	 * @cfg {String}            bind.service            The service to call to get data to populate the form
+	 */
+	/**
+	 * @cfg {String}            bind.action             The service action to call to get data to populate the form
 	 */
 	/**
 	 * @cfg {String}            bind.extraParams        Extra parameters to pass to the service action
@@ -155,6 +152,8 @@ Ext.define('NP.lib.ui.BoundForm', {
 				});
 			}
 		});
+
+		that.getForm().clearInvalid();
 	},
 
 	/**
@@ -239,14 +238,21 @@ Ext.define('NP.lib.ui.BoundForm', {
 
 	/**
 	 * Runs validation on the form panel
-	 * @return {Boolean}
+	 * @param  Object  [options]                Additional options for validation
+	 * @param  Object  [options.excludedFields] A hash of fields to exclude; name of the field is the key, value can be anything (standard is to make it "true"), we're using a hash for performance only
+	 * @param  Object  [options.excludedForms]  An array of forms to exclude, each provided as a valid component query string
+	 * @return Boolean
 	 */
-	isValid: function() {
+	isValid: function(options) {
 		var that = this;
+
+		if (!arguments.length) options = {};
+		
+		Ext.suspendLayouts();
 
 		this.updateBoundModels();
 		
-		var valid = this.getForm().isValid();
+		var valid = this.getForm().isValid(options);
 		var modelValid = true;
 		
 		Ext.each(this.bind.models, function(model) {
@@ -271,6 +277,8 @@ Ext.define('NP.lib.ui.BoundForm', {
 			}
 		}
 
+		Ext.resumeLayouts(true);
+		
 		return isValid;
 	},
 

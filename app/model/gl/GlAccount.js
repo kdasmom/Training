@@ -4,7 +4,7 @@
  * @author Thomas Messier
  */
 Ext.define('NP.model.gl.GlAccount', {
-	extend: 'NP.lib.data.Model',
+	extend: 'Ext.data.Model',
 	
 	requires: ['NP.lib.core.Config'],
 

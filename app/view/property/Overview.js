@@ -20,7 +20,7 @@ Ext.define('NP.view.property.Overview', {
 	propertyApCodeText: '<b>' + NP.Config.getPropertyLabel() + ' AP Code:</b> use this to further identify the ' + NP.Config.getPropertyLabel().toLowerCase() + ' (this is not required)',
 	departmentCodeText: '<b>Department Code:</b> use this in conjunction with the AP Code to even further identify the ' + NP.Config.getPropertyLabel().toLowerCase() + ' (this is not required)',
 	propertyNameText  : '<b>' + NP.Config.getPropertyLabel() + ' Name:</b> enter the name that should be used to refer to the ' + NP.Config.getPropertyLabel().toLowerCase() + '',
-	totalUnitsText    : '<b>Total # of Units/Square Feet:</b> enter the number of units or square feet in the building',
+	totalUnitsText    : '<b>Total # of ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + 's/Square Feet:</b> enter the number of ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'unit').toLowerCase() + 's or square feet in the building',
 	attentionText     : '<b>Attention: </b>enter the name of the contact person for the ' + NP.Config.getPropertyLabel().toLowerCase() + '',
 	addressText       : '<b>Address, City, State, Zip: </b>enter the address of the ' + NP.Config.getPropertyLabel().toLowerCase() + '',
 	phoneNumberText   : '<b>Phone number: </b>enter the phone number of the ' + NP.Config.getPropertyLabel().toLowerCase() + '',

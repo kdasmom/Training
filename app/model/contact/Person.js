@@ -1,10 +1,10 @@
 /**
  * Model for a Person
  *
- * @author 
+ * @author Thomas Messier
  */
 Ext.define('NP.model.contact.Person', {
-	extend: 'NP.lib.data.Model',
+	extend: 'Ext.data.Model',
 	
 	requires: ['NP.lib.core.Config'],
 

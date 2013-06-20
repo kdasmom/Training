@@ -1,10 +1,10 @@
 /**
  * Model for a Address
  *
- * @author 
+ * @author Thomas Messier
  */
 Ext.define('NP.model.contact.Address', {
-	extend: 'NP.lib.data.Model',
+	extend: 'Ext.data.Model',
 	
 	requires: ['NP.lib.core.Config'],
 
@@ -28,7 +28,6 @@ Ext.define('NP.model.contact.Address', {
 	],
 
 	validations: [
-		{ field: 'address_id', type: 'presence' },
 		{ field: 'table_name', type: 'length', max: 100 },
 		{ field: 'address_attn', type: 'length', max: 255 },
 		{ field: 'address_company', type: 'length', max: 255 },

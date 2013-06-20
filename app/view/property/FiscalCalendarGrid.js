@@ -7,8 +7,6 @@ Ext.define('NP.view.property.FiscalCalendarGrid', {
     extend: 'NP.lib.ui.Grid',
     alias: 'widget.property.fiscalcalendargrid',
     
-    requires: ['NP.store.property.FiscalCals'],
-
     emptyText     : 'No fiscal calendars found',
     nameColumnText: 'Name',
     yearColumnText: 'Year',

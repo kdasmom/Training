@@ -14,10 +14,22 @@ use NP\core\db\Expression;
  */
 class WfRuleTargetGateway extends AbstractGateway {
 
+	/**
+	 * Adds a property or list of properties as rule targets for workflow rules that are set for "All Properties"
+	 *
+	 * @param  array|int $property_id_list The property or properties to add
+	 * @return boolean                     Whether or not the operation was successful
+	 */
 	public function addActivatedPropertiesToRules($property_id_list) {
 		$insert = new Insert();
 		$select = new Select();
 		$subSelect = new Select();
+
+		// If $property_id_list is not an array, we're dealing with a single property, just make it an array
+		// for consistency
+		if (!is_array($property_id_list)) {
+			$property_id_list = array($property_id_list);
+		}
 
 		$propertyPlaceHolders = $this->createPlaceholders($property_id_list);
 
