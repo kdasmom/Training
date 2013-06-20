@@ -1,10 +1,10 @@
 /**
  * Model for a VcItem
  *
- * @author 
+ * @author Thomas Messier
  */
 Ext.define('NP.model.catalog.VcItem', {
-	extend: 'NP.lib.data.Model',
+	extend: 'Ext.data.Model',
 	
 	requires: ['NP.lib.core.Config'],
 

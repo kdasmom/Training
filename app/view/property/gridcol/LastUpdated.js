@@ -9,7 +9,7 @@ Ext.define('NP.view.property.gridcol.LastUpdated', {
 
 	requires: ['NP.lib.core.Config'],
 
-	text: 'Created By',
+	text: 'Last Updated',
 	dataIndex: 'last_updated_datetm',
 	renderer: function(val, meta, rec) {
 		var returnVal = Ext.Date.format(val, NP.Config.getDefaultDateFormat() + ' h:iA');

@@ -15,23 +15,24 @@ use Zend\Cache\Storage\Adapter\WinCache;
 class ConfigService extends AbstractService {
 	
 	protected $config, $cache, $siteService, $configsysGateway, $intReqGateway, $intPkgGateway, $lookupcodeGateway,
-				$appName, $cacheName;
+				$pnCustomFieldsGateway, $appName, $cacheName;
 	
 	/**
 	 * @param array                                     $config                  Array with configuration options for the app
 	 * @param Zend\Cache\Storage\Adapter\WinCache       $cache                   WinCache object injected
 	 * @param \NP\system\SiteService                    $siteService             SiteService object injected
 	 * @param \NP\system\ConfigsysGateway               $configsysGateway        ConfigsysGateway object injected
-	 * @param \NP\system\PNUniversalFieldGateway        $pnUniversalFieldGateway PNUniversalFieldGateway object injected
+	 * @param \NP\system\PnUniversalFieldGateway        $pnUniversalFieldGateway PnUniversalFieldGateway object injected
 	 * @param \NP\system\IntegrationRequirementsGateway $intReqGateway           IntegrationRequirementsGateway object injected
 	 * @param \NP\system\IntegrationPackageGateway      $intPkgGateway           IntegrationPackageGateway object injected
 	 * @param \NP\system\LookupcodeGateway              $lookupcodeGateway       LookupcodeGateway object injected
+	 * @param \NP\system\PnCustomFieldsGateway          $pnCustomFieldsGateway   PnCustomFieldsGateway object injected
 	 * @param boolean                                   $reloadCache             Whether to reload the cache at instantiation time (optional); defaults to false
 	 */
 	public function __construct($config, WinCache $cache, SiteService $siteService, ConfigsysGateway $configsysGateway, 
-								PNUniversalFieldGateway $pnUniversalFieldGateway,  IntegrationRequirementsGateway $intReqGateway, 
+								PnUniversalFieldGateway $pnUniversalFieldGateway,  IntegrationRequirementsGateway $intReqGateway, 
 								IntegrationPackageGateway $intPkgGateway, LookupcodeGateway $lookupcodeGateway,
-								$reloadCache=false) {
+								PnCustomFieldsGateway $pnCustomFieldsGateway, $reloadCache=false) {
 		$this->config                  = $config;
 		$this->cache                   = $cache;
 		$this->siteService             = $siteService;
@@ -40,6 +41,7 @@ class ConfigService extends AbstractService {
 		$this->intReqGateway           = $intReqGateway;
 		$this->intPkgGateway           = $intPkgGateway;
 		$this->lookupcodeGateway       = $lookupcodeGateway;
+		$this->pnCustomFieldsGateway   = $pnCustomFieldsGateway;
 		$this->appName                 = $siteService->getAppName();
 		$this->cacheName               = $this->appName . "_config";
 		
@@ -152,11 +154,22 @@ class ConfigService extends AbstractService {
 	}
 	
 	/**
-	 * Get all custom field config data
+	 * Get custom field data for an entity
+	 *
+	 * @param  string $customfield_pn_type      The entity type
+	 * @param  int    $customfielddata_table_id The id of the entity
+	 * @return array                            An associative array with the custom field data
+	 */
+	public function getCustomFieldData($customfield_pn_type, $customfielddata_table_id) {
+		return $this->pnCustomFieldsGateway->findCustomFieldData($customfield_pn_type, $customfielddata_table_id);
+	}
+
+	/**
+	 * Get all invoice/PO custom field config data
 	 *
 	 * @return array An associative array with all the relevant configuration values for invoice/po header and line custom fields
 	 */
-	public function getCustomFields() {
+	public function getInvoicePoCustomFields() {
 		$arCustomSettings = $this->configsysGateway->getCustomFieldSettings();
 		$arIntReqs = $this->intReqGateway->find();
 		
@@ -236,13 +249,21 @@ class ConfigService extends AbstractService {
 	/**
 	 * Gets values for a custom field drop down 
 	 *
-	 * @param  int $universal_field_number The custom field number
-	 * @param  int $isLineItem             Whether or not it's a line or header custom field (0=header; 1=line)
-	 * @param  int $glaccount_id           Associated GL account ID (optional); defaults to null
+	 * @param  string  $customfield_pn_type    The entity type for which we want to get custom field options
+	 * @param  int     $universal_field_number The custom field number
+	 * @param  boolean [$activeOnly=true]      Whether or not to retrieve only active items
+	 * @param  int     [$isLineItem=1]         Whether or not it's a line or header custom field (0=header; 1=line); defaults to 1
+	 * @param  int     [$glaccount_id]         Associated GL account ID (optional); defaults to null
 	 * @return array
 	 */
-	public function getCustomFieldDropDownValues($universal_field_number, $isLineItem, $glaccount_id=null) {
-		return $this->pnUniversalFieldGateway->getCustomFieldDropDownValues($universal_field_number, $isLineItem, $glaccount_id);
+	public function getCustomFieldOptions($customfield_pn_type, $universal_field_number, $activeOnly=true, 
+										  $isLineItem=1, $glaccount_id=null) {
+		return $this->pnUniversalFieldGateway->findCustomFieldOptions(
+			$customfield_pn_type,
+			$universal_field_number,
+			$activeOnly,
+			$isLineItem,
+			$glaccount_id);
 	}
 
 	/**

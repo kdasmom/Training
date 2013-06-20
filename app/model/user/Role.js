@@ -4,7 +4,7 @@
  * @author Thomas Messier
  */
 Ext.define('NP.model.user.Role', {
-	extend: 'NP.lib.data.Model',
+	extend: 'Ext.data.Model',
 	
     idProperty: 'role_id',
     fields: [

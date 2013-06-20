@@ -23,26 +23,31 @@ Ext.define('NP.view.property.PropertiesFormAccounting', {
     	};
     	this.items = [
     		{
-				xtype     : 'textfield',
-				name      : 'property_salestax',
-				fieldLabel: NP.Config.getPropertyLabel() + ' ' + NP.Config.getSetting('PN.General.salesTaxTerm', 'Sales Tax'),
-				width     : 350
+                xtype           : 'numberfield',
+                name            : 'property_salestax',
+                decimalPrecision: 6,
+                fieldLabel      : NP.Config.getPropertyLabel() + ' ' + NP.Config.getSetting('PN.General.salesTaxTerm', 'Sales Tax'),
+                width           : 350,
+                minValue        : 0,
+                maxValue        : 1,
+                step            : 0.01
     		},
     		{
-				xtype     : 'textfield',
+				xtype     : 'numberfield',
 				name      : 'matching_threshold',
 				fieldLabel: this.thresholdFieldText,
-				width     : 350
+				width     : 350,
+                minValue  : 0,
+                maxValue  : 100
     		},
     		{
-				xtype         : 'combo',
+				xtype         : 'customcombo',
 				fieldLabel    : this.fiscalCalStartFieldText,
 				width         : 450,
 				name          : 'fiscaldisplaytype_value',
 				store         : 'property.FiscalDisplayTypes',
 				displayField  : 'fiscaldisplaytype_name',
-				valueField    : 'fiscaldisplaytype_value',
-				forceSelection: true
+				valueField    : 'fiscaldisplaytype_value'
     		}
     	];
 

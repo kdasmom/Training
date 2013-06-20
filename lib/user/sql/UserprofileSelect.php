@@ -17,6 +17,39 @@ class UserprofileSelect extends Select {
 	}
 	
 	/**
+	 * Adds all columns except the password column
+	 *
+	 * @return \NP\user\sql\UserprofileSelect Returns caller object for easy chaining
+	 */
+	public function columnsAll() {
+		$cols = array(
+			'userprofile_id',
+			'asp_client_id',
+			'userprofile_username',
+			'userprofile_status',
+			'userprofile_session',
+			'oracle_authentication',
+			'userprofile_startdate',
+			'userprofile_enddate',
+			'userprofile_preferred_property',
+			'userprofile_default_dashboard',
+			'userprofile_splitscreen_size',
+			'userprofile_splitscreen_ishorizontal',
+			'userprofile_splitscreen_imageorder',
+			'userprofile_splitscreen_loadwithoutimage',
+			'userprofile_preferred_region',
+			'userprofile_updated_by',
+			'userprofile_updated_datetm'
+		);
+		for ($i=1;$i<=6;$i++) {
+			$cols[] = "security_question{$i}";
+			$cols[] = "security_answer{$i}";
+		}
+
+		return $this->columns($cols);
+	}
+
+	/**
 	 * Joins USERPROFILEROLE table
 	 *
 	 * @param  string[] $cols                 Columns to retrieve from the USERPROFILEROLE table

@@ -1,10 +1,10 @@
 /**
  * Model for a Phone
  *
- * @author 
+ * @author Thomas Messier
  */
 Ext.define('NP.model.contact.Phone', {
-	extend: 'NP.lib.data.Model',
+	extend: 'Ext.data.Model',
 	
 	requires: ['NP.lib.core.Config'],
 
@@ -20,7 +20,6 @@ Ext.define('NP.model.contact.Phone', {
 	],
 
 	validations: [
-		{ field: 'phone_id', type: 'presence' },
 		{ field: 'table_name', type: 'length', max: 100 },
 		{ field: 'phone_number', type: 'length', max: 25 },
 		{ field: 'phone_ext', type: 'length', max: 25 },

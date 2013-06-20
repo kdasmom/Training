@@ -1,5 +1,5 @@
 /**
- * Vertical tab in Property Setup > Properties > Add/Edit form 
+ * Vertical tab in Property Setup > Properties > Add/Edit form > Property Info tab
  *
  * @author Thomas Messier
  */
@@ -11,7 +11,8 @@ Ext.define('NP.view.property.PropertiesFormInfo', {
     	'NP.lib.core.Config',
     	'NP.view.shared.Address',
     	'NP.view.shared.Phone',
-    	'NP.view.shared.YesNoField'
+    	'NP.view.shared.YesNoField',
+        'NP.view.shared.CustomField'
     ],
 
     autoScroll: true,
@@ -39,6 +40,9 @@ Ext.define('NP.view.property.PropertiesFormInfo', {
     volumeTypeFieldText    : 'Volume Type',
 
     initComponent: function() {
+        var that = this;
+        var defaultWidth = 525;
+
     	this.defaults = { labelWidth: 175 };
 
     	var intPkgStore = Ext.getStore('system.IntegrationPackages').getCopy();
@@ -52,66 +56,85 @@ Ext.define('NP.view.property.PropertiesFormInfo', {
     	});
     	
     	this.items = [
-    		{ xtype: 'textfield', fieldLabel: this.codeFieldText, name: 'property_id_alt' },
-    		{ xtype: 'textfield', fieldLabel: this.apCodeFieldText, name: 'property_id_alt_ap' },
-    		{ xtype: 'textfield', fieldLabel: this.deptCodeFieldText, name: 'property_department_code' },
-    		{ xtype: 'textfield', fieldLabel: this.propertyNameFieldText, name: 'property_name' },
+            // Property Code
+    		{ xtype: 'textfield', fieldLabel: this.codeFieldText, name: 'property_id_alt', width: defaultWidth },
+    		// Property AP Code
+            { xtype: 'textfield', fieldLabel: this.apCodeFieldText, name: 'property_id_alt_ap', width: defaultWidth },
+            // Property Department Code
+    		{ xtype: 'textfield', fieldLabel: this.deptCodeFieldText, name: 'property_department_code', width: defaultWidth },
+            // Property Name
+    		{ xtype: 'textfield', fieldLabel: this.propertyNameFieldText, name: 'property_name', width: defaultWidth },
+            // Number of Units
     		{ xtype: 'textfield', fieldLabel: this.totalUnitsFieldText, name: 'property_no_units' },
-    		{ xtype: 'textfield', fieldLabel: this.attnFieldText, name: 'address_attn' },
-    		{ xtype: 'fieldcontainer', fieldLabel: this.addressFieldText, items: [{ xtype: 'shared.address', showCountry: true }] },
+            // Attention
+    		{ xtype: 'textfield', fieldLabel: this.attnFieldText, name: 'address_attn', allowBlank: false, width: defaultWidth },
+            // Address
+    		{ xtype: 'fieldcontainer', fieldLabel: this.addressFieldText, items: [{ xtype: 'shared.address', showCountry: true, required: true }] },
+            // Phone
     		{
     			xtype: 'fieldcontainer',
     			fieldLabel: this.phoneFieldText, 
     			items: [{ xtype: 'shared.phone', showFieldDescriptions: true, hideLabel: true }]
     		},
+            // Fax
     		{
     			xtype: 'fieldcontainer',
     			fieldLabel: this.faxFieldText, 
     			items: [{ xtype: 'shared.phone', prefix: 'fax_', showFieldDescriptions: true, hideLabel: true }]
     		},
+            // Region
     		{
-				xtype         : 'combo',
-				fieldLabel    : NP.Config.getSetting('PN.main.RegionLabel', 'Region'),
-				queryMode     : 'local',
-				forceSelection: true,
-				name          : 'region_id',
-				store         : regionStore,
-				valueField    : 'region_id',
-				displayField  : 'region_name'
+                xtype       : 'customcombo',
+                fieldLabel  : NP.Config.getSetting('PN.main.RegionLabel', 'Region'),
+                name        : 'region_id',
+                store       : regionStore,
+                valueField  : 'region_id',
+                displayField: 'region_name',
+                width       : defaultWidth
     		},
+            // Bill To Address Option
     		{ xtype: 'shared.yesnofield', fieldLabel: this.billToFieldText, name: 'property_optionBillAddress' },
+            // Default Bill To Property
     		{
-				xtype       : 'combo',
-				fieldLabel  : this.billToPropertyFieldText,
-				name        : 'default_billto_property_id',
-				hidden      : true,
-				store       : Ext.create('NP.store.property.Properties', {
+                xtype                : 'customcombo',
+                fieldLabel           : this.billToPropertyFieldText,
+                name                 : 'default_billto_property_id',
+                hidden               : true,
+                width                : defaultWidth,
+                valueField           : 'property_id',
+                displayField         : 'property_name',
+                loadStoreOnFirstQuery: true,
+                store                : Ext.create('NP.store.property.Properties', {
 					service: 'PropertyService',
 					action : 'getBillToShipToProperties',
 					extraParams: {
 						type: 'bill'
 					}
 				}),
-				valueField  : 'property_id',
-				displayField: 'property_name'
     		},
+            // Ship To Address Option
     		{ xtype: 'shared.yesnofield', fieldLabel: this.shipToFieldText, name: 'property_optionShipAddress' },
+            // Default Ship To Property
     		{
-				xtype       : 'combo',
-				fieldLabel  : this.shipToPropertyFieldText,
-				name        : 'default_shipto_property_id',
-				hidden      : true,
-				store       : Ext.create('NP.store.property.Properties', {
+                xtype                : 'customcombo',
+                fieldLabel           : this.shipToPropertyFieldText,
+                name                 : 'default_shipto_property_id',
+                hidden               : true,
+                width                : defaultWidth,
+                valueField           : 'property_id',
+                displayField         : 'property_name',
+                loadStoreOnFirstQuery: true,
+                store                : Ext.create('NP.store.property.Properties', {
 					service: 'PropertyService',
 					action : 'getBillToShipToProperties',
 					extraParams: {
 						type: 'ship'
 					}
-				}),
-				valueField  : 'property_id',
-				displayField: 'property_name'
+				})
     		},
+            // Sync
     		{ xtype: 'shared.yesnofield', fieldLabel: this.syncFieldText, name: 'sync' },
+            // Accrual Cash
     		{
     			xtype: 'radiogroup',
     			fieldLabel: this.accrualCashFieldText,
@@ -124,18 +147,21 @@ Ext.define('NP.view.property.PropertiesFormInfo', {
 		    		{ boxLabel: 'Cash', inputValue: 'cash' }
 		    	]
     		},
+            // Nexus Services
     		{ xtype: 'shared.yesnofield', fieldLabel: this.nexusServicesFieldText, name: 'property_NexusServices' },
+            // Vendor Catalog
     		{ xtype: 'shared.yesnofield', fieldLabel: this.vendorCatalogFieldText, name: 'property_VendorCatalog' },
+            // Integration Package
     		{
-				xtype         : 'combo',
-				fieldLabel    : this.intPackageFieldText,
-				queryMode     : 'local',
-				forceSelection: true,
-				name          : 'integration_package_id',
-				store         : intPkgStore,
-				valueField    : 'integration_package_id',
-				displayField  : 'integration_package_name'
+                xtype              : 'customcombo',
+                fieldLabel         : this.intPackageFieldText,
+                name               : 'integration_package_id',
+                width              : defaultWidth,
+                store              : intPkgStore,
+                valueField         : 'integration_package_id',
+                displayField       : 'integration_package_name'
     		},
+            // Closing Calendar
     		{
 				xtype         : 'customcombo',
 				fieldLabel    : this.calendarFieldText,
@@ -144,21 +170,37 @@ Ext.define('NP.view.property.PropertiesFormInfo', {
 					service: 'PropertyService',
 					action : 'getMasterClosingCalendars'
 				}),
+                width            : defaultWidth,
 				selectFirstRecord: true,
+                allowBlank       : false,
 				valueField       : 'fiscalcal_id',
 				displayField     : 'fiscalcal_name'
     		},
+            // Volume Type
     		{
-				xtype         : 'combo',
-				fieldLabel    : this.volumeTypeFieldText,
-				queryMode     : 'local',
-				forceSelection: true,
-				name          : 'property_volume',
-				store         : Ext.create('NP.store.property.VolumeTypes'),
-				valueField    : 'code',
-				displayField  : 'name'
+                xtype              : 'customcombo',
+                fieldLabel         : this.volumeTypeFieldText,
+                width              : defaultWidth,
+                name               : 'property_volume',
+                store              : Ext.create('NP.store.property.VolumeTypes'),
+                valueField         : 'code',
+                displayField       : 'name'
     		}
     	];
+
+        // Add custom fields at the end of the form
+        Ext.Array.each(this.customFieldData, function(fieldData) {
+            that.items.push({
+                xtype     : 'shared.customfield',
+                fieldLabel: fieldData['customfield_label'],
+                entityType: fieldData['customfield_pn_type'],
+                type      : fieldData['customfield_type'],
+                name      : fieldData['customfield_name'],
+                number    : fieldData['universal_field_number'],
+                allowBlank: !fieldData['customfield_required'],
+                fieldCfg  : { width: defaultWidth-177, value: fieldData['customfielddata_value'] }
+            });
+        });
 
     	this.callParent(arguments);
     }

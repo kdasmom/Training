@@ -4,14 +4,34 @@
  * @author Thomas Messier
  */
 Ext.define('NP.view.property.PropertiesFormUnitMeasurements', {
-    extend: 'Ext.container.Container',
+    extend: 'Ext.panel.Panel',
     alias: 'widget.property.propertiesformunitmeasurements',
     
-    title: 'Unit Measurements',
+    requires: [
+    	'NP.lib.core.Config',
+    	'NP.view.property.UnitTypeGrid',
+    	'NP.view.property.UnitTypeForm'
+    ],
 
-    html: 'Coming soon...',
+    border: false,
+
+    measurementTitleText: 'Measurements',
 
     initComponent: function() {
+    	var that = this;
+
+    	this.title = NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + ' ' + this.measurementTitleText;
+
+    	this.layout = {
+			type: 'hbox',
+			align: 'stretch'
+		};
+
+		this.items = [
+			{ xtype: 'property.unittypegrid', flex: 2 },
+			{ xtype: 'property.unittypeform', flex: 1, hidden: true }
+		];
+
     	this.callParent(arguments);
     }
 });

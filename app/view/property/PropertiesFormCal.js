@@ -1,5 +1,5 @@
 /**
- * Vertical tab in Property Setup > Properties > Add/Edit form 
+ * Vertical tab in Property Setup > Properties > Add/Edit form > Closing Calendars tab
  *
  * @author Thomas Messier
  */
@@ -7,9 +7,14 @@ Ext.define('NP.view.property.PropertiesFormCal', {
     extend: 'Ext.container.Container',
     alias: 'widget.property.propertiesformcal',
     
-    requires: ['NP.view.property.FiscalCalendarGrid'],
+    requires: [
+    	'NP.view.property.FiscalCalendarGrid',
+    	'NP.view.property.FiscalCalendarForm',
+    	'NP.view.shared.button.Cancel',
+    	'NP.view.shared.button.Save'
+    ],
 
-    title: 'Closing Calendars',
+    title: 'Fsical Calendars',
 
     layout: {
 		type : 'vbox',
@@ -29,8 +34,7 @@ Ext.define('NP.view.property.PropertiesFormCal', {
 				xtype      : 'numberfield',
 				name       : 'fiscalcalmonth_cutoff_' + i,
 				fieldLabel : Ext.Date.format(dt, 'M'),
-				width      : 50,
-				minLength  : 2,
+				width      : 150,
 				maxLength  : 2,
 				disabled   : true,
 				allowBlank : false,
@@ -45,18 +49,18 @@ Ext.define('NP.view.property.PropertiesFormCal', {
     		layout: 'column',
     		items: [
     			{
-					xtype         : 'combo',
-					name          : 'add_fiscalcal_id',
-					width         : 250,
-					hideLabel     : true,
-					forceSelection: true,
-					store         : Ext.create('NP.store.property.FiscalCals', {
-										service    : 'PropertyService',
-										action     : 'getUnusedFiscalCalendars',
-										property_id: null
-									}),
-					displayField  : 'fiscalcal_name',
-					valueField    : 'fiscalcal_id'
+					xtype                : 'customcombo',
+					name                 : 'add_fiscalcal_id',
+					width                : 250,
+					hideLabel            : true,
+					displayField         : 'fiscalcal_name',
+					valueField           : 'fiscalcal_id',
+					loadStoreOnFirstQuery: true,
+					store                : Ext.create('NP.store.property.FiscalCals', {
+												service    : 'PropertyService',
+												action     : 'getUnusedFiscalCalendars',
+												property_id: null
+											})
     			},{
 					xtype : 'button',
 					itemId: 'addFiscalCalBtn',
@@ -74,23 +78,14 @@ Ext.define('NP.view.property.PropertiesFormCal', {
 			items : [
     			{
 					xtype: 'property.fiscalcalendargrid',
-					store: Ext.create('NP.store.property.FiscalCals'),
+					store: Ext.create('NP.store.property.FiscalCals', {
+						service    : 'PropertyService',
+						action     : 'getPropertyFiscalCalendars'
+					}),
 					flex: 1
 		    	},{
-					xtype      : 'panel',
-					itemId     : 'cutoffPanel',
-					title      : 'Monthly Cutoffs',
-					layout     : 'column',
-					bodyPadding: 8,
-					margin     : '0 0 0 8',
-					flex       : 1,
-					items      : months,
-					hidden     : true,
-					buttons    : [
-						{ xtype: 'button', text: 'Save' },
-						{ xtype: 'button', text: 'Cancel' }
-					],
-					buttonAlign: 'center'
+					xtype: 'property.fiscalcalendarform',
+					flex : 1
 		    	}
     		]
     	}];

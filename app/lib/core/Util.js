@@ -11,6 +11,21 @@ Ext.define('NP.lib.core.Util', {
 	
 	requires: 'Ext.util.Format',
 	
+	monthDays: {
+		1: 31,
+		2: 28,
+		3: 31,
+		4: 30,
+		5: 31,
+		6: 30,
+		7: 31,
+		8: 31,
+		9: 30,
+		10: 31,
+		11: 30,
+		12: 31
+	},
+
 	/**
 	 * Shows a window with a message for a certain amount of time that eventually fades out
 	 * @param  {Object} windowOptions      Supports all options for the window object, with certain defaults
@@ -111,6 +126,35 @@ Ext.define('NP.lib.core.Util', {
 		return Object.prototype.toString.call(obj) == '[object Object]';
 	},
 	
+	/**
+	 * Checks if a certain combination of year, month and day is valid
+	 * @param  {Number} year
+	 * @param  {Number} month
+	 * @param  {Number} day
+	 * @return {Boolean}
+	 */
+	isValidDayOfMonth: function(year, month, day) {
+		if (month < 1 || month > 12) {
+			throw 'Invalid month argument. month must be between 1 and 12.'
+		}
+
+		if (day < 1) {
+			return false;
+		}
+		
+		var maxDays = this.monthDays[month];
+		// Account for february leap years
+		if (month == 2) {
+			if ((year % 400 == 0) || (year % 4 == 0 && year && 100 != 0)) {
+				maxDays = 29;
+			}
+		}
+		if (day > maxDays) {
+			return false;
+		}
+
+		return true;
+	},
 
 	/**
 	 * Calculates the difference in time between two dates
@@ -173,5 +217,16 @@ Ext.define('NP.lib.core.Util', {
 			}
 		});
 		return value;
+	},
+
+	/**
+	 * This is a function to retrieve the idProperty from a model class, seeing as there's no built-in function
+	 * to do it.
+	 *
+	 * @param  {String} modelClass Class as a full namespaced class name
+	 * @return {String}            The name of the field that's the primary key for the model
+	 */
+	getIdProperty: function(modelClass) {
+		return Ext.ClassManager.get('NP.model.' + modelClass).getFields()[1].name;
 	}
 });

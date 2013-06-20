@@ -29,23 +29,31 @@ Ext.define('NP.view.property.PropertiesForm', {
 
     initComponent: function() {
         var bar = [
-            { xtype: 'shared.button.cancel' },
-            { xtype: 'shared.button.save' }
+            { xtype: 'shared.button.cancel', itemId: 'propertyCancelBtn' },
+            { xtype: 'shared.button.save', itemId: 'propertySaveBtn' }
         ];
         this.tbar = bar;
         this.bbar = bar;
 
         var tabs = [
-            { xtype: 'property.propertiesforminfo' },
+            { xtype: 'property.propertiesforminfo', customFieldData: this.customFieldData },
             { xtype: 'property.propertiesformaccounting' }
         ];
         if (NP.Config.getSetting('CP.PROPERTYGLACCOUNT_USE', 0) && NP.Security.hasPermission(12)) {
             tabs.push({ xtype: 'property.propertiesformgl', hidden: true });
         }
+        if (NP.Security.hasPermission(1042)) {
+            tabs.push({ xtype: 'property.propertiesformcal', hidden: true });
+        }
+
+        if (NP.Config.getSetting('PN.InvoiceOptions.AllowUnitAttach') == '1') {
+            tabs.push({ xtype: 'property.propertiesformunits', hidden: true });
+            if (NP.Config.getSetting('VC_isOn') == '1') {
+                tabs.push({ xtype: 'property.propertiesformunitmeasurements', hidden: true });
+            }
+        }
+
         tabs.push(
-            { xtype: 'property.propertiesformcal', hidden: true },
-            { xtype: 'property.propertiesformunits', hidden: true },
-            { xtype: 'property.propertiesformunitmeasurements', hidden: true },
             { xtype: 'property.propertiesformusers', hidden: true },
             { xtype: 'property.propertiesformuserreport', hidden: true }
         );
@@ -56,7 +64,7 @@ Ext.define('NP.view.property.PropertiesForm', {
             defaults: {
                 padding: 8
             },
-            activeTab: 0,
+            activeTab: 3,
             items    : tabs
         }];
 

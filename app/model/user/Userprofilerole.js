@@ -1,12 +1,16 @@
 /**
  * Model for a Userprofilerole
  *
- * @author 
+ * @author Thomas Messier
  */
 Ext.define('NP.model.user.Userprofilerole', {
-	extend: 'NP.lib.data.Model',
+	extend: 'Ext.data.Model',
 	
-	requires: ['NP.lib.core.Config'],
+	requires: [
+		'NP.lib.core.Config',
+		'NP.model.user.Staff',
+        'NP.lib.data.JsonFlat'
+	],
 
 	idProperty: 'userprofilerole_id',
 	fields: [
@@ -16,6 +20,17 @@ Ext.define('NP.model.user.Userprofilerole', {
 		{ name: 'tablekey_id', type: 'int' },
 		{ name: 'userprofilerole_status' }
 	],
+
+    belongsTo: [
+        {
+            model         : 'NP.model.user.Staff',
+            name          : 'staff',
+            getterName    : 'getStaff',
+            foreignKey    : 'tablekey_id',
+            primaryKey    : 'staff_id',
+            reader        : 'jsonflat'
+        }
+    ],
 
 	validations: [
 		{ field: 'userprofilerole_id', type: 'presence' },

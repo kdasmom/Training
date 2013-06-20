@@ -1,12 +1,16 @@
 /**
  * Model for a Staff
  *
- * @author 
+ * @author Thomas Messier
  */
 Ext.define('NP.model.user.Staff', {
-	extend: 'NP.lib.data.Model',
+	extend: 'Ext.data.Model',
 	
-	requires: ['NP.lib.core.Config'],
+	requires: [
+		'NP.lib.core.Config',
+		'NP.model.user.Person',
+        'NP.lib.data.JsonFlat'
+	],
 
 	idProperty: 'staff_id',
 	fields: [
@@ -15,6 +19,17 @@ Ext.define('NP.model.user.Staff', {
 		{ name: 'person_id', type: 'int' },
 		{ name: 'staff_status' }
 	],
+
+    belongsTo: [
+        {
+            model         : 'NP.model.user.Person',
+            name          : 'person',
+            getterName    : 'getPerson',
+            foreignKey    : 'person_id',
+            primaryKey    : 'person_id',
+            reader        : 'jsonflat'
+        }
+    ],
 
 	validations: [
 		{ field: 'staff_id', type: 'presence' },

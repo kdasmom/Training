@@ -10,7 +10,6 @@ class PhoneEntity extends \NP\core\AbstractEntity {
 	
 	protected $fields = array(
 		'phone_id'	 => array(
-			'required' => true,
 			'validation' => array(
 				'digits' => array()
 			)

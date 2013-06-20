@@ -53,23 +53,41 @@ Ext.define('NP.view.property.PropertiesMain', {
             columns : [
                 { xtype: 'property.gridcol.propertyname', flex: 2 },
                 { xtype: 'shared.gridcol.integrationpackagename', flex: 1 },
-                { xtype: 'property.gridcol.regionname', flex: 1.5 },
+                { xtype: 'templatecolumn', text: NP.Config.getSetting('PN.main.RegionLabel', 'Region'), tpl: '{region.region_name}', flex: 1.5 },
                 { xtype: 'property.gridcol.code', flex: 1 },
                 { xtype: 'property.gridcol.totalunits', flex: 1 },
-                { xtype: 'property.gridcol.createdby', flex: 1.5 },
-                { xtype: 'property.gridcol.createddate', flex: 0.5 },
-                { xtype: 'property.gridcol.lastupdated', flex: 1.5 },
                 {
-                    xtype: 'actioncolumn',
-                    flex : 0.1,
-                    align: 'center',
-                    items: [{
-                        icon   :    'resources/images/buttons/edit.gif',
-                        tooltip: 'Edit',
-                        handler: function(grid, rowIndex, colIndex, item, e, rec) {
-                            that.fireEvent('itemeditclick', grid, rec, rowIndex);
+                    text : 'Created By',
+                    dataIndex: 'UserProfile_ID',
+                    renderer: function(val, meta, rec) {
+                        var user = rec.getCreatedByUser();
+                        var returnVal = user.get('userprofile_username');
+                        var person = user.getUserprofilerole().getStaff().getPerson();
+                        if (person.get('person_id') != null) {
+                            var firstName = person.get('person_firstname');
+                            var lastName = person.get('person_lastname');
+                            if (firstName != '' || lastName != '') {
+                                returnVal += ' (' + firstName + ' ' + lastName + ')'
+                            }
                         }
-                    }]
+
+                        return returnVal;
+                    },
+                    flex : 1.5
+                },
+                { xtype: 'property.gridcol.createddate', flex: 0.5 },
+                {
+                    text : 'Last Updated',
+                    dataIndex: 'last_updated_datetm',
+                    renderer: function(val, meta, rec) {
+                        var returnVal = Ext.Date.format(val, NP.Config.getDefaultDateFormat() + ' h:iA');
+                        if (rec.get('last_updated_by') != null) {
+                            returnVal += ' (' + rec.getUpdatedByUser().get('userprofile_username') + ')'
+                        }
+
+                        return returnVal;
+                    },
+                    flex : 1.5
                 }
             ],
             pagingToolbarButtons: [

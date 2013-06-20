@@ -1,10 +1,10 @@
 /**
  * Model for a MobInfo
  *
- * @author 
+ * @author Thomas Messier
  */
 Ext.define('NP.model.user.MobInfo', {
-	extend: 'NP.lib.data.Model',
+	extend: 'Ext.data.Model',
 	
 	requires: ['NP.lib.core.Config'],
 

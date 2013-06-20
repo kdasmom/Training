@@ -189,6 +189,87 @@ Ext.define('NP.locale.en.view.shared.Address', {
 });
 
 /**
+ * BUTTONS
+ */
+Ext.define('NP.locale.en.view.shared.button.Activate', {
+	override: 'NP.view.shared.button.Activate',
+
+	text: 'Activate'
+});
+
+Ext.define('NP.locale.en.view.shared.button.Back', {
+	override: 'NP.view.shared.button.Back',
+
+	text: 'Back'
+});
+
+Ext.define('NP.locale.en.view.shared.button.Camera', {
+	override: 'NP.view.shared.button.Camera',
+
+	text: 'Camera'
+});
+
+Ext.define('NP.locale.en.view.shared.button.Cancel', {
+	override: 'NP.view.shared.button.Cancel',
+
+	text: 'Cancel'
+});
+
+Ext.define('NP.locale.en.view.shared.button.Delete', {
+	override: 'NP.view.shared.button.Delete',
+
+	text: 'Delete'
+});
+
+Ext.define('NP.locale.en.view.shared.button.Edit', {
+	override: 'NP.view.shared.button.Edit',
+
+	text: 'Edit'
+});
+
+Ext.define('NP.locale.en.view.shared.button.Hourglass', {
+	override: 'NP.view.shared.button.Hourglass',
+
+	text: 'Place On Hold'
+});
+
+Ext.define('NP.locale.en.view.shared.button.Inactivate', {
+	override: 'NP.view.shared.button.Inactivate',
+
+	text: 'Inactivate'
+});
+
+Ext.define('NP.locale.en.view.shared.button.New', {
+	override: 'NP.view.shared.button.New',
+
+	text: 'New'
+});
+
+Ext.define('NP.locale.en.view.shared.button.Save', {
+	override: 'NP.view.shared.button.Save',
+
+	text: 'Save'
+});
+
+Ext.define('NP.locale.en.view.shared.button.SaveAndAdd', {
+	override: 'NP.view.shared.button.SaveAndAdd',
+
+	text: 'Save And Add Another'
+});
+
+Ext.define('NP.locale.en.view.shared.button.Upload', {
+	override: 'NP.view.shared.button.Upload',
+
+	text: 'Upload'
+});
+
+Ext.define('NP.locale.en.view.shared.button.View', {
+	override: 'NP.view.shared.button.View',
+
+	text: 'View'
+});
+
+/**
  * VIEWPORT
  */
 
@@ -505,6 +586,7 @@ Ext.define('NP.locale.en.controller.PropertySetup', {
 	
 	requires: ['NP.lib.core.Config'],
 
+	errorDialogTitleText      : 'Error',
 	placeOnHoldDialogTitleText: 'Place On Hold?',
 	placeOnHoldDialogText     : 'Are you sure you want to place the selected ' + NP.Config.getPropertyLabel(true).toLowerCase() + ' on hold?',
 	onHoldSuccessText         : NP.Config.getPropertyLabel(true) + ' were placed on hold',
@@ -516,7 +598,10 @@ Ext.define('NP.locale.en.controller.PropertySetup', {
 	inactivateDialogTitleText : 'Inactivate?',
 	inactivateDialogText      : 'Are you sure you want to inactivate the selected ' + NP.Config.getPropertyLabel(true).toLowerCase() + '?',
 	inactivateSuccessText     : NP.Config.getPropertyLabel(true) + ' were inactivated',
-	inactivateFailureText     : 'There was an error inactivating ' + NP.Config.getPropertyLabel(true)
+	inactivateFailureText     : 'There was an error inactivating ' + NP.Config.getPropertyLabel(true),
+	changesSavedText          : 'Changes saved successfully',
+	invalidDayErrorText       : 'Invalid day',
+	unassignedUniTypeTitle    : 'View ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + 's Not Assigned to a ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + ' Type'
 });
 
 Ext.define('NP.locale.en.view.propertySetup.Overview', {
@@ -593,7 +678,30 @@ Ext.define('NP.locale.en.view.property.PropertiesFormGl', {
 Ext.define('NP.locale.en.view.property.PropertiesFormCal', {
 	override: 'NP.view.property.PropertiesFormCal',
 	
-	title: 'Closing Calendars'
+	title: 'Fiscal Calendars'
+});
+
+Ext.define('NP.locale.en.view.property.UnitGrid', {
+	override: 'NP.view.property.UnitGrid',
+	
+	addButtonText   : 'Add',
+    removeButtonText: 'Remove',
+    gridCodeColText : 'Code',
+    gridNameColText : 'Name'
+});
+
+Ext.define('NP.locale.en.view.property.UnitForm', {
+	override: 'NP.view.property.UnitForm',
+	
+	codeLabelText: 'Code',
+	nameLabelText: 'Name',
+	typeLabelText: 'Type'
+});
+
+Ext.define('NP.locale.en.view.property.PropertiesFormUnitMeasurements', {
+	override: 'NP.view.property.PropertiesFormUnitMeasurements',
+	
+	measurementTitleText: 'Measurements'
 });
 
 /**

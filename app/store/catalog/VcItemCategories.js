@@ -1,7 +1,7 @@
 /**
  * Store for Item Categories
  *
- * @author 
+ * @author Thomas Messier
  */
 Ext.define('NP.store.catalog.VcItemCategories', {
     extend: 'NP.lib.data.Store',

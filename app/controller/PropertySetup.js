@@ -7,11 +7,14 @@ Ext.define('NP.controller.PropertySetup', {
 	extend: 'Ext.app.Controller',
 	
 	requires: [
+		'NP.lib.core.Config',
 		'NP.lib.core.Security',
 		'NP.lib.core.Net',
 		'NP.lib.core.Util'
 	],
 	
+	// For localization
+	errorDialogTitleText      : 'Error',
 	placeOnHoldDialogTitleText: 'Place On Hold?',
 	placeOnHoldDialogText     : 'Are you sure you want to place the selected ' + NP.Config.getPropertyLabel(true).toLowerCase() + ' on hold?',
 	onHoldSuccessText         : NP.Config.getPropertyLabel(true) + ' were placed on hold',
@@ -24,12 +27,9 @@ Ext.define('NP.controller.PropertySetup', {
 	inactivateDialogText      : 'Are you sure you want to inactivate the selected ' + NP.Config.getPropertyLabel(true).toLowerCase() + '?',
 	inactivateSuccessText     : NP.Config.getPropertyLabel(true) + ' were inactivated',
 	inactivateFailureText     : 'There was an error inactivating ' + NP.Config.getPropertyLabel(true),
-
-	/**
-	 * This store keeps track of all the additions/edits we make to fiscal calendars
-	 * @private
-	 */
-	fiscalCalMonths: Ext.create('NP.store.property.FiscalCalMonths'),
+	changesSavedText          : 'Changes saved successfully',
+	invalidDayErrorText       : 'Invalid day',
+	unassignedUniTypeTitle    : 'View ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + 's Not Assigned to a ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + ' Type',
 
 	init: function() {
 		Ext.log('PropertySetup controller initialized');
@@ -50,13 +50,8 @@ Ext.define('NP.controller.PropertySetup', {
 			},
 			// The Properties grid
 			'[xtype="property.propertiesmain"] customgrid': {
-				selectionchange: this.gridSelectionChange
-			},
-			// The main properties container that shows the grid
-			'[xtype="property.propertiesmain"]': {
-				itemeditclick: function(grid, rec, rowIndex) {
-					this.application.addHistory('PropertySetup:showPropertySetup:Properties:Form:' + rec.get('property_id'));
-				}
+				selectionchange: this.gridSelectionChange,
+				itemclick      : this.viewProperty
 			},
 			// The Property grid drop down
 			'[xtype="property.propertiesmain"] [name="property_status"]': {
@@ -80,18 +75,81 @@ Ext.define('NP.controller.PropertySetup', {
 					this.application.addHistory('PropertySetup:showPropertySetup:Properties:Form');
 				}
 			},
-			// The integration package combo box on the property form
-			'[xtype="property.propertiesform"] [name="integration_package_id"]': {
-				// Run this whenever the integration package is changed
-				change: this.changeIntegrationPackage
-			},
 			// The add fiscal calendar button
 			'[xtype="property.propertiesformcal"] #addFiscalCalBtn': {
-				click: function() { this.addFiscalCal(); }
+				click: this.addFiscalCal
 			},
 			// The fiscal calendar grid on the add/edit properties page
-			'[xtype="property.propertiesform"] [xtype="property.fiscalcalendargrid"]': {
+			'[xtype="property.fiscalcalendargrid"]': {
 				selectionchange: this.selectFiscalCalendar
+			},
+			// The cancel button on the property form
+			'#propertyCancelBtn': {
+				click: function() {
+					this.activePropertyRecord = null;
+					this.application.addHistory('PropertySetup:showPropertySetup:Properties:Main');
+				}
+			},
+			// The save button on the property form
+			'#propertySaveBtn': {
+				click: this.saveProperty
+			},
+			// The cancel button on the property form fiscal calendar panel
+			'[xtype="property.fiscalcalendarform"] [xtype="shared.button.cancel"]': {
+				click: this.cancelCalendarCutoffs
+			},
+			// The save button on the property form fiscal calendar panel
+			'[xtype="property.propertiesformcal"] [xtype="shared.button.save"]': {
+				click: this.savePropertyCalendarCutoffs
+			},
+			// The save button on the master closing calendar form
+			'[xtype="property.calendar"] [xtype="shared.button.save"]': {
+				click: this.saveCalendarCutoffs
+			},
+			// The add fiscal calendar button
+			'[xtype="property.calendar"] [xtype="shared.button.new"]': {
+				click: this.addMasterFiscalCal
+			},
+			// The unit grid on the add/edit properties page
+			'[xtype="property.unitgrid"]': {
+				selectionchange: this.selectUnit,
+				itemclick      : this.viewUnit
+			},
+			// The cancel button on the property unit form
+			'[xtype="property.unitform"] [xtype="shared.button.cancel"]': {
+				click: this.cancelUnitForm
+			},
+			// The save button on the property unit form
+			'[xtype="property.unitform"] [xtype="shared.button.save"]': {
+				click: this.saveUnit
+			},
+			// The Add Unit button on the unit grid
+			'[xtype="property.unitgrid"] [xtype="shared.button.new"]': {
+				click: this.addUnit
+			},
+			// The Remove Unit button on the unit grid
+			'[xtype="property.unitgrid"] [xtype="shared.button.delete"]': {
+				click: this.removeUnits
+			},
+			// The Add Unit Type button on the unit type grid
+			'[xtype="property.unittypegrid"] [xtype="shared.button.new"]': {
+				click: this.addUnitType
+			},
+			// The View Unassigned Unit Types button on the unit type grid
+			'[xtype="property.unittypegrid"] [xtype="shared.button.view"]': {
+				click: this.viewUnassignedUnitTypes
+			},
+			// The unit type grid on the add/edit properties page
+			'[xtype="property.unittypegrid"]': {
+				itemclick: this.viewUnitType
+			},
+			// The cancel button on the property unit form
+			'[xtype="property.unittypeform"] [xtype="shared.button.cancel"]': {
+				click: this.cancelUnitTypeForm
+			},
+			// The save button on the property unit form
+			'[xtype="property.unittypeform"] [xtype="shared.button.save"]': {
+				click: this.saveUnitType
 			}
 		});
 	},
@@ -155,6 +213,12 @@ Ext.define('NP.controller.PropertySetup', {
 		inactivateBtn.hide();
 		activateBtn.hide();
 		holdBtn.hide();
+	},
+
+	viewProperty: function(grid, rec, item, index, e) {
+		if (e.getTarget().className != 'x-grid-row-checker') {
+			this.application.addHistory('PropertySetup:showPropertySetup:Properties:Form:' + rec.get('property_id'));
+		}
 	},
 
 	gridSelectionChange: function(selectionModel, selected) {
@@ -230,11 +294,11 @@ Ext.define('NP.controller.PropertySetup', {
 								NP.Util.showFadingWindow({ html: successDialogText });
 							// If an error occurs
 							} else {
-								Ext.MessageBox.alert('Error', failureDialogText);
+								Ext.MessageBox.alert(that.errorDialogTitleText, failureDialogText);
 							}
 						},
 						failure: function(response, options, deferred) {
-							Ext.MessageBox.alert('Error', failureDialogText);
+							Ext.MessageBox.alert(that.errorDialogTitleText, failureDialogText);
 						}
 					}
 				});
@@ -245,152 +309,724 @@ Ext.define('NP.controller.PropertySetup', {
 	showPropertiesForm: function(property_id) {
 		var that = this;
 
-		// Setup the binding for the form
-		var viewCfg = {
-			bind: {
-				models: [
-		        	'property.Property',
-		        	'contact.Address',
-		        	'contact.Phone',
-		        	{ class: 'contact.Phone', prefix: 'fax_' }
-		        ]
-		    }
-		};
+		// Do an Ajax request first to retrieve property custom field data since we need it for the form
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service                 : 'ConfigService',
+				action                  : 'getCustomFieldData',
+				customfield_pn_type     : 'property',
+				customfielddata_table_id: (property_id) ? property_id : 0,
+				success                 : function(result, deferred) {
+					// Setup the binding for the form
+					var viewCfg = {
+						customFieldData: result,
+						bind: {
+							models: [
+					        	'property.Property',
+					        	'contact.Address',
+					        	'contact.Phone',
+					        	{ class: 'contact.Phone', prefix: 'fax_' }
+					        ]
+					    }
+					};
 
-		// If editing a property, we need to configure a few more things
-		if (property_id) {
-			// Setup a listener to populate billto/shipto stores with default values so 
-			// we don't have to preload them and they don't show up as just a number
-			Ext.apply(viewCfg, {
-				listeners: {
-		        	beforefieldupdate: function(form, result) {
-		        		var defaultBillToField = form.findField('default_billto_property_id');
-		        		defaultBillToField.getStore().add({
-		        			property_id: result['default_billto_property_id'],
-		        			property_name: result['default_billto_property_name']
-		        		});
-		        		var defaultShipToField = form.findField('default_shipto_property_id');
-		        		defaultShipToField.getStore().add({
-		        			property_id: result['default_shipto_property_id'],
-		        			property_name: result['default_shipto_property_name']
-		        		});
-		        	}
-		        }
-			});
-			// Specify the service to use to retrieve the data for the property being edited
-	    	Ext.apply(viewCfg.bind, {
-				service    : 'PropertyService',
-				action     : 'get',
-				extraParams: {
-					property_id: property_id
-		        }
-	    	});
-	    }
+					// If editing a property, we need to configure a few more things
+					if (property_id) {
+						// Setup a listener to populate some fields
+						Ext.apply(viewCfg, {
+							listeners: {
+					        	beforefieldupdate: function(form, result) {
+					        		// Save the record for the property being edited for later use
+					        		that.activePropertyRecord = that.application.getComponent('property.propertiesform').getModel('property.Property');
 
-		// Create the view
-		var form = this.application.setView('NP.view.property.PropertiesForm', viewCfg, '[xtype="property.properties"]');
+					        		// Populate billto/shipto stores with default values so 
+					        		var defaultBillToField = form.findField('default_billto_property_id');
+					        		defaultBillToField.getStore().addExtraParams({ property_id: property_id });
+					        		defaultBillToField.getStore().add({
+					        			property_id: result['default_billto_property_id'],
+					        			property_name: result['default_billto_property_name']
+					        		});
+					        		var defaultShipToField = form.findField('default_shipto_property_id');
+					        		defaultShipToField.getStore().addExtraParams({ property_id: property_id });
+					        		defaultShipToField.getStore().add({
+					        			property_id: result['default_shipto_property_id'],
+					        			property_name: result['default_shipto_property_name']
+					        		});
 
-		var hideablePanels = ['property.propertiesformgl','property.propertiesformunits',
-							'property.propertiesformunitmeasurements','property.propertiesformusers',
-							'property.propertiesformuserreport'];
+					        		// Load the GL Store
+					        		var glStore = form.findField('property_gls').getStore();
+					        		glStore.addExtraParams({ integration_package_id: result['integration_package_id'] });
+					        		glStore.load();
 
-		// Make sure all hideable tabs are in the proper state (hidden for new record, showing for editing)
-		Ext.Array.each(hideablePanels, function(panel) {
-			panel = that.application.getComponent(panel);
-			if (property_id) {
-				panel.tab.show();
-			} else {
-				panel.tab.hide();
+					        		// Store the accounting period
+					        		that.accountingPeriod = result['accounting_period']['date'].split(' ')[0];
+					        		that.accountingPeriod = that.accountingPeriod.split('-');
+					        		that.accountingPeriod = new Date(that.accountingPeriod[0], that.accountingPeriod[1]-1, that.accountingPeriod[2]);
+					        	}
+					        }
+						});
+						// Specify the service to use to retrieve the data for the property being edited
+				    	Ext.apply(viewCfg.bind, {
+							service    : 'PropertyService',
+							action     : 'get',
+							extraParams: {
+								property_id: property_id
+					        },
+					        extraFields: ['property_gls','property_users']
+				    	});
+				    }
+
+				    // Suspend layouts for better performance
+				    Ext.suspendLayouts();
+
+					// Create the view
+					var form = that.application.setView('NP.view.property.PropertiesForm', viewCfg, '[xtype="property.properties"]');
+
+					var hideablePanels = ['property.propertiesformgl','property.propertiesformcal','property.propertiesformunits',
+										'property.propertiesformunitmeasurements','property.propertiesformusers',
+										'property.propertiesformuserreport'];
+
+					// Make sure all hideable tabs are in the proper state (hidden for new record, showing for editing)
+					Ext.Array.each(hideablePanels, function(panel) {
+						panel = that.application.getComponent(panel);
+						if (property_id) {
+							panel.tab.show();
+						} else {
+							panel.tab.hide();
+						}
+					});
+
+					var defaultBillToField = form.findField('default_billto_property_id');
+					var defaultShipToField = form.findField('default_shipto_property_id');
+					var intPkgField = form.findField('integration_package_id');
+					// Do the following only when creating a new property
+					if (!property_id) {
+						var defaultIntPkg = intPkgField.getStore().query('universal_field_status', 2);
+						// If there's a default integration package, select it by default
+			    		if (defaultIntPkg.getCount()) {
+			    			intPkgField.setValue(defaultIntPkg.getAt(0));
+			    		}
+
+			    		var regionField = form.findField('region_id');
+						var defaultRegion = regionField.getStore().query('universal_field_status', 2);
+			    		if (defaultRegion.getCount()) {
+			    			regionField.setValue(defaultRegion.getAt(0));
+			    		}
+
+			    		var fiscalCalField = form.findField('fiscalcal_id');
+			    		fiscalCalField.getStore().load();
+			    		fiscalCalField.show();
+
+			    		intPkgField.enable();
+			    		defaultBillToField.hide();
+						defaultShipToField.hide();
+					// Do the following only when editing a property
+					} else {
+						defaultBillToField.show();
+						defaultShipToField.show();
+						intPkgField.disable();
+						form.findField('fiscalcal_id').allowBlank = true;
+						form.findField('fiscalcal_id').hide();
+
+						// Populate parameter of fiscal calendar drop-down
+						form.findField('add_fiscalcal_id').getStore()
+														  .addExtraParams({ property_id: property_id });
+
+						// Load Closing Calendars grid
+						var calGridStore = form.query('[xtype="property.fiscalcalendargrid"]')[0].getStore();
+		        		calGridStore.addExtraParams({ property_id: property_id });
+		        		calGridStore.load();
+
+		        		// Load the Unit Store
+		        		var unitGrid = form.query('[xtype="property.unitgrid"]');
+		        		if (unitGrid.length) {
+			        		var unitStore = unitGrid[0].getStore();
+			        		unitStore.addExtraParams({ property_id: property_id });
+			        		unitStore.load();
+
+			        		// Add parameters for unittype store if it's needed
+			        		if (NP.Config.getSetting('VC_isOn') == '1') {
+			        			var unitTypeStore = form.findField('unittype_id').getStore();
+			        			unitTypeStore.addExtraParams({ property_id: property_id });
+			        			unitTypeStore.load();
+
+			        			unitTypeStore = that.application.getComponent('property.unittypegrid').getStore();
+			        			unitTypeStore.addExtraParams({ property_id: property_id });
+			        			unitTypeStore.load();
+			        		}
+			        	}
+					}
+
+					// Resume layouts now that fields and tabs have been updated
+					Ext.resumeLayouts(true);
+				},
+				failure: function(response, options, deferred) {}
 			}
 		});
-
-		var defaultBillToField = form.findField('default_billto_property_id');
-		var defaultShipToField = form.findField('default_shipto_property_id');
-		// Do the following only when creating a new property
-		if (!property_id) {
-			var intPkgField = form.findField('integration_package_id');
-			var defaultIntPkg = intPkgField.getStore().query('universal_field_status', 2);
-			// If there's a default integration package, select it by default
-    		if (defaultIntPkg.getCount()) {
-    			intPkgField.setValue(defaultIntPkg.getAt(0));
-    		}
-
-    		var regionField = form.findField('region_id');
-			var defaultRegion = regionField.getStore().query('universal_field_status', 2);
-    		if (defaultRegion.getCount()) {
-    			regionField.setValue(defaultRegion.getAt(0));
-    		}
-
-    		var fiscalCalField = form.findField('fiscalcal_id');
-    		fiscalCalField.getStore().load();
-    		fiscalCalField.show();
-
-    		defaultBillToField.hide();
-			defaultShipToField.hide();
-		// Do the following only when editing a property
-		} else {
-			defaultBillToField.show();
-			defaultShipToField.show();
-			form.findField('fiscalcal_id').hide();
-		}
 	},
 
-	changeIntegrationPackage: function(combo, newVal, oldVal) {
-		var property_gls = this.application.getComponent('property.propertiesform').findField('property_gls');
-
-		// We need to clear the stores for the item selector, otherwise it'll keep adding new records to it
-		property_gls.fromField.getStore().removeAll();
-		property_gls.toField.getStore().removeAll();
-
-		// Add the integration package to the GL account store parameters
-		if (newVal !== null) {
-			property_gls.getStore().getProxy().extraParams['integration_package_id'] = newVal;
-			property_gls.getStore().load();
-		}
-	},
-
-	addFiscalCal: function() {
-		var form = this.application.getComponent('property.propertiesform');
+	addFiscalCal: function(button, e) {
+		var form = button.up('[xtype="property.propertiesform"]');
+		var property_id = form.getModel('property.Property').get('property_id');
 		var fiscalcalField = form.findField('add_fiscalcal_id');
 		// Only perform the add operation if a value is selected in the combo
 		if (fiscalcalField.getValue() !== null) {
 			// Get the record from the store
 			var rec = fiscalcalField.getStore().findRecord('fiscalcal_id', fiscalcalField.getValue());
-			// Copy the record to the grid store
-			var grid = this.application.getComponent('property.fiscalcalendargrid');
-			grid.getStore().add(rec);
 			// Remove the record from the combo store
 			fiscalcalField.getStore().remove(rec);
+			// Set the property_id on the record and clear the fiscalcal_id
+			rec.set('property_id', property_id);
+			rec.set('fiscalcal_id', null);
+			rec.set('fiscalcal_type', 'assigned');
+			// Copy the record to the grid store
+			var grid = form.down('[xtype="property.fiscalcalendargrid"]');
+			grid.getStore().add(rec);
 			// Clear the combo
 			fiscalcalField.setValue(null);
 		}
 	},
 
-	selectFiscalCalendar: function(grid, recs) {
-		var form = this.application.getComponent('property.propertiesform');
-
+	selectFiscalCalendar: function(selModel, recs) {
 		// Show the panel with the cutoff dates
-		var cutoffPanel = Ext.ComponentQuery.query('#cutoffPanel')[0];
-		cutoffPanel.show();
+		var cutoffPanel = selModel.view.up('customgrid').nextNode('[xtype="property.fiscalcalendarform"]');
 
-		// Get the cutoff days for the month
-		NP.Net.remoteCall({
-			mask: cutoffPanel,
-			requests: {
-				service     : 'PropertyService',
-				action      : 'getFiscalCalMonths',
-				fiscalcal_id: recs[0].get('fiscalcal_id'),
-				store       : 'NP.store.property.FiscalCalMonths',
-				success: function(store, deferred) {
-					// Set all the values for the cutoff days
-					for (var i=1; i<=12; i++) {
-						var field = form.findField('fiscalcalmonth_cutoff_' + i);
-						var rec = store.findRecord('fiscalcalmonth_num', i);
-						field.setValue(rec.get('fiscalcalmonth_cutoff'));
-					}
-				},
-				failure: function(response, options, deferred) {}
+		var form = cutoffPanel.getForm();
+
+		// The fiscal calendar year cannot be edited
+		form.findField('fiscalcal_year').disable();
+
+		if (recs.length) {
+			this.selectedFiscalCal = recs[0];
+			
+			form.loadRecord(this.selectedFiscalCal);
+
+			// Set all the values for the cutoff days
+			var fiscalCalMonths = recs[0].months().getRange();
+			Ext.Array.each(fiscalCalMonths, function(fiscalCalMonth) {
+				var field = form.findField('fiscalcalmonth_cutoff_' + fiscalCalMonth.get('fiscalcalmonth_num'));
+				field.setValue(fiscalCalMonth.get('fiscalcalmonth_cutoff'));
+			});
+
+			// Figure out which fields should be enabled and which should be disabled
+			this.setCalendarCutoffState(form);
+			cutoffPanel.show();
+		} else {
+			this.selectedFiscalCal = null;
+			cutoffPanel.hide();
+		}
+	},
+
+	setCalendarCutoffState: function(form) {
+		var now = new Date();
+		for (var i=1; i<=12; i++) {
+			var compareDate = new Date(form.findField('fiscalcal_year').getValue(), i-1, 1);
+			var field = form.findField('fiscalcalmonth_cutoff_' + i);
+			if (this.accountingPeriod > compareDate || (
+					this.accountingPeriod === compareDate && (
+						this.accountingPeriod.getMonth() > now.getMonth() || field.getValue() >= now.getDate()
+					)
+				)
+			) {
+				field.disable();
+			} else {
+				field.enable();
+			}
+		}
+	},
+
+	saveProperty: function(button, e) {
+		var that = this;
+
+		var form = button.up('[xtype="property.propertiesform"]');
+		
+		// Setup validation options to include some sub forms from validation
+		var validationOptions = {
+			excludedForms: ['[xtype="property.unitform"]','[xtype="property.unittypeform"]','[xtype="property.fiscalcalendarform"]']
+		};
+		if (form.isValid(validationOptions)) {
+			// Get the custom property fields to add them to the submission funtion
+			var extraFields = {};
+			Ext.Array.each(form.customFieldData, function(field) {
+				extraFields[field['customfield_name']] = field['customfield_name'];
+			});
+
+			// Add GL Assignment field
+			extraFields['property_gls'] = 'property_gls';
+
+			// Add User Assignment field
+			extraFields['property_users'] = 'property_users';
+			
+			// Default extra parameters
+			var extraParams = {
+				userprofile_id              : NP.Security.getUser().get('userprofile_id'),
+				delegation_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id')
+			}
+
+			// Add fiscal calendar info as extra params
+			extraParams['fiscalcals'] = [];
+			
+			// Get all fiscal calendars in the grid
+			var calGrid = form.down('[xtype="property.fiscalcalendargrid"]');
+			var fiscalcals = calGrid.getStore().getRange();
+
+			// Loop through all fiscal calendars
+			Ext.Array.each(fiscalcals, function(fiscalcal) {
+				// If fiscal calendar is new or was changed or if there are updated months,
+				// add to list of fiscal calendars for submission
+				if (fiscalcal.dirty || fiscalcal.months().getUpdatedRecords().length) {
+					extraParams['fiscalcals'].push(fiscalcal.getData(true));
+				}
+			});
+
+			// Add unit info as extra params
+			extraParams['units'] = [];
+			// Get all new and updated units from the grid			
+			var unitGrid = this.application.getComponent('property.unitgrid');
+			var units = unitGrid.getStore().getModifiedRecords();
+
+			// Loop through all units
+			Ext.Array.each(units, function(unit) {
+				extraParams['units'].push(unit.getData());
+			});
+
+			// Add removed units as extra params
+			extraParams['removedUnits'] = [];
+			// Get all new and updated units from the grid			
+			units = unitGrid.getStore().getRemovedRecords();
+
+			// Loop through all units
+			Ext.Array.each(units, function(unit) {
+				extraParams['removedUnits'].push(unit.getData());
+			});
+
+			// Add unit type info as extra params
+			extraParams['unitTypes'] = [];
+			// Get all new and updated units from the grid			
+			var unitTypeGrid = this.application.getComponent('property.unittypegrid');
+			var unitTypes = unitTypeGrid.getStore().getModifiedRecords();
+
+			// Loop through all unit types
+			Ext.Array.each(unitTypes, function(unitType) {
+				extraParams['unitTypes'].push(unitType.getData(true));
+			});
+
+			// Submit the form
+			form.submitWithBindings({
+				service: 'PropertyService',
+				action : 'saveProperty',
+				extraFields: extraFields,
+				extraParams: extraParams,
+				success: function(result, deferred) {
+					// Reload the fiscal calendar store if needed to get new primary keys
+					if (calGrid.getStore().getNewRecords().length) {
+						calGrid.getStore().load();
+			    	} else {
+			    		calGrid.getStore().commitChanges()
+			    	}
+
+			    	// Reload the fiscal calendar store if needed to get new primary keys
+			    	if (unitGrid.getStore().getNewRecords().length) {
+			    		unitGrid.getStore().load();
+			    	} else {
+			    		unitGrid.getStore().commitChanges()
+			    	}
+
+			    	// Reload the fiscal calendar store if needed to get new primary keys
+			    	if (unitTypeGrid.getStore().getNewRecords().length) {
+			    		unitTypeGrid.getStore().load();
+			    	} else {
+			    		unitTypeGrid.getStore().commitChanges()
+			    	}
+
+					// Show info message
+					NP.Util.showFadingWindow({ html: that.changesSavedText });
+				}
+			});
+		}
+	},
+
+	cancelCalendarCutoffs: function(button, e) {
+		button.up('[xtype="property.fiscalcalendarform"]').hide();
+		var grid = button.previousNode('[xtype="property.fiscalcalendargrid"]');
+		grid.getSelectionModel().deselectAll();
+		this.selectedFiscalCal = null;
+	},
+
+	savePropertyCalendarCutoffs: function(button, e) {
+		var form = button.up('[xtype="property.fiscalcalendarform"]');
+		var grid = form.previousNode('[xtype="property.fiscalcalendargrid"]');
+		var isValid = this.saveCalendarCutoffsToStore(grid, form);
+
+		if (isValid) {
+			this.cancelCalendarCutoffs(button);
+		} 
+	},
+
+	saveCalendarCutoffsToStore: function(grid, form) {
+		var that = this;
+
+		form = form.getForm();
+		var fiscalCal = this.selectedFiscalCal;
+		// If dealing with a new calendar, we need to create the record
+		if (fiscalCal === null) {
+			fiscalCal = Ext.create('NP.model.property.FiscalCal');
+			for (var i=1; i<=12; i++) {
+				fiscalCal.months().add({
+					fiscalcalmonth_num   : i
+				});
+			}
+		}
+		var fiscalCalMonths = fiscalCal.months().getRange();
+		var isValid = true;
+		var saveValues = {};
+		var now = new Date();
+		now = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+		var year = fiscalCal.get('fiscalcal_year');
+
+		Ext.Array.each(fiscalCalMonths, function(fiscalCalMonth) {
+			var month = fiscalCalMonth.get('fiscalcalmonth_num');
+			var field = form.findField('fiscalcalmonth_cutoff_' + month);
+			var day = field.getValue();
+
+			if (NP.Util.isValidDayOfMonth(year, month, day)) {
+				var cutoffDate = new Date(year, month-1, day);
+				if (that.accountingPeriod.getMonth() == (month-1) && that.accountingPeriod.getFullYear() == year
+					&& now > cutoffDate
+				) {
+					field.markInvalid(that.invalidDayErrorText);
+					isValid = false;
+				} else {
+					saveValues[month] = day;
+				}
+			} else {
+				field.markInvalid(that.invalidDayErrorText);
+				isValid = false;
 			}
 		});
+
+		if (isValid) {
+			fiscalCal.set({
+				fiscalcal_name: form.findField('fiscalcal_name').getValue(),
+				fiscalcal_year: form.findField('fiscalcal_year').getValue()
+			});
+
+			Ext.Array.each(fiscalCalMonths, function(fiscalCalMonth) {
+				var month = fiscalCalMonth.get('fiscalcalmonth_num');
+				fiscalCalMonth.set('fiscalcalmonth_cutoff', saveValues[month]);
+			});
+
+			if (this.selectedFiscalCal === null) {
+				grid.getStore().add(fiscalCal);
+			}
+		}
+
+		return isValid;
+	},
+
+	viewUnit: function(grid, rec, item, index, e) {
+		if (e.getTarget().className != 'x-grid-row-checker') {
+			var form = this.application.getComponent('property.unitform');
+
+			form.setTitle('Edit ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit'));
+			this.activeUnitRecord = rec;
+			form.loadRecord(this.activeUnitRecord);
+
+			if (form.isHidden()) {
+				form.show();
+			}
+		}
+	},
+
+	selectUnit: function(grid, recs) {
+		// Enable or disable the Remove Unit button
+		var grid = this.application.getComponent('property.unitgrid');
+		
+		var removeBtn = grid.query('[xtype="shared.button.delete"]')[0];
+		
+		if (recs.length) {
+			removeBtn.enable();
+		} else {
+			removeBtn.disable();
+		}
+	},
+
+	addUnit: function() {
+		var form = this.application.getComponent('property.unitform');
+		form.setTitle('Add ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit'));
+		form.getForm().reset();
+		this.activeUnitRecord = null;
+
+		if (form.isHidden()) {
+			form.show();
+		}
+	},
+
+	cancelUnitForm: function() {
+		this.application.getComponent('property.unitform').hide();
+		this.activeUnitRecord = null;
+	},
+
+	saveUnit: function() {
+		var that = this;
+
+		var form = this.application.getComponent('property.unitform');
+		
+		if (form.getForm().isValid()) {
+			var unitTypeStore = form.getForm().findField('unittype_id').getStore();
+			var data = form.getValues();
+			data['unittype_name'] = unitTypeStore.query('unittype_id', data.unittype_id).getAt(0).get('unittype_name');
+			// If dealing with a new record, we need to add it to the grid
+			if (this.activeUnitRecord === null) {
+				this.application.getComponent('property.unitgrid').getStore().add(data);
+			// Otherwise just update the existing record with new values
+			} else {
+				this.activeUnitRecord.set(data);
+			}
+
+			this.cancelUnitForm();
+		}
+	},
+
+	removeUnits: function() {
+		var grid = this.application.getComponent('property.unitgrid');
+		grid.getStore().remove(grid.getSelectionModel().getSelection());
+		this.cancelUnitForm();
+	},
+
+	viewUnitType: function(grid, rec, item, index, e) {
+		if (e.getTarget().className != 'x-grid-row-checker') {
+			var form = this.application.getComponent('property.unittypeform');
+			var mask = new Ext.LoadMask(form);
+			mask.show();
+
+			form.setTitle('Edit ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit'));
+			this.activeUnitTypeRecord = rec;
+			form.loadRecord(this.activeUnitTypeRecord);
+
+			var vals = rec.vals().getRange();
+			Ext.Array.each(vals, function(val) {
+				var fieldName = 'unittype_val_' + val.get('unittype_meas_id') + '_' + val.get('unittype_material_id');
+				form.getForm().findField(fieldName).setValue(val.get('unittype_val_val'));
+			});
+
+			var unitsField = form.getForm().findField('units');
+			var unitStore = unitsField.getStore();
+			unitStore.addExtraParams({
+				property_id: this.activePropertyRecord.get('property_id'),
+				unittype_id: rec.get('unittype_id')
+			});
+			unitStore.load(function() {
+				unitsField.setValue(rec.units().getRange());
+				mask.destroy();
+			});
+
+			if (form.isHidden()) {
+				form.show();
+			}
+		}
+	},
+
+	addUnitType: function() {
+		var form = this.application.getComponent('property.unittypeform');
+		form.setTitle('Add ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit'));
+		form.getForm().reset();
+		this.activeUnitTypeRecord = null;
+
+		var unitsField = form.getForm().findField('units');
+		var unitStore = unitsField.getStore();
+		unitStore.addExtraParams({
+			property_id: this.activePropertyRecord.get('property_id'),
+			unittype_id: null
+		});
+
+		var mask = new Ext.LoadMask(form);
+		mask.show();
+
+		unitStore.load(function() {
+			mask.destroy();
+		});
+
+		if (form.isHidden()) {
+			form.show();
+		}
+	},
+
+	cancelUnitTypeForm: function() {
+		this.application.getComponent('property.unittypeform').hide();
+		this.activeUnitTypeRecord = null;
+	},
+
+	saveUnitType: function() {
+		var that = this;
+		
+		var form = this.application.getComponent('property.unittypeform');
+		
+		if (form.getForm().isValid()) {
+			var data = form.getValues();
+			
+			// Set the values for the main unit type record
+			var rec = {
+				unittype_name        : data['unittype_name'],
+				unittype_bedrooms    : data['unittype_bedrooms'],
+				unittype_bathrooms   : data['unittype_bathrooms']
+			};
+
+			// Set the value for the UnitTypeVal hasMany association
+			var vals = Ext.getStore('property.UnitTypeMeasurements').getRange();
+			var valRecs = [];
+			Ext.Array.each(vals, function(val, idx) {
+				var fieldName = 'unittype_val_' + val.get('unittype_meas_id') + '_' + val.get('unittype_material_id');
+				valRecs.push({
+					unittype_material_id: val.get('unittype_material_id'),
+					unittype_meas_id    : val.get('unittype_meas_id'),
+					unittype_val_val    : form.getForm().findField(fieldName).getValue()
+				});
+			});
+
+			var assignedUnitStore = form.getForm().findField('units').toField.getStore();
+			
+			// If dealing with a new record, we need to add it to the grid
+			if (this.activeUnitTypeRecord === null) {
+				rec = this.application.getComponent('property.unittypegrid').getStore().add(rec);
+				rec[0].vals().add(valRecs);
+				rec[0].units().add(assignedUnitStore.getRange());
+				rec[0].set('unittype_updated_date', new Date());
+			// Otherwise just update the existing record with new values
+			} else {
+				this.activeUnitTypeRecord.set(rec);
+				Ext.Array.each(valRecs, function(valRec, idx) {
+					var val = that.activeUnitTypeRecord.vals().queryBy(function(record) {
+						if (record.get('unittype_meas_id') == valRec['unittype_meas_id'] && record.get('unittype_material_id') == valRec['unittype_material_id']) {
+							return true;
+						}
+						return false;
+					}).getAt(0);
+					val.set(valRec);
+				});
+				// We need to jump through hoops to make sure we only make the parent record dirty when needed
+				var unitStore = this.activeUnitTypeRecord.units();
+				for (var i=0; i<unitStore.getCount(); i++) {
+					var unitRec = unitStore.getAt(i);
+					if (assignedUnitStore.find('unit_id', unitRec.get('unit_id')) == -1) {
+						unitStore.removeAt(i);
+					}
+				}
+				for (i=0; i<assignedUnitStore.getCount(); i++) {
+					var unitRec = assignedUnitStore.getAt(i);
+					if (unitStore.find('unit_id', unitRec.get('unit_id')) == -1) {
+						unitStore.add(unitRec);
+					}
+				}
+
+				// If we determine we've made changes, change the updated date to make sure the parent record
+				// is dirty and gets submitted
+				if (this.activeUnitTypeRecord.dirty
+					|| this.activeUnitTypeRecord.vals().getModifiedRecords()
+					|| this.activeUnitTypeRecord.units().getModifiedRecords()) {
+					this.activeUnitTypeRecord.set('unittype_updated_date', new Date());
+				}
+			}
+
+			this.cancelUnitTypeForm();
+		}
+	},
+
+	viewUnassignedUnitTypes: function() {
+		var win = Ext.Msg.show({
+			title      : this.unassignedUniTypeTitle,
+			msg        : '',
+			width      : 300,
+			padding: 8,
+			buttons    : Ext.Msg.OK,
+			icon       : Ext.window.MessageBox.INFO
+		});
+
+		NP.lib.core.Net.remoteCall({
+			mask    : win,
+			requests: {
+				service    : 'PropertyService',
+				action     : 'getUnitsWithoutType',
+				property_id: this.activePropertyRecord.get('property_id'),
+				success: function(result, deferred) {
+					var unit_list = NP.Util.valueList(result, 'unit_number');
+					unit_list = unit_list.join(',');
+					if (unit_list == '') {
+						unit_list = 'None';
+					}
+					win.update(unit_list);
+				}
+			}
+		});
+	},
+
+	showCalendar: function() {
+		var now = new Date();
+		now = new Date(now.getFullYear(), now.getMonth(), 1);
+		this.accountingPeriod = now;
+	},
+
+	addMasterFiscalCal: function(button, e) {
+		this.selectedFiscalCal = null;
+
+		var cutoffPanel = button.up('[xtype="property.fiscalcalendarform"]');
+		cutoffPanel.getForm().reset();
+
+		var fields = cutoffPanel.getForm().getFields();
+		fields.each(function(field) { field.enable(); });
+
+		cutoffPanel.show();
+	},
+
+	saveCalendarCutoffs: function(button, e) {
+		var that = this;
+		var isNewRecord = false;
+
+		var form = button.up('[xtype="property.fiscalcalendarform"]');
+		var calGrid = form.previousNode('[xtype="property.fiscalcalendargrid"]');
+
+		var isValid = this.saveCalendarCutoffsToStore(calGrid, form);
+
+		if (isValid) {
+			var modifiedFiscalCal = this.selectedFiscalCal;
+			
+
+			if (modifiedFiscalCal === null) {
+				modifiedFiscalCal = calGrid.getStore().getNewRecords()[0];
+				isNewRecord = true;
+			}
+
+			NP.lib.core.Net.remoteCall({
+				method  : 'POST',
+				requests: {
+					service: 'PropertyService',
+					action : 'saveFiscalCal',
+					data   : modifiedFiscalCal.getData(true),
+					success: function(result, deferred) {
+						if (result.success) {
+							// Close form panel
+							that.cancelCalendarCutoffs(button);
+
+							// Only reload the grid if new records were created to easily update the primary key
+							if (isNewRecord) {
+								calGrid.getStore().load();
+							} else {
+								calGrid.getStore().commitChanges();
+							}
+
+							that.cancelCalendarCutoffs(button);
+
+							// Show info message
+							NP.Util.showFadingWindow({ html: that.changesSavedText });
+						} else {
+							if (isNewRecord) {
+								calGrid.getStore().remove(modifiedFiscalCal);
+							}
+							Ext.MessageBox.alert(that.errorDialogTitleText, result.errors[0].msg);
+						}
+					}
+				}
+			});
+		}
 	}
 });

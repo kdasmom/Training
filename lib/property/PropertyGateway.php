@@ -46,15 +46,13 @@ class PropertyGateway  extends AbstractGateway {
 
 		$select->joinIntegrationPackage(array('integration_package_name'))
 				->joinRegion(array('region_name'))
-				->joinCreatedByUser(array('created_by_userprofile_username'=>'userprofile_username'))
+				->joinCreatedByUser(array('created_by_userprofile_id'=>'userprofile_id', 'created_by_userprofile_username'=>'userprofile_username'))
 				->joinCreatedByPerson(array(
-					'created_by_person_id'        =>'person_id',
 					'created_by_person_firstname' =>'person_firstname',
 					'created_by_person_lastname'  =>'person_lastname'
 				))
-				->joinUpdatedByUser(array('last_updated_by_userprofile_username'=>'userprofile_username'))
+				->joinUpdatedByUser(array('last_updated_by_userprofile_id'=>'userprofile_id', 'last_updated_by_userprofile_username'=>'userprofile_username'))
 				->joinUpdatedByPerson(array(
-					'last_updated_by_person_id'        =>'person_id',
 					'last_updated_by_person_firstname' =>'person_firstname',
 					'last_updated_by_person_lastname'  =>'person_lastname'
 				))
@@ -112,7 +110,7 @@ class PropertyGateway  extends AbstractGateway {
 		return $this->adapter->query($select, $params);
 	}
 	
-	public function getBillToShipToProperties($type) {
+	public function getBillToShipToProperties($type, $property_id) {
 		$type = strtolower($type);
 
 		$validTypes = array('bill','ship');
@@ -128,13 +126,16 @@ class PropertyGateway  extends AbstractGateway {
 					'property_name'
 				))
 				->from('property')
+				->whereOr()
+				->whereEquals('property_id', '?')
+				->whereNest()
 				->whereIn('property_status', '?,?')
 				->whereNest('OR')
 				->whereEquals("property_option{$type}Address", 1)
 				->whereIsNull("property_option{$type}Address")
 				->order('property_name');
 
-		return $this->adapter->query($select, array(1,-1));
+		return $this->adapter->query($select, array($property_id, 1,-1));
 	}
 
 	/**

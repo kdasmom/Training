@@ -10,7 +10,6 @@ class AddressEntity extends \NP\core\AbstractEntity {
 	
 	protected $fields = array(
 		'address_id'	 => array(
-			'required' => true,
 			'validation' => array(
 				'digits' => array()
 			)
@@ -77,7 +76,7 @@ class AddressEntity extends \NP\core\AbstractEntity {
 		),
 		'address_country'	 => array(
 			'validation' => array(
-				'stringLength' => array('max'=>100)
+				'digits' => array()
 			)
 		),
 		'address_id_alt'	 => array(

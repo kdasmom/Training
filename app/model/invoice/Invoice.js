@@ -4,7 +4,7 @@
  * @author Thomas Messier
  */
 Ext.define('NP.model.invoice.Invoice', {
-    extend: 'NP.lib.data.Model',
+    extend: 'Ext.data.Model',
     
     requires: ['NP.lib.core.Config'],
     

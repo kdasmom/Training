@@ -117,7 +117,7 @@ Ext.define('{$extNameSpace}.{$extClassName}', {
 		$hasValidation = false;
 		$validation = "";
 		$dataType = $col['DATA_TYPE'];
-		if ($dataType == 'int') {
+		if ($dataType == 'int' || $dataType == 'smallint' || $dataType == 'tinyint') {
 			$validation .= "
 				'digits' => array()";
 			$ext .= ", type: 'int'";

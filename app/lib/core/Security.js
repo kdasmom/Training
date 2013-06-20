@@ -48,11 +48,7 @@ Ext.define('NP.lib.core.Security', function() {
 		action: 'getPermissions',
 		success: function(result) {
 			// Save permissions
-			var modules = result.split(',');
-			permissions = {};
-			for (var i=0; i<modules.length; i++) {
-				permissions[modules[i]] = true;
-			}
+			permissions = result;
 		},
 		failure: function() {
 			Ext.log('Could not load permissions')

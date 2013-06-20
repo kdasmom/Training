@@ -11,7 +11,22 @@ use NP\core\db\Update;
  * @author Thomas Messier
  */
 class UserprofileGateway extends AbstractGateway {
-	
+	protected $tableAlias = 'u';
+
+	/**
+	 * Override to retrieve more by default
+	 */
+	public function getSelect() {
+		$select = new sql\UserprofileSelect();
+		$select->columnsAll()
+				->joinUserprofilerole(null)
+				->joinRole(null)
+				->joinStaff(null)
+				->joinPerson(null);
+
+		return $select;
+	}
+
 	/**
 	 * @param  string  $username 
 	 * @param  string  $pwd      
@@ -43,31 +58,7 @@ class UserprofileGateway extends AbstractGateway {
 	 */
 	public function findProfileById($userprofile_id) {
 		$select = new sql\UserprofileSelect();
-		$cols = array(
-			'userprofile_id',
-			'asp_client_id',
-			'userprofile_username',
-			'userprofile_status',
-			'userprofile_session',
-			'oracle_authentication',
-			'userprofile_startdate',
-			'userprofile_enddate',
-			'userprofile_preferred_property',
-			'userprofile_default_dashboard',
-			'userprofile_splitscreen_size',
-			'userprofile_splitscreen_ishorizontal',
-			'userprofile_splitscreen_imageorder',
-			'userprofile_splitscreen_loadwithoutimage',
-			'userprofile_preferred_region',
-			'userprofile_updated_by',
-			'userprofile_updated_datetm'
-		);
-		for ($i=1;$i<=6;$i++) {
-			$cols[] = "security_question{$i}";
-			$cols[] = "security_answer{$i}";
-		}
-		
-		$select->columns($cols)
+		$select->columnsAll()
 				->joinUserprofilerole(null)
 				->joinRole(null)
 				->joinStaff(null)

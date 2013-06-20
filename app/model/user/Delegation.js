@@ -1,10 +1,10 @@
 /**
  * Model for a Delegation
  *
- * @author 
+ * @author Thomas Messier
  */
 Ext.define('NP.model.user.Delegation', {
-    extend: 'NP.lib.data.Model',
+    extend: 'Ext.data.Model',
     
     requires: ['NP.lib.core.Config','NP.lib.core.Security'],
 

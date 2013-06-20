@@ -10,12 +10,19 @@ Ext.define('NP.lib.ui.ComboBox', {
 	/**
 	 * @cfg {"normal"/"autocomplete"} type              The type of ComboBox; can be set to either "normal" or "autocomplete"; defaults to "normal"
 	 */
+	type: 'normal',
 	/**
-	 * @cfg {boolean}                 addBlankRecord    Set to true if you want a blank record to be added as the first record of this combo box's store
+	 * @cfg {Boolean}                 addBlankRecord    Set to true if you want a blank record to be added as the first record of this combo box's store
 	 */
+	addBlankRecord: false,
 	/**
-	 * @cfg {boolean}                 selectFirstRecord Set to true if you want the first record of the store to be selected by default
+	 * @cfg {Boolean}                 selectFirstRecord Set to true if you want the first record of the store to be selected by default
 	 */
+	selectFirstRecord: false,
+	/**
+	 * @cfg {Boolean}                 loadStoreOnFirstQuery Set to true if you want the store to run its load method the first time a query is run on the combo
+	 */
+	loadStoreOnFirstQuery: false,
 	/**
 	 * @cfg {Array}                   dependentCombos   An array of IDs for combo boxes that depend on this combo; when the value of this combo is changed, the valueField will be added as a parameter to the proxy of the dependent combos specified and reload their stores
 	 */
@@ -30,7 +37,6 @@ Ext.define('NP.lib.ui.ComboBox', {
 			type          : 'normal',
 			forceSelection: true,
 			tpl           : new Ext.XTemplate('<tpl for=".">' + '<li class="x-boundlist-item" role="option">' + '{'+cfg.displayField+'}' + '</li></tpl>'),
-			listeners     : {},
 			addBlankRecord: false
 		});
 
@@ -58,41 +64,50 @@ Ext.define('NP.lib.ui.ComboBox', {
 		this.callParent(arguments);
 
 		// Add keyup listener so that value can be cleared
-		this.addListener('keyup', function(combo) {
+		this.on('keyup', function(combo) {
 			var val = combo.getRawValue();
 			if (val === '' || val === null) {
 				combo.clearValue();
 			}
 		});
 
-		// If type is autocomplete
-		if (this.type == 'autocomplete') {
-			this.addListener('beforerender', function(combo) {
-				if ('defaultRec' in combo) {
-					// Add the current value to the store, otherwise you have an empty store
-					combo.getStore().add(combo.defaultRec);
-					
-					// Suspend events briefly to prevent change events from firing
-					combo.suspendEvents(false);
-					// Set the current value
-					combo.setValue( combo.defaultRec[combo.valueField] );
-					// Re-enable events
-					combo.resumeEvents();
-				}
+		// Run a few things before rendering if the options are set
+		this.on('beforerender', function(combo) {
+			if ('defaultRec' in combo) {
+				// Add the current value to the store, otherwise you have an empty store
+				combo.getStore().add(combo.defaultRec);
 				
-				if ('extraParams' in combo) {
-					var proxy = combo.getStore().getProxy();
-					Ext.apply(proxy.extraParams, combo.extraParams);
-				}
-			});
+				// Suspend events briefly to prevent change events from firing
+				combo.suspendEvents(false);
+				// Set the current value
+				combo.setValue( combo.defaultRec[combo.valueField] );
+				// Re-enable events
+				combo.resumeEvents();
+			}
+			
+			if ('extraParams' in combo) {
+				var proxy = combo.getStore().getProxy();
+				Ext.apply(proxy.extraParams, combo.extraParams);
+			}
+		});
+
+		// If type is normal only
+		if (this.type == 'normal') {
+			// If loadStoreOnFirstQuery is true, set a listener on beforequery to load a store only the first time the
+			// user tries to expand the field or types text for autocomplete
+			if (this.loadStoreOnFirstQuery) {
+				this.on('beforequery', function() {
+					this.getStore().load();
+				}, this, { single: true });
+			}
 		}
 
 		// If addBlankRecord is true, add a blank record at the beginning of the store to make it easy for the user to select
 		// a blank value
 		if (this.addBlankRecord) {
-			this.addListener('beforerender', function(combo) {
+			this.on('beforerender', function(combo) {
 				// Add a blank record to the store
-				combo.getStore().addListener('load', function(store) {
+				combo.getStore().on('load', function(store) {
 					var rec = {};
 					rec[combo.displayField] = '';
 					rec[combo.valueField] = '';
@@ -116,21 +131,21 @@ Ext.define('NP.lib.ui.ComboBox', {
 				}
 			}
 
-			this.addListener('beforerender', function(combo) {
-				combo.getStore().addListener('load', function(store) {
+			this.on('beforerender', function(combo) {
+				combo.getStore().on('load', function(store) {
 					var val = combo.getValue();
 					selectFirstRec(combo, this.valueField, val);
 				});
 			});
 
-			this.addListener('afterrender', function(combo) {
+			this.on('afterrender', function(combo) {
 				selectFirstRec(combo, this.valueField, this.value);
 			});
 		}
 
 		// If dependent combos are specified, add a select event to update them when the value of their parent combo is changed
 		if (this.dependentCombos) {
-			this.addListener('select', function(combo, recs) {
+			this.on('select', function(combo, recs) {
 				for (var i=0; i<this.dependentCombos.length; i++) {
 					var combo = Ext.ComponentQuery.query('#'+this.dependentCombos[i]);
 					if (combo.length) {

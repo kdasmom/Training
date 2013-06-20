@@ -1,12 +1,16 @@
 /**
  * Model for a Userprofile
  *
- * @author 
+ * @author Thomas Messier
  */
 Ext.define('NP.model.user.Userprofile', {
-    extend: 'NP.lib.data.Model',
+    extend: 'Ext.data.Model',
     
-    requires: ['NP.lib.core.Config'],
+    requires: [
+        'NP.lib.core.Config',
+        'NP.model.user.Userprofilerole',
+        'NP.lib.data.JsonFlat'
+    ],
 
     idProperty: 'userprofile_id',
     fields: [
@@ -40,6 +44,18 @@ Ext.define('NP.model.user.Userprofile', {
         { name: 'security_answer5' },
         { name: 'security_question6', type: 'int' },
         { name: 'security_answer6' }
+    ],
+
+    associations: [
+        {
+            type      : 'hasOne',
+            model     : 'NP.model.user.Userprofilerole',
+            name      : 'userprofilerole',
+            getterName: 'getUserprofilerole',
+            foreignKey: 'userprofile_id',
+            primaryKey: 'userprofile_id',
+            reader    : 'jsonflat'
+        }
     ],
 
     validations: [
