@@ -147,14 +147,16 @@ abstract class AbstractGateway {
 	/**
 	 * Utility function to retrieve records based on criteria
 	 * 
-	 * @param  NP\core\db\Where|string|array $where   The criteria by which to filter records
-	 * @param  array                         $params  Parameters to bind to the query (optional)
-	 * @param  string|array                  $order   Ordering of the records (optional)
-	 * @param  array                         $columns Columns to retrieve (optional)
-	 * @param  NP\core\db\Select             $select  A custom Select object to use (optional)
-	 * @return array                                  A positional array filled with associative arrays of each record found
+	 * @param  NP\core\db\Where|string|array $where    The criteria by which to filter records
+	 * @param  array                         $params   Parameters to bind to the query (optional)
+	 * @param  string|array                  $order    Ordering of the records (optional)
+	 * @param  array                         $columns  Columns to retrieve (optional)
+	 * @param  int                           $pageSize The number of records per page; if null, all records are returned
+	 * @param  int                           $page     The page for which to return records
+	 * @param  NP\core\db\Select             $select   A custom Select object to use (optional)
+	 * @return array                                   A positional array filled with associative arrays of each record found
 	 */
-	public function find($where=null, $params=array(), $order=null,  $cols=null, $select=null) {
+	public function find($where=null, $params=array(), $order=null,  $cols=null, $pageSize=null, $page=null, $select=null) {
 		// Allow for passing a custom select just in case
 		if ($select === null) {
 			$select = $this->getSelect();
@@ -172,9 +174,12 @@ abstract class AbstractGateway {
 			$select->order($order);
 		}
 		
-		$res = $this->adapter->query($select, $params);
-		
-		return $res;
+		// If paging is needed
+		if ($pageSize !== null) {
+			return $this->getPagingArray($select, $params, $pageSize, $page);
+		} else {
+			return $this->adapter->query($select, $params);
+		}
 	}
 	
 	/**

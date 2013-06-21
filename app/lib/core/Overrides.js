@@ -293,6 +293,7 @@ Ext.define('NP.lib.core.Overrides', function() {
 	});
 
 	return {
-		singleton: true
+		singleton: true,
+		requires : ['NP.lib.ui.VerticalTabPanel']
 	}
 });

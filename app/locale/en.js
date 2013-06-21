@@ -497,10 +497,8 @@ Ext.define('NP.locale.en.view.invoice.grid.RegisterVoid', {
 });
 
 /**
- * ADMIN SECTION
+ * MY SETTINGS SECTION
  */
-
-// My Settings
 Ext.define('NP.locale.en.controller.MySettings', {
 	override: 'NP.controller.MySettings',
 
@@ -577,6 +575,38 @@ Ext.define('NP.locale.en.view.mySettings.UserDelegationForm', {
     delegPropertiesEmptyText: 'Select ' + NP.Config.getSetting('PN.Main.PropertiesLabel') + '...'
 });
 
+
+/**
+ * MESSAGE CENTER SECTION
+ */
+ Ext.define('NP.locale.en.controller.MessageCenter', {
+	override: 'NP.controller.MessageCenter',
+	
+	saveSuccessText      : 'Your changes were saved.',
+	deleteDialogTitleText: 'Delete Message?',
+	deleteDialogText     : 'Are you sure you want to delete this message?',
+	deleteSuccessText    : 'Message succesfully deleted',
+	deleteFailureText    : 'There was an error deleting the message. Please try again.',
+	errorDialogTitleText : 'Error'
+});
+
+ Ext.define('NP.locale.en.view.messageCenter.MessageForm', {
+	override: 'NP.view.messageCenter.MessageForm',
+	
+	title                 : 'Message',
+	typeFieldLabel        : 'Message Type',
+	titleFieldLabel       : 'Title of Message',
+	messageFieldLabel     : 'Message',
+	sentFieldLabel        : 'Sent Date',
+	displayUntilFieldLabel: 'Display Until Date',
+	messageForFieldLabel  : 'Message For',
+	userUnassignedText    : 'Users',
+	userAssignedText      : 'Users to Send To',
+	groupUnassignedText   : 'Groups',
+	groupAssignedText     : 'Groups to Send To',
+	pastErrorText         : 'cannot be in the past',
+	laterThanErrorText    : 'must be a later date than'
+});
 
 /**
  * PROPERTY SETUP SECTION

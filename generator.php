@@ -41,32 +41,14 @@ class {$docTable}Gateway extends AbstractGateway {}
 ?>";
 	
 	$extStore = "/**
- * Store for {$docTable}s. This store uses the {$docTable} fields from the model and adds onto them, allowing to use
- * different fields that come from joining tables to {$docTable}.
+ * Store for {$docTable}s.
  *
  * @author 
  */
 Ext.define('{$extStoreNameSpace}.{$extClassName}s', {
     extend: 'NP.lib.data.Store',
 	
-    requires: ['{$extNameSpace}.{$extClassName}'],
-
-    constructor: function(cfg) {
-    	var that = this;
-    	
-    	Ext.apply(this, cfg);
-
-    	this.fields = [];
-    	Ext.Array.each({$extNameSpace}.{$extClassName}.getFields(), function(field) {
-            that.fields.push({
-                name: field.name,
-                type: field.type.type,
-                dateFormat: field.dateFormat
-            });
-        });
-
-    	this.callParent(arguments);
-    }    
+	model: '{$extNameSpace}.{$extClassName}'    
 });";
 
 	$php = "<?php
@@ -87,7 +69,7 @@ class {$className} extends \NP\core\AbstractEntity {
  * @author 
  */
 Ext.define('{$extNameSpace}.{$extClassName}', {
-	extend: 'NP.lib.data.Model',
+	extend: 'Ext.data.Model',
 	
 	requires: ['NP.lib.core.Config'],
 

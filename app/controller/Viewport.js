@@ -46,6 +46,13 @@ Ext.define('NP.controller.Viewport', {
 				}
 			},
 
+			// Clicking on the Administration > Message Center menu
+			'#messageCenterMenuBtn': {
+				click: function() {
+					this.application.addHistory('MessageCenter:showRegister');
+				}
+			},
+
 			// Clicking on the Administration > My Settings menu
 			'#propertySetupMenuBtn': {
 				click: function() {

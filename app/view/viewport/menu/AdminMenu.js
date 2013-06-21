@@ -54,6 +54,7 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 		// Message Center
 		if ( NP.lib.core.Security.hasPermission(6091) ) {
 			this.menu.items.push({
+				itemId: 'messageCenterMenuBtn',
 				text: this.messageText
 			});
 		}

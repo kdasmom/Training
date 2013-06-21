@@ -496,6 +496,15 @@ class UserService extends AbstractService {
 			));
 		}
 	}
+
+	/**
+	 * Gets roles
+	 *
+	 * @return array
+	 */
+	public function getRoles() {
+		return $this->roleGateway->find(null, array(), 'role_name');
+	}
 }
 
 ?>

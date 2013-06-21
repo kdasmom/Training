@@ -69,8 +69,10 @@ Ext.define('NP.lib.ui.BoundForm', {
 
 		// Only run ajax event if service/action has been provided, otherwise just bind the models
 		if (!this.bind.service) {
-			// Copy the model data to the form fields
-			this.updateBoundFields();
+			this.on('afterrender', function() {
+				// Copy the model data to the form fields
+				that.updateBoundFields();
+			});
 		} else {
 			// Do the data binding once the form has been shown
 			this.on(this.bind.evt, function() {
@@ -325,7 +327,8 @@ Ext.define('NP.lib.ui.BoundForm', {
 				if (field.getXType() == 'filefield') {
 					fileFields.push(field);
 				} else {
-					data[key] = field.getValue();
+					var fieldVal = (field.getGroupValue) ? field.getGroupValue() : field.getValue();
+					data[key] = fieldVal;
 				}
 			}
 		});
