@@ -19,10 +19,18 @@ Ext.define('NP.controller.Viewport', {
 
 		// Define event handlers
 		this.control({
-			// Clicking on the NexusPayables logo
 			'viewport': {
-				npLogoClicked: function() {
+				// Clicking on the NexusPayables logo
+				nplogoclicked: function() {
 					this.application.addHistory('Viewport:home');
+				},
+				// Clicking on the Home link in the header top right
+				nphomelinkclick: function() {
+					this.application.addHistory('Viewport:home');
+				},
+				// Clicking on the Logout link in the header top right
+				nplogoutlink: function() {
+					NP.Security.logout(function() { window.location = 'login.php'; });
 				}
 			},
 

@@ -1,3 +1,9 @@
+/* STYLES FOR PAGE HEADER */
+#npHeaderLogo { cursor: pointer; }
+#learningNexusImg { margin-right: 8px; cursor: pointer; }
+#npHeaderRightLinks, #npHeaderRightLinks a { color: #FFFFFF; text-decoration: none; }
+#npHeaderRightWelcomeText { margin-top: 8px; color: #9FCCFA; font-style:italic; }
+
 /* BUTTONS */
 .save-btn { background-image: url("../images/buttons/save.gif"); }
 .save-and-add-btn { background-image: url("../images/buttons/save_and_add.gif"); }

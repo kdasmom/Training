@@ -23,6 +23,12 @@ Ext.define('NP.view.viewport.TopMenu', {
 
     itemId: 'viewportTopMenu',
 
+    height: 29,
+
+    style: {
+    	background: 'url(resources/images/menu-bar-gradient.gif) repeat-x'
+    },
+
     initComponent: function() {
     	var section, subSection;
 
@@ -33,14 +39,14 @@ Ext.define('NP.view.viewport.TopMenu', {
 			this.items.push({
 				xtype: 'viewport.menu.vcmenu',
 				itemId: 'vcMenuBtn'
-			});
+			}, '-');
 	    }
 	    
 	    // Purchase Orders
 		if ( NP.lib.core.Config.getSetting('PN.POOptions.POSwitch') == 1 && NP.lib.core.Security.hasPermission(1026) ) {
 			this.items.push({
 				xtype: 'viewport.menu.pomenu'
-			});
+			}, '-');
 		}
 	    
 	    // Invoice
@@ -48,7 +54,7 @@ Ext.define('NP.view.viewport.TopMenu', {
 	    	this.items.push({
 				xtype: 'viewport.menu.invoicemenu',
 				itemId: 'invMenuBtn'
-			});
+			}, '-');
 		}
 		
 		// Vendors
@@ -56,7 +62,7 @@ Ext.define('NP.view.viewport.TopMenu', {
 			this.items.push({
 				xtype: 'viewport.menu.vendormenu',
 				itemId: 'vendorMenuBtn'
-			});
+			}, '-');
 	    }
 		
 		// Image Management
@@ -65,7 +71,7 @@ Ext.define('NP.view.viewport.TopMenu', {
 			this.items.push({
 				xtype: 'viewport.menu.imagemenu',
 				itemId: 'imageMenuBtn'
-			});
+			}, '-');
 	    }
 		
 		// Budgets
@@ -73,7 +79,7 @@ Ext.define('NP.view.viewport.TopMenu', {
 			this.items.push({
 				xtype: 'viewport.menu.budgetmenu',
 				itemId: 'budgetMenuBtn'
-			});
+			}, '-');
 	    }
 		
 		// Reports
@@ -81,7 +87,7 @@ Ext.define('NP.view.viewport.TopMenu', {
 			this.items.push({
 				xtype: 'viewport.menu.reportmenu',
 				itemId: 'reportMenuBtn'
-			});
+			}, '-');
 	    }
 		
 		// Administration

@@ -16,6 +16,9 @@ Ext.define('NP.view.viewport.DelegationPicker', {
 
     signedOnText: 'You are signed on as',
 
+    style    : 'background-color: transparent; float:right;',
+    bodyStyle: 'background-color: transparent; color: #9FCCFA; font-style: italic',
+
     initComponent: function() {
         var that = this;
         this.items = [];

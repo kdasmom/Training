@@ -198,11 +198,11 @@ Ext.define('NP.lib.core.Security', function() {
 		 * @return {Deft.Promise}
 		 */
 		logout: function(callback) {
-			return NP.lib.core.Net.remoteCall({
+			return NP.Net.remoteCall({
 				requests: { 
 					service: 'SecurityService', 
 					action: 'logout',
-					success: function(result) {
+					success: function(result, deferred) {
 						permissions = null;
 						deferred.resolve(result);
 						if (callback) {

@@ -26,10 +26,7 @@ Ext.define('NP.view.Viewport', {
 		this.items = {
 	    	xtype: 'panel',
 	    	region: 'center',
-	    	dockedItems: {
-			    xtype: 'viewport.topmenu'
-			},
-			layout: {
+	    	layout: {
 	            type: 'vbox',
 	            align: 'stretch'
 	       	},
@@ -37,18 +34,40 @@ Ext.define('NP.view.Viewport', {
 	       	items: [
 	       		// This displays the NP logo at the top, right below the menu
 		       	{
-			        xtype: 'panel',
-			        height: 51,
-			        border: 0,
-			        html: '<img id="npLogo" src="resources/images/payables-top.gif" />',
-			        bodyStyle: {
-			        	background: 'url(resources/images/headerspacer.gif) repeat-x'
-			        }
+			        xtype: 'container',
+			        height: 53,
+			        layout: {
+			            type: 'hbox',
+			            align: 'stretch'
+			       	},
+			       	items: [
+			       		{ xtype: 'component', html: '<img id="npHeaderLogo" src="resources/images/payables-top.jpg" />' },
+			       		{
+			       			xtype: 'container',
+			       			style: {
+					        	backgroundColor: '#1E244D'
+					        },
+					        flex: 1,
+					        padding: '10 12 0 0',
+					        items: [
+					        	{
+					        		xtype: 'component',
+					        		html: '<div align="right" id="npHeaderRight">' +
+						        			'<img id="learningNexusImg" src="resources/images/learningnexus.gif" align="top" />' +
+						        			'<span id="npHeaderRightLinks">' + 
+						        				'<a href="javascript:void(0)" id="npHomeLink">Home</a>' + ' | ' + 
+						        				'<a href="javascript:void(0);" id="npHelpLink">Help</a>' + ' | ' + 
+						        				'<a href="javascript:void(0);" id="npLogoutLink">Logout</a>' + 
+						        			'</span>' +
+						        		'</div>'
+					        	},
+					        	{ xtype: 'viewport.delegationpicker' }
+					        ]
+					    }
+			       	]
 			    },
-			    // This displays the toolbar right below the image
 			    {
-			    	xtype: 'viewport.toptoolbar',
-			    	itemId: 'viewportTopToolbar'
+			    	xtype: 'viewport.topmenu'
 			    },
 			    // This is the main content panel where all other things get loaded
 			    {
@@ -67,16 +86,48 @@ Ext.define('NP.view.Viewport', {
 	    };
 	    
 	    // Add custom event for clicking on the NP logo
-	    this.addEvents('npLogoClicked');
+	    this.addEvents('nplogoclicked','nphomelinkclick','nphelplink','nplogoutlink');
 
 	    // Add a listener for clicking on the NP logo so our controller can subscribe to it
 	    this.addListener('afterrender', function() {
-	    	that.mon(Ext.get('npLogo'), 'click', function() {
+	    	that.mon(Ext.get('npHeaderLogo'), 'click', function() {
 	    		/**
-		         * @event npLogoClicked
+		         * @event nplogoclicked
 				 * Fires whenever the NP logo is clicked
 		         */
-	    		that.fireEvent('npLogoClicked');
+	    		that.fireEvent('nplogoclicked');
+			});
+
+			that.mon(Ext.get('npHomeLink'), 'click', function() {
+				/**
+		         * @event nphomelinkclick
+				 * Fires whenever the NP Home link is clicked
+		         */
+	    		that.fireEvent('nphomelinkclick');
+			});
+
+			that.mon(Ext.get('npHelpLink'), 'click', function() {
+				/**
+		         * @event nphelplink
+				 * Fires whenever the NP Help link is clicked
+		         */
+	    		that.fireEvent('nphelplink');
+			});
+
+			that.mon(Ext.get('npLogoutLink'), 'click', function() {
+				/**
+		         * @event nplogoutlink
+				 * Fires whenever the NP Logout link is clicked
+		         */
+	    		that.fireEvent('nplogoutlink');
+			});
+
+			that.mon(Ext.get('learningNexusImg'), 'click', function() {
+				/**
+		         * @event learningnexusimgclick
+				 * Fires whenever the LearningNexus image is clicked
+		         */
+	    		that.fireEvent('learningnexusimgclick');
 			});
 	    });
 
