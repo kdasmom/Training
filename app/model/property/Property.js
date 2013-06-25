@@ -8,6 +8,7 @@ Ext.define('NP.model.property.Property', {
     
     requires: [
         'NP.lib.core.Config',
+        'NP.model.system.IntegrationPackage',
         'NP.model.property.Region',
         'NP.model.user.Userprofile',
         'NP.lib.data.JsonFlat'
@@ -53,6 +54,14 @@ Ext.define('NP.model.property.Property', {
     ],
 
     belongsTo: [
+        {
+            model         : 'NP.model.system.IntegrationPackage',
+            name          : 'integrationPackage',
+            getterName    : 'getIntegrationPackage',
+            foreignKey    : 'integration_package_id',
+            primaryKey    : 'integration_package_id',
+            reader        : 'jsonflat'
+        },
         {
             model         : 'NP.model.property.Region',
             name          : 'region',

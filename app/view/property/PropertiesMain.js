@@ -14,9 +14,7 @@ Ext.define('NP.view.property.PropertiesMain', {
     	'NP.view.shared.button.Inactivate',
     	'NP.view.shared.button.New',
     	'NP.view.shared.button.Hourglass',
-        'NP.view.shared.gridcol.IntegrationPackageName',
         'NP.view.property.gridcol.Code',
-        'NP.view.property.gridcol.CreatedBy',
         'NP.view.property.gridcol.CreatedDate',
         'NP.view.property.gridcol.LastUpdated',
         'NP.view.property.gridcol.PropertyName',
@@ -52,7 +50,14 @@ Ext.define('NP.view.property.PropertiesMain', {
             }),
             columns : [
                 { xtype: 'property.gridcol.propertyname', flex: 2 },
-                { xtype: 'shared.gridcol.integrationpackagename', flex: 1 },
+                {
+                    text: 'Integration Package',
+                    dataIndex: 'integration_package_name',
+                    flex: 1,
+                    renderer: function(val, meta, rec) {
+                        return rec.getIntegrationPackage().get('integration_package_name');
+                    }
+                },
                 { xtype: 'templatecolumn', text: NP.Config.getSetting('PN.main.RegionLabel', 'Region'), tpl: '{region.region_name}', flex: 1.5 },
                 { xtype: 'property.gridcol.code', flex: 1 },
                 { xtype: 'property.gridcol.totalunits', flex: 1 },
