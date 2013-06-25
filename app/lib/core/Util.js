@@ -225,6 +225,6 @@ Ext.define('NP.lib.core.Util', {
 	 * @return {String}            The name of the field that's the primary key for the model
 	 */
 	getIdProperty: function(modelClass) {
-		return Ext.ClassManager.get('NP.model.' + modelClass).getFields()[1].name;
+		return Ext.ClassManager.get('NP.model.' + modelClass).getFields()[0].name;
 	}
 });

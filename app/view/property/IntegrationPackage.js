@@ -19,7 +19,7 @@ Ext.define('NP.view.property.IntegrationPackage', {
     			{ text: 'Name', dataIndex: 'integration_package_name', flex: 1 },
     			{ text: 'Data Source', dataIndex: 'integration_package_datasource', flex: 1 }
     		],
-    		store: Ext.create('NP.store.system.IntegrationPackages'),
+    		store: 'system.IntegrationPackages',
     		flex: 1
     	});
 

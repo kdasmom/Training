@@ -4,7 +4,7 @@
  * @author Thomas Messier
  */
 Ext.define('NP.controller.Invoice', {
-	extend: 'Ext.app.Controller',
+	extend: 'NP.lib.core.AbstractController',
 	
 	requires: ['NP.lib.core.Config'],
 	
@@ -24,13 +24,13 @@ Ext.define('NP.controller.Invoice', {
 					
 					var activeTab = newCard.getXType().split('.');
 					activeTab = activeTab[activeTab.length-1].replace('register', '');
-					this.application.addHistory('Invoice:showRegister:' + activeTab);
+					this.addHistory('Invoice:showRegister:' + activeTab);
 				}
 			},
 			// Clicking on an invoice in an Invoice Register grid
 			'[xtype="invoice.register"] tabpanel > grid': {
 				itemclick: function(gridView, record, item, index, e, eOpts) {
-					this.application.addHistory( 'Invoice:showView:' + record.get('invoice_id') );
+					this.addHistory( 'Invoice:showView:' + record.get('invoice_id') );
 				}
 			},
 			// Making a change to the context picker (picking from drop-down or clicking radio button)
@@ -70,7 +70,7 @@ Ext.define('NP.controller.Invoice', {
 	 */
 	showRegister: function(activeTab) {
 		// Set the register view
-		this.application.setView('NP.view.invoice.Register');
+		this.setView('NP.view.invoice.Register');
 
 		// If no active tab is passed, default to Open
 		if (!activeTab) var activeTab = 'open';
@@ -95,6 +95,6 @@ Ext.define('NP.controller.Invoice', {
 	showView: function(invoice_id) {
 		Ext.log('Invoice.showView('+invoice_id+') running');
 		
-		this.application.setView('NP.view.invoice.View');
+		this.setView('NP.view.invoice.View');
 	}
 });

@@ -4,7 +4,7 @@
  * @author Thomas Messier
  */
 Ext.define('NP.controller.PropertySetup', {
-	extend: 'Ext.app.Controller',
+	extend: 'NP.lib.core.AbstractController',
 	
 	requires: [
 		'NP.lib.core.Config',
@@ -45,7 +45,7 @@ Ext.define('NP.controller.PropertySetup', {
 					Ext.log('PropertySetup onTabChange() running');
 					
 					var activeTab = Ext.getClassName(newCard).split('.').pop();
-					this.application.addHistory('PropertySetup:showPropertySetup:' + activeTab);
+					this.addHistory('PropertySetup:showPropertySetup:' + activeTab);
 				}
 			},
 			// The Properties grid
@@ -72,7 +72,7 @@ Ext.define('NP.controller.PropertySetup', {
 			// The Create New Property button
 			'[xtype="property.propertiesmain"] [xtype="shared.button.new"]': {
 				click: function() {
-					this.application.addHistory('PropertySetup:showPropertySetup:Properties:Form');
+					this.addHistory('PropertySetup:showPropertySetup:Properties:Form');
 				}
 			},
 			// The add fiscal calendar button
@@ -87,7 +87,7 @@ Ext.define('NP.controller.PropertySetup', {
 			'#propertyCancelBtn': {
 				click: function() {
 					this.activePropertyRecord = null;
-					this.application.addHistory('PropertySetup:showPropertySetup:Properties:Main');
+					this.addHistory('PropertySetup:showPropertySetup:Properties:Main');
 				}
 			},
 			// The save button on the property form
@@ -164,13 +164,13 @@ Ext.define('NP.controller.PropertySetup', {
 		var that = this;
 
 		// Set the MySettings view
-		var tabPanel = that.application.setView('NP.view.property.Main');
+		var tabPanel = that.setView('NP.view.property.Main');
 
 		// If no active tab is passed, default to Open
 		if (!activeTab) activeTab = 'Overview';
 		
 		// Check if the tab to be selected is already active, if it isn't make it the active tab
-		var tab = that.application.getComponent('property.' + activeTab.toLowerCase());
+		var tab = that.getCmp('property.' + activeTab.toLowerCase());
 		
 		// Set the active tab if it hasn't been set yet
 		if (tab.getXType() != tabPanel.getActiveTab().getXType()) {
@@ -194,14 +194,14 @@ Ext.define('NP.controller.PropertySetup', {
 	},
 
 	showPropertiesMain: function() {
-		this.application.setView('NP.view.property.PropertiesMain', {}, '[xtype="property.properties"]');
+		this.setView('NP.view.property.PropertiesMain', {}, '[xtype="property.properties"]');
 
 		this.changePropertyStatus();
 	},
 
 	changePropertyStatus: function() {
 		// Reload the grid
-		var grid = this.application.getComponent('property.properties').query('customgrid')[0];
+		var grid = this.getCmp('property.properties').query('customgrid')[0];
 		var property_status = grid.query('[name="property_status"]')[0].getValue();
 		grid.addExtraParams({ property_status: property_status });
 		grid.reloadFirstPage();
@@ -217,12 +217,12 @@ Ext.define('NP.controller.PropertySetup', {
 
 	viewProperty: function(grid, rec, item, index, e) {
 		if (e.getTarget().className != 'x-grid-row-checker') {
-			this.application.addHistory('PropertySetup:showPropertySetup:Properties:Form:' + rec.get('property_id'));
+			this.addHistory('PropertySetup:showPropertySetup:Properties:Form:' + rec.get('property_id'));
 		}
 	},
 
 	gridSelectionChange: function(selectionModel, selected) {
-		var grid = this.application.getComponent('property.properties').query('customgrid')[0];
+		var grid = this.getCmp('property.properties').query('customgrid')[0];
 		
 		// Change the buttons that show in the toolbar
 		var inactivateBtn = grid.query('[xtype="shared.button.inactivate"]')[0];
@@ -270,7 +270,7 @@ Ext.define('NP.controller.PropertySetup', {
 			// If user clicks Yes, perform action
 			if (btn == 'yes') {
 				// Get the properties that were checked on the grid
-				var grid = that.application.getComponent('property.properties').query('customgrid')[0];
+				var grid = that.getCmp('property.properties').query('customgrid')[0];
 				var properties = grid.getSelectionModel().getSelection();
 				var property_id_list = [];
 				Ext.each(properties, function(property) {
@@ -337,7 +337,7 @@ Ext.define('NP.controller.PropertySetup', {
 							listeners: {
 					        	beforefieldupdate: function(form, result) {
 					        		// Save the record for the property being edited for later use
-					        		that.activePropertyRecord = that.application.getComponent('property.propertiesform').getModel('property.Property');
+					        		that.activePropertyRecord = that.getCmp('property.propertiesform').getModel('property.Property');
 
 					        		// Populate billto/shipto stores with default values so 
 					        		var defaultBillToField = form.findField('default_billto_property_id');
@@ -380,7 +380,7 @@ Ext.define('NP.controller.PropertySetup', {
 				    Ext.suspendLayouts();
 
 					// Create the view
-					var form = that.application.setView('NP.view.property.PropertiesForm', viewCfg, '[xtype="property.properties"]');
+					var form = that.setView('NP.view.property.PropertiesForm', viewCfg, '[xtype="property.properties"]');
 
 					var hideablePanels = ['property.propertiesformgl','property.propertiesformcal','property.propertiesformunits',
 										'property.propertiesformunitmeasurements','property.propertiesformusers',
@@ -388,7 +388,7 @@ Ext.define('NP.controller.PropertySetup', {
 
 					// Make sure all hideable tabs are in the proper state (hidden for new record, showing for editing)
 					Ext.Array.each(hideablePanels, function(panel) {
-						panel = that.application.getComponent(panel);
+						panel = that.getCmp(panel);
 						if (property_id) {
 							panel.tab.show();
 						} else {
@@ -450,7 +450,7 @@ Ext.define('NP.controller.PropertySetup', {
 			        			unitTypeStore.addExtraParams({ property_id: property_id });
 			        			unitTypeStore.load();
 
-			        			unitTypeStore = that.application.getComponent('property.unittypegrid').getStore();
+			        			unitTypeStore = that.getCmp('property.unittypegrid').getStore();
 			        			unitTypeStore.addExtraParams({ property_id: property_id });
 			        			unitTypeStore.load();
 			        		}
@@ -582,7 +582,7 @@ Ext.define('NP.controller.PropertySetup', {
 			// Add unit info as extra params
 			extraParams['units'] = [];
 			// Get all new and updated units from the grid			
-			var unitGrid = this.application.getComponent('property.unitgrid');
+			var unitGrid = this.getCmp('property.unitgrid');
 			var units = unitGrid.getStore().getModifiedRecords();
 
 			// Loop through all units
@@ -603,7 +603,7 @@ Ext.define('NP.controller.PropertySetup', {
 			// Add unit type info as extra params
 			extraParams['unitTypes'] = [];
 			// Get all new and updated units from the grid			
-			var unitTypeGrid = this.application.getComponent('property.unittypegrid');
+			var unitTypeGrid = this.getCmp('property.unittypegrid');
 			var unitTypes = unitTypeGrid.getStore().getModifiedRecords();
 
 			// Loop through all unit types
@@ -647,7 +647,9 @@ Ext.define('NP.controller.PropertySetup', {
 	},
 
 	cancelCalendarCutoffs: function(button, e) {
-		button.up('[xtype="property.fiscalcalendarform"]').hide();
+		var form = button.up('[xtype="property.fiscalcalendarform"]');
+		form.hide();
+		form.getForm().reset();
 		var grid = button.previousNode('[xtype="property.fiscalcalendargrid"]');
 		grid.getSelectionModel().deselectAll();
 		this.selectedFiscalCal = null;
@@ -726,7 +728,7 @@ Ext.define('NP.controller.PropertySetup', {
 
 	viewUnit: function(grid, rec, item, index, e) {
 		if (e.getTarget().className != 'x-grid-row-checker') {
-			var form = this.application.getComponent('property.unitform');
+			var form = this.getCmp('property.unitform');
 
 			form.setTitle('Edit ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit'));
 			this.activeUnitRecord = rec;
@@ -740,7 +742,7 @@ Ext.define('NP.controller.PropertySetup', {
 
 	selectUnit: function(grid, recs) {
 		// Enable or disable the Remove Unit button
-		var grid = this.application.getComponent('property.unitgrid');
+		var grid = this.getCmp('property.unitgrid');
 		
 		var removeBtn = grid.query('[xtype="shared.button.delete"]')[0];
 		
@@ -752,7 +754,7 @@ Ext.define('NP.controller.PropertySetup', {
 	},
 
 	addUnit: function() {
-		var form = this.application.getComponent('property.unitform');
+		var form = this.getCmp('property.unitform');
 		form.setTitle('Add ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit'));
 		form.getForm().reset();
 		this.activeUnitRecord = null;
@@ -763,14 +765,14 @@ Ext.define('NP.controller.PropertySetup', {
 	},
 
 	cancelUnitForm: function() {
-		this.application.getComponent('property.unitform').hide();
+		this.getCmp('property.unitform').hide();
 		this.activeUnitRecord = null;
 	},
 
 	saveUnit: function() {
 		var that = this;
 
-		var form = this.application.getComponent('property.unitform');
+		var form = this.getCmp('property.unitform');
 		
 		if (form.getForm().isValid()) {
 			var unitTypeStore = form.getForm().findField('unittype_id').getStore();
@@ -778,7 +780,7 @@ Ext.define('NP.controller.PropertySetup', {
 			data['unittype_name'] = unitTypeStore.query('unittype_id', data.unittype_id).getAt(0).get('unittype_name');
 			// If dealing with a new record, we need to add it to the grid
 			if (this.activeUnitRecord === null) {
-				this.application.getComponent('property.unitgrid').getStore().add(data);
+				this.getCmp('property.unitgrid').getStore().add(data);
 			// Otherwise just update the existing record with new values
 			} else {
 				this.activeUnitRecord.set(data);
@@ -789,14 +791,14 @@ Ext.define('NP.controller.PropertySetup', {
 	},
 
 	removeUnits: function() {
-		var grid = this.application.getComponent('property.unitgrid');
+		var grid = this.getCmp('property.unitgrid');
 		grid.getStore().remove(grid.getSelectionModel().getSelection());
 		this.cancelUnitForm();
 	},
 
 	viewUnitType: function(grid, rec, item, index, e) {
 		if (e.getTarget().className != 'x-grid-row-checker') {
-			var form = this.application.getComponent('property.unittypeform');
+			var form = this.getCmp('property.unittypeform');
 			var mask = new Ext.LoadMask(form);
 			mask.show();
 
@@ -828,7 +830,7 @@ Ext.define('NP.controller.PropertySetup', {
 	},
 
 	addUnitType: function() {
-		var form = this.application.getComponent('property.unittypeform');
+		var form = this.getCmp('property.unittypeform');
 		form.setTitle('Add ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit'));
 		form.getForm().reset();
 		this.activeUnitTypeRecord = null;
@@ -853,14 +855,14 @@ Ext.define('NP.controller.PropertySetup', {
 	},
 
 	cancelUnitTypeForm: function() {
-		this.application.getComponent('property.unittypeform').hide();
+		this.getCmp('property.unittypeform').hide();
 		this.activeUnitTypeRecord = null;
 	},
 
 	saveUnitType: function() {
 		var that = this;
 		
-		var form = this.application.getComponent('property.unittypeform');
+		var form = this.getCmp('property.unittypeform');
 		
 		if (form.getForm().isValid()) {
 			var data = form.getValues();
@@ -888,7 +890,7 @@ Ext.define('NP.controller.PropertySetup', {
 			
 			// If dealing with a new record, we need to add it to the grid
 			if (this.activeUnitTypeRecord === null) {
-				rec = this.application.getComponent('property.unittypegrid').getStore().add(rec);
+				rec = this.getCmp('property.unittypegrid').getStore().add(rec);
 				rec[0].vals().add(valRecs);
 				rec[0].units().add(assignedUnitStore.getRange());
 				rec[0].set('unittype_updated_date', new Date());
@@ -969,7 +971,7 @@ Ext.define('NP.controller.PropertySetup', {
 	addMasterFiscalCal: function(button, e) {
 		this.selectedFiscalCal = null;
 
-		var cutoffPanel = button.up('[xtype="property.fiscalcalendarform"]');
+		var cutoffPanel = button.nextNode('[xtype="property.fiscalcalendarform"]');
 		cutoffPanel.getForm().reset();
 
 		var fields = cutoffPanel.getForm().getFields();
@@ -1013,8 +1015,6 @@ Ext.define('NP.controller.PropertySetup', {
 							} else {
 								calGrid.getStore().commitChanges();
 							}
-
-							that.cancelCalendarCutoffs(button);
 
 							// Show info message
 							NP.Util.showFadingWindow({ html: that.changesSavedText });

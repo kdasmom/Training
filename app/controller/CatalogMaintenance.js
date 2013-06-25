@@ -4,7 +4,7 @@
  * @author Thomas Messier
  */
 Ext.define('NP.controller.CatalogMaintenance', {
-	extend: 'Ext.app.Controller',
+	extend: 'NP.lib.core.AbstractController',
 	
 	requires: [
 		'NP.lib.core.Net',
@@ -33,7 +33,7 @@ Ext.define('NP.controller.CatalogMaintenance', {
 			'[xtype="catalogmaintenance.cataloggrid"]': {
 				// Clicking on an Activated Vendor Catalog grid inactivate/activate button
 				cellclick: function(gridView, td, cellIndex, record, tr, rowIndex, e, eOpts) {
-					var grid = this.application.getComponent('catalogmaintenance.cataloggrid');
+					var grid = this.getCmp('catalogmaintenance.cataloggrid');
 					
 					// Do this if click hapened on activate/inactivate button
 					if (e.target.tagName == 'IMG') {
@@ -52,7 +52,7 @@ Ext.define('NP.controller.CatalogMaintenance', {
 			// Clicking on the New Catalog button
 			'#newCatalogBtn': {
 				click: function() {
-					this.application.addHistory('CatalogMaintenance:showCatalogForm');
+					this.addHistory('CatalogMaintenance:showCatalogForm');
 				}
 			},
 
@@ -71,21 +71,21 @@ Ext.define('NP.controller.CatalogMaintenance', {
 			// Clicking on the Cancel button
 			'[xtype="catalogmaintenance.catalogform"] [xtype="shared.button.cancel"]': {
 				click: function() {
-					this.application.addHistory('CatalogMaintenance:showRegister');
+					this.addHistory('CatalogMaintenance:showRegister');
 				}
 			},
 
 			// Clicking the Back catalog button
 			'[xtype="catalogmaintenance.catalogview"] [xtype="shared.button.back"]': {
 				click: function() {
-					this.application.addHistory('CatalogMaintenance:showRegister');
+					this.addHistory('CatalogMaintenance:showRegister');
 				}
 			},
 
 			// Clicking the Edit catalog button
 			'[xtype="catalogmaintenance.catalogview"] [xtype="shared.button.edit"]': {
 				click: function() {
-					this.application.addHistory('CatalogMaintenance:showCatalogForm:' + this.vc.get('vc_id'));
+					this.addHistory('CatalogMaintenance:showCatalogForm:' + this.vc.get('vc_id'));
 				}
 			},
 
@@ -112,7 +112,7 @@ Ext.define('NP.controller.CatalogMaintenance', {
 			// Clicking on Cancel button on Upload Vendor Logo form
 			'[xtype="catalogmaintenance.catalogformuploadlogo"] [xtype="shared.button.cancel"]': {
 				click: function() {
-					this.application.getComponent('catalogmaintenance.catalogformuploadlogo').destroy();
+					this.getCmp('catalogmaintenance.catalogformuploadlogo').destroy();
 				}
 			},
 
@@ -146,7 +146,7 @@ Ext.define('NP.controller.CatalogMaintenance', {
 			// Clicking on Save button on Upload Info PDF form
 			'[xtype="catalogmaintenance.catalogformuploadinfopdf"] [xtype="shared.button.cancel"]': {
 				click: function() {
-					this.application.getComponent('catalogmaintenance.catalogformuploadinfopdf').destroy();
+					this.getCmp('catalogmaintenance.catalogformuploadinfopdf').destroy();
 				}
 			},
 
@@ -168,16 +168,16 @@ Ext.define('NP.controller.CatalogMaintenance', {
 	changeGridTab: function(tabPanel, newCard, oldCard, eOpts) {
 		Ext.log('Catalog onTabChange() running');
 		
-		this.application.addHistory('CatalogMaintenance:showRegister:' + newCard.type);
+		this.addHistory('CatalogMaintenance:showRegister:' + newCard.type);
 	},
 
 	openCatalog: function(grid, record) {
-		this.application.addHistory('CatalogMaintenance:showCatalog:' + record.get('vc_id'));
+		this.addHistory('CatalogMaintenance:showCatalog:' + record.get('vc_id'));
 	},
 
 	showRegister: function(activeTab) {
 		// Create the view
-		var tabPanel = this.application.setView('NP.view.catalogMaintenance.CatalogRegister');
+		var tabPanel = this.setView('NP.view.catalogMaintenance.CatalogRegister');
 		
 		// If no active tab is passed, default to Open
 		if (!activeTab) var activeTab = 'activated';
@@ -269,7 +269,7 @@ Ext.define('NP.controller.CatalogMaintenance', {
 
 					// Set the assignment fields
 					Ext.each(['categories','properties','vendors'], function(tab) {
-						var cmp = that.application.getComponent('catalogmaintenance.catalogform' + tab);
+						var cmp = that.getCmp('catalogmaintenance.catalogform' + tab);
 						// If the tab is visible, set the value
 						if (!cmp.tab.hidden) {
 							cmp.setValue(data['vc_' + tab]);
@@ -277,21 +277,21 @@ Ext.define('NP.controller.CatalogMaintenance', {
 					});
 
 					// Load the vendor assignment store based on the tax ID for the current catalog
-					var vendorAssignCmp = that.application.getComponent('catalogmaintenance.catalogformvendors');
+					var vendorAssignCmp = that.getCmp('catalogmaintenance.catalogformvendors');
 					vendorAssignCmp.getStore().getProxy().extraParams.vendor_fedid = data['vc_unique_id'];
 					vendorAssignCmp.getStore().load();
 				}
 			}
 		});
 
-		this.application.setView(form);
+		this.setView(form);
 	},
 
 	selectCatalogVendor: function(combo, records, eOpts) {
 		var that = this;
 
 		// We need to clear the stores for the item selector, otherwise it'll keep adding new records to it
-		var itemSelec = that.application.getComponent('catalogmaintenance.catalogformvendors');
+		var itemSelec = that.getCmp('catalogmaintenance.catalogformvendors');
 		itemSelec.fromField.getStore().removeAll();
 		itemSelec.toField.getStore().removeAll();
 
@@ -317,17 +317,17 @@ Ext.define('NP.controller.CatalogMaintenance', {
         });
 
         container.add(catalogImpl.getFields());
-        var tabPanel = this.application.getComponent('tabpanel');
+        var tabPanel = this.getCmp('tabpanel');
         var activeTab = tabPanel.getActiveTab();
 
         Ext.each(['categories','properties','vendors','posubmission'], function(tab) {
-        	var cmp = that.application.getComponent('catalogmaintenance.catalogform' + tab);
+        	var cmp = that.getCmp('catalogmaintenance.catalogform' + tab);
         	cmp.tab.hide();
         });
 
         var visibleTabs = catalogImpl.getVisibleTabs();
         Ext.each(visibleTabs, function(tab) {
-        	var cmp = that.application.getComponent('catalogmaintenance.catalogform' + tab);
+        	var cmp = that.getCmp('catalogmaintenance.catalogform' + tab);
         	cmp.tab.show();
         });
 
@@ -336,7 +336,7 @@ Ext.define('NP.controller.CatalogMaintenance', {
 
 	saveCatalog: function() {
 		var that = this;
-		var form = this.application.getComponent('catalogmaintenance.catalogform');
+		var form = this.getCmp('catalogmaintenance.catalogform');
 
 		// Check if form is valid
 		if (form.isValid()) {
@@ -360,7 +360,7 @@ Ext.define('NP.controller.CatalogMaintenance', {
 					// Show info message
 					NP.Util.showFadingWindow({ html: 'Catalog saved successfully' });
 
-					that.application.addHistory('CatalogMaintenance:showCatalog:' + result.vc['vc_id']);
+					that.addHistory('CatalogMaintenance:showCatalog:' + result.vc['vc_id']);
 				}
 			});
 		}
@@ -376,7 +376,7 @@ Ext.define('NP.controller.CatalogMaintenance', {
 				vc_id      : vc_id,
 				success: function(result, deferred) {
 					that.vc = Ext.create('NP.model.catalog.Vc', result);
-					var view = that.application.setView('NP.view.catalogMaintenance.CatalogView', {
+					var view = that.setView('NP.view.catalogMaintenance.CatalogView', {
 						title: that.vc.get('vc_catalogname')
 					});
 					var type = Ext.util.Format.capitalize(that.vc.get('vc_catalogtype'));
@@ -402,7 +402,7 @@ Ext.define('NP.controller.CatalogMaintenance', {
 			visibility = [false,true];
 		}
 		Ext.Array.each(btns, function(val, idx) {
-			that.application.getComponent(val).setVisible(visibility[idx]);
+			that.getCmp(val).setVisible(visibility[idx]);
 		});
 	},
 

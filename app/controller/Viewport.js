@@ -5,7 +5,7 @@
  * @author Thomas Messier
  */
 Ext.define('NP.controller.Viewport', {
-	extend: 'Ext.app.Controller',
+	extend: 'NP.lib.core.AbstractController',
 	
 	requires: ['NP.lib.core.Security','NP.lib.core.SummaryStatManager'],
 	
@@ -14,7 +14,7 @@ Ext.define('NP.controller.Viewport', {
 		
 		// Shortcut private function to open an invoice
 		function openInvoice(invoice_id) {
-			that.application.addHistory('Invoice:showView:' + invoice_id);
+			that.addHistory('Invoice:showView:' + invoice_id);
 		}
 
 		// Define event handlers
@@ -22,11 +22,11 @@ Ext.define('NP.controller.Viewport', {
 			'viewport': {
 				// Clicking on the NexusPayables logo
 				nplogoclicked: function() {
-					this.application.addHistory('Viewport:home');
+					this.addHistory('Viewport:home');
 				},
 				// Clicking on the Home link in the header top right
 				nphomelinkclick: function() {
-					this.application.addHistory('Viewport:home');
+					this.addHistory('Viewport:home');
 				},
 				// Clicking on the Logout link in the header top right
 				nplogoutlink: function() {
@@ -43,35 +43,35 @@ Ext.define('NP.controller.Viewport', {
 					} else {
 						token += ':open';
 					}
-					this.application.addHistory(token);
+					this.addHistory(token);
 				}
 			},
 
 			// Clicking on the Administration > My Settings menu
 			'#mySettingsMenuBtn': {
 				click: function() {
-					this.application.addHistory('MySettings:showMySettings');
+					this.addHistory('MySettings:showMySettings');
 				}
 			},
 
 			// Clicking on the Administration > Message Center menu
 			'#messageCenterMenuBtn': {
 				click: function() {
-					this.application.addHistory('MessageCenter:showRegister');
+					this.addHistory('MessageCenter:showRegister');
 				}
 			},
 
 			// Clicking on the Administration > My Settings menu
 			'#propertySetupMenuBtn': {
 				click: function() {
-					this.application.addHistory('PropertySetup:showPropertySetup');
+					this.addHistory('PropertySetup:showPropertySetup');
 				}
 			},
 
 			// Clicking on the Administration > Catalog Maintenance menu
 			'#catalogMaintenanceMenuBtn': {
 				click: function() {
-					this.application.addHistory('CatalogMaintenance:showRegister');
+					this.addHistory('CatalogMaintenance:showRegister');
 				}
 			},
 
@@ -97,7 +97,7 @@ Ext.define('NP.controller.Viewport', {
 			// Runs when a summary stat summary is clicked
 			'[xtype="viewport.summarystatlist"]': {
 				click: function(rec) {
-					this.application.addHistory('Viewport:home:' + rec.get('name'));
+					this.addHistory('Viewport:home:' + rec.get('name'));
 				}
 			},
 
@@ -128,7 +128,7 @@ Ext.define('NP.controller.Viewport', {
 	 */
 	home: function(summaryStatName) {
 		// Setup the Home view
-		this.application.setView('NP.view.viewport.Home');
+		this.setView('NP.view.viewport.Home');
 		// If a summary stat is being passed to the controller, select it
 		if (arguments.length == 1) {
 			this.selectSummaryStat(summaryStatName);
@@ -172,7 +172,7 @@ Ext.define('NP.controller.Viewport', {
 		});
 		
 		// Set the grid to the detail panel
-		this.application.setView(grid, {}, '[xtype="viewport.summarydetailpanel"]');
+		this.setView(grid, {}, '[xtype="viewport.summarydetailpanel"]');
 		
 		// Load the store
 		this.loadSummaryStatGrid();

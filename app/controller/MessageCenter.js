@@ -4,7 +4,7 @@
  * @author Thomas Messier
  */
 Ext.define('NP.controller.MessageCenter', {
-	extend: 'Ext.app.Controller',
+	extend: 'NP.lib.core.AbstractController',
 	
 	requires: [
 		'NP.lib.core.Config',
@@ -71,7 +71,7 @@ Ext.define('NP.controller.MessageCenter', {
 	
 	showRegister: function() {
 		// Create the view
-		var grid = this.application.setView('NP.view.messageCenter.MessageGrid');
+		var grid = this.setView('NP.view.messageCenter.MessageGrid');
 		
 		// Load the store
 		grid.reloadFirstPage();
@@ -90,7 +90,7 @@ Ext.define('NP.controller.MessageCenter', {
 			});
 		}
 
-		var form = this.application.setView('NP.view.messageCenter.MessageForm', viewCfg);
+		var form = this.setView('NP.view.messageCenter.MessageForm', viewCfg);
 		
 		if (arguments.length) {
 			// This will run once data has been loaded if we're editing an existing message
@@ -119,7 +119,7 @@ Ext.define('NP.controller.MessageCenter', {
 	},
 
 	changeMessageType: function(group, newVal, oldVal) {
-		var displayField = this.application.getComponent('messagecenter.messageform').findField('displayUntil');
+		var displayField = this.getCmp('messagecenter.messageform').findField('displayUntil');
 		if (newVal.type == 'email') {
 			displayField.allowBlank = true;
 			displayField.hide();
@@ -130,7 +130,7 @@ Ext.define('NP.controller.MessageCenter', {
 	},
 
 	changeRecipientType: function(group, newVal, oldVal) {
-		var form = this.application.getComponent('messagecenter.messageform');
+		var form = this.getCmp('messagecenter.messageform');
 		var roleField = form.findField('roles');
 		var userField = form.findField('users');
 
@@ -153,14 +153,14 @@ Ext.define('NP.controller.MessageCenter', {
 	},
 
 	sendMessage: function() {
-		var message = this.application.getComponent('messagecenter.messageform').getModel('system.UserMessage');
+		var message = this.getCmp('messagecenter.messageform').getModel('system.UserMessage');
 		message.set('status', 'scheduled');
 
 		this.saveMessage();
 	},
 
 	saveMessageAsDraft: function() {
-		var message = this.application.getComponent('messagecenter.messageform').getModel('system.UserMessage');
+		var message = this.getCmp('messagecenter.messageform').getModel('system.UserMessage');
 		message.set('status', 'draft');
 
 		this.saveMessage();
@@ -169,7 +169,7 @@ Ext.define('NP.controller.MessageCenter', {
 	saveMessage: function() {
 		var that = this;
 
-		var form = this.application.getComponent('messagecenter.messageform');
+		var form = this.getCmp('messagecenter.messageform');
 
 		if (form.isValid()) {
 			form.submitWithBindings({
@@ -191,7 +191,7 @@ Ext.define('NP.controller.MessageCenter', {
 		Ext.MessageBox.confirm(that.deleteDialogTitleText, that.deleteDialogText, function(btn) {
 			// If user clicks Yes, proceed with deleting
 			if (btn == 'yes') {
-				var message = that.application.getComponent('messagecenter.messageform').getModel('system.UserMessage');
+				var message = that.getCmp('messagecenter.messageform').getModel('system.UserMessage');
 
 				// Ajax request to delete catalog
 				NP.lib.core.Net.remoteCall({

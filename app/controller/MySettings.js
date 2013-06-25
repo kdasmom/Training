@@ -4,7 +4,7 @@
  * @author Thomas Messier
  */
 Ext.define('NP.controller.MySettings', {
-	extend: 'Ext.app.Controller',
+	extend: 'NP.lib.core.AbstractController',
 	
 	requires: ['NP.lib.core.Security','NP.lib.core.Net','NP.lib.core.Util'],
 	
@@ -33,7 +33,7 @@ Ext.define('NP.controller.MySettings', {
 					Ext.log('MySettings onTabChange() running');
 					
 					var activeTab = Ext.getClassName(newCard).split('.').pop();
-					this.application.addHistory('MySettings:showMySettings:' + activeTab);
+					this.addHistory('MySettings:showMySettings:' + activeTab);
 				}
 			},
 			// User Information tab
@@ -93,7 +93,7 @@ Ext.define('NP.controller.MySettings', {
 							this.cancelDelegation(delegation_id, grid);
 						// If View button was clicked
 						} else if (el.hasCls('view')) {
-							this.application.addHistory('MySettings:showMySettings:UserDelegation:Form:' + delegation_id);
+							this.addHistory('MySettings:showMySettings:UserDelegation:Form:' + delegation_id);
 						}
 					}
 				}
@@ -106,7 +106,7 @@ Ext.define('NP.controller.MySettings', {
 			// The Cancel button on the Add Delegation form
 			'[xtype="mysettings.userdelegationform"] [xtype="shared.button.cancel"]': {
 				// Run this whenever the button is clicked
-				click: function() { this.application.addHistory('MySettings:showMySettings:UserDelegation:Main'); }
+				click: function() { this.addHistory('MySettings:showMySettings:UserDelegation:Main'); }
 			},
 			// The Save button on the Add Delegation form
 			'[xtype="mysettings.userdelegationform"] [xtype="shared.button.save"]': {
@@ -137,13 +137,13 @@ Ext.define('NP.controller.MySettings', {
 		// Load the Email Alert Types store
 		this.application.loadStore('notification.EmailAlertTypes', 'NP.store.notification.EmailAlertTypes', {}, function() {
 			// Set the MySettings view
-			var tabPanel = that.application.setView('NP.view.mySettings.Main');
+			var tabPanel = that.setView('NP.view.mySettings.Main');
 
 			// If no active tab is passed, default to Open
 			if (!activeTab) activeTab = 'Overview';
 			
 			// Check if the tab to be selected is already active, if it isn't make it the active tab
-			var tab = that.application.getComponent('mysettings.' + activeTab.toLowerCase());
+			var tab = that.getCmp('mysettings.' + activeTab.toLowerCase());
 			
 			// Set the active tab if it hasn't been set yet
 			if (tab.getXType() != tabPanel.getActiveTab().getXType()) {
@@ -167,7 +167,7 @@ Ext.define('NP.controller.MySettings', {
 	saveUserInfo: function() {
 		var that = this;
 
-		var form = this.application.getComponent('mysettings.userinformation');
+		var form = this.getCmp('mysettings.userinformation');
 		
 		if (form.isValid()) {
 			form.submitWithBindings({
@@ -197,7 +197,7 @@ Ext.define('NP.controller.MySettings', {
 	 * Displays the page for the Display tab
 	 */
 	showDisplay: function() {
-		var form = this.application.getComponent('mysettings.display');
+		var form = this.getCmp('mysettings.display');
 
 		// Bind the form to a model that's the same as the current logged in user's model
 		var formModel = NP.Security.getUser().copy();
@@ -214,7 +214,7 @@ Ext.define('NP.controller.MySettings', {
 
 	saveDisplay: function() {
 		var that = this;
-		var form = this.application.getComponent('mysettings.display');
+		var form = this.getCmp('mysettings.display');
 
 		if (form.isValid()) {
 			var values = form.getValues();
@@ -245,7 +245,7 @@ Ext.define('NP.controller.MySettings', {
 	 */
 	showEmailNotification: function() {
 		// Mask the form while we load the data
-		var comp = this.application.getComponent('mysettings.emailnotification');
+		var comp = this.getCmp('mysettings.emailnotification');
 		
 		// Load the data we need to populate the form
 		NP.lib.core.Net.remoteCall({
@@ -325,7 +325,7 @@ Ext.define('NP.controller.MySettings', {
 		});
 
 		// Submit the notification info for saving
-		var maskCmp = this.application.getComponent('mysettings.emailnotification');
+		var maskCmp = this.getCmp('mysettings.emailnotification');
 		NP.Net.remoteCall({
 			method  : 'post',
 			mask    : maskCmp,
@@ -355,7 +355,7 @@ Ext.define('NP.controller.MySettings', {
 	 */
 	showMobileSettings: function() {
 		var that = this;
-		var form = this.application.getComponent('mysettings.mobilesettings');
+		var form = this.getCmp('mysettings.mobilesettings');
 
 		form.on('dataloaded', function(boundForm, data) {
 			that.updateUI();
@@ -367,7 +367,7 @@ Ext.define('NP.controller.MySettings', {
 	 */
 	saveMobileSettings: function(isNewDevice) {
 		var that = this;
-		var form = this.application.getComponent('mysettings.mobilesettings');
+		var form = this.getCmp('mysettings.mobilesettings');
 		if (!isNewDevice) isNewDevice = false;
 
 		// If the form is valid, save the mobile settings
@@ -413,7 +413,7 @@ Ext.define('NP.controller.MySettings', {
 	 */
 	disableMobileNumber: function() {
 		var that = this;
-		var form = this.application.getComponent('mysettings.mobilesettings');
+		var form = this.getCmp('mysettings.mobilesettings');
 
 		// Show confirm dialog
 		Ext.MessageBox.confirm(that.disableMobileDialogTitleText, that.disableMobileDialogText, function(btn) {
@@ -445,7 +445,7 @@ Ext.define('NP.controller.MySettings', {
 	 * @private
 	 */
 	updateUI: function() {
-		var form = this.application.getComponent('mysettings.mobilesettings');
+		var form = this.getCmp('mysettings.mobilesettings');
 
 		var mobInfo = form.getModel('user.MobInfo');
 
@@ -478,7 +478,7 @@ Ext.define('NP.controller.MySettings', {
 	 * Displays the main user delegation page (the one with the two grids)
 	 */
 	showUserDelegationMain: function() {
-		this.application.setView('NP.view.mySettings.UserDelegationMain', {}, '[xtype="mysettings.userdelegation"]');
+		this.setView('NP.view.mySettings.UserDelegationMain', {}, '[xtype="mysettings.userdelegation"]');
 
 		var grids = Ext.ComponentQuery.query('[xtype="mysettings.userdelegationgrid"]');
 
@@ -533,7 +533,7 @@ Ext.define('NP.controller.MySettings', {
 						Ext.MessageBox.alert(that.activeDelegErrorTitleText, that.activeDelegErrorText);
 					// Otherwise, it's find and redirect them to the add delegation form	
 					} else {
-						that.application.addHistory('MySettings:showMySettings:UserDelegation:Form');
+						that.addHistory('MySettings:showMySettings:UserDelegation:Form');
 					}
 				},
 				failure: function(response, options, deferred) {
@@ -568,7 +568,7 @@ Ext.define('NP.controller.MySettings', {
 			};
 	    }
 
-		var form = this.application.setView('NP.view.mySettings.UserDelegationForm', viewCfg, '[xtype="mysettings.userdelegation"]');
+		var form = this.setView('NP.view.mySettings.UserDelegationForm', viewCfg, '[xtype="mysettings.userdelegation"]');
 		var userField = form.findField('Delegation_To_UserProfile_Id');
 		if (delegation_id) {
 			userField.hide();
@@ -580,7 +580,7 @@ Ext.define('NP.controller.MySettings', {
 
 	saveUserDelegationForm: function() {
 		var that = this;
-		var form = this.application.getComponent('mysettings.userdelegationform');
+		var form = this.getCmp('mysettings.userdelegationform');
 		form.getModel('user.Delegation').set('UserProfile_Id', NP.Security.getUser().get('userprofile_id'));
 
 		if (form.isValid()) {
@@ -592,7 +592,7 @@ Ext.define('NP.controller.MySettings', {
 				},
 				success: function(result, deferred) {
 					// Relocate to the main page
-					that.application.addHistory('MySettings:showMySettings:UserDelegation:Main');
+					that.addHistory('MySettings:showMySettings:UserDelegation:Main');
 				}
 			});
 		}
