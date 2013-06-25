@@ -58,7 +58,8 @@ Ext.define('NP.model.property.Property', {
             name          : 'region',
             getterName    : 'getRegion',
             foreignKey    : 'region_id',
-            primaryKey    : 'region_id'
+            primaryKey    : 'region_id',
+            reader        : 'jsonflat'
         },{
             model         : 'NP.model.user.Userprofile',
             name          : 'createdByUser',

@@ -1,6 +1,5 @@
 /**
- * Store for Properties. This store uses the Property fields from the model and adds onto them, allowing to use
- * different fields that come from joining tables to Property.
+ * Store for Properties.
  *
  * @author Thomas Messier
  */

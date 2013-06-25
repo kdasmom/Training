@@ -58,7 +58,10 @@ Ext.define('NP.view.property.UnitGrid', {
 	    	this.columns.push({
 	    		header   : 'Type',
 				dataIndex: 'unittype_name',
-				flex     : 1
+				flex     : 1,
+				renderer : function(val, meta, rec) {
+					return rec.getUnitType().get('unittype_name')
+				}
 	    	});
 	    }
 

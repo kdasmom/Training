@@ -64,7 +64,6 @@ Ext.define('NP.view.property.PropertiesForm', {
             defaults: {
                 padding: 8
             },
-            activeTab: 3,
             items    : tabs
         }];
 

@@ -13,7 +13,7 @@ Ext.define('NP.view.catalog.gridcol.VcItemCategory', {
 		if (rec.get('UNSPSC_Commodity_Commodity') === null) {
 			return val;
 		} else {
-			return rec.get('UNSPSC_Commodity_FamilyTitle');
+			return rec.getUnspscCommodity().get('UNSPSC_Commodity_FamilyTitle');
 		}
 	}
 });

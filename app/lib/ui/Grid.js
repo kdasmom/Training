@@ -14,7 +14,6 @@ Ext.define('NP.lib.ui.Grid', {
 	 /**
 	 * @cfg {Array}   pagingToolbarButtons Buttons to add to the paging toolbar (only applies if paging is true)
 	 */
-	pagingToolbarButtons: [],
 	/**
 	 * @cfg {Array}   pageSizeOptions      Possible page size values
 	 */
@@ -47,9 +46,10 @@ Ext.define('NP.lib.ui.Grid', {
 				}
 			});
 
-			this.pagingToolbarButtons = [];
-			if (this.pagingToolbarButtons.length) {
+			if (this.pagingToolbarButtons) {
 				this.pagingToolbarButtons.unshift('-');
+			} else {
+				this.pagingToolbarButtons = [];
 			}
 			this.pagingToolbarButtons.unshift('-', 'Records per page:', this.pageSizeCombo);
 

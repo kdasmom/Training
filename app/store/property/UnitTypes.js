@@ -1,6 +1,5 @@
 /**
- * Store for UnitTypes. This store uses the UnitType fields from the model and adds onto them, allowing to use
- * different fields that come from joining tables to UnitType.
+ * Store for UnitTypes.
  *
  * @author Thomas Messier
  */

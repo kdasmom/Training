@@ -31,7 +31,8 @@ Ext.define('NP.model.property.UnitType', {
 		name          : 'userprofile',
 		getterName    : 'getLastUpdatedUser',
 		foreignKey    : 'unittype_updated_by',
-		primaryKey    : 'userprofile_id'
+		primaryKey    : 'userprofile_id',
+        reader        : 'jsonflat'
 	},
 	hasMany  : [
 		{

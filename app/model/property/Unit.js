@@ -6,7 +6,10 @@
 Ext.define('NP.model.property.Unit', {
 	extend: 'Ext.data.Model',
 	
-	requires: ['NP.lib.core.Config'],
+	requires: [
+		'NP.lib.core.Config',
+		'NP.model.property.UnitType'
+	],
 
 	idProperty: 'unit_id',
 	fields: [
@@ -20,6 +23,15 @@ Ext.define('NP.model.property.Unit', {
 		{ name: 'unit_squarefeet' },
 		{ name: 'property_id', type: 'int' }
 	],
+
+	belongsTo: {
+		model     : 'NP.model.property.UnitType',
+		name      : 'unitType',
+		getterName: 'getUnitType',
+		foreignKey: 'unittype_id',
+		primaryKey: 'unittype_id',
+		reader    : 'jsonflat'
+	},
 
 	validations: [
 		{ field: 'unit_id_alt', type: 'length', max: 10 },

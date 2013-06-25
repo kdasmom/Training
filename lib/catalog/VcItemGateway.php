@@ -17,7 +17,7 @@ class VcItemGateway extends AbstractGateway {
 		$select->from(array('vi'=>'vcitem'))
 			   ->join(array('uc'=>'unspsc_commodity'),
 			          'uc.unspsc_commodity_commodity = vi.unspsc_commodity_commodity',
-			          array('unspsc_commodity_familytitle','unspsc_commodity_commoditytitle'),
+			          array('UNSPSC_Commodity_FamilyTitle','UNSPSC_Commodity_CommodityTitle'),
 			          Select::JOIN_LEFT)
 			   ->where(array(
 			   		'vc_id'=>'?'

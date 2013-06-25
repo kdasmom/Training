@@ -7,22 +7,5 @@
 Ext.define('NP.store.system.IntegrationPackages', {
     extend: 'NP.lib.data.Store',
 	
-    requires: ['NP.model.system.IntegrationPackage'],
-
-    constructor: function(cfg) {
-    	var that = this;
-    	
-    	Ext.apply(this, cfg);
-
-    	this.fields = [];
-    	Ext.Array.each(NP.model.system.IntegrationPackage.getFields(), function(field) {
-            that.fields.push({
-                name: field.name,
-                type: field.type.type,
-                dateFormat: field.dateFormat
-            });
-        });
-
-    	this.callParent(arguments);
-    }    
+    model: 'NP.model.system.IntegrationPackage'
 });
