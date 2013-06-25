@@ -33,6 +33,6 @@ Ext.define('NP.view.catalogMaintenance.types.AbstractCatalog', {
 
 	getView: function(vc) {
 		throw 'You must implement a getView() function that returns an array of tab strings';
-	},
+	}
 
 });

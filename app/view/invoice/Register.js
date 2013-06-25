@@ -1,18 +1,26 @@
 Ext.define('NP.view.invoice.Register', function() {
 	// Define the grids that need to be shown
 	var grids = ['Open','Rejected','Overdue','Template','OnHold','Pending','Approved','Submitted','Transferred','Paid','Void'];
-	
-	// Build required classes list dynamically to avoid tedious typing
-	var reqs = ['NP.view.shared.ContextPicker','NP.lib.core.Security'];
-	for (var i=0; i<grids.length; i++) {
-		reqs.push('NP.view.invoice.grid.Register'+grids[i]);
-	}
 
 	return {
 		extend: 'Ext.panel.Panel',
 	    alias: 'widget.invoice.register',
 	    
-	    requires: reqs,
+	    requires: [
+	    	'NP.view.shared.ContextPicker',
+	    	'NP.lib.core.Security',
+	    	'NP.view.invoice.grid.RegisterOpen',
+	    	'NP.view.invoice.grid.RegisterRejected',
+	    	'NP.view.invoice.grid.RegisterOverdue',
+	    	'NP.view.invoice.grid.RegisterTemplate',
+	    	'NP.view.invoice.grid.RegisterOnHold',
+	    	'NP.view.invoice.grid.RegisterPending',
+	    	'NP.view.invoice.grid.RegisterApproved',
+	    	'NP.view.invoice.grid.RegisterSubmitted',
+	    	'NP.view.invoice.grid.RegisterTransferred',
+	    	'NP.view.invoice.grid.RegisterPaid',
+	    	'NP.view.invoice.grid.RegisterVoid'
+	    ],
 	    
 	    layout: {
 	        type: 'vbox',

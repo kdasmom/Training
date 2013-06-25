@@ -61,6 +61,6 @@ Ext.define('NP.model.catalog.Vc', {
 		{ field: 'vc_posubmit_pwd', type: 'length', max: 50 },
 		{ field: 'vc_posubmit_pwd', type: 'presence', groupFields: ['vc_posubmit_url','vc_posubmit_username','vc_posubmit_from_duns','vc_posubmit_to_duns'] },
 		{ field: 'vc_posubmit_from_duns', type: 'length', max: 50 },
-		{ field: 'vc_posubmit_to_duns', type: 'length', max: 50 },
+		{ field: 'vc_posubmit_to_duns', type: 'length', max: 50 }
 	]
 });

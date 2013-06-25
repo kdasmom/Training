@@ -540,7 +540,7 @@ Ext.define('NP.locale.en.view.mySettings.Display', {
 	rightPositionText          : 'Right (Top for Horizontal View)',
 	defaultViewLabelText       : 'Default View',
 	splitScreenViewText        : 'Split Screen',
-	poReceiptInvoiceViewText   : 'PO / Receipt / Invoice',
+	poReceiptInvoiceViewText   : 'PO / Receipt / Invoice'
 });
 
 Ext.define('NP.locale.en.view.mySettings.UserDelegation', {

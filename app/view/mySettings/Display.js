@@ -26,7 +26,7 @@ Ext.define('NP.view.mySettings.Display', {
     autoScroll: true,
 
     bind: {
-    	models: ['user.Userprofile'],
+    	models: ['user.Userprofile']
     },
 
     initComponent: function() {

@@ -110,7 +110,7 @@ Ext.define('NP.view.property.PropertiesFormInfo', {
 					extraParams: {
 						type: 'bill'
 					}
-				}),
+				})
     		},
             // Ship To Address Option
     		{ xtype: 'shared.yesnofield', fieldLabel: this.shipToFieldText, name: 'property_optionShipAddress' },

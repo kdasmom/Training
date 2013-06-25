@@ -32,7 +32,7 @@ Ext.define('NP.view.mySettings.UserDelegationMain', {
 
 	    this.items = [
             { xtype: 'mysettings.userdelegationgrid', toOrFrom: 'from', flex: 1, title: this.delegationFromText },
-            { xtype: 'mysettings.userdelegationgrid', toOrFrom: 'to', flex: 1, title: this.delegationToText },
+            { xtype: 'mysettings.userdelegationgrid', toOrFrom: 'to', flex: 1, title: this.delegationToText }
         ];
 
     	this.callParent(arguments);

@@ -9,8 +9,6 @@ Ext.define('NP.lib.core.Util', {
 	alternateClassName: ['NP.Util'],
 	singleton: true,
 	
-	requires: 'Ext.util.Format',
-	
 	monthDays: {
 		1: 31,
 		2: 28,

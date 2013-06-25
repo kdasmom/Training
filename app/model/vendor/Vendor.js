@@ -4,7 +4,7 @@
  * @author 
  */
 Ext.define('NP.model.vendor.Vendor', {
-	extend: 'NP.lib.data.Model',
+	extend: 'Ext.data.Model',
 	
 	requires: ['NP.lib.core.Config'],
 
