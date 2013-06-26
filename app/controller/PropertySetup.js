@@ -551,6 +551,9 @@ Ext.define('NP.controller.PropertySetup', {
 				extraFields[field['customfield_name']] = field['customfield_name'];
 			});
 
+			// Add Closing Calendar field
+			extraFields['fiscalcal_id'] = 'fiscalcal_id';
+
 			// Add GL Assignment field
 			extraFields['property_gls'] = 'property_gls';
 
@@ -618,26 +621,33 @@ Ext.define('NP.controller.PropertySetup', {
 				extraFields: extraFields,
 				extraParams: extraParams,
 				success: function(result, deferred) {
-					// Reload the fiscal calendar store if needed to get new primary keys
-					if (calGrid.getStore().getNewRecords().length) {
-						calGrid.getStore().load();
-			    	} else {
-			    		calGrid.getStore().commitChanges()
-			    	}
+					// If dealing with a new record, redirect
+					var propertyModel = form.getModel('property.Property');
+					if (propertyModel.get('property_id') === null) {
+						that.addHistory('PropertySetup:showPropertySetup:Properties:Form:' + result.id);
+						propertyModel.set('property_id', result.id);
+					} else {
+						// Reload the fiscal calendar store if needed to get new primary keys
+						if (calGrid.getStore().getNewRecords().length) {
+							calGrid.getStore().load();
+				    	} else {
+				    		calGrid.getStore().commitChanges()
+				    	}
 
-			    	// Reload the fiscal calendar store if needed to get new primary keys
-			    	if (unitGrid.getStore().getNewRecords().length) {
-			    		unitGrid.getStore().load();
-			    	} else {
-			    		unitGrid.getStore().commitChanges()
-			    	}
+				    	// Reload the fiscal calendar store if needed to get new primary keys
+				    	if (unitGrid.getStore().getNewRecords().length) {
+				    		unitGrid.getStore().load();
+				    	} else {
+				    		unitGrid.getStore().commitChanges()
+				    	}
 
-			    	// Reload the fiscal calendar store if needed to get new primary keys
-			    	if (unitTypeGrid.getStore().getNewRecords().length) {
-			    		unitTypeGrid.getStore().load();
-			    	} else {
-			    		unitTypeGrid.getStore().commitChanges()
-			    	}
+				    	// Reload the fiscal calendar store if needed to get new primary keys
+				    	if (unitTypeGrid.getStore().getNewRecords().length) {
+				    		unitTypeGrid.getStore().load();
+				    	} else {
+				    		unitTypeGrid.getStore().commitChanges()
+				    	}
+				    }
 
 					// Show info message
 					NP.Util.showFadingWindow({ html: that.changesSavedText });

@@ -57,15 +57,15 @@ Ext.define('NP.view.property.PropertiesFormInfo', {
     	
     	this.items = [
             // Property Code
-    		{ xtype: 'textfield', fieldLabel: this.codeFieldText, name: 'property_id_alt', width: defaultWidth },
+    		{ xtype: 'textfield', fieldLabel: this.codeFieldText, name: 'property_id_alt', width: defaultWidth, allowBlank: false },
     		// Property AP Code
             { xtype: 'textfield', fieldLabel: this.apCodeFieldText, name: 'property_id_alt_ap', width: defaultWidth },
             // Property Department Code
     		{ xtype: 'textfield', fieldLabel: this.deptCodeFieldText, name: 'property_department_code', width: defaultWidth },
             // Property Name
-    		{ xtype: 'textfield', fieldLabel: this.propertyNameFieldText, name: 'property_name', width: defaultWidth },
+    		{ xtype: 'textfield', fieldLabel: this.propertyNameFieldText, name: 'property_name', width: defaultWidth, allowBlank: false },
             // Number of Units
-    		{ xtype: 'textfield', fieldLabel: this.totalUnitsFieldText, name: 'property_no_units' },
+    		{ xtype: 'textfield', fieldLabel: this.totalUnitsFieldText, name: 'property_no_units', allowBlank: false },
             // Attention
     		{ xtype: 'textfield', fieldLabel: this.attnFieldText, name: 'address_attn', allowBlank: false, width: defaultWidth },
             // Address
@@ -90,7 +90,8 @@ Ext.define('NP.view.property.PropertiesFormInfo', {
                 store       : regionStore,
                 valueField  : 'region_id',
                 displayField: 'region_name',
-                width       : defaultWidth
+                width       : defaultWidth,
+                allowBlank  : false
     		},
             // Bill To Address Option
     		{ xtype: 'shared.yesnofield', fieldLabel: this.billToFieldText, name: 'property_optionBillAddress' },
@@ -153,13 +154,14 @@ Ext.define('NP.view.property.PropertiesFormInfo', {
     		{ xtype: 'shared.yesnofield', fieldLabel: this.vendorCatalogFieldText, name: 'property_VendorCatalog' },
             // Integration Package
     		{
-                xtype              : 'customcombo',
-                fieldLabel         : this.intPackageFieldText,
-                name               : 'integration_package_id',
-                width              : defaultWidth,
-                store              : intPkgStore,
-                valueField         : 'integration_package_id',
-                displayField       : 'integration_package_name'
+                xtype       : 'customcombo',
+                fieldLabel  : this.intPackageFieldText,
+                name        : 'integration_package_id',
+                width       : defaultWidth,
+                store       : intPkgStore,
+                valueField  : 'integration_package_id',
+                displayField: 'integration_package_name',
+                allowBlank  : false
     		},
             // Closing Calendar
     		{

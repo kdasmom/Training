@@ -89,8 +89,12 @@ Ext.define('NP.lib.data.Store', {
      * @return {NP.lib.data.Store}
      */
     getCopy: function() {
-    	var store = Ext.create(Ext.getClassName(this));
-    	store.loadRawData(this.getProxy().getReader().rawData);
+    	var records = [];
+		this.each(function(r){
+			records.push(r.copy());
+		});
+		var store = Ext.create(Ext.getClassName(this));
+		store.add(records);
     	
     	return store;
     },

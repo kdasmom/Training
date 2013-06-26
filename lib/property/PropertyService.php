@@ -541,8 +541,8 @@ class PropertyService extends AbstractService {
 				// If dealing with new property only
 				if ($isNew) {
 					// Update the billto/shipto property IDs to be the ones for this property and re-save the record
-					$this->property->default_billto_property_id = $property->property_id;
-					$this->property->default_shipto_property_id = $property->property_id;
+					$property->default_billto_property_id = $property->property_id;
+					$property->default_shipto_property_id = $property->property_id;
 					$this->propertyGateway->save($property);
 
 					// Save the creator of the property
@@ -562,6 +562,17 @@ class PropertyService extends AbstractService {
 
 					// Make sure property is added to workflow rules that are set for "All Properties"
 					$this->wfRuleTargetGateway->addActivatedPropertiesToRules($property->property_id);
+
+					// Convert the fiscal cal provided to a format that can be used by the saveFiscalCal() method
+					// that gets called later
+					$data['fiscalcals'] = array($this->fiscalcalGateway->findById($data['fiscalcal_id']));
+					$data['fiscalcals'][0]['fiscalcal_id'] = null;
+					$data['fiscalcals'][0]['property_id'] = $property->property_id;
+					$data['fiscalcals'][0]['fiscalcal_type'] = 'assigned';
+					$data['fiscalcals'][0]['months'] = $this->fiscalcalMonthGateway->find('fiscalcal_id = ?', array($data['fiscalcal_id']));
+					foreach ($data['fiscalcals'][0]['months'] as $idx=>$fiscalcalMonthData) {
+						$data['fiscalcals'][0]['months'][$idx]['fiscalcalmonth_id'] = null;
+					}
 				}
 
 				// Set the property ID on address, validates it, and save it
@@ -618,7 +629,7 @@ class PropertyService extends AbstractService {
 				}
 
 				// Save GL assignments if any
-				if (array_key_exists('property_gls', $data)) {
+				if (array_key_exists('property_gls', $data) && is_array($data['property_gls'])) {
 					$success = $this->saveGlAssignment($property->property_id, $data['property_gls']);
 					if (!$success) {
 						$errors[] = array('field'=>'global', 'msg'=>'There was an error saving GL Assignments');
@@ -705,6 +716,7 @@ class PropertyService extends AbstractService {
 		return array(
 			'success'    => (count($errors)) ? false : true,
 			'errors'     => $errors,
+			'id'         => $property->property_id
 		);
 	}
 

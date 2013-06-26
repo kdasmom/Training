@@ -159,8 +159,6 @@ Ext.define('NP.lib.core.Net', {
 							}
 							// Create the store and set it as the return variable
 							res[i] = Ext.create(cfg.requests[i].store, storeCfg);
-							// Save the rawData to the reader for consistency
-							res[i].getProxy().getReader().rawData = storeCfg['data'];
 						}
 						// If a success callback was defined, run it, passing it the result and the deferred object
 						if (cfg.requests[i].success) {
