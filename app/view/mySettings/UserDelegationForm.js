@@ -63,7 +63,7 @@ Ext.define('NP.view.mySettings.UserDelegationForm', {
                     }
                 }),
                 listConfig: {
-                    itemTpl: '{person_lastname}, {person_lastname} ({userprofile_username})'
+                    itemTpl: '{userprofilerole.staff.person.person_lastname}, {userprofilerole.staff.person.person_lastname} ({userprofile_username})'
                 }
             },{
                 xtype       : 'boxselect',

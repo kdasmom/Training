@@ -1,15 +1,29 @@
 /**
- * Model for a Role entity
+ * Model for a Role
  *
  * @author Thomas Messier
  */
 Ext.define('NP.model.user.Role', {
 	extend: 'Ext.data.Model',
 	
-    idProperty: 'role_id',
-    fields: [
-        { name: 'role_id', type: 'int' },
-        { name: 'role_name' },
-        { name: 'is_admin_role', type: 'int' }
+	requires: ['NP.lib.core.Config'],
+
+	idProperty: 'role_id',
+	fields: [
+		{ name: 'role_id', type: 'int' },
+		{ name: 'asp_client_id', type: 'int' },
+		{ name: 'role_name' },
+		{ name: 'table_name' },
+		{ name: 'role_entrypage' },
+		{ name: 'is_admin_role', type: 'int' },
+		{ name: 'role_updated_by', type: 'int' },
+		{ name: 'role_updated_datetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() }
+	],
+
+	validations: [
+		{ field: 'role_name', type: 'length', max: 255 },
+		{ field: 'table_name', type: 'length', max: 100 },
+		{ field: 'role_entrypage', type: 'length', max: 200 },
+		{ field: 'is_admin_role', type: 'presence' }
 	]
 });

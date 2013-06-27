@@ -383,7 +383,7 @@ Ext.define('NP.controller.PropertySetup', {
 					var form = that.setView('NP.view.property.PropertiesForm', viewCfg, '[xtype="property.properties"]');
 
 					var hideablePanels = ['property.propertiesformgl','property.propertiesformcal','property.propertiesformunits',
-										'property.propertiesformunitmeasurements','property.propertiesformusers',
+										'property.propertiesformunitmeasurements','shared.userassigner',
 										'property.propertiesformuserreport'];
 
 					// Make sure all hideable tabs are in the proper state (hidden for new record, showing for editing)

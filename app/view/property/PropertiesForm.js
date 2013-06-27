@@ -12,6 +12,7 @@ Ext.define('NP.view.property.PropertiesForm', {
         'NP.lib.core.Security',
         'NP.view.shared.button.Cancel',
         'NP.view.shared.button.Save',
+        'NP.view.shared.UserAssigner',
         'NP.lib.ui.VerticalTabPanel',
         'NP.view.property.PropertiesFormInfo',
         'NP.view.property.PropertiesFormAccounting',
@@ -19,7 +20,6 @@ Ext.define('NP.view.property.PropertiesForm', {
         'NP.view.property.PropertiesFormCal',
         'NP.view.property.PropertiesFormUnits',
         'NP.view.property.PropertiesFormUnitMeasurements',
-        'NP.view.property.PropertiesFormUsers',
         'NP.view.property.PropertiesFormUserReport'
     ],
 
@@ -54,7 +54,17 @@ Ext.define('NP.view.property.PropertiesForm', {
         }
 
         tabs.push(
-            { xtype: 'property.propertiesformusers', hidden: true },
+            {
+                xtype     : 'shared.userassigner',
+                title     : 'User Assignment',
+                hideLabel : true,
+                name      : 'property_users',
+                fromTitle : 'Unassigned Users',
+                toTitle   : 'Assigned Users',
+                autoScroll: true,
+                margin    : 8,
+                hidden    : true
+            },
             { xtype: 'property.propertiesformuserreport', hidden: true }
         );
 

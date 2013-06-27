@@ -45,10 +45,21 @@ Ext.define('NP.model.user.Userprofile', {
         { name: 'security_question6', type: 'int' },
         { name: 'security_answer6' }
     ],
-
-    associations: [
+    
+    belongsTo: [
         {
-            type      : 'hasOne',
+            model     : 'NP.model.user.Userprofile',
+            name      : 'updater',
+            getterName: 'getUpdater',
+            foreignKey: 'userprofile_updated_by',
+            primaryKey: 'userprofile_id',
+            reader    : 'jsonflat',
+            prefix    : 'updated_by_'
+        }
+    ],
+
+    hasOne: [
+        {
             model     : 'NP.model.user.Userprofilerole',
             name      : 'userprofilerole',
             getterName: 'getUserprofilerole',

@@ -16,7 +16,7 @@ Ext.define('NP.view.shared.UserAssigner', {
 					userprofile_status: 'active',
 					autoLoad          : true
 			    }),
-    tpl         : '<tpl for="."><div class="x-boundlist-item">{person_lastname}, {person_firstname} ({userprofile_username})</div></tpl>',
+    tpl         : '<tpl for="."><div class="x-boundlist-item">{userprofilerole.staff.person.person_lastname}, {userprofilerole.staff.person.person_firstname} ({userprofile_username})</div></tpl>',
     displayField: 'userprofile_id',
     valueField  : 'userprofile_id',
     fromTitle   : 'Unassigned',

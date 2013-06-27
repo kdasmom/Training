@@ -577,6 +577,34 @@ Ext.define('NP.locale.en.view.mySettings.UserDelegationForm', {
 
 
 /**
+ * USER MANAGER SECTION
+ */
+Ext.define('NP.locale.en.controller.UserManager', {
+	override: 'NP.controller.UserManager'
+});
+
+Ext.define('NP.locale.en.view.user.UserManager', {
+	override: 'NP.view.user.UserManager',
+
+	title: 'User Manager'
+});
+
+Ext.define('NP.locale.en.view.user.Overview', {
+	override: 'NP.view.user.Overview',
+
+	title           : 'Overview',
+	newUserBtnLabel : 'Create a New User',
+	newGroupBtnLabel: 'Create a New User Group'
+});
+
+Ext.define('NP.locale.en.view.user.Users', {
+	override: 'NP.view.user.Users',
+
+	title                : 'Users',
+	createNewUserBtnLabel: 'Create New User'
+});
+
+/**
  * MESSAGE CENTER SECTION
  */
  Ext.define('NP.locale.en.controller.MessageCenter', {

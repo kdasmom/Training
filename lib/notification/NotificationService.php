@@ -5,22 +5,35 @@ namespace NP\notification;
 use NP\core\AbstractService;
 use NP\core\validation\EntityValidator;
 use NP\user\UserprofileGateway;
+use NP\core\notification\EmailerInterface;
+use NP\core\notification\EmailMessage;
 
 /**
- * Service class for operations related to Invoices
+ * Service class for operations related to Notifications, email or otherwise
  *
  * @author Thomas Messier
  */
 class NotificationService extends AbstractService {
 
-	protected $emailAlertTypeGateway, $emailAlertHourGateway, $emailAlertGateway, $userprofileGateway;
+	protected $emailAlertTypeGateway, $emailAlertHourGateway, $emailAlertGateway, $userprofileGateway, $emailer;
 
 	public function __construct(EmailAlertTypeGateway $emailAlertTypeGateway, EmailAlertGateway $emailAlertGateway,
-								EmailAlertHourGateway $emailAlertHourGateway, UserprofileGateway $userprofileGateway) {
+								EmailAlertHourGateway $emailAlertHourGateway, UserprofileGateway $userprofileGateway,
+								EmailerInterface $emailer) {
 		$this->emailAlertTypeGateway = $emailAlertTypeGateway;
 		$this->emailAlertGateway     = $emailAlertGateway;
 		$this->emailAlertHourGateway = $emailAlertHourGateway;
 		$this->userprofileGateway    = $userprofileGateway;
+		$this->emailer               = $emailer;
+	}
+	
+	public function sendEmail($message, $from=null, $to=null, $subject=null, $contentType='text/html') {
+		if (!$message instanceOf EmailMessage) {
+			$message = new EmailMessage($subject, $message, $contentType);
+			$message->setTo($to);
+			$message->setFrom($from);
+		}
+		$this->emailer->send($message);
 	}
 
 	public function getAlertTypes() {

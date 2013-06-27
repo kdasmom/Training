@@ -19,10 +19,14 @@ class UserprofileGateway extends AbstractGateway {
 	public function getSelect() {
 		$select = new sql\UserprofileSelect();
 		$select->columnsAll()
-				->joinUserprofilerole(null)
-				->joinRole(null)
-				->joinStaff(null)
-				->joinPerson(null);
+				->joinUserprofilerole(array('userprofilerole_id','tablekey_id'))
+				->joinRole(array('role_id','role_name'))
+				->joinStaff(array('staff_id'))
+				->joinPerson(array('person_id','person_firstname','person_lastname'))
+				->joinUpdatedBy(array(
+					'updated_by_userprofile_id' => 'userprofile_id',
+					'updated_by_userprofile_username' => 'userprofile_username'
+				));
 
 		return $select;
 	}

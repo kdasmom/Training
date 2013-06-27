@@ -19,10 +19,15 @@ Ext.define('NP.lib.data.JsonFlat', {
             if (association.type == 'belongsTo' || association.type == 'hasOne') {
                 if (association.prefix) {
                     associationData = {};
+                    var fieldFound = false;
                     for (field in data) {
                         if (field.substring(0, association.prefix.length) == association.prefix) {
                             associationData[field.replace(association.prefix, '')] = data[field];
+                            fieldFound = true;
                         }
+                    }
+                    if (!fieldFound) {
+                        associationData = null;
                     }
                 } else {
                     associationData = data;

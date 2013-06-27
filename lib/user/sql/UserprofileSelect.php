@@ -139,4 +139,19 @@ class UserprofileSelect extends Select {
 						array());
 	}
 	
+	/**
+	 * Joins USERPROFILE table for userprofile_updated_by column
+	 *
+	 * @param  string[] $cols                 Columns to retrieve from the PHONE table
+	 * @return \NP\user\sql\UserprofileSelect Returns caller object for easy chaining
+	 */
+	public function joinUpdatedBy($cols=array()) {
+		return $this->join(array('updtu' => 'userprofile'),
+						'u.userprofile_updated_by = updtu.userprofile_id',
+						$cols,
+						Select::JOIN_LEFT);
+	}
+	
 }
+
+?>

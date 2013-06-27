@@ -54,6 +54,13 @@ Ext.define('NP.controller.Viewport', {
 				}
 			},
 
+			// Clicking on the Administraton > User Manager menu
+			'#userManagerMenuBtn': {
+				click: function() {
+					this.addHistory('UserManager:showUserManager');
+				}
+			},
+
 			// Clicking on the Administration > Message Center menu
 			'#messageCenterMenuBtn': {
 				click: function() {

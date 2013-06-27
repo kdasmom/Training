@@ -55,15 +55,17 @@ class UserService extends AbstractService {
 	 * @param  string $userprofile_status The status of the user (optional); valid values are 'active' or 'inactive'
 	 * @return array
 	 */
-	public function getAll($userprofile_status=null) {
+	public function getAll($userprofile_status=null, $pageSize=null, $page=1, $sort='person_lastname') {
 		$where = null;
 		$params = array();
 		if ($userprofile_status !== null) {
 			$where = 'userprofile_status = ?';
 			$params[] = $userprofile_status;
 		}
-
-		return $this->userprofileGateway->find($where, $params, 'p.person_lastname, p.person_firstname');
+		if ($sort == 'person_lastname') {
+			$sort = 'person_lastname, person_firstname';
+		}
+		return $this->userprofileGateway->find($where, $params, $sort, null, $pageSize, $page);
 	}
 
 	/**

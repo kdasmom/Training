@@ -29,6 +29,13 @@ Ext.define('NP.model.user.Userprofilerole', {
             foreignKey    : 'tablekey_id',
             primaryKey    : 'staff_id',
             reader        : 'jsonflat'
+        },{
+            model         : 'NP.model.user.Role',
+            name          : 'role',
+            getterName    : 'getRole',
+            foreignKey    : 'role_id',
+            primaryKey    : 'role_id',
+            reader        : 'jsonflat'
         }
     ],
 
