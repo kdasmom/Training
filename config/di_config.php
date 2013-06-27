@@ -32,10 +32,17 @@ $di['sessionDuration'] = $di->share(function($di) use ($__CONFIG) {
 	return $di['ConfigService']->get('main.util.logofftime', 1800);
 });
 
+$di['mailHost'] = $__CONFIG['mailServer']['host'];
+$di['mailPort'] = $__CONFIG['mailServer']['port'];
+$di['mailUsername'] = $__CONFIG['mailServer']['username'];
+$di['mailPassword'] = $__CONFIG['mailServer']['password'];
+$di['mailEncryptionType'] = $__CONFIG['mailServer']['encryptionType'];
+
 // DI Definitions
 $diDefinition = array(
 	'Zend\Cache\Storage\Adapter\WinCache',
 	'NP\core\db\Adapter'                       => array('dbServer','dbName','dbUsername','dbPassword'),
+	'NP\core\notification\Emailer'             => array('mailHost','mailPort','mailUsername','mailPassword','mailEncryptionType'),
 	'NP\budget\BudgetGateway'                  => array('Adapter'),
 	'NP\budget\GlAccountYearGateway'           => array('Adapter'),
 	'NP\budget\BudgetService'                  => array('BudgetGateway','GlAccountYearGateway'),
@@ -79,6 +86,7 @@ $diDefinition = array(
 	'NP\security\SecurityService'              => array('SessionService','UserprofileGateway','RoleGateway','UserprofileLogonGateway','ModulePrivGateway','RegionGateway','PropertyGateway','ConfigService'),
 	'NP\system\ConfigsysGateway'               => array('Adapter'),
 	'NP\system\ConfigService'                  => array('config','WinCache','SiteService','ConfigsysGateway','PnUniversalFieldGateway','IntegrationRequirementsGateway','IntegrationPackageGateway','LookupcodeGateway','PnCustomFieldsGateway','reloadCache'),
+	'NP\system\NotificationService'            => array('Emailer'),
 	'NP\system\PicklistService'                => array('IntegrationPackageGateway','RegionGateway'),
 	'NP\system\PnCustomFieldsGateway'          => array('Adapter'),
 	'NP\system\PnCustomFieldDataGateway'       => array('Adapter'),
