@@ -70,8 +70,6 @@ Ext.define('NP.model.user.Userprofile', {
     ],
 
     validations: [
-        { field: 'userprofile_id', type: 'presence' },
-        { field: 'asp_client_id', type: 'presence' },
         { field: 'userprofile_username', type: 'length', max: 50 },
         { field: 'userprofile_status', type: 'length', max: 50 },
         { field: 'userprofile_session', type: 'length', max: 100 },
@@ -106,7 +104,7 @@ Ext.define('NP.model.user.Userprofile', {
             if (question == null || question == '') {
                 blank.push(questionField);
             }
-            if (answer == '') {
+            if (answer == null || answer == '') {
                 blank.push(answerField);
             }
         }

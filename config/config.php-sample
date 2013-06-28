@@ -19,6 +19,13 @@ $__CONFIG = array(
 	'enabledNamespaces'		=> array('global','mail','fileupload','catalog','invoice','po'),
 	'fileLogEnabled'		=> false, 
 	'debugLogEnabled'		=> true,
+	'mailServer'            => array(
+			'host'           => 'smtp.yourhost.com',
+			'port'           => 25,
+			'username'       => null, // leave null if no authentication
+			'password'       => null, // leave null if no authentication
+			'encryptionType' => null  // valid options are ssl and tls; leave null if no encryption;
+	)
 );
 
 $__CONFIG['logPath']		= $__CONFIG['appRoot'] . 'logs';

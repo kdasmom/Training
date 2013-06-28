@@ -59,7 +59,7 @@ class UserService extends AbstractService {
 		$where = null;
 		$params = array();
 		if ($userprofile_status !== null) {
-			$where = 'userprofile_status = ?';
+			$where = 'u.userprofile_status = ?';
 			$params[] = $userprofile_status;
 		}
 		if ($sort == 'person_lastname') {
@@ -506,6 +506,45 @@ class UserService extends AbstractService {
 	 */
 	public function getRoles() {
 		return $this->roleGateway->find(null, array(), 'role_name');
+	}
+
+	/**
+	 * Activate a list of users
+	 *
+	 * @param  int    $userprofile_updated_by The id of the user performing the operation 
+	 * @param  array  $userprofile_id_list    List of user IDs for the users who's activation you want to change
+	 */
+	public function activateUsers($userprofile_updated_by, $userprofile_id_list) {
+		$this->toggleUserActivation('active', $userprofile_updated_by, $userprofile_id_list);
+	}
+
+	/**
+	 * Inactivate a list of users
+	 *
+	 * @param  int    $userprofile_updated_by The id of the user performing the operation 
+	 * @param  array  $userprofile_id_list    List of user IDs for the users who's activation you want to change
+	 */
+	public function inactivateUsers($userprofile_updated_by, $userprofile_id_list) {
+		$this->toggleUserActivation('inactive', $userprofile_updated_by, $userprofile_id_list);
+	}
+
+	/**
+	 * Changes the user's activation status to a specified status
+	 *
+	 * @param  string $status                 The status to change the user to
+	 * @param  int    $userprofile_updated_by The id of the user performing the operation 
+	 * @param  array  $userprofile_id_list    List of user IDs for the users who's activation you want to change
+	 */
+	public function toggleUserActivation($status, $userprofile_updated_by, $userprofile_id_list) {
+		foreach ($userprofile_id_list as $userprofile_id) {
+			$user = $this->userprofileGateway->findById($userprofile_id);
+			if ($user['userprofile_status'] != $status) {
+				$user = new UserprofileEntity($user);
+				$user->userprofile_updated_by = $userprofile_updated_by;
+				$user->userprofile_status = $status;
+				$this->userprofileGateway->save($user);
+			}
+		}
 	}
 }
 

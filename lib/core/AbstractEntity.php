@@ -10,11 +10,12 @@ abstract class AbstractEntity {
 	 * the entity and can be either just a value with the field name (if the field has no additional specifications)
 	 *  or a key/value pair where the key is the field name and the value is another array with the specifications 
 	 * for the field. The valid options for the array representing a single field definition are "required", 
-	 * "displayName", and "validation".
+	 * "displayName", "validation", and "timestamp".
 	 * 
 	 * - required (boolean): if the field is required or not (optional); defaults to false
 	 * - displayName (string): a friendly display value that the validator can use to generate error messages (optional); default will be field name if not provided
 	 * - validation (array): an associative array where the key is a valid validation rule name (rules in NP\core\validation) and the value is an array with the options for that validation rule
+	 * - timestamp (string): marks the field as a date that tracks either creation date or updated date; valid values are "created" and "updated"
 	 * 
 	 * @abstract
 	 * @var array

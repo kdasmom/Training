@@ -79,8 +79,8 @@ class SecurityService extends AbstractService {
 		// Get the user record
 		$user = $this->userprofileGateway->find(
 			array(
-				'userprofile_username' => '?',
-				'userprofile_status'   => '?'
+				'u.userprofile_username' => '?',
+				'u.userprofile_status'   => '?'
 			),
 			array($username, 'active')
 		);

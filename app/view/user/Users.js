@@ -40,8 +40,7 @@ Ext.define('NP.view.user.Users', {
             store   : Ext.create('NP.store.user.Userprofiles', {
                 service: 'UserService',
                 action : 'getAll',
-                paging : true,
-                autoLoad: true
+                paging : true
             }),
             columns : [
                 {
@@ -77,8 +76,13 @@ Ext.define('NP.view.user.Users', {
                 },{
                 	text: 'Status',
                 	dataIndex: 'userprofile_status',
-                	flex: 0.5
+                	flex: 0.5,
+                    renderer: Ext.util.Format.capitalize
                 }
+            ],
+            pagingToolbarButtons: [
+                { xtype: 'shared.button.activate', disabled: true },
+                { xtype: 'shared.button.inactivate', disabled: true }
             ]
         }];
 

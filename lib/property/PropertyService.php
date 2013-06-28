@@ -187,16 +187,6 @@ class PropertyService extends AbstractService {
 	public function getUserProperties($userprofile_id, $delegated_to_userprofile_id, $cols=array('property_id','property_id_alt','property_name')) {
 		return $this->propertyGateway->findByUser($userprofile_id, $delegated_to_userprofile_id, $cols);
 	}
-
-	/**
-	 * Get users that have access to a property
-	 *
-	 * @param  int   $property_id The property Id
-	 * @return array              Array of property records
-	 */
-	public function getPropertyUsers($property_id) {
-		return $this->userprofileGateway->findByProperty($property_id);
-	}
 	
 	/**
 	 * Get all the regions in the system

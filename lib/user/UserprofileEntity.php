@@ -28,7 +28,10 @@ class UserprofileEntity extends \NP\core\AbstractEntity {
 		),
 		'userprofile_status' => array(
 			'validation' => array(
-				'stringLength' => array('max'=>50)
+				'stringLength' => array('max'=>50),
+				'inArray' => array(
+					'haystack' => array('active','inactive')
+				)
 			)
 		),
 		'userprofile_session' => array(
@@ -97,6 +100,7 @@ class UserprofileEntity extends \NP\core\AbstractEntity {
 			)
 		),
 		'userprofile_updated_datetm' => array(
+			'timestamp' => 'updated',
 			'validation' => array(
 				'date' => array('format'=>'Y-m-d H:i:s.u')
 			)
