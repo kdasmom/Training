@@ -354,9 +354,11 @@ Ext.define('NP.controller.PropertySetup', {
 					        		});
 
 					        		// Load the GL Store
-					        		var glStore = form.findField('property_gls').getStore();
-					        		glStore.addExtraParams({ integration_package_id: result['integration_package_id'] });
-					        		glStore.load();
+					        		if (form.findField('property_gls')) {
+						        		var glStore = form.findField('property_gls').getStore();
+						        		glStore.addExtraParams({ integration_package_id: result['integration_package_id'] });
+						        		glStore.load();
+					        		}
 
 					        		// Store the accounting period
 					        		that.accountingPeriod = result['accounting_period']['date'].split(' ')[0];
@@ -388,11 +390,14 @@ Ext.define('NP.controller.PropertySetup', {
 
 					// Make sure all hideable tabs are in the proper state (hidden for new record, showing for editing)
 					Ext.Array.each(hideablePanels, function(panel) {
-						panel = that.getCmp(panel);
-						if (property_id) {
-							panel.tab.show();
-						} else {
-							panel.tab.hide();
+						panel = Ext.ComponentQuery.query('[xtype="'+panel+'"]');
+						if (panel.length) {
+							panel = panel[0];
+							if (property_id) {
+								panel.tab.show();
+							} else {
+								panel.tab.hide();
+							}
 						}
 					});
 
