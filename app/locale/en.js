@@ -659,7 +659,9 @@ Ext.define('NP.locale.en.controller.PropertySetup', {
 	inactivateFailureText     : 'There was an error inactivating ' + NP.Config.getPropertyLabel(true),
 	changesSavedText          : 'Changes saved successfully',
 	invalidDayErrorText       : 'Invalid day',
-	unassignedUniTypeTitle    : 'View ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + 's Not Assigned to a ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + ' Type'
+	unassignedUniTypeTitle    : 'View ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + 's Not Assigned to a ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + ' Type',
+	newPropertyTitleText      : 'New Property',
+	editPropertyTitleText     : 'Editing'
 });
 
 Ext.define('NP.locale.en.view.propertySetup.Overview', {

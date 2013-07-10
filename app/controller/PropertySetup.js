@@ -30,6 +30,8 @@ Ext.define('NP.controller.PropertySetup', {
 	changesSavedText          : 'Changes saved successfully',
 	invalidDayErrorText       : 'Invalid day',
 	unassignedUniTypeTitle    : 'View ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + 's Not Assigned to a ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + ' Type',
+	newPropertyTitleText      : 'New Property',
+	editPropertyTitleText     : 'Editing',
 
 	init: function() {
 		Ext.log('PropertySetup controller initialized');
@@ -339,6 +341,9 @@ Ext.define('NP.controller.PropertySetup', {
 					        		// Save the record for the property being edited for later use
 					        		that.activePropertyRecord = that.getCmp('property.propertiesform').getModel('property.Property');
 
+					        		// Set the form title
+					        		form.setTitle(that.editPropertyTitleText + ' "' + that.activePropertyRecord.get('property_name') + ' (' + that.activePropertyRecord.get('property_id_alt') + ')"');
+
 					        		// Populate billto/shipto stores with default values so 
 					        		var defaultBillToField = form.findField('default_billto_property_id');
 					        		defaultBillToField.getStore().addExtraParams({ property_id: property_id });
@@ -406,6 +411,9 @@ Ext.define('NP.controller.PropertySetup', {
 					var intPkgField = form.findField('integration_package_id');
 					// Do the following only when creating a new property
 					if (!property_id) {
+						// Set the form title
+						form.setTitle(that.newPropertyTitleText);
+
 						var defaultIntPkg = intPkgField.getStore().query('universal_field_status', 2);
 						// If there's a default integration package, select it by default
 			    		if (defaultIntPkg.getCount()) {
