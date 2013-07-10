@@ -41,7 +41,7 @@ Ext.define('NP.view.property.PropertiesFormInfo', {
 
     initComponent: function() {
         var that = this;
-        var defaultWidth = 525;
+        var defaultWidth = 578;
 
     	this.defaults = { labelWidth: 175 };
 
