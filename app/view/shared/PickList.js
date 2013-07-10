@@ -98,9 +98,7 @@ Ext.define('NP.view.shared.PickList', {
         // Add the toolbar with a save and cancel button so we don't have to do it each time
         this.form.addDocked({
             xtype : 'toolbar',
-            dock  : 'bottom',
-            ui    : 'footer',
-            layout: { pack: 'center' },
+            dock  : 'top',
             items : [
                 {
                     xtype: 'shared.button.save',
