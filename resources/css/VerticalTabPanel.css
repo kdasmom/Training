@@ -17,6 +17,7 @@
 
 .x-vertical-tab-active {
 	background-image: -moz-linear-gradient(center top , #FFFFFF, #F5F9FE 25%, #DEECFD 45%);
+	background-color: #FFFFFF;
 }
 
 .x-vertical-tab-active .x-btn-inner {
