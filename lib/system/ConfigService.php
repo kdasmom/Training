@@ -171,6 +171,7 @@ class ConfigService extends AbstractService {
 	 */
 	public function getInvoicePoCustomFields() {
 		$arCustomSettings = $this->configsysGateway->getCustomFieldSettings();
+		
 		$arIntReqs = $this->intReqGateway->find();
 		
 		$arFields = array(
@@ -385,6 +386,41 @@ class ConfigService extends AbstractService {
 	public function getIntegrationPackages() {
 		return $this->intPkgGateway->find(null, null, 'integration_package_name');
 	}
+	
+	
+	/**
+	 * Retrieves password configuration fields
+	 *
+	 * @return array Array of password configuration fields
+	 */
+	public function getPasswordConfiguration () {
+		$arPassCfg = $this->configsysGateway->getPasswordConfiguration();
+		
+		$arTemp = array();
+		foreach($arPassCfg as $rec) {
+			$arTemp[strtolower($rec["configsys_name"])] = $rec["configsysval_val"];
+		}
+		return $arTemp;
+	}
+	
+	/**
+	 * Saves password configuration fields
+	 *
+	 * @param  array $data An associative array with the data needed to save password configuration
+	 * @return array       An array with success status of the operation and any errors that happened
+	 */
+	public function setPasswordConfiguration ($data) {
+		$errors = $this->configsysGateway->savePasswordConfiguration($data);
+		
+		$this->cache->setItems($data);
+		
+		// return the status of the save along with the errors if any
+		return array(
+			'success'    => (count($errors)) ? false : true,
+			'errors'     => $errors
+		);
+	}
+	
 }
 
 ?>

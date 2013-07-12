@@ -814,3 +814,85 @@ Ext.define('NP.locale.en.view.user.gridcol.DelegationView', {
 
 	text: 'View'
 });
+
+/**
+ * SYSTEM SETUP SECTION
+ */
+
+Ext.define('NP.locale.en.controller.SystemSetup', {
+	override: 'NP.controller.SystemSetup',
+
+	changesSavedText		: 'Changes saved successfully',
+	errorDialogTitleText	: 'Error',
+});
+
+Ext.define('NP.locale.en.controller.systemSetup.Main', {
+	override: 'NP.view.systemSetup.Main',
+
+	title: 'System Setup',
+});
+
+Ext.define('NP.locale.en.view.systemSetup.Overview', {
+	override: 'NP.view.systemSetup.Overview',
+
+	title						: 'Overview',
+	introText					: 'Much of the information in System Setup is established at the time that the system is first deployed or a new feature is added.  However, the system administrator can access this information, as necessary, for review or update.',
+	settingsText				: '<b>Settings</b> - this section should be accessed only by your NexusPayables support staff.',
+	workflowManagerText			: '<b>Workflow Manager</b> - this tab contains the full list of Workflow rules set up in the system and provides a way for you to add, edit, and delete these rules at any time.  Please refer to the specific overview section within this tab for more information.',
+	glAccountsText				: '<b>GL Accounts</b> - this tab contains the full list of GL accounts set up in the system and provides a way for you to add, edit, and delete these accounts. Please refer to the specific overview section within this tab for more information.',
+	passwordConfigurationText	: '<b>Password Configuration</b> - the Password Configuration options available in this tab are provided as a means to control how users set up and change their passwords.',
+	customFieldsText			: '<b>Custom Fields</b> - this tab provides a way to manage up to three custom fields, to be defined by you, for use on Purchase Orders and Invoices',
+	picklistsText				: '<b>Picklists</b> - this tab provides a way to manage the values that should display on Rejection Notes, Vendor Types, and Vendor Document Types.  These values can be updated and added to at any time.',
+	defaultSplitsText			: '<b>Default Splits</b> - this tab displays a list of current default splits set up in the system and provides a way to upload new default splits in the system.',
+});
+
+
+Ext.define('NP.locale.en.controller.systemSetup.CustomFields', {
+	override: 'NP.view.systemSetup.CustomFields',
+
+	title: 'Custom Fields',
+});
+
+Ext.define('NP.locale.en.controller.systemSetup.DefaultSplits', {
+	override: 'NP.view.systemSetup.DefaultSplits',
+
+	title: 'Default Splits',
+});
+
+Ext.define('NP.locale.en.controller.systemSetup.GLAccounts', {
+	override: 'NP.view.systemSetup.GLAccounts',
+
+	title: 'GL Accounts',
+});
+
+Ext.define('NP.locale.en.controller.systemSetup.PasswordConfiguration', {
+	override: 'NP.view.systemSetup.PasswordConfiguration',
+
+	title: 'Password Configuration',
+	pwdCfgExplanationText			: 'Password security requires that a minimum of one letter, number and special character be used when setting up user passwords in the system. Special characters include !, @, $, %, &, *, and ?',
+    passwordMinLengthText			: 'Please select the minimum password length',
+    passwordExpireIntervalText		: 'Expiration Interval (days)',
+    passwordHistoryIntervalText		: 'Days until same password can be reused',
+    passwordChangeOnLoginText		: 'User must change password on login',
+    passwordChangeOnLoginYesText	: 'Yes',
+    passwordChangeOnLoginNoText		: 'No'
+});
+
+Ext.define('NP.locale.en.controller.systemSetup.Picklist', {
+	override: 'NP.view.systemSetup.Picklist',
+
+	title: 'Picklist',
+});
+
+Ext.define('NP.locale.en.controller.systemSetup.Settings', {
+	override: 'NP.view.systemSetup.Settings',
+
+	title: 'Settings',
+});
+
+Ext.define('NP.locale.en.controller.systemSetup.WorkflowManager', {
+	override: 'NP.view.systemSetup.WorkflowManager',
+
+	title: 'Workflow Manager',
+});
+

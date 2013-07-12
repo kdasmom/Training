@@ -81,6 +81,13 @@ Ext.define('NP.controller.Viewport', {
 					this.addHistory('CatalogMaintenance:showRegister');
 				}
 			},
+			
+			// Clicking on the Administration > System Setup menu
+			'#systemSetupMenuBtn': {
+				click: function() {
+					this.addHistory('SystemSetup:showSystemSetup');
+				}
+			},
 
 			// Runs after Home panel has been rendered
 			'[xtype="viewport.home"]': {

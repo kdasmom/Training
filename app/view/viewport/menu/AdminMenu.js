@@ -77,6 +77,7 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 		// System Setup
 		if ( NP.lib.core.Security.hasPermission(1066) ) {
 			this.menu.items.push({
+				itemId: 'systemSetupMenuBtn',
 				text: this.systemText
 			});
 		}
