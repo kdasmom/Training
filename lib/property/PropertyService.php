@@ -84,18 +84,19 @@ class PropertyService extends AbstractService {
 												array('glaccount_id')
 											);
 			$res['property_gls'] = \NP\util\Util::valueList($res['property_gls'], 'glaccount_id');
-			$res['property_users'] = $this->propertyUserprofileGateway->find(
-												array('pu.property_id'=>'?'),
-												array($property_id),
-												'pe.person_lastname, pe.person_firstname',
-												array('userprofile_id')
-											);
-			$res['property_users'] = \NP\util\Util::valueList($res['property_users'], 'userprofile_id');
-			$res['accounting_period'] = $this->getAccountingPeriod($property_id);
-			// If no accounting period was found, set it to the first day of this month
-			if ($res['accounting_period'] === false) {
-				$res['accounting_period'] = new \DateTime(date('Y') . '-' . date('n') . '-01');
-			}
+		}
+		
+		$res['property_users'] = $this->propertyUserprofileGateway->find(
+											array('pu.property_id'=>'?'),
+											array($property_id),
+											'pe.person_lastname, pe.person_firstname',
+											array('userprofile_id')
+										);
+		$res['property_users'] = \NP\util\Util::valueList($res['property_users'], 'userprofile_id');
+		$res['accounting_period'] = $this->getAccountingPeriod($property_id);
+		// If no accounting period was found, set it to the first day of this month
+		if ($res['accounting_period'] === false) {
+			$res['accounting_period'] = new \DateTime(date('Y') . '-' . date('n') . '-01');
 		}
 
 		return $res;

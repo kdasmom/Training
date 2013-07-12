@@ -39,7 +39,7 @@ Ext.define('NP.view.property.PropertiesForm', {
             { xtype: 'property.propertiesforminfo', customFieldData: this.customFieldData },
             { xtype: 'property.propertiesformaccounting' }
         ];
-        if (NP.Config.getSetting('CP.PROPERTYGLACCOUNT_USE', 0) && NP.Security.hasPermission(12)) {
+        if (NP.Config.getSetting('CP.PROPERTYGLACCOUNT_USE', 0) == 1 && NP.Security.hasPermission(12)) {
             tabs.push({ xtype: 'property.propertiesformgl', hidden: true });
         }
         if (NP.Security.hasPermission(1042)) {

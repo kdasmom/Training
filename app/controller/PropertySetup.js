@@ -30,6 +30,8 @@ Ext.define('NP.controller.PropertySetup', {
 	changesSavedText          : 'Changes saved successfully',
 	invalidDayErrorText       : 'Invalid day',
 	unassignedUniTypeTitle    : 'View ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + 's Not Assigned to a ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + ' Type',
+	newPropertyTitleText      : 'New Property',
+	editPropertyTitleText     : 'Editing',
 
 	init: function() {
 		Ext.log('PropertySetup controller initialized');
@@ -339,6 +341,9 @@ Ext.define('NP.controller.PropertySetup', {
 					        		// Save the record for the property being edited for later use
 					        		that.activePropertyRecord = that.getCmp('property.propertiesform').getModel('property.Property');
 
+					        		// Set the form title
+					        		form.setTitle(that.editPropertyTitleText + ' "' + that.activePropertyRecord.get('property_name') + ' (' + that.activePropertyRecord.get('property_id_alt') + ')"');
+
 					        		// Populate billto/shipto stores with default values so 
 					        		var defaultBillToField = form.findField('default_billto_property_id');
 					        		defaultBillToField.getStore().addExtraParams({ property_id: property_id });
@@ -354,9 +359,11 @@ Ext.define('NP.controller.PropertySetup', {
 					        		});
 
 					        		// Load the GL Store
-					        		var glStore = form.findField('property_gls').getStore();
-					        		glStore.addExtraParams({ integration_package_id: result['integration_package_id'] });
-					        		glStore.load();
+					        		if (form.findField('property_gls')) {
+						        		var glStore = form.findField('property_gls').getStore();
+						        		glStore.addExtraParams({ integration_package_id: result['integration_package_id'] });
+						        		glStore.load();
+					        		}
 
 					        		// Store the accounting period
 					        		that.accountingPeriod = result['accounting_period']['date'].split(' ')[0];
@@ -388,11 +395,14 @@ Ext.define('NP.controller.PropertySetup', {
 
 					// Make sure all hideable tabs are in the proper state (hidden for new record, showing for editing)
 					Ext.Array.each(hideablePanels, function(panel) {
-						panel = that.getCmp(panel);
-						if (property_id) {
-							panel.tab.show();
-						} else {
-							panel.tab.hide();
+						panel = Ext.ComponentQuery.query('[xtype="'+panel+'"]');
+						if (panel.length) {
+							panel = panel[0];
+							if (property_id) {
+								panel.tab.show();
+							} else {
+								panel.tab.hide();
+							}
 						}
 					});
 
@@ -401,6 +411,9 @@ Ext.define('NP.controller.PropertySetup', {
 					var intPkgField = form.findField('integration_package_id');
 					// Do the following only when creating a new property
 					if (!property_id) {
+						// Set the form title
+						form.setTitle(that.newPropertyTitleText);
+
 						var defaultIntPkg = intPkgField.getStore().query('universal_field_status', 2);
 						// If there's a default integration package, select it by default
 			    		if (defaultIntPkg.getCount()) {
