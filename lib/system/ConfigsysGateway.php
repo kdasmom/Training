@@ -84,6 +84,11 @@ class ConfigsysGateway extends AbstractGateway {
 		$errors = array();
 		
 		foreach ($data as $key => $val){
+			
+			/*
+			 * TODO
+			 * Modify NP\core\db\Update class to work with joined tables
+			 */
 			$updateSQL = "UPDATE cv SET
 				cv.configsysval_val = ?
 				FROM configsysval cv
@@ -93,7 +98,9 @@ class ConfigsysGateway extends AbstractGateway {
 			try {
 				$this->adapter->query($updateSQL, array($val, $key));
 			} catch (\Exception $e) {
-				$errors[$key] = $e->getMessage();
+				$errors[] = array(
+						"field" => $key,
+						"msg"	=> $e->getMessage());
 			}
 		}
 	

@@ -6,11 +6,21 @@
 Ext.define('NP.controller.SystemSetup', {
 	extend: 'NP.lib.core.AbstractController',
 	
-	requires: ['NP.lib.core.Security','NP.lib.core.Net','NP.lib.core.Util'],
+	requires: [
+	    'NP.lib.core.Security',
+	    'NP.lib.core.Net',
+	    'NP.lib.core.Util',
+	    'NP.lib.core.Config',
+	],
 	
 	changesSavedText                : 'Changes saved successfully',
 	errorDialogTitleText            : 'Error',
 
+	refs : [{
+		ref: 'PasswordConfiguration',
+		selector: '[xtype="systemsetup.passwordconfiguration"]'
+	}],
+	
 	init: function() {
 		Ext.log('SystemSetup controller initialized');
 
@@ -75,17 +85,18 @@ Ext.define('NP.controller.SystemSetup', {
 	 * Displays the page for the Password Configuration tab
 	 */
 	showPasswordConfiguration: function() {
-		var form = this.getCmp('systemsetup.passwordconfiguration');
+		var form = this.getPasswordConfiguration();
 
 		NP.lib.core.Net.remoteCall({
 			requests: {
 				service    : 'ConfigService',
 				action     : 'getPasswordConfiguration',
 				success    : function(result, deferred) {
-					// Set values in Form using results
-					for (i in result){
+					//Formating results to integer so value types will match expecting values for form, needed for combobox
+					for( i in result){
 						result[i] = parseInt(result[i]);
 					}
+					// Set values in Form using results
 					form.getForm().setValues(result);
 				}
 			}
@@ -99,7 +110,7 @@ Ext.define('NP.controller.SystemSetup', {
 	 */
 	savePasswordConfiguration: function() {
 		var that = this;
-		var form = this.getCmp('systemsetup.passwordconfiguration');
+		var form = this.getPasswordConfiguration();
 
 		if (form.getForm().isValid()) {
 			var values = form.getValues();
@@ -111,7 +122,12 @@ Ext.define('NP.controller.SystemSetup', {
 					data	   : values,
 					success    : function(result, deferred) {
 						// If save is successful, run success callback
-						if (!result.success) {
+						if (result.success) {
+							//Setting new password configuration settings
+							for(i in values){
+								NP.Config.setSetting(i, values[i]);
+							}
+						}else{
 							// Only try to process results if there's an errors array
 							if (result.errors && result.errors instanceof Array) {
 								Ext.each(result.errors, function(error) {

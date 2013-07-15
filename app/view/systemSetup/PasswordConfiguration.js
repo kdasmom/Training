@@ -49,33 +49,33 @@ Ext.define('NP.view.systemSetup.PasswordConfiguration', {
         
         this.items = [
               		{
-              			xtype: 'combo',
-                        name: 'cp.password_min_length',
-                        fieldLabel: this.passwordMinLengthText,
-                        store: Ext.create('Ext.data.Store', {
+              			xtype			: 'combo',
+                        name			: 'cp.password_min_length',
+                        fieldLabel		: this.passwordMinLengthText,
+                        store			: Ext.create('Ext.data.Store', {
                             fields: ['chars'],
                             data  : lengthData
                         }),
-                        queryMode: 'local',
-                        displayField: 'chars',
-                        valueField: 'chars',
-                        forceSelection: true,
-                        editable: false,
-                    	width: 340
+                        queryMode		: 'local',
+                        displayField	: 'chars',
+                        valueField		: 'chars',
+                        forceSelection	: true,
+                        editable		: false,
+                    	width	  		: 340
               		},{
         				xtype     : 'numberfield',
         				name      : 'cp.password_expire_interval',
         				fieldLabel: this.passwordExpireIntervalText,
                         minValue  : 0,
                         maxValue  : 999,
-                    	width: 340
+                    	width	  : 340
             		},{
         				xtype     : 'numberfield',
         				name      : 'cp.password_history_interval',
         				fieldLabel: this.passwordHistoryIntervalText,
                         minValue  : 0,
                         maxValue  : 999,
-                    	width: 340
+                    	width	  : 340
             		},{
               			xtype: 'radiogroup',
               			fieldLabel: this.passwordChangeOnLoginText,

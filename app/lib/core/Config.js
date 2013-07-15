@@ -186,6 +186,25 @@ Ext.define('NP.lib.core.Config', function() {
 		},
 		
 		/**
+		 * Sets the value of an application setting
+		 * @param  {String} name            Name of the setting to retrieve
+		 * @param  {Mixed}  [value=""] 		Value that should be set for setting
+		 * @return {Boolean}
+		 */
+		setSetting: function(name, value) {
+			name = name.toLowerCase();
+			if (arguments.length < 2) {
+				Ext.log('No value provided for setting ' + name);
+				return false;
+			}
+			
+			if(settings[name] = value){
+				return true;
+			}
+		},
+		
+		
+		/**
 		 * Returns all custom field configuration settings
 		 * @return {Object}
 		 */
