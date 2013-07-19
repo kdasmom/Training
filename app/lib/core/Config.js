@@ -145,6 +145,13 @@ Ext.define('NP.lib.core.Config', function() {
 							// Save timezone
 							timezone = result;
 						}
+					},
+					// This requests gets the tree for all the roles in the system
+					{ 
+						service: 'UserService',
+						action : 'getRoleTree',
+						store  : 'NP.store.user.RoleTree',
+						storeId: 'user.RoleTree'
 					}
 				],
 				success: function(results, deferred) {

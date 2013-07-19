@@ -202,13 +202,16 @@ Ext.application({
      * The purpose of this function is basically to dynamically load views into empty panels.
      * It will usually be used to load views into the main content area, which is why the "panel"
      * argument defaults to "#contentPanel", the main content area of the application.
-     * @param  {Ext.Component/String} view  The component to add to a panel if it's not already its first child
-     * @param  {String}               panel Any selector that can be used by Ext.ComponentQuery to get a container
-     * @return {Ext.Component}              Returns the component created (if any) or the existing view object
+     * @param  {Ext.Component/String} view        The component to add to a panel if it's not already its first child
+     * @param  {Object}               cfg         Configuration parameters for the view (only used if view is a string)
+     * @param  {String}               panel       Any selector that can be used by Ext.ComponentQuery to get a container
+     * @param  {Boolean}              forceCreate Forces creation/adding of the view even if it already exists
+     * @return {Ext.Component}                    Returns the component created (if any) or the existing view object
      */
-	setView: function(view, cfg, panel) {
+	setView: function(view, cfg, panel, forceCreate) {
 		if (!cfg) var cfg = {};
 		if (!panel) var panel = '#contentPanel';
+		if (!forceCreate) var forceCreate = false;
 		
 		var pnl = Ext.ComponentQuery.query(panel)[0];
 		var isNewView = true;
@@ -217,17 +220,19 @@ Ext.application({
 		var currentView = pnl.child();
 
 		// If a string was passed in, check if dealing with a new view or a
-		if (typeof view == 'string') {
-			// Only create the view if dealing with a different one than the currently active one
-			if (Ext.ClassManager.getName(currentView) == view) {
-				isNewView = false;
-			}
-		} else {
-			if (currentView == view) {
-				isNewView = false;
+		if (!forceCreate) {
+			if (typeof view == 'string') {
+				// Only create the view if dealing with a different one than the currently active one
+				if (Ext.ClassManager.getName(currentView) == view) {
+					isNewView = false;
+				}
+			} else {
+				if (currentView == view) {
+					isNewView = false;
+				}
 			}
 		}
-
+		
 		// If we have a new view, let's add it to the parent panel
 		if (isNewView) {
 			// Remove all child elements from the parent panel

@@ -10,8 +10,8 @@ Ext.define('NP.view.mySettings.UserInformation', {
     requires: [
         'NP.lib.core.Security',
         'NP.lib.ui.VerticalTabPanel',
-    	'NP.view.mySettings.UserDetails',
-        'NP.view.mySettings.UserContactInfo',
+    	'NP.view.user.UsersFormDetails',
+        'NP.view.user.UserContactInfo',
         'NP.view.mySettings.UserPermissions',
     	'NP.view.shared.button.Save'
     ],
@@ -28,8 +28,11 @@ Ext.define('NP.view.mySettings.UserInformation', {
         extraParams: {
             userprofile_id: NP.lib.core.Security.getUser().get('userprofile_id')
         },
+        extraFields: ['role_id'],
         models: [
             'user.Userprofile',
+            'user.Userprofilerole',
+            'user.Staff',
             'contact.Person',
             'contact.Address',
             'contact.Email',
@@ -61,8 +64,8 @@ Ext.define('NP.view.mySettings.UserInformation', {
                 padding: 8
             },
             items : [
-                { xtype: 'mysettings.userdetails' },
-                { xtype: 'mysettings.usercontactinfo' }
+                { xtype: 'user.usersformdetails', isMySettings: true },
+                { xtype: 'user.usercontactinfo' }
             ]
         }];
 
@@ -79,8 +82,8 @@ Ext.define('NP.view.mySettings.UserInformation', {
         // Call the standard validation function
         var isValid = this.callParent();
 
-        var field = this.findField('user_properties');
-        if (field.getValue().length == 0) {
+        var field = this.findField('properties');
+        if (field && field.getValue().length == 0) {
             field.markInvalid('This field is required.');
             isValid = false;
         }

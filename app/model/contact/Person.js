@@ -25,8 +25,6 @@ Ext.define('NP.model.contact.Person', {
 	],
 
 	validations: [
-		{ field: 'person_id', type: 'presence' },
-		{ field: 'asp_client_id', type: 'presence' },
 		{ field: 'person_title', type: 'length', max: 20 },
 		{ field: 'person_firstname', type: 'length', max: 50 },
 		{ field: 'person_middlename', type: 'length', max: 50 },

@@ -6,7 +6,10 @@
 Ext.define('NP.model.user.Role', {
 	extend: 'Ext.data.Model',
 	
-	requires: ['NP.lib.core.Config'],
+	requires: [
+		'NP.lib.core.Config',
+		'NP.model.user.Userprofile'
+	],
 
 	idProperty: 'role_id',
 	fields: [
@@ -17,8 +20,19 @@ Ext.define('NP.model.user.Role', {
 		{ name: 'role_entrypage' },
 		{ name: 'is_admin_role', type: 'int' },
 		{ name: 'role_updated_by', type: 'int' },
-		{ name: 'role_updated_datetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() }
+		{ name: 'role_updated_datetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+		{ name: 'role_user_count', type: 'int' } // This field does not exist in the DB, it's a computed field
 	],
+    
+    belongsTo: [
+        {
+            model     : 'NP.model.user.Userprofile',
+            name      : 'updater',
+            getterName: 'getUpdater',
+            foreignKey: 'role_updated_by',
+            primaryKey: 'userprofile_id'
+        }
+    ],
 
 	validations: [
 		{ field: 'role_name', type: 'length', max: 255 },

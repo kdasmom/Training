@@ -6,8 +6,23 @@
 Ext.define('NP.controller.MySettings', {
 	extend: 'NP.lib.core.AbstractController',
 	
-	requires: ['NP.lib.core.Security','NP.lib.core.Net','NP.lib.core.Util'],
+	requires: [
+		'NP.lib.core.Security',
+		'NP.lib.core.Net',
+		'NP.lib.core.Util'
+	],
 	
+	refs: [
+		{ ref: 'overviewTab', selector: '[xtype="mysettings.overview"]' },
+		{ ref: 'userInformationTab', selector: '[xtype="mysettings.userinformation"]' },
+		{ ref: 'settingsTab', selector: '[xtype="mysettings.settings"]' },
+		{ ref: 'displayTab', selector: '[xtype="mysettings.display"]' },
+		{ ref: 'emailNotificationTab', selector: '[xtype="mysettings.emailnotification"]' },
+		{ ref: 'mobileSettingsTab', selector: '[xtype="mysettings.mobilesettings"]' },
+		{ ref: 'userDelegationTab', selector: '[xtype="user.userdelegation"]' }
+	],
+
+	// For localization	
 	changesSavedText                : 'Changes saved successfully',
 	errorDialogTitleText            : 'Error',
 	registerNewDeviceDialogTitleText: 'Register New Device?',
@@ -22,7 +37,8 @@ Ext.define('NP.controller.MySettings', {
 	init: function() {
 		Ext.log('MySettings controller initialized');
 
-		var app = this.application;
+		// Make sure the UserManager controller is loaded because we're re-using functionality
+		this.application.initController('UserManager');
 
 		// Setup event handlers
 		this.control({
@@ -42,7 +58,7 @@ Ext.define('NP.controller.MySettings', {
 				dataloaded: function(formPanel, data) {
 					// Select properties in item selector
 					var userProps = Ext.getStore('user.Properties').getRange();
-					formPanel.getForm().findField('user_properties').setValue(userProps);
+					formPanel.getForm().findField('properties').setValue(userProps);
 				}
 			},
 			// The Save button on the User Information page
@@ -79,39 +95,11 @@ Ext.define('NP.controller.MySettings', {
 				// Run this whenever the Disable button is clicked
 				click: this.disableMobileNumber
 			},
-			// The delegation grids
-			'[xtype="mysettings.userdelegationgrid"]': {
-				// Clicking on Cancel or View on one of the delegation grids
-				cellclick: function(grid, td, cellIndex, record, tr, rowIndex, e, eOpts) {
-					// Only take action if the click happened on an image (button)
-					if (e.target.tagName == 'IMG') {
-						// Get the delegation ID for the record
-						var delegation_id = record.get('Delegation_Id');
-						var el = Ext.get(e.target);
-						// If Cancel button was clicked
-						if (el.hasCls('cancel')) {
-							this.cancelDelegation(delegation_id, grid);
-						// If View button was clicked
-						} else if (el.hasCls('view')) {
-							this.addHistory('MySettings:showMySettings:UserDelegation:Form:' + delegation_id);
-						}
-					}
+			// The Add a Delegation button in User Delegations tab
+			'[xtype="mysettings.main"] [xtype="user.userdelegation"] [xtype="shared.button.new"]': {
+				click: function() {
+					this.application.getController('UserManager').addDelegation(NP.Security.getUser().get('userprofile_id'));
 				}
-			},
-			// The Add a Delegation button on User Delegations
-			'[xtype="mysettings.userdelegation"] [xtype="shared.button.new"]': {
-				// Run this whenever the button is clicked
-				click: this.addUserDelegation
-			},
-			// The Cancel button on the Add Delegation form
-			'[xtype="mysettings.userdelegationform"] [xtype="shared.button.cancel"]': {
-				// Run this whenever the button is clicked
-				click: function() { this.addHistory('MySettings:showMySettings:UserDelegation:Main'); }
-			},
-			// The Save button on the Add Delegation form
-			'[xtype="mysettings.userdelegationform"] [xtype="shared.button.save"]': {
-				// Run this whenever the button is clicked
-				click: this.saveUserDelegationForm
 			}
 		});
 
@@ -143,7 +131,7 @@ Ext.define('NP.controller.MySettings', {
 			if (!activeTab) activeTab = 'Overview';
 			
 			// Check if the tab to be selected is already active, if it isn't make it the active tab
-			var tab = that.getCmp('mysettings.' + activeTab.toLowerCase());
+			var tab = that['get' + activeTab + 'Tab']();
 			
 			// Set the active tab if it hasn't been set yet
 			if (tab.getXType() != tabPanel.getActiveTab().getXType()) {
@@ -176,11 +164,11 @@ Ext.define('NP.controller.MySettings', {
 				extraFields: {
 					userprofile_password_current: 'userprofile_password_current',
 					userprofile_password_confirm: 'userprofile_password_confirm',
-					user_properties             : 'user_properties'
+					properties                  : 'properties'
 				},
 				success: function(result, deferred) {
-					// Clear passsord fields after save
-					if (form.findField('userprofile_password_current')) {
+					// Clear password fields after save
+					if (NP.Security.getRole().get('is_admin_role') != 1) {
 						form.findField('userprofile_password_current').setValue('');
 					}
 					form.findField('userprofile_password').setValue('');
@@ -244,6 +232,8 @@ Ext.define('NP.controller.MySettings', {
 	 * Displays the page for the Email Notification tab
 	 */
 	showEmailNotification: function() {
+		var that = this;
+
 		// Mask the form while we load the data
 		var comp = this.getCmp('mysettings.emailnotification');
 		
@@ -257,16 +247,7 @@ Ext.define('NP.controller.MySettings', {
 					userprofile_id: NP.Security.getUser().get('userprofile_id'),
 					success: function(result, deferred) {
 						// Check the appropriate boxes
-						Ext.Array.each(result, function(alertType) {
-							var checkbox = Ext.ComponentQuery.query('#emailalerttype_id_alt_' + alertType['emailalert_type']);
-							if (checkbox.length) {
-								checkbox[0].setValue(true);
-							}
-							var combo = Ext.ComponentQuery.query('#emailalert_days_pending_' + alertType['emailalert_type']);
-							if (combo.length) {
-								combo[0].setValue(parseInt(alertType['emailalert_days_pending']));
-							}
-						});
+						that.application.getController('UserManager').selectEmailAlerts(result);
 					},
 					failure: function(response, options, deferred) {
 						Ext.log('Failed to load user email notification')
@@ -277,9 +258,7 @@ Ext.define('NP.controller.MySettings', {
 					userprofile_id: NP.Security.getUser().get('userprofile_id'),
 					success: function(result, deferred) {
 						// Check the appropriate boxes
-						Ext.Array.each(result, function(hour) {
-							Ext.ComponentQuery.query('#emailalert_hours_' + hour)[0].setValue(true);
-						});
+						that.application.getController('UserManager').selectEmailAlertHours(result);
 					},
 					failure: function(response, options, deferred) {
 						Ext.log('Failed to load user email frequencies')
@@ -297,33 +276,6 @@ Ext.define('NP.controller.MySettings', {
 
 		var userprofile_id = NP.Security.getUser().get('userprofile_id');
 
-		// Get the value for the alert checkboxes
-		var emailalerttype_id_alt_list = NP.Util.getCheckboxValue('emailalerttype_id_alt');
-		
-		// Build the email alert records
-		var emailalerts = [];
-		Ext.Array.each(emailalerttype_id_alt_list, function(emailalerttype_id_alt) {
-			var combo = Ext.ComponentQuery.query('#emailalert_days_pending_' + emailalerttype_id_alt);
-			var emailalert_days_pending = (combo.length) ? combo[0].getValue() : null;
-			emailalerts.push({
-				emailalert_type        : emailalerttype_id_alt,
-				userprofile_id         : userprofile_id,
-				emailalert_days_pending: emailalert_days_pending
-			});
-		});
-
-		// Get the value for the frequency checkboxes
-		var emailalerthour_list = NP.Util.getCheckboxValue('emailalert_hours');
-
-		// Build the email alert hour records
-		var emailalerthours = [];
-		Ext.Array.each(emailalerthour_list, function(emailalerthour) {
-			emailalerthours.push({
-				runhour       : emailalerthour,
-				userprofile_id: userprofile_id
-			});
-		});
-
 		// Submit the notification info for saving
 		var maskCmp = this.getCmp('mysettings.emailnotification');
 		NP.Net.remoteCall({
@@ -332,9 +284,10 @@ Ext.define('NP.controller.MySettings', {
 			requests: {
 				service        : 'NotificationService',
 				action         : 'saveNotifications',
-				userprofile_id : userprofile_id,
-				emailalerts    : emailalerts,
-				emailalerthours: emailalerthours,
+				type           : 'userprofile',
+				tablekey_id    : userprofile_id,
+				emailalerts    : that.application.getController('UserManager').getSelectedEmailAlerts(),
+				emailalerthours: that.application.getController('UserManager').getSelectedEmailHours(),
 				success: function(result, deferred) {
 					if (result.success) {
 						// Show info message
@@ -478,40 +431,13 @@ Ext.define('NP.controller.MySettings', {
 	 * Displays the main user delegation page (the one with the two grids)
 	 */
 	showUserDelegationMain: function() {
-		this.setView('NP.view.mySettings.UserDelegationMain', {}, '[xtype="mysettings.userdelegation"]');
+		this.setView('NP.view.user.UserDelegationMain', {}, '[xtype="user.userdelegation"]');
 
-		var grids = Ext.ComponentQuery.query('[xtype="mysettings.userdelegationgrid"]');
+		var grids = Ext.ComponentQuery.query('[xtype="user.userdelegationgrid"]');
 
 		Ext.Array.each(grids, function(grid) {
 			grid.addExtraParams({ userprofile_id: NP.Security.getUser().get('userprofile_id') });
 			grid.getStore().load();
-		});
-	},
-
-	/**
-	 * Cancels a delegation
-	 * @param {Number}         delegation_id Id for the delegation to Cancel
-	 * @param {Ext.grid.Panel} grid          The grid on which the delegation to cancel is
-	 */
-	cancelDelegation: function(delegation_id, grid) {
-		Ext.MessageBox.confirm(this.cancelDelegDialogTitleText, this.cancelDelegDialogText, function(btn) {
-			if (btn == 'yes') {
-				NP.lib.core.Net.remoteCall({
-					requests: {
-						service      : 'UserService',
-						action       : 'cancelDelegation',
-						delegation_id: delegation_id,
-						success      : function(result, deferred) {
-							var rec = grid.getStore().query('Delegation_Id', delegation_id).getAt(0);
-							rec.set('Delegation_Status', 0);
-							rec.set('delegation_status_name', 'Inactive');
-						},
-						failure      : function(response, options, deferred) {
-							Ext.log('Failed to cancel delegation')
-						}
-					}
-				});
-			}
 		});
 	},
 
@@ -521,19 +447,20 @@ Ext.define('NP.controller.MySettings', {
 	 */
 	addUserDelegation: function() {
 		var that = this;
+		var userprofile_id = NP.Security.getUser().get('userprofile_id');
 		// Check if there's an active delegation for this user
 		NP.lib.core.Net.remoteCall({
 			requests: {
 				service: 'UserService',
 				action : 'hasActiveDelegation',
-				userprofile_id: NP.Security.getUser().get('userprofile_id'),
+				userprofile_id: userprofile_id,
 				success: function(result, deferred) {
 					// If user has an active delegation, then they can't add a delegation
 					if (result) {
 						Ext.MessageBox.alert(that.activeDelegErrorTitleText, that.activeDelegErrorText);
 					// Otherwise, it's find and redirect them to the add delegation form	
 					} else {
-						that.addHistory('MySettings:showMySettings:UserDelegation:Form');
+						that.showUserDelegationForm(userprofile_id);
 					}
 				},
 				failure: function(response, options, deferred) {
@@ -541,60 +468,5 @@ Ext.define('NP.controller.MySettings', {
 				}
 			}
 		});
-	},
-
-	showUserDelegationForm: function(delegation_id) {
-		var viewCfg = {
-			title: 'Add a Delegation',
-			bind: {
-				models   : ['user.Delegation']
-			}
-	    };
-
-	    if (delegation_id) {
-	    	Ext.apply(viewCfg.bind, {
-				service    : 'UserService',
-				action     : 'getDelegation',
-				extraParams: {
-					delegation_id: delegation_id
-		        },
-		        extraFields: ['delegation_properties']
-	    	});
-	    	viewCfg.title = 'Update a Delegation';
-	    	viewCfg.listeners = {
-	    		dataloaded: function(boundForm, data) {
-					boundForm.findField('Delegation_To_UserProfile_Id').setRawValue(data['Delegation_To_UserProfile_Id']);
-				}
-			};
-	    }
-
-		var form = this.setView('NP.view.mySettings.UserDelegationForm', viewCfg, '[xtype="mysettings.userdelegation"]');
-		var userField = form.findField('Delegation_To_UserProfile_Id');
-		if (delegation_id) {
-			userField.hide();
-			form.findField('Delegation_StartDate').disable();
-		} else {
-			userField.getStore().load();
-		}
-	},
-
-	saveUserDelegationForm: function() {
-		var that = this;
-		var form = this.getCmp('mysettings.userdelegationform');
-		form.getModel('user.Delegation').set('UserProfile_Id', NP.Security.getUser().get('userprofile_id'));
-
-		if (form.isValid()) {
-			form.submitWithBindings({
-				service: 'UserService',
-				action : 'saveDelegation',
-				extraFields: {
-					delegation_properties: 'delegation_properties'
-				},
-				success: function(result, deferred) {
-					// Relocate to the main page
-					that.addHistory('MySettings:showMySettings:UserDelegation:Main');
-				}
-			});
-		}
 	}
 });

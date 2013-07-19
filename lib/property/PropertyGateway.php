@@ -109,6 +109,26 @@ class PropertyGateway  extends AbstractGateway {
 
 		return $this->adapter->query($select, $params);
 	}
+
+	/**
+	 * Find coding access only properties for a given user
+	 *
+	 * @param  int    $userprofile_id              The active user ID, can be a delegated account
+	 * @return array                               Array of property records
+	 */
+	public function findCodingByUser($userprofile_id, $cols=null) {
+		$select = new Select();
+		$select->from(array('p'=>'property'))
+				->columns($cols)
+				->join(array('pu'=>'propertyusercoding'),
+						"p.property_id = pu.property_id",
+						array())
+				->whereEquals('pu.userprofile_id', '?')
+				->whereNotEquals('p.property_status', '0')
+				->order("p.property_name");
+		
+		return $this->adapter->query($select, array($userprofile_id));
+	}
 	
 	public function getBillToShipToProperties($type, $property_id) {
 		$type = strtolower($type);

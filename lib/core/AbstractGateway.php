@@ -191,6 +191,7 @@ abstract class AbstractGateway {
 	public function insert($data) {
 		// If we passed in an entity, get the data for it
 		if ($data instanceOf \NP\core\AbstractEntity) {
+			$fields = $data->getFields();
 			foreach ($fields as $fieldName=>$fieldDef) {
 				if (array_key_exists('timestamp', $fieldDef) && $fieldDef['timestamp'] == 'created') {
 					$data->$fieldName = \NP\util\Util::formatDateForDB();

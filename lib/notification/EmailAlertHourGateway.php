@@ -4,6 +4,9 @@ namespace NP\notification;
 
 use NP\core\AbstractGateway;
 use NP\core\db\Select;
+use NP\core\db\Delete;
+use NP\core\db\Insert;
+use NP\core\db\Expression;
 
 /**
  * Gateway for the EMAILALERTHOUR table
@@ -12,43 +15,84 @@ use NP\core\db\Select;
  */
 class EmailAlertHourGateway extends AbstractGateway {
 
-	public function getUserEmailFrequency($userprofile_id) {
-		$roleSubSelect = new Select();
-		$roleSubSelect->column('role_id')
-						->from('userprofilerole')
-						->whereEquals('userprofile_id', '?');
-		$roleHourSubSelect = new Select();
-		$roleHourSubSelect->count()
-							->from('emailalerthour')
-							->whereEquals('userprofile_id', '?')
-							->whereEquals('isActive', 0);
-
-		$select = new Select();
-		$select->from('emailalerthour')
-				->whereEquals('isActive', 1)
-				->whereNest('OR')
-				->whereEquals('userprofile_id', '?')
-				->whereNest()
-				->whereEquals('role_id', $roleSubSelect)
-				->whereEquals($roleHourSubSelect, 0);
+	public function deleteUserRoleEmailFrequency($type, $tablekey_id) {
+		$delete = new Delete();
+		$delete->from('emailalerthour');
 		
-		$params = array_fill(0, 3, $userprofile_id);
+		if ($type == 'userprofile') {
+			$delete->whereEquals('userprofile_id', '?');
+		} else {
+			$select = new Select();
+			$select->column('userprofile_id')
+					->from('userprofilerole')
+					->whereEquals('role_id', '?');
 
-		return $this->adapter->query($select, $params);
+			$delete->whereIn('userprofile_id', $select);
+		}
+
+		return $this->adapter->query($delete, array($tablekey_id));
 	}
 
-	public function insertUserMissingHours($userprofile_id) {
-		for ($i=0; $i<24; $i++) {
-			$exists = $this->adapter->query('
-				SELECT *
-				FROM emailalerthour 
-				WHERE runhour = ?
-					AND userprofile_id = ?
-			', array($i, $userprofile_id));
-			if (!count($exists)) {
-				$this->save(array('runhour'=>$i, 'userprofile_id'=>$userprofile_id, 'isActive'=>0));
-			}
+	public function copyRoleEmailFrequencyToUsers($type, $tablekey_id) {
+		$insert = new Insert();
+		$insert->into('emailalerthour')
+				->columns(array('runhour','isActive','userprofile_id'));
+
+		$select = new Select();
+		$select->columns(array(
+							'runhour',
+							'isActive'
+						))
+				->from(array('e'=>'emailalerthour'))
+				->whereEquals('e.role_id', '?');
+
+		if ($type == 'role') {
+				$select->join(array('ur'=>'userprofilerole'),
+						null,
+						array('userprofile_id'),
+						Select::JOIN_CROSS)
+						->whereEquals('ur.role_id', '?');
+
+				$role_id = $tablekey_id;
+		} else {
+			$role = new Select();
+			$role->column('role_id')
+						->from('userprofilerole')
+						->whereEquals('userprofile_id', '?');
+			$this->adapter->query($role, array($tablekey_id));
+			$role_id = $role[0]['role_id'];
+
+			$select->join(array('u'=>'userprofile'),
+						null,
+						array('userprofile_id'),
+						Select::JOIN_CROSS)
+						->whereEquals('u.userprofile_id', '?');
 		}
+
+		$insert->values($select);
+
+		return $this->adapter->query($insert, array($role_id, $tablekey_id));
+	}
+	
+	public function copyToRole($from_role_id, $to_role_id) {
+		$insert = new Insert();
+		$select = new Select();
+		$now = \NP\util\Util::formatDateForDB();
+
+		$insert->into('emailalerthour')
+				->columns(array('runhour','role_id','isActive'))
+				->values(
+					$select->columns(array(
+								'runhour',
+								new Expression('?'),
+								'isActive'
+							))
+							->from('emailalerthour')
+							->whereEquals('role_id', '?')
+							->whereEquals('isActive', '?')
+				);
+
+		$this->adapter->query($insert, array($to_role_id, $from_role_id, 1));
 	}
 
 }

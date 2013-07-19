@@ -10,7 +10,6 @@ class UserprofileEntity extends \NP\core\AbstractEntity {
 	
 	protected $fields = array(
 		'userprofile_id' => array(
-			'required' => true,
 			'validation' => array(
 				'digits' => array()
 			)
@@ -22,15 +21,17 @@ class UserprofileEntity extends \NP\core\AbstractEntity {
 			)
 		),
 		'userprofile_username' => array(
+			'required' => true,
 			'validation' => array(
 				'stringLength' => array('max'=>50)
 			)
 		),
 		'userprofile_status' => array(
+			'required' => true,
 			'validation' => array(
 				'stringLength' => array('max'=>50),
 				'inArray' => array(
-					'haystack' => array('active','inactive')
+					'haystack' => array('active','inactive','Active','Inactive')
 				)
 			)
 		),

@@ -6,12 +6,13 @@ use NP\core\AbstractService;
 use NP\user\UserprofileGateway;
 use NP\user\RoleGateway;
 use NP\user\UserprofileLogonGateway;
-use NP\user\ModulePrivGateway;
 use NP\system\ConfigService;
 use NP\system\SessionService;
+use NP\system\SiteService;
 use NP\property\RegionGateway;
 use NP\property\PropertyGateway;
 use NP\util\Util;
+use NP\core\validation\EntityValidator;
 
 /**
  * Service class for operations related to application security
@@ -20,22 +21,15 @@ use NP\util\Util;
  */
 class SecurityService extends AbstractService {
 	
-	protected $sessionService, $userprofileGateway, $roleGateway, $userprofileLogonGateway, $modulePrivGateway,
-				$regionGateway, $propertyGateway, $configService;
+	protected $siteService, $sessionService, $userprofileGateway, $roleGateway, $userprofileLogonGateway, 
+			$modulePrivGateway, $regionGateway, $propertyGateway, $configService, $moduleGateway;
 	
-	/**
-	 * @param \NP\system\SessionService        $sessionService          SessionService object injected
-	 * @param \NP\user\UserprofileGateway      $userprofileGateway      UserprofileGateway object injected
-	 * @param \NP\user\RoleGateway             $roleGateway             RoleGateway object injected
-	 * @param \NP\user\UserprofileLogonGateway $userprofileLogonGateway UserprofileLogonGateway object injected
-	 * @param \NP\user\ModulePrivGateway       $modulePrivGateway       ModulePrivGateway object injected
-	 * @param \NP\property\RegionGateway       $regionGateway           RegionGateway object injected
-	 * @param \NP\property\PropertyGateway     $propertyGateway         PropertyGateway object injected
-	 */
-	public function __construct(SessionService $sessionService, UserprofileGateway $userprofileGateway,
+	public function __construct($config, SiteService $siteService, SessionService $sessionService, UserprofileGateway $userprofileGateway,
 								RoleGateway $roleGateway, UserprofileLogonGateway $userprofileLogonGateway,
 								ModulePrivGateway $modulePrivGateway, RegionGateway $regionGateway,
-								PropertyGateway $propertyGateway, ConfigService $configService) {
+								PropertyGateway $propertyGateway, ModuleGateway $moduleGateway) {
+		$this->config                  = $config;
+		$this->siteService             = $siteService;
 		$this->sessionService          = $sessionService;
 		$this->userprofileGateway      = $userprofileGateway;
 		$this->roleGateway             = $roleGateway;
@@ -43,7 +37,7 @@ class SecurityService extends AbstractService {
 		$this->modulePrivGateway       = $modulePrivGateway;
 		$this->regionGateway           = $regionGateway;
 		$this->propertyGateway         = $propertyGateway;
-		$this->configService           = $configService;
+		$this->moduleGateway           = $moduleGateway;
 	}
 
 	/**
@@ -52,7 +46,7 @@ class SecurityService extends AbstractService {
 	 * @return \NP\security\auth\AuthenticationInterface 
 	 */
 	public function getAuthenticator() {
-		$configPath = $this->configService->getClientFolder() . '/authentication_config.php';
+		$configPath = $this->config['appRoot'] . '/clients/' . $this->siteService->getAppName() . '/authentication_config.php';
 		if (file_exists($configPath)) {
 			$config = include $configPath;
 			$className = '\\NP\\security\\auth\\' . ucfirst($config['type']) . 'Authenticator';
@@ -280,6 +274,160 @@ class SecurityService extends AbstractService {
 	 */
 	public function getContext() {
 		return $this->sessionService->get('global_context');
+	}
+
+	/**
+	 * Returns a module tree starting from a certain module
+	 */
+	public function getModuleTree($module_id=0, $getAsHierarchy=0, $leafOnly=0, $showCheckboxes=1) {
+		$modules = $this->moduleGateway->findForTree();
+		$tree = array();
+		$startParent = 0;
+		foreach ($modules as $module) {
+			if ($module_id !== 0 && $module_id === $module['module_id']) {
+				$startParent = $module['tree_parent'];
+			}
+			if (!array_key_exists($module['tree_parent'], $tree)) {
+				$tree[$module['tree_parent']] = array();
+			}
+			$tree[$module['tree_parent']][] = $module;
+		}
+
+		$tree = $this->buildTree($tree, $startParent, 0, $getAsHierarchy, $leafOnly, $showCheckboxes);
+
+		return $tree;
+	}
+
+	private function buildTree($tree, $parent, $level=0, $getAsHierarchy=0, $leafOnly=0, $showCheckboxes=1) {
+		$modules = array();
+		if (array_key_exists($parent, $tree)) {
+			foreach($tree[$parent] as $treeItem) {
+				$modules[] = array(
+					'module_id'   => $treeItem['module_id'],
+					'module_name' => $treeItem['module_name']
+				);
+				$newlevel = $level + 1;
+				$pos = count($modules) - 1;
+				if ($getAsHierarchy) {
+					$modules[$pos]['children'] = $this->buildTree($tree, $treeItem['tree_id'], $newlevel, $getAsHierarchy, $leafOnly, $showCheckboxes);
+					if ($showCheckboxes) {
+						$modules[$pos]['checked'] = false;
+					}
+					if (!count($modules[$pos]['children'])) {
+						$modules[$pos]['leaf'] = true;
+						unset($modules[$pos]['children']);
+					} else {
+						if ($leafOnly) {
+							$modules[$pos]['cls'] = ($leafOnly) ? 'leaf' : 'folder';
+						}
+						$modules[$pos]['leaf'] = false;
+					}
+				} else {
+					$modules[$pos]['level'] = $level;
+					$modules[$pos]['indent_text'] = str_repeat('&nbsp;', $level*5);
+					$modules = array_merge($modules, $this->buildTree($tree, $treeItem['tree_id'], $newlevel, $getAsHierarchy, $leafOnly, $showCheckboxes));
+				}
+			}
+		}
+		return $modules;
+	}
+
+	/**
+	 * Get permissions for a role
+	 *
+	 * @param  int $role_id Id of role to get permissions for
+	 * @return array        Associative array of module_ids with true as the value
+	 */
+	public function getRolePermissions($role_id) {
+		$modules = $this->modulePrivGateway->find(
+			array('table_name'=>'?', 'tablekey_id'=>'?'),
+			array('role', $role_id),
+			null,
+			array('module_id')
+		);
+
+		return \NP\util\Util::valueList($modules, 'module_id', true);
+	}
+
+	/**
+	 * Saves permissions assigned to a role
+	 *
+	 * @param  array $module_id_list Array of module_ids
+	 * @return array
+	 */
+	public function saveRolePermissions($role_id, $module_id_list) {
+		$this->modulePrivGateway->beginTransaction();
+
+		$error = '';
+		try {
+			$validator = new EntityValidator();
+
+			$this->modulePrivGateway->delete(
+				array('table_name'=>'?', 'tablekey_id'=>'?'),
+				array('role', $role_id)
+			);
+
+			$now = \NP\util\Util::formatDateForDB();
+
+			foreach($module_id_list as $module_id) {
+				$modulePriv = new \NP\security\ModulePrivEntity(array(
+					'table_name'               => 'role',
+					'tablekey_id'              => $role_id,
+					'module_id'                => $module_id,
+					'modulepriv_dategranted'   => $now,
+					'modulepriv_effectivedate' => $now
+				));
+
+				$isValid = $validator->validate($modulePriv);
+				if ($isValid) {
+					$this->modulePrivGateway->save($modulePriv);
+				} else {
+					$error = 'Failed to save group permission, invalid record.';
+					break;
+				}
+			}
+		} catch(\Exception $e) {
+			$error = 'Unexpected error saving group permission';
+		}
+
+		if ($error == '') {
+			$this->modulePrivGateway->commit();
+		} else {
+			$this->modulePrivGateway->rollback();
+		}
+
+		return array(
+			'success' => ($error == '') ? true : false,
+			'error'   => $error
+		);
+	}
+
+	/**
+	 * Copies permissions from one role to another
+	 *
+	 * @param  int   $from_role_id
+	 * @param  int   $to_role_id
+	 * @return array
+	 */
+	public function copyRolePermissions($from_role_id, $to_role_id) {
+		$error = '';
+		$this->modulePrivGateway->beginTransaction();
+		try {
+			$this->modulePrivGateway->copyToRole($from_role_id, $to_role_id);
+		} catch(\Exception $e) {
+			$error = 'Unexpected error copying group permission';
+		}
+
+		if ($error == '') {
+			$this->modulePrivGateway->commit();
+		} else {
+			$this->modulePrivGateway->rollback();
+		}
+
+		return array(
+			'success' => ($error == '') ? true : false,
+			'error'   => $error
+		);
 	}
 }
 

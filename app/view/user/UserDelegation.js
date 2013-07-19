@@ -3,12 +3,10 @@
  *
  * @author Thomas Messier
  */
-Ext.define('NP.view.mySettings.UserDelegation', {
+Ext.define('NP.view.user.UserDelegation', {
     extend: 'Ext.panel.Panel',
-    alias: 'widget.mysettings.userdelegation',
+    alias: 'widget.user.userdelegation',
     
-    requires: ['NP.view.mySettings.UserDelegationMain'],
-
     title: 'User Delegation',
 
     layout: 'fit'

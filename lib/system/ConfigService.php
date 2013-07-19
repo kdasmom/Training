@@ -4,8 +4,8 @@ namespace NP\system;
 
 use NP\core\AbstractService;
 use NP\core\Exception;
-
-use Zend\Cache\Storage\Adapter\WinCache;
+use NP\core\Config;
+use NP\security\SecurityService;
 
 /**
  * Service class for operations related to app configuration
@@ -14,27 +14,15 @@ use Zend\Cache\Storage\Adapter\WinCache;
  */
 class ConfigService extends AbstractService {
 	
-	protected $config, $cache, $siteService, $configsysGateway, $intReqGateway, $intPkgGateway, $lookupcodeGateway,
-				$pnCustomFieldsGateway, $appName, $cacheName;
+	protected $config, $securityService, $siteService, $configsysGateway, $intReqGateway, $intPkgGateway, $lookupcodeGateway,
+				$pnCustomFieldsGateway, $appName;
 	
-	/**
-	 * @param array                                     $config                  Array with configuration options for the app
-	 * @param Zend\Cache\Storage\Adapter\WinCache       $cache                   WinCache object injected
-	 * @param \NP\system\SiteService                    $siteService             SiteService object injected
-	 * @param \NP\system\ConfigsysGateway               $configsysGateway        ConfigsysGateway object injected
-	 * @param \NP\system\PnUniversalFieldGateway        $pnUniversalFieldGateway PnUniversalFieldGateway object injected
-	 * @param \NP\system\IntegrationRequirementsGateway $intReqGateway           IntegrationRequirementsGateway object injected
-	 * @param \NP\system\IntegrationPackageGateway      $intPkgGateway           IntegrationPackageGateway object injected
-	 * @param \NP\system\LookupcodeGateway              $lookupcodeGateway       LookupcodeGateway object injected
-	 * @param \NP\system\PnCustomFieldsGateway          $pnCustomFieldsGateway   PnCustomFieldsGateway object injected
-	 * @param boolean                                   $reloadCache             Whether to reload the cache at instantiation time (optional); defaults to false
-	 */
-	public function __construct($config, WinCache $cache, SiteService $siteService, ConfigsysGateway $configsysGateway, 
+	public function __construct(Config $config, SecurityService $securityService, SiteService $siteService, ConfigsysGateway $configsysGateway, 
 								PnUniversalFieldGateway $pnUniversalFieldGateway,  IntegrationRequirementsGateway $intReqGateway, 
 								IntegrationPackageGateway $intPkgGateway, LookupcodeGateway $lookupcodeGateway,
-								PnCustomFieldsGateway $pnCustomFieldsGateway, $reloadCache=false) {
+								PnCustomFieldsGateway $pnCustomFieldsGateway) {
 		$this->config                  = $config;
-		$this->cache                   = $cache;
+		$this->securityService         = $securityService;
 		$this->siteService             = $siteService;
 		$this->configsysGateway        = $configsysGateway;
 		$this->pnUniversalFieldGateway = $pnUniversalFieldGateway;
@@ -43,38 +31,9 @@ class ConfigService extends AbstractService {
 		$this->lookupcodeGateway       = $lookupcodeGateway;
 		$this->pnCustomFieldsGateway   = $pnCustomFieldsGateway;
 		$this->appName                 = $siteService->getAppName();
-		$this->cacheName               = $this->appName . "_config";
 		
-		if ($reloadCache || !$this->isCacheLoaded()) {
-			$this->loadConfigCache();
-		}
-
 		// Defaulting locale to "en" for now until we implement this, will then probably come from session
 		$this->setLocale('en');
-	}
-	
-	/**
-	 * Loads all config settings into the cache
-	 */
-	protected function loadConfigCache() {
-		$configs = array();
-		
-		// Get all config values from DB and cache them
-		$configRows = $this->configsysGateway->find();
-		
-		foreach ($configRows as $configRow) {
-			$configs[strtolower($configRow['configsys_name'])] = $configRow['configsysval_val'];
-		}
-		$this->cache->setItem($this->cacheName, $configs);
-	}
-	
-	/**
-	 * Checks if the config cache is loaded
-	 *
-	 * @return boolean
-	 */
-	public function isCacheLoaded() {
-		return $this->cache->hasItem($this->cacheName);
 	}
 	
 	/**
@@ -83,7 +42,7 @@ class ConfigService extends AbstractService {
 	 * @return array
 	 */
 	public function getAll() {
-		return $this->cache->getItem($this->cacheName);
+		return $this->config->getAll();
 	}
 	
 	/**
@@ -94,37 +53,7 @@ class ConfigService extends AbstractService {
 	 * @return mixed
 	 */
 	public function get($key, $defaultVal=null) {
-		$val = "";
-		$key = strtolower($key);
-		if ( !$this->isCached($key) ) {
-			throw new Exception("The value you tried to retrieve doesn't exist");
-		}
-		$configs = $this->cache->getItem($this->cacheName);
-		// Check the cache from DB items first, if found there return
-		if ( array_key_exists($key, $configs) ) {
-			$val = $configs[$key];
-		} else {
-			// If item not found in the DB cache, check the site config file cache
-			$siteConfigs = $this->siteService->getClient($this->appName);
-			
-			// If it's found in the cache, return it
-			if ( array_key_exists("$key", $siteConfigs) ) {
-				$val = $siteConfigs[$key];
-			// Otherwise just pull it from the DB
-			} else {
-				$configRec = $this->configsysGateway->find(array("configsys_name"=>$key));
-				if (sizeof($configRec)) {
-					$val = $configRec[0]["configsysval_val"];
-				}
-			}
-		}
-		
-		// If the value is blank, return the default value
-		if ($val == "") {
-			$val = $defaultVal;
-		}
-		
-		return $val;
+		return $this->config->get($key, $defaultVal);
 	}
 	
 	/**
@@ -134,23 +63,7 @@ class ConfigService extends AbstractService {
 	 * @return boolean
 	 */
 	public function isCached($key) {
-		$key = strtolower($key);
-		
-		// If config cache hasn't been initialized for this app, do it now
-		if (!$this->isCacheLoaded()) {
-			$this->initConfigCache();
-		}
-		
-		// Check if the value is in the cache loaded from DB
-		$configs = $this->getAll();
-		$exists = array_key_exists($key, $configs);
-		
-		// If not in values from DB, check the values from the site config file
-		if (!$exists) {
-			$exists = array_key_exists($key, $this->siteService->getClient($this->appName));
-		}
-		
-		return $exists;
+		return $this->config->isCached($key);
 	}
 	
 	/**
@@ -412,7 +325,7 @@ class ConfigService extends AbstractService {
 	public function setPasswordConfiguration ($data) {
 		$errors = $this->configsysGateway->savePasswordConfiguration($data);
 		
-		$this->cache->setItems($data);
+		$this->config->loadConfigCache();
 		
 		// return the status of the save along with the errors if any
 		return array(

@@ -6,12 +6,9 @@
 Ext.define('NP.view.user.Groups', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.user.groups',
-    
+   	
+   	// For localization 
     title: 'User Groups',
 
-    html: 'Coming soon...',
-
-    initComponent: function() {
-    	this.callParent(arguments);
-    }
+    layout: 'fit'
 });

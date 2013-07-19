@@ -7,7 +7,6 @@ Ext.define('NP.model.user.Userprofilerole', {
 	extend: 'Ext.data.Model',
 	
 	requires: [
-		'NP.lib.core.Config',
 		'NP.model.user.Staff',
         'NP.lib.data.JsonFlat'
 	],
@@ -18,7 +17,7 @@ Ext.define('NP.model.user.Userprofilerole', {
 		{ name: 'userprofile_id', type: 'int' },
 		{ name: 'role_id', type: 'int' },
 		{ name: 'tablekey_id', type: 'int' },
-		{ name: 'userprofilerole_status' }
+		{ name: 'userprofilerole_status', defaultValue: 'active' }
 	],
 
     belongsTo: [
@@ -40,7 +39,8 @@ Ext.define('NP.model.user.Userprofilerole', {
     ],
 
 	validations: [
-		{ field: 'userprofilerole_id', type: 'presence' },
+		{ field: 'role_id', type: 'presence' },
+		{ field: 'userprofilerole_status', type: 'presence' },
 		{ field: 'userprofilerole_status', type: 'length', max: 50 }
 	]
 });

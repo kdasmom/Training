@@ -10,7 +10,6 @@ class EmailEntity extends \NP\core\AbstractEntity {
 	
 	protected $fields = array(
 		'email_id'	 => array(
-			'required' => true,
 			'validation' => array(
 				'digits' => array()
 			)
@@ -21,11 +20,13 @@ class EmailEntity extends \NP\core\AbstractEntity {
 			)
 		),
 		'tablekey_id'	 => array(
+			'required'   => true,
 			'validation' => array(
 				'digits' => array()
 			)
 		),
 		'table_name'	 => array(
+			'required'   => true,
 			'validation' => array(
 				'stringLength' => array('max'=>100)
 			)

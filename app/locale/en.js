@@ -600,8 +600,90 @@ Ext.define('NP.locale.en.view.user.Overview', {
 Ext.define('NP.locale.en.view.user.Users', {
 	override: 'NP.view.user.Users',
 
-	title                : 'Users',
-	createNewUserBtnLabel: 'Create New User'
+	title                : 'Users'
+});
+
+Ext.define('NP.locale.en.view.user.UsersGrid', {
+	override: 'NP.view.user.UsersGrid',
+
+	createNewUserBtnLabel: 'Create New User',
+    nameColText          : 'Name',
+    groupColText         : 'Group',
+    usernameColText      : 'Username',
+    lastUpdatedColText   : 'Last Updated',
+    statusColText        : 'Status'
+});
+
+Ext.define('NP.locale.en.view.user.UsersForm', {
+	override: 'NP.view.user.UsersForm',
+
+	delegationTabText: 'Delegation',
+	infoTabText      : 'User Information'
+});
+
+Ext.define('NP.locale.en.view.user.UsersFormDetails', {
+	override: 'NP.view.user.UsersFormDetails',
+
+	title                     : 'User Details',
+	usernameFieldLabel        : 'Username',
+	currentPasswordFieldLabel : 'Current Password',
+	passwordFieldLabel        : 'New Password',
+	passwordDescriptionText   : 'The minimum password length required is 6 characters. Password security requires that a minimum of one letter, number and special character be used when setting up user passwords in the system. Special characters include !, @, #, $, %, &, *, and ?.',
+	passwordFieldConfirmLabel : 'Confirm Password',
+	passwordMatchErrorText    : 'The password fields need to match',
+	positionFieldLabel        : 'Position',
+	startDateFieldLabel       : 'Start Date',
+	endDateFieldLabel         : 'End Date',
+	securityQuestionFieldLabel: 'Security Question',
+	securityAnswerFieldLabel  : 'Answer',
+});
+
+Ext.define('NP.locale.en.view.user.UsersFormPermissions', {
+	override: 'NP.view.user.UsersFormPermissions',
+
+	requires: ['NP.lib.core.Config'],
+
+	title              : 'Permissions',
+	codingPropertyLabel: NP.Config.getPropertyLabel(true) + ' for Coding Access Only'
+});
+
+Ext.define('NP.locale.en.view.user.Groups', {
+	override: 'NP.view.user.Groups',
+
+	title: 'User Groups'
+});
+
+Ext.define('NP.locale.en.view.user.GroupsForm', {
+	override: 'NP.view.user.GroupsForm',
+
+	createCopyBtnText: 'Create Copy'
+});
+
+Ext.define('NP.locale.en.view.user.GroupsFormInfo', {
+	override: 'NP.view.user.GroupsFormInfo',
+
+	title              : 'Group Information',
+	roleNameFieldLabel : 'Group Name',
+	nextLevelFieldLabel: 'Next Level'
+});
+
+Ext.define('NP.locale.en.view.user.GroupsFormPermissions', {
+	override: 'NP.view.user.GroupsFormPermissions',
+
+	title             : 'Responsibilities',
+	expandAllBtnText  : 'Expand All',
+	collapseAllBtnText: 'Collapse All'
+});
+
+Ext.define('NP.locale.en.view.user.GroupsGrid', {
+	override: 'NP.view.user.GroupsGrid',
+
+	createNewGroupBtnLabel: 'Create New Group',
+    createCopyBtnLabel    : 'Create Copy',
+    nameColText           : 'Name',
+    usersColText          : 'Users',
+    lastUpdatedColText    : 'Last Updated',
+    moduleFilterLabel     : 'Function'
 });
 
 /**
@@ -814,7 +896,7 @@ Ext.define('NP.locale.en.view.user.gridcol.DelegationCancel', {
 Ext.define('NP.locale.en.view.user.gridcol.DelegationView', {
 	override: 'NP.view.user.gridcol.DelegationToName',
 
-	text: 'View'
+	text: 'Name'
 });
 
 /**
@@ -897,4 +979,3 @@ Ext.define('NP.locale.en.controller.systemSetup.WorkflowManager', {
 
 	title: 'Workflow Manager',
 });
-

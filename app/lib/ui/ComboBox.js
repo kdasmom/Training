@@ -11,6 +11,7 @@ Ext.define('NP.lib.ui.ComboBox', {
 	 * @cfg {"normal"/"autocomplete"} type              The type of ComboBox; can be set to either "normal" or "autocomplete"; defaults to "normal"
 	 */
 	type: 'normal',
+
 	/**
 	 * @cfg {Boolean}                 addBlankRecord    Set to true if you want a blank record to be added as the first record of this combo box's store
 	 */
@@ -36,11 +37,10 @@ Ext.define('NP.lib.ui.ComboBox', {
 		Ext.applyIf(cfg, {
 			type          : 'normal',
 			forceSelection: true,
-			tpl           : new Ext.XTemplate('<tpl for=".">' + '<li class="x-boundlist-item" role="option">' + '{'+cfg.displayField+'}' + '</li></tpl>'),
 			addBlankRecord: false
 		});
 
-		if (cfg.type == 'autocomplete') {
+		if (this.type == 'autocomplete') {
 			Ext.applyIf(cfg, {
 				queryMode    : 'remote',
 				queryParam   : 'keyword',
@@ -56,7 +56,10 @@ Ext.define('NP.lib.ui.ComboBox', {
 				editable           : true
 			});
 		}
+
 		Ext.apply(this, cfg);
+
+		this.tpl = new Ext.XTemplate('<tpl for=".">' + '<li class="x-boundlist-item" role="option">' + '{'+this.displayField+'}' + '</li></tpl>');
 
 		// Key events must be on
 		this.enableKeyEvents = true;

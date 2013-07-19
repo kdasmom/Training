@@ -6,9 +6,17 @@ use NP\core\AbstractService;
 use NP\core\validation\EntityValidator;
 use NP\security\SecurityService;
 use NP\contact\PersonGateway;
+use NP\contact\AddressTypeGateway;
 use NP\contact\AddressGateway;
+use NP\contact\EmailTypeGateway;
 use NP\contact\EmailGateway;
+use NP\contact\PhoneTypeGateway;
 use NP\contact\PhoneGateway;
+use NP\property\PropertyGateway;
+use NP\property\RegionGateway;
+use NP\notification\NotificationService;
+use NP\system\TreeGateway;
+use NP\system\TreeEntity;
 
 /**
  * Service class for operations related to application users
@@ -18,13 +26,18 @@ use NP\contact\PhoneGateway;
 class UserService extends AbstractService {
 	protected $securityService, $delegationGateway, $userSettingGateway, $userprofileGateway, $roleGateway,
 			  $personGateway, $addressGateway, $emailGateway, $phoneGateway, $propertyUserprofileGateway,
-			  $mobInfoGateway, $delegationPropGateway;
+			  $mobInfoGateway, $delegationPropGateway, $propertyGateway, $regionGateway, $notificationService,
+			  $propertyUserCodingGateway, $userprofileroleGateway, $staffGateway, $addressTypeGateway,
+			  $emailTypeGateway, $phoneTypeGateway, $treeGateway, $configService;
 
 	public function __construct(SecurityService $securityService, DelegationGateway $delegationGateway, UserSettingGateway $userSettingGateway, 
 								UserprofileGateway $userprofileGateway, RoleGateway $roleGateway, PersonGateway $personGateway,
 								AddressGateway $addressGateway, EmailGateway $emailGateway, PhoneGateway $phoneGateway,
 								PropertyUserprofileGateway $propertyUserprofileGateway, MobInfoGateway $mobInfoGateway,
-								DelegationPropGateway $delegationPropGateway) {
+								DelegationPropGateway $delegationPropGateway, PropertyGateway $propertyGateway, RegionGateway $regionGateway,
+								NotificationService $notificationService, PropertyUserCodingGateway $propertyUserCodingGateway,
+								UserprofileroleGateway $userprofileroleGateway, StaffGateway $staffGateway, AddressTypeGateway $addressTypeGateway,
+								EmailTypeGateway $emailTypeGateway, PhoneTypeGateway $phoneTypeGateway, TreeGateway $treeGateway) {
 		$this->securityService            = $securityService;
 		$this->delegationGateway          = $delegationGateway;
 		$this->userSettingGateway         = $userSettingGateway;
@@ -37,6 +50,24 @@ class UserService extends AbstractService {
 		$this->propertyUserprofileGateway = $propertyUserprofileGateway;
 		$this->mobInfoGateway             = $mobInfoGateway;
 		$this->delegationPropGateway      = $delegationPropGateway;
+		$this->propertyGateway            = $propertyGateway;
+		$this->regionGateway              = $regionGateway;
+		$this->notificationService        = $notificationService;
+		$this->propertyUserCodingGateway  = $propertyUserCodingGateway;
+		$this->userprofileroleGateway     = $userprofileroleGateway;
+		$this->staffGateway               = $staffGateway;
+		$this->addressTypeGateway         = $addressTypeGateway;
+		$this->emailTypeGateway           = $emailTypeGateway;
+		$this->phoneTypeGateway           = $phoneTypeGateway;
+		$this->treeGateway                = $treeGateway;
+	}
+	
+	/**
+	 * Setter function required by DI to set the config service via setter injection
+	 * @param \NP\system\ConfigService $configService
+	 */
+	public function setConfigService(\NP\system\ConfigService $configService) {
+		$this->configService = $configService;
 	}
 
 	/**
@@ -46,7 +77,19 @@ class UserService extends AbstractService {
 	 * @return array
 	 */
 	public function get($userprofile_id) {
-		return $this->userprofileGateway->findProfileById($userprofile_id);
+		$res = $this->userprofileGateway->findProfileById($userprofile_id);
+		// Get property assignments for user
+		$res['properties'] = $this->getUserProperties($userprofile_id, $userprofile_id, array('property_id'));
+		$res['properties'] = \NP\util\Util::valueList($res['properties'], 'property_id');
+		// Get coding property assignments for user
+		$res['coding_properties'] = $this->getUserCodingProperties($userprofile_id, array('property_id'));
+		$res['coding_properties'] = \NP\util\Util::valueList($res['coding_properties'], 'property_id');
+		// Get email alerts for user
+		$res['email_alerts'] = $this->notificationService->getUserNotifications($userprofile_id);
+		// Get email alert hours for user
+		$res['email_hours'] = $this->notificationService->getUserEmailFrequency($userprofile_id);
+
+		return $res;
 	}
 
 	/**
@@ -55,17 +98,8 @@ class UserService extends AbstractService {
 	 * @param  string $userprofile_status The status of the user (optional); valid values are 'active' or 'inactive'
 	 * @return array
 	 */
-	public function getAll($userprofile_status=null, $pageSize=null, $page=1, $sort='person_lastname') {
-		$where = null;
-		$params = array();
-		if ($userprofile_status !== null) {
-			$where = 'u.userprofile_status = ?';
-			$params[] = $userprofile_status;
-		}
-		if ($sort == 'person_lastname') {
-			$sort = 'person_lastname, person_firstname';
-		}
-		return $this->userprofileGateway->find($where, $params, $sort, null, $pageSize, $page);
+	public function getAll($userprofile_status=null, $property_id=null, $role_id=null, $module_id=null, $pageSize=null, $page=1, $sort='person_lastname') {
+		return $this->userprofileGateway->findByFilter($userprofile_status, $property_id, $role_id, $module_id, $pageSize, $page, $sort);
 	}
 
 	/**
@@ -77,6 +111,77 @@ class UserService extends AbstractService {
 		$userprofile_id = $this->securityService->getUserId();
 		
 		return $this->userSettingGateway->getForUser($userprofile_id);
+	}
+
+	/**
+	 * Returns a role tree starting from a certain role
+	 */
+	public function getRoleTree($role_id=null) {
+		$roles = $this->roleGateway->findForTree();
+		$tree = array();
+		$startParent = 0;
+		foreach ($roles as $role) {
+			if ($role_id !== null && $role_id === $role['role_id']) {
+				$startParent = $role['tree_parent'];
+			}
+			if (!array_key_exists($role['tree_parent'], $tree)) {
+				$tree[$role['tree_parent']] = array();
+			}
+			$tree[$role['tree_parent']][] = $role;
+		}
+
+		$tree = $this->buildTree($tree, $startParent, 0);
+
+		return $tree;
+	}
+
+	private function buildTree($tree, $parent, $level=0) {
+		$roles = array();
+		if (array_key_exists($parent, $tree)) {
+			foreach($tree[$parent] as $treeItem) {
+				$roles[] = array(
+					'role_id'     => $treeItem['role_id'],
+					'role_name'   => $treeItem['role_name'],
+					'level'       => $level,
+					'indent_text' => str_repeat('&nbsp;', $level*5)
+				);
+				$newlevel = $level + 1;
+				$roles = array_merge($roles, $this->buildTree($tree, $treeItem['tree_id'], $newlevel));
+			}
+		}
+		return $roles;
+	}
+
+	/**
+	 * Get properties a user has permissions to
+	 *
+	 * @param  int   $userprofile_id              The active user ID, can be a delegated account
+	 * @param  int   $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
+	 * @return array                              Array of property records
+	 */
+	public function getUserProperties($userprofile_id, $delegated_to_userprofile_id, $cols=array('property_id','property_id_alt','property_name')) {
+		return $this->propertyGateway->findByUser($userprofile_id, $delegated_to_userprofile_id, $cols);
+	}
+
+	/**
+	 * Get coding access only properties a user has permissions to
+	 *
+	 * @param  int   $userprofile_id              The active user ID, can be a delegated account
+	 * @return array                              Array of property records
+	 */
+	public function getUserCodingProperties($userprofile_id, $cols=array('property_id','property_id_alt','property_name')) {
+		return $this->propertyGateway->findCodingByUser($userprofile_id, $cols);
+	}
+	
+	/**
+	 * Get regions a user has permissions to
+	 *
+	 * @param  int   $userprofile_id              The active user ID, can be a delegated account
+	 * @param  int   $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
+	 * @return array                              Array of region records
+	 */
+	public function getUserRegions($userprofile_id, $delegated_to_userprofile_id) {
+		return $this->regionGateway->findByUser($userprofile_id, $delegated_to_userprofile_id);
 	}
 
 	/**
@@ -162,40 +267,147 @@ class UserService extends AbstractService {
 	}
 
 	/**
+	 * Saves a complete user profile
+	 *
+	 * @param  array $data A data set of user information to be saved 
+	 * @return array       Array with status info on the operation
+	 */
+	public function saveUser($data) {
+		$errors = array();
+		$userprofile_id = null;
+
+		$this->userprofileGateway->beginTransaction();
+
+		try {
+			$res = $this->saveUserDetails($data);
+			$errors = $res['errors'];
+			$userprofile_id = $res['userprofile_id'];
+
+			// If no errors, save properties
+			if (!count($errors)) {
+				$success = $this->savePropertyAssignment($userprofile_id, $data['properties']);
+				if (!$success) {
+					$errors[] = array('field'=>'properties', 'msg'=>'Failed to save user property assignments', 'extra'=>null);
+				}
+			}
+
+			// If no errors, save coding only properties
+			if (!count($errors)) {
+				$success = $this->savePropertyAssignment($userprofile_id, $data['coding_properties'], true);
+				if (!$success) {
+					$errors[] = array('field'=>'coding_properties', 'msg'=>'Failed to save coding only property assignments', 'extra'=>null);
+				}
+			}
+
+			// If no errors, save email alerts and email frequencies
+			if (!count($errors)) {
+				$res = $this->notificationService->saveNotifications('userprofile', $userprofile_id, $data['emailalerts'], $data['emailalerthours']);
+				if (!$res['success']) {
+					$errors[] = array('field'=>'global', 'msg'=>$res['error'], 'extra'=>null);
+				}
+			}
+			
+		} catch(\Exception $e) {
+			// Add a global error to the error array
+			$errors[] = array('field'=>'global', 'msg'=>'Unexpected error', 'extra'=>null);
+		}
+
+		if (count($errors)) {
+			$this->userprofileGateway->rollback();
+		} else {
+			$this->userprofileGateway->commit();
+		}
+
+		return array(
+			'success'        => (count($errors)) ? false : true,
+			'errors'         => $errors,
+			'userprofile_id' => $userprofile_id
+		);
+	}
+
+	/**
 	 * Saves information for a user
 	 *
 	 * @param  array $data A data set of user information to be saved 
 	 * @return array       Array with status info on the operation
 	 */
 	public function saveUserInfo($data) {
+		$errors = array();
+		$userprofile_id = null;
+
+		$this->userprofileGateway->beginTransaction();
+
+		try {
+			$res = $this->saveUserDetails($data);
+			$errors = $res['errors'];
+			$userprofile_id = $res['userprofile_id'];
+
+			// If no errors, save coding only properties
+			if (!count($errors) && array_key_exists('properties', $data)) {
+				$success = $this->savePropertyAssignment($userprofile_id, $data['properties']);
+				if (!$success) {
+					$errors[] = array('field'=>'properties', 'msg'=>'Failed to save user property assignments', 'extra'=>null);
+				}
+			}
+		} catch(\Exception $e) {
+			$errors[] = array('field'=>'global', 'msg'=>'Unexpected error', 'extra'=>null);
+		}
+
+		if (count($errors)) {
+			$this->userprofileGateway->rollback();
+		} else {
+			$this->userprofileGateway->commit();
+		}
+
+		return array(
+			'success'        => (count($errors)) ? false : true,
+			'errors'         => $errors,
+			'userprofile_id' => $userprofile_id
+		);
+	}
+
+	/**
+	 * Saves details pertaining to the actual user, such as username, name, address, email, etc.
+	 *
+	 * @param  array $data A data set of user information to be saved 
+	 * @return array       Array with status info on the operation
+	 */
+	public function saveUserDetails($data) {
 		// Get entities
-		$userprofile = new \NP\user\UserprofileEntity($data['userprofile']);
-		$person      = new \NP\contact\PersonEntity($data['person']);
-		$address     = new \NP\contact\AddressEntity($data['address']);
-		$email       = new \NP\contact\EmailEntity($data['email']);
-		$homePhone   = new \NP\contact\PhoneEntity($data['home_phone']);
-		$workPhone   = new \NP\contact\PhoneEntity($data['work_phone']);
+		$userprofile     = new \NP\user\UserprofileEntity($data['userprofile']);
+		$userprofilerole = new \NP\user\UserprofileroleEntity($data['userprofilerole']);
+		$staff           = new \NP\user\StaffEntity($data['staff']);
+		$person          = new \NP\contact\PersonEntity($data['person']);
+		$address         = new \NP\contact\AddressEntity($data['address']);
+		$email           = new \NP\contact\EmailEntity($data['email']);
+		$homePhone       = new \NP\contact\PhoneEntity($data['home_phone']);
+		$workPhone       = new \NP\contact\PhoneEntity($data['work_phone']);
 
 		// Update the userprofile object
 		$userprofile->userprofile_updated_by = $this->securityService->getUserId();
-		$userprofile->userprofile_updated_datetm = \NP\util\Util::formatDateForDB();
+
+		// Set the client ID
+		$userprofile->asp_client_id = $this->configService->getClientId();
 
 		// Run validation
 		$validator = new EntityValidator();
 		$validator->validate($userprofile);
 		$errors    = $validator->getErrors();
-		$validator->validate($person);
-		$errors    = array_merge($errors, $validator->getErrors());
-		$validator->validate($address);
-		$errors    = array_merge($errors, $validator->getErrors());
-		$validator->validate($email);
-		$errors    = array_merge($errors, $validator->getErrors());
+
+		// Check the username to make sure it's unique
+		if (!$this->userprofileGateway->isUsernameUnique($userprofile->userprofile_username, $userprofile->userprofile_id)) {
+			$errors[] = array('field'=>'userprofile_username', 'msg'=>'The username entered is already in use by another user', 'extra'=>null);
+		}
 
 		// Check the current password entered if user is not an admin
-		$isAdmin = $this->isAdmin($userprofile->userprofile_id);
-		if (!$isAdmin) {
-			$id = $this->securityService->authenticate($userprofile->userprofile_username, $data['userprofile_password_current']);
-			if ($id == 0) {
+		$isAdmin = $this->isAdmin($this->securityService->getUserId());
+		if (!$isAdmin && array_key_exists('userprofile_password_current', $data)) {
+			$authenticator = $this->securityService->getAuthenticator();
+			$authenticator->setUsername($userprofile->userprofile_username);
+			$authenticator->setPassword($data['userprofile_password_current']);
+			$authSuccess = $authenticator->authenticate();
+
+			if (!$authSuccess) {
 				$errors[] = array('field'=>'userprofile_password_current', 'msg'=>'The password entered was incorrect', 'extra'=>null);
 			}
 		}
@@ -208,80 +420,127 @@ class UserService extends AbstractService {
 		// If the data is valid, save it
 		if (count($errors) == 0) {
 			// Begin transaction
-			$adapter = $this->userprofileGateway->getAdapter();
-			$adapter->beginTransaction();
+			$this->userprofileGateway->beginTransaction();
 
 			try {
 				// Save the userprofile record
 				$this->userprofileGateway->save($userprofile);
-				
+
 				// Save the person record
+				$person->asp_client_id = $this->configService->getClientId();
+				$validator->validate($person);
+				$errors    = array_merge($errors, $validator->getErrors());
 				$this->personGateway->save($person);
-
-				// Save the address records
-				$this->addressGateway->save($address);
-
-				// Save the email record
-				$this->emailGateway->save($email);
-
-				// Save the home phone record
-				$this->phoneGateway->save($homePhone);
-
-				// Save the work phone record
-				$this->phoneGateway->save($workPhone);
-
-				// Save property assignments
-				$success = $this->savePropertyAssignment($userprofile->userprofile_id, $data['user_properties']);
-				if (!$success) {
-					throw new \NP\core\Exception('Failed to save user property assignments');
+				
+				// Save the staff record
+				$staff->person_id = $person->person_id;
+				$validator->validate($staff);
+				$errors = array_merge($errors, $validator->getErrors());
+				if (!count($validator->getErrors())) {
+					$this->staffGateway->save($staff);
+				}
+				
+				// Save the user role record
+				$userprofilerole->userprofile_id = $userprofile->userprofile_id;
+				$userprofilerole->tablekey_id    = $staff->staff_id;
+				$validator->validate($userprofilerole);
+				$errors = array_merge($errors, $validator->getErrors());
+				if (!count($validator->getErrors())) {
+					$this->userprofileroleGateway->save($userprofilerole);
 				}
 
-				// Commit the transaction
-				$adapter->commit();
+				// Save the address records
+				$address->table_name = 'staff';
+				$address->tablekey_id = $staff->staff_id;
+				$address->addresstype_id = $this->addressTypeGateway->find('addresstype_name = ?', array('Home'));
+				$address->addresstype_id = $address->addresstype_id[0]['addresstype_id'];
+				$validator->validate($address);
+				$errors    = array_merge($errors, $validator->getErrors());
+				if (!count($validator->getErrors())) {
+					$this->addressGateway->save($address);
+				}
+
+				// Save the email record
+				$email->table_name = 'staff';
+				$email->tablekey_id = $staff->staff_id;
+				$email->emailtype_id = $this->emailTypeGateway->find('emailtype_name = ?', array('Home'));
+				$email->emailtype_id = $email->emailtype_id[0]['emailtype_id'];
+				$validator->validate($email);
+				$errors    = array_merge($errors, $validator->getErrors());
+				if (!count($validator->getErrors())) {
+					$this->emailGateway->save($email);
+				}
+
+				// Save the home phone record
+				$homePhone->table_name = 'staff';
+				$homePhone->tablekey_id = $staff->staff_id;
+				$homePhone->phonetype_id = $this->phoneTypeGateway->find(array('phonetype_name'=>'?'), array('Home'));
+				$homePhone->phonetype_id = $homePhone->phonetype_id[0]['phonetype_id'];
+				$validator->validate($homePhone);
+				$errors    = array_merge($errors, $validator->getErrors());
+				if (!count($validator->getErrors())) {
+					$this->phoneGateway->save($homePhone);
+				}
+
+				// Save the work phone record
+				$workPhone->table_name = 'staff';
+				$workPhone->tablekey_id = $staff->staff_id;
+				$workPhone->phonetype_id = $this->phoneTypeGateway->find(array('phonetype_name'=>'?'), array('Work'));
+				$workPhone->phonetype_id = $workPhone->phonetype_id[0]['phonetype_id'];
+				$validator->validate($workPhone);
+				$errors    = array_merge($errors, $validator->getErrors());
+				if (!count($validator->getErrors())) {
+					$this->phoneGateway->save($workPhone);
+				}
 			} catch(\Exception $e) {
-				// If there was an error, rollback the transaction
-				$adapter->rollback();
 				// Add a global error to the error array
-				$errors[] = array('field'=>'global', 'msg'=>"Unexpected error", 'extra'=>null);
+				$errors[] = array('field'=>'global', 'msg'=>'Unexpected error', 'extra'=>null);
 			}
 		}
 
+		if (count($errors)) {
+			$this->userprofileGateway->rollback();
+		} else {
+			$this->userprofileGateway->commit();
+		}
+
 		return array(
-			'success'    => (count($errors)) ? false : true,
-			'errors'     => $errors,
+			'success'        => (count($errors)) ? false : true,
+			'errors'         => $errors,
+			'userprofile_id' => $userprofile->userprofile_id
 		);
 	}
 
 	/**
 	 * Saves property assignments for a user
 	 *
-	 * @param int    $userprofile_id The ID for the user we want to assign properties to
-	 * @param string 
+	 * @param  int   $userprofile_id The ID for the user we want to assign properties to
+	 * @param  array $property_id_list
+	 * @return boolean
 	 */
-	public function savePropertyAssignment($userprofile_id, $property_id_list) {
-		$adapter = $this->propertyUserprofileGateway->getAdapter();
-
+	public function savePropertyAssignment($userprofile_id, $property_id_list, $isCodingOnly=false) {
+		$gateway = ($isCodingOnly) ? 'propertyUserCodingGateway' : 'propertyUserprofileGateway';
 		// Start a DB transaction
-		$adapter->beginTransaction();
+		$this->$gateway->beginTransaction();
 
 		$success = true;
 		try {
 			// Remove all property associations for this user
-			$this->propertyUserprofileGateway->delete('userprofile_id = ?', array($userprofile_id));
+			$this->$gateway->delete('userprofile_id = ?', array($userprofile_id));
 
 			// Insert new property associations for this user
 			foreach ($property_id_list as $property_id) {
-				$this->propertyUserprofileGateway->insert(array(
+				$this->$gateway->insert(array(
 					'userprofile_id' => $userprofile_id,
 					'property_id'    => $property_id
 				));
 			}
 
 			// Commit the data
-			$adapter->commit();
+			$this->$gateway->commit();
 		} catch(\Exception $e) {
 			// If there was an error, rollback the transaction
-			$adapter->rollback();
+			$this->$gateway->rollback();
 			// Change success to indicate failure
 			$success = false;
 		}
@@ -509,6 +768,24 @@ class UserService extends AbstractService {
 	}
 
 	/**
+	 * Get a specific role
+	 *
+	 * @param  int   $role_id Id of the role to retrieve
+	 * @return array
+	 */
+	public function getRole($role_id) {
+		$role = $this->roleGateway->findById($role_id);
+		// Get email alerts for role
+		$role['email_alerts'] = $this->notificationService->getRoleNotifications($role_id);
+		// Get email alert hours for role
+		$role['email_hours'] = $this->notificationService->getRoleEmailFrequency($role_id);
+		// Get modules assigned
+		$role['permissions'] = $this->securityService->getRolePermissions($role_id);
+
+		return $role;
+	}
+
+	/**
 	 * Activate a list of users
 	 *
 	 * @param  int    $userprofile_updated_by The id of the user performing the operation 
@@ -545,6 +822,198 @@ class UserService extends AbstractService {
 				$this->userprofileGateway->save($user);
 			}
 		}
+	}
+
+	/**
+	 * Returns a list of roles optionally filtered by module the role has access
+	 */
+	public function getRolesByModule($module_id=null, $pageSize=null, $page=1, $sort='role_name') {
+		return $this->roleGateway->findRolesByModule($module_id, $pageSize, $page, $sort);
+	}
+
+	/**
+	 * Saves a role
+	 *
+	 * @param  array $data A data set of role information to be saved 
+	 * @return array       Array with status info on the operation
+	 */
+	public function saveRole($data) {
+		$this->roleGateway->beginTransaction();
+
+		try {
+			$role     = new \NP\user\RoleEntity($data['role']);
+			$validator = new EntityValidator();
+			$validator->validate($role);
+			$errors   = $validator->getErrors();
+
+			// Check the username to make sure it's unique
+			if ($role->role_name != '' && !$this->roleGateway->isRoleNameUnique($role->role_name, $role->role_id)) {
+				$errors[] = array('field'=>'role_name', 'msg'=>'The group name entered is already in use', 'extra'=>null);
+			}
+
+			// If no errors, save the role
+			if (!count($errors)) {
+				$this->roleGateway->save($role);
+			}
+
+			// If no errors, save tree position
+			if (!count($errors)) {
+				// Find tree ID for parent role
+				$parentTree = $this->treeGateway->find(
+					array('table_name'=>'?', 'tablekey_id'=>'?'),
+					array('role', $data['parent_role_id'])
+				);
+				$parentTree = $parentTree[0];
+
+				// Create tree record
+				$tree = new TreeEntity(array(
+					'tree_parent' => $parentTree['tree_id'],
+					'table_name' => 'role',
+					'tablekey_id' => $role->role_id
+				));
+				$validator->validate($tree);
+
+				// If tree record is valid, save it
+				if (!$validator->getErrors()) {
+					$this->treeGateway->delete(
+						array('table_name'=>'?', 'tablekey_id'=>'?'),
+						array('role', $role->role_id)
+					);
+					$this->treeGateway->save($tree);
+				// Else create an error record
+				} else {
+					$errors[] = array('field'=>'global', 'msg'=>'Unexpected error saving role level, invalid record', 'extra'=>null);
+				}
+			}
+
+			// If no errors, save role permissions
+			if (!count($errors)) {
+				$res = $this->securityService->saveRolePermissions($role->role_id, $data['permissions']);
+				if (!$res['success']) {
+					$errors[] = array('field'=>'global', 'msg'=>$res['error'], 'extra'=>null);
+				}
+			}
+
+			// If no errors, save email alerts and email frequencies
+			if (!count($errors)) {
+				// Save new role email alerts
+				$res = $this->notificationService->saveNotifications('role', $role->role_id, $data['emailalerts'], $data['emailalerthours']);
+				if (!$res['success']) {
+					$errors[] = array('field'=>'global', 'msg'=>$res['error'], 'extra'=>null);
+				}
+			}
+
+			// If no errors and overwrite user email flag is on
+			if (!count($errors) && $data['email_overwrite']) {
+				$res = $this->notificationService->resetUserEmailAlertSettings('role', $role->role_id);
+				if (!$res['success']) {
+					$errors[] = array('field'=>'global', 'msg'=>$res['error'], 'extra'=>null);
+				}
+			}
+		} catch(\Exception $e) {
+			// Add a global error to the error array
+			$errors[] = array('field'=>'global', 'msg'=>'Unexpected error', 'extra'=>null);
+		}
+
+		if (count($errors)) {
+			$this->roleGateway->rollback();
+		} else {
+			$this->roleGateway->commit();
+		}
+
+		return array(
+			'success' => (count($errors)) ? false : true,
+			'errors'  => $errors,
+			'role_id' => $role->role_id
+		);
+	}
+
+	/**
+	 * Creates a copy of a role with the same properties
+	 *
+	 * @param  int   $role_id
+	 * @return array
+	 */
+	public function copyRole($role_id) {
+		$this->roleGateway->beginTransaction();
+
+		$role = $this->roleGateway->findById($role_id);
+
+		try {
+			// Clear out certain fields from the copied record
+			$role['role_id'] = null;
+			$role['role_updated_by'] = null;
+			$role['role_updated_datetm'] = null;
+
+			// Create the role name, making sure it's unique
+			$role['role_name'] = "{$role['role_name']} - copy";
+			$copyNum = 2;
+			while ( count($this->roleGateway->find('role_name = ?', array($role['role_name']))) ) {
+				$role['role_name'] = "{$role['role_name']} {$copyNum}";
+				$copyNum++;
+			}
+
+			// Create the role record
+			$role     = new \NP\user\RoleEntity($role);
+			$validator = new EntityValidator();
+			$validator->validate($role);
+			$errors   = $validator->getErrors();
+
+			if (!count($errors)) {
+				$this->roleGateway->save($role);
+			}
+
+			if (!count($errors)) {
+				// Get the tree record for role we're copying from
+				$tree = $this->treeGateway->find(
+					array('table_name'=>'?', 'tablekey_id'=>'?'),
+					array('role', $role_id)
+				);
+				$tree = $tree[0];
+
+				// Create a new tree record for the new role
+				$tree['tree_id'] = null;
+				$tree['tablekey_id'] = $role->role_id;
+				$tree = new \NP\system\TreeEntity($tree);
+
+				// Validate and save the tree record
+				$validator->validate($tree);
+				$errors   = array_merge($errors, $validator->getErrors());
+
+				if (!count($errors)) {
+					$this->treeGateway->save($tree);
+				}
+			}
+
+			if (!count($errors)) {
+				$res = $this->securityService->copyRolePermissions($role_id, $role->role_id);
+				if (!$res['success']) {
+					$errors[] = array('field'=>'global', 'msg'=>$res['error'], 'extra'=>null);
+				}
+			}
+
+			if (!count($errors)) {
+				$res = $this->notificationService->copyEmailSettingsToRole($role_id, $role->role_id);
+				if (!$res['success']) {
+					$errors[] = array('field'=>'global', 'msg'=>$res['error'], 'extra'=>null);
+				}
+			}
+		} catch(\Exception $e) {
+			// Add a global error to the error array
+			$errors[] = array('field'=>'global', 'msg'=>'Unexpected error', 'extra'=>null);
+		}
+
+		if (count($errors)) {
+			$this->roleGateway->rollback();
+		} else {
+			$this->roleGateway->commit();
+		}
+
+		return array(
+			'success'   => (count($errors)) ? false : true,
+			'errors'    => $errors,
+			'role_id'   => $role->role_id
+		);
 	}
 }
 
