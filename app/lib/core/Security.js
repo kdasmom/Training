@@ -133,6 +133,13 @@ Ext.define('NP.lib.core.Security', function() {
 						failure: function() {
 							Ext.log('Could not load property context');
 						}
+					},
+					// Get module tree
+					{ 
+						service                    : 'SecurityService',
+						action                     : 'getModuleTree',
+						store                      : 'NP.store.security.ModuleTree',
+						storeId                    : 'security.ModuleTree'
 					}
 				],
 				success: function(results, deferred) {
@@ -141,7 +148,7 @@ Ext.define('NP.lib.core.Security', function() {
 						requests: [
 							// This request gets regions for the user
 							{ 
-								service                    : 'PropertyService',
+								service                    : 'UserService',
 								action                     : 'getUserRegions',
 								store                      : 'NP.store.property.Regions',
 								storeId                    : 'user.Regions',
@@ -150,7 +157,7 @@ Ext.define('NP.lib.core.Security', function() {
 							},
 							// This request gets properties for the user
 							{ 
-								service                    : 'PropertyService',
+								service                    : 'UserService',
 								action                     : 'getUserProperties',
 								store                      : 'NP.store.property.Properties',
 								storeId                    : 'user.Properties',

@@ -10,8 +10,8 @@ Ext.define('NP.lib.core.AbstractController', {
 		return this.application.getComponent(comp);
 	},
 
-	setView: function(view, cfg, panel) {
-		return this.application.setView(view, cfg, panel);
+	setView: function(view, cfg, panel, forceCreate) {
+		return this.application.setView(view, cfg, panel, forceCreate);
 	},
 
 	addHistory: function(newToken) {

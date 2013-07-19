@@ -4,13 +4,12 @@ namespace NP\user;
 /**
  * Entity class for Staff
  *
- * @author 
+ * @author Thomas Messier
  */
 class StaffEntity extends \NP\core\AbstractEntity {
 	
 	protected $fields = array(
 		'staff_id'	 => array(
-			'required' => true,
 			'validation' => array(
 				'digits' => array()
 			)

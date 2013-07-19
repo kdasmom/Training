@@ -102,12 +102,21 @@ class PropertyService extends AbstractService {
 	}
 	
 	/**
+	 * Retrieves all properties
+	 *
+	 * @return array
+	 */
+	public function getAll() {
+		return $this->propertyGateway->find(null, array(), "property_name",  array('property_id','property_id_alt','property_name','property_status'));
+	}
+
+	/**
 	 * Retrieves all active properties with limited column info for settings
 	 *
 	 * @return array
 	 */
 	public function getAllForSettings() {
-		return $this->propertyGateway->find("property_status = 1", array(), "property_name",  array('property_id','property_id_alt','property_name'));
+		return $this->propertyGateway->find("property_status = 1", array(), "property_name",  array('property_id','property_id_alt','property_name','property_status'));
 	}
 
 	/**
@@ -176,17 +185,6 @@ class PropertyService extends AbstractService {
 			$property_keyword
 		);
 	}
-
-	/**
-	 * Get properties a user has permissions to
-	 *
-	 * @param  int   $userprofile_id              The active user ID, can be a delegated account
-	 * @param  int   $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
-	 * @return array                              Array of property records
-	 */
-	public function getUserProperties($userprofile_id, $delegated_to_userprofile_id, $cols=array('property_id','property_id_alt','property_name')) {
-		return $this->propertyGateway->findByUser($userprofile_id, $delegated_to_userprofile_id, $cols);
-	}
 	
 	/**
 	 * Get all the regions in the system
@@ -195,17 +193,6 @@ class PropertyService extends AbstractService {
 	 */
 	public function getRegions() {
 		return $this->regionGateway->find(null, null, 'region_name');
-	}
-	
-	/**
-	 * Get regions a user has permissions to
-	 *
-	 * @param  int   $userprofile_id              The active user ID, can be a delegated account
-	 * @param  int   $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
-	 * @return array                              Array of region records
-	 */
-	public function getUserRegions($userprofile_id, $delegated_to_userprofile_id) {
-		return $this->regionGateway->findByUser($userprofile_id, $delegated_to_userprofile_id);
 	}
 	
 	/**

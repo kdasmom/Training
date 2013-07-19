@@ -18,7 +18,6 @@ Ext.define('NP.model.contact.Email', {
 	],
 
 	validations: [
-		{ field: 'email_id', type: 'presence' },
 		{ field: 'table_name', type: 'length', max: 100 },
 		{ field: 'email_address', type: 'length', max: 255 },
 		{ field: 'email_address', type: 'email' }

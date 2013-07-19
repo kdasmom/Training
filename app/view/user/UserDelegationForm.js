@@ -3,9 +3,9 @@
  *
  * @author Thomas Messier
  */
-Ext.define('NP.view.mySettings.UserDelegationForm', {
+Ext.define('NP.view.user.UserDelegationForm', {
     extend: 'NP.lib.ui.BoundForm',
-    alias : 'widget.mysettings.userdelegationform',
+    alias : 'widget.user.userdelegationform',
     
     requires: [
         'NP.lib.core.Config',
@@ -57,10 +57,7 @@ Ext.define('NP.view.mySettings.UserDelegationForm', {
                 valueField  : 'userprofile_id',
                 store       : Ext.create('NP.store.user.Userprofiles', {
                     service    : 'UserService',
-                    action     : 'getAllowedDelegationUsers',
-                    extraParams: {
-                        userprofile_id: NP.Security.getUser().get('userprofile_id')
-                    }
+                    action     : 'getAllowedDelegationUsers'
                 }),
                 listConfig: {
                     itemTpl: '{userprofilerole.staff.person.person_lastname}, {userprofilerole.staff.person.person_lastname} ({userprofile_username})'
@@ -74,14 +71,18 @@ Ext.define('NP.view.mySettings.UserDelegationForm', {
                 selectOnTab : false,
                 displayField: 'property_name',
                 valueField  : 'property_id',
-                store       : 'user.Properties',
+                store       : Ext.create('NP.store.property.Properties', {
+                                service: 'UserService',
+                                action : 'getUserProperties'
+                            }),
                 width       : 600,
                 growMin     : 200,
                 growMax     : 400,
                 allowBlank  : false,
                 validateOnBlur: false,
                 validateOnChange: false
-            }
+            },
+            { xtype: 'hiddenfield', name: 'UserProfile_Id'}
         ];
 
         this.callParent(arguments);

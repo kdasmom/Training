@@ -10,7 +10,6 @@ class PersonEntity extends \NP\core\AbstractEntity {
 	
 	protected $fields = array(
 		'person_id'	 => array(
-			'required' => true,
 			'validation' => array(
 				'digits' => array()
 			)

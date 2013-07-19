@@ -3,9 +3,9 @@
  *
  * @author Thomas Messier
  */
-Ext.define('NP.view.mySettings.UserContactInfo', {
+Ext.define('NP.view.user.UserContactInfo', {
     extend: 'Ext.container.Container',
-    alias: 'widget.mysettings.usercontactinfo',
+    alias: 'widget.user.usercontactinfo',
     
     requires: [
         'NP.view.shared.Person',

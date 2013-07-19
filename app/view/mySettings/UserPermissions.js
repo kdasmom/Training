@@ -4,26 +4,29 @@
  * @author Thomas Messier
  */
 Ext.define('NP.view.mySettings.UserPermissions', {
-    extend: 'Ext.ux.form.ItemSelector',
+    extend: 'NP.view.shared.PropertyAssigner',
     alias: 'widget.mysettings.userpermissions',
     
     requires: [
         'NP.lib.core.Config'
     ],
 
+    // For localization
     title: 'User Permissions',
-
+    
     autoScroll: true,
+    margin    : 8,
+    hideLabel : true,
+    name      : 'properties',
+    anchor    : '100%',
+    store     : 'property.AllProperties',
 
-    margin: 8,
+    initComponent: function() {
+        var propLabel = NP.Config.getSetting('PN.Main.PropertiesLabel');
 
-    name        : 'user_properties',
-    anchor      : '100%',
-    store       : 'property.AllProperties',
-    displayField: 'property_name',
-    valueField  : 'property_id',
-    fromTitle   : 'Unassigned ' + NP.lib.core.Config.getSetting('PN.Main.PropertiesLabel'),
-    toTitle     : 'Assigned ' + NP.lib.core.Config.getSetting('PN.Main.PropertiesLabel'),
-    buttons     : ['add','remove'],
-    msgTarget   : 'under'
+        this.fromTitle = this.fromTitle + ' ' + propLabel;
+        this.toTitle = this.toTitle + ' ' + propLabel;
+
+        this.callParent(arguments);
+    }
 });

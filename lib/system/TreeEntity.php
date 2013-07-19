@@ -1,29 +1,29 @@
 <?php
-namespace NP\user;
+namespace NP\system;
 
 /**
- * Entity class for Userprofilerole
+ * Entity class for Tree
  *
- * @author 
+ * @author Thomas Messier
  */
-class UserprofileroleEntity extends \NP\core\AbstractEntity {
+class TreeEntity extends \NP\core\AbstractEntity {
 	
 	protected $fields = array(
-		'userprofilerole_id'	 => array(
+		'tree_id'	 => array(
 			'validation' => array(
 				'digits' => array()
 			)
 		),
-		'userprofile_id'	 => array(
+		'tree_parent'	 => array(
 			'required'   => true,
 			'validation' => array(
 				'digits' => array()
 			)
 		),
-		'role_id'	 => array(
+		'table_name'	 => array(
 			'required'   => true,
 			'validation' => array(
-				'digits' => array()
+				'stringLength' => array('max'=>50)
 			)
 		),
 		'tablekey_id'	 => array(
@@ -32,10 +32,9 @@ class UserprofileroleEntity extends \NP\core\AbstractEntity {
 				'digits' => array()
 			)
 		),
-		'userprofilerole_status'	 => array(
-			'required'   => true,
+		'tree_order'	 => array(
 			'validation' => array(
-				'stringLength' => array('max'=>50)
+				'digits' => array()
 			)
 		)
 	);

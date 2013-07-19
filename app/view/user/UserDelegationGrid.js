@@ -3,9 +3,9 @@
  *
  * @author Thomas Messier
  */
-Ext.define('NP.view.mySettings.UserDelegationGrid', {
+Ext.define('NP.view.user.UserDelegationGrid', {
     extend: 'NP.lib.ui.Grid',
-    alias : 'widget.mysettings.userdelegationgrid',
+    alias : 'widget.user.userdelegationgrid',
     
     requires: [
         'NP.view.user.gridcol.DelegationToName',

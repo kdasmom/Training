@@ -4,6 +4,7 @@ namespace NP\user;
 
 use NP\core\AbstractGateway;
 use NP\core\db\Update;
+use NP\core\db\Select;
 
 /**
  * Gateway for the USERPROFILE table
@@ -64,7 +65,7 @@ class UserprofileGateway extends AbstractGateway {
 		$select = new sql\UserprofileSelect();
 		$select->columnsAll()
 				->joinUserprofilerole(null)
-				->joinRole(null)
+				->joinRole()
 				->joinStaff(null)
 				->joinPerson(null)
 				->joinEmail(null)
@@ -194,6 +195,78 @@ class UserprofileGateway extends AbstractGateway {
 		return $this->adapter->query($update, $property_id_list);
 	}
 	
+	/**
+	 * Checks if a username is unique
+	 *
+	 * @param  string $userprofile_username 
+	 * @param  int    $userprofile_id       
+	 * @return boolean
+	 */
+	public function isUsernameUnique($userprofile_username, $userprofile_id) {
+		$select = new sql\UserprofileSelect();
+		$select->whereEquals('userprofile_username', '?');
+
+		$params = array($userprofile_username);
+		if ($userprofile_id !== null) {
+			$select->whereNotEquals('userprofile_id', '?');
+			$params[] = $userprofile_id;
+		}
+
+		$res = $this->adapter->query($select, $params);
+
+		return (count($res)) ? false : true;
+	}
+
+	/**
+	 * 
+	 */
+	public function findByFilter($userprofile_status=null, $property_id=null, $role_id=null, $module_id=null, $pageSize=null, $page=1, $sort='person_lastname') {
+		if ($sort == 'person_lastname ASC') {
+			$sort = 'p.person_lastname, p.person_firstname';
+		} else if ($sort == 'person_lastname DESC') {
+			$sort = 'p.person_lastname DESC, p.person_firstname DESC';
+		}
+
+		$select = $this->getSelect()->order($sort);
+		$params = array();
+
+		if ($userprofile_status !== null && $userprofile_status != '') {
+			$select->whereEquals('u.userprofile_status', '?');
+			$params[] = $userprofile_status;
+		}
+
+		if ($property_id !== null && $property_id != '') {
+			$propSelect = new Select();
+			$select->whereExists(
+				$propSelect->from(array('pu'=>'propertyuserprofile'))
+							->whereEquals('u.userprofile_id', 'pu.userprofile_id')
+							->whereEquals('pu.property_id', '?')
+			);
+			$params[] = $property_id;
+		}
+
+		if ($role_id !== null && $role_id != '') {
+			$select->whereEquals('ur.role_id', '?');
+			$params[] = $role_id;
+		}
+
+		if ($module_id !== null && $module_id != '') {
+			$moduleSelect = new Select();
+			$select->whereExists(
+				$moduleSelect->from(array('mp'=>'modulepriv'))
+							->whereEquals('mp.tablekey_id', 'ur.role_id')
+							->whereEquals('mp.module_id', '?')
+			);
+			$params[] = $module_id;
+		}
+
+		// If paging is needed
+		if ($pageSize !== null) {
+			return $this->getPagingArray($select, $params, $pageSize, $page);
+		} else {
+			return $this->adapter->query($select, $params);
+		}
+	}
 }
 
 ?>

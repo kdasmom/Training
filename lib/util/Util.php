@@ -27,12 +27,23 @@ class Util {
 	/**
 	 * Takes an array of objects and returns a simple array using the value of the specified field for each record
 	 *
-	 * @param  array  $arr   An array of objects 
-	 * @param  string $field The field you want values for in the array
+	 * @param  array   $arr               An array of objects 
+	 * @param  string  $field             The field you want values for in the array
+	 * @param  boolean $returnAssociative Set to true if you want an associative array instead of regular array (defaults to false)
 	 * @return array
 	 */
-	public static function valueList($arr, $field) {
-		$res = array_map(function($val) use ($field) { return $val[$field]; }, $arr);
+	public static function valueList($arr, $field, $returnAssociative=false) {
+		if ($returnAssociative) {
+			$res = array();
+			foreach ($arr as $val) {
+				$res[$val[$field]] = true;
+			}
+		} else {
+			$res = array_map(function($val) use ($field) {
+				return $val[$field];
+			}, $arr);
+		}
+
 		return $res;
 	}
 	

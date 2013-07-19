@@ -3,13 +3,13 @@
  *
  * @author Thomas Messier
  */
-Ext.define('NP.view.mySettings.UserDelegationMain', {
+Ext.define('NP.view.user.UserDelegationMain', {
 	extend: 'Ext.panel.Panel',
-    alias: 'widget.mysettings.userdelegationmain',
+    alias: 'widget.user.userdelegationmain',
     
     requires: [
     	'NP.view.shared.button.New',
-    	'NP.view.mySettings.UserDelegationGrid'
+    	'NP.view.user.UserDelegationGrid'
     ],
 
 	layout: {
@@ -31,8 +31,8 @@ Ext.define('NP.view.mySettings.UserDelegationMain', {
 	    this.bbar = bar;
 
 	    this.items = [
-            { xtype: 'mysettings.userdelegationgrid', toOrFrom: 'from', flex: 1, title: this.delegationFromText },
-            { xtype: 'mysettings.userdelegationgrid', toOrFrom: 'to', flex: 1, title: this.delegationToText }
+            { xtype: 'user.userdelegationgrid', toOrFrom: 'from', flex: 1, title: this.delegationFromText },
+            { xtype: 'user.userdelegationgrid', toOrFrom: 'to', flex: 1, title: this.delegationToText }
         ];
 
     	this.callParent(arguments);

@@ -16,7 +16,7 @@ Ext.define('NP.view.mySettings.Main', {
     	'NP.view.mySettings.Display',
     	'NP.view.mySettings.EmailNotification',
     	'NP.view.mySettings.MobileSettings',
-    	'NP.view.mySettings.UserDelegation'
+    	'NP.view.user.UserDelegation'
     ],
 
     title: 'My Settings',
@@ -51,7 +51,7 @@ Ext.define('NP.view.mySettings.Main', {
             });
         }
 
-		this.items.push({ xtype: 'mysettings.userdelegation' });
+		this.items.push({ xtype: 'user.userdelegation', itemId:'mySettingsDelegation' });
 
     	this.callParent(arguments);
     }

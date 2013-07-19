@@ -20,11 +20,13 @@ class PhoneEntity extends \NP\core\AbstractEntity {
 			)
 		),
 		'tablekey_id'	 => array(
+			'required'   => true,
 			'validation' => array(
 				'digits' => array()
 			)
 		),
 		'table_name'	 => array(
+			'required'   => true,
 			'validation' => array(
 				'stringLength' => array('max'=>100)
 			)

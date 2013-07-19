@@ -22,8 +22,8 @@ Ext.define('NP.view.user.Overview', {
 
     initComponent: function() {
     	var bar = [
-    		{ xtype: 'shared.button.new', text: this.newUserBtnLabel },
-    		{ xtype: 'shared.button.new', text: this.newGroupBtnLabel }
+    		{ xtype: 'shared.button.new', itemId: 'newUserBtn', text: this.newUserBtnLabel },
+    		{ xtype: 'shared.button.new', itemId: 'newGroupBtn', text: this.newGroupBtnLabel }
     	];
 
     	this.tbar = bar;
