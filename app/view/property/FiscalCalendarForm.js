@@ -20,13 +20,16 @@ Ext.define('NP.view.property.FiscalCalendarForm', {
 	bodyPadding: 8,
 	margin     : '0 0 0 8',
 	hidden     : true,
-	buttons    : [
-		{ xtype: 'shared.button.save' },
-		{ xtype: 'shared.button.cancel' }
-	],
-	buttonAlign: 'center',
-
+	
     initComponent: function() {
+        this.tbar = {
+            dock  : 'top',
+            items : [
+                { xtype: 'shared.button.save' },
+                { xtype: 'shared.button.cancel' }
+            ]
+        };
+
         var now = new Date();
         var fiscalYears = [];
         for (var year=2001; year<=now.getFullYear()+2; year++) {
