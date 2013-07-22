@@ -28,9 +28,6 @@ $di['dbName'] = $di->share(function($di) use ($__CONFIG) {
 });
 $di['dbUsername'] = $__CONFIG['datasource']['username'];
 $di['dbPassword'] = $__CONFIG['datasource']['password'];
-$di['sessionDuration'] = $di->share(function($di) use ($__CONFIG) {
-	return $di['Config']->get('main.util.logofftime', 1800);
-});
 
 $di['mailHost'] = $__CONFIG['mailServer']['host'];
 $di['mailPort'] = $__CONFIG['mailServer']['port'];
@@ -103,7 +100,7 @@ $diDefinition = array(
 	'NP\system\UserMessageRecipientGateway'    => array('Adapter'),
 	'NP\system\MessageService'                 => array('UserMessageGateway','UserMessageRecipientGateway'),
 	'NP\system\LoggingService'                 => array('logPath','enabledNamespaces','fileEnabled','debugEnabled'),
-	'NP\system\SessionService'                 => array('sessionDuration'),
+	'NP\system\SessionService'                 => array('Config','SiteService'),
 	'NP\system\SiteService'                    => array('WinCache','configPath','reloadCache'),
 	'NP\user\DelegationGateway'                => array('Adapter','RoleGateway'),
 	'NP\user\DelegationPropGateway'            => array('Adapter'),

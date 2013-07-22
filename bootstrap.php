@@ -1,8 +1,6 @@
 <?php
 use Zend\Loader\StandardAutoloader;
 
-session_start();
-
 // Load appropriate config file for environment
 require_once("config/config.php");
 
