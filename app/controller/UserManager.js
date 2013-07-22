@@ -39,7 +39,7 @@ Ext.define('NP.controller.UserManager', {
 	addDelegationDlgTitle     : 'Add a Delegation',
 	updateDelegationDlgTitle  : 'Update Delegation',
 	newUserFormTitle          : 'New User',
-	editUserFormTitle         : 'Editing User',
+	editUserFormTitle         : 'Editing',
 	newGroupFormTitle         : 'New Group',
 	editGroupFormTitle        : 'Editing Group',
 	changesSavedText          : 'Changes saved successfully',
@@ -307,7 +307,7 @@ Ext.define('NP.controller.UserManager', {
 					listeners       : {
 				    	dataloaded: function(formPanel, data) {
 				    		// Set the form title
-				    		formPanel.setTitle(that.editUserFormTitle + ' "' + data['userprofile_username'] + '"');
+				    		formPanel.setTitle(that.editUserFormTitle + ' ' + data['userprofile_username']);
 
 				    		// Set the active user for easy access later
 				    		that.activeUser = formPanel.getModel('user.Userprofile');
