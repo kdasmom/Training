@@ -342,7 +342,7 @@ Ext.define('NP.controller.PropertySetup', {
 					        		that.activePropertyRecord = that.getCmp('property.propertiesform').getModel('property.Property');
 
 					        		// Set the form title
-					        		form.setTitle(that.editPropertyTitleText + ' "' + that.activePropertyRecord.get('property_name') + ' (' + that.activePropertyRecord.get('property_id_alt') + ')"');
+					        		form.setTitle(that.editPropertyTitleText + ' ' + that.activePropertyRecord.get('property_name') + ' (' + that.activePropertyRecord.get('property_id_alt') + ')');
 
 					        		// Populate billto/shipto stores with default values so 
 					        		var defaultBillToField = form.findField('default_billto_property_id');
