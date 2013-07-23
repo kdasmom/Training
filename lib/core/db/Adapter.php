@@ -1,6 +1,8 @@
 <?php
 namespace NP\core\db;
 
+use NP\system\LoggingService;
+
 /**
  * Database adapter class
  *
@@ -80,7 +82,13 @@ class Adapter {
 			$this->conn = sqlsrv_connect($this->server, $connectionInfo);
 
 			if (!$this->conn) {
-				die( print_r( sqlsrv_errors(), true) );
+				$errors = sqlsrv_errors();
+				$message = "Error connecting to database. Errors were the following:";
+				foreach ($errors as $error) {
+					$message .= "\n\nSQLSTATE: {$error['SQLSTATE']}\ncode: {$error['code']}\nmessage: {$error['message']}";
+				}
+				throw new \NP\core\Exception($message);
+				die;
 			}
 		}
 	}
@@ -112,9 +120,13 @@ class Adapter {
 		// Create the SQL statement and execute it
 		$stmt = sqlsrv_query($this->conn, $sql, $params);
 		if (!$stmt) {
-			$error = "Error running query. SQL was the following:\n\n{$sql}\n\nError was the following:\n\n";
-			$error .= print_r( sqlsrv_errors(), true);
-			throw new \NP\core\Exception($error);
+			$errors = sqlsrv_errors();
+			$paramStr = (count($params)) ? implode('|', $params) : '<none>';
+			$message = "Error running query. SQL was the following:\n\n{$sql};\n\nParameters were the following: {$paramStr};\n\nError was the following:";
+			foreach ($errors as $error) {
+				$message .= "\n\nSQLSTATE: {$error['SQLSTATE']};\ncode: {$error['code']};\nmessage: {$error['message']}";
+			}
+			throw new \NP\core\Exception($message);
 			die;
 		}
 		

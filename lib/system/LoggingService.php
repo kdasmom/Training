@@ -48,8 +48,8 @@ class LoggingService {
 	 * @param array  $details   Additional details for the logged item
 	 */
 	public function log($namespace, $message, $details=array()) {
-		// Only create the logger if firePHP debugging is on or if the namespace is on
-		if ( in_array($namespace, $this->enabledNamespaces) && ($this->fileEnabled || $this->debugEnabled) ) {
+		// Only create the logger if firePHP debugging is on or if the namespace is on or if it's set to 'error' (always on)
+		if ( ($namespace == 'error' || in_array($namespace, $this->enabledNamespaces)) && ($this->fileEnabled || $this->debugEnabled) ) {
 			// If we've already created the logger for this request, just retrieve it
 			if (array_key_exists($namespace, $this->loggers)) {
 				$logger = $this->loggers[$namespace];
@@ -73,7 +73,8 @@ class LoggingService {
 				$this->loggers[$namespace] = $logger;
 			}
 			// Log the message
-			$logger->info($message, $details);
+			$fn = ($namespace == 'error') ? 'err' : 'info';
+			$logger->$fn($message, $details);
 		}
 	}
 	
