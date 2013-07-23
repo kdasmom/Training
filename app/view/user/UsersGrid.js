@@ -170,6 +170,7 @@ Ext.define('NP.view.user.UsersGrid', {
                         text: this.groupColText,
                         dataIndex: 'role_name',
                         flex: 1,
+                        tdCls: 'grid-clickable-col',
                         renderer: function(val, meta, rec) {
                             return rec.getUserprofilerole().getRole().get('role_name');
                         }

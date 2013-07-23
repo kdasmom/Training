@@ -48,7 +48,7 @@ Ext.define('NP.controller.UserManager', {
 	init: function() {
 		Ext.log('UserManager controller initialized');
 
-		var app = this.application;
+		var that = this;
 
 		// Setup event handlers
 		this.control({
@@ -74,8 +74,11 @@ Ext.define('NP.controller.UserManager', {
 			'[xtype="user.usersgrid"] customgrid': {
 				// Making a selection on the grid
 				selectionchange: this.selectUser,
-				itemclick      : function(grid, rec, item, index, e) {
-					if (e.getTarget().className != 'x-grid-row-checker') {
+				cellclick: function(view, td, cellIndex, rec, tr, rowIndex, e) {
+					if (view.getHeaderAtIndex(cellIndex).text == 'Group') {
+						var grid = that.getUserGrid();
+						that.addHistory('UserManager:showUserManager:Groups:Form:' + rec.getUserprofilerole().get('role_id'));
+					} else if (cellIndex != 0) {
 						this.addHistory('UserManager:showUserManager:Users:Form:' + rec.get('userprofile_id'));
 					}
 				}

@@ -27,3 +27,6 @@
 /* FORM ITEMS */
 .x-form-item-label { font-weight: bold; }
 .x-form-required-field { background: repeat-x scroll 0 0 #DFE8F6; }
+
+/* GRIDs */
+.grid-clickable-col:hover { text-decoration:underline; cursor: pointer; }
