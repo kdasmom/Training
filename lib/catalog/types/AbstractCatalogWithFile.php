@@ -16,7 +16,7 @@ abstract class AbstractCatalogWithFile extends AbstractCatalog {
 		parent::isValid();
 
 		if ($this->data['vc_vendors'] === null || count($this->data['vc_vendors']) == 0) {
-			$this->validator->addError('vc_categories', 'This field is required');
+			$this->validator->addError('vc_categories', $this->localizationService->getMessage('requiredFieldError'));
 		}
 
 		return $this->validator->isValid();

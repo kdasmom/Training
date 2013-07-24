@@ -9,15 +9,8 @@ namespace NP\core;
  * @author Thomas Messier
  */
 abstract class AbstractService {
-	/**
-	 * The logging service singleton
-	 * 
-	 * The logging service singleton gets automatically injected via setter injection
-	 * (setLoggingService() function).
-	 *
-	 * @var \NP\system\LoggingService The logging service singleton
-	 */
-	protected $loggingService;
+	
+	protected $loggingService, $localizationService;
 
 	/**
 	 * @internal Setter function required by DI framework to set the logging service via setter injection
@@ -25,6 +18,27 @@ abstract class AbstractService {
 	 */
 	public function setLoggingService(\NP\system\LoggingService $loggingService) {
 		$this->loggingService = $loggingService;
+	}
+
+	/**
+	 * @internal Setter function required by DI framework to set the localization service via setter injection
+	 * @param \NP\locale\LocalizationService $localizationService
+	 */
+	public function setLocalizationService(\NP\locale\LocalizationService $localizationService) {
+		$this->localizationService = $localizationService;
+	}
+
+	/**
+	 * Utility function to handle unexpected exceptions caught in catch blocks
+	 *
+	 * @param  \Exception $e
+	 * @return string
+	 */
+	public function handleUnexpectedError($e) {
+		$errorMsg = "File: {$e->getFile()};\nLine: {$e->getLine()};\nMessage: {$e->getMessage()};\nTrace: {$e->getTraceAsString()};";
+		$this->loggingService->log('error', $errorMsg);
+
+		return $this->localizationService->getMessage('unexpectedError');
 	}
 }
 

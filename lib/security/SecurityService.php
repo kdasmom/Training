@@ -59,7 +59,7 @@ class SecurityService extends AbstractService {
 			}
 			return $authenticator;
 		} else {
-			return new auth\StandardAuthenticator($this->userprofileGateway);
+			return new auth\StandardAuthenticator($this->userprofileGateway, $this->localizationService);
 		}
 	}
 	
@@ -382,12 +382,12 @@ class SecurityService extends AbstractService {
 				if ($isValid) {
 					$this->modulePrivGateway->save($modulePriv);
 				} else {
-					$error = 'Failed to save group permission, invalid record.';
+					$error = $this->localizationService->getMessage('unexpectedError');
 					break;
 				}
 			}
 		} catch(\Exception $e) {
-			$error = 'Unexpected error saving group permission';
+			$error = $this->handleUnexpectedError($e);
 		}
 
 		if ($error == '') {
@@ -415,7 +415,7 @@ class SecurityService extends AbstractService {
 		try {
 			$this->modulePrivGateway->copyToRole($from_role_id, $to_role_id);
 		} catch(\Exception $e) {
-			$error = 'Unexpected error copying group permission';
+			$error = $this->handleUnexpectedError($e);
 		}
 
 		if ($error == '') {

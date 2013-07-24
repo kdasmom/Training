@@ -69,38 +69,38 @@ class FileUpload {
 	protected function isValid() {
 		switch($this->file['error']) {
 			case UPLOAD_ERR_INI_SIZE:
-				$this->errors[] = 'File exceeds maximum allowed size.';
+				$this->errors[] = 'uploadMaxSizeError';
 				break;
 			case UPLOAD_ERR_FORM_SIZE:
-				$this->errors[] = 'File exceeds maximum allowed size.';
+				$this->errors[] = 'uploadMaxSizeError';
 				break;
 			case UPLOAD_ERR_PARTIAL:
-				$this->errors[] = 'File was not uploaded completely.';
+				$this->errors[] = 'uploadIncompleteUploadError';
 				break;
 			case UPLOAD_ERR_NO_FILE:
 				if ($this->options['required']) {
-					$this->errors[] = 'You must select a file to upload.';
+					$this->errors[] = 'uploadMissingFileError';
 				}
 				break;
 			case UPLOAD_ERR_NO_TMP_DIR:
-				$this->errors[] = 'Missing a temporary folder.';
+				$this->errors[] = 'uploadTempFolderError';
 				break;
 			case UPLOAD_ERR_CANT_WRITE:
-				$this->errors[] = 'Failed to write file to disk.';
+				$this->errors[] = 'uploadFailedWriteError';
 				break;
 			case UPLOAD_ERR_EXTENSION:
-				$this->errors[] = 'File upload was stopped by an extension.';
+				$this->errors[] = 'uploadExtensionError';
 				break;
 		}
 
 		if (!count($this->errors)) {
 			if ($this->file['name'] != '') {
 				if ( array_key_exists('allowedTypes', $this->options) && !in_array($this->file['type'], $this->options['allowedTypes']) ) {
-					$this->errors[] = "Files of type {$this->file['type']} are not allowed.";
+					$this->errors[] = 'uploadFileTypeError';
 				}
 
 				if ( array_key_exists('maxSize', $this->options) && $this->size > $this->options['maxSize'] ) {
-					$this->errors[] = "File exceeds maximum allowed size.";
+					$this->errors[] = 'uploadMaxSizeError';
 				}
 			}
 		}
@@ -139,7 +139,7 @@ class FileUpload {
 			// Move the uploaded file to the desired location
 			$success = move_uploaded_file($this->file["tmp_name"], $filePath);
 			if (!$success) {
-				$this->errors[] = "Failed to move the file.";
+				$this->errors[] = 'uploadFileMoveError';
 			}
 		}
 

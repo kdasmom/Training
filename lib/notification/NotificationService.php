@@ -90,7 +90,7 @@ class NotificationService extends AbstractService {
 				if ($isValid) {
 					$this->emailAlertGateway->save($emailalert);
 				} else {
-					$error = 'Failed to save email notifications.';
+					$error = $this->localizationService->getMessage('unexpectedError');
 					break;
 				}
 			}
@@ -106,13 +106,13 @@ class NotificationService extends AbstractService {
 				if ($isValid) {
 					$this->emailAlertHourGateway->save($emailalerthour);
 				} else {
-					$error = 'Failed to save email frequency.';
+					$error = $this->localizationService->getMessage('unexpectedError');
 					break;
 				}
 			}
 		} catch(\Exception $e) {
 			// Capture the error message
-			$error = 'Unexpected error';
+			$error = $this->handleUnexpectedError($e);
 		}
 
 		// If any error happens, rollback the transaction
@@ -150,7 +150,7 @@ class NotificationService extends AbstractService {
 			$this->emailAlertHourGateway->copyRoleEmailFrequencyToUsers($type, $tablekey_id);
 		} catch(\Exception $e) {
 			// Capture the error message
-			$error = $e->getMessage();
+			$error = $this->handleUnexpectedError($e);
 		}
 
 		// If any error happens, rollback the transaction
@@ -181,7 +181,7 @@ class NotificationService extends AbstractService {
 			$this->emailAlertGateway->copyToRole($from_role_id, $to_role_id);
 			$this->emailAlertHourGateway->copyToRole($from_role_id, $to_role_id);
 		} catch(\Exception $e) {
-			$error = 'Unexpected error copying email settings';
+			$error = $this->handleUnexpectedError($e);
 		}
 
 		if ($error == '') {

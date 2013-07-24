@@ -2,6 +2,9 @@
 
 namespace NP\security\auth;
 
+use NP\user\UserprofileGateway;
+use NP\locale\LocalizationService;
+
 /**
  * Class to perform standard authentication, which involves querying the NexusPayables database to check
  * is the username is present and if the password is correct
@@ -12,8 +15,9 @@ class StandardAuthenticator extends AbstractAuthenticator implements Authenticat
 
 	protected $userprofileGateway;
 	
-	public function __construct(\NP\user\UserprofileGateway $userprofileGateway) {
-		$this->userprofileGateway = $userprofileGateway;
+	public function __construct(UserprofileGateway $userprofileGateway, LocalizationService $localizationService) {
+		$this->userprofileGateway  = $userprofileGateway;
+		$this->localizationService = $localizationService;
 	}
 
 	public function authenticate() {
@@ -22,7 +26,7 @@ class StandardAuthenticator extends AbstractAuthenticator implements Authenticat
 
 		// If authentication succeeds, set the username
 		if (!$success) {
-			$this->errors[] = 'Username or password is incorrect. Please try again.';
+			$this->errors[] = $this->localizationService->getMessage('invalidUsernamePasswordError');
 		}
 
 		return $success;

@@ -19,19 +19,8 @@ class CatalogService extends AbstractService {
 	const CATALOG_PENDING    = -1;
 	const CATALOG_PROCESSING = -2;
 
-	protected $vcGateway;
-	protected $linkVcitemcatGlGateway;
-	protected $linkVcPropertyGateway;
-	protected $linkVcVccatGateway;
-	protected $linkVcVendorGateway;
-	protected $vcItemGateway;
-	protected $vcCatGateway;
-	protected $vendorGateway;
-
-	/**
-	 * @var \NP\system\ConfigService The config service singleton
-	 */
-	protected $configService;
+	protected $vcGateway, $linkVcitemcatGlGateway, $linkVcPropertyGateway, $linkVcVccatGateway,
+				$linkVcVendorGateway, $vcItemGateway, $vcCatGateway, $vendorGateway, $configService;
 
 	/**
 	 * @param \NP\catalog\VcGateway              $vcGateway              VcGateway object injected
@@ -57,10 +46,6 @@ class CatalogService extends AbstractService {
 		$this->vendorGateway          = $vendorGateway;
 	}
 	
-	/**
-	 * Setter function required by DI to set the config service via setter injection
-	 * @param \NP\system\ConfigService $configService
-	 */
 	public function setConfigService(\NP\system\ConfigService $configService) {
 		$this->configService = $configService;
 	}
@@ -159,7 +144,7 @@ class CatalogService extends AbstractService {
 
 		// Create an implementation class
 		$vcImpl = '\NP\catalog\types\\' . ucfirst($vc->vc_catalogtype);
-		$vcImpl = new $vcImpl($this->configService, $vc, $data);
+		$vcImpl = new $vcImpl($this->configService, $this->localizationService, $vc, $data);
 
 		$vcImpl->isValid();
 		$errors = $vcImpl->getErrors();
@@ -226,7 +211,11 @@ class CatalogService extends AbstractService {
 				// If there was an unexpected error, rollback the transaction
 				$this->vcGateway->rollback();
 				// Add a global error to the error array
-				$errors[] = array('field'=>'global', 'msg'=>"Unexpected error: {$e->getMessage()}; File: {$e->getFile()}; Line: {$e->getLine()}", 'extra'=>null);
+				$errors[] = array(
+								'field' => 'global',
+								'msg'   => $this->handleUnexpectedError($e),
+								'extra' => null
+							);
 			}
 		}
 
@@ -351,7 +340,7 @@ class CatalogService extends AbstractService {
 				$this->vcGateway->commit();
 			} catch(\Exception $e) {
 				$this->vcGateway->rollback();
-				$errors[] = 'There was an unexpected error saving the catalog vendor logo.';
+				$errors[] = $this->handleUnexpectedError($e);
 			}
 		}
 

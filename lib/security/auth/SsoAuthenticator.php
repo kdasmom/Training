@@ -21,7 +21,7 @@ class SsoAuthenticator extends LdapAuthenticator implements AuthenticatorInterfa
 			// Return the authentication as successful
 			return true;
 		} else {
-			parent::authenticate();
+			return parent::authenticate();
 		}
 	}
 

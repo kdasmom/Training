@@ -26,4 +26,17 @@ $autoLoader->register();
 // Load DI configuration 
 require_once("config/di_config.php"); // Keep DI configs in a separate file to keep this one clean
 
+// Set a generic error handler to catch errors
+// (this is especially needed to catch warnings and notices since they aren't caught by try/catch blocks)
+set_error_handler(function ($errno, $errstr, $errfile, $errline, $errcontext) use ($di) {
+	// Throw an ErrorException so the exception handler function can pick up
+	throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
+});
+
+set_exception_handler(function($e) use ($di) {
+	// Log error
+	$errorMsg = "File: {$e->getFile()};\nLine: {$e->getLine()};\nMessage: {$e->getMessage()};\nTrace: {$e->getTraceAsString()}";
+	$di['LoggingService']->log('error', $errorMsg);
+});
+
 ?>

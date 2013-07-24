@@ -11,6 +11,7 @@ if (array_key_exists("reloadconfiguration", $_GET)) {
 $di = new Pimple();
 
 // DI Parameters
+$di['locale'] = 'En';
 $di['reloadCache'] = $reloadCache;
 $di['configPath'] = $__CONFIG['appRoot'] . 'config\\site_config.xml';
 $di['config'] = $__CONFIG;
@@ -65,6 +66,7 @@ $diDefinition = array(
 	'NP\invoice\InvoiceItemGateway'            => array('Adapter'),
 	'NP\invoice\InvoiceService'                => array('SecurityService','InvoiceGateway','InvoiceItemGateway','BudgetService'),
 	'NP\invoice\InvoiceServiceInterceptor',
+	'NP\locale\LocalizationService'            => array('locale'),
 	'NP\notification\EmailAlertGateway'        => array('Adapter'),
 	'NP\notification\EmailAlertHourGateway'    => array('Adapter'),
 	'NP\notification\EmailAlertTypeGateway'    => array('Adapter'),
@@ -156,6 +158,11 @@ foreach($diDefinition as $classPath=>$dependencies) {
 		// Inject the Security service via setter injection to all interceptors
 		if ($r->hasMethod('setSecurityService')) {
 			$obj->setSecurityService($di['SecurityService']);
+		}
+
+		// Inject the Locale service via setter injection to all interceptors
+		if ($r->hasMethod('setLocalizationService')) {
+			$obj->setLocalizationService($di['LocalizationService']);
 		}
 
 		// Return object

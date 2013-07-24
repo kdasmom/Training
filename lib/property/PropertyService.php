@@ -610,7 +610,10 @@ class PropertyService extends AbstractService {
 				if (array_key_exists('property_gls', $data) && is_array($data['property_gls'])) {
 					$success = $this->saveGlAssignment($property->property_id, $data['property_gls']);
 					if (!$success) {
-						$errors[] = array('field'=>'global', 'msg'=>'There was an error saving GL Assignments');
+						$errors[] = array(
+										'field' => 'global',
+										'msg'   => $this->localizationService->getMessage('glAssignmentError')
+									);
 					}
 				}
 
@@ -618,7 +621,10 @@ class PropertyService extends AbstractService {
 				if (array_key_exists('property_users', $data)) {
 					$success = $this->saveUserAssignment($property->property_id, $data['property_users']);
 					if (!$success) {
-						$errors[] = array('field'=>'global', 'msg'=>'There was an error saving user assignments');
+						$errors[] = array(
+										'field' => 'global',
+										'msg'   => $this->localizationService->getMessage('userAssignmentError')
+									);
 					}
 				}
 
@@ -628,7 +634,10 @@ class PropertyService extends AbstractService {
 						$fiscalcalData['property_id'] = $property->property_id;
 						$saveStatus = $this->saveFiscalCal($fiscalcalData);
 						if (!$saveStatus['success']) {
-							$errors[] = array('field'=>'global', 'msg'=>'There was an error saving fiscal calendars');
+							$errors[] = array(
+										'field' => 'global',
+										'msg'   => $this->localizationService->getMessage('fiscalCalSaveError')
+									);
 							break;
 						}
 					}
@@ -688,7 +697,7 @@ class PropertyService extends AbstractService {
 			// If there was an error, rollback the transaction
 			$this->propertyGateway->rollback();
 			// Add a global error to the error array
-			$errors[] = array('field'=>'global', 'msg'=>'Unexpected error. Please contact system administrator.', 'extra'=>null);
+			$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
 		}
 
 		return array(
@@ -786,7 +795,11 @@ class PropertyService extends AbstractService {
 			if ($this->fiscalcalGateway->isDuplicateCalendar(
 				$fiscalcal->fiscalcal_id, $fiscalcal->fiscalcal_name, $fiscalcal->fiscalcal_year, $fiscalcal->property_id
 			)) {
-				$errors[] = array('field'=>'global', 'msg'=>'There is already a Fiscal Calendar with that name and year. Please select a different date and/or year.', 'extra'=>null);
+				$errors[] = array(
+								'field' => 'global',
+								'msg'   => $this->localizationService->getMessage('duplicateFiscalCalError'),
+								'extra' => null
+							);
 			} else {
 				$this->fiscalcalGateway->save($fiscalcal);
 
@@ -806,7 +819,7 @@ class PropertyService extends AbstractService {
 			// If there was an error, rollback the transaction
 			$this->fiscalcalGateway->rollback();
 			// Change success to indicate failure
-			$errors[] = array('field'=>'global', 'msg'=>'Unexpected error. Please contact system administrator.', 'extra'=>null);
+			$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
 		}
 
 		return array(

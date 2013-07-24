@@ -85,7 +85,7 @@ class PicklistService extends AbstractService {
 				$this->$gatewayName->commit();
 			} catch(\Exception $e) {
 				$this->$gatewayName->rollback();
-				$errors[] = array('field'=>'global', 'msg'=>$e->getMessage(), 'extra'=>null);
+				$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
 			}
 		}
 

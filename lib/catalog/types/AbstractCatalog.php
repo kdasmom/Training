@@ -3,6 +3,7 @@
 namespace NP\catalog\types;
 
 use NP\system\ConfigService;
+use NP\locale\LocalizationService;
 use NP\core\validation\EntityValidator;
 
 /**
@@ -19,11 +20,12 @@ abstract class AbstractCatalog {
 	protected $data;
 	protected $validator;
 
-	public function __construct(ConfigService $configService, $vc, $data) {
-		$this->configService = $configService;
-		$this->vc            = $vc;
-		$this->data          = $data;
-		$this->validator     = new EntityValidator();
+	public function __construct(ConfigService $configService, LocalizationService $localizationService, $vc, $data) {
+		$this->configService       = $configService;
+		$this->localizationService = $localizationService;
+		$this->vc                  = $vc;
+		$this->data                = $data;
+		$this->validator           = new EntityValidator();
 	}
 
 	abstract protected function getAssignmentFields();
@@ -34,7 +36,7 @@ abstract class AbstractCatalog {
 		foreach (self::$assignmentFields as $val) {
 			if ( in_array($val, $this->getAssignmentFields()) ) {
 				if ($this->data["vc_{$val}"] === null || count($this->data["vc_{$val}"]) == 0) {
-					$this->validator->addError("vc_{$val}", 'This field is required');
+					$this->validator->addError("vc_{$val}", $this->localizationService->getMessage('requiredFieldError'));
 				}
 			}
 		}

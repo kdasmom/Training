@@ -28,7 +28,7 @@ if (!$authenticator->showLogin()) {
 			header("Location: $loginUrl") ;
 			die;
 		} else {
-			$errors = array('Authentication failed');
+			$errors = array($di['LocalizationService']->getMessage('authenticationFailedError'));
 		}
 	// If authentication failed, get the errors
 	} else {

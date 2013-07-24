@@ -287,7 +287,10 @@ class UserService extends AbstractService {
 			if (!count($errors)) {
 				$success = $this->savePropertyAssignment($userprofile_id, $data['properties']);
 				if (!$success) {
-					$errors[] = array('field'=>'properties', 'msg'=>'Failed to save user property assignments', 'extra'=>null);
+					$errors[] = array(
+									'field' => 'properties',
+									'msg'   => $this->localizationService->getMessage('propertyAssignmentError')
+								);
 				}
 			}
 
@@ -295,7 +298,10 @@ class UserService extends AbstractService {
 			if (!count($errors)) {
 				$success = $this->savePropertyAssignment($userprofile_id, $data['coding_properties'], true);
 				if (!$success) {
-					$errors[] = array('field'=>'coding_properties', 'msg'=>'Failed to save coding only property assignments', 'extra'=>null);
+					$errors[] = array(
+									'field' => 'coding_properties',
+									'msg'   => $this->localizationService->getMessage('codingPropertyAssignmentError')
+								);
 				}
 			}
 
@@ -309,7 +315,7 @@ class UserService extends AbstractService {
 			
 		} catch(\Exception $e) {
 			// Add a global error to the error array
-			$errors[] = array('field'=>'global', 'msg'=>'Unexpected error', 'extra'=>null);
+			$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
 		}
 
 		if (count($errors)) {
@@ -341,16 +347,20 @@ class UserService extends AbstractService {
 			$res = $this->saveUserDetails($data);
 			$errors = $res['errors'];
 			$userprofile_id = $res['userprofile_id'];
-
+			
 			// If no errors, save coding only properties
 			if (!count($errors) && array_key_exists('properties', $data)) {
 				$success = $this->savePropertyAssignment($userprofile_id, $data['properties']);
 				if (!$success) {
-					$errors[] = array('field'=>'properties', 'msg'=>'Failed to save user property assignments', 'extra'=>null);
+					$errors[] = array(
+									'field' => 'properties',
+									'msg'   => $this->localizationService->getMessage('propertyAssignmentError'),
+									'extra' => null
+								);
 				}
 			}
 		} catch(\Exception $e) {
-			$errors[] = array('field'=>'global', 'msg'=>'Unexpected error', 'extra'=>null);
+			$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
 		}
 
 		if (count($errors)) {
@@ -396,7 +406,11 @@ class UserService extends AbstractService {
 
 		// Check the username to make sure it's unique
 		if (!$this->userprofileGateway->isUsernameUnique($userprofile->userprofile_username, $userprofile->userprofile_id)) {
-			$errors[] = array('field'=>'userprofile_username', 'msg'=>'The username entered is already in use by another user', 'extra'=>null);
+			$errors[] = array(
+							'field' => 'userprofile_username',
+							'msg'   => $this->localizationService->getMessage('duplicateUsernameError'),
+							'extra' => null
+						);
 		}
 
 		// Check the current password entered if user is not an admin
@@ -408,13 +422,21 @@ class UserService extends AbstractService {
 			$authSuccess = $authenticator->authenticate();
 
 			if (!$authSuccess) {
-				$errors[] = array('field'=>'userprofile_password_current', 'msg'=>'The password entered was incorrect', 'extra'=>null);
+				$errors[] = array(
+								'field' => 'userprofile_password_current',
+								'msg'   => $this->localizationService->getMessage('incorrectPasswordError'),
+								'extra' => null
+							);
 			}
 		}
 
 		// Check the password fields to make sure they match
 		if ($userprofile->userprofile_password != '' && $userprofile->userprofile_password != $data['userprofile_password_confirm']) {
-			$errors[] = array('field'=>'userprofile_password_confirm', 'msg'=>'The password fields need to match', 'extra'=>null);
+			$errors[] = array(
+							'field' => 'userprofile_password_confirm',
+							'msg'   => $this->localizationService->getMessage('passwordMatchError'),
+							'extra' => null
+						);
 		}
 
 		// If the data is valid, save it
@@ -494,7 +516,7 @@ class UserService extends AbstractService {
 				}
 			} catch(\Exception $e) {
 				// Add a global error to the error array
-				$errors[] = array('field'=>'global', 'msg'=>'Unexpected error', 'extra'=>null);
+				$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
 			}
 		}
 
@@ -572,7 +594,7 @@ class UserService extends AbstractService {
 			}
 		} catch(\Exception $e) {
 			$this->userprofileGateway->rollback();
-			$errors[] = array('field'=>'global', 'msg'=>'Unexpected error');
+			$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e));
 		}
 
 		return array(
@@ -606,7 +628,11 @@ class UserService extends AbstractService {
 
 			// Check if somebody else already registered this number
 			if ($this->mobInfoGateway->isDuplicate($mobInfo->userprofile_id, $mobInfo->mobinfo_phone)) {
-				$errors[] = array('field'=>'mobinfo_phone', 'msg'=>'This mobile number is already in use by another user. Please enter another number.');
+				$errors[] = array(
+								'field' => 'mobinfo_phone',
+								'msg'   => $this->localizationService->getMessage('duplicateMobileNumberError'),
+								'extra' => null
+							);
 			}
 
 			// Validate the record
@@ -636,7 +662,7 @@ class UserService extends AbstractService {
 			}
 		} catch(\Exception $e) {
 			$this->mobInfoGateway->rollback();
-			$errors[] = array('field'=>'global', 'msg'=>'Unexpected error');
+			$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e));
 		}
 
 		// Blank out the pin from the returned data so it gets cleared out
@@ -726,7 +752,10 @@ class UserService extends AbstractService {
 
 			// Validate to make sure at least one property is assigned
 			if (!array_key_exists('delegation_properties', $data) || !is_array($data['delegation_properties']) || !count($data['delegation_properties'])) {
-				$errors[] = array('field'=>'delegation_properties', 'msg'=>'You must delegate at least one property.');
+				$errors[] = array(
+								'field' => 'delegation_properties',
+								'msg'   => $this->localizationService->getMessage('noDelegationPropertyError')
+							);
 			}
 
 			// If there are no errors we can save everything
@@ -739,7 +768,7 @@ class UserService extends AbstractService {
 			}
 		} catch(\Exception $e) {
 			$this->delegationGateway->rollback();
-			$errors[] = array('field'=>'global', 'msg'=>'Unexpected database error');
+			$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e));
 		}
 
 		return array(
@@ -848,7 +877,11 @@ class UserService extends AbstractService {
 
 			// Check the username to make sure it's unique
 			if ($role->role_name != '' && !$this->roleGateway->isRoleNameUnique($role->role_name, $role->role_id)) {
-				$errors[] = array('field'=>'role_name', 'msg'=>'The group name entered is already in use', 'extra'=>null);
+				$errors[] = array(
+								'field' => 'role_name',
+								'msg'   => $this->localizationService->getMessage('duplicateGroupNameError'),
+								'extra' => null
+							);
 			}
 
 			// If no errors, save the role
@@ -882,7 +915,7 @@ class UserService extends AbstractService {
 					$this->treeGateway->save($tree);
 				// Else create an error record
 				} else {
-					$errors[] = array('field'=>'global', 'msg'=>'Unexpected error saving role level, invalid record', 'extra'=>null);
+					$errors[] = array('field'=>'global', 'msg'=>$this->localizationService->getMessage('unexpectedError'), 'extra'=>null);
 				}
 			}
 
@@ -912,7 +945,7 @@ class UserService extends AbstractService {
 			}
 		} catch(\Exception $e) {
 			// Add a global error to the error array
-			$errors[] = array('field'=>'global', 'msg'=>'Unexpected error', 'extra'=>null);
+			$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
 		}
 
 		if (count($errors)) {
@@ -1000,7 +1033,7 @@ class UserService extends AbstractService {
 			}
 		} catch(\Exception $e) {
 			// Add a global error to the error array
-			$errors[] = array('field'=>'global', 'msg'=>'Unexpected error', 'extra'=>null);
+			$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
 		}
 
 		if (count($errors)) {

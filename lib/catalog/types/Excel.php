@@ -55,7 +55,7 @@ class Excel extends AbstractCatalog {
 		if (!$fileUpload->upload()) {
 			$fileErrors = $fileUpload->getErrors();
 			foreach ($fileErrors as $error) {
-				$errors[] = array('field'=>'catalog_file', 'msg'=>$error, 'extra'=>null);
+				$errors[] = array('field'=>'catalog_file', 'msg'=>$this->localizationService->getMessage($error), 'extra'=>null);
 			}
 		}
 

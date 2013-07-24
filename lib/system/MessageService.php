@@ -121,7 +121,7 @@ class MessageService extends AbstractService {
 				// If there was an error, rollback the transaction
 				$this->userMessageGateway->rollback();
 				// Add a global error to the error array
-				$errors[] = array('field'=>'global', 'msg'=>'Unexpected error. Please contact system administrator.', 'extra'=>null);
+				$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
 			}
 		}
 
