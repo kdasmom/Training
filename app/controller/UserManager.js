@@ -310,7 +310,7 @@ Ext.define('NP.controller.UserManager', {
 					listeners       : {
 				    	dataloaded: function(formPanel, data) {
 				    		// Set the form title
-				    		formPanel.setTitle(that.editUserFormTitle + ' ' + data['userprofile_username']);
+				    		formPanel.setTitle(that.editUserFormTitle + ' ' + data['person_lastname'] + ', ' + data['person_firstname'] + ' (' + data['userprofile_username'] + ')');
 
 				    		// Set the active user for easy access later
 				    		that.activeUser = formPanel.getModel('user.Userprofile');
