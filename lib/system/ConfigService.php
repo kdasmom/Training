@@ -237,7 +237,7 @@ class ConfigService extends AbstractService {
 	 * @return mixed       The value of the config option
 	 */
 	public function getConfig($key) {
-		return $this->config[$key];
+		return $this->config->getConfig($key);
 	}
 
 	/**
