@@ -635,6 +635,14 @@ class UserService extends AbstractService {
 							);
 			}
 
+			$user = $this->userprofileGateway->findProfileById($mobInfo->userprofile_id);
+			if ($user['email_address'] === '' || $user['email_address'] === null) {
+				$errors[] = array(
+								'field' => 'global',
+								'msg'   => $this->localizationService->getMessage('noEmailSetupError')
+							);
+			}
+
 			// Validate the record
 			$validator = new EntityValidator();
 			$validator->validate($mobInfo);
@@ -652,17 +660,34 @@ class UserService extends AbstractService {
 				}
 
 				// Add activated date if dealing with new record
+				$sendEmail = false;
 				if ($mobInfo->mobinfo_id === null) {
+					$sendEmail = true;
 					$mobInfo->mobinfo_activated_datetm = \NP\util\Util::formatDateForDB();
 				}
 
 				$this->mobInfoGateway->save($mobInfo);
-
-				$this->mobInfoGateway->commit();	
 			}
 		} catch(\Exception $e) {
-			$this->mobInfoGateway->rollback();
 			$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e));
+		}
+
+		if (!count($errors)) {
+			$this->mobInfoGateway->commit();
+
+			// If dealing with a new device, send an email notification
+			if ($sendEmail === true) {
+				$emailMessage = new \NP\core\notification\EmailMessage();
+				$emailMessage->setSubject($this->localizationService->getMessage('mobileDeviceEmailSubject'))
+							->setFrom( $this->configService->get('PN.Main.FromEmail') )
+							->setTo($user['email_address'])
+							->setTemplate( $this->localizationService->getMessage('mobileDeviceEmailBody') )
+							->compile( array('mobinfo_phone'=>$mobInfo->mobinfo_phone) );
+
+				$this->notificationService->sendEmail($emailMessage);
+			}
+		} else {
+			$this->mobInfoGateway->rollback();
 		}
 
 		// Blank out the pin from the returned data so it gets cleared out
@@ -763,12 +788,80 @@ class UserService extends AbstractService {
 				$this->delegationGateway->save($delegation);
 
 				$this->saveDelegationProperties($delegation->Delegation_Id, $data['delegation_properties']);
-
-				$this->delegationGateway->commit();	
 			}
 		} catch(\Exception $e) {
-			$this->delegationGateway->rollback();
 			$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e));
+		}
+
+		if (count($errors)) {
+			$this->delegationGateway->rollback();
+		} else {
+			$this->delegationGateway->commit();
+
+			// If dealing with a new delegation, send an email notification
+			if ($data['delegation']['Delegation_Id'] === null) {
+				// We don't want the process to fail just because of email notification, so we try/catch
+				try {
+					// Get all the data needed for the email content
+					$fromUser = $this->userprofileGateway->findProfileById($delegation->UserProfile_Id);
+					$toUser = $this->userprofileGateway->findProfileById($delegation->Delegation_To_UserProfile_Id);
+					$dateFormat = $this->configService->get('PN.Intl.DateFormat');
+					$startDate = new \DateTime($delegation->Delegation_StartDate);
+					$stopDate = new \DateTime($delegation->Delegation_StopDate);
+					$delegProps = \NP\util\Util::valueList(
+						$this->delegationPropGateway->findDelegationProperties($delegation->Delegation_Id),
+						'property_name'
+					);
+
+					$subject = $this->localizationService->getMessage('newDelegationEmailSubject');
+					$body = $this->localizationService->getMessage('newDelegationEmailBody') . 
+							$this->localizationService->getMessage('emailNotificationFooter');
+					$from = $this->configService->get('PN.Main.FromEmail');
+
+					// Determine recipients
+					$recipients = explode(';', $this->configService->get('PN.General.delegationEmail'));
+					if (strlen($fromUser['email_address']) > 0) {
+						$recipients[] = $fromUser['email_address'];
+					}
+					if (strlen($toUser['email_address']) > 0) {
+						$recipients[] = $toUser['email_address'];
+					}
+
+					// Build email message
+					$emailMessage = new \NP\core\notification\EmailMessage();
+					$emailMessage->setSubject($subject)
+								->setFrom($from)
+								->setTemplate($body)
+								->compile(array(
+									'person_firstname'        => $fromUser['person_firstname'],
+									'person_lastname'         => $fromUser['person_lastname'],
+									'userprofile_username'    => $fromUser['userprofile_username'],
+									'to_person_firstname'     => $toUser['person_firstname'],
+									'to_person_lastname'      => $toUser['person_lastname'],
+									'to_userprofile_username' => $toUser['userprofile_username'],
+									'delegation_startdate'    => $startDate->format($dateFormat),
+									'delegation_stopdate'     => $stopDate->format($dateFormat),
+									'property_name_list'      => implode(', ', $delegProps)
+								));
+
+					$emailValidator = new \Zend\Validator\EmailAddress();
+
+					// Loop through all recipients to make sure they're valid
+					$validRecipients = array();
+					foreach ($recipients as $recipient) {
+						// Only send email if address is valid
+						if ($emailValidator->isValid($recipient)) {
+							$validRecipients[] = $recipient;
+						}
+					}
+
+					$emailMessage->setTo($validRecipients);
+					$this->notificationService->sendEmail($emailMessage);
+				// If an error occurs, just catch it and log it to be dealt with later
+				} catch(\Exception $e) {
+					$this->handleUnexpectedError($e);
+				}
+			}
 		}
 
 		return array(

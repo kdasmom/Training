@@ -19,6 +19,7 @@ $__CONFIG = array(
 	'enabledNamespaces'		=> array('global','mail','fileupload','catalog','invoice','po'),
 	'fileLogEnabled'		=> false, 
 	'debugLogEnabled'		=> true,
+	'notificationsEnabled'  => true,
 	'mailServer'            => array(
 			'host'           => 'smtp.yourhost.com',
 			'port'           => 25,

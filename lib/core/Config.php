@@ -137,11 +137,16 @@ class Config {
 	/**
 	 * Returns a value from the $config array
 	 *
-	 * @param  string $key The name of the config option to retrieve
-	 * @return mixed       The value of the config option
+	 * @param  string $key          The name of the config option to retrieve
+	 * @param  mixed  $defaultValue Default value to return if value doesn't exist
+	 * @return mixed                The value of the config option
 	 */
-	public function getConfig($key) {
-		return $this->config[$key];
+	public function getConfig($key, $defaultValue=null) {
+		if (array_key_exists($key, $this->config)) {
+			return $this->config[$key];
+		} else {
+			return $defaultValue;
+		}
 	}
 	
 }

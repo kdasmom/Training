@@ -37,8 +37,8 @@ namespace NP\core\notification;
  * @method array                              getAttachments()
  */
 class EmailMessage {
-	protected $from, $to, $cc, $bcc, $replyTo, $charset, $priority, $contentType, 
-				$subject, $body, $templatePath, $parts = array(), $attachments = array();
+	protected $from, $to, $cc, $bcc, $replyTo, $charset, $priority, $contentType, $subject,
+			$body, $template, $templatePath, $parts = array(), $attachments = array();
 
 	protected $validAddressTypes = array('from','to','cc','bcc','replyTo');
 	protected $validSetterFields = array('charset','priority','contentType','subject','body');
@@ -195,19 +195,39 @@ class EmailMessage {
 	}
 
 	/**
+	 * Allows for adding a template string (as opposed to a file for setTemplatePath) to be used to compile a message based on certain data
+	 *
+	 * @param  string $template The string to use as a template
+	 * @return \NP\core\notification\EmailMessage
+	 */
+	public function setTemplate($template) {
+		$this->template = $template;
+
+		return $this;
+	}
+
+	/**
 	 * Uses the template set to compile the body of the message based on the data passed
 	 *
 	 * @param  array $data Data to be used by the template
 	 * @return \NP\core\notification\EmailMessage
 	 */
 	public function compile($data) {
-		ob_start();
+		if ($this->templatePath !== null) {
+			ob_start();
 
-        extract($data);
-        include $this->templatePath;
+	        extract($data);
+	        include $this->templatePath;
 
-        $content = ob_get_contents();
-        ob_end_clean();
+	        $content = ob_get_contents();
+	        ob_end_clean();
+	    } else if ($this->template !== null) {
+	    	$content = $this->template;
+	    	 foreach ($data as $key=>$value) {
+		        $tagToReplace = "\${$key}";
+		        $content = str_replace($tagToReplace, $value, $content);
+		    }
+	    }
 
         $this->setBody($content);
 

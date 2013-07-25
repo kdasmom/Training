@@ -7,6 +7,7 @@ use NP\core\validation\EntityValidator;
 use NP\user\UserprofileGateway;
 use NP\core\notification\EmailerInterface;
 use NP\core\notification\EmailMessage;
+use NP\core\Config;
 
 /**
  * Service class for operations related to Notifications, email or otherwise
@@ -15,11 +16,12 @@ use NP\core\notification\EmailMessage;
  */
 class NotificationService extends AbstractService {
 
-	protected $emailAlertTypeGateway, $emailAlertHourGateway, $emailAlertGateway, $userprofileGateway, $emailer;
+	protected $config, $emailAlertTypeGateway, $emailAlertHourGateway, $emailAlertGateway, $userprofileGateway, $emailer;
 
-	public function __construct(EmailAlertTypeGateway $emailAlertTypeGateway, EmailAlertGateway $emailAlertGateway,
-								EmailAlertHourGateway $emailAlertHourGateway, UserprofileGateway $userprofileGateway,
-								EmailerInterface $emailer) {
+	public function __construct(Config $config, EmailAlertTypeGateway $emailAlertTypeGateway,
+								EmailAlertGateway $emailAlertGateway, EmailAlertHourGateway $emailAlertHourGateway,
+								UserprofileGateway $userprofileGateway, EmailerInterface $emailer) {
+		$this->config                = $config;
 		$this->emailAlertTypeGateway = $emailAlertTypeGateway;
 		$this->emailAlertGateway     = $emailAlertGateway;
 		$this->emailAlertHourGateway = $emailAlertHourGateway;
@@ -33,7 +35,26 @@ class NotificationService extends AbstractService {
 			$message->setTo($to);
 			$message->setFrom($from);
 		}
-		$this->emailer->send($message);
+
+		// Only send the email if notifications are enabled
+		if ($this->config->getConfig('notificationsEnabled', true)) {
+			$this->emailer->send($message);
+		}
+
+		// If mail logging is on, log this message
+		if ( in_array('mail', $this->config->getConfig('enabledNamespaces', array())) ) {
+			$from = $message->getFrom();
+			if (is_array($from)) {
+				$from = implode(';', $from);
+			}
+
+			$to = $message->getTo();
+			if (is_array($to)) {
+				$to = implode(';', $to);
+			}
+
+			$this->loggingService->log('mail', "From: {$from}; To: {$to}; Subject: {$message->getSubject()}; Message: {$message->getBody()}");
+		}
 	}
 
 	public function getAlertTypes() {

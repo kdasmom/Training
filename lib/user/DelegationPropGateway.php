@@ -18,7 +18,7 @@ class DelegationPropGateway extends AbstractGateway {
 				->from(array('dp'=>'delegationprop'))
 				->join(array('p'=>'property'),
 						'dp.property_id = p.property_id',
-						array())
+						array('property_id_alt','property_name'))
 				->whereEquals('dp.delegation_id', '?')
 				->order('p.property_name');
 
