@@ -7,10 +7,11 @@ Ext.define('NP.lib.ui.ComboBox', {
 	extend : 'Ext.form.field.ComboBox',
 	alias : 'widget.customcombo',
 	
-	/**
-	 * @cfg {"normal"/"autocomplete"} type              The type of ComboBox; can be set to either "normal" or "autocomplete"; defaults to "normal"
-	 */
-	type: 'normal',
+	forceSelection     : true,
+	queryMode          : 'local',
+	typeAhead          : true,
+	allowOnlyWhitespace: true,
+	editable           : true,
 
 	/**
 	 * @cfg {Boolean}                 addBlankRecord    Set to true if you want a blank record to be added as the first record of this combo box's store
@@ -33,32 +34,7 @@ Ext.define('NP.lib.ui.ComboBox', {
 	/**
 	 * @cfg {Object}                  extraParams       Default parameters to add to the store proxy; only applies to type "autocomplete"
 	 */
-	constructor: function(cfg) {
-		Ext.applyIf(cfg, {
-			type          : 'normal',
-			forceSelection: true,
-			addBlankRecord: false
-		});
-
-		if (this.type == 'autocomplete') {
-			Ext.applyIf(cfg, {
-				queryMode    : 'remote',
-				queryParam   : 'keyword',
-				typeAhead    : false,
-				hideTrigger  : true,
-				triggerAction: 'query'
-			});
-		} else {
-			Ext.applyIf(cfg, {
-				queryMode          : 'local',
-				typeAhead          : true,
-				allowOnlyWhitespace: true,
-				editable           : true
-			});
-		}
-
-		Ext.apply(this, cfg);
-
+	initComponent: function() {
 		this.tpl = new Ext.XTemplate('<tpl for=".">' + '<li class="x-boundlist-item" role="option">' + '{'+this.displayField+'}' + '</li></tpl>');
 
 		// Key events must be on
@@ -94,15 +70,12 @@ Ext.define('NP.lib.ui.ComboBox', {
 			}
 		});
 
-		// If type is normal only
-		if (this.type == 'normal') {
-			// If loadStoreOnFirstQuery is true, set a listener on beforequery to load a store only the first time the
-			// user tries to expand the field or types text for autocomplete
-			if (this.loadStoreOnFirstQuery) {
-				this.on('beforequery', function() {
-					this.getStore().load();
-				}, this, { single: true });
-			}
+		// If loadStoreOnFirstQuery is true, set a listener on beforequery to load a store only the first time the
+		// user tries to expand the field or types text for autocomplete
+		if (this.loadStoreOnFirstQuery) {
+			this.on('beforequery', function() {
+				this.getStore().load();
+			}, this, { single: true });
 		}
 
 		// If addBlankRecord is true, add a blank record at the beginning of the store to make it easy for the user to select
