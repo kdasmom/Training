@@ -14,17 +14,14 @@ class SessionService {
 	public function __construct(Config $config, SiteService $siteService) {
 		$sessionDuration = $config->get('main.util.logofftime', 1800);
 		$loginUrl = $siteService->getLoginUrl();
-		$loginUrl = rtrim(preg_replace('/https?:\/\//i', '', $loginUrl));
+		$loginUrl = rtrim(preg_replace('/https?:\/\//i', '', $loginUrl), '/');
 		$loginUrl = explode('/', $loginUrl);
-
-		// Make cookie last 1 day (note this is not the session length)
-		$cookieLifeTime = 60*60*24;
 
 		// Setup cookie parameters based on the type of URL (if we have a unique domain or domain and sub directory)
 		if (count($loginUrl) > 1) {
-			session_set_cookie_params($cookieLifeTime, $loginUrl[1], $loginUrl[0]);
+			session_set_cookie_params(0, '/'.$loginUrl[1].'/', $loginUrl[0]);
 		} else {
-			session_set_cookie_params($cookieLifeTime, '/', $loginUrl[0]);
+			session_set_cookie_params(0, '/', $loginUrl[0]);
 		}
 		session_start();
 

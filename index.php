@@ -6,7 +6,7 @@ require_once("bootstrap.php");
 $isAuth = $di['SecurityService']->isSessionAuthenticated();
 
 if (!$isAuth) {
-	$loginUrl = $di['ConfigService']->get('PN.Main.LoginUrl');
+	$loginUrl = rtrim($di['ConfigService']->get('PN.Main.LoginUrl'), '/');
 	header("Location: $loginUrl/login.php");
 } else {
 ?>
