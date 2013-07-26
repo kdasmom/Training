@@ -19,7 +19,7 @@ class LinkVcVendorGateway extends AbstractGateway {
 		$select->from(array('lvv'=>$this->table))
 				->join(array('v'=>'vendor'),
 					   'lvv.vendor_id = v.vendor_id',
-					   array());
+					   array('vendor_id_alt','vendor_name'));
 
 		return $select;
 	}

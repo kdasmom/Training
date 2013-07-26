@@ -13,9 +13,9 @@ Ext.define('NP.model.catalog.Vc', {
 		{ name: 'vc_id', type: 'int' },
 		{ name: 'vc_vendorname' },
 		{ name: 'vc_catalogname' },
-		{ name: 'vc_createdt', type: 'date', defaultValue: new Date(), dateFormat: NP.lib.core.Config.getServerDateFormat() },
+		{ name: 'vc_createdt', type: 'date' },
 		{ name: 'vc_createdby', type: 'int', defaultValue: NP.lib.core.Security.getUser().get('userprofile_id') },
-		{ name: 'vc_lastupdatedt', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
+		{ name: 'vc_lastupdatedt', type: 'date' },
 		{ name: 'vc_lastupdateby', type: 'int', defaultValue: NP.lib.core.Security.getUser().get('userprofile_id') },
 		{ name: 'vc_totalItems', type: 'int', defaultValue: 0 },
 		{ name: 'vc_status', type: 'int', defaultValue: -1 },
@@ -36,7 +36,6 @@ Ext.define('NP.model.catalog.Vc', {
 	],
 
 	validations: [
-		{ field: 'vc_vendorname' },
 		{ field: 'vc_vendorname', type: 'length', max: 250 },
 		{ field: 'vc_catalogname', type: 'presence' },
 		{ field: 'vc_catalogname', type: 'length', max: 100 },

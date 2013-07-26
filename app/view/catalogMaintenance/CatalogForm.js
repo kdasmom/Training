@@ -22,6 +22,7 @@ Ext.define('NP.view.catalogMaintenance.CatalogForm', {
     layout: 'fit',
 
     autoScroll: true,
+    border    : false,
 
     initComponent: function() {
         var that = this;
@@ -36,10 +37,11 @@ Ext.define('NP.view.catalogMaintenance.CatalogForm', {
 
         this.items = [
             {
-                xtype: 'tabpanel',
-                bodyPadding: 8,
+                xtype         : 'tabpanel',
+                bodyPadding   : 8,
                 deferredRender: false,
-                items: [
+                border        : false,
+                items         : [
                     { xtype: 'catalogmaintenance.catalogforminfo' },
                     { xtype: 'catalogmaintenance.catalogformposubmission', hidden: true },
                     { xtype: 'catalogmaintenance.catalogformcategories', hidden: true },

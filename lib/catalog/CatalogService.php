@@ -61,7 +61,9 @@ class CatalogService extends AbstractService {
 	public function get($vc_id) {
 		$data = $this->vcGateway->findById($vc_id);
 		$data['vc_categories'] = Util::valueList($this->getAssignedCategories($vc_id), 'vccat_id');
-		$data['vc_vendors']    = Util::valueList($this->getAssignedVendors($vc_id), 'vendor_id');
+		$assignedVendors       = $this->getAssignedVendors($vc_id);
+		$data['vc_vendors']    = Util::valueList($assignedVendors, 'vendor_id');
+		$data['vendor']        = $assignedVendors[0];
 		$data['vc_properties'] = Util::valueList($this->getAssignedProperties($vc_id), 'property_id');
 
 		$pdfPath = $this->getPdfPath() . $vc_id . '.pdf';
@@ -141,6 +143,13 @@ class CatalogService extends AbstractService {
 	public function saveCatalog($data) {
 		// Get entity
 		$vc = new VcEntity($data['vc']);
+		
+		// Add vendor name, tax ID, and created date to the model only if dealing with a new catalog
+		if ($vc->vc_id === null) {
+			$vendor = $this->vendorGateway->findById($data['vendor_id']);
+			$vc->vc_vendorname = $vendor['vendor_name'];
+			$vc->vc_unique_id = $vendor['vendor_fedid'];
+		}
 
 		// Create an implementation class
 		$vcImpl = '\NP\catalog\types\\' . ucfirst($vc->vc_catalogtype);
@@ -155,13 +164,6 @@ class CatalogService extends AbstractService {
 			$this->vcGateway->beginTransaction();
 
 			try {
-				// Add vendor name, tax ID, and created date to the model only if dealing with a new catalog
-				if ($vc->vc_id === null) {
-					$vendor = $this->vendorGateway->findById($data['vendor_id']);
-					$vc->vc_vendorname = $vendor['vendor_name'];
-					$vc->vc_unique_id = $vendor['vendor_fedid'];
-				}
-
 				// Run implementation-specific code
 				$errors = $vcImpl->beforeSave();
 
@@ -180,10 +182,19 @@ class CatalogService extends AbstractService {
 
 					// Save the vendor assignments
 					$this->linkVcVendorGateway->delete(array('vc_id'=>$vc->vc_id));
-					foreach ($data['vc_vendors'] as $vendor_id) {
+					if ( array_key_exists('vc_vendors', $data) && count($data['vc_vendors']) ) {
+						foreach ($data['vc_vendors'] as $vendor_id) {
+							$this->linkVcVendorGateway->save(array(
+								'vc_id'     =>$vc->vc_id,
+								'vendor_id' =>$vendor_id
+							));
+						}
+					// If there are no vendor assignments, it's because it's a catalog type that doesn't use them
+					// In that case, just assign the vendor selected
+					} else {
 						$this->linkVcVendorGateway->save(array(
-							'vc_id'     =>$vc->vc_id,
-							'vendor_id' =>$vendor_id
+							'vc_id'     => $vc->vc_id,
+							'vendor_id' => $data['vendor_id']
 						));
 					}
 
@@ -200,22 +211,22 @@ class CatalogService extends AbstractService {
 					$errors = $vcImpl->afterSave();
 				}
 
-				// Commit the transaction if there were no errors
-				if (!count($errors)) {
-					$this->vcGateway->commit();
-				// Otherwise rollback
-				} else {
-					$this->vcGateway->rollback();
-				}
+				
 			} catch(\Exception $e) {
-				// If there was an unexpected error, rollback the transaction
-				$this->vcGateway->rollback();
 				// Add a global error to the error array
 				$errors[] = array(
 								'field' => 'global',
 								'msg'   => $this->handleUnexpectedError($e),
 								'extra' => null
 							);
+			}
+
+			// Commit the transaction if there were no errors
+			if (!count($errors)) {
+				$this->vcGateway->commit();
+			// Otherwise rollback
+			} else {
+				$this->vcGateway->rollback();
 			}
 		}
 

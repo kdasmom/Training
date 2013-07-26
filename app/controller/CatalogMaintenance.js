@@ -264,7 +264,12 @@ Ext.define('NP.controller.CatalogMaintenance', {
 					that.vc_has_pdf = data['vc_has_pdf'];
 
 					var field = boundForm.findField('vendor_id');
-					field.setRawValue(data['vc_vendorname']);
+
+					field.setDefaultRec(Ext.create('NP.model.vendor.Vendor', {
+						vendor_id    : data['vendor']['vendor_id'],
+						vendor_id_alt: data['vendor']['vendor_id_alt'],
+						vendor_name  : data['vendor']['vendor_name']
+					}));
 					field.disable();
 
 					// Set the assignment fields

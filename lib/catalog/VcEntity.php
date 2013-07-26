@@ -15,16 +15,19 @@ class VcEntity extends \NP\core\AbstractEntity {
 			)
 		),
 		'vc_vendorname'	 => array(
+			'required'   => true,
 			'validation' => array(
 				'stringLength' => array('max'=>250)
 			)
 		),
 		'vc_catalogname'	 => array(
+			'required'   => true,
 			'validation' => array(
 				'stringLength' => array('max'=>100)
 			)
 		),
 		'vc_createdt'	 => array(
+			'timestamp' => 'created',
 			'validation' => array(
 				'date' => array('format'=>'Y-m-d H:i:s.u')
 			)
@@ -35,6 +38,7 @@ class VcEntity extends \NP\core\AbstractEntity {
 			)
 		),
 		'vc_lastupdatedt'	 => array(
+			'timestamp' => 'updated',
 			'validation' => array(
 				'date' => array('format'=>'Y-m-d H:i:s.u')
 			)
@@ -56,7 +60,9 @@ class VcEntity extends \NP\core\AbstractEntity {
 				)
 			)
 		),
-		'vc_unique_id'	 => array(),
+		'vc_unique_id'	 => array(
+			'required'   => true
+		),
 		'vc_catalogtype'	 => array(
 			'required' => true,
 			'validation' => array(
