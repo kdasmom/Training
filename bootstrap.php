@@ -38,6 +38,9 @@ function np_global_exception_handler($e) {
 	// Log error
 	$errorMsg = "File: {$e->getFile()};\nLine: {$e->getLine()};\nMessage: {$e->getMessage()};\nTrace: {$e->getTraceAsString()}";
 	$di['LoggingService']->log('error', $errorMsg);
+
+    // Throw an HTTP 500 error
+    header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
 };
 set_exception_handler('np_global_exception_handler');
 
