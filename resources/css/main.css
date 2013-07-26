@@ -28,5 +28,10 @@
 .x-form-item-label { font-weight: bold; }
 .x-form-required-field { background: repeat-x scroll 0 0 #DFE8F6; }
 
-/* GRIDs */
+/* GRIDS */
 .grid-clickable-col:hover { text-decoration:underline; cursor: pointer; }
+
+/* DISABLED FIELDS */
+.x-item-disabled .x-form-item-label, .x-item-disabled .x-form-field, .x-item-disabled .x-form-cb-label, .x-item-disabled .x-form-trigger {
+    opacity: 0.5;
+}
