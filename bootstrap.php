@@ -33,10 +33,32 @@ set_error_handler(function ($errno, $errstr, $errfile, $errline, $errcontext) us
 	throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
 });
 
-set_exception_handler(function($e) use ($di) {
+function np_global_exception_handler($e) {
+	global $di;
 	// Log error
 	$errorMsg = "File: {$e->getFile()};\nLine: {$e->getLine()};\nMessage: {$e->getMessage()};\nTrace: {$e->getTraceAsString()}";
 	$di['LoggingService']->log('error', $errorMsg);
+};
+set_exception_handler('np_global_exception_handler');
+
+// Use this to catch errors not caught by the other handlers
+register_shutdown_function(function() use ($di) {
+    $isError = false;
+    if ($error = error_get_last()){
+        switch($error['type']){
+            case E_ERROR:
+            case E_CORE_ERROR:
+            case E_COMPILE_ERROR:
+                $isError = true;
+                break;
+        }
+    }
+
+    if ($isError){
+    	// Throw an ErrorException so the exception handler function can pick up
+		$e = new \ErrorException($error['message'], 0, $error['type'], $error['file'], $error['line']);
+		np_global_exception_handler($e);
+    }
 });
 
 ?>
