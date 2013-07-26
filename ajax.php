@@ -64,8 +64,9 @@ if ( is_array($config) && $isAuth ) {
 	}
 }
 
+// If unauthorized ajax request is attempted, throw a 403 HTTP error
 if (!$isAuth) {
-	echo 'authenticationFailure';
+	header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
 }
 
 ?>
