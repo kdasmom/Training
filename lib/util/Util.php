@@ -65,7 +65,7 @@ class Util {
 	public static function httpRequest($url, $type='GET', $data=null, $headers=null, $curl_options=null) {
 		$validTypes = array('GET'=>0,'POST'=>1);
 		if (!array_key_exists($type, $validTypes)) {
-			throw new \NP\core\Exception('Value passed for argument "$types" is invalid. Valid values are ' . implode(' and ', $validTypes) . '.');
+			throw new \NP\core\Exception("Value '{$type}' passed for argument '\$type' is invalid. Valid values are " . implode(' and ', $validTypes) . ".");
 		}
 
 		// Init the curl request
@@ -98,6 +98,7 @@ class Util {
 		$error = curl_error($ch);
 
 		return array(
+			'success' => ($error === '') ? true : false,
 			'content' => $content,
 			'error'   => $error
 		);

@@ -5,6 +5,7 @@ namespace NP\catalog;
 use NP\core\AbstractService;
 use NP\core\validation\EntityValidator;
 use NP\vendor\VendorGateway;
+use NP\property\PropertyGateway;
 use NP\util\Util;
 
 /**
@@ -20,22 +21,14 @@ class CatalogService extends AbstractService {
 	const CATALOG_PROCESSING = -2;
 
 	protected $vcGateway, $linkVcitemcatGlGateway, $linkVcPropertyGateway, $linkVcVccatGateway,
-				$linkVcVendorGateway, $vcItemGateway, $vcCatGateway, $vendorGateway, $configService;
+				$linkVcVendorGateway, $vcItemGateway, $vcCatGateway, $vendorGateway, $configService,
+				$propertyGateway;
 
-	/**
-	 * @param \NP\catalog\VcGateway              $vcGateway              VcGateway object injected
-	 * @param \NP\catalog\LinkVcitemcatGlGateway $linkVcitemcatGlGateway LinkVcitemcatGlGateway object injected
-	 * @param \NP\catalog\LinkVcPropertyGateway  $linkVcPropertyGateway  LinkVcPropertyGateway object injected
-	 * @param \NP\catalog\LinkVcVccatGateway     $linkVcVccatGateway     LinkVcVccatGateway object injected
-	 * @param \NP\catalog\LinkVcVendorGateway    $linkVcVendorGateway    LinkVcVendorGateway object injected
-	 * @param \NP\catalog\VcItemGateway          $vcItemGateway          VcItemGateway object injected
-	 * @param \NP\catalog\VcCatGateway          $vcItemGateway          VcItemGateway object injected
-	 * @param \NP\vendor\VendorGateway           $vendorGateway          VendorGateway object injected
-	 */
 	public function __construct(VcGateway $vcGateway, LinkVcitemcatGlGateway $linkVcitemcatGlGateway,
 								LinkVcPropertyGateway $linkVcPropertyGateway, LinkVcVccatGateway $linkVcVccatGateway,
 								LinkVcVendorGateway $linkVcVendorGateway, VcItemGateway $vcItemGateway,
-								VcCatGateway $vcCatGateway, VendorGateway $vendorGateway) {
+								VcCatGateway $vcCatGateway, VendorGateway $vendorGateway,
+								PropertyGateway $propertyGateway) {
 		$this->vcGateway              = $vcGateway;
 		$this->linkVcitemcatGlGateway = $linkVcitemcatGlGateway;
 		$this->linkVcPropertyGateway  = $linkVcPropertyGateway;
@@ -44,6 +37,7 @@ class CatalogService extends AbstractService {
 		$this->vcItemGateway          = $vcItemGateway;
 		$this->vcCatGateway           = $vcCatGateway;
 		$this->vendorGateway          = $vendorGateway;
+		$this->propertyGateway        = $propertyGateway;
 	}
 	
 	public function setConfigService(\NP\system\ConfigService $configService) {
@@ -182,7 +176,7 @@ class CatalogService extends AbstractService {
 
 					// Save the vendor assignments
 					$this->linkVcVendorGateway->delete(array('vc_id'=>$vc->vc_id));
-					if ( array_key_exists('vc_vendors', $data) && count($data['vc_vendors']) ) {
+					if ( in_array('vendors', $vcImpl->getAssignmentFields()) ) {
 						foreach ($data['vc_vendors'] as $vendor_id) {
 							$this->linkVcVendorGateway->save(array(
 								'vc_id'     =>$vc->vc_id,
@@ -455,13 +449,13 @@ class CatalogService extends AbstractService {
 	/**
 	 * Gets the URL that can be used to view a catalog when using Punchout type
 	 *
-	 * @param  array  $vc               A data set based on a catalog entity
+	 * @param  int  $vc_id              Id of the catalog to retrieve
 	 * @param  int    $userprofile_id   Id of the user requesting the Url 
 	 * @param  string $property_id_alt  Id of the property the request is being made for
 	 * @param  int    $purchaseorder_id An optional purchase order Id that will be used when checking out of catalog to redirect to the appropriate PO
 	 * @return array  Status information on the operation
 	 */
-	public function getPunchoutUrl($vc, $userprofile_id, $property_id_alt, $purchaseorder_id=0) {
+	public function getPunchoutUrl($vc_id, $userprofile_id, $property_id, $purchaseorder_id=0) {
 		// Define the path of the XML file that will be used as a template
 		$appRoot = $this->configService->getAppRoot();
 		$xmlPath = $appRoot . '/lib/catalog/punchout/punchout.php';
@@ -470,22 +464,92 @@ class CatalogService extends AbstractService {
 		$now = new \DateTime();
 		$payloadID = $now->format('YMd') . $now->format('His') . time();
 		$timestamp = $now->format('Y-M-d') . $now->format('H:i:s') . '-05:00';
+
+		$vc = $this->vcGateway->findById($vc_id);
 		foreach ($vc as $key=>$value) {
 			$$key = $value;
 		}
 		$asp_client_id = $this->configService->getClientId();
 		$loginUrl = $this->configService->getloginUrl();
+		$property_id_alt = $this->propertyGateway->findById($property_id);
+		$property_id_alt = $property_id_alt['property_id_alt'];
 
 		// Include the XML file and store results in a string
 		$xmlRequest = include $xmlPath;
-		$response = \NP\util\Util::httpRequest($vc['vc_punchout_url'], $xmlRequest, array(
+
+		// Do the HTTP POST
+		$response = \NP\util\Util::httpRequest($vc['vc_punchout_url'], 'POST', $xmlRequest, array(
             "Content-type: text/xml;charset=\"utf-8\"",
             "Cache-Control: no-cache",
             "Pragma: no-cache",
-            "Content-length: ".strlen($data)
+            "Content-length: ".strlen($xmlRequest)
         ));
 
-		return $response;
+		// Initialize some variables
+		$url = null;
+		$success = $response['success'];
+		$errorMsg = "Error running punchout for this URL: {$vc['vc_punchout_url']};\n";
+
+		// If HTTP request was successful, proceed
+		if ($success) {
+			// Create an XML object with the content of the HTTP request
+			$punchoutXML = simplexml_load_string($response['content']);
+
+			// If the content of the request is not XML, log the error
+			if (!$punchoutXML) {
+				$success = false;
+				$errors = libxml_get_errors();
+				$errorMsg .= "HTTP request content was as follows:\n{$response['content']}";
+			    $this->loggingService->log('catalog', $errorMsg);
+			    libxml_clear_errors();
+			// If the content of the request is valid XML, proceed
+			} else {
+				// Get the Status node from the XML document
+				$status = $punchoutXML->xpath('/cXML/Response/Status');
+				// If the Status node is not found, then the cXML is not valid, log the error 
+				if (!count($status)) {
+					$success = false;
+					$errorMsg .= "Invalid cXML, Status node was not found. cXML was as follows:\n{$response['content']}";
+					$this->loggingService->log('catalog', $errorMsg);
+				// If the Status node is found, proceed
+				} else {
+					// Get the status code from the Status node
+					$status = $status[0];
+					$statusCode = $status->xpath('//@code');
+					$statusCode = (string)$statusCode[0];
+
+					// If the code returned is 200, proceed
+					if ($statusCode == '200') {
+						// Get the punchout session URL from the cXML
+						$url = $punchoutXML->xpath('/cXML/Response/PunchOutSetupResponse/StartPage/URL');
+						$url = (string)$url[0];
+					// If the code returned is not 200, log the error
+					} else {
+						// Get an error message and/or error details from the cXML
+						$success = false;
+						$error = $status->xpath('//@text');
+						$error = (string)$error[0];
+						$errorDetails = (string)$status;
+						
+						$errorMsg .= "Error: {$error};";
+						if ($errorDetails !== '') {
+							$errorMsg .= "\nError Details: {$errorDetails}";
+						}
+						$this->loggingService->log('catalog', $errorMsg);
+					}
+				}
+			}
+		// If HTTP Request failed, log the error
+		} else {
+			$errorMsg .= "Connection failed. This is the connection error: {$reponse['error']}";
+			$this->loggingService->log('catalog', $errorMsg);
+		}
+
+		// Return the results of the operation
+		return array(
+			'success' => $success,
+			'url'     => $url
+		);
 	}
 }
 

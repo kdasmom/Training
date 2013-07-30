@@ -13,7 +13,8 @@ Ext.define('NP.view.catalogMaintenance.CatalogView', {
         'NP.view.shared.button.Camera',
         'NP.view.shared.button.Upload',
         'NP.view.shared.button.Activate',
-        'NP.view.shared.button.Inactivate'
+        'NP.view.shared.button.Inactivate',
+        'NP.view.shared.PropertyCombo'
     ],
 
     layout: 'fit',
@@ -29,7 +30,7 @@ Ext.define('NP.view.catalogMaintenance.CatalogView', {
             { xtype: 'shared.button.camera', text: 'Upload Vendor Logo' },
             { xtype: 'shared.button.upload', text: 'Upload Information PDF' },
             { xtype: 'shared.button.activate', hidden: true },
-            { xtype: 'shared.button.inactivate', hidden: true }
+            { xtype: 'shared.button.inactivate', hidden: true }            
         ];
 
         this.tbar = bar;

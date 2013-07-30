@@ -26,6 +26,9 @@ $autoLoader->register();
 // Load DI configuration 
 require_once("config/di_config.php"); // Keep DI configs in a separate file to keep this one clean
 
+// Force the use of libxml_get_errors() to get XML errors
+libxml_use_internal_errors(true);
+
 // Set a generic error handler to catch errors
 // (this is especially needed to catch warnings and notices since they aren't caught by try/catch blocks)
 set_error_handler(function ($errno, $errstr, $errfile, $errline, $errcontext) use ($di) {

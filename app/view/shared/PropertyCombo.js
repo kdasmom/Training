@@ -14,6 +14,7 @@ Ext.define('NP.view.shared.PropertyCombo', {
     name               : 'property_id',
     displayField       : 'property_name',
     valueField         : 'property_id',
+    width              : 400,
     tpl                : '<tpl for=".">' +
                             '<li class="x-boundlist-item" role="option">{property_name}' +
                                 '<tpl if="property_status == -1">' +
