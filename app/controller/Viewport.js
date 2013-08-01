@@ -89,6 +89,18 @@ Ext.define('NP.controller.Viewport', {
 				}
 			},
 
+			// Clicking on Import/Export Utility or any of the subitems under Import/Export Utility
+			'#importMenuBtn,#importMenuBtn menuitem': {
+				click: function(itemClicked) {
+					var token = 'Import:showImport';
+					if (itemClicked.itemId != 'importMenuBtn') {
+						token += ':' + itemClicked.itemId.replace('ImportMenuBtn', '');
+					} else {
+						token += ':overview';
+					}
+					this.addHistory(token);
+				}
+			},
 			// Runs after Home panel has been rendered
 			'[xtype="viewport.home"]': {
 				afterrender: function() {

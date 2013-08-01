@@ -146,6 +146,18 @@ class GLAccountGateway extends AbstractGateway {
 		return $this->adapter->query($select, array($userprofile_id));
 	}
 	
+	/**
+	 * Retrieves GL accounts
+	 *
+	 * @return array
+	 */
+	public function getGLAccounts($userprofile_id) {
+		$select = new Select();
+		$select->from(array('g'=>'glaccount'))
+					->order("g.glaccount_name");
+		return $this->adapter->query($select);
+	}
+	
 }
 
 ?>
