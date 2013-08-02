@@ -9,8 +9,8 @@ Ext.define('NP.controller.Import', {
 	requires: ['NP.lib.core.Config',
 	           'NP.lib.core.Net',
 	           'NP.lib.core.Util',
-	           'NP.lib.core.Security'
-           		],
+	           'NP.lib.core.Security',
+	           'Ext.ux.form.field.BoxSelect'],
 	
 	refs: [
 			{ ref: 'overviewTab', selector: '[xtype="import.overview"]' },
@@ -44,7 +44,8 @@ Ext.define('NP.controller.Import', {
 			// The Upload button on the GL Category tab
 			'[xtype="import.gl"] [xtype="shared.button.upload"]': {
 				// Run this whenever the upload button is clicked
-				click: this.uploadGL
+				//click: this.uploadCSV
+				click: this.uploadCSV
 			},
 			// The Cancel button on the GL Category tab
 			'[xtype="import.gl"] [xtype="shared.button.cancel"]': {
@@ -52,7 +53,15 @@ Ext.define('NP.controller.Import', {
 				click: function() {
 					this.addHistory('Import:showImport');
 				}
-			}
+			},
+			// The Upload button on the GL Category tab
+			'[xtype="import.csvgrid"] [xtype="shared.button.save"]': {
+				// Run this whenever the upload button is clicked
+				click: function() {
+					grid =  Ext.ComponentQuery.query('[xtype="import.csvgrid"]')[0];
+					this.saveCSV(grid);
+				}
+			},
 		});
 	},
 	
@@ -77,30 +86,39 @@ Ext.define('NP.controller.Import', {
 		}
 	},
 	
-	/**
-	 * Displays the page for the Display tab
-	 */
-	showGL: function() {
-		var form = this.getCmp('impoer.glcategory');
-
-		// Bind the form to a model that's the same as the current logged in user's model
-		var formModel = NP.Security.getUser().copy();
-		form.setModel('user.Userprofile', formModel);
-
-		// Now update the fields to set the correct values
-		form.updateBoundFields();
-		var screenSize = formModel.get('userprofile_splitscreen_size');
-		if ( screenSize !== null && !Ext.Array.contains([25,50,60], screenSize) ) {
-			form.findField('userprofile_splitscreen_size').setValue(-1);
-			form.findField('userprofile_splitscreen_size_custom').setValue(screenSize);
-		}
+	showGrid: function () {
+		// Create the view
+		var grid = this.setView('NP.view.import.CSVGrid');
+		
+		// Load the store
+		grid.reloadFirstPage();
 	},
-
-	uploadGL2: function() {
-
+	
+	saveCSV: function(grid) {
+		//var data = grid.getView().getSelectionModel().getSelections(); 
+		NP.lib.core.Net.remoteCall({
+			method  : 'POST',
+			requests: {
+				service : 'GLService',
+				action  : 'saveCSV',
+				success : function(result, deferred, response) {
+					if (result.success) {							
+						// Show friendly message
+						NP.Util.showFadingWindow({ html: 'Data from csv file saved' });
+					} else {
+						if (result.errors.length) {
+							NP.Util.showFadingWindow({ html: 'Data from csv file not saved. Errors:' + result.errors[0] });
+						}
+					}
+				},
+				failure: function() {
+					Ext.log('Error save csv file');
+				}
+			}
+		});
 		
 	},
-	uploadGL: function() {
+	uploadCSV: function() {
 		var that = this;
 		var formSelector = '[xtype="import.gl"] form';
 		var form = Ext.ComponentQuery.query(formSelector)[0];

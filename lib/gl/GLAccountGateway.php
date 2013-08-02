@@ -21,6 +21,15 @@ class GLAccountGateway extends AbstractGateway {
 	protected $configService;
 	
 	/**
+	 * @param \NP\core\db\Adapter          $adapter         Database adapter object injected
+	 * @param \NP\user\RoleGateway         $roleGateway     UserService object injected
+	 */
+	public function __construct(Adapter $adapter, RoleGateway $roleGateway) {
+		$this->roleGateway      = $roleGateway;
+	
+		parent::__construct($adapter);
+	}
+	/**
 	 * Setter function required by DI to set the config service via setter injection
 	 * @param \NP\system\ConfigService $configService
 	 */

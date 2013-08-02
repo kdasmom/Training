@@ -10,16 +10,16 @@ Ext.define('NP.model.gl.GlAccount', {
 
 	idProperty: 'glaccount_id',
 	fields: [
-		{ name: 'glaccount_id', type: 'int' },
+	    { name: 'glaccount_id', type: 'int' },
 		{ name: 'glaccount_name' },
 		{ name: 'glaccount_number' },
 		{ name: 'glaccount_status' },
 		{ name: 'glaccount_amount' },
-		{ name: 'glaccounttype_id', type: 'int' },
-		{ name: 'glaccount_level', type: 'int' },
+		{ name: 'glaccounttype_id' },
+		{ name: 'glaccount_level' },
 		{ name: 'glaccount_usable' },
 		{ name: 'glaccount_order', type: 'int' },
-		{ name: 'integration_package_id', type: 'int' },
+		{ name: 'integration_package_id' },
 		{ name: 'glaccount_updateby', type: 'int' },
 		{ name: 'glaccount_updatetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() }
 	],

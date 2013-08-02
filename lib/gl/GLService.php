@@ -3,7 +3,6 @@
 namespace NP\gl;
 
 use NP\core\AbstractService;
-use NP\core\db\Select;
 
 /**
  * All operations that are closely related to GL accounts belong in this service
@@ -40,6 +39,50 @@ class GLService extends AbstractService {
 	 */
 	public function getForInvoiceItemComboBox($vendorsite_id, $property_id, $glaccount_keyword='') {
 		return $this->glaccountGateway->findForInvoiceItemComboBox($vendorsite_id, $property_id, $glaccount_keyword);
+	}
+	
+	/**
+	 * Saves data from csv file
+	 *
+	 * @param  array $dataSet An associative array with the data to save; line items should be in a "lines" key
+	 * @return array          Errors that occurred while attempting to save the entity
+	 */
+	public function saveCSV($file = 'glcategory.csv') {
+		// Create an GLAccount entity
+		$dataSet = $this->csvFileToJson($this->getUploadPath() . $file);
+		
+		$glAccountEntity = new GLAccountEntity($dataSet);
+		// Get glAccount validator
+		$glAccountValidator = new validation\GLAccountValidator();
+	
+		// If the data is valid, save it
+		if ($glAccountValidator->validate($glAccountEntity)) {
+			// Begin transaction
+			$connection = $this->glaccountGateway->getAdapter()->driver->getConnection()->beginTransaction();
+	
+			try {
+				// Save the glaccount entity
+ 				$id = $this->glaccountGateway->save($glAccountEntity);
+	
+				// Loop through each line in the glaccount and save them
+				foreach($dataSet as $line) {
+					$line['glaccount_id'] = $id;
+ 					$this->glaccountGateway->save($line);
+				}
+	
+				$connection->commit();
+			} catch(\Exception $e) {
+				$connection->rollback();
+				$glAccountValidator->addError('global', 'Unexpected database error');
+			}
+		}
+	
+		$errors = $glAccountValidator->getErrors();
+		return array(
+				'success'    => (count($errors)) ? false : true,
+				'glaccount_id' => $id,
+				'errors'     => $errors,
+		);
 	}
 	
 	/**
