@@ -55,6 +55,14 @@ Ext.define('NP.lib.core.Security', function() {
 		}
 	};
 
+	// Add a global ajax event listener to boot user out if session has expired
+	Ext.Ajax.addListener('requestcomplete', function(conn, response, options, eOpts) {
+		if (response.responseText.indexOf('authenticationFailure') !== -1) {
+			window.location = 'login.php';
+			return false;
+		}
+	});
+
 	return {
 		alternateClassName: 'NP.Security',
 
@@ -62,45 +70,6 @@ Ext.define('NP.lib.core.Security', function() {
 		
 		requires: ['NP.lib.core.Net'],
 		
-		// For localization
-		errorDialogTitleText: 'Error',
-		errorText           : 'An unexpected error has occurred. Please contact your system administrator',
-
-		constructor: function(cfg) {
-			var that = this;
-
-			// Global javascript error handler to pick up any error that isn't caught
-			window.onerror = function(message, url, line) {
-				// Display a generic alert to the user saying that an error happened
-				Ext.MessageBox.alert(that.errorDialogTitleText, that.errorText);
-
-				// Send the javascript error via Ajax since otherwise we can't log it from the client side
-				var errorMsg = 'Url: ' + url + '\nLine: ' + line + '\nMessage: ' + message;
-				NP.lib.core.Net.remoteCall({
-					requests: {
-						service  : 'LoggingService',
-						action   : 'log',
-						namespace: 'error',
-						message  : errorMsg
-					}
-				});
-			}
-			
-			// This is a global error handler for Ajax requests
-			Ext.Ajax.on('requestexception', function (conn, response, options) {
-				// Catch errors
-				if (response.status === 500) {
-			        Ext.MessageBox.alert(that.errorDialogTitleText, that.errorText);
-			    // Catch requests made with expired/unauthenticated session
-			    } else if (response.status === 403) {
-			    	window.location = 'login.php';
-			    	return false;
-			    }
-			});
-
-			this.callParent(arguments);
-		},
-
 		/**
 		 * Loads all permissions for logged in user and gets information for the logged in user
 		 * and the user being delegated to. This function runs at application startup.

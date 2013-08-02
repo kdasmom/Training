@@ -907,13 +907,13 @@ Ext.define('NP.locale.en.controller.SystemSetup', {
 	override: 'NP.controller.SystemSetup',
 
 	changesSavedText		: 'Changes saved successfully',
-	errorDialogTitleText	: 'Error'
+	errorDialogTitleText	: 'Error',
 });
 
 Ext.define('NP.locale.en.controller.systemSetup.Main', {
 	override: 'NP.view.systemSetup.Main',
 
-	title: 'System Setup'
+	title: 'System Setup',
 });
 
 Ext.define('NP.locale.en.view.systemSetup.Overview', {
