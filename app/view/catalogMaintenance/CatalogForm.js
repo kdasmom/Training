@@ -37,11 +37,10 @@ Ext.define('NP.view.catalogMaintenance.CatalogForm', {
 
         this.items = [
             {
-                xtype         : 'tabpanel',
-                bodyPadding   : 8,
+                xtype: 'tabpanel',
+                bodyPadding: 8,
                 deferredRender: false,
-                border        : false,
-                items         : [
+                items: [
                     { xtype: 'catalogmaintenance.catalogforminfo' },
                     { xtype: 'catalogmaintenance.catalogformposubmission', hidden: true },
                     { xtype: 'catalogmaintenance.catalogformcategories', hidden: true },

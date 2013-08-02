@@ -34,7 +34,32 @@ Ext.define('NP.lib.ui.ComboBox', {
 	/**
 	 * @cfg {Object}                  extraParams       Default parameters to add to the store proxy; only applies to type "autocomplete"
 	 */
-	initComponent: function() {
+	constructor: function(cfg) {
+		Ext.applyIf(cfg, {
+			type          : 'normal',
+			forceSelection: true,
+			addBlankRecord: false
+		});
+
+		if (this.type == 'autocomplete') {
+			Ext.applyIf(cfg, {
+				queryMode    : 'remote',
+				queryParam   : 'keyword',
+				typeAhead    : false,
+				hideTrigger  : true,
+				triggerAction: 'query'
+			});
+		} else {
+			Ext.applyIf(cfg, {
+				queryMode          : 'local',
+				typeAhead          : true,
+				allowOnlyWhitespace: true,
+				editable           : true
+			});
+		}
+
+		Ext.apply(this, cfg);
+
 		this.tpl = new Ext.XTemplate('<tpl for=".">' + '<li class="x-boundlist-item" role="option">' + '{'+this.displayField+'}' + '</li></tpl>');
 
 		// Key events must be on
@@ -70,12 +95,15 @@ Ext.define('NP.lib.ui.ComboBox', {
 			}
 		});
 
-		// If loadStoreOnFirstQuery is true, set a listener on beforequery to load a store only the first time the
-		// user tries to expand the field or types text for autocomplete
-		if (this.loadStoreOnFirstQuery) {
-			this.on('beforequery', function() {
-				this.getStore().load();
-			}, this, { single: true });
+		// If type is normal only
+		if (this.type == 'normal') {
+			// If loadStoreOnFirstQuery is true, set a listener on beforequery to load a store only the first time the
+			// user tries to expand the field or types text for autocomplete
+			if (this.loadStoreOnFirstQuery) {
+				this.on('beforequery', function() {
+					this.getStore().load();
+				}, this, { single: true });
+			}
 		}
 
 		// If addBlankRecord is true, add a blank record at the beginning of the store to make it easy for the user to select

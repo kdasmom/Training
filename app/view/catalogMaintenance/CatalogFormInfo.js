@@ -31,15 +31,15 @@ Ext.define('NP.view.catalogMaintenance.CatalogFormInfo', {
 
         this.items = [
             {
-                xtype        : 'autocomplete',
-                fieldLabel   : 'Vendor',
-                name         : 'vendor_id',
-                displayField : 'vendor_name',
-                width        : fieldWidth,
-                valueField   : 'vendor_id',
-                allowBlank   : false,
-                multiSelect  : false,
-                store        : Ext.create('NP.store.vendor.Vendors', {
+                xtype       : 'customcombo',
+                fieldLabel  : 'Vendor',
+                type        : 'autocomplete',
+                name        : 'vendor_id',
+                displayField: 'vendor_name',
+                width       : fieldWidth,
+                valueField  : 'vendor_id',
+                allowBlank  : false,
+                store       : Ext.create('NP.store.vendor.Vendors', {
                                 service     : 'VendorService',
                                 action      : 'getForCatalogDropDown'
                             }),
@@ -52,7 +52,6 @@ Ext.define('NP.view.catalogMaintenance.CatalogFormInfo', {
                 xtype     : 'textfield',
                 fieldLabel: 'Catalog Name',
                 name      : 'vc_catalogname',
-                allowBlank: false,
                 width     : fieldWidth
             },{
                 xtype: 'fieldcontainer',

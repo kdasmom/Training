@@ -384,14 +384,12 @@ Ext.define('NP.controller.CatalogMaintenance', {
 					var view = that.setView('NP.view.catalogMaintenance.CatalogView', {
 						title: that.vc.get('vc_catalogname')
 					});
-
-					that.updateActivationButton(that.vc);
-					
 					var type = Ext.util.Format.capitalize(that.vc.get('vc_catalogtype'));
         			var catalogImpl = Ext.create('NP.view.catalogMaintenance.types.' + type);
         			catalogImpl.getView(that.vc).then({
         				success: function(subView) {
         					view.add(subView);
+        					that.updateActivationButton(that.vc);
         				}
         			});
 				}
