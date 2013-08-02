@@ -63,6 +63,14 @@ class Select extends AbstractFilterableSql implements SQLInterface, SQLElement {
 	protected $offset = null;
 
 	/**
+	 * Static function to retrieve a select object (to avoid having to use new Select() all the time)
+	 * @return \NP\core\db\Select
+	 */
+	public static function get() {
+		return new Select();
+	}
+
+	/**
 	 * @param $table string|array See from($table) method (optional)
 	 * @param $cols  array        Columns to retrieve from main table (optional)
 	 */

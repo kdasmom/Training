@@ -32,6 +32,16 @@ class Where implements SQLElement {
 	protected $logicalOperator;
 
 	/**
+	 * Utility static function to get a Where object (so we don't need to do $where = new Where() all the time)
+	 *
+	 * @param $logicalOperator string Logical operator to use (can be "AND" or "OR")
+	 * @return NP\core\db\Where
+	 */
+	public static function get($logicalOperator=self::AND_OP) {
+		return new Where(null, $logicalOperator);
+	}
+
+	/**
 	 * @param $where           string|array|NP\core\db\Where Initial where criteria (optional)
 	 * @param $logicalOperator string                        Logical operator to use (can be "AND" or "OR")
 	 */

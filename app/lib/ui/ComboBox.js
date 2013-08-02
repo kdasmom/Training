@@ -34,9 +34,16 @@ Ext.define('NP.lib.ui.ComboBox', {
 	/**
 	 * @cfg {Object}                  extraParams       Default parameters to add to the store proxy; only applies to type "autocomplete"
 	 */
-	initComponent: function() {
-		this.tpl = new Ext.XTemplate('<tpl for=".">' + '<li class="x-boundlist-item" role="option">' + '{'+this.displayField+'}' + '</li></tpl>');
 
+	constructor: function(cfg) {
+		Ext.applyIf(this, {
+			tpl: '<tpl for="."><li class="x-boundlist-item" role="option">' + '{'+this.displayField+'}' + '</li></tpl>'
+		});
+
+		this.callParent(arguments);
+	},
+
+	initComponent: function() {
 		// Key events must be on
 		this.enableKeyEvents = true;
 

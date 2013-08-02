@@ -48,6 +48,25 @@ class GLAccountGateway extends AbstractGateway {
 	}
 
 	/**
+	 * 
+	 */
+	public function findByProperty($property_id) {
+		$order = ($this->configService->get('PN.Budget.GLDisplayOrder') == 'Name') ? 'glaccount_name' : 'glaccount_number';
+		$select = Select::get()->from(array('g'=>'glaccount'))
+								->whereEquals('glaccount_usable', '?')
+								->whereEquals('glaccount_status', '?')
+								->whereIsNotNull('glaccounttype_id')
+								->whereExists(
+									Select::get()->from(array('pg'=>'propertyglaccount'))
+												->whereEquals('pg.glaccount_id', 'g.glaccount_id')
+												->whereEquals('pg.property_id', '?')
+								)
+								->order($order);
+
+		return $this->adapter->query($select, array('Y', 'active', $property_id));
+	}
+
+	/**
 	 * @param  int    $vendorsite_id
 	 * @param  int    $property_id
 	 * @param  string $glaccount_keyword

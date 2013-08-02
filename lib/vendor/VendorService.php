@@ -32,6 +32,17 @@ class VendorService extends AbstractService {
 	public function getForCatalogDropDown($keyword) {
 		return $this->vendorGateway->getForCatalogDropDown($keyword);
 	}
+	
+	/**
+	 * Retrieves vendor records by integration package, 
+	 *
+	 * @param  int    $integration_package_id
+	 * @param  string $keyword                Keyword to use to search for a vendor
+	 * @return array                          Array of vendor records
+	 */
+	public function getByIntegrationPackage($integration_package_id, $vendor_status=null, $keyword=null) {
+		return $this->vendorGateway->findByIntegrationPackage($integration_package_id, $vendor_status, $keyword);
+	}
 
 	/**
 	 * Retrieves vendor records matching a specified tax ID. A tax ID can be provided, otherwise a vendor ID can

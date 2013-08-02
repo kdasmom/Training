@@ -23,6 +23,14 @@ class Insert implements SQLInterface, SQLElement {
 	protected $cols = null;
 
 	/**
+	 * Static function to retrieve an Insert object (to avoid having to use $insert = new Insert() all the time)
+	 * @return \NP\core\db\Insert
+	 */
+	public static function get() {
+		return new Insert();
+	}
+
+	/**
 	 * @param $table  string Name of the table to insert into (optional)
 	 * @param $values array  Values to insert (optional)
 	 */

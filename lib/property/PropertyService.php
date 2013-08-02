@@ -108,7 +108,7 @@ class PropertyService extends AbstractService {
 	 * @return array
 	 */
 	public function getAll() {
-		return $this->propertyGateway->find(null, array(), "property_name",  array('property_id','property_id_alt','property_name','property_status'));
+		return $this->propertyGateway->find(null, array(), "property_name",  array('property_id','property_id_alt','property_name','property_status','integration_package_id'));
 	}
 
 	/**
@@ -118,6 +118,24 @@ class PropertyService extends AbstractService {
 	 */
 	public function getAllForSettings() {
 		return $this->propertyGateway->find("property_status = 1", array(), "property_name",  array('property_id','property_id_alt','property_name','property_status'));
+	}
+
+	/**
+	 * Retrieves all active properties for a specified integration package
+	 *
+	 * @param  int   $integration_package_id
+	 * @return array
+	 */
+	public function getByIntegrationPackage($integration_package_id) {
+		return $this->propertyGateway->find(
+			array(
+				'property_status' => '?',
+				'integration_package_id' => '?'
+			),
+			array(1, $integration_package_id),
+			"property_name",
+			array('property_id','property_id_alt','property_name','property_status')
+		);
 	}
 
 	/**

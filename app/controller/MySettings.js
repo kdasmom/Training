@@ -105,12 +105,6 @@ Ext.define('NP.controller.MySettings', {
 
 		// Load the Security Questions store
 		this.application.loadStore('system.SecurityQuestions', 'NP.store.system.SecurityQuestions');
-
-		// Load the Property store
-		this.application.loadStore('property.AllProperties', 'NP.store.property.Properties', {
-			service: 'PropertyService',
-			action : 'getAllForSettings'
-		});
 	},
 	
 	/**
@@ -147,6 +141,10 @@ Ext.define('NP.controller.MySettings', {
 				that[showMethod](subSection, id);
 			}
 		});
+	},
+
+	showUserInformation: function() {
+		Ext.getStore('property.AllProperties').filter('property_status', 1);
 	},
 
 	/**

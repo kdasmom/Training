@@ -104,6 +104,13 @@ Ext.define('NP.lib.core.Config', function() {
 						store  : 'NP.store.system.IntegrationPackages',
 						storeId: 'system.IntegrationPackages'
 					},
+					// This request gets all properties in the app
+					{ 
+						service: 'PropertyService',
+						action : 'getAll',
+						store  : 'NP.store.property.Properties',
+						storeId: 'property.AllProperties'
+					},
 					// This request gets all integration packages for the app
 					{ 
 						service: 'PropertyService',
@@ -117,6 +124,13 @@ Ext.define('NP.lib.core.Config', function() {
 						action : 'getRegions',
 						store  : 'NP.store.property.Regions',
 						storeId: 'property.Regions'
+					},
+					// This request gets all properties in the app
+					{ 
+						service: 'GLService',
+						action : 'getAll',
+						store  : 'NP.store.gl.GlAccounts',
+						storeId: 'gl.AllGlAccounts'
 					},
 					// This request gets all unit type measurement options for the app
 					{ 

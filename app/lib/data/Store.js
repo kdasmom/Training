@@ -111,6 +111,23 @@ Ext.define('NP.lib.data.Store', {
     },
 
     /**
+	 * Gets extraparams set on the store's proxy
+	 * @return {Object}
+	 */
+	getExtraParams: function() {
+    	return this.getProxy().extraParams;
+    },
+
+    /**
+	 * Gets value of a specific param set on the store's proxy
+	 * @param  {string} name
+	 * @return {Mixed}
+	 */
+	getExtraParam: function(name) {
+    	return this.getProxy().extraParams[name];
+    },
+
+    /**
 	 * Shortcut to set the service and action for the store proxy
 	 * @param {String} service
 	 * @param {String} action
