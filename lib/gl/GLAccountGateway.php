@@ -4,6 +4,7 @@ namespace NP\gl;
 
 use NP\core\AbstractGateway;
 use NP\core\db\Select;
+use NP\core\db\Insert;
 use NP\system\ConfigService;
 
 use NP\core\db\Adapter;
@@ -151,12 +152,37 @@ class GLAccountGateway extends AbstractGateway {
 	 *
 	 * @return array
 	 */
-	public function getGLAccounts($userprofile_id) {
+	public function getGLAccounts() {
 		$select = new Select();
 		$select->from(array('g'=>'glaccount'))
 					->order("g.glaccount_name");
 		return $this->adapter->query($select);
 	}
+        
+        /**
+	 * Retrieves All EXIM GL accounts
+	 *
+	 * @return array
+	 */
+	public function getGLAccountsExim() {
+		$select = new Select();
+		$select->from(array('g'=>'exim_glaccount'))
+					->order("g.glaccount_name");
+		return $this->adapter->query($select);
+	}
+        
+        public function saveEximGLAccount($data) {
+                $account = $data->toArray();
+                $insert = new Insert();
+                $insert->into('exim_glaccount');
+                $cols = array('exim_glaccountName','exim_glaccountNumber','exim_glaccountType',
+                        'exim_categoryName','exim_integrationPackage');
+                $insert->columns($cols);
+                $insert->values($account);
+                $result = $this->adapter->query($insert);
+                return $result;
+            
+        }
 	
 }
 
