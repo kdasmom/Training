@@ -12,10 +12,22 @@ Ext.define('NP.view.import.GLCode', {
     html: '',
 
     initComponent: function() {
-        this.items = [
-                  { xtype: 'filefield', name : 'file_upload_code', width: 400, hideLabel: true }
-                      ];
+    	 this.items = [{
+             xtype: 'form',
+             autoScroll: true,
+             border: false,
+             bodyPadding: 8,
+             items: [
+	                     { 
+	                    	 xtype: 'filefield', 
+	                    	 name: 'file_upload_category', 
+	                    	 width: 400, 
+	                    	 hideLabel: true, 
+	                    	 allowBlank: false
+	                	 }
+                     ]
+    	 }];
     	this.callParent(arguments);
-    },
+    }
     
 });

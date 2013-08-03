@@ -9,24 +9,9 @@ Ext.define('NP.view.import.GLCategory', {
             
     title: 'GL Category',
     bodyPadding: 8,
-    html: '',
+    html: 'Coming soon...',
 
     initComponent: function() {
-    	 this.items = [{
-             xtype: 'form',
-             autoScroll: true,
-             border: false,
-             bodyPadding: 8,
-             items: [
-	                     { 
-	                    	 xtype: 'filefield', 
-	                    	 name: 'file_upload_category', 
-	                    	 width: 400, 
-	                    	 hideLabel: true, 
-	                    	 allowBlank: false
-	                	 }
-                     ]
-    	 }];
     	this.callParent(arguments);
     }
 });

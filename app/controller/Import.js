@@ -44,7 +44,10 @@ Ext.define('NP.controller.Import', {
 			// The Upload button on the GL Category tab
 			'[xtype="import.gl"] [xtype="shared.button.upload"]': {
 				// Run this whenever the upload button is clicked
-				click: this.uploadGL
+				//click: this.uploadGL
+                                click: function() {
+                                    this.showGrid('glCategories_1375523737.csv');
+                                }
 			},
 			// The Cancel button on the GL Category tab
 			'[xtype="import.gl"] [xtype="shared.button.cancel"]': {
@@ -52,7 +55,26 @@ Ext.define('NP.controller.Import', {
 				click: function() {
 					this.addHistory('Import:showImport');
 				}
-			}
+			},
+                        // The Upload csv file
+			'[xtype="import.csvgrid"] [xtype="shared.button.save"]': {
+				// Run this whenever the upload button is clicked
+				click: function() {
+					that = this;
+                                        var grid =  Ext.ComponentQuery.query('[xtype="import.csvgrid"]')[0];
+                                        var accounts = grid.getSelectionModel().getSelection(); 
+                                        Ext.each(accounts, function(account) {
+                                            that.saveCSV(account.data);
+                                        });	
+				}
+			},
+                        // The Cancel button
+			'[xtype="import.csvgrid"] [xtype="shared.button.cancel"]': {
+				// Run this whenever the upload button is clicked
+				click: function() {
+                                        this.addHistory('Import:showImport');
+				}
+			},
 		});
 	},
 	
@@ -80,24 +102,36 @@ Ext.define('NP.controller.Import', {
 	/**
 	 * Displays the page for the Display tab
 	 */
-	showGL: function() {
-		var form = this.getCmp('impoer.glcategory');
+	showGrid: function(file) {
+		    // Create the view
+                    var grid = this.setView('NP.view.import.CSVGrid', {file : file});
 
-		// Bind the form to a model that's the same as the current logged in user's model
-		var formModel = NP.Security.getUser().copy();
-		form.setModel('user.Userprofile', formModel);
-
-		// Now update the fields to set the correct values
-		form.updateBoundFields();
-		var screenSize = formModel.get('userprofile_splitscreen_size');
-		if ( screenSize !== null && !Ext.Array.contains([25,50,60], screenSize) ) {
-			form.findField('userprofile_splitscreen_size').setValue(-1);
-			form.findField('userprofile_splitscreen_size_custom').setValue(screenSize);
-		}
+                    // Load the store
+                    grid.reloadFirstPage();
 	},
 
-	uploadGL2: function() {
-
+        saveCSV: function(account) {
+		NP.lib.core.Net.remoteCall({
+			method  : 'POST',
+			requests: {
+				service : 'GLService',
+				action  : 'saveCSV',
+                                account : account,
+				success : function(result, deferred) {
+					if (result.success) {							
+						// Show friendly message
+						NP.Util.showFadingWindow({ html: 'Data from csv file saved' });
+					} else {
+						if (result.errors.length) {
+							NP.Util.showFadingWindow({ html: 'Data from csv file not saved. Errors:' + result.errors[0] });
+						}
+					}
+				},
+				failure: function() {
+					Ext.log('Error save csv file');
+				}
+			}
+		});
 		
 	},
 	uploadGL: function() {
@@ -119,14 +153,10 @@ Ext.define('NP.controller.Import', {
 					file      : file,
 					success : function(result, deferred, response) {
 						if (result.success) {							
-							// Create the view
-							var grid = that.setView('NP.view.import.CSVGrid');
-							
-							// Load the store
-							grid.reloadFirstPage();
 							// Show friendly message
 							NP.Util.showFadingWindow({ html: 'File <b>'+ result.upload_filename +' </b>was successfully upload' });
-						} else {
+                                                        that.showGrid(result.upload_filename);
+                                                } else {
 							if (result.errors.length) {
 								form.getForm().findField('file_upload_category').markInvalid(result.errors[0]);
 							}
