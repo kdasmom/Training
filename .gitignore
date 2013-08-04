@@ -1,3 +1,6 @@
+# IDE specific files
+.idea/
+
 # Ignore test file in root
 test.php
 
