@@ -222,7 +222,7 @@ class GLAccountGateway extends AbstractGateway {
             ->where("glaccount_name = ?	AND glaccounttype_id IS NULL AND integration_package_id = ?");
 
         $result = $this->adapter->query($select, array($categoryName, $integrationPackageId));
-        return $result[0]['id'];
+        return (!empty($result[0]['id'])) ? $result[0]['id'] : null;
     }
 
     public function getAccountTypeIdByName($accountType)
@@ -233,7 +233,7 @@ class GLAccountGateway extends AbstractGateway {
             ->where("g.glaccounttype_name= ?");
 
         $result = $this->adapter->query($select, array($accountType));
-        return $result[0]['id'];
+        return (!empty($result[0]['id'])) ? $result[0]['id'] : null;
     }
 
     public function getIntegrationPackageIdByName($integrationPackageName)
@@ -244,7 +244,7 @@ class GLAccountGateway extends AbstractGateway {
             ->where("integration_package_name = ?");
 
         $result = $this->adapter->query($select, array($integrationPackageName));
-        return $result[0]['id'];
+        return (!empty($result[0]['id'])) ? $result[0]['id'] : null;
     }
 	
 }

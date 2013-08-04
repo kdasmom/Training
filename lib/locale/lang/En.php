@@ -61,6 +61,9 @@ The delegation starts on <strong>$delegation_startdate</strong>
 and ends on <strong>$delegation_stopdate</strong>.
 <br /><br />
 The following properties have been delegated: $property_name_list.',
+                'importFieldAccountTypeError' => 'Error import field Account Type',
+                'importFieldCategoryNameError' => 'Error import field Category Name',
+                'importFieldIntegrationPackageNameError' => 'Error import field Integration Package Name',
 	);
 }
 

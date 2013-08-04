@@ -4,7 +4,7 @@ namespace NP\gl;
 
 use NP\core\AbstractService;
 use NP\core\validation\EntityValidator;
-use NP\core\db\Select;
+use NP\core\db\Insert;
 use NP\exim\EximGLAccountEntity;
 use NP\exim\EximGLAccountGateway;
 
@@ -75,7 +75,7 @@ class GLService extends AbstractService {
 	 * @param  string $file A path to file
 	 * @return array
 	 */
-	public function getCSVFile($file=null, $pageSize=null, $page=1, $sort='glaccount_name') {
+	public function getCSVFile($file=null, $pageSize=null, $page=1, $sort='exim_glaccountName') {
 		$data = $this->csvFileToJson($this->getUploadPath() . $file);
                 
                 foreach ($data as $key => $value) {
@@ -86,6 +86,39 @@ class GLService extends AbstractService {
                     $validator = new EntityValidator();
                     $validator->validate($glaccount);
                     $errors    = $validator->getErrors();
+                    
+                    // Get Id for field glaccounttype_id, integrationPackageId, glaccount_level
+                    $glaccounttype_id = $this->glaccountGateway->getAccountTypeIdByName($value['exim_accountType']);
+                    $integrationPackageId = $this->glaccountGateway->getIntegrationPackageIdByName($value['exim_integrationPackage']);
+                    $glaccount_level = $this->glaccountGateway->getCategoryIdByName($value['exim_categoryName'], $integrationPackageId);
+                
+                    // Check the GLAccount Type in DB
+                    if (is_null($glaccounttype_id)) {
+                            $errors[] = array(
+                                            'field' => 'exim_accountType',
+                                            'msg'   => $this->localizationService->getMessage('importFieldAccountTypeError'),
+                                            'extra' => null
+                                        );
+                    }
+                    
+                    // Check the Integration Package Name in DB
+                    if (is_null($integrationPackageId)) {
+                            $errors[] = array(
+                                            'field' => 'exim_integrationPackage',
+                                            'msg'   => $this->localizationService->getMessage('importFieldIntegrationPackageNameError'),
+                                            'extra' => null
+                                        );
+                    }
+                
+                    // Check the Category Name in DB
+                    if (is_null($glaccount_level)) {
+                            $errors[] = array(
+                                            'field' => 'exim_categoryName',
+                                            'msg'   => $this->localizationService->getMessage('importFieldCategoryNameError'),
+                                            'extra' => null
+                                        );
+                    }
+                    
                     if (count($errors)) {
                         $data[$key]['exim_status'] = 'Invalid';
                     } else {
@@ -151,12 +184,12 @@ class GLService extends AbstractService {
         	public function saveCSV($account) {		
 		$errors = array();
 		$exim_glaccount_id = null;
-                $this->eximglaccountGateway->beginTransaction();
+                $this->glaccountGateway->beginTransaction();
 
 		try {
 			$res = $this->saveAccount($account);
 			$errors = $res['errors'];
-			$exim_glaccount_id = $res['exim_glaccount_id'];
+			$glaccount_id = $res['glaccount_id'];
                         
 		} catch(\Exception $e) {
 			// Add a global error to the error array
@@ -164,36 +197,48 @@ class GLService extends AbstractService {
 		}
 
 		if (count($errors)) {
-			$this->eximglaccountGateway->rollback();
+			$this->glaccountGateway->rollback();
 		} else {
-			$this->eximglaccountGateway->commit();
+			$this->glaccountGateway->commit();
 		}
 
 		return array(
 			'success'        => (count($errors)) ? false : true,
 			'errors'         => $errors,
-			'exim_glaccount_id'   => $exim_glaccount_id
+			'glaccount_id'   => $glaccount_id
 		);
 	}
         
 	public function saveAccount($data) {
 		// Get entities
-                unset($data['glaccount_status']);
-		$exim_glaccount     = new \NP\exim\EximGLAccountEntity($data);
+                $glaccounttype_id = $this->glaccountGateway->getAccountTypeIdByName($data['exim_accountType']);
+                $integrationPackageId = $this->glaccountGateway->getIntegrationPackageIdByName($data['exim_integrationPackage']);
+                $glAccountCategoryId = $this->glaccountGateway->getCategoryIdByName($data['exim_categoryName'], $integrationPackageId);
+                $parentTreeId  = $this->glaccountGateway->getTreeIdForCategory($glAccountCategoryId);
+                $treeOrder = $this->glaccountGateway->getTreeOrder($parentTreeId);
+                $account = array(
+                            'glaccount_name' => $data['exim_glaccountName'],
+                            'glaccount_number' => $data['exim_glaccountNumber'],
+                            'glaccounttype_id' => $glaccounttype_id, 
+                            'integrationPackageId' => $integrationPackageId
+                    );
+                
+		$glaccount     = new GLAccountEntity($account);
 		
 		// Run validation
 		$validator = new EntityValidator();
-		$validator->validate($exim_glaccount);
+		$validator->validate($glaccount);
 		$errors    = $validator->getErrors();
 
 		// If the data is valid, save it
 		if (count($errors) == 0) {
 			// Begin transaction
-			$this->eximglaccountGateway->beginTransaction();
+			$this->glaccountGateway->beginTransaction();
 
 			try {
 				// Save the glaccount record
-				$this->eximglaccountGateway->save($exim_glaccount);
+				$this->glaccountGateway->save($glaccount);
+                                $newGlAccountId = $glaccount->glaccount_id;
 
 			} catch(\Exception $e) {
 				// Add a global error to the error array
@@ -202,15 +247,24 @@ class GLService extends AbstractService {
 		}
 
 		if (count($errors)) {
-			$this->eximglaccountGateway->rollback();
+			$this->glaccountGateway->rollback();
 		} else {
-			$this->eximglaccountGateway->commit();
+			$this->glaccountGateway->commit();
 		}
-
+                
+                //Insert data to TREE
+                $treeValues = array(
+                    'tree_parent' => $parentTreeId,
+                    'table_name'  => "'glaccount'",
+                    'tablekey_id' => $newGlAccountId,
+                    'tree_order'  => $treeOrder
+                );
+                $insert = new Insert('tree', $treeValues);
+                $this->glaccountGateway->adapter->query($insert);
 		return array(
 			'success'        => (count($errors)) ? false : true,
 			'errors'         => $errors,
-			'exim_glaccount_id' => $exim_glaccount->exim_glaccount_id
+			'glaccount_id' => $glaccount->glaccount_id
 		);
 	}
 
