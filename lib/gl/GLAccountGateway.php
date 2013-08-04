@@ -155,7 +155,7 @@ class GLAccountGateway extends AbstractGateway {
 	public function getGLAccounts() {
 		$select = new Select();
 		$select->from(array('g'=>'glaccount'))
-					->order("g.glaccount_name");
+			   ->order("g.glaccount_name");
 		return $this->adapter->query($select);
 	}
         
@@ -167,23 +167,84 @@ class GLAccountGateway extends AbstractGateway {
 	public function getGLAccountsExim() {
 		$select = new Select();
 		$select->from(array('g'=>'exim_glaccount'))
-					->order("g.glaccount_name");
+			   ->order("g.glaccount_name");
 		return $this->adapter->query($select);
 	}
         
-        public function saveEximGLAccount($data) {
-                $account = $data->toArray();
-                $insert = new Insert();
-                $insert->into('exim_glaccount');
-                $cols = array('exim_glaccountName','exim_glaccountNumber','exim_glaccountType',
-                        'exim_categoryName','exim_integrationPackage');
-                $insert->columns($cols);
-                $insert->values($account);
-                $result = $this->adapter->query($insert);
-                return $result;
-            
+    public function saveEximGLAccount($data) {
+            $account = $data->toArray();
+            $insert = new Insert();
+            $insert->into('exim_glaccount');
+            $cols = array(
+                'exim_glaccountName',
+                'exim_glaccountNumber',
+                'exim_glaccountType',
+                'exim_categoryName',
+                'exim_integrationPackage'
+            );
+            $insert->columns($cols);
+            $insert->values($account);
+            $result = $this->adapter->query($insert);
+            return $result;
+
+    }
+
+    public function getTreeOrder($parentTreeId)
+    {
+        $select = new Select();
+        $select->from('tree')
+            ->columns(array('tree_order' => new \NP\core\db\Expression('ISNULL(max(tree_order), 0)')))
+            ->where("table_name = 'glaccount' AND tree_parent = ?");
+
+        $result = $this->adapter->query($select, array($parentTreeId));
+        if(count($result) > 0) {
+            return (int)$result[0]['tree_order'] + 1;
         }
+        return 1;
+    }
+
+    public function getTreeIdForCategory($glAccountCategoryId)
+    {
+        $select = new Select();
+        $select->from('tree')
+            ->columns(array('id' => 'tree_id'))
+            ->where("table_name = 'glaccount' AND tablekey_id = ?");
+
+        $result = $this->adapter->query($select, array($glAccountCategoryId));
+        return $result[0]['id'];
+    }
+
+    public function getCategoryIdByName($categoryName, $integrationPackageId)
+    {
+        $select = new Select();
+        $select->from('GLACCOUNT')
+            ->columns(array('id' => 'glaccount_id'))
+            ->where("glaccount_name = ?	AND glaccounttype_id IS NULL AND integration_package_id = ?");
+
+        $result = $this->adapter->query($select, array($categoryName, $integrationPackageId));
+        return $result[0]['id'];
+    }
+
+    public function getAccountTypeIdByName($accountType)
+    {
+        $select = new Select();
+        $select->from(array('g' => 'GLACCOUNTTYPE'))
+            ->columns(array('id' => 'glaccounttype_id'))
+            ->where("g.glaccounttype_name= ?");
+
+        $result = $this->adapter->query($select, array($accountType));
+        return $result[0]['id'];
+    }
+
+    public function getIntegrationPackageIdByName($integrationPackageName)
+    {
+        $select = new Select();
+        $select->from('integrationpackage')
+            ->columns(array('id' => 'integration_package_id'))
+            ->where("integration_package_name = ?");
+
+        $result = $this->adapter->query($select, array($integrationPackageName));
+        return $result[0]['id'];
+    }
 	
 }
-
-?>
