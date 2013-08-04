@@ -27,6 +27,14 @@ Ext.define('NP.view.import.GLCode', {
 	                	 }
                      ]
     	 }];
+        var labelWidth = 150;
+    	var bar = [
+	    	 { xtype: 'shared.button.cancel' },
+	    	 { xtype: 'shared.button.upload' }
+	    ];
+
+	    this.tbar = bar;
+	    this.bbar = bar;
     	this.callParent(arguments);
     }
     

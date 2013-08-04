@@ -26,14 +26,6 @@ Ext.define('NP.view.import.GL', {
     },
 
     initComponent: function() {
-    	var labelWidth = 150;
-    	var bar = [
-	    	 { xtype: 'shared.button.cancel' },
-	    	 { xtype: 'shared.button.upload' }
-	    ];
-
-	    this.tbar = bar;
-	    this.bbar = bar;
 
         this.items = [{
             xtype : 'verticaltabpanel',

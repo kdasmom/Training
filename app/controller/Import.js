@@ -33,12 +33,19 @@ Ext.define('NP.controller.Import', {
 		// Setup event handlers
 		this.control({
 			// Clicking on an import in an Overview tab
-			'[xtype="import.overview"] tabpanel': {
+			'[xtype="import.main"]': {
 				tabchange: function(tabPanel, newCard, oldCard, eOpts) {
 					Ext.log('Import.onTabChange() running');
 					
 					var activeTab = Ext.getClassName(newCard).split('.').pop();
 					this.addHistory('Import:showImport:' + activeTab);
+				}
+			},
+                        // The Cancel button on the GL Category tab
+			'[xtype="import.gl"] [xtype="shared.button.cancel"]': {
+				// Run this whenever the upload button is clicked
+				click: function() {
+					this.addHistory('Import:showImport');
 				}
 			},
 			// The Upload button on the GL Category tab
@@ -47,14 +54,20 @@ Ext.define('NP.controller.Import', {
 				click: this.uploadGL
 			},
 			// The Cancel button on the GL Category tab
-			'[xtype="import.gl"] [xtype="shared.button.cancel"]': {
+			'[xtype="import.csvgrid"] [xtype="shared.button.cancel"]': {
+				click: function() {
+					this.addHistory('Import:showImport');
+				}
+			},
+                        // The Decline button on the GL Category tab
+			'[xtype="import.csvgrid"] [xtype="shared.button.inactivate"]': {
 				// Run this whenever the upload button is clicked
 				click: function() {
 					this.addHistory('Import:showImport');
 				}
 			},
                         // The Upload csv file
-			'[xtype="import.csvgrid"] [xtype="shared.button.save"]': {
+			'[xtype="import.csvgrid"] [xtype="shared.button.activate"]': {
 				// Run this whenever the upload button is clicked
 				click: function() {
 					that = this;

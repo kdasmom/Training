@@ -32,20 +32,16 @@ Ext.define('NP.view.import.CSVGrid', {
             { text: 'Integration Package Name', dataIndex: 'exim_integrationPackage'},
             { text: 'Status', dataIndex: 'exim_status' }
         ];
-        
-        this.pagingToolbarButtons = [
-                    { xtype: 'shared.button.activate', disabled: true },
-                    { xtype: 'shared.button.inactivate', disabled: true }
-                ];
-        
+           
         this.selModel = Ext.create('Ext.selection.CheckboxModel');
         
         var bar = [
- 	    		{ xtype: 'shared.button.save', text: 'Save' },
- 	    		{ xtype: 'shared.button.cancel', text: 'Cancel' }
+                    { xtype: 'shared.button.cancel', text: 'Cancel' },
+                    { xtype: 'shared.button.inactivate', text: 'Decline' },
+                    { xtype: 'shared.button.activate', text: 'Accept' },
+ 	    		
 	    ];
         this.tbar = bar;
-        this.bbar = bar;
         // Create the store
         this.store = Ext.create('NP.store.gl.GlImportAccounts', {
             service    : 'GLService',
