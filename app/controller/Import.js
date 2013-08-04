@@ -44,10 +44,7 @@ Ext.define('NP.controller.Import', {
 			// The Upload button on the GL Category tab
 			'[xtype="import.gl"] [xtype="shared.button.upload"]': {
 				// Run this whenever the upload button is clicked
-				//click: this.uploadGL
-                                click: function() {
-                                    this.showGrid('glCategories_1375523737.csv');
-                                }
+				click: this.uploadGL
 			},
 			// The Cancel button on the GL Category tab
 			'[xtype="import.gl"] [xtype="shared.button.cancel"]': {
@@ -138,11 +135,10 @@ Ext.define('NP.controller.Import', {
 		var that = this;
 		var formSelector = '[xtype="import.gl"] form';
 		var form = Ext.ComponentQuery.query(formSelector)[0];
-
 		// If form is valid, submit it
 		if (form.getForm().isValid()) {
 			var formEl = NP.Util.createFormForUpload(formSelector);
-			var file = form.getForm().findField('file_upload_category').getValue();
+                        var file = form.getForm().findField('file_upload_category').getValue();
 			NP.lib.core.Net.remoteCall({
 				method  : 'POST',
 				isUpload: true,
@@ -150,8 +146,8 @@ Ext.define('NP.controller.Import', {
 				requests: {
 					service : 'GLService',
 					action  : 'uploadCSV',
-					file      : file,
-					success : function(result, deferred, response) {
+                                        file    : file,
+					success : function(result, deferred) {
 						if (result.success) {							
 							// Show friendly message
 							NP.Util.showFadingWindow({ html: 'File <b>'+ result.upload_filename +' </b>was successfully upload' });
