@@ -74,7 +74,7 @@ Ext.define('NP.controller.Import', {
 				click: function() {
                                         this.addHistory('Import:showImport');
 				}
-			},
+			}
 		});
 	},
 	

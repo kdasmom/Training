@@ -907,13 +907,13 @@ Ext.define('NP.locale.en.controller.SystemSetup', {
 	override: 'NP.controller.SystemSetup',
 
 	changesSavedText		: 'Changes saved successfully',
-	errorDialogTitleText	: 'Error',
+	errorDialogTitleText	: 'Error'
 });
 
 Ext.define('NP.locale.en.controller.systemSetup.Main', {
 	override: 'NP.view.systemSetup.Main',
 
-	title: 'System Setup',
+	title: 'System Setup'
 });
 
 Ext.define('NP.locale.en.view.systemSetup.Overview', {
@@ -927,7 +927,7 @@ Ext.define('NP.locale.en.view.systemSetup.Overview', {
 	passwordConfigurationText	: '<b>Password Configuration</b> - the Password Configuration options available in this tab are provided as a means to control how users set up and change their passwords.',
 	customFieldsText			: '<b>Custom Fields</b> - this tab provides a way to manage up to three custom fields, to be defined by you, for use on Purchase Orders and Invoices',
 	picklistsText				: '<b>Picklists</b> - this tab provides a way to manage the values that should display on Rejection Notes, Vendor Types, and Vendor Document Types.  These values can be updated and added to at any time.',
-	defaultSplitsText			: '<b>Default Splits</b> - this tab displays a list of current default splits set up in the system and provides a way to upload new default splits in the system.',
+	defaultSplitsText			: '<b>Default Splits</b> - this tab displays a list of current default splits set up in the system and provides a way to upload new default splits in the system.'
 });
 
 
@@ -965,17 +965,17 @@ Ext.define('NP.locale.en.controller.systemSetup.PasswordConfiguration', {
 Ext.define('NP.locale.en.controller.systemSetup.Picklist', {
 	override: 'NP.view.systemSetup.Picklist',
 
-	title: 'Picklist',
+	title: 'Picklist'
 });
 
 Ext.define('NP.locale.en.controller.systemSetup.Settings', {
 	override: 'NP.view.systemSetup.Settings',
 
-	title: 'Settings',
+	title: 'Settings'
 });
 
 Ext.define('NP.locale.en.controller.systemSetup.WorkflowManager', {
 	override: 'NP.view.systemSetup.WorkflowManager',
 
-	title: 'Workflow Manager',
+	title: 'Workflow Manager'
 });
