@@ -53,12 +53,6 @@ Ext.define('NP.controller.Import', {
 				// Run this whenever the upload button is clicked
 				click: this.uploadGL
 			},
-			// The Cancel button on the GL Category tab
-			'[xtype="import.csvgrid"] [xtype="shared.button.cancel"]': {
-				click: function() {
-					this.addHistory('Import:showImport');
-				}
-			},
                         // The Decline button on the GL Category tab
 			'[xtype="import.csvgrid"] [xtype="shared.button.inactivate"]': {
 				// Run this whenever the upload button is clicked
@@ -72,12 +66,19 @@ Ext.define('NP.controller.Import', {
 				click: function() {
 					that = this;
                                         var grid =  Ext.ComponentQuery.query('[xtype="import.csvgrid"]')[0];
-                                        var items = grid.getStore().data.items; 
+                                        var items = grid.getStore().data.items;
+                                        var countItems = 0;
                                         Ext.each(items, function(item) {
+                                            var count = 0;
                                             if(item.data.exim_status === 'Valid') {
                                                 that.saveCSV(item.data);
+                                                count++;
+                                                countItems = count;
                                             }
-                                        });	
+                                        });
+                                        if (countItems === 0) {
+                                            NP.Util.showFadingWindow({ html: 'No valid records to import.'});
+                                        }
 				}
 			},
                         // The Cancel button
@@ -86,7 +87,14 @@ Ext.define('NP.controller.Import', {
 				click: function() {
                                         this.addHistory('Import:showImport');
 				}
-			}
+			},
+                        // The Back button on the GL tab
+			'[xtype="import.message"] [xtype="shared.button.back"]': {
+				// Run this whenever the upload button is clicked
+				click: function() {
+					this.addHistory('Import:showImport');
+				}
+			},
 		});
 	},
 	
