@@ -72,9 +72,11 @@ Ext.define('NP.controller.Import', {
 				click: function() {
 					that = this;
                                         var grid =  Ext.ComponentQuery.query('[xtype="import.csvgrid"]')[0];
-                                        var accounts = grid.getSelectionModel().getSelection(); 
-                                        Ext.each(accounts, function(account) {
-                                            that.saveCSV(account.data);
+                                        var items = grid.getStore().data.items; 
+                                        Ext.each(items, function(item) {
+                                            if(item.data.exim_status === 'Valid') {
+                                                that.saveCSV(item.data);
+                                            }
                                         });	
 				}
 			},
@@ -121,6 +123,7 @@ Ext.define('NP.controller.Import', {
 	},
 
         saveCSV: function(account) {
+                var that = this; 
 		NP.lib.core.Net.remoteCall({
 			method  : 'POST',
 			requests: {
@@ -130,7 +133,7 @@ Ext.define('NP.controller.Import', {
 				success : function(result, deferred) {
 					if (result.success) {							
 						// Show friendly message
-						NP.Util.showFadingWindow({ html: 'Data from csv file saved' });
+						that.setView('NP.view.import.Message');
 					} else {
 						if (result.errors.length) {
 							NP.Util.showFadingWindow({ html: 'Data from csv file not saved. Errors:' + result.errors[0] });

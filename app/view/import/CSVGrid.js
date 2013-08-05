@@ -32,9 +32,7 @@ Ext.define('NP.view.import.CSVGrid', {
             { text: 'Integration Package Name', dataIndex: 'exim_integrationPackage'},
             { text: 'Status', dataIndex: 'exim_status' }
         ];
-           
-        this.selModel = Ext.create('Ext.selection.CheckboxModel');
-        
+          
         var bar = [
                     { xtype: 'shared.button.cancel', text: 'Cancel' },
                     { xtype: 'shared.button.inactivate', text: 'Decline' },
