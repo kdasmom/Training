@@ -7,6 +7,7 @@ use NP\core\validation\EntityValidator;
 use NP\core\db\Insert;
 use NP\exim\EximGLAccountEntity;
 use NP\exim\EximGLAccountGateway;
+use NP\security\SecurityService;
 
 /**
  * All operations that are closely related to GL accounts belong in this service
@@ -18,14 +19,15 @@ class GLService extends AbstractService {
 	/**
 	 * @var \NP\gl\GLAccountGateway
 	 */
-	protected $glaccountGateway, $configService, $eximglaccountGateway;
+	protected $glaccountGateway, $configService, $eximglaccountGateway, $securityService;
         	
 	/**
 	 * @param \NP\gl\GLAccountGateway $glaccountGateway GLAccount gateway injected
 	 */
-	public function __construct(GLAccountGateway $glaccountGateway, EximGLAccountGateway $eximglaccountGateway) {
+	public function __construct(GLAccountGateway $glaccountGateway, EximGLAccountGateway $eximGLAccountGateway, SecurityService $securityService) {
 		$this->glaccountGateway = $glaccountGateway;
-                $this->eximglaccountGateway = $eximglaccountGateway;
+        $this->eximglaccountGateway = $eximGLAccountGateway;
+        $this->securityService = $securityService;
 	}
 	
 	public function setConfigService(\NP\system\ConfigService $configService) {
@@ -61,8 +63,13 @@ class GLService extends AbstractService {
 		$rows = explode("\n", trim($csv));
 		array_shift($rows);
 		$csvarr = array_map(function ($row) {
-			$keys = array('exim_glaccountName','exim_glaccountNumber','exim_accountType',
-                            'exim_categoryName','exim_integrationPackage');
+			$keys = array(
+                'exim_glaccountName',
+                'exim_glaccountNumber',
+                'exim_accountType',
+                'exim_categoryName',
+                'exim_integrationPackage'
+            );
 			return array_combine($keys, str_getcsv($row));
 		}, $rows);
 			
@@ -94,11 +101,11 @@ class GLService extends AbstractService {
                 
                     // Check the GLAccount Type in DB
                     if (is_null($glaccounttype_id)) {
-                            $errors[] = array(
-                                            'field' => 'exim_accountType',
-                                            'msg'   => $this->localizationService->getMessage('importFieldAccountTypeError'),
-                                            'extra' => null
-                                        );
+                        $errors[] = array(
+                            'field' => 'exim_accountType',
+                            'msg'   => $this->localizationService->getMessage('importFieldAccountTypeError'),
+                            'extra' => null
+                        );
                     }
                     
                     // Check the Integration Package Name in DB
@@ -158,7 +165,10 @@ class GLService extends AbstractService {
 			$destPath, 
 			array(
 				'allowedTypes'=>array(
-					'text/csv'
+					'text/csv',
+                    'application/octet-stream',
+                    'text/comma-separated-values',
+                    'application/vnd.ms-excel'
 				),
 					'fileName' => 'glCategories_' . time() . '.csv'
 			)
@@ -181,10 +191,10 @@ class GLService extends AbstractService {
 		);
 	}
         
-        	public function saveCSV($account) {		
+    public function saveCSV($account) {
 		$errors = array();
 		$exim_glaccount_id = null;
-                $this->glaccountGateway->beginTransaction();
+        $this->glaccountGateway->beginTransaction();
 
 		try {
 			$res = $this->saveAccount($account);
@@ -193,7 +203,7 @@ class GLService extends AbstractService {
                         
 		} catch(\Exception $e) {
 			// Add a global error to the error array
-			$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
+			$errors[] = array('field'=>'global', 'msg' => $this->handleUnexpectedError($e), 'extra' => null);
 		}
 
 		if (count($errors)) {
@@ -205,24 +215,39 @@ class GLService extends AbstractService {
 		return array(
 			'success'        => (count($errors)) ? false : true,
 			'errors'         => $errors,
-			'glaccount_id'   => $glaccount_id
+			'glaccount_id'   => !empty($glaccount_id)?$glaccount_id:null
 		);
 	}
         
 	public function saveAccount($data) {
+
+        $userProfileId = $this->securityService->getUserId();
+
 		// Get entities
-                $glaccounttype_id = $this->glaccountGateway->getAccountTypeIdByName($data['exim_accountType']);
-                $integrationPackageId = $this->glaccountGateway->getIntegrationPackageIdByName($data['exim_integrationPackage']);
-                $glAccountCategoryId = $this->glaccountGateway->getCategoryIdByName($data['exim_categoryName'], $integrationPackageId);
-                $parentTreeId  = $this->glaccountGateway->getTreeIdForCategory($glAccountCategoryId);
-                $treeOrder = $this->glaccountGateway->getTreeOrder($parentTreeId);
-                $account = array(
-                            'glaccount_name' => $data['exim_glaccountName'],
-                            'glaccount_number' => $data['exim_glaccountNumber'],
-                            'glaccounttype_id' => $glaccounttype_id, 
-                            'integrationPackageId' => $integrationPackageId
-                    );
-                
+        $accountNumber = $data['exim_glaccountNumber'];
+        $accountName = $data['exim_glaccountName'];
+        $integrationPackageName = $data['exim_integrationPackage'];
+        $categoryName = $data['exim_categoryName'];
+        $accountTypeName = $data['exim_accountType'];
+
+        $accountTypeId = $this->glaccountGateway->getAccountTypeIdByName($accountTypeName);
+        $integrationPackageId = $this->glaccountGateway->getIntegrationPackageIdByName($integrationPackageName);
+        $glAccountCategoryId = $this->glaccountGateway->getCategoryIdByName($categoryName, $integrationPackageId);
+        $parentTreeId  = $this->glaccountGateway->getTreeIdForCategory($glAccountCategoryId);
+        $treeOrder = $this->glaccountGateway->getTreeOrder($parentTreeId);
+        $account = array(
+            'glaccount_name' => $accountName,
+            'glaccount_number' => $accountNumber,
+            'glaccounttype_id' => $accountTypeId,
+            'integration_package_id' => $integrationPackageId,
+            'glaccount_updateby' => $userProfileId
+        );
+
+        $exists = $oldGlAccountId = $this->glaccountGateway->glaccountExists($accountNumber, $integrationPackageId);
+        if($exists) {
+            $account['glaccount_id'] = $oldGlAccountId;
+        }
+
 		$glaccount     = new GLAccountEntity($account);
 		
 		// Run validation
@@ -238,11 +263,12 @@ class GLService extends AbstractService {
 			try {
 				// Save the glaccount record
 				$this->glaccountGateway->save($glaccount);
-                                $newGlAccountId = $glaccount->glaccount_id;
+                $newGlAccountId = $glaccount->glaccount_id;
+                $this->glaccountGateway->updateTree($oldGlAccountId, $newGlAccountId, $parentTreeId, $treeOrder, $exists);
 
 			} catch(\Exception $e) {
 				// Add a global error to the error array
-				$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
+				$errors[] = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e), 'extra'=>null);
 			}
 		}
 
@@ -251,17 +277,8 @@ class GLService extends AbstractService {
 		} else {
 			$this->glaccountGateway->commit();
 		}
-                
-                //Insert data to TREE
-                $treeValues = array(
-                    'tree_parent' => $parentTreeId,
-                    'table_name'  => "'glaccount'",
-                    'tablekey_id' => $newGlAccountId,
-                    'tree_order'  => $treeOrder
-                );
-                $insert = new Insert('tree', $treeValues);
-                $this->glaccountGateway->adapter->query($insert);
-		return array(
+
+        return array(
 			'success'        => (count($errors)) ? false : true,
 			'errors'         => $errors,
 			'glaccount_id' => $glaccount->glaccount_id
@@ -269,5 +286,3 @@ class GLService extends AbstractService {
 	}
 
 }
-
-?>

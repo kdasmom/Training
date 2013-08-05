@@ -5,6 +5,7 @@ namespace NP\gl;
 use NP\core\AbstractGateway;
 use NP\core\db\Select;
 use NP\core\db\Insert;
+use NP\core\db\Update;
 use NP\system\ConfigService;
 
 use NP\core\db\Adapter;
@@ -20,7 +21,7 @@ class GLAccountGateway extends AbstractGateway {
 	 * @var \NP\system\ConfigService The config service singleton
 	 */
 	protected $configService;
-	
+
 	/**
 	 * Setter function required by DI to set the config service via setter injection
 	 * @param \NP\system\ConfigService $configService
@@ -170,6 +171,44 @@ class GLAccountGateway extends AbstractGateway {
 			   ->order("g.glaccount_name");
 		return $this->adapter->query($select);
 	}
+
+    public function glaccountExists($glaccount_number, $integration_package_id)
+    {
+        $query = new Select();
+        $query->from('glaccount')
+            ->column('glaccount_id')
+            ->where('glaccount_number = ? AND integration_package_id = ? AND glaccounttype_id IS NOT NULL');
+        $result = $this->adapter->query($query, array($glaccount_number, $integration_package_id));
+        $result = !empty($result)?$result[0]['glaccount_id']:false;
+        return $result;
+    }
+
+    public function updateTree($glaccountId, $newGlAccountId, $parentTreeId, $treeOrder, $exists)
+    {
+        if(!$exists) {
+            //Insert data to TREE
+            // INSERT INTO TREE (tree_parent, table_name, tablekey_id, tree_order) VALUES (@parent_tree_id, 'glaccount', @new_glaccount_id, @tree_order)
+            $treeValues = array(
+                'tree_parent' => $parentTreeId,
+                'table_name'  => "'glaccount'",
+                'tablekey_id' => $newGlAccountId,
+                'tree_order'  => $treeOrder
+            );
+            $query = new Insert('tree', $treeValues);
+        } else {
+            //UPDATE tree SET tree_parent = @parent_tree_id, tree_order = @tree_order WHERE table_name = 'glaccount' AND tablekey_id = @glaccount_id;
+            $values = array(
+                'tree_parent' => $parentTreeId,
+                'tree_order'  => $treeOrder
+            );
+            $where = array(
+                'table_name'  => "'glaccount'",
+                'tablekey_id' => $glaccountId,
+            );
+            $query = new Update('tree', $values, $where);
+        }
+        $this->adapter->query($query);
+    }
         
     public function saveEximGLAccount($data) {
             $account = $data->toArray();
