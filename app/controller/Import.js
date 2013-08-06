@@ -67,21 +67,19 @@ Ext.define('NP.controller.Import', {
             },
             // The Upload csv file
             '[xtype="import.gl"] [xtype="shared.button.activate"]': {
-                // Run this whenever the upload button is clicked
                 click: function() {
                     that = this;
                     var grid = Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="panel"] [xtype="customgrid"]')[0];
                     var items = grid.getStore().data.items;
-                    var countItems = 0;
+                    var accounts = [];
                     Ext.each(items, function(item) {
-                        var count = 0;
-                        if (item.data.exim_status === 'Valid') {
-                            that.saveGrid(item.data);
-                            count++;
-                            countItems = count;
+                        if ( item.data.exim_status.indexOf('buttons/activate') + 1) {
+                            accounts.push(item.data);
                         }
                     });
-                    if (countItems === 0) {
+                    if (accounts.length > 0) {
+                        that.saveGrid(accounts);
+                    } else {
                         NP.Util.showFadingWindow({html: 'No valid records to import.'});
                     }
                 }
@@ -132,18 +130,19 @@ Ext.define('NP.controller.Import', {
         Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="shared.button.activate"]')[1].setVisible(true);
 
         Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="panel"]')[3].setVisible(true);
-
+        
+        var view = Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="import.glcode"]');
+        
         var grid = Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="panel"] [xtype="customgrid"]')[0];
         var store = Ext.create('NP.store.gl.GlImportAccounts', {
-            service: 'GLService',
-            action: 'getCSVFile',
-            paging: true,
-            extraParams: {file: file}
-        });
-        Ext.apply(grid, {store: store});
-        // Load the store
-        grid.getStore().load();
-        grid.getView().refresh();
+             service: 'GLService',
+             action: 'getCSVFile',
+             paging: true,
+             extraParams: {file: file}
+         });
+         grid.store = store;
+         grid.getStore().load();
+         grid.getView().refresh();
     },
     showFormUpload: function() {
         Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="form"]')[0].setVisible(true);
@@ -167,8 +166,8 @@ Ext.define('NP.controller.Import', {
             method: 'POST',
             requests: {
                 service: 'GLService',
-                action: 'saveCSV',
-                account: accounts,
+                action: 'saveGrid',
+                accounts: accounts,
                 success: function(result, deferred) {
                     if (result.success) {
                         // Show friendly message
@@ -203,7 +202,7 @@ Ext.define('NP.controller.Import', {
                 form: formEl.id,
                 requests: {
                     service: 'GLService',
-                    action: 'uploadCSV',
+                    action: 'uploadFile',
                     file: file,
                     success: function(result, deferred) {
                         if (result.success) {
@@ -211,7 +210,7 @@ Ext.define('NP.controller.Import', {
                             that.showGrid(result.upload_filename);
                         } else {
                             if (result.errors.length) {
-                                form.getForm().findField('file_upload_category').markInvalid(result.errors[0]);
+                                form.getForm().findField('file_upload_category').markInvalid(result.errors);
                             }
                         }
                         Ext.removeNode(formEl);

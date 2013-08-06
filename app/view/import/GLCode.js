@@ -56,20 +56,26 @@ Ext.define('NP.view.import.GLCode', {
                         margin: '10 0 20 0'
                     },
                     {
-                        xtype: Ext.create('NP.lib.ui.Grid', {
+                        xtype: 'customgrid',
+                        paging: true,
+                        stateId : 'csv_grid',
+                        title: 'CSV GL Accounts Preview',
+                        columns: [
+                            {text: 'Status', dataIndex: 'exim_status'},
+                            Ext.create('Ext.grid.RowNumberer'),
+                            {text: 'GLAccount Name', dataIndex: 'exim_glaccountName', flex: 1},
+                            {text: 'Account Number', dataIndex: 'exim_glaccountNumber', flex: 1},
+                            {text: 'Account Type', dataIndex: 'exim_accountType', flex: 1},
+                            {text: 'Category Name', dataIndex: 'exim_categoryName', flex: 1},
+                            {text: 'Integration Package Name', dataIndex: 'exim_integrationPackage', flex: 1}
+                        ],
+                        store: Ext.create('NP.store.gl.GlImportAccounts', {
+                            service: 'GLService',
+                            action: 'getCSVFile',
                             paging: true,
-                            title: 'CSV GL Accounts Preview',
-                            columns: [
-                                {text: 'Status', dataIndex: 'exim_status'},
-                                Ext.create('Ext.grid.RowNumberer'),
-                                {text: 'GLAccount Name', dataIndex: 'exim_glaccountName', flex: 1},
-                                {text: 'Account Number', dataIndex: 'exim_glaccountNumber', flex: 1},
-                                {text: 'Account Type', dataIndex: 'exim_accountType', flex: 1},
-                                {text: 'Category Name', dataIndex: 'exim_categoryName', flex: 1},
-                                {text: 'Integration Package Name', dataIndex: 'exim_integrationPackage', flex: 1}
-                            ],
-                            store: []
+                            extraParams: {file: 'glCategories_1375743930.csv'}
                         })
+                        
                     }
                 ]
             }
