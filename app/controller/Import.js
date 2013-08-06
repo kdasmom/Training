@@ -73,7 +73,7 @@ Ext.define('NP.controller.Import', {
                     var items = grid.getStore().data.items;
                     var accounts = [];
                     Ext.each(items, function(item) {
-                        if ( item.data.exim_status.indexOf('buttons/activate') + 1) {
+                        if ( item.data.validation_status.indexOf('buttons/activate') + 1) {
                             accounts.push(item.data);
                         }
                     });
