@@ -3,6 +3,8 @@
 namespace NP\system;
 
 use NP\core\AbstractGateway;
+use NP\core\db\Select;
+use NP\core\db\Update;
 
 /**
  * Gateway for the TREE table

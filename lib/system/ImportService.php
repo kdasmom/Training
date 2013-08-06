@@ -55,7 +55,7 @@ abstract class ImportService  extends AbstractService {
      * @param  string $file A file name
      * @return array     Array with status info on the operation
      */
-    public function uploadCSV($file) {
+    public function uploadFile($file) {
         $fileName = null;
         $destinationPath = $this->getUploadPath();
         $userProfileId = $this->securityService->getUserId();
@@ -78,7 +78,9 @@ abstract class ImportService  extends AbstractService {
         // Do the file upload
         $fileUpload->upload();
         $errors = $fileUpload->getErrors();
-
+        foreach ($errors as $k => $v) {
+                    $errors[$k] = $this->localizationService->getMessage($v);
+        }
         // If there are no errors, run the resize operations and DB updates
         if (!count($errors)) {
             $fileName = $fileUpload->getFile();
