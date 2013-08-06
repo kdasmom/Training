@@ -8,7 +8,7 @@ Ext.define('NP.view.import.GLActuals', {
     alias: 'widget.import.glactuals',
             
     title: 'Actuals',
-    bodyPadding: 8,
+    border: false,
     html: 'Coming soon...',
 
     initComponent: function() {

@@ -8,7 +8,7 @@ Ext.define('NP.view.import.GLCode', {
     alias: 'widget.import.glcode',
     requires: ['NP.lib.ui.Grid'],
     title: 'GL Code',
-    bodyPadding: 8,
+    border: false,
     initComponent: function() {
         var bar = [
             {xtype: 'shared.button.cancel'},
@@ -62,7 +62,7 @@ Ext.define('NP.view.import.GLCode', {
                         title: 'CSV GL Accounts Preview',
                         columns: [
                             {text: 'Status', dataIndex: 'validation_status'},
-                            Ext.create('Ext.grid.RowNumberer'),
+                            Ext.create('Ext.grid.RowNumberer', {text: 'Row #', width: 43,}),
                             {text: 'GLAccount Name', dataIndex: 'glaccount_name', flex: 1},
                             {text: 'Account Number', dataIndex: 'glaccount_number', flex: 1},
                             {text: 'Account Type', dataIndex: 'account_type_name', flex: 1},
@@ -74,7 +74,7 @@ Ext.define('NP.view.import.GLCode', {
                             service: 'GLService',
                             action: 'getCSVFile',
                             paging: true,
-                            extraParams: {file: 'glCategories_13757869331.csv'}
+                            extraParams: {file: null}
                         })
                         
                     }
