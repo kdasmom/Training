@@ -29,7 +29,7 @@ class EntityValidator implements ValidatorInterface {
 	 * @param string The error message
 	 */
 	public function addError($field, $msg, $extra=null) {
-		$this->errors[] = array('field'=>$field, 'msg'=>$msg, 'extra'=>$extra);
+		$this->errors[] = array('field' => $field, 'msg' => $msg, 'extra' => $extra);
 	}
 
 	/**
@@ -144,4 +144,3 @@ class EntityValidator implements ValidatorInterface {
 		return new $classPath($options);
 	}
 }
-?>
