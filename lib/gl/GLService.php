@@ -127,12 +127,12 @@ class GLService extends AbstractService {
                     }
                     
                     if (count($errors)) {
-                        $data[$key]['exim_status'] = 'Invalid';
+                        $data[$key]['exim_status'] = '<span style="color:red;"><img src="resources/images/buttons/inactivate.gif" /></span>';
                     } else {
-                        $data[$key]['exim_status'] = 'Valid';
+                        $data[$key]['exim_status'] = '<span style="color:green;"><img src="resources/images/buttons/activate.gif" /></span>';
                     }
                 }
-		return array('data'=>$data);
+		return array('total' => count($data), 'data'=>$data);
 	}
 	
 	/**
@@ -150,7 +150,7 @@ class GLService extends AbstractService {
 	 * @param  string $file A file name
 	 * @return array     Array with status info on the operation
 	 */
-	public function uploadCSV($file) {
+	public function uploadFile($file) {
 		$fileName = null;
 		$destPath = $this->getUploadPath();
 		
@@ -177,6 +177,9 @@ class GLService extends AbstractService {
 		// Do the file upload
 		$fileUpload->upload();
 		$errors = $fileUpload->getErrors();
+                foreach ($errors as $k => $v) {
+                    $errors[$k] = $this->localizationService->getMessage($v);
+                }
 
 		// If there are no errors, run the resize operations and DB updates
 		if (!count($errors)) {
@@ -191,31 +194,31 @@ class GLService extends AbstractService {
 		);
 	}
         
-    public function saveCSV($account) {
+    public function saveGrid($accounts) {
 		$errors = array();
 		$exim_glaccount_id = null;
-        $this->glaccountGateway->beginTransaction();
+                $this->glaccountGateway->beginTransaction();
 
-		try {
-			$res = $this->saveAccount($account);
-			$errors = $res['errors'];
-			$glaccount_id = $res['glaccount_id'];
-                        
-		} catch(\Exception $e) {
-			// Add a global error to the error array
-			$errors[] = array('field'=>'global', 'msg' => $this->handleUnexpectedError($e), 'extra' => null);
-		}
+		foreach ($accounts as $account) {
+                    try {
+                            $res = $this->saveAccount($account);
+                            $errors = $res['errors'];
+                            $glaccount_id = $res['glaccount_id'];
 
-		if (count($errors)) {
-			$this->glaccountGateway->rollback();
-		} else {
-			$this->glaccountGateway->commit();
-		}
+                    } catch(\Exception $e) {
+                            // Add a global error to the error array
+                            $errors[] = array('field'=>'global', 'msg' => $this->handleUnexpectedError($e), 'extra' => null);
+                    }
 
+                    if (count($errors)) {
+                            $this->glaccountGateway->rollback();
+                    } else {
+                            $this->glaccountGateway->commit();
+                    }
+                }
 		return array(
 			'success'        => (count($errors)) ? false : true,
-			'errors'         => $errors,
-			'glaccount_id'   => !empty($glaccount_id)?$glaccount_id:null
+			'errors'         => $errors
 		);
 	}
         
