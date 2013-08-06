@@ -78,7 +78,7 @@ Ext.define('NP.controller.Import', {
                         }
                     });
                     if (accounts.length > 0) {
-                        that.saveGrid(accounts);
+                        that.saveGrid(JSON.stringify(accounts));
                     } else {
                         NP.Util.showFadingWindow({html: 'No valid records to import.'});
                     }
