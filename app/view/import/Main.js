@@ -23,22 +23,13 @@ Ext.define('NP.view.import.Main', {
     title: 'Import/Export Utility',
     
     items: [
-        {
-            xtype: 'import.overview'
-        },{
-            xtype: 'import.gl'
-        },{
-            xtype: 'import.property'
-        },{
-            xtype: 'import.vendor'
-        },{
-            xtype: 'import.invoice'
-        },{
-            xtype: 'import.user'
-        },{
-            xtype: 'import.customfield'
-        },{
-            xtype: 'import.splits'
-        }
+        { xtype: 'import.overview' },
+        { xtype: 'import.gl' },
+        { xtype: 'import.property' },
+        { xtype: 'import.vendor' },
+        { xtype: 'import.invoice' },
+        { xtype: 'import.user' },
+        { xtype: 'import.customfield' },
+        { xtype: 'import.splits' }
     ]
 });

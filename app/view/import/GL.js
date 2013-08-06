@@ -13,7 +13,7 @@ Ext.define('NP.view.import.GL', {
                'NP.view.import.GLCode',
                'NP.view.import.GLBudgets',
                'NP.view.import.GLActuals',
-           	   'NP.view.shared.button.Cancel',
+               'NP.view.shared.button.Cancel',
                'NP.view.shared.button.Upload'
            ],
            
@@ -41,25 +41,5 @@ Ext.define('NP.view.import.GL', {
             ]
         }];
     	this.callParent(arguments);
-    },
-    isValid: function() {
-        // Call the standard validation function
-        var isValid = this.callParent();
-
-        var field = this.findField('file_upload_category');
-        if (field && field.getValue().length == 0) {
-            field.markInvalid('This field is required.');
-            isValid = false;
-        }
-
-        // Check for errors
-        var errors = this.findInvalid();
-
-        // If there are errors, make sure the first field is visible
-        if (errors.getCount()) {
-            errors.getAt(0).ensureVisible();
-        }
-
-        return isValid;
     }
 });
