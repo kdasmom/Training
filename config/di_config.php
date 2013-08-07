@@ -62,7 +62,7 @@ $diDefinition = array(
 	'NP\core\Config'                           => array('config','reloadCache','WinCache','SiteService','ConfigsysGateway'),
 	'NP\exim\EximGLAccountGateway'             => array('Adapter'),
     'NP\gl\GLAccountGateway'                   => array('Adapter'),
-	'NP\gl\GLService'                          => array('GLAccountGateway', 'TreeGateway'),
+	'NP\gl\GLService'                          => array(),
 	'NP\invoice\InvoiceGateway'                => array('Adapter','RoleGateway'),
 	'NP\invoice\InvoiceItemGateway'            => array('Adapter'),
 	'NP\invoice\InvoiceService'                => array('SecurityService','InvoiceGateway','InvoiceItemGateway','BudgetService'),
@@ -150,6 +150,11 @@ foreach($diDefinition as $classPath=>$dependencies) {
 		if ($r->hasMethod('setLoggingService')) {
 			$obj->setLoggingService($di['LoggingService']);
 		}
+
+        // Inject the Config service via setter injection to all services and gateways
+        if ($r->hasMethod('setPimple')) {
+            $obj->setPimple($di);
+        }
 
 		// Inject the Config service via setter injection to all services and gateways
 		if ($r->hasMethod('setConfigService')) {

@@ -2,23 +2,15 @@
 
 namespace NP\system;
 
-use \NP\core\AbstractService;
-use \NP\system\ConfigService;
-use \NP\security\SecurityService;
+
 use \NP\core\io\FileUpload;
+use \NP\core\validation\ExtendedEntityValidator as EntityValidator;
 use \NP\gl\GLAccountEntity;
+use \ReflectionClass;
 
-abstract class ImportService  extends AbstractService {
+class ImportService  extends BaseImportService {
 
-    /**
-     * @var ConfigService
-     */
-    protected $configService;
 
-    /**
-     * @var SecurityService
-     */
-    protected $securityService;
 
     /**
      * @var array
@@ -30,24 +22,24 @@ abstract class ImportService  extends AbstractService {
         'application/vnd.ms-excel'
     );
 
+
     // Force Extending class to define this method to be abel to validate CSV file
-    abstract protected function validate(&$data);
+    public function validate(&$data, $type)
+    {
+        $entity = new VirtualEntity($this->getImportEntityConfiguration($type), $data);
 
-    /**
-     * Returns the path for upload csv file
-     *
-     * @return string The full path to the directory where upload csv file
-     */
-    protected function getUploadPath() {
-        return "{$this->configService->getAppRoot()}/clients/{$this->configService->getAppName()}/gl_account_csv_uploads/";
-    }
+        // Run validation
+        $validator = new ExtendedEntityValidator();
+        $validator->validate($entity);
+        $this->errors = array_merge($this->errors, $validator->getErrors());
 
-    public function setConfigService(ConfigService $configService) {
-        $this->configService = $configService;
-    }
-
-    public function setSecurityService(SecurityService $securityService) {
-        $this->securityService = $securityService;
+        if($this->getImportCustomValidationFlag($type))
+        {
+            $gateway = $this->getImportGateway($type);
+            foreach($data as $key => $row) {
+                $gateway->validateImportEntity($data[$key], $this->errors);
+            }
+        }
     }
 
     /**
@@ -56,6 +48,7 @@ abstract class ImportService  extends AbstractService {
      * @param  string $file A file name
      * @return array     Array with status info on the operation
      */
+
     public function uploadCSV($file) {
         $fileName = null;
         $destinationPath = $this->getUploadPath();
@@ -101,98 +94,27 @@ abstract class ImportService  extends AbstractService {
      * @param  string $file A path to file
      * @return array
      */
-    public function getPreview($file = null, $pageSize = null, $page = 1, $sortBy = 'glaccountName') {
-        $data = $this->csvFileToArray($this->getUploadPath() . $file);
-        $this->validate($data);
+
+    public function getPreview($file = null, $type, $pageSize = null, $page = 1, $sortBy = 'glaccountName') {
+        $data = $this->csvFileToArray($this->getUploadPath() . $file, $type);
+        $this->validate($data, $type);
         return array('data' => $data);
     }
 
-    protected function csvFileToArray($file) {
-        $csv = file_get_contents($file);
-        $rows = explode("\n", trim($csv));
-        array_shift($rows);
-        $csvArray = array_map(function ($row) {
-            $keys = array(
-                'glaccount_name',
-                'glaccount_number',
-                'account_type_name',
-                'category_name',
-                'integration_package_name'
-            );
-            return array_combine($keys, str_getcsv($row));
-        }, $rows);
+    public function accept($file, $type) {
 
-        return $csvArray;
-    }
+        $data = $this->csvFileToArray($this->getUploadPath() . $file, $type);
+        $this->validate($data, $type);
 
-    public function accept($file) {
+        $gateway = $this->getImportGateway($type);
+        $gateway->save($data, $this->errors);
+        $gateway->postSave();
 
-        $csvData = $this->csvFileToArray($this->getUploadPath() . $file);
-        $this->validate($csvData);
+        return array(
+            'success'        => (count($this->errors)) ? false : true,
+            'errors'         => $this->errors
+        );
 
-        $userProfileId = $this->securityService->getUserId();
-
-        foreach ($csvData as $data) {
-            // Get entities
-            $accountNumber = $data->glaccount_number;
-            $accountName = $data->glaccount_name;
-            $integrationPackageName = $data->integration_package_name;
-            $categoryName = $data->category_name;
-            $accountTypeName = $data->account_type_name;
-
-            $accountTypeId = $this->glaccountGateway->getAccountTypeIdByName($accountTypeName);
-            $integrationPackageId = $this->glaccountGateway->getIntegrationPackageIdByName($integrationPackageName);
-            $glAccountCategoryId = $this->glaccountGateway->getCategoryIdByName($categoryName, $integrationPackageId);
-            $parentTreeId  = $this->treeGateway->getTreeIdForCategory($glAccountCategoryId);
-            $treeOrder = $this->treeGateway->getTreeOrder($parentTreeId);
-            $account = array(
-                'glaccount_name' => $accountName,
-                'glaccount_number' => $accountNumber,
-                'glaccounttype_id' => $accountTypeId,
-                'integration_package_id' => $integrationPackageId,
-                'glaccount_updateby' => $userProfileId
-            );
-
-            $exists = $oldGlAccountId = $this->glaccountGateway->glaccountExists($accountNumber, $integrationPackageId);
-            if($exists) {
-                $account['glaccount_id'] = $oldGlAccountId;
-            }
-
-            $glaccount     = new GLAccountEntity($account);
-
-            // Run validation
-            $validator = new EntityValidator();
-            $validator->validate($glaccount);
-            $errors    = $validator->getErrors();
-
-            // If the data is valid, save it
-            if (count($errors) == 0) {
-                // Begin transaction
-                $this->glaccountGateway->beginTransaction();
-
-                try {
-                    // Save the glaccount record
-                    $this->glaccountGateway->save($glaccount);
-                    $newGlAccountId = $glaccount->glaccount_id;
-                    $this->treeGateway->updateTree($oldGlAccountId, $newGlAccountId, $parentTreeId, $treeOrder, $exists);
-
-                } catch(\Exception $e) {
-                    // Add a global error to the error array
-                    $errors[] = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e), 'extra'=>null);
-                }
-            }
-
-            if (count($errors)) {
-                $this->glaccountGateway->rollback();
-            } else {
-                $this->glaccountGateway->commit();
-            }
-
-            return array(
-                'success'        => (count($errors)) ? false : true,
-                'errors'         => $errors
-            );
-        }
     }
 
     public function decline($file)
@@ -207,5 +129,11 @@ abstract class ImportService  extends AbstractService {
 
         return array('success' => !!unlink($this->getUploadPath() . $file));
     }
+
+    public function getImportConfig($type)
+    {
+        return json_decode(file_get_contents($this->configService->getAppRoot() . '/config/import/' . $type), true);
+    }
+
 
 }
