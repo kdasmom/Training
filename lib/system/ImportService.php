@@ -103,7 +103,7 @@ abstract class ImportService  extends AbstractService {
     public function getCSVFile($file=null, $pageSize=null, $page=1, $sort='glaccountName') {
         $data = $this->csvFileToArray($this->getUploadPath() . $file);
         $this->validate($data);
-        return array('data' => $data);
+        return array('total' => count($data), 'data' => $data);
     }
 
     protected function csvFileToArray($file) {
