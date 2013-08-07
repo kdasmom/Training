@@ -128,48 +128,43 @@ Ext.define('NP.controller.Import', {
         }
     },
     showGrid: function(file) {
-        Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="form"]')[0].setVisible(false);
-
-        Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="shared.button.upload"]')[0].setVisible(false);
-        Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="shared.button.upload"]')[1].setVisible(false);
-        Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="shared.button.cancel"]')[0].setVisible(false);
-        Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="shared.button.cancel"]')[1].setVisible(false);
-
-        Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="shared.button.inactivate"]')[0].setVisible(true);
-        Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="shared.button.inactivate"]')[1].setVisible(true);
-        Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="shared.button.activate"]')[0].setVisible(true);
-        Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="shared.button.activate"]')[1].setVisible(true);
-
-        Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="panel"]')[3].setVisible(true);
+        this.setView('NP.view.import.CSVGrid', {file: file}, '[xtype="import.glcode"] [xtype="panel"]');
+        var grid = Ext.ComponentQuery.query('[xtype="import.csvgrid"] [xtype="customgrid"]')[0];
         
-        var view = this.application.getCurrentView();
-        var grid = Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="panel"] [xtype="customgrid"]')[0];
-        var store = Ext.create('NP.store.gl.GlImportAccounts', {
-             service: 'GLService',
-             action: 'getCSVFile',
-             paging: true,
-             extraParams: {file: file}
-         });
-         
-         grid.store = store;
-         grid.getStore().load();
-         view.down(grid);
+        grid.getStore().load();
+        
+        //Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="form"]')[0].setVisible(false);
+//
+        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.upload"]')[0].setVisible(false);
+        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.upload"]')[1].setVisible(false);
+        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.cancel"]')[0].setVisible(false);
+        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.cancel"]')[1].setVisible(false);
+//
+        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.inactivate"]')[0].setVisible(true);
+        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.inactivate"]')[1].setVisible(true);
+        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.activate"]')[0].setVisible(true);
+        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.activate"]')[1].setVisible(true);
+//
+//        
+//        var view = this.application.getCurrentView();
+//        var grid = Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="panel"] [xtype="customgrid"]')[0];
+
 
     },
     showFormUpload: function() {
-        Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="form"]')[0].setVisible(true);
+        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="panel"] [xtype="form"]')[0].setVisible(true);
 
-        Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="shared.button.upload"]')[0].setVisible(true);
-        Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="shared.button.upload"]')[1].setVisible(true);
-        Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="shared.button.cancel"]')[0].setVisible(true);
-        Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="shared.button.cancel"]')[1].setVisible(true);
+        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.upload"]')[0].setVisible(true);
+        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.upload"]')[1].setVisible(true);
+        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.cancel"]')[0].setVisible(true);
+        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.cancel"]')[1].setVisible(true);
 
-        Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="shared.button.inactivate"]')[0].setVisible(false);
-        Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="shared.button.inactivate"]')[1].setVisible(false);
-        Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="shared.button.activate"]')[0].setVisible(false);
-        Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="shared.button.activate"]')[1].setVisible(false);
+        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.inactivate"]')[0].setVisible(false);
+        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.inactivate"]')[1].setVisible(false);
+        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.activate"]')[0].setVisible(false);
+        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.activate"]')[1].setVisible(false);
 
-        Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="panel"]')[3].setVisible(false);
+        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="panel"]')[3].setVisible(false);
 
     },
     saveGrid: function(accounts, file) {

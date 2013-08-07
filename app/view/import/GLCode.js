@@ -22,11 +22,8 @@ Ext.define('NP.view.import.GLCode', {
 
         this.items = [
             {
-                itemId: 'form_upload',
-                xtype: 'form',
-                autoScroll: true,
+                xtype: 'panel',
                 border: false,
-                bodyPadding: 8,
                 items: [
                     {html: 'Please Note:', border: false},
                     {html: '<ul><li>This upload tool is for new GL Codes only. \n\
@@ -36,50 +33,23 @@ Ext.define('NP.view.import.GLCode', {
                     },
                     {html: '<p>Select a valid CSV file to upload:</p>', border: false, margin: '10 0 0 0'},
                     {
-                        xtype: 'filefield',
-                        name: 'file_upload_category',
-                        width: 400,
-                        hideLabel: true,
-                        allowBlank: false
+                        itemId: 'form_upload',
+                        xtype: 'form',
+                        autoScroll: true,
+                        border: false,
+                        bodyPadding: 8,
+                        items: [
+                            {
+                                xtype: 'filefield',
+                                name: 'file_upload_category',
+                                width: 400,
+                                hideLabel: true,
+                                allowBlank: false
+                            }
+                        ]
                     }
                 ]
             },
-            {
-                xtype: 'panel',
-                hidden: true,
-                border: false,
-                items: [
-                    {
-                        html: 'If you exit from the Import/Export Utility without Accepting or Declining, \n\
-                                    any import/export in process will be abandoned.',
-                        border: false,
-                        margin: '10 0 20 0'
-                    },
-                    {
-                        xtype: 'customgrid',
-                        paging: true,
-                        stateId : 'csv_grid',
-                        title: 'CSV GL Accounts Preview',
-                        columns: [
-                            {text: 'Status', dataIndex: 'validation_status'},
-                            Ext.create('Ext.grid.RowNumberer', {text: 'Row #', width: 43,}),
-                            {text: 'GLAccount Name', dataIndex: 'glaccount_name', flex: 1},
-                            {text: 'Account Number', dataIndex: 'glaccount_number', flex: 1},
-                            {text: 'Account Type', dataIndex: 'account_type_name', flex: 1},
-                            {text: 'Category Name', dataIndex: 'category_name', flex: 1},
-                            {text: 'Integration Package Name', dataIndex: 'integration_package_name', flex: 1},
-                            {text: 'Validation Messages', dataIndex: 'validation_messages', hide: true, flex :1}
-                        ],
-                        store: Ext.create('NP.store.gl.GlImportAccounts', {
-                            service: 'GLService',
-                            action: 'getCSVFile',
-                            paging: true,
-                            extraParams: {file: null}
-                        })
-                        
-                    }
-                ]
-            }
         ];
         this.callParent(arguments);
     }

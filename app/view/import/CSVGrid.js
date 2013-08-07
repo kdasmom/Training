@@ -4,50 +4,52 @@
  * @author Zubik Aliaksandr
  */
 Ext.define('NP.view.import.CSVGrid', {
-    extend: 'NP.lib.ui.Grid',
-    alias : 'widget.import.csvgrid',
-       
+    extend: 'Ext.panel.Panel',
+    alias: 'widget.import.csvgrid',
     requires: [
-    	'NP.lib.core.Config',
-        'NP.view.shared.button.save',
-        'NP.view.shared.button.cancel',
-    	'NP.view.shared.button.Inactivate',
-    	'NP.view.shared.button.Activate',
-        'NP.lib.ui.ComboBox',
-        'NP.view.shared.PropertyCombo'
+        'NP.lib.core.Config',
+        'NP.view.shared.button.Inactivate',
+        'NP.view.shared.button.Activate',
+        'NP.lib.ui.Grid',
     ],
-    paging  : true,
-    stateful: true,
-    stateId : 'csv_grid',
-
-    title: 'CSV GL Accounts Preview',
-
-    initComponent: function() {     
-        // Add the base columns for the grid
-        this.columns = [
-            { text: 'GLAccount Name', dataIndex: 'exim_glaccountName' },
-            { text: 'Account Number', dataIndex: 'exim_glaccountNumber' },
-            { text: 'Account Type', dataIndex: 'exim_accountType' },
-            { text: 'Category Name', dataIndex: 'exim_categoryName'},
-            { text: 'Integration Package Name', dataIndex: 'exim_integrationPackage'},
-            { text: 'Status', dataIndex: 'exim_status' }
+    border: false,
+    initComponent: function() {
+        this.items = [
+            {
+                xtype: 'panel',
+                border: false,
+                items: [
+                    {
+                        html: 'If you exit from the Import/Export Utility without Accepting or Declining, \n\
+                                    any import/export in process will be abandoned.',
+                        border: false,
+                        margin: '10 0 20 0'
+                    }
+                ]
+            },{
+                xtype: 'customgrid',
+                paging: true,
+                stateId: 'csv_grid',
+                title: 'CSV GL Accounts Preview',
+                columns: [
+                    {text: 'Status', dataIndex: 'validation_status'},
+                    Ext.create('Ext.grid.RowNumberer', {text: 'Row #', width: 43, }),
+                    {text: 'GLAccount Name', dataIndex: 'glaccount_name', flex: 1},
+                    {text: 'Account Number', dataIndex: 'glaccount_number', flex: 1},
+                    {text: 'Account Type', dataIndex: 'account_type_name', flex: 1},
+                    {text: 'Category Name', dataIndex: 'category_name', flex: 1},
+                    {text: 'Integration Package Name', dataIndex: 'integration_package_name', flex: 1},
+                    {text: 'Validation Messages', dataIndex: 'validation_messages', hide: true, flex: 1}
+                ],
+                store: Ext.create('NP.store.gl.GlImportAccounts', {
+                    service: 'GLService',
+                    action: 'getCSVFile',
+                    paging: true,
+                    extraParams: {file: this.file}
+                })
+            }
         ];
-          
-        var bar = [
-                    { xtype: 'shared.button.cancel', text: 'Cancel' },
-                    { xtype: 'shared.button.inactivate', text: 'Decline' },
-                    { xtype: 'shared.button.activate', text: 'Accept' },
- 	    		
-	    ];
-        this.tbar = bar;
-        // Create the store
-        this.store = Ext.create('NP.store.gl.GlImportAccounts', {
-            service    : 'GLService',
-            action     : 'getCSVFile',
-            paging     : true,
-            extraParams: { file: this.file } 
-        });
-
         this.callParent(arguments);
     }
+
 });
