@@ -8,7 +8,7 @@ Ext.define('NP.view.import.GLCategory', {
     alias: 'widget.import.glcategory',
             
     title: 'GL Category',
-    bodyPadding: 8,
+    border: false,
     html: 'Coming soon...',
 
     initComponent: function() {

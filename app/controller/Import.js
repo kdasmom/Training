@@ -38,8 +38,8 @@ Ext.define('NP.controller.Import', {
                 }
             },
             // The Import tab GL
-            '[xtype="import.gl"]  > verticaltabpanel': {
-                itemclick: function(tabPanel, newCard, oldCard, eOpts) {
+            '[xtype="import.gl"] [xtype="verticaltabpanel"]': {
+                tabchange: function(verticalTabPanel, newCard, oldCard, eOpts) {
                     var activeTab = Ext.getClassName(newCard).split('.').pop();
                     this.addHistory('Import:showImport:GL:' + activeTab);
                 }
@@ -61,7 +61,7 @@ Ext.define('NP.controller.Import', {
                 // Run this whenever the upload button is clicked
                 click: function() {
 //                    this.deleteFile(file);
-                    this.addHistory('Import:showImport:GL');
+                    this.addHistory('Import:showImport:GL:GLCode');
                     this.showFormUpload();
                 }
             },
@@ -90,7 +90,7 @@ Ext.define('NP.controller.Import', {
      * Shows the import page with a specific tab open
      * @param {String} [activeTab="overview"] The tab currently active
      */
-    showImport: function(activeTab) {
+    showImport: function(activeTab, subSection, id) {
         var that = this;
         // Set the overview view
         var tabPanel = this.setView('NP.view.import.Main');
@@ -102,12 +102,23 @@ Ext.define('NP.controller.Import', {
         // Check if the tab to be selected is already active, if it isn't make it the active tab
         var tab = that.getCmp('import.' + activeTab.toLowerCase());
         var tabPanel = Ext.ComponentQuery.query('tabpanel')[0];
-
+        
         // Set the active tab if it hasn't been set yet
         if (tab.getXType() != tabPanel.getActiveTab().getXType()) {
             tabPanel.suspendEvents(false);
             tabPanel.setActiveTab(tab);
             tabPanel.resumeEvents();
+        }
+        
+        // Set the active vertical tab if it hasn't been set yet
+        var verticalTabPanel = Ext.ComponentQuery.query('verticaltabpanel')[0];
+        var token = Ext.History.currentToken;
+        var verticalActiveTab =  that.getCmp('import.' + token.split(':')[3].toLowerCase());
+        
+        if (verticalActiveTab) {
+            verticalTabPanel.suspendEvents(false);
+            verticalTabPanel.setActiveTab(verticalActiveTab);
+            verticalTabPanel.resumeEvents();
         }
         // Check if there's a show method for this tab
         var showMethod = 'show' + activeTab;
@@ -131,8 +142,7 @@ Ext.define('NP.controller.Import', {
 
         Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="panel"]')[3].setVisible(true);
         
-        var view = Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="import.glcode"]');
-        
+        var view = this.application.getCurrentView();
         var grid = Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="panel"] [xtype="customgrid"]')[0];
         var store = Ext.create('NP.store.gl.GlImportAccounts', {
              service: 'GLService',
@@ -140,9 +150,11 @@ Ext.define('NP.controller.Import', {
              paging: true,
              extraParams: {file: file}
          });
+         
          grid.store = store;
          grid.getStore().load();
-         grid.getView().refresh();
+         view.down(grid);
+
     },
     showFormUpload: function() {
         Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="form"]')[0].setVisible(true);
@@ -174,7 +186,7 @@ Ext.define('NP.controller.Import', {
                         NP.Util.showFadingWindow({html: 'The valid GL Codes were uploaded successfully.'});
 //                        this.deleteFile(file);
                         that.showFormUpload();
-                        that.addHistory('Import:showImport:GL');
+                        that.addHistory('Import:showImport:GL:GLCode');
                     } else {
                         if (result.errors.length) {
                             NP.Util.showFadingWindow({html: 'Data from csv file not saved. Errors:' + result.errors[0]});

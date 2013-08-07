@@ -8,7 +8,7 @@ Ext.define('NP.view.import.GLBudgets', {
     alias: 'widget.import.glbudgets',
             
     title: 'Budgets',
-    bodyPadding: 8,
+    border: false,
     html: 'Coming soon...',
 
     initComponent: function() {
