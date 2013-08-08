@@ -157,6 +157,9 @@ Ext.define('NP.controller.Import', {
     },
     saveGrid: function() {
         var that = this;
+        var glcode = Ext.ComponentQuery.query('[xtype="import.glcode"]')[0];
+        var mask = new Ext.LoadMask(glcode, {msg: 'Saving'});
+        mask.show();
         NP.lib.core.Net.remoteCall({
             method: 'POST',
             requests: {
@@ -166,6 +169,7 @@ Ext.define('NP.controller.Import', {
                 type: 'GLAccount.json',
                 success: function(result, deferred) {
                     if (result.success) {
+                        mask.hide();
                         // Show friendly message
                         NP.Util.showFadingWindow({html: 'The valid GL Codes were uploaded successfully.'});
                         that.showFormUpload();
