@@ -18,10 +18,10 @@ use NP\core\db\Adapter;
  */
 class GLAccountGateway extends AbstractGateway {
 
-	/**
-	 * @var \NP\system\ConfigService The config service singleton
-	 */
-	protected $configService;
+    /**
+     * @var \NP\system\ConfigService The config service singleton
+     */
+    protected $configService;
 
     protected $localizationService;
 
@@ -180,187 +180,154 @@ class GLAccountGateway extends AbstractGateway {
 		return $this->adapter->query($select);
 	}
         
-        /**
-	 * Retrieves All EXIM GL accounts
-	 *
-	 * @return array
-	 */
-	public function getGLAccountsExim() {
-		$select = new Select();
-		$select->from(array('g'=>'exim_glaccount'))
-			   ->order("g.glaccount_name");
-		return $this->adapter->query($select);
-	}
-
-    public function glaccountExists($glaccount_number, $integration_package_id)
-    {
-        $query = new Select();
-        $query->from('glaccount')
-            ->column('glaccount_id')
-            ->where('glaccount_number = ? AND integration_package_id = ? AND glaccounttype_id IS NOT NULL');
-        $result = $this->adapter->query($query, array($glaccount_number, $integration_package_id));
-        $result = !empty($result)?$result[0]['glaccount_id']:false;
-        return $result;
-    }
-        
-    public function saveEximGLAccount($data) {
-            $account = $data->toArray();
-            $insert = new Insert();
-            $insert->into('exim_glaccount');
-            $cols = array(
-                'exim_glaccountName',
-                'exim_glaccountNumber',
-                'exim_glaccountType',
-                'exim_categoryName',
-                'exim_integrationPackage'
-            );
-            $insert->columns($cols);
-            $insert->values($account);
-            $result = $this->adapter->query($insert);
+        public function glaccountExists($glaccount_number, $integration_package_id)
+        {
+            $query = new Select();
+            $query->from('glaccount')
+                ->column('glaccount_id')
+                ->where('glaccount_number = ? AND integration_package_id = ? AND glaccounttype_id IS NOT NULL');
+            $result = $this->adapter->query($query, array($glaccount_number, $integration_package_id));
+            $result = !empty($result)?$result[0]['glaccount_id']:false;
             return $result;
-
-    }
-
-    public function getCategoryIdByName($categoryName, $integrationPackageId)
-    {
-        $select = new Select();
-        $select->from('GLACCOUNT')
-            ->columns(array('id' => 'glaccount_id'))
-            ->where("glaccount_name = ?	AND glaccounttype_id IS NULL AND integration_package_id = ?");
-
-        $result = $this->adapter->query($select, array($categoryName, $integrationPackageId));
-        return (!empty($result[0]['id'])) ? $result[0]['id'] : null;
-    }
-
-    public function getAccountTypeIdByName($accountType)
-    {
-        $select = new Select();
-        $select->from(array('g' => 'GLACCOUNTTYPE'))
-            ->columns(array('id' => 'glaccounttype_id'))
-            ->where("g.glaccounttype_name= ?");
-
-        $result = $this->adapter->query($select, array($accountType));
-        return (!empty($result[0]['id'])) ? $result[0]['id'] : null;
-    }
-
-    public function getIntegrationPackageIdByName($integrationPackageName)
-    {
-        $select = new Select();
-        $select->from('integrationpackage')
-            ->columns(array('id' => 'integration_package_id'))
-            ->where("integration_package_name = ?");
-
-        $result = $this->adapter->query($select, array($integrationPackageName));
-        return (!empty($result[0]['id'])) ? $result[0]['id'] : null;
-    }
-
-    public function validateImportEntity(&$row, &$errors)
-    {
-//        var_dump($row);
-        // Get Id for field glaccounttype_id, integrationPackageId, glaccount_level
-        $glaccounttype_id = $this->getAccountTypeIdByName($row['AccountType']);
-        $integrationPackageId = $this->getIntegrationPackageIdByName($row['IntegrationPackageName']);
-        $glaccount_level = $this->getCategoryIdByName($row['CategoryName'], $integrationPackageId);
-
-        // Check the GLAccount Type in DB
-        if (is_null($glaccounttype_id)) {
-            $errors[] = array(
-                'field' => 'exim_accountType',
-                'msg'   => $this->localizationService->getMessage('importFieldAccountTypeError'),
-                'extra' => null
-            );
         }
 
-        // Check the Integration Package Name in DB
-        if (is_null($integrationPackageId)) {
-            $errors[] = array(
-                'field' => 'exim_integrationPackage',
-                'msg'   => $this->localizationService->getMessage('importFieldIntegrationPackageNameError'),
-                'extra' => null
-            );
+  
+        public function getCategoryIdByName($categoryName, $integrationPackageId)
+        {
+            $select = new Select();
+            $select->from('GLACCOUNT')
+                ->columns(array('id' => 'glaccount_id'))
+                ->where("glaccount_name = ?	AND glaccounttype_id IS NULL AND integration_package_id = ?");
+
+            $result = $this->adapter->query($select, array($categoryName, $integrationPackageId));
+            return (!empty($result[0]['id'])) ? $result[0]['id'] : null;
         }
 
-        // Check the Category Name in DB
-        if (is_null($glaccount_level)) {
-            $errors[] = array(
-                'field' => 'exim_categoryName',
-                'msg'   => $this->localizationService->getMessage('importFieldCategoryNameError'),
-                'extra' => null
-            );
+        public function getAccountTypeIdByName($accountType)
+        {
+            $select = new Select();
+            $select->from(array('g' => 'GLACCOUNTTYPE'))
+                ->columns(array('id' => 'glaccounttype_id'))
+                ->where("g.glaccounttype_name= ?");
+
+            $result = $this->adapter->query($select, array($accountType));
+            return (!empty($result[0]['id'])) ? $result[0]['id'] : null;
         }
 
-        if (count($errors)) {
-            $errorStrings = array();
-            foreach($errors as $error) {
-                $errorStrings[] = $error['msg'];
-            }
-            $row['validation_status'] = '<span style="color:red;"><img src="resources/images/buttons/inactivate.gif" /></span>';
-            $row['validation_messages'] = join(', ', $errorStrings);
-        } else {
-            $row['validation_status'] = '<span style="color:green;"><img src="resources/images/buttons/activate.gif" /></span>';
-            $row['validation_messages'] = '';
+        public function getIntegrationPackageIdByName($integrationPackageName)
+        {
+            $select = new Select();
+            $select->from('integrationpackage')
+                ->columns(array('id' => 'integration_package_id'))
+                ->where("integration_package_name = ?");
+
+            $result = $this->adapter->query($select, array($integrationPackageName));
+            return (!empty($result[0]['id'])) ? $result[0]['id'] : null;
         }
 
-    }
-
-    public function save($data)
-    {
-        // TODO
-        $userProfileId = $this->securityService->getUserId();
-
-            // Get entities
-            $accountNumber = $data->glaccount_number;
-            $accountName = $data->glaccount_name;
-            $integrationPackageName = $data->integration_package_name;
-            $categoryName = $data->category_name;
-            $accountTypeName = $data->account_type_name;
-
-            $accountTypeId = $this->getAccountTypeIdByName($accountTypeName);
-            $integrationPackageId = $this->getIntegrationPackageIdByName($integrationPackageName);
-            $glAccountCategoryId = $this->getCategoryIdByName($categoryName, $integrationPackageId);
-            $parentTreeId  = $this->TreeGateway->getTreeIdForCategory($glAccountCategoryId);
-            $treeOrder = $this->TreeGateway->getTreeOrder($parentTreeId);
-            $account = array(
-                'glaccount_name' => $accountName,
-                'glaccount_number' => $accountNumber,
-                'glaccounttype_id' => $accountTypeId,
-                'integration_package_id' => $integrationPackageId,
-                'glaccount_updateby' => $userProfileId
-            );
-
-            $exists = $oldGlAccountId = $this->glaccountExists($accountNumber, $integrationPackageId);
-            if($exists) {
-                $account['glaccount_id'] = $oldGlAccountId;
+        public function validateImportEntity(&$row, $errors)
+        {
+            // Get Id for field glaccounttype_id, integrationPackageId, glaccount_level
+            $glaccounttype_id = $this->getAccountTypeIdByName($row['AccountType']);
+            $integrationPackageId = $this->getIntegrationPackageIdByName($row['IntegrationPackageName']);
+            $glaccount_level = $this->getCategoryIdByName($row['CategoryName'], $integrationPackageId);
+            // Check the GLAccount Type in DB
+            if (is_null($glaccounttype_id)) {
+                $errors[] = array(
+                    'field' => 'accountType',
+                    'msg'   => $this->localizationService->getMessage('importFieldAccountTypeError'),
+                    'extra' => null
+                );
+                $row['AccountType'] .= ';' . $this->localizationService->getMessage('importFieldAccountTypeError');
             }
 
-            $glaccount     = new GLAccountEntity($account);
+            // Check the Integration Package Name in DB
+            if (is_null($integrationPackageId)) {
+                $errors[] = array(
+                    'field' => 'integrationPackageName',
+                    'msg'   => $this->localizationService->getMessage('importFieldIntegrationPackageNameError'),
+                    'extra' => null
+                );
+                $row['IntegrationPackageName'] .= ';' . $this->localizationService->getMessage('importFieldIntegrationPackageNameError');
 
-            // Run validation
-            $validator = new EntityValidator();
-            $validator->validate($glaccount);
-            $errors    = $validator->getErrors();
-
-            // If the data is valid, save it
-            if (count($errors) == 0) {
-                // Begin transaction
-                $this->beginTransaction();
-
-                try {
-                    // Save the glaccount record
-                    parent::save($glaccount);
-                    $newGlAccountId = $glaccount->glaccount_id;
-                    $this->TreeGateway->updateTree($oldGlAccountId, $newGlAccountId, $parentTreeId, $treeOrder, $exists);
-
-                } catch(\Exception $e) {
-                    // Add a global error to the error array
-                    $errors[] = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e), 'extra'=>null);
-                }
             }
 
+            // Check the Category Name in DB
+            if (is_null($glaccount_level)) {
+                $errors[] = array(
+                    'field' => 'categoryName',
+                    'msg'   => $this->localizationService->getMessage('importFieldCategoryNameError'),
+                    'extra' => null
+                );
+                 $row['CategoryName'] .= ';' . $this->localizationService->getMessage('importFieldCategoryNameError');
+              }
             if (count($errors)) {
-                $this->rollback();
+                $row['validation_status'] = 'invalid';
+                $row['validation_errors'] = $errors;
             } else {
-                $this->commit();
+                $row['validation_status'] = 'valid';
+                $row['validation_errors'] = '';
             }
-    }
+        }
+
+        public function save($data)
+        {
+            // TODO
+            $userProfileId = $this->securityService->getUserId();
+
+                // Get entities
+                $accountNumber = $data->glaccount_number;
+                $accountName = $data->glaccount_name;
+                $integrationPackageName = $data->integration_package_name;
+                $categoryName = $data->category_name;
+                $accountTypeName = $data->account_type_name;
+
+                $accountTypeId = $this->getAccountTypeIdByName($accountTypeName);
+                $integrationPackageId = $this->getIntegrationPackageIdByName($integrationPackageName);
+                $glAccountCategoryId = $this->getCategoryIdByName($categoryName, $integrationPackageId);
+                $parentTreeId  = $this->TreeGateway->getTreeIdForCategory($glAccountCategoryId);
+                $treeOrder = $this->TreeGateway->getTreeOrder($parentTreeId);
+                $account = array(
+                    'glaccount_name' => $accountName,
+                    'glaccount_number' => $accountNumber,
+                    'glaccounttype_id' => $accountTypeId,
+                    'integration_package_id' => $integrationPackageId,
+                    'glaccount_updateby' => $userProfileId
+                );
+
+                $exists = $oldGlAccountId = $this->glaccountExists($accountNumber, $integrationPackageId);
+                if($exists) {
+                    $account['glaccount_id'] = $oldGlAccountId;
+                }
+
+                $glaccount     = new GLAccountEntity($account);
+
+                // Run validation
+                $validator = new EntityValidator();
+                $validator->validate($glaccount);
+                $errors    = $validator->getErrors();
+
+                // If the data is valid, save it
+                if (count($errors) == 0) {
+                    // Begin transaction
+                    $this->beginTransaction();
+
+                    try {
+                        // Save the glaccount record
+                        parent::save($glaccount);
+                        $newGlAccountId = $glaccount->glaccount_id;
+                        $this->TreeGateway->updateTree($oldGlAccountId, $newGlAccountId, $parentTreeId, $treeOrder, $exists);
+
+                    } catch(\Exception $e) {
+                        // Add a global error to the error array
+                        $errors[] = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e), 'extra'=>null);
+                    }
+                }
+
+                if (count($errors)) {
+                    $this->rollback();
+                } else {
+                    $this->commit();
+                }
+        }
 }

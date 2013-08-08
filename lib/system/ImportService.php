@@ -2,14 +2,13 @@
 
 namespace NP\system;
 
-
+use \NP\security\SecurityService;
 use \NP\core\io\FileUpload;
 use \NP\core\validation\ExtendedEntityValidator as EntityValidator;
 use \NP\gl\GLAccountEntity;
 use \ReflectionClass;
 
 class ImportService  extends BaseImportService {
-
 
 
     /**
@@ -26,7 +25,7 @@ class ImportService  extends BaseImportService {
     // Force Extending class to define this method to be abel to validate CSV file
     public function validate(&$data, $type)
     {
-        $entity = new VirtualEntity($this->getImportEntityConfiguration($type), $data);
+        $entity = new GLAccountEntity($data);
 
         // Run validation
         $validator = new \NP\core\validation\ExtendedEntityValidator();

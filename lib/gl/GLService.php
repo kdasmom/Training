@@ -2,19 +2,26 @@
 
 namespace NP\gl;
 
-use NP\core\validation\EntityValidator;
-use NP\core\db\Insert;
-use NP\core\Config;
-use NP\security\SecurityService;
-use NP\system\ImportService;
-use NP\system\TreeGateway;
+use NP\core\AbstractService;
 
 /**
  * All operations that are closely related to GL accounts belong in this service
  *
  * @author Thomas Messier
  */
-class GLService extends ImportService {
+class GLService extends AbstractService {
+	
+	/**
+	 * @var \NP\gl\GLAccountGateway
+	 */
+	protected $glaccountGateway;
+	
+	/**
+	 * @param \NP\gl\GLAccountGateway $glaccountGateway GLAccount gateway injected
+	 */
+	public function __construct(GLAccountGateway $glaccountGateway) {
+		$this->glaccountGateway = $glaccountGateway;
+	}
 	
 	/**
 	 * Retrieves records from GLAccount table that display in an invoice line item combo box matching a
@@ -40,3 +47,5 @@ class GLService extends ImportService {
 		return $this->glaccountGateway->findByIntegrationPackage($integration_package_id);
 	}
 }
+
+?>
