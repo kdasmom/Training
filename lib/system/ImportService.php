@@ -111,8 +111,8 @@ class ImportService  extends BaseImportService {
                 $data[$k]['userProfileId'] = $this->securityService->getUserId();
                 $gateway->save($data[$k]);
             }
+
         }
-        $gateway->postSave();
 
         return array(
             'success'        => (count($this->errors)) ? false : true,
