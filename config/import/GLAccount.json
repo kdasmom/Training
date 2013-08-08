@@ -1,0 +1,12 @@
+{
+    "description": "GL Accounts import",
+    "gateway": "GLAccountGateway",
+    "columns": [
+        {"name": "GL Account Name", "entityField": "glaccount_name"},
+        {"name": "AccountNumber", "entityField": "glaccount_number"},
+        {"name": "AccountType", "entityField": "glaccounttype_id", "dataTable": "glaccounttype", "dataColumn": "glaccounttype_name"},
+        {"name": "CategoryName", "entityField": "category_name"},
+        {"name": "IntegrationPackageName", "entityField": "integration_package_id", "dataTable": "IntegrationPackage", "dataColumn": "integration_package_name"}
+    ],
+    "customValidation": true
+}

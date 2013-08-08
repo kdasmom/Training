@@ -68,16 +68,16 @@ Ext.define('NP.controller.Import', {
             '[xtype="import.gl"] [xtype="shared.button.activate"]': {
                 click: function() {
                     that = this;
-                    var grid = Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="panel"] [xtype="customgrid"]')[0];
+                    var grid = Ext.ComponentQuery.query('[xtype="import.csvgrid"] [xtype="customgrid"]')[0];
                     var items = grid.getStore().data.items;
                     var accounts = [];
                     Ext.each(items, function(item) {
-                        if (item.data.validation_status.indexOf('buttons/activate') + 1) {
+                        if (item.data.validation_status == 'valid') {
                             accounts.push(item.data);
                         }
                     });
                     if (accounts.length > 0) {
-                        that.saveGrid(JSON.stringify(accounts));
+                        that.saveGrid();
                     } else {
                         NP.Util.showFadingWindow({html: 'No valid records to import.'});
                     }
@@ -155,15 +155,15 @@ Ext.define('NP.controller.Import', {
         Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.activate"]')[0].setVisible(false);
         Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.activate"]')[1].setVisible(false);
     },
-    saveGrid: function(accounts, file) {
+    saveGrid: function() {
         var that = this;
         NP.lib.core.Net.remoteCall({
             method: 'POST',
             requests: {
-                service: 'GLService',
+                service: 'ImportService',
                 action: 'accept',
-                file: file,
-                accounts: accounts,
+                file: this.file,
+                type: 'GLAccount.json',
                 success: function(result, deferred) {
                     if (result.success) {
                         // Show friendly message
@@ -196,7 +196,7 @@ Ext.define('NP.controller.Import', {
                 isUpload: true,
                 form: formEl.id,
                 requests: {
-                    service: 'GLService',
+                    service: 'ImportService',
                     action: 'uploadCSV',
                     file: file,
                     success: function(result, deferred) {
@@ -222,7 +222,7 @@ Ext.define('NP.controller.Import', {
         NP.lib.core.Net.remoteCall({
             method: 'POST',
             requests: {
-                service: 'GLService',
+                service: 'ImportService',
                 action: 'decline',
                 file: this.file,
                 success: function(result, deferred) {
