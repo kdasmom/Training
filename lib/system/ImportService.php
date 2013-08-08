@@ -106,7 +106,12 @@ class ImportService  extends BaseImportService {
         $this->validate($data, $type);
 
         $gateway = $this->getImportGateway($type);
-        $gateway->save($data, $this->errors);
+        foreach ($data as $k => $account) {
+            if ($account['validation_status'] == 'valid') {
+                $data[$k]['userProfileId'] = $this->securityService->getUserId();
+                $gateway->save($data[$k]);
+            }
+        }
         $gateway->postSave();
 
         return array(

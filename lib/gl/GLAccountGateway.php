@@ -272,62 +272,59 @@ class GLAccountGateway extends AbstractGateway {
 
         public function save($data)
         {
-            // TODO
-            $userProfileId = $this->securityService->getUserId();
+            // Get entities
+            $accountNumber = $data['AccountNumber'];
+            $accountName = $data['GL Account Name'];
+            $categoryName = $data['CategoryName'];
+            $accountTypeName = $data['AccountType'];
+            $integrationPackageName = $data['IntegrationPackageName'];
+            $glaccount_updateby = $data['userProfileId'];
+            $accountTypeId = $this->getAccountTypeIdByName($accountTypeName);
+            $integrationPackageId = $this->getIntegrationPackageIdByName($integrationPackageName);
+            $glAccountCategoryId = $this->getCategoryIdByName($categoryName, $integrationPackageId);
+            $parentTreeId  = $this->TreeGateway->getTreeIdForCategory($glAccountCategoryId);
+            $treeOrder = $this->TreeGateway->getTreeOrder($parentTreeId);
+            $account = array(
+                'glaccount_name' => $accountName,
+                'glaccount_number' => $accountNumber,
+                'glaccounttype_id' => $accountTypeId,
+                'integration_package_id' => $integrationPackageId,
+                'glaccount_updateby' => $glaccount_updateby
+            );
 
-                // Get entities
-                $accountNumber = $data->glaccount_number;
-                $accountName = $data->glaccount_name;
-                $integrationPackageName = $data->integration_package_name;
-                $categoryName = $data->category_name;
-                $accountTypeName = $data->account_type_name;
+            $exists = $oldGlAccountId = $this->glaccountExists($accountNumber, $integrationPackageId);
+            if($exists) {
+                $account['glaccount_id'] = $oldGlAccountId;
+            }
 
-                $accountTypeId = $this->getAccountTypeIdByName($accountTypeName);
-                $integrationPackageId = $this->getIntegrationPackageIdByName($integrationPackageName);
-                $glAccountCategoryId = $this->getCategoryIdByName($categoryName, $integrationPackageId);
-                $parentTreeId  = $this->TreeGateway->getTreeIdForCategory($glAccountCategoryId);
-                $treeOrder = $this->TreeGateway->getTreeOrder($parentTreeId);
-                $account = array(
-                    'glaccount_name' => $accountName,
-                    'glaccount_number' => $accountNumber,
-                    'glaccounttype_id' => $accountTypeId,
-                    'integration_package_id' => $integrationPackageId,
-                    'glaccount_updateby' => $userProfileId
-                );
+            $glaccount     = new GLAccountEntity($account);
 
-                $exists = $oldGlAccountId = $this->glaccountExists($accountNumber, $integrationPackageId);
-                if($exists) {
-                    $account['glaccount_id'] = $oldGlAccountId;
+            // Run validation
+            $validator = new EntityValidator();
+            $validator->validate($glaccount);
+            $errors    = $validator->getErrors();
+
+            // If the data is valid, save it
+            if (count($errors) == 0) {
+                // Begin transaction
+                $this->beginTransaction();
+
+                try {
+                    // Save the glaccount record
+                    parent::save($glaccount);
+                    $newGlAccountId = $glaccount->glaccount_id;
+                    $this->TreeGateway->updateTree($oldGlAccountId, $newGlAccountId, $parentTreeId, $treeOrder, $exists);
+
+                } catch(\Exception $e) {
+                    // Add a global error to the error array
+                    $errors[] = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e), 'extra'=>null);
                 }
+            }
 
-                $glaccount     = new GLAccountEntity($account);
-
-                // Run validation
-                $validator = new EntityValidator();
-                $validator->validate($glaccount);
-                $errors    = $validator->getErrors();
-
-                // If the data is valid, save it
-                if (count($errors) == 0) {
-                    // Begin transaction
-                    $this->beginTransaction();
-
-                    try {
-                        // Save the glaccount record
-                        parent::save($glaccount);
-                        $newGlAccountId = $glaccount->glaccount_id;
-                        $this->TreeGateway->updateTree($oldGlAccountId, $newGlAccountId, $parentTreeId, $treeOrder, $exists);
-
-                    } catch(\Exception $e) {
-                        // Add a global error to the error array
-                        $errors[] = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e), 'extra'=>null);
-                    }
-                }
-
-                if (count($errors)) {
-                    $this->rollback();
-                } else {
-                    $this->commit();
-                }
+            if (count($errors)) {
+                $this->rollback();
+            } else {
+                $this->commit();
+            }
         }
 }
