@@ -1,0 +1,52 @@
+{
+    "description": "GL Accounts import",
+    "gateway": "GLAccountGateway",
+    "entity": {
+        "glaccount_id": {
+            "validation": {
+                "digits": []
+            }
+        },
+
+        "glaccount_name": {
+            "validation": {
+                "stringLength": {"max": 255}
+            }
+        },
+        
+        "glaccount_number": {
+            "validation": {
+                "stringLength": {"max": 50}
+            }
+        },
+
+        "glaccounttype_id": {
+            "validation": {
+                "digits": {}
+            }
+        },
+
+        "integration_package_id": {
+            "validation": {
+                "digits": {}
+            }
+        },
+
+        "glaccount_status": {
+            "defaultValue": "active"
+        },
+        
+        "glaccount_usable": {
+            "defaultValue": "Y"
+        },
+        "glaccount_updateby": {}
+    },
+    "columns": [
+        {"name": "GL Account Name", "entityField": "glaccount_name"},
+        {"name": "AccountNumber", "entityField": "glaccount_number"},
+        {"name": "AccountType", "entityField": "glaccounttype_id", "dataTable": "glaccounttype", "dataColumn": "glaccounttype_name"},
+        {"name": "CategoryName", "entityField": "category_name"},
+        {"name": "IntegrationPackageName", "entityField": "integration_package_id", "dataTable": "IntegrationPackage", "dataColumn": "integration_package_name"}
+    ],
+    "customValidation": true
+}
