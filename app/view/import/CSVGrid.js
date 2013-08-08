@@ -34,18 +34,18 @@ Ext.define('NP.view.import.CSVGrid', {
                 columns: [
                     {text: 'Status', dataIndex: 'validation_status'},
                     Ext.create('Ext.grid.RowNumberer', {text: 'Row #', width: 43, }),
-                    {text: 'GLAccount Name', dataIndex: 'glaccount_name', flex: 1},
-                    {text: 'Account Number', dataIndex: 'glaccount_number', flex: 1},
-                    {text: 'Account Type', dataIndex: 'account_type_name', flex: 1},
-                    {text: 'Category Name', dataIndex: 'category_name', flex: 1},
-                    {text: 'Integration Package Name', dataIndex: 'integration_package_name', flex: 1},
+                    {text: 'GLAccount Name', dataIndex: 'GL Account Name', flex: 1},
+                    {text: 'Account Number', dataIndex: 'AccountNumber', flex: 1},
+                    {text: 'Account Type', dataIndex: 'AccountType', flex: 1},
+                    {text: 'Category Name', dataIndex: 'CategoryName', flex: 1},
+                    {text: 'Integration Package Name', dataIndex: 'IntegrationPackageName', flex: 1},
                     {text: 'Validation Messages', dataIndex: 'validation_messages', hide: true, flex: 1}
                 ],
                 store: Ext.create('NP.store.gl.GlImportAccounts', {
                     service: 'GLService',
-                    action: 'getCSVFile',
+                    action: 'getPreview',
                     paging: true,
-                    extraParams: {file: this.file}
+                    extraParams: {file: this.file, type: 'GLA.json'}
                 })
             }
         ];

@@ -9,11 +9,11 @@ Ext.define('NP.model.gl.GlImportAccount', {
 	requires: ['NP.lib.core.Config'],
 
 	fields: [
-		{ name: 'glaccount_name' },
-		{ name: 'glaccount_number' },
-		{ name: 'account_type_name' },
-		{ name: 'category_name' },
-		{ name: 'integration_package_name' },
+		{ name: 'GL Account Name' },
+		{ name: 'AccountNumber' },
+		{ name: 'AccountType' },
+		{ name: 'CategoryName' },
+		{ name: 'IntegrationPackageName' },
                 { name: 'validation_status' },
                 { name: 'validation_messages' }
 	],

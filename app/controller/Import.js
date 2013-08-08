@@ -60,8 +60,7 @@ Ext.define('NP.controller.Import', {
             '[xtype="import.gl"] [xtype="shared.button.inactivate"]': {
                 // Run this whenever the upload button is clicked
                 click: function() {
-//                    this.deleteFile(file);
-                    this.addHistory('Import:showImport:GL:GLCode');
+                    this.decline(this.file);
                     this.showFormUpload();
                 }
             },
@@ -73,7 +72,7 @@ Ext.define('NP.controller.Import', {
                     var items = grid.getStore().data.items;
                     var accounts = [];
                     Ext.each(items, function(item) {
-                        if ( item.data.validation_status.indexOf('buttons/activate') + 1) {
+                        if (item.data.validation_status.indexOf('buttons/activate') + 1) {
                             accounts.push(item.data);
                         }
                     });
@@ -102,19 +101,19 @@ Ext.define('NP.controller.Import', {
         // Check if the tab to be selected is already active, if it isn't make it the active tab
         var tab = that.getCmp('import.' + activeTab.toLowerCase());
         var tabPanel = Ext.ComponentQuery.query('tabpanel')[0];
-        
+
         // Set the active tab if it hasn't been set yet
         if (tab.getXType() != tabPanel.getActiveTab().getXType()) {
             tabPanel.suspendEvents(false);
             tabPanel.setActiveTab(tab);
             tabPanel.resumeEvents();
         }
-        
+
         // Set the active vertical tab if it hasn't been set yet
         var verticalTabPanel = Ext.ComponentQuery.query('verticaltabpanel')[0];
         var token = Ext.History.currentToken;
-        var verticalActiveTab =  that.getCmp('import.' + token.split(':')[3].toLowerCase());
-        
+        var verticalActiveTab = that.getCmp('import.' + token.split(':')[3].toLowerCase());
+
         if (verticalActiveTab) {
             verticalTabPanel.suspendEvents(false);
             verticalTabPanel.setActiveTab(verticalActiveTab);
@@ -130,42 +129,31 @@ Ext.define('NP.controller.Import', {
     showGrid: function(file) {
         this.setView('NP.view.import.CSVGrid', {file: file}, '[xtype="import.glcode"] [xtype="panel"]');
         var grid = Ext.ComponentQuery.query('[xtype="import.csvgrid"] [xtype="customgrid"]')[0];
-        
         grid.getStore().load();
-        
-        //Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="form"]')[0].setVisible(false);
-//
+        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.cancel"]')[0].setVisible(false);
+        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.cancel]')[1].setVisible(false);
         Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.upload"]')[0].setVisible(false);
         Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.upload"]')[1].setVisible(false);
-        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.cancel"]')[0].setVisible(false);
-        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.cancel"]')[1].setVisible(false);
-//
+        
+        
         Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.inactivate"]')[0].setVisible(true);
-        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.inactivate"]')[1].setVisible(true);
+        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.inactivate]')[1].setVisible(true);
         Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.activate"]')[0].setVisible(true);
         Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.activate"]')[1].setVisible(true);
-//
-//        
-//        var view = this.application.getCurrentView();
-//        var grid = Ext.ComponentQuery.query('[xtype="import.gl"] [xtype="panel"] [xtype="customgrid"]')[0];
-
 
     },
     showFormUpload: function() {
-        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="panel"] [xtype="form"]')[0].setVisible(true);
-
+        this.setView('NP.view.import.UploadForm', {}, '[xtype="import.glcode"] [xtype="panel"]');
+        
+        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.cancel"]')[0].setVisible(true);
+        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.cancel]')[1].setVisible(true);
         Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.upload"]')[0].setVisible(true);
         Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.upload"]')[1].setVisible(true);
-        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.cancel"]')[0].setVisible(true);
-        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.cancel"]')[1].setVisible(true);
-
+        
         Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.inactivate"]')[0].setVisible(false);
-        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.inactivate"]')[1].setVisible(false);
+        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.inactivate]')[1].setVisible(false);
         Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.activate"]')[0].setVisible(false);
         Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.activate"]')[1].setVisible(false);
-
-        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="panel"]')[3].setVisible(false);
-
     },
     saveGrid: function(accounts, file) {
         var that = this;
@@ -173,13 +161,13 @@ Ext.define('NP.controller.Import', {
             method: 'POST',
             requests: {
                 service: 'GLService',
-                action: 'saveGrid',
+                action: 'accept',
+                file: file,
                 accounts: accounts,
                 success: function(result, deferred) {
                     if (result.success) {
                         // Show friendly message
                         NP.Util.showFadingWindow({html: 'The valid GL Codes were uploaded successfully.'});
-//                        this.deleteFile(file);
                         that.showFormUpload();
                         that.addHistory('Import:showImport:GL:GLCode');
                     } else {
@@ -209,11 +197,12 @@ Ext.define('NP.controller.Import', {
                 form: formEl.id,
                 requests: {
                     service: 'GLService',
-                    action: 'uploadFile',
+                    action: 'uploadCSV',
                     file: file,
                     success: function(result, deferred) {
                         if (result.success) {
                             // Show friendly message
+                            that.file = result.upload_filename;
                             that.showGrid(result.upload_filename);
                         } else {
                             if (result.errors.length) {
@@ -229,25 +218,25 @@ Ext.define('NP.controller.Import', {
             });
         }
     },
-    deleteFile: function(file) {
+    decline: function() {
         NP.lib.core.Net.remoteCall({
             method: 'POST',
             requests: {
                 service: 'GLService',
-                action: 'deleteFile',
-                file: file,
+                action: 'decline',
+                file: this.file,
                 success: function(result, deferred) {
                     if (result.success) {
                         // Show friendly message
-                        NP.Util.showFadingWindow({html: 'The file <b>' + file + '</b> has been deleted.'});
+//                        NP.Util.showFadingWindow({html: 'The file <b>' + this.file + '</b> has been deleted.'});
                     } else {
                         if (result.errors.length) {
-                            NP.Util.showFadingWindow({html: 'The file <b>' + file + '</b> has not been deleted. Errors:' + result.errors[0]});
+                            NP.Util.showFadingWindow({html: 'The file <b>' + this.file + '</b> has not been deleted. Errors:' + result.errors[0]});
                         }
                     }
                 },
                 failure: function() {
-                    Ext.log('Error save csv file');
+                    Ext.log('Error delete file');
                 }
             }
         });
