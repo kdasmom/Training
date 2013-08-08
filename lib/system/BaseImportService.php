@@ -12,6 +12,7 @@ namespace NP\system;
 use \NP\system\ConfigService;
 use \NP\security\SecurityService;
 use \NP\core\AbstractService;
+use \ReflectionClass;
 
 abstract class BaseImportService extends AbstractService {
 

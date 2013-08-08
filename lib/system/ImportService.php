@@ -29,7 +29,7 @@ class ImportService  extends BaseImportService {
         $entity = new VirtualEntity($this->getImportEntityConfiguration($type), $data);
 
         // Run validation
-        $validator = new ExtendedEntityValidator();
+        $validator = new \NP\core\validation\ExtendedEntityValidator();
         $validator->validate($entity);
         $this->errors = array_merge($this->errors, $validator->getErrors());
 
@@ -95,7 +95,7 @@ class ImportService  extends BaseImportService {
      * @return array
      */
 
-    public function getPreview($file = null, $type, $pageSize = null, $page = 1, $sortBy = 'glaccountName') {
+    public function getPreview($file = null, $type, $pageSize = null, $page = 1, $sortBy = 'glaccount_name') {
         $data = $this->csvFileToArray($this->getUploadPath() . $file, $type);
         $this->validate($data, $type);
         return array('data' => $data);

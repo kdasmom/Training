@@ -256,11 +256,11 @@ class GLAccountGateway extends AbstractGateway {
 
     public function validateImportEntity(&$row, &$errors)
     {
-        var_dump($row);
+//        var_dump($row);
         // Get Id for field glaccounttype_id, integrationPackageId, glaccount_level
-        $glaccounttype_id = $this->getAccountTypeIdByName($row['account_type_name']);
-        $integrationPackageId = $this->getIntegrationPackageIdByName($row['integration_package_name']);
-        $glaccount_level = $this->getCategoryIdByName($row['category_name'], $integrationPackageId);
+        $glaccounttype_id = $this->getAccountTypeIdByName($row['AccountType']);
+        $integrationPackageId = $this->getIntegrationPackageIdByName($row['IntegrationPackageName']);
+        $glaccount_level = $this->getCategoryIdByName($row['CategoryName'], $integrationPackageId);
 
         // Check the GLAccount Type in DB
         if (is_null($glaccounttype_id)) {
