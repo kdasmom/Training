@@ -134,8 +134,8 @@ Ext.define('NP.controller.Import', {
         Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.cancel]')[1].setVisible(false);
         Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.upload"]')[0].setVisible(false);
         Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.upload"]')[1].setVisible(false);
-        
-        
+
+
         Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.inactivate"]')[0].setVisible(true);
         Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.inactivate]')[1].setVisible(true);
         Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.activate"]')[0].setVisible(true);
@@ -144,12 +144,12 @@ Ext.define('NP.controller.Import', {
     },
     showFormUpload: function() {
         this.setView('NP.view.import.UploadForm', {}, '[xtype="import.glcode"] [xtype="panel"]');
-        
+
         Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.cancel"]')[0].setVisible(true);
         Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.cancel]')[1].setVisible(true);
         Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.upload"]')[0].setVisible(true);
         Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.upload"]')[1].setVisible(true);
-        
+
         Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.inactivate"]')[0].setVisible(false);
         Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.inactivate]')[1].setVisible(false);
         Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.activate"]')[0].setVisible(false);
@@ -157,8 +157,7 @@ Ext.define('NP.controller.Import', {
     },
     saveGrid: function() {
         var that = this;
-        var glcode = Ext.ComponentQuery.query('[xtype="import.glcode"]')[0];
-        var mask = new Ext.LoadMask(glcode, {msg: 'Saving'});
+        var mask = new Ext.LoadMask(Ext.ComponentQuery.query('[xtype="import.glcode"]')[0], {msg: 'Saving'});
         mask.show();
         NP.lib.core.Net.remoteCall({
             method: 'POST',
@@ -168,8 +167,8 @@ Ext.define('NP.controller.Import', {
                 file: this.file,
                 type: 'GLAccount.json',
                 success: function(result, deferred) {
+                    mask.hide();
                     if (result.success) {
-                        mask.hide();
                         // Show friendly message
                         NP.Util.showFadingWindow({html: 'The valid GL Codes were uploaded successfully.'});
                         that.showFormUpload();
@@ -191,8 +190,10 @@ Ext.define('NP.controller.Import', {
         var that = this;
         var formSelector = '[xtype="import.gl"] form';
         var form = Ext.ComponentQuery.query(formSelector)[0];
+        var mask = new Ext.LoadMask(Ext.ComponentQuery.query('[xtype="import.glcode"]')[0], {msg: 'Upload'});
         // If form is valid, submit it
         if (form.getForm().isValid()) {
+            mask.show();
             var formEl = NP.Util.createFormForUpload(formSelector);
             var file = form.getForm().findField('file_upload_category').getValue();
             NP.lib.core.Net.remoteCall({
@@ -204,6 +205,7 @@ Ext.define('NP.controller.Import', {
                     action: 'uploadCSV',
                     file: file,
                     success: function(result, deferred) {
+                        mask.hide();
                         if (result.success) {
                             // Show friendly message
                             that.file = result.upload_filename;
