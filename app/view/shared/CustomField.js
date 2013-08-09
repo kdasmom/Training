@@ -6,9 +6,16 @@
  */
 Ext.define('NP.view.shared.CustomField', {
     extend: 'Ext.form.FieldContainer',
+    mixins: {
+        field: 'Ext.form.field.Field'
+    },
     alias: 'widget.shared.customfield',
     
-    requires: ['NP.lib.core.Config','NP.lib.core.Security','NP.lib.ui.ComboBox'],
+    requires: [
+        'NP.lib.core.Config',
+        'NP.lib.core.Security',
+        'NP.lib.ui.AutoComplete'
+    ],
 
     /**
 	 * @cfg {String}  entityType Type of entity this custom field is for
@@ -36,7 +43,13 @@ Ext.define('NP.view.shared.CustomField', {
 	 */
 	isLineItem: 1,
 
+    layout    : 'fit',
+
     initComponent: function() {
+        var me = this;
+
+        this.isFormField = true;
+
     	if (!'entityType' in this) {
     		throw 'The config option "entityType" must be specified';
     	}
@@ -60,10 +73,9 @@ Ext.define('NP.view.shared.CustomField', {
     	// Configuration for a combo custom field
     	} else if (this.type == 'select') {
     		Ext.apply(field, {
-				xtype                : 'customcombo',
+				xtype                : 'autocomplete',
 				displayField         : 'universal_field_data',
 				valueField           : 'universal_field_data',
-				value                : 'testing',
 				loadStoreOnFirstQuery: true,
 				store                : Ext.create('NP.store.system.PnUniversalFields', {
 					service    : 'ConfigService',
@@ -95,5 +107,32 @@ Ext.define('NP.view.shared.CustomField', {
     	this.items = [field];
 
     	this.callParent(arguments);
+
+        this.field = this.down('[name="'+this.name+'"]');
+
+        // We need to add the specialkey event so we can tab in the editor
+        this.addEvents('specialkey');
+        // Subscribe to the field's event and re-fire it from our fieldcontainer component
+        this.field.on('specialkey', function(field, e, eOpts) {
+            me.fireEvent('specialkey', field, e, eOpts);
+        });
+    },
+
+    getValue: function() {
+        return this.field.getValue();
+    },
+
+    setValue: function(val) {
+        this.field.setValue(val);
+    },
+
+    getSubmitData: function() {
+        var data = {};
+        data[this.getName()] = this.getSubmitValue()
+        return data;
+    },
+
+    focus: function() {
+        this.field.focus.apply(this.field, arguments);
     }
 });

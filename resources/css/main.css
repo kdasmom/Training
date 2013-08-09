@@ -19,6 +19,7 @@
 .hourglass-btn { background-image: url("../images/buttons/hourglass.gif"); }
 .delete-btn { background-image: url("../images/buttons/delete.gif"); }
 .message-btn { background-image: url("../images/buttons/message.gif"); }
+.reset-btn { background-image: url("../images/buttons/reset.gif"); }
 
 /* STYLE FOR USING AN IMAGE AS A BUTTON IN A GRID BY SPECIFYING THIS AS tdCls CONFIG OPTION */
 .image-button-cell .x-grid-cell-inner { padding-bottom: 0; }
@@ -31,6 +32,11 @@
 /* GRIDS */
 .grid-clickable-col:hover { text-decoration:underline; cursor: pointer; }
 
+/* this makes a summary grid cell bold */
+.x-grid-row-summary .x-grid-cell-inner {
+    font-weight: bold;
+}
+
 /* DISABLED FIELDS */
 .x-item-disabled .x-form-item-label, .x-item-disabled .x-form-field, .x-item-disabled .x-form-cb-label, .x-item-disabled .x-form-trigger {
     opacity: 0.5;
@@ -38,3 +44,16 @@
 
 /* CURSOR STYLE */
 .pointer { cursor: pointer; }
+
+/* BOXSELECT */
+/* We need to override this style and make it !important to get the right size for a BoxSelect component in an editing grid */
+.x-border-box .x-grid-editor .auto-complete .x-form-trigger, .x-border-box .x-grid-row-editor .auto-complete .x-form-trigger {
+    height: 20px !important;
+}
+
+/* This is to fix the issue where tabbing from previous field to boxselect will jump over it if no value is selected */
+.x-boxselect-emptyinput {
+	display: block;
+	position: absolute;
+	left: -500px;
+}

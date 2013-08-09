@@ -36,10 +36,14 @@ Ext.define('NP.lib.ui.ComboBox', {
 	 */
 
 	constructor: function(cfg) {
+		if (cfg.displayField) {
+			this.displayField = cfg.displayField;
+		}
+		
 		Ext.applyIf(this, {
 			tpl: '<tpl for="."><li class="x-boundlist-item" role="option">' + '{'+this.displayField+'}' + '</li></tpl>'
 		});
-
+		
 		this.callParent(arguments);
 	},
 
@@ -49,12 +53,21 @@ Ext.define('NP.lib.ui.ComboBox', {
 
 		this.callParent(arguments);
 
-		// Add keyup listener so that value can be cleared
-		this.on('keyup', function(combo) {
-			var val = combo.getRawValue();
-			if (val === '' || val === null) {
-				combo.clearValue();
+		// We set a keyup event to allow us to clear the field when the value is blank and we hit escape,
+		// even if forceSelection is true
+		this.on('keyup', function(combo, e) {
+			if (e.getKey() === Ext.EventObject.ESC) {
+				var val = combo.getRawValue();
+				
+				if ((val === '' || val === null) && combo.getFocusValue() !== null) {
+					combo.clearValue();
+				}
 			}
+		});
+
+		// 
+		this.on('focus', function(combo) {
+			combo.setFocusValue(combo.getValue());
 		});
 
 		// Run a few things before rendering if the options are set
@@ -141,5 +154,13 @@ Ext.define('NP.lib.ui.ComboBox', {
 				}
 			});
 		}
+	},
+
+	getFocusValue: function() {
+		return this.focusValue;
+	},
+
+	setFocusValue: function(value) {
+		this.focusValue = value;
 	}
 });

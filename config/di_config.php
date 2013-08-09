@@ -122,7 +122,7 @@ $diDefinition = array(
 	'NP\user\UserSettingGateway'               => array('Adapter'),
 	'NP\user\UserService'                      => array('SecurityService','DelegationGateway','UserSettingGateway','UserprofileGateway','RoleGateway','PersonGateway','AddressGateway','EmailGateway','PhoneGateway','PropertyUserprofileGateway','MobInfoGateway','DelegationPropGateway','PropertyGateway','RegionGateway','NotificationService','PropertyUserCodingGateway','UserprofileroleGateway','StaffGateway','AddressTypeGateway','EmailTypeGateway','PhoneTypeGateway','TreeGateway'),
 	'NP\user\UserprofileLogonGateway'          => array('Adapter'),
-	'NP\vendor\VendorGateway'                  => array('Adapter','PropertyService'),
+	'NP\vendor\VendorGateway'                  => array('Adapter'),
 	'NP\vendor\VendorService'                  => array('VendorGateway'),
 	'NP\workflow\WfRuleTargetGateway'          => array('Adapter'),
 );

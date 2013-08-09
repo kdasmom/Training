@@ -123,5 +123,10 @@ Ext.define('NP.lib.ui.DateTimeField', {
         var value = this.getValue();
 
         return value ? Ext.Date.format(value, dateFormat) + ' ' + Ext.Date.format(value, timeFormat) : null;
+    },
+
+    reset: function() {
+        this.dateField.reset();
+        this.timeField.reset();
     }
 });

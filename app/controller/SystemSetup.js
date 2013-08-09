@@ -22,17 +22,22 @@ Ext.define('NP.controller.SystemSetup', {
 		{ ref: 'splitFormItemGrid',     selector: '[xtype="systemsetup.defaultsplitform"] customgrid' },
 		{ ref: 'splitFormVendor',       selector: '[xtype="systemsetup.defaultsplitform"] [xtype="shared.vendorautocomplete"]' },
 		{ ref: 'splitFormIntPkg',       selector: '[xtype="systemsetup.defaultsplitform"] [name="integration_package_id"]' },
+		{ ref: 'splitGridVendorCombo',  selector: '[xtype="systemsetup.defaultsplitform"] [xtype="shared.vendorautocomplete"]' },
 		{ ref: 'splitGridPropertyCombo',selector: '#splitGridPropertyCombo' },
-		{ ref: 'splitGridGlCombo',      selector: '#splitGridGlCombo' }
+		{ ref: 'splitGridGlCombo',      selector: '#splitGridGlCombo' },
+		{ ref: 'splitGridUnitCombo',      selector: '#splitGridUnitCombo' },
+		{ ref: 'addSplitAllocBtn',      selector: '#addSplitAllocBtn' }
 	],
 	
 	// For localization
-	changesSavedText      : 'Changes saved successfully',
-	errorDialogTitleText  : 'Error',
-	deleteSplitDialogTitle: 'Delete Split?',
-	deleteSplitDialogText : 'Are you sure you want to delete the selected split(s)?',
-	editSplitFormTitle    : 'Editing',
-	newSplitFormTitle     : 'New Split',
+	changesSavedText       : 'Changes saved successfully',
+	errorDialogTitleText   : 'Error',
+	deleteSplitDialogTitle : 'Delete Split?',
+	deleteSplitDialogText  : 'Are you sure you want to delete the selected split(s)?',
+	editSplitFormTitle     : 'Editing',
+	newSplitFormTitle      : 'New Split',
+	intPkgChangeDialogTitle: 'Change integration package?',
+	intPkgChangeDialogText : 'Are you sure you want to change integration package? Doing so will clear the entire form, removing all splits you have entered.',
 	
 	init: function() {
 		Ext.log('SystemSetup controller initialized');
@@ -67,26 +72,47 @@ Ext.define('NP.controller.SystemSetup', {
 					}
 				}
 			},
+			// The Create New Split button
+			'[xtype="systemsetup.defaultsplitgrid"] [xtype="shared.button.new"]': {
+				click: function() {
+					this.addHistory('SystemSetup:showSystemSetup:DefaultSplits:Form');
+				}
+			},
 			// The Delete button on the split grid
 			'[xtype="systemsetup.defaultsplitgrid"] [xtype="shared.button.delete"]': {
 				click: this.deleteSplit
 			},
 			// The default split form integration package field
 			'[xtype="systemsetup.defaultsplitform"] [name="integration_package_id"]': {
-				select: this.selectIntegrationPackage
+				select: function(combo) { this.selectIntegrationPackage(combo, true) }
 			},
 			// The default split form allocation grid
 			'[xtype="systemsetup.defaultsplitform"] customgrid': {
 				beforeedit: function(editor, e) {
 					if (e.field == 'property_id') {
-						this.selectProperty(e.record);
+						this.openPropertyEditor(e.record);
 					} else if (e.field == 'glaccount_id') {
-						this.selectGlAccount(e.record);
+						this.openGlAccountEditor(e.record);
+					} else if (e.field == 'unit_id') {
+						this.openUnitEditor(e.record);
 					}
 				},
-				deleterow: function(grid, rec, rowIndex) {
-					console.log(grid, rec, rowIndex);
+				deleterow: this.deleteSplitItem,
+				updateproperty: this.updateProperty
+			},
+			'#saveSplitFormBtn': {
+				click: this.saveSplitForm
+			},
+			'#resetSplitFormBtn': {
+				click: this.resetSplitForm
+			},
+			'#cancelSplitFormBtn': {
+				click: function() {
+					this.addHistory('SystemSetup:showSystemSetup:DefaultSplits');
 				}
+			},
+			'#addSplitAllocBtn': {
+				click: this.addSplitLine
 			}
 		});
 
@@ -270,7 +296,7 @@ Ext.define('NP.controller.SystemSetup', {
 		    	listeners       : {
 			    	dataloaded: function(formPanel, data) {
 			    		// Set the form title
-			    		formPanel.setTitle(that.editSplitFormTitle);
+			    		formPanel.setTitle(that.editSplitFormTitle + ' ' + data['dfsplit_name']);
 
 			    		// Set the active user for easy access later
 			    		that.activeSplit = formPanel.getModel('system.DfSplit');
@@ -280,7 +306,18 @@ Ext.define('NP.controller.SystemSetup', {
 			    		grid.getStore().load();
 
 			    		// Load the integration
-			    		that.selectIntegrationPackage();
+			    		that.selectIntegrationPackage(formPanel.findField('integration_package_id'), false);
+
+			    		// Set the vendor record
+			    		if (data['vendor_id'] !== null) {
+				    		that.getSplitGridVendorCombo().setDefaultRec(Ext.create('NP.model.vendor.Vendor', {
+								vendor_id    : data['vendor_id'],
+								vendor_name  : data['vendor_name'],
+								vendor_id_alt: data['vendor_id_alt'],
+								vendorsite_id: data['vendorsite_id']
+				    		}));
+				    		that.getSplitGridVendorCombo().resetOriginalValue();
+				    	}
 					}
 			    }
 			});
@@ -308,41 +345,111 @@ Ext.define('NP.controller.SystemSetup', {
 		}
 	},
 
-	selectIntegrationPackage: function(combo, recs) {
-		var form = this.getDefaultSplitForm();
+	selectIntegrationPackage: function(combo, showWarning) {
+		var that = this;
 
-		var params = { integration_package_id: form.findField('integration_package_id').getValue() };
+		function selectIntPkg() {
+			var integration_package_id = combo.getValue();
 
-        var vendorCombo = this.getSplitFormVendor();
-        vendorCombo.getStore().addExtraParams(params);
-        vendorCombo.clearValue();
+			// When changing the integration package, you basically clear the entire form
+			// since everything depends on it
+	        that.getSplitFormVendor().clearValue();
+	        if (integration_package_id === null) {
+	        	that.getSplitFormVendor().disable();
+	        	that.getAddSplitAllocBtn().disable();
+	        } else {
+	        	that.getSplitFormVendor().getStore().addExtraParams({ integration_package_id: integration_package_id });
+	        	that.getSplitFormVendor().enable();
+	        	that.getAddSplitAllocBtn().enable();
+	        }
+	        // Remove items one at a time, otherwise we can't reset the form
+	        var store = that.getSplitFormItemGrid().getStore();
+	        var lineItems = store.getRange();
+	        Ext.Array.each(lineItems, function(lineItem) {
+	        	store.remove(lineItem);
+	        });
+
+	        combo.setFocusValue(combo.getValue());
+		}
+
+		if (showWarning && combo.getFocusValue() !== null && combo.getFocusValue() != combo.getValue()) {
+			Ext.MessageBox.confirm(that.intPkgChangeDialogTitle, that.intPkgChangeDialogText, function(btn) {
+				// If user clicks Yes, proceed with deleting
+				if (btn == 'yes') {
+					selectIntPkg();
+			    } else {
+			    	combo.setValue(combo.getFocusValue());
+			    }
+			});
+		} else {
+			selectIntPkg();
+		}
     },
 
-    selectProperty: function(rec) {
+    openPropertyEditor: function(rec) {
     	this.addIntegrationPkgToStore(this.getSplitGridPropertyCombo().getStore());
     },
 
-    selectGlAccount: function(rec) {
+    updateProperty: function(store, rec) {
+    	if (rec.get('property_id') !== null) {
+	    	// Only run this if a GL value is selected and property/GL association is on
+	    	if (rec.get('glaccount_id') !== null && NP.Config.getSetting('CP.PROPERTYGLACCOUNT_USE') == '1') {
+	    		// make sure the GL account is valid for the property selected
+	    		NP.lib.core.Net.remoteCall({
+	    			requests: {
+						service     : 'PropertyService',
+						action      : 'isGlAssigned',
+						property_id : rec.get('property_id'),
+						glaccount_id: rec.get('glaccount_id'),
+						success     : function(result, deferred) {
+							// If the GL is not assigned to the property, clear it
+							if (!result) {
+								rec.set('glaccount_id', null);
+							}
+						}
+	    			}
+	    		});
+	    	}
+	    } else {
+	    	rec.set('glaccount_id', null);
+	    }
+    },
+
+    openGlAccountEditor: function(rec) {
     	var that = this;
+
+    	var glStore = this.getSplitGridGlCombo().getStore();
+
+    	// Only run this if property/GL association is on
     	if (NP.Config.getSetting('CP.PROPERTYGLACCOUNT_USE') == '1') {
             var property_id = rec.get('property_id');
-            
-            if (property_id) {
-            	var glStore = this.getSplitGridGlCombo().getStore();
+
+            if (property_id !== null) {
             	if (property_id != glStore.getExtraParam('property_id')) {
-            		var glaccount_id = rec.get('glaccount_id');
-                	glStore.addExtraParams({ property_id: property_id });
-                	glStore.load(function() {
-                		if (glStore.find('glaccount_id', glaccount_id) == -1) {
-                			that.getSplitGridGlCombo().clearValue();
-                		}
-                	});
+            		glStore.addExtraParams({ property_id: property_id });
                 }
             } else {
                 glStore.removeAll();
             }
+        // Otherwise run code for associating with integration package
         } else {
-        	this.addIntegrationPkgToStore(this.getSplitGridGlCombo().getStore());
+        	this.addIntegrationPkgToStore(glStore);
+        }
+    },
+
+    openUnitEditor: function(rec) {
+    	var that = this;
+
+    	var unitStore = this.getSplitGridUnitCombo().getStore();
+    	var property_id = rec.get('property_id');
+
+    	if (property_id !== null) {
+        	if (property_id != unitStore.getExtraParam('property_id')) {
+        		unitStore.addExtraParams({ property_id: property_id });
+        		unitStore.load();
+            }
+        } else {
+            unitStore.removeAll();
         }
     },
 
@@ -350,7 +457,24 @@ Ext.define('NP.controller.SystemSetup', {
     	var integration_package_id = this.getSplitFormIntPkg().getValue();
     	if (integration_package_id != store.getExtraParam('integration_package_id')) {
         	store.addExtraParams({ integration_package_id: integration_package_id });
-        	store.load();
         }
-    }
+    },
+
+    deleteSplitItem: function(grid, rec, rowIndex) {
+		grid.getStore().remove(rec);
+	},
+
+	resetSplitForm: function() {
+		this.getDefaultSplitForm().getForm().reset();
+        this.getSplitFormItemGrid().getStore().rejectChanges();
+        this.getSplitFormItemGrid().getStore().sort();
+	},
+
+	addSplitLine: function() {
+		this.getSplitFormItemGrid().getStore().add(Ext.create('NP.model.system.DfSplitItem'));
+	},
+
+	saveSplitForm: function() {
+
+	}
 });

@@ -13,60 +13,31 @@ use NP\core\db\Delete;
  * @author Thomas Messier
  */
 class PropertyGateway  extends AbstractGateway {
+	protected $tableAlias = 'p';
 	
 	/**
 	 * Retrieve a property by Id
 	 */
 	public function findById($id, $cols=null) {
-		$select = new sql\PropertySelect();
-		$select->columns($cols)
-				->joinAddress()
-				->joinPhone()
-				->joinFax()
-				->joinBillOrShipToProperty('bill')
-				->joinBillOrShipToProperty('ship')
-				->whereEquals('p.property_id', '?');
+		$joins = array(
+			new sql\join\PropertyAddressJoin(),
+			new sql\join\PropertyPhoneJoin(),
+			new sql\join\PropertyFaxJoin(),
+			new sql\join\PropertyBillToShipToJoin('bill'),
+			new sql\join\PropertyBillToShipToJoin('ship')
+		);
 
-		$res = $this->adapter->query($select, array($id));
+		$res = $this->find(
+			array('p.property_id'=>'?'),
+			array($id),
+			null,
+			$cols,
+			null,
+			null,
+			$joins
+		);
 
 		return $res[0];
-	}
-
-	/**
-	 * Find properties by a given status
-	 *
-	 * @param  int    $property_status The status of the property; can be 1 (active), 0 (inactive), or -1 (on hold)
-	 * @param  int    $pageSize        The number of records per page; if null, all records are returned
-	 * @param  int    $page            The page for which to return records
-	 * @param  string $sort            Field(s) by which to sort the result; defaults to property_name
-	 * @return array                   Array of property records
-	 */
-	public function findByStatus($property_status, $pageSize=null, $page=null, $sort="property_name") {
-		$select = new sql\PropertySelect();
-
-		$select->joinIntegrationPackage(array('integration_package_name'))
-				->joinRegion(array('region_name'))
-				->joinCreatedByUser(array('created_by_userprofile_id'=>'userprofile_id', 'created_by_userprofile_username'=>'userprofile_username'))
-				->joinCreatedByPerson(array(
-					'created_by_person_firstname' =>'person_firstname',
-					'created_by_person_lastname'  =>'person_lastname'
-				))
-				->joinUpdatedByUser(array('last_updated_by_userprofile_id'=>'userprofile_id', 'last_updated_by_userprofile_username'=>'userprofile_username'))
-				->joinUpdatedByPerson(array(
-					'last_updated_by_person_firstname' =>'person_firstname',
-					'last_updated_by_person_lastname'  =>'person_lastname'
-				))
-				->whereEquals('p.property_status', '?')
-				->order($sort);
-
-		$params = array($property_status);
-
-		// If paging is needed
-		if ($pageSize !== null) {
-			return $this->getPagingArray($select, $params, $pageSize, $page);
-		} else {
-			return $this->adapter->query($select, $params);
-		}
 	}
 
 	/**

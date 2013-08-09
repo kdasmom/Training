@@ -36,12 +36,42 @@ class VendorService extends AbstractService {
 	/**
 	 * Retrieves vendor records by integration package, 
 	 *
-	 * @param  int    $integration_package_id
-	 * @param  string $keyword                Keyword to use to search for a vendor
+	 * @param  int          $integration_package_id
+	 * @param  string|array $vendor_status          Vendor status or array of statuses
+	 * @param  string       $keyword                Keyword to use to search for a vendor
 	 * @return array                          Array of vendor records
 	 */
 	public function getByIntegrationPackage($integration_package_id, $vendor_status=null, $keyword=null) {
-		return $this->vendorGateway->findByIntegrationPackage($integration_package_id, $vendor_status, $keyword);
+		if (is_numeric($integration_package_id)) {
+			$wheres = array(array('integration_package_id' => '?'));
+			$params = array($integration_package_id);
+
+			if ($vendor_status !== null) {
+				$wheres[] = new sql\criteria\VendorStatusCriteria($vendor_status, 'IN');
+				if (!is_array($vendor_status)) {
+					$vendor_status = array($vendor_status);
+				}
+				foreach ($vendor_status as $vendor_status_val) {
+					$params[] = $vendor_status_val;
+				}
+			}		
+
+			if ($keyword !== null) {
+				$wheres[] = new sql\criteria\VendorKeywordCriteria();
+				$keyword = $keyword . '%';
+				$params[] = $keyword;
+				$params[] = $keyword;
+			}
+
+			return $this->vendorGateway->find(
+				\NP\core\db\Where::buildCriteria($wheres),
+				$params,
+				'vendor_name',
+				array('vendor_id','vendor_id_alt','vendor_name')
+			);
+		} else {
+			return array();
+		}
 	}
 
 	/**

@@ -4,6 +4,16 @@
  * @author Thomas Messier
  */
 Ext.define('NP.lib.core.Overrides', function() {
+	// Override the combo box clearValue() function so that the select event gets fired even when you clear the field
+	Ext.define('Ext.override.form.field.ComboBox', {
+		override: 'Ext.form.field.ComboBox',
+
+		clearValue: function() {
+			this.setValue([]);
+	        this.fireEvent('select', this, [], {});
+	    }
+	});
+
 	// Override the basic Forms isValid function to allow exclusion of some fields
 	Ext.define('Ext.override.form.Basic', {
 		override: 'Ext.form.Basic',

@@ -13,7 +13,23 @@ use NP\core\db\Insert;
  * @author Thomas Messier
  */
 class DfSplitGateway extends AbstractGateway {
+	protected $tableAlias = 's';
 	
+	/**
+	 * Override default getSelect() to add some joins
+	 */
+	public function getSelect() {
+		return Select::get()->from(array('s'=>'dfsplit'))
+							->join(array('vs'=>'vendorsite'),
+									's.vendorsite_id = vs.vendorsite_id',
+									array('vendorsite_id'),
+									Select::JOIN_LEFT)
+							->join(array('v'=>'vendor'),
+									'vs.vendor_id = v.vendor_id',
+									array('vendor_id','vendor_id_alt','vendor_name'),
+									Select::JOIN_LEFT);
+	}
+
 	public function findByFilter($property_id=null, $glaccount_id=null, $pageSize=null, $page=1, $sort='dfsplit_name') {
 		$select = new Select();
 		

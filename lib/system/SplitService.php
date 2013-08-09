@@ -4,6 +4,7 @@ namespace NP\system;
 
 use NP\core\AbstractService;
 use NP\core\db\Where;
+use NP\core\db\Expression;
 
 /**
  * All operations that are closely related to splits belong in this service
@@ -38,7 +39,27 @@ class SplitService extends AbstractService {
 	 * @return array
 	 */
 	public function getSplitItems($dfsplit_id) {
-		return $this->dfSplitItemsGateway->find('dfsplit_id = ?', array($dfsplit_id));
+		return $this->dfSplitItemsGateway->find(
+			'dfsplit_id = ?',
+			array($dfsplit_id),
+			null,
+			array(
+				'dfsplititem_id',
+				'dfsplit_id',
+				'property_id'  => new Expression('CASE WHEN property_id = 0 THEN NULL ELSE property_id END'),
+				'glaccount_id' => new Expression('CASE WHEN glaccount_id = 0 THEN NULL ELSE glaccount_id END'),
+				'unit_id'      => new Expression('CASE WHEN unit_id = 0 THEN NULL ELSE unit_id END'),
+				'dfsplititem_percent',
+				'universal_field1',
+				'universal_field2',
+				'universal_field3',
+				'universal_field4',
+				'universal_field5',
+				'universal_field6',
+				'universal_field7',
+				'universal_field8'
+			)
+		);
 	}
 
 	/**

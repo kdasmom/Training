@@ -153,13 +153,20 @@ abstract class AbstractGateway {
 	 * @param  array                         $columns  Columns to retrieve (optional)
 	 * @param  int                           $pageSize The number of records per page; if null, all records are returned
 	 * @param  int                           $page     The page for which to return records
-	 * @param  NP\core\db\Select             $select   A custom Select object to use (optional)
+	 * @param  NP\core\db\Join|array         $joins    A join object or array of joins to use in this select statement
 	 * @return array                                   A positional array filled with associative arrays of each record found
 	 */
-	public function find($where=null, $params=array(), $order=null,  $cols=null, $pageSize=null, $page=null, $select=null) {
+	public function find($where=null, $params=array(), $order=null,  $cols=null, $pageSize=null, $page=null, $joins=null) {
+		$select = $this->getSelect();
+
 		// Allow for passing a custom select just in case
-		if ($select === null) {
-			$select = $this->getSelect();
+		if ($joins !== null) {
+			if (!is_array($joins)) {
+				$joins = array($joins);
+			}
+			foreach ($joins as $join) {
+				$select->join($join);
+			}
 		}
 		
 		if ($cols !== null) {
@@ -404,7 +411,7 @@ abstract class AbstractGateway {
 		
 		// Recreate the joins without the columns
 		foreach($joins as $join) {
-			$selectTotal->join($join['table'], $join['condition'], array(), $join['type']);
+			$selectTotal->join($join->getTable(), $join->getCondition(), array(), $join->getType());
 		}
 		
 		// Return the new Select object

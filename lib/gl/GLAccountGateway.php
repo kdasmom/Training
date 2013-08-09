@@ -14,6 +14,7 @@ use NP\core\db\Adapter;
  * @author Thomas Messier
  */
 class GLAccountGateway extends AbstractGateway {
+	protected $tableAlias = 'g';
 
 	/**
 	 * @var \NP\system\ConfigService The config service singleton
@@ -29,41 +30,10 @@ class GLAccountGateway extends AbstractGateway {
 	}
 
 	/**
-	 * Gets all GL accounts that belong to a specified integration package
-	 *
-	 * @param  int   $integration_package_id The integration package to get GL accounts for
-	 * @return array                         Array of GL account records
-	 */
-	public function findByIntegrationPackage($integration_package_id) {
-		$order = ($this->configService->get('PN.Budget.GLDisplayOrder') == 'Name') ? 'glaccount_name' : 'glaccount_number';
-		$select = new Select();
-		$select->from('glaccount')
-				->whereEquals('integration_package_id', '?')
-				->whereEquals('glaccount_usable', '?')
-				->whereEquals('glaccount_status', '?')
-				->whereIsNotNull('glaccounttype_id')
-				->order($order);
-
-		return $this->adapter->query($select, array($integration_package_id, 'Y', 'active'));
-	}
-
-	/**
 	 * 
 	 */
-	public function findByProperty($property_id) {
-		$order = ($this->configService->get('PN.Budget.GLDisplayOrder') == 'Name') ? 'glaccount_name' : 'glaccount_number';
-		$select = Select::get()->from(array('g'=>'glaccount'))
-								->whereEquals('glaccount_usable', '?')
-								->whereEquals('glaccount_status', '?')
-								->whereIsNotNull('glaccounttype_id')
-								->whereExists(
-									Select::get()->from(array('pg'=>'propertyglaccount'))
-												->whereEquals('pg.glaccount_id', 'g.glaccount_id')
-												->whereEquals('pg.property_id', '?')
-								)
-								->order($order);
-
-		return $this->adapter->query($select, array('Y', 'active', $property_id));
+	public function getDefaultSortOrder() {
+		return ($this->configService->get('PN.Budget.GLDisplayOrder') == 'Name') ? 'glaccount_name' : 'glaccount_number';
 	}
 
 	/**

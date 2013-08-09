@@ -3,6 +3,7 @@
 namespace NP\gl;
 
 use NP\core\AbstractService;
+use NP\core\db\Where;
 
 /**
  * All operations that are closely related to GL accounts belong in this service
@@ -61,8 +62,30 @@ class GLService extends AbstractService {
 	 * @param  int   $integration_package_id The integration package to get GL accounts for
 	 * @return array                         Array of GL account records
 	 */
-	public function getByIntegrationPackage($integration_package_id) {
-		return $this->glaccountGateway->findByIntegrationPackage($integration_package_id);
+	public function getByIntegrationPackage($integration_package_id, $glaccount_keyword=null) {
+		$wheres = array(
+			array(
+				'integration_package_id' => '?',
+				'glaccount_usable'       => '?',
+				'glaccount_status'       => '?'
+			),
+			new sql\criteria\GlIsCategoryCriteria()
+		);
+		$params = array($integration_package_id, 'Y', 'active');
+
+		if ($glaccount_keyword !== null) {
+			$wheres[] = new sql\criteria\GlKeywordCriteria();
+			$keyword = $glaccount_keyword . '%';
+			$params[] = $glaccount_keyword;
+			$params[] = $glaccount_keyword;
+		}
+
+		return $this->glaccountGateway->find(
+			Where::buildCriteria($wheres),
+			$params,
+			$this->glaccountGateway->getDefaultSortOrder(),
+			array('glaccount_id','glaccount_number','glaccount_name')
+		);
 	}
 	
 	/**
@@ -71,8 +94,30 @@ class GLService extends AbstractService {
 	 * @param  int   $property_id The integration package to get GL accounts for
 	 * @return array              Array of GL account records
 	 */
-	public function getByProperty($property_id) {
-		return $this->glaccountGateway->findByProperty($property_id);
+	public function getByProperty($property_id, $keyword=null) {
+		$wheres = array(
+			array(
+				'glaccount_usable'       => '?',
+				'glaccount_status'       => '?'
+			),
+			new sql\criteria\GlPropertyCriteria(),
+			new sql\criteria\GlIsCategoryCriteria()
+		);
+		$params = array('Y', 'active', $property_id);
+
+		if ($keyword !== null) {
+			$wheres[] = new sql\criteria\GlKeywordCriteria();
+			$keyword = $keyword . '%';
+			$params[] = $keyword;
+			$params[] = $keyword;
+		}
+
+		return $this->glaccountGateway->find(
+			Where::buildCriteria($wheres),
+			$params,
+			$this->glaccountGateway->getDefaultSortOrder(),
+			array('glaccount_id','glaccount_number','glaccount_name')
+		);
 	}
 }
 

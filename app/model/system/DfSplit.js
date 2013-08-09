@@ -8,6 +8,7 @@ Ext.define('NP.model.system.DfSplit', {
 	
 	requires: [
 		'NP.lib.core.Config',
+		'NP.model.vendor.Vendorsite',
 		'NP.model.user.Userprofile'
 	],
 
@@ -27,6 +28,13 @@ Ext.define('NP.model.system.DfSplit', {
     
     belongsTo: [
         {
+        	model     : 'NP.model.vendor.Vendorsite',
+            name      : 'vendorsite',
+            getterName: 'getVendorsite',
+            foreignKey: 'vendorsite_id',
+            primaryKey: 'vendorsite_id',
+			reader    : 'jsonflat'
+        },{
             model     : 'NP.model.user.Userprofile',
             name      : 'updater',
             getterName: 'getUpdater',

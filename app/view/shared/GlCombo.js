@@ -4,7 +4,7 @@
  * @author Thomas Messier
  */
 Ext.define('NP.view.shared.GlCombo', {
-    extend: 'NP.lib.ui.ComboBox',
+    extend: 'NP.lib.ui.AutoComplete',
     alias: 'widget.shared.glcombo',
     
     requires: ['NP.model.gl.GlAccount'],

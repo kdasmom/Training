@@ -17,19 +17,15 @@ use NP\core\db\Adapter;
  * @author Thomas Messier
  */
 class VendorGateway extends AbstractGateway {
+	protected $tableAlias = 'v';
 	/**
-	 * @var NP\property\PropertyService
+	 * Override getSelect() to get the vendorsite_id by default
 	 */
-	protected $propertyService;
-	
-	/**
-	 * @param NP\core\db\Adapter     $adapter         Database adapter object injected
-	 * @param NP\property\PropertyService $propertyService PropertyService object injected
-	 */
-	public function __construct(Adapter $adapter, PropertyService $propertyService) {
-		$this->propertyService = $propertyService;
-		
-		parent::__construct($adapter);
+	public function getSelect() {
+		return Select::get()->from(array('v'=>'vendor'))
+							->join(array('vs'=>'vendorsite'),
+									'v.vendor_id = vs.vendor_id AND v.vendor_status = vs.vendorsite_status',
+									array('vendorsite_id'));
 	}
 
 	/**
@@ -68,37 +64,6 @@ class VendorGateway extends AbstractGateway {
 		$select->populateForDropdown();
 		
 		return $this->adapter->query($select, $params);
-	}
-
-	public function findByIntegrationPackage($integration_package_id, $vendor_status=null, $keyword=null) {
-		$where = Where::get()->equals('integration_package_id', '?');
-		$params = array($integration_package_id);
-
-		if ($keyword !== null) {
-			$where->nest('OR')
-				->like('vendor_name', '?')
-				->like('vendor_id_alt', '?')
-				->unnest();
-
-			$keyword = "%{$keyword}%";
-			$params[] = $keyword;
-			$params[] = $keyword;
-		}
-
-		if ($vendor_status !== null) {
-			if (!is_array($vendor_status)) {
-				$vendor_status = explode(',', $vendor_status);
-			}
-			if (count($vendor_status) == 1) {
-				$where->equals('vendor_status', '?');
-				$params[] = $vendor_status[0];
-			} else {
-				$where->in('vendor_status', $this->createPlaceholders($vendor_status));
-				$params = array_merge($params, $vendor_status);
-			}
-		}
-
-		return $this->find($where, $params, 'vendor_name', array('vendor_id','vendor_id_alt','vendor_name'));
 	}
 	
 }

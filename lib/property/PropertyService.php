@@ -126,13 +126,20 @@ class PropertyService extends AbstractService {
 	 * @param  int   $integration_package_id
 	 * @return array
 	 */
-	public function getByIntegrationPackage($integration_package_id) {
+	public function getByIntegrationPackage($integration_package_id, $keyword=null) {
+		$wheres = array(new sql\criteria\PropertyStatusCriteria(), array('integration_package_id' => '?'));
+		$params = array(1, $integration_package_id);
+
+		if ($keyword !== null) {
+			$wheres[] = new sql\criteria\PropertyKeywordCriteria();
+			$keyword = $keyword . '%';
+			$params[] = $keyword;
+			$params[] = $keyword;
+		}
+
 		return $this->propertyGateway->find(
-			array(
-				'property_status' => '?',
-				'integration_package_id' => '?'
-			),
-			array(1, $integration_package_id),
+			\NP\core\db\Where::buildCriteria($wheres),
+			$params,
 			"property_name",
 			array('property_id','property_id_alt','property_name','property_status')
 		);
@@ -148,7 +155,46 @@ class PropertyService extends AbstractService {
 	 * @return array                   Array of property records
 	 */
 	public function getByStatus($property_status, $pageSize=null, $page=null, $sort="property_name") {
-		return $this->propertyGateway->findByStatus($property_status, $pageSize, $page, $sort);
+		$joins = array(
+			new sql\join\PropertyIntPkgJoin(),
+			new sql\join\PropertyRegionJoin(),
+			new sql\join\PropertyCreatedByUserJoin(),
+			new \NP\user\sql\join\UserUserroleJoin(array(
+				'created_by_userprofilerole_id' =>'userprofilerole_id',
+				'created_by_tablekey_id'        =>'tablekey_id'
+			)),
+			new \NP\user\sql\join\UserroleStaffJoin(array(
+				'created_by_staff_id'  =>'staff_id',
+				'created_by_person_id' =>'person_id'
+			)),
+			new \NP\user\sql\join\StaffPersonJoin(array(
+				'created_by_person_firstname' =>'person_firstname',
+				'created_by_person_lastname'  =>'person_lastname'
+			)),
+			new sql\join\PropertyUpdatedByUserJoin(),
+			new \NP\user\sql\join\UserUserroleJoin(array(
+				'updated_by_userprofilerole_id' =>'userprofilerole_id',
+				'updated_by_tablekey_id'        =>'tablekey_id'
+			), 'ur2', 'u2'),
+			new \NP\user\sql\join\UserroleStaffJoin(array(
+				'updated_by_staff_id'  =>'staff_id',
+				'updated_by_person_id' =>'person_id'
+			), 's2', 'ur2'),
+			new \NP\user\sql\join\StaffPersonJoin(array(
+				'updated_by_person_firstname' =>'person_firstname',
+				'updated_by_person_lastname'  =>'person_lastname'
+			), 'pe2', 's2')
+		);
+
+		return $this->propertyGateway->find(
+			new sql\criteria\PropertyStatusCriteria(),	// filter
+			array($property_status),			// params
+			$sort,								// order by
+			null,								// columns
+			$pageSize,
+			$page,
+			$joins
+		);
 	}
 
 	/**
@@ -229,6 +275,22 @@ class PropertyService extends AbstractService {
 			$vals[] = $unit_status;
 		}
 		return $this->unitGateway->find($fields, $vals, "unit_number");
+	}
+	
+	/**
+	 * Retrieves all units, optionally filtering out by status
+	 *
+	 * @param  string $unit_status The status of units to retrieve
+	 * @return array            Array of unit records
+	 */
+	public function getAllUnits($unit_status=null) {
+		$fields = null;
+		$params = array();
+		if ($unit_status !== null) {
+			$fields = array('unit_status' => '?');
+			$params[] = $unit_status;
+		}
+		return $this->unitGateway->find($fields, $params, "unit_number");
 	}
 
 	/**
@@ -502,6 +564,23 @@ class PropertyService extends AbstractService {
 			array('fiscalcal_id'=>'?'),
 			array($fiscalcal_id)
 		);
+	}
+
+	/**
+	 * Checks if a GL account is assigned to a property
+	 * @param  int     $property_id
+	 * @param  int     $glaccount_id
+	 * @return boolean
+	 */
+	public function isGlAssigned($property_id, $glaccount_id) {
+		$res = $this->propertyGlAccountGateway->find(
+			array('pg.property_id'=>'?', 'pg.glaccount_id'=>'?'),
+			array($property_id, $glaccount_id),
+			null,
+			array('propertyglaccount_id')
+		);
+
+		return (count($res)) ? true : false;
 	}
 
 	/**

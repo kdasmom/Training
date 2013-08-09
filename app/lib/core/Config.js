@@ -111,6 +111,13 @@ Ext.define('NP.lib.core.Config', function() {
 						store  : 'NP.store.property.Properties',
 						storeId: 'property.AllProperties'
 					},
+					// This request gets all units in the app
+					{ 
+						service: 'PropertyService',
+						action : 'getAllUnits',
+						store  : 'NP.store.property.Units',
+						storeId: 'property.AllUnits'
+					},
 					// This request gets all integration packages for the app
 					{ 
 						service: 'PropertyService',
