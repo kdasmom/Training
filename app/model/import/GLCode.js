@@ -1,21 +1,19 @@
 /**
- * Model for a GlImportAccount
+ * Model for a GLCode
  *
  * @author Aliaksandr Zubik
  */
-Ext.define('NP.model.gl.GlImportAccount', {
+Ext.define('NP.model.import.GLCode', {
 	extend: 'Ext.data.Model',
 	
-	requires: ['NP.lib.core.Config'],
-
 	fields: [
-		{ name: 'GL Account Name' },
+		{ name: 'GLAccountName' },
 		{ name: 'AccountNumber' },
 		{ name: 'AccountType' },
 		{ name: 'CategoryName' },
 		{ name: 'IntegrationPackageName' },
-                { name: 'validation_status' },
-                { name: 'validation_messages' }
+		{ name: 'validation_status' },
+		{ name: 'validation_messages' }
 	],
 
 	validations: [

@@ -10,7 +10,6 @@ use \ReflectionClass;
 
 class ImportService  extends BaseImportService {
 
-
     /**
      * @var array
      */
@@ -23,8 +22,7 @@ class ImportService  extends BaseImportService {
 
 
     // Force Extending class to define this method to be abel to validate CSV file
-    public function validate(&$data, $type)
-    {
+    public function validate(&$data, $type) {
         $entity = new GLAccountEntity($data);
 
         // Run validation
@@ -48,9 +46,9 @@ class ImportService  extends BaseImportService {
      * @return array     Array with status info on the operation
      */
 
-    public function uploadCSV($file) {
+    public function uploadCSV($file, $type, $fileFieldName) {
         $fileName = null;
-        $destinationPath = $this->getUploadPath();
+        $destinationPath = $this->getUploadPath() . "{$type}/";
         $userProfileId = $this->securityService->getUserId();
 
         // If destination directory doesn't exist, create it
@@ -60,7 +58,7 @@ class ImportService  extends BaseImportService {
 
         // Create the upload object
         $fileUpload = new FileUpload (
-            'file_upload_category',
+            $fileFieldName,
             $destinationPath,
             array(
                 'allowedTypes' => $this->uploadMimeTypes,
@@ -72,7 +70,7 @@ class ImportService  extends BaseImportService {
         $fileUpload->upload();
         $errors = $fileUpload->getErrors();
         foreach ($errors as $k => $v) {
-                    $errors[$k] = $this->localizationService->getMessage($v);
+            $errors[$k] = $this->localizationService->getMessage($v);
         }
         // If there are no errors, run the resize operations and DB updates
         if (!count($errors)) {
@@ -95,14 +93,13 @@ class ImportService  extends BaseImportService {
      */
 
     public function getPreview($file = null, $type, $pageSize = null, $page = 1, $sortBy = 'glaccount_name') {
-        $data = $this->csvFileToArray($this->getUploadPath() . $file, $type);
+        $data = $this->csvFileToArray($this->getUploadPath() . "{$type}/" . $file, $type);
         $this->validate($data, $type);
         return array('data' => $data);
     }
 
     public function accept($file, $type) {
-
-        $data = $this->csvFileToArray($this->getUploadPath() . $file, $type);
+        $data = $this->csvFileToArray($this->getUploadPath() . "{$type}/" . $file, $type);
         $this->validate($data, $type);
 
         $gateway = $this->getImportGateway($type);
@@ -121,22 +118,21 @@ class ImportService  extends BaseImportService {
 
     }
 
-    public function decline($file)
-    {
-        if(!file_exists($this->getUploadPath() . $file)) {
+    public function decline($file, $type) {
+        $path = $this->getUploadPath() . "{$type}/" . $file;
+        if(!file_exists($path)) {
             return array('success' => false, 'errors' => array('No file exists'));
         }
 
-        if(!is_writable($this->getUploadPath() . $file)) {
+        if(!is_writable($path)) {
             return array('success' => false, 'errors' => array('File not writable'));
         }
 
-        return array('success' => !!unlink($this->getUploadPath() . $file));
+        return array('success' => !!unlink($path));
     }
 
-    public function getImportConfig($type)
-    {
-        return json_decode(file_get_contents($this->configService->getAppRoot() . '/config/import/' . $type), true);
+    public function getImportConfig($type) {
+        return json_decode(file_get_contents($this->configService->getAppRoot() . '/config/import/' . $type . '.json'), true);
     }
 
 

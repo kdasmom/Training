@@ -275,7 +275,7 @@ class GLAccountGateway extends AbstractGateway {
         {
             // Get entities
             $accountNumber = $data['AccountNumber'];
-            $accountName = $data['GL Account Name'];
+            $accountName = $data['GLAccountName'];
             $categoryName = $data['CategoryName'];
             $accountTypeName = $data['AccountType'];
             $integrationPackageName = $data['IntegrationPackageName'];
