@@ -12,17 +12,26 @@ Ext.define('NP.controller.Import', {
         'NP.view.shared.button.Inactivate',
         'NP.view.shared.button.Activate',
     ],
+    
     refs: [
-        {ref: 'overviewTab', selector: '[xtype="import.overview"]'},
-        {ref: 'glTab', selector: '[xtype="import.gl"] '},
-        {ref: 'propertyTab', selector: '[xtype="import.property"]'},
-        {ref: 'vendorTab', selector: '[xtype="import.vendor"]'},
-        {ref: 'invoiceTab', selector: '[xtype="import.invoice"]'},
-        {ref: 'userTab', selector: '[xtype="import.user"]'},
-        {ref: 'customFieldTab', selector: '[xtype="import.customField"]'},
-        {ref: 'splitsTab', selector: '[xtype="import.splits"]'}
+        { ref: 'horizontalTab', selector: 'tabpanel' },
+        { ref: 'overviewTab', selector: '[xtype="import.overview"]' },
+        { ref: 'glTab', selector: '[xtype="import.gl"]' },
+        { ref: 'propertyTab', selector: '[xtype="import.property"]' },
+        { ref: 'vendorTab', selector: '[xtype="import.vendor"]' },
+        { ref: 'invoiceTab', selector: '[xtype="import.invoice"]' },
+        { ref: 'userTab', selector: '[xtype="import.user"]' },
+        { ref: 'customFieldTab', selector: '[xtype="import.customField"]' },
+        { ref: 'splitsTab', selector: '[xtype="import.splits"]' },
+        { ref: 'previewGrid', selector: '[xtype="import.csvgrid"] customgrid' }
     ],
+    
+    // For localization
+    uploadSuccessText: 'Data was successfully imported',
+    uploadErrorText  : 'Data from CSV file not saved. Errors: ',
+
     file_upload: null,
+    
     init: function() {
         Ext.log('Import controller initialized');
 
@@ -33,50 +42,40 @@ Ext.define('NP.controller.Import', {
             // Clicking on an import in an Overview tab
             '[xtype="import.main"]': {
                 tabchange: function(tabPanel, newCard, oldCard, eOpts) {
-                    var activeTab = Ext.getClassName(newCard).split('.').pop();
-                    this.addHistory('Import:showImport:' + activeTab);
+                    this.addHistory('Import:showImport:' + this.getHorizontalTabToken(newCard));
                 }
             },
             // The Import tab GL
-            '[xtype="import.gl"] [xtype="verticaltabpanel"]': {
+            '[xtype="import.main"] [xtype="verticaltabpanel"]': {
                 tabchange: function(verticalTabPanel, newCard, oldCard, eOpts) {
-                    var activeTab = Ext.getClassName(newCard).split('.').pop();
-                    this.addHistory('Import:showImport:GL:' + activeTab);
-                }
-            },
-            // The Cancel button on the GL Category tab
-            '[xtype="import.gl"] [xtype="shared.button.cancel"]': {
-                // Run this whenever the upload button is clicked
-                click: function() {
-                    this.addHistory('Import:showImport');
+                    var activeTab = this.getActiveHorizontalTab().getItemId().replace('ImportTab', '');
+                    this.addHistory('Import:showImport:' + activeTab + ':' + this.getVerticalTabToken(newCard));
                 }
             },
             // The Upload button on the GL Category tab
-            '[xtype="import.gl"] [xtype="shared.button.upload"]': {
+            '[xtype="import.main"] [xtype="shared.button.upload"]': {
                 // Run this whenever the upload button is clicked
                 click: this.uploadFile
             },
             // The Decline button on the GL Category tab
-            '[xtype="import.gl"] [xtype="shared.button.inactivate"]': {
+            '[xtype="import.main"] [xtype="shared.button.inactivate"]': {
                 // Run this whenever the upload button is clicked
-                click: function() {
-                    this.decline(this.file);
-                    this.showFormUpload();
-                }
+                click: this.decline
             },
             // The Upload csv file
-            '[xtype="import.gl"] [xtype="shared.button.activate"]': {
+            '[xtype="import.main"] [xtype="shared.button.activate"]': {
                 click: function() {
                     that = this;
                     var grid = Ext.ComponentQuery.query('[xtype="import.csvgrid"] [xtype="customgrid"]')[0];
-                    var items = grid.getStore().data.items;
-                    var accounts = [];
+                    var items = grid.getStore().getRange();
+                    var hasValid = false;
                     Ext.each(items, function(item) {
-                        if (item.data.validation_status == 'valid') {
-                            accounts.push(item.data);
+                        if (item.get('validation_status') == 'valid') {
+                            hasValid = true;
+                            return false;
                         }
                     });
-                    if (accounts.length > 0) {
+                    if (hasValid > 0) {
                         that.saveGrid();
                     } else {
                         NP.Util.showFadingWindow({html: 'No valid records to import.'});
@@ -85,11 +84,33 @@ Ext.define('NP.controller.Import', {
             }
         });
     },
+
+    getActiveHorizontalTab: function() {
+        return this.getHorizontalTab().getActiveTab();
+    },
+
+    getHorizontalTabToken: function(tab) {
+        return tab.getItemId().replace('ImportTab', '');
+    },
+
+    getActiveVerticalTab: function() {
+        var verticalTabPanel = this.getHorizontalTab().getActiveTab().query('verticaltabpanel');
+        if (verticalTabPanel.length) {
+            return verticalTabPanel[0].getActiveTab();
+        } else {
+            return this.getHorizontalTab().getActiveTab().down('panel');
+        }
+    },
+
+    getVerticalTabToken: function(tab) {
+        return tab.getItemId().replace('Panel', '');
+    },
+
     /**
      * Shows the import page with a specific tab open
      * @param {String} [activeTab="overview"] The tab currently active
      */
-    showImport: function(activeTab, subSection, id) {
+    showImport: function(activeTab, subSection, page) {
         var that = this;
         // Set the overview view
         var tabPanel = this.setView('NP.view.import.Main');
@@ -99,152 +120,125 @@ Ext.define('NP.controller.Import', {
             activeTab = 'overview';
 
         // Check if the tab to be selected is already active, if it isn't make it the active tab
-        var tab = that.getCmp('import.' + activeTab.toLowerCase());
-        var tabPanel = Ext.ComponentQuery.query('tabpanel')[0];
+        var tab = Ext.ComponentQuery.query('#' + activeTab + 'ImportTab')[0];
+        var tabPanel = this.getHorizontalTab();
 
         // Set the active tab if it hasn't been set yet
-        if (tab.getXType() != tabPanel.getActiveTab().getXType()) {
+        if (tab.getItemId() != tabPanel.getActiveTab().getItemId()) {
             tabPanel.suspendEvents(false);
             tabPanel.setActiveTab(tab);
             tabPanel.resumeEvents();
         }
 
         // Set the active vertical tab if it hasn't been set yet
-        var verticalTabPanel = Ext.ComponentQuery.query('verticaltabpanel')[0];
-        var token = Ext.History.currentToken;
-        var verticalActiveTab = that.getCmp('import.' + token.split(':')[3].toLowerCase());
-
-        if (verticalActiveTab) {
+        var verticalTabPanel = tabPanel.query('verticaltabpanel');
+        if (verticalTabPanel.length) {
+            verticalTabPanel = verticalTabPanel[0];
+            var verticalActiveTab = (subSection) ? Ext.ComponentQuery.query('#' + subSection + 'Panel')[0] : 0;
             verticalTabPanel.suspendEvents(false);
             verticalTabPanel.setActiveTab(verticalActiveTab);
             verticalTabPanel.resumeEvents();
         }
-        // Check if there's a show method for this tab
-        var showMethod = 'show' + activeTab;
-        if (that[showMethod]) {
-            // If the show method exists, run it
-            that[showMethod](subSection, id);
-        }
+
+        this.showFormUpload();
     },
-    showGrid: function(file) {
-        this.setView('NP.view.import.CSVGrid', {file: file}, '[xtype="import.glcode"] [xtype="panel"]');
-        var grid = Ext.ComponentQuery.query('[xtype="import.csvgrid"] [xtype="customgrid"]')[0];
-        grid.getStore().load();
-        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.cancel"]')[0].setVisible(false);
-        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.cancel]')[1].setVisible(false);
-        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.upload"]')[0].setVisible(false);
-        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.upload"]')[1].setVisible(false);
 
-
-        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.inactivate"]')[0].setVisible(true);
-        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.inactivate]')[1].setVisible(true);
-        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.activate"]')[0].setVisible(true);
-        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.activate"]')[1].setVisible(true);
-
-    },
     showFormUpload: function() {
-        this.setView('NP.view.import.UploadForm', {}, '[xtype="import.glcode"] [xtype="panel"]');
-
-        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.cancel"]')[0].setVisible(true);
-        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.cancel]')[1].setVisible(true);
-        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.upload"]')[0].setVisible(true);
-        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.upload"]')[1].setVisible(true);
-
-        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.inactivate"]')[0].setVisible(false);
-        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.inactivate]')[1].setVisible(false);
-        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.activate"]')[0].setVisible(false);
-        Ext.ComponentQuery.query('[xtype="import.glcode"] [xtype="shared.button.activate"]')[1].setVisible(false);
+        var type = this.getVerticalTabToken(this.getActiveVerticalTab());
+        var importItem = Ext.create('NP.view.import.types.' + type);
+        this.setView(importItem.getImportForm(), {}, '#' + this.getActiveVerticalTab().getItemId());
     },
-    saveGrid: function() {
-        var that = this;
-        var mask = new Ext.LoadMask(Ext.ComponentQuery.query('[xtype="import.glcode"]')[0], {msg: 'Saving'});
-        mask.show();
-        NP.lib.core.Net.remoteCall({
-            method: 'POST',
-            requests: {
-                service: 'ImportService',
-                action: 'accept',
-                file: this.file,
-                type: 'GLAccount.json',
-                success: function(result, deferred) {
-                    mask.hide();
-                    if (result.success) {
-                        // Show friendly message
-                        NP.Util.showFadingWindow({html: 'The valid GL Codes were uploaded successfully.'});
-                        that.showFormUpload();
-                        that.addHistory('Import:showImport:GL:GLCode');
-                    } else {
-                        if (result.errors.length) {
-                            NP.Util.showFadingWindow({html: 'Data from csv file not saved. Errors:' + result.errors[0]});
-                        }
-                    }
-                },
-                failure: function() {
-                    Ext.log('Error save csv file');
-                }
-            }
-        });
 
+    showGrid: function() {
+        var type = this.getActiveVerticalTab().getItemId();
+        var view = this.setView('NP.view.import.CSVGrid', {
+                    file: this.file,
+                    type: type.replace('Panel', '')
+                }, '#' + type);
+        
+        view.query('customgrid')[0].getStore().load();
     },
+
     uploadFile: function() {
         var that = this;
-        var formSelector = '[xtype="import.gl"] form';
-        var form = Ext.ComponentQuery.query(formSelector)[0];
-        var mask = new Ext.LoadMask(Ext.ComponentQuery.query('[xtype="import.glcode"]')[0], {msg: 'Upload'});
+        
+        var form = this.getActiveVerticalTab().query('form')[0];
         // If form is valid, submit it
         if (form.getForm().isValid()) {
-            mask.show();
-            var formEl = NP.Util.createFormForUpload(formSelector);
-            var file = form.getForm().findField('file_upload_category').getValue();
+            var fileField = form.query('filefield')[0];
+            var file = fileField.getValue();
+            var formEl = NP.Util.createFormForUpload('#' + this.getActiveVerticalTab().getItemId() + ' form');
+            
             NP.lib.core.Net.remoteCall({
                 method: 'POST',
+                mask  : this.getActiveVerticalTab(),
                 isUpload: true,
                 form: formEl.id,
                 requests: {
-                    service: 'ImportService',
-                    action: 'uploadCSV',
-                    file: file,
-                    success: function(result, deferred) {
-                        mask.hide();
+                    service      : 'ImportService',
+                    action       : 'uploadCSV',
+                    file         : file,
+                    type         : this.getVerticalTabToken(this.getActiveVerticalTab()),
+                    fileFieldName: fileField.getName(),
+                    success      : function(result, deferred) {
                         if (result.success) {
-                            // Show friendly message
+                            // Save file name
                             that.file = result.upload_filename;
-                            that.showGrid(result.upload_filename);
+                            // Show the preview grid
+                            that.showGrid();
                         } else {
                             if (result.errors.length) {
-                                form.getForm().findField('file_upload_category').markInvalid(result.errors);
+                                fileField.markInvalid(result.errors);
                             }
                         }
                         Ext.removeNode(formEl);
-                    },
-                    failure: function() {
-                        Ext.log('Error upload csv file');
                     }
                 }
             });
         }
     },
+
+    saveGrid: function() {
+        var that = this;
+
+        var type = this.getVerticalTabToken(this.getActiveVerticalTab());
+
+        NP.lib.core.Net.remoteCall({
+            method: 'POST',
+            mask  : this.getActiveVerticalTab(),
+            requests: {
+                service: 'ImportService',
+                action : 'accept',
+                file   : this.file,
+                type   : type,
+                success: function(result, deferred) {
+                    if (result.success) {
+                        // Show friendly message
+                        NP.Util.showFadingWindow({ html: that.uploadSuccessText });
+                        that.showFormUpload();
+                    } else {
+                        if (result.errors.length) {
+                            NP.Util.showFadingWindow({ html: that.uploadErrorText + result.errors[0] });
+                        }
+                    }
+                }
+            }
+        });
+    },
+
     decline: function() {
+        // Declining the upload will delete the file, if the file deletion fails it's not a big deal, so we don't
+        // need to check for success or failure
         NP.lib.core.Net.remoteCall({
             method: 'POST',
             requests: {
                 service: 'ImportService',
-                action: 'decline',
-                file: this.file,
-                success: function(result, deferred) {
-                    if (result.success) {
-                        // Show friendly message
-//                        NP.Util.showFadingWindow({html: 'The file <b>' + this.file + '</b> has been deleted.'});
-                    } else {
-                        if (result.errors.length) {
-                            NP.Util.showFadingWindow({html: 'The file <b>' + this.file + '</b> has not been deleted. Errors:' + result.errors[0]});
-                        }
-                    }
-                },
-                failure: function() {
-                    Ext.log('Error delete file');
-                }
+                action : 'decline',
+                file   : this.file,
+                type   : this.getVerticalTabToken(this.getActiveVerticalTab())
             }
         });
+
+        this.showFormUpload();
     }
 });
