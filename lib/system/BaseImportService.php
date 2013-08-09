@@ -141,7 +141,7 @@ abstract class BaseImportService extends AbstractService {
      * @return string The full path to the directory where upload csv file
      */
     protected function getUploadPath() {
-        return "{$this->configService->getAppRoot()}/clients/{$this->configService->getAppName()}/csv_uploads/";
+        return "{$this->configService->getAppRoot()}/clients/{$this->configService->getAppName()}/web/exim_uploads/";
     }
 
     /**
