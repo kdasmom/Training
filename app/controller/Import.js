@@ -171,6 +171,7 @@ Ext.define('NP.controller.Import', {
             
             NP.lib.core.Net.remoteCall({
                 method: 'POST',
+                mask  : this.getActiveVerticalTab(),
                 isUpload: true,
                 form: formEl.id,
                 requests: {
@@ -204,6 +205,7 @@ Ext.define('NP.controller.Import', {
 
         NP.lib.core.Net.remoteCall({
             method: 'POST',
+            mask  : this.getActiveVerticalTab(),
             requests: {
                 service: 'ImportService',
                 action : 'accept',
