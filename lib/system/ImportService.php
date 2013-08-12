@@ -270,7 +270,7 @@ class ImportService extends AbstractService
         /**
          * @var $entity \NP\core\AbstractEntity
          */
-        $entity = new $entityClass();
+        $entity = new $entityClass($data);
         $gateway = $this->getImportGateway($type);
 
         foreach ($data as $k => $row) {
