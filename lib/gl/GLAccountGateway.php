@@ -27,8 +27,6 @@ class GLAccountGateway extends AbstractGateway
 
     protected $localizationService;
 
-    protected $di;
-
     /**
      * Setter function required by DI to set the config service via setter injection
      * @param \NP\system\ConfigService $configService
@@ -41,16 +39,6 @@ class GLAccountGateway extends AbstractGateway
     public function setLocalizationService(LocalizationService $localizationService)
     {
         $this->localizationService = $localizationService;
-    }
-
-    public function setDI(\Pimple $di)
-    {
-        $this->di = $di;
-    }
-
-    public function __get($key)
-    {
-        return $this->di[$key];
     }
 
     /**
@@ -187,62 +175,4 @@ class GLAccountGateway extends AbstractGateway
         return $this->adapter->query($select);
     }
 
-
-    public function save($data)
-    {
-        // Get entities
-        $accountNumber = $data['AccountNumber'];
-        $accountName = $data['GLAccountName'];
-        $categoryName = $data['CategoryName'];
-        $accountTypeName = $data['AccountType'];
-        $integrationPackageName = $data['IntegrationPackageName'];
-        $glaccount_updateby = $data['glaccount_updateby'];
-        $accountTypeId = $this->GLAccountEntityValidator->getAccountTypeIdByName($accountTypeName);
-        $integrationPackageId = $this->GLAccountEntityValidator->getIntegrationPackageIdByName($integrationPackageName);
-        $glAccountCategoryId = $this->GLAccountEntityValidator->getCategoryIdByName($categoryName, $integrationPackageId);
-        $parentTreeId  = $this->TreeGateway->getTreeIdForCategory($glAccountCategoryId);
-        $treeOrder = $this->TreeGateway->getTreeOrder($parentTreeId);
-        $account = array(
-            'glaccount_name' => $accountName,
-            'glaccount_number' => $accountNumber,
-            'glaccounttype_id' => $accountTypeId,
-            'integration_package_id' => $integrationPackageId,
-            'glaccount_updateby' => $glaccount_updateby
-        );
-
-        $exists = $oldGlAccountId = $this->GLAccountEntityValidator->glaccountExists($accountNumber, $integrationPackageId);
-        if($exists) {
-            $account['glaccount_id'] = $oldGlAccountId;
-        }
-
-        $glaccount     = new GLAccountEntity($account);
-
-        // Run validation
-        $validator = new EntityValidator();
-        $validator->validate($glaccount);
-        $errors    = $validator->getErrors();
-
-        // If the data is valid, save it
-        if (count($errors) == 0) {
-            // Begin transaction
-            $this->beginTransaction();
-
-            try {
-                // Save the glaccount record
-                parent::save($glaccount);
-                $newGlAccountId = $glaccount->glaccount_id;
-                $this->TreeGateway->updateTree($oldGlAccountId, $newGlAccountId, $parentTreeId, $treeOrder, $exists);
-
-            } catch(\Exception $e) {
-                // Add a global error to the error array
-                $errors[] = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e), 'extra'=>null);
-            }
-        }
-
-        if (count($errors)) {
-            $this->rollback();
-        } else {
-            $this->commit();
-        }
-    }
 }

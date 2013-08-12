@@ -133,32 +133,17 @@ class ImportService extends AbstractService
         return $validator;
     }
 
-    /**
-     * Get related gateway to make saving and validation
-     *
-     * @param $type
-     * @return mixed
-     */
-    protected function getImportGateway($type)
-    {
-        $config = $this->getImportConfig($type);
-        $gatewayClass = $config['gateway'];
-        $gateway = $this->{$gatewayClass};
-
-        $gatewayReflection = new ReflectionClass($gateway);
-
-        // Inject the DI if gateway need it
-        if ($gatewayReflection->hasMethod('setDI')) {
-            $gateway->setDI($this->di);
-        }
-
-        return $gateway;
-    }
-
     protected function getImportEntityClass($type)
     {
         $config = $this->getImportConfig($type);
         return $config['entity'];
+    }
+
+    protected function getImportService($type)
+    {
+        $config = $this->getImportConfig($type);
+        $class = $config['service'];
+        return $this->{$class};
     }
 
     public function validate(&$data, $type)
@@ -271,7 +256,7 @@ class ImportService extends AbstractService
          * @var $entity \NP\core\AbstractEntity
          */
         $entity = new $entityClass($data);
-        $gateway = $this->getImportGateway($type);
+        $service = $this->getImportService($type);
 
         foreach ($data as $k => $row) {
 
@@ -284,7 +269,7 @@ class ImportService extends AbstractService
                     $data[$k]['glaccount_updateby'] = $this->securityService->getUserId();
                 }
 
-                $gateway->save($data[$k]);
+                $service->save($data[$k], $entityClass);
             }
         }
 
