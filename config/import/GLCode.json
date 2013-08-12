@@ -8,5 +8,6 @@
         {"name": "CategoryName", "entityField": "category_name"},
         {"name": "IntegrationPackageName", "entityField": "integration_package_id", "dataTable": "IntegrationPackage", "dataColumn": "integration_package_name"}
     ],
-    "customValidation": true
+    "customValidation": true,
+    "customValidationClass": "GLAccountEntityValidator"
 }
