@@ -2,13 +2,14 @@
 
 namespace NP\system;
 
+use NP\core\AbstractService;
 use \NP\security\SecurityService;
 use \NP\core\io\FileUpload;
 use \NP\core\validation\ExtendedEntityValidator as EntityValidator;
 use \NP\gl\GLAccountEntity;
 use \ReflectionClass;
 
-class ImportService extends BaseImportService {
+class ImportService extends AbstractService {
 
     /**
 
