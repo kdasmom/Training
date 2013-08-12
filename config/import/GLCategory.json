@@ -1,0 +1,11 @@
+{
+    "description": "GL Accounts import",
+    "service": "GLService",
+    "entity": "NP\\gl\\GLAccountEntity",
+    "columns": [
+        {"name": "CategoryName", "entityField": "category_name"},
+        {"name": "IntegrationPackage", "entityField": "integration_package"}
+    ],
+    "customValidation": true,
+    "customValidationClass": "GLCategoryEntityValidator"
+}
