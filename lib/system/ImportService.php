@@ -22,14 +22,126 @@ class ImportService extends BaseImportService {
         'application/vnd.ms-excel'
     );
 
-    // Force Extending class to define this method to be abel to validate CSV file
+    /**
+     * @var ConfigService
+     */
+    protected $configService;
+
+    /**
+     * @var SecurityService
+     */
+    protected $securityService;
+
+    /**
+     * @var Pimple
+     */
+    protected $di;
+
+    /**
+     * @var array
+     */
+    protected $errors = array();
+
+
+    protected $customValidator;
+
+    /**
+     * Magic method to get Gateways easy
+     *
+     * @param $key
+     * @return mixed
+     */
+    public function __get($key)
+    {
+        return $this->di[$key];
+    }
+
+    /**
+     * @param ConfigService $configService set by Pimple di bootstrap
+     */
+    public function setConfigService(ConfigService $configService) {
+        $this->configService = $configService;
+    }
+
+    /**
+     * @param SecurityService $securityService set by Pimple di bootstrap
+     */
+    public function setSecurityService(SecurityService $securityService) {
+        $this->securityService = $securityService;
+    }
+
+    /**
+     * @param Container $di set by Pimple di bootstrap
+     */
+    public function setPimple(Container $di) {
+        $this->di = $di;
+    }
+
+
+    protected function getImportColumnNames($type)
+    {
+        $names = array();
+        $config = $this->getImportConfig($type);
+        foreach($config['columns'] as $column) {
+            $names[] = $column['name'];
+        }
+        return $names;
+    }
+
+    protected function getImportDBColumnNames($type)
+    {
+        $names = array();
+        $config = $this->getImportConfig($type);
+        foreach($config['columns'] as $column) {
+            $names[$column['name']] = $column['entityField'];
+        }
+        return $names;
+    }
+
+    /**
+     * Detect if custom validation exists
+     *
+     * @param $type
+     * @return bool
+     */
+    protected function getImportCustomValidationFlag($type)
+    {
+        $config = $this->getImportConfig($type);
+        return !!$config['customValidation'];
+    }
+
+    protected function getCustomValidator($type)
+    {
+        $config = $this->getImportConfig($type);
+        $gatewayClass = $config['customValidationClass'];
+        $gateway = $this->{$gatewayClass};
+
+        $gatewayReflection = new ReflectionClass($gateway);
+
+        // Inject the DI if gateway need it
+        if ($gatewayReflection->hasMethod('setDI')) {
+            $gateway->setDI($this->di);
+        }
+
+        return $gateway;
+    }
+
+    /**
+     * Get related gateway to make saving and validation
+     *
+     * @param $type
+     * @return mixed
+     */
+    protected function getImportGateway($type)
+    {
+        $config = $this->getImportConfig($type);
+        $gatewayClass = $config['gateway'];
+        $gateway = $this->{$gatewayClass};
+    }
 
     public function validate(&$data, $type) {
 
         $entity = new GLAccountEntity($data);
-
-
-        // Run validation
 
         $validator = new \NP\core\validation\ExtendedEntityValidator();
 
@@ -37,16 +149,34 @@ class ImportService extends BaseImportService {
 
         $this->errors = array_merge($this->errors, $validator->getErrors());
 
-
         if ($this->getImportCustomValidationFlag($type)) {
-
-            $gateway = $this->getImportGateway($type);
-
-            foreach ($data as $key => $row) {
-
-                $gateway->validateImportEntity($data[$key], $this->errors);
+            $validator = $this->getCustomValidator($type);
+            foreach($data as $key => $row) {
+                $validator->validate($data[$key], $this->errors);
             }
         }
+    }
+
+
+    /**
+     * Gets entity fields configuration from JSON configuration file
+     *
+     * @param $type
+     * @return mixed
+     */
+    protected function getImportEntityConfiguration($type)
+    {
+        $config = $this->getImportConfig($type);
+        return $config['entity'];
+    }
+
+    /**
+     * Returns the path for upload csv file
+     *
+     * @return string The full path to the directory where upload csv file
+     */
+    protected function getUploadPath() {
+        return "{$this->configService->getAppRoot()}/clients/{$this->configService->getAppName()}/csv_uploads/";
     }
 
     /**
