@@ -8,6 +8,7 @@ use \NP\core\io\FileUpload;
 use \NP\core\validation\ExtendedEntityValidator as EntityValidator;
 use \NP\gl\GLAccountEntity;
 use \ReflectionClass;
+use \Pimple as Container;
 
 class ImportService extends AbstractService {
 
@@ -114,17 +115,17 @@ class ImportService extends AbstractService {
     protected function getCustomValidator($type)
     {
         $config = $this->getImportConfig($type);
-        $gatewayClass = $config['customValidationClass'];
-        $gateway = $this->{$gatewayClass};
+        $customValidationClass = $config['customValidationClass'];
+        $validator = $this->{$customValidationClass};
 
-        $gatewayReflection = new ReflectionClass($gateway);
+        $validatorReflection = new ReflectionClass($validator);
 
         // Inject the DI if gateway need it
-        if ($gatewayReflection->hasMethod('setDI')) {
-            $gateway->setDI($this->di);
+        if ($validatorReflection->hasMethod('setDI')) {
+            $validator->setDI($this->di);
         }
 
-        return $gateway;
+        return $validator;
     }
 
     /**
@@ -138,6 +139,15 @@ class ImportService extends AbstractService {
         $config = $this->getImportConfig($type);
         $gatewayClass = $config['gateway'];
         $gateway = $this->{$gatewayClass};
+
+        $gatewayReflection = new ReflectionClass($gateway);
+
+        // Inject the DI if gateway need it
+        if ($gatewayReflection->hasMethod('setDI')) {
+            $gateway->setDI($this->di);
+        }
+
+        return $gateway;
     }
 
     public function validate(&$data, $type) {
@@ -314,6 +324,27 @@ class ImportService extends AbstractService {
     public function getImportConfig($type) {
 
         return json_decode(file_get_contents($this->configService->getAppRoot() . '/config/import/' . $type . '.json'), true);
+    }
+
+    /**
+     * Convert CSV file fields to array with names mapping
+     *
+     * @param $file
+     * @param $type
+     * @return array
+     */
+    protected function csvFileToArray($file, $type) {
+        $csv = file_get_contents($file);
+        $rows = explode("\n", trim($csv));
+        array_shift($rows);
+
+        $keys = $this->getImportColumnNames($type);
+
+        $csvArray = array_map(function ($row) use ($keys) {
+            return array_combine($keys, str_getcsv($row));
+        }, $rows);
+
+        return $csvArray;
     }
 
 }

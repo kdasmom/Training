@@ -9,6 +9,12 @@
 
 namespace NP\gl;
 
+use NP\locale\LocalizationService;
+use NP\system\ConfigService;
+
+use NP\core\db\Select;
+use NP\core\db\Insert;
+use NP\core\db\Update;
 
 class GLAccountEntityValidator {
 
@@ -18,6 +24,14 @@ class GLAccountEntityValidator {
     protected $configService;
 
     protected $localizationService;
+
+    protected $GLAccountGateway;
+
+    public function __construct(GLAccountGateway $gateway)
+    {
+        $this->GLAccountGateway = $gateway;
+    }
+
 
     /**
      * Setter function required by DI to set the config service via setter injection

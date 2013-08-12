@@ -197,9 +197,9 @@ class GLAccountGateway extends AbstractGateway
         $accountTypeName = $data['AccountType'];
         $integrationPackageName = $data['IntegrationPackageName'];
         $glaccount_updateby = $data['userProfileId'];
-        $accountTypeId = $this->getAccountTypeIdByName($accountTypeName);
-        $integrationPackageId = $this->getIntegrationPackageIdByName($integrationPackageName);
-        $glAccountCategoryId = $this->getCategoryIdByName($categoryName, $integrationPackageId);
+        $accountTypeId = $this->GLAccountEntityValidator->getAccountTypeIdByName($accountTypeName);
+        $integrationPackageId = $this->GLAccountEntityValidator->getIntegrationPackageIdByName($integrationPackageName);
+        $glAccountCategoryId = $this->GLAccountEntityValidator->getCategoryIdByName($categoryName, $integrationPackageId);
         $parentTreeId  = $this->TreeGateway->getTreeIdForCategory($glAccountCategoryId);
         $treeOrder = $this->TreeGateway->getTreeOrder($parentTreeId);
         $account = array(
@@ -210,7 +210,7 @@ class GLAccountGateway extends AbstractGateway
             'glaccount_updateby' => $glaccount_updateby
         );
 
-        $exists = $oldGlAccountId = $this->glaccountExists($accountNumber, $integrationPackageId);
+        $exists = $oldGlAccountId = $this->GLAccountEntityValidator->glaccountExists($accountNumber, $integrationPackageId);
         if($exists) {
             $account['glaccount_id'] = $oldGlAccountId;
         }
