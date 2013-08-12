@@ -1,6 +1,7 @@
 {
     "description": "GL Accounts import",
     "gateway": "GLAccountGateway",
+    "entity": "NP\\gl\\GLAccountEntity",
     "columns": [
         {"name": "GLAccountName", "entityField": "glaccount_name"},
         {"name": "AccountNumber", "entityField": "glaccount_number"},

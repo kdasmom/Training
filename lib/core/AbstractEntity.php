@@ -97,5 +97,12 @@ abstract class AbstractEntity {
 		return $this->values;
 	}
 
+    public function hasField($field)
+    {
+        if (!array_key_exists($field, $this->fields)) {
+            return false;
+        }
+        return true;
+    }
+
 }
-?>

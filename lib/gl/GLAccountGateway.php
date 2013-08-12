@@ -196,7 +196,7 @@ class GLAccountGateway extends AbstractGateway
         $categoryName = $data['CategoryName'];
         $accountTypeName = $data['AccountType'];
         $integrationPackageName = $data['IntegrationPackageName'];
-        $glaccount_updateby = $data['userProfileId'];
+        $glaccount_updateby = $data['glaccount_updateby'];
         $accountTypeId = $this->GLAccountEntityValidator->getAccountTypeIdByName($accountTypeName);
         $integrationPackageId = $this->GLAccountEntityValidator->getIntegrationPackageIdByName($integrationPackageName);
         $glAccountCategoryId = $this->GLAccountEntityValidator->getCategoryIdByName($categoryName, $integrationPackageId);
