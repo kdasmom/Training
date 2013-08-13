@@ -1,7 +1,7 @@
 {
     "description": "GL Accounts import",
-    "service": "GLService",
-    "entity": "NP\\gl\\GLAccountEntity",
+    "service": "BudgetService",
+    "entity": "NP\\budget\\BudgetEntity",
     "columns": [
         {"name": "BusinessUnit", "entityField": "category_name"},
         {"name": "GLAccount", "entityField": "glaccount_id", "dataTable": "glaccount", "dataColumn": "glaccount_id"},
