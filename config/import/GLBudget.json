@@ -1,0 +1,16 @@
+{
+    "description": "GL Accounts import",
+    "service": "GLService",
+    "entity": "NP\\gl\\GLAccountEntity",
+    "columns": [
+        {"name": "BusinessUnit", "entityField": "category_name"},
+        {"name": "GLAccount", "entityField": "glaccount_id", "dataTable": "glaccount", "dataColumn": "glaccount_id"},
+        {"name": "PeriodMonth", "entityField": "budget_period"},
+        {"name": "PeriodYear", "entityField": "glaccountyear_id", "dataTable": "glaccountyear", "dataColumn": "glaccountyear_year"},
+        {"name": "Amount", "entityField": "budget_amount"},
+        {"name": "IntegrationPackage", "entityField": "integration_package_id", "dataTable": "IntegrationPackage", "dataColumn": "integration_package_name"}
+  
+    ],
+    "customValidation": true,
+    "customValidationClass": "GLBudgetEntityValidator"
+}
