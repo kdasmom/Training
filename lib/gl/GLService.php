@@ -13,10 +13,10 @@ use NP\system\TreeGateway;
  */
 class GLService extends AbstractService {
 	
-	/**
-	 * @var \NP\gl\GLAccountGateway
-	 */
-	protected $glaccountGateway;
+    /**
+     * @var \NP\gl\GLAccountGateway
+     */
+    protected $glaccountGateway;
 
     protected $treeGateway;
 
@@ -26,9 +26,9 @@ class GLService extends AbstractService {
 	 * @param \NP\gl\GLAccountGateway $glaccountGateway GLAccount gateway injected
 	 */
 	public function __construct(GLAccountGateway $glaccountGateway, TreeGateway $treeGateway, GLAccountEntityValidator $validator) {
-		$this->glaccountGateway = $glaccountGateway;
-        $this->treeGateway = $treeGateway;
-        $this->GLAccountEntityValidator = $validator;
+            $this->glaccountGateway = $glaccountGateway;
+            $this->treeGateway = $treeGateway;
+            $this->GLAccountEntityValidator = $validator;
 	}
 	
 	/**

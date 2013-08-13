@@ -64,7 +64,8 @@ The following properties have been delegated: $property_name_list.',
                 'importFieldAccountTypeError' => 'Error import field Account Type',
                 'importFieldCategoryNameError' => 'Error import field Category Name',
                 'importFieldIntegrationPackageNameError' => 'Error import field Integration Package Name',
-	);
+                'importFieldGLAccountNameError' => 'Error import field GLAccount Name'
+            );
 }
 
 ?>
