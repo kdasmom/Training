@@ -16,7 +16,7 @@ Ext.define('NP.model.system.DfSplit', {
 	fields: [
 		{ name: 'dfsplit_id', type: 'int' },
 		{ name: 'dfsplit_name' },
-		{ name: 'dfsplit_status' },
+		{ name: 'dfsplit_status', defaultValue: 'active' },
 		{ name: 'vendorsite_id', type: 'int' },
 		{ name: 'dfsplit_datetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
 		{ name: 'integration_package_id', type: 'int' },

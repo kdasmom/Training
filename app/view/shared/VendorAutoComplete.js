@@ -17,6 +17,7 @@ Ext.define('NP.view.shared.VendorAutoComplete', {
     width        : 500,
     allowBlank   : false,
     multiSelect  : false,
+    minChars     : 1,
 
     initComponent: function() {
         if (!this.store) {

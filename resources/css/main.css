@@ -20,6 +20,7 @@
 .delete-btn { background-image: url("../images/buttons/delete.gif"); }
 .message-btn { background-image: url("../images/buttons/message.gif"); }
 .reset-btn { background-image: url("../images/buttons/reset.gif"); }
+.allocate-btn { background-image: url("../images/buttons/allocate.gif"); }
 
 /* STYLE FOR USING AN IMAGE AS A BUTTON IN A GRID BY SPECIFYING THIS AS tdCls CONFIG OPTION */
 .image-button-cell .x-grid-cell-inner { padding-bottom: 0; }
@@ -31,6 +32,7 @@
 
 /* GRIDS */
 .grid-clickable-col:hover { text-decoration:underline; cursor: pointer; }
+.grid-invalid-cell { background-color: #F2C2C2 !important; }
 
 /* this makes a summary grid cell bold */
 .x-grid-row-summary .x-grid-cell-inner {
@@ -57,3 +59,6 @@
 	position: absolute;
 	left: -500px;
 }
+
+/* GENERIC STYLES */
+.error-text { color: #c0272b; font: normal 11px tahoma, arial, verdana, sans-serif; }

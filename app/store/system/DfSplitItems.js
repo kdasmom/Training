@@ -6,5 +6,5 @@
 Ext.define('NP.store.system.DfSplitItems', {
     extend: 'NP.lib.data.Store',
 	
-	model: 'NP.model.system.DfSplitItem'    
+	model: 'NP.model.system.DfSplitItem'
 });

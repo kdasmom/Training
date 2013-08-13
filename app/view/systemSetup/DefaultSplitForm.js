@@ -10,9 +10,11 @@ Ext.define('NP.view.systemSetup.DefaultSplitForm', {
     requires: [
         'NP.lib.core.Config',
     	'NP.view.shared.button.Save',
-    	'NP.view.shared.button.Cancel',
         'NP.view.shared.button.New',
+        'NP.view.shared.button.Delete',
         'NP.view.shared.button.Reset',
+        'NP.view.shared.button.Cancel',
+        'NP.view.shared.button.Allocate',
         'NP.lib.ui.Grid',
         'NP.lib.ui.ComboBox',
         'NP.view.shared.VendorAutoComplete',
@@ -31,19 +33,29 @@ Ext.define('NP.view.systemSetup.DefaultSplitForm', {
     trackResetOnLoad: true,
 
     // For localization
+    copySplitBtnText   : 'Copy Split',
     splitNameLabel     : 'Split Name',
     intPkgFieldLabel   : 'Integration Package',
     allocationGridTitle: 'Allocation Details',
     glAccountColText   : 'GL Account',
     percentColText     : 'Percentage',
+    propInactiveError  : NP.Config.getPropertyLabel() + ' is inactive',
+    propOnHoldError    : NP.Config.getPropertyLabel() + ' is on hold',
+    glInactiveError    : 'GL Account is inactive',
     addSplitBtnText    : 'Add Split',
+    autoAllocBtnText   : 'Auto Allocate by ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit'),
     leftToAllocateText : 'Left to allocate',
+    allocationErrorText: 'Allocation must add up to 100%',
+    propertyErrorText  : 'Please make sure each allocation line has a ' + NP.Config.getPropertyLabel() + ' selected',
+    dialogErrorText    : 'Error',
     
     initComponent: function() {
     	var that = this;
 
     	var bar = [
     		{ xtype: 'shared.button.save', itemId: 'saveSplitFormBtn' },
+            { xtype: 'shared.button.new', itemId: 'copySplitFormBtn', text: this.copySplitBtnText, hidden: true },
+            { xtype: 'shared.button.delete', itemId: 'deleteSplitFormBtn', hidden: true },
             { xtype: 'shared.button.reset', itemId: 'resetSplitFormBtn' },
             { xtype: 'shared.button.cancel', itemId: 'cancelSplitFormBtn' }
 	    ];
@@ -91,18 +103,25 @@ Ext.define('NP.view.systemSetup.DefaultSplitForm', {
                                     service: 'VendorService',
                                     action: 'getByIntegrationPackage'
                                 })
+                },{
+                    xtype    : 'displayfield',
+                    hideLabel: true,
+                    hidden   : true,
+                    name     : 'allocationErrors',
+                    margin   : '12 0 0 0',
                 }
             ]
         }];
 
+        var hideAutoAlloc = (NP.Config.getSetting('PN.InvoiceOptions.AllowUnitAttach') == '1') ? false : true;
         var gridConfig = {
             xtype: 'customgrid',
             title: this.allocationGridTitle,
-            emptyText: 'No split allocation lines',
             flex : 1,
             border: '1 0 0 0',
             tbar: [
-                { xtype: 'shared.button.new', itemId: 'addSplitAllocBtn', text: this.addSplitBtnText, disabled: true }
+                { xtype: 'shared.button.new', itemId: 'addSplitAllocBtn', text: this.addSplitBtnText, disabled: true },
+                { xtype: 'shared.button.allocate', itemId: 'autoAllocBtn', text: this.autoAllocBtnText, hidden: hideAutoAlloc }
             ],
             plugins: [
                 Ext.create('Ext.grid.plugin.CellEditing', { clicksToEdit: 1 })
@@ -172,10 +191,18 @@ Ext.define('NP.view.systemSetup.DefaultSplitForm', {
                     {
                         text     : NP.Config.getPropertyLabel(),
                         dataIndex: 'property_id',
-                        renderer : function(val) {
+                        itemId   : 'propertyCol',
+                        renderer : function(val, meta) {
                             var rec = Ext.getStore('property.AllProperties').findRecord('property_id', val, 0, false, false, true);
                             
+                            meta.tdCls = '';
+                            meta.tdAttr = '';
                             if (rec) {
+                                if (rec.get('property_status') !== 1) {
+                                    meta.tdCls = 'grid-invalid-cell';
+                                    var tooltipMsg = (rec.get('property_status') == 0) ? that.propInactiveError : that.propOnHoldError
+                                    meta.tdAttr = 'data-qtip="' + tooltipMsg + '"';
+                                }
                                 return rec.get('property_name');
                             } else {
                                 return '';
@@ -190,9 +217,16 @@ Ext.define('NP.view.systemSetup.DefaultSplitForm', {
                     },{
                         text: this.glAccountColText,
                         dataIndex: 'glaccount_id',
-                        renderer: function(val) {
+                        renderer: function(val, meta) {
                             var rec = Ext.getStore('gl.AllGlAccounts').findRecord('glaccount_id', val, 0, false, false, true);
+                            
+                            meta.tdCls = '';
+                            meta.tdAttr = '';
                             if (rec) {
+                                if (rec.get('glaccount_status') === 'inactive') {
+                                    meta.tdCls = 'grid-invalid-cell';
+                                    meta.tdAttr = 'data-qtip="' + that.glInactiveError + '"';
+                                }
                                 return rec.get('display_name');
                             } else {
                                 return '';
@@ -264,18 +298,18 @@ Ext.define('NP.view.systemSetup.DefaultSplitForm', {
         // Add last columns of grid
         gridConfig.columns.items.push(
             {
-                xtype: 'numbercolumn',
-                text: this.percentColText,
+                xtype    : 'numbercolumn',
+                text     : this.percentColText,
                 dataIndex: 'dfsplititem_percent',
-                align: 'right',
-                renderer: function(val) {
+                align    : 'right',
+                renderer : function(val) {
                     if (val !== '') {
-                        return val + '%';
+                        return val.toFixed(4) + '%';
                     }
 
                     return val;
                 },
-                flex : 1,
+                flex  : 1,
                 editor: {
                     xtype           : 'numberfield',
                     decimalPrecision: 4,
@@ -284,7 +318,8 @@ Ext.define('NP.view.systemSetup.DefaultSplitForm', {
                 },
                 summaryType: 'sum',
                 summaryRenderer: function(value, summaryData, dataIndex) {
-                    return that.leftToAllocateText + ': ' + Ext.util.Format.number(100-value, '0.0000%');
+                    var span = (100-Ext.Number.toFixed(value, 4) == 0) ? '' : '<span style="color:#FF0000;">';
+                    return that.leftToAllocateText + ': ' + span + Ext.util.Format.number(100-value, '0.0000%') + '</span>';
                 }
             },{
                 xtype: 'actioncolumn',
@@ -310,23 +345,50 @@ Ext.define('NP.view.systemSetup.DefaultSplitForm', {
     },
 
     isValid: function() {
+        var that = this;
+
         var isValid = this.callParent(arguments);
 
         var grid = this.query('customgrid')[0];
         var recs = grid.getStore().getRange();
 
         var allocTotal = 0;
-        var errors = {};
-        Ext.Array.each(recs, function(rec) {
+        var errors = [];
+        var hasPropertyError = false;
+        // Loop through allocation lines to sum percentages and check if a property is set
+        Ext.Array.each(recs, function(rec, row) {
+            // Add to the percentage total
             if (rec.get('dfsplititem_percent') !== null) {
                 allocTotal += rec.get('dfsplititem_percent');
             }
-            if (!'property' in errors && rec.get('property_id') === null) {
-                errors['property'] = true;
+
+            var cell = grid.getView().getCell(rec, Ext.ComponentQuery.query('#propertyCol')[0]);
+            cell = Ext.create('Ext.dom.Element', cell);
+            if (rec.get('property_id') === null) {
+                cell.addCls('grid-invalid-cell');
+                if (!hasPropertyError) {
+                    errors.push(that.propertyErrorText);
+                    hasPropertyError = true;
+                }
+            } else {
+                cell.removeCls('grid-invalid-cell');
             }
         });
-        if (allocTotal != 100) {
 
+        if (Ext.Number.toFixed(allocTotal, 4) != 100) {
+            errors.push(this.allocationErrorText);
         }
+
+        var errorField = this.findField('allocationErrors');
+        if (errors.length) {
+            errors = errors.join('<br />');
+            errorField.inputEl.addCls('error-text');
+            errorField.setValue(errors);
+            errorField.show();
+        } else {
+            errorField.hide();
+        }
+
+        return (!isValid || errors.length) ? false : true;
     }
 });

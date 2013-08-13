@@ -66,7 +66,8 @@ class DfSplitGateway extends AbstractGateway {
 				->from(array('s'=>'dfsplit'))
 				->join(array('u'=>'userprofile'),
 						's.dfsplit_update_userprofile = u.userprofile_id',
-						array('userprofile_id','userprofile_username'))
+						array('userprofile_id','userprofile_username'),
+						Select::JOIN_LEFT)
 				->whereEquals('s.dfsplit_status', '?')
 				->order($sort);
 
@@ -109,6 +110,20 @@ class DfSplitGateway extends AbstractGateway {
 	}
 
 	public function copySplit($dfsplit_id, $dfsplit_name) {
+		// Get a unique name for the split
+		$nameSuffix = '(Copy)';
+		$increment = 0;
+		while (true) {
+			$new_dfsplit_name = $dfsplit_name . ' ' . $nameSuffix;
+			if ( count($this->find('dfsplit_name = ?', array($new_dfsplit_name))) ) {
+				$increment++;
+				$nameSuffix = "(Copy {$increment})";
+			} else {
+				break;
+			}
+		}
+
+		// Create the split insert query
 		$insert = Insert::get()->into('dfsplit')
 								->columns(array(
 									'dfsplit_name',
@@ -127,10 +142,12 @@ class DfSplitGateway extends AbstractGateway {
 												->whereEquals('dfsplit_id', '?')
 								);
 
-		$this->adapter->query($insert, array($dfsplit_name, $dfsplit_id));
+		// Save the new split
+		$this->adapter->query($insert, array($new_dfsplit_name, $dfsplit_id));
 
 		$new_dfsplit_id = $this->adapter->lastInsertId();
 
+		// Create the split items insert query
 		$insert = Insert::get()->into('dfsplititems')
 								->columns(array(
 									'dfsplit_id',
@@ -166,7 +183,7 @@ class DfSplitGateway extends AbstractGateway {
 												->from('dfsplititems')
 												->whereEquals('dfsplit_id', '?')
 								);
-
+		// Save the line items
 		$this->adapter->query($insert, array($new_dfsplit_id, $dfsplit_id));
 
 		return $new_dfsplit_id;

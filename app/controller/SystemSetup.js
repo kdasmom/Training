@@ -25,7 +25,7 @@ Ext.define('NP.controller.SystemSetup', {
 		{ ref: 'splitGridVendorCombo',  selector: '[xtype="systemsetup.defaultsplitform"] [xtype="shared.vendorautocomplete"]' },
 		{ ref: 'splitGridPropertyCombo',selector: '#splitGridPropertyCombo' },
 		{ ref: 'splitGridGlCombo',      selector: '#splitGridGlCombo' },
-		{ ref: 'splitGridUnitCombo',      selector: '#splitGridUnitCombo' },
+		{ ref: 'splitGridUnitCombo',    selector: '#splitGridUnitCombo' },
 		{ ref: 'addSplitAllocBtn',      selector: '#addSplitAllocBtn' }
 	],
 	
@@ -33,7 +33,8 @@ Ext.define('NP.controller.SystemSetup', {
 	changesSavedText       : 'Changes saved successfully',
 	errorDialogTitleText   : 'Error',
 	deleteSplitDialogTitle : 'Delete Split?',
-	deleteSplitDialogText  : 'Are you sure you want to delete the selected split(s)?',
+	deleteSplitsDialogText : 'Are you sure you want to delete the selected split(s)?',
+	deleteSplitDialogText  : 'Are you sure you want to delete this split?',
 	editSplitFormTitle     : 'Editing',
 	newSplitFormTitle      : 'New Split',
 	intPkgChangeDialogTitle: 'Change integration package?',
@@ -80,7 +81,7 @@ Ext.define('NP.controller.SystemSetup', {
 			},
 			// The Delete button on the split grid
 			'[xtype="systemsetup.defaultsplitgrid"] [xtype="shared.button.delete"]': {
-				click: this.deleteSplit
+				click: this.deleteSplits
 			},
 			// The default split form integration package field
 			'[xtype="systemsetup.defaultsplitform"] [name="integration_package_id"]': {
@@ -103,6 +104,12 @@ Ext.define('NP.controller.SystemSetup', {
 			'#saveSplitFormBtn': {
 				click: this.saveSplitForm
 			},
+			'#copySplitFormBtn': {
+				click: this.copySplit
+			},
+			'#deleteSplitFormBtn': {
+				click: this.deleteSplit
+			},
 			'#resetSplitFormBtn': {
 				click: this.resetSplitForm
 			},
@@ -113,6 +120,9 @@ Ext.define('NP.controller.SystemSetup', {
 			},
 			'#addSplitAllocBtn': {
 				click: this.addSplitLine
+			},
+			'#autoAllocBtn': {
+				click: this.autoAllocSplit
 			}
 		});
 
@@ -231,7 +241,7 @@ Ext.define('NP.controller.SystemSetup', {
 
 	showDfSplitGrid: function() {
 		this.setView('NP.view.systemSetup.DefaultSplitGrid', {}, '[xtype="systemsetup.defaultsplits"]');
-
+		
 		this.getDefaultSplitGrid().getStore().load();
 	},
 
@@ -240,10 +250,10 @@ Ext.define('NP.controller.SystemSetup', {
 		this.getSplitDeleteBtn()[fn]();
 	},
 
-	deleteSplit: function() {
+	deleteSplits: function() {
 		var that = this;
 
-		Ext.MessageBox.confirm(this.deleteSplitDialogTitle, this.deleteSplitDialogText, function(btn) {
+		Ext.MessageBox.confirm(this.deleteSplitDialogTitle, this.deleteSplitsDialogText, function(btn) {
 			// If user clicks Yes, proceed with deleting
 			if (btn == 'yes') {
 				var grid = that.getDefaultSplitGrid();
@@ -254,26 +264,48 @@ Ext.define('NP.controller.SystemSetup', {
 					dfsplit_id.push(split.get('dfsplit_id'));
 				});
 
-				NP.lib.core.Net.remoteCall({
-					method  : 'POST',
-					mask    : grid,
-					requests: {
-						service   : 'SplitService',
-						action    : 'deleteSplit',
-						dfsplit_id: dfsplit_id,
-						success: function(result, deferred) {
-							if (result.success) {
-								// Unmark items in the grid
-								grid.getStore().commitChanges();
-								// Show a friendly message saying action was successful
-								NP.Util.showFadingWindow({ html: that.changesSavedText });
-							} else {
-								grid.getStore().rejectChanges();
-								NP.Util.showFadingWindow({ html: result.error });
-							}
+				that.deleteSplitAction(
+					dfsplit_id,
+					grid,
+					{
+						success: function() {
+							// Unmark items in the grid
+							grid.getStore().commitChanges();
+						},
+						failure: function() {
+							grid.getStore().rejectChanges();
 						}
 					}
-				});
+				);
+			}
+		});
+	},
+
+	deleteSplitAction: function(dfsplit_id, mask, callbacks) {
+		var that = this;
+		var callbacks = callbacks || {};
+
+		NP.lib.core.Net.remoteCall({
+			method  : 'POST',
+			mask    : mask,
+			requests: {
+				service   : 'SplitService',
+				action    : 'deleteSplit',
+				dfsplit_id: dfsplit_id,
+				success: function(result, deferred) {
+					if (result.success) {
+						if (callbacks.success) {
+							callbacks.success();
+						}
+						// Show a friendly message saying action was successful
+						NP.Util.showFadingWindow({ html: that.changesSavedText });
+					} else {
+						if (callbacks.failure) {
+							callbacks.failure();
+						}
+						NP.Util.showFadingWindow({ html: result.error });
+					}
+				}
 			}
 		});
 	},
@@ -332,17 +364,27 @@ Ext.define('NP.controller.SystemSetup', {
 		}
 
 		// Create the view with the configuration defined above
-		var form = that.setView('NP.view.systemSetup.DefaultSplitForm', viewCfg, '[xtype="systemsetup.defaultsplits"]');
+		var form = that.setView('NP.view.systemSetup.DefaultSplitForm', viewCfg, '[xtype="systemsetup.defaultsplits"]', true);
 
+		var copyBtn = Ext.ComponentQuery.query('#copySplitFormBtn')[0];
+		var deleteBtn = Ext.ComponentQuery.query('#deleteSplitFormBtn')[0];
+
+		Ext.suspendLayouts();
+		
 		// Only do this if we're editing a user
 		if (dfsplit_id) {
-			
+			copyBtn.show();
+			deleteBtn.show();
 		}
 		// Only do this if we're creating a new user
 		else {
 			// Set the form title
 			form.setTitle(that.newSplitFormTitle);
+			copyBtn.hide();
+			deleteBtn.hide();
 		}
+
+		Ext.resumeLayouts(true);
 	},
 
 	selectIntegrationPackage: function(combo, showWarning) {
@@ -369,6 +411,12 @@ Ext.define('NP.controller.SystemSetup', {
 	        	store.remove(lineItem);
 	        });
 
+	        // Reload the property store
+	        if (that.getSplitGridPropertyCombo()) {
+		        that.openPropertyEditor();
+		        that.getSplitGridPropertyCombo().getStore().load();
+		    }
+
 	        combo.setFocusValue(combo.getValue());
 		}
 
@@ -386,7 +434,7 @@ Ext.define('NP.controller.SystemSetup', {
 		}
     },
 
-    openPropertyEditor: function(rec) {
+    openPropertyEditor: function() {
     	this.addIntegrationPkgToStore(this.getSplitGridPropertyCombo().getStore());
     },
 
@@ -427,6 +475,7 @@ Ext.define('NP.controller.SystemSetup', {
             if (property_id !== null) {
             	if (property_id != glStore.getExtraParam('property_id')) {
             		glStore.addExtraParams({ property_id: property_id });
+            		glStore.load();
                 }
             } else {
                 glStore.removeAll();
@@ -462,6 +511,8 @@ Ext.define('NP.controller.SystemSetup', {
 
     deleteSplitItem: function(grid, rec, rowIndex) {
 		grid.getStore().remove(rec);
+		// We call refresh to make sure the allocation gets recalculated
+		grid.getView().refresh();
 	},
 
 	resetSplitForm: function() {
@@ -474,7 +525,114 @@ Ext.define('NP.controller.SystemSetup', {
 		this.getSplitFormItemGrid().getStore().add(Ext.create('NP.model.system.DfSplitItem'));
 	},
 
-	saveSplitForm: function() {
+	autoAllocSplit: function() {
+		function getPropertyUnits(line) {
+			var propertyUnits = 0;
+			var property_id = line.get('property_id');
+			if (property_id !== null) {
+				var prop = Ext.getStore('property.AllProperties').findRecord('property_id', property_id, 0, false, false, true);
+				propertyUnits = parseFloat(prop.get('property_no_units').replace(/[^0-9.]/g, ''));
+				if (isNaN(propertyUnits)) {
+					propertyUnits = 0;
+				}
+			}
+			return propertyUnits;
+		}
 
+		var grid = this.getSplitFormItemGrid();
+		var store = grid.getStore();
+		var lines = store.getRange();
+
+		var totalUnits = 0;
+		Ext.each(lines, function(line) {
+			var propertyUnits = getPropertyUnits(line);
+			totalUnits += propertyUnits;
+		});
+
+		grid.suspendEvents(false);
+		store.suspendEvents(false);
+		Ext.each(lines, function(line) {
+			if (line.get('property_id') !== null) {
+				var propertyUnits = getPropertyUnits(line);
+				var percent = (propertyUnits / totalUnits) * 100;
+				line.set('dfsplititem_percent', percent);
+			}
+		});
+		grid.resumeEvents();
+		store.resumeEvents();
+		grid.getView().refresh();
+	},
+
+	copySplit: function() {
+		var that = this;
+
+		var splitRec = this.getDefaultSplitForm().getModel('system.DfSplit');
+
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service     : 'SplitService',
+				action      : 'copySplit',
+				dfsplit_id  : splitRec.get('dfsplit_id'),
+				dfsplit_name: splitRec.get('dfsplit_name'),
+				success     : function(result, deferred) {
+					NP.Util.showFadingWindow({ html: that.changesSavedText });
+					that.addHistory('SystemSetup:showSystemSetup:DefaultSplits:Form:' + result.dfsplit_id);
+				}
+			}
+		});
+	},
+
+	deleteSplit: function() {
+		var that = this;
+
+		Ext.MessageBox.confirm(this.deleteSplitDialogTitle, this.deleteSplitDialogText, function(btn) {
+			// If user clicks Yes, proceed with deleting
+			if (btn == 'yes') {
+				var dfsplit_id = that.getDefaultSplitForm().getModel('system.DfSplit').get('dfsplit_id');
+
+				that.deleteSplitAction(
+					dfsplit_id,
+					that.getDefaultSplitForm(),
+					{
+						success: function() {
+							that.addHistory('SystemSetup:showSystemSetup:DefaultSplits');
+						}
+					}
+				);
+			}
+		});
+	},
+
+	saveSplitForm: function() {
+		var that = this;
+		var form = this.getDefaultSplitForm();
+
+		if (form.isValid()) {
+			var modifiedItems = this.getSplitFormItemGrid().getStore().getModifiedRecords();
+			var dfSplitItems = [];
+			Ext.each(modifiedItems, function(dfSplitItem) {
+				dfSplitItems.push(dfSplitItem.getData());
+			});
+
+			var removedItems = this.getSplitFormItemGrid().getStore().getRemovedRecords();
+			var removedDfSplitItems = [];
+			Ext.each(removedItems, function(removedItem) {
+				removedDfSplitItems.push(removedItem.get('dfsplititem_id'));
+			});
+
+			form.submitWithBindings({
+				service: 'SplitService',
+				action : 'saveSplit',
+				extraParams: {
+					dfSplitItems       : dfSplitItems,
+					removedDfSplitItems: removedDfSplitItems
+				},
+				extraFields: { vendor_id: 'vendor_id' },
+				success: function(result, deferred) {
+					NP.Util.showFadingWindow({ html: that.changesSavedText });
+					that.addHistory('SystemSetup:showSystemSetup:DefaultSplits');
+				}
+			});
+		}
 	}
 });

@@ -134,5 +134,13 @@ Ext.define('NP.view.shared.CustomField', {
 
     focus: function() {
         this.field.focus.apply(this.field, arguments);
+    },
+
+    onEditorTab: function(e){
+        var keyNav = this.field.listKeyNav;
+        
+        if (keyNav) {
+            keyNav.selectHighlighted(e);
+        }
     }
 });

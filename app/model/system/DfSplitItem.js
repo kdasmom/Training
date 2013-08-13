@@ -18,7 +18,7 @@ Ext.define('NP.model.system.DfSplitItem', {
 		{ name: 'dfsplit_id', type: 'int' },
 		{ name: 'property_id', type: 'int' },
 		{ name: 'glaccount_id', type: 'int' },
-		{ name: 'dfsplititem_percent' },
+		{ name: 'dfsplititem_percent', type: 'float', defaultValue: 0 },
 		{ name: 'universal_field1' },
 		{ name: 'universal_field2' },
 		{ name: 'universal_field3' },

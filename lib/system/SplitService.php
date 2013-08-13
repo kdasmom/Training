@@ -5,6 +5,8 @@ namespace NP\system;
 use NP\core\AbstractService;
 use NP\core\db\Where;
 use NP\core\db\Expression;
+use NP\core\validation\EntityValidator;
+use NP\vendor\VendorGateway;
 
 /**
  * All operations that are closely related to splits belong in this service
@@ -13,13 +15,22 @@ use NP\core\db\Expression;
  */
 class SplitService extends AbstractService {
 	
-	protected $dfSplitGateway, $dfSplitItemsGateway, $propertySplitGateway;
+	protected $securityService, $dfSplitGateway, $dfSplitItemsGateway, $propertySplitGateway;
 	
 	public function __construct(DfSplitGateway $dfSplitGateway, DfSplitItemsGateway $dfSplitItemsGateway,
-								PropertySplitGateway $propertySplitGateway) {
+								PropertySplitGateway $propertySplitGateway, VendorGateway $vendorGateway) {
 		$this->dfSplitGateway       = $dfSplitGateway;
 		$this->dfSplitItemsGateway  = $dfSplitItemsGateway;
 		$this->propertySplitGateway = $propertySplitGateway;
+		$this->vendorGateway = $vendorGateway;
+	}
+	
+	/**
+	 * Setter function required by DI to set the config service via setter injection
+	 * @param \NP\system\ConfigService $configService
+	 */
+	public function setSecurityService(\NP\security\SecurityService $securityService) {
+		$this->securityService = $securityService;
 	}
 
 	/**
@@ -89,13 +100,13 @@ class SplitService extends AbstractService {
 		$error = null;
 
 		try {
-			$params = $dfsplit_id;
+			$where = Where::get()->in('dfsplit_id', $this->dfSplitGateway->createPlaceholders($dfsplit_id));
 
-			$where = Where::get()->in('dfsplit_id', '?');
-
-			$this->dfSplitItemsGateway->delete($where, $params);
-			$this->propertySplitGateway->delete($where, $params);
-			$this->dfSplitGateway->delete($where, $params);
+			$this->dfSplitGateway->update(
+				array('dfsplit_status'=>'inactive'),
+				$where,
+				$dfsplit_id
+			);
 		} catch(\Exception $e) {
 			$error = $this->handleUnexpectedError($e);
 		}
@@ -121,9 +132,10 @@ class SplitService extends AbstractService {
 	public function copySplit($dfsplit_id, $dfsplit_name) {
 		$this->dfSplitGateway->beginTransaction();
 		$error = null;
+		$new_dfsplit_id = null;
 
 		try {
-			$this->dfSplitGateway->copySplit($dfsplit_id, $dfsplit_name);
+			$new_dfsplit_id = $this->dfSplitGateway->copySplit($dfsplit_id, $dfsplit_name);
 		} catch(\Exception $e) {
 			$error = $this->handleUnexpectedError($e);
 		}
@@ -132,6 +144,129 @@ class SplitService extends AbstractService {
 			$this->dfSplitGateway->commit();
 		} else {
 			$this->dfSplitGateway->rollback();
+		}
+
+		return array(
+			'success'    => ($error === null) ? true : false,
+			'error'      => $error,
+			'dfsplit_id' => $new_dfsplit_id
+		);
+	}
+
+	/**
+	 * Saves a split
+	 */
+	public function saveSplit($data) {
+		$this->dfSplitGateway->beginTransaction();
+		$errors = array();
+
+		try {
+			$dfSplit = new \NP\system\DfSplitEntity($data['dfsplit']);
+			
+			if ($dfSplit->dfsplit_id !== null) {
+				$dfSplit->dfsplit_update_userprofile = $this->securityService->getUserId();
+			}
+
+			// If a vendor was picked, get the vendorsite_id and add it to the split record
+			if ($data['vendor_id'] !== null) {
+				$vendor = $this->vendorGateway->findById($data['vendor_id']);
+				$dfSplit->vendorsite_id = $vendor['vendorsite_id'];
+			} else {
+				$dfSplit->vendorsite_id = null;
+			}
+
+			// Validate the split record
+			$validator = new EntityValidator();
+			$validator->validate($dfSplit);
+			$errors    = $validator->getErrors();
+
+			// If there are no errors, save the split record and line items
+			if (!count($errors)) {
+				$this->dfSplitGateway->save($dfSplit);
+
+				// Loop through the lines and save each one
+				foreach ($data['dfSplitItems'] as $dfSplitItem) {
+					$dfSplitItem['dfsplit_id'] = $dfSplit->dfsplit_id;
+					$saveItemResult = $this->saveSplitLine($dfSplitItem);
+					if (!$saveItemResult['success']) {
+						$errors = array_merge($errors, $saveItemResult['errors']);
+						break;
+					}
+				}
+
+				// Remove deleted lines if any
+				if ( count($data['removedDfSplitItems']) ) {
+					$removeItemsResult = $this->deleteSplitLines($data['removedDfSplitItems']);
+					if (!$removeItemsResult['success']) {
+						$errors = array_merge($errors, array('field'=>'global', 'msg'=>$removeItemsResult['error']));
+					}
+				}
+			}
+		} catch(\Exception $e) {
+			$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e));
+		}
+
+		if (!count($errors)) {
+			$this->dfSplitGateway->commit();
+		} else {
+			$this->dfSplitGateway->rollback();
+		}
+
+		return array(
+			'success' => count($errors) ? false : true,
+			'errors'  => $errors
+		);
+	}
+
+	/**
+	 * 
+	 */
+	public function saveSplitLine($data) {
+		$this->dfSplitItemsGateway->beginTransaction();
+		$errors = array();
+
+		try {
+			$dfSplitItem = new \NP\system\DfSplitItemEntity($data);
+
+			$validator = new EntityValidator();
+			$validator->validate($dfSplitItem);
+			$errors    = $validator->getErrors();
+
+			if (!count($errors)) {
+				$this->dfSplitItemsGateway->save($dfSplitItem);
+			}
+		} catch(\Exception $e) {
+			$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e));
+		}
+
+		if (!count($errors)) {
+			$this->dfSplitItemsGateway->commit();
+		} else {
+			$this->dfSplitItemsGateway->rollback();
+		}
+
+		return array(
+			'success' => (count($errors)) ? false : true,
+			'errors'  => $errors
+		);
+	}
+
+	/**
+	 * Deletes one or more split line items
+	 */
+	public function deleteSplitLines($dfsplititem_id) {
+		$error = null;
+
+		try {
+			if (!is_array($dfsplititem_id)) {
+				$dfsplititem_id = array($dfsplititem_id);
+				$where = Where::get()->equals('dfsplititem_id', '?');
+			} else {
+				$where = Where::get()->in('dfsplititem_id', $this->dfSplitItemsGateway->createPlaceholders($dfsplititem_id));
+			}
+			$this->dfSplitItemsGateway->delete($where, $dfsplititem_id);
+		} catch(\Exception $e) {
+			$error = $this->handleUnexpectedError($e);
 		}
 
 		return array(
