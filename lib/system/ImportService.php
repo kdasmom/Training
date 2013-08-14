@@ -224,6 +224,12 @@ class ImportService extends AbstractService
         if (!count($errors)) {
             $fileName = $fileUpload->getFile();
             $fileName = $fileName['uploaded_name'];
+            //Check correct format data in CSV file
+            $data = $this->csvFileToArray($this->getUploadPath() . "{$type}/" . $fileName, $type);
+            //var_dump($data);
+            if (isset($data[0]['errors'])) {
+                $errors[] = $data[0]['errors'] . $type;
+            }
         }
 
         return array(
@@ -317,7 +323,11 @@ class ImportService extends AbstractService
         $keys = $this->getImportColumnNames($type);
 
         $csvArray = array_map(function ($row) use ($keys) {
-            return array_combine($keys, str_getcsv($row));
+            if (count($keys) != count(str_getcsv($row))) {
+                return array('errors' => $this->localizationService->getMessage('uploadFileCSVFormatError'));
+            } else {
+                return array_combine($keys, str_getcsv($row));                    
+            } 
         }, $rows);
 
         return $csvArray;
