@@ -1,7 +1,7 @@
 /**
  * The SystemSetup controller deals with operations in the System Setup section of the app
  *
- * @author Witold Frackiewicz - Testerix
+ * @author Thomas Messier
  */
 Ext.define('NP.controller.SystemSetup', {
 	extend: 'NP.lib.core.AbstractController',
@@ -573,7 +573,6 @@ Ext.define('NP.controller.SystemSetup', {
 				service     : 'SplitService',
 				action      : 'copySplit',
 				dfsplit_id  : splitRec.get('dfsplit_id'),
-				dfsplit_name: splitRec.get('dfsplit_name'),
 				success     : function(result, deferred) {
 					NP.Util.showFadingWindow({ html: that.changesSavedText });
 					that.addHistory('SystemSetup:showSystemSetup:DefaultSplits:Form:' + result.dfsplit_id);

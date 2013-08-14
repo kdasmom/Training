@@ -76,8 +76,11 @@ class SplitService extends AbstractService {
 	/**
 	 * Get all splits in the application
 	 *
-	 * @param  int $property_id
-	 * @param  int $glaccount_id
+	 * @param  int    $property_id
+	 * @param  int    $glaccount_id
+	 * @param  int    $pageSize     The number of records per page; if null, all records are returned
+	 * @param  int    $page         The page for which to return records
+	 * @param  string $sort         Field(s) by which to sort the result; defaults to dfsplit_name
 	 * @return array
 	 */
 	public function getByFilter($property_id=null, $glaccount_id=null, $pageSize=null, $page=1, $sort='dfsplit_name') {
@@ -126,16 +129,16 @@ class SplitService extends AbstractService {
 	/**
 	 * Makes a copy of a split
 	 *
-	 * @param  int    $dfsplit_id
-	 * @param  string $dfsplit_name
+	 * @param  int    $dfsplit_id   Id of the split to copy
+	 * @param  string $dfsplit_name Name of the split to copy
 	 */
-	public function copySplit($dfsplit_id, $dfsplit_name) {
+	public function copySplit($dfsplit_id) {
 		$this->dfSplitGateway->beginTransaction();
 		$error = null;
 		$new_dfsplit_id = null;
 
 		try {
-			$new_dfsplit_id = $this->dfSplitGateway->copySplit($dfsplit_id, $dfsplit_name);
+			$new_dfsplit_id = $this->dfSplitGateway->copySplit($dfsplit_id);
 		} catch(\Exception $e) {
 			$error = $this->handleUnexpectedError($e);
 		}
@@ -155,14 +158,19 @@ class SplitService extends AbstractService {
 
 	/**
 	 * Saves a split
+	 *
+	 * @param  array $data Data for the save operation
+	 * @return array
 	 */
 	public function saveSplit($data) {
 		$this->dfSplitGateway->beginTransaction();
 		$errors = array();
 
 		try {
+			// Create the entity
 			$dfSplit = new \NP\system\DfSplitEntity($data['dfsplit']);
 			
+			// If split is not new, assign an updated by user value
 			if ($dfSplit->dfsplit_id !== null) {
 				$dfSplit->dfsplit_update_userprofile = $this->securityService->getUserId();
 			}
@@ -186,8 +194,11 @@ class SplitService extends AbstractService {
 
 				// Loop through the lines and save each one
 				foreach ($data['dfSplitItems'] as $dfSplitItem) {
+					// Assign the dfsplit_id for the line
 					$dfSplitItem['dfsplit_id'] = $dfSplit->dfsplit_id;
+					// Save the line
 					$saveItemResult = $this->saveSplitLine($dfSplitItem);
+					// If there was an error saving a line, capture the error and abort other line saves
 					if (!$saveItemResult['success']) {
 						$errors = array_merge($errors, $saveItemResult['errors']);
 						break;
@@ -196,7 +207,9 @@ class SplitService extends AbstractService {
 
 				// Remove deleted lines if any
 				if ( count($data['removedDfSplitItems']) ) {
+					// Delete the line items
 					$removeItemsResult = $this->deleteSplitLines($data['removedDfSplitItems']);
+					// If there was an error deleting lines, capture the error
 					if (!$removeItemsResult['success']) {
 						$errors = array_merge($errors, array('field'=>'global', 'msg'=>$removeItemsResult['error']));
 					}
@@ -206,6 +219,7 @@ class SplitService extends AbstractService {
 			$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e));
 		}
 
+		// Commit if no errors
 		if (!count($errors)) {
 			$this->dfSplitGateway->commit();
 		} else {
@@ -219,19 +233,25 @@ class SplitService extends AbstractService {
 	}
 
 	/**
-	 * 
+	 * Saves a split line item
+	 *
+	 * @param  array $data Data for the save operation
+	 * @return array
 	 */
 	public function saveSplitLine($data) {
 		$this->dfSplitItemsGateway->beginTransaction();
 		$errors = array();
 
 		try {
+			// Create the entity for the split line
 			$dfSplitItem = new \NP\system\DfSplitItemEntity($data);
 
+			// Validate the split line
 			$validator = new EntityValidator();
 			$validator->validate($dfSplitItem);
 			$errors    = $validator->getErrors();
 
+			// If there were no errors, save the line item
 			if (!count($errors)) {
 				$this->dfSplitItemsGateway->save($dfSplitItem);
 			}
@@ -239,6 +259,7 @@ class SplitService extends AbstractService {
 			$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e));
 		}
 
+		// If no errors, commit transaction
 		if (!count($errors)) {
 			$this->dfSplitItemsGateway->commit();
 		} else {
@@ -253,6 +274,9 @@ class SplitService extends AbstractService {
 
 	/**
 	 * Deletes one or more split line items
+	 *
+	 * @param  int|array Id(s) for the line items to delete
+	 * @return array
 	 */
 	public function deleteSplitLines($dfsplititem_id) {
 		$error = null;

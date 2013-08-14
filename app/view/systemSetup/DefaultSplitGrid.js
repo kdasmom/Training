@@ -19,6 +19,7 @@ Ext.define('NP.view.systemSetup.DefaultSplitGrid', {
     // For localization
     createNewSplitBtnLabel: 'Create New Split',
     nameColText           : 'Name',
+    createdDateColText    : 'Created Date',
     lastUpdatedColText    : 'Last Updated',
     alertColText          : 'Alert',
     inactiveText          : 'Inactive',
@@ -105,14 +106,19 @@ Ext.define('NP.view.systemSetup.DefaultSplitGrid', {
                         }),
                 columns : [
                     {
-                        text: this.nameColText,
+                        text     : this.nameColText,
                         dataIndex: 'dfsplit_name',
-                        flex: 5
+                        flex     : 5
                     },{
-                        text: this.lastUpdatedColText,
+                        text     : this.createdDateColText,
+                        xtype    :'datecolumn',
+                        dataIndex: 'dfsplit_datetm',
+                        flex     : 1
+                    },{
+                        text     : this.lastUpdatedColText,
                         dataIndex: 'dfsplit_update_datetm',
-                        flex: 1,
-                        renderer: function(val, meta, rec) {
+                        flex     : 2,
+                        renderer : function(val, meta, rec) {
                             val = Ext.Date.format(val, NP.Config.getDefaultDateFormat() + ' h:iA');
                             if (rec.get('dfsplit_update_userprofile') !== null) {
                                 val += ' (' + rec.getUpdater().get('userprofile_username') + ')'
@@ -120,10 +126,10 @@ Ext.define('NP.view.systemSetup.DefaultSplitGrid', {
                             return val;
                         }
                     },{
-                        text: this.alertColText,
+                        text     : this.alertColText,
                         dataIndex: 'alert',
-                        flex: 1,
-                        renderer: function(val, meta, rec) {
+                        flex     : 1,
+                        renderer : function(val, meta, rec) {
                             if (val == 'propInactive') {
                                 return that.inactiveText + ' ' + NP.Config.getPropertyLabel();
                             } else if (val == 'propOnHold') {

@@ -109,13 +109,18 @@ class DfSplitGateway extends AbstractGateway {
 		}
 	}
 
-	public function copySplit($dfsplit_id, $dfsplit_name) {
+	public function copySplit($dfsplit_id) {
+		// Get the record so we have the current name
+		$dfsplit_name = $this->findById($dfsplit_id, array('dfsplit_name'));
+		$dfsplit_name = $dfsplit_name['dfsplit_name'];
+
 		// Get a unique name for the split
 		$nameSuffix = '(Copy)';
-		$increment = 0;
+		$increment = 1;
 		while (true) {
 			$new_dfsplit_name = $dfsplit_name . ' ' . $nameSuffix;
-			if ( count($this->find('dfsplit_name = ?', array($new_dfsplit_name))) ) {
+			$splitRec = $this->find(array('dfsplit_name' => '?', 'dfsplit_status' => '?'), array($new_dfsplit_name, 'active'));
+			if ( count($splitRec) ) {
 				$increment++;
 				$nameSuffix = "(Copy {$increment})";
 			} else {
