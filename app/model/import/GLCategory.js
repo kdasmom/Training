@@ -9,7 +9,6 @@ Ext.define('NP.model.import.GLCategory', {
 	fields: [
 		{ name: 'CategoryName' },
 		{ name: 'IntegrationPackage' },
-		{ name: 'validation_status' },
-		{ name: 'validation_messages' }
+		{ name: 'validation_status' }
 	]
 });
