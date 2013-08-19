@@ -65,6 +65,9 @@ The following properties have been delegated: $property_name_list.',
                 'importFieldCategoryNameError' => 'Error import field Category Name',
                 'importFieldIntegrationPackageNameError' => 'Error import field Integration Package Name',
                 'importFieldGLAccountNameError' => 'Error import field GLAccount Name',
+                'importFieldRegionError' => 'Error import field Region',
+                'importFieldStateError' => 'Error import field State',
+                'importFieldClosingCalendarError' => 'Error import field Closing Calendar',
                 'uploadFileCSVFormatError' => 'File upload was stopped by not correct format upload CSV file for '
             );
 }

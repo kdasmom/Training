@@ -24,7 +24,7 @@ class PropertyService extends AbstractService {
 				$unitGateway, $userprofileGateway, $invoiceService, $poService, $wfRuleTargetGateway,
 				$fiscalDisplayTypeGateway, $fiscalcalMonthGateway, $addressGateway, $phoneGateway, $pnCustomFieldsGateway,
 				$pnCustomFieldDataGateway, $propertyGlAccountGateway, $configService, $unitTypeGateway, $unitTypeValGateway,
-				$unitTypeMeasGateway;
+				$unitTypeMeasGateway, $propertyEntityValidator;
 	
 	public function __construct(SecurityService $securityService, PropertyGateway $propertyGateway, RegionGateway $regionGateway,
 								FiscalcalGateway $fiscalcalGateway, PropertyUserprofileGateway $propertyUserprofileGateway,
@@ -35,7 +35,7 @@ class PropertyService extends AbstractService {
 								RecAuthorGateway $recAuthorGateway, PnCustomFieldsGateway $pnCustomFieldsGateway,
 								PnCustomFieldDataGateway $pnCustomFieldDataGateway, PropertyGlAccountGateway $propertyGlAccountGateway,
 								UnitTypeGateway $unitTypeGateway, UnitTypeValGateway $unitTypeValGateway,
-								UnitTypeMeasGateway $unitTypeMeasGateway) {
+								UnitTypeMeasGateway $unitTypeMeasGateway, PropertyEntityValidator $propertyEntityValidator) {
 		$this->securityService            = $securityService;
 		$this->propertyGateway            = $propertyGateway;
 		$this->regionGateway              = $regionGateway;
@@ -58,6 +58,7 @@ class PropertyService extends AbstractService {
 		$this->unitTypeGateway            = $unitTypeGateway;
 		$this->unitTypeValGateway         = $unitTypeValGateway;
 		$this->unitTypeMeasGateway        = $unitTypeMeasGateway;
+                $this->propertyEntityValidator    = $propertyEntityValidator;
 	}
 
 	/**
@@ -707,6 +708,86 @@ class PropertyService extends AbstractService {
 		);
 	}
 
+        public function save($data, $entityClass)
+        {
+            // Get entities
+            //var_dump($data);
+            $propertyIdAlt = $data['PropertyCode'];
+            $propertyIdAltAp = $data['PropertyCode'];
+            $propertyName = $data['PropertyName'];
+            $propertySalesTax = $data['PropertySalesTax'];
+            $UserProfile_ID = $data['UserProfile_ID'];
+            $propertyNoUnits = $data['TotalNoUnits'];
+            $matchingThreshold = $data['POMatchingThreshhold'] / 100;
+            $cashAccural = strtolower($data['AccrualorCash']);
+            $createDateTM = substr(date('Y-m-d H:i:s.u'), 0, -3);
+            $propertyOptionBillAddress = (strtolower($data['BillToAddressOption']) == 'yes') ? 1 : 0;
+            $propertyOptionShipAddress = (strtolower($data['ShipToAddressOption']) == 'yes') ? 1 : 0;
+            $defaultBillToPropertyId = $data['DefaultBillToProperty'];
+            $defaultShipToPropertyId = $data['DefaultShipToProperty'];
+            $regionId = $this->propertyEntityValidator->getRegionIdByName($data['Region']);
+            $integrationPackageId = $this->propertyEntityValidator->getIntegrationPackageIdByName($data['IntegrationPackage']);
+            $property = array(
+                'property_id_alt' => $propertyIdAlt,
+                'property_id_alt_ap' => $propertyIdAltAp,
+                'property_name' => $propertyName,
+                'property_salestax' => $propertySalesTax,
+                'property_no_units' => $propertyNoUnits,
+                'matching_threshold' => $matchingThreshold,
+                'property_status' => 0,
+                'property_download' => 1,
+                'region_id' => $regionId,
+                'integration_package_id' => $integrationPackageId,
+                'sync' => 1,
+                'fiscaldisplaytype_value' => 1,
+                'cash_accural' => $cashAccural,
+                'UserProfile_ID' => $UserProfile_ID,
+                'createdatetm' => $createDateTM,
+                'property_optionBillAddress' => $propertyOptionBillAddress,
+                'property_optionShipAddress' => $propertyOptionShipAddress,
+                'default_billto_property_id' => $defaultBillToPropertyId,
+                'default_shipto_property_id' => $defaultShipToPropertyId,
+                'property_volume' => 'normal',
+                'property_NexusServices' => 1,
+                'property_VendorCatalog' => 1,
+                'last_updated_by' => $UserProfile_ID
+            );
+//            var_dump($property);
+            $exists = $oldPropertyId = $this->propertyEntityValidator->propertyExists($propertyIdAlt);
+            if($exists) {
+                $property['property_id'] = $oldPropertyId;
+            }
+
+            $newProperty     = new $entityClass($property);
+
+            // Run validation
+            $validator = new EntityValidator();
+            $validator->validate($newProperty);
+            $errors    = $validator->getErrors();
+
+            // If the data is valid, save it
+            if (count($errors) == 0) {
+                // Begin transaction
+                $this->propertyGateway->beginTransaction();
+
+                try {
+                    // Save the glaccount record
+                    $this->propertyGateway->save($newProperty);
+                    $newPropertyId = $newProperty->property_id;
+                    
+                } catch(\Exception $e) {
+                    // Add a global error to the error array
+                    $errors[] = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e), 'extra'=>null);
+                }
+            }
+
+            if (count($errors)) {
+                $this->propertyGateway->rollback();
+            } else {
+                $this->propertyGateway->commit();
+            }
+        }
+    
 	/**
 	 * Save GL accounts assigned to a property
 	 *

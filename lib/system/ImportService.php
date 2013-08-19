@@ -274,7 +274,9 @@ class ImportService extends AbstractService
                 if ($entity->hasField('glaccount_updateby')) {
                     $data[$k]['glaccount_updateby'] = $this->securityService->getUserId();
                 }
-
+                if ($entity->hasField('UserProfile_ID')) {
+                    $data[$k]['UserProfile_ID'] = $this->securityService->getUserId();
+                }
                 $service->save($data[$k], $entityClass);
             }
         }
@@ -303,7 +305,6 @@ class ImportService extends AbstractService
 
     public function getImportConfig($type)
     {
-
         return json_decode(file_get_contents($this->configService->getAppRoot() . '/config/import/' . $type . '.json'), true);
     }
 
