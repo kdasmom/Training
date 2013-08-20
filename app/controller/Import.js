@@ -131,7 +131,7 @@ Ext.define('NP.controller.Import', {
         }
 
         // Set the active vertical tab if it hasn't been set yet
-        var verticalTabPanel = tabPanel.query('verticaltabpanel');
+        var verticalTabPanel = tabPanel.getActiveTab().query('verticaltabpanel');
         if (verticalTabPanel.length) {
             verticalTabPanel = verticalTabPanel[0];
             var verticalActiveTab = (subSection) ? Ext.ComponentQuery.query('#' + subSection + 'Panel')[0] : 0;
