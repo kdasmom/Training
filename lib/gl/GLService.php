@@ -4,6 +4,7 @@ namespace NP\gl;
 
 use NP\core\AbstractService;
 use NP\core\validation\EntityValidator;
+use NP\system\BaseImportService;
 use NP\system\TreeGateway;
 
 /**
@@ -11,7 +12,7 @@ use NP\system\TreeGateway;
  *
  * @author Thomas Messier
  */
-class GLService extends AbstractService {
+class GLService extends BaseImportService {
 	
     /**
      * @var \NP\gl\GLAccountGateway
@@ -55,7 +56,7 @@ class GLService extends AbstractService {
 		return $this->glaccountGateway->findByIntegrationPackage($integration_package_id);
 	}
 
-    public function save($data, $entityClass)
+    public function save(\ArrayObject $data, $entityClass)
     {
         // Get entities
         $accountNumber = $data['AccountNumber'];
@@ -85,9 +86,7 @@ class GLService extends AbstractService {
         $glaccount     = new $entityClass($account);
 
         // Run validation
-        $validator = new EntityValidator();
-        $validator->validate($glaccount);
-        $errors    = $validator->getErrors();
+        $errors    = $this->validate($glaccount);
 
         // If the data is valid, save it
         if (count($errors) == 0) {

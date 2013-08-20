@@ -14,7 +14,12 @@ class VendorFavoriteEntity extends \NP\core\AbstractEntity {
             )
         ),
 
-        'vendorsite_id'	 => array(),
+        'vendorsite_id' 	 => array(
+            'required' => true,
+            'validation' => array(
+                'digits' => array()
+            )
+        ),
 
         'property_id'	 => array(
             'validation' => array(

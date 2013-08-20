@@ -3,13 +3,14 @@
 namespace NP\gl;
 
 use NP\locale\LocalizationService;
+use NP\system\BaseImportServiceEntityValidator;
 use NP\system\ConfigService;
 
 use NP\core\db\Select;
 use NP\core\db\Insert;
 use NP\core\db\Update;
 
-class GLCAtegoryEntityValidator {
+class GLCAtegoryEntityValidator extends BaseImportServiceEntityValidator {
 
     /**
      * @var \NP\system\ConfigService The config service singleton
@@ -39,7 +40,7 @@ class GLCAtegoryEntityValidator {
         $this->localizationService = $localizationService;
     }
 
-    public function validate(&$row, $errors)
+    public function validate(\ArrayObject $row, \ArrayObject $errors)
     {
         // Get Id for field integrationPackageId, glaccount_level
         $integrationPackageId = $this->getIntegrationPackageIdByName($row['IntegrationPackage']);
@@ -50,27 +51,12 @@ class GLCAtegoryEntityValidator {
         $row['AccountType'] = $glaccounttype_id;
         $row['GLAccountName'] = $glaccountName;
         $row['IntegrationPackageName'] = $row['IntegrationPackage'];
-        // Check the Integration Package Name in DB
-        if (is_null($integrationPackageId)) {
-            $errors[] = array(
-                'field' => 'integrationPackageName',
-                'msg'   => $this->localizationService->getMessage('importFieldIntegrationPackageNameError'),
-                'extra' => null
-            );
-            $row['IntegrationPackage'] .= ';' . $this->localizationService->getMessage('importFieldIntegrationPackageNameError');
 
-        }
+        // Check the Integration Package Name in DB
+        $this->addLocalizedErrorMessageIfNull($integrationPackageId, 'IntegrationPackage', 'importFieldIntegrationPackageNameError');
 
         // Check the Category Name in DB
-        if (is_null($glaccount_level)) {
-            $errors[] = array(
-                'field' => 'categoryName',
-                'msg'   => $this->localizationService->getMessage('importFieldCategoryNameError'),
-                'extra' => null
-            );
-            $row['CategoryName'] .= ';' . $this->localizationService->getMessage('importFieldCategoryNameError');
-        }
-            $row['validation_status'] = (count($errors)) ? 'invalid' : 'valid';
+        $this->addLocalizedErrorMessageIfNull($glaccount_level, 'CategoryName', 'importFieldCategoryNameError');
     }
 
     public function getCategoryIdByName($categoryName, $integrationPackageId)
