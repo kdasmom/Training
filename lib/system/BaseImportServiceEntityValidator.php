@@ -69,7 +69,7 @@ abstract class BaseImportServiceEntityValidator {
     protected function addErrorMessage($field, $message, $extra = null)
     {
         if(is_null($this->errors)) {
-            throw new \Exception('Please do $this->setErrors($errors) at the begining of validate method body');
+            throw new \Exception('Please do $this->setErrors($errors) at the beginning of validate method body');
         }
 
         $this->errors->append(array(
