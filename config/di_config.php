@@ -110,7 +110,6 @@ $diDefinition = array(
 	'NP\system\PnCustomFieldDataGateway'       => array('Adapter'),
 	'NP\system\PnUniversalFieldGateway'        => array('Adapter'),
 	'NP\system\IntegrationRequirementsGateway' => array('Adapter'),
-
 	'NP\system\LookupcodeGateway'              => array('Adapter'),
 	'NP\system\TreeGateway'                    => array('Adapter'),
 	'NP\system\UserMessageGateway'             => array('Adapter'),
@@ -119,7 +118,7 @@ $diDefinition = array(
 	'NP\system\LoggingService'                 => array('logPath','enabledNamespaces','fileEnabled','debugEnabled'),
 	'NP\system\SessionService'                 => array('Config','SiteService'),
 	'NP\system\SiteService'                    => array('WinCache','configPath','reloadCache'),
-    'NP\system\ImportService'                  => array(),
+        'NP\system\ImportService'                  => array(),
 	'NP\user\DelegationGateway'                => array('Adapter','RoleGateway'),
 	'NP\user\DelegationPropGateway'            => array('Adapter'),
 	'NP\user\MobInfoGateway'                   => array('Adapter'),
@@ -133,7 +132,6 @@ $diDefinition = array(
 	'NP\user\UserSettingGateway'               => array('Adapter'),
 	'NP\user\UserService'                      => array('SecurityService','DelegationGateway','UserSettingGateway','UserprofileGateway','RoleGateway','PersonGateway','AddressGateway','EmailGateway','PhoneGateway','PropertyUserprofileGateway','MobInfoGateway','DelegationPropGateway','PropertyGateway','RegionGateway','NotificationService','PropertyUserCodingGateway','UserprofileroleGateway','StaffGateway','AddressTypeGateway','EmailTypeGateway','PhoneTypeGateway','TreeGateway'),
 	'NP\user\UserprofileLogonGateway'          => array('Adapter'),
-
 	'NP\workflow\WfRuleTargetGateway'          => array('Adapter'),
 );
 
