@@ -52,26 +52,10 @@ class GLCAtegoryEntityValidator extends BaseImportServiceEntityValidator {
         $row['GLAccountName'] = $glaccountName;
         $row['IntegrationPackageName'] = $row['IntegrationPackage'];
         // Check the Integration Package Name in DB
-        if (is_null($integrationPackageId)) {
-            $errors[] = array(
-                'field' => 'integrationPackageName',
-                'msg'   => $this->localizationService->getMessage('importFieldIntegrationPackageNameError'),
-                'extra' => null
-            );
-            $row['IntegrationPackage'] .= ';' . $this->localizationService->getMessage('importFieldIntegrationPackageNameError');
-
-        }
+        $this->addLocalizedErrorMessageIfNull($integrationPackageId, 'IntegrationPackage', 'importFieldIntegrationPackageNameError');
 
         // Check the Category Name in DB
-        if (is_null($glaccount_level)) {
-            $errors[] = array(
-                'field' => 'categoryName',
-                'msg'   => $this->localizationService->getMessage('importFieldCategoryNameError'),
-                'extra' => null
-            );
-            $row['CategoryName'] .= ';' . $this->localizationService->getMessage('importFieldCategoryNameError');
-        }
-            $row['validation_status'] = (count($errors)) ? 'invalid' : 'valid';
+        $this->addLocalizedErrorMessageIfNull($glaccount_level, 'CategoryName', 'importFieldCategoryNameError');
     }
 
     public function getCategoryIdByName($categoryName, $integrationPackageId)

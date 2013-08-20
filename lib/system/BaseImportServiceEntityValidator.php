@@ -48,8 +48,25 @@ abstract class BaseImportServiceEntityValidator {
         $this->setErrors($errors)
              ->setRow($row);
 
+        $row['validation_status'] = 'valid';
+        $row['validation_errors'] = '';
+
         $this->validate($row, $errors);
     }
+
+    /**
+     * @param $field string
+     * @param $message string
+     * @param null $extra
+     */
+    protected function addLocalizedErrorMessageIfNull($check, $field, $message, $extra = null)
+    {
+        if(is_null($check)) {
+            $message = $this->localizationService->getMessage($message);
+            $this->addErrorMessage($field, $message, $extra);
+        }
+    }
+
     /**
      * @param $field string
      * @param $message string
@@ -57,11 +74,8 @@ abstract class BaseImportServiceEntityValidator {
      */
     protected function addLocalizedErrorMessage($field, $message, $extra = null)
     {
-        $this->errors->append(array(
-            'field' => $field,
-            'msg'   => $this->localizationService->getMessage($message),
-            'extra' => $extra
-        ));
+        $message = $this->localizationService->getMessage($message);
+        $this->addErrorMessage($field, $message, $extra);
     }
 
     /**
@@ -76,6 +90,11 @@ abstract class BaseImportServiceEntityValidator {
             'msg'   => $message,
             'extra' => $extra
         ));
+
+        $this->row[$field] = $this->row[$field] . ';' . $message;
+
+        $this->row['validation_status'] = 'invalid';
+        $this->row['validation_errors'] = $this->errors;
     }
 
     /**

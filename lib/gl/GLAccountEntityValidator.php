@@ -53,43 +53,15 @@ class GLAccountEntityValidator extends BaseImportServiceEntityValidator {
         $glaccounttype_id = $this->getAccountTypeIdByName($row['AccountType']);
         $integrationPackageId = $this->getIntegrationPackageIdByName($row['IntegrationPackageName']);
         $glaccount_level = $this->getCategoryIdByName($row['CategoryName'], $integrationPackageId);
+
         // Check the GLAccount Type in DB
-        if (is_null($glaccounttype_id)) {
-            $errors[] = array(
-                'field' => 'accountType',
-                'msg'   => $this->localizationService->getMessage('importFieldAccountTypeError'),
-                'extra' => null
-            );
-            $row['AccountType'] .= ';' . $this->localizationService->getMessage('importFieldAccountTypeError');
-        }
+        $this->addLocalizedErrorMessageIfNull($glaccounttype_id, 'AccountType', 'importFieldAccountTypeError');
 
         // Check the Integration Package Name in DB
-        if (is_null($integrationPackageId)) {
-            $errors[] = array(
-                'field' => 'integrationPackageName',
-                'msg'   => $this->localizationService->getMessage('importFieldIntegrationPackageNameError'),
-                'extra' => null
-            );
-            $row['IntegrationPackageName'] .= ';' . $this->localizationService->getMessage('importFieldIntegrationPackageNameError');
-
-        }
+        $this->addLocalizedErrorMessageIfNull($integrationPackageId, 'IntegrationPackageName', 'importFieldIntegrationPackageNameError');
 
         // Check the Category Name in DB
-        if (is_null($glaccount_level)) {
-            $errors[] = array(
-                'field' => 'categoryName',
-                'msg'   => $this->localizationService->getMessage('importFieldCategoryNameError'),
-                'extra' => null
-            );
-            $row['CategoryName'] .= ';' . $this->localizationService->getMessage('importFieldCategoryNameError');
-        }
-        if (count($errors)) {
-            $row['validation_status'] = 'invalid';
-            $row['validation_errors'] = $errors;
-        } else {
-            $row['validation_status'] = 'valid';
-            $row['validation_errors'] = '';
-        }
+        $this->addLocalizedErrorMessageIfNull($glaccount_level, 'CategoryName', 'importFieldCategoryNameError');
     }
 
     public function glaccountExists($glaccount_number, $integration_package_id)
