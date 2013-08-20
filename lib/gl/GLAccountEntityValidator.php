@@ -10,13 +10,14 @@
 namespace NP\gl;
 
 use NP\locale\LocalizationService;
+use NP\system\BaseImportServiceEntityValidator;
 use NP\system\ConfigService;
 
 use NP\core\db\Select;
 use NP\core\db\Insert;
 use NP\core\db\Update;
 
-class GLAccountEntityValidator {
+class GLAccountEntityValidator extends BaseImportServiceEntityValidator {
 
     /**
      * @var \NP\system\ConfigService The config service singleton
@@ -46,7 +47,7 @@ class GLAccountEntityValidator {
         $this->localizationService = $localizationService;
     }
 
-    public function validate(&$row, $errors)
+    public function validate(\ArrayObject $row, \ArrayObject $errors)
     {
         // Get Id for field glaccounttype_id, integrationPackageId, glaccount_level
         $glaccounttype_id = $this->getAccountTypeIdByName($row['AccountType']);

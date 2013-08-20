@@ -258,7 +258,7 @@ class ImportService extends AbstractService
     {
         $data = $this->csvFileToArray($this->getUploadPath() . "{$type}/" . $file, $type);
         $this->validate($data, $type);
-        return array('data' => $data);
+        return array('data' => (array)$data);
     }
 
     public function accept($file, $type)
