@@ -244,7 +244,7 @@ class ImportService extends AbstractService
         return array(
             'success' => (count($errors)) ? false : true,
             'upload_filename' => $fileName,
-            'errors' => $errors
+            'errors' => (array)$errors
         );
     }
 
@@ -286,14 +286,23 @@ class ImportService extends AbstractService
                 if ($entity->hasField('UserProfile_ID')) {
                     $data[$k]['UserProfile_ID'] = $this->securityService->getUserId();
                 }
+
+                if($service instanceof BaseImportService) {
+                    $service->preSave();
+                }
+
                 $service->save($data[$k], $entityClass);
+
+                if($service instanceof BaseImportService) {
+                    $service->postSave();
+                }
             }
         }
 
 
         return array(
             'success' => (count($this->errors)) ? false : true,
-            'errors' => $this->errors
+            'errors' => (array)$this->errors
         );
     }
 

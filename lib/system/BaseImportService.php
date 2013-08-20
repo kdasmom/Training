@@ -19,6 +19,8 @@ namespace NP\system;
 use \NP\system\ConfigService;
 use \NP\security\SecurityService;
 use \NP\core\AbstractService;
+use \NP\core\AbstractEntity;
+use \NP\core\validation\EntityValidator;
 
 abstract class BaseImportService extends AbstractService {
 
@@ -49,6 +51,16 @@ abstract class BaseImportService extends AbstractService {
         $this->securityService = $securityService;
     }
 
+    public function preSave()
+    {
+
+    }
+
+    public function postSave()
+    {
+
+    }
+
     /**
      * This must be implemented in child class.
      * Method accept row and entity class to save in related gateway.
@@ -57,5 +69,18 @@ abstract class BaseImportService extends AbstractService {
      * @param string $entityClass Entity class to map data
      */
     abstract public function save(\ArrayObject $data, $entityClass);
+
+    /**
+     * @param AbstractEntity $entity
+     * @return \ArrayObject
+     */
+    public function validate(AbstractEntity $entity)
+    {
+        // Run validation
+        $validator = new EntityValidator();
+        $validator->validate($entity);
+
+        return $validator->getErrors();
+    }
 
 }

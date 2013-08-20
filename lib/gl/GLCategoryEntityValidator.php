@@ -51,6 +51,7 @@ class GLCAtegoryEntityValidator extends BaseImportServiceEntityValidator {
         $row['AccountType'] = $glaccounttype_id;
         $row['GLAccountName'] = $glaccountName;
         $row['IntegrationPackageName'] = $row['IntegrationPackage'];
+
         // Check the Integration Package Name in DB
         $this->addLocalizedErrorMessageIfNull($integrationPackageId, 'IntegrationPackage', 'importFieldIntegrationPackageNameError');
 
