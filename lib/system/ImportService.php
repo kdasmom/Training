@@ -168,7 +168,7 @@ class ImportService extends AbstractService
         if ($this->getImportCustomValidationFlag($type)) {
             $validator = $this->getCustomValidator($type);
             foreach ($data as $key => $row) {
-                $validator->validate($data[$key], $this->errors);
+                $validator->validateRow($data[$key], $this->errors);
             }
         }
     }
