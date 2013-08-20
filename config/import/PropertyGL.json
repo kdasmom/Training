@@ -1,6 +1,6 @@
 {
     "description": "Property GL Assignment",
-    "service": "PropertyService",
+    "service": "PropertyGLService",
     "entity": "NP\\property\\PropertyGLEntity",
     "columns": [
         {"name": "PropertyCode", "entityField": "PropertyCode"},

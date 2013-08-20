@@ -175,4 +175,11 @@ class GLAccountGateway extends AbstractGateway
         return $this->adapter->query($select);
     }
 
+    public function findByAltIdAndIntegrationPackage($glCode, $integrationPackageId)
+    {
+        $res = $this->find('glaccount_number = ? AND integration_package_id = ?', array($glCode, $integrationPackageId));
+
+        return $res[0];
+        
+    }
 }
