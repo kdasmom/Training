@@ -34,7 +34,7 @@ class VendorFavoriteService extends BaseImportService {
      * @param $data array Row array for entity defined in next param
      * @param $entityClass string Entity class to map data
      */
-    public function save($data, $entityClass)
+    public function save(\ArrayObject $data, $entityClass)
     {
         // TODO: Implement save() method.
     }

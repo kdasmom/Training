@@ -15,42 +15,17 @@ use NP\system\BaseImportServiceEntityValidator;
 class VendorFavoriteEntityValidator extends BaseImportServiceEntityValidator {
 
     // TODO
-    public function validate(&$row, &$errors)
+    public function validate(\ArrayObject $row, \ArrayObject $errors)
     {
-        // Get Id for field glaccounttype_id, integrationPackageId, glaccount_level
-        $glaccounttype_id = $this->getAccountTypeIdByName($row['AccountType']);
-        $integrationPackageId = $this->getIntegrationPackageIdByName($row['IntegrationPackageName']);
-        $glaccount_level = $this->getCategoryIdByName($row['CategoryName'], $integrationPackageId);
-        // Check the GLAccount Type in DB
-        if (is_null($glaccounttype_id)) {
-            $errors[] = array(
-                'field' => 'accountType',
-                'msg'   => $this->localizationService->getMessage('importFieldAccountTypeError'),
-                'extra' => null
-            );
-            $row['AccountType'] .= ';' . $this->localizationService->getMessage('importFieldAccountTypeError');
+        $this->setErrors($errors);
+
+        // TODO
+        if (is_null(null)) {
+            $this->addLocalizedErrorMessage('accountType', 'importFieldAccountTypeError');
+            $row['AccountType'] .= ';' . $this->translate('importFieldAccountTypeError');
         }
 
-        // Check the Integration Package Name in DB
-        if (is_null($integrationPackageId)) {
-            $errors[] = array(
-                'field' => 'integrationPackageName',
-                'msg'   => $this->localizationService->getMessage('importFieldIntegrationPackageNameError'),
-                'extra' => null
-            );
-            $row['IntegrationPackageName'] .= ';' . $this->localizationService->getMessage('importFieldIntegrationPackageNameError');
 
-        }
-
-        // Check the Category Name in DB
-        if (is_null($glaccount_level)) {
-            $errors[] = array(
-                'field' => 'categoryName',
-                'msg'   => $this->localizationService->getMessage('importFieldCategoryNameError'),
-                'extra' => null
-            );
-            $row['CategoryName'] .= ';' . $this->localizationService->getMessage('importFieldCategoryNameError');
-        }
         if (count($errors)) {
             $row['validation_status'] = 'invalid';
             $row['validation_errors'] = $errors;
