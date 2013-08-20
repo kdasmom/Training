@@ -2,117 +2,63 @@
 
 namespace NP\property;
 
+use NP\gl\GLAccountGateway;
+use NP\property\PropertyGateway;
+use NP\system\BaseImportServiceEntityValidator;
 use NP\core\db\Select;
-use NP\core\db\Insert;
-use NP\core\db\Update;
 
-class PropertyGLEntityValidator {
+class PropertyGLEntityValidator extends BaseImportServiceEntityValidator{
 
-    /**
-     * @var \NP\system\ConfigService The config service singleton
-     */
-    protected $configService;
-
-    protected $localizationService;
-
-    protected $propertyGlAccountGateway;
-
-    public function __construct(PropertyGlAccountGateway $gateway)
-    {
-        $this->propertyGlAccountGateway = $gateway;
-    }
-
+  protected $glaccountGateway, $propertyGateway;
 
     /**
-     * Setter function required by DI to set the config service via setter injection
-     * @param \NP\system\ConfigService $configService
+     * @param GLAccountGateway $glaccountGateway
+     * @param PropertyGateway $propertyGateway
      */
-    public function setConfigService(\NP\system\ConfigService $configService) {
-        $this->configService = $configService;
-    }
-
-    public function setLocalizationService(LocalizationService $localizationService)
+    public function __construct(GLAccountGateway $glaccountGateway, PropertyGateway $propertyGateway)
     {
-        $this->localizationService = $localizationService;
+        $this->glaccountGateway = $glaccountGateway;
+        $this->propertyGateway = $propertyGateway;
     }
 
-    public function validateRow(&$row, $errors)
-    {
-        $propertyId = $this->getPropertyIdByCode($row['PropertCode']);
-        $glaccountId = $this->getGlAccountIdByCode($row['GLCode']);
-        $integrationPackageId = $this->getIntegrationPackageIdByName($row['IntegrationPackage']);        
-        if (is_null($propertyId)) {
-            $errors[] = array(
-                'field' => 'propertyCode',
-                'msg'   => $this->localizationService->getMessage('importFieldPropertyCodeError'),
-                'extra' => null
-            );
-            $row['PropertyCode'] .= ';' . $this->localizationService->getMessage('importFieldPropertyCodeError');
-        }
-        
-        if (is_null($glaccountId)) {
-            $errors[] = array(
-                'field' => 'GLCode',
-                'msg'   => $this->localizationService->getMessage('importFieldGLCodeError'),
-                'extra' => null
-            );
-            $row['GLCode'] .= ';' . $this->localizationService->getMessage('importFieldGLCodeError');
-        }
-
-        if (is_null($integrationPackageId)) {
-            $errors[] = array(
-                'field' => 'integrationPackageName',
-                'msg'   => $this->localizationService->getMessage('importFieldIntegrationPackageNameError'),
-                'extra' => null
-            );
-            $row['IntegrationPackageName'] .= ';' . $this->localizationService->getMessage('importFieldIntegrationPackageNameError');
-        }
-
-        $row['validation_status'] = (count($errors)) ? 'invalid' : 'valid';
-    }
-
-    public function propertyGlAccountExists($propertyId, $glaccountId)
-    {
-        $query = new Select();
-        $query->from('PROPERTYGLACCOUNT')
-            ->column('propertyglaccount_id')
-            ->where('property_id = ? AND glaccount_id ?');
-        $result = $this->propertyGlAccountGateway->adapter->query($query, array($propertyId, $glaccountId));
-        $result = !empty($result) ? $result[0]['propertyglaccount_id'] : false;
-        return $result;
-    }
-    
-    public function getPropertyIdByCode($property_id_alt)
+    /**
+     * @param \ArrayObject $row
+     * @param \ArrayObject $errors
+     * @return BaseImportServiceEntityValidator|void
+     */
+    protected function validate(\ArrayObject $row, \ArrayObject $errors)
     {
         $select = new Select();
-        $select->from('PROPERTY')
+        $select ->from('INTEGRATIONPACKAGE')
+                ->columns(array('id' => 'integration_package_id'))
+                ->where("integration_package_name = ?");
+
+        $resultPropertyGL = $this->glaccountGateway->adapter->query($select, array($row['IntegrationPackage']));
+
+        if (empty($resultPropertyGL)) {
+            $this->addLocalizedErrorMessage('IntegrationPackage', 'importFieldIntegrationPackageNameError');
+        }
+
+        $select = new Select();
+        $select ->from('PROPERTY')
             ->columns(array('id' => 'property_id'))
-            ->where("property_id_alt = ?");
+            ->where("property_id_alt = ? AND integration_package_id = ?");
 
-        $result = $this->propertyGlAccountGateway->adapter->query($select, array($property_id_alt));
-        return (!empty($result[0]['id'])) ? $result[0]['id'] : null;
-    }
-    
-    public function getGlAccountIdByCode($glaccount_number)
-    {
+        $result = $this->propertyGateway->adapter->query($select, array($row['PropertyCode'], @$resultPropertyGL[0]['id']));
+
+        if (empty($result)) {
+            $this->addLocalizedErrorMessage('PropertyCode', 'importFieldPropertyCodeError');
+        }
+
         $select = new Select();
-        $select->from('GLACCOUNT')
+        $select ->from('GLACCOUNT')
             ->columns(array('id' => 'glaccount_id'))
-            ->where("glaccount_number = ?");
+            ->where("glaccount_number = ? AND integration_package_id = ?");
 
-        $result = $this->propertyGlAccountGateway->adapter->query($select, array($glaccount_number));
-        return (!empty($result[0]['id'])) ? $result[0]['id'] : null;
-    }
-   
-    public function getIntegrationPackageIdByName($integrationPackageName)
-    {
-        $select = new Select();
-        $select->from('integrationpackage')
-            ->columns(array('id' => 'integration_package_id'))
-            ->where("integration_package_name = ?");
+        $result = $this->glaccountGateway->adapter->query($select, array($row['GLCode'], @$resultPropertyGL[0]['id']));
 
-        $result = $this->PropertyGateway->adapter->query($select, array($integrationPackageName));
-        return (!empty($result[0]['id'])) ? $result[0]['id'] : null;
-    }
-    
+        if (empty($result)) {
+            $this->addLocalizedErrorMessage('GLCode', 'importFieldGLCodeError');
+        }    
+   }
 }
