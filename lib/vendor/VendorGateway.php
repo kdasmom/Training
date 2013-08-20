@@ -38,6 +38,13 @@ class VendorGateway extends AbstractGateway {
 	public function setConfigService(\NP\system\ConfigService $configService) {
 		$this->configService = $configService;
 	}
+
+    public function findByAltIdAndIntegrationPackage($vendorCode, $integrationPackageId)
+    {
+        $res = $this->find('vendor_id_alt = ? AND integration_package_id = ?', array($vendorCode, $integrationPackageId));
+
+        return $res[0];
+    }
 	
 	/**
 	 * Retrieves a vendor record looking it up by vendorsite ID

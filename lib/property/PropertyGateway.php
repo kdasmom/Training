@@ -13,6 +13,18 @@ use NP\core\db\Delete;
  * @author Thomas Messier
  */
 class PropertyGateway  extends AbstractGateway {
+
+    public function findByAltIdAndIntegrationPackage($altId, $integrationPackageId)
+    {
+        $select = new Select();
+        $select ->from('property')
+            ->columns(array('id' => 'property_id'))
+            ->where("property_id_alt = ? AND integration_package_id = ?");
+
+        $res = $this->adapter->query($select, array($altId, $integrationPackageId));
+
+        return $res[0];
+    }
 	
 	/**
 	 * Retrieve a property by Id
