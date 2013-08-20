@@ -54,14 +54,9 @@ abstract class BaseImportServiceEntityValidator {
      * @param $field string
      * @param $message string
      * @param null $extra
-     * @throws \Exception
      */
     protected function addLocalizedErrorMessage($field, $message, $extra = null)
     {
-        if(is_null($this->errors)) {
-            throw new \Exception('Please do $this->setErrors($errors) at the begining of validate method body');
-        }
-
         $this->errors->append(array(
             'field' => $field,
             'msg'   => $this->localizationService->getMessage($message),
@@ -73,14 +68,9 @@ abstract class BaseImportServiceEntityValidator {
      * @param $field string
      * @param $message string
      * @param null $extra
-     * @throws \Exception
      */
     protected function addErrorMessage($field, $message, $extra = null)
     {
-        if(is_null($this->errors)) {
-            throw new \Exception('Please do $this->setErrors($errors) at the beginning of validate method body');
-        }
-
         $this->errors->append(array(
             'field' => $field,
             'msg'   => $message,
