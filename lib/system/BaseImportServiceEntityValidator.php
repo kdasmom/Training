@@ -21,6 +21,8 @@ abstract class BaseImportServiceEntityValidator {
 
     protected $errors;
 
+    protected $row;
+
     /**
      * Setter function required by DI to set the config service via setter injection
      * @param \NP\system\ConfigService $configService
@@ -39,8 +41,15 @@ abstract class BaseImportServiceEntityValidator {
      * @param \ArrayObject $errors
      * @return BaseImportServiceEntityValidator
      */
-    abstract public function validate(\ArrayObject $row, \ArrayObject $errors);
+    abstract protected function validate(\ArrayObject $row, \ArrayObject $errors);
 
+    public function validateRow(\ArrayObject $row, \ArrayObject $errors)
+    {
+        $this->setErrors($errors)
+             ->setRow($row);
+
+        $this->validate($row, $errors);
+    }
     /**
      * @param $field string
      * @param $message string
@@ -86,6 +95,17 @@ abstract class BaseImportServiceEntityValidator {
     protected function setErrors(\ArrayObject $errors)
     {
         $this->errors = $errors;
+
+        return $this;
+    }
+
+    /**
+     * @param \ArrayObject $row
+     * @return BaseImportServiceEntityValidator
+     */
+    protected function setRow(\ArrayObject $row)
+    {
+        $this->row = $row;
 
         return $this;
     }

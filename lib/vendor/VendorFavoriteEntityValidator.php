@@ -15,10 +15,8 @@ use NP\system\BaseImportServiceEntityValidator;
 class VendorFavoriteEntityValidator extends BaseImportServiceEntityValidator {
 
     // TODO
-    public function validate(\ArrayObject $row, \ArrayObject $errors)
+    protected function validate(\ArrayObject $row, \ArrayObject $errors)
     {
-        $this->setErrors($errors);
-
         // TODO
         if (is_null(null)) {
             $this->addLocalizedErrorMessage('accountType', 'importFieldAccountTypeError');
