@@ -23,24 +23,18 @@ use \NP\core\AbstractService;
 abstract class BaseImportService extends AbstractService {
 
     /**
-
      * @var ConfigService
-
      */
     protected $configService;
 
     /**
-
      * @var SecurityService
-
      */
     protected $securityService;
 
 
     /**
-
      * @param ConfigService $configService set by Pimple di bootstrap
-
      */
     public function setConfigService(ConfigService $configService) {
 
@@ -48,9 +42,7 @@ abstract class BaseImportService extends AbstractService {
     }
 
     /**
-
      * @param SecurityService $securityService set by Pimple di bootstrap
-
      */
     public function setSecurityService(SecurityService $securityService) {
 
@@ -61,9 +53,9 @@ abstract class BaseImportService extends AbstractService {
      * This must be implemented in child class.
      * Method accept row and entity class to save in related gateway.
      *
-     * @param $data array Row array for entity defined in next param
-     * @param $entityClass string Entity class to map data
+     * @param \ArrayObject $data Row array for entity defined in next param
+     * @param string $entityClass Entity class to map data
      */
-    abstract public function save($data, $entityClass);
+    abstract public function save(\ArrayObject $data, $entityClass);
 
 }

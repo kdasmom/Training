@@ -19,6 +19,8 @@ abstract class BaseImportServiceEntityValidator {
 
     protected $localizationService;
 
+    protected $errors;
+
     /**
      * Setter function required by DI to set the config service via setter injection
      * @param \NP\system\ConfigService $configService
@@ -33,9 +35,69 @@ abstract class BaseImportServiceEntityValidator {
     }
 
     /**
-     * @param $row array Row array to validate
-     * @param $errors array Errors array
-     * @return mixed
+     * @param \ArrayObject $row
+     * @param \ArrayObject $errors
+     * @return BaseImportServiceEntityValidator
      */
-    abstract public function validate(&$row, &$errors);
+    abstract public function validate(\ArrayObject $row, \ArrayObject $errors);
+
+    /**
+     * @param $field string
+     * @param $message string
+     * @param null $extra
+     * @throws \Exception
+     */
+    protected function addLocalizedErrorMessage($field, $message, $extra = null)
+    {
+        if(is_null($this->errors)) {
+            throw new \Exception('Please do $this->setErrors($errors) at the begining of validate method body');
+        }
+
+        $this->errors->append(array(
+            'field' => $field,
+            'msg'   => $this->localizationService->getMessage($message),
+            'extra' => $extra
+        ));
+    }
+
+    /**
+     * @param $field string
+     * @param $message string
+     * @param null $extra
+     * @throws \Exception
+     */
+    protected function addErrorMessage($field, $message, $extra = null)
+    {
+        if(is_null($this->errors)) {
+            throw new \Exception('Please do $this->setErrors($errors) at the begining of validate method body');
+        }
+
+        $this->errors->append(array(
+            'field' => $field,
+            'msg'   => $message,
+            'extra' => $extra
+        ));
+    }
+
+    /**
+     * @param \ArrayObject $errors
+     * @return BaseImportServiceEntityValidator
+     */
+    protected function setErrors(\ArrayObject $errors)
+    {
+        $this->errors = $errors;
+
+        return $this;
+    }
+
+    /**
+     * Useful stub to translate strings
+     *
+     * @param $message string
+     * @return string
+     */
+    protected function translate($message)
+    {
+        return $this->localizationService->getMessage($message);
+    }
 }

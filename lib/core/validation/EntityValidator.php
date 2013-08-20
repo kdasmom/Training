@@ -9,7 +9,7 @@ namespace NP\core\validation;
 class EntityValidator implements ValidatorInterface {
 	
 	/**
-	 * @var array An array of errors
+	 * @var \ArrayObject  An array of errors
 	 */
 	protected $errors;
 
@@ -29,13 +29,13 @@ class EntityValidator implements ValidatorInterface {
 	 * @param string The error message
 	 */
 	public function addError($field, $msg, $extra=null) {
-		$this->errors[] = array('field' => $field, 'msg' => $msg, 'extra' => $extra);
+		$this->errors->append(new \ArrayObject(array('field' => $field, 'msg' => $msg, 'extra' => $extra)));
 	}
 
 	/**
 	 * Gets errors generated when validation was last run
 	 *
-	 * @return array
+	 * @return \ArrayObject
 	 */
 	public function getErrors() {
 		return $this->errors;
@@ -49,7 +49,7 @@ class EntityValidator implements ValidatorInterface {
 	 */
 	public function validate(\NP\core\AbstractEntity $entity) {
 		// Reset the errors array
-		$this->errors = array();
+		$this->errors = new \ArrayObject();
 
 		// Get the entity field values as an array
 		$dataSet = $entity->toArray();

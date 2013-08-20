@@ -41,7 +41,7 @@ class ImportService extends AbstractService
     /**
      * @var array
      */
-    protected $errors = array();
+    protected $errors;
 
 
     protected $customValidator;
@@ -55,6 +55,11 @@ class ImportService extends AbstractService
     public function __get($key)
     {
         return $this->di[$key];
+    }
+
+    public function __construct()
+    {
+        $this->errors = new \ArrayObject();
     }
 
     /**
@@ -117,6 +122,10 @@ class ImportService extends AbstractService
         return !!$config['customValidation'];
     }
 
+    /**
+     * @param $type
+     * @return BaseImportServiceEntityValidator
+     */
     protected function getCustomValidator($type)
     {
         $config = $this->getImportConfig($type);
@@ -146,7 +155,7 @@ class ImportService extends AbstractService
         return $this->{$class};
     }
 
-    public function validate(&$data, $type)
+    public function validate(\ArrayObject $data, $type)
     {
         $entityClass = $this->getImportEntityClass($type);
         $entity = new $entityClass($data);
@@ -154,7 +163,7 @@ class ImportService extends AbstractService
         $validator = new EntityValidator();
         $validator->validate($entity);
 
-        $this->errors = array_merge($this->errors, $validator->getErrors());
+        $this->errors = new \ArrayObject(array_merge($this->errors->getArrayCopy(), $validator->getErrors()->getArrayCopy()));
 
         if ($this->getImportCustomValidationFlag($type)) {
             $validator = $this->getCustomValidator($type);
@@ -325,13 +334,13 @@ class ImportService extends AbstractService
 
         $csvArray = array_map(function ($row) use ($keys) {
             if (count($keys) != count(str_getcsv($row))) {
-                return array('errors' => $this->localizationService->getMessage('uploadFileCSVFormatError'));
+                return new \ArrayObject(array('errors' => $this->localizationService->getMessage('uploadFileCSVFormatError')));
             } else {
-                return array_combine($keys, str_getcsv($row));                    
+                return new \ArrayObject(array_combine($keys, str_getcsv($row)));
             } 
         }, $rows);
 
-        return $csvArray;
+        return new \ArrayObject($csvArray);
     }
 
 }

@@ -60,13 +60,21 @@ $diDefinition = array(
 	'NP\contact\PhoneGateway'                  => array('Adapter'),
 	'NP\contact\PhoneTypeGateway'              => array('Adapter'),
 	'NP\core\Config'                           => array('config','reloadCache','WinCache','SiteService','ConfigsysGateway'),
+
+    /*
+     * no need this
+    'NP\system\BaseImportService'                => array(),
+    'NP\system\BaseImportServiceEntityValidator' => array(),
+    'NP\system\BaseImportServiceGateway'         => array(),
+    */
+
 	'NP\exim\EximGLAccountGateway'             => array('Adapter'),
-        'NP\gl\GLAccountGateway'                   => array('Adapter'),
-        'NP\gl\GLAccountEntityValidator'           => array('GLAccountGateway'),
-        'NP\gl\GLCategoryEntityValidator'          => array('GLAccountGateway'),
-	'NP\gl\GLService'                          => array('GLAccountGateway', 'TreeGateway', 'GLAccountEntityValidator'),
-        'NP\gl\GLBudgetEntityValidator'            => array('GLAccountGateway', 'BudgetGateway','GlAccountYearGateway'),	
-        'NP\invoice\InvoiceGateway'                => array('Adapter','RoleGateway'),
+    'NP\gl\GLAccountGateway'                   => array('Adapter'),
+    'NP\gl\GLAccountEntityValidator'           => array('GLAccountGateway'),
+    'NP\gl\GLCategoryEntityValidator'          => array('GLAccountGateway'),
+
+    'NP\gl\GLService'                          => array('GLAccountGateway', 'TreeGateway', 'GLAccountEntityValidator'),
+    'NP\gl\GLBudgetEntityValidator'            => array('GLAccountGateway', 'BudgetGateway','GlAccountYearGateway'),        'NP\invoice\InvoiceGateway'                => array('Adapter','RoleGateway'),
 	'NP\invoice\InvoiceItemGateway'            => array('Adapter'),
 	'NP\invoice\InvoiceService'                => array('SecurityService','InvoiceGateway','InvoiceItemGateway','BudgetService'),
 	'NP\invoice\InvoiceServiceInterceptor',
@@ -89,7 +97,7 @@ $diDefinition = array(
 	'NP\property\UnitTypeGateway'              => array('Adapter'),
 	'NP\property\UnitTypeValGateway'           => array('Adapter'),
 	'NP\property\UnitTypeMeasGateway'          => array('Adapter'),
-        'NP\property\PropertyEntityValidator'      => array('PropertyGateway'),
+    'NP\property\PropertyEntityValidator'      => array('PropertyGateway'),
 	'NP\security\ModuleGateway'                => array('Adapter'),
 	'NP\security\ModulePrivGateway'            => array('Adapter'),
 	'NP\security\SecurityService'              => array('config','SiteService','SessionService','UserprofileGateway','RoleGateway','UserprofileLogonGateway','ModulePrivGateway','RegionGateway','PropertyGateway','ModuleGateway'),
@@ -109,7 +117,7 @@ $diDefinition = array(
 	'NP\system\LoggingService'                 => array('logPath','enabledNamespaces','fileEnabled','debugEnabled'),
 	'NP\system\SessionService'                 => array('Config','SiteService'),
 	'NP\system\SiteService'                    => array('WinCache','configPath','reloadCache'),
-        'NP\system\ImportService'                  => array(),
+    'NP\system\ImportService'                  => array(),
 	'NP\user\DelegationGateway'                => array('Adapter','RoleGateway'),
 	'NP\user\DelegationPropGateway'            => array('Adapter'),
 	'NP\user\MobInfoGateway'                   => array('Adapter'),
