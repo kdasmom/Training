@@ -163,7 +163,7 @@ class ImportService extends AbstractService
         $validator = new EntityValidator();
         $validator->validate($entity);
 
-        $this->errors = new \ArrayObject(array_merge($this->errors->getArrayCopy(), $validator->getErrors()->getArrayCopy()));
+        $this->errors = new \ArrayObject($validator->getErrors()->getArrayCopy());
 
         if ($this->getImportCustomValidationFlag($type)) {
             $validator = $this->getCustomValidator($type);
@@ -273,6 +273,8 @@ class ImportService extends AbstractService
         $entity = new $entityClass($data);
         $service = $this->getImportService($type);
 
+        $success = false;
+
         foreach ($data as $k => $row) {
 
             if ($row['validation_status'] == 'valid') {
@@ -296,12 +298,14 @@ class ImportService extends AbstractService
                 if($service instanceof BaseImportService) {
                     $service->postSave();
                 }
+
+                $success = true;
             }
         }
 
 
         return array(
-            'success' => (count($this->errors)) ? false : true,
+            'success' => $success,
             'errors' => (array)$this->errors
         );
     }
