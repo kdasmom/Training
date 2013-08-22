@@ -15,7 +15,7 @@ $__CONFIG = array(
 		    'password'		=> 'your_password'
 	),
 	// Set logs that are enabled
-	// Valid values are 'global','mail','fileupload','catalog','invoice','po'
+	// Valid values are 'global','mail','fileupload','catalog','invoice','po','sql'
 	'enabledNamespaces'		=> array('global','mail','fileupload','catalog','invoice','po'),
 	'fileLogEnabled'		=> false, 
 	'debugLogEnabled'		=> true,
