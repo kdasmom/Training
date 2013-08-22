@@ -78,7 +78,7 @@ class Adapter {
 			sqlsrv_configure('WarningsReturnAsErrors', 1);
 
 			// Try to connect
-			$connectionInfo = array('Database'=>$this->dbName, 'UID'=>$this->username, 'PWD'=>$this->pwd, 'ReturnDatesAsStrings'=>true);
+			$connectionInfo = array('Database'=>$this->dbName, 'UID'=>$this->username, 'PWD'=>$this->pwd, 'ReturnDatesAsStrings'=>true, 'CharacterSet'=>'UTF-8');
 			$this->conn = sqlsrv_connect($this->server, $connectionInfo);
 
 			if (!$this->conn) {
