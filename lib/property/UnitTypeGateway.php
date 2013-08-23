@@ -25,6 +25,18 @@ class UnitTypeGateway extends AbstractGateway {
 
 		return $select;
 	}
+        
+        public function findByAltId($type)
+    {
+        $select = new Select();
+        $select ->from('unittype')
+            ->columns(array('id' => 'unittype_id'))
+            ->where("unittype_name = ?");
+
+        $res = $this->adapter->query($select, array($type));
+
+        return $res[0];
+    }
 
 }
 

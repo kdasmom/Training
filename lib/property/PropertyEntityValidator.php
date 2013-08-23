@@ -4,13 +4,13 @@ namespace NP\property;
 
 use NP\locale\LocalizationService;
 use NP\system\ConfigService;
-
+use NP\system\BaseImportServiceEntityValidator;
 use NP\core\db\Select;
 use NP\core\db\Insert;
 use NP\core\db\Update;
 
 class PropertyEntityValidator {
-
+    
     /**
      * @var \NP\system\ConfigService The config service singleton
      */
