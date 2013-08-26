@@ -12,5 +12,3 @@ use NP\core\AbstractGateway;
 class IntegrationPackageGateway extends AbstractGateway {
 	protected $pk = 'integration_package_id';
 }
-
-?>

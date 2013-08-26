@@ -35,14 +35,12 @@ class PropertyEntity extends \NP\core\AbstractEntity {
 			)
 		),
 		'property_name'	 => array(
-			'required'   => true,
 			'validation' => array(
 				'stringLength' => array('max'=>255)
 			)
 		),
 		'property_salestax'	 => array(),
 		'property_no_units'	 => array(
-			'required'   => true,
 			'validation' => array(
 				'stringLength' => array('max'=>50)
 			)
@@ -88,13 +86,11 @@ class PropertyEntity extends \NP\core\AbstractEntity {
 			)
 		),
 		'matching_threshold'	 => array(
-			'required'   => true,
 			'validation' => array(
 				'numeric' => array()
 			)
 		),
 		'property_status'	 => array(
-			'required'   => true,
 			'validation' => array(
 				'numeric' => array(),
 				'inArray' => array(
@@ -109,7 +105,6 @@ class PropertyEntity extends \NP\core\AbstractEntity {
 			)
 		),
 		'integration_package_id'	 => array(
-			'required'   => true,
 			'validation' => array(
 				'digits' => array()
 			)
@@ -125,7 +120,6 @@ class PropertyEntity extends \NP\core\AbstractEntity {
 			)
 		),
 		'cash_accural'	 => array(
-			'required'   => true,
 			'validation' => array(
 				'stringLength' => array('max'=>10)
 			)

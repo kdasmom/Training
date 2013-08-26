@@ -1,0 +1,12 @@
+{
+    "description": "Property GL Assignment",
+    "service": "PropertyGLService",
+    "entity": "NP\\property\\PropertyGLEntity",
+    "columns": [
+        {"name": "PropertyCode", "entityField": "PropertyCode"},
+        {"name": "GLCode", "entityField": "GLCode"},
+        {"name": "IntegrationPackage", "entityField": "IntegrationPackage", "dataTable": "IntegrationPackage", "dataColumn": "integration_package_name"}
+    ],
+    "customValidation": true,
+    "customValidationClass": "PropertyGLEntityValidator"
+}

@@ -41,5 +41,3 @@ abstract class AbstractService {
 		return $this->localizationService->getMessage('unexpectedError');
 	}
 }
-
-?>

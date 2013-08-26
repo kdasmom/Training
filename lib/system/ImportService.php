@@ -41,7 +41,7 @@ class ImportService extends AbstractService
     /**
      * @var array
      */
-    protected $errors = array();
+    protected $errors;
 
 
     protected $customValidator;
@@ -55,6 +55,11 @@ class ImportService extends AbstractService
     public function __get($key)
     {
         return $this->di[$key];
+    }
+
+    public function __construct()
+    {
+        $this->errors = new \ArrayObject();
     }
 
     /**
@@ -117,6 +122,10 @@ class ImportService extends AbstractService
         return !!$config['customValidation'];
     }
 
+    /**
+     * @param $type
+     * @return BaseImportServiceEntityValidator
+     */
     protected function getCustomValidator($type)
     {
         $config = $this->getImportConfig($type);
@@ -146,7 +155,7 @@ class ImportService extends AbstractService
         return $this->{$class};
     }
 
-    public function validate(&$data, $type)
+    public function validate(\ArrayObject $data, $type)
     {
         $entityClass = $this->getImportEntityClass($type);
         $entity = new $entityClass($data);
@@ -154,12 +163,12 @@ class ImportService extends AbstractService
         $validator = new EntityValidator();
         $validator->validate($entity);
 
-        $this->errors = array_merge($this->errors, $validator->getErrors());
+        $this->errors = new \ArrayObject($validator->getErrors()->getArrayCopy());
 
         if ($this->getImportCustomValidationFlag($type)) {
             $validator = $this->getCustomValidator($type);
             foreach ($data as $key => $row) {
-                $validator->validate($data[$key], $this->errors);
+                $validator->validateRow($data[$key], $this->errors);
             }
         }
     }
@@ -235,7 +244,7 @@ class ImportService extends AbstractService
         return array(
             'success' => (count($errors)) ? false : true,
             'upload_filename' => $fileName,
-            'errors' => $errors
+            'errors' => (array)$errors
         );
     }
 
@@ -249,7 +258,7 @@ class ImportService extends AbstractService
     {
         $data = $this->csvFileToArray($this->getUploadPath() . "{$type}/" . $file, $type);
         $this->validate($data, $type);
-        return array('data' => $data);
+        return array('data' => (array)$data);
     }
 
     public function accept($file, $type)
@@ -264,6 +273,8 @@ class ImportService extends AbstractService
         $entity = new $entityClass($data);
         $service = $this->getImportService($type);
 
+        $success = false;
+
         foreach ($data as $k => $row) {
 
             if ($row['validation_status'] == 'valid') {
@@ -274,15 +285,28 @@ class ImportService extends AbstractService
                 if ($entity->hasField('glaccount_updateby')) {
                     $data[$k]['glaccount_updateby'] = $this->securityService->getUserId();
                 }
+                if ($entity->hasField('UserProfile_ID')) {
+                    $data[$k]['UserProfile_ID'] = $this->securityService->getUserId();
+                }
+
+                if($service instanceof BaseImportService) {
+                    $service->preSave();
+                }
 
                 $service->save($data[$k], $entityClass);
+
+                if($service instanceof BaseImportService) {
+                    $service->postSave();
+                }
+
+                $success = true;
             }
         }
 
 
         return array(
-            'success' => (count($this->errors)) ? false : true,
-            'errors' => $this->errors
+            'success' => $success,
+            'errors' => (array)$this->errors
         );
     }
 
@@ -303,7 +327,6 @@ class ImportService extends AbstractService
 
     public function getImportConfig($type)
     {
-
         return json_decode(file_get_contents($this->configService->getAppRoot() . '/config/import/' . $type . '.json'), true);
     }
 
@@ -324,13 +347,13 @@ class ImportService extends AbstractService
 
         $csvArray = array_map(function ($row) use ($keys) {
             if (count($keys) != count(str_getcsv($row))) {
-                return array('errors' => $this->localizationService->getMessage('uploadFileCSVFormatError'));
+                return new \ArrayObject(array('errors' => $this->localizationService->getMessage('uploadFileCSVFormatError')));
             } else {
-                return array_combine($keys, str_getcsv($row));                    
+                return new \ArrayObject(array_combine($keys, str_getcsv($row)));
             } 
         }, $rows);
 
-        return $csvArray;
+        return new \ArrayObject($csvArray);
     }
 
 }

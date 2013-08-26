@@ -10,13 +10,14 @@
 namespace NP\gl;
 
 use NP\locale\LocalizationService;
+use NP\system\BaseImportServiceEntityValidator;
 use NP\system\ConfigService;
 
 use NP\core\db\Select;
 use NP\core\db\Insert;
 use NP\core\db\Update;
 
-class GLAccountEntityValidator {
+class GLAccountEntityValidator extends BaseImportServiceEntityValidator {
 
     /**
      * @var \NP\system\ConfigService The config service singleton
@@ -46,49 +47,21 @@ class GLAccountEntityValidator {
         $this->localizationService = $localizationService;
     }
 
-    public function validate(&$row, $errors)
+    public function validate(\ArrayObject $row, \ArrayObject $errors)
     {
         // Get Id for field glaccounttype_id, integrationPackageId, glaccount_level
         $glaccounttype_id = $this->getAccountTypeIdByName($row['AccountType']);
         $integrationPackageId = $this->getIntegrationPackageIdByName($row['IntegrationPackageName']);
         $glaccount_level = $this->getCategoryIdByName($row['CategoryName'], $integrationPackageId);
+
         // Check the GLAccount Type in DB
-        if (is_null($glaccounttype_id)) {
-            $errors[] = array(
-                'field' => 'accountType',
-                'msg'   => $this->localizationService->getMessage('importFieldAccountTypeError'),
-                'extra' => null
-            );
-            $row['AccountType'] .= ';' . $this->localizationService->getMessage('importFieldAccountTypeError');
-        }
+        $this->addLocalizedErrorMessageIfNull($glaccounttype_id, 'AccountType', 'importFieldAccountTypeError');
 
         // Check the Integration Package Name in DB
-        if (is_null($integrationPackageId)) {
-            $errors[] = array(
-                'field' => 'integrationPackageName',
-                'msg'   => $this->localizationService->getMessage('importFieldIntegrationPackageNameError'),
-                'extra' => null
-            );
-            $row['IntegrationPackageName'] .= ';' . $this->localizationService->getMessage('importFieldIntegrationPackageNameError');
-
-        }
+        $this->addLocalizedErrorMessageIfNull($integrationPackageId, 'IntegrationPackageName', 'importFieldIntegrationPackageNameError');
 
         // Check the Category Name in DB
-        if (is_null($glaccount_level)) {
-            $errors[] = array(
-                'field' => 'categoryName',
-                'msg'   => $this->localizationService->getMessage('importFieldCategoryNameError'),
-                'extra' => null
-            );
-            $row['CategoryName'] .= ';' . $this->localizationService->getMessage('importFieldCategoryNameError');
-        }
-        if (count($errors)) {
-            $row['validation_status'] = 'invalid';
-            $row['validation_errors'] = $errors;
-        } else {
-            $row['validation_status'] = 'valid';
-            $row['validation_errors'] = '';
-        }
+        $this->addLocalizedErrorMessageIfNull($glaccount_level, 'CategoryName', 'importFieldCategoryNameError');
     }
 
     public function glaccountExists($glaccount_number, $integration_package_id)

@@ -17,9 +17,9 @@ class BudgetService extends AbstractService {
 	protected $budgetGateway, $glAccountYearGateway, $glBudgetEntityValidator;
 
 	public function __construct(BudgetGateway $budgetGateway, GlAccountYearGateway $glAccountYearGateway, GLBudgetEntityValidator $validator) {
-		$this->budgetGateway        = $budgetGateway;
-		$this->glAccountYearGateway = $glAccountYearGateway;
-                $this->glBudgetEntityValidator = $validator;
+		$this->budgetGateway           = $budgetGateway;
+		$this->glAccountYearGateway    = $glAccountYearGateway;
+        $this->glBudgetEntityValidator = $validator;
 	}
 
 	public function createMissingBudgets($entityType) {
@@ -102,5 +102,3 @@ class BudgetService extends AbstractService {
             }
         }
 }
-
-?>

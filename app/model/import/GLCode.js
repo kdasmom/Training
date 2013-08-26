@@ -12,8 +12,7 @@ Ext.define('NP.model.import.GLCode', {
 		{ name: 'AccountType' },
 		{ name: 'CategoryName' },
 		{ name: 'IntegrationPackageName' },
-		{ name: 'validation_status' },
-		{ name: 'validation_messages' }
+		{ name: 'validation_status' }
 	],
 
 	validations: [

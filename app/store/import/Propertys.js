@@ -3,7 +3,7 @@
  *
  * @author Aliaksandr Zubik
  */
-Ext.define('NP.store.import.GPropertys', {
+Ext.define('NP.store.import.Propertys', {
     extend: 'NP.lib.data.Store',
 	
     model: 'NP.model.import.Property'

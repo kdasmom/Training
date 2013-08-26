@@ -1,0 +1,14 @@
+{
+    "description": "Unit",
+    "service": "UnitService",
+    "entity": "NP\\property\\UnitEntity",
+    "columns": [
+        {"name": "IntegrationPackage", "entityField": "IntegrationPackage", "dataTable": "IntegrationPackage", "dataColumn": "integration_package_name"},
+        {"name": "PropertyCode", "entityField": "PropertyCode"},
+        {"name": "Code", "entityField": "Code"},
+        {"name": "Name", "entityField": "Name"},
+        {"name": "Type", "entityField": "Type"}
+    ],
+    "customValidation": true,
+    "customValidationClass": "UnitEntityValidator"
+}

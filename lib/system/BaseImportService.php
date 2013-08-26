@@ -19,58 +19,24 @@ namespace NP\system;
 use \NP\system\ConfigService;
 use \NP\security\SecurityService;
 use \NP\core\AbstractService;
-use \ReflectionClass;
+use \NP\core\AbstractEntity;
+use \NP\core\validation\EntityValidator;
 
 abstract class BaseImportService extends AbstractService {
 
     /**
-
      * @var ConfigService
-
      */
     protected $configService;
 
     /**
-
      * @var SecurityService
-
      */
     protected $securityService;
 
-    /**
-
-     * @var Pimple
-
-     */
-    protected $di;
 
     /**
-
-     * @var array
-
-     */
-    protected $errors = array();
-
-    /**
-
-     * Magic method to get Gateways easy
-
-     *
-
-     * @param $key
-
-     * @return mixed
-
-     */
-    public function __get($key) {
-
-        return $this->di[$key];
-    }
-
-    /**
-
      * @param ConfigService $configService set by Pimple di bootstrap
-
      */
     public function setConfigService(ConfigService $configService) {
 
@@ -78,169 +44,43 @@ abstract class BaseImportService extends AbstractService {
     }
 
     /**
-
      * @param SecurityService $securityService set by Pimple di bootstrap
-
      */
     public function setSecurityService(SecurityService $securityService) {
 
         $this->securityService = $securityService;
     }
 
-    /**
+    public function preSave()
+    {
 
-     * @param \Pimple $di set by Pimple di bootstrap
-
-     */
-    public function setPimple(\Pimple $di) {
-
-        $this->di = $di;
     }
 
-    protected function getImportColumnNames($type) {
+    public function postSave()
+    {
 
-        $names = array();
-
-        $config = $this->getImportConfig($type);
-
-        foreach ($config['columns'] as $column) {
-
-            $names[] = $column['name'];
-        }
-
-        return $names;
-    }
-
-    protected function getImportDBColumnNames($type) {
-
-        $names = array();
-
-        $config = $this->getImportConfig($type);
-
-        foreach ($config['columns'] as $column) {
-
-            $names[$column['name']] = $column['entityField'];
-        }
-
-        return $names;
     }
 
     /**
-
-     * Detect if custom validation exists
-
+     * This must be implemented in child class.
+     * Method accept row and entity class to save in related gateway.
      *
-
-     * @param $type
-
-     * @return bool
-
+     * @param \ArrayObject $data Row array for entity defined in next param
+     * @param string $entityClass Entity class to map data
      */
-    protected function getImportCustomValidationFlag($type) {
-
-        $config = $this->getImportConfig($type);
-
-        return !!$config['customValidation'];
-    }
+    abstract public function save(\ArrayObject $data, $entityClass);
 
     /**
-
-     * Get related gateway to make saving and validation
-
-     *
-
-     * @param $type
-
-     * @return mixed
-
+     * @param AbstractEntity $entity
+     * @return \ArrayObject
      */
-    protected function getImportGateway($type) {
+    public function validate(AbstractEntity $entity)
+    {
+        // Run validation
+        $validator = new EntityValidator();
+        $validator->validate($entity);
 
-        $config = $this->getImportConfig($type);
-
-        $gatewayClass = $config['gateway'];
-
-        $gateway = $this->{$gatewayClass};
-
-
-        $gatewayReflection = new ReflectionClass($gateway);
-
-
-        // Inject the DI if gateway need it
-
-        if ($gatewayReflection->hasMethod('setDI')) {
-
-            $gateway->setDI($this->di);
-        }
-
-
-        return $gateway;
-    }
-
-    /**
-
-     * Gets entity fields configuration from JSON configuration file
-
-     *
-
-     * @param $type
-
-     * @return mixed
-
-     */
-    protected function getImportEntityConfiguration($type) {
-
-        $config = $this->getImportConfig($type);
-
-        return $config['entity'];
-    }
-
-    /**
-
-     * Returns the path for upload csv file
-
-     *
-
-     * @return string The full path to the directory where upload csv file
-
-     */
-    protected function getUploadPath() {
-
-        return "{$this->configService->getAppRoot()}/clients/{$this->configService->getAppName()}/web/exim_uploads/";
-    }
-
-    /**
-
-     * Convert CSV file fields to array with names mapping
-
-     *
-
-     * @param $file
-
-     * @param $type
-
-     * @return array
-
-     */
-    protected function csvFileToArray($file, $type) {
-
-        $csv = file_get_contents($file);
-
-        $rows = explode("\n", trim($csv));
-
-        array_shift($rows);
-
-
-        $keys = $this->getImportColumnNames($type);
-
-
-        $csvArray = array_map(function ($row) use ($keys) {
-
-                    return array_combine($keys, str_getcsv($row));
-                }, $rows);
-
-
-        return $csvArray;
+        return $validator->getErrors();
     }
 
 }

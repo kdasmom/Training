@@ -1,13 +1,14 @@
 /**
- * Model for a GLCategory
+ * Model for a Vendor
  *
  * @author Aliaksandr Zubik
  */
-Ext.define('NP.model.import.GLCategory', {
+Ext.define('NP.model.import.VendorFavorites', {
 	extend: 'Ext.data.Model',
 	
 	fields: [
-		{ name: 'CategoryName' },
+		{ name: 'VendorCode' },
+                { name: 'PropertyCode' },
 		{ name: 'IntegrationPackage' },
 		{ name: 'validation_status' }
 	]
