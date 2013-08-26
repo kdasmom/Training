@@ -2,6 +2,7 @@
 
 namespace NP\property;
 
+use NP\system\BaseImportService;
 use NP\core\AbstractService;
 use NP\core\validation\EntityValidator;
 use NP\security\SecurityService;
@@ -17,14 +18,15 @@ use NP\contact\PhoneTypeGateway;
 use NP\system\PnCustomFieldsGateway;
 use NP\system\PnCustomFieldDataGateway;
 use NP\system\ConfigService;
+use NP\system\IntegrationPackageGateway;
 
-class PropertyService extends AbstractService {
+class PropertyService extends BaseImportService {
 	
 	protected $securityService, $propertyGateway, $regionGateway, $fiscalcalGateway, $propertyUserprofileGateway, 
 				$unitGateway, $userprofileGateway, $invoiceService, $poService, $wfRuleTargetGateway,
 				$fiscalDisplayTypeGateway, $fiscalcalMonthGateway, $addressGateway, $phoneGateway, $pnCustomFieldsGateway,
 				$pnCustomFieldDataGateway, $propertyGlAccountGateway, $configService, $unitTypeGateway, $unitTypeValGateway,
-				$unitTypeMeasGateway, $propertyEntityValidator;
+				$unitTypeMeasGateway, $propertyEntityValidator, $stateGateway, $integrationPackageGateway;
 	
 	public function __construct(SecurityService $securityService, PropertyGateway $propertyGateway, RegionGateway $regionGateway,
 								FiscalcalGateway $fiscalcalGateway, PropertyUserprofileGateway $propertyUserprofileGateway,
@@ -35,7 +37,8 @@ class PropertyService extends AbstractService {
 								RecAuthorGateway $recAuthorGateway, PnCustomFieldsGateway $pnCustomFieldsGateway,
 								PnCustomFieldDataGateway $pnCustomFieldDataGateway, PropertyGlAccountGateway $propertyGlAccountGateway,
 								UnitTypeGateway $unitTypeGateway, UnitTypeValGateway $unitTypeValGateway,
-								UnitTypeMeasGateway $unitTypeMeasGateway, PropertyEntityValidator $propertyEntityValidator) {
+								UnitTypeMeasGateway $unitTypeMeasGateway, PropertyEntityValidator $propertyEntityValidator,
+                                                                StateGateway $stateGateway, IntegrationPackageGateway $integrationPackageGateway) {
 		$this->securityService            = $securityService;
 		$this->propertyGateway            = $propertyGateway;
 		$this->regionGateway              = $regionGateway;
@@ -59,6 +62,8 @@ class PropertyService extends AbstractService {
 		$this->unitTypeValGateway         = $unitTypeValGateway;
 		$this->unitTypeMeasGateway        = $unitTypeMeasGateway;
                 $this->propertyEntityValidator    = $propertyEntityValidator;
+                $this->stateGateway               = $stateGateway;
+                $this->integrationPackageGateway  = $integrationPackageGateway;
 	}
 
 	/**
@@ -708,10 +713,9 @@ class PropertyService extends AbstractService {
 		);
 	}
 
-        public function save($data, $entityClass)
+        public function save(\ArrayObject $data, $entityClass)
         {
             // Get entities
-            //var_dump($data);
             $propertyIdAlt = $data['PropertyCode'];
             $propertyIdAltAp = $data['PropertyCode'];
             $propertyName = $data['PropertyName'];
@@ -725,9 +729,11 @@ class PropertyService extends AbstractService {
             $propertyOptionShipAddress = (strtolower($data['ShipToAddressOption']) == 'yes') ? 1 : 0;
             $defaultBillToPropertyId = $data['DefaultBillToProperty'];
             $defaultShipToPropertyId = $data['DefaultShipToProperty'];
-            $regionId = $this->propertyEntityValidator->getRegionIdByName($data['Region']);
-            $integrationPackageId = $this->propertyEntityValidator->getIntegrationPackageIdByName($data['IntegrationPackage']);
-            $property = array(
+            $regionId = $this->regionGateway->find('region_name = ?', array($data['Region']));
+            $result = $this->integrationPackageGateway->find('integration_package_name = ?', array($data['IntegrationPackage']));
+            $integrationPackageId = $result[0]['integration_package_id'];
+      
+            $entityData = array(
                 'property_id_alt' => $propertyIdAlt,
                 'property_id_alt_ap' => $propertyIdAltAp,
                 'property_name' => $propertyName,
@@ -752,41 +758,30 @@ class PropertyService extends AbstractService {
                 'property_VendorCatalog' => 1,
                 'last_updated_by' => $UserProfile_ID
             );
-//            var_dump($property);
-            $exists = $oldPropertyId = $this->propertyEntityValidator->propertyExists($propertyIdAlt);
-            if($exists) {
-                $property['property_id'] = $oldPropertyId;
-            }
+            
+        $entity = new $entityClass($entityData);
+        $errors = $this->validate($entity);
 
-            $newProperty     = new $entityClass($property);
+        // If the data is valid, save it
+        if (count($errors) == 0) {
+            // Begin transaction
+            $this->propertyGateway->beginTransaction();
 
-            // Run validation
-            $validator = new EntityValidator();
-            $validator->validate($newProperty);
-            $errors    = $validator->getErrors();
-
-            // If the data is valid, save it
-            if (count($errors) == 0) {
-                // Begin transaction
-                $this->propertyGateway->beginTransaction();
-
-                try {
-                    // Save the glaccount record
-                    $this->propertyGateway->save($newProperty);
-                    $newPropertyId = $newProperty->property_id;
-                    
-                } catch(\Exception $e) {
-                    // Add a global error to the error array
-                    $errors[] = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e), 'extra'=>null);
-                }
-            }
-
-            if (count($errors)) {
-                $this->propertyGateway->rollback();
-            } else {
-                $this->propertyGateway->commit();
+            try {
+                // Save the glaccount record
+                $this->propertyGateway->save($entity);
+            } catch(\Exception $e) {
+                // Add a global error to the error array
+                $errors[] = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e), 'extra'=>null);
             }
         }
+
+        if (count($errors)) {
+            $this->propertyGateway->rollback();
+        } else {
+            $this->propertyGateway->commit();
+        }
+    }
     
 	/**
 	 * Save GL accounts assigned to a property
