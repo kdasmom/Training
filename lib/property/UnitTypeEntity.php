@@ -29,10 +29,8 @@ class UnitTypeEntity extends \NP\core\AbstractEntity {
 				'digits' => array()
 			)
 		),
-		'unittype_bedrooms'	 => array(
-			'required' => true),
-		'unittype_bathrooms'	 => array(
-			'required' => true),
+		'unittype_bedrooms'	 => array(),
+		'unittype_bathrooms'	 => array(),
 		'property_id'	 => array(
 			'validation' => array(
 				'digits' => array()
