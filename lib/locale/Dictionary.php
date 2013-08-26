@@ -25,12 +25,10 @@ abstract class Dictionary {
 	}
 
 	public function getMessage($messageName) {
-		return $this->messages[$messageName];
+		return array_keys($this->messages, $messageName)?$this->messages[$messageName]:$messageName;
 	}
 
 	public function messageExists($messageName) {
-		return array_key_exists($messageName, $this->messages);
+		return array_key_exists($this->messages, $messageName);
 	}
 }
-
-?>
