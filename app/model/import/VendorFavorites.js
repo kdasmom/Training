@@ -8,7 +8,7 @@ Ext.define('NP.model.import.VendorFavorites', {
 	
 	fields: [
 		{ name: 'VendorCode' },
-                { name: 'PropertyCode' },
+        { name: 'PropertyCode' },
 		{ name: 'IntegrationPackage' },
 		{ name: 'validation_status' }
 	]
