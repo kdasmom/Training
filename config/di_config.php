@@ -102,11 +102,18 @@ $diDefinition = array(
 	'NP\system\IntegrationPackageGateway'      => array('Adapter'),
         'NP\vendor\VendorGateway'                  => array('Adapter','PropertyService'),
         'NP\vendor\VendorService'                  => array('VendorGateway'),
+
         'NP\vendor\VendorFavoriteEntityValidator'  => array('GLAccountGateway', 'PropertyGateway', 'VendorGateway'),
         'NP\vendor\VendorFavoriteEntity'           => array(),
         'NP\vendor\VendorFavoriteGateway'          => array('Adapter'),
         'NP\vendor\VendorFavoriteService'          => array('VendorFavoriteGateway', 'VendorFavoriteEntityValidator', 'PropertyGateway', 'VendorGateway', 'IntegrationPackageGateway'),
-	'NP\security\ModuleGateway'                => array('Adapter'),
+
+    'NP\vendor\VendorUtilityEntityValidator'   => array('Adapter'),
+    'NP\vendor\VendorUtilityEntity'            => array(),
+    'NP\vendor\VendorUtilityGateway'           => array(),
+    'NP\vendor\VendorUtilityService'           => array('VendorUtilityGateway'),
+
+    'NP\security\ModuleGateway'                => array('Adapter'),
 	'NP\security\ModulePrivGateway'            => array('Adapter'),
 	'NP\security\SecurityService'              => array('config','SiteService','SessionService','UserprofileGateway','RoleGateway','UserprofileLogonGateway','ModulePrivGateway','RegionGateway','PropertyGateway','ModuleGateway'),
 	'NP\system\ConfigsysGateway'               => array('Adapter'),

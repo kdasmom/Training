@@ -1,0 +1,16 @@
+{
+    "description": "Vendor Utility Setup",
+    "service": "VendorUtilityService",
+    "entity": "NP\\vendor\\VendorUtilityEntity",
+    "columns": [
+        {"name": "Vendor_ID"},
+        {"name": "Utility_Type"},
+        {"name": "Account_Number"},
+        {"name": "Property_ID"},
+        {"name": "Unit_Id"},
+        {"name": "Meter_Number"},
+        {"name": "GL_Account"}
+    ],
+    "customValidation": true,
+    "customValidationClass": "VendorUtilityEntityValidator"
+}
