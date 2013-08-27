@@ -107,15 +107,25 @@ $diDefinition = array(
         'NP\vendor\VendorGateway'                  => array('Adapter','PropertyService'),
         'NP\vendor\VendorService'                  => array('VendorGateway'),
 
-        'NP\vendor\VendorFavoriteEntityValidator'  => array('GLAccountGateway', 'PropertyGateway', 'VendorGateway'),
-        'NP\vendor\VendorFavoriteEntity'           => array(),
-        'NP\vendor\VendorFavoriteGateway'          => array('Adapter'),
-        'NP\vendor\VendorFavoriteService'          => array('VendorFavoriteGateway', 'VendorFavoriteEntityValidator', 'PropertyGateway', 'VendorGateway', 'IntegrationPackageGateway'),
+    'NP\vendor\VendorFavoriteEntityValidator'  => array('GLAccountGateway', 'PropertyGateway', 'VendorGateway'),
+    'NP\vendor\VendorFavoriteEntity'           => array(),
+    'NP\vendor\VendorFavoriteGateway'          => array('Adapter'),
+    'NP\vendor\VendorFavoriteService'          => array('VendorFavoriteGateway', 'VendorFavoriteEntityValidator', 'PropertyGateway', 'VendorGateway', 'IntegrationPackageGateway'),
 
     'NP\vendor\VendorUtilityEntityValidator'   => array('Adapter'),
     'NP\vendor\VendorUtilityEntity'            => array(),
-    'NP\vendor\VendorUtilityGateway'           => array(),
+    'NP\vendor\VendorUtilityGateway'           => array('Adapter'),
     'NP\vendor\VendorUtilityService'           => array('VendorUtilityGateway'),
+
+    'NP\vendor\VendorInsuranceEntityValidator'   => array('Adapter'),
+    'NP\vendor\VendorInsuranceEntity'            => array(),
+    'NP\vendor\VendorInsuranceGateway'           => array('Adapter'),
+    'NP\vendor\VendorInsuranceService'           => array('VendorInsuranceGateway'),
+
+    'NP\vendor\VendorGLEntityValidator'   => array('Adapter'),
+    'NP\vendor\VendorGLEntity'            => array(),
+    'NP\vendor\VendorGLGateway'           => array('Adapter'),
+    'NP\vendor\VendorGLService'           => array('VendorGLGateway'),
 
     'NP\security\ModuleGateway'                => array('Adapter'),
 	'NP\security\ModulePrivGateway'            => array('Adapter'),

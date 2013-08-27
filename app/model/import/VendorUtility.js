@@ -13,6 +13,7 @@ Ext.define('NP.model.import.VendorUtility', {
 		{ name: 'Property_ID' },
         { name: 'Unit_Id' },
         { name: 'Meter_Number' },
-        { name: 'GL_Account' }
+        { name: 'GL_Account' },
+        { name: 'validation_status' }
 	]
 });
