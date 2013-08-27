@@ -45,6 +45,13 @@ class VendorGateway extends AbstractGateway {
 
         return $res[0];
     }
+
+    public function findByAltId($vendorCode)
+    {
+        $res = $this->find('vendor_id_alt = ?', array($vendorCode));
+
+        return $res[0];
+    }
 	
 	/**
 	 * Retrieves a vendor record looking it up by vendorsite ID

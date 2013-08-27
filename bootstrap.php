@@ -45,7 +45,9 @@ function np_global_exception_handler($e) {
     // Throw an HTTP 500 error
     header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
 };
-set_exception_handler('np_global_exception_handler');
+if($__CONFIG['serverType'] !== 'dev') {
+    set_exception_handler('np_global_exception_handler');
+}
 
 // Use this to catch errors not caught by the other handlers
 register_shutdown_function(function() use ($di) {
@@ -66,5 +68,3 @@ register_shutdown_function(function() use ($di) {
 		np_global_exception_handler($e);
     }
 });
-
-?>
