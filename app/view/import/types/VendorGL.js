@@ -9,9 +9,9 @@ Ext.define('NP.view.import.types.VendorGL', {
     fieldName  : 'file_upload_vendor_gl',
 
     // For localization
-    tabTitle : 'Vendor GL Assignment',
-    entityName : '',
-    sectionName: '',
+    tabTitle     : 'Vendor GL Assignment',
+    entityName   : 'Vendor GL Assignment',
+    sectionName  : 'Vendor Setup',
 
     renderClosure: function(val, meta, rec) {
         var value = val.split(';');

@@ -16,6 +16,7 @@ Ext.define('NP.model.import.VendorInsurance', {
         { name: "Expiration Date"},
         { name: "Policy Limit"},
         { name: "Additional Insured"},
-        { name: "Property ID"}
+        { name: "Property ID"},
+        { name: 'validation_status' }
 	]
 });

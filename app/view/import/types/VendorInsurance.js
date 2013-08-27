@@ -10,8 +10,8 @@ Ext.define('NP.view.import.types.VendorInsurance', {
 
     // For localization
     tabTitle : 'Vendor Insurance',
-    entityName : '',
-    sectionName: '',
+    entityName : 'Vendor Insurance',
+    sectionName: 'Vendor Setup',
 
     renderClosure: function(val, meta, rec) {
         var value = val.split(';');
