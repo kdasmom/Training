@@ -86,4 +86,3 @@ vendor/zendframework/zendframework/library/Zend/*
 !vendor/zendframework/zendframework/library/Zend/Stdlib/
 !vendor/zendframework/zendframework/library/Zend/Validator/
 /clients/simpson/gl_account_csv_uploads/
-/NexusPayablesPHP/
