@@ -39,7 +39,8 @@ class UserprofileSelect extends Select {
 			'userprofile_splitscreen_loadwithoutimage',
 			'userprofile_preferred_region',
 			'userprofile_updated_by',
-			'userprofile_updated_datetm'
+			'userprofile_updated_datetm',
+			'userprofile_dashboard_layout'
 		);
 		for ($i=1;$i<=6;$i++) {
 			$cols[] = "security_question{$i}";

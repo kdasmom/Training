@@ -6,7 +6,11 @@
 Ext.define('NP.model.vendor.Vendor', {
 	extend: 'Ext.data.Model',
 	
-	requires: ['NP.lib.core.Config'],
+	requires: [
+		'NP.lib.core.Config',
+		'NP.model.user.RecAuthor',
+		'NP.model.system.IntegrationPackage'
+	],
 
 	idProperty: 'vendor_id',
 	fields: [
@@ -120,6 +124,19 @@ Ext.define('NP.model.vendor.Vendor', {
 		{ name: 'insurance_req' },
 
 		// This field does not exist in the DB, we are retrieving it to simplify
-		{ name: 'vendorsite_id', type: 'int' }
+		{ name: 'vendorsite_id', type: 'int' },
+		{ name: 'sent_for_approval_date', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
+		{ name: 'sent_for_approval_by' }
+	],
+
+	belongsTo: [
+		{
+			model     : 'NP.model.system.IntegrationPackage',
+			name      : 'integrationPackage',
+			getterName: 'getIntegrationPackage',
+			foreignKey: 'integration_package_id',
+			primaryKey: 'integration_package_id',
+			reader    : 'jsonflat'
+        }
 	]
 });

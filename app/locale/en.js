@@ -362,8 +362,8 @@ Ext.define('NP.locale.en.view.shared.gridcol.PriorityFlag', {
 	text: 'Priority'
 });
 
-Ext.define('NP.locale.en.view.shared.gridcol.VendorName', {
-	override: 'NP.view.shared.gridcol.VendorName',
+Ext.define('NP.locale.en.view.vendor.gridcol.VendorName', {
+	override: 'NP.view.vendor.gridcol.VendorName',
 
 	text: 'Vendor'
 });

@@ -21,7 +21,10 @@ Ext.define('NP.model.user.Role', {
 		{ name: 'is_admin_role', type: 'int' },
 		{ name: 'role_updated_by', type: 'int' },
 		{ name: 'role_updated_datetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
-		{ name: 'role_user_count', type: 'int' } // This field does not exist in the DB, it's a computed field
+		{ name: 'role_dashboard_layout' },
+
+		// These fields are not database columns
+		{ name: 'role_user_count', type: 'int' } 
 	],
     
     belongsTo: [

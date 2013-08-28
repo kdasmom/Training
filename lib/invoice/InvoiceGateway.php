@@ -77,7 +77,7 @@ class InvoiceGateway extends AbstractGateway {
 					'invoice_budgetoverage_note',
 					'invoice_cycle_from',
 					'invoice_cycle_to',
-					'priorityflag_id_alt',
+					'PriorityFlag_ID_Alt',
 					'invoice_neededby_datetm',
 					'vendor_code',
 					'remit_advice',
@@ -491,7 +491,7 @@ class InvoiceGateway extends AbstractGateway {
 								'invoice_duedate',
 								'invoice_neededby_datetm',
 								'invoice_period',
-								'priorityflag_id_alt'
+								'PriorityFlag_ID_Alt'
 							))
 					->column(new Expression("ISNULL((" . $jobcodeSubSelect->toString() . "), 0)"), 'invoice_inactive_jobcode')
 					->columnInvoiceAmount()
@@ -534,7 +534,7 @@ class InvoiceGateway extends AbstractGateway {
 								'invoice_datetm',
 								'invoice_duedate',
 								'invoice_neededby_datetm',
-								'priorityflag_id_alt'
+								'PriorityFlag_ID_Alt'
 							))
 					->columnInvoiceAmount()
 					->columnPendingDays()
@@ -588,7 +588,7 @@ class InvoiceGateway extends AbstractGateway {
 								'invoice_ref',
 								'invoice_datetm',
 								'invoice_status',
-								'priorityflag_id_alt'
+								'PriorityFlag_ID_Alt'
 							))
 					->columnInvoiceAmount()
 					->columnPendingDays()

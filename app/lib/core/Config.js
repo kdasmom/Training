@@ -61,6 +61,12 @@ Ext.define('NP.lib.core.Config', function() {
 			
 			// Create the country store
 			Ext.create('NP.store.system.Countries', { storeId: 'system.Countries' });
+			
+			// Create the Summary Stat Categories store
+			Ext.create('NP.store.system.SummaryStatCategories', { storeId: 'system.SummaryStatCategories' });
+
+			// Create the Summary Stat store
+			Ext.create('NP.store.system.SummaryStats', { storeId: 'system.SummaryStats' });
 
 			// Make the ajax request
 			return NP.lib.core.Net.remoteCall({
@@ -293,7 +299,7 @@ Ext.define('NP.lib.core.Config', function() {
 		 * @param  {Mixed}  value Value for the setting
 		 * @return {Deft.Promise}
 		 */
-		saveUserSetting: function(name, value) {
+		saveUserSetting: function(name, value, callback) {
 			return NP.lib.core.Net.remoteCall({
 	            requests: {
 	                service: 'UserService', 
@@ -303,10 +309,9 @@ Ext.define('NP.lib.core.Config', function() {
 	                success: function(result, deferred) {
 	                    Ext.log('Setting was saved');
 	                	deferred.resolve();
-	                },
-	                failure: function(response, options, deferred) {
-	                    Ext.log('Setting could not be saved');
-	                	deferred.reject('Setting could not be saved');
+	                	if (callback) {
+	                		callback();
+	                	}
 	                }
 	            }
 	        });

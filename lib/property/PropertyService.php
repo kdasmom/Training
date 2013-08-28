@@ -24,7 +24,7 @@ class PropertyService extends AbstractService {
 				$unitGateway, $userprofileGateway, $invoiceService, $poService, $wfRuleTargetGateway,
 				$fiscalDisplayTypeGateway, $fiscalcalMonthGateway, $addressGateway, $phoneGateway, $pnCustomFieldsGateway,
 				$pnCustomFieldDataGateway, $propertyGlAccountGateway, $configService, $unitTypeGateway, $unitTypeValGateway,
-				$unitTypeMeasGateway;
+				$unitTypeMeasGateway, $fiscalCalService;
 	
 	public function __construct(SecurityService $securityService, PropertyGateway $propertyGateway, RegionGateway $regionGateway,
 								FiscalcalGateway $fiscalcalGateway, PropertyUserprofileGateway $propertyUserprofileGateway,
@@ -35,7 +35,7 @@ class PropertyService extends AbstractService {
 								RecAuthorGateway $recAuthorGateway, PnCustomFieldsGateway $pnCustomFieldsGateway,
 								PnCustomFieldDataGateway $pnCustomFieldDataGateway, PropertyGlAccountGateway $propertyGlAccountGateway,
 								UnitTypeGateway $unitTypeGateway, UnitTypeValGateway $unitTypeValGateway,
-								UnitTypeMeasGateway $unitTypeMeasGateway) {
+								UnitTypeMeasGateway $unitTypeMeasGateway, FiscalCalService $fiscalCalService) {
 		$this->securityService            = $securityService;
 		$this->propertyGateway            = $propertyGateway;
 		$this->regionGateway              = $regionGateway;
@@ -58,6 +58,7 @@ class PropertyService extends AbstractService {
 		$this->unitTypeGateway            = $unitTypeGateway;
 		$this->unitTypeValGateway         = $unitTypeValGateway;
 		$this->unitTypeMeasGateway        = $unitTypeMeasGateway;
+		$this->fiscalCalService           = $fiscalCalService;
 	}
 
 	/**
@@ -208,31 +209,13 @@ class PropertyService extends AbstractService {
 	}
 	
 	/**
-	 * Returns the current accounting period for a property
+	 * Returns the current accounting period for a property; this method is deprecated, function is now in FiscalCalService
 	 *
 	 * @param  int   $property_id ID of the property
 	 * @return DateTime  The accounting period; returns false if no accounting period is found
 	 */
 	public function getAccountingPeriod($property_id) {
-		$now = time();
-		$today = mktime(0, 0, 0, date('n', $now), date('j', $now), date('Y', $now));
-		$year = date('Y', $now);
-		$month = date('n', $now);
-		// Try to get a cutoff date; if an error is thrown, it's because there's no fiscal calendar for this year
-		try {
-			$cutoffDay = $this->fiscalcalGateway->getCutoffDay($property_id, $year, $month);
-		} catch(\NP\core\Exception $e) {
-			return false;
-		}
-		$cutoffDate = mktime(0, 0, 0, $month, $cutoffDay, $year);
-		
-		if ($today > $cutoffDate) {
-			date_add($cutoffDate, date_interval_create_from_date_string('1 month'));
-		}
-		
-		$accountingPeriod = new \DateTime(date('Y', $cutoffDate) . '/' . date('n', $cutoffDate) . '/1');
-
-		return $accountingPeriod;
+		return $this->fiscalCalService->getAccountingPeriod($property_id);
 	}
 	
 	/**

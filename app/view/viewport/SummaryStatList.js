@@ -7,7 +7,10 @@ Ext.define('NP.view.viewport.SummaryStatList', {
     extend: 'Ext.container.Container',
     alias: 'widget.viewport.summarystatlist',
 
-    requires: ['NP.lib.core.SummaryStatManager'],
+    requires: [
+        'NP.lib.core.SummaryStatManager',
+        'NP.store.system.SummaryStatCategories'
+    ],
 
     /**
      * @private
@@ -23,18 +26,12 @@ Ext.define('NP.view.viewport.SummaryStatList', {
     defaults: { flex: 1, border: false },
 
     /**
-     * This value can be adjusted if we want to have more columns
-     * @private
-     */
-    columns: 2,
-
-    /**
      * @private
      */
     grids: [],
     
-    stateful: true,
-    stateId : 'summarystat_list',
+    /*stateful: true,
+    stateId : 'summarystat_list',*/
 
     initComponent: function() {
         var that = this;
@@ -44,62 +41,60 @@ Ext.define('NP.view.viewport.SummaryStatList', {
         // Get a list of all the valid summary stats for the current user
         var stats = NP.lib.core.SummaryStatManager.getStats();
 
-        // Figure out how many stats are going to be shown per column
-        var maxStatsPerCol = Math.ceil(stats.length/this.columns);
-        var currentCol = -1;
+        var categories = Ext.create('NP.store.system.SummaryStatCategories').getRange();
 
-        // Build an array of data per column so we know what data to create in each grid
-        var data = [];
-        for (var i=0; i<stats.length; i++) {
-            if (i == 0 || i % maxStatsPerCol == 0) {
-                currentCol++;
-                data[currentCol] = [];
-            }
-            data[currentCol].push(
-                { title: stats[i].title, name: stats[i].name, count: '<img src="resources/images/ajax-loader.gif" border="0" />' }
-            );
-        }
-        
-        // Loop through each column to create a grid for it
-        for (i=0; i<=currentCol; i++) {
-            // Build the grid
-            var grid = Ext.create('Ext.grid.Panel', {
-                hideHeaders: true,                              // We don't need to show column headers
-                border     : false,
-                margin     : (i<currentCol) ? '0 16 0 0' : 0,   // No need for a right margin for the last column
-                viewConfig : { markDirty: false },              // When updating the count, we don't want a dirty marker
-                store      : Ext.create('Ext.data.Store', {
-                                fields: ['title','name','count'],
-                                data  : data[i],
-                                proxy : {
-                                    type: 'memory',
-                                    reader: {
-                                        type: 'json'
+        // Loop through categories
+        Ext.each(categories, function(cat) {
+            // Only proceed if the user has any stats for this category
+            if (cat.get('name') in stats) {
+                var data = [];
+                Ext.each(stats[cat.get('name')], function(stat) {
+                    data.push(
+                        { title: stat.title, name: stat.name, count: '<img src="resources/images/ajax-loader.gif" border="0" />' }
+                    );
+                });
+
+                var grid = Ext.create('Ext.grid.Panel', {
+                    title      : cat.get('title'),
+                    itemId     : cat.get('name') + '_summary_stat_cat_panel',
+                    frame      : true,
+                    hideHeaders: true,                              // We don't need to show column headers
+                    border     : false,
+                    margin     : '0 16 0 0',
+                    viewConfig : { markDirty: false },              // When updating the count, we don't want a dirty marker
+                    store      : Ext.create('Ext.data.Store', {
+                                    fields: ['title','name','count'],
+                                    data  : data,
+                                    proxy : {
+                                        type: 'memory',
+                                        reader: {
+                                            type: 'json'
+                                        }
                                     }
-                                }
-                            }),
-                columns   : [
-                    { text: 'Name', dataIndex: 'title', flex: 1 },
-                    { text: 'Count', dataIndex: 'count' }
-                ],
-                listeners : {
-                    itemclick: function(grid, rec, item, index, e) {
-                        /**
-                         * @event click
-                         * Fires Whenever a row is clicked in any of the summary stat grids
-                         * @param {Ext.data.Model} rec The record for the summary stat that was clicked
-                         */
-                        that.fireEvent('click', rec);
+                                }),
+                    columns   : [
+                        { text: 'Name', dataIndex: 'title', flex: 1 },
+                        { text: 'Count', dataIndex: 'count' }
+                    ],
+                    listeners : {
+                        itemclick: function(grid, rec, item, index, e) {
+                            /**
+                             * @event click
+                             * Fires Whenever a row is clicked in any of the summary stat grids
+                             * @param {Ext.data.Model} rec The record for the summary stat that was clicked
+                             */
+                            that.fireEvent('click', rec);
+                        }
                     }
-                }
-            });
+                });
 
-            // Add grid to the private grid collection
-            that.grids.push(grid);
+                // Add grid to the private grid collection
+                that.grids.push(grid);
 
-            // Add grid to the container
-            this.items.push(grid);
-        }
+                // Add grid to the container
+                that.items.push(grid);
+            }
+        });
 
         // Add a custom click event for this component
         this.addEvents('click');
@@ -165,7 +160,7 @@ Ext.define('NP.view.viewport.SummaryStatList', {
         return selection;
     },
 
-    getState: function() {
+    /*getState: function() {
         return { selection: this.getSelection() };
     },
 
@@ -180,5 +175,5 @@ Ext.define('NP.view.viewport.SummaryStatList', {
                 }
             }
         }
-    }
+    }*/
 });

@@ -66,6 +66,44 @@ class VendorGateway extends AbstractGateway {
 		return $this->adapter->query($select, $params);
 	}
 	
+	public function findVendorsToApprove($countOnly, $pageSize=null, $page=null, $sort="vendor_name") {
+		$select = new sql\VendorSelect();
+
+		if ($countOnly == 'true') {
+			$select->count(true, 'totalRecs')
+					->column('vendor_id');
+		} else {
+			if ( substr($sort, 0, 7) == 'vendor_' ) {
+				$sort = "v.{$sort}";
+			}
+
+			$select->columns(array(
+						'vendor_id',
+						'vendor_id_alt',
+						'vendor_name',
+						'vendor_fedid',
+						'integration_package_id'
+					))
+					->columnSentForApprovalDate()
+					->columnSentForApprovalBy()
+					->order($sort);
+		}
+
+		$select->join(new sql\join\VendorIntPkgJoin())
+				->join(new sql\join\VendorApprovalJoin())
+				->whereEquals('v.vendor_status', "'forapproval'");
+
+		// If paging is needed
+		if ($pageSize !== null && $countOnly == 'false') {
+			return $this->getPagingArray($select, array(), $pageSize, $page, 'vendor_id');
+		} else if ($countOnly == 'true') {
+			$res = $this->adapter->query($select);
+			return $res[0]['totalRecs'];
+		} else {
+			return $this->adapter->query($select);
+		}
+	}
+
 }
 
 ?>

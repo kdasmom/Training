@@ -124,5 +124,44 @@ class VendorSelect extends Select {
 		
 		return $this;
 	}
+
+	/**
+	 * Adds the sent_for_approval_date column to the query
+	 *
+	 * @return \NP\vendor\sql\VendorSelect Returns caller object for easy chaining
+	 */
+	public function columnSentForApprovalDate() {
+		return $this->column(
+			Select::get()->column('recauthor_datetm')
+						->from(array('ra'=>'recauthor'))
+						->whereEquals('v.approval_tracking_id', 'ra.tablekey_id')
+						->whereEquals('ra.table_name', "'vendor'")
+						->order('ra.recauthor_datetm desc')
+						->limit(1),
+			'sent_for_approval_date'
+		);
+	}
+
+	/**
+	 * Adds the sent_for_approval_date column to the query
+	 *
+	 * @return \NP\vendor\sql\VendorSelect Returns caller object for easy chaining
+	 */
+	public function columnSentForApprovalBy() {
+		return $this->column(
+			Select::get()->columns(array())
+						->from(array('ra'=>'recauthor'))
+						->join(
+							array('usf'=>'userprofile'),
+							'ra.userprofile_id = usf.userprofile_id',
+							array('userprofile_username')
+						)
+						->whereEquals('v.approval_tracking_id', 'ra.tablekey_id')
+						->whereEquals('ra.table_name', "'vendor'")
+						->order('ra.recauthor_datetm desc')
+						->limit(1),
+			'sent_for_approval_by'
+		);
+	}
 	
 }

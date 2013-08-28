@@ -159,7 +159,7 @@ class UserService extends AbstractService {
 	 * @param  int   $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
 	 * @return array                              Array of property records
 	 */
-	public function getUserProperties($userprofile_id, $delegated_to_userprofile_id, $cols=array('property_id','property_id_alt','property_name','integration_package_id')) {
+	public function getUserProperties($userprofile_id, $delegated_to_userprofile_id, $cols=array('property_id','property_id_alt','property_name','property_status','integration_package_id')) {
 		return $this->propertyGateway->findByUser($userprofile_id, $delegated_to_userprofile_id, $cols);
 	}
 
@@ -570,6 +570,44 @@ class UserService extends AbstractService {
 		return $success;
 	}
 
+	public function saveDashboardSettings($userprofile_id, $userprofile_preferred_property, $userprofile_preferred_region, $userprofile_default_dashboard) {
+		$errors = array();
+
+		try {
+			$this->userprofileGateway->save(array(
+				'userprofile_id'                 => $userprofile_id,
+				'userprofile_preferred_property' => $userprofile_preferred_property,
+				'userprofile_preferred_region'   => $userprofile_preferred_region,
+				'userprofile_default_dashboard'  => $userprofile_default_dashboard
+			));
+		} catch(\Exception $e) {
+			$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e));
+		}
+
+		return array(
+			'success' => (count($errors)) ? false : true,
+			'errors'  => $errors
+		);
+	}
+
+	public function saveDashboardLayout($userprofile_id, $userprofile_dashboard_layout) {
+		$errors = array();
+
+		try {
+			$this->userprofileGateway->save(array(
+				'userprofile_id'               => $userprofile_id,
+				'userprofile_dashboard_layout' => $userprofile_dashboard_layout
+			));
+		} catch(\Exception $e) {
+			$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e));
+		}
+
+		return array(
+			'success' => (count($errors)) ? false : true,
+			'errors'  => $errors
+		);
+	}
+
 	public function saveDisplaySettings($data) {
 		// Begin transaction
 		$this->userprofileGateway->beginTransaction();
@@ -963,6 +1001,7 @@ class UserService extends AbstractService {
 		$this->roleGateway->beginTransaction();
 
 		try {
+			$data['role']['role_dashboard_layout'] = $data['dashboard_layout'];
 			$role     = new \NP\user\RoleEntity($data['role']);
 			$validator = new EntityValidator();
 			$validator->validate($role);

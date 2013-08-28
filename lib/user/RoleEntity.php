@@ -56,7 +56,8 @@ class RoleEntity extends \NP\core\AbstractEntity {
 			'validation' => array(
 				'date' => array('format'=>'Y-m-d H:i:s.u')
 			)
-		)
+		),
+		'role_dashboard_layout' => array()
 	);
 
 }

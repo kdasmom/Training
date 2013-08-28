@@ -47,6 +47,8 @@ class Select extends AbstractFilterableSql implements SQLInterface, SQLElement {
 	 */
 	protected $group = null;
 
+	protected $having = null;
+
 	/**
 	 * @var \NP\core\db\Order ORDER BY clause for the SELECT statement
 	 */
@@ -184,6 +186,24 @@ class Select extends AbstractFilterableSql implements SQLInterface, SQLElement {
 			$group = new Group($group);
 		}
 		$this->group = $group;
+		return $this;
+	}
+
+	/**
+	 * Adds a HAVING clause to the statement
+	 *
+	 * @param  $where string|array|NP\core\db\Where
+	 * @return \NP\core\db\Select                   Caller object returned for easy chaining
+	 */
+	public function having($having) {
+		if (!is_string($having) && !is_array($having) && !$having instanceOf Where) {
+			throw new \NP\core\Exception('The $having argument must be a string, array, or NP\core\db\Where object');
+		}
+		if (!$having instanceOf Where) {
+			$having = new Where($having);
+		}
+		$this->having = $having;
+
 		return $this;
 	}
 
@@ -373,6 +393,14 @@ class Select extends AbstractFilterableSql implements SQLInterface, SQLElement {
 		// If there's a group by clause, add it
 		if ($this->group !== null) {
 			$sql .= " GROUP BY " . $this->group->toString();
+		}
+
+		// If there's a having clause, add it
+		if ($this->having !== null) {
+			$having = $this->having->toString();
+			if ($having != '') {
+				$sql .= ' HAVING ' . $having;
+			}
 		}
 
 		// If there's an order clause, add it

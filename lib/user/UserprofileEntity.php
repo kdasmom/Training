@@ -165,7 +165,8 @@ class UserprofileEntity extends \NP\core\AbstractEntity {
 			'validation' => array(
 				'stringLength' => array('max'=>600)
 			)
-		)
+		),
+		'userprofile_dashboard_layout' => array()
 	);
 
 }

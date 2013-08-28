@@ -51,9 +51,10 @@ Ext.application({
 					
 					// Init the history module so we can use the back and forward buttons
 					that.initHistory();
-					 
+					
 					// Initialize state manager
-					Ext.state.Manager.setProvider( Ext.create('NP.lib.core.DBProvider') );
+					that.stateProvider = Ext.create('NP.lib.core.DBProvider');
+					Ext.state.Manager.setProvider(that.stateProvider);
 					
 					// Initialize the UI state so that we start on whatever page is in the URL fragment
 					that.initState();
@@ -137,8 +138,8 @@ Ext.application({
 				var args = newToken.split(':');
 				this.runAction.apply(this, args);
 			} else {
-				console.log('Booting to the home page');
-				this.addHistory('Viewport:home');
+				Ext.log('Booting to the home page');
+				this.addHistory('Viewport:home:dashboard');
 			}
 		} else {
 			this.runAction('Viewport', 'home');
@@ -273,6 +274,10 @@ Ext.application({
 	 */
 	getComponent: function(comp) {
 		return Ext.ComponentQuery.query('[xtype="' + comp + '"]')[0];
+	},
+
+	getStateProvider: function() {
+		return this.stateProvider;
 	},
 
 	/**

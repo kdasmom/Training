@@ -43,7 +43,8 @@ Ext.define('NP.model.user.Userprofile', {
         { name: 'security_question5', type: 'int' },
         { name: 'security_answer5' },
         { name: 'security_question6', type: 'int' },
-        { name: 'security_answer6' }
+        { name: 'security_answer6' },
+        { name: 'userprofile_dashboard_layout' }
     ],
     
     belongsTo: [

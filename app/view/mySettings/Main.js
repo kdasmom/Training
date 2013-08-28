@@ -13,6 +13,7 @@ Ext.define('NP.view.mySettings.Main', {
     	'NP.view.mySettings.Overview',
     	'NP.view.mySettings.UserInformation',
     	'NP.view.mySettings.Settings',
+        'NP.view.mySettings.Dashboard',
     	'NP.view.mySettings.Display',
     	'NP.view.mySettings.EmailNotification',
     	'NP.view.mySettings.MobileSettings',
@@ -29,7 +30,9 @@ Ext.define('NP.view.mySettings.Main', {
 	    		xtype: 'mysettings.userinformation'
 	    	},{
 	    		xtype: 'mysettings.settings'
-	    	}
+	    	},{
+                xtype: 'mysettings.dashboard'
+            }
     	];
 
     	var settingVal = NP.Config.getSetting('pn.main.WebDocumentz', 0);

@@ -6,7 +6,8 @@
  */
 Ext.define('NP.view.invoice.grid.AbstractInvoiceGrid', {
     extend: 'NP.lib.ui.Grid',
-    
+ 	alias : 'widget.invoice.grid.abstractinvoicegrid',
+
     requires: ['NP.lib.core.Util','NP.lib.core.Config'],
     
     /**

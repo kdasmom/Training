@@ -43,6 +43,34 @@ class BudgetService extends AbstractService {
 		}
 	}
 
+	/**
+	 * Get Month-to-Date Over Budget categories
+	 *
+	 * @param  boolean $countOnly   Whether we want to retrieve only the number of records or all the data
+	 * @param  int     $property_id The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
+	 * @param  int     $pageSize    The number of records per page; if null, all records are returned
+	 * @param  int     $page        The page for which to return records
+	 * @param  string  $sort        Field(s) by which to sort the result; defaults to vendor_name
+	 * @return array                Array of budget records
+	 */
+	public function getMtdOverBudgetCategories($countOnly, $property_id, $pageSize=null, $page=null, $sort="category_name") {
+		return $this->budgetGateway->findMtdOverBudgetCategories($countOnly, $property_id, $pageSize, $page, $sort);
+	}
+
+	/**
+	 * Get Year-to-Date Over Budget categories
+	 *
+	 * @param  boolean $countOnly   Whether we want to retrieve only the number of records or all the data
+	 * @param  int     $property_id The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
+	 * @param  int     $pageSize    The number of records per page; if null, all records are returned
+	 * @param  int     $page        The page for which to return records
+	 * @param  string  $sort        Field(s) by which to sort the result; defaults to vendor_name
+	 * @return array                Array of budget records
+	 */
+	public function getYtdOverBudgetCategories($countOnly, $property_id, $pageSize=null, $page=null, $sort="category_name") {
+		return $this->budgetGateway->findYtdOverBudgetCategories($countOnly, $property_id, $pageSize, $page, $sort);
+	}
+
 }
 
 ?>

@@ -14,7 +14,8 @@ Ext.define('NP.view.user.GroupsForm', {
     	'NP.view.shared.button.Cancel',
     	'NP.view.user.GroupsFormInfo',
     	'NP.view.user.GroupsFormPermissions',
-    	'NP.view.user.UsersFormEmail'
+    	'NP.view.user.UsersFormEmail',
+        'NP.view.user.GroupsFormDashboard',
     ],
 
     layout: 'fit',
@@ -29,7 +30,7 @@ Ext.define('NP.view.user.GroupsForm', {
     	var bar = [
     		{ xtype: 'shared.button.save' },
     		{ xtype: 'shared.button.cancel' },
-            { xtype: 'shared.button.new', text: this.createCopyBtnText }
+            { xtype: 'shared.button.new', itemId: 'createGroupCopyBtn', text: this.createCopyBtnText }
 	    ];
 	    this.tbar = bar;
 	    this.bbar = bar;
@@ -37,10 +38,12 @@ Ext.define('NP.view.user.GroupsForm', {
 	    this.items = [{
 			xtype : 'verticaltabpanel',
 			border: false,
+            activeTab: 3,
             items : [
 	    		{ xtype: 'user.groupsforminfo' },
 	    		{ xtype: 'user.groupsformpermissions' },
-	    		{ xtype: 'user.usersformemail', showEmailOverwrite: true }
+	    		{ xtype: 'user.usersformemail', showEmailOverwrite: true },
+                { xtype: 'user.groupsformdashboard', border: false }
 	    	]
 	    }];
 

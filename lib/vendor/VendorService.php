@@ -11,16 +11,11 @@ use NP\core\AbstractService;
  */
 class VendorService extends AbstractService {
 	
-	/**
-	 * @var NP\vendor\VendorGateway
-	 */
-	protected $vendorGateway;
+	protected $vendorGateway, $insuranceGateway;
 	
-	/**
-	 * @param NP\vendor\VendorGateway $vendorGateway VendorGateway object injected
-	 */
-	public function __construct(VendorGateway $vendorGateway) {
-		$this->vendorGateway = $vendorGateway;
+	public function __construct(VendorGateway $vendorGateway, InsuranceGateway $insuranceGateway) {
+		$this->vendorGateway    = $vendorGateway;
+		$this->insuranceGateway = $insuranceGateway;
 	}
 	
 	/**
@@ -94,6 +89,32 @@ class VendorService extends AbstractService {
 			'vendor_name ASC',
 			array('vendor_id','vendor_id_alt','vendor_name')
 		);
+	}
+
+	/**
+	 * Get list of vendors to approve
+	 *
+	 * @param  boolean $countOnly                   Whether we want to retrieve only the number of records or all the data
+	 * @param  int     $pageSize                    The number of records per page; if null, all records are returned
+	 * @param  int     $page                        The page for which to return records
+	 * @param  string  $sort                        Field(s) by which to sort the result; defaults to vendor_name
+	 * @return array                                Array of vendor records
+	 */
+	public function getVendorsToApprove($countOnly, $pageSize=null, $page=null, $sort="vendor_name") {
+		return $this->vendorGateway->findVendorsToApprove($countOnly, $pageSize, $page, $sort);
+	}
+
+	/**
+	 * Get list of vendors to approve
+	 *
+	 * @param  boolean $countOnly                   Whether we want to retrieve only the number of records or all the data
+	 * @param  int     $pageSize                    The number of records per page; if null, all records are returned
+	 * @param  int     $page                        The page for which to return records
+	 * @param  string  $sort                        Field(s) by which to sort the result; defaults to vendor_name
+	 * @return array                                Array of vendor records
+	 */
+	public function getExpiredInsuranceCerts($countOnly, $pageSize=null, $page=null, $sort="insurance_expdatetm") {
+		return $this->insuranceGateway->findExpiredInsuranceCerts($countOnly, $pageSize, $page, $sort);
 	}
 	
 }

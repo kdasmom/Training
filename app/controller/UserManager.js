@@ -11,7 +11,8 @@ Ext.define('NP.controller.UserManager', {
 		'NP.lib.core.Security',
 		'NP.lib.core.Net',
 		'NP.lib.core.Util',
-		'Ext.ux.form.field.BoxSelect'
+		'Ext.ux.form.field.BoxSelect',
+		'NP.view.shared.PortalCanvas'
 	],
 	
 	refs: [
@@ -24,6 +25,7 @@ Ext.define('NP.controller.UserManager', {
 		{ ref: 'delegationForm', selector: '[xtype="user.userdelegationform"]' },
 		{ ref: 'groupGrid', selector: '[xtype="user.groupsgrid"] customgrid' },
 		{ ref: 'groupForm', selector: '[xtype="user.groupsform"]' },
+		{ ref: 'portalCanvas', selector: '[xtype="shared.portalcanvas"]' },
 		{ ref: 'groupTree', selector: '[xtype="user.groupsformpermissions"]' }
 	],
 
@@ -167,7 +169,7 @@ Ext.define('NP.controller.UserManager', {
 				}
 			},
 			// The Save button on the group form
-			'[xtype="user.groupsform"] [xtype="shared.button.new"]': {
+			'#createGroupCopyBtn': {
 				click: this.createCopy
 			}
 		});
@@ -636,6 +638,13 @@ Ext.define('NP.controller.UserManager', {
 									n.set('checked', true);
 								}
 							});
+
+							// Setup the Dashboard canvas
+							var canvas = that.getPortalCanvas();
+							var canvasConfig = data['role_dashboard_layout'];
+							if (canvasConfig !== null) {
+								canvas.buildFromConfig(Ext.JSON.decode(canvasConfig));
+							}
 						}
 				    }
 				});
@@ -659,7 +668,8 @@ Ext.define('NP.controller.UserManager', {
 		var that = this;
 
 		var form = this.getGroupForm();
-		
+		var canvasConfig = this.getPortalCanvas().serialize();
+
 		if (form.isValid()) {
 			var permissions = [];
 			var checkedModules = this.getGroupTree().getChecked();
@@ -674,9 +684,10 @@ Ext.define('NP.controller.UserManager', {
 				service: 'UserService',
 				action : 'saveRole',
 				extraParams: {
-					permissions    : permissions,
-					emailalerts    : this.getSelectedEmailAlerts(),
-					emailalerthours: this.getSelectedEmailHours()
+					permissions     : permissions,
+					emailalerts     : this.getSelectedEmailAlerts(),
+					emailalerthours : this.getSelectedEmailHours(),
+					dashboard_layout: Ext.JSON.encode(canvasConfig)
 				},
 				extraFields: {
 					parent_role_id: 'parent_role_id',
