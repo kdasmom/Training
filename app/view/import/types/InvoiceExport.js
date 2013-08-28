@@ -47,6 +47,17 @@ Ext.define('NP.view.import.types.InvoiceExport', {
         return {
             forceFit: true,
             columns: [
+                { text : this.colTextPropertyCode, dataIndex: 'PropertyCode', flex: 1,
+                    renderer : function(val, meta, rec) {
+                                    var value = val.split(';');
+                                    if (value[1]) {
+                                        meta.tdAttr = 'data-qtip="' + value[1] + '"';
+                                        return "<span style='color:red;font-weight:bold' >" + value[0] + "</span>";
+                                    } else {
+                                        return val;
+                                    }
+                                }
+                },
                 { text: this.colTextInvoiceNumber, dataIndex: 'InvoiceNumber', flex: 1 },
                 { text: this.colTextVendorCode, dataIndex: 'VendorCode', flex: 1 },
                 { text: this.colTextInvoiceDate, dataIndex: 'InvoiceDate', flex: 1 },
@@ -65,7 +76,7 @@ Ext.define('NP.view.import.types.InvoiceExport', {
                 { text: this.colTextInvoiceItemQuantity, dataIndex: 'InvoiceItemQuantity', flex: 1 },
                 { text: this.colTextInvoiceItemUnitPrice, dataIndex: 'InvoiceItemUnitPrice', flex: 1 },
                 { text: this.colTextInvoiceItemAmount, dataIndex: 'InvoiceItemAmount', flex: 1 },
-                { text: this.colTextInvoiceItemSalesTax, dataIndex: 'InvoiceItemSales Tax', flex: 1 },
+                { text: this.colTextInvoiceItemSalesTax, dataIndex: 'InvoiceItemSalesTax', flex: 1 },
                 { text: this.colTextInvoiceItemShipping, dataIndex: 'InvoiceItemShipping', flex: 1 },
                 { text: this.colTextInvoiceItemDescription, dataIndex: 'InvoiceItemDescription', flex: 1 },
                 { text: this.colTextInvoiceItemContract, dataIndex: 'InvoiceItemContract', flex: 1 },

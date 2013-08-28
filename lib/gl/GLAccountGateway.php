@@ -182,4 +182,12 @@ class GLAccountGateway extends AbstractGateway
         return $res[0];
         
     }
+    
+    public function findByAltId($glNumber)
+    {
+        $res = $this->find('glaccount_number  = ?', array($glNumber));
+
+        return $res[0];
+        
+    }
 }

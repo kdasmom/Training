@@ -26,6 +26,17 @@ class PropertyGateway  extends AbstractGateway {
         return $res[0];
     }
 	
+    public function findByAltId($altId)
+    {
+        $select = new Select();
+        $select ->from('property')
+            ->columns(array('id' => 'property_id'))
+            ->where("property_id_alt = ?");
+
+        $res = $this->adapter->query($select, array($altId));
+
+        return $res[0];
+    }
 	/**
 	 * Retrieve a property by Id
 	 */

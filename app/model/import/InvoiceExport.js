@@ -37,6 +37,7 @@ Ext.define('NP.model.import.InvoiceExport', {
         { name: 'InvoiceItemCustomField3' },
         { name: 'InvoiceItemCustomField4' },
         { name: 'InvoiceItemCustomField5' },
-        { name: 'InvoiceItemCustomField6' }
+        { name: 'InvoiceItemCustomField6' },
+        { name: 'validation_status' }
     ]
 });

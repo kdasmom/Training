@@ -28,6 +28,26 @@ class InvoiceExportEntityValidator extends BaseImportServiceEntityValidator{
      */
     protected function validate(\ArrayObject $row, \ArrayObject $errors)
     {
-   
+        $select = new Select();
+        $select ->from('PROPERTY')
+            ->columns(array('id' => 'property_id'))
+            ->where("property_id_alt = ? ");
+
+        $result = $this->propertyGateway->adapter->query($select, array($row['PropertyCode']));
+
+        if (empty($result)) {
+            $this->addLocalizedErrorMessage('PropertyCode', 'importFieldPropertyCodeError');
+        }   
+        
+        $select = new Select();
+        $select ->from('GLACCOUNT')
+            ->columns(array('id' => 'glaccount_id'))
+            ->where("glaccount_number = ? ");
+
+        $result = $this->glaccountGateway->adapter->query($select, array($row['AccountNumber']));
+
+        if (empty($result)) {
+            $this->addLocalizedErrorMessage('AccountNumber', 'importFieldGLCodeError');
+        }  
    }
 }

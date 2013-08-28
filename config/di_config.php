@@ -72,11 +72,13 @@ $diDefinition = array(
 	'NP\invoice\InvoiceItemGateway'            => array('Adapter'),
 	'NP\invoice\InvoiceService'                => array('SecurityService','InvoiceGateway','InvoiceItemGateway','BudgetService'),
 	'NP\invoice\InvoiceServiceInterceptor',
-        'NP\invoice\InvoiceExportEntity'                 => array(),
-        'NP\invoice\InvoiceExportEntityValidator'        => array('GLAccountGateway', 'PropertyGateway'),
-	'NP\invoice\InvoiceExportService'          => array('SecurityService','InvoiceGateway','InvoiceItemGateway','BudgetService'),
+        
+        'NP\invoice\InvoiceExportEntity'           => array(),
+        'NP\invoice\InvoiceExportEntityValidator'  => array('GLAccountGateway', 'PropertyGateway'),
         'NP\invoice\InvoiceExportGateway'          => array('Adapter'),
-	'NP\locale\LocalizationService'            => array('locale'),
+	'NP\invoice\InvoiceExportService'          => array('InvoiceExportGateway', 'InvoiceExportEntityValidator', 'PropertyGateway', 'GLAccountGateway'),
+	
+        'NP\locale\LocalizationService'            => array('locale'),
 	'NP\notification\EmailAlertGateway'        => array('Adapter'),
 	'NP\notification\EmailAlertHourGateway'    => array('Adapter'),
 	'NP\notification\EmailAlertTypeGateway'    => array('Adapter'),
