@@ -37,7 +37,7 @@ class VendorInsuranceEntityValidator extends BaseImportServiceEntityValidator
     {
         $integrationPackageName = $row['Integration Package Name'];
         $vendorName = $row['Vendor ID'];
-        $insutanceTypeName = $row['Insurance Type'];
+        $insuranceTypeName = $row['Insurance Type'];
         $companyName = $row['Company'];
         $policyNumber = $row['Policy Number'];
         $effectiveDate = $row['Effective Date'];
@@ -62,9 +62,17 @@ class VendorInsuranceEntityValidator extends BaseImportServiceEntityValidator
         $this->addLocalizedErrorMessageIfNull($propertyId, 'Property ID', 'Invalid Property');
 
         $query = "SELECT insurancetype_id FROM insurancetype WHERE insurancetype_name = ?";
-        $result = $this->adapter->query($query, array($insutanceTypeName));
+        $result = $this->adapter->query($query, array($insuranceTypeName));
         $insuranceTypeId = !empty($result[0])?$result[0]['insurancetype_id']:null;
         $this->addLocalizedErrorMessageIfNull($insuranceTypeId, 'Insurance Type', 'Invalid Insurance Type');
+
+        if(!preg_match('|\d{2}[-/]\d{2}[-/]\d{4}|', $effectiveDate)) {
+            $this->addLocalizedErrorMessage('Effective Date', 'Invalid Effective Date');
+        }
+
+        if(!preg_match('|\d{2}[-/]\d{2}[-/]\d{4}|', $expirationDate)) {
+            $this->addLocalizedErrorMessage('Expiration Date', 'Invalid Expiration Date');
+        }
 
     }
 }
