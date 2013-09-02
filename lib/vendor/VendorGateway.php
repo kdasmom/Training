@@ -2,8 +2,8 @@
 
 namespace NP\vendor;
 
-use NP\core\AbstractGateway;
 use NP\core\db\Select;
+use NP\system\BaseImportServiceGateway;
 use NP\system\ConfigService;
 use NP\property\PropertyService;
 use NP\vendor\VendorSelect;
@@ -15,7 +15,7 @@ use NP\core\db\Adapter;
  *
  * @author Thomas Messier
  */
-class VendorGateway extends AbstractGateway {
+class VendorGateway extends BaseImportServiceGateway {
 	/**
 	 * @var NP\property\PropertyService
 	 */
@@ -84,5 +84,3 @@ class VendorGateway extends AbstractGateway {
 	}
 	
 }
-
-?>

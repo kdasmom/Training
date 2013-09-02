@@ -2,22 +2,22 @@
 
 namespace NP\vendor;
 
-use NP\core\AbstractService;
+use NP\system\BaseImportService;
 
 /**
  * Service class for operations related to vendors
  *
  * @author Thomas Messier
  */
-class VendorService extends AbstractService {
+class VendorService extends BaseImportService {
 	
 	/**
-	 * @var NP\vendor\VendorGateway
+	 * @var \NP\vendor\VendorGateway
 	 */
 	protected $vendorGateway;
 	
 	/**
-	 * @param NP\vendor\VendorGateway $vendorGateway VendorGateway object injected
+	 * @param \NP\vendor\VendorGateway $vendorGateway VendorGateway object injected
 	 */
 	public function __construct(VendorGateway $vendorGateway) {
 		$this->vendorGateway = $vendorGateway;
@@ -54,7 +54,16 @@ class VendorService extends AbstractService {
 			array('vendor_id','vendor_id_alt','vendor_name')
 		);
 	}
-	
-}
 
-?>
+    /**
+     * This must be implemented in child class.
+     * Method accept row and entity class to save in related gateway.
+     *
+     * @param \ArrayObject $data Row array for entity defined in next param
+     * @param string $entityClass Entity class to map data
+     */
+    public function save(\ArrayObject $data, $entityClass)
+    {
+        // TODO: Implement save() method.
+    }
+}

@@ -545,4 +545,3 @@ class VendorEntity extends \NP\core\AbstractEntity {
 	);
 
 }
-?>
