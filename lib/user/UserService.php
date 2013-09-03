@@ -265,7 +265,54 @@ class UserService extends AbstractService {
 
 		return false;
 	}
+        
+        public function save(\ArrayObject $data, $entityClass)
+        {
+            $user['userprofile'] = array("userprofile_username" => $data["Username"], 
+                                            "userprofile_status" => "active",
+                                            "userprofile_password" => "admin");
+            $user["userprofile_password_confirm"] =  "admin";
+            $role = $this->roleGateway->find('role_name = ?', array($data['UserGroup']));
+            $roleId = $role[0]['role_id'];
+            $user['userprofilerole'] = array("role_id" => $roleId, "userprofilerole_status" => "active");
+            $user['staff'] = array("staff_status" => "active");
+            $user['person'] = array("person_firstname" => $data["FirstName"],
+                                        "person_middlename" => $data["MiddleName"],
+                                        "person_lastname" => $data["LastName"]);
+            $user['address'] = array ( "address_line1" => $data["Address1"],
+                                            "address_line2" => $data["Address2"],
+                                            "address_city" => $data["City"],
+                                            "address_state" => $data["State"],
+                                            "address_zip" => $data["Zip"]);
+            $user['email'] = array("email_address" => $data["EmailAddress"]);
+            $user['home_phone'] = array("phone_number" => $data["HomePhone"]);
+            $user['work_phone'] = array("phone_number" => $data["WorkPhone"]);
+            $errors = array();
+            $userprofile_id = null;
 
+            $this->userprofileGateway->beginTransaction();
+
+            try {
+                    $res = $this->saveUserDetails($user);
+                    $errors = $res['errors'];
+                    $userprofile_id = $res['userprofile_id'];
+            } catch(\Exception $e) {
+                    $errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
+            }
+
+            if (count($errors)) {
+                    $this->userprofileGateway->rollback();
+            } else {
+                    $this->userprofileGateway->commit();
+            }
+
+            return array(
+                    'success'        => (count($errors)) ? false : true,
+                    'errors'         => $errors,
+                    'userprofile_id' => $userprofile_id
+            );
+        }
+        
 	/**
 	 * Saves a complete user profile
 	 *

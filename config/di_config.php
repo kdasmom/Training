@@ -167,7 +167,8 @@ $diDefinition = array(
 	'NP\user\UserSettingGateway'               => array('Adapter'),
 	'NP\user\UserService'                      => array('SecurityService','DelegationGateway','UserSettingGateway','UserprofileGateway','RoleGateway','PersonGateway','AddressGateway','EmailGateway','PhoneGateway','PropertyUserprofileGateway','MobInfoGateway','DelegationPropGateway','PropertyGateway','RegionGateway','NotificationService','PropertyUserCodingGateway','UserprofileroleGateway','StaffGateway','AddressTypeGateway','EmailTypeGateway','PhoneTypeGateway','TreeGateway'),
 	'NP\user\UserprofileLogonGateway'          => array('Adapter'),
-	'NP\workflow\WfRuleTargetGateway'          => array('Adapter'),
+	'NP\user\UserEntityValidator'              => array('RoleGateway'),
+        'NP\workflow\WfRuleTargetGateway'          => array('Adapter'),
 );
 
 // Loop through all the definitions
