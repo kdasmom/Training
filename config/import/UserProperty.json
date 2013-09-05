@@ -1,0 +1,11 @@
+{
+    "description": "User Property Assignment",
+    "service": "UserPropertyService",
+    "entity": "NP\\user\\UserPropertyEntity",
+    "columns": [
+        {"name": "Username", "entityField": "Username"},
+        {"name": "PropertyCode", "entityField": "PropertyCode"}
+    ],
+    "customValidation": true,
+    "customValidationClass": "UserPropertyEntityValidator"
+}

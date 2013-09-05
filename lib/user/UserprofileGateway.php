@@ -12,8 +12,17 @@ use NP\core\db\Select;
  * @author Thomas Messier
  */
 class UserprofileGateway extends AbstractGateway {
-	protected $tableAlias = 'u';
+        protected $tableAlias = 'u';
 
+        public function getUserprofileIdByUsername($username) {
+            $select = new sql\UserprofileSelect();
+            $select ->columns(array('id' => 'userprofile_id'))
+                ->where("userprofile_username = ?");
+
+            $res = $this->adapter->query($select, array($username));
+
+            return $res[0]['id'];
+        }
 	/**
 	 * Override to retrieve more by default
 	 */

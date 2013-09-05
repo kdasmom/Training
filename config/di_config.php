@@ -168,6 +168,9 @@ $diDefinition = array(
 	'NP\user\UserService'                      => array('SecurityService','DelegationGateway','UserSettingGateway','UserprofileGateway','RoleGateway','PersonGateway','AddressGateway','EmailGateway','PhoneGateway','PropertyUserprofileGateway','MobInfoGateway','DelegationPropGateway','PropertyGateway','RegionGateway','NotificationService','PropertyUserCodingGateway','UserprofileroleGateway','StaffGateway','AddressTypeGateway','EmailTypeGateway','PhoneTypeGateway','TreeGateway'),
 	'NP\user\UserprofileLogonGateway'          => array('Adapter'),
 	'NP\user\UserEntityValidator'              => array('RoleGateway'),
+        'NP\user\UserPropertyEntityValidator'      => array('UserprofileGateway', 'PropertyGateway'),
+        'NP\user\UserPropertyGateway'              => array('Adapter'),
+        'NP\user\UserPropertyService'              => array('UserPropertyGateway', 'UserPropertyEntityValidator', 'UserprofileGateway', 'PropertyGateway'),
         'NP\workflow\WfRuleTargetGateway'          => array('Adapter'),
 );
 
