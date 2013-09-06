@@ -173,26 +173,7 @@ class PurchaseOrderGateway extends AbstractGateway {
 			$select->count(true, 'totalRecs')
 					->column('purchaseorder_id');
 		} else {
-			$select->columns(array(
-								'purchaseorder_id',
-								'property_id',
-								'purchaseorder_ref',
-								'purchaseorder_period',
-								'purchaseorder_created',
-								'purchaseorder_datetm',
-								'purchaseorder_NeededBy_datetm',
-								'purchaseorder_status',
-								'purchaseorder_rct_req',
-								'PriorityFlag_ID_Alt',
-								'universal_field1',
-								'universal_field2',
-								'universal_field3',
-								'universal_field4',
-								'universal_field5',
-								'universal_field6',
-								'universal_field7',
-								'universal_field8'
-							))
+			$select->allColumns()
 					->columnAmount()
 					->columnPendingDays()
 					->columnPendingApprovalDays()

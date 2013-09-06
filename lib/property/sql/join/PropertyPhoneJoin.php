@@ -12,7 +12,7 @@ use NP\core\db\Select;
  */
 class PropertyPhoneJoin extends Join {
 	
-	public function __construct($cols=null, $type=Select::JOIN_LEFT, $toAlias='ph', $fromAlias='p') {
+	public function __construct($cols=null, $type=Select::JOIN_LEFT, $toAlias='ph', $fromAlias='pr') {
 		$this->setTable(array($toAlias=>'phone'))
 			->setCondition("{$toAlias}.tablekey_id = {$fromAlias}.property_id AND {$toAlias}.table_name = 'property' AND {$toAlias}.phonetype_id = (SELECT phonetype_id FROM phonetype WHERE phonetype_name = 'Main')")
 			->setCols($cols)

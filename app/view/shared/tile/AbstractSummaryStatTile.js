@@ -46,6 +46,7 @@ Ext.define('NP.view.shared.tile.AbstractSummaryStatTile', {
     getPreview: function() {
         var grid = this.getGrid();
         grid.store = this.getPreviewStore();
+        grid.paging = false;
 
         return grid;
     },

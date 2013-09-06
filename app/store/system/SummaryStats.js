@@ -47,12 +47,6 @@ Ext.define('NP.store.system.SummaryStats', {
 
 		// First we define a basic array of stats to loop over
 		var stats = [
-			// Invoice category
-			{ id: 4, title: this.invoicesToApproveText, name: 'InvoicesToApprove', module_id: 1053, store: 'invoice.Invoice', service: 'InvoiceService', category: 'invoice' },
-			{ id: 31, title: this.invoicesOnHoldText, name: 'InvoicesOnHold', module_id: 6052, store: 'invoice.Invoice', service: 'InvoiceService', category: 'invoice' },
-			{ id: 6, title: this.invoicesCompletedText, name: 'InvoicesCompleted', module_id: 2004, store: 'invoice.Invoice', service: 'InvoiceService', category: 'invoice' },
-			{ id: 23, title: this.invoicesRejectedText, name: 'InvoicesRejected', module_id: 6036, store: 'invoice.Invoice', service: 'InvoiceService', category: 'invoice' },
-			{ id: 10, title: this.invoicesMyText, name: 'InvoicesByUser', module_id: 2060, store: 'invoice.Invoice', service: 'InvoiceService', category: 'invoice' },
 			// PO category
 			{ id: 3, title: this.posToApproveText, name: 'PosToApprove', module_id: 1055, store: 'po.Purcasheorders', service: 'PoService', category: 'po' },
 			{ id: 29, title: this.posReleasedText, name: 'PosReleased', module_id: 6039, store: 'po.Purcasheorders', service: 'PoService', category: 'po' },
@@ -61,6 +55,12 @@ Ext.define('NP.store.system.SummaryStats', {
 			{ id: 27, title: this.receiptsToApproveText, name: 'ReceiptsToApprove', module_id: 6026, store: 'po.Receipts', service: 'ReceiptService', category: 'po' },
 			{ id: 28, title: this.receiptsRejectedText, name: 'ReceiptsRejected', module_id: 6028, store: 'po.Receipts', service: 'ReceiptService', category: 'po' },
 			{ id: 34, title: this.receiptsPendingPostText, name: 'ReceiptsPendingPost', module_id: 6059, store: 'po.Receipts', service: 'ReceiptService', category: 'po' },
+			// Invoice category
+			{ id: 4, title: this.invoicesToApproveText, name: 'InvoicesToApprove', module_id: 1053, store: 'invoice.Invoices', service: 'InvoiceService', category: 'invoice' },
+			{ id: 31, title: this.invoicesOnHoldText, name: 'InvoicesOnHold', module_id: 6052, store: 'invoice.Invoices', service: 'InvoiceService', category: 'invoice' },
+			{ id: 6, title: this.invoicesCompletedText, name: 'InvoicesCompleted', module_id: 2004, store: 'invoice.Invoices', service: 'InvoiceService', category: 'invoice' },
+			{ id: 23, title: this.invoicesRejectedText, name: 'InvoicesRejected', module_id: 6036, store: 'invoice.Invoices', service: 'InvoiceService', category: 'invoice' },
+			{ id: 10, title: this.invoicesMyText, name: 'InvoicesByUser', module_id: 2060, store: 'invoice.Invoices', service: 'InvoiceService', category: 'invoice' },
 			// Image category
 			{ id: 7, title: this.imagesToConvertText, name: 'ImagesToConvert', module_id: 1050, store: 'image.ImageIndexes', service: 'ImageService', category: 'image' },
 			{ id: 8, title: this.imagesToProcessText, name: 'ImagesToProcess', module_id: 2040, store: 'image.ImageIndexes', service: 'ImageService', category: 'image' },

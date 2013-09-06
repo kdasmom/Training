@@ -38,7 +38,6 @@ Ext.define('NP.view.user.GroupsForm', {
 	    this.items = [{
 			xtype : 'verticaltabpanel',
 			border: false,
-            activeTab: 3,
             items : [
 	    		{ xtype: 'user.groupsforminfo' },
 	    		{ xtype: 'user.groupsformpermissions' },

@@ -18,11 +18,20 @@ Ext.define('NP.view.user.GroupsFormDashboard', {
 	initComponent: function() {
 		this.items = [
 			{
-				xtype : 'panel',
-				border: false,
+				xtype      : 'panel',
+				border     : false,
 				bodyPadding: 8,
-				region: 'north',
-				html  : 'Please use the tool below to create a default dashboard view for this user group.'
+				region     : 'north',
+				items      : [
+					{
+						xtype: 'component',
+						html : 'Please use the tool below to create a default dashboard view for this user group.'
+					},{
+						xtype   : 'checkbox',
+						name    : 'dashboard_to_users',
+						boxLabel: 'Check this box to save this dashboard configuration to all users when the group is saved'
+					}
+				]
 			},{
 				xtype : 'shared.portalcanvas',
 				region: 'center'

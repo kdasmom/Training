@@ -1075,6 +1075,14 @@ class UserService extends AbstractService {
 					$errors[] = array('field'=>'global', 'msg'=>$res['error'], 'extra'=>null);
 				}
 			}
+
+			// If flag is set to true, set all user dashboards to match the role
+			if (!count($errors) && $data['dashboard_to_users']) {
+				$roleUsers = $this->getAll(null, null, $role->role_id);
+				foreach ($roleUsers as $roleUser) {
+					$this->saveDashboardLayout($roleUser['userprofile_id'], $role->role_dashboard_layout);
+				}
+			}
 		} catch(\Exception $e) {
 			// Add a global error to the error array
 			$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);

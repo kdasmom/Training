@@ -12,7 +12,7 @@ use NP\core\db\Select;
  */
 class PropertyFiscalcalJoin extends Join {
 	
-	public function __construct($year=null, $cols=array(), $type=Select::JOIN_INNER, $toAlias='f', $fromAlias='p') {
+	public function __construct($year=null, $cols=array(), $type=Select::JOIN_INNER, $toAlias='f', $fromAlias='pr') {
 		if ($year === null) {
 			$now = new \DateTime();
 			$year = $now->format('Y');

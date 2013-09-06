@@ -56,6 +56,8 @@ Ext.define('NP.view.user.GroupsFormPermissions', {
 
 	    this.callParent(arguments);
 
+	    this.addEvents('checkchangecascade');
+
 	    // Listener for when a checkbox is toggled
 	    this.on('checkchange', function(node, checked) {
 	    	// When a box is toggled, also toggle all child nodes
@@ -71,6 +73,8 @@ Ext.define('NP.view.user.GroupsFormPermissions', {
 		    		parentNode = parentNode.parentNode;
 		    	}
 		    }
+
+		    that.fireEvent('checkchangecascade', that, node, checked);
 	    });
     }
 });

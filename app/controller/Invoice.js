@@ -8,7 +8,7 @@ Ext.define('NP.controller.Invoice', {
 	
 	requires: ['NP.lib.core.Config'],
 	
-	stores: ['invoice.Invoice'],
+	stores: ['invoice.Invoices'],
 	
 	init: function() {
 		Ext.log('Invoice controller initialized');
@@ -22,8 +22,7 @@ Ext.define('NP.controller.Invoice', {
 				tabchange: function(tabPanel, newCard, oldCard, eOpts) {
 					Ext.log('Invoice.onTabChange() running');
 					
-					var activeTab = newCard.getXType().split('.');
-					activeTab = activeTab[activeTab.length-1].replace('register', '');
+					var activeTab = newCard.getItemId().replace('invoice_grid_', '').toLowerCase();
 					this.addHistory('Invoice:showRegister:' + activeTab);
 				}
 			},
@@ -76,11 +75,11 @@ Ext.define('NP.controller.Invoice', {
 		if (!activeTab) var activeTab = 'open';
 		
 		// Check if the tab to be selected is already active, if it isn't make it the active tab
-		var tab = Ext.ComponentQuery.query('[xtype="invoice.grid.register' + activeTab + '"]')[0];
+		var tab = Ext.ComponentQuery.query('#invoice_grid_' + activeTab)[0];
 		var tabPanel = Ext.ComponentQuery.query('tabpanel')[0];
 		
 		// Set the active tab if it hasn't been set yet
-		if (tab.getXType() != tabPanel.getActiveTab().getXType()) {
+		if (tab.getItemId() != tabPanel.getActiveTab().getItemId()) {
 			tabPanel.setActiveTab(tab);
 		}
 		

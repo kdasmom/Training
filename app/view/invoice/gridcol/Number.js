@@ -3,9 +3,9 @@
  *
  * @author Thomas Messier
  */
-Ext.define('NP.view.shared.gridcol.InvoiceNumber', {
+Ext.define('NP.view.invoice.gridcol.Number', {
 	extend: 'Ext.grid.column.Column',
-	alias: 'widget.shared.gridcol.invoicenumber',
+	alias: 'widget.invoice.gridcol.number',
 
 	text     : 'Invoice Number',
 	dataIndex: 'invoice_ref'

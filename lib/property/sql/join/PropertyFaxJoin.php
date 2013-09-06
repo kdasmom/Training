@@ -12,7 +12,7 @@ use NP\core\db\Select;
  */
 class PropertyFaxJoin extends Join {
 	
-	public function __construct($cols=null, $type=Select::JOIN_LEFT, $toAlias='ph2', $fromAlias='p') {
+	public function __construct($cols=null, $type=Select::JOIN_LEFT, $toAlias='ph2', $fromAlias='pr') {
 		if ($cols === null) {
 			$cols = array(
 				'fax_phone_id'          =>'phone_id',

@@ -1,19 +1,22 @@
 /**
- * A component to easily create a PO Grid
+ * The InvoiceGrid class can be used to easily create an invoice grid. All that's required
+ * are a few configuration options.
  *
  * @author Thomas Messier
  */
-Ext.define('NP.view.po.PoGrid', function() {
+Ext.define('NP.view.invoice.InvoiceGrid', function() {
 	// This is the default list of columns available for Invoice grids
 	var colOptions = ['property.gridcol.PropertyName','property.gridcol.PropertyCode','vendor.gridcol.VendorName',
-					'vendor.gridcol.VendorCode','po.gridcol.Date','po.gridcol.CreatedDate','po.gridcol.NeededByDate',
-					'shared.gridcol.CreatedBy','po.gridcol.Period', 'po.gridcol.Number','shared.gridcol.Amount',
-					'shared.gridcol.PendingDays','po.gridcol.Status','shared.gridcol.PriorityFlag','shared.gridcol.LastApprovedDate',
-					'shared.gridcol.LastApprovedBy','shared.gridcol.RejectedBy','shared.gridcol.RejectedDate',
-					'shared.gridcol.PendingApprovalDays','po.gridcol.SentToVendor','po.gridcol.ReceiptRequired',
-					'po.gridcol.Notes','po.gridcol.BudgetNotes'];
+					'vendor.gridcol.VendorCode','invoice.gridcol.Date','invoice.gridcol.CreatedDate',
+					'shared.gridcol.CreatedBy','shared.gridcol.RejectedDate','shared.gridcol.RejectedBy',
+					'shared.gridcol.RejectedReason','invoice.gridcol.Period','invoice.gridcol.DueDate',
+					'invoice.gridcol.NeededByDate','invoice.gridcol.Number','shared.gridcol.Amount',
+					'invoice.gridcol.PendingDays','invoice.gridcol.Status','shared.gridcol.PriorityFlag',
+					'invoice.gridcol.RemittanceAdvice','invoice.gridcol.Notes','invoice.gridcol.BudgetNotes',
+					'shared.gridcol.LastApprovedDate','shared.gridcol.LastApprovedBy','invoice.gridcol.HoldDate',
+					'invoice.gridcol.DaysOnHold','invoice.gridcol.OnHoldBy'];
 
-	var requires = ['NP.lib.core.Config'];
+	var requires = ['NP.lib.core.Util','NP.lib.core.Config'];
 	
 	Ext.each(colOptions, function(col) {
 		requires.push('NP.view.' + col);
@@ -23,7 +26,7 @@ Ext.define('NP.view.po.PoGrid', function() {
 
 	return {
 	    extend: 'NP.lib.ui.Grid',
-	 	alias : 'widget.po.pogrid',
+	 	alias : 'widget.invoice.invoicegrid',
 
 	    requires: requires,
 	    
@@ -48,7 +51,7 @@ Ext.define('NP.view.po.PoGrid', function() {
 
 			function addCustomFields(hidden) {
 				Ext.Object.each(customFields, function(key, field) {
-					if (field.poOn) {
+					if (field.invOn) {
 						colDefs.push({ xtype: 'shared.gridcol.universalfield', fieldNumber: key, flex: 1, hidden: hidden });
 					}
 				});

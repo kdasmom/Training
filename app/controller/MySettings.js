@@ -549,46 +549,30 @@ Ext.define('NP.controller.MySettings', {
 	saveDashboard: function() {
 		var that = this;
 
-		// Serialize the canvas
-		var canvasConfig = this.getPortalCanvas().serialize();
-
-		// Validate the canvas to make sure every column has a tile in it
-		var isValid = true;
-		Ext.each(canvasConfig, function(row) {
-			Ext.each(row.cols, function(col) {
-				if (!col.tiles.length) {
-					Ext.MessageBox.alert(that.errorDialogTitleText, that.blankColumnErrorText);
-					isValid = false;
-					return false;
-				}
-			});
-			if (!isValid) {
-				return false;
-			}
-		});
-
 		// If valid, we can save our dashboard layout as a user setting
-		if (isValid) {
+		if (this.getPortalCanvas().isValid()) {
 			var user   = NP.Security.getUser();
-			canvasConfig = Ext.JSON.encode(canvasConfig);
+			var userprofile_dashboard_layout = this.getPortalCanvas().serialize();
 
 			NP.lib.core.Net.remoteCall({
 				requests: {
 					service: 'UserService',
 					action : 'saveDashboardLayout',
 					userprofile_id              : user.get('userprofile_id'),
-					userprofile_dashboard_layout: canvasConfig,
+					userprofile_dashboard_layout: userprofile_dashboard_layout,
 					success: function(result, deferred) {
 						if (result.success) {
 							// Show info message
 							NP.Util.showFadingWindow({ html: that.changesSavedText });
 
 							// Update the local user model
-							user.set('userprofile_dashboard_layout', canvasConfig);
+							user.set('userprofile_dashboard_layout', userprofile_dashboard_layout);
 						}
 					}
 				}
 			});
+		} else {
+			Ext.MessageBox.alert(that.errorDialogTitleText, that.blankColumnErrorText);
 		}
 	}
 });

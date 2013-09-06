@@ -13,8 +13,42 @@ use NP\core\db\Expression;
  */
 class PoSelect extends AbstractEntitySelect {
 	
-	protected $tableName = 'purchaseorder';
+	protected $tableName     = 'purchaseorder';
 	protected $lineTableName = 'poitem';
+
+	/**
+	 * Adds all "normal" columns
+	 *
+	 * @param \NP\po\PoSelect Returns caller object for easy chaining
+	 */
+	public function allColumns() {
+		return $this->columns(array(
+								'purchaseorder_id',
+								'property_id',
+								'vendorsite_id',
+								'purchaseorder_ref',
+								'purchaseorder_period',
+								'purchaseorder_created',
+								'purchaseorder_datetm',
+								'purchaseorder_NeededBy_datetm',
+								'purchaseorder_status',
+								'purchaseorder_rct_req',
+								'PriorityFlag_ID_Alt',
+								'purchaseorder_note',
+								'purchaseorder_budgetoverage_note',
+								'purchaseorder_taxallflag',
+								'Purchaseorder_billaddress',
+								'Purchaseorder_shipaddress',
+								'universal_field1',
+								'universal_field2',
+								'universal_field3',
+								'universal_field4',
+								'universal_field5',
+								'universal_field6',
+								'universal_field7',
+								'universal_field8'
+							));
+	}
 
 	/**
 	 * Adds the pending days column

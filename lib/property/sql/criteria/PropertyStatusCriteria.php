@@ -11,7 +11,7 @@ use NP\core\db\Where;
  */
 class PropertyStatusCriteria extends Where {
 	
-	public function __construct($property_status=null, $op='=', $alias='p') {
+	public function __construct($property_status=null, $op='=', $alias='pr') {
 		parent::__construct();
 
 		$placeHolder = '?';

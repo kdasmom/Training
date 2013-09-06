@@ -45,7 +45,7 @@ Ext.define('NP.view.shared.PortalColumn', {
 		if (!that.viewOnly) {
 			mainPanel.listeners = {
 				render: function(colPanel) {
-					Ext.create('Ext.dd.DropTarget', colPanel.body.dom, {
+					colPanel._dropTarget = Ext.create('Ext.dd.DropTarget', colPanel.body.dom, {
 				        ddGroup: 'tiles',
 				        notifyEnter: function(ddSource, e, data) {
 				        	// Add some flare to invite drop.
@@ -63,8 +63,12 @@ Ext.define('NP.view.shared.PortalColumn', {
 				            return true;
 				        }
 				    });
+				},
+				beforedestroy: function(colPanel) {
+					colPanel._dropTarget.destroy();
+					colPanel._dropTarget = null;
 				}
-			}		
+			}
 		}
 
 		this.items = [mainPanel];
@@ -82,7 +86,11 @@ Ext.define('NP.view.shared.PortalColumn', {
 	},
 
 	addTile: function(tile) {
-		var colPanel = this.down('panel');
+		var me = this,
+			colPanel = me.down('panel'),
+			className,
+			tilePanel,
+			containerPanel;
 
 		Ext.suspendLayouts();
 
@@ -90,24 +98,39 @@ Ext.define('NP.view.shared.PortalColumn', {
         	borderWidth: '0'
         });
 
-        var className = Ext.getClassName(tile).split('.').pop();
-        var tilePanel = (this.viewOnly) ? tile.getDashboardPanel() : tile.getPreview();
+        className = Ext.getClassName(tile).split('.').pop();
+        tilePanel = (me.viewOnly) ? tile.getDashboardPanel() : tile.getPreview();
 
-        var tileContainer = colPanel.add({
+        containerPanel = {
 			xtype    : 'panel',
 			title    : tile.getName(),
 			tileClass: className,
 			margin   : 4,
 			frame    : true,
-			closable : !this.viewOnly,
+			closable : !me.viewOnly,
 			layout   : 'fit',
 			flex     : 1,
 			items    : [tilePanel]
-        });
+        };
+
+        if (me.viewOnly) {
+        	containerPanel.tools = [
+	        	{
+					type   : 'maximize',
+					handler: Ext.bind(me.onMaximizeTile, me)
+	        	},{
+					type   : 'minimize',
+					disabled: true,
+					handler: Ext.bind(me.onMinimizeTile, me)
+	        	}
+        	];
+        }
+
+        var tileContainer = colPanel.add(containerPanel);
 
         Ext.resumeLayouts(true);
 
-        if (!this.viewOnly) {
+        if (!me.viewOnly) {
 	        tileContainer.on('close', function() {
 	        	if (colPanel.items.items.length === 1) {
 		        	colPanel.setBodyStyle({
@@ -117,5 +140,47 @@ Ext.define('NP.view.shared.PortalColumn', {
 		        }
 	        });
 	    }
+	},
+
+	onMaximizeTile: function(evt, toolEl, owner, tool) {
+		var me = this;
+
+		var rows = Ext.ComponentQuery.query('[xtype="shared.portalrow"]');
+
+		me._hiddenItems = [];
+		
+		Ext.suspendLayouts();
+
+		Ext.each(rows, function(row) {
+			if (owner.up('[xtype="shared.portalrow"]').getId() != row.getId()) {
+				row.hide();
+				me._hiddenItems.push(row);
+			} else {
+				var cols = row.query('[xtype="shared.portalcolumn"]');
+				Ext.each(cols, function(col) {
+					if (owner.up('[xtype="shared.portalcolumn"]').getId() != col.getId()) {
+						col.hide();
+						me._hiddenItems.push(col);
+					}
+				});
+			}
+		});
+		tool.disable();
+		owner.down('tool[type="minimize"]').enable();
+		Ext.resumeLayouts(true);
+	},
+
+	onMinimizeTile: function(evt, toolEl, owner, tool) {
+		var me = this;
+
+		Ext.suspendLayouts();
+		Ext.each(me._hiddenItems, function(hiddenItem) {
+			hiddenItem.show();
+		});
+		tool.disable();
+		owner.down('tool[type="maximize"]').enable();
+		Ext.resumeLayouts(true);
+
+		me._hiddenItems = null;
 	}
 });

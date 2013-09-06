@@ -7,7 +7,7 @@ use NP\core\db\Where;
 use NP\core\db\Expression;
 
 /**
- * A custom Select object for Invoice, PO, and receipt records with some shortcut methods
+ * A custom Select object for Invoice, PO, and Receipt records with some shortcut methods
  *
  * @author Thomas Messier
  */
@@ -49,8 +49,11 @@ abstract class AbstractEntitySelect extends Select {
 	public function columnCreatedBy() {
 		return $this->column(
 						Select::get()->from(array('ra'=>'recauthor'))
-									->columns(array())
-									->join(new \NP\user\sql\join\RecauthorUserprofileJoin())
+									->columns(array(new Expression("pe.person_firstname + ' ' + pe.person_lastname")))
+									->join(new \NP\user\sql\join\RecauthorUserprofileJoin(array()))
+									->join(new \NP\user\sql\join\UserUserroleJoin(array()))
+									->join(new \NP\user\sql\join\UserroleStaffJoin(array()))
+									->join(new \NP\user\sql\join\StaffPersonJoin(array()))
 									->whereEquals('ra.tablekey_id', "{$this->tableAlias}.{$this->tableName}_id")
 									->whereEquals('ra.table_name', "'{$this->tableName}'"),
 						'created_by'
@@ -146,6 +149,28 @@ abstract class AbstractEntitySelect extends Select {
 		);
 	}
 
+	/**
+	 * Adds the rejection reason subquery as a column
+	 *
+	 * @param \NP\shared\AbstractEntitySelect Returns caller object for easy chaining
+	 */
+	public function columnRejectedReason() {
+		return $this->column(
+			Select::get()->columns(array())
+						->from(array('rh'=>'rejectionhistory'))
+						->join(
+							array('rn'=>'rejectionnote'),
+							'rh.rejectionnote_id = rn.rejectionnote_id',
+							array('rejectionnote_text')
+						)
+						->whereEquals("rh.tablekey_id", "{$this->tableAlias}.{$this->tableName}_id")
+						->whereEquals("rh.table_name", "'{$this->tableName}'")
+						->order('rh.rejectionhistory_id DESC')
+						->limit(1),
+			'rejected_reason'
+		);
+	}
+
 	protected function getApproveSelect($alias, $approvetype_name) {
 		if (strpos($approvetype_name, '%')) {
 			$whereFn = 'whereIn';
@@ -164,7 +189,7 @@ abstract class AbstractEntitySelect extends Select {
 					->order("{$alias}.approve_datetm DESC");
 	}
 
-	protected function getApproveTypeSubSelect($approvetype_name) {
+	public function getApproveTypeSubSelect($approvetype_name) {
 		if (strpos($approvetype_name, '%')) {
 			$whereFn = 'whereLike';
 		} else {

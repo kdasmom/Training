@@ -7,7 +7,12 @@ Ext.define('NP.view.shared.tile.InvoicesToApprove', {
 	extend: 'NP.view.shared.tile.AbstractInvoiceTile',
 	
 	getCols: function() {
-    	return ['InvoiceDate','PropertyName','VendorName','InvoiceNumber','InvoiceAmount',
-    			'InvoicePendingDays','InvoiceDueDate'];
+    	return ['invoice.gridcol.Date','property.gridcol.PropertyName','vendor.gridcol.VendorName',
+    			'invoice.gridcol.Number','shared.gridcol.Amount','invoice.gridcol.PendingDays',
+    			'invoice.gridcol.DueDate'];
+    },
+
+    getExcludedCols: function() {
+    	return ['shared.gridcol.RejectedDate','shared.gridcol.RejectedBy','shared.gridcol.RejectedReason'];
     }
 });

@@ -12,7 +12,7 @@ use NP\core\db\Select;
  */
 class PropertyAddressJoin extends Join {
 	
-	public function __construct($cols=null, $type=Select::JOIN_LEFT, $toAlias='adr', $fromAlias='p') {
+	public function __construct($cols=null, $type=Select::JOIN_LEFT, $toAlias='adr', $fromAlias='pr') {
 		$this->setTable(array($toAlias=>'address'))
 			->setCondition("{$toAlias}.tablekey_id = {$fromAlias}.property_id AND {$toAlias}.table_name = 'property'")
 			->setCols($cols)

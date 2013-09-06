@@ -3,9 +3,9 @@
  *
  * @author Thomas Messier
  */
-Ext.define('NP.view.shared.gridcol.InvoiceHoldDate', {
+Ext.define('NP.view.invoice.gridcol.HoldDate', {
 	extend: 'Ext.grid.column.Date',
-	alias: 'widget.shared.gridcol.invoiceholddate',
+	alias: 'widget.invoice.gridcol.holddate',
 
 	text     : 'On Hold Date',
 	dataIndex: 'invoice_hold_datetm'

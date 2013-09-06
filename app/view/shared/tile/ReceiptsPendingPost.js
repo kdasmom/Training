@@ -17,13 +17,5 @@ Ext.define('NP.view.shared.tile.ReceiptsPendingPost', {
 
     getExcludedCols: function() {
         return ['shared.gridcol.RejectedBy','shared.gridcol.RejectedDate'];
-    },
-
-    getService: function() {
-    	return 'ReceiptService';
-    },
-
-    getAction: function() {
-    	return 'getReceiptsPendingPost';
     }
 });

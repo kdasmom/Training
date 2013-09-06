@@ -13,7 +13,7 @@ use NP\core\db\Delete;
  * @author Thomas Messier
  */
 class PropertyGateway  extends AbstractGateway {
-	protected $tableAlias = 'p';
+	protected $tableAlias = 'pr';
 	
 	/**
 	 * Retrieve a property by Id
@@ -28,7 +28,7 @@ class PropertyGateway  extends AbstractGateway {
 		);
 
 		$res = $this->find(
-			array('p.property_id'=>'?'),
+			array('pr.property_id'=>'?'),
 			array($id),
 			null,
 			$cols,
@@ -49,21 +49,21 @@ class PropertyGateway  extends AbstractGateway {
 	 */
 	public function findByUser($userprofile_id, $delegation_to_userprofile_id, $cols=null) {
 		$select = new Select();
-		$select->from(array('p'=>'property'))
+		$select->from(array('pr'=>'property'))
 				->columns($cols)
-				->order("p.property_name");
+				->order("pr.property_name");
 		if ($userprofile_id == $delegation_to_userprofile_id) {
 			$select->join(array('pu'=>'propertyuserprofile'),
-							"p.property_id = pu.property_id",
+							"pr.property_id = pu.property_id",
 							array())
 					->where("
 						pu.userprofile_id = ?
-						AND p.property_status <> 0
+						AND pr.property_status <> 0
 					");
 			$params = array($userprofile_id);
 		} else {
 			$select->join(array('dp'=>'delegationprop'),
-							"p.property_id = dp.property_id",
+							"pr.property_id = dp.property_id",
 							array())
 					->join(array('d'=>'delegation'),
 							"dp.delegation_id = d.delegation_id",
@@ -89,14 +89,14 @@ class PropertyGateway  extends AbstractGateway {
 	 */
 	public function findCodingByUser($userprofile_id, $cols=null) {
 		$select = new Select();
-		$select->from(array('p'=>'property'))
+		$select->from(array('pr'=>'property'))
 				->columns($cols)
 				->join(array('pu'=>'propertyusercoding'),
-						"p.property_id = pu.property_id",
+						"pr.property_id = pu.property_id",
 						array())
 				->whereEquals('pu.userprofile_id', '?')
-				->whereNotEquals('p.property_status', '0')
-				->order("p.property_name");
+				->whereNotEquals('pr.property_status', '0')
+				->order("pr.property_name");
 		
 		return $this->adapter->query($select, array($userprofile_id));
 	}
@@ -142,7 +142,7 @@ class PropertyGateway  extends AbstractGateway {
 					EXISTS (
 						SELECT *
 						FROM propertyuserprofile pu
-						WHERE pu.property_id = p.property_id
+						WHERE pu.property_id = pr.property_id
 							AND pu.userprofile_id = ?
 					)
 					AND (
@@ -150,7 +150,7 @@ class PropertyGateway  extends AbstractGateway {
 						OR property_id_alt LIKE ?
 					)
 				')
-				->order('p.property_name');
+				->order('pr.property_name');
 		
 		$property_keyword = $property_keyword . '%';
 		

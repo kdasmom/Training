@@ -143,10 +143,46 @@ Ext.define('NP.controller.Viewport', {
 	home: function(summaryStatName) {
 		var that = this;
 
-		function renderDashboard() {
-			var config = NP.Security.getUser().get('userprofile_dashboard_layout');
-			if (config !== null) {
-				that.renderCanvas(Ext.JSON.decode(config));
+		function renderDashboard(useSummaryStatOnBlank) {
+			// Get the user's dashboard layout
+			var userprofile_dashboard_layout = NP.Security.getUser().get('userprofile_dashboard_layout');
+			// If the layout has been setup and is not blank, render it
+			if (userprofile_dashboard_layout !== null) {
+				that.renderCanvas(Ext.JSON.decode(userprofile_dashboard_layout));
+			// If it's blank, try to use the default summary stat that they log into instead
+			// (the useSummaryStatOnBlank is to prevent infinite loops)
+			} else if(useSummaryStatOnBlank) {
+				renderDefaultSummaryStat();
+			// If we're skipping the default summary stat, last option is to try to display the first summary stat available
+			} else {
+				var userStats = NP.lib.core.SummaryStatManager.getStats();
+				for (var cat in userStats) {
+					if (userStats[cat].length) {
+						that.selectSummaryStat(userStats[cat][0]['name']);
+						break;
+					}
+				}
+			}
+		}
+
+		function renderDefaultSummaryStat() {
+			var user = NP.Security.getUser();
+			var defaultDash = user.get('userprofile_default_dashboard');
+			if (defaultDash === null) {
+				renderDashboard(false);
+			// Otherwise they want to see the summary stat they selected
+			} else {
+				// Get the summary stat record
+				var rec = Ext.getStore('system.SummaryStats').findRecord('id', defaultDash, 0, false, false, true);
+
+				// If the summary stat is valid and the user has access to it, show it
+				if (rec && rec.get('module_id') in NP.Security.getPermissions()) {
+					that.selectSummaryStat(rec.get('name'));
+				// If for some reason that summary stat isn't valid (stat they no longer have access to, for example)
+				// just show their default dashboard
+				} else {
+					renderDashboard(false);
+				}
 			}
 		}
 
@@ -154,25 +190,16 @@ Ext.define('NP.controller.Viewport', {
 		this.setView('NP.view.viewport.Home');
 		// If a summary stat is being passed to the controller, select it
 		if (arguments.length == 1) {
+			// If the summaryStatName is set to dashboard, that's a special stat to display the customizable dashboard
 			if (summaryStatName == 'dashboard') {
-				renderDashboard();
+				renderDashboard(true);
+			// Otherwise we just want to display a summary stat
 			} else {
 				this.selectSummaryStat(summaryStatName);
 			}
+		// If no summary stat is being passed, we assume we're dealing with user who's seeing the home page when logging in
 		} else {
-			var user = NP.Security.getUser();
-			var defaultDash = user.get('userprofile_default_dashboard');
-			if (defaultDash === null) {
-				renderDashboard();
-			} else {
-				var rec = Ext.getStore('system.SummaryStats').findRecord('id', defaultDash, 0, false, false, true);
-
-				if (rec) {
-					this.selectSummaryStat(rec.get('name'));
-				} else {
-					renderDashboard();
-				}
-			}
+			renderDefaultSummaryStat();
 		}
 	},
 
@@ -181,7 +208,8 @@ Ext.define('NP.controller.Viewport', {
 		this.setView('NP.view.shared.PortalCanvas', {
 			border     : false,
 			viewOnly   : true,
-			buildConfig: config
+			buildConfig: config,
+			permissions: NP.Security.getPermissions()
 		}, '[xtype="viewport.summarydetailpanel"]', true);
 	},
 

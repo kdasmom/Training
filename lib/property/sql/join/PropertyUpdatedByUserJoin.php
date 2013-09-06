@@ -12,7 +12,7 @@ use NP\core\db\Select;
  */
 class PropertyUpdatedByUserJoin extends Join {
 	
-	public function __construct($cols=null, $type=Select::JOIN_LEFT, $toAlias='u2', $fromAlias='p') {
+	public function __construct($cols=null, $type=Select::JOIN_LEFT, $toAlias='u2', $fromAlias='pr') {
 		if ($cols === null) {
 			$cols = array(
 				'updated_by_userprofile_id'=>'userprofile_id',

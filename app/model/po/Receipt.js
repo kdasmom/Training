@@ -45,7 +45,8 @@ Ext.define('NP.model.po.Receipt', {
 		{ name: 'last_approved_datetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
 		{ name: 'last_approved_by' },
 		{ name: 'rejected_datetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
-		{ name: 'rejected_by' }
+		{ name: 'rejected_by' },
+		{ name: 'rejected_reason' }
 	],
 
     belongsTo: [

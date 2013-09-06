@@ -12,7 +12,7 @@ use NP\core\db\Select;
  */
 class PropertyCreatedByUserJoin extends Join {
 	
-	public function __construct($cols=null, $type=Select::JOIN_LEFT, $toAlias='u', $fromAlias='p') {
+	public function __construct($cols=null, $type=Select::JOIN_LEFT, $toAlias='u', $fromAlias='pr') {
 		if ($cols === null) {
 			$cols = array(
 				'created_by_userprofile_id'=>'userprofile_id',

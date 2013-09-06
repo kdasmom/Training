@@ -186,7 +186,8 @@ class ReceiptGateway extends AbstractGateway {
 								'receipt_status',
 								'receipt_period',
 								'receipt_receivedondt',
-								'transfer_dt'
+								'transfer_dt',
+								'receipt_note'
 							))
 					->columnAmount()
 					->columnPendingDays()

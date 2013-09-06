@@ -3,9 +3,9 @@
  *
  * @author Thomas Messier
  */
-Ext.define('NP.view.shared.gridcol.InvoiceOnHoldBy', {
+Ext.define('NP.view.invoice.gridcol.OnHoldBy', {
 	extend: 'Ext.grid.column.Column',
-	alias: 'widget.shared.gridcol.invoiceonholdby',
+	alias: 'widget.invoice.gridcol.onholdby',
 
 	text     : 'On Hold By',
 	dataIndex: 'invoice_onhold_by'

@@ -9,6 +9,8 @@ Ext.define('NP.lib.core.Util', {
 	alternateClassName: ['NP.Util'],
 	singleton: true,
 	
+	requires: ['NP.lib.core.Config'],
+
 	monthDays: {
 		1: 31,
 		2: 28,
@@ -196,7 +198,7 @@ Ext.define('NP.lib.core.Util', {
 	 * @return {String}
 	 */
 	currencyRenderer: function(val) {
-		return Ext.util.Format.currency(val);
+		return Ext.util.Format.currency(val, NP.Config.getSetting('PN.Intl.currencySymbol', '$'));
 	},
 	
 	/**

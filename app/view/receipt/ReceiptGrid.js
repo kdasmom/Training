@@ -10,7 +10,7 @@ Ext.define('NP.view.receipt.ReceiptGrid', function() {
 					'receipt.gridcol.Period', 'receipt.gridcol.Number','shared.gridcol.Amount','receipt.gridcol.ReceiveDate',
 					'receipt.gridcol.TransferDate','shared.gridcol.PendingDays','shared.gridcol.LastApprovedDate',
 					'shared.gridcol.LastApprovedBy','shared.gridcol.RejectedBy','shared.gridcol.RejectedDate',
-					'shared.gridcol.PendingApprovalDays'];
+					'shared.gridcol.PendingApprovalDays','po.gridcol.Notes'];
 
 	var requires = ['NP.lib.core.Config'];
 	

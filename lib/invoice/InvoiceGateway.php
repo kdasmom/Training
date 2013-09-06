@@ -60,6 +60,7 @@ class InvoiceGateway extends AbstractGateway {
 		$select = new sql\InvoiceSelect();
 		$select->columns(array(
 					'invoice_id',
+					'property_id',
 					'invoicepayment_type_id',
 					'invoice_ref',
 					'invoice_datetm',
@@ -91,17 +92,12 @@ class InvoiceGateway extends AbstractGateway {
 					'universal_field8',
 					'paytablekey_id'
 				))
-				->columnInvoiceAmount()
-				->joinVendor(null, null)
-				->joinProperty(array(
-					'property_id',
-					'property_id_alt',
-					'property_name'
-				))
-				->joinUserprofile(array(
-					'userprofile_id',
-					'userprofile_username'
-				))
+				->columnAmount()
+				->join(new sql\join\InvoiceVendorsiteJoin(array('vendorsite_id')))
+				->join(new \NP\vendor\sql\join\VendorsiteVendorJoin())
+				->join(new sql\join\InvoicePropertyJoin())
+				->join(new sql\join\InvoiceRecauthorJoin())
+				->join(new \NP\user\sql\join\RecauthorUserprofileJoin(array('userprofile_id','userprofile_username')))
 				->where('i.invoice_id = ?');
 		
 		$res = $this->adapter->query($select, array($invoice_id));
@@ -215,16 +211,12 @@ class InvoiceGateway extends AbstractGateway {
 		$propertyFilterSelect = new PropertyFilterSelect($propertyContext);
 
 		$select = new sql\InvoiceSelect();
-		$select->columns(array(
-					'invoice_id',
-					'invoice_ref',
-					'invoice_createddatetm',
-					'invoice_datetm',
-					'invoice_duedate'
-				))
-				->columnInvoiceAmount()
-				->joinVendor(array('vendorsite_id'), array('vendor_name'))
-				->joinProperty(array('property_name'))
+		$select->allColumns()
+				->columnAmount()
+				->columnCreatedBy()
+				->join(new sql\join\InvoiceVendorsiteJoin(array('vendorsite_id')))
+				->join(new \NP\vendor\sql\join\VendorsiteVendorJoin())
+				->join(new sql\join\InvoicePropertyJoin())
 				->where(
 					"i.invoice_status = 'open'
 					AND vs.vendorsite_status IN ('active','inactive','rejected')
@@ -253,111 +245,45 @@ class InvoiceGateway extends AbstractGateway {
 	 * @return array                               Array of invoice records
 	 */
 	public function findRejectedInvoices($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=1, $sort='vendor_name') {
-		$propertyContext = new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection);
-		$propertyFilterSelect = new PropertyFilterSelect($propertyContext);
-
-		$select = new sql\InvoiceSelect();
-		$select->columns(array(
-					'invoice_id',
-					'invoice_ref',
-					'invoice_createddatetm',
-					'invoice_datetm',
-					'invoice_duedate'
-				))
-				->columnInvoiceAmount()
-				->columnRejectedDate()
-				->columnRejectedBy()
-				->columnCreatedBy()
-				->joinVendor(array('vendorsite_id'), array('vendor_name'))
-				->joinProperty(array('property_name'))
-				->where(
-					"i.invoice_status = 'rejected'
-					AND vs.vendorsite_status IN ('active','inactive','rejected')
-					AND p.property_id IN (" . $propertyFilterSelect->toString() . ")"
-				)
-				->order($sort);
-		
-		// If paging is needed
-		if ($pageSize !== null) {
-			return $this->getPagingArray($select, array(), $pageSize, $page);
-		} else {
-			return $this->adapter->query($select);
-		}
+		// Just use the same function as the one used for Rejected Invoices dashboard
+		return $this->findInvoicesRejected(false, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
 	}
 	
 	/**
 	 * See getInvoicesToApprove() function in InvoiceService
 	 */
 	public function findInvoicesToApprove($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
+		$select = $this->getDashboardSelect($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
+
 		$propertyFilterSelect = new PropertyFilterSelect(new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection));
 
 		$role = $this->roleGateway->findByUser($userprofile_id);
 		$isAdmin = ($role['is_admin_role'] == 1) ? true : false;
-		$approveSubSelect = new Select();
-		$approveSubSelect->from(array('a'=>'approve'))
-						->columns(array(
-							'tablekey_id',
-							'approve_datetm',
-							'wftarget_id',
-							'forwardto_tablekeyid',
-							'forwardto_tablename'
-						))
-						->join(array('i2' => 'invoice'),
-							"a.tablekey_id = i2.invoice_id AND a.table_name = 'invoice'",
-							array())
-						->where("
-							a.approvetype_id = 1
-							AND a.approve_status = 'active'
-							AND i2.invoice_status = 'forapproval'
-						");
 
-		$select = new sql\InvoiceSelect();
 		$select->distinct();
 		$where = new Where();
 
-		if ($countOnly == 'true') {
-			$select->count(true, 'totalRecs')
-					->column('invoice_id');
-		} else {
-			$select->columns(array(
-								'invoice_id',
-								'invoice_ref',
-								'invoice_createddatetm',
-								'invoice_datetm',
-								'invoice_duedate'
-							))
-					->column(new Expression('DateDiff(day, a.approve_datetm, getDate())'), 'invoice_pending_days')
-					->columnSubjectName()
-					->columnInvoiceAmount()
-					->joinVendorOneTime()
-					->order($sort);
-		}
-
-		$targetSubSelect = new Select();
-		$targetSubSelect->from(array('wft'=>'WFRULETARGET'))
-						->column('tablekey_id')
-						->where("
-							wft.wfruletarget_id = a.wftarget_id 
-							AND wft.table_name = 'property'
-						");
-
 		$where->equals('i.invoice_status', "'forapproval'")
+			->equals('a.approvetype_id', 1)
+			->equals('a.approve_status', "'active'")
 			->nest('OR')
 			->isNull('a.wftarget_id')
-			->in($targetSubSelect, $propertyFilterSelect)
+			->in(
+				Select::get()->from(array('wft'=>'WFRULETARGET'))
+							->column('tablekey_id')
+							->where("
+								wft.wfruletarget_id = a.wftarget_id 
+								AND wft.table_name = 'property'
+							"),
+				$propertyFilterSelect)
 			->unnest();
 
 		if ($isAdmin) {
-			$invoiceitemSubSelect = new Select();
-			$invoiceitemSubSelect->from(array('ii'=>'invoiceitem'))
-								->column(new Expression('1'))
-								->where("
-									ii.invoice_id = i.invoice_id 
-									AND ii.property_id IN (" . $propertyFilterSelect->toString() . ")
-								");
-
 			$where->nest('OR')
-				->exists($invoiceitemSubSelect)
+				->exists(Select::get()->from(array('ii'=>'invoiceitem'))
+									->column(new Expression('1'))
+									->whereEquals('ii.invoice_id', 'i.invoice_id')
+									->whereIn('ii.property_id', $propertyFilterSelect->toString()))
 				->in('i.property_id', $propertyFilterSelect);
 		} else {
 			$where->nest('OR')
@@ -370,11 +296,7 @@ class InvoiceGateway extends AbstractGateway {
 				->equals('a.forwardto_tablename', "'userprofilerole'");
 		}
 
-		$select->joinVendor(array('vendorsite_id'), array('vendor_name'))
-				->joinProperty(array('property_name'))
-				->join(array('a'=>$approveSubSelect),
-					'i.invoice_id = a.tablekey_id',
-					array())
+		$select->join(new sql\join\InvoiceApproveJoin())
 				->where($where);
 
 		// If paging is needed
@@ -392,63 +314,42 @@ class InvoiceGateway extends AbstractGateway {
 	 * See getInvoicesOnHold() function in InvoiceService
 	 */
 	public function findInvoicesOnHold($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
+		$select = $this->getDashboardSelect($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
+
 		$propertyFilterSelect = new PropertyFilterSelect(new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection));
 
-		$select = new sql\InvoiceSelect();
 		$select->distinct();
+		$where = new Where();
 
-		if ($countOnly == 'true') {
-			$select->count(true, 'totalRecs')
-					->column('invoice_id');
-		} else {
-			$select->columns(array(
-								'invoice_id',
-								'invoice_ref',
-								'invoice_createddatetm',
-								'invoice_datetm',
-								'invoice_duedate'
-							))
-					->column(new Expression('DateDiff(day, a.approve_datetm, getDate())'), 'invoice_days_onhold')
-					->column(new Expression('(SELECT userprofile_username FROM USERPROFILE WHERE userprofile_id = a.userprofile_id)'), 'invoice_onhold_by')
-					->columnInvoiceAmount()
-					->order($sort);
+		if ($countOnly != 'true') {
+			$select->column(new Expression('DateDiff(day, a.approve_datetm, getDate())'), 'invoice_days_onhold')
+					->column(new Expression('(SELECT userprofile_username FROM USERPROFILE WHERE userprofile_id = a.userprofile_id)'), 'invoice_onhold_by');
 		}
 
-		$approvetypeSubSelect = new Select();
-		$approvetypeSubSelect->from('approvetype')
-						->column('approvetype_id')
-						->where("approvetype_name = 'hold'")
-						->limit(1);
+		$where->equals('i.invoice_status', "'hold'")
+				->equals(
+					'a.approve_id',
+					new Expression('ISNULL((' .
+						Select::get()->column('approve_id')
+									->from(array('a2'=>'approve'))
+									->whereEquals('a2.tablekey_id', 'i.invoice_id')
+									->whereEquals('a2.table_name', "'invoice'")
+									->whereEquals('a2.approvetype_id', $select->getApproveTypeSubSelect('hold'))
+									->order('approve_id DESC')
+									->limit(1)
+									->toString()
+					. '), 0)')
+				)
+				->nest('OR')
+				->in('i.property_id', $propertyFilterSelect)
+				->exists(
+					Select::get()->from(array('ii'=>'invoiceitem'))
+								->whereEquals('ii.invoice_id', 'i.invoice_id')
+								->whereIn('ii.property_id', $propertyFilterSelect)
+				);
 
-		$approveSubSelect = new Select();
-		$approveSubSelect->from(array('a'=>'approve'))
-						->column('approve_id')
-						->where("
-							tablekey_id = i.invoice_id 
-							AND table_name = 'invoice' 
-							AND approvetype_id = (" . $approvetypeSubSelect->toString() . ")
-						")
-						->order('approve_id DESC')
-						->limit(1);
-
-		$select->joinVendor(array('vendorsite_id'), array('vendor_name'))
-				->joinProperty(array('property_name'))
-				->join(array('a'=>'approve'),
-					'i.invoice_id = a.tablekey_id',
-					array('invoice_hold_datetm'=>'approve_datetm'))
-				->where("
-					i.invoice_status = 'hold'
-					AND a.approve_id = isNULL((" . $approveSubSelect->toString() . "),0)
-					AND (
-						i.property_id IN (" . $propertyFilterSelect->toString() . ")
-						OR EXISTS (
-							SELECT 1
-							FROM invoiceitem ii
-							WHERE ii.invoice_id = i.invoice_id
-								AND ii.property_id IN (" . $propertyFilterSelect->toString() . ")
-						)
-					)
-				");
+		$select->join(new sql\join\InvoiceApproveJoin(array('invoice_hold_datetm'=>'approve_datetm')))
+				->where($where);
 
 		// If paging is needed
 		if ($pageSize !== null && $countOnly == 'false') {
@@ -465,46 +366,29 @@ class InvoiceGateway extends AbstractGateway {
 	 * See getInvoicesCompleted() function in InvoiceService
 	 */
 	public function findInvoicesCompleted($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-		$propertyFilterSelect = new PropertyFilterSelect(new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection));
+		$select = $this->getDashboardSelect($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
 
-		$select = new sql\InvoiceSelect();
-		
-		if ($countOnly == 'true') {
-			$select->count(true, 'totalRecs');
-		} else {
-			$jobcodeSubSelect = new Select();
-			$jobcodeSubSelect->from(array('jc'=>'jbjobcode'))
-							->column(new Expression('1'))
+		if ($countOnly != 'true') {
+			$select->column(
+				new Expression("ISNULL((" .
+					Select::get()->column(new Expression('1'))
+							->from(array('jc'=>'jbjobcode'))
 							->join(array('ja'=>'jbjobassociation'),
 								'ja.jbjobcode_id = jc.jbjobcode_id',
 								array())
 							->join(array('ii'=>'invoiceitem'),
 								"ja.tablekey_id = ii.invoiceitem_id AND ja.table_name = 'invoiceitem'",
 								array())
-							->where("ii.invoice_id = i.invoice_id AND jc.jbjobcode_status = 'inactive'")
-							->limit(1);
-
-			$select->columns(array(
-								'invoice_id',
-								'invoice_ref',
-								'invoice_datetm',
-								'invoice_duedate',
-								'invoice_neededby_datetm',
-								'invoice_period',
-								'PriorityFlag_ID_Alt'
-							))
-					->column(new Expression("ISNULL((" . $jobcodeSubSelect->toString() . "), 0)"), 'invoice_inactive_jobcode')
-					->columnInvoiceAmount()
-					->columnPendingDays()
-					->order($sort);
+							->whereEquals('ii.invoice_id', 'i.invoice_id')
+							->whereEquals('jc.jbjobcode_status', "'inactive'")
+							->limit(1)
+							->toString() 
+				. "), 0)"),
+				'invoice_inactive_jobcode'
+			);
 		}
 
-		$select->joinVendor(array('vendorsite_id'), array('vendor_name'))
-				->joinProperty(array('property_name'))
-				->where("
-					i.invoice_status = 'saved'
-					AND i.property_id IN (" . $propertyFilterSelect->toString() . ")
-				");
+		$select->whereEquals('i.invoice_status', "'saved'");
 
 		// If paging is needed
 		if ($pageSize !== null && $countOnly == 'false') {
@@ -521,32 +405,15 @@ class InvoiceGateway extends AbstractGateway {
 	 * See getInvoicesRejected() function in InvoiceService
 	 */
 	public function findInvoicesRejected($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-		$propertyFilterSelect = new PropertyFilterSelect(new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection));
+		$select = $this->getDashboardSelect($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
 
-		$select = new sql\InvoiceSelect();
-		
-		if ($countOnly == 'true') {
-			$select->count(true, 'totalRecs');
-		} else {
-			$select->columns(array(
-								'invoice_id',
-								'invoice_ref',
-								'invoice_datetm',
-								'invoice_duedate',
-								'invoice_neededby_datetm',
-								'PriorityFlag_ID_Alt'
-							))
-					->columnInvoiceAmount()
-					->columnPendingDays()
-					->order($sort);
+		if ($countOnly != 'true') {
+			$select->columnRejectedDate()
+					->columnRejectedBy()
+					->columnRejectedReason();
 		}
 
-		$select->joinVendor(array('vendorsite_id'), array('vendor_name'))
-				->joinProperty(array('property_name'))
-				->where("
-					i.invoice_status = 'rejected'
-					AND i.property_id IN (" . $propertyFilterSelect->toString() . ")
-				");
+		$select->whereEquals('i.invoice_status', "'rejected'");
 
 		// If paging is needed
 		if ($pageSize !== null && $countOnly == 'false') {
@@ -563,7 +430,7 @@ class InvoiceGateway extends AbstractGateway {
 	 * See getInvoicesByUser() function in InvoiceService
 	 */
 	public function findInvoicesByUser($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-		$propertyFilterSelect = new PropertyFilterSelect(new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection));
+		$select = $this->getDashboardSelect($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
 
 		$rollOffType = $this->configService->get('PN.InvoiceOptions.rollOffType', 'currentPeriod');
 		switch ($rollOffType) {
@@ -578,23 +445,6 @@ class InvoiceGateway extends AbstractGateway {
 				break;
 		}
 
-		$select = new sql\InvoiceSelect();
-		
-		if ($countOnly == 'true') {
-			$select->count(true, 'totalRecs');
-		} else {
-			$select->columns(array(
-								'invoice_id',
-								'invoice_ref',
-								'invoice_datetm',
-								'invoice_status',
-								'PriorityFlag_ID_Alt'
-							))
-					->columnInvoiceAmount()
-					->columnPendingDays()
-					->order($sort);
-		}
-
 		$now = new \DateTime();
 		$nextMonth = new \DateTime();
 		$nextMonth->add(new \DateInterval('P1M'));
@@ -603,28 +453,21 @@ class InvoiceGateway extends AbstractGateway {
 		$interval->invert = 1;
 		$cutoffDate->add($interval);
 
-		$select->joinVendor(array('vendorsite_id'), array('vendor_name'))
-				->joinProperty(array('property_name'))
-				->joinFiscalcal($now->format('Y'))
-				->joinFiscalcalMonth($now->format('n'))
-				->joinIntegrationPackage()
-				->joinIntegrationPackageType(array('integration_package_type_display_name'))
-				->where("
-					i.property_id IN (" . $propertyFilterSelect->toString() . ")
-					AND (
-						(
-							i.invoice_status NOT IN ('draft','paid') 
-							AND i.invoice_createddatetm BETWEEN '{$cutoffDate->format('Y-m-d H:i:s')}' AND '{$now->format('Y-m-d H:i:s')}'
-						)
-						OR (
-							i.invoice_status = 'paid' 
-							AND DATEADD(m, {$rollIncrement}, i.invoice_period) >= (
-								CASE
-									WHEN fm.fiscalcalmonth_cutoff >= {$now->format('j')} THEN '{$now->format('Y')}-{$now->format('m')}-01'
-									ELSE '{$nextMonth->format('Y')}-{$nextMonth->format('m')}-01'
-								END
-							)
-						)
+		$select->join(new \NP\property\sql\join\PropertyFiscalcalJoin())
+				->join(new \NP\property\sql\join\FiscalcalFiscalcalMonthJoin())
+				->whereNest('OR')
+				->whereNest('AND')
+				->whereNotIn('i.invoice_status', "'draft','paid'")
+				->whereBetween('i.invoice_createddatetm', "'{$cutoffDate->format('Y-m-d H:i:s')}'", "'{$now->format('Y-m-d H:i:s')}'")
+				->whereUnnest()
+				->whereNest('AND')
+				->whereEquals('i.invoice_status', "'paid'")
+				->whereExpression("
+					DATEADD(m, {$rollIncrement}, i.invoice_period) >= (
+						CASE
+							WHEN fm.fiscalcalmonth_cutoff >= {$now->format('j')} THEN '{$now->format('Y')}-{$now->format('m')}-01'
+							ELSE '{$nextMonth->format('Y')}-{$nextMonth->format('m')}-01'
+						END
 					)
 				");
 
@@ -637,6 +480,36 @@ class InvoiceGateway extends AbstractGateway {
 		} else {
 			return $this->adapter->query($select);
 		}
+	}
+
+	protected function getDashboardSelect($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort) {
+		$select = new sql\InvoiceSelect();
+		
+		if ($countOnly == 'true') {
+			$select->count(true, 'totalRecs')
+					->column('invoice_id');
+		} else {
+			$select->allColumns()
+					->columnAmount()
+					->columnSubjectName()
+					->columnPendingDays()
+					->columnPendingApprovalDays()
+					->columnCreatedBy()
+					->columnLastApprovedBy()
+					->columnLastApprovedDate()
+					->order($sort);
+		}
+
+		$propertyFilterSelect = new PropertyFilterSelect(new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection));
+
+		$select->join(new sql\join\InvoicePropertyJoin())
+			->join(new sql\join\InvoiceVendorsiteJoin())
+			->join(new \NP\vendor\sql\join\VendorsiteVendorJoin())
+			->join(new sql\join\InvoicePriorityFlagJoin())
+			->join(new sql\join\InvoiceVendorOneTimeJoin())
+			->whereIn('i.property_id', $propertyFilterSelect);
+
+		return $select;
 	}
 
 	public function rollPeriod($property_id, $newAccountingPeriod, $oldAccountingPeriod) {

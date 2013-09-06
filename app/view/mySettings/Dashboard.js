@@ -8,6 +8,7 @@ Ext.define('NP.view.mySettings.Dashboard', {
 	alias : 'widget.mysettings.dashboard',
 	
 	requires: [
+		'NP.lib.core.Security',
 		'NP.view.shared.PortalCanvas',
 		'NP.view.shared.PortalTilePicker',
 		'NP.view.shared.button.Save'
@@ -16,28 +17,30 @@ Ext.define('NP.view.mySettings.Dashboard', {
 	layout: 'border',
 	title : 'Dashboard',
 
-	items: [
-		{
-			xtype : 'panel',
-			border: false,
-			bodyPadding: 8,
-			region: 'north',
-			html  : 'Please use the tool below to create your dashboard view.'
-		},{
-			xtype : 'shared.portalcanvas',
-			region: 'center'
-		},{
-			xtype : 'shared.portaltilepicker',
-			region: 'east',
-			width : 250
-		}
-	],
-
 	initComponent: function() {
 		var bar = [{ xtype: 'shared.button.save' }];
 
 		this.tbar = bar;
 		this.bbar = bar;
+
+		this.items = [
+			{
+				xtype : 'panel',
+				border: false,
+				bodyPadding: 8,
+				region: 'north',
+				html  : 'Please use the tool below to create your dashboard view.'
+			},{
+				xtype : 'shared.portalcanvas',
+				region: 'center',
+				permissions: NP.Security.getPermissions()
+			},{
+				xtype : 'shared.portaltilepicker',
+				region: 'east',
+				width : 250,
+				permissions: NP.Security.getPermissions()
+			}
+		];
 
 		this.callParent(arguments);
 	}

@@ -3,10 +3,11 @@
  *
  * @author Thomas Messier
  */
-Ext.define('NP.view.shared.gridcol.InvoiceDaysOnHold', {
+Ext.define('NP.view.invoice.gridcol.DaysOnHold', {
 	extend: 'Ext.grid.column.Column',
-	alias: 'widget.shared.gridcol.invoicedaysonhold',
+	alias: 'widget.invoice.gridcol.daysonhold',
 
 	text     : 'Number of Days On Hold',
-	dataIndex: 'invoice_days_onhold'
+	dataIndex: 'invoice_days_onhold',
+	align    : 'right'
 });

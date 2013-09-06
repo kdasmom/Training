@@ -70,12 +70,14 @@ Ext.define('NP.model.invoice.Invoice', {
 		{ name: 'template_name' },
 
 		// These fields are not in the INVOICE table
+		{ name: 'entity_amount', type: 'float' },
 		{ name: 'integration_package_type_display_name' },
 		{ name: 'userprofile_id', type: 'int' },
     	{ name: 'userprofile_username' },
     	{ name: 'created_by' },
 		{ name: 'rejected_datetm', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
 		{ name: 'rejected_by' },
+		{ name: 'rejected_reason' },
 		{ name: 'invoice_pending_days', type: 'int' },
 		{ name: 'invoice_onhold_by' },
 		{ name: 'invoice_days_onhold', type: 'int' }

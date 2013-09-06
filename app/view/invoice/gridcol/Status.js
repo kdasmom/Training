@@ -3,9 +3,9 @@
  *
  * @author Thomas Messier
  */
-Ext.define('NP.view.shared.gridcol.InvoiceStatus', {
+Ext.define('NP.view.invoice.gridcol.Status', {
 	extend: 'Ext.grid.column.Column',
-	alias: 'widget.shared.gridcol.invoicestatus',
+	alias: 'widget.invoice.gridcol.status',
 
 	text     : 'Status',
 	dataIndex: 'invoice_status',

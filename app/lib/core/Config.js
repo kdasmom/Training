@@ -68,6 +68,9 @@ Ext.define('NP.lib.core.Config', function() {
 			// Create the Summary Stat store
 			Ext.create('NP.store.system.SummaryStats', { storeId: 'system.SummaryStats' });
 
+			// Create the Tiles store
+			Ext.create('NP.store.system.Tiles', { storeId: 'system.Tiles' });
+
 			// Make the ajax request
 			return NP.lib.core.Net.remoteCall({
 				requests: [
