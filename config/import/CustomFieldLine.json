@@ -1,0 +1,10 @@
+{
+    "description": "CustomField Line import",
+    "service": "CustomField",
+    "entity": "NP\\system\\CustomField",
+    "columns": [
+        {"name": "CustomField", "entityField": "CustomField"},
+    ],
+    "customValidation": true,
+    "customValidationClass": "CustomFieldEntityValidator"
+}

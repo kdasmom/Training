@@ -10,11 +10,15 @@ Ext.define('NP.view.import.types.CustomFieldLine', {
 
     // For localization
     tabTitle : 'Line Item',
-    entityName : '',
-    sectionName: '',
+    entityName : 'Custom Field Line',
+    sectionName: 'Custom Field Line',
+    customField : "Custom Field",
 
     getGrid: function() {
-        
+        return {
+            columns: [
+                { text: this.customField, dataIndex: 'CustomField', flex: 1 }                
+            ]
+        }
     }
-
 });

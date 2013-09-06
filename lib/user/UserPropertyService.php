@@ -56,6 +56,7 @@ class UserPropertyService extends BaseImportService {
         $userprofileId = $this->userprofileGateway->getUserprofileIdByUsername($username);
        
         $entityData = array(
+            'propuser_id' => '',
             'property_id' => $propertyId,
             'userprofile_id' => $userprofileId
         );

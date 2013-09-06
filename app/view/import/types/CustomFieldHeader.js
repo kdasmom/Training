@@ -10,11 +10,15 @@ Ext.define('NP.view.import.types.CustomFieldHeader', {
 
     // For localization
     tabTitle : 'Header',
-    entityName : '',
-    sectionName: '',
+    entityName : 'Custom Field Header',
+    sectionName: 'Custom Field Header',
+    customField : "Custom Field",
 
     getGrid: function() {
-        
+        return {
+            columns: [
+                { text: this.customField, dataIndex: 'CustomField', flex: 1 }                
+            ]
+        }
     }
-
 });

@@ -12,6 +12,9 @@ use NP\system\BaseImportServiceGateway;
 class UserPropertyGateway extends BaseImportServiceGateway {
 
      protected $table = 'PROPERTYUSERPROFILE';
+     
+     protected $pk = 'propuser_id';
+     
 }
 
 ?>
