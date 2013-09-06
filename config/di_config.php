@@ -78,6 +78,12 @@ $diDefinition = array(
         'NP\invoice\InvoiceExportGateway'          => array('Adapter'),
 	'NP\invoice\InvoiceExportService'          => array('InvoiceExportGateway', 'InvoiceExportEntityValidator', 'PropertyGateway', 'GLAccountGateway'),
 	
+        'NP\invoice\InvoicePaymentStatusGateway'               => array('Adapter'),
+        'NP\invoice\InvoicePaymentsEntity'          => array(),
+        'NP\invoice\InvoicePaymentsEntityValidator' => array('PropertyGateway', 'VendorGateway', 'InvoiceGateway', 'InvoicePaymentStatusGateway', 'IntegrationPackageGateway'),
+        'NP\invoice\InvoicePaymentsGateway'         => array('Adapter'),
+	'NP\invoice\InvoicePaymentsService'         => array('InvoicePaymentsGateway', 'InvoicePaymentsEntityValidator', 'PropertyGateway', 'VendorGateway', 'InvoiceGateway', 'InvoicePaymentStatusGateway', 'IntegrationPackageGateway'),
+    
         'NP\locale\LocalizationService'            => array('locale'),
 	'NP\notification\EmailAlertGateway'        => array('Adapter'),
 	'NP\notification\EmailAlertHourGateway'    => array('Adapter'),
@@ -164,7 +170,11 @@ $diDefinition = array(
 	'NP\user\UserSettingGateway'               => array('Adapter'),
 	'NP\user\UserService'                      => array('SecurityService','DelegationGateway','UserSettingGateway','UserprofileGateway','RoleGateway','PersonGateway','AddressGateway','EmailGateway','PhoneGateway','PropertyUserprofileGateway','MobInfoGateway','DelegationPropGateway','PropertyGateway','RegionGateway','NotificationService','PropertyUserCodingGateway','UserprofileroleGateway','StaffGateway','AddressTypeGateway','EmailTypeGateway','PhoneTypeGateway','TreeGateway'),
 	'NP\user\UserprofileLogonGateway'          => array('Adapter'),
-	'NP\workflow\WfRuleTargetGateway'          => array('Adapter'),
+	'NP\user\UserEntityValidator'              => array('RoleGateway'),
+        'NP\user\UserPropertyEntityValidator'      => array('UserprofileGateway', 'PropertyGateway'),
+        'NP\user\UserPropertyGateway'              => array('Adapter'),
+        'NP\user\UserPropertyService'              => array('UserPropertyGateway', 'UserPropertyEntityValidator', 'UserprofileGateway', 'PropertyGateway'),
+        'NP\workflow\WfRuleTargetGateway'          => array('Adapter'),
 );
 
 // Loop through all the definitions

@@ -57,7 +57,7 @@ Ext.define('NP.view.import.CSVGrid', {
             {
                 text     : this.statusColText,
                 dataIndex: 'validation_status',
-                width: 43,
+                flex: 1,
                 renderer : function(val, meta, rec) {
                     if (val == 'invalid'){
                         meta.tdAttr = 'data-qtip="Invalid"';
