@@ -129,6 +129,9 @@ $diDefinition = array(
     'NP\vendor\VendorGLGateway'           => array('Adapter'),
     'NP\vendor\VendorGLService'           => array('VendorGLGateway'),
 
+    'NP\vendor\VendorEntityValidator'   => array('Adapter'),
+    'NP\vendor\VendorEntity'            => array(),
+
     'NP\security\ModuleGateway'                => array('Adapter'),
 	'NP\security\ModulePrivGateway'            => array('Adapter'),
 	'NP\security\SecurityService'              => array('config','SiteService','SessionService','UserprofileGateway','RoleGateway','UserprofileLogonGateway','ModulePrivGateway','RegionGateway','PropertyGateway','ModuleGateway'),
