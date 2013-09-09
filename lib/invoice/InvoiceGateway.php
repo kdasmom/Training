@@ -220,7 +220,7 @@ class InvoiceGateway extends AbstractGateway {
 				->where(
 					"i.invoice_status = 'open'
 					AND vs.vendorsite_status IN ('active','inactive','rejected')
-					AND p.property_id IN (" . $propertyFilterSelect->toString() . ")"
+					AND pr.property_id IN (" . $propertyFilterSelect->toString() . ")"
 				)
 				->order($sort);
 		
