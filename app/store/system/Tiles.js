@@ -14,7 +14,7 @@ Ext.define('NP.store.system.Tiles', {
 	],
 	
 	// For localization
-	poChart: 'PO Chart',
+	//poChart: 'PO Chart',
 
 	constructor: function() {
 		var that = this;
@@ -33,13 +33,13 @@ Ext.define('NP.store.system.Tiles', {
 		});
 
 		// Then add any other custom tiles
-		this.data.push(
+		/*this.data.push(
 			{
 				name     : this.poChart,
 				className: 'PoChart',
 				moduleId : null
 			}
-		);
+		);*/
 
 		this.callParent(arguments);
 	}
