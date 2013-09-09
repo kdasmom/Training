@@ -157,7 +157,13 @@ $diDefinition = array(
 	'NP\system\SessionService'                 => array('Config','SiteService'),
 	'NP\system\SiteService'                    => array('WinCache','configPath','reloadCache'),
         'NP\system\ImportService'                  => array(),
-	'NP\user\DelegationGateway'                => array('Adapter','RoleGateway'),
+	
+        'NP\system\SplitEntity'                    => array(),
+        'NP\system\SplitEntityValidator'           => array('IntegrationPackageGateway', 'VendorGateway', 'PropertyGateway', 'GLAccountGateway'),
+        'NP\system\SplitGateway'                   => array('Adapter'),
+	'NP\system\SplitService'                   => array('SplitGateway', 'SplitEntityValidator', 'IntegrationPackageGateway', 'VendorGateway', 'PropertyGateway', 'GLAccountGateway'),
+	
+        'NP\user\DelegationGateway'                => array('Adapter','RoleGateway'),
 	'NP\user\DelegationPropGateway'            => array('Adapter'),
 	'NP\user\MobInfoGateway'                   => array('Adapter'),
 	'NP\user\PropertyUserprofileGateway'       => array('Adapter'),
