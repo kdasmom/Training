@@ -49,9 +49,9 @@ protected $glaccountGateway, $propertyGateway, $regionGateway, $fiscalcalGateway
         $select = new Select();
         $select->from('REGION')
             ->columns(array('id' => 'region_id'))
-            ->where("region_name = ?");
+            ->where("region_name = ? or region_name = ?");
 
-        $result = $this->regionGateway->adapter->query($select, array($row['Region']));
+        $result = $this->regionGateway->adapter->query($select, array($row['Region'], 'DO NOT USE ' . $row['Region']));
         
         if (empty($result)) {
             $this->addLocalizedErrorMessage('Region', 'importFieldRegionError');

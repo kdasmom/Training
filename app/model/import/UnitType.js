@@ -9,7 +9,6 @@ Ext.define('NP.model.import.UnitType', {
 	fields: [
 		{ name: 'IntegrationPackage' },
 		{ name: 'PropertyCode' },
-		{ name: 'Code' },
 		{ name: 'Name' },
 		{ name: 'Bedrooms' },
 		{ name: 'Bathrooms' },

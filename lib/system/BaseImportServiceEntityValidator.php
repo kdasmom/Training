@@ -49,7 +49,6 @@ abstract class BaseImportServiceEntityValidator {
              ->setRow($row);
 
         $row['validation_status'] = 'valid';
-        $row['validation_errors'] = '';
 
         $this->validate($row, $errors);
     }

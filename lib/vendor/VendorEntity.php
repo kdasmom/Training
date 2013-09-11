@@ -10,7 +10,6 @@ class VendorEntity extends \NP\core\AbstractEntity {
 	
 	protected $fields = array(
 		'vendor_id'	 => array(
-			'required' => true,
 			'validation' => array(
 				'digits' => array()
 			)

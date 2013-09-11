@@ -22,7 +22,7 @@ Ext.define('NP.view.import.types.GLCode', {
         return {
             columns: [
                 { text: this.nameColText, dataIndex: 'GLAccountName', flex: 1 },
-                { text: this.accountNumberText, dataIndex: 'AccountNumber', flex: 1 },
+                { text: this.accountNumberColText, dataIndex: 'AccountNumber', flex: 1 },
                 {
                     text     : this.accountTypeColText,
                     dataIndex: 'AccountType',

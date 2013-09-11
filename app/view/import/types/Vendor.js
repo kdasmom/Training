@@ -32,163 +32,161 @@ Ext.define('NP.view.import.types.Vendor', {
             columns: [
                 {
                     text     : 'Vendor ID',
-                    dataIndex: 'Vendor ID',
+                    dataIndex: 'VendorID',
                     flex     : 1,
-                    renderer : this.renderClosure
+                    renderer : function(val, meta, rec) {
+                        var value = val.split(';');
+                        if (value[1]) {
+                            meta.tdAttr = 'data-qtip="' + value[1] + '"';
+                            return "<span style='color:red;font-weight:bold' >" + value[0] + "</span>";
+                        } else {
+                            return val;
+                        }
+
+                    }
                 },
 
                 {
                     text     : 'Name',
                     dataIndex: 'Name',
-                    flex     : 1,
-                    renderer : this.renderClosure
+                    flex     : 1
                 },
 
                 {
                     text     : 'Federal ID',
-                    dataIndex: 'Federal ID',
-                    flex     : 1,
-                    renderer : this.renderClosure
+                    dataIndex: 'FederalID',
+                    flex     : 1
                 },
 
                 {
                     text     : 'Tax Report Name',
-                    dataIndex: 'Tax Report Name',
-                    flex     : 1,
-                    renderer : this.renderClosure
+                    dataIndex: 'TaxReportName',
+                    flex     : 1
                 },
 
                 {
                     text     : 'Status',
                     dataIndex: 'Status',
-                    flex     : 1,
-                    renderer : this.renderClosure
+                    flex     : 1
                 },
 
                 {
                     text     : 'Vendor Type',
-                    dataIndex: 'Vendor Type',
-                    flex     : 1,
-                    renderer : this.renderClosure
+                    dataIndex: 'VendorType',
+                    flex     : 1
                 },
 
                 {
                     text     : 'Pay Priority',
-                    dataIndex: 'Pay Priority',
-                    flex     : 1,
-                    renderer : this.renderClosure
+                    dataIndex: 'PayPriority',
+                    flex     : 1
                 },
 
                 {
                     text     : 'Created Date',
-                    dataIndex: 'Created Date',
-                    flex     : 1,
-                    renderer : this.renderClosure
+                    dataIndex: 'CreatedDate',
+                    flex     : 1
                 },
 
                 {
                     text     : 'Last Update Date',
-                    dataIndex: 'Last Update Date',
-                    flex     : 1,
-                    renderer : this.renderClosure
+                    dataIndex: 'LastUpdateDate',
+                    flex     : 1
                 },
 
                 {
-                    text     : 'Reportable',
-                    dataIndex: 'Reportable',
-                    flex     : 1,
-                    renderer : this.renderClosure
+                    text     : '1099 Reportable ?',
+                    dataIndex: '1099Reportable?',
+                    flex     : 1
                 },
 
                 {
                     text     : 'Term Date Basis',
-                    dataIndex: 'Term Date Basis',
-                    flex     : 1,
-                    renderer : this.renderClosure
+                    dataIndex: 'TermDateBasis',
+                    flex     : 1
                 },
 
                 {
                     text     : 'Pay Date Basis',
-                    dataIndex: 'Pay Date Basis',
-                    flex     : 1,
-                    renderer : this.renderClosure
+                    dataIndex: 'PayDateBasis',
+                    flex     : 1
                 },
 
                 {
                     text     : 'Default GL code',
-                    dataIndex: 'Default GL code',
-                    flex     : 1,
-                    renderer : this.renderClosure
+                    dataIndex: 'DefaultGLcode',
+                    flex     : 1
                 },
 
                 {
                     text     : 'Phone',
                     dataIndex: 'Phone',
-                    flex     : 1,
-                    renderer : this.renderClosure
+                    flex     : 1
                 },
 
                 {
                     text     : 'Fax',
                     dataIndex: 'Fax',
-                    flex     : 1,
-                    renderer : this.renderClosure
+                    flex     : 1
                 },
 
                 {
                     text     : 'Address 1',
-                    dataIndex: 'Address 1',
-                    flex     : 1,
-                    renderer : this.renderClosure
+                    dataIndex: 'Address1',
+                    flex     : 1
                 },
 
                 {
                     text     : 'Address 2',
-                    dataIndex: 'Address 2',
-                    flex     : 1,
-                    renderer : this.renderClosure
+                    dataIndex: 'Address2',
+                    flex     : 1
                 },
 
                 {
                     text     : 'City',
                     dataIndex: 'City',
-                    flex     : 1,
-                    renderer : this.renderClosure
+                    flex     : 1
                 },
 
                 {
                     text     : 'State',
                     dataIndex: 'State',
-                    flex     : 1,
-                    renderer : this.renderClosure
+                    flex     : 1
                 },
 
                 {
                     text     : 'Zip Code',
-                    dataIndex: 'Zip Code',
-                    flex     : 1,
-                    renderer : this.renderClosure
+                    dataIndex: 'ZipCode',
+                    flex     : 1
                 },
 
                 {
                     text     : 'Contact Last Name',
-                    dataIndex: 'Contact Last Name',
-                    flex     : 1,
-                    renderer : this.renderClosure
+                    dataIndex: 'ContactLastName',
+                    flex     : 1
                 },
 
                 {
                     text     : 'Contact First Name',
-                    dataIndex: 'Contact First Name',
-                    flex     : 1,
-                    renderer : this.renderClosure
+                    dataIndex: 'ContactFirstName',
+                    flex     : 1
                 },
 
                 {
-                    text     : 'Integration Package',
-                    dataIndex: 'Integration Package',
+                    text     : 'IntegrationPackage',
+                    dataIndex: 'IntegrationPackage',
                     flex     : 1,
-                    renderer : this.renderClosure
+                    renderer : function(val, meta, rec) {
+                        var value = val.split(';');
+                        if (value[1]) {
+                            meta.tdAttr = 'data-qtip="' + value[1] + '"';
+                            return "<span style='color:red;font-weight:bold' >" + value[0] + "</span>";
+                        } else {
+                            return val;
+                        }
+
+                    }
+                 
                 }
 
             ]
