@@ -4,7 +4,6 @@ namespace NP\budget;
 
 use NP\core\AbstractService;
 use NP\core\validation\EntityValidator;
-use NP\gl\GLBudgetEntityValidator;
 use NP\system\TreeGateway;
 
 /**
@@ -16,10 +15,10 @@ class BudgetService extends AbstractService {
 
 	protected $budgetGateway, $glAccountYearGateway, $glBudgetEntityValidator;
 
-	public function __construct(BudgetGateway $budgetGateway, GlAccountYearGateway $glAccountYearGateway, GLBudgetEntityValidator $validator) {
+	public function __construct(BudgetGateway $budgetGateway, GlAccountYearGateway $glAccountYearGateway, BudgetEntityValidator $validator) {
 		$this->budgetGateway           = $budgetGateway;
 		$this->glAccountYearGateway    = $glAccountYearGateway;
-        $this->glBudgetEntityValidator = $validator;
+        $this->budgetEntityValidator = $validator;
 	}
 
 	public function createMissingBudgets($entityType) {
@@ -55,10 +54,10 @@ class BudgetService extends AbstractService {
             $budget_amount = $data['Amount'];
             $budget_status = 'Active';
             $budget_createddatetime = date('Y-m-d H:i:s.u');
-            $glAccountId = $this->glBudgetEntityValidator->getGLAccountIdByName($glAccount);
+            $glAccountId = $this->budgetEntityValidator->getGLAccountIdByName($glAccount);
             //TODO
             $propertyId = 427;
-            $glAccountYearId =$this->glBudgetEntityValidator->getGLAccountYearIdByYear($glAccountId, (int)$data['PeriodYear'], $propertyId);
+            $glAccountYearId =$this->budgetEntityValidator->getGLAccountYearIdByYear($glAccountId, (int)$data['PeriodYear'], $propertyId);
             $budget = array(
                 'glaccount_id' => $glAccountId,
                 'budget_period' => $budget_period,
@@ -67,7 +66,7 @@ class BudgetService extends AbstractService {
                 'budget_createddatetime' => $budget_createddatetime
             );
 
-            $exists = $oldGlBudgetId = $this->glBudgetEntityValidator->glbudgetExists($glAccountYearId, $budget_period, $budget_status);
+            $exists = $oldGlBudgetId = $this->budgetEntityValidator->glbudgetExists($glAccountYearId, $budget_period, $budget_status);
             if($exists) {
                 $budget['budget_id'] = $oldGlBudgetId;
             }

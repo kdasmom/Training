@@ -43,8 +43,10 @@ $diDefinition = array(
 	'NP\core\notification\Emailer'             => array('mailHost','mailPort','mailUsername','mailPassword','mailEncryptionType'),
 	'NP\budget\BudgetGateway'                  => array('Adapter'),
 	'NP\budget\GlAccountYearGateway'           => array('Adapter'),
-	'NP\budget\BudgetService'                  => array('BudgetGateway','GlAccountYearGateway', 'GLBudgetEntityValidator'),
-	'NP\catalog\LinkVcitemcatGlGateway'        => array('Adapter'),
+        'NP\budget\BudgetEntityValidator'          => array('GLAccountGateway', 'GlAccountYearGateway'), 
+	'NP\budget\BudgetService'                  => array('BudgetGateway','GlAccountYearGateway', 'BudgetEntityValidator'),
+	
+        'NP\catalog\LinkVcitemcatGlGateway'        => array('Adapter'),
 	'NP\catalog\LinkVcPropertyGateway'         => array('Adapter'),
 	'NP\catalog\LinkVcVccatGateway'            => array('Adapter'),
 	'NP\catalog\LinkVcVendorGateway'           => array('Adapter'),
@@ -68,7 +70,8 @@ $diDefinition = array(
         'NP\gl\GLCategoryEntityValidator'          => array('GLAccountGateway'),
 
         'NP\gl\GLService'                          => array('GLAccountGateway', 'TreeGateway', 'GLAccountEntityValidator'),
-        'NP\gl\GLBudgetEntityValidator'            => array('GLAccountGateway', 'BudgetGateway','GlAccountYearGateway'),        'NP\invoice\InvoiceGateway'                => array('Adapter','RoleGateway'),
+        
+        'NP\invoice\InvoiceGateway'                    => array('Adapter','RoleGateway'),
 	'NP\invoice\InvoiceItemGateway'            => array('Adapter'),
 	'NP\invoice\InvoiceService'                => array('SecurityService','InvoiceGateway','InvoiceItemGateway','BudgetService'),
 	'NP\invoice\InvoiceServiceInterceptor',

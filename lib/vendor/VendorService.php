@@ -5,6 +5,7 @@ namespace NP\vendor;
 use NP\system\BaseImportService;
 use NP\system\IntegrationPackageGateway;
 use NP\gl\GLAccountGateway;
+use Zend\Soap\Client as SOAPClient;;
 
 /**
  * Service class for operations related to vendors
@@ -102,7 +103,7 @@ class VendorService extends BaseImportService {
 
             try {
                 // Save the glaccount record
-                $this->vendorGateway->save($entity);
+                //$this->vendorGateway->save($entity);
             } catch(\Exception $e) {
                 // Add a global error to the error array
                 $errors[] = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e), 'extra'=>null);
