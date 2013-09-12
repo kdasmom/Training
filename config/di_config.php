@@ -104,7 +104,7 @@ $diDefinition = array(
 	'NP\property\UnitTypeValGateway'           => array('Adapter'),
 	'NP\property\UnitTypeMeasGateway'          => array('Adapter'),
         'NP\property\StateGateway'                 => array('Adapter'),
-        'NP\property\PropertyEntityValidator'      => array('GLAccountGateway', 'PropertyGateway', 'RegionGateway', 'FiscalcalGateway', 'StateGateway'),
+        'NP\property\PropertyEntityValidator'      => array('GLAccountGateway', 'PropertyGateway', 'RegionGateway', 'FiscalcalGateway', 'StateGateway', 'IntegrationPackageGateway'),
         'NP\property\UnitEntityValidator'          => array('GLAccountGateway', 'PropertyGateway'),
         'NP\property\UnitService'                  => array('UnitGateway', 'UnitEntityValidator', 'PropertyGateway', 'UnitTypeGateway', 'IntegrationPackageGateway'),
         'NP\property\UnitTypeEntityValidator'      => array('GLAccountGateway', 'PropertyGateway'),
@@ -113,8 +113,9 @@ $diDefinition = array(
         'NP\property\PropertyGLService'            => array('PropertyGlAccountGateway', 'PropertyGLEntityValidator', 'PropertyGateway', 'GLAccountGateway', 'IntegrationPackageGateway'),
 	'NP\system\IntegrationPackageGateway'      => array('Adapter'),
         'NP\vendor\VendorGateway'                  => array('Adapter','PropertyService'),
-        'NP\vendor\VendorService'                  => array('VendorGateway'),
-
+        'NP\vendor\VendorService'                  => array('VendorGateway', 'VendorEntityValidator', 'IntegrationPackageGateway', 'VendorTypeGateway', 'GLAccountGateway'),
+        'NP\vendor\VendorTypeGateway'              => array('Adapter'),
+    
     'NP\vendor\VendorFavoriteEntityValidator'  => array('GLAccountGateway', 'PropertyGateway', 'VendorGateway'),
     'NP\vendor\VendorFavoriteEntity'           => array(),
     'NP\vendor\VendorFavoriteGateway'          => array('Adapter'),

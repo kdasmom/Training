@@ -729,9 +729,10 @@ class PropertyService extends BaseImportService {
             $propertyOptionShipAddress = (strtolower($data['ShipToAddressOption']) == 'yes') ? 1 : 0;
             $defaultBillToPropertyId = $data['DefaultBillToProperty'];
             $defaultShipToPropertyId = $data['DefaultShipToProperty'];
-            $regionId = $this->regionGateway->find('region_name = ?', array($data['Region']));
-            $result = $this->integrationPackageGateway->find('integration_package_name = ?', array($data['IntegrationPackage']));
-            $integrationPackageId = $result[0]['integration_package_id'];
+            $region = $this->regionGateway->find('region_name = ?', array($data['Region']));
+            $regionId = $region[0]['region_id'];
+            $integrationPackage = $this->integrationPackageGateway->find('integration_package_name = ?', array($data['IntegrationPackage']));
+            $integrationPackageId = $integrationPackage[0]['integration_package_id'];
       
             $entityData = array(
                 'property_id_alt' => $propertyIdAlt,

@@ -3,6 +3,8 @@
 namespace NP\vendor;
 
 use NP\system\BaseImportService;
+use NP\system\IntegrationPackageGateway;
+use NP\gl\GLAccountGateway;
 
 /**
  * Service class for operations related to vendors
@@ -11,16 +13,21 @@ use NP\system\BaseImportService;
  */
 class VendorService extends BaseImportService {
 	
-	/**
-	 * @var \NP\vendor\VendorGateway
-	 */
-	protected $vendorGateway;
-	
-	/**
-	 * @param \NP\vendor\VendorGateway $vendorGateway VendorGateway object injected
-	 */
-	public function __construct(VendorGateway $vendorGateway) {
-		$this->vendorGateway = $vendorGateway;
+	protected $vendorGateway, $validator, $integrationPackageGateway, $vendorTypeGateway, $glaccountGateway;
+
+	public function __construct(        
+                VendorGateway $vendorGateway,
+                VendorEntityValidator $validator,
+                IntegrationPackageGateway $integrationPackageGateway,
+                VendorTypeGateway $vendorTypeGateway,
+                GLAccountGateway $glaccountGateway
+                )
+        {
+                $this->vendorGateway = $vendorGateway;
+                $this->validator = $validator;
+                $this->integrationPackageGateway = $integrationPackageGateway;
+                $this->vendorTypeGateway = $vendorTypeGateway;
+                $this->glaccountGateway = $glaccountGateway;
 	}
 	
 	/**
@@ -64,6 +71,49 @@ class VendorService extends BaseImportService {
      */
     public function save(\ArrayObject $data, $entityClass)
     {
-        // TODO: Implement save() method.
+        $result = $this->integrationPackageGateway->find('integration_package_name = ?', array( $data['IntegrationPackage']));
+        $integrationPackageId = $result[0]['integration_package_id'];
+        $result = $this->vendorTypeGateway->find('vendortype_name = ?', array( $data['VendorType']));
+        $vendorTypeId = $result[0]['vendortype_id'];
+        $result = $this->glaccountGateway->find('glaccount_number = ?', array( $data['DefaultGLcode']));
+        $glaccountId = $result[0]['glaccount_id'];
+        $entityData = array(
+		'vendor_id_alt' => $data['VendorID'],
+		'vendor_name' => $data['Name'],
+		'vendor_fedid' => $data['FederalID'],
+		'default_glaccount_id'=> $glaccountId,
+		'vendor_type_code' => $data['VendorType'],
+		'vendortype_id' => $vendorTypeId,
+		'vendor_paypriority' => $data['PayPriority'],
+		'vendor_type1099' => $data['1099Reportable?'],
+		'vendor_tax_reporting_name' => $data['TaxReportName'],
+		'vendor_status' => $data['Status'],
+		'vendor_lastupdate_date' => $data['LastUpdateDate'],
+		'integration_package_id' => $integrationPackageId,
+		'vendor_createddatetm' => $data['CreatedDate'],
+        );
+        $entity = new $entityClass($entityData);
+        $errors = $this->validate($entity);
+
+        // If the data is valid, save it
+        if (count($errors) == 0) {
+            // Begin transaction
+            $this->vendorGateway->beginTransaction();
+
+            try {
+                // Save the glaccount record
+                $this->vendorGateway->save($entity);
+            } catch(\Exception $e) {
+                // Add a global error to the error array
+                $errors[] = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e), 'extra'=>null);
+            }
+        }
+
+        if (count($errors)) {
+            $this->vendorGateway->rollback();
+        } else {
+            $this->vendorGateway->commit();
+        } 
+    
     }
 }

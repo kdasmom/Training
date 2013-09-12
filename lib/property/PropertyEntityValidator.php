@@ -6,10 +6,11 @@ use NP\gl\GLAccountGateway;
 use NP\property\PropertyGateway;
 use NP\system\BaseImportServiceEntityValidator;
 use NP\core\db\Select;
+use NP\system\IntegrationPackageGateway;
 
 class PropertyEntityValidator extends BaseImportServiceEntityValidator{
     
-protected $glaccountGateway, $propertyGateway, $regionGateway, $fiscalcalGateway, $stateGateway;
+protected $glaccountGateway, $propertyGateway, $regionGateway, $fiscalcalGateway, $stateGateway, $integrationPackageGateway;
 
     /**
      * @param GLAccountGateway $glaccountGateway
@@ -19,13 +20,15 @@ protected $glaccountGateway, $propertyGateway, $regionGateway, $fiscalcalGateway
      * @param StateGateway $stateGateway
      */
     public function __construct(GLAccountGateway $glaccountGateway, PropertyGateway $propertyGateway, 
-            RegionGateway $regionGateway, FiscalcalGateway $fiscalcalGateway, StateGateway $stateGateway)
+            RegionGateway $regionGateway, FiscalcalGateway $fiscalcalGateway, StateGateway $stateGateway,
+            IntegrationPackageGateway $integrationPackageGateway)
     {
         $this->glaccountGateway = $glaccountGateway;
         $this->propertyGateway = $propertyGateway;
         $this->regionGateway = $regionGateway;
         $this->fiscalGateway = $fiscalcalGateway;
         $this->stateGateway = $stateGateway;
+        $this->integrationPackageGateway = $integrationPackageGateway;
     }
 
     /**
@@ -39,10 +42,9 @@ protected $glaccountGateway, $propertyGateway, $regionGateway, $fiscalcalGateway
         $select ->from('INTEGRATIONPACKAGE')
                 ->columns(array('id' => 'integration_package_id'))
                 ->where("integration_package_name = ?");
+        $result = $this->integrationPackageGateway->adapter->query($select, array($row['IntegrationPackage']));
 
-        $resultPropertyGL = $this->glaccountGateway->adapter->query($select, array($row['IntegrationPackage']));
-
-        if (empty($resultPropertyGL)) {
+        if (empty($result)) {
             $this->addLocalizedErrorMessage('IntegrationPackage', 'importFieldIntegrationPackageNameError');
         }
 
