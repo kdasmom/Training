@@ -12,7 +12,7 @@ namespace NP\vendor;
 
 use NP\system\BaseImportServiceEntityValidator;
 use NP\core\db\Select;
-use Zend\Soap\Client as SOAPClient;;
+use Zend\Soap\Client as SOAPClient;
 
 class VendorEntityValidator extends BaseImportServiceEntityValidator
 {
@@ -97,10 +97,10 @@ class VendorEntityValidator extends BaseImportServiceEntityValidator
         $login = $client->Login($wsdl_login);
         $LoginResult = $login->LoginResult;
         $session_key = $LoginResult->any;
-//        $SecurityHeader = new SoapHeader(null, null, array('SessionKey' => $session_key, 
-//                'ClientName' => $wsdl_login['client_name'], 
-//                'UserName' => $wsdl_login['username']));
-//        $client->addSoapInputHeader($SecurityHeader);
+        $SecurityHeader = new \SoapHeader(null, null, array('SessionKey' => $session_key, 
+                'ClientName' => $wsdl_login['client_name'], 
+                'UserName' => $wsdl_login['username']));
+        $client->addSoapInputHeader($SecurityHeader);
         $resultWsdl = $client->PN_SET_VENDORCOMBO(array('vendorcombo' => $xmlstring,'integration_id' =>1));
         
     }

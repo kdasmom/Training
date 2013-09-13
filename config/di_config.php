@@ -43,7 +43,7 @@ $diDefinition = array(
 	'NP\core\notification\Emailer'             => array('mailHost','mailPort','mailUsername','mailPassword','mailEncryptionType'),
 	'NP\budget\BudgetGateway'                  => array('Adapter'),
 	'NP\budget\GlAccountYearGateway'           => array('Adapter'),
-        'NP\budget\BudgetEntityValidator'          => array('GLAccountGateway', 'GlAccountYearGateway'), 
+        'NP\budget\BudgetEntityValidator'          => array('Adapter'), 
 	'NP\budget\BudgetService'                  => array('BudgetGateway','GlAccountYearGateway', 'BudgetEntityValidator'),
 	
         'NP\catalog\LinkVcitemcatGlGateway'        => array('Adapter'),

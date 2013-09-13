@@ -2,81 +2,106 @@
 
 namespace NP\budget;
 
-use NP\gl\GLAccountGateway;
 use NP\system\BaseImportServiceEntityValidator;
+use NP\core\db\Select;
+use Zend\Soap\Client as SOAPClient;
+use Zend\Dom\Query as DOMQuery;
 
 class BudgetEntityValidator extends BaseImportServiceEntityValidator{
 
-    protected $glaccountGateway, $glAccountYearGateway;
+    /**
+     * @var \NP\core\db\Adapter
+     */
+    protected $adapter;
 
-    public function __construct(GLAccountGateway $glaccountGateway, GlAccountYearGateway $glAccountYearGateway) {
-                $this->glaccountGateway     = $glaccountGateway;
-		$this->glAccountYearGateway = $glAccountYearGateway;
-	}
+    /**
+     * @param \NP\core\db\Adapter $adapter
+     */
+    public function __construct(\NP\core\db\Adapter $adapter)
+    {
+        $this->adapter = $adapter;
+    }
 
+    /**
+     * @param \ArrayObject $row
+     * @param \ArrayObject $errors
+     * @return BaseImportServiceEntityValidator
+     */
+    
     protected function validate(\ArrayObject $row, \ArrayObject $errors)
     {
-        
-        $select = new Select();
-        $select ->from('GLACCOUNT')
-            ->columns(array('id' => 'glaccount_id'))
-            ->where("glaccount_number = ? AND integration_package_id = ?");
-
-        $result = $this->glaccountGateway->adapter->query($select, array($row['GLCode'], @$resultPropertyGL[0]['id']));
-
-        if (empty($result)) {
-            $this->addLocalizedErrorMessage('GLCode', 'importFieldGLCodeError');
-        }  
-        
         $select = new Select();
         $select ->from('INTEGRATIONPACKAGE')
                 ->columns(array('id' => 'integration_package_id'))
                 ->where("integration_package_name = ?");
 
-        $resultPropertyGL = $this->integrationPackageGateway->adapter->query($select, array($row['IntegrationPackage']));
-
-        if (empty($resultPropertyGL)) {
+        $integrationPackage = $this->adapter->query($select, array($row['IntegrationPackage']));
+        
+        if (empty($integrationPackage)) {
             $this->addLocalizedErrorMessage('IntegrationPackage', 'importFieldIntegrationPackageNameError');
         }
-    }
-
-    public function getGLAccountIdByName($glaccount_name)
-    {
+        
         $select = new Select();
-        $select->from('GLACCOUNT')
+        $select ->from('GLACCOUNT')
             ->columns(array('id' => 'glaccount_id'))
-            ->where("glaccount_name = ?");
+            ->where("glaccount_number = ? and integration_package_id = ?");
 
-        $result = $this->GLAccountGateway->adapter->query($select, array($glaccount_name));
-        return (!empty($result[0]['id'])) ? $result[0]['id'] : null;
-    }
+        $glaccount = $this->adapter->query($select, array($row['GLAccount'], $integrationPackage[0]['id']));
 
-    public function getIntegrationPackageIdByName($integrationPackageName)
-    {
+        if (empty($glaccount)) {
+            $this->addLocalizedErrorMessage('GLAccount', 'importFieldGLAccountError');
+        }
+        
         $select = new Select();
-        $select->from('integrationpackage')
-            ->columns(array('id' => 'integration_package_id'))
-            ->where("integration_package_name = ?");
+        $select ->from('PROPERTY')
+            ->columns(array('id' => 'property_id'))
+            ->where("property_id_alt = ?");
 
-        $result = $this->GLAccountGateway->adapter->query($select, array($integrationPackageName));
-        return (!empty($result[0]['id'])) ? $result[0]['id'] : null;
-    }
-    public function getGLAccountYearIdByYear($glaccount_id, $glaccountyear_year, $property_id) {
+        $property = $this->adapter->query($select, array($row['BusinessUnit']));
+
+        if (empty($property)) {
+            $this->addLocalizedErrorMessage('BusinessUnit', 'importFieldPropertyCodeError');
+        }  
+
         $query = new Select();
-        $query->from('glaccountyear')
-            ->column('glaccountyear_id')
+        $query->from('GLACCOUNTYEAR')
+            ->column( 'glaccountyear_id')
             ->where('glaccount_id = ? AND glaccountyear_year = ? AND property_id = ?');
-        $result = $this->glAccountYearGateway->adapter->query($query, array($glaccount_id, $glaccountyear_year, $property_id));
-        return (!empty($result[0]['id'])) ? $result[0]['glaccountyear_id'] : null;
+        $glaccountyear = $this->adapter->query($query, array($glaccount[0]['id'], $row['PeriodYear'], $property[0]['id']));
+        if (empty($glaccountyear)) {
+            $this->addLocalizedErrorMessage('PeriodYear', 'importFieldPeriodYearError');
+        }  
+                   
+         $xmlstring = "
+             <BUDGETS xmlns=''>
+                <BUDGET>
+                    <Business_Unit>{$row['BusinessUnit']}</Business_Unit>
+                    <Gl_Account>{$row['GLAccount']}</Gl_Account>
+                    <Period_Month>{$row['PeriodMonth']}</Period_Month>
+                    <Period_Year>{$row['PeriodYear']}</Period_Year>
+                    <Amount>{$row['Amount']}</Amount>
+                </BUDGET>
+            </BUDGETS>";
+        
+        $dom = new DOMQuery();
+        $dom->setDocumentXml($xmlstring);
+            
+        $wsdl_url = 'http://setup.nexussystems.com/PNQAServices/payablenexus.asmx?WSDL';
+        $wsdl_login = array('username' => 'xmlservices',
+                'password' => 'monkeys',
+                'client_name' => 'LegacyResQABudgetClient',
+                'client_ip' => '');
+        $client = new SOAPClient($wsdl_url);
+        
+        $login = $client->Login($wsdl_login);
+        $LoginResult = $login->LoginResult;
+        $session_key = $LoginResult->any;
+        $SecurityHeader = new \SoapHeader('SOAPHEADER', 'HEADERNAME', array('SessionKey' => $session_key, 
+                'ClientName' => $wsdl_login['client_name'], 
+                'UserName' => $wsdl_login['username']));
+        $client->addSoapInputHeader($SecurityHeader);
+        $client->PN_SET_BUDGET(array('budgets' => $dom,'integration_id' =>1));
+
     }
-    public function glbudgetExists($glaccountyear_id, $budget_period, $budget_status)
-    {
-        $query = new Select();
-        $query->from('budget')
-            ->column('budget_id')
-            ->where('glaccountyear_id = ? AND budget_period = ? AND budget_status = ?');
-        $result = $this->GLAccountGateway->adapter->query($query, array($glaccountyear_id, $budget_period, $budget_status));
-        $result = !empty($result)?$result[0]['budget_id']:false;
-        return $result;
-    }
+
 }
