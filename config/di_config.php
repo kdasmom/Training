@@ -41,10 +41,14 @@ $diDefinition = array(
 	'Zend\Cache\Storage\Adapter\WinCache',
 	'NP\core\db\Adapter'                       => array('dbServer','dbName','dbUsername','dbPassword'),
 	'NP\core\notification\Emailer'             => array('mailHost','mailPort','mailUsername','mailPassword','mailEncryptionType'),
-	'NP\budget\BudgetGateway'                  => array('Adapter'),
-	'NP\budget\GlAccountYearGateway'           => array('Adapter'),
+    
+    	'NP\actual\ActualGateway'                  => array('Adapter'),
+        'NP\actual\ActualEntityValidator'          => array('Adapter'), 
+	'NP\actual\ActualService'                  => array('ActualGateway', 'ActualEntityValidator', 'IntegrationPackageGateway', 'GLAccountGateway', 'PropertyGateway', 'GlAccountYearGateway'),
+    
+        'NP\budget\BudgetGateway'                  => array('Adapter'),
         'NP\budget\BudgetEntityValidator'          => array('Adapter'), 
-	'NP\budget\BudgetService'                  => array('BudgetGateway','GlAccountYearGateway', 'BudgetEntityValidator'),
+	'NP\budget\BudgetService'                  => array('BudgetGateway', 'BudgetEntityValidator', 'IntegrationPackageGateway', 'GLAccountGateway', 'PropertyGateway', 'GlAccountYearGateway'),
 	
         'NP\catalog\LinkVcitemcatGlGateway'        => array('Adapter'),
 	'NP\catalog\LinkVcPropertyGateway'         => array('Adapter'),
@@ -65,6 +69,7 @@ $diDefinition = array(
 
 
 	'NP\exim\EximGLAccountGateway'             => array('Adapter'),
+	'NP\gl\GlAccountYearGateway'               => array('Adapter'),
         'NP\gl\GLAccountGateway'                   => array('Adapter'),
         'NP\gl\GLAccountEntityValidator'           => array('GLAccountGateway'),
         'NP\gl\GLCategoryEntityValidator'          => array('GLAccountGateway'),

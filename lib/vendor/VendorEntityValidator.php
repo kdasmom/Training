@@ -60,9 +60,8 @@ class VendorEntityValidator extends BaseImportServiceEntityValidator
             $this->addLocalizedErrorMessage('VendorID', 'importFieldVendorIDError');
         }  
                    
-         $xmlstring = "<?xml version=\"1.0\" encoding=\"utf-8\"?> 
-            <VENDORCOMBOS xmlns=''>
-                <VENDORCOMBO>
+         $xmlstring = "<vendorcombos xmlns=''>
+                <vendorcombo>
                     <VENDOR_ID_ALT>{$row['VendorID']}</VENDOR_ID_ALT>
                     <VENDOR_NAME>{$row['Name']}</VENDOR_NAME>
                     <VENDOR_FEDID>{$row['FederalID']}</VENDOR_FEDID>
@@ -85,10 +84,10 @@ class VendorEntityValidator extends BaseImportServiceEntityValidator
                     <VENDOR_ZIPCODE>{$row['ZipCode']}</VENDOR_ZIPCODE>
                     <CONTACT_LAST_NAME>{$row['ContactLastName']}</CONTACT_LAST_NAME>
                     <CONTACT_FIRST_NAME>{$row['ContactFirstName']}</CONTACT_FIRST_NAME>
-                </VENDORCOMBO>
-            </VENDORCOMBOS>";
+                </vendorcombo>
+            </vendorcombos>";
         
-        $vendorcombo = new \NPSoapStructVendors($xmlstring);
+        $vendorcombo = new \NPSoapStructVendorcombo($xmlstring);
 
         $wsdl_url = 'http://setup.nexussystems.com/PNQAServices/payablenexus.asmx?WSDL';
         $wsdl_username = 'xmlservices';
@@ -118,6 +117,7 @@ class VendorEntityValidator extends BaseImportServiceEntityValidator
             $xmlResult = $result->PN_SET_VENDORCOMBOResult->PN_SET_VENDORCOMBOResult->any;
             $statusResult = simplexml_load_string($xmlResult);
             $status = (string)$statusResult->StatusCode;
+            var_dump($status);
        } else {
             $error = $nPSoapServicePN->getLastError();
        }

@@ -1,7 +1,7 @@
 {
     "description": "GL Accounts import",
-    "service": "BudgetService",
-    "entity": "NP\\budget\\BudgetEntity",
+    "service": "ActualService",
+    "entity": "NP\\actual\\ActualEntity",
     "columns": [
         {"name": "BusinessUnit", "entityField": "category_name"},
         {"name": "GLAccount", "entityField": "glaccount_id", "dataTable": "glaccount", "dataColumn": "glaccount_id"},
@@ -12,5 +12,5 @@
   
     ],
     "customValidation": true,
-    "customValidationClass": "GLBudgetEntityValidator"
+    "customValidationClass": "ActualEntityValidator"
 }

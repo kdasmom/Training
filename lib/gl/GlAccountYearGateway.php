@@ -1,6 +1,6 @@
 <?php
 
-namespace NP\budget;
+namespace NP\gl;
 
 use NP\core\AbstractGateway;
 use NP\core\db\Update;

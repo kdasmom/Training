@@ -5,7 +5,6 @@ namespace NP\vendor;
 use NP\system\BaseImportService;
 use NP\system\IntegrationPackageGateway;
 use NP\gl\GLAccountGateway;
-use Zend\Soap\Client as SOAPClient;;
 
 /**
  * Service class for operations related to vendors

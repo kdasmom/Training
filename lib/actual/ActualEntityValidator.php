@@ -1,13 +1,13 @@
 <?php
 
-namespace NP\budget;
+namespace NP\actual;
 
 use NP\system\BaseImportServiceEntityValidator;
 use NP\core\db\Select;
 require_once("NPSoap\NPSoapAutoload.php");
 require_once("NPSoap\NPSoapWsdlClass.php");
 
-class BudgetEntityValidator extends BaseImportServiceEntityValidator{
+class ActualEntityValidator extends BaseImportServiceEntityValidator{
 
     /**
      * @var \NP\core\db\Adapter
@@ -73,17 +73,17 @@ class BudgetEntityValidator extends BaseImportServiceEntityValidator{
         }  
                    
          $xmlstring = "
-             <BUDGETS xmlns=''>
-                <BUDGET>
+             <ACTUALS xmlns=''>
+                <ACTUAL>
                     <Business_Unit>{$row['BusinessUnit']}</Business_Unit>
                     <Gl_Account>{$row['GLAccount']}</Gl_Account>
                     <Period_Month>{$row['PeriodMonth']}</Period_Month>
                     <Period_Year>{$row['PeriodYear']}</Period_Year>
                     <Amount>{$row['Amount']}</Amount>
-                </BUDGET>
-            </BUDGETS>";
+                </ACTUAL>
+            </ACTUALS>";
        
-        $xml = new \NPSoapStructBudgets($xmlstring);
+        $xml = new \NPSoapStructActuals($xmlstring);
 
         $wsdl_url = 'http://setup.nexussystems.com/PNQAServices/payablenexus.asmx?WSDL';
         $wsdl_username = 'xmlservices';
@@ -108,11 +108,11 @@ class BudgetEntityValidator extends BaseImportServiceEntityValidator{
        }
 
        $nPSoapServicePN->setSoapHeaderSecurityHeader(new \NPSoapStructSecurityHeader($session_key, $wsdl_client_name, $wsdl_username));
-       if($nPSoapServicePN->PN_SET_BUDGET(new \NPSoapStructPN_SET_BUDGET($integrationPackage[0]['id'], $xml))){
+       if($nPSoapServicePN->PN_SET_ACTUAL(new \NPSoapStructPN_SET_ACTUAL($integrationPackage[0]['id'], $xml))){
             $result = $nPSoapServicePN->getResult();
-            $xmlResult = $result->PN_SET_BUDGETResult->PN_SET_BUDGETResult->any;
+            $xmlResult = $result->PN_SET_ACTUALResult->PN_SET_ACTUALResult->any;
             $xmlLogin = simplexml_load_string($xmlResult);
-            $status = (string)$xmlLogin->StatusCode;
+            $status = (string)$xmlLogin->StatusCode;            
        } else {
             $errors = $nPSoapServicePN->getLastError();
        }
