@@ -81,3 +81,6 @@ vendor/zendframework/zendframework/library/Zend/*
 !vendor/zendframework/zendframework/library/Zend/ServiceManager/
 !vendor/zendframework/zendframework/library/Zend/Stdlib/
 !vendor/zendframework/zendframework/library/Zend/Validator/
+
+#Ignore idea ide settings
+.idea/*
