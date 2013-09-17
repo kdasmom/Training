@@ -115,19 +115,18 @@ class ConfigService extends AbstractService {
 		$invLineOnCount = 0;
 		
 		for ($i=1; $i<=8; $i++) {
-			if ($i <= 6) {
-				$fieldType = 'select';
-			} else {
-				$fieldType = 'text';
-			}
-			$lineFieldType = $fieldType;
-			if (array_key_exists("CP.CUSTOM_FIELD".$i."_TYPE", $arTemp) && sizeof($arTemp["CP.CUSTOM_FIELD".$i."_TYPE"])) {
-				$fieldType = $arTemp["CP.CUSTOM_FIELD".$i."_TYPE"];
-			}
-			
 			// Loop through this twice just to avoid code repetition for header and line item fields
 			for ($j=1; $j<=2; $j++) {
-				if ($j == 1) { 
+				if ($i <= 6) {
+					$fieldType = 'select';
+				} else {
+					$fieldType = 'text';
+				}
+				
+				if ($j == 1) {
+					if (array_key_exists("CP.CUSTOM_FIELD".$i."_TYPE", $arTemp)) {
+						$fieldType = $arTemp["CP.CUSTOM_FIELD".$i."_TYPE"];
+					}
 					$suffix = '';
 					$key = 'header';
 					$invOnCount += $arTemp["CP.INVOICE_CUSTOM_FIELD".$i."_ON_OFF"];

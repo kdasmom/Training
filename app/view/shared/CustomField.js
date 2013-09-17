@@ -60,8 +60,9 @@ Ext.define('NP.view.shared.CustomField', {
     		throw 'The config option "number" must be specified when "type" is set to "select"';
     	}
 
+        var fieldName = this.name + '_internal';
     	var field = {
-			name      :  this.name,
+			name      : fieldName,
 			allowBlank: this.allowBlank
 		};
 
@@ -76,7 +77,6 @@ Ext.define('NP.view.shared.CustomField', {
 				xtype                : 'autocomplete',
 				displayField         : 'universal_field_data',
 				valueField           : 'universal_field_data',
-				loadStoreOnFirstQuery: true,
 				store                : Ext.create('NP.store.system.PnUniversalFields', {
 					service    : 'ConfigService',
 					action     : 'getCustomFieldOptions',
@@ -108,7 +108,7 @@ Ext.define('NP.view.shared.CustomField', {
 
     	this.callParent(arguments);
 
-        this.field = this.down('[name="'+this.name+'"]');
+        this.field = this.down('[name="'+fieldName+'"]');
 
         // We need to add the specialkey event so we can tab in the editor
         this.addEvents('specialkey');
@@ -123,7 +123,15 @@ Ext.define('NP.view.shared.CustomField', {
     },
 
     setValue: function(val) {
-        this.field.setValue(val);
+        // If we're dealing with a custom field drop down that's not loaded, we need to make sure
+        // the record is in the store, so we can add the setDefaultRec() custom method for that
+        if (this.type == 'select' && !this.field.getStore().isLoaded) {
+            this.field.setDefaultRec(Ext.create('NP.model.system.PnUniversalField', {
+                                        universal_field_data: val
+                                    }));
+        } else {
+            this.field.setValue(val);
+        }
     },
 
     getSubmitData: function() {

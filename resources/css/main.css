@@ -27,7 +27,7 @@
 	.image-button-cell .x-grid-cell-inner img { cursor: pointer; }
 
 /* FORM ITEMS */
-.x-form-item-label { font-weight: bold; }
+.x-form-item-label, .x-form-item-label-top { font-weight: bold; }
 .x-form-required-field { background: repeat-x scroll 0 0 #DFE8F6; }
 
 /* GRIDS */
@@ -62,3 +62,30 @@
 
 /* GENERIC STYLES */
 .error-text { color: #c0272b; font: normal 11px tahoma, arial, verdana, sans-serif; }
+
+
+/* INVOICE VIEW PAGE */
+.invoiceViewPanel {
+	margin: 4px 8px 4px 8px;
+}
+
+	.invoiceViewPanel .x-panel-body {
+		background-color: white;
+		padding         : 8px;
+		border          : solid 1px #99BCE8;
+	}
+
+#lineItemTable th, #lineItemTable td {
+	padding: 2px 6px;
+	border : solid 1px #99BCE8;
+}
+
+#lineItemTable th {
+	font-weight     : bold;
+	background-color: #CCC;
+}
+
+#lineItemTable td {
+	font-size     : 11px;
+	vertical-align: top;
+}

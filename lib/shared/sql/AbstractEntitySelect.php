@@ -28,7 +28,7 @@ abstract class AbstractEntitySelect extends Select {
 	}
 	
 	/**
-	 * Adds the po amount subquery as a column
+	 * Adds the entity amount subquery as a column
 	 *
 	 * @param \NP\shared\AbstractEntitySelect Returns caller object for easy chaining
 	 */
@@ -38,6 +38,34 @@ abstract class AbstractEntitySelect extends Select {
 									->column(new Expression("SUM({$this->lineTableAlias}.{$this->lineTableName}_amount + {$this->lineTableAlias}.{$this->lineTableName}_shipping + {$this->lineTableAlias}.{$this->lineTableName}_salestax)"))
 									->where("{$this->lineTableAlias}.{$this->tableName}_id = {$this->tableAlias}.{$this->tableName}_id"),
 						'entity_amount'
+		);
+	}
+	
+	/**
+	 * Adds the entity shipping total subquery as a column
+	 *
+	 * @param \NP\shared\AbstractEntitySelect Returns caller object for easy chaining
+	 */
+	public function columnShippingAmount() {
+		return $this->column(
+						Select::get()->from(array($this->lineTableAlias => $this->lineTableName))
+									->column(new Expression("SUM({$this->lineTableAlias}.{$this->lineTableName}_shipping)"))
+									->where("{$this->lineTableAlias}.{$this->tableName}_id = {$this->tableAlias}.{$this->tableName}_id"),
+						'shipping_amount'
+		);
+	}
+	
+	/**
+	 * Adds the entity tax total subquery as a column
+	 *
+	 * @param \NP\shared\AbstractEntitySelect Returns caller object for easy chaining
+	 */
+	public function columnTaxAmount() {
+		return $this->column(
+						Select::get()->from(array($this->lineTableAlias => $this->lineTableName))
+									->column(new Expression("SUM({$this->lineTableAlias}.{$this->lineTableName}_salestax)"))
+									->where("{$this->lineTableAlias}.{$this->tableName}_id = {$this->tableAlias}.{$this->tableName}_id"),
+						'tax_amount'
 		);
 	}
 	

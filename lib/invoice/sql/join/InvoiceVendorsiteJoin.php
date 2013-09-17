@@ -12,7 +12,7 @@ use NP\core\db\Select;
  */
 class InvoiceVendorsiteJoin extends Join {
 	
-	public function __construct($cols=array(), $type=Select::JOIN_INNER, $toAlias='vs', $fromAlias='i') {
+	public function __construct($cols=array('vendor_id','vendorsite_id'), $type=Select::JOIN_INNER, $toAlias='vs', $fromAlias='i') {
 		$this->setTable(array($toAlias=>'vendorsite'))
 			->setCondition("{$fromAlias}.paytablekey_id = {$toAlias}.vendorsite_id")
 			->setCols($cols)

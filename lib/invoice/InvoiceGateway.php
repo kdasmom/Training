@@ -58,46 +58,15 @@ class InvoiceGateway extends AbstractGateway {
 	 */
 	public function findById($invoice_id, $cols=null) {
 		$select = new sql\InvoiceSelect();
-		$select->columns(array(
-					'invoice_id',
-					'property_id',
-					'invoicepayment_type_id',
-					'invoice_ref',
-					'invoice_datetm',
-					'invoice_createddatetm',
-					'invoice_duedate',
-					'invoice_status',
-					'invoice_note',
-					'invoice_submitteddate',
-					'invoice_startdate',
-					'invoice_endate',
-					'invoice_reject_note',
-					'invoice_period',
-					'control_amount',
-					'invoice_taxallflag',
-					'invoice_budgetoverage_note',
-					'invoice_cycle_from',
-					'invoice_cycle_to',
-					'PriorityFlag_ID_Alt',
-					'invoice_neededby_datetm',
-					'vendor_code',
-					'remit_advice',
-					'universal_field1',
-					'universal_field2',
-					'universal_field3',
-					'universal_field4',
-					'universal_field5',
-					'universal_field6',
-					'universal_field7',
-					'universal_field8',
-					'paytablekey_id'
-				))
+		$select->column(new Expression('i.*'))
 				->columnAmount()
-				->join(new sql\join\InvoiceVendorsiteJoin(array('vendorsite_id')))
+				->columnShippingAmount()
+				->columnTaxAmount()
+				->join(new sql\join\InvoiceVendorsiteJoin())
 				->join(new \NP\vendor\sql\join\VendorsiteVendorJoin())
 				->join(new sql\join\InvoicePropertyJoin())
 				->join(new sql\join\InvoiceRecauthorJoin())
-				->join(new \NP\user\sql\join\RecauthorUserprofileJoin(array('userprofile_id','userprofile_username')))
+				->join(new \NP\user\sql\join\RecauthorUserprofileJoin(array('userprofile_username')))
 				->where('i.invoice_id = ?');
 		
 		$res = $this->adapter->query($select, array($invoice_id));
@@ -128,73 +97,6 @@ class InvoiceGateway extends AbstractGateway {
 	}
 	
 	/**
-	 * Get forwards associated to an invoice, if any
-	 *
-	 * @param  int $invoice_id
-	 * @return array           Array with forward records in a specific format
-	 */
-	public function findForwards($invoice_id) {
-		$select = new Select(array('ipf'=>'INVOICEPOFORWARD'));
-		
-		$select->columns(
-					array(
-						"invoicepo_forward_id"=>"invoicepo_forward_id",
-						"forward_datetm"=>"forward_datetm",
-						"forward_to_email"=>"forward_to_email",
-						"forward_from_name"=>new Expression("
-							isNull(pf.person_firstname,'') + ' ' + isNull(pf.person_lastname,'') + 
-							CASE
-								WHEN ipf.forward_from_userprofile_id <> ISNULL(ipf.from_delegation_to_userprofile_id, 0) 
-									AND ipf.forward_from_userprofile_id IS NOT NULL 
-									AND ipf.from_delegation_to_userprofile_id IS NOT NULL THEN
-										' (done by ' + u2.userprofile_username + ' on behalf of ' + upf.userprofile_username + ')'
-								ELSE ''
-							END
-						"),
-						"forward_to_name"=>new Expression("isNull(pt.person_firstname,'') + ' ' + isNull(pt.person_lastname,'')")
-					)
-				)
-				->join(array('upf' => 'USERPROFILE'),
-						'upf.userprofile_id = ipf.forward_from_userprofile_id',
-						array())
-				->join(array('uprf' => 'USERPROFILEROLE'),
-						'uprf.userprofile_id = upf.userprofile_id',
-						array())
-				->join(array('sf' => 'staff'),
-						'uprf.tablekey_id = sf.staff_id',
-						array())
-				->join(array('pf' => 'person'),
-						'pf.person_id = sf.person_id',
-						array())
-				->join(array('upt' => 'USERPROFILE'),
-						'upt.userprofile_id = ipf.forward_to_userprofile_id',
-						array(),
-						Select::JOIN_LEFT)
-				->join(array('uprt' => 'USERPROFILEROLE'),
-						'uprt.userprofile_id = upt.userprofile_id',
-						array(),
-						Select::JOIN_LEFT)
-				->join(array('st' => 'staff'),
-						'uprt.tablekey_id = st.staff_id',
-						array(),
-						Select::JOIN_LEFT)
-				->join(array('pt' => 'person'),
-						'pt.person_id = st.person_id',
-						array(),
-						Select::JOIN_LEFT)
-				->join(array('u2' => 'userprofile'),
-						'ipf.from_delegation_to_userprofile_id = u2.userprofile_id',
-						array(),
-						Select::JOIN_LEFT)
-				->where("
-					ipf.table_name = 'invoice' 
-					AND ipf.tablekey_id = ?
-				");
-		
-		return $this->adapter->query($select, array($invoice_id));
-	}
-	
-	/**
 	 * Find open invoices for a user given a certain context filter
 	 *
 	 * @param  int    $userprofile_id              The active user ID, can be a delegated account
@@ -214,7 +116,7 @@ class InvoiceGateway extends AbstractGateway {
 		$select->allColumns()
 				->columnAmount()
 				->columnCreatedBy()
-				->join(new sql\join\InvoiceVendorsiteJoin(array('vendorsite_id')))
+				->join(new sql\join\InvoiceVendorsiteJoin())
 				->join(new \NP\vendor\sql\join\VendorsiteVendorJoin())
 				->join(new sql\join\InvoicePropertyJoin())
 				->where(
@@ -260,44 +162,17 @@ class InvoiceGateway extends AbstractGateway {
 		$role = $this->roleGateway->findByUser($userprofile_id);
 		$isAdmin = ($role['is_admin_role'] == 1) ? true : false;
 
-		$select->distinct();
-		$where = new Where();
-
-		$where->equals('i.invoice_status', "'forapproval'")
-			->equals('a.approvetype_id', 1)
-			->equals('a.approve_status', "'active'")
-			->nest('OR')
-			->isNull('a.wftarget_id')
-			->in(
-				Select::get()->from(array('wft'=>'WFRULETARGET'))
-							->column('tablekey_id')
-							->where("
-								wft.wfruletarget_id = a.wftarget_id 
-								AND wft.table_name = 'property'
-							"),
-				$propertyFilterSelect)
-			->unnest();
-
-		if ($isAdmin) {
-			$where->nest('OR')
-				->exists(Select::get()->from(array('ii'=>'invoiceitem'))
-									->column(new Expression('1'))
-									->whereEquals('ii.invoice_id', 'i.invoice_id')
-									->whereIn('ii.property_id', $propertyFilterSelect->toString()))
-				->in('i.property_id', $propertyFilterSelect);
-		} else {
-			$where->nest('OR')
-				->nest()
-				->equals('a.forwardto_tablekeyid', $role['role_id'])
-				->equals('a.forwardto_tablename', "'role'")
-				->unnest()
-				->nest()
-				->in('a.forwardto_tablekeyid', $role['userprofilerole_id'])
-				->equals('a.forwardto_tablename', "'userprofilerole'");
-		}
-
-		$select->join(new sql\join\InvoiceApproveJoin())
-				->where($where);
+		$select->distinct()
+				->join(new sql\join\InvoiceApproveJoin())
+				->whereEquals('i.invoice_status', "'forapproval'")
+				->whereMerge(
+					new \NP\shared\sql\criteria\IsApproverCriteria(
+						'invoice',
+						$userprofile_id,
+						$propertyFilterSelect,
+						$isAdmin
+					)
+				);
 
 		// If paging is needed
 		if ($pageSize !== null && $countOnly == 'false') {
@@ -503,13 +378,33 @@ class InvoiceGateway extends AbstractGateway {
 		$propertyFilterSelect = new PropertyFilterSelect(new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection));
 
 		$select->join(new sql\join\InvoicePropertyJoin())
-			->join(new sql\join\InvoiceVendorsiteJoin())
+			->join(new sql\join\InvoiceVendorsiteJoin(array()))
 			->join(new \NP\vendor\sql\join\VendorsiteVendorJoin())
 			->join(new sql\join\InvoicePriorityFlagJoin())
 			->join(new sql\join\InvoiceVendorOneTimeJoin())
 			->whereIn('i.property_id', $propertyFilterSelect);
 
 		return $select;
+	}
+
+	/**
+	 * 
+	 */
+	public function isApprover($invoice_id, $userprofile_id) {
+		$res = $this->adapter->query(
+			Select::get()->from(array('i'=>'invoice'))
+						->join(new sql\join\InvoiceApproveJoin())
+						->whereEquals('i.invoice_id', '?')
+						->whereMerge(
+							new \NP\shared\sql\criteria\IsApproverCriteria(
+								'invoice',
+								$userprofile_id
+							)
+						),
+			array($invoice_id)
+		);
+
+		return (count($res)) ? true : false;
 	}
 
 	public function rollPeriod($property_id, $newAccountingPeriod, $oldAccountingPeriod) {

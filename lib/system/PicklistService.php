@@ -5,6 +5,7 @@ namespace NP\system;
 use NP\core\AbstractService;
 use NP\core\validation\EntityValidator;
 use NP\core\db\Update;
+use NP\invoice\InvoicePaymentTypeGateway;
 use NP\property\RegionGateway;
 use NP\property\RegionEntity;
 
@@ -16,9 +17,11 @@ use NP\property\RegionEntity;
 class PicklistService extends AbstractService {
 	protected $configService, $integrationPackageGateway, $regionGateway;
 
-	public function __construct(IntegrationPackageGateway $integrationPackageGateway, RegionGateway $regionGateway) {
+	public function __construct(IntegrationPackageGateway $integrationPackageGateway, RegionGateway $regionGateway,
+								InvoicePaymentTypeGateway $invoicePaymentTypeGateway) {
 		$this->integrationPackageGateway = $integrationPackageGateway;
-		$this->regionGateway = $regionGateway;
+		$this->regionGateway             = $regionGateway;
+		$this->invoicePaymentTypeGateway = $invoicePaymentTypeGateway;
 	}
 
 	public function setConfigService(ConfigService $configService) {

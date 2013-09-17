@@ -7,6 +7,7 @@ Ext.define('NP.model.invoice.Invoice', {
     extend: 'Ext.data.Model',
     
     requires: [
+		'NP.lib.core.Security',
 		'NP.lib.core.Config',
 		'NP.model.vendor.Vendorsite',
 		'NP.model.property.Property'
@@ -18,10 +19,10 @@ Ext.define('NP.model.invoice.Invoice', {
 		{ name: 'reftable_name' },
 		{ name: 'invoice_datetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
 		{ name: 'invoice_createddatetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
-		{ name: 'invoice_status' },
+		{ name: 'invoice_status', defaultValue: 'open' },
 		{ name: 'invoice_budgetid', type: 'int' },
 		{ name: 'invoice_glaccountid', type: 'int' },
-		{ name: 'paytable_name' },
+		{ name: 'paytable_name', defaultValue: 'vendorsite' },
 		{ name: 'paytablekey_id', type: 'int' },
 		{ name: 'property_id', type: 'int' },
 		{ name: 'invoice_ref' },
@@ -43,7 +44,7 @@ Ext.define('NP.model.invoice.Invoice', {
 		{ name: 'initial_amount' },
 		{ name: 'invoice_reject_note' },
 		{ name: 'invoice_period', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
-		{ name: 'control_amount' },
+		{ name: 'control_amount', type: 'float' },
 		{ name: 'invoice_multiproperty', type: 'int' },
 		{ name: 'invoice_taxallflag', type: 'int' },
 		{ name: 'invoice_budgetoverage_note' },
@@ -57,7 +58,7 @@ Ext.define('NP.model.invoice.Invoice', {
 		{ name: 'reftablekey_id' },
 		{ name: 'remit_advice', type: 'int' },
 		{ name: 'vendoraccess_notes' },
-		{ name: 'PriorityFlag_ID_Alt', type: 'int' },
+		{ name: 'PriorityFlag_ID_Alt', type: 'int', defaultValue: 1 },
 		{ name: 'invoice_NeededBy_datetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
 		{ name: 'universal_field4' },
 		{ name: 'universal_field5' },
@@ -70,7 +71,9 @@ Ext.define('NP.model.invoice.Invoice', {
 		{ name: 'template_name' },
 
 		// These fields are not in the INVOICE table
-		{ name: 'entity_amount', type: 'float' },
+		{ name: 'entity_amount', type: 'float', default_value: 0 },
+		{ name: 'shipping_amount', type: 'float', default_value: 0, useNull: false },
+		{ name: 'tax_amount', type: 'float', default_value: 0, useNull: false },
 		{ name: 'integration_package_type_display_name' },
 		{ name: 'userprofile_id', type: 'int' },
     	{ name: 'userprofile_username' },
@@ -99,5 +102,71 @@ Ext.define('NP.model.invoice.Invoice', {
 			primaryKey: 'property_id',
 			reader    : 'jsonflat'
         }
-    ]
+    ],
+
+    isModifiable: function() {
+        var me = this;
+
+        if (NP.Security.hasPermission(6076)) {
+            return true;
+        }
+
+        if (NP.Security.hasPermission(6077) 
+                && NP.Security.getUser().get('userprofile_id') == me.get('userprofile_id')) {
+            return true;
+        }
+
+        return false;
+    },
+
+    isEditable: function() {
+		var me      = this,
+			status  = me.get('invoice_status');
+
+		if (
+			(status == 'open' && me.isInvoiceModifiable())
+			|| (status == 'saved' && NP.Security.hasPermission(1068))
+			|| (status == 'paid' && NP.Security.hasPermission(2094))
+		) {
+			return true;
+		}
+
+		return false;
+	},
+    
+    isLineEditable: function() {
+        var me = this,
+            status  = me.get('invoice_status');
+
+        if (
+            (status == 'open' && (NP.Security.hasPermission(1032) || NP.Security.hasPermission(6076) || NP.Security.hasPermission(6077)))
+            || (status == 'saved' && NP.Security.hasPermission(1068) && me.isInvoiceModifiable())
+            || (status == 'paid' && NP.Security.hasPermission(2094))
+        ) {
+            return true;
+        }
+
+        return false;
+    },
+
+    isLineAddable: function() {
+		var me      = this,
+			status  = me.get('invoice_status');
+
+		if (
+			(
+				status == 'open' 
+				&& (
+					NP.Security.hasPermission(1032) 
+					|| NP.Security.hasPermission(6076) 
+					|| NP.Security.hasPermission(6077)
+				)
+			)
+			|| (status == 'saved' && NP.Security.hasPermission(1068))
+		) {
+			return true;
+		}
+
+		return false;
+	}
 });

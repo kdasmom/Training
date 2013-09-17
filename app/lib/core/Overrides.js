@@ -4,6 +4,19 @@
  * @author Thomas Messier
  */
 Ext.define('NP.lib.core.Overrides', function() {
+	// Override the number field setValue() function to make sure decimal precision is forced on the display value
+	Ext.define('Ext.override.form.field.Number', {
+		override: 'Ext.form.field.Number',
+
+		setValue: function(val) {
+			this.callParent(arguments);
+
+			if (this.decimalPrecision && val && val.toFixed) {
+				this.setRawValue(val.toFixed(this.decimalPrecision));
+			}
+	    }
+	});
+
 	// Override the combo box clearValue() function so that the select event gets fired even when you clear the field
 	Ext.define('Ext.override.form.field.ComboBox', {
 		override: 'Ext.form.field.ComboBox',

@@ -198,7 +198,19 @@ Ext.define('NP.lib.core.Util', {
 	 * @return {String}
 	 */
 	currencyRenderer: function(val) {
-		return Ext.util.Format.currency(val, NP.Config.getSetting('PN.Intl.currencySymbol', '$'));
+		var isNegative = false;
+		
+		if (val < 0) {
+			val = Math.abs(val);
+			isNegative = true;
+		}
+		val = Ext.util.Format.currency(val, NP.Config.getSetting('PN.Intl.currencySymbol', '$'));
+		
+		if (isNegative) {
+			val = '(' + val + ')';
+		}
+
+		return val;
 	},
 	
 	/**

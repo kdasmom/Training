@@ -3,6 +3,8 @@
 namespace NP\invoice\sql;
 
 use NP\core\db\Select;
+use NP\core\db\Expression;
+use NP\shared\sql\EntityLinePeriodSpendingSelect;
 
 /**
  * A custom Select object for InvoiceItem records with some shortcut methods
@@ -17,103 +19,21 @@ class InvoiceItemSelect extends Select {
 	}
 	
 	/**
-	 * Joins the GLACCOUNT table
+	 * Adds the invoice amount subquery as a column
 	 *
-	 * @param  string[] $cols               Columns to retrieve from the table
-	 * @param \NP\invoice\InvoiceItemSelect Returns caller object for easy chaining
+	 * @param \NP\invoice\sql\InvoiceItemSelect Returns caller object for easy chaining
 	 */
-	public function joinGL($cols=array()) {
-		return $this->join(array('g' => 'glaccount'),
-						'ii.glaccount_id = g.glaccount_id',
-						$cols);
+	public function columnBudgetVariance($budgetCompareWithTax) {
+		$invoiceSubSelect = new EntityLinePeriodSpendingSelect('invoice', $budgetCompareWithTax, 'invoiceitem');
+		$poSubSelect = new EntityLinePeriodSpendingSelect('purchaseorder', $budgetCompareWithTax, 'invoiceitem');
+		
+		return $this->column(new Expression("
+			b.budget_amount
+			- (
+				(" . $invoiceSubSelect->toString() . " )
+				+ ( " . $poSubSelect->toString() . " )
+				+ b.oracle_actual
+			)
+		"), 'budget_variance');
 	}
-	
-	/**
-	 * Joins the PROPERTY table
-	 *
-	 * @param  string[] $cols               Columns to retrieve from the table
-	 * @param \NP\invoice\InvoiceItemSelect Returns caller object for easy chaining
-	 */
-	public function joinProperty($cols=array()) {
-		return $this->join(array('p' => 'property'),
-						'ii.property_id = p.property_id',
-						$cols);
-	}
-	
-	/**
-	 * Left joins the UTILITYACCOUNT table
-	 *
-	 * @param  string[] $cols               Columns to retrieve from the table
-	 * @param \NP\invoice\InvoiceItemSelect Returns caller object for easy chaining
-	 */
-	public function joinUtil($cols=array()) {
-		return $this->join(array('ua' => 'UTILITYACCOUNT'),
-							"ii.utilityaccount_id = ua.utilityaccount_id",
-							array(),
-							static::JOIN_LEFT);
-	}
-	
-	/**
-	 * Left joins all job costing related tables (JBJOBASSOCIATION, JBCONTRACT, JBCHANGEORDER, JBJOBCODE, JBPHASECODE, AND JBCOSTCODE)
-	 *
-	 * @param  string[] $contractCols       Columns to retrieve from the JBCONTRACT table
-	 * @param  string[] $changeorderCols    Columns to retrieve from the JBCHANGEORDER table
-	 * @param  string[] $jobcodeCols        Columns to retrieve from the JBJOBCODE table
-	 * @param  string[] $phasecodeCols      Columns to retrieve from the JBPHASECODE table
-	 * @param  string[] $costcodeCols       Columns to retrieve from the JBCOSTCODE table
-	 * @param \NP\invoice\InvoiceItemSelect Returns caller object for easy chaining
-	 */
-	public function joinJobcost($contractCols=array(), $changeorderCols=array(), $jobcodeCols=array(), $phasecodeCols=array(), $costcodeCols=array()) {
-		return $this->join(array('jba' => 'JBJOBASSOCIATION'),
-							"ii.invoiceitem_id = jba.tablekey_id AND jba.table_name = 'invoiceitem'",
-							array(),
-							static::JOIN_LEFT)
-					->join(array('jbct' => 'jbcontract'),
-							"jba.jbcontract_id = jbct.jbcontract_id",
-							$contractCols,
-							static::JOIN_LEFT)
-					->join(array('jbco' => 'jbchangeorder'),
-							"jba.jbchangeorder_id = jbco.jbchangeorder_id",
-							$changeorderCols,
-							static::JOIN_LEFT)
-					->join(array('jbj' => 'jbjobcode'),
-							"jba.jbjobcode_id = jbj.jbjobcode_id",
-							$jobcodeCols,
-							static::JOIN_LEFT)
-					->join(array('jbpc' => 'jbphasecode'),
-							"jba.jbphasecode_id = jbpc.jbphasecode_id",
-							$phasecodeCols,
-							static::JOIN_LEFT)
-					->join(array('jbcd' => 'jbcostcode'),
-							"jba.jbcostcode_id = jbcd.jbcostcode_id",
-							$costcodeCols,
-							static::JOIN_LEFT);
-	}
-	
-	/**
-	 * Left joins the UNITTYPE_MATERIAL table
-	 *
-	 * @param  string[] $cols               Columns to retrieve from the table
-	 * @param \NP\invoice\InvoiceItemSelect Returns caller object for easy chaining
-	 */
-	public function joinUnitTypeMaterial($cols=array()) {
-		return $this->join(array('uma' => 'unittype_material'),
-							"ii.unittype_material_id = uma.unittype_material_id",
-							$cols,
-							static::JOIN_LEFT);
-	}
-	
-	/**
-	 * Left joins the UNITTYPE_MEAS table
-	 *
-	 * @param  string[] $cols               Columns to retrieve from the table
-	 * @param \NP\invoice\InvoiceItemSelect Returns caller object for easy chaining
-	 */
-	public function joinUnitTypeMeas($cols=array()) {
-		return $this->join(array('ume' => 'unittype_meas'),
-							'ii.unittype_meas_id = ume.unittype_meas_id',
-							$cols,
-							static::JOIN_LEFT);
-	}
-	
 }

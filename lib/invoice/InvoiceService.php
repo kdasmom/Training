@@ -5,6 +5,8 @@ namespace NP\invoice;
 use NP\core\AbstractService;
 use NP\security\SecurityService;
 use NP\budget\BudgetService;
+use NP\shared\InvoicePoForwardGateway;
+use NP\property\FiscalCalService;
 
 /**
  * Service class for operations related to Invoices
@@ -15,17 +17,16 @@ class InvoiceService extends AbstractService {
 	
 	protected $securityService, $invoiceGateway, $invoiceItemGateway, $budgetService;
 	
-	/**
-	 * @param \NP\security\SecurityService   $securityService    SecurityService object injected
-	 * @param \NP\invoice\InvoiceGateway     $invoiceGateway     InvoiceGateway object injected
-	 * @param \NP\invoice\InvoiceItemGateway $invoiceItemGateway InvoiceItemGateway object injected
-	 */
 	public function __construct(SecurityService $securityService, InvoiceGateway $invoiceGateway, 
-								InvoiceItemGateway $invoiceItemGateway, BudgetService $budgetService) {
-		$this->securityService    = $securityService;
-		$this->invoiceGateway     = $invoiceGateway;
-		$this->invoiceItemGateway = $invoiceItemGateway;
-		$this->budgetService      = $budgetService;
+								InvoiceItemGateway $invoiceItemGateway, BudgetService $budgetService,
+								InvoicePoForwardGateway $invoicePoForwardGateway,
+								FiscalCalService $fiscalCalService) {
+		$this->securityService         = $securityService;
+		$this->invoiceGateway          = $invoiceGateway;
+		$this->invoiceItemGateway      = $invoiceItemGateway;
+		$this->budgetService           = $budgetService;
+		$this->invoicePoForwardGateway = $invoicePoForwardGateway;
+		$this->fiscalCalService        = $fiscalCalService;
 	}
 	
 	/**
@@ -35,9 +36,23 @@ class InvoiceService extends AbstractService {
 	 * @return array
 	 */
 	public function get($invoice_id) {
-		return $this->invoiceGateway->findById($invoice_id);
+		$invoice = $this->invoiceGateway->findById($invoice_id);
+		$invoice['associated_pos']  = $this->getAssociatedPOs($invoice_id);
+		$invoice['accounting_period'] = $this->fiscalCalService->getAccountingPeriod($invoice['property_id'])->format('Y-m-d');
+
+		// If invoice is for approval, let's check if the current user is an approver
+		if ($invoice['invoice_status'] == 'forapproval') {
+			$invoice['isApprover'] = $this->invoiceGateway->isApprover(
+				$invoice_id,
+				$this->securityService->getUserId()
+			);
+		} else {
+			$invoice['isApprover'] = false;
+		}
+
+		return $invoice;
 	}
-	
+
 	/**
 	 * Saves an invoice entity; invoices should always be saved through this method
 	 *
@@ -88,7 +103,7 @@ class InvoiceService extends AbstractService {
 	 * @return array
 	 */
 	public function getInvoiceLines($invoice_id) {
-		return $this->invoiceItemGateway->getByInvoice($invoice_id);
+		return $this->invoiceItemGateway->findInvoiceLines($invoice_id);
 	}
 	
 	/**
@@ -108,7 +123,7 @@ class InvoiceService extends AbstractService {
 	 * @return array           Array with forward records in a specific format
 	 */
 	public function getForwards($invoice_id) {
-		return $this->invoiceGateway->findForwards($invoice_id);
+		return $this->invoicePoForwardGateway->findByEntity('invoice', $invoice_id);
 	}
 	
 	/**
