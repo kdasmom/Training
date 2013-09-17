@@ -12,7 +12,8 @@ namespace NP\vendor;
 
 use NP\system\BaseImportServiceEntityValidator;
 use NP\core\db\Select;
-use Zend\Soap\Client as SOAPClient;
+require_once("NPSoap\NPSoapAutoload.php");
+require_once("NPSoap\NPSoapWsdlClass.php");
 
 class VendorEntityValidator extends BaseImportServiceEntityValidator
 {
@@ -87,21 +88,39 @@ class VendorEntityValidator extends BaseImportServiceEntityValidator
                 </VENDORCOMBO>
             </VENDORCOMBOS>";
         
+        $vendorcombo = new \NPSoapStructVendors($xmlstring);
+
         $wsdl_url = 'http://setup.nexussystems.com/PNQAServices/payablenexus.asmx?WSDL';
-        $wsdl_login = array('username' => 'xmlservices',
-                'password' => 'monkeys',
-                'client_name' => 'LegacyResQABudgetClient',
-                'client_ip' => '');
-        $client = new SOAPClient($wsdl_url);
+        $wsdl_username = 'xmlservices';
+        $wsdl_password = 'monkeys';
+        $wsdl_client_name = 'LegacyResQABudgetClient';
+        $wsdl_client_ip ='';
+              
+        $wsdl = array('wsdl_url' => $wsdl_url, 
+           'wsdl_cache_wsdl' => WSDL_CACHE_NONE, 
+           'wsdl_trace' => true);
         
-        $login = $client->Login($wsdl_login);
-        $LoginResult = $login->LoginResult;
-        $session_key = $LoginResult->any;
-        $SecurityHeader = new \SoapHeader(null, null, array('SessionKey' => $session_key, 
-                'ClientName' => $wsdl_login['client_name'], 
-                'UserName' => $wsdl_login['username']));
-        $client->addSoapInputHeader($SecurityHeader);
-        $resultWsdl = $client->PN_SET_VENDORCOMBO(array('vendorcombo' => $xmlstring,'integration_id' =>1));
+       $nPSoapServicePN = new \NPSoapServicePN($wsdl);
+       $nPSoapServiceLogin = new \NPSoapServiceLogin($wsdl);
+       if($nPSoapServiceLogin->Login(new \NPSoapStructLogin($wsdl_username, $wsdl_password, $wsdl_client_name, $wsdl_client_ip))){
+            $LoginResult = $nPSoapServiceLogin->getResult();
+            $xmlResult = $LoginResult->LoginResult->LoginResult->any;
+            $xmlLogin = simplexml_load_string($xmlResult);
+            $session_key = (string)$xmlLogin->SessionKey;
+       } else {
+            $errors = $nPSoapServiceLogin->getLastError();
+       }
+
+       $nPSoapServicePN->setSoapHeaderSecurityHeader(new \NPSoapStructSecurityHeader($session_key, $wsdl_client_name, $wsdl_username));
+       
+       if($nPSoapServicePN->PN_SET_VENDORCOMBO(new \NPSoapStructPN_SET_VENDORCOMBO($integrationPackage[0]['id'], $vendorcombo))){
+            $result = $nPSoapServicePN->getResult();
+            $xmlResult = $result->PN_SET_VENDORCOMBOResult->PN_SET_VENDORCOMBOResult->any;
+            $statusResult = simplexml_load_string($xmlResult);
+            $status = (string)$statusResult->StatusCode;
+       } else {
+            $error = $nPSoapServicePN->getLastError();
+       }
         
     }
 }

@@ -4,11 +4,8 @@ namespace NP\budget;
 
 use NP\system\BaseImportServiceEntityValidator;
 use NP\core\db\Select;
-use Zend\Soap\Client as SOAPClient;
-use Zend\Dom\Query as DOMQuery;
 require_once("NPSoap\NPSoapAutoload.php");
 require_once("NPSoap\NPSoapWsdlClass.php");
-
 
 class BudgetEntityValidator extends BaseImportServiceEntityValidator{
 
@@ -92,16 +89,7 @@ class BudgetEntityValidator extends BaseImportServiceEntityValidator{
         $wsdl_username = 'xmlservices';
         $wsdl_password = 'monkeys';
         $wsdl_client_name = 'LegacyResQABudgetClient';
-        $wsdl_client_ip ='81.25.45.213';
-//        $client = new \SoapClient($wsdl_url, array( 'wsdl_cache_wsdl' => WSDL_CACHE_NONE, 
-//           'wsdl_trace' => true));
-//        $login = $client->Login($wsdl_login);
-//        $LoginResult = $login->LoginResult;
-//        $session_key_xml = $LoginResult->any;
-//        
-//        $xmlLogin = simplexml_load_string($session_key_xml);
-//         
-//        $session_key = (string)$xmlLogin->SessionKey;
+        $wsdl_client_ip ='';
               
         $wsdl = array('wsdl_url' => $wsdl_url, 
            'wsdl_cache_wsdl' => WSDL_CACHE_NONE, 
