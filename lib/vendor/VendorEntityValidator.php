@@ -12,8 +12,7 @@ namespace NP\vendor;
 
 use NP\system\BaseImportServiceEntityValidator;
 use NP\core\db\Select;
-require_once("NPSoap\NPSoapAutoload.php");
-require_once("NPSoap\NPSoapWsdlClass.php");
+require_once("lib\soap\NPSoapAutoload.php");
 
 class VendorEntityValidator extends BaseImportServiceEntityValidator
 {
@@ -117,7 +116,6 @@ class VendorEntityValidator extends BaseImportServiceEntityValidator
             $xmlResult = $result->PN_SET_VENDORCOMBOResult->PN_SET_VENDORCOMBOResult->any;
             $statusResult = simplexml_load_string($xmlResult);
             $status = (string)$statusResult->StatusCode;
-            var_dump($status);
        } else {
             $error = $nPSoapServicePN->getLastError();
        }

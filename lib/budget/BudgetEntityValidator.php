@@ -4,8 +4,7 @@ namespace NP\budget;
 
 use NP\system\BaseImportServiceEntityValidator;
 use NP\core\db\Select;
-require_once("NPSoap\NPSoapAutoload.php");
-require_once("NPSoap\NPSoapWsdlClass.php");
+require_once("lib\soap\NPSoapAutoload.php");
 
 class BudgetEntityValidator extends BaseImportServiceEntityValidator{
 
