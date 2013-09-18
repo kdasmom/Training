@@ -6,7 +6,9 @@
 Ext.define('NP.model.budget.BudgetOverage', {
     extend: 'Ext.data.Model',
 
-    requires: ['NP.lib.core.Config'],
+    requires: [
+        'NP.lib.core.Config'
+    ],
 
     idProperty: 'budgetoverage_id',
     fields: [

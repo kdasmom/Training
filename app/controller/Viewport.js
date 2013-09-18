@@ -98,6 +98,13 @@ Ext.define('NP.controller.Viewport', {
 				}
 			},
 
+            // Clicking on the Administration > System Setup menu
+            '#budgetOverageMenuBtn': {
+                click: function() {
+                    this.addHistory('BudgetOverage:showBudgetOverage');
+                }
+            },
+
 			// Runs after Home panel has been rendered
 			'[xtype="viewport.home"]': {
 				afterrender: function() {

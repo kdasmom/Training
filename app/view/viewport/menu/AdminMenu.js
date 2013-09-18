@@ -163,6 +163,7 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 		// Set Approval Budget Overage
 		if ( NP.lib.core.Security.hasPermission(1043) ) {
 			this.menu.items.push({
+                itemId: 'budgetOverageMenuBtn',
 				text: this.approvalBudgetsText
 			});
 		}
