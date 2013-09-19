@@ -84,8 +84,12 @@ Ext.define('NP.view.budget.BudgetOverageGrid', {
             { xtype: 'actioncolumn',
                 items: [
                     {
-                        icon: '/NexusPayablesPHP/resources/images/buttons/delete.gif',
-                        tooltip: 'Delete'
+                        icon: 'resources/images/buttons/delete.gif',
+                        tooltip: 'Delete',
+                        handler: function(gridView, rowIndex, colIndex) {
+                            var grid = gridView.ownerCt;
+                            grid.fireEvent('deleterow', grid, grid.getStore().getAt(rowIndex), rowIndex);
+                        }
                     }
                 ],
                 align: 'center'
@@ -100,5 +104,7 @@ Ext.define('NP.view.budget.BudgetOverageGrid', {
         });
 
         this.callParent(arguments);
+
+        this.addEvents('deleterow');
     }
 });

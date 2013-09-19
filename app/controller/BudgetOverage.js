@@ -16,6 +16,11 @@ Ext.define('NP.controller.BudgetOverage', {
 
 //  for localization
     saveSuccessText      : 'Your changes were saved.',
+    deleteDialogTitleText: 'Delete budget overage?',
+    deleteDialogText     : 'Are you sure you want to delete this budget overage?',
+    deleteSuccessText    : 'Budget overage successfully deleted',
+    deleteFailureText    : 'There was an error deleting the budget overage. Please try again.',
+    errorDialogTitleText : 'Error',
 
     /**
      * Init
@@ -46,6 +51,10 @@ Ext.define('NP.controller.BudgetOverage', {
             // The Property grid drop down
             '[xtype="budget.budgetoveragegrid"] [name="property_id"]': {
                 change: this.filterByPropertyName
+            },
+//            override delete row event
+            '[xtype="budget.budgetoveragegrid"]': {
+                deleterow: this.deleteBudgetOverageItem
             }
         });
     },
@@ -156,5 +165,39 @@ Ext.define('NP.controller.BudgetOverage', {
         var property_id = grid.query('[name="property_id"]')[0].getValue();
         grid.addExtraParams({ property_id: property_id });
         grid.reloadFirstPage();
+    },
+
+    /**
+     * Delete selected row and refresh grid on success
+     *
+     * @param grid
+     * @param rec
+     * @param rowIndex
+     */
+    deleteBudgetOverageItem: function(grid, rec, rowIndex) {
+        var that = this;
+        Ext.Msg.confirm(this.deleteDialogTitleText, this.deleteDialogText, function(buttonText) {
+            if (buttonText == "yes") {
+
+                var id = rec.internalId;
+
+                NP.lib.core.Net.remoteCall({
+                    requests: {
+                        service: 'BudgetOverageService',
+                        action : 'budgetOverageDelete',
+                        id     : id,
+                        success: function(success, deferred) {
+                            if (success) {
+                                NP.Util.showFadingWindow({ html: that.deleteSuccessText });
+                                grid.getStore().remove(rec);
+                                grid.getView().refresh();
+                            } else {
+                                Ext.MessageBox.alert(that.errorDialogTitleText, that.deleteFailureText);
+                            }
+                        }
+                    }
+                });
+            }
+        });
     }
 });

@@ -86,4 +86,28 @@ class BudgetOverageService extends AbstractService {
         );
     }
 
+    /**
+     * Delete budget overage record by id
+     *
+     * @param $id
+     * @return bool
+     */
+    public function budgetOverageDelete($id) {
+        $this->budgetOverageGateway->beginTransaction();
+
+        $success = true;
+        try {
+            $this->budgetOverageGateway->delete('budgetoverage_id = ?', array($id));
+
+            $this->budgetOverageGateway->commit();
+        } catch(\Exception $e) {
+            // If there was an error, rollback the transaction
+            $this->budgetOverageGateway->rollback();
+            // Add a global error to the error array
+            $success = false;
+        }
+
+        return $success;
+    }
+
 } 
