@@ -32,9 +32,14 @@ class BudgetOverageService extends AbstractService {
 
     /**
      * Retrieve list of budget overage
+     *
+     * @param $property_id
+     * @return array
      */
-    public function budgetOverageList() {
+    public function budgetOverageList($property_id = null, $sort = 'property_name') {
+        $result = $this->budgetOverageGateway->findByPropertyId($property_id, $sort);
 
+        return $result;
     }
 
     /**

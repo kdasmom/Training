@@ -8,10 +8,9 @@ Ext.define('NP.view.budget.BudgetOverageGrid', {
     alias: 'widget.budget.budgetoveragegrid',
 
     requires: [
-//        'NP.lib.core.Config',
-        'NP.view.shared.button.New'
-//        'NP.view.shared.button.Delete',
-//        'NP.lib.ui.Grid'
+        'NP.lib.core.Config',
+        'NP.view.shared.button.New',
+        'NP.lib.ui.ComboBox'
     ],
 
     // For localization
@@ -25,16 +24,61 @@ Ext.define('NP.view.budget.BudgetOverageGrid', {
     stateful: true,
     stateId : 'budgetoverage_grid',
 
+//    for localization
     title: 'Budget Overage',
+    propertyFilterLabel: 'Property',
 
     initComponent: function() {
-        this.pagingToolbarButtons = [{ xtype: 'shared.button.new', text: this.createNewBudgetOverageBtnLabel }];
+
+        var propertyStore = Ext.create('NP.store.property.Properties', {
+            service: 'PropertyService',
+            action : 'getByStatus',
+            paging: true,
+            extraParams: {property_status: 1, pageSize: null}
+        });
+
+        propertyStore.load();
+
+        this.pagingToolbarButtons = [
+            {
+                xtype: 'shared.button.new',
+                text: this.createNewBudgetOverageBtnLabel
+            },
+            {
+                xtype: 'tbseparator'
+            },
+            {
+                xtype           : 'customcombo',
+                name            : 'property_id',
+                fieldLabel      : this.propertyFilterLabel,
+                displayField    : 'property_name',
+                valueField      : 'property_id',
+                store           : propertyStore,
+                width           : 500,
+                emptyText       : 'All ' + NP.Config.getPropertyLabel(true)
+
+            }
+        ];
 
         // Add the base columns for the grid
         this.columns = [
-            { text: this.propertyColText, dataIndex: 'property_name' },
-            { text: this.categoryColText, dataIndex: 'category_name' },
-            { xtype: 'datecolumn', text: this.periodColText, dataIndex: 'budgetoverage_period', format: 'd/m/Y', align: 'right' },
+            {
+                text: this.propertyColText,
+                dataIndex: 'property_name',
+                flex: 1,
+                renderer: function(val, meta, rec) {
+                    return rec.getProperty().get('property_name');
+                }
+            },
+            {
+                text: this.categoryColText,
+                dataIndex: 'glaccount_name',
+                flex: 1,
+                renderer: function(val, meta, rec) {
+                    return rec.getGlAccount().get('glaccount_name');
+                }
+            },
+            { xtype: 'datecolumn', text: this.periodColText, dataIndex: 'budgetoverage_period', format: 'm/Y', align: 'right' },
             { xtype: 'numbercolumn', text: this.amountColText, dataIndex: 'budgetoverage_amount', format: '$0,000', align: 'right' },
             { xtype: 'actioncolumn',
                 items: [
@@ -47,50 +91,13 @@ Ext.define('NP.view.budget.BudgetOverageGrid', {
             }
         ];
 
-        // Create the store, only thing that changes between stores is the vc_status
         this.store = Ext.create('NP.store.budget.BudgetOverage', {
-            service    : 'MessageService',
-            action     : 'getAllMessages',
-            paging     : true
+            service    : 'BudgetOverageService',
+            action     : 'budgetOverageList',
+            paging     : true,
+            extraParams: {property_id: null, pageSize: null}
         });
-        /*this.store = Ext.create('NP.store.system.UserMessages', {
-            service    : 'MessageService',
-            action     : 'getAllMessages',
-            paging     : true
-        });*/
 
         this.callParent(arguments);
     }
-    /*extend: 'NP.lib.ui.Grid',
- 	alias : 'widget.budget.budgetoveragegrid',
-
-    requires: ['NP.lib.core.Config'],
-    
-    // For localization
-	propertyColText: 'Property',
-	categoryColText: 'Category',
-	periodColText  : 'Period',
-	amountColText: 'Amount',
-
-    initComponent: function() {
-    	this.columns = {
-    		defaults: { flex: 1 },
-    		items: [
-    			{ text: this.propertyColText, dataIndex: 'property_name' },
-    			{ text: this.categoryColText, dataIndex: 'category_name' },
-	    		{ xtype: 'datecolumn', text: this.periodColText, dataIndex: 'budgetoverage_period', format: 'd/m/Y', align: 'right' },
-	    		{ xtype: 'numbercolumn', text: this.amountColText, dataIndex: 'budgetoverage_amount', format: '$0,000', align: 'right' },
-	    		{ xtype: 'actioncolumn',
-                    items: [
-                        {
-                            icon: '../resources/images/buttons/delete.gif',
-                            tooltip: 'Delete'
-                        }
-                    ]
-                }
-    		]
-    	};
-    	
-    	this.callParent(arguments);
-    }*/
 });

@@ -17,7 +17,7 @@ class BudgetOverageGateway extends AbstractGateway {
         parent::__construct($adapter);
     }
 
-    public function findByPropertyId($property_id) {
+    public function findByPropertyId($property_id, $sort = 'property_name') {
         $select = new Select();
         $where = [
             'p.property_status' => 1
@@ -39,9 +39,10 @@ class BudgetOverageGateway extends AbstractGateway {
             ->join(array('gl' => 'glaccount'),
                 'bo.glaccount_id = gl.glaccount_id',
                 array('glaccount_id','glaccount_name'))
-            ->where($where);
+            ->where($where)
+            ->order($sort);
 
-        return $select;
+        return $this->adapter->query($select);
     }
 }
 ?>

@@ -9,7 +9,6 @@ Ext.define('NP.view.budget.BudgetOverageForm', {
 
     requires: [
         'NP.lib.core.Config',
-        'NP.lib.ui.DateTimeField',
         'NP.view.shared.button.Save',
         'NP.view.shared.button.Cancel',
         'NP.view.shared.button.Delete',
@@ -43,8 +42,10 @@ Ext.define('NP.view.budget.BudgetOverageForm', {
         };
 
         var propertyStore = Ext.create('NP.store.property.Properties', {
-            service : 'PropertyService',
-            action  : 'getAll'
+            service: 'PropertyService',
+            action : 'getByStatus',
+            paging: true,
+            extraParams: {property_status: 1, pageSize: null}
         });
         var glStore = Ext.create('NP.store.gl.GlAccounts', {
             service : 'GLService',
