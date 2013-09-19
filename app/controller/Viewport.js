@@ -97,7 +97,13 @@ Ext.define('NP.controller.Viewport', {
 					this.addHistory('SystemSetup:showSystemSetup');
 				}
 			},
-
+                                
+			// Clicking on the Administration > GL Account Setup menu
+			'#glaccountSetupMenuBtn': {
+				click: function() {
+					this.addHistory('GLAccountSetup:showGLAccountSetup');
+				}
+			},
 			// Runs after Home panel has been rendered
 			'[xtype="viewport.home"]': {
 				afterrender: function() {
