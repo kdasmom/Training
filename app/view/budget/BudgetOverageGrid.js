@@ -55,6 +55,7 @@ Ext.define('NP.view.budget.BudgetOverageGrid', {
                 valueField      : 'property_id',
                 store           : propertyStore,
                 width           : 500,
+                labelWidth      : 65,
                 emptyText       : 'All ' + NP.Config.getPropertyLabel(true)
 
             }

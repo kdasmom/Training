@@ -42,6 +42,10 @@ Ext.define('NP.controller.BudgetOverage', {
             // The Save button on the New Budget Overage Form
             '[xtype="budget.budgetoverageform"] [xtype="shared.button.save"]': {
                 click: this.saveBudgetOverage
+            },
+            // The Property grid drop down
+            '[xtype="budget.budgetoveragegrid"] [name="property_id"]': {
+                change: this.filterByPropertyName
             }
         });
     },
@@ -142,5 +146,15 @@ Ext.define('NP.controller.BudgetOverage', {
                 }
             });
         }
+    },
+
+    /**
+     *  Reload grid after filter property combobox's value changed
+     */
+    filterByPropertyName: function() {
+        var grid = this.getCmp('budget.budgetoveragegrid');
+        var property_id = grid.query('[name="property_id"]')[0].getValue();
+        grid.addExtraParams({ property_id: property_id });
+        grid.reloadFirstPage();
     }
 });
