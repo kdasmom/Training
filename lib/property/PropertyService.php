@@ -187,6 +187,8 @@ class PropertyService extends AbstractService {
 			), 'pe2', 's2')
 		);
 
+        $pageSize = !$pageSize ? null : $pageSize;
+
 		return $this->propertyGateway->find(
 			new sql\criteria\PropertyStatusCriteria(),	// filter
 			array($property_status),			// params
