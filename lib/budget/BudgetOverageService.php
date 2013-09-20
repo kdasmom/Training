@@ -27,7 +27,9 @@ class BudgetOverageService extends AbstractService {
      * @return array
      */
     public function getBudgetOverage($id) {
-        return $this->budgetOverageGateway->findById($id);
+        $budgetoverage = $this->budgetOverageGateway->findById($id);
+        $budgetoverage['budgetoverage_period'] = date('m/Y', strtotime($budgetoverage['budgetoverage_period']));
+        return $budgetoverage;
     }
 
     /**

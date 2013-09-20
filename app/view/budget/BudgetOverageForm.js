@@ -74,7 +74,9 @@ Ext.define('NP.view.budget.BudgetOverageForm', {
                 id              : 'budgetoverage_period',
                 displayField    : 'period',
                 valueField      : 'budgetoverage_period',
-                queryMode       : 'local'
+                queryMode       : 'local',
+                autoSelect      : true,
+                forceselection  : true
             },
             {
                 xtype           : 'customcombo',

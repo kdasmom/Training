@@ -54,7 +54,10 @@ Ext.define('NP.controller.BudgetOverage', {
             },
 //            override delete row event
             '[xtype="budget.budgetoveragegrid"]': {
-                deleterow: this.deleteBudgetOverageItem
+                deleterow: this.deleteBudgetOverageItem,
+                itemclick: function (grid, rec) {
+                    app.addHistory('BudgetOverage:showBudgetOverageForm:' + rec.get('budgetoverage_id') + ':' + rec.get('budgetoverage_period'));
+                }
             }
         });
     },
@@ -74,8 +77,7 @@ Ext.define('NP.controller.BudgetOverage', {
      * Show budget overage form
      * @param id
      */
-    showBudgetOverageForm: function(id) {
-
+    showBudgetOverageForm: function(id, datetime) {
         var viewCfg = { bind: { models: ['budget.BudgetOverage'] }};
         if (arguments.length) {
             Ext.apply(viewCfg.bind, {
@@ -89,12 +91,12 @@ Ext.define('NP.controller.BudgetOverage', {
 
         var form = this.setView('NP.view.budget.BudgetOverageForm', viewCfg);
         if (arguments.length) {
-
+            var date = datetime.split(" ");
+            Ext.getCmp('budgetoverage_period').bindStore(this.setPeriodRange(date[0]));
+            form.findField('budgetoverage_period').setValue(Ext.Date.format(new Date(date[0]), 'Y-m-1'));
         } else {
            Ext.getCmp('budgetoverage_period').bindStore(this.setPeriodRange());
         }
-
-        this.setPeriodRange();
     },
 
     /**
@@ -111,8 +113,14 @@ Ext.define('NP.controller.BudgetOverage', {
         Ext.define('DateRange', {
             extend: 'Ext.data.Model',
             fields: [
-                {type: 'string', name: 'budgetoverage_period'},
-                {type: 'string', name: 'period'}
+                {
+                    type: 'string',
+                    name: 'budgetoverage_period'
+                },
+                {
+                    type: 'string',
+                    name: 'period'
+                }
             ]
         });
         var daterange = [
