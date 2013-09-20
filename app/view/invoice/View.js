@@ -35,8 +35,8 @@ Ext.define('NP.view.invoice.View', {
 				defaults  : { cls: 'invoiceViewPanel', frame: true },
 				items     : [
 		    		{ xtype: 'invoice.viewheader' },
-		    		{ xtype: 'invoice.viewlineitems' },
 		    		{ xtype: 'invoice.viewcustomfields' },
+                    { xtype: 'invoice.viewlineitems' },
 		    		{ xtype: 'invoice.viewnotes' }
 		    	]
 			};
@@ -57,8 +57,7 @@ Ext.define('NP.view.invoice.View', {
 				collapsed  : true,
 				items      : [{
 					xtype: 'component',
-					html : 'Image shows up here'
-					//html: '<iframe src="clients/help.pdf" height="100%" width="100%"></iframe>'
+					html: '<iframe src="about:blank" height="100%" width="100%"></iframe>'
 				}]
     		}
     	];

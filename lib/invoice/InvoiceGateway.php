@@ -58,7 +58,7 @@ class InvoiceGateway extends AbstractGateway {
 	 */
 	public function findById($invoice_id, $cols=null) {
 		$select = new sql\InvoiceSelect();
-		$select->column(new Expression('i.*'))
+		$select->allColumns('i')
 				->columnAmount()
 				->columnShippingAmount()
 				->columnTaxAmount()
@@ -113,7 +113,7 @@ class InvoiceGateway extends AbstractGateway {
 		$propertyFilterSelect = new PropertyFilterSelect($propertyContext);
 
 		$select = new sql\InvoiceSelect();
-		$select->allColumns()
+		$select->allColumns('i')
 				->columnAmount()
 				->columnCreatedBy()
 				->join(new sql\join\InvoiceVendorsiteJoin())
@@ -364,7 +364,7 @@ class InvoiceGateway extends AbstractGateway {
 			$select->count(true, 'totalRecs')
 					->column('invoice_id');
 		} else {
-			$select->allColumns()
+			$select->allColumns('i')
 					->columnAmount()
 					->columnSubjectName()
 					->columnPendingDays()

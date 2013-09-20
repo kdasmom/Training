@@ -1,6 +1,8 @@
 <?php
 namespace NP\core\db;
 
+use NP\core\db\Expression;
+
 /**
  * Abstracts a SQL SELECT statement to an object
  *
@@ -117,12 +119,26 @@ class Select extends AbstractFilterableSql implements SQLInterface, SQLElement {
 	/**
 	 * Adds columns to be fetched
 	 *
-	 * @param  $cols array       An array of columns; see the column($col) method for valid column definitions
+	 * @param  array $cols An array of columns; see the column($col) method for valid column definitions
 	 * @return \NP\core\db\Select Caller object returned for easy chaining
 	 */
 	public function columns($cols) {
 		$this->cols = $cols;
 		return $this;
+	}
+
+	/**
+	 * Returns all columns for a table (adds a * to the column list)
+	 *
+	 * @param string $alias Table alias for the table we want to retrieve all columns from
+	 * @return \NP\core\db\Select Caller object returned for easy chaining
+	 */
+	public function allColumns($alias=null) {
+		$expr = '*';
+		if ($alias != null) {
+			$expr = "{$alias}.{$expr}";
+		}
+		return $this->column(new Expression($expr));
 	}
 
 	/**

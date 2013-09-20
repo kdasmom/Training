@@ -31,15 +31,6 @@ class InvoiceSelect extends AbstractEntitySelect {
 	}
 	
 	/**
-	 * Adds all "normal" columns
-	 *
-	 * @param \NP\invoice\InvoiceSelect Returns caller object for easy chaining
-	 */
-	public function allColumns() {
-		return $this->column(new Expression('*'));
-	}
-	
-	/**
 	 * Adds the pending days column
 	 *
 	 * @param \NP\invoice\InvoiceSelect Returns caller object for easy chaining

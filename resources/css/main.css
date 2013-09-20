@@ -80,12 +80,40 @@
 	border : solid 1px #99BCE8;
 }
 
-#lineItemTable th {
+#lineItemTable th, #lineItemTable tfoot td {
 	font-weight     : bold;
-	background-color: #CCC;
+	background-color: #CECECE;
 }
 
 #lineItemTable td {
 	font-size     : 11px;
 	vertical-align: top;
+}
+
+#lineItemTable td .taxableFlag {
+	font-style: italic;
+	color     : #18659C;
+}
+
+#lineItemTable td a {
+	color     : #18659C;
+}
+
+#lineItemTable tfoot th, #lineItemTable tfoot td {
+	text-align: right;
+}
+
+#lineItemTable tfoot th {
+	text-transform: uppercase;
+}
+
+#lineItemTable tfoot th span {
+	text-transform: none;
+	font-style    : italic;
+	font-weight   : normal;
+	margin-right  : 16px;
+}
+
+#lineItemTable tfoot td input {
+	text-align: right;
 }

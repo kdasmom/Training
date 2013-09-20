@@ -47,7 +47,20 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                     total += me.getStore().getAt(i).get(field);
                 }
 
-                return total.toFixed(2);
+                return total;
+            },
+            getGrossTotal: function() {
+                return this.getSum(me.fieldPrefix + '_amount', 0) +
+                        this.getSum(me.fieldPrefix + '_shipping', 0) +
+                        this.getSum(me.fieldPrefix + '_salestax', 0);
+            },
+            getRetentionTotal: function() {
+                var total = 0;
+                for (var i=0; i<me.getStore().getCount(); i++) {
+                    total += me.getStore().getAt(i).getJob().get('jbassociation_retamt');
+                }
+
+                return total;
             },
             arrayContains: function() {
                 var item = arguments[0],
@@ -263,7 +276,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
     },
 
     buildBudgetCol: function() {
-        return '<td>' +
+        return '<td align="right">' +
                 '<tpl if="this.showBudgetComparison()">' +
                     '<tpl if="this.getSetting(\'PN.jobcosting.budgetlineitemcompare\') == \'1\' && job.jbjobcode_id !== null">' +
                         '{[this.renderCurrency(values.jbcontractbudget_amt)]}' +
@@ -275,7 +288,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
     },
 
     buildBudgetRemainingCol: function() {
-        return '<td>' +
+        return '<td align="right">' +
                 '<tpl if="this.showBudgetComparison()">' +
                     '<tpl if="this.getSetting(\'PN.jobcosting.budgetlineitemcompare\') == \'1\' && job.jbjobcode_id !== null">' +
                         '{[this.renderCurrency(values.jbcontractbudget_amt - (values.jbcontractbudget_amt_actual + values.jbcontractbudget_amt_pnactual))]}' +
@@ -288,7 +301,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
 
     buildItemPriceCol: function() {
         var me = this;
-        return '<td>' +
+        return '<td align="right">' +
                 '{[this.renderCurrency(values.'+me.fieldPrefix+'_unitprice_long)]}' +
                 '<tpl if="invoiceitem_taxflag == \'Y\'">' +
                     '<div class="taxableFlag">Taxable</div>' +
@@ -298,7 +311,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
 
     buildAmountCol: function() {
         var me = this;
-        return '<td>' +
+        return '<td align="right">' +
                 '{[this.renderCurrency(values.'+me.fieldPrefix+'_amount)]}' +
                 '<tpl if="this.isLineEditable()">' +
                     '<div>' +
@@ -333,19 +346,38 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
         var me= this;
 
         return '<tr>' +
-                '<th colspan="6">SHIPPING:</th>' +
-                '<th>' +
-                    '<input type="text" name="shipping_amount" value="{[this.getSum(\'invoiceitem_shipping\', 0)]}" size="9" />' +
-                '</th>' +
+                '<th colspan="6">Shipping:</th>' +
+                '<td>' +
+                    '<input type="text" name="shipping_amount" value="{[this.getSum(\'' + me.fieldPrefix + '_shipping\', 0).toFixed(2)]}" size="9" />' +
+                '</td>' +
             '</tr>' +
             '<tr>' +
                 '<th colspan="6">' +
-                    '* A portion of the {[this.getSetting(\'PN.General.salesTaxTerm\', \'sales tax\')]} and shipping charges are allocated to the G/L account' +
-                    '&nbsp;&nbsp; {[this.getSetting(\'PN.General.salesTaxTerm\', \'sales tax\')]}:' +
+                    '<span>* A portion of the {[this.getSetting(\'PN.General.salesTaxTerm\', \'sales tax\')]} and shipping charges are allocated to the G/L account</span>' +
+                    '{[this.getSetting(\'PN.General.salesTaxTerm\', \'sales tax\')]}:' +
                 '</th>' +
-                '<th>' +
-                    '<input type="text" name="tax_amount" value="{[this.getSum(\'invoiceitem_salestax\', 0)]}" size="9" />' +
+                '<td>' +
+                    '<input type="text" name="tax_amount" value="{[this.getSum(\'' + me.fieldPrefix + '_salestax\', 0).toFixed(2)]}" size="9" />' +
+                '</td>' +
+            '</tr>' +
+            '<tr>' +
+                '<th colspan="6">' +
+                    '<tpl if="this.getSetting(\'pn.jobcosting.jobcostingEnabled\', \'0\') == \'1\'">' +
+                        'Gross' +
+                    '</tpl>' +
+                    'Total:' +
                 '</th>' +
-            '</tr>';
+                '<td>' +
+                    '{[this.renderCurrency(this.getGrossTotal())]}' +
+                '</td>' +
+            '</tr>' +
+            '<tpl if="this.getSetting(\'pn.jobcosting.jobcostingEnabled\', \'0\') == \'1\'">' +
+                '<th colspan="6">' +
+                    'Net Amount:' +
+                '</th>' +
+                '<td>' +
+                    '{[this.renderCurrency(this.getGrossTotal() - this.getRetentionTotal())]}' +
+                '</td>' +
+            '</tpl>';
     }
 });

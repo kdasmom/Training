@@ -7,6 +7,10 @@ use NP\security\SecurityService;
 use NP\budget\BudgetService;
 use NP\shared\InvoicePoForwardGateway;
 use NP\property\FiscalCalService;
+use NP\jobcosting\JbContractGateway;
+use NP\jobcosting\JbJobCodeGateway;
+use NP\image\ImageIndexGateway;
+use NP\po\PurchaseorderGateway;
 
 /**
  * Service class for operations related to Invoices
@@ -15,18 +19,32 @@ use NP\property\FiscalCalService;
  */
 class InvoiceService extends AbstractService {
 	
-	protected $securityService, $invoiceGateway, $invoiceItemGateway, $budgetService;
+	protected $configService, $securityService, $invoiceGateway, $invoiceItemGateway, $budgetService, 
+			  $jbContractGateway, $jbJobCodeGateway, $imageIndexGateway;
 	
-	public function __construct(SecurityService $securityService, InvoiceGateway $invoiceGateway, 
-								InvoiceItemGateway $invoiceItemGateway, BudgetService $budgetService,
-								InvoicePoForwardGateway $invoicePoForwardGateway,
-								FiscalCalService $fiscalCalService) {
+	public function __construct(SecurityService $securityService, FiscalCalService $fiscalCalService,
+								BudgetService $budgetService, InvoiceGateway $invoiceGateway,
+								InvoiceItemGateway $invoiceItemGateway, InvoicePoForwardGateway $invoicePoForwardGateway,
+								JbContractGateway $jbContractGateway, JbJobCodeGateway $jbJobCodeGateway,
+								ImageIndexGateway $imageIndexGateway, PurchaseorderGateway $purchaseorderGateway) {
 		$this->securityService         = $securityService;
+		$this->fiscalCalService        = $fiscalCalService;
+		$this->budgetService           = $budgetService;
 		$this->invoiceGateway          = $invoiceGateway;
 		$this->invoiceItemGateway      = $invoiceItemGateway;
-		$this->budgetService           = $budgetService;
 		$this->invoicePoForwardGateway = $invoicePoForwardGateway;
-		$this->fiscalCalService        = $fiscalCalService;
+		$this->jbContractGateway       = $jbContractGateway;
+		$this->jbJobCodeGateway        = $jbJobCodeGateway;
+		$this->imageIndexGateway       = $imageIndexGateway;
+		$this->purchaseorderGateway    = $purchaseorderGateway;
+	}
+	
+	/**
+	 * Setter function required by DI to set the config service via setter injection
+	 * @param \NP\system\ConfigService $configService
+	 */
+	public function setConfigService(\NP\system\ConfigService $configService) {
+		$this->configService = $configService;
 	}
 	
 	/**
@@ -40,15 +58,29 @@ class InvoiceService extends AbstractService {
 		$invoice['associated_pos']  = $this->getAssociatedPOs($invoice_id);
 		$invoice['accounting_period'] = $this->fiscalCalService->getAccountingPeriod($invoice['property_id'])->format('Y-m-d');
 
+		if ($this->configService->get('pn.jobcosting.jobcostingEnabled', '0') == '1') {
+			$invoice['inactive_contracts'] = $this->jbContractGateway->findInactiveContractInEntity('invoice', $invoice_id);
+			$invoice['inactive_jobs']      = $this->jbJobCodeGateway->findInactiveJobInEntity('invoice', $invoice_id);
+		} else {
+			$invoice['inactive_contracts'] = array();
+			$invoice['inactive_jobs'] = array();
+		}
+
 		// If invoice is for approval, let's check if the current user is an approver
 		if ($invoice['invoice_status'] == 'forapproval') {
-			$invoice['isApprover'] = $this->invoiceGateway->isApprover(
+			$invoice['is_approver'] = $this->invoiceGateway->isApprover(
 				$invoice_id,
 				$this->securityService->getUserId()
 			);
 		} else {
-			$invoice['isApprover'] = false;
+			$invoice['is_approver'] = false;
 		}
+
+		// Get invoice images
+		$invoice['images'] = $this->imageIndexGateway->findEntityImages($invoice_id, 'Invoice');
+
+		// Get linkable POs
+		$invoice['has_linkable_pos'] = (count($this->getLinkablePOs($invoice_id))) ? true : false;
 
 		return $invoice;
 	}
@@ -228,6 +260,16 @@ class InvoiceService extends AbstractService {
 	 */
 	public function getInvoicesByUser($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
 		return $this->invoiceGateway->findInvoicesByUser($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
+	}
+
+	/**
+	 * Return a list of POs that could be linked to an invoice for the user currently logged in
+	 *
+	 * @param  int $invoice_id Invoice to get linkable POs for
+	 * @return array           List of linkable POs
+	 */
+	public function getLinkablePOs($invoice_id) {
+		return $this->purchaseorderGateway->findPosLinkableToInvoice($invoice_id);
 	}
 
 	public function rollPeriod($property_id, $newAccountingPeriod, $oldAccountingPeriod) {

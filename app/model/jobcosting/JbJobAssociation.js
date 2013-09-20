@@ -22,7 +22,7 @@ Ext.define('NP.model.jobcosting.JbJobAssociation', {
 		{ name: 'jbcontract_id', type: 'int' },
 		{ name: 'tablekey_id', type: 'int' },
 		{ name: 'jbcostcode_id', type: 'int' },
-		{ name: 'jbassociation_retamt' },
+		{ name: 'jbassociation_retamt', type: 'float' },
 		{ name: 'jbassociation_retglaccount', type: 'int' },
 		{ name: 'jbchangeorder_id', type: 'int' },
 		{ name: 'jbphasecode_id', type: 'int' }

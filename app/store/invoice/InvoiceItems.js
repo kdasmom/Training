@@ -6,5 +6,10 @@
 Ext.define('NP.store.invoice.InvoiceItems', {
     extend: 'NP.lib.data.Store',
 	
-	model: 'NP.model.invoice.InvoiceItem'    
+	model: 'NP.model.invoice.InvoiceItem',
+
+	sorters: [{
+		property : 'invoiceitem_linenum',
+		direction: 'ASC'
+	}]
 });

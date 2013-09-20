@@ -15,6 +15,7 @@ Ext.define('NP.controller.Invoice', {
 	
 	refs: [
 		{ ref: 'invoiceView', selector: '[xtype="invoice.view"]' },
+		{ ref: 'invoiceViewToolbar', selector: '[xtype="invoice.viewtoolbar"]' },
 		{ ref: 'forwardsGrid', selector: '[xtype="shared.invoicepo.forwardsgrid"]' },
 		{ ref: 'lineView', selector: '[xtype="shared.invoicepo.viewlines"]' },
 		{ ref: 'lineGrid', selector: '[xtype="shared.invoicepo.viewlinegrid"]' }
@@ -121,6 +122,8 @@ Ext.define('NP.controller.Invoice', {
 			Ext.apply(viewCfg, {
 				listeners      : {
 					dataloaded: function(boundForm, data) {
+						me.buildViewToolbar(data);
+
 						var vendorField   = boundForm.findField('vendor_id')
 							vendorDisplay = boundForm.down('#vendor_display'),
 							propertyField = boundForm.findField('property_id'),
@@ -175,6 +178,24 @@ Ext.define('NP.controller.Invoice', {
 		} else {
 			me.setDefaultPayBy();
 		}
+	},
+
+	buildViewToolbar: function(data) {
+		var me                   = this,
+			invoice              = me.getInvoiceView().getModel('invoice.Invoice'),
+			toolbar              = me.getInvoiceViewToolbar();
+
+		data = data || { is_approver: false, images: [] };
+		toolbar.displayConditionData = {};
+
+		Ext.apply(toolbar.displayConditionData, {
+			invoice         : invoice,
+			is_approver     : data['is_approver'],
+			images          : data['images'],
+			has_linkable_pos: data['has_linkable_pos']
+		});
+
+		toolbar.refresh();
 	},
 
 	populatePeriods: function(accounting_period, invoice_period) {
