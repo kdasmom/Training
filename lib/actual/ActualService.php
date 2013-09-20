@@ -14,10 +14,10 @@ use NP\gl\GlAccountYearGateway;
  */
 class ActualService extends BaseImportService {
 
-	protected $actualGateway, $validator, $integrationPackageGateway, $glaccountGateway, $propertyGateway, $glAccountYearGateway;
+	protected $gateway, $validator, $integrationPackageGateway, $glaccountGateway, $propertyGateway, $glAccountYearGateway;
 
 	public function __construct(        
-                ActualGateway $actualGateway,
+                BudgetGateway $gateway,
                 ActualEntityValidator $validator,
                 IntegrationPackageGateway $integrationPackageGateway,
                 GLAccountGateway $glaccountGateway,
@@ -25,7 +25,7 @@ class ActualService extends BaseImportService {
                 GlAccountYearGateway $glAccountYearGateway
                 )
         {
-                $this->actualGateway = $actualGateway;
+                $this->gateway = $gateway;
                 $this->validator = $validator;
                 $this->integrationPackageGateway = $integrationPackageGateway;
                 $this->glaccountGateway = $glaccountGateway;
@@ -70,11 +70,11 @@ class ActualService extends BaseImportService {
             // If the data is valid, save it
             if (count($errors) == 0) {
                 // Begin transaction
-                $this->actualGateway->beginTransaction();
+                $this->gateway->beginTransaction();
 
                 try {
                     // Save the glaccount record
-                    $this->actualGateway->save($entity);
+                    $this->gateway->save($entity);
                     
                 } catch(\Exception $e) {
                     // Add a global error to the error array
@@ -83,9 +83,9 @@ class ActualService extends BaseImportService {
             }
 
             if (count($errors)) {
-                $this->actualGateway->rollback();
+                $this->gateway->rollback();
             } else {
-                $this->actualGateway->commit();
+                $this->gateway->commit();
             }
         }
 }

@@ -42,9 +42,8 @@ $diDefinition = array(
 	'NP\core\db\Adapter'                       => array('dbServer','dbName','dbUsername','dbPassword'),
 	'NP\core\notification\Emailer'             => array('mailHost','mailPort','mailUsername','mailPassword','mailEncryptionType'),
     
-    	'NP\actual\ActualGateway'                  => array('Adapter'),
         'NP\actual\ActualEntityValidator'          => array('Adapter'), 
-	'NP\actual\ActualService'                  => array('ActualGateway', 'ActualEntityValidator', 'IntegrationPackageGateway', 'GLAccountGateway', 'PropertyGateway', 'GlAccountYearGateway'),
+	'NP\actual\ActualService'                  => array('BudgetGateway', 'ActualEntityValidator', 'IntegrationPackageGateway', 'GLAccountGateway', 'PropertyGateway', 'GlAccountYearGateway'),
     
         'NP\budget\BudgetGateway'                  => array('Adapter'),
         'NP\budget\BudgetEntityValidator'          => array('Adapter'), 
