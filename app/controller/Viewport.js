@@ -98,6 +98,12 @@ Ext.define('NP.controller.Viewport', {
 				}
 			},
 
+            '#utilitySetupMenuBtn': {
+                click: function() {
+                    this.addHistory('UtilitySetup:showVendorsGrid');
+                }
+            },
+
 			// Runs after Home panel has been rendered
 			'[xtype="viewport.home"]': {
 				afterrender: function() {

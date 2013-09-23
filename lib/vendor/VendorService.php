@@ -116,6 +116,21 @@ class VendorService extends AbstractService {
 	public function getExpiredInsuranceCerts($countOnly, $pageSize=null, $page=null, $sort="insurance_expdatetm") {
 		return $this->insuranceGateway->findExpiredInsuranceCerts($countOnly, $pageSize, $page, $sort);
 	}
+
+
+    /**
+     * Retrieve vendors list
+     *
+     * @param null $pageSize
+     * @param null $page
+     * @param string $sort
+     * @return array
+     */
+    public function getAll($pageSize = null, $page = null, $sort = "vendor_name") {
+        $vendors = $this->vendorGateway->find(null, [], $sort, ['vendor_id', 'vendor_name', 'vendor_status'], $pageSize, $page);
+
+        return $vendors;
+    }
 	
 }
 
