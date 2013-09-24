@@ -14,7 +14,11 @@ Ext.define('NP.controller.BudgetOverage', {
         'NP.lib.core.Util',
     ],
 
-//  for localization
+    refs: [
+        { ref: 'overageGrid', selector: '[xtype="budget.budgetoveragegrid"]' }
+    ],
+
+    //  for localization
     saveSuccessText      : 'Your changes were saved.',
     deleteDialogTitleText: 'Delete budget overage?',
     deleteDialogText     : 'Are you sure you want to delete this budget overage?',
@@ -28,20 +32,18 @@ Ext.define('NP.controller.BudgetOverage', {
     init: function(){
         Ext.log('BudgetOverageController init');
 
-        var app = this.application;
-
         // Setup event handlers
         this.control({
             // The New Budget Overage button
             '[xtype="budget.budgetoveragegrid"] [xtype="shared.button.new"]': {
                 click: function() {
-                    app.addHistory('BudgetOverage:showBudgetOverageForm');
+                    this.addHistory('BudgetOverage:showBudgetOverageForm');
                 }
             },
             // The Cancel button on the New Budget Overage Form
             '[xtype="budget.budgetoverageform"] [xtype="shared.button.cancel"]': {
                 click: function() {
-                    app.addHistory('BudgetOverage:showBudgetOverage');
+                    this.addHistory('BudgetOverage:showBudgetOverage');
                 }
             },
             // The Save button on the New Budget Overage Form
@@ -50,13 +52,15 @@ Ext.define('NP.controller.BudgetOverage', {
             },
             // The Property grid drop down
             '[xtype="budget.budgetoveragegrid"] [name="property_id"]': {
-                change: this.filterByPropertyName
+                select: this.filterByPropertyName
             },
-//            override delete row event
+            // override delete row event
             '[xtype="budget.budgetoveragegrid"]': {
                 deleterow: this.deleteBudgetOverageItem,
-                itemclick: function (grid, rec) {
-                    app.addHistory('BudgetOverage:showBudgetOverageForm:' + rec.get('budgetoverage_id') + ':' + rec.get('budgetoverage_period'));
+                itemclick: function (grid, rec, item, index, e, eOpts) {
+                    if (e.target.tagName != 'IMG') {
+                        this.addHistory('BudgetOverage:showBudgetOverageForm:' + rec.get('budgetoverage_id'));
+                    }
                 }
             }
         });
@@ -77,68 +81,39 @@ Ext.define('NP.controller.BudgetOverage', {
      * Show budget overage form
      * @param id
      */
-    showBudgetOverageForm: function(id, datetime) {
+    showBudgetOverageForm: function(id) {
         var viewCfg = { bind: { models: ['budget.BudgetOverage'] }};
+        
         if (arguments.length) {
             Ext.apply(viewCfg.bind, {
-                service    : 'BudgetOverageService',
+                service    : 'BudgetService',
                 action     : 'getBudgetOverage',
                 extraParams: {
                     id: id
                 }
             });
+
+            viewCfg.listeners = {
+                dataloaded: function(boundForm, data) {
+                    var periodField  = boundForm.findField('budgetoverage_period'),
+                        periodStore  = periodField.getStore(),
+                        periodRecVal = boundForm.getModel('budget.BudgetOverage').get('budgetoverage_period'),
+                        periodName   = Ext.Date.format(periodRecVal, 'm/Y'),
+                        periodVal    = Ext.Date.format(periodRecVal, 'm/d/Y');
+                    
+                    if (periodStore.find('period_name', periodName) === -1) {
+                        periodStore.add({
+                            period_name : periodName,
+                            period_value: periodVal
+                        });
+                    }
+
+                    periodField.setValue(periodVal);
+                }
+            };
         }
 
         var form = this.setView('NP.view.budget.BudgetOverageForm', viewCfg);
-        if (arguments.length) {
-            var date = datetime.split(" ");
-            Ext.getCmp('budgetoverage_period').bindStore(this.setPeriodRange(date[0]));
-            form.findField('budgetoverage_period').setValue(Ext.Date.format(new Date(date[0]), 'Y-m-1'));
-        } else {
-           Ext.getCmp('budgetoverage_period').bindStore(this.setPeriodRange());
-        }
-    },
-
-    /**
-     * Receive period range for the form value "Period"
-     *
-     * @param startdate
-     */
-    setPeriodRange: function(budget_overage_startdate) {
-        var startdate = new Date();
-        if (budget_overage_startdate) {
-            startdate = new Date(budget_overage_startdate);
-        }
-
-        Ext.define('DateRange', {
-            extend: 'Ext.data.Model',
-            fields: [
-                {
-                    type: 'string',
-                    name: 'budgetoverage_period'
-                },
-                {
-                    type: 'string',
-                    name: 'period'
-                }
-            ]
-        });
-        var daterange = [
-            {'budgetoverage_period': Ext.Date.format(startdate, 'Y-m-1'), 'period': Ext.Date.format(startdate, 'm/Y')}
-        ];
-
-        for (var index = 1; index < 7; index++) {
-            var nextdate = Ext.Date.add(startdate, Ext.Date.MONTH, index);
-            daterange.push({"budgetoverage_period": "" + Ext.Date.format(nextdate, 'Y-m-1') + "", "period": Ext.Date.format(nextdate, 'm/Y')});
-        }
-
-        var store = new Ext.data.Store(
-            {
-                model: 'DateRange',
-                data: daterange
-            }
-        );
-        return store;
     },
 
     /**
@@ -151,7 +126,7 @@ Ext.define('NP.controller.BudgetOverage', {
 
         if (form.isValid()) {
             form.submitWithBindings({
-                service: 'BudgetOverageService',
+                service: 'BudgetService',
                 action: 'saveBudgetOverage',
                 extraParams: {
                     userprofile_id: NP.Security.getUser().get('userprofile_id'),
@@ -168,11 +143,11 @@ Ext.define('NP.controller.BudgetOverage', {
     /**
      *  Reload grid after filter property combobox's value changed
      */
-    filterByPropertyName: function() {
-        var grid = this.getCmp('budget.budgetoveragegrid');
-        var property_id = grid.query('[name="property_id"]')[0].getValue();
-        grid.addExtraParams({ property_id: property_id });
-        grid.reloadFirstPage();
+    filterByPropertyName: function(combo, recs) {
+        var property_id = (recs.length) ? recs[0].get('property_id') : null;
+
+        this.getOverageGrid().addExtraParams({ property_id: property_id });
+        this.getOverageGrid().reloadFirstPage();
     },
 
     /**
@@ -191,7 +166,7 @@ Ext.define('NP.controller.BudgetOverage', {
 
                 NP.lib.core.Net.remoteCall({
                     requests: {
-                        service: 'BudgetOverageService',
+                        service: 'BudgetService',
                         action : 'budgetOverageDelete',
                         id     : id,
                         success: function(success, deferred) {

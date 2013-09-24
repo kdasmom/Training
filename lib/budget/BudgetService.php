@@ -3,6 +3,7 @@
 namespace NP\budget;
 
 use NP\core\AbstractService;
+use NP\core\validation\EntityValidator;
 
 /**
  * Service class for operations related to Budgets
@@ -11,11 +12,13 @@ use NP\core\AbstractService;
  */
 class BudgetService extends AbstractService {
 
-	protected $budgetGateway, $glAccountYearGateway;
+	protected $budgetGateway, $glAccountYearGateway, $budgetOverageGateway;
 
-	public function __construct(BudgetGateway $budgetGateway, GlAccountYearGateway $glAccountYearGateway) {
+	public function __construct(BudgetGateway $budgetGateway, GlAccountYearGateway $glAccountYearGateway,
+								BudgetOverageGateway $budgetOverageGateway) {
 		$this->budgetGateway        = $budgetGateway;
 		$this->glAccountYearGateway = $glAccountYearGateway;
+		$this->budgetOverageGateway = $budgetOverageGateway;
 	}
 
 	public function createMissingBudgets($entityType) {
@@ -70,6 +73,78 @@ class BudgetService extends AbstractService {
 	public function getYtdOverBudgetCategories($countOnly, $property_id, $pageSize=null, $page=null, $sort="category_name") {
 		return $this->budgetGateway->findYtdOverBudgetCategories($countOnly, $property_id, $pageSize, $page, $sort);
 	}
+
+	/**
+     * Retrieve budget overage by id
+     * @param $id
+     * @return array
+     */
+    public function getBudgetOverage($id) {
+        return $this->budgetOverageGateway->findById($id);
+    }
+
+    /**
+     * Retrieve list of budget overage
+     *
+     * @param $property_id
+     * @return array
+     */
+    public function getBudgetOveragesByProperty($property_id, $pageSize=null, $page=null, $sort="property_name") {
+        return $this->budgetOverageGateway->findByPropertyId($property_id, $pageSize, $page);
+    }
+
+    /**
+     * save budget overage
+     *
+     * @param $data
+     * @return array
+     */
+    public function saveBudgetOverage($data) {
+        $budgetoverage = new BudgetOverageEntity($data['budgetoverage']);
+
+        if ($budgetoverage->budgetoverage_id == null) {
+			$budgetoverage->userprofile_id = $data['userprofile_id'];
+			$budgetoverage->role_id        = $data['role_id'];
+        }
+        $budgetoverage->budgetoverage_period = \NP\util\Util::formatDateForDB(new \DateTime($budgetoverage->budgetoverage_period));
+
+        $validator = new EntityValidator();
+
+        $validator->validate($budgetoverage);
+        $errors = $validator->getErrors();
+
+        if (count($errors) == 0) {
+            try {
+                $this->budgetOverageGateway->save($budgetoverage);
+            } catch(\Exception $e) {
+                // Add a global error to the error array
+                $errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
+            }
+        }
+
+        return array(
+            'success'    => (count($errors)) ? false : true,
+            'errors'     => $errors,
+        );
+    }
+
+    /**
+     * Delete budget overage record by id
+     *
+     * @param $id
+     * @return bool
+     */
+    public function budgetOverageDelete($id) {
+        $success = true;
+
+        try {
+            $this->budgetOverageGateway->commit();
+        } catch(\Exception $e) {
+            $success = false;
+        }
+
+        return $success;
+    }
 
 }
 

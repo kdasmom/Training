@@ -12,37 +12,29 @@ use NP\core\db\Select;
  * @author
  */
 class BudgetOverageGateway extends AbstractGateway {
+    protected $tableAlias = 'bo';
 
-    public function __construct(Adapter $adapter) {
-        parent::__construct($adapter);
-    }
-
-    public function findByPropertyId($property_id, $sort = 'property_name') {
-        $select = new Select();
-        $where = [
-            'p.property_status' => 1
-        ];
+    public function findByPropertyId($property_id, $pageSize=null, $page=null, $sort="property_name") {
+        $where = array('pr.property_status' => 1);
 
         if ($property_id) {
-            $where['bo.property_id'] = $property_id;
+            $where['bo.property_id'] = '?';
         }
-        $select->from(array('bo'=>'budgetoverage'))
-            ->join(array('u' => 'userprofile'),
-                'bo.userprofile_id = u.userprofile_id',
-                array('userprofile_id','userprofile_username'))
-            ->join(array('r' => 'role'),
-                'bo.role_id = r.role_id',
-                array('role_id','role_name'))
-            ->join(array('p' => 'property'),
-                'bo.property_id = p.property_id',
-                array('property_id', 'property_name'))
-            ->join(array('gl' => 'glaccount'),
-                'bo.glaccount_id = gl.glaccount_id',
-                array('glaccount_id','glaccount_name'))
-            ->where($where)
-            ->order($sort);
 
-        return $this->adapter->query($select);
+        return $this->find(
+            $where,
+            array($property_id),
+            $sort,
+            null,
+            $pageSize,
+            $page,
+            array(
+                new sql\join\BudgetOverageUserJoin(),
+                new sql\join\BudgetOverageRoleJoin(),
+                new sql\join\BudgetOveragePropertyJoin(),
+                new sql\join\BudgetOverageGlAccountJoin()
+            )
+        );
     }
 }
 ?>

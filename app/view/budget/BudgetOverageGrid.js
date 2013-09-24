@@ -10,7 +10,8 @@ Ext.define('NP.view.budget.BudgetOverageGrid', {
     requires: [
         'NP.lib.core.Config',
         'NP.view.shared.button.New',
-        'NP.lib.ui.ComboBox'
+        'NP.lib.ui.ComboBox',
+        'NP.model.gl.GlAccount'
     ],
 
     // For localization
@@ -29,62 +30,60 @@ Ext.define('NP.view.budget.BudgetOverageGrid', {
     propertyFilterLabel: 'Property',
 
     initComponent: function() {
-
-        var propertyStore = Ext.create('NP.store.property.Properties', {
-            service: 'PropertyService',
-            action : 'getByStatus',
-            paging: true,
-            extraParams: {property_status: 1, pageSize: null}
-        });
-
-        propertyStore.load();
-
         this.pagingToolbarButtons = [
             {
                 xtype: 'shared.button.new',
                 text: this.createNewBudgetOverageBtnLabel
-            },
-            {
+            },{
                 xtype: 'tbseparator'
-            },
-            {
-                xtype           : 'customcombo',
-                name            : 'property_id',
-                fieldLabel      : this.propertyFilterLabel,
-                displayField    : 'property_name',
-                valueField      : 'property_id',
-                store           : propertyStore,
-                width           : 500,
-                labelWidth      : 65,
-                emptyText       : 'All ' + NP.Config.getPropertyLabel(true)
-
+            },{
+                xtype       : 'customcombo',
+                name        : 'property_id',
+                fieldLabel  : this.propertyFilterLabel,
+                displayField: 'property_name',
+                valueField  : 'property_id',
+                store       : 'property.AllProperties',
+                width       : 500,
+                labelWidth  : 65,
+                emptyText   : 'All ' + NP.Config.getPropertyLabel(true)
             }
         ];
 
         // Add the base columns for the grid
         this.columns = [
             {
-                text: this.propertyColText,
+                text     : this.propertyColText,
                 dataIndex: 'property_name',
-                flex: 1,
-                renderer: function(val, meta, rec) {
+                flex     : 1,
+                renderer : function(val, meta, rec) {
                     return rec.getProperty().get('property_name');
                 }
-            },
-            {
-                text: this.categoryColText,
+            },{
+                text     : this.categoryColText,
                 dataIndex: 'glaccount_name',
-                flex: 1,
-                renderer: function(val, meta, rec) {
-                    return rec.getGlAccount().get('glaccount_name');
+                flex     : 1,
+                renderer : function(val, meta, rec) {
+                    var glRec = rec.getGlAccount();
+                    
+                    return NP.model.gl.GlAccount.formatName(glRec.get('glaccount_number'), glRec.get('glaccount_name'));
                 }
-            },
-            { xtype: 'datecolumn', text: this.periodColText, dataIndex: 'budgetoverage_period', format: 'm/Y', align: 'right' },
-            { xtype: 'numbercolumn', text: this.amountColText, dataIndex: 'budgetoverage_amount', format: '$0,000', align: 'right' },
-            { xtype: 'actioncolumn',
+            },{
+                xtype: 'datecolumn',
+                text: this.periodColText,
+                dataIndex: 'budgetoverage_period',
+                format: 'm/Y',
+                align: 'right'
+            },{
+                xtype    : 'numbercolumn',
+                text     : this.amountColText,
+                dataIndex: 'budgetoverage_amount',
+                renderer : NP.Util.currencyRenderer,
+                align    : 'right'
+            },{
+                xtype: 'actioncolumn',
                 items: [
                     {
-                        icon: 'resources/images/buttons/delete.gif',
+                        icon   : 'resources/images/buttons/delete.gif',
                         tooltip: 'Delete',
                         handler: function(gridView, rowIndex, colIndex) {
                             var grid = gridView.ownerCt;
@@ -92,15 +91,16 @@ Ext.define('NP.view.budget.BudgetOverageGrid', {
                         }
                     }
                 ],
-                align: 'center'
+                align: 'center',
+                flex : 0.1
             }
         ];
 
         this.store = Ext.create('NP.store.budget.BudgetOverage', {
-            service    : 'BudgetOverageService',
-            action     : 'budgetOverageList',
+            service    : 'BudgetService',
+            action     : 'getBudgetOveragesByProperty',
             paging     : true,
-            extraParams: {property_id: null, pageSize: null}
+            extraParams: { property_id: null }
         });
 
         this.callParent(arguments);

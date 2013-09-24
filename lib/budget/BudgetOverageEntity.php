@@ -50,6 +50,7 @@ class BudgetOverageEntity extends \NP\core\AbstractEntity {
             )
         ),
         'budgetoverage_created'	 => array(
+            'timestamp' => 'created',
             'validation' => array(
                 'date' => array('format'=>'Y-m-d H:i:s.u')
             )
