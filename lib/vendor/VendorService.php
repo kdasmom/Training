@@ -3,6 +3,7 @@
 namespace NP\vendor;
 
 use NP\core\AbstractService;
+use NP\core\db\Select;
 
 /**
  * Service class for operations related to vendors
@@ -130,6 +131,10 @@ class VendorService extends AbstractService {
         $vendors = $this->vendorGateway->find(null, [], $sort, ['vendor_id', 'vendor_name', 'vendor_status'], $pageSize, $page);
 
         return $vendors;
+    }
+
+    public function findUtilityVendors($pageSize = null, $page = null, $sort = "vendor_name") {
+        return $this->vendorGateway->findUtilityVendors($pageSize, $page, $sort);
     }
 	
 }

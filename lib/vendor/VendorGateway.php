@@ -104,6 +104,27 @@ class VendorGateway extends AbstractGateway {
 		}
 	}
 
+    public function findUtilityVendors($pageSize = null, $page = null, $sort = "vendor_name") {
+        $select = new Select();
+
+        $select->from(['v' => 'vendor'])
+            ->join(
+                ['vs' => 'vendorsite'],
+                'vs.vendor_id = v.vendor_id',
+                ['vendorsite_id']
+            )
+            ->join(
+                ['u' => 'utility'],
+                'vs.vendorsite_id = u.vendorsite_id',
+                ['utility_id']
+            )
+            ->order($sort)
+            ->limit($pageSize)
+            ->offset($pageSize*($page - 1));
+
+        return $this->adapter->query($select);
+    }
+
 }
 
 ?>

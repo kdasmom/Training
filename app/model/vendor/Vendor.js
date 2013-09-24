@@ -138,5 +138,15 @@ Ext.define('NP.model.vendor.Vendor', {
 			primaryKey: 'integration_package_id',
 			reader    : 'jsonflat'
         }
-	]
+	],
+
+    hasOne: [
+        {
+            model       : 'NP.model.vendor.Vendorsite',
+            name        : 'vendorsite_id',
+            getterName  : 'getVendorsiteId',
+            foreignKey  : 'vendor_id',
+            primaryKey  : 'vendor_id'
+        }
+    ]
 });

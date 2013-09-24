@@ -42,7 +42,7 @@ Ext.define('NP.model.utility.Utility', {
             model     : 'NP.model.vendor.Vendorsite',
             name      : 'vendorsite_id',
             foreignKey: 'Vendorsite_Id',
-            primaryKey: 'vendorsite_id'
+            primaryKey: 'Vendorsite_id'
         }
     ]
 
