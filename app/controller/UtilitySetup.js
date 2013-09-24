@@ -34,6 +34,9 @@ Ext.define('NP.controller.UtilitySetup', {
                     click: function() {
                         app.addHistory('UtilitySetup:showVendorForm');
                     }
+                },
+                '[xtype="utilitysetup.utilitysetupform"] [xtype="shared.button.save"]': {
+                    click: this.saveUtility
                 }
             }
         );
@@ -45,12 +48,35 @@ Ext.define('NP.controller.UtilitySetup', {
     },
 
     showVendorForm: function(id) {
-        var viewCfg = { bind: { models: ['vendor.Vendor'] }};
+        var viewCfg = { bind: { models: ['utility.Utility'] }};
 
         var form = this.setView('NP.view.utilitySetup.UtilitySetupForm', viewCfg);
     },
 
     saveUtility: function() {
+        var form = this.getCmp('utilitysetup.utilitysetupform');
+        var formValues = form.getValues();
+        if (form.isValid()) {
+            form.submitWithBindings({
+                service: 'UtilityService',
+                action: 'saveUtility',
+                extraParams: {
+                    utilitytypes        : formValues['utilitytypes'],
+                    person_firstname    : formValues['person_firstname'],
+                    person_middlename   : formValues['person_middlename'],
+                    person_lastname     : formValues['person_lastname'],
+                    phone_number    : formValues['phone_number'],
+                    phone_ext    : formValues['phone_ext']
+                },
+                success: function(result, deferred) {
+//                    NP.Util.showFadingWindow({ html: that.saveSuccessText });
+//                    that.application.addHistory('BudgetOverage:showBudgetOverage');
+                }
+            });
+        }
+    },
+
+    getSelectedUtilityTypes: function() {
 
     }
 });

@@ -12,7 +12,7 @@ namespace NP\utility;
 class UtilityEntity extends \NP\core\AbstractEntity {
 
     protected $fields = array(
-        'Utility_Id'	 => array(
+        'utility_id'	 => array(
             'validation' => array(
                 'digits' => array()
             )

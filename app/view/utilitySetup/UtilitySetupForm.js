@@ -64,10 +64,10 @@ Ext.define('NP.view.utilitySetup.UtilitySetupForm', {
             {
                 xtype           : 'autocomplete',
                 fieldLabel      : 'Vendor',
-                name            : 'vendor_id',
+                name            : 'Vendorsite_Id',
                 displayField    : 'vendor_name',
                 width           : 337,
-                valueField      : 'vendor_id',
+                valueField      : 'vendorsite_id',
                 allowBlank      : false,
                 multiSelect     : false,
                 store           : Ext.create('NP.store.vendor.Vendors', {
@@ -78,7 +78,7 @@ Ext.define('NP.view.utilitySetup.UtilitySetupForm', {
             {
                 xtype           : 'combo',
                 fieldLabel      : this.utilityTypeInputLabel,
-                name            : 'utilitytype_id',
+                name            : 'utilitytypes',
                 multiSelect     : true,
                 displayField    : 'UtilityType',
                 valueField      : 'UtilityType_Id',
@@ -129,7 +129,7 @@ Ext.define('NP.view.utilitySetup.UtilitySetupForm', {
                     {
                         xtype: 'textfield',
                         fieldLabel: this.contactPhoneExtLabel,
-                        name:   'phoen_ext',
+                        name:   'phone_ext',
                         margin: '0 0 5 5',
                         labelWidth: 70
                     }

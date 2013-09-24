@@ -9,7 +9,11 @@
 namespace NP\contact;
 
 use NP\core\AbstractGateway;
+use NP\core\db\Adapter;
 
 class ContactGateway extends AbstractGateway {
 
+    public function __construct(Adapter $adapter) {
+        return parent::__construct($adapter);
+    }
 }
