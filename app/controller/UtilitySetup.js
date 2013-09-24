@@ -27,11 +27,27 @@ Ext.define('NP.controller.UtilitySetup', {
         Ext.log('Utility Setup Controller init');
 
         var app = this.application;
+
+        this.control(
+            {
+                '[xtype="utilitysetup.vendorsgrid"] [xtype="shared.button.new"]': {
+                    click: function() {
+                        app.addHistory('UtilitySetup:showVendorForm');
+                    }
+                }
+            }
+        );
     },
 
     showVendorsGrid: function() {
         var grid = this.setView('NP.view.utilitySetup.VendorsGrid');
         grid.reloadFirstPage();
+    },
+
+    showVendorForm: function(id) {
+        var viewCfg = { bind: { models: ['vendor.Vendor'] }};
+
+        var form = this.setView('NP.view.utilitySetup.VendorForm', viewCfg);
     }
 
 });

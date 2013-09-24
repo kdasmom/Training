@@ -51,9 +51,9 @@ Ext.define('NP.view.utilitySetup.VendorsGrid', {
             }
         ];
 
-        this.store = Ext.create('NP.store.vendor.Vendors', {
-            service    : 'VendorService',
-            action     : 'getAll',
+        this.store = Ext.create('NP.store.utility.Utilities', {
+            service    : 'UtilityService',
+            action     : 'findVendors',
             paging     : true,
             extraParams: {pageSize: 25}
         });
