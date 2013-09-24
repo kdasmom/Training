@@ -6,7 +6,7 @@
  * Time: 11:52 AM
  */
 
-namespace NP\system;
+namespace NP\utility;
 
 
 use NP\core\AbstractGateway;

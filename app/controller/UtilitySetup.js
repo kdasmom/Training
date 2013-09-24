@@ -47,7 +47,10 @@ Ext.define('NP.controller.UtilitySetup', {
     showVendorForm: function(id) {
         var viewCfg = { bind: { models: ['vendor.Vendor'] }};
 
-        var form = this.setView('NP.view.utilitySetup.VendorForm', viewCfg);
-    }
+        var form = this.setView('NP.view.utilitySetup.UtilitySetupForm', viewCfg);
+    },
 
+    saveUtility: function() {
+
+    }
 });
