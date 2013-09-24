@@ -1,44 +1,18 @@
 <?php
 namespace NP\core\validation;
 
+use NP\locale\LocalizationService;
+
 /**
  * A class to validate entities
  * 
  * @author Thomas Messier
  */
 class EntityValidator implements ValidatorInterface {
-	
-	/**
-	 * @var \ArrayObject  An array of errors
-	 */
-	protected $errors;
+	protected $localizationService;
 
-	/**
-	 * Checks the state of the validator since validate() was last run
-	 *
-	 * @return boolean Returns true if the data set last validated is valid
-	 */
-	public function isValid() {
-		return (count($this->errors) == 0) ? true : false;
-	}
-
-	/**
-	 * Add an error
-	 *
-	 * @param string The field for which the error occurred
-	 * @param string The error message
-	 */
-	public function addError($field, $msg, $extra=null) {
-		$this->errors->append(new \ArrayObject(array('field' => $field, 'msg' => $msg, 'extra' => $extra)));
-	}
-
-	/**
-	 * Gets errors generated when validation was last run
-	 *
-	 * @return \ArrayObject
-	 */
-	public function getErrors() {
-		return $this->errors;
+	public function __construct(LocalizationService $localizationService) {
+		$this->localizationService = $localizationService;
 	}
 
 	/**
@@ -49,7 +23,7 @@ class EntityValidator implements ValidatorInterface {
 	 */
 	public function validate(\NP\core\AbstractEntity $entity) {
 		// Reset the errors array
-		$this->errors = new \ArrayObject();
+		$errors = array();
 
 		// Get the entity field values as an array
 		$dataSet = $entity->toArray();
@@ -72,7 +46,11 @@ class EntityValidator implements ValidatorInterface {
 			if ($fieldVal === null || $fieldVal === '') {
 				// If the field is required, add an error
 				if (array_key_exists('required', $definition) && $definition['required']) {
-					$this->addError($field, "This field is required.");
+					$this->addError(
+						$errors,
+						$field,
+						$this->localizationService->getMessage("This field is required.")
+					);
 				}
 				// Break out of the loop, validation is done for this field
 				continue;
@@ -81,7 +59,8 @@ class EntityValidator implements ValidatorInterface {
 			// Check for validation key in the definition
 			if (array_key_exists('validation', $definition)) {
 				$displayName = (array_key_exists('displayName', $definition)) ? $definition['displayName'] : $field;
-
+				$displayName = $this->localizationService->getMessage($displayName);
+				
 				// Loop through each validation setting
 				foreach ($definition['validation'] as $key=>$val) {
 					// Check if we're working with a validator or a validator chain
@@ -102,13 +81,23 @@ class EntityValidator implements ValidatorInterface {
 
 					// Append the errors to the result object
 					foreach ($validator->getMessages() as $messageId => $message) {
-				        $this->addError($field, $message);
+				        $this->addError($errors, $field, $message);
 				    }
 				}
 			}
 		}
 
-		return $this->isValid();
+		return $errors;
+	}
+	
+	/**
+	 * Add an error
+	 *
+	 * @param string The field for which the error occurred
+	 * @param string The error message
+	 */
+	public function addError(&$errors, $field, $msg, $extra=null) {
+		array_push($errors, array('field' => $field, 'msg' => $msg, 'extra' => $extra));
 	}
 
 	/**

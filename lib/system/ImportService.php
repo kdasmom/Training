@@ -155,15 +155,21 @@ class ImportService extends AbstractService
         return $this->{$class};
     }
 
+    protected function getImportSaveAction($type)
+    {
+        $config = $this->getImportConfig($type);
+
+        return (array_key_exists('action', $config)) ? $config['action'] : 'save';
+    }
+
     public function validate(\ArrayObject $data, $type)
     {
         $entityClass = $this->getImportEntityClass($type);
         $entity = new $entityClass($data);
 
-        $validator = new EntityValidator();
-        $validator->validate($entity);
+        $errors = new \ArrayObject($this->entityValidator->validate($entity));
 
-        $this->errors = new \ArrayObject($validator->getErrors()->getArrayCopy());
+        $this->errors = new \ArrayObject($errors->getArrayCopy());
 
         if ($this->getImportCustomValidationFlag($type)) {
             $validator = $this->getCustomValidator($type);
@@ -271,6 +277,7 @@ class ImportService extends AbstractService
          */
         $entity = new $entityClass($data);
         $service = $this->getImportService($type);
+        $saveFunction = $this->getImportSaveAction($type);
 
         $success = false;
 
@@ -290,9 +297,9 @@ class ImportService extends AbstractService
 
                 if($service instanceof BaseImportService) {
                     $service->preSave();
-                }
+                }                
 
-                $service->save($data[$k], $entityClass);
+                $service->$saveFunction($data[$k], $entityClass);
 
                 if($service instanceof BaseImportService) {
                     $service->postSave();

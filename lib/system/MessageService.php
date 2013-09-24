@@ -90,9 +90,7 @@ class MessageService extends AbstractService {
 			$userMessage->createdAt = $now;
 		}
 
-		$validator   = new EntityValidator();
-		$validator->validate($userMessage);
-		$errors      = $validator->getErrors();
+		$errors      = $this->entityValidator->validate($userMessage);
 
 		if (!count($errors)) {
 			$this->userMessageGateway->beginTransaction();

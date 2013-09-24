@@ -1,19 +1,4 @@
 <?php
-
-/**
-
- * Created by JetBrains PhpStorm.
-
- * User: Yura Rodchyn (rodchyn) rodchyn@gmail.com
-
- * Date: 8/7/13
-
- * Time: 8:11 PM
-
- * To change this template use File | Settings | File Templates.
-
- */
-
 namespace NP\system;
 
 use \NP\system\ConfigService;
@@ -39,7 +24,6 @@ abstract class BaseImportService extends AbstractService {
      * @param ConfigService $configService set by Pimple di bootstrap
      */
     public function setConfigService(ConfigService $configService) {
-
         $this->configService = $configService;
     }
 
@@ -47,7 +31,6 @@ abstract class BaseImportService extends AbstractService {
      * @param SecurityService $securityService set by Pimple di bootstrap
      */
     public function setSecurityService(SecurityService $securityService) {
-
         $this->securityService = $securityService;
     }
 
@@ -77,10 +60,7 @@ abstract class BaseImportService extends AbstractService {
     public function validate(AbstractEntity $entity)
     {
         // Run validation
-        $validator = new EntityValidator();
-        $validator->validate($entity);
-
-        return $validator->getErrors();
+        return $this->entityValidator->validate($entity);
     }
 
 }

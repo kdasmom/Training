@@ -156,6 +156,62 @@ class Util {
 		return $wasResized;
 	}
 	
+	/**
+	 * Utility function to easily do a SOAP request by doing an HTTP post with XML
+	 * 
+	 * @param  string  $url        File system path of the image to resize
+	 * @param  int     $body       Maximum width allowed
+	 * @param  int     $soapAction Maximum height allowed
+	 * @return array               The HTTP response to the SOAP request; any SOAP response XML will be in the "content" key
+	 */
+	public static function soapRequest($url, $body, $header='', $soapAction=null) {
+		$host = explode('/', $url);
+		$host = $host[2];
+
+		if ($soapAction === null) {
+			$soapAction = simplexml_load_string($body);
+			$soapAction = 'http://tempuri.org/' . $soapAction->getName();
+		}
+
+		if ($header !== '') {
+			$header = '<soap:Header>' . $header . '</soap:Header>';
+		}
+
+		$xml = '<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    ' . $header . '
+	<soap:Body>
+		' . $body . '
+	</soap:Body>
+</soap:Envelope>';
+
+		$res = \NP\util\Util::httpRequest(
+		    $url,
+		    'POST',
+		    $xml,
+		    array(
+		        'Content-Type: text/xml; charset=utf-8',
+		        'Accept: application/soap+xml, application/dime, multipart/related, text/*',
+		        'Host: ' . $host,
+		        'User-Agent: Axis/1.1',
+		        'Cache-Control: no-cache',
+		        'Pragma: no-cache',
+		        'SOAPAction: ' . $soapAction,
+		        'Content-Length: ' . strlen($xml)
+		    )
+		);
+new \dBug($res);die;
+		if ($res['success']) {
+			$xml = new \SimpleXMLElement($res['content']);
+			if ($xml !== false) {
+				$res['soapResult'] = $xml->children('soap', true)->Body->children('', true)->children('', true);
+			}
+		}
+
+		return $res;
+	}
 }
 
 ?>

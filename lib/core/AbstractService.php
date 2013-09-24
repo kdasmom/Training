@@ -29,6 +29,14 @@ abstract class AbstractService {
 	}
 
 	/**
+	 * @internal Setter function required by DI framework to set the entity validator via setter injection
+	 * @param \NP\core\validation\EntityValidator $entityValidator
+	 */
+	public function setEntityValidator(\NP\core\validation\EntityValidator $entityValidator) {
+		$this->entityValidator = $entityValidator;
+	}
+
+	/**
 	 * Utility function to handle unexpected exceptions caught in catch blocks
 	 *
 	 * @param  \Exception $e

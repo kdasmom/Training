@@ -60,9 +60,7 @@ class PicklistService extends AbstractService {
 		}
 
 		// Use a generic validator to validate the entity
-		$validator = new EntityValidator();
-		$validator->validate($entity);
-		$errors    = $validator->getErrors();
+		$errors    = $this->entityValidator->validate($entity);
 
 		// If there are no errors, proceed with attempting to save
 		if (!count($errors)) {

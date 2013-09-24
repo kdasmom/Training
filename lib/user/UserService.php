@@ -447,9 +447,7 @@ class UserService extends AbstractService {
 		$userprofile->asp_client_id = $this->configService->getClientId();
 
 		// Run validation
-		$validator = new EntityValidator();
-		$validator->validate($userprofile);
-		$errors    = $validator->getErrors();
+		$errors    = $this->entityValidator->validate($userprofile);
 
 		// Check the username to make sure it's unique
 		if (!$this->userprofileGateway->isUsernameUnique($userprofile->userprofile_username, $userprofile->userprofile_id)) {
@@ -496,70 +494,79 @@ class UserService extends AbstractService {
 				$this->userprofileGateway->save($userprofile);
 
 				// Save the person record
-				$person->asp_client_id = $this->configService->getClientId();
-				$validator->validate($person);
-				$errors    = array_merge($errors, $validator->getErrors());
-				$this->personGateway->save($person);
+				if (!count($errors)) {
+					$person->asp_client_id = $this->configService->getClientId();
+					$errors    = array_merge($errors, $this->entityValidator->validate($person));
+					if (!count($errors)) {
+						$this->personGateway->save($person);
+					}
+				}
 				
 				// Save the staff record
-				$staff->person_id = $person->person_id;
-				$validator->validate($staff);
-				$errors = array_merge($errors, $validator->getErrors());
-				if (!count($validator->getErrors())) {
-					$this->staffGateway->save($staff);
+				if (!count($errors)) {
+					$staff->person_id = $person->person_id;
+					$errors = array_merge($errors, $this->entityValidator->validate($staff));
+					if (!count($errors)) {
+						$this->staffGateway->save($staff);
+					}
 				}
 				
 				// Save the user role record
-				$userprofilerole->userprofile_id = $userprofile->userprofile_id;
-				$userprofilerole->tablekey_id    = $staff->staff_id;
-				$validator->validate($userprofilerole);
-				$errors = array_merge($errors, $validator->getErrors());
-				if (!count($validator->getErrors())) {
-					$this->userprofileroleGateway->save($userprofilerole);
+				if (!count($errors)) {
+					$userprofilerole->userprofile_id = $userprofile->userprofile_id;
+					$userprofilerole->tablekey_id    = $staff->staff_id;
+					$errors = array_merge($errors, $this->entityValidator->validate($userprofilerole));
+					if (!count($errors)) {
+						$this->userprofileroleGateway->save($userprofilerole);
+					}
 				}
 
 				// Save the address records
-				$address->table_name = 'staff';
-				$address->tablekey_id = $staff->staff_id;
-				$address->addresstype_id = $this->addressTypeGateway->find('addresstype_name = ?', array('Home'));
-				$address->addresstype_id = $address->addresstype_id[0]['addresstype_id'];
-				$validator->validate($address);
-				$errors    = array_merge($errors, $validator->getErrors());
-				if (!count($validator->getErrors())) {
-					$this->addressGateway->save($address);
+				if (!count($errors)) {
+					$address->table_name = 'staff';
+					$address->tablekey_id = $staff->staff_id;
+					$address->addresstype_id = $this->addressTypeGateway->find('addresstype_name = ?', array('Home'));
+					$address->addresstype_id = $address->addresstype_id[0]['addresstype_id'];
+					$errors    = array_merge($errors, $this->entityValidator->validate($address));
+					if (!count($errors)) {
+						$this->addressGateway->save($address);
+					}
 				}
 
 				// Save the email record
-				$email->table_name = 'staff';
-				$email->tablekey_id = $staff->staff_id;
-				$email->emailtype_id = $this->emailTypeGateway->find('emailtype_name = ?', array('Home'));
-				$email->emailtype_id = $email->emailtype_id[0]['emailtype_id'];
-				$validator->validate($email);
-				$errors    = array_merge($errors, $validator->getErrors());
-				if (!count($validator->getErrors())) {
-					$this->emailGateway->save($email);
+				if (!count($errors)) {
+					$email->table_name = 'staff';
+					$email->tablekey_id = $staff->staff_id;
+					$email->emailtype_id = $this->emailTypeGateway->find('emailtype_name = ?', array('Home'));
+					$email->emailtype_id = $email->emailtype_id[0]['emailtype_id'];
+					$errors    = array_merge($errors, $this->entityValidator->validate($email));
+					if (!count($errors)) {
+						$this->emailGateway->save($email);
+					}
 				}
 
 				// Save the home phone record
-				$homePhone->table_name = 'staff';
-				$homePhone->tablekey_id = $staff->staff_id;
-				$homePhone->phonetype_id = $this->phoneTypeGateway->find(array('phonetype_name'=>'?'), array('Home'));
-				$homePhone->phonetype_id = $homePhone->phonetype_id[0]['phonetype_id'];
-				$validator->validate($homePhone);
-				$errors    = array_merge($errors, $validator->getErrors());
-				if (!count($validator->getErrors())) {
-					$this->phoneGateway->save($homePhone);
+				if (!count($errors)) {
+					$homePhone->table_name = 'staff';
+					$homePhone->tablekey_id = $staff->staff_id;
+					$homePhone->phonetype_id = $this->phoneTypeGateway->find(array('phonetype_name'=>'?'), array('Home'));
+					$homePhone->phonetype_id = $homePhone->phonetype_id[0]['phonetype_id'];
+					$errors    = array_merge($errors, $this->entityValidator->validate($homePhone));
+					if (!count($errors)) {
+						$this->phoneGateway->save($homePhone);
+					}
 				}
 
 				// Save the work phone record
-				$workPhone->table_name = 'staff';
-				$workPhone->tablekey_id = $staff->staff_id;
-				$workPhone->phonetype_id = $this->phoneTypeGateway->find(array('phonetype_name'=>'?'), array('Work'));
-				$workPhone->phonetype_id = $workPhone->phonetype_id[0]['phonetype_id'];
-				$validator->validate($workPhone);
-				$errors    = array_merge($errors, $validator->getErrors());
-				if (!count($validator->getErrors())) {
-					$this->phoneGateway->save($workPhone);
+				if (!count($errors)) {
+					$workPhone->table_name = 'staff';
+					$workPhone->tablekey_id = $staff->staff_id;
+					$workPhone->phonetype_id = $this->phoneTypeGateway->find(array('phonetype_name'=>'?'), array('Work'));
+					$workPhone->phonetype_id = $workPhone->phonetype_id[0]['phonetype_id'];
+					$errors    = array_merge($errors, $this->entityValidator->validate($workPhone));
+					if (!count($errors)) {
+						$this->phoneGateway->save($workPhone);
+					}
 				}
 			} catch(\Exception $e) {
 				// Add a global error to the error array
@@ -624,9 +631,7 @@ class UserService extends AbstractService {
 
 		try {
 			$userprofile = new \NP\user\UserprofileEntity($data['userprofile']);
-			$validator = new EntityValidator();
-			$validator->validate($userprofile);
-			$errors    = $validator->getErrors();
+			$errors    = $this->entityValidator->validate($userprofile);
 
 			if (!count($errors)) {
 				$this->userprofileGateway->save(array(
@@ -691,9 +696,7 @@ class UserService extends AbstractService {
 			}
 
 			// Validate the record
-			$validator = new EntityValidator();
-			$validator->validate($mobInfo);
-			$errors    = array_merge($errors, $validator->getErrors());
+			$errors    = array_merge($errors, $this->entityValidator->validate($mobInfo));
 
 			// If not errors, we can save and commit the transaction
 			if (!count($errors)) {
@@ -818,16 +821,11 @@ class UserService extends AbstractService {
 			}
 
 			// Validate the entity
-			$validator = new EntityValidator();
-			$validator->validate($delegation);
-			$errors    = $validator->getErrors();
+			$errors    = $this->entityValidator->validate($delegation);
 
 			// Validate to make sure at least one property is assigned
 			if (!array_key_exists('delegation_properties', $data) || !is_array($data['delegation_properties']) || !count($data['delegation_properties'])) {
-				$errors[] = array(
-								'field' => 'delegation_properties',
-								'msg'   => $this->localizationService->getMessage('noDelegationPropertyError')
-							);
+				$this->entityValidator->addError($errors, 'delegation_properties', $this->localizationService->getMessage('noDelegationPropertyError'));
 			}
 
 			// If there are no errors we can save everything
@@ -1011,17 +1009,11 @@ class UserService extends AbstractService {
 
 		try {
 			$role     = new \NP\user\RoleEntity($data['role']);
-			$validator = new EntityValidator();
-			$validator->validate($role);
-			$errors   = $validator->getErrors();
+			$errors   = $this->entityValidator->validate($role);
 
 			// Check the username to make sure it's unique
 			if ($role->role_name != '' && !$this->roleGateway->isRoleNameUnique($role->role_name, $role->role_id)) {
-				$errors[] = array(
-								'field' => 'role_name',
-								'msg'   => $this->localizationService->getMessage('duplicateGroupNameError'),
-								'extra' => null
-							);
+				$this->entityValidator->addError($errors, 'role_name', $this->localizationService->getMessage('duplicateGroupNameError'));
 			}
 
 			// If no errors, save the role
@@ -1044,10 +1036,10 @@ class UserService extends AbstractService {
 					'table_name' => 'role',
 					'tablekey_id' => $role->role_id
 				));
-				$validator->validate($tree);
+				$errors = $this->entityValidator->validate($tree);
 
 				// If tree record is valid, save it
-				if (!$validator->getErrors()) {
+				if (!count($errors)) {
 					$this->treeGateway->delete(
 						array('table_name'=>'?', 'tablekey_id'=>'?'),
 						array('role', $role->role_id)
@@ -1055,7 +1047,7 @@ class UserService extends AbstractService {
 					$this->treeGateway->save($tree);
 				// Else create an error record
 				} else {
-					$errors[] = array('field'=>'global', 'msg'=>$this->localizationService->getMessage('unexpectedError'), 'extra'=>null);
+					$this->entityValidator->addError($errors, 'global', $this->localizationService->getMessage('unexpectedError'));
 				}
 			}
 
@@ -1063,7 +1055,7 @@ class UserService extends AbstractService {
 			if (!count($errors)) {
 				$res = $this->securityService->saveRolePermissions($role->role_id, $data['permissions']);
 				if (!$res['success']) {
-					$errors[] = array('field'=>'global', 'msg'=>$res['error'], 'extra'=>null);
+					$this->entityValidator->addError($errors, 'global', $res['error']);
 				}
 			}
 
@@ -1072,7 +1064,7 @@ class UserService extends AbstractService {
 				// Save new role email alerts
 				$res = $this->notificationService->saveNotifications('role', $role->role_id, $data['emailalerts'], $data['emailalerthours']);
 				if (!$res['success']) {
-					$errors[] = array('field'=>'global', 'msg'=>$res['error'], 'extra'=>null);
+					$this->entityValidator->addError($errors, 'global', $res['error']);
 				}
 			}
 
@@ -1080,12 +1072,12 @@ class UserService extends AbstractService {
 			if (!count($errors) && $data['email_overwrite']) {
 				$res = $this->notificationService->resetUserEmailAlertSettings('role', $role->role_id);
 				if (!$res['success']) {
-					$errors[] = array('field'=>'global', 'msg'=>$res['error'], 'extra'=>null);
+					$this->entityValidator->addError($errors, 'global', $res['error']);
 				}
 			}
 		} catch(\Exception $e) {
 			// Add a global error to the error array
-			$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
+			$this->entityValidator->addError($errors, 'global', $this->handleUnexpectedError($e));
 		}
 
 		if (count($errors)) {
@@ -1128,9 +1120,7 @@ class UserService extends AbstractService {
 
 			// Create the role record
 			$role     = new \NP\user\RoleEntity($role);
-			$validator = new EntityValidator();
-			$validator->validate($role);
-			$errors   = $validator->getErrors();
+			$errors   = $this->entityValidator->validate($role);
 
 			if (!count($errors)) {
 				$this->roleGateway->save($role);
@@ -1150,8 +1140,7 @@ class UserService extends AbstractService {
 				$tree = new \NP\system\TreeEntity($tree);
 
 				// Validate and save the tree record
-				$validator->validate($tree);
-				$errors   = array_merge($errors, $validator->getErrors());
+				$errors   = $this->entityValidator->validate($tree);
 
 				if (!count($errors)) {
 					$this->treeGateway->save($tree);
@@ -1161,19 +1150,19 @@ class UserService extends AbstractService {
 			if (!count($errors)) {
 				$res = $this->securityService->copyRolePermissions($role_id, $role->role_id);
 				if (!$res['success']) {
-					$errors[] = array('field'=>'global', 'msg'=>$res['error'], 'extra'=>null);
+					$this->entityValidator->addError($errors, 'global', $res['error']);
 				}
 			}
 
 			if (!count($errors)) {
 				$res = $this->notificationService->copyEmailSettingsToRole($role_id, $role->role_id);
 				if (!$res['success']) {
-					$errors[] = array('field'=>'global', 'msg'=>$res['error'], 'extra'=>null);
+					$this->entityValidator->addError($errors, 'global', $res['error']);
 				}
 			}
 		} catch(\Exception $e) {
 			// Add a global error to the error array
-			$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
+			$this->entityValidator->addError($errors, 'global', $this->handleUnexpectedError($e));
 		}
 
 		if (count($errors)) {

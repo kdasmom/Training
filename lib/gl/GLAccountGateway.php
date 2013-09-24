@@ -8,7 +8,6 @@ use NP\core\db\Insert;
 use NP\core\db\Update;
 use NP\locale\LocalizationService;
 use NP\system\ConfigService;
-use NP\core\validation\ExtendedEntityValidator as EntityValidator;
 
 use NP\core\db\Adapter;
 

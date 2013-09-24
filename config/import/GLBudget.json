@@ -12,5 +12,5 @@
   
     ],
     "customValidation": true,
-    "customValidationClass": "BudgetEntityValidator"
+    "customValidationClass": "BudgetAmountEntityValidator"
 }

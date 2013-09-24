@@ -102,13 +102,11 @@ class NotificationService extends AbstractService {
 			$this->emailAlertGateway->delete(array($col=>'?'), array($tablekey_id));
 
 			// Insert the new notifications
-			$validator = new EntityValidator();
 			foreach ($emailalerts as $data) {
 				$emailalert = new EmailAlertEntity($data);
 				$emailalert->$col = $tablekey_id;
 
-				$isValid = $validator->validate($emailalert);
-				if ($isValid) {
+				if (!count($this->entityValidator->validate($emailalert))) {
 					$this->emailAlertGateway->save($emailalert);
 				} else {
 					$error = $this->localizationService->getMessage('unexpectedError');
@@ -123,8 +121,7 @@ class NotificationService extends AbstractService {
 				$emailalerthour = new EmailAlertHourEntity($data);
 				$emailalerthour->$col = $tablekey_id;
 
-				$isValid = $validator->validate($emailalerthour);
-				if ($isValid) {
+				if (!count($this->entityValidator->validate($emailalerthour))) {
 					$this->emailAlertHourGateway->save($emailalerthour);
 				} else {
 					$error = $this->localizationService->getMessage('unexpectedError');

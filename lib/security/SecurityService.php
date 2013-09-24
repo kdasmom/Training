@@ -360,8 +360,6 @@ class SecurityService extends AbstractService {
 
 		$error = '';
 		try {
-			$validator = new EntityValidator();
-
 			$this->modulePrivGateway->delete(
 				array('table_name'=>'?', 'tablekey_id'=>'?'),
 				array('role', $role_id)
@@ -378,7 +376,7 @@ class SecurityService extends AbstractService {
 					'modulepriv_effectivedate' => $now
 				));
 
-				$isValid = $validator->validate($modulePriv);
+				$isValid = $this->entityValidator->validate($modulePriv);
 				if ($isValid) {
 					$this->modulePrivGateway->save($modulePriv);
 				} else {

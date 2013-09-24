@@ -507,9 +507,7 @@ class PropertyService extends BaseImportService {
 			$fax       = new \NP\contact\PhoneEntity($data['fax_phone']);
 
 			// Run validation
-			$validator = new EntityValidator();
-			$validator->validate($property);
-			$errors    = $validator->getErrors();
+			$errors    = $this->entityValidator->validate($property);
 
 			$now = \NP\util\Util::formatDateForDB();
 
@@ -560,34 +558,37 @@ class PropertyService extends BaseImportService {
 				}
 
 				// Set the property ID on address, validates it, and save it
-				$address->table_name = 'property';
-				$address->tablekey_id = $property->property_id;
-				$validator->validate($address);
-				$errors    = array_merge($errors, $addressErrors = $validator->getErrors());
-				if (!count($addressErrors)) {
-					$this->addressGateway->save($address);
+				if (!count($errors)) {
+					$address->table_name = 'property';
+					$address->tablekey_id = $property->property_id;
+					$errors    = array_merge($errors, $this->entityValidator->validate($address));
+					if (!count($errors)) {
+						$this->addressGateway->save($address);
+					}
 				}
 
 				// Set the property ID on phone, validates it, and save it
-				$phone->table_name = 'property';
-				$phone->tablekey_id = $property->property_id;
-				$phone->phonetype_id = $this->phoneTypeGateway->find(array('phonetype_name'=>'?'), array('Main'));
-				$phone->phonetype_id = $phone->phonetype_id[0]['phonetype_id'];
-				$validator->validate($phone);
-				$errors    = array_merge($errors, $phoneErrors = $validator->getErrors());
-				if (!count($phoneErrors)) {
-					$this->phoneGateway->save($phone);
+				if (!count($errors)) {
+					$phone->table_name = 'property';
+					$phone->tablekey_id = $property->property_id;
+					$phone->phonetype_id = $this->phoneTypeGateway->find(array('phonetype_name'=>'?'), array('Main'));
+					$phone->phonetype_id = $phone->phonetype_id[0]['phonetype_id'];
+					$errors    = array_merge($errors, $this->entityValidator->validate($phone));
+					if (!count($errors)) {
+						$this->phoneGateway->save($phone);
+					}
 				}
 
 				// Set the property ID on fax, validates it, and save it
-				$fax->table_name = 'property';
-				$fax->tablekey_id = $property->property_id;
-				$fax->phonetype_id = $this->phoneTypeGateway->find(array('phonetype_name'=>'?'), array('Fax'));
-				$fax->phonetype_id = $fax->phonetype_id[0]['phonetype_id'];
-				$validator->validate($fax);
-				$errors    = array_merge($errors, $faxErrors = $validator->getErrors());
-				if (!count($faxErrors)) {
-					$this->phoneGateway->save($fax);
+				if (!count($errors)) {
+					$fax->table_name = 'property';
+					$fax->tablekey_id = $property->property_id;
+					$fax->phonetype_id = $this->phoneTypeGateway->find(array('phonetype_name'=>'?'), array('Fax'));
+					$fax->phonetype_id = $fax->phonetype_id[0]['phonetype_id'];
+					$errors    = array_merge($errors, $this->entityValidator->validate($fax));
+					if (!count($errors)) {
+						$this->phoneGateway->save($fax);
+					}
 				}
 
 				// Save property custom field data

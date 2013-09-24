@@ -3,7 +3,6 @@
 namespace NP\catalog;
 
 use NP\core\AbstractService;
-use NP\core\validation\EntityValidator;
 use NP\vendor\VendorGateway;
 use NP\property\PropertyGateway;
 use NP\util\Util;
