@@ -26,7 +26,6 @@ Ext.define('NP.view.utilitySetup.AccountsGrid', {
     propertyColText:  'Property',
     unitColText:  'Unit/Dept',
 
-    addNewAccountButtonText: 'Add New Account',
 
     paging  : true,
     stateful: true,
@@ -34,17 +33,7 @@ Ext.define('NP.view.utilitySetup.AccountsGrid', {
 
     initComponent: function() {
 
-
-        this.pagingToolbarButtons = [
-            {
-                xtype: 'shared.button.cancel'
-            },
-            {
-                xtype: 'shared.button.new',
-                text: this.addNewAccountButtonText
-            }
-
-        ];
+        this.selModel = Ext.create('Ext.selection.CheckboxModel');
 
         // Add the base columns for the grid
         this.columns = [

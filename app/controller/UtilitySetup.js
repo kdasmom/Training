@@ -54,7 +54,7 @@ Ext.define('NP.controller.UtilitySetup', {
                         app.addHistory('UtilitySetup:showVendorForm:' + rec.get('vendor_id'));
                     }
                 },
-                '[xtype="utilitysetup.accountsgrid"] [xtype="shared.button.cancel"]': {
+                '[xtype="utilitysetup.vendoraccountlist"] [xtype="shared.button.cancel"]': {
                     click: function() {
                         app.addHistory('UtilitySetup:showVendorsGrid');
                     }
@@ -119,8 +119,9 @@ Ext.define('NP.controller.UtilitySetup', {
     },
 
     showAccountsGrid: function(utility_id) {
-        var grid = this.setView('NP.view.utilitySetup.AccountsGrid');
-        grid.reloadFirstPage();
+//        var grid = this.setView('NP.view.utilitySetup.AccountsGrid');
+       this.setView('NP.view.utilitySetup.VendorAccountsList');
+//        grid.reloadFirstPage();
     },
 
     saveUtility: function() {

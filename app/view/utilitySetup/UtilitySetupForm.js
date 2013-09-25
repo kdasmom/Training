@@ -50,16 +50,7 @@ Ext.define('NP.view.utilitySetup.UtilitySetupForm', {
             labelWidth: 125
         };
 
-        var utilityTypesStore = Ext.create('NP.store.utility.UtilityTypes', {
-            service     : 'UtilityTypeService',
-            action      : 'findAll',
-            extraParams : {pageSize: 25}
-        });
-
-        utilityTypesStore.load();
-
         this.addEvents('selectvendor');
-// @TODO
 //        change vendor_id to vendorsite_id
         this.items = [
             {
