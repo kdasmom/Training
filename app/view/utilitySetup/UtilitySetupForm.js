@@ -13,7 +13,6 @@ Ext.define('NP.view.utilitySetup.UtilitySetupForm', {
         'NP.view.shared.button.Cancel',
         'NP.view.shared.button.View',
         'NP.view.shared.UtilityTypeAssigner',
-//        'NP.lib.ui.ComboBox',
         'NP.lib.ui.AutoComplete'
 
     ],
@@ -56,7 +55,7 @@ Ext.define('NP.view.utilitySetup.UtilitySetupForm', {
             {
                 xtype           : 'autocomplete',
                 fieldLabel      : 'Vendor',
-                name            : 'vendor_id',
+                name            : 'Vendorsite_Id',
                 displayField    : 'vendor_name',
                 width           : 337,
                 valueField      : 'vendorsite_id',

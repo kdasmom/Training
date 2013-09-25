@@ -122,6 +122,34 @@ class UtilityService extends AbstractService {
 
     }
 
+    /*public function saveUtility__($data) {
+
+        $person = [
+            'person_firstname'      => $data['person_firstname'],
+            'person_middlename'      => $data['person_middlename'],
+            'person_lastname'      => $data['person_lastname'],
+        ];
+        $phone = [
+            'phone_number'      => $data['phone_number'],
+            'phone_ext'         => $data['phone_ext'],
+            'table_name'        => 'utility',
+            'phonetype_id'      => 6,
+            'phone_countrycode' => null
+        ];
+
+        $utilitytypes = explode(',', $data['utilitytypes']);
+
+        $res = [];
+        foreach ($utilitytypes as $type) {
+            $res = $this->_saveSingleUtility($data['utility'], $type, $person, $phone);
+            if (!$res['success']) {
+                return $res;
+            }
+        }
+
+        return $res;
+    }*/
+
     public function findByVendorId($vendor_id) {
         $utility = $this->utilityGateway->findByVendorId($vendor_id);
         $utility['utilitytypes'] = Util::valueList($this->utilityGateway->findAssignedUtilityTypes($utility['Utility_Id']), 'utilitytype_id');
@@ -141,5 +169,67 @@ class UtilityService extends AbstractService {
         $utility['vendor'] = $vendor;
 
         return $utility;
+    }
+
+    private function _saveSingleUtility($utilitydata, $type, $person, $phone) {
+
+        $utility = new UtilityEntity($utilitydata);
+        if ($utility->utility_id == null) {
+            $utility->periodic_billing_flag = null;
+            $utility->period_billing_cycle = null;
+            $utility->Property_Id = null;
+        }
+
+        $utility->UtilityType_Id = $type;
+        $utility->Vendorsite_Id = $utilitydata['Vendorsite_Id'];
+
+        $validator = new EntityValidator();
+        $validator->validate($utility);
+        $errors = $validator->getErrors();
+
+        if (count($errors) == 0) {
+            $this->utilityGateway->beginTransaction();
+
+            try {
+                $utilityid = $this->utilityGateway->save($utility);
+
+                if ($utilitydata['Utility_Id'] == null) {
+                    $personsaves = $this->personService->savePersonForUtility($person);
+                    $contact = [
+                        'contact' => [
+                            'person_id' => $personsaves['person_id'],
+                            'contacttype_id'    => 8,
+                            'table_name'        => 'utility',
+                            'tablekey_id'       => $utilityid,
+                            'contact_relation'  => 'Yes'
+                        ]
+                    ];
+                    $contactsaves = $this->contactService->saveContact($contact);
+                    $phone['tablekey_id'] = $utilityid;
+                    $phonesaves = $this->phoneService->savePhone(['phone' => $phone]);
+                } else {
+                    $phonesaved = $this->phoneService->findByUtilityId($utilitydata['Utility_Id']);
+                    $phone['phone_id'] = $phonesaved['phone_id'];
+                    $phone['tablekey_id'] = $utilitydata['Utility_Id'];
+                    $phone['table_name'] = 'utility';
+                    $res = $this->phoneService->savePhone(['phone' => $phone]);
+                    if (!$res['success']) {
+                        throw new \Exception($res['msg']);
+                    }
+
+                }
+
+                $this->utilityGateway->commit();
+            } catch(\Exception $exception) {
+                $this->utilityGateway->rollback();
+                $errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($exception), 'extra'=>null);
+            }
+        }
+
+
+        return array(
+            'success'    => (count($errors)) ? false : true,
+            'errors'     => $errors,
+        );
     }
 } 

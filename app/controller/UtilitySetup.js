@@ -54,11 +54,17 @@ Ext.define('NP.controller.UtilitySetup', {
                         app.addHistory('UtilitySetup:showVendorForm:' + rec.get('vendor_id'));
                     }
                 },
-                '[xtype="utilitysetup.vendoraccountlist"] [xtype="shared.button.cancel"]': {
+                '[xtype="utilitysetup.vendoraccountslist"] [xtype="shared.button.cancel"]': {
                     click: function() {
                         app.addHistory('UtilitySetup:showVendorsGrid');
                     }
-                }
+                }/*,
+                '[xtype="utilitysetup.vendoraccountslist"] [xtype="shared.button.new"]': {
+                    click: function() {
+                        var list = Ext.widget('utilitysetup.vendoraccountslist');
+                        app.addHistory('UtilitySetup:showAccountForm');
+                    }
+                }*/
             }
         );
     },
@@ -96,16 +102,13 @@ Ext.define('NP.controller.UtilitySetup', {
 
         if (arguments.length) {
             form.on('dataloaded', function(boundForm, data) {
-                console.log('data: ', data);
                 var data = data;
                 form.down('[xtype="shared.button.view"]').show();
-                console.log(form.down('[xtype="shared.button.view"]').on('click', function(){
+                form.down('[xtype="shared.button.view"]').on('click', function(){
                     that.application.addHistory('UtilitySetup:showAccountsGrid:' + data['Utility_Id']);
-                }));
+                });
 
-
-
-                var field = boundForm.findField('vendor_id');
+                var field = boundForm.findField('Vendorsite_Id');
 
                 field.setDefaultRec(Ext.create('NP.model.vendor.Vendor', {
                     vendor_id    : data['vendor']['vendor_id'],
@@ -119,9 +122,36 @@ Ext.define('NP.controller.UtilitySetup', {
     },
 
     showAccountsGrid: function(utility_id) {
-//        var grid = this.setView('NP.view.utilitySetup.AccountsGrid');
-       this.setView('NP.view.utilitySetup.VendorAccountsList');
-//        grid.reloadFirstPage();
+        var that = this;
+
+        var view = this.setView('NP.view.utilitySetup.VendorAccountsList');
+        view.down('[xtype="shared.button.new"]').on('click', function() {
+            console.log('utilityId: ', utility_id);
+            that.application.addHistory('UtilitySetup:showAccountForm::' + utility_id);
+        });
+    },
+
+    showAccountForm: function(account_id, utility_id) {
+        var that = this;
+
+        var viewCfg = {
+            bind: {
+                models: ['utility.UtilityAccount']
+            },
+            utility_id: utility_id
+        };
+
+        if (account_id) {
+            Ext.apply(viewCfg.bind, {
+                service    : 'UtilityAccountService',
+                action     : 'get',
+                extraParams: {
+                    id: account_id
+                }
+            });
+        }
+
+        var form = this.setView('NP.view.utilitySetup.AccountForm', viewCfg);
     },
 
     saveUtility: function() {
@@ -147,9 +177,5 @@ Ext.define('NP.controller.UtilitySetup', {
                 }
             });
         }
-    },
-
-    getSelectedUtilityTypes: function() {
-
     }
 });

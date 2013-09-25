@@ -6,7 +6,7 @@
 
 Ext.define('NP.view.utilitySetup.VendorAccountsList', {
     extend: 'Ext.panel.Panel',
-    alias: 'widget.utilitysetup.vendoraccountlist',
+    alias: 'widget.utilitysetup.vendoraccountslist',
 
     requires: [
         'NP.lib.core.Config',
