@@ -62,6 +62,11 @@ class UtilityAccountEntity extends \NP\core\AbstractEntity {
             'validation' => array(
                 'digits' => array()
             )
+        ),
+        'UtilityType_Id'	 => array(
+            'validation' => array(
+                'digits' => array()
+            )
         )
     );
 

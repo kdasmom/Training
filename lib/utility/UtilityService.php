@@ -171,6 +171,15 @@ class UtilityService extends AbstractService {
         return $utility;
     }
 
+    public function get($id) {
+        $utility = $this->utilityGateway->findById($id);
+        $vendor = $this->utilityGateway->findAssignedVendor($utility['Utility_Id']);
+
+        $utility['vendor_name'] = $vendor['vendor_name'];
+
+        return $utility;
+    }
+
     private function _saveSingleUtility($utilitydata, $type, $person, $phone) {
 
         $utility = new UtilityEntity($utilitydata);

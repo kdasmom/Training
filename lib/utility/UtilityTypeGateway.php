@@ -24,10 +24,20 @@ class UtilityTypeGateway extends AbstractGateway {
 
     }
 
+    /***
+     * Retrieve utility types assigned to the selected utility
+     *
+     * @param $utility_id
+     * @return array|bool
+     */
+    public function findByUtilityId($utility_id) {
+        $select =  new Select();
 
-    public function saveUtility($data) {
-        $spid = $this->adapter->query('SELECT @@SPID as spid');
+        $select->from(['ut' => 'utilitytype'])
+            ->join(['uts' => 'utilitytypes'], 'ut.utilitytype_id = uts.utilitytype_id', [])
+            ->where(['uts.utility_id' => '?']);
 
+        return $this->adapter->query($select, [$utility_id]);
     }
 
 }

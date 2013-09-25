@@ -17,14 +17,16 @@ Ext.define('NP.view.utilitySetup.AccountForm', {
     ],
 
 //    for localization
-    title                   : 'Utility Account',
-    vendorInputLabel        : 'Vendor',
-    utilityInputLabel       : 'Utility',
-    accountNumberInputLabel : 'Account number',
-    propertyInputlabel      : 'Property',
-    unitInputLabel          : 'Default unit',
-    meterInputLabel         : 'Meter number',
-    glaccountInputLabel     : 'Default GL Account',
+    title                           : 'Utility Account',
+    vendorInputLabel                : 'Vendor',
+    utilityInputLabel               : 'Utility',
+    utilityTypeInputLabel           : 'Utility type',
+    accountNumberInputLabel         : 'Account number',
+    propertyInputlabel              : 'Property',
+    unitInputLabel                  : 'Default unit',
+    meterInputLabel                 : 'Meter number',
+    glaccountInputLabel             : 'Default GL Account',
+    emptyTextForDependedByProperty  : 'Choose property first',
 
 
     initComponent: function() {
@@ -44,15 +46,23 @@ Ext.define('NP.view.utilitySetup.AccountForm', {
 
         this.defaults = {
             labelWidth  : 125,
-            padding     : '5'
+            padding     : '5',
+            width: 500
         };
 
         this.items = [
             {
                 xtype: 'displayfield',
                 fieldLabel: this.utilityInputLabel,
-                width: 300,
+                name: 'vendor_name',
                 value: 'test'
+            },
+            {
+                xtype: 'customcombo',
+                fieldLabel: this.utilityTypeInputLabel,
+                name: 'utilityname',
+                valueField: 'UtilityType_Id',
+                displayField: 'UtilityType'
             },
             {
                 xtype: 'textfield',
@@ -64,7 +74,8 @@ Ext.define('NP.view.utilitySetup.AccountForm', {
             },
             {
                 xtype: 'customcombo',
-                fieldLabel: this.unitInputLabel
+                fieldLabel: this.unitInputLabel,
+                emptyText: this.emptyTextForDependedByProperty
             },
             {
                 xtype: 'textfield',
@@ -72,7 +83,8 @@ Ext.define('NP.view.utilitySetup.AccountForm', {
             },
             {
                 xtype: 'customcombo',
-                fieldLabel: this.glaccountInputLabel
+                fieldLabel: this.glaccountInputLabel,
+                emptyText: this.emptyTextForDependedByProperty
             }
         ];
 

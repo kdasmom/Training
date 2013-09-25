@@ -58,30 +58,23 @@ Ext.define('NP.controller.UtilitySetup', {
                     click: function() {
                         app.addHistory('UtilitySetup:showVendorsGrid');
                     }
-                }/*,
-                '[xtype="utilitysetup.vendoraccountslist"] [xtype="shared.button.new"]': {
-                    click: function() {
-                        var list = Ext.widget('utilitysetup.vendoraccountslist');
-                        app.addHistory('UtilitySetup:showAccountForm');
-                    }
-                }*/
+                }
             }
         );
     },
 
-    changeGridTab: function(tabPanel, newCard, oldCard, eOpts) {
-        Ext.log('Catalog onTabChange() running');
-
-        this.addHistory('UtilitySetup:show:' + newCard.type);
-    },
-
+    /**
+     *  Vendors grid
+     */
     showVendorsGrid: function() {
         var grid = this.setView('NP.view.utilitySetup.VendorsGrid');
         grid.reloadFirstPage();
     },
 
-
-
+    /**
+     * Show utility setup form
+     * @param vendor_id
+     */
     showVendorForm: function(vendor_id) {
         var that = this;
 
@@ -121,16 +114,25 @@ Ext.define('NP.controller.UtilitySetup', {
         }
     },
 
+    /**
+     *  show utility accounts grid
+     * @param utility_id
+     */
     showAccountsGrid: function(utility_id) {
         var that = this;
 
         var view = this.setView('NP.view.utilitySetup.VendorAccountsList');
         view.down('[xtype="shared.button.new"]').on('click', function() {
-            console.log('utilityId: ', utility_id);
             that.application.addHistory('UtilitySetup:showAccountForm::' + utility_id);
         });
     },
 
+    /**
+     * show account setup form
+     *
+     * @param account_id
+     * @param utility_id
+     */
     showAccountForm: function(account_id, utility_id) {
         var that = this;
 
@@ -152,6 +154,33 @@ Ext.define('NP.controller.UtilitySetup', {
         }
 
         var form = this.setView('NP.view.utilitySetup.AccountForm', viewCfg);
+        form.down('[xtype="shared.button.cancel"]').on('click', function() {
+            that.application.addHistory('UtilitySetup:showAccountsGrid:' + utility_id);
+        });
+
+        if (utility_id) {
+
+            var store = Ext.create('NP.store.utility.UtilityTypes', {
+                service: 'UtilityTypeService',
+                action: 'findByUtilityId',
+                extraParams: {
+                    utility_id: utility_id
+                }
+            });
+
+            store.load();
+            NP.lib.core.Net.remoteCall({
+                requests: {
+                    service    : 'UtilityService',
+                    action     : 'get',
+                    id      : utility_id,
+                    success: function(result, deferred) {
+                        form.findField('vendor_name').setValue(result['vendor_name']);
+                    }
+                }
+            });
+            form.findField('utilityname').bindStore(store);
+        }
     },
 
     saveUtility: function() {

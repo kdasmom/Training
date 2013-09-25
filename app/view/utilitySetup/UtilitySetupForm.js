@@ -32,6 +32,8 @@ Ext.define('NP.view.utilitySetup.UtilitySetupForm', {
     contactPhoneExtLabel: 'Ext',
     emptyErrorText: 'cannot be empty',
     lessZeroErrorText: 'cannot be less the zero',
+    phoneNumberBaseMoreSymbolsErrorText: 'incorrect phone format',
+    phoneDigitsErrorText: 'use digits only',
 
     initComponent: function() {
 
@@ -122,12 +124,59 @@ Ext.define('NP.view.utilitySetup.UtilitySetupForm', {
         ];
 
         this.callParent(arguments);
-    }/*,
+    },
 
     isValid: function() {
         var isValid = this.callParent(arguments);
 
+        var vendor = this.findField('Vendorsite_Id');
+        var utilitytypes = this.findField('utilitytypes'); //array
+        var person_firstname = this.findField('person_firstname');
+        var person_middlename = this.findField('person_middlename');
+        var person_lastname = this.findField('person_lastname');
+        var phone_number = this.findField('phone_number');
+        var phone_ext = this.findField('phone_ext');
+
+        if (vendor.getValue() == null) {
+            isValid = false;
+            vendor.markInvalid(this.vendorNameInputLabel + ' ' + this.emptyErrorText);
+        }
+        if (utilitytypes.getValue().length == 0) {
+            isValid = false;
+            utilitytypes.markInvalid(this.utilityTypeInputLabel + ' ' + this.emptyErrorText);
+        }
+        if (person_firstname.getValue() == '') {
+            isValid = false;
+            person_firstname.markInvalid(this.contactPersonFirstnameLabel + ' ' + this.emptyErrorText);
+        }
+        if (person_middlename.getValue() == '') {
+            isValid = false;
+            person_middlename.markInvalid(this.contactPersonMiddlenameLabel + ' ' + this.emptyErrorText);
+        }
+        if (person_lastname.getValue() == '') {
+            isValid = false;
+            person_lastname.markInvalid(this.contactPersonLastnameLabel + ' ' + this.emptyErrorText);
+        }
+        if (phone_number.getValue() == null) {
+            isValid = false;
+            phone_number.markInvalid(this.contactPhoneBaseLabel + ' ' + this.emptyErrorText);
+        }
+        var matchPhone = new RegExp("[0-9]{9}");
+        if (!phone_number.getValue().match(matchPhone)) {
+            isValid = false;
+            phone_number.markInvalid(this.contactPhoneBaseLabel + ' ' + this.phoneNumberBaseMoreSymbolsErrorText);
+        }
+        if (phone_ext.getValue() == null) {
+            isValid = false;
+            phone_ext.markInvalid(this.contactPhoneExtLabel + ' ' + this.emptyErrorText);
+        }
+        var matchPhone = new RegExp("[0-9]{3}");
+        if (!phone_ext.getValue().match(matchPhone)) {
+            isValid = false;
+            phone_ext.markInvalid(this.contactPhoneExtLabel + ' ' + this.phoneNumberBaseMoreSymbolsErrorText);
+        }
+
         return isValid;
-    }*/
+    }
 
 });

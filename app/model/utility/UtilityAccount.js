@@ -21,7 +21,8 @@ Ext.define('NP.model.utility.UtilityAccount', {
         { name: 'property_id', type: 'int' },
         { name: 'utilityaccount_active' },
         { name: 'glaccount_id', type: 'int' },
-        { name: 'unit_id', type: 'int' }
+        { name: 'unit_id', type: 'int' },
+        { name: 'UtilityType_Id', type: 'int' }
     ],
 
     validations: [
