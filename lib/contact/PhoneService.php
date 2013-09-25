@@ -42,4 +42,8 @@ class PhoneService extends AbstractService {
             'errors'     => $errors,
         );
     }
+
+    public function findByUtilityId($utility_id) {
+        return $this->phoneGateway->findByTableNameAndKey('utility', $utility_id);
+    }
 } 

@@ -58,4 +58,42 @@ class UtilityGateway extends AbstractGateway {
         }
     }
 
+    public function findByVendorId($vendor_id) {
+        $select = new Select();
+        $select->from(['u' => 'utility'])
+            ->join(
+                ['vs' => 'vendorsite'],
+                'u.vendorsite_id = vs.vendorsite_id',
+                []
+            )
+            ->where(['vs.vendor_id' => $vendor_id]);
+
+        $utility =$this->adapter->query($select);
+        return $utility[0];
+    }
+
+    public function findAssignedUtilityTypes($utility_id) {
+        $select = new Select();
+        $select->from(['ut' => 'utilitytypes'])
+            ->join(['u' => 'utility'], 'u.utility_id = ut.utility_id', [])
+            ->columns(['utilitytype_id'])
+            ->where(['u.utility_id' => $utility_id]);
+
+        return $this->adapter->query($select);
+    }
+
+    public function findAssignedVendor($utility_id) {
+        $select = new Select();
+
+        $select->from(['u' => 'utility'])
+            ->join(['vs' => 'vendorsite'], 'vs.vendorsite_id = u.vendorsite_id', ['vendor_id', 'vendorsite_id'])
+            ->join(['v' => 'vendor'], 'v.vendor_id = vs.vendor_id', ['vendor_name', 'vendor_id_alt'])
+            ->where(['u.utility_id' => $utility_id])
+            ->columns([]);
+
+        $vendor = $this->adapter->query($select);
+
+        return $vendor[0];
+    }
+
 }

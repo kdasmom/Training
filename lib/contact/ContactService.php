@@ -47,4 +47,8 @@ class ContactService extends AbstractService {
         );
     }
 
+    public function findByTableNameAndKey($tablename, $key) {
+        return $this->contactGateway->findByTableNameAndKey($tablename, $key);
+    }
+
 } 

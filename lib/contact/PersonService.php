@@ -53,4 +53,8 @@ class PersonService extends AbstractService {
             'person_id' => $personid
         );
     }
+
+    public function get($id) {
+        return $this->personGateway->findById($id);
+    }
 } 

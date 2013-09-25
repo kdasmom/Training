@@ -10,16 +10,14 @@ namespace NP\utility;
 
 
 use NP\contact\ContactService;
-use NP\contact\PersonEntity;
-use NP\contact\PersonGateway;
 use NP\contact\PersonService;
-use NP\contact\PhoneGateway;
 use NP\contact\PhoneService;
 use NP\core\AbstractService;
-use NP\core\db\Insert;
 use NP\core\validation\EntityValidator;
 use NP\system\ConfigService;
 use NP\vendor\VendorGateway;
+
+use NP\util\Util;
 
 class UtilityService extends AbstractService {
     protected $utilityGateway;
@@ -54,6 +52,8 @@ class UtilityService extends AbstractService {
             $utility->UtilityType_Id = null;
         }
 
+        $utility->Vendorsite_Id = $data['vendor_id'];
+
         $person = [
             'person_firstname'      => $data['person_firstname'],
             'person_middlename'      => $data['person_middlename'],
@@ -67,7 +67,7 @@ class UtilityService extends AbstractService {
             'phone_countrycode' => null
         ];
 
-        $utilitytypes = $data['utilitytypes'];
+        $utilitytypes = explode(',', $data['utilitytypes']);
 
         $validator = new EntityValidator();
         $validator->validate($utility);
@@ -110,5 +110,26 @@ class UtilityService extends AbstractService {
             'errors'     => $errors,
         );
 
+    }
+
+    public function findByVendorId($vendor_id) {
+        $utility = $this->utilityGateway->findByVendorId($vendor_id);
+        $utility['utilitytypes'] = Util::valueList($this->utilityGateway->findAssignedUtilityTypes($utility['Utility_Id']), 'utilitytype_id');
+
+        $vendor = $this->utilityGateway->findAssignedVendor($utility['Utility_Id']);
+
+        $phone = $this->phoneService->findByUtilityId($utility['Utility_Id']);
+        $contact = $this->contactService->findByTableNameAndKey('utility', $utility['Utility_Id']);
+        $person = $this->personService->get($contact['person_id']);
+
+        $utility['phone_number'] = $phone['phone_number'];
+        $utility['phone_ext'] = $phone['phone_ext'];
+        $utility['person_firstname'] = $person['person_firstname'];
+        $utility['person_middlename'] = $person['person_middlename'];
+        $utility['person_lastname'] = $person['person_lastname'];
+        $utility['vendor_id'] = $utility['Vendorsite_Id'];
+        $utility['vendor'] = $vendor;
+
+        return $utility;
     }
 } 

@@ -11,7 +11,8 @@ Ext.define('NP.view.utilitySetup.UtilitySetupForm', {
         'NP.lib.core.Config',
         'NP.view.shared.button.Save',
         'NP.view.shared.button.Cancel',
-        'NP.view.shared.button.Delete',
+        'NP.view.shared.button.View',
+        'NP.view.shared.UtilityTypeAssigner',
 //        'NP.lib.ui.ComboBox',
         'NP.lib.ui.AutoComplete'
 
@@ -39,8 +40,8 @@ Ext.define('NP.view.utilitySetup.UtilitySetupForm', {
 
         var bar = [
             { xtype: 'shared.button.cancel' },
-            { xtype: 'shared.button.delete', hidden: true },
-            { xtype: 'shared.button.save'}
+            { xtype: 'shared.button.save'},
+            { xtype: 'shared.button.view', text: 'Accounts', hidden: true}
         ];
         this.tbar = bar;
         this.bbar = bar;
@@ -52,19 +53,19 @@ Ext.define('NP.view.utilitySetup.UtilitySetupForm', {
         var utilityTypesStore = Ext.create('NP.store.utility.UtilityTypes', {
             service     : 'UtilityTypeService',
             action      : 'findAll',
-            paging      : true,
             extraParams : {pageSize: 25}
         });
 
         utilityTypesStore.load();
 
         this.addEvents('selectvendor');
-
+// @TODO
+//        change vendor_id to vendorsite_id
         this.items = [
             {
                 xtype           : 'autocomplete',
                 fieldLabel      : 'Vendor',
-                name            : 'Vendorsite_Id',
+                name            : 'vendor_id',
                 displayField    : 'vendor_name',
                 width           : 337,
                 valueField      : 'vendorsite_id',
@@ -76,15 +77,8 @@ Ext.define('NP.view.utilitySetup.UtilitySetupForm', {
                 })
             },
             {
-                xtype           : 'combo',
-                fieldLabel      : this.utilityTypeInputLabel,
-                name            : 'utilitytypes',
-                multiSelect     : true,
-                displayField    : 'UtilityType',
-                valueField      : 'UtilityType_Id',
-                queryMode       : 'local',
-                store           : utilityTypesStore,
-                width           : 337
+                xtype    : 'shared.utilitytypeassigner',
+                maxHeight: 150
             },
             {
                 xtype           : 'fieldcontainer',
@@ -137,14 +131,17 @@ Ext.define('NP.view.utilitySetup.UtilitySetupForm', {
             }
         ];
 
+        console.log('adada');
 
+        console.log('args: ', arguments);
         this.callParent(arguments);
-    },
+        console.log('dadas');
+    }/*,
 
     isValid: function() {
         var isValid = this.callParent(arguments);
 
         return isValid;
-    }
+    }*/
 
 });

@@ -26,6 +26,8 @@ class VendorService extends AbstractService {
 	 * @return array           Array of vendor records
 	 */
 	public function getForCatalogDropDown($keyword) {
+        $vendors = $this->vendorGateway->getForCatalogDropDown($keyword);
+
 		return $this->vendorGateway->getForCatalogDropDown($keyword);
 	}
 	
