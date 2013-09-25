@@ -25,7 +25,7 @@ class VendorService extends AbstractService {
 	 * @param  string $keyword Keyword to use to search for a vendor
 	 * @return array           Array of vendor records
 	 */
-	public function getForCatalogDropDown($keyword) {
+	public function getForCatalogDropDown($keyword = '') {
         $vendors = $this->vendorGateway->getForCatalogDropDown($keyword);
 
 		return $this->vendorGateway->getForCatalogDropDown($keyword);

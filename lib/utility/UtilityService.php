@@ -52,7 +52,7 @@ class UtilityService extends AbstractService {
             $utility->UtilityType_Id = null;
         }
 
-        $utility->Vendorsite_Id = $data['vendor_id'];
+        $utility->Vendorsite_Id = $data['utility']['Vendorsite_Id'];
 
         $person = [
             'person_firstname'      => $data['person_firstname'],
@@ -78,6 +78,7 @@ class UtilityService extends AbstractService {
 
             try {
                 $utilityid = $this->utilityGateway->save($utility);
+
                 $this->utilityGateway->saveUtilityTypesRelations($utilityid, $utilitytypes);
 
                 if ($data['utility']['Utility_Id'] == null) {
@@ -95,6 +96,15 @@ class UtilityService extends AbstractService {
                     $phone['tablekey_id'] = $utilityid;
                     $phonesaves = $this->phoneService->savePhone(['phone' => $phone]);
                 } else {
+                    $phonesaved = $this->phoneService->findByUtilityId($data['utility']['Utility_Id']);
+                    $phone['phone_id'] = $phonesaved['phone_id'];
+                    $phone['tablekey_id'] = $data['utility']['Utility_Id'];
+                    $phone['table_name'] = 'utility';
+                    $res = $this->phoneService->savePhone(['phone' => $phone]);
+                    if (!$res['success']) {
+                        throw new \Exception($res['msg']);
+                    }
+
                 }
 
                 $this->utilityGateway->commit();

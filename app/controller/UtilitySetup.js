@@ -53,6 +53,11 @@ Ext.define('NP.controller.UtilitySetup', {
                     itemclick: function(grid, rec) {
                         app.addHistory('UtilitySetup:showVendorForm:' + rec.get('vendor_id'));
                     }
+                },
+                '[xtype="utilitysetup.accountsgrid"] [xtype="shared.button.cancel"]': {
+                    click: function() {
+                        app.addHistory('UtilitySetup:showVendorsGrid');
+                    }
                 }
             }
         );
@@ -72,6 +77,7 @@ Ext.define('NP.controller.UtilitySetup', {
 
 
     showVendorForm: function(vendor_id) {
+        var that = this;
 
         var viewCfg = { bind: { models: ['utility.Utility'] }};
 
@@ -91,7 +97,13 @@ Ext.define('NP.controller.UtilitySetup', {
         if (arguments.length) {
             form.on('dataloaded', function(boundForm, data) {
                 console.log('data: ', data);
+                var data = data;
                 form.down('[xtype="shared.button.view"]').show();
+                console.log(form.down('[xtype="shared.button.view"]').on('click', function(){
+                    that.application.addHistory('UtilitySetup:showAccountsGrid:' + data['Utility_Id']);
+                }));
+
+
 
                 var field = boundForm.findField('vendor_id');
 
@@ -104,6 +116,11 @@ Ext.define('NP.controller.UtilitySetup', {
                 field.disable();
             });
         }
+    },
+
+    showAccountsGrid: function(utility_id) {
+        var grid = this.setView('NP.view.utilitySetup.AccountsGrid');
+        grid.reloadFirstPage();
     },
 
     saveUtility: function() {

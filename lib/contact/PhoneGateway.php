@@ -19,6 +19,7 @@ class PhoneGateway extends AbstractGateway {
             ->where('p.table_name = ? and p.tablekey_id = ?');
 
         $phone = $this->adapter->query($select, [$tablename, $key]);
+
         return $phone[0];
     }
 }

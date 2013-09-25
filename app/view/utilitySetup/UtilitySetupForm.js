@@ -131,11 +131,7 @@ Ext.define('NP.view.utilitySetup.UtilitySetupForm', {
             }
         ];
 
-        console.log('adada');
-
-        console.log('args: ', arguments);
         this.callParent(arguments);
-        console.log('dadas');
     }/*,
 
     isValid: function() {

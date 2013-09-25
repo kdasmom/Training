@@ -57,4 +57,35 @@ class PersonService extends AbstractService {
     public function get($id) {
         return $this->personGateway->findById($id);
     }
+
+    public function savePhone($data) {
+        $person = new PersonEntity($data['phone']);
+
+        if ($person->person_id == null) {
+            $person->asp_client_id = $this->configService->getClientId();
+        }
+
+        $validator = new EntityValidator();
+        $validator->validate($person);
+        $errors = $validator->getErrors();
+        $personid = null;
+
+        if (count($errors) == 0) {
+            $this->personGateway->beginTransaction();
+
+            try {
+                $this->personGateway->save($person);
+
+                $this->personGateway->commit();
+            } catch(\Exception $exception) {
+                $this->personGateway->rollback();
+                $errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($exception), 'extra'=>null);
+            }
+        }
+
+        return array(
+            'success'    => (count($errors)) ? false : true,
+            'errors'     => $errors
+        );
+    }
 } 
