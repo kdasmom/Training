@@ -11,7 +11,7 @@ Ext.define('NP.view.glaccount.Main', {
         'NP.lib.core.Config',
         'NP.lib.core.Security',
     	'NP.view.glaccount.Overview',
-    	'NP.view.glaccount.GL Accounts',
+    	'NP.view.glaccount.GLAccounts',
     	'NP.view.glaccount.Category',
     	'NP.view.glaccount.Reports'
     ],
