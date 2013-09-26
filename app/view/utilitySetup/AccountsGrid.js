@@ -29,7 +29,7 @@ Ext.define('NP.view.utilitySetup.AccountsGrid', {
 
     paging  : true,
     stateful: true,
-    stateId : 'budgetoverage_grid',
+    stateId : 'accounts_grid',
 
     initComponent: function() {
 
@@ -40,26 +40,41 @@ Ext.define('NP.view.utilitySetup.AccountsGrid', {
             {
                 text: this.vendorColText,
                 dataIndex: 'vendor_name',
-                flex: 1
+                flex: 1,
+                renderer: function(val, meta, rec) {
+                    val = rec.raw.vendor_name;
+
+                    return val;
+                }
             },
             {
                 text: this.vendorIdColText,
                 dataIndex: 'vendor_id',
-                flex: 1
+                flex: 1,
+                renderer: function(val, meta, rec) {
+                    val = rec.raw.vendor_id;
+
+                    return val;
+                }
             },
             {
                 text: this.utilityTypeColText,
                 dataIndex: 'utilitytype',
-                flex: 1
+                flex: 1,
+                renderer: function(val, meta, rec) {
+                    val = rec.raw.utilitytype;
+
+                    return val;
+                }
             },
             {
                 text: this.accountColText,
-                dataIndex: 'utilityaccount_accountnumber',
+                dataIndex: 'UtilityAccount_AccountNumber',
                 flex: 1
             },
             {
                 text: this.meterColText,
-                dataIndex: 'utilityaccount_metersize',
+                dataIndex: 'UtilityAccount_MeterSize',
                 flex: 1
             },
             {
@@ -70,36 +85,31 @@ Ext.define('NP.view.utilitySetup.AccountsGrid', {
             {
                 text: this.propertyColText,
                 dataIndex: 'property_name',
-                flex: 1
+                flex: 1,
+                renderer: function(val, meta, rec) {
+                    val = rec.raw.property_name;
+
+                    return val;
+                }
             },
             {
                 text: this.unitColText,
-                dataIndex: 'unittype_name',
-                flex: 1
-            },
-            {
-                xtype: 'actioncolumn',
-                items: [
-                    {
-                        icon: 'resources/images/buttons/delete.gif',
-                        tooltip: 'Delete',
-                        handler: function(gridView, rowIndex, colIndex) {
-                            var grid = gridView.ownerCt;
-                            grid.fireEvent('deleterow', grid, grid.getStore().getAt(rowIndex), rowIndex);
-                        }
-                    }
-                ],
-                align: 'center'
+                dataIndex: 'unit_number',
+                flex: 1,
+                renderer: function(val, meta, rec) {
+                    val = rec.raw.unit_number;
+
+                    return val;
+                }
             }
         ];
 
-//        this.store = Ext.create('NP.store.vendor.Vendors', {
-//            service    : 'VendorService',
-//            action     : 'findUtilityVendors',
-//            paging     : true,
-//            extraParams: {pageSize: 25}
-//        });
-
+        /*this.store = Ext.create('NP.store.vendor.Vendors', {
+            service    : 'VendorService',
+            action     : 'findUtilityVendors',
+            paging     : true,
+            extraParams: {pageSize: 25}
+        });*/
         this.store = [];
 
         this.callParent(arguments);

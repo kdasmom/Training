@@ -59,7 +59,6 @@ Ext.define('NP.controller.UtilitySetup', {
                         app.addHistory('UtilitySetup:showVendorsGrid');
                     }
                 },
-
                 '[xtype="utilitysetup.accountform"]': {
                     selectproperty: this.selectProperty
                 }
@@ -126,9 +125,25 @@ Ext.define('NP.controller.UtilitySetup', {
         var that = this;
 
         var view = this.setView('NP.view.utilitySetup.VendorAccountsList');
+
         view.down('[xtype="shared.button.new"]').on('click', function() {
             that.application.addHistory('UtilitySetup:showAccountForm::' + utility_id);
         });
+
+        var grid = view.query('customgrid')[0];
+//
+//
+        var accountStore = Ext.create('NP.store.utility.UtilityAccounts', {
+            service    : 'UtilityAccountService',
+            action     : 'getAll',
+            paging     : true,
+            extraParams: {
+                pageSize: 25
+            }
+        });
+//
+        accountStore.load();
+        grid.bindStore(accountStore);
     },
 
     /**
@@ -161,6 +176,9 @@ Ext.define('NP.controller.UtilitySetup', {
         form.down('[xtype="shared.button.cancel"]').on('click', function() {
             that.application.addHistory('UtilitySetup:showAccountsGrid:' + utility_id);
         });
+        form.down('[xtype="shared.button.save"]').on('click', function() {
+            that.saveAccount(utility_id);
+        });
 
         if (utility_id) {
 
@@ -183,7 +201,7 @@ Ext.define('NP.controller.UtilitySetup', {
                     }
                 }
             });
-            form.findField('utilityname').bindStore(store);
+            form.findField('UtilityType_Id').bindStore(store);
         }
     },
 
@@ -237,5 +255,25 @@ Ext.define('NP.controller.UtilitySetup', {
         var form = this.getCmp('utilitysetup.accountform');
         form.findField('unit_id').bindStore(unitStore);
         form.findField('glaccount_id').bindStore(glaccountStore);
+    },
+
+    saveAccount: function(utility_id) {
+        var that = this;
+
+        var form = this.getCmp('utilitysetup.accountform');
+        var formValues = form.getValues();
+        if (form.isValid()) {
+            form.submitWithBindings({
+                service: 'UtilityAccountService',
+                action: 'save',
+                extraParams: {
+                    utility_id: utility_id
+                },
+                success: function(result, deferred) {
+                    NP.Util.showFadingWindow({ html: that.saveSuccessText });
+                    that.application.addHistory('UtilitySetup:showAccountsGrid:' + utility_id);
+                }
+            });
+        }
     }
 });

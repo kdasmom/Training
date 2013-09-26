@@ -12,7 +12,6 @@ Ext.define('NP.view.utilitySetup.VendorAccountsList', {
         'NP.lib.core.Config',
         'NP.view.shared.button.New',
         'NP.view.shared.button.Cancel',
-        'NP.view.shared.button.View',
         'NP.lib.ui.Grid',
         'NP.lib.ui.ComboBox',
         'NP.view.shared.PropertyCombo',
@@ -27,6 +26,16 @@ Ext.define('NP.view.utilitySetup.VendorAccountsList', {
     lastUpdatedColText   : 'Last Updated',
     statusColText        : 'Status',
     addNewAccountButtonText: 'Add New Account',
+    title: 'Utility Accounts',
+    vendorColText: 'Vendor',
+    vendorIdColText: 'VendorID',
+    utilityTypeColText: 'Utility',
+    accountColText: 'Account',
+    meterColText:  'Meter',
+    glAccountColText:  'GLAccount',
+    propertyColText:  'Property',
+    unitColText:  'Unit/Dept',
+
     layout: {
         type : 'vbox',
         align: 'stretch'
@@ -56,6 +65,14 @@ Ext.define('NP.view.utilitySetup.VendorAccountsList', {
         var glaccountStore = Ext.create('NP.store.gl.GlAccounts', {
             service     : 'GLService',
             action      : 'getAll'
+        });
+        var accountStore = Ext.create('NP.store.utility.UtilityAccounts', {
+            service    : 'UtilityAccountService',
+            action     : 'getAll',
+            paging     : true,
+            extraParams: {
+                pageSize: 25
+            }
         });
 
         utilityTypesStore.load();
@@ -150,7 +167,81 @@ Ext.define('NP.view.utilitySetup.VendorAccountsList', {
                 ]
             },
             {
-                xtype: 'utilitysetup.accountsgrid'
+                xtype   : 'customgrid',
+                border  : false,
+                paging  : true,
+                flex    : 1,
+                selModel: Ext.create('Ext.selection.CheckboxModel'),
+                stateful: true,
+                stateId : 'utility_accounts_grid',
+                store   : [],
+                columns : [
+                    {
+                        text: this.vendorColText,
+                        dataIndex: 'vendor_name',
+                        flex: 1,
+                        renderer: function(val, meta, rec) {
+                            val = rec.raw.vendor_name;
+
+                            return val;
+                        }
+                    },
+                    {
+                        text: this.vendorIdColText,
+                        dataIndex: 'vendor_id',
+                        flex: 1,
+                        renderer: function(val, meta, rec) {
+                            val = rec.raw.vendor_id;
+
+                            return val;
+                        }
+                    },
+                    {
+                        text: this.utilityTypeColText,
+                        dataIndex: 'utilitytype',
+                        flex: 1,
+                        renderer: function(val, meta, rec) {
+                            val = rec.raw.utilitytype;
+
+                            return val;
+                        }
+                    },
+                    {
+                        text: this.accountColText,
+                        dataIndex: 'UtilityAccount_AccountNumber',
+                        flex: 1
+                    },
+                    {
+                        text: this.meterColText,
+                        dataIndex: 'UtilityAccount_MeterSize',
+                        flex: 1
+                    },
+                    {
+                        text: this.glAccountColText,
+                        dataIndex: 'glaccount_name',
+                        flex: 1
+                    },
+                    {
+                        text: this.propertyColText,
+                        dataIndex: 'property_name',
+                        flex: 1,
+                        renderer: function(val, meta, rec) {
+                            val = rec.raw.property_name;
+
+                            return val;
+                        }
+                    },
+                    {
+                        text: this.unitColText,
+                        dataIndex: 'unit_number',
+                        flex: 1,
+                        renderer: function(val, meta, rec) {
+                            val = rec.raw.unit_number;
+
+                            return val;
+                        }
+                    }
+                ]
             }
         ];
 

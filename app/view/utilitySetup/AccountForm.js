@@ -28,6 +28,7 @@ Ext.define('NP.view.utilitySetup.AccountForm', {
     meterInputLabel                 : 'Meter number',
     glaccountInputLabel             : 'Default GL Account',
     emptyTextForDependedByProperty  : 'Choose property first',
+    emptyErrorText: 'cannot be empty',
 
 
     initComponent: function() {
@@ -40,6 +41,10 @@ Ext.define('NP.view.utilitySetup.AccountForm', {
             },
             {
                 xtype: 'shared.button.save'
+            },
+            {
+                xtype: 'shared.button.delete',
+                hidden: true
             }
         ];
         this.tbar = bar;
@@ -61,18 +66,20 @@ Ext.define('NP.view.utilitySetup.AccountForm', {
             {
                 xtype: 'customcombo',
                 fieldLabel: this.utilityTypeInputLabel,
-                name: 'utilityname',
+                name: 'UtilityType_Id',
                 valueField: 'UtilityType_Id',
                 displayField: 'UtilityType'
             },
             {
                 xtype: 'textfield',
-                fieldLabel: this.accountNumberInputLabel
+                fieldLabel: this.accountNumberInputLabel,
+                name: 'UtilityAccount_AccountNumber'
             },
             {
                 xtype                   : 'shared.propertycombo',
                 fieldLabel              : this.propertyInputlabel,
                 loadStoreOnFirstQuery   : true,
+                name                    : 'property_id',
                 listeners: {
                     select: function(combo, records, eOpts) {
                         that.fireEvent('selectproperty', combo, records, eOpts);
@@ -92,7 +99,8 @@ Ext.define('NP.view.utilitySetup.AccountForm', {
             },
             {
                 xtype: 'textfield',
-                fieldLabel: this.meterInputLabel
+                fieldLabel: this.meterInputLabel,
+                name: 'UtilityAccount_MeterSize'
             },
             {
                 xtype: 'customcombo',
@@ -111,12 +119,34 @@ Ext.define('NP.view.utilitySetup.AccountForm', {
 
         this.callParent(arguments);
         this.addEvents('selectproperty');
-    }/*,
+    },
 
      isValid: function() {
-     var isValid = this.callParent(arguments);
+         var isValid = this.callParent(arguments);
 
-     return isValid;
-     }*/
+         propertyInput = this.findField('property_id');
+         utilityTypeInput = this.findField('UtilityType_Id');
+         accountNumberInput = this.findField('UtilityAccount_AccountNumber');
+         metersizeInput = this.findField('UtilityAccount_MeterSize');
+
+         if (propertyInput.getValue() == null) {
+             isValid = false;
+             propertyInput.markInvalid(this.propertyInputlabel + ' ' + this.emptyErrorText);
+         }
+         if (utilityTypeInput.getValue() == null) {
+             isValid = false;
+             utilityTypeInput.markInvalid(this.utilityTypeInputLabel + ' ' + this.emptyErrorText);
+         }
+         if (accountNumberInput.getValue() == '') {
+             isValid = false;
+             accountNumberInput.markInvalid(this.accountNumberInputLabel + ' ' + this.emptyErrorText);
+         }
+         if (metersizeInput.getValue() == '') {
+             isValid = false;
+             metersizeInput.markInvalid(this.meterInputLabel + ' ' + this.emptyErrorText);
+         }
+
+         return isValid;
+     }
 
 });

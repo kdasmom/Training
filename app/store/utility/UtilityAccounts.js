@@ -7,5 +7,5 @@
 Ext.define('NP.store.utility.UtilityAccounts', {
     extend: 'NP.lib.data.Store',
 
-    model: 'NP.store.model.UtilityAccount'
+    model: 'NP.model.utility.UtilityAccount'
 });
