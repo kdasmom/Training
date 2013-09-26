@@ -253,5 +253,40 @@ Ext.define('NP.view.utilitySetup.VendorAccountsList', {
         this.glaccountFilter   = this.query('[name="glaccount_id"]')[0];
 
         this.filterFields = ['vendorFilter','propertyFilter','utilitytyperoleFilter','glaccountFilter'];
+    },
+
+    applyFilter: function() {
+
+
+        var that = this;
+
+        var grid = this.query('customgrid')[0];
+
+        var currentParams = grid.getStore().getProxy().extraParams;
+        var newParams = {
+            vendor_id       : this.vendorFilter.getValue(),
+            property_id     : this.propertyFilter.getValue(),
+            utilitytype_id  : this.utilitytyperoleFilter.getValue(),
+            glaccount_id    : this.glaccountFilter.getValue()
+        };
+
+        Ext.Object.each(newParams, function(key, val) {
+            if (currentParams[key] !== newParams[key]) {
+                grid.getStore().addExtraParams(newParams);
+                grid.reloadFirstPage();
+
+                return false;
+            }
+        });
+    },
+
+    clearFilter: function() {
+        var that = this;
+
+        Ext.Array.each(this.filterFields, function(field) {
+            that[field].clearValue();
+        });
+
+        this.applyFilter();
     }
 });

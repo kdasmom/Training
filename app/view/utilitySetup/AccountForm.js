@@ -11,6 +11,7 @@ Ext.define('NP.view.utilitySetup.AccountForm', {
         'NP.lib.core.Config',
         'NP.view.shared.button.Save',
         'NP.view.shared.button.Cancel',
+        'NP.view.shared.button.SaveAndAdd',
         'NP.lib.ui.ComboBox',
         'NP.lib.ui.AutoComplete',
         'NP.view.shared.PropertyCombo'
@@ -43,8 +44,7 @@ Ext.define('NP.view.utilitySetup.AccountForm', {
                 xtype: 'shared.button.save'
             },
             {
-                xtype: 'shared.button.delete',
-                hidden: true
+                xtype: 'shared.button.saveandadd'
             }
         ];
         this.tbar = bar;

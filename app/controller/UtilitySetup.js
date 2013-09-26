@@ -138,7 +138,10 @@ Ext.define('NP.controller.UtilitySetup', {
             action     : 'getAll',
             paging     : true,
             extraParams: {
-                pageSize: 25
+                vendor_id       : null,
+                property_id     : null,
+                utilitytype_id  : null,
+                glaccount_id    : null
             }
         });
 //
@@ -173,11 +176,20 @@ Ext.define('NP.controller.UtilitySetup', {
         }
 
         var form = this.setView('NP.view.utilitySetup.AccountForm', viewCfg);
+        if (!account_id) {
+            form.getForm().reset();
+            console.log('reset');
+        }
+
+
         form.down('[xtype="shared.button.cancel"]').on('click', function() {
             that.application.addHistory('UtilitySetup:showAccountsGrid:' + utility_id);
         });
         form.down('[xtype="shared.button.save"]').on('click', function() {
-            that.saveAccount(utility_id);
+            that.saveAccount(utility_id, false);
+        });
+        form.down('[xtype="shared.button.saveandadd"]').on('click', function() {
+            that.saveAccount(utility_id, true);
         });
 
         if (utility_id) {
@@ -257,7 +269,7 @@ Ext.define('NP.controller.UtilitySetup', {
         form.findField('glaccount_id').bindStore(glaccountStore);
     },
 
-    saveAccount: function(utility_id) {
+    saveAccount: function(utility_id, add) {
         var that = this;
 
         var form = this.getCmp('utilitysetup.accountform');
@@ -271,9 +283,26 @@ Ext.define('NP.controller.UtilitySetup', {
                 },
                 success: function(result, deferred) {
                     NP.Util.showFadingWindow({ html: that.saveSuccessText });
-                    that.application.addHistory('UtilitySetup:showAccountsGrid:' + utility_id);
+                    if (add) {
+                        form.findField('UtilityType_Id').clearValue();
+                        console.log('1');
+                        form.findField('UtilityAccount_AccountNumber').setValue('');
+                        console.log('2');
+                        form.findField('property_id').clearValue();
+                        console.log('3');
+                        form.findField('unit_id').clearValue();
+                        console.log('4');
+                        form.findField('UtilityAccount_MeterSize').setValue('');
+                        console.log('5');
+                        form.findField('glaccount_id').clearValue();
+                        console.log('6');
+//                        that.application.addHistory('UtilitySetup:showAccountForm::' + utility_id);
+                    } else {
+                        that.application.addHistory('UtilitySetup:showAccountsGrid:' + utility_id);
+                    }
                 }
             });
+
         }
     }
 });
