@@ -34,8 +34,33 @@ Ext.define('NP.controller.GLAccountSetup', {
 					var activeTab = Ext.getClassName(newCard).split('.').pop();
 					this.addHistory('GLAccountSetup:showGLAccountSetup:' + activeTab);
 				}
-			}
-			
+			},
+                        // The GLAccounts grid
+			'[xtype="glaccount.glaccountsmain"] customgrid': {
+				selectionchange: this.gridSelectionChange,
+				itemclick      : this.viewGLAccount
+			},
+                        // The GLAccounts grid drop down
+			'[xtype="glaccount.glaccountsmain"] [name="glaccount_status"]': {
+				change: this.changeGLAccountStatus
+			},
+                        // The Create New GL Account
+			'[xtype="glaccount.glaccountsmain"] [xtype="shared.button.new"]': {
+				click: function() {
+					this.addHistory('GLAccountSetup:showGLAccountSetup:GLAccounts:Form');
+				}
+			},
+                        // The cancel button on the glaccount form
+			'#glaccountCancelBtn': {
+				click: function() {
+					this.activeGLAccountRecord = null;
+					this.addHistory('GLAccountSetup:showGLAccountSetup:GLAccounts:Main');
+				}
+			},
+			// The save button on the glaccount form
+			'#glaccountSaveBtn': {
+//				click: this.saveGLAccount
+			},
 		});
 	},
 	
@@ -70,5 +95,41 @@ Ext.define('NP.controller.GLAccountSetup', {
 			// If the show method exists, run it
 			that[showMethod](subSection, id);
 		}
-	}
+	},
+        showGLAccounts: function(subSection, glaccount_id) {
+		if (!subSection) subSection = 'Main';
+
+		this['showGLAccounts' + subSection](glaccount_id);
+	},
+
+	showGLAccountsMain: function() {
+		this.setView('NP.view.glaccount.GLAccountsMain', {}, '[xtype="glaccount.glaccounts"]');
+
+		this.changeGLAccountStatus();
+	},
+                
+        gridSelectionChange: function(selectionModel, selected) {
+		var grid = this.getCmp('glaccount.glaccounts').query('customgrid')[0];
+			
+		var glaccount_status = grid.query('[name="glaccount_status"]')[0].getValue();
+	},
+        
+        viewGLAccount: function(grid, rec, item, index, e) {
+		if (e.getTarget().className != 'x-grid-row-checker') {
+			this.addHistory('GLAccountSetup:showGLAccountSetup:GLAccounts:Form:' + rec.get('glaccount_id'));
+		}
+	},
+        
+        changeGLAccountStatus: function() {
+		// Reload the grid
+		var grid = this.getCmp('glaccount.glaccounts').query('customgrid')[0];
+		var glaccount_status = grid.query('[name="glaccount_status"]')[0].getValue();
+		grid.addExtraParams({ glaccount_status: glaccount_status });
+		grid.reloadFirstPage();
+	},
+                
+        showGLAccountsForm: function(glaccount_id) {
+		var that = this;
+		
+	},
 });
