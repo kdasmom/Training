@@ -75,6 +75,21 @@ class UnitGateway extends AbstractGateway {
 
 		return $this->adapter->query($select, $params);
 	}
+
+    /**
+     * Retrieve units list by property id
+     *
+     * @param int $property_id ID of the property
+     * @return array|bool
+     */
+    public function findUnitsByPropertyId($property_id) {
+        $select = new Select();
+        $select->from(['u' => 'unit'])
+            ->where(['u.unit_status' => '?', 'u.property_id' => '?'])
+            ->columns(['unit_id', 'unit_number']);
+
+        return $this->adapter->query($select, ['active', $property_id]);
+    }
 }
 
 ?>

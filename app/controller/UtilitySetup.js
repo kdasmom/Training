@@ -58,6 +58,10 @@ Ext.define('NP.controller.UtilitySetup', {
                     click: function() {
                         app.addHistory('UtilitySetup:showVendorsGrid');
                     }
+                },
+
+                '[xtype="utilitysetup.accountform"]': {
+                    selectproperty: this.selectProperty
                 }
             }
         );
@@ -206,5 +210,32 @@ Ext.define('NP.controller.UtilitySetup', {
                 }
             });
         }
+    },
+
+    selectProperty: function(combo, records, eOpts) {
+
+        var property_id = combo.getValue();
+
+        var unitStore = Ext.create('NP.store.property.Units', {
+            service: 'UtilityAccountService',
+            action: 'getUnits',
+            extraParams: {
+                property_id: property_id
+            }
+        });
+        var glaccountStore = Ext.create('NP.store.gl.GlAccounts', {
+            service: 'GLService',
+            action: 'getByProperty',
+            extraParams: {
+                property_id: property_id
+            }
+        });
+
+        unitStore.load();
+        glaccountStore.load();
+
+        var form = this.getCmp('utilitysetup.accountform');
+        form.findField('unit_id').bindStore(unitStore);
+        form.findField('glaccount_id').bindStore(glaccountStore);
     }
 });

@@ -12,7 +12,8 @@ Ext.define('NP.view.utilitySetup.AccountForm', {
         'NP.view.shared.button.Save',
         'NP.view.shared.button.Cancel',
         'NP.lib.ui.ComboBox',
-        'NP.lib.ui.AutoComplete'
+        'NP.lib.ui.AutoComplete',
+        'NP.view.shared.PropertyCombo'
 
     ],
 
@@ -69,13 +70,25 @@ Ext.define('NP.view.utilitySetup.AccountForm', {
                 fieldLabel: this.accountNumberInputLabel
             },
             {
-                xtype: 'customcombo',
-                fieldLabel: this.propertyInputlabel
+                xtype                   : 'shared.propertycombo',
+                fieldLabel              : this.propertyInputlabel,
+                loadStoreOnFirstQuery   : true,
+                listeners: {
+                    select: function(combo, records, eOpts) {
+                        that.fireEvent('selectproperty', combo, records, eOpts);
+                    }
+                }
             },
             {
                 xtype: 'customcombo',
                 fieldLabel: this.unitInputLabel,
-                emptyText: this.emptyTextForDependedByProperty
+                emptyText: this.emptyTextForDependedByProperty,
+                name: 'unit_id',
+                displayField: 'unit_number',
+                valueField: 'unit_id',
+                queryMode       : 'local',
+                autoSelect      : true,
+                forceselection  : true
             },
             {
                 xtype: 'textfield',
@@ -84,13 +97,20 @@ Ext.define('NP.view.utilitySetup.AccountForm', {
             {
                 xtype: 'customcombo',
                 fieldLabel: this.glaccountInputLabel,
-                emptyText: this.emptyTextForDependedByProperty
+                emptyText: this.emptyTextForDependedByProperty,
+                name: 'glaccount_id',
+                displayField: 'glaccount_name',
+                valueField: 'glaccount_id',
+                queryMode       : 'local',
+                autoSelect      : true,
+                forceselection  : true
             }
         ];
 
 
 
         this.callParent(arguments);
+        this.addEvents('selectproperty');
     }/*,
 
      isValid: function() {
