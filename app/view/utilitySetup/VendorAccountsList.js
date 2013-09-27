@@ -13,6 +13,7 @@ Ext.define('NP.view.utilitySetup.VendorAccountsList', {
         'NP.view.shared.button.New',
         'NP.view.shared.button.Cancel',
         'NP.view.shared.button.Delete',
+        'NP.view.shared.button.Print',
         'NP.lib.ui.Grid',
         'NP.lib.ui.ComboBox',
         'NP.view.shared.PropertyCombo',
@@ -53,6 +54,12 @@ Ext.define('NP.view.utilitySetup.VendorAccountsList', {
             {
                 xtype: 'shared.button.new',
                 text: this.addNewAccountButtonText
+            },
+            {
+                xtype: 'shared.button.delete'
+            },
+            {
+                xtype: 'shared.button.print'
             }
         ];
         this.tbar = bar;
@@ -66,14 +73,6 @@ Ext.define('NP.view.utilitySetup.VendorAccountsList', {
         var glaccountStore = Ext.create('NP.store.gl.GlAccounts', {
             service     : 'GLService',
             action      : 'getAll'
-        });
-        var accountStore = Ext.create('NP.store.utility.UtilityAccounts', {
-            service    : 'UtilityAccountService',
-            action     : 'getAll',
-            paging     : true,
-            extraParams: {
-                pageSize: 25
-            }
         });
 
         utilityTypesStore.load();
@@ -175,7 +174,17 @@ Ext.define('NP.view.utilitySetup.VendorAccountsList', {
                 selModel: Ext.create('Ext.selection.CheckboxModel'),
                 stateful: true,
                 stateId : 'utility_accounts_grid',
-                store   : [],
+                store   : Ext.create('NP.store.utility.UtilityAccounts', {
+                    service    : 'UtilityAccountService',
+                    action     : 'getAll',
+                    paging     : true,
+                    extraParams: {
+                        vendor_id       : null,
+                        property_id     : null,
+                        utilitytype_id  : null,
+                        glaccount_id    : null
+                    }
+                }),
                 columns : [
                     {
                         text: this.vendorColText,
@@ -241,6 +250,20 @@ Ext.define('NP.view.utilitySetup.VendorAccountsList', {
 
                             return val;
                         }
+                    },
+                    {
+                        xtype: 'actioncolumn',
+                        items: [
+                            {
+                                icon: 'resources/images/buttons/edit.gif',
+                                tooltip: 'Edit',
+                                handler: function(gridView, rowIndex, colIndex) {
+                                    var grid = gridView.ownerCt;
+                                    grid.fireEvent('editrow', grid, grid.getStore().getAt(rowIndex), rowIndex);
+                                }
+                            }
+                        ],
+                        align: 'center'
                     }
                 ]
             }
@@ -254,6 +277,9 @@ Ext.define('NP.view.utilitySetup.VendorAccountsList', {
         this.glaccountFilter   = this.query('[name="glaccount_id"]')[0];
 
         this.filterFields = ['vendorFilter','propertyFilter','utilitytyperoleFilter','glaccountFilter'];
+
+
+        this.addEvents('editrow');
     },
 
     applyFilter: function() {
@@ -270,6 +296,9 @@ Ext.define('NP.view.utilitySetup.VendorAccountsList', {
             utilitytype_id  : this.utilitytyperoleFilter.getValue(),
             glaccount_id    : this.glaccountFilter.getValue()
         };
+
+        console.log('params: ', newParams);
+        console.log('cparams: ', currentParams);
 
         Ext.Object.each(newParams, function(key, val) {
             if (currentParams[key] !== newParams[key]) {

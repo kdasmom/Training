@@ -61,7 +61,7 @@ Ext.define('NP.view.utilitySetup.AccountForm', {
                 xtype: 'displayfield',
                 fieldLabel: this.utilityInputLabel,
                 name: 'vendor_name',
-                value: 'test'
+                value: ''
             },
             {
                 xtype: 'customcombo',
@@ -112,6 +112,11 @@ Ext.define('NP.view.utilitySetup.AccountForm', {
                 queryMode       : 'local',
                 autoSelect      : true,
                 forceselection  : true
+            },
+            {
+                xtype: 'hidden',
+                name: 'vendorsite_id',
+                value: ''
             }
         ];
 

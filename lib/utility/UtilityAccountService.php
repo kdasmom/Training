@@ -35,8 +35,10 @@ class UtilityAccountService extends AbstractService {
     public function save($data) {
 
         $utilityAccount = new UtilityAccountEntity($data['utilityaccount']);
-        $utility = $this->utilityGateway->findByVendorsiteIDAndType($data['vendorsite_id'], $data['type']);
 
+        $utilityAccount->utilityaccount_id = $data['utilityaccount']['UtilityAccount_Id'];
+
+        $utility = $this->utilityGateway->findByVendorsiteIDAndType($data['vendorsite_id'], $data['type']);
         $utilityAccount->Utility_Id = $utility['Utility_Id'];
 
         $validator = new EntityValidator();

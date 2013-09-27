@@ -25,7 +25,7 @@ class UtilityAccountGateway extends AbstractGateway {
 
         $select->from(['ua' => 'utilityaccount'])
             ->join(['u' => 'utility'], 'u.utility_id = ua.utility_id', [])
-            ->join(['ut' => 'utilitytype'], 'ut.utilitytype_id = ua.utilitytype_id', ['utilitytype'])
+            ->join(['ut' => 'utilitytype'], 'ut.utilitytype_id = u.utilitytype_id', ['utilitytype'])
             ->join(['vs' => 'vendorsite'], 'vs.vendorsite_id = u.vendorsite_id', [])
             ->join(['v' => 'vendor'], 'v.vendor_id = vs.vendor_id', ['vendor_id', 'vendor_name'])
             ->join(['p' => 'property'], 'p.property_id = ua.property_id', ['property_name'])

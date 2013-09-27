@@ -142,7 +142,7 @@ class UtilityService extends AbstractService {
      * @param int $id
      * @return array
      */
-    public function get($id) {
+    public function get($id = null) {
         $utility = $this->utilityGateway->findById($id);
         $vendor = $this->utilityGateway->findAssignedVendor($utility['Utility_Id']);
 
@@ -271,5 +271,7 @@ class UtilityService extends AbstractService {
         return $this->utilityGateway->findAssignedUtilityTypes($vendorsite_id);
     }
 
-
+    public function findByAccountId($account_id) {
+        return $this->utilityGateway->findByAccountId($account_id);
+    }
 } 

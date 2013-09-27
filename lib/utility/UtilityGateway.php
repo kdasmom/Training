@@ -139,5 +139,19 @@ class UtilityGateway extends AbstractGateway {
         return $res[0];
     }
 
+    public function findByAccountId($account_id) {
+        $select = new Select();
+
+        $select->from(['u' => 'utility'])
+            ->join(['ua' => 'utilityaccount'], 'u.utility_id = ua.utility_id', [])
+            ->join(['vs' => 'vendorsite'], 'vs.vendorsite_id = u.vendorsite_id', [])
+            ->join(['v' => 'vendor'], 'v.vendor_id = vs.vendor_id', ['vendor_name'])
+            ->where(['ua.utilityaccount_id' => '?']);
+
+        $res = $this->adapter->query($select, [$account_id]);
+
+        return $res[0];
+    }
+
 
 }
