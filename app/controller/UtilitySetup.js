@@ -101,7 +101,7 @@ Ext.define('NP.controller.UtilitySetup', {
                 var data = data;
                 form.down('[xtype="shared.button.view"]').show();
                 form.down('[xtype="shared.button.view"]').on('click', function(){
-                    that.application.addHistory('UtilitySetup:showAccountsGrid:' + data['Utility_Id']);
+                    that.application.addHistory('UtilitySetup:showAccountsGrid:' + data['Vendorsite_Id']);
                 });
 
                 var field = boundForm.findField('Vendorsite_Id');
@@ -121,13 +121,13 @@ Ext.define('NP.controller.UtilitySetup', {
      *  show utility accounts grid
      * @param utility_id
      */
-    showAccountsGrid: function(utility_id) {
+    showAccountsGrid: function(vendorsite_Id) {
         var that = this;
 
         var view = this.setView('NP.view.utilitySetup.VendorAccountsList');
 
         view.down('[xtype="shared.button.new"]').on('click', function() {
-            that.application.addHistory('UtilitySetup:showAccountForm::' + utility_id);
+            that.application.addHistory('UtilitySetup:showAccountForm::' + vendorsite_Id);
         });
 
         var grid = view.query('customgrid')[0];
@@ -155,14 +155,13 @@ Ext.define('NP.controller.UtilitySetup', {
      * @param account_id
      * @param utility_id
      */
-    showAccountForm: function(account_id, utility_id) {
+    showAccountForm: function(account_id, vendorsite_Id) {
         var that = this;
 
         var viewCfg = {
             bind: {
                 models: ['utility.UtilityAccount']
-            },
-            utility_id: utility_id
+            }
         };
 
         if (account_id) {
@@ -176,38 +175,34 @@ Ext.define('NP.controller.UtilitySetup', {
         }
 
         var form = this.setView('NP.view.utilitySetup.AccountForm', viewCfg);
-        if (!account_id) {
-            form.getForm().reset();
-            console.log('reset');
-        }
 
 
         form.down('[xtype="shared.button.cancel"]').on('click', function() {
-            that.application.addHistory('UtilitySetup:showAccountsGrid:' + utility_id);
+            that.application.addHistory('UtilitySetup:showAccountsGrid:' + vendorsite_Id);
         });
         form.down('[xtype="shared.button.save"]').on('click', function() {
-            that.saveAccount(utility_id, false);
+            that.saveAccount(vendorsite_Id, false);
         });
         form.down('[xtype="shared.button.saveandadd"]').on('click', function() {
-            that.saveAccount(utility_id, true);
+            that.saveAccount(vendorsite_Id, true);
         });
 
-        if (utility_id) {
-
+        if (vendorsite_Id) {
             var store = Ext.create('NP.store.utility.UtilityTypes', {
                 service: 'UtilityTypeService',
-                action: 'findByUtilityId',
+                action: 'findByVendorsiteId',
                 extraParams: {
-                    utility_id: utility_id
-                }
+                    vendorsite_id: vendorsite_Id
+                },
+                extraFields:['Utility_Id']
             });
 
             store.load();
             NP.lib.core.Net.remoteCall({
                 requests: {
-                    service    : 'UtilityService',
-                    action     : 'get',
-                    id      : utility_id,
+                    service         : 'UtilityService',
+                    action          : 'findByVendorsiteId',
+                    vendorsite_id   : vendorsite_Id,
                     success: function(result, deferred) {
                         form.findField('vendor_name').setValue(result['vendor_name']);
                     }
@@ -269,7 +264,7 @@ Ext.define('NP.controller.UtilitySetup', {
         form.findField('glaccount_id').bindStore(glaccountStore);
     },
 
-    saveAccount: function(utility_id, add) {
+    saveAccount: function(vendorsite_Id, add) {
         var that = this;
 
         var form = this.getCmp('utilitysetup.accountform');
@@ -279,7 +274,8 @@ Ext.define('NP.controller.UtilitySetup', {
                 service: 'UtilityAccountService',
                 action: 'save',
                 extraParams: {
-                    utility_id: utility_id
+                    vendorsite_id: vendorsite_Id,
+                    type: formValues['UtilityType_Id']
                 },
                 success: function(result, deferred) {
                     NP.Util.showFadingWindow({ html: that.saveSuccessText });
@@ -291,7 +287,7 @@ Ext.define('NP.controller.UtilitySetup', {
                         form.findField('UtilityAccount_MeterSize').setValue('');
                         form.findField('glaccount_id').clearValue();
                     } else {
-                        that.application.addHistory('UtilitySetup:showAccountsGrid:' + utility_id);
+                        that.application.addHistory('UtilitySetup:showAccountsGrid:' + vendorsite_Id);
                     }
                 }
             });

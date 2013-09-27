@@ -32,8 +32,17 @@ class UtilityTypeService extends AbstractService {
         return $this->utilitytypeGateway->find(null, [], $order, ['UtilityType_Id', 'UtilityType'], $pageSize, $page);
     }
 
-    public function findByUtilityId($utility_id) {
-        return $this->utilitytypeGateway->findByUtilityId($utility_id);
+
+    /**
+     * Retrieve utilitytypes list by vendorsite id
+     *
+     * @param $vendorsite_id
+     * @return array|bool
+     */
+    public function findByVendorsiteId($vendorsite_id) {
+        $types = $this->utilitytypeGateway->findByVendorsite_id($vendorsite_id);
+
+        return $types;
     }
 
 

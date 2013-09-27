@@ -24,20 +24,22 @@ class UtilityTypeGateway extends AbstractGateway {
 
     }
 
-    /***
-     * Retrieve utility types assigned to the selected utility
+    /**
+     * Retrieve utilitytypes list by vendorsite id
      *
-     * @param $utility_id
+     * @param $vendorsite_id
      * @return array|bool
      */
-    public function findByUtilityId($utility_id) {
-        $select =  new Select();
+    public function findByVendorsite_id($vendorsite_id) {
+        $select = new Select();
 
         $select->from(['ut' => 'utilitytype'])
-            ->join(['uts' => 'utilitytypes'], 'ut.utilitytype_id = uts.utilitytype_id', [])
-            ->where(['uts.utility_id' => '?']);
+            ->join(['u' => 'utility'], 'ut.utilitytype_id = u.utilitytype_id', ['Utility_Id'])
+            ->where(['u.vendorsite_id' => '?'])
+            ->order('ut.utilitytype');
 
-        return $this->adapter->query($select, [$utility_id]);
+        return $this->adapter->query($select, [$vendorsite_id]);
     }
+
 
 }

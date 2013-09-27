@@ -16,10 +16,12 @@ use NP\property\UnitGateway;
 class UtilityAccountService extends AbstractService {
     protected $utilityAccountGateway;
     protected $unitGateway;
+    protected $utilityGateway;
 
-    public function __construct(UtilityAccountGateway $utilityAccountGateway, UnitGateway $unitGateway) {
+    public function __construct(UtilityAccountGateway $utilityAccountGateway, UnitGateway $unitGateway, UtilityGateway $utilityGateway) {
         $this->utilityAccountGateway = $utilityAccountGateway;
         $this->unitGateway = $unitGateway;
+        $this->utilityGateway = $utilityGateway;
     }
 
     public function get($id) {
@@ -33,9 +35,9 @@ class UtilityAccountService extends AbstractService {
     public function save($data) {
 
         $utilityAccount = new UtilityAccountEntity($data['utilityaccount']);
-        if ($utilityAccount->utilityaccount_id == null) {
-            $utilityAccount->Utility_Id = $data['utility_id'];
-        }
+        $utility = $this->utilityGateway->findByVendorsiteIDAndType($data['vendorsite_id'], $data['type']);
+
+        $utilityAccount->Utility_Id = $utility['Utility_Id'];
 
         $validator = new EntityValidator();
         $validator->validate($utilityAccount);

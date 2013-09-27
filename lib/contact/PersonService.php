@@ -22,6 +22,12 @@ class PersonService extends AbstractService {
         $this->configService = $configService;
     }
 
+    /**
+     * Save person record for utility
+     *
+     * @param $data
+     * @return array
+     */
     public function savePersonForUtility($data) {
         $person = new PersonEntity($data);
 
@@ -53,11 +59,24 @@ class PersonService extends AbstractService {
         );
     }
 
+    /**
+     * Retrieve person record by id
+     *
+     * @param int $id
+     * @return array
+     */
     public function get($id) {
         return $this->personGateway->findById($id);
     }
 
-    public function savePhone($data) {
+
+    /**
+     * Save person
+     *
+     * @param $data
+     * @return array
+     */
+    public function savePerson($data) {
         $person = new PersonEntity($data['phone']);
 
         if ($person->person_id == null) {
@@ -88,6 +107,13 @@ class PersonService extends AbstractService {
         );
     }
 
+    /**
+     * Update for utility
+     *
+     * @param $data
+     * @param $person_id
+     * @return array|bool
+     */
     public function updateForUtility($data, $person_id) {
         return $this->personGateway->updateForUtility($data, $person_id);
     }

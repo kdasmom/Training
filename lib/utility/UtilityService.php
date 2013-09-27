@@ -38,90 +38,24 @@ class UtilityService extends AbstractService {
         $this->contactService = $contactService;
     }
 
+    /**
+     * Retrive vendors list marked as utility vendors
+     *
+     * @param null $pageSize
+     * @param null $page
+     * @param string $order
+     * @return array|bool
+     */
     public function findVendors($pageSize = null, $page = null, $order = 'vendor_name') {
         return $this->utilityGateway->findVendors($pageSize, $page, $order);
     }
 
-    /*public function saveUtility($data) {
-
-        $utility = new UtilityEntity($data['utility']);
-        if ($utility->utility_id == null) {
-            $utility->periodic_billing_flag = null;
-            $utility->period_billing_cycle = null;
-            $utility->Property_Id = null;
-            $utility->UtilityType_Id = null;
-        }
-
-        $utility->Vendorsite_Id = $data['utility']['Vendorsite_Id'];
-
-        $person = [
-            'person_firstname'      => $data['person_firstname'],
-            'person_middlename'      => $data['person_middlename'],
-            'person_lastname'      => $data['person_lastname'],
-        ];
-        $phone = [
-            'phone_number'      => $data['phone_number'],
-            'phone_ext'         => $data['phone_ext'],
-            'table_name'        => 'utility',
-            'phonetype_id'      => 6,
-            'phone_countrycode' => null
-        ];
-
-        $utilitytypes = explode(',', $data['utilitytypes']);
-
-        $validator = new EntityValidator();
-        $validator->validate($utility);
-        $errors = $validator->getErrors();
-
-        if (count($errors) == 0) {
-            $this->utilityGateway->beginTransaction();
-
-            try {
-                $utilityid = $this->utilityGateway->save($utility);
-
-                $this->utilityGateway->saveUtilityTypesRelations($utilityid, $utilitytypes);
-
-                if ($data['utility']['Utility_Id'] == null) {
-                    $personsaves = $this->personService->savePersonForUtility($person);
-                    $contact = [
-                        'contact' => [
-                            'person_id' => $personsaves['person_id'],
-                            'contacttype_id'    => 8,
-                            'table_name'        => 'utility',
-                            'tablekey_id'       => $utilityid,
-                            'contact_relation'  => 'Yes'
-                        ]
-                    ];
-                    $contactsaves = $this->contactService->saveContact($contact);
-                    $phone['tablekey_id'] = $utilityid;
-                    $phonesaves = $this->phoneService->savePhone(['phone' => $phone]);
-                } else {
-                    $phonesaved = $this->phoneService->findByUtilityId($data['utility']['Utility_Id']);
-                    $phone['phone_id'] = $phonesaved['phone_id'];
-                    $phone['tablekey_id'] = $data['utility']['Utility_Id'];
-                    $phone['table_name'] = 'utility';
-                    $res = $this->phoneService->savePhone(['phone' => $phone]);
-                    if (!$res['success']) {
-                        throw new \Exception($res['msg']);
-                    }
-
-                }
-
-                $this->utilityGateway->commit();
-            } catch(\Exception $exception) {
-                $this->utilityGateway->rollback();
-                $errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($exception), 'extra'=>null);
-            }
-        }
-
-
-        return array(
-            'success'    => (count($errors)) ? false : true,
-            'errors'     => $errors,
-        );
-
-    }*/
-
+    /**
+     * Save utility
+     *
+     * @param $data
+     * @return array
+     */
     public function saveUtility($data) {
 
         $person = [
@@ -175,6 +109,12 @@ class UtilityService extends AbstractService {
         return $res;
     }
 
+    /**
+     * Retirve utility record by vendorid
+     *
+     * @param $vendor_id
+     * @return mixed
+     */
     public function findByVendorId($vendor_id) {
         $utility = $this->utilityGateway->findByVendorId($vendor_id);
         $utility['utilitytypes'] = Util::valueList($this->utilityGateway->findAssignedUtilityTypes($utility['Vendorsite_Id']), 'utilitytype_id');
@@ -196,6 +136,12 @@ class UtilityService extends AbstractService {
         return $utility;
     }
 
+    /**
+     * Retreive utility record by ID
+     *
+     * @param int $id
+     * @return array
+     */
     public function get($id) {
         $utility = $this->utilityGateway->findById($id);
         $vendor = $this->utilityGateway->findAssignedVendor($utility['Utility_Id']);
@@ -206,6 +152,16 @@ class UtilityService extends AbstractService {
     }
 
 
+    /**
+     * Save single utility record in multisaving case
+     *
+     * @param $utilitydata
+     * @param $type
+     * @param $person
+     * @param $phone
+     * @param bool $isnew
+     * @return array
+     */
     private function _saveSingleUtility($utilitydata, $type, $person, $phone, $isnew = true) {
 
         $utility = new UtilityEntity($utilitydata);
@@ -276,6 +232,14 @@ class UtilityService extends AbstractService {
         );
     }
 
+    /**
+     * Delete utility
+     *
+     * @param $utility_id
+     * @return bool
+     * @throws \Exception
+     * @throws Exception
+     */
     public function deleteUtility($utility_id) {
         $this->utilityGateway->beginTransaction();
         $success = false;
@@ -292,4 +256,20 @@ class UtilityService extends AbstractService {
 
         return $success;
     }
+
+    /**
+     * Retreive vendor record by vendorsite id
+     *
+     * @param int $vendorsite_id
+     * @return array
+     */
+    public function findByVendorsiteId($vendorsite_id) {
+        return $this->vendorGateway->findByVendorsite($vendorsite_id);
+    }
+
+    public function findTypesByVendorsiteId($vendorsite_id) {
+        return $this->utilityGateway->findAssignedUtilityTypes($vendorsite_id);
+    }
+
+
 } 

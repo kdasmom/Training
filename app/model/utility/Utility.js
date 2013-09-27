@@ -22,10 +22,11 @@ Ext.define('NP.model.utility.Utility', {
         { name: 'period_billing_cycle', type: 'int' }
     ],
 
-    hasMany: [
+    hasOne: [
         {
             model     : 'NP.model.utility.UtilityType',
-            name      : 'utilitytype_id',
+            name      : 'utilitytype',
+            getterName    : 'getUtilityType',
             foreignKey: 'UtilityType_Id',
             primaryKey: 'UtilityType_Id'
         }

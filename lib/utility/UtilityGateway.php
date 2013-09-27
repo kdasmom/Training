@@ -21,6 +21,14 @@ class UtilityGateway extends AbstractGateway {
         parent::__construct($adapter);
     }
 
+    /**
+     * Retreive Utility Vendors list
+     *
+     * @param null $pageSize
+     * @param null $page
+     * @param string $order
+     * @return array|bool
+     */
     public function findVendors($pageSize = null, $page = null, $order = "vendor_name") {
         $select = new Select();
         $select->distinct()
@@ -42,22 +50,13 @@ class UtilityGateway extends AbstractGateway {
         return $this->adapter->query($select);
     }
 
-    public function saveUtilityTypesRelations($utility_id, $types) {
-//        delete assigned types
-        $delete = new Delete();
-        $delete->from('utilitytypes')
-            ->where(['utility_id' => $utility_id]);
-        $this->adapter->query($delete);
-//        save types
-        $insert = new Insert();
-        foreach ($types as $type) {
-            $insert->into('utilitytypes')
-                ->columns(array('utility_id', 'utilitytype_id'))
-                ->values(array('utility_id' => $utility_id, 'utilitytype_id' => $type));
-            $this->adapter->query($insert);
-        }
-    }
 
+    /**
+     * Retreive utility by vendor id
+     *
+     * @param int $vendor_id
+     * @return mixed
+     */
     public function findByVendorId($vendor_id) {
         $select = new Select();
         $select->from(['u' => 'utility'])
@@ -73,6 +72,12 @@ class UtilityGateway extends AbstractGateway {
         return $utilitites[0];
     }
 
+    /**
+     * Retreive utility by vendorsite id
+     *
+     * @param int $vendorsiteId
+     * @return array|bool
+     */
     public function findByVendorsiteId($vendorsiteId) {
         $select = new Select();
 
@@ -82,6 +87,12 @@ class UtilityGateway extends AbstractGateway {
         return $this->adapter->query($select, [$vendorsiteId]);
     }
 
+    /**
+     * Retrieve assigned types for the vendor
+     *
+     * @param id $vendorsite_id
+     * @return array|bool
+     */
     public function findAssignedUtilityTypes($vendorsite_id) {
         $select = new Select();
         $select->from(['u' => 'utility'])
@@ -91,6 +102,12 @@ class UtilityGateway extends AbstractGateway {
         return $this->adapter->query($select);
     }
 
+    /**
+     * Retrieve assigned vendor by utility
+     *
+     * @param $utility_id
+     * @return mixed
+     */
     public function findAssignedVendor($utility_id) {
         $select = new Select();
 
@@ -103,6 +120,23 @@ class UtilityGateway extends AbstractGateway {
         $vendor = $this->adapter->query($select);
 
         return $vendor[0];
+    }
+
+    /**
+     * Retrieve utility by vendorsite_id and utilitytype_id
+     *
+     * @param $vendorsite_id
+     * @param $type_id
+     * @return mixed
+     */
+    public function findByVendorsiteIDAndType($vendorsite_id, $type_id) {
+        $select = new Select();
+
+        $select->from('utility')
+            ->where(['utilitytype_id' => '?', 'vendorsite_id' => '?']);
+
+        $res = $this->adapter->query($select, [$type_id, $vendorsite_id]);
+        return $res[0];
     }
 
 

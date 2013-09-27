@@ -18,6 +18,13 @@ class ContactGateway extends AbstractGateway {
         return parent::__construct($adapter);
     }
 
+    /**
+     * Retrive record by tablename and tablekey
+     *
+     * @param string $tablename
+     * @param int $key
+     * @return mixed
+     */
     public function findByTableNameAndKey($tablename, $key) {
         $select = new Select();
 
