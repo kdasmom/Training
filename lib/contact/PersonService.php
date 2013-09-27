@@ -25,9 +25,8 @@ class PersonService extends AbstractService {
     public function savePersonForUtility($data) {
         $person = new PersonEntity($data);
 
-        if ($person->person_id == null) {
-            $person->asp_client_id = $this->configService->getClientId();
-        }
+        $person->asp_client_id = $this->configService->getClientId();
+
 
         $validator = new EntityValidator();
         $validator->validate($person);
@@ -87,5 +86,9 @@ class PersonService extends AbstractService {
             'success'    => (count($errors)) ? false : true,
             'errors'     => $errors
         );
+    }
+
+    public function updateForUtility($data, $person_id) {
+        return $this->personGateway->updateForUtility($data, $person_id);
     }
 } 

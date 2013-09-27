@@ -42,7 +42,7 @@ class UtilityService extends AbstractService {
         return $this->utilityGateway->findVendors($pageSize, $page, $order);
     }
 
-    public function saveUtility($data) {
+    /*public function saveUtility($data) {
 
         $utility = new UtilityEntity($data['utility']);
         if ($utility->utility_id == null) {
@@ -120,9 +120,9 @@ class UtilityService extends AbstractService {
             'errors'     => $errors,
         );
 
-    }
+    }*/
 
-    /*public function saveUtility__($data) {
+    public function saveUtility($data) {
 
         $person = [
             'person_firstname'      => $data['person_firstname'],
@@ -140,19 +140,44 @@ class UtilityService extends AbstractService {
         $utilitytypes = explode(',', $data['utilitytypes']);
 
         $res = [];
-        foreach ($utilitytypes as $type) {
-            $res = $this->_saveSingleUtility($data['utility'], $type, $person, $phone);
-            if (!$res['success']) {
-                return $res;
+        if (!$data['utility']['Utility_Id']) {
+            foreach ($utilitytypes as $type) {
+                $res = $this->_saveSingleUtility($data['utility'], $type, $person, $phone);
+                if (!$res['success']) {
+                    return $res;
+                }
+            }
+        } else {
+            $previousSavedUtilitites = [];
+            $savedTypes = [];
+            foreach ($this->utilityGateway->findByVendorsiteId($data['utility']['Vendorsite_Id']) as $item) {
+                if (!in_array($item['UtilityType_Id'], $utilitytypes)) {
+                    $this->deleteUtility($item['Utility_Id']);
+                    $this->phoneService->deleteByUtilityId($item['Utility_Id']);
+                } else {
+                    $previousSavedUtilitites[] = $item;
+                    $savedTypes[] = $item['UtilityType_Id'];
+                }
+
+            }
+            foreach ($previousSavedUtilitites as $item) {
+                $res = $this->_saveSingleUtility($item, $item['UtilityType_Id'], $person, $phone, false);
+            }
+
+            foreach (array_diff($utilitytypes, $savedTypes) as $type) {
+                $res = $this->_saveSingleUtility($data['utility'], $type, $person, $phone);
+                if (!$res['success']) {
+                    return $res;
+                }
             }
         }
 
         return $res;
-    }*/
+    }
 
     public function findByVendorId($vendor_id) {
         $utility = $this->utilityGateway->findByVendorId($vendor_id);
-        $utility['utilitytypes'] = Util::valueList($this->utilityGateway->findAssignedUtilityTypes($utility['Utility_Id']), 'utilitytype_id');
+        $utility['utilitytypes'] = Util::valueList($this->utilityGateway->findAssignedUtilityTypes($utility['Vendorsite_Id']), 'utilitytype_id');
 
         $vendor = $this->utilityGateway->findAssignedVendor($utility['Utility_Id']);
 
@@ -180,17 +205,20 @@ class UtilityService extends AbstractService {
         return $utility;
     }
 
-    private function _saveSingleUtility($utilitydata, $type, $person, $phone) {
+
+    private function _saveSingleUtility($utilitydata, $type, $person, $phone, $isnew = true) {
 
         $utility = new UtilityEntity($utilitydata);
-        if ($utility->utility_id == null) {
+        if ($isnew) {
             $utility->periodic_billing_flag = null;
             $utility->period_billing_cycle = null;
             $utility->Property_Id = null;
         }
 
         $utility->UtilityType_Id = $type;
-        $utility->Vendorsite_Id = $utilitydata['Vendorsite_Id'];
+        if (!$isnew) {
+            $utility->utility_id = $utilitydata['Utility_Id'];
+        }
 
         $validator = new EntityValidator();
         $validator->validate($utility);
@@ -202,7 +230,8 @@ class UtilityService extends AbstractService {
             try {
                 $utilityid = $this->utilityGateway->save($utility);
 
-                if ($utilitydata['Utility_Id'] == null) {
+                if ($isnew) {
+//                    save person
                     $personsaves = $this->personService->savePersonForUtility($person);
                     $contact = [
                         'contact' => [
@@ -214,10 +243,12 @@ class UtilityService extends AbstractService {
                         ]
                     ];
                     $contactsaves = $this->contactService->saveContact($contact);
+//                    save phone
                     $phone['tablekey_id'] = $utilityid;
                     $phonesaves = $this->phoneService->savePhone(['phone' => $phone]);
                 } else {
                     $phonesaved = $this->phoneService->findByUtilityId($utilitydata['Utility_Id']);
+
                     $phone['phone_id'] = $phonesaved['phone_id'];
                     $phone['tablekey_id'] = $utilitydata['Utility_Id'];
                     $phone['table_name'] = 'utility';
@@ -225,6 +256,9 @@ class UtilityService extends AbstractService {
                     if (!$res['success']) {
                         throw new \Exception($res['msg']);
                     }
+
+                    $contactsaved = $this->contactService->findByTableNameAndKey('utility', $utilitydata['Utility_Id']);
+                    $this->personService->updateForUtility($person, $contactsaved['person_id']);
 
                 }
 
@@ -240,5 +274,22 @@ class UtilityService extends AbstractService {
             'success'    => (count($errors)) ? false : true,
             'errors'     => $errors,
         );
+    }
+
+    public function deleteUtility($utility_id) {
+        $this->utilityGateway->beginTransaction();
+        $success = false;
+
+        try {
+            $this->utilityGateway->delete(array('utility_id'=>$utility_id));
+
+            $this->utilityGateway->commit();
+            $success = true;
+        } catch (Exception $e) {
+            $this->utilityGateway->rollback();
+            throw $e;
+        }
+
+        return $success;
     }
 } 

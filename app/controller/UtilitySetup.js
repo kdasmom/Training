@@ -285,18 +285,11 @@ Ext.define('NP.controller.UtilitySetup', {
                     NP.Util.showFadingWindow({ html: that.saveSuccessText });
                     if (add) {
                         form.findField('UtilityType_Id').clearValue();
-                        console.log('1');
                         form.findField('UtilityAccount_AccountNumber').setValue('');
-                        console.log('2');
                         form.findField('property_id').clearValue();
-                        console.log('3');
                         form.findField('unit_id').clearValue();
-                        console.log('4');
                         form.findField('UtilityAccount_MeterSize').setValue('');
-                        console.log('5');
                         form.findField('glaccount_id').clearValue();
-                        console.log('6');
-//                        that.application.addHistory('UtilitySetup:showAccountForm::' + utility_id);
                     } else {
                         that.application.addHistory('UtilitySetup:showAccountsGrid:' + utility_id);
                     }

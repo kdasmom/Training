@@ -12,6 +12,7 @@ Ext.define('NP.view.utilitySetup.VendorAccountsList', {
         'NP.lib.core.Config',
         'NP.view.shared.button.New',
         'NP.view.shared.button.Cancel',
+        'NP.view.shared.button.Delete',
         'NP.lib.ui.Grid',
         'NP.lib.ui.ComboBox',
         'NP.view.shared.PropertyCombo',

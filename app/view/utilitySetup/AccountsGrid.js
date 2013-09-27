@@ -103,13 +103,6 @@ Ext.define('NP.view.utilitySetup.AccountsGrid', {
                 }
             }
         ];
-
-        /*this.store = Ext.create('NP.store.vendor.Vendors', {
-            service    : 'VendorService',
-            action     : 'findUtilityVendors',
-            paging     : true,
-            extraParams: {pageSize: 25}
-        });*/
         this.store = [];
 
         this.callParent(arguments);

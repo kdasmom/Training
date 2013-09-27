@@ -10,6 +10,7 @@ namespace NP\contact;
 
 
 use NP\core\AbstractService;
+use NP\core\db\Select;
 use NP\core\validation\EntityValidator;
 
 class PhoneService extends AbstractService {
@@ -45,5 +46,22 @@ class PhoneService extends AbstractService {
 
     public function findByUtilityId($utility_id) {
         return $this->phoneGateway->findByTableNameAndKey('utility', $utility_id);
+    }
+
+    public function deleteByUtilityId($id) {
+        $this->phoneGateway->beginTransaction();
+        $success = false;
+
+        try {
+            $this->phoneGateway->delete(array('tablekey_id'=>'?', 'table_name' => '?'), [$id, 'utility']);
+
+            $this->phoneGateway->commit();
+            $success = true;
+        } catch (Exception $e) {
+            $this->phoneGateway->rollback();
+            throw $e;
+        }
+
+        return $success;
     }
 } 
