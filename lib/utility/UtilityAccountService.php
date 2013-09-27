@@ -66,10 +66,9 @@ class UtilityAccountService extends AbstractService {
         );
     }
 
-    public function getAll($vendorid = null, $propertyid = null, $utilitytypeid = null, $glaccountid = null, $pageSize = null, $page = null, $order = 'vendor_name') {
+    public function getAll($vendor_id = null, $property_id = null, $utilitytype_id = null, $glaccount_id = null, $pageSize = null, $page = null, $order = 'vendor_name') {
 
-        $result = $this->utilityAccountGateway->getAll($vendorid, $propertyid, $utilitytypeid, $glaccountid, $pageSize, $page, $order);
-
+        $result = $this->utilityAccountGateway->getAll($vendor_id, $property_id, $utilitytype_id, $glaccount_id, $pageSize, $page, $order);
         return $result;
     }
 } 

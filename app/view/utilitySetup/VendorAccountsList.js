@@ -122,8 +122,8 @@ Ext.define('NP.view.utilitySetup.VendorAccountsList', {
                                 name            : 'vendor_id',
                                 displayField    : 'vendor_name',
                                 width           : 337,
-                                valueField      : 'vendorsite_id',
-                                allowBlank      : false,
+                                valueField      : 'vendor_id',
+                                allowBlank      : true,
                                 multiSelect     : false,
                                 store           : Ext.create('NP.store.vendor.Vendors', {
                                     service     : 'VendorService',
@@ -278,7 +278,6 @@ Ext.define('NP.view.utilitySetup.VendorAccountsList', {
 
         this.filterFields = ['vendorFilter','propertyFilter','utilitytyperoleFilter','glaccountFilter'];
 
-
         this.addEvents('editrow');
     },
 
@@ -297,13 +296,12 @@ Ext.define('NP.view.utilitySetup.VendorAccountsList', {
             glaccount_id    : this.glaccountFilter.getValue()
         };
 
-        console.log('params: ', newParams);
-        console.log('cparams: ', currentParams);
-
         Ext.Object.each(newParams, function(key, val) {
             if (currentParams[key] !== newParams[key]) {
                 grid.getStore().addExtraParams(newParams);
                 grid.reloadFirstPage();
+                console.log('curert: ', currentParams[key]);
+                console.log('new: ', newParams[key]);
 
                 return false;
             }

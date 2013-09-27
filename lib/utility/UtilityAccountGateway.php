@@ -23,6 +23,25 @@ class UtilityAccountGateway extends AbstractGateway {
 
         $select = new Select();
 
+        $where = [];
+        $params = [];
+        if ($vendorid) {
+            $where['v.vendor_id'] =  '?';
+            $params[] = $vendorid;
+        }
+        if ($propertyid) {
+            $where['p.property_id'] = '?';
+            $params[] = $propertyid;
+        }
+        if ($utilitytypeid) {
+            $where['u.utilitytype_id'] = '?';
+            $params[] = $utilitytypeid;
+        }
+        if ($glaccountid) {
+            $where['ua.glaccount_id'] = '?';
+            $params[] = $glaccountid;
+        }
+
         $select->from(['ua' => 'utilityaccount'])
             ->join(['u' => 'utility'], 'u.utility_id = ua.utility_id', [])
             ->join(['ut' => 'utilitytype'], 'ut.utilitytype_id = u.utilitytype_id', ['utilitytype'])
@@ -33,8 +52,9 @@ class UtilityAccountGateway extends AbstractGateway {
             ->join(['un' => 'unit'], 'un.unit_id = ua.unit_id', ['unit_number'], Select::JOIN_LEFT)
             ->order($order)
             ->limit($pageSize)
-            ->offset($pageSize*($page - 1));
-
-        return $this->adapter->query($select);
+            ->offset($pageSize*($page - 1))
+            ->where($where);
+//        print ($select->toString());
+        return $this->adapter->query($select, $params);
     }
 }
