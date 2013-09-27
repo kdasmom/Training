@@ -13,7 +13,6 @@ Ext.define('NP.view.utilitySetup.VendorAccountsList', {
         'NP.view.shared.button.New',
         'NP.view.shared.button.Cancel',
         'NP.view.shared.button.Delete',
-        'NP.view.shared.button.Print',
         'NP.lib.ui.Grid',
         'NP.lib.ui.ComboBox',
         'NP.view.shared.PropertyCombo',
@@ -57,9 +56,6 @@ Ext.define('NP.view.utilitySetup.VendorAccountsList', {
             },
             {
                 xtype: 'shared.button.delete'
-            },
-            {
-                xtype: 'shared.button.print'
             }
         ];
         this.tbar = bar;

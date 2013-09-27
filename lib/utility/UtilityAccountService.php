@@ -71,4 +71,26 @@ class UtilityAccountService extends AbstractService {
         $result = $this->utilityAccountGateway->getAll($vendor_id, $property_id, $utilitytype_id, $glaccount_id, $pageSize, $page, $order);
         return $result;
     }
+
+    public function deleteUtilityAccount($accounts) {
+
+        $accounts = explode(',',$accounts);
+        $this->utilityAccountGateway->beginTransaction();
+
+        $success = true;
+        try {
+            foreach ($accounts as $item) {
+                $this->utilityAccountGateway->delete('utilityaccount_id = ?', [$item]);
+            }
+
+            $this->utilityAccountGateway->commit();
+        } catch(\Exception $e) {
+            // If there was an error, rollback the transaction
+            $this->utilityAccountGateway->rollback();
+            // Add a global error to the error array
+            $success = false;
+        }
+
+        return $success;
+    }
 } 

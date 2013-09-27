@@ -14,16 +14,15 @@ Ext.define('NP.controller.UtilitySetup', {
     ],
 
     refs: [
-        { ref: 'utilitySetupTab', selector: '[xtype="utilitysetup.utilitysetupform"]' },
-        { ref: 'utilityAccountsTab', selector: '[xtype="utilitysetup.accountsgrid"]' }
+        { ref: 'accountsGrid', selector: '[xtype="utilitysetup.vendoraccountslist"] customgrid' }
     ],
 
 //  for localization
     saveSuccessText      : 'Your changes were saved.',
-    deleteDialogTitleText: 'Delete budget overage?',
-    deleteDialogText     : 'Are you sure you want to delete this budget overage?',
-    deleteSuccessText    : 'Budget overage successfully deleted',
-    deleteFailureText    : 'There was an error deleting the budget overage. Please try again.',
+    deleteDialogTitleText: 'Delete utility account?',
+    deleteDialogText     : 'Are you sure you want to delete this utility account?',
+    deleteSuccessText    : 'Utility account successfully deleted',
+    deleteFailureText    : 'There was an error deleting the utility account. Please try again.',
     errorDialogTitleText : 'Error',
 
     /**
@@ -58,6 +57,9 @@ Ext.define('NP.controller.UtilitySetup', {
                     click: function() {
                         app.addHistory('UtilitySetup:showVendorsGrid');
                     }
+                },
+                '[xtype="utilitysetup.vendoraccountslist"] [xtype="shared.button.delete"]': {
+                    click: this.deleteAccounts
                 },
                 '[xtype="utilitysetup.vendoraccountslist"] [xtype="customgrid"]': {
                     editrow: this.editRowGrid
@@ -306,10 +308,43 @@ Ext.define('NP.controller.UtilitySetup', {
 
     editRowGrid: function(grid, rec, rowIndex) {
         var that = this;
-        console.log('rec: ', rec);
 
         var id = rec.internalId;
 
         that.application.addHistory('UtilitySetup:showAccountForm:' + id);
+    },
+
+    deleteAccounts: function() {
+        var that = this;
+        Ext.Msg.confirm(this.deleteDialogTitleText, this.deleteDialogText, function(buttonText) {
+            if (buttonText == "yes") {
+                var grid = that.getAccountsGrid();
+                var accounts = grid.getSelectionModel().getSelection();
+
+                var accounts_id = [];
+                Ext.each(accounts, function(account) {
+                    accounts_id.push(account.get('UtilityAccount_Id'));
+                });
+
+                NP.lib.core.Net.remoteCall({
+                    requests: {
+                        service         : 'UtilityAccountService',
+                        action          : 'deleteUtilityAccount',
+                        accounts        : accounts_id.join(','),
+                        success: function(success, deferred) {
+                            if (success) {
+                                NP.Util.showFadingWindow({ html: that.deleteSuccessText });
+                                Ext.each(accounts, function(account) {
+                                    grid.getStore().remove(account);
+                                });
+                                grid.getView().refresh();
+                            } else {
+                                Ext.MessageBox.alert(that.errorDialogTitleText, that.deleteFailureText);
+                            }
+                        }
+                    }
+                });
+            }
+        });
     }
 });
