@@ -50,6 +50,15 @@ class GLService extends AbstractService {
 	public function getAllGLAccounts() {
 		return $this->glaccountGateway->find(null, array(), "glaccount_name",  array('glaccount_id','glaccount_name','glaccount_number','glaccount_status','glaccounttype_id','glaccount_level','glaccount_updatetm'));
 	}
+        
+        /**
+	 * Retrieves all GL Accounts for grid GL Account Setup
+	 *
+	 * @return array
+	 */
+	public function getGLAccount($id) {
+		return $this->glaccountGateway->findById($id);
+	}
 	/**
 	 * Retrieves records from GLAccount table that display in an invoice line item combo box matching a
 	 * specific vendor, property, and keyword (basically to be used by an autocomplete combo as someody

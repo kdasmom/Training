@@ -129,7 +129,20 @@ Ext.define('NP.controller.GLAccountSetup', {
 	},
                 
         showGLAccountsForm: function(glaccount_id) {
-		var that = this;
-		
-	},
+       
+        var viewCfg = { bind: { models: ['gl.GlAccount'] }};
+        if (glaccount_id) {
+            if (arguments.length) {
+                Ext.apply(viewCfg.bind, {
+                    service    : 'GLService',
+                    action     : 'getGLAccount',
+                    extraParams: {
+                        id: glaccount_id
+                    }
+                });
+            }
+       }
+
+        var form = this.setView('NP.view.glaccount.GLAccountsForm', viewCfg, '[xtype="glaccount.glaccounts"]');
+    },
 });
