@@ -76,7 +76,7 @@ Ext.define('NP.view.glaccount.GLAccountsMain', {
                     name          : 'glaccount_status',
                     displayField  : 'glaccount_status_name',
                     valueField    : 'glaccount_status',
-                    value         : 1,
+                    value         : 'active',
                     store         : Ext.create('Ext.data.Store', {
                         fields: ['glaccount_status', 'glaccount_status_name'],
                         data : [

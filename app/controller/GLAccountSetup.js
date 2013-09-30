@@ -165,7 +165,7 @@ Ext.define('NP.controller.GLAccountSetup', {
                 },
                 success: function(result, deferred) {
                     NP.Util.showFadingWindow({ html: that.saveSuccessText });
-                    that.application.addHistory('GLAccountSetup:showBudgetOverage');
+                    that.application.addHistory('GLAccountSetup:showGLAccountSetup');
                 }
             });
         }

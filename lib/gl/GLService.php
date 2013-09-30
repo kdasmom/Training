@@ -32,6 +32,18 @@ class GLService extends AbstractService {
 		$this->configService = $configService;
 	}
 	
+        /**
+	 * Returns all Category in the system
+	 */
+	public function getCategories() {
+            return $this->glaccountGateway->find(
+			'glaccount_order is not null',
+			array(),
+			'glaccount_number',
+			array('glaccount_id','glaccount_number')
+		);
+	}
+        
 	/**
 	 * Returns all GL Accounts in the system
 	 */
@@ -51,9 +63,21 @@ class GLService extends AbstractService {
 	 *
 	 * @return array
 	 */
-	public function getAllGLAccounts() {
-		return $this->glaccountGateway->find(null, array(), "glaccount_name",  array('glaccount_id','glaccount_name','glaccount_number','glaccount_status','glaccounttype_id','glaccount_level','glaccount_updatetm'));
-	}
+	public function getAllGLAccounts($glaccount_status='active', $pageSize=null, $page=null, $sort="glaccount_name") {
+            $joins = array(
+			new sql\join\GLAccountTypeJoin()
+                );
+              return $this->glaccountGateway->find(
+			new sql\criteria\GlAccountStatusCriteria(),	// filter
+			array($glaccount_status),			// params
+			$sort,								// order by
+			null,								// columns
+			$pageSize,
+			$page,
+			$joins
+		);
+                
+        }
         
         /**
 	 * Retrieves all GL Accounts for grid GL Account Setup
