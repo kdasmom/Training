@@ -177,6 +177,7 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 		// Will need to add condition here to only show for admin users
 		Ext.log('Need to modify to only show Mobile Setup to admin users');
 		this.menu.items.push({
+            itemId: 'mobileSetupMenuBtn',
 			text: this.mobileText
 		});
 
