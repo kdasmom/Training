@@ -105,8 +105,7 @@ Ext.define('NP.view.glaccount.GLAccountsForm', {
                 fromTitle : 'Unassigned',
                 toTitle   : 'Assigned',
                 autoScroll: true,
-                margin    : 8,
-                hidden    : true
+                margin    : 8
             }
         ];
 
