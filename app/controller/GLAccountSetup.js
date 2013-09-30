@@ -17,6 +17,7 @@ Ext.define('NP.controller.GLAccountSetup', {
 	errorDialogTitleText      : 'Error',
         newGLAccountTitleText     : 'New GL Account',
 	editPropertyTitleText     : 'Editing',
+        saveSuccessText           : 'Your changes were saved.',
 
 	init: function() {
 		Ext.log('GLAccountSetup controller initialized');
@@ -59,7 +60,7 @@ Ext.define('NP.controller.GLAccountSetup', {
 			},
 			// The save button on the glaccount form
 			'#glaccountSaveBtn': {
-//				click: this.saveGLAccount
+				click: this.saveGlAccount
 			},
 		});
 	},
@@ -138,11 +139,35 @@ Ext.define('NP.controller.GLAccountSetup', {
                     action     : 'getGLAccount',
                     extraParams: {
                         id: glaccount_id
-                    }
+                    },
+                    extraFields: ['vendor_glaccounts']
                 });
             }
        }
 
         var form = this.setView('NP.view.glaccount.GLAccountsForm', viewCfg, '[xtype="glaccount.glaccounts"]');
+    },
+    
+    /**
+     * Save GLAccountSetup
+     */
+    saveGlAccount: function() {
+        var that = this;
+
+        var form = this.getCmp('glaccount.glaccountsform');
+
+        if (form.isValid()) {
+            form.submitWithBindings({
+                service: 'GLService',
+                action: 'saveGlAccount',
+                extraParams: {
+                    glaccount_updateby: NP.Security.getUser().get('userprofile_id')
+                },
+                success: function(result, deferred) {
+                    NP.Util.showFadingWindow({ html: that.saveSuccessText });
+                    that.application.addHistory('GLAccountSetup:showBudgetOverage');
+                }
+            });
+        }
     },
 });

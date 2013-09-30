@@ -4,6 +4,8 @@ namespace NP\gl;
 
 use NP\core\AbstractService;
 use NP\core\db\Where;
+use NP\vendor\VendorGlAccountsGateway;
+use NP\core\validation\EntityValidator;
 
 /**
  * All operations that are closely related to GL accounts belong in this service
@@ -15,13 +17,15 @@ class GLService extends AbstractService {
 	/**
 	 * @var \NP\gl\GLAccountGateway
 	 */
-	protected $glaccountGateway, $configService;
+	protected $glaccountGateway, $configService, $vendorGlAccountsGateway, $glaccountTypeGateway;
 	
 	/**
 	 * @param \NP\gl\GLAccountGateway $glaccountGateway GLAccount gateway injected
 	 */
-	public function __construct(GLAccountGateway $glaccountGateway) {
+	public function __construct(GLAccountGateway $glaccountGateway, VendorGlAccountsGateway $vendorGlAccountsGateway, GlAccountTypeGateway $glaccountTypeGateway) {
 		$this->glaccountGateway = $glaccountGateway;
+                $this->vendorGlAccountsGateway = $vendorGlAccountsGateway;
+                $this->glaccountTypeGateway = $glaccountTypeGateway;
 	}
 
 	public function setConfigService(\NP\system\ConfigService $configService) {
@@ -56,8 +60,26 @@ class GLService extends AbstractService {
 	 *
 	 * @return array
 	 */
+	public function getTypes() {
+		return $this->glaccountTypeGateway->find(null, array(), "glaccounttype_name",  array('glaccounttype_id','glaccounttype_name'));
+	}
+        
+        /**
+	 * Retrieves all GL Accounts for grid GL Account Setup
+	 *
+	 * @return array
+	 */
 	public function getGLAccount($id) {
-		return $this->glaccountGateway->findById($id);
+		$res = $this->glaccountGateway->findById($id);
+		
+		$res['vendor_glaccounts'] = $this->vendorGlAccountsGateway->find(
+											array('glaccount_id'=>'?'),
+											array($id),
+											'vendor_id',
+											array('vendor_id')
+										);
+		$res['vendor_glaccounts'] = \NP\util\Util::valueList($res['vendor_glaccounts'], 'vendor_id');
+                return $res;
 	}
 	/**
 	 * Retrieves records from GLAccount table that display in an invoice line item combo box matching a
@@ -136,6 +158,47 @@ class GLService extends AbstractService {
 			array('glaccount_id','glaccount_number','glaccount_name')
 		);
 	}
+        
+        
+    /**
+     * save GL Account
+     *
+     * @param $data
+     * @return array
+     */
+    public function saveGlAccount($data) {
+        $glaccount = new GLAccountEntity($data['glaccount']);
+
+        $now = \NP\util\Util::formatDateForDB();
+
+        if ($glaccount->glaccount_id == null) {
+            $glaccount->glaccount_updateby = $data['glaccount_updateby'];
+        }
+        $validator = new EntityValidator();
+
+        $validator->validate($glaccount);
+        $errors = $validator->getErrors();
+
+        if (count($errors) == 0) {
+            $this->glaccountGateway->beginTransaction();
+
+            try {
+                $this->glaccountGateway->save($glaccount);
+                $this->glaccountGateway->commit();
+            } catch(\Exception $e) {
+                // If there was an error, rollback the transaction
+                $this->glaccountGateway->rollback();
+                // Add a global error to the error array
+                $errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
+            }
+        }
+
+
+        return array(
+            'success'    => (count($errors)) ? false : true,
+            'errors'     => $errors,
+        );
+    }
 }
 
 ?>
