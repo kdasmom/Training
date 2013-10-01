@@ -62,6 +62,16 @@ Ext.define('NP.controller.GLAccountSetup', {
 			'#glaccountSaveBtn': {
 				click: this.saveGlAccount
 			},
+                        // The cancel button on the glcategory form
+			'glcategoryCancelBtn"]': {
+				click: 	function() {
+                                    this.addHistory('GLAccountSetup:showGLAccountSetup:Overview');
+                                }
+			},
+			// The save button on the glcategory form
+			'#glcategorySaveBtn': {
+				click: this.saveGlAccount
+			},
 		});
 	},
 	

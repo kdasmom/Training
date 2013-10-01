@@ -37,7 +37,7 @@ class GLService extends AbstractService {
 	 */
 	public function getCategories() {
             return $this->glaccountGateway->find(
-			'glaccount_order is not null',
+			'glaccount_order > 1',
 			array(),
 			'glaccount_number',
 			array('glaccount_id','glaccount_number')
