@@ -37,6 +37,16 @@ Ext.define('NP.controller.MobileSetup', {
             },
             '[xtype="mobilesetup.mobileinfoform"] [xtype="shared.button.save"]': {
                 click: function() {this.saveMobinfoForm(true);}
+            },
+            '[xtype="mobilesetup.mobileinfoform"] [xtype="shared.button.cancel"]': {
+                click: function() {
+                    app.addHistory('MobileSetup:showMobileInfoGrid');
+                }
+            },
+            '[xtype="mobilesetup.mobilegrid"]': {
+                itemclick: function (grid, rec) {
+                    app.addHistory('MobileSetup:showMobileInfoForm:' + rec.get('userprofile_id'));
+                }
             }
         })
 
@@ -53,9 +63,32 @@ Ext.define('NP.controller.MobileSetup', {
         grid.reloadFirstPage();
     },
 
-    showMobileInfoForm: function() {
+    showMobileInfoForm: function(userprofile_id) {
         var viewCfg = { bind: { models: ['user.MobInfo'] }};
+
+        if (arguments.length) {
+            Ext.apply(viewCfg.bind, {
+                service    : 'UserService',
+                action     : 'getMobileInfo',
+                extraParams: {
+                    userprofile_id: userprofile_id
+                }
+            });
+        }
         var form = this.setView('NP.view.mobileSetup.MobileInfoForm', viewCfg);
+        if (arguments.length) {
+            NP.lib.core.Net.remoteCall({
+                requests: {
+                    service: 'UserService',
+                    action : 'get',
+                    userprofile_id: userprofile_id,
+                    success: function(success, deferred) {
+                        form.findField('username').setValue(success.person_lastname + ', ' + success.person_firstname + ' (' + success.userprofile_username + ')');
+                    }
+                }
+            });
+            form.findField('userprofile_id').setValue(userprofile_id);
+        }
     },
 
     saveMobinfoForm: function(newDevice) {

@@ -61,7 +61,7 @@ class UserprofileGateway extends AbstractGateway {
 	 * @param  int   $userprofile_id The ID of the user you want details for
 	 * @return array                 An array with data for the specified user, including userprofile, role, person, address, and email
 	 */
-	public function findProfileById($userprofile_id) {
+	public function findProfileById($userprofile_id = null) {
 		$select = new sql\UserprofileSelect();
 		$select->columnsAll()
 				->joinUserprofilerole(null)
@@ -268,7 +268,7 @@ class UserprofileGateway extends AbstractGateway {
 		}
 	}
 
-    public function findMobileInfo($pageSize = null, $page = null, $order = 'person_lastname') {
+    public function findAllMobileInfo($pageSize = null, $page = null, $order = 'person_lastname') {
 
         $select = new sql\UserprofileSelect();
         $select->columns(['userprofile_username', 'userprofile_id', 'userprofile_status'])
@@ -280,12 +280,6 @@ class UserprofileGateway extends AbstractGateway {
             ->order($order)
             ->limit($pageSize)
             ->offset($pageSize * ($page - 1));
-
-//        $select = new Select();
-//        $select->from(['m' => 'mobinfo'])
-//            ->join(['u' => 'userprofile'], 'u.userprofile_id = m.userprofile_id', ['userprofile_username'])
-            /*->limit($pageSize)
-            ->offset($pageSize * ($page - 1))*/;
 
         return $this->adapter->query($select);
     }

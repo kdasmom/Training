@@ -1189,8 +1189,8 @@ class UserService extends AbstractService {
 		);
 	}
 
-    public function findMobileInfo($pageSize = null, $page = null, $order = 'person_lastname') {
-        $mobiles = $this->userprofileGateway->findMobileInfo($pageSize, $page, $order);
+    public function findAllMobileInfo($pageSize = null, $page = null, $order = 'person_lastname') {
+        $mobiles = $this->userprofileGateway->findAllMobileInfo($pageSize, $page, $order);
 
         return $mobiles;
     }

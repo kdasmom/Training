@@ -110,7 +110,7 @@ Ext.define('NP.view.mobileSetup.MobileGrid', {
         this.selModel = Ext.create('Ext.selection.CheckboxModel', { checkOnly: true, mode: 'MULTI' });
         this.store = Ext.create('NP.store.user.Mobinfos', {
             service    : 'UserService',
-            action     : 'findMobileInfo',
+            action     : 'findAllMobileInfo',
             paging     : true
         });
         this.callParent(arguments);
