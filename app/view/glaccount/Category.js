@@ -4,7 +4,7 @@
  * @author Aliaksandr Zubik
  */
 Ext.define('NP.view.glaccount.Category', {
-    extend: 'Ext.panel.Panel',
+    extend: 'NP.lib.ui.BoundForm',
     alias: 'widget.glaccount.category',
     
     title: 'Category',
@@ -44,6 +44,7 @@ Ext.define('NP.view.glaccount.Category', {
             {
                 xtype           : 'customcombo',
                 emptyText       : this.allCategoriesEmptyText,
+                allowBlank      : false,
                 width           : defaultWidth,
                 name            : 'glaccount_level',
                 displayField    : 'glaccount_number',
@@ -72,7 +73,7 @@ Ext.define('NP.view.glaccount.Category', {
                         ]
                     })},
             //Name
-            { xtype: 'textfield', fieldLabel: this.nameFieldText, name: 'glaccount_name', width: defaultWidth },
+            { xtype: 'textfield', fieldLabel: this.nameFieldText, name: 'glaccount_name', allowBlank: false, width: defaultWidth },
             ],
     	this.callParent(arguments);
     }

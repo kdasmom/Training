@@ -63,14 +63,14 @@ Ext.define('NP.controller.GLAccountSetup', {
 				click: this.saveGlAccount
 			},
                         // The cancel button on the glcategory form
-			'glcategoryCancelBtn"]': {
+			'#glcategoryCancelBtn': {
 				click: 	function() {
                                     this.addHistory('GLAccountSetup:showGLAccountSetup:Overview');
                                 }
 			},
 			// The save button on the glcategory form
 			'#glcategorySaveBtn': {
-				click: this.saveGlAccount
+				click: this.saveGlCategory
 			},
 		});
 	},
@@ -165,6 +165,28 @@ Ext.define('NP.controller.GLAccountSetup', {
         var that = this;
 
         var form = this.getCmp('glaccount.glaccountsform');
+
+        if (form.isValid()) {
+            form.submitWithBindings({
+                service: 'GLService',
+                action: 'saveGlAccount',
+                extraParams: {
+                    glaccount_updateby: NP.Security.getUser().get('userprofile_id')
+                },
+                success: function(result, deferred) {
+                    NP.Util.showFadingWindow({ html: that.saveSuccessText });
+                    that.application.addHistory('GLAccountSetup:showGLAccountSetup');
+                }
+            });
+        }
+    },
+    /**
+     * Save GL Category
+     */
+    saveGlCategory: function() {
+        var that = this;
+
+        var form = this.getCmp('glaccount.category');
 
         if (form.isValid()) {
             form.submitWithBindings({
