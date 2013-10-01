@@ -43,7 +43,8 @@ Ext.define('NP.view.mobileSetup.MobileGrid', {
         this.pagingToolbarButtons = [
             {
                 xtype: 'shared.button.report',
-                text: this.mobileReportButtonText
+                text: this.mobileReportButtonText,
+                hidden: true
             },
             {
                 xtype: 'shared.button.new',
@@ -51,15 +52,18 @@ Ext.define('NP.view.mobileSetup.MobileGrid', {
             },
             {
                 xtype: 'shared.button.activate',
-                text: this.activateButtonText
+                text: this.activateButtonText,
+                disabled: true
             },
             {
                 xtype: 'shared.button.inactivate',
-                text: this.inactivateButtonText
+                text: this.inactivateButtonText,
+                disabled: true
             },
             {
                 xtype: 'shared.button.delete',
-                text: this.deleteDeviceButtonText
+                text: this.deleteDeviceButtonText,
+                disabled: true
             }
         ];
 
@@ -107,7 +111,7 @@ Ext.define('NP.view.mobileSetup.MobileGrid', {
                 flex: 1
             }
         ];
-        this.selModel = Ext.create('Ext.selection.CheckboxModel', { checkOnly: true, mode: 'MULTI' });
+        this.selModel = Ext.create('Ext.selection.CheckboxModel');
         this.store = Ext.create('NP.store.user.Mobinfos', {
             service    : 'UserService',
             action     : 'findAllMobileInfo',

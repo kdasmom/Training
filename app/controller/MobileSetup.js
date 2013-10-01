@@ -16,10 +16,22 @@ Ext.define('NP.controller.MobileSetup', {
 
 //  for localization
     saveSuccessText      : 'Your changes were saved.',
-    deleteDialogTitleText: 'Delete mobile info?',
-    deleteDialogText     : 'Are you sure you want to delete this mobile info?',
-    deleteSuccessText    : 'Mobile info successfully deleted',
-    deleteFailureText    : 'There was an error deleting the mobile info. Please try again.',
+//    delete action messages
+    deleteDialogTitleText: 'Delete device?',
+    deleteDialogText     : 'Are you sure you want to delete this device?',
+    deleteSuccessText    : 'Device info successfully deleted',
+    deleteFailureText    : 'There was an error deleting the device. Please try again.',
+//    activate action messages
+    activateDialogTitleText : 'Activate?',
+    activateDialogText      : 'Are you sure you want to activate the selected devices?',
+    activateSuccessText     : 'Devices were activated',
+    activateFailureText     : 'There was an error activating devices',
+//    deactivate
+    deactivateDialogTitleText : 'Inactivate?',
+    deactivateDialogText      : 'Are you sure you want to deactivate the selected devices?',
+    deactivateSuccessText     : 'Devices were deactivated',
+    deactivateFailureText     : 'There was an error deactivating devices',
+//    common
     errorDialogTitleText : 'Error',
 
     /**
@@ -44,8 +56,26 @@ Ext.define('NP.controller.MobileSetup', {
                 }
             },
             '[xtype="mobilesetup.mobilegrid"]': {
-                itemclick: function (grid, rec) {
-                    app.addHistory('MobileSetup:showMobileInfoForm:' + rec.get('userprofile_id'));
+                selectionchange: this.checkMobinfo,
+                itemclick: function (grid, rec, item, index, e) {
+                    if (e.getTarget().className != 'x-grid-row-checker') {
+                        app.addHistory('MobileSetup:showMobileInfoForm:' + rec.get('userprofile_id'));
+                    }
+                }
+            },
+            '[xtype="mobilesetup.mobilegrid"] [xtype="shared.button.activate"]': {
+                click: function() {
+                    this.actionHandler('activateDevice');
+                }
+            },
+            '[xtype="mobilesetup.mobilegrid"] [xtype="shared.button.inactivate"]': {
+                click: function() {
+                    this.actionHandler('deactivateDevice');
+                }
+            },
+            '[xtype="mobilesetup.mobilegrid"] [xtype="shared.button.delete"]': {
+                click: function() {
+                    this.actionHandler('deleteDevice');
                 }
             }
         })
@@ -88,6 +118,9 @@ Ext.define('NP.controller.MobileSetup', {
                 }
             });
             form.findField('userprofile_id').setValue(userprofile_id);
+            form.down('[xtype="shared.button.activate"]').on('click', function() {
+                that.saveMobinfoForm(false);
+            });
         }
     },
 
@@ -107,6 +140,89 @@ Ext.define('NP.controller.MobileSetup', {
                     that.application.addHistory('MobileSetup:showMobileInfoGrid');
                 }
             });
+        }
+    },
+
+    actionHandler: function(action) {
+
+        var that = this;
+        var title, successMessage, failMessage, dialogtext;
+
+        switch (action) {
+            case 'activateDevice':
+                title = this.activateDialogTitleText;
+                successMessage = this.activateSuccessText;
+                failMessage = this.activateFailureText;
+                dialogtext = this.activateDialogText;
+                break;
+            case 'deactivateDevice':
+                title = this.deactivateDialogTitleText;
+                successMessage = this.deactivateSuccessText;
+                failMessage = this.deactivateFailureText;
+                dialogtext = this.deactivateDialogText;
+                break;
+            case 'deleteDevice':
+                title = this.deleteDialogTitleText;
+                successMessage = this.deleteSuccessText;
+                failMessage = this.deleteFailureText;
+                dialogtext = this.deleteDialogText;
+                break;
+        }
+
+        // Show a confirmation dialog
+        Ext.MessageBox.confirm(title, dialogtext, function(btn) {
+            // If user clicks Yes, perform action
+            if (btn == 'yes') {
+                var grid = that.getCmp('mobilesetup.mobilegrid');
+                var devices = grid.getSelectionModel().getSelection();
+
+                var devices_id = [];
+                Ext.each(devices, function(device) {
+                    devices_id.push(device.get('mobinfo_id'));
+                });
+
+                NP.lib.core.Net.remoteCall({
+                    mask: grid,
+                    requests: {
+                        service: 'UserService',
+                        action : action,
+                        device_list: devices_id.join(','),
+                        success: function(result, deferred) {
+                            if (result.success) {
+                                if (action == 'deleteDevice') {
+                                    grid.getStore().remove(devices);
+                                }
+                                grid.getSelectionModel().deselectAll();
+                                grid.reloadFirstPage();
+                                NP.Util.showFadingWindow({ html: successMessage });
+                            } else {
+                                Ext.MessageBox.alert(that.errorDialogTitleText, failMessage);
+                            }
+                        },
+                        failure: function(response, options, deferred) {
+                            Ext.MessageBox.alert(that.errorDialogTitleText, failMessage);
+                        }
+                    }
+                });
+            }
+        });
+    },
+
+    checkMobinfo: function(grid, recs) {
+        var grid = this.getCmp('mobilesetup.mobilegrid');
+
+        var removeBtn = grid.query('[xtype="shared.button.delete"]')[0];
+        var activateBtn = grid.query('[xtype="shared.button.activate"]')[0];
+        var inactivateBtn = grid.query('[xtype="shared.button.inactivate"]')[0];
+
+        if (recs.length) {
+            removeBtn.enable();
+            activateBtn.enable();
+            inactivateBtn.enable();
+        } else {
+            removeBtn.disable();
+            activateBtn.disable();
+            inactivateBtn.disable();
         }
     }
 });
