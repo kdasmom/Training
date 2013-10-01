@@ -29,6 +29,16 @@ Ext.define('NP.controller.MobileSetup', {
 
         var app = this.application;
 
+        this.control({
+            '[xtype="mobilesetup.mobilegrid"] [xtype="shared.button.new"]': {
+                click: function() {
+                    app.addHistory('MobileSetup:showMobileInfoForm');
+                }
+            },
+            '[xtype="mobilesetup.mobileinfoform"] [xtype="shared.button.save"]': {
+                click: function() {this.saveMobinfoForm(true);}
+            }
+        })
 
     },
 
@@ -41,5 +51,29 @@ Ext.define('NP.controller.MobileSetup', {
 
         // Load the store
         grid.reloadFirstPage();
+    },
+
+    showMobileInfoForm: function() {
+        var viewCfg = { bind: { models: ['user.MobInfo'] }};
+        var form = this.setView('NP.view.mobileSetup.MobileInfoForm', viewCfg);
+    },
+
+    saveMobinfoForm: function(newDevice) {
+        var that = this;
+        var form = this.getCmp('mobilesetup.mobileinfoform');
+
+        if (form.isValid()) {
+            form.submitWithBindings({
+                service: 'UserService',
+                action: 'saveMobileInfo',
+                extraParams: {
+                    isNewDevice: newDevice ? newDevice : false
+                },
+                success: function(result, deferred) {
+                    NP.Util.showFadingWindow({ html: that.saveSuccessText });
+                    that.application.addHistory('MobileSetup:showMobileInfoGrid');
+                }
+            });
+        }
     }
 });

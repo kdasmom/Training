@@ -66,38 +66,53 @@ Ext.define('NP.view.mobileSetup.MobileGrid', {
         this.columns = [
             {
                 text: this.userColText,
-                dataIndex: 'username',
-                flex: 1
+                dataIndex: 'userprofile_username',
+                flex: 1,
+                renderer: function(val, meta, rec) {
+                    var val = rec.raw.person_lastname + ', ' + rec.raw.person_firstname + ' (' + rec.raw.userprofile_username + ')';
+
+                    return val;
+                }
             },
             {
                 text: this.userStatusColText,
-                dataIndex: 'user_status',
-                flex: 1
+                dataIndex: 'userprofile_status',
+                flex: 1,
+                renderer: function(val, meta, rec) {
+                    var val = rec.raw.userprofile_status;
+
+                    return val;
+                }
             },
             {
                 text: this.mobilePhoneColText,
-                dataIndex: 'mobile_phone',
+                dataIndex: 'mobinfo_phone',
                 flex: 1
             },
             {
                 text: this.deviceStatusColText,
-                dataIndex: 'device_status',
+                dataIndex: 'mobinfo_status',
                 flex: 1
             },
             {
+                xtype: 'datecolumn',
                 text: this.activeDateColText,
-                dataIndex: 'active_date',
+                dataIndex: 'mobinfo_activated_datetm',
                 flex: 1
             },
             {
+                xtype: 'datecolumn',
                 text: this.inactiveDateColText,
-                dataIndex: 'inactive_date',
+                dataIndex: 'mobinfo_deactivated_datetm',
                 flex: 1
             }
         ];
-
-        this.store = [];
-
+        this.selModel = Ext.create('Ext.selection.CheckboxModel', { checkOnly: true, mode: 'MULTI' });
+        this.store = Ext.create('NP.store.user.Mobinfos', {
+            service    : 'UserService',
+            action     : 'findMobileInfo',
+            paging     : true
+        });
         this.callParent(arguments);
     }
 });

@@ -1188,6 +1188,12 @@ class UserService extends AbstractService {
 			'role_id'   => $role->role_id
 		);
 	}
+
+    public function findMobileInfo($pageSize = null, $page = null, $order = 'person_lastname') {
+        $mobiles = $this->userprofileGateway->findMobileInfo($pageSize, $page, $order);
+
+        return $mobiles;
+    }
 }
 
 ?>

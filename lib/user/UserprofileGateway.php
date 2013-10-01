@@ -267,6 +267,28 @@ class UserprofileGateway extends AbstractGateway {
 			return $this->adapter->query($select, $params);
 		}
 	}
+
+    public function findMobileInfo($pageSize = null, $page = null, $order = 'person_lastname') {
+
+        $select = new sql\UserprofileSelect();
+        $select->columns(['userprofile_username', 'userprofile_id', 'userprofile_status'])
+            ->joinUserprofilerole([])
+            ->joinRole([])
+            ->joinStaff([])
+            ->joinPerson(array('person_firstname','person_lastname'))
+            ->joinMobinfo(['mobinfo_id', 'mobinfo_phone', 'mobinfo_activated_datetm', 'mobinfo_deactivated_datetm', 'mobinfo_status'])
+            ->order($order)
+            ->limit($pageSize)
+            ->offset($pageSize * ($page - 1));
+
+//        $select = new Select();
+//        $select->from(['m' => 'mobinfo'])
+//            ->join(['u' => 'userprofile'], 'u.userprofile_id = m.userprofile_id', ['userprofile_username'])
+            /*->limit($pageSize)
+            ->offset($pageSize * ($page - 1))*/;
+
+        return $this->adapter->query($select);
+    }
 }
 
 ?>

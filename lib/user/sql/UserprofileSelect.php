@@ -154,6 +154,15 @@ class UserprofileSelect extends Select {
 						$cols,
 						Select::JOIN_LEFT);
 	}
+
+    public function joinMobinfo($cols = []) {
+        return $this->join(
+            ['m' => 'mobinfo'],
+            'u.userprofile_id = m.userprofile_id',
+            $cols,
+            Select::JOIN_INNER
+        );
+    }
 	
 }
 
