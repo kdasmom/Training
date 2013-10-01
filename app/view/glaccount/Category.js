@@ -11,6 +11,7 @@ Ext.define('NP.view.glaccount.Category', {
     
     requires: [
         'NP.lib.core.Config',
+        'NP.view.shared.GlCategoryOrder',
     	'NP.view.shared.button.Cancel',
     	'NP.view.shared.button.Save',
     ],
@@ -40,38 +41,30 @@ Ext.define('NP.view.glaccount.Category', {
         });
         glCategoryStore.load();
         
-        this.items = [            
+        this.items = [ 
             {
-                xtype           : 'customcombo',
-                emptyText       : this.allCategoriesEmptyText,
-                allowBlank      : false,
-                width           : defaultWidth,
-                name            : 'glaccount_level',
+                xtype     : 'shared.glcategoryorder',
+                title     : this.categoryFieldText,
+                name      : 'glaccount_order',
                 displayField    : 'glaccount_number',
                 valueField      : 'glaccount_id',
-                store           : glCategoryStore,
-                fieldLabel      : this.categoryFieldText
+                autoScroll: true,
+                ddReorder: true,
+                height : 200,
+                width : defaultWidth
             },
         // Status
-    		{ xtype: 'combo',
-                    width: defaultWidth,
-                    allowBlank: false,
-                    mode:           'local',
-                    triggerAction:  'all',
-                    forceSelection: true,
-                    editable:       false,
-                    fieldLabel:     this.statusFieldText,
-                    name:           'glaccount_status',
-                    displayField:   'name',
-                    valueField:     'value',
-                    queryMode: 'local',
-                    store:          Ext.create('Ext.data.Store', {
-                        fields : ['name', 'value'],
-                        data   : [
-                            {name : 'Active',   value: 'active'},
-                            {name : 'Inactive',  value: 'inactive'},
-                        ]
-                    })},
+        	{
+    			xtype: 'radiogroup',
+    			fieldLabel: this.statusFieldText,
+                        width: 250,
+                        name: 'glaccount_status',
+                        style: 'white-space: nowrap;margin-right:12px;',
+    			items: [
+		    		{ boxLabel: 'Active', inputValue: 'active', checked: true },
+		    		{ boxLabel: 'Inactive', inputValue: 'inactive' }
+		    	]
+    		},
             //Name
             { xtype: 'textfield', fieldLabel: this.nameFieldText, name: 'glaccount_name', allowBlank: false, width: defaultWidth },
             ],
