@@ -9,7 +9,7 @@ namespace NP\catalog\types;
  */
 class Punchout extends AbstractCatalog {
 
-	protected function getAssignmentFields() {
+	public function getAssignmentFields() {
 		return array('categories','vendors','properties');
 	}
 

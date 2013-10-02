@@ -9,17 +9,21 @@ Ext.define('NP.controller.MySettings', {
 	requires: [
 		'NP.lib.core.Security',
 		'NP.lib.core.Net',
-		'NP.lib.core.Util'
+		'NP.lib.core.Util',
+		'NP.lib.core.Config',
+		'NP.view.shared.PortalCanvas'
 	],
 	
 	refs: [
 		{ ref: 'overviewTab', selector: '[xtype="mysettings.overview"]' },
 		{ ref: 'userInformationTab', selector: '[xtype="mysettings.userinformation"]' },
 		{ ref: 'settingsTab', selector: '[xtype="mysettings.settings"]' },
+		{ ref: 'dashboardTab', selector: '[xtype="mysettings.dashboard"]' },
 		{ ref: 'displayTab', selector: '[xtype="mysettings.display"]' },
 		{ ref: 'emailNotificationTab', selector: '[xtype="mysettings.emailnotification"]' },
 		{ ref: 'mobileSettingsTab', selector: '[xtype="mysettings.mobilesettings"]' },
-		{ ref: 'userDelegationTab', selector: '[xtype="user.userdelegation"]' }
+		{ ref: 'userDelegationTab', selector: '[xtype="user.userdelegation"]' },
+		{ ref: 'portalCanvas', selector: '[xtype="shared.portalcanvas"]' }
 	],
 
 	// For localization	
@@ -33,6 +37,7 @@ Ext.define('NP.controller.MySettings', {
 	cancelDelegDialogText           : 'Are you sure you want to cancel this delegation?',
 	activeDelegErrorTitleText       : 'Active Delegation',
 	activeDelegErrorText            : 'You have an active delegation. You cannot delegate to another user until that delegation expires or is cancelled.',
+	blankColumnErrorText            : 'You have left one or more columns empty. Please fill those columns or remove them.',
 
 	init: function() {
 		Ext.log('MySettings controller initialized');
@@ -65,6 +70,11 @@ Ext.define('NP.controller.MySettings', {
 			'[xtype="mysettings.userinformation"] [xtype="shared.button.save"]': {
 				// Run this whenever the save button is clicked
 				click: this.saveUserInfo
+			},
+			// The Save button on the Settings tab
+			'[xtype="mysettings.settings"] [xtype="shared.button.save"]': {
+				// Run this whenever the save button is clicked
+				click: this.saveSettings
 			},
 			// The Save button on the Display page
 			'[xtype="mysettings.display"] [xtype="shared.button.save"]': {
@@ -100,17 +110,15 @@ Ext.define('NP.controller.MySettings', {
 				click: function() {
 					this.application.getController('UserManager').addDelegation(NP.Security.getUser().get('userprofile_id'));
 				}
+			},
+			// The Add a Delegation button in User Delegations tab
+			'[xtype="mysettings.dashboard"] [xtype="shared.button.save"]': {
+				click: this.saveDashboard
 			}
 		});
 
 		// Load the Security Questions store
 		this.application.loadStore('system.SecurityQuestions', 'NP.store.system.SecurityQuestions');
-
-		// Load the Property store
-		this.application.loadStore('property.AllProperties', 'NP.store.property.Properties', {
-			service: 'PropertyService',
-			action : 'getAllForSettings'
-		});
 	},
 	
 	/**
@@ -149,6 +157,10 @@ Ext.define('NP.controller.MySettings', {
 		});
 	},
 
+	showUserInformation: function() {
+		Ext.getStore('property.AllProperties').filter('property_status', 1);
+	},
+
 	/**
 	 * Saves user info from the form
 	 */
@@ -176,6 +188,58 @@ Ext.define('NP.controller.MySettings', {
 
 					// Show info message
 					NP.Util.showFadingWindow({ html: that.changesSavedText });
+				}
+			});
+		}
+	},
+
+	showSettings: function() {
+		var form = this.getSettingsTab();
+
+		// Bind the form to a model that's the same as the current logged in user's model
+		var formModel = NP.Security.getUser().copy();
+		form.setModel('user.Userprofile', formModel);
+
+		var selectedStat = form.summaryStatStore.findRecord('id', formModel.get('userprofile_default_dashboard'));
+		
+		if (selectedStat !== null) {
+			form.categoryCombo.setValue(selectedStat.get('category'));
+		} else {
+			form.onCategorySelect()
+		}
+
+		// Now update the fields to set the correct values
+		form.updateBoundFields();
+	},
+
+	saveSettings: function() {
+		var that = this;
+
+		var form = this.getSettingsTab();
+
+		if (form.isValid()) {
+			var user   = NP.Security.getUser();
+			var values = form.getValues();
+
+			NP.lib.core.Net.remoteCall({
+				requests: {
+					service: 'UserService',
+					action : 'saveDashboardSettings',
+					userprofile_id                : user.get('userprofile_id'),
+					userprofile_preferred_property: values['userprofile_preferred_property'],
+					userprofile_preferred_region  : values['userprofile_preferred_region'],
+					userprofile_default_dashboard : values['userprofile_default_dashboard'],
+					success: function(result, deferred) {
+						if (result.success) {
+							// Show info message
+							NP.Util.showFadingWindow({ html: that.changesSavedText });
+
+							// Update the local user model
+							user.set('userprofile_preferred_property', values['userprofile_preferred_property']);
+							user.set('userprofile_preferred_region', values['userprofile_preferred_region']);
+							user.set('userprofile_default_dashboard', values['userprofile_default_dashboard']);
+						}
+					}
 				}
 			});
 		}
@@ -468,5 +532,47 @@ Ext.define('NP.controller.MySettings', {
 				}
 			}
 		});
+	},
+
+	showDashboard: function() {
+		var canvas = this.getPortalCanvas();
+
+		// Get the configuration for the dashboard
+		var canvasConfig = NP.Security.getUser().get('userprofile_dashboard_layout');
+
+		// If no configuration has been saved yet, use a blank canvas
+		if (canvasConfig !== null) {
+			canvas.buildFromConfig(Ext.JSON.decode(canvasConfig));
+		}
+	},
+
+	saveDashboard: function() {
+		var that = this;
+
+		// If valid, we can save our dashboard layout as a user setting
+		if (this.getPortalCanvas().isValid()) {
+			var user   = NP.Security.getUser();
+			var userprofile_dashboard_layout = this.getPortalCanvas().serialize();
+
+			NP.lib.core.Net.remoteCall({
+				requests: {
+					service: 'UserService',
+					action : 'saveDashboardLayout',
+					userprofile_id              : user.get('userprofile_id'),
+					userprofile_dashboard_layout: userprofile_dashboard_layout,
+					success: function(result, deferred) {
+						if (result.success) {
+							// Show info message
+							NP.Util.showFadingWindow({ html: that.changesSavedText });
+
+							// Update the local user model
+							user.set('userprofile_dashboard_layout', userprofile_dashboard_layout);
+						}
+					}
+				}
+			});
+		} else {
+			Ext.MessageBox.alert(that.errorDialogTitleText, that.blankColumnErrorText);
+		}
 	}
 });

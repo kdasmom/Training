@@ -12,6 +12,9 @@ Ext.define('NP.lib.ui.AutoComplete', {
 	queryParam    : 'keyword',
 	typeAhead     : false,
 	triggerAction : 'query',
+    multiSelect   : false,
+    minChars      : 0,
+    cls           : 'auto-complete',
 
 	/**
 	 * @cfg {Array}                   dependentCombos   An array of IDs for combo boxes that depend on this combo; when the value of this combo is changed, the valueField will be added as a parameter to the proxy of the dependent combos specified and reload their stores
@@ -35,6 +38,15 @@ Ext.define('NP.lib.ui.AutoComplete', {
 					}
 				}
 			});
+		}
+	},
+
+	/* Override this function to fire the select event even when clearing the field */
+	setValue: function(value, doSelect, skipLoad) {
+		this.callParent(arguments);
+
+		if (value && !value.length) {
+			this.fireEvent('select', this, [], {});
 		}
 	},
 

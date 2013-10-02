@@ -167,7 +167,10 @@ Ext.define('NP.view.shared.ContextPicker', {
         this.callParent(arguments);
     },
 
-    triggerChangeEvent: function() {
+    triggerChangeEvent: function(initCall) {
+        if (arguments.length === 0) {
+            initCall = false;
+        }
         var context = this.getState();
 
         NP.Security.setCurrentContext({
@@ -184,7 +187,7 @@ Ext.define('NP.view.shared.ContextPicker', {
          * @param {"property"/"region"/"all"}    type     The context type
          * @param {Number}                       selected The value of the item selected in the combo box
          */
-        this.fireEvent('change', this, context.type, context.selected);
+        this.fireEvent('change', this, context.type, context.selected, initCall);
     },
 
     /**

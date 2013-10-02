@@ -9,9 +9,9 @@ Ext.define('NP.view.catalogMaintenance.CatalogFormInfo', {
     
     requires: [
         'NP.lib.core.Config',
-    	'NP.lib.core.Security',
+        'NP.lib.core.Security',
         'NP.store.catalog.CatalogTypes',
-    	'NP.lib.ui.ComboBox',
+        'NP.lib.ui.ComboBox',
         'NP.lib.ui.AutoComplete'
     ],
 
@@ -22,8 +22,8 @@ Ext.define('NP.view.catalogMaintenance.CatalogFormInfo', {
     initComponent: function() {
         var that = this;
 
-    	var fieldWidth = 450;
-    	
+        var fieldWidth = 450;
+        
         var catalogTypes = Ext.create('NP.store.catalog.CatalogTypes').getRange();
         var radioGroup;
         
@@ -31,15 +31,15 @@ Ext.define('NP.view.catalogMaintenance.CatalogFormInfo', {
 
         this.items = [
             {
-                xtype       : 'customcombo',
-                fieldLabel  : 'Vendor',
-                type        : 'autocomplete',
-                name        : 'vendor_id',
-                displayField: 'vendor_name',
-                width       : fieldWidth,
-                valueField  : 'vendor_id',
-                allowBlank  : false,
-                store       : Ext.create('NP.store.vendor.Vendors', {
+                xtype        : 'autocomplete',
+                fieldLabel   : 'Vendor',
+                name         : 'vendor_id',
+                displayField : 'vendor_name',
+                width        : fieldWidth,
+                valueField   : 'vendor_id',
+                allowBlank   : false,
+                multiSelect  : false,
+                store        : Ext.create('NP.store.vendor.Vendors', {
                                 service     : 'VendorService',
                                 action      : 'getForCatalogDropDown'
                             }),
@@ -52,6 +52,7 @@ Ext.define('NP.view.catalogMaintenance.CatalogFormInfo', {
                 xtype     : 'textfield',
                 fieldLabel: 'Catalog Name',
                 name      : 'vc_catalogname',
+                allowBlank: false,
                 width     : fieldWidth
             },{
                 xtype: 'fieldcontainer',
@@ -82,6 +83,6 @@ Ext.define('NP.view.catalogMaintenance.CatalogFormInfo', {
             });
         }
 
-    	this.callParent(arguments);
+        this.callParent(arguments);
     }
 });

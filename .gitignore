@@ -1,5 +1,5 @@
-# IDE specific files
-.idea/
+#Ignore idea ide settings
+.idea/*
 
 # Ignore test file in root
 test.php
@@ -13,7 +13,6 @@ config/site_config.xml
 # Ignore some folders in the clients folder since they will contain user uploaded files
 clients/*/web/*/
 clients/*/web/images/logos/*
-clients/*/csv_uploads/
 !clients/*/web/images/
 
 # Ignore composer files for now, not ready to use it yet
@@ -85,4 +84,3 @@ vendor/zendframework/zendframework/library/Zend/*
 !vendor/zendframework/zendframework/library/Zend/ServiceManager/
 !vendor/zendframework/zendframework/library/Zend/Stdlib/
 !vendor/zendframework/zendframework/library/Zend/Validator/
-/clients/simpson/gl_account_csv_uploads/

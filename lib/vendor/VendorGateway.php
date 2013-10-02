@@ -2,10 +2,13 @@
 
 namespace NP\vendor;
 
-use NP\core\db\Select;
 use NP\core\AbstractGateway;
+use NP\core\db\Select;
+use NP\core\db\Where;
 use NP\system\ConfigService;
+use NP\property\PropertyService;
 use NP\vendor\VendorSelect;
+
 use NP\core\db\Adapter;
 
 /**
@@ -24,7 +27,7 @@ class VendorGateway extends AbstractGateway {
 									'v.vendor_id = vs.vendor_id AND v.vendor_status = vs.vendorsite_status',
 									array('vendorsite_id'));
 	}
-	
+
 	/**
 	 * Setter function required by DI to set the config service via setter injection
 	 * @param \NP\system\ConfigService $configService
@@ -32,20 +35,6 @@ class VendorGateway extends AbstractGateway {
 	public function setConfigService(\NP\system\ConfigService $configService) {
 		$this->configService = $configService;
 	}
-
-    public function findByAltIdAndIntegrationPackage($vendorCode, $integrationPackageId)
-    {
-        $res = $this->find('vendor_id_alt = ? AND integration_package_id = ?', array($vendorCode, $integrationPackageId));
-
-        return $res[0];
-    }
-
-    public function findByAltId($vendorCode)
-    {
-        $res = $this->find('vendor_id_alt = ?', array($vendorCode));
-
-        return $res[0];
-    }
 	
 	/**
 	 * Retrieves a vendor record looking it up by vendorsite ID
@@ -77,4 +66,44 @@ class VendorGateway extends AbstractGateway {
 		return $this->adapter->query($select, $params);
 	}
 	
+	public function findVendorsToApprove($countOnly, $pageSize=null, $page=null, $sort="vendor_name") {
+		$select = new sql\VendorSelect();
+
+		if ($countOnly == 'true') {
+			$select->count(true, 'totalRecs')
+					->column('vendor_id');
+		} else {
+			if ( substr($sort, 0, 7) == 'vendor_' ) {
+				$sort = "v.{$sort}";
+			}
+
+			$select->columns(array(
+						'vendor_id',
+						'vendor_id_alt',
+						'vendor_name',
+						'vendor_fedid',
+						'integration_package_id'
+					))
+					->columnSentForApprovalDate()
+					->columnSentForApprovalBy()
+					->order($sort);
+		}
+
+		$select->join(new sql\join\VendorIntPkgJoin())
+				->join(new sql\join\VendorApprovalJoin())
+				->whereEquals('v.vendor_status', "'forapproval'");
+
+		// If paging is needed
+		if ($pageSize !== null && $countOnly == 'false') {
+			return $this->getPagingArray($select, array(), $pageSize, $page, 'vendor_id');
+		} else if ($countOnly == 'true') {
+			$res = $this->adapter->query($select);
+			return $res[0]['totalRecs'];
+		} else {
+			return $this->adapter->query($select);
+		}
+	}
+
 }
+
+?>

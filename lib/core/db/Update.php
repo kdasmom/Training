@@ -18,6 +18,14 @@ class Update extends AbstractFilterableSql implements SQLInterface, SQLElement {
 	protected $values = array();
 
 	/**
+	 * Static function to retrieve an Update object (to avoid having to use $update = new Update() all the time)
+	 * @return \NP\core\db\Update
+	 */
+	public static function get() {
+		return new Update();
+	}
+
+	/**
 	 * @param $table  string                        Name of the table to update into (optional)
 	 * @param $values array                         Values to update (optional)
 	 * @param $where  string|array|NP\core\db\Where The update criteria

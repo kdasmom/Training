@@ -11,6 +11,13 @@ Ext.define('NP.view.property.gridcol.PropertyName', {
 
 	dataIndex: 'property_name',
 
+	renderer : function(val, meta, rec) {
+		if (rec.getProperty) {
+			return rec.getProperty().get('property_name');
+		}
+		return val;
+	},
+
 	initComponent: function() {
 		this.text = NP.lib.core.Config.getSetting('PN.main.PropertyLabel');
 		

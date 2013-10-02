@@ -16,6 +16,10 @@ class SessionService {
 		$loginUrl = $siteService->getLoginUrl();
 		$loginUrl = rtrim(preg_replace('/https?:\/\//i', '', $loginUrl), '/');
 		$loginUrl = explode('/', $loginUrl);
+		
+		// If there's a port specified, remove it
+		$loginUrl[0] = explode(':', $loginUrl[0]);
+		$loginUrl[0] = array_shift($loginUrl[0]);
 
 		// Setup cookie parameters based on the type of URL (if we have a unique domain or domain and sub directory)
 		if (count($loginUrl) > 1) {

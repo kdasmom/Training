@@ -193,7 +193,7 @@ class ImportService extends AbstractService
      */
     protected function getUploadPath()
     {
-        return "{$this->configService->getAppRoot()}/clients/{$this->configService->getAppName()}/csv_uploads/";
+        return "{$this->configService->getAppRoot()}/clients/{$this->configService->getAppName()}/web/exim_uploads/";
     }
 
     /**

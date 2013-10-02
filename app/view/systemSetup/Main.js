@@ -1,7 +1,7 @@
 /**
  * System Setup section
  *
- * @author Witold Frackiewicz - Testerix
+ * @author Thomas Messier
  */
 Ext.define('NP.view.systemSetup.Main', {
     extend: 'Ext.tab.Panel',

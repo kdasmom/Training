@@ -9,6 +9,8 @@ Ext.define('NP.lib.core.Util', {
 	alternateClassName: ['NP.Util'],
 	singleton: true,
 	
+	requires: ['NP.lib.core.Config'],
+
 	monthDays: {
 		1: 31,
 		2: 28,
@@ -196,7 +198,7 @@ Ext.define('NP.lib.core.Util', {
 	 * @return {String}
 	 */
 	currencyRenderer: function(val) {
-		return Ext.util.Format.currency(val);
+		return Ext.util.Format.currency(val, NP.Config.getSetting('PN.Intl.currencySymbol', '$'));
 	},
 	
 	/**
@@ -206,8 +208,9 @@ Ext.define('NP.lib.core.Util', {
 	 * @param  {String} name The value of the "name" field of the checkboxes
 	 * @return {Array}       An array with all the inputValue values for the fields that are checked
 	 */
-	getCheckboxValue: function(name) {
-		var checkboxes = Ext.ComponentQuery.query('checkbox[name="'+name+'"]');
+	getCheckboxValue: function(name, selector) {
+		selector = selector + ' ' || '';
+		var checkboxes = Ext.ComponentQuery.query(selector + 'checkbox[name="'+name+'"]');
 		var value = [];
 		Ext.Array.each(checkboxes, function(checkbox) {
 			if (checkbox.getValue()) {

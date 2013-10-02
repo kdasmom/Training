@@ -44,7 +44,7 @@ Ext.define('NP.view.user.UsersForm', {
 	    		{ xtype: 'user.usersformdetails', passwordRequired: this.passwordRequired },
 	    		{ xtype: 'user.usercontactinfo', padding: 8, title: this.infoTabText },
 	    		{ xtype: 'user.usersformpermissions' },
-	    		{ xtype: 'user.usersformemail' },
+	    		{ xtype: 'user.usersformemail', itemId: 'userEmailAlertPanel' },
                 {
                     xtype : 'user.userdelegation',
                     itemId: 'userManagerDelegation',

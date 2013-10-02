@@ -11,7 +11,8 @@ Ext.define('NP.controller.UserManager', {
 		'NP.lib.core.Security',
 		'NP.lib.core.Net',
 		'NP.lib.core.Util',
-		'Ext.ux.form.field.BoxSelect'
+		'Ext.ux.form.field.BoxSelect',
+		'NP.view.shared.PortalCanvas'
 	],
 	
 	refs: [
@@ -24,6 +25,9 @@ Ext.define('NP.controller.UserManager', {
 		{ ref: 'delegationForm', selector: '[xtype="user.userdelegationform"]' },
 		{ ref: 'groupGrid', selector: '[xtype="user.groupsgrid"] customgrid' },
 		{ ref: 'groupForm', selector: '[xtype="user.groupsform"]' },
+		{ ref: 'groupFormDashboard', selector: '[xtype="user.groupsformdashboard"]' },
+		{ ref: 'portalCanvas', selector: '[xtype="shared.portalcanvas"]' },
+		{ ref: 'portalTilePicker', selector: '[xtype="shared.portaltilepicker"]' },
 		{ ref: 'groupTree', selector: '[xtype="user.groupsformpermissions"]' }
 	],
 
@@ -44,6 +48,7 @@ Ext.define('NP.controller.UserManager', {
 	editGroupFormTitle        : 'Editing Group',
 	changesSavedText          : 'Changes saved successfully',
 	errorDialogTitleText      : 'Error',
+	blankColumnErrorText      : 'You have left one or more dashboard columns empty. Please fill those columns or remove them.',
 
 	init: function() {
 		Ext.log('UserManager controller initialized');
@@ -167,8 +172,12 @@ Ext.define('NP.controller.UserManager', {
 				}
 			},
 			// The Save button on the group form
-			'[xtype="user.groupsform"] [xtype="shared.button.new"]': {
+			'#createGroupCopyBtn': {
 				click: this.createCopy
+			},
+			// The Groups form Responsibilities tab
+			'[xtype="user.groupsformpermissions"]': {
+				checkchangecascade: this.checkPermissionBox
 			}
 		});
 	},
@@ -530,8 +539,8 @@ Ext.define('NP.controller.UserManager', {
 				service: 'UserService',
 				action : 'saveUser',
 				extraParams: {
-					emailalerts    : this.getSelectedEmailAlerts(),
-					emailalerthours: this.getSelectedEmailHours()
+					emailalerts    : this.getSelectedEmailAlerts('userEmailAlertPanel'),
+					emailalerthours: this.getSelectedEmailHours('userEmailAlertPanel')
 				},
 				extraFields: {
 					userprofile_password_confirm: 'userprofile_password_confirm',
@@ -548,9 +557,9 @@ Ext.define('NP.controller.UserManager', {
 		}
 	},
 
-	getSelectedEmailAlerts: function() {
+	getSelectedEmailAlerts: function(panel) {
 		// Get the value for the alert checkboxes
-		var emailalerttype_id_alt_list = NP.Util.getCheckboxValue('emailalerttype_id_alt');
+		var emailalerttype_id_alt_list = NP.Util.getCheckboxValue('emailalerttype_id_alt', '#' + panel);
 		
 		// Build the email alert records
 		var emailalerts = [];
@@ -566,9 +575,9 @@ Ext.define('NP.controller.UserManager', {
 		return emailalerts;
 	},
 
-	getSelectedEmailHours: function() {
+	getSelectedEmailHours: function(panel) {
 		// Get the value for the frequency checkboxes
-		var emailalerthour_list = NP.Util.getCheckboxValue('emailalert_hours');
+		var emailalerthour_list = NP.Util.getCheckboxValue('emailalert_hours', '#' + panel);
 
 		// Build the email alert hour records
 		var emailalerthours = [];
@@ -636,6 +645,16 @@ Ext.define('NP.controller.UserManager', {
 									n.set('checked', true);
 								}
 							});
+
+							// Setup the Dashboard canvas
+							var canvas = that.getPortalCanvas();
+							var canvasConfig = data['role_dashboard_layout'];
+							if (canvasConfig !== null) {
+								canvas.setPermissions(data['permissions']);
+								canvas.buildFromConfig(Ext.JSON.decode(canvasConfig));
+							}
+
+							that.getPortalTilePicker().setPermissions(data['permissions']);
 						}
 				    }
 				});
@@ -655,12 +674,34 @@ Ext.define('NP.controller.UserManager', {
 		});
 	},
 
+	checkPermissionBox: function() {
+		// Get all the selected permisisons
+		var checkedModules = this.getGroupTree().getChecked();
+
+		// Convert the selected permissions to a format that the portal picker can work with (object with module_id as keys)
+		var permissions = {};
+		Ext.each(checkedModules, function(module) {
+			if (module.get('module_id') !== null) {
+				permissions[module.get('module_id')] = true;
+			}
+		});
+		
+		// Update the portal picker with the new permissions so only tiles matching permissions show
+		this.getPortalTilePicker().setPermissions(permissions);
+	},
+
 	saveGroup: function() {
 		var that = this;
 
 		var form = this.getGroupForm();
 		
 		if (form.isValid()) {
+			if (!this.getPortalCanvas().isValid()) {
+				this.getGroupForm().down('verticaltabpanel').setActiveTab(this.getGroupFormDashboard());
+				Ext.MessageBox.alert(that.errorDialogTitleText, that.blankColumnErrorText);
+				return false;
+			}
+
 			var permissions = [];
 			var checkedModules = this.getGroupTree().getChecked();
 			Ext.Array.each(checkedModules, function(rec) {
@@ -674,13 +715,15 @@ Ext.define('NP.controller.UserManager', {
 				service: 'UserService',
 				action : 'saveRole',
 				extraParams: {
-					permissions    : permissions,
-					emailalerts    : this.getSelectedEmailAlerts(),
-					emailalerthours: this.getSelectedEmailHours()
+					permissions     : permissions,
+					emailalerts     : this.getSelectedEmailAlerts('groupEmailAlertPanel'),
+					emailalerthours : this.getSelectedEmailHours('groupEmailAlertPanel'),
+					dashboard_layout: this.getPortalCanvas().serialize()
 				},
 				extraFields: {
-					parent_role_id: 'parent_role_id',
-					email_overwrite: 'email_overwrite'
+					parent_role_id    : 'parent_role_id',
+					email_overwrite   : 'email_overwrite',
+					dashboard_to_users: 'dashboard_to_users'
 				},
 				success: function(result, deferred) {
 					// Show info message

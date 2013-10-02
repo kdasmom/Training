@@ -53,6 +53,8 @@ class Adapter {
 	 */
 	protected $lastInsertId = null;
 
+	protected $loggingService;
+
 	/**
 	 * @param $server   string Server address
 	 * @param $dbName   string Name of the database
@@ -68,6 +70,10 @@ class Adapter {
 		$this->options  = $options;
 	}
 
+	public function setLoggingService(\NP\system\LoggingService $loggingService) {
+		$this->loggingService = $loggingService;
+	}
+
 	/**
 	 * Connects to the database
 	 */
@@ -78,7 +84,7 @@ class Adapter {
 			sqlsrv_configure('WarningsReturnAsErrors', 1);
 
 			// Try to connect
-			$connectionInfo = array('Database'=>$this->dbName, 'UID'=>$this->username, 'PWD'=>$this->pwd, 'ReturnDatesAsStrings'=>true);
+			$connectionInfo = array('Database'=>$this->dbName, 'UID'=>$this->username, 'PWD'=>$this->pwd, 'ReturnDatesAsStrings'=>true, 'CharacterSet'=>'UTF-8');
 			$this->conn = sqlsrv_connect($this->server, $connectionInfo);
 
 			if (!$this->conn) {
@@ -116,6 +122,9 @@ class Adapter {
 		if ($beginSql == 'insert') {
 			$sql .= ';SELECT SCOPE_IDENTITY() AS last_id;';
 		}
+
+		// Log SQL queries
+		$this->loggingService->log('sql', $sql, array('sql'=>$sql, 'params'=>$params));
 
 		// Create the SQL statement and execute it
 		$stmt = sqlsrv_query($this->conn, $sql, $params);

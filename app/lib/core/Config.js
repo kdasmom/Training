@@ -61,6 +61,15 @@ Ext.define('NP.lib.core.Config', function() {
 			
 			// Create the country store
 			Ext.create('NP.store.system.Countries', { storeId: 'system.Countries' });
+			
+			// Create the Summary Stat Categories store
+			Ext.create('NP.store.system.SummaryStatCategories', { storeId: 'system.SummaryStatCategories' });
+
+			// Create the Summary Stat store
+			Ext.create('NP.store.system.SummaryStats', { storeId: 'system.SummaryStats' });
+
+			// Create the Tiles store
+			Ext.create('NP.store.system.Tiles', { storeId: 'system.Tiles' });
 
 			// Make the ajax request
 			return NP.lib.core.Net.remoteCall({
@@ -104,6 +113,20 @@ Ext.define('NP.lib.core.Config', function() {
 						store  : 'NP.store.system.IntegrationPackages',
 						storeId: 'system.IntegrationPackages'
 					},
+					// This request gets all properties in the app
+					{ 
+						service: 'PropertyService',
+						action : 'getAll',
+						store  : 'NP.store.property.Properties',
+						storeId: 'property.AllProperties'
+					},
+					// This request gets all units in the app
+					{ 
+						service: 'PropertyService',
+						action : 'getAllUnits',
+						store  : 'NP.store.property.Units',
+						storeId: 'property.AllUnits'
+					},
 					// This request gets all integration packages for the app
 					{ 
 						service: 'PropertyService',
@@ -117,6 +140,13 @@ Ext.define('NP.lib.core.Config', function() {
 						action : 'getRegions',
 						store  : 'NP.store.property.Regions',
 						storeId: 'property.Regions'
+					},
+					// This request gets all properties in the app
+					{ 
+						service: 'GLService',
+						action : 'getAll',
+						store  : 'NP.store.gl.GlAccounts',
+						storeId: 'gl.AllGlAccounts'
 					},
 					// This request gets all unit type measurement options for the app
 					{ 
@@ -272,7 +302,7 @@ Ext.define('NP.lib.core.Config', function() {
 		 * @param  {Mixed}  value Value for the setting
 		 * @return {Deft.Promise}
 		 */
-		saveUserSetting: function(name, value) {
+		saveUserSetting: function(name, value, callback) {
 			return NP.lib.core.Net.remoteCall({
 	            requests: {
 	                service: 'UserService', 
@@ -282,10 +312,9 @@ Ext.define('NP.lib.core.Config', function() {
 	                success: function(result, deferred) {
 	                    Ext.log('Setting was saved');
 	                	deferred.resolve();
-	                },
-	                failure: function(response, options, deferred) {
-	                    Ext.log('Setting could not be saved');
-	                	deferred.reject('Setting could not be saved');
+	                	if (callback) {
+	                		callback();
+	                	}
 	                }
 	            }
 	        });

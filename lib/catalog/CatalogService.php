@@ -146,7 +146,7 @@ class CatalogService extends AbstractService {
 
 		// Create an implementation class
 		$vcImpl = '\NP\catalog\types\\' . ucfirst($vc->vc_catalogtype);
-		$vcImpl = new $vcImpl($this->configService, $this->localizationService, $vc, $data);
+		$vcImpl = new $vcImpl($this->configService, $this->entityValidator, $vc, $data);
 
 		$vcImpl->isValid();
 		$errors = $vcImpl->getErrors();

@@ -34,45 +34,40 @@ Ext.define('NP.lib.ui.ComboBox', {
 	/**
 	 * @cfg {Object}                  extraParams       Default parameters to add to the store proxy; only applies to type "autocomplete"
 	 */
+
 	constructor: function(cfg) {
-		Ext.applyIf(cfg, {
-			type          : 'normal',
-			forceSelection: true,
-			addBlankRecord: false
-		});
-
-		if (this.type == 'autocomplete') {
-			Ext.applyIf(cfg, {
-				queryMode    : 'remote',
-				queryParam   : 'keyword',
-				typeAhead    : false,
-				hideTrigger  : true,
-				triggerAction: 'query'
-			});
-		} else {
-			Ext.applyIf(cfg, {
-				queryMode          : 'local',
-				typeAhead          : true,
-				allowOnlyWhitespace: true,
-				editable           : true
-			});
+		if (cfg.displayField) {
+			this.displayField = cfg.displayField;
 		}
+		
+		Ext.applyIf(this, {
+			tpl: '<tpl for="."><li class="x-boundlist-item" role="option">' + '{'+this.displayField+'}' + '</li></tpl>'
+		});
+		
+		this.callParent(arguments);
+	},
 
-		Ext.apply(this, cfg);
-
-		this.tpl = new Ext.XTemplate('<tpl for=".">' + '<li class="x-boundlist-item" role="option">' + '{'+this.displayField+'}' + '</li></tpl>');
-
+	initComponent: function() {
 		// Key events must be on
 		this.enableKeyEvents = true;
 
 		this.callParent(arguments);
 
-		// Add keyup listener so that value can be cleared
-		this.on('keyup', function(combo) {
-			var val = combo.getRawValue();
-			if (val === '' || val === null) {
-				combo.clearValue();
+		// We set a keyup event to allow us to clear the field when the value is blank and we hit escape,
+		// even if forceSelection is true
+		this.on('keyup', function(combo, e) {
+			if (e.getKey() === Ext.EventObject.ESC) {
+				var val = combo.getRawValue();
+				
+				if ((val === '' || val === null) && combo.getFocusValue() !== null) {
+					combo.clearValue();
+				}
 			}
+		});
+
+		// 
+		this.on('focus', function(combo) {
+			combo.setFocusValue(combo.getValue());
 		});
 
 		// Run a few things before rendering if the options are set
@@ -95,15 +90,12 @@ Ext.define('NP.lib.ui.ComboBox', {
 			}
 		});
 
-		// If type is normal only
-		if (this.type == 'normal') {
-			// If loadStoreOnFirstQuery is true, set a listener on beforequery to load a store only the first time the
-			// user tries to expand the field or types text for autocomplete
-			if (this.loadStoreOnFirstQuery) {
-				this.on('beforequery', function() {
-					this.getStore().load();
-				}, this, { single: true });
-			}
+		// If loadStoreOnFirstQuery is true, set a listener on beforequery to load a store only the first time the
+		// user tries to expand the field or types text for autocomplete
+		if (this.loadStoreOnFirstQuery) {
+			this.on('beforequery', function() {
+				this.getStore().load();
+			}, this, { single: true });
 		}
 
 		// If addBlankRecord is true, add a blank record at the beginning of the store to make it easy for the user to select
@@ -162,5 +154,13 @@ Ext.define('NP.lib.ui.ComboBox', {
 				}
 			});
 		}
+	},
+
+	getFocusValue: function() {
+		return this.focusValue;
+	},
+
+	setFocusValue: function(value) {
+		this.focusValue = value;
 	}
 });

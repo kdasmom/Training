@@ -362,8 +362,8 @@ Ext.define('NP.locale.en.view.shared.gridcol.PriorityFlag', {
 	text: 'Priority'
 });
 
-Ext.define('NP.locale.en.view.shared.gridcol.VendorName', {
-	override: 'NP.view.shared.gridcol.VendorName',
+Ext.define('NP.locale.en.view.vendor.gridcol.VendorName', {
+	override: 'NP.view.vendor.gridcol.VendorName',
 
 	text: 'Vendor'
 });
@@ -906,8 +906,15 @@ Ext.define('NP.locale.en.view.user.gridcol.DelegationView', {
 Ext.define('NP.locale.en.controller.SystemSetup', {
 	override: 'NP.controller.SystemSetup',
 
-	changesSavedText		: 'Changes saved successfully',
-	errorDialogTitleText	: 'Error'
+	changesSavedText       : 'Changes saved successfully',
+	errorDialogTitleText   : 'Error',
+	deleteSplitDialogTitle : 'Delete Split?',
+	deleteSplitsDialogText : 'Are you sure you want to delete the selected split(s)?',
+	deleteSplitDialogText  : 'Are you sure you want to delete this split?',
+	editSplitFormTitle     : 'Editing',
+	newSplitFormTitle      : 'New Split',
+	intPkgChangeDialogTitle: 'Change integration package?',
+	intPkgChangeDialogText : 'Are you sure you want to change integration package? Doing so will clear the entire form, removing all splits you have entered.'
 });
 
 Ext.define('NP.locale.en.controller.systemSetup.Main', {
@@ -941,6 +948,38 @@ Ext.define('NP.locale.en.controller.systemSetup.DefaultSplits', {
 	override: 'NP.view.systemSetup.DefaultSplits',
 
 	title: 'Default Splits',
+});
+
+Ext.define('NP.locale.en.view.systemSetup.DefaultSplitGrid', {
+	override: 'NP.view.systemSetup.DefaultSplitGrid',
+
+	createNewSplitBtnLabel: 'Create New Split',
+    nameColText           : 'Name',
+    lastUpdatedColText    : 'Last Updated',
+    alertColText          : 'Alert',
+    inactiveText          : 'Inactive',
+    onHoldText            : 'On Hold',
+    glText                : 'GL'
+});
+
+Ext.define('NP.locale.en.view.systemSetup.DefaultSplitForm', {
+	override: 'NP.view.systemSetup.DefaultSplitForm',
+
+	copySplitBtnText   : 'Copy Split',
+    splitNameLabel     : 'Split Name',
+    intPkgFieldLabel   : 'Integration Package',
+    allocationGridTitle: 'Allocation Details',
+    glAccountColText   : 'GL Account',
+    percentColText     : 'Percentage',
+    propInactiveError  : NP.Config.getPropertyLabel() + ' is inactive',
+    propOnHoldError    : NP.Config.getPropertyLabel() + ' is on hold',
+    glInactiveError    : 'GL Account is inactive',
+    addSplitBtnText    : 'Add Split',
+    autoAllocBtnText   : 'Auto Allocate by ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit'),
+    leftToAllocateText : 'Left to allocate',
+    allocationErrorText: 'Allocation must add up to 100%',
+    propertyErrorText  : 'Please make sure each allocation line has a ' + NP.Config.getPropertyLabel() + ' selected',
+    dialogErrorText    : 'Error'
 });
 
 Ext.define('NP.locale.en.controller.systemSetup.GLAccounts', {

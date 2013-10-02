@@ -13,95 +13,31 @@ use NP\core\db\Delete;
  * @author Thomas Messier
  */
 class PropertyGateway  extends AbstractGateway {
-
-    public function findByAltIdAndIntegrationPackage($altId, $integrationPackageId)
-    {
-        $select = new Select();
-        $select ->from('property')
-            ->columns(array('id' => 'property_id'))
-            ->where("property_id_alt = ? AND integration_package_id = ?");
-
-        $res = $this->adapter->query($select, array($altId, $integrationPackageId));
-
-        return $res[0];
-    }
+	protected $tableAlias = 'pr';
 	
-    public function findByAltId($altId)
-    {
-        $select = new Select();
-        $select ->from('property')
-            ->columns(array('id' => 'property_id'))
-            ->where("property_id_alt = ?");
-
-        $res = $this->adapter->query($select, array($altId));
-
-        return $res[0];
-    }
-    
-    public function findByAltIdAp($altIdAp)
-    {
-        $select = new Select();
-        $select ->from('property')
-            ->columns(array('id' => 'property_id'))
-            ->where("property_id_alt_ap = ?");
-
-        $res = $this->adapter->query($select, array($altIdAp));
-
-        return $res[0];
-    }
 	/**
 	 * Retrieve a property by Id
 	 */
 	public function findById($id, $cols=null) {
-		$select = new sql\PropertySelect();
-		$select->columns($cols)
-				->joinAddress()
-				->joinPhone()
-				->joinFax()
-				->joinBillOrShipToProperty('bill')
-				->joinBillOrShipToProperty('ship')
-				->whereEquals('p.property_id', '?');
+		$joins = array(
+			new sql\join\PropertyAddressJoin(),
+			new sql\join\PropertyPhoneJoin(),
+			new sql\join\PropertyFaxJoin(),
+			new sql\join\PropertyBillToShipToJoin('bill'),
+			new sql\join\PropertyBillToShipToJoin('ship')
+		);
 
-		$res = $this->adapter->query($select, array($id));
+		$res = $this->find(
+			array('pr.property_id'=>'?'),
+			array($id),
+			null,
+			$cols,
+			null,
+			null,
+			$joins
+		);
 
 		return $res[0];
-	}
-
-	/**
-	 * Find properties by a given status
-	 *
-	 * @param  int    $property_status The status of the property; can be 1 (active), 0 (inactive), or -1 (on hold)
-	 * @param  int    $pageSize        The number of records per page; if null, all records are returned
-	 * @param  int    $page            The page for which to return records
-	 * @param  string $sort            Field(s) by which to sort the result; defaults to property_name
-	 * @return array                   Array of property records
-	 */
-	public function findByStatus($property_status, $pageSize=null, $page=null, $sort="property_name") {
-		$select = new sql\PropertySelect();
-
-		$select->joinIntegrationPackage(array('integration_package_name'))
-				->joinRegion(array('region_name'))
-				->joinCreatedByUser(array('created_by_userprofile_id'=>'userprofile_id', 'created_by_userprofile_username'=>'userprofile_username'))
-				->joinCreatedByPerson(array(
-					'created_by_person_firstname' =>'person_firstname',
-					'created_by_person_lastname'  =>'person_lastname'
-				))
-				->joinUpdatedByUser(array('last_updated_by_userprofile_id'=>'userprofile_id', 'last_updated_by_userprofile_username'=>'userprofile_username'))
-				->joinUpdatedByPerson(array(
-					'last_updated_by_person_firstname' =>'person_firstname',
-					'last_updated_by_person_lastname'  =>'person_lastname'
-				))
-				->whereEquals('p.property_status', '?')
-				->order($sort);
-
-		$params = array($property_status);
-
-		// If paging is needed
-		if ($pageSize !== null) {
-			return $this->getPagingArray($select, $params, $pageSize, $page);
-		} else {
-			return $this->adapter->query($select, $params);
-		}
 	}
 
 	/**
@@ -113,21 +49,21 @@ class PropertyGateway  extends AbstractGateway {
 	 */
 	public function findByUser($userprofile_id, $delegation_to_userprofile_id, $cols=null) {
 		$select = new Select();
-		$select->from(array('p'=>'property'))
+		$select->from(array('pr'=>'property'))
 				->columns($cols)
-				->order("p.property_name");
+				->order("pr.property_name");
 		if ($userprofile_id == $delegation_to_userprofile_id) {
 			$select->join(array('pu'=>'propertyuserprofile'),
-							"p.property_id = pu.property_id",
+							"pr.property_id = pu.property_id",
 							array())
 					->where("
 						pu.userprofile_id = ?
-						AND p.property_status <> 0
+						AND pr.property_status <> 0
 					");
 			$params = array($userprofile_id);
 		} else {
 			$select->join(array('dp'=>'delegationprop'),
-							"p.property_id = dp.property_id",
+							"pr.property_id = dp.property_id",
 							array())
 					->join(array('d'=>'delegation'),
 							"dp.delegation_id = d.delegation_id",
@@ -153,14 +89,14 @@ class PropertyGateway  extends AbstractGateway {
 	 */
 	public function findCodingByUser($userprofile_id, $cols=null) {
 		$select = new Select();
-		$select->from(array('p'=>'property'))
+		$select->from(array('pr'=>'property'))
 				->columns($cols)
 				->join(array('pu'=>'propertyusercoding'),
-						"p.property_id = pu.property_id",
+						"pr.property_id = pu.property_id",
 						array())
 				->whereEquals('pu.userprofile_id', '?')
-				->whereNotEquals('p.property_status', '0')
-				->order("p.property_name");
+				->whereNotEquals('pr.property_status', '0')
+				->order("pr.property_name");
 		
 		return $this->adapter->query($select, array($userprofile_id));
 	}
@@ -206,7 +142,7 @@ class PropertyGateway  extends AbstractGateway {
 					EXISTS (
 						SELECT *
 						FROM propertyuserprofile pu
-						WHERE pu.property_id = p.property_id
+						WHERE pu.property_id = pr.property_id
 							AND pu.userprofile_id = ?
 					)
 					AND (
@@ -214,7 +150,7 @@ class PropertyGateway  extends AbstractGateway {
 						OR property_id_alt LIKE ?
 					)
 				')
-				->order('p.property_name');
+				->order('pr.property_name');
 		
 		$property_keyword = $property_keyword . '%';
 		

@@ -24,7 +24,7 @@ class PnUniversalFieldGateway extends AbstractGateway {
 	 * @return array
 	 */
 	public function findCustomFieldOptions($customfield_pn_type, $universal_field_number, $activeOnly=true, 
-										  $isLineItem=1, $glaccount_id=null) {
+										  $isLineItem=1, $glaccount_id=null, $keyword=null) {
 		$select = new Select();
 		$select->from(array('u'=>'PnUniversalField'))
 				->columns(array('universal_field_data','universal_field_status','universal_field_order'))
@@ -38,7 +38,7 @@ class PnUniversalFieldGateway extends AbstractGateway {
 		if ($activeOnly) {
 			$select->whereIn('u.universal_field_status', '?,?');
 			$params[] = 1;
-			$params[] = 1;
+			$params[] = 2;
 		}
 
 		// If a glaccount_id argument was passed, we need to filter by that GL Account
@@ -48,6 +48,12 @@ class PnUniversalFieldGateway extends AbstractGateway {
 							array())
 					->whereEquals('l.gl_id', '?');
 			$params[] = $glaccount_id;
+		}
+
+		if ($keyword !== null) {
+			$select->whereLike('u.universal_field_data', '?');
+			$keyword = $keyword . '%';
+			$params[] = $keyword;
 		}
 		
 		return $this->adapter->query($select, $params);

@@ -376,8 +376,8 @@ class SecurityService extends AbstractService {
 					'modulepriv_effectivedate' => $now
 				));
 
-				$isValid = $this->entityValidator->validate($modulePriv);
-				if ($isValid) {
+				$errors = $this->entityValidator->validate($modulePriv);
+				if (!count($errors)) {
 					$this->modulePrivGateway->save($modulePriv);
 				} else {
 					$error = $this->localizationService->getMessage('unexpectedError');

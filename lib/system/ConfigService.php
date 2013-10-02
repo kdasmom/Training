@@ -140,12 +140,12 @@ class ConfigService extends AbstractService {
 				}
 				$arFields[$key]["fields"][$i] = array(
 					"fieldNumber" => $i,
-					"type" => $fieldType,
-					"label" => $arTemp["CP.CUSTOM_FIELD_LABEL".$i.$suffix],
-					"invOn" => $arTemp["CP.INVOICE_CUSTOM_FIELD".$i.$suffix."_ON_OFF"],
-					"invRequired" => $arTemp["CP.INVOICE_CUSTOM_FIELD".$i.$suffix."_REQ"],
-					"poOn" => $arTemp["CP.PO_CUSTOM_FIELD".$i.$suffix."_ON_OFF"],
-					"poRequired" => $arTemp["CP.PO_CUSTOM_FIELD".$i.$suffix."_REQ"]
+					"type"        => $fieldType,
+					"label"       => $arTemp["CP.CUSTOM_FIELD_LABEL".$i.$suffix],
+					"invOn"       => ($arTemp["CP.INVOICE_CUSTOM_FIELD".$i.$suffix."_ON_OFF"] == '1') ? true : false,
+					"invRequired" => ($arTemp["CP.INVOICE_CUSTOM_FIELD".$i.$suffix."_REQ"] == '1') ? true : false,
+					"poOn"        => ($arTemp["CP.PO_CUSTOM_FIELD".$i.$suffix."_ON_OFF"] == '1') ? true : false,
+					"poRequired"  => ($arTemp["CP.PO_CUSTOM_FIELD".$i.$suffix."_REQ"] == '1') ? true : false
 				);
 				if (array_key_exists($i, $arMaxlength[$key])) {
 					$arFields[$key]["fields"][$i]["maxlength"] = $arMaxlength[$key][$i];
@@ -171,13 +171,15 @@ class ConfigService extends AbstractService {
 	 * @return array
 	 */
 	public function getCustomFieldOptions($customfield_pn_type, $universal_field_number, $activeOnly=true, 
-										  $isLineItem=1, $glaccount_id=null) {
+										  $isLineItem=1, $glaccount_id=null, $keyword=null) {
 		return $this->pnUniversalFieldGateway->findCustomFieldOptions(
 			$customfield_pn_type,
 			$universal_field_number,
 			$activeOnly,
 			$isLineItem,
-			$glaccount_id);
+			$glaccount_id,
+			$keyword
+		);
 	}
 
 	/**

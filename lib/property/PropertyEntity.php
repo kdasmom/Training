@@ -148,10 +148,6 @@ class PropertyEntity extends \NP\core\AbstractEntity {
 		'UserProfile_ID'	 => array(
 			'validation' => array(
 				'digits' => array()
-			),
-			'tableConstraint' => array(
-				'table' => 'userprofile',
-				'field' => 'userprofile_id'
 			)
 		),
 		'createdatetm'	 => array(

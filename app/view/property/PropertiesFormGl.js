@@ -7,7 +7,7 @@ Ext.define('NP.view.property.PropertiesFormGl', {
     extend: 'Ext.ux.form.ItemSelector',
     alias: 'widget.property.propertiesformgl',
     
-    requires: ['NP.lib.core.Config'],
+    requires: ['NP.model.gl.GlAccount'],
 
 	title        : 'GL Assignments',
 	fromTitleText: 'Assigned',
@@ -25,15 +25,8 @@ Ext.define('NP.view.property.PropertiesFormGl', {
 	margin: 8,
 
     initComponent: function() {
-    	var glDisplay = NP.Config.getSetting('PN.Budget.GLDisplayOrder', 'number').toLowerCase();
-    	if (glDisplay == 'number') {
-    		this.tpl = '<tpl for="."><div class="x-boundlist-item">{glaccount_number} ({glaccount_name})</div></tpl>';
-    	} else if (glDisplay == 'numberonly') {
-    		this.tpl = '<tpl for="."><div class="x-boundlist-item">{glaccount_number}</div></tpl>';
-    	} else if (glDisplay == 'name') {
-    		this.tpl = '<tpl for="."><div class="x-boundlist-item">{glaccount_name} ({glaccount_number})</div></tpl>';
-    	}
-
+    	this.tpl = '<tpl for="."><div class="x-boundlist-item">{[NP.model.gl.GlAccount.formatName(values.glaccount_number, values.glaccount_name)]}</div></tpl>';
+    	
     	this.store = Ext.create('NP.store.gl.GlAccounts', {
 			service: 'GLService',
 			action : 'getByIntegrationPackage'

@@ -1,17 +1,14 @@
 /**
- * System Setup: Default Splits section
+ * System Setup > Default Splits section
  *
- * @author Witold Frackiewicz - Testerix
+ * @author Thomas Messier
  */
 Ext.define('NP.view.systemSetup.DefaultSplits', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.systemsetup.defaultsplits',
     
+    // For localization
     title: 'Default Splits',
 
-    html: 'Coming soon...',
-
-    initComponent: function() {
-    	this.callParent(arguments);
-    }
+    layout: 'fit'
 });

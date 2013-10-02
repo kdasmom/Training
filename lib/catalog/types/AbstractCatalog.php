@@ -21,16 +21,15 @@ abstract class AbstractCatalog {
 	protected $validator;
 	protected $errors;
 
-	public function __construct(ConfigService $configService, LocalizationService $localizationService, $vc, $data) {
+	public function __construct(ConfigService $configService, EntityValidator $entityValidator, $vc, $data) {
 		$this->configService       = $configService;
-		$this->localizationService = $localizationService;
+		$this->validator           = $entityValidator;
 		$this->vc                  = $vc;
 		$this->data                = $data;
 		$this->errors              = array();
-		$this->validator           = new EntityValidator();
 	}
 
-	abstract protected function getAssignmentFields();
+	abstract public function getAssignmentFields();
 
 	public function isValid() {
 		$this->errors = $this->validator->validate($this->vc);
@@ -38,7 +37,7 @@ abstract class AbstractCatalog {
 		foreach (self::$assignmentFields as $val) {
 			if ( in_array($val, $this->getAssignmentFields()) ) {
 				if ($this->data["vc_{$val}"] === null || count($this->data["vc_{$val}"]) == 0) {
-					$this->validator->addError($this->errors, "vc_{$val}", $this->localizationService->getMessage('requiredFieldError'));
+					$this->validator->addError($this->errors, "vc_{$val}", 'requiredFieldError');
 				}
 			}
 		}

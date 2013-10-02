@@ -19,8 +19,8 @@ use NP\gl\GLAccountGateway;
  */
 class SplitService extends AbstractService {
 	
-	protected $securityService, $dfSplitGateway, $dfSplitItemsGateway, $propertySplitGateway,
-			$integrationPackageGateway;
+	protected $securityService, $dfSplitGateway, $dfSplitItemsGateway, $propertyGateway,
+			$integrationPackageGateway, $glAccountGateway;
 	
 	public function __construct(DfSplitGateway $dfSplitGateway, DfSplitItemsGateway $dfSplitItemsGateway,
 								PropertyGateway $propertyGateway, VendorGateway $vendorGateway,

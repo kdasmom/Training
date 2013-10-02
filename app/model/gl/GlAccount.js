@@ -21,13 +21,28 @@ Ext.define('NP.model.gl.GlAccount', {
 		{ name: 'glaccount_order', type: 'int' },
 		{ name: 'integration_package_id', type: 'int' },
 		{ name: 'glaccount_updateby', type: 'int' },
-		{ name: 'glaccount_updatetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() }
+		{ name: 'glaccount_updatetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+
+		// Calculated field that doesn't exist in the DB
+		{
+			name: 'display_name',
+			convert: function(v, rec) {
+				return NP.model.gl.GlAccount.formatName(rec.get('glaccount_number'), rec.get('glaccount_name'));
+			}
+		}
 	],
 
-	validations: [
-		{ field: 'glaccount_name', type: 'length', max: 255 },
-		{ field: 'glaccount_number', type: 'length', max: 50 },
-		{ field: 'glaccount_status', type: 'length', max: 50 },
-		{ field: 'glaccount_usable', type: 'length', max: 1 }
-	]
+	statics: {
+		formatName: function(glaccount_number, glaccount_name) {
+			var glDisplay = NP.Config.getSetting('PN.Budget.GLDisplayOrder', 'number').toLowerCase();
+			
+	    	if (glDisplay == 'number') {
+	    		return glaccount_number + ' (' + glaccount_name + ')';
+	    	} else if (glDisplay == 'numberonly') {
+	    		return glaccount_number;
+	    	} else if (glDisplay == 'name') {
+	    		return glaccount_name + ' (' + glaccount_number + ')';
+	    	}
+		}
+	}
 });
