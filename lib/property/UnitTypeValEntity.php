@@ -14,26 +14,33 @@ class UnitTypeValEntity extends \NP\core\AbstractEntity {
 				'digits' => array()
 			)
 		),
-		'unittype_id'	 => array(
-			'required' => true,
+		'unittype_id' => array(
+			'required'   => true,
 			'validation' => array(
 				'digits' => array()
-			)
+			),
+			'tableConstraint' => array()
 		),
 		'unittype_material_id'	 => array(
-			'required' => true,
+			'required'   => true,
 			'validation' => array(
 				'digits' => array()
-			)
+			),
+			'tableConstraint' => array()
 		),
 		'unittype_meas_id'	 => array(
-			'required' => true,
+			'required'   => true,
 			'validation' => array(
 				'digits' => array()
-			)
+			),
+			'tableConstraint' => array()
 		),
 		'unittype_val_val'	 => array(
-			'required' => true)
+			'required'   => true,
+			'validation' => array(
+				'numeric' => array()
+			)
+		)
 	);
 
 }

@@ -25,7 +25,7 @@ abstract class Dictionary {
 	}
 
 	public function getMessage($messageName) {
-		return array_keys($this->messages, $messageName)?$this->messages[$messageName]:$messageName;
+		return $this->messages[$messageName];
 	}
 
 	public function messageExists($messageName) {

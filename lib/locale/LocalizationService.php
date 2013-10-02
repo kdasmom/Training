@@ -2,7 +2,7 @@
 
 namespace NP\locale;
 
-use NP\core\AbstractService;
+use NP\system\LoggingService;
 
 /**
  * Service class for translating text
@@ -10,9 +10,11 @@ use NP\core\AbstractService;
  * @author Thomas Messier
  */
 class LocalizationService {
-	protected $defaultLocale, $locale, $dictionaries;
+	protected $defaultLocale, $locale, $loggingService, $dictionaries;
 
-	public function __construct($locale) {
+	public function __construct($locale, LoggingService $loggingService) {
+		$this->loggingService = $loggingService;
+
 		// Set english as the default locale
 		$this->defaultLocale = 'En';
 		$this->locale = $locale;
@@ -31,14 +33,20 @@ class LocalizationService {
 		if ($locale === null) {
 			$locale = $this->locale;
 		}
+		
 		// Try to get the message for the locale requested
 		try {
 			$msg = $this->getDictionary($locale)->getMessage($messageName);
 		// If the message doesn't exist for the locale requested, get it from the default locale
 		} catch(\Exception $e) {
-			$msg = $this->getDictionary($this->defaultLocale)->getMessage($messageName);
+			try {
+				$msg = $this->getDictionary($this->defaultLocale)->getMessage($messageName);
+			// If the mesage is not found in the default dictionary, just return the message name
+			} catch(\Exception $e2) {
+				$msg = $messageName;
+			}
 		}
-
+		
 		return $msg;
 	}
 

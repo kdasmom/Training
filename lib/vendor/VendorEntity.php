@@ -211,17 +211,17 @@ class VendorEntity extends \NP\core\AbstractEntity {
 		),
 		'vendor_withhold_startdate'	 => array(
 			'validation' => array(
-				'date' => array('format'=>'Y-m-d\TH:i:s')
+				'date' => array('format'=>'Y-m-d H:i:s.u')
 			)
 		),
 		'vendor_active_startdate'	 => array(
 			'validation' => array(
-				'date' => array('format'=>'Y-m-d\TH:i:s')
+				'date' => array('format'=>'Y-m-d H:i:s.u')
 			)
 		),
 		'vendor_active_enddate'	 => array(
 			'validation' => array(
-				'date' => array('format'=>'Y-m-d\TH:i:s')
+				'date' => array('format'=>'Y-m-d H:i:s.u')
 			)
 		),
 		'minoritygroup_code'	 => array(
@@ -286,7 +286,7 @@ class VendorEntity extends \NP\core\AbstractEntity {
 		),
 		'vendor_purchasehold_date'	 => array(
 			'validation' => array(
-				'date' => array('format'=>'Y-m-d\TH:i:s')
+				'date' => array('format'=>'Y-m-d H:i:s.u')
 			)
 		),
 		'vendor_termsdatebasis'	 => array(
@@ -356,7 +356,7 @@ class VendorEntity extends \NP\core\AbstractEntity {
 		),
 		'vendor_tax_verif_date'	 => array(
 			'validation' => array(
-				'date' => array('format'=>'Y-m-d\TH:i:s')
+				'date' => array('format'=>'Y-m-d H:i:s.u')
 			)
 		),
 		'vendor_name_control'	 => array(
@@ -461,7 +461,7 @@ class VendorEntity extends \NP\core\AbstractEntity {
 		),
 		'vendor_lastupdate_date'	 => array(
 			'validation' => array(
-				'date' => array('format'=>'Y-m-d\TH:i:s')
+				'date' => array('format'=>'Y-m-d H:i:s.u')
 			)
 		),
 		'table_status'	 => array(
@@ -501,7 +501,7 @@ class VendorEntity extends \NP\core\AbstractEntity {
 		),
 		'vendor_createddatetm'	 => array(
 			'validation' => array(
-				'date' => array('format'=>'Y-m-d\TH:i:s')
+				'date' => array('format'=>'Y-m-d H:i:s.u')
 			)
 		),
 		'finance_vendor'	 => array(
@@ -516,7 +516,7 @@ class VendorEntity extends \NP\core\AbstractEntity {
 		),
 		'vendor_reject_dt'	 => array(
 			'validation' => array(
-				'date' => array('format'=>'Y-m-d\TH:i:s')
+				'date' => array('format'=>'Y-m-d H:i:s.u')
 			)
 		),
 		'vendor_reject_userprofile_id'	 => array(

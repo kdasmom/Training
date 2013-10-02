@@ -34,6 +34,7 @@ class UserprofileroleEntity extends \NP\core\AbstractEntity {
 		),
 		'userprofilerole_status'	 => array(
 			'required'   => true,
+			'defaultValue' => 'active',
 			'validation' => array(
 				'stringLength' => array('max'=>50)
 			)

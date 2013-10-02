@@ -2,10 +2,6 @@
 
 namespace NP\vendor;
 
+use NP\core\AbstractGateway;
 
-use NP\system\BaseImportServiceGateway;
-
-class VendorTypeGateway extends BaseImportServiceGateway
-{
-
-}
+class VendorTypeGateway extends AbstractGateway {}

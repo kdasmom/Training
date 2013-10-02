@@ -30,7 +30,7 @@ abstract class AbstractEntity {
 	/**
 	 * @param array $data An associative array of data for the entity
 	 */
-	public function __construct($data) {
+	public function __construct($data=array()) {
 		if ($this->fields === null) {
 			throw new \NP\core\Exception("You must define fields for the entity in the \$fields property.");
 		}
@@ -52,6 +52,19 @@ abstract class AbstractEntity {
 	 */
 	public function getFields() {
 		return $this->fields;
+	}
+
+	/**
+	 * Sets value for multiple fields using an associative array
+	 *
+	 * @param  array $data
+	 */
+	public function setFields($data) {
+		foreach($this->fields as $field=>$definition) {
+			if (array_key_exists($field, $data)) {
+				$this->values[$field] = $data[$field];
+			}
+		}
 	}
 
 	/**

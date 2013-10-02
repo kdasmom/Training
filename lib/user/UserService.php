@@ -266,53 +266,6 @@ class UserService extends AbstractService {
 		return false;
 	}
         
-        public function save(\ArrayObject $data, $entityClass)
-        {
-            $user['userprofile'] = array("userprofile_username" => $data["Username"], 
-                                            "userprofile_status" => "active",
-                                            "userprofile_password" => "admin");
-            $user["userprofile_password_confirm"] =  "admin";
-            $role = $this->roleGateway->find('role_name = ?', array($data['UserGroup']));
-            $roleId = $role[0]['role_id'];
-            $user['userprofilerole'] = array("role_id" => $roleId, "userprofilerole_status" => "active");
-            $user['staff'] = array("staff_status" => "active");
-            $user['person'] = array("person_firstname" => $data["FirstName"],
-                                        "person_middlename" => $data["MiddleName"],
-                                        "person_lastname" => $data["LastName"]);
-            $user['address'] = array ( "address_line1" => $data["Address1"],
-                                            "address_line2" => $data["Address2"],
-                                            "address_city" => $data["City"],
-                                            "address_state" => $data["State"],
-                                            "address_zip" => $data["Zip"]);
-            $user['email'] = array("email_address" => $data["EmailAddress"]);
-            $user['home_phone'] = array("phone_number" => $data["HomePhone"]);
-            $user['work_phone'] = array("phone_number" => $data["WorkPhone"]);
-            $errors = array();
-            $userprofile_id = null;
-
-            $this->userprofileGateway->beginTransaction();
-
-            try {
-                    $res = $this->saveUserDetails($user);
-                    $errors = $res['errors'];
-                    $userprofile_id = $res['userprofile_id'];
-            } catch(\Exception $e) {
-                    $errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
-            }
-
-            if (count($errors)) {
-                    $this->userprofileGateway->rollback();
-            } else {
-                    $this->userprofileGateway->commit();
-            }
-
-            return array(
-                    'success'        => (count($errors)) ? false : true,
-                    'errors'         => $errors,
-                    'userprofile_id' => $userprofile_id
-            );
-        }
-        
 	/**
 	 * Saves a complete user profile
 	 *
@@ -594,7 +547,7 @@ class UserService extends AbstractService {
 	 * @param  array $property_id_list
 	 * @return boolean
 	 */
-	public function savePropertyAssignment($userprofile_id, $property_id_list, $isCodingOnly=false) {
+	public function savePropertyAssignment($userprofile_id, $property_id_list, $isCodingOnly=false, $removeExisting=true) {
 		$gateway = ($isCodingOnly) ? 'propertyUserCodingGateway' : 'propertyUserprofileGateway';
 		// Start a DB transaction
 		$this->$gateway->beginTransaction();
@@ -602,7 +555,9 @@ class UserService extends AbstractService {
 		$success = true;
 		try {
 			// Remove all property associations for this user
-			$this->$gateway->delete('userprofile_id = ?', array($userprofile_id));
+			if ($removeExisting) {
+				$this->$gateway->delete('userprofile_id = ?', array($userprofile_id));
+			}
 
 			// Insert new property associations for this user
 			foreach ($property_id_list as $property_id) {
@@ -1176,6 +1131,112 @@ class UserService extends AbstractService {
 			'errors'    => $errors,
 			'role_id'   => $role->role_id
 		);
+	}
+
+	/**
+	 * Save user imported with the import tool
+	 */
+	public function saveUserFromImport($data) {
+		$errors             = array();
+
+        // Loop through all the rows to import
+        foreach ($data as $idx=>$row) {
+        	// Package the person record
+            $person = array_intersect_key(
+            	$row,
+            	array_flip(array('person_firstname','person_middlename','person_lastname'))
+            );
+
+            // Split the zip code if necessary
+            $row['address_zipext'] = '';
+            if ($row['address_zip'] != '') {
+            	$zip = explode('-', $row['address_zip']);
+            	if (count($zip) > 1) {
+            		$row['address_zip'] = $zip[0];
+            		$row['address_zipext'] = $zip[1];
+            	}
+            }
+
+            // Package the address record
+            $address = array_intersect_key(
+            	$row,
+            	array_flip(array('address_line1','address_line2','address_state',
+            					'address_city','address_zip','address_zipext'))
+            );
+
+            // Get the role ID
+            $role = $this->roleGateway->find('role_name = ?', array($row['role_name']));
+
+            $userData = array(
+				'userprofile'                  => $row,
+				'userprofilerole'              => array('role_id'=>$role[0]['role_id']),
+				'staff'                        => array(),
+				'person'                       => $person,
+				'address'                      => $address,
+				'home_phone'                   => array('phone_number'  => $row['home_phone_number']),
+				'work_phone'                   => array('phone_number'  => $row['work_phone_number']),
+				'email'                        => array('email_address' => $row['email_address']),
+				'userprofile_password_confirm' => 'payablesnexus'
+            );
+
+            // Save the row
+            $result = $this->saveUserDetails($userData);
+
+            // Set errors
+            if (!$result['success']) {
+            	$rowNum = $idx + 1;
+                $errorMsg = $this->localizationService->getMessage('importRecordSaveError') . " {$rowNum}";
+                $errors[] = $errorMsg;
+
+                $this->loggingService->log('error', 'Error importing user data', $result['errors']);
+            }
+        }
+
+        $error = implode('<br />', $errors);
+        return array(
+            'success' => (count($errors)) ? false : true,
+            'error'  => $error
+        );
+	}
+
+	/**
+	 * Save user imported with the import tool
+	 */
+	public function saveUserPropertyFromImport($data) {
+		$errors = array();
+
+        // Loop through all the rows to import
+        foreach ($data as $idx=>$row) {
+        	$rec = $this->userprofileGateway->find(
+        		'u.userprofile_username = ?',
+        		array($row['userprofile_username'])
+        	);
+        	$userprofile_id = $rec[0]['userprofile_id'];
+
+        	$rec = $this->propertyGateway->find(
+        		'property_id_alt = ?',
+        		array($row['property_id_alt'])
+        	);
+        	$property_id = $rec[0]['property_id'];
+
+            // Save the row
+            $success = $this->savePropertyAssignment($userprofile_id, array($property_id), false, false);
+
+            // Set errors
+            if (!$success) {
+            	$rowNum = $idx + 1;
+                $errorMsg = $this->localizationService->getMessage('importRecordSaveError') . " {$rowNum}";
+                $errors[] = $errorMsg;
+
+                $this->loggingService->log('error', 'Error importing user property data');
+            }
+        }
+
+        $error = implode('<br />', $errors);
+        return array(
+            'success' => (count($errors)) ? false : true,
+            'error'  => $error
+        );
 	}
 }
 

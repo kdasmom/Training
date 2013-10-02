@@ -13,6 +13,7 @@ use NP\core\db\Delete;
  */
 class PropertyUserprofileGateway extends AbstractGateway {
 	protected $tableAlias = 'pu';
+	protected $pk         = 'propuser_id';
 
 	/**
 	 * Override getSelect() to include some joins

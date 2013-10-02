@@ -27,8 +27,9 @@ Ext.define('NP.controller.Import', {
     ],
     
     // For localization
-    uploadSuccessText: 'Data was successfully imported',
-    uploadErrorText  : 'Data from CSV file not saved. Errors: ',
+    uploadSuccessText   : 'Data was successfully imported',
+    uploadErrorText     : 'Some or all data from CSV files could not be saved. Errors:',
+    errorDialogTitleText: 'Error',
 
     file_upload: null,
     
@@ -64,23 +65,7 @@ Ext.define('NP.controller.Import', {
             },
             // The Upload csv file
             '[xtype="import.main"] [xtype="shared.button.activate"]': {
-                click: function() {
-                    that = this;
-                    var grid = Ext.ComponentQuery.query('[xtype="import.csvgrid"] [xtype="customgrid"]')[0];
-                    var items = grid.getStore().getRange();
-                    var hasValid = false;
-                    Ext.each(items, function(item) {
-                        if (item.get('validation_status') == 'valid') {
-                            hasValid = true;
-                            return false;
-                        }
-                    });
-                    if (hasValid > 0) {
-                        that.saveGrid();
-                    } else {
-                        NP.Util.showFadingWindow({html: 'No valid records to import.'});
-                    }
-                }
+                click: this.accept
             }
         });
     },
@@ -103,7 +88,9 @@ Ext.define('NP.controller.Import', {
     },
 
     getVerticalTabToken: function(tab) {
-        return tab.getItemId().replace('Panel', '');
+        if (tab) {
+            return tab.getItemId().replace('Panel', '');
+        }
     },
 
     /**
@@ -138,9 +125,9 @@ Ext.define('NP.controller.Import', {
             verticalTabPanel.suspendEvents(false);
             verticalTabPanel.setActiveTab(verticalActiveTab);
             verticalTabPanel.resumeEvents();
-        }
 
-        this.showFormUpload();
+            this.showFormUpload();
+        }
     },
 
     showFormUpload: function() {
@@ -198,6 +185,41 @@ Ext.define('NP.controller.Import', {
         }
     },
 
+    decline: function() {
+        // Declining the upload will delete the file, if the file deletion fails it's not a big deal, so we don't
+        // need to check for success or failure
+        NP.lib.core.Net.remoteCall({
+            method: 'POST',
+            requests: {
+                service: 'ImportService',
+                action : 'decline',
+                file   : this.file,
+                type   : this.getVerticalTabToken(this.getActiveVerticalTab())
+            }
+        });
+
+        this.showFormUpload();
+    },
+
+    accept: function() {
+        that = this;
+        
+        var grid = Ext.ComponentQuery.query('[xtype="import.csvgrid"] [xtype="customgrid"]')[0];
+        var items = grid.getStore().getRange();
+        var hasValid = false;
+        Ext.each(items, function(item) {
+            if (item.get('validation_status') == 'valid') {
+                hasValid = true;
+                return false;
+            }
+        });
+        if (hasValid > 0) {
+            that.saveGrid();
+        } else {
+            NP.Util.showFadingWindow({html: 'No valid records to import.'});
+        }
+    },
+
     saveGrid: function() {
         var that = this;
 
@@ -217,28 +239,14 @@ Ext.define('NP.controller.Import', {
                         NP.Util.showFadingWindow({ html: that.uploadSuccessText });
                         that.showFormUpload();
                     } else {
-                        if (result.errors.length) {
-                            NP.Util.showFadingWindow({ html: that.uploadErrorText + result.errors[0] });
-                        }
+                        Ext.MessageBox.alert(
+                            that.errorDialogTitleText,
+                            that.uploadErrorText + '<br /><br />' + result.error
+                        );
+                        that.showFormUpload();
                     }
                 }
             }
         });
-    },
-
-    decline: function() {
-        // Declining the upload will delete the file, if the file deletion fails it's not a big deal, so we don't
-        // need to check for success or failure
-        NP.lib.core.Net.remoteCall({
-            method: 'POST',
-            requests: {
-                service: 'ImportService',
-                action : 'decline',
-                file   : this.file,
-                type   : this.getVerticalTabToken(this.getActiveVerticalTab())
-            }
-        });
-
-        this.showFormUpload();
     }
 });

@@ -2,35 +2,36 @@
 
 namespace NP\budget;
 
-use NP\system\BaseImportService;
+use NP\core\AbstractService;
 use NP\system\IntegrationPackageGateway;
 use NP\gl\GLAccountGateway;
 use NP\property\PropertyGateway;
+use NP\util\SoapService;
 
 /**
  * Service class for operations related to Budgets
  *
  * @author Thomas Messier
  */
-class BudgetService extends BaseImportService {
+class BudgetService extends AbstractService {
 
-	protected $budgetGateway, $validator, $integrationPackageGateway, $glaccountGateway, $propertyGateway, $glAccountYearGateway;
+	protected $budgetGateway, $integrationPackageGateway, $glaccountGateway, $propertyGateway, $glAccountYearGateway;
 
 	public function __construct(        
                 BudgetGateway $budgetGateway,
-                BudgetEntityValidator $validator,
                 IntegrationPackageGateway $integrationPackageGateway,
                 GLAccountGateway $glaccountGateway,
                 PropertyGateway $propertyGateway,
-                GlAccountYearGateway $glAccountYearGateway
+                GlAccountYearGateway $glAccountYearGateway,
+                SoapService $soapService
                 )
         {
-                $this->budgetGateway = $budgetGateway;
-                $this->validator = $validator;
+                $this->budgetGateway             = $budgetGateway;
                 $this->integrationPackageGateway = $integrationPackageGateway;
-                $this->glaccountGateway = $glaccountGateway;
-                $this->propertyGateway = $propertyGateway;
-                $this->glAccountYearGateway = $glAccountYearGateway;
+                $this->glaccountGateway          = $glaccountGateway;
+                $this->propertyGateway           = $propertyGateway;
+                $this->glAccountYearGateway      = $glAccountYearGateway;
+                $this->soapService               = $soapService;
 	}
 
 	public function createMissingBudgets($entityType) {
@@ -57,113 +58,98 @@ class BudgetService extends BaseImportService {
 			$this->glAccountYearGateway->rollback();
 		}
 	}
-        
-    public function save(\ArrayObject $data, $entityClass)
-    {
-        $result = $this->integrationPackageGateway->find('integration_package_name = ?', array( $data['IntegrationPackage']));
-        $integrationPackageId = $result[0]['integration_package_id'];
-    
-        $result = $this->glaccountGateway->find('glaccount_number = ?', array($data['GLAccount']));
-        $glAccountId = $result[0]['glaccount_id'];
-       
-        $budget_period = $data['PeriodYear'] . '-' . $data['PeriodMonth'] . '-01 00:00:00.000';
-        $budget_amount = $data['Amount'];
-        $budget_status = 'Active';
-        $budget_createddatetime = substr(date('Y-m-d H:i:s.u'), 0, -3);
-        
-        $result = $this->propertyGateway->find('property_id_alt = ?', array($data['BusinessUnit']));
-        $propertyId = $result[0]['property_id'];
-        
 
-        $result =$this->glAccountYearGateway->find('glaccount_id = ? AND glaccountyear_year = ? AND property_id = ?', array($glAccountId, (int)$data['PeriodYear'], $propertyId));
-        $glAccountYearId = $result[0]['glaccountyear_id'];
-        
-        $entityData = array(
-            'glaccount_id' => $glAccountId,
-            'budget_period' => $budget_period,
-            'budget_status' => $budget_status,
-            'budget_createddatetime' => $budget_createddatetime,
-            'budget_amount' => $budget_amount,
-            'glaccountyear_id' => $glAccountYearId
-        );
-
-       $entity = new $entityClass($entityData);
-       $errors = $this->validate($entity);
-
-    // I
-
-        // If the data is valid, save it
-        if (count($errors) == 0) {
-            // Begin transaction
-            $this->budgetGateway->beginTransaction();
-
-            try {
-                // Save the glaccount record
-                $this->budgetGateway->save($entity);
-                
-            } catch(\Exception $e) {
-                // Add a global error to the error array
-                $errors[] = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e), 'extra'=>null);
-            }
-        }
-
-        if (count($errors)) {
-            $this->budgetGateway->rollback();
-        } else {
-            $this->budgetGateway->commit();
-        }
+    /**
+     * Shortcut function for saveBudgetFromImport($data, 'budget')
+     */
+    public function saveGLBudgetFromImport($data) {
+        return $this->saveBudgetFromImport($data, 'budget');
     }
 
-    public function saveActual(\ArrayObject $data, $entityClass) {
-        $result = $this->integrationPackageGateway->find('integration_package_name = ?', array( $data['IntegrationPackage']));
-        $integrationPackageId = $result[0]['integration_package_id'];
-    
-        $result = $this->glaccountGateway->find('glaccount_number = ?', array($data['GLAccount']));
-        $glAccountId = $result[0]['glaccount_id'];
-       
-        $actual_period = $data['PeriodYear'] . '-' . $data['PeriodMonth'] . '-01 00:00:00.000';
-        $actual_amount = $data['Amount'];
-        $actual_status = 'Active';
-        $actual_createddatetime = substr(date('Y-m-d H:i:s.u'), 0, -3);
-        
-        $result = $this->propertyGateway->find('property_id_alt = ?', array($data['BusinessUnit']));
-        $propertyId = $result[0]['property_id'];
-        
+    /**
+     * Shortcut function for saveBudgetFromImport($data, 'actual')
+     */
+    public function saveGLActualFromImport($data) {
+        return $this->saveBudgetFromImport($data, 'actual');
+    }
 
-        $result =$this->glAccountYearGateway->find('glaccount_id = ? AND glaccountyear_year = ? AND property_id = ?', array($glAccountId, (int)$data['PeriodYear'], $propertyId));
-        $glAccountYearId = $result[0]['glaccountyear_id'];
+    /**
+     * Function to save a budget or actual record from a  
+     */
+    public function saveBudgetFromImport($data, $type) {
+        // Make sure a type was set in the extended class
+        if ($type === null) {
+            throw new \NP\core\Exception('You must override the $type property in your extended class');
+        }
+
+        // Make sure the type set is valid
+        $parentNodeName = strtolower($type);
+        $nodeName = strtoupper($type);
+        if ($nodeName !== 'BUDGET' && $nodeName !== 'ACTUAL') {
+            throw new \NP\core\Exception("\$type '{$type}' is invalid. Valid types are 'budget' and 'actual'");
+        }
         
-        $entityData = array(
-            'glaccount_id' => $glAccountId,
-            'budget_period' => $actual_period,
-            'budget_status' => $actual_status,
-            'budget_createddatetime' => $actual_createddatetime,
-            'oracle_actual' => $actual_amount,
-            'glaccountyear_id' => $glAccountYearId
+        $intPkg = $this->integrationPackageGateway->find(
+            'integration_package_name = ?',
+            array($data[0]['integration_package_name'])
         );
+        $integration_package_id = $intPkg[0]['integration_package_id'];
+        
+        try {
+            $sessionKey = $this->soapService->login();
 
-       $entity = new BudgetEntity($entityData);
-       $errors = $this->validate($entity);
+            $soapSettings = $this->soapService->getSettings();
 
-        // If the data is valid, save it
-        if (count($errors) == 0) {
-            // Begin transaction
-            $this->budgetGateway->beginTransaction();
+            $headerXml = "<SecurityHeader xmlns=\"http://tempuri.org/\">
+                            <SessionKey>{$sessionKey}</SessionKey>
+                            <ClientName>{$soapSettings['wsdl_client']}</ClientName>
+                            <UserName>{$soapSettings['wsdl_user']}</UserName>
+                        </SecurityHeader>";
 
-            try {
-                // Save the glaccount record
-                $this->budgetGateway->save($entity);
-                
-            } catch(\Exception $e) {
-                // Add a global error to the error array
-                $errors[] = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e), 'extra'=>null);
+            $xml = "<PN_SET_{$nodeName} xmlns=\"http://tempuri.org/\">
+                        <{$parentNodeName}s>
+                            <{$nodeName}S xmlns=\"\">";
+
+            foreach ($data as $rec) {
+                $xml .=         "<{$nodeName}>
+                                    <Business_Unit>{$rec['property_id_alt']}</Business_Unit>
+                                    <Gl_Account>{$rec['glaccount_number']}</Gl_Account>
+                                    <Period_Month>{$rec['period_month']}</Period_Month>
+                                    <Period_Year>{$rec['glaccountyear_year']}</Period_Year>
+                                    <Amount>{$rec['amount']}</Amount>
+                                </{$nodeName}>";
             }
+
+            $xml .=         "</{$nodeName}S>
+                        </{$parentNodeName}s>
+                        <integration_id>{$integration_package_id}</integration_id>
+                    </PN_SET_{$nodeName}>";
+
+            $res = $this->soapService->request(
+                $soapSettings['wsdl_url'],
+                $xml,
+                $headerXml
+            );
+
+            $resultProperty = "PN_SET_{$nodeName}Result";
+            $statusCode = (string)$res['soapResult']->$resultProperty->Status->StatusCode;
+
+            $error = null;
+            if ($statusCode === 'SUCCESS') {
+                $success = true;
+            } else {
+                throw new \NP\core\Exception('The SOAP request for saving a budget failed.');
+            }
+        } catch(\Exception $e) {
+            $success = false;
+            $error   = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
         }
 
-        if (count($errors)) {
-            $this->budgetGateway->rollback();
-        } else {
-            $this->budgetGateway->commit();
-        }
+        return array(
+            'success' => $success,
+            'error'   => $error
+        );
     }
 }
+
+?>

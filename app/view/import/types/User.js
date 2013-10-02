@@ -9,41 +9,42 @@ Ext.define('NP.view.import.types.User', {
     fieldName  : 'file_upload_user',
 
     // For localization
-    tabTitle          : 'User',
-    entityName        : 'User',
-    sectionName       : 'User',
-    colTextFirstName  : 'First Name',
-    colTextMiddleName : 'Middle Name',
-    colTextLastName   : 'Last Name',
-    colTextUsername   : 'Username',
-    colTextUserGroup  : 'UserGroup',
-    colTextAddress1   : 'Address1',
-    colTextAddress2   : 'Address2',
-    colTextCity       : 'City',
-    colTextState      : 'State',
-    colTextZip        : 'Zip',
-    colTextEmailAddress  : 'Email Address',
-    colTextHomePhone  : 'Home Phone',
-    colTextWorkPhone  : 'Work Phone',
+    tabTitle           : 'User',
+    entityName         : 'User',
+    sectionName        : 'User',
+    colTextFirstName   : 'First Name',
+    colTextMiddleName  : 'Middle Name',
+    colTextLastName    : 'Last Name',
+    colTextUsername    : 'Username',
+    colTextUserGroup   : 'UserGroup',
+    colTextAddress1    : 'Address1',
+    colTextAddress2    : 'Address2',
+    colTextCity        : 'City',
+    colTextState       : 'State',
+    colTextZip         : 'Zip',
+    colTextEmailAddress: 'Email Address',
+    colTextHomePhone   : 'Home Phone',
+    colTextWorkPhone   : 'Work Phone',
 
     getGrid: function() {
         return {
-            forceFit: true,
-            columns: [
-                { text: this.colTextFirstName, dataIndex: 'FirstName', flex: 1 },
-                { text: this.colTextMiddleName, dataIndex: 'MiddleName', flex: 1 },
-                { text: this.colTextLastName, dataIndex: 'LastName'},
-                { text: this.colTextUsername, dataIndex: 'Username'},
-                { text: this.colTextUserGroup, dataIndex: 'UserGroup'},
-                { text: this.colTextAddress1, dataIndex: 'Address1', flex: 1 },
-                { text: this.colTextAddress2, dataIndex: 'Address2', flex: 1 },
-                { text: this.colTextCity, dataIndex: 'City', flex: 1 },
-                { text: this.colTextState, dataIndex: 'State', flex: 1 },
-                { text: this.colTextZip, dataIndex: 'Zip', flex: 1 },
-                { text: this.colTextEmailAddress, dataIndex: 'EmailAddress', flex: 1 },
-                { text: this.colTextHomePhone, dataIndex: 'HomePhone', flex: 1 },
-                { text: this.colTextWorkPhone, dataIndex: 'WorkPhone', flex: 1 }
-            ]
+            columns: {
+                items: [
+                    { text: this.colTextFirstName, dataIndex: 'person_firstname' },
+                    { text: this.colTextMiddleName, dataIndex: 'person_middlename' },
+                    { text: this.colTextLastName, dataIndex: 'person_lastname' },
+                    { text: this.colTextUsername, dataIndex: 'userprofile_username' },
+                    { text: this.colTextUserGroup, dataIndex: 'role_name' },
+                    { text: this.colTextAddress1, dataIndex: 'address_line1' },
+                    { text: this.colTextAddress2, dataIndex: 'address_line2' },
+                    { text: this.colTextCity, dataIndex: 'address_city' },
+                    { text: this.colTextState, dataIndex: 'address_state' },
+                    { text: this.colTextZip, dataIndex: 'address_zip' },
+                    { text: this.colTextEmailAddress, dataIndex: 'email_address' },
+                    { text: this.colTextHomePhone, dataIndex: 'home_phone_number' },
+                    { text: this.colTextWorkPhone, dataIndex: 'work_phone_number' }
+                ]
+            }
         };
     }
 

@@ -1,0 +1,25 @@
+PropertyCode,PropertyName,ContactName,Address1,Address2,City,State,Zip,PhoneNumber,FaxNumber,PropertySalesTax,TotalNoUnits,Region,IntegrationPackage,BillToAddressOption,DefaultBillToProperty,ShipToAddressOption,DefaultShipToProperty,AccrualorCash,ClosingCalendar,FiscalCalendarStartMonth,POMatchingThreshhold,CustomField1,CustomField2,CustomField3,CustomField4
+"The Property Code field is an alphanumeric field only and is limited to 50 characters.  This is a required field for this upload.  If missing, the row will be marked inactive.  Note that all new properties uploaded will be uploaded to the On Hold tab in Property Setup.",The Property Name field is an alphanumeric text field.  There is no limit as to the number of characters which can be input in this field.  ,"This is a text field with no character limits.  No validation required. This is a required field and if missing, the row will be marked invalid.",This is a text field with no character limits and is a required field.  No validation required.  ,This is a text field with no character limits.  No validation required.,This is a text field with no character limits and is a required field.  No validation required.,"This is a drop down list of the state abbreviations.  The file upload should only allow 2 characters and check for an exact match against the state abbreviations.  If no exact match is found, the row should be marked invalid.  This is a required field.",This is a numeric field which will have either 5 or 9 digits.  The system will allow a 12345-3333 type number and insert the numbers in the corresponding zip+4 field.  The system will mark the row as invalid if the value in this field is not numeric.  This is a required field.,"This is a numeric field which is limited to 10 digits.  If the data in the field has ( ) or - in it, the system will automatically strip the characters out and place the number in the correct xxx xxx xxxx format.  This is a required field.","This is a numeric field which is limited to 10 digits.  If the data in the field has ( ) or - in it, the system will automatically strip the characters out and place the number in the correct xxx xxx xxxx format.","This field is a numeric/decimal field.  The tax should be input as a decimal, not a percentage.  For example, 6.5% should be input as .065.  This is a required field and if not found should default to 0.00.","This is a numeric field to display either the number of units or total square footage for the property.  The value must be greater than 0.  If any other symbols are in the upload, the system will automatically strip out the symbols.  This is a required field.","This is an alphanumeric field which will be compared for an exact match in the system.  If no exact match is found, the row will be marked invalid.","This is a required field.  This field is a text field and will be compared for an exact match in the system.  If no exact match is found, the row will be marked invalid.  To find the integration package name, refer to the Integration Package field on any Active Property in Property Setup.",This is a required field. Use Yes or No as values,Optional field that should contain the property code of a property setup in the system,This is a required field. Use Yes or No as values,Optional field that should contain the property code of a property setup in the system,This is a required field. Use Accrual or Cash as values,This must be an exact match of the closing calendar name as setup in the system,"Must be one of the following values: 
+Jan of the Current Year
+Feb of the Current Year
+Mar of the Current Year
+Apr of the Current Year
+June of the Current Year
+July of the Current Year
+Aug of the Current Year
+Sept of the Current Year
+Oct of the Current Year
+Nov of the Current Year
+Dec of the Current Year
+Jan of the Previous Year
+Feb of the Previous Year
+Mar of the Previous Year
+Apr of the Previous Year
+May of the Previous Year
+June of the Previous Year
+July of the Previous Year
+Aug of the Previous Year
+Sept of the Previous year
+Oct of the Previous Year
+Nov of the Previous Year
+Dec of the Previous Year","This is an optional field that represents a percentage. Values should be input as a decimal value without the percentage symbol, such as 5 or 5.00 rather than 5%.","This field is required if it is designated as such in Nexus Payables. If the field is a drop down list, value will be compared to the allowable values setup in the drop down list.","This field is required if it is designated as such in Nexus Payables. If the field is a drop down list, value will be compared to the allowable values setup in the drop down list.","This field is required if it is designated as such in Nexus Payables. If the field is a drop down list, value will be compared to the allowable values setup in the drop down list.","This field is required if it is designated as such in Nexus Payables. If the field is a drop down list, value will be compared to the allowable values setup in the drop down list."

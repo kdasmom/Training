@@ -3,11 +3,9 @@
 namespace NP\vendor;
 
 use NP\core\db\Select;
-use NP\system\BaseImportServiceGateway;
+use NP\core\AbstractGateway;
 use NP\system\ConfigService;
-use NP\property\PropertyService;
 use NP\vendor\VendorSelect;
-
 use NP\core\db\Adapter;
 
 /**
@@ -15,22 +13,18 @@ use NP\core\db\Adapter;
  *
  * @author Thomas Messier
  */
-class VendorGateway extends BaseImportServiceGateway {
+class VendorGateway extends AbstractGateway {
+	protected $tableAlias = 'v';
 	/**
-	 * @var NP\property\PropertyService
+	 * Override getSelect() to get the vendorsite_id by default
 	 */
-	protected $propertyService;
-	
-	/**
-	 * @param NP\core\db\Adapter     $adapter         Database adapter object injected
-	 * @param NP\property\PropertyService $propertyService PropertyService object injected
-	 */
-	public function __construct(Adapter $adapter, PropertyService $propertyService) {
-		$this->propertyService = $propertyService;
-		
-		parent::__construct($adapter);
+	public function getSelect() {
+		return Select::get()->from(array('v'=>'vendor'))
+							->join(array('vs'=>'vendorsite'),
+									'v.vendor_id = vs.vendor_id AND v.vendor_status = vs.vendorsite_status',
+									array('vendorsite_id'));
 	}
-
+	
 	/**
 	 * Setter function required by DI to set the config service via setter injection
 	 * @param \NP\system\ConfigService $configService

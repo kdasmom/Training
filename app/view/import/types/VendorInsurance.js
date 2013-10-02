@@ -12,90 +12,55 @@ Ext.define('NP.view.import.types.VendorInsurance', {
     tabTitle : 'Vendor Insurance',
     entityName : 'Vendor Insurance',
     sectionName: 'Vendor Setup',
-
-    renderClosure: function(val, meta, rec) {
-        var value = val.split(';');
-        if (value[1]) {
-            meta.tdAttr = 'data-qtip="' + value[1] + '"';
-            return "<span style='color:red;font-weight:bold' >" + value[0] + "</span>";
-        } else {
-            return val;
-        }
-    },
+    
+    intPkgColText           : 'Integration Package Name',
+    vendorIdColText         : 'Vendor ID',
+    insuranceTypeColText    : 'Insurance Type',
+    companyColText          : 'Company',
+    policyNumColText        : 'Policy Number',
+    effectiveDateColText    : 'Effective Date',
+    expirationDateColText   : 'Expiration Date',
+    policyLimitColText      : 'Policy Limit',
+    additionalInsuredColText: 'Additional Insured',
+    propertyIdColText       : 'Property ID',
 
     getGrid: function() {
         return {
-            columns: [
-                {
-                    text     : 'Integration Package Name',
-                    dataIndex: 'Integration Package Name',
-                    flex     : 1,
-                    renderer : this.renderClosure
-                },
-
-                {
-                    text     : 'Vendor ID',
-                    dataIndex: 'Vendor ID',
-                    flex     : 1,
-                    renderer : this.renderClosure
-                },
-
-                {
-                    text     : 'Insurance Type',
-                    dataIndex: 'Insurance Type',
-                    flex     : 1,
-                    renderer : this.renderClosure
-                },
-
-                {
-                    text     : 'Company',
-                    dataIndex: 'Company',
-                    flex     : 1,
-                    renderer : this.renderClosure
-                },
-
-                {
-                    text     : 'Policy Number',
-                    dataIndex: 'Policy Number',
-                    flex     : 1,
-                    renderer : this.renderClosure
-                },
-
-                {
-                    text     : 'Effective Date',
-                    dataIndex: 'Effective Date',
-                    flex     : 1,
-                    renderer : this.renderClosure
-                },
-
-                {
-                    text     : 'Expiration Date',
-                    dataIndex: 'Expiration Date',
-                    flex     : 1,
-                    renderer : this.renderClosure
-                },
-
-                {
-                    text     : 'Policy Limit',
-                    dataIndex: 'Policy Limit',
-                    flex     : 1,
-                    renderer : this.renderClosure
-                },
-
-                {
-                    text     : 'Additional Insured',
-                    dataIndex: 'Additional Insured',
-                    flex     : 1,
-                    renderer : this.renderClosure
-                },
-
-                {
-                    text     : 'Property ID',
-                    dataIndex: 'Property ID',
-                    flex     : 1,
-                    renderer : this.renderClosure
-                }
-            ]
+            columns: {
+                items: [
+                    {
+                        text     : this.intPkgColText,
+                        dataIndex: 'integration_package_name'
+                    },{
+                        text     : this.vendorIdColText,
+                        dataIndex: 'vendor_id_alt'
+                    },{
+                        text     : this.insuranceTypeColText,
+                        dataIndex: 'insurancetype_name'
+                    },{
+                        text     : this.companyColText,
+                        dataIndex: 'insurance_company'
+                    },{
+                        text     : this.policyNumColText,
+                        dataIndex: 'insurance_policynum'
+                    },{
+                        text     : this.effectiveDateColText,
+                        dataIndex: 'insurance_policy_effective_datetm'
+                    },{
+                        text     : this.expirationDateColText,
+                        dataIndex: 'insurance_expdatetm'
+                    },{
+                        text     : this.policyLimitColText,
+                        dataIndex: 'insurance_policy_limit'
+                    },{
+                        text     : this.additionalInsuredColText,
+                        dataIndex: 'insurance_additional_insured_listed'
+                    },{
+                        text     : this.propertyIdColText,
+                        dataIndex: 'property_id_alt'
+                    }
+                ]
+            }
         };
     }
 

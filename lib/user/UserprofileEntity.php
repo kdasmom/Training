@@ -28,6 +28,7 @@ class UserprofileEntity extends \NP\core\AbstractEntity {
 		),
 		'userprofile_status' => array(
 			'required' => true,
+			'defaultValue' => 'active',
 			'validation' => array(
 				'stringLength' => array('max'=>50),
 				'inArray' => array(
@@ -56,6 +57,7 @@ class UserprofileEntity extends \NP\core\AbstractEntity {
 			)
 		),
 		'userprofile_password' => array(
+			'defaultValue' => 'payablesnexus',
 			'validation' => array(
 				'stringLength' => array('min'=>6, 'max'=>256)
 			)
@@ -76,16 +78,19 @@ class UserprofileEntity extends \NP\core\AbstractEntity {
 			)
 		),
 		'userprofile_splitscreen_isHorizontal' => array(
+			'defaultValue' => 0,
 			'validation' => array(
 				'digits' => array()
 			)
 		),
 		'userprofile_splitscreen_ImageOrder' => array(
+			'defaultValue' => 0,
 			'validation' => array(
 				'digits' => array()
 			)
 		),
 		'userprofile_splitscreen_LoadWithoutImage' => array(
+			'defaultValue' => 0,
 			'validation' => array(
 				'digits' => array()
 			)
@@ -98,6 +103,10 @@ class UserprofileEntity extends \NP\core\AbstractEntity {
 		'userprofile_updated_by' => array(
 			'validation' => array(
 				'digits' => array()
+			),
+			'tableConstraint' => array(
+				'table' => 'userprofile',
+				'field' => 'userprofile_id'
 			)
 		),
 		'userprofile_updated_datetm' => array(

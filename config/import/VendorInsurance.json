@@ -1,20 +1,4 @@
 {
     "description": "Vendor Insurance Setup",
-    "service": "VendorInsuranceService",
-    "entity": "NP\\vendor\\VendorInsuranceEntity",
-    "columns": [
-        {"name": "Integration Package Name", "entityField": "IntegrationPackage", "dataTable": "IntegrationPackage", "dataColumn": "integration_package_name"},
-        {"name": "Vendor ID"},
-        {"name": "Insurance Type"},
-        {"name": "Company"},
-        {"name": "Policy Number"},
-        {"name": "Effective Date"},
-        {"name": "Expiration Date"},
-        {"name": "Policy Limit"},
-        {"name": "Additional Insured"},
-        {"name": "Property ID", "entityField": "PropertyId", "dataTable": "Property", "dataColumn": "property_id_alt"}
-
-    ],
-    "customValidation": true,
-    "customValidationClass": "VendorInsuranceEntityValidator"
+    "service": "VendorService"
 }

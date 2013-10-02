@@ -7,13 +7,14 @@ Ext.define('NP.model.import.VendorUtility', {
 	extend: 'Ext.data.Model',
 	
 	fields: [
-		{ name: 'Vendor_ID' },
-        { name: 'Utility_Type' },
-		{ name: 'Account_Number' },
-		{ name: 'Property_ID' },
-        { name: 'Unit_Id' },
-        { name: 'Meter_Number' },
-        { name: 'GL_Account' },
-        { name: 'validation_status' }
+		{ name: 'vendor_id_alt' },
+        { name: 'UtilityType' },
+		{ name: 'UtilityAccount_AccountNumber' },
+		{ name: 'property_id_alt' },
+        { name: 'unit_id_alt' },
+        { name: 'UtilityAccount_MeterSize' },
+        { name: 'glaccount_number' },
+        { name: 'validation_status' },
+        { name: 'validation_errors' }
 	]
 });

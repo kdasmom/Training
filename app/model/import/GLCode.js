@@ -7,15 +7,12 @@ Ext.define('NP.model.import.GLCode', {
 	extend: 'Ext.data.Model',
 	
 	fields: [
-		{ name: 'GLAccountName' },
-		{ name: 'AccountNumber' },
-		{ name: 'AccountType' },
-		{ name: 'CategoryName' },
-		{ name: 'IntegrationPackageName' },
-		{ name: 'validation_status' }
-	],
-
-	validations: [
-		{ field: 'glaccount_name', type: 'length', max: 50 }
+		{ name: 'glaccount_name' },
+		{ name: 'glaccount_number' },
+		{ name: 'glaccounttype_name' },
+		{ name: 'category_name' },
+		{ name: 'integration_package_name' },
+		{ name: 'validation_status' },
+		{ name: 'validation_errors' }
 	]
 });

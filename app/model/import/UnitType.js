@@ -7,27 +7,20 @@ Ext.define('NP.model.import.UnitType', {
 	extend: 'Ext.data.Model',
 	
 	fields: [
-		{ name: 'IntegrationPackage' },
-		{ name: 'PropertyCode' },
-		{ name: 'Name' },
-		{ name: 'Bedrooms' },
-		{ name: 'Bathrooms' },
-		{ name: 'CarpetYd' },
-		{ name: 'VinylYd' },
-		{ name: 'TileYd' },
-		{ name: 'HarwoodYd' },
-		{ name: 'CarpetFt' },
-		{ name: 'VinylFt' },
-		{ name: 'TileFt' },
-		{ name: 'HarwoodFt' },
-                { name: 'validation_status' }
-	],
-
-	validations: [
-		{ field: 'IntegrationPackage', type: 'length', max: 50 },
-		{ field: 'PropertyCode', type: 'length', max: 10 },
-		{ field: 'Code', type: 'length', max: 10 },
-		{ field: 'Bedrooms', type: 'length', max: 10 },
-		{ field: 'Bathrooms', type: 'length', max: 10 },
+		{ name: 'integration_package_name' },
+		{ name: 'property_id_alt' },
+		{ name: 'unittype_name' },
+		{ name: 'unittype_bedrooms' },
+		{ name: 'unittype_bathrooms' },
+		{ name: 'carpet_yards' },
+		{ name: 'vinyl_yards' },
+		{ name: 'tile_yards' },
+		{ name: 'hardwood_yards' },
+		{ name: 'carpet_feet' },
+		{ name: 'vinyl_feet' },
+		{ name: 'tile_feet' },
+		{ name: 'hardwood_feet' },
+        { name: 'validation_status' },
+        { name: 'validation_errors' }
 	]
 });

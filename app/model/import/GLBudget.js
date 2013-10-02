@@ -7,16 +7,13 @@ Ext.define('NP.model.import.GLBudget', {
 	extend: 'Ext.data.Model',
 	
 	fields: [
-		{ name: 'BusinessUnit' },
-		{ name: 'GLAccount' },
-		{ name: 'PeriodMonth' },
-		{ name: 'PeriodYear' },
-		{ name: 'Amount' },
-		{ name: 'IntegrationPackage' },
-		{ name: 'validation_status' }
-	],
-
-	validations: [
-		{ field: 'GLAccount', type: 'presence' },
+		{ name: 'property_id_alt' },
+		{ name: 'glaccount_number' },
+		{ name: 'period_month' },
+		{ name: 'glaccountyear_year' },
+		{ name: 'amount' },
+		{ name: 'integration_package_name' },
+		{ name: 'validation_status' },
+		{ name: 'validation_errors' }
 	]
 });

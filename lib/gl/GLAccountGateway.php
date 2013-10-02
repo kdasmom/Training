@@ -6,6 +6,7 @@ use NP\core\AbstractGateway;
 use NP\core\db\Select;
 use NP\core\db\Insert;
 use NP\core\db\Update;
+use NP\core\db\Expression;
 use NP\locale\LocalizationService;
 use NP\system\ConfigService;
 
@@ -162,16 +163,43 @@ class GLAccountGateway extends AbstractGateway
     }
 
     /**
-     * Retrieves GL accounts
+     * Checks if a certain GL category already exists
      *
-     * @return array
+     * @param  string $glaccount_name
+     * @param  int    $integration_package_id
+     * @return boolean
      */
-    public function getGLAccounts()
-    {
+    public function getCategoryByName($glaccount_name, $integration_package_id) {
         $select = new Select();
-        $select->from(array('g' => 'glaccount'))
-            ->order("g.glaccount_name");
-        return $this->adapter->query($select);
+        $select->from(array('g'=>'glaccount'))
+                ->join(new sql\join\GlAccountTreeJoin(array('tree_id')))
+                ->whereEquals('glaccount_name', '?')
+                ->whereEquals('integration_package_id', '?')
+                ->whereIsNull('glaccounttype_id');
+
+        $res = $this->adapter->query($select, array($glaccount_name, $integration_package_id));
+
+        return (count($res)) ? $res[0] : null;
+    }
+
+    /**
+     * Gets the next number in the sequence for the glaccount_order field within a certain tree
+     *
+     * @param  int $tree_parent
+     * @return int
+     */
+    public function getMaxOrder($tree_parent) {
+        $select = new Select();
+        $select->column(new Expression("ISNULL(MAX(g.glaccount_order), 1) + 1"), 'max_order')
+                ->column(new Expression("COUNT(*) + 1 AS total"))
+                ->from(array('g'=>'glaccount'))
+                ->join(new sql\join\GlAccountTreeJoin())
+                ->whereEquals('tr.tree_parent', '?');
+
+        $res = $this->adapter->query($select, array($tree_parent));
+
+        // Return whichever is bigger, the glaccount_order or the number of records
+        return ($res[0]['max_order'] > $res[0]['total']) ? $res[0]['max_order'] : $res[0]['total'];
     }
 
     public function findByAltIdAndIntegrationPackage($glCode, $integrationPackageId)

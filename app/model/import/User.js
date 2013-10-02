@@ -7,19 +7,20 @@ Ext.define('NP.model.import.User', {
 	extend: 'Ext.data.Model',
 	
 	fields: [
-		{ name: 'FirstName' },
-		{ name: 'MiddleName' },
-		{ name: 'LastName' },
-		{ name: 'Username' },
-		{ name: 'UserGroup' },
-		{ name: 'Address1' },
-		{ name: 'Address2' },
-		{ name: 'City' },
-		{ name: 'State' },
-		{ name: 'Zip' },
-		{ name: 'EmailAddress' },
-		{ name: 'HomePhone' },
-                { name: 'WorkPhone' },
-                { name: 'validation_status' }
+		{ name: 'person_firstname' },
+		{ name: 'person_middlename' },
+		{ name: 'person_lastname' },
+		{ name: 'userprofile_username' },
+		{ name: 'role_name' },
+		{ name: 'address_line1' },
+		{ name: 'address_line2' },
+		{ name: 'address_city' },
+		{ name: 'address_state' },
+		{ name: 'address_zip' },
+		{ name: 'email_address' },
+		{ name: 'home_phone_number' },
+        { name: 'work_phone_number' },
+        { name: 'validation_status' },
+        { name: 'validation_errors' }
 	]
 });

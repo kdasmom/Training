@@ -27,11 +27,11 @@ Ext.define('NP.view.import.Main', {
             {xtype: 'import.overview', itemId: 'overviewImportTab'},
             {xtype: 'import.importsection', itemId: 'glImportTab', title: this.glTabText, tabs: ['GLCategory', 'GLCode', 'GLBudget', 'GLActual']},
             {xtype: 'import.importsection', itemId: 'propertyImportTab', title: NP.Config.getPropertyLabel(), tabs: ['Property', 'PropertyGL', 'Unit', 'UnitType']},
-            {xtype: 'import.importsection', itemId: 'vendorImportTab', title: this.vendorTabText, tabs: ['Vendor', 'VendorGL', 'VendorFavorites', 'VendorInsurance', 'VendorUtility']},
-            {xtype: 'import.importsection', itemId: 'invoiceImportTab', title: this.invoiceTabText, tabs: ['InvoiceExport', 'InvoicePayments']},
+            {xtype: 'import.importsection', itemId: 'vendorImportTab', title: this.vendorTabText, tabs: ['Vendor', 'VendorGL', 'VendorFavorite', 'VendorInsurance', 'VendorUtility']},
+            {xtype: 'import.importsection', itemId: 'invoiceImportTab', title: this.invoiceTabText, tabs: ['InvoiceExport', 'InvoicePayment']},
             {xtype: 'import.importsection', itemId: 'userImportTab', title: this.userTabText, tabs: ['User', 'UserProperty']},
             {xtype: 'import.importsection', itemId: 'customFieldImportTab', title: this.customFieldTabText, tabs: ['CustomFieldHeader', 'CustomFieldLine']},
-            {xtype: 'import.importsection', itemId: 'splitsImportTab', title: this.splitsTabText, tabs: ['Splits']}
+            {xtype: 'import.importsection', itemId: 'splitImportTab', title: this.splitsTabText, tabs: ['Split']}
 
         ];
         this.callParent(arguments);

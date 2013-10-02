@@ -16,7 +16,7 @@ $__CONFIG = array(
 	),
 	// Set logs that are enabled
 	// Valid values are 'global','mail','fileupload','catalog','invoice','po'
-	'enabledNamespaces'		=> array('global','mail','fileupload','catalog','invoice','po'),
+	'enabledNamespaces'		=> array('global','mail','fileupload','catalog','invoice','po','sql','soap'),
 	'fileLogEnabled'		=> false, 
 	'debugLogEnabled'		=> true,
 	'notificationsEnabled'  => true,

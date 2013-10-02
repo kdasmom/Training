@@ -9,187 +9,110 @@ Ext.define('NP.view.import.types.Vendor', {
     fieldName  : 'file_upload_vendor',
 
     // For localization
-    tabTitle : 'Vendor',
-    entityName : 'Vendor',
-    sectionName: 'Vendor Setup',
-
-    renderClosure: function(val, meta, rec) {
-        if(!val) {
-            console.error('Arguments', arguments);
-            return;
-        }
-        var value = val.split(';');
-        if (value[1]) {
-            meta.tdAttr = 'data-qtip="' + value[1] + '"';
-            return "<span style='color:red;font-weight:bold' >" + value[0] + "</span>";
-        } else {
-            return val;
-        }
-    },
+    tabTitle          : 'Vendor',
+    entityName        : 'Vendor',
+    sectionName       : 'Vendor Setup',
+    
+    vendorIdColText   : 'Vendor ID',
+    vendorNameColText : 'Name',
+    fedIdColText      : 'Federal ID',
+    taxReportColText  : 'Tax Report Name',
+    statusColText     : 'Status',
+    vendorTypeColText : 'Vendor Type',
+    payPriorityColText: 'Pay Priority',
+    createDateColText : 'Created Date',
+    updateDateColText : 'Last Update Date',
+    report1099ColText : '1099 Reportable ?',
+    termDateColText   : 'Term Date Basis',
+    payDateColText    : 'Pay Date Basis',
+    glCodeColText     : 'Default GL code',
+    phoneColText      : 'Phone',
+    faxColText        : 'Fax',
+    address1ColText   : 'Address 1',
+    address2ColText   : 'Address 2',
+    cityColText       : 'City',
+    stateColText      : 'State',
+    zipCodeColText    : 'Zip Code',
+    lastNameColText   : 'Contact Last Name',
+    firstNameColText  : 'Contact First Name',
+    intPkgColText     : 'Integration Package',
 
     getGrid: function() {
         return {
-            columns: [
-                {
-                    text     : 'Vendor ID',
-                    dataIndex: 'VendorID',
-                    flex     : 1,
-                    renderer : function(val, meta, rec) {
-                        var value = val.split(';');
-                        if (value[1]) {
-                            meta.tdAttr = 'data-qtip="' + value[1] + '"';
-                            return "<span style='color:red;font-weight:bold' >" + value[0] + "</span>";
-                        } else {
-                            return val;
-                        }
-
+            columns: {
+                items: [
+                    {
+                        text     : this.vendorIdColText,
+                        dataIndex: 'vendor_id_alt'
+                    },{
+                        text     : this.vendorNameColText,
+                        dataIndex: 'vendor_name'
+                    },{
+                        text     : this.fedIdColText,
+                        dataIndex: 'vendor_fedid'
+                    },{
+                        text     : this.taxReportColText,
+                        dataIndex: 'vendor_tax_reporting_name'
+                    },{
+                        text     : this.statusColText,
+                        dataIndex: 'vendor_status'
+                    },{
+                        text     : this.vendorTypeColText,
+                        dataIndex: 'vendortype_name'
+                    },{
+                        text     : this.payPriorityColText,
+                        dataIndex: 'vendor_paypriority'
+                    },{
+                        text     : this.createDateColText,
+                        dataIndex: 'vendor_createddatetm'
+                    },{
+                        text     : this.updateDateColText,
+                        dataIndex: 'vendor_lastupdate_date'
+                    },{
+                        text     : this.report1099ColText,
+                        dataIndex: 'vendor_type1099'
+                    },{
+                        text     : this.termDateColText,
+                        dataIndex: 'vendor_termsdatebasis'
+                    },{
+                        text     : this.payDateColText,
+                        dataIndex: 'paydatebasis_code'
+                    },{
+                        text     : this.glCodeColText,
+                        dataIndex: 'default_glaccount_number'
+                    },{
+                        text     : this.phoneColText,
+                        dataIndex: 'phone_number'
+                    },{
+                        text     : this.faxColText,
+                        dataIndex: 'fax_number'
+                    },{
+                        text     : this.address1ColText,
+                        dataIndex: 'address_line1'
+                    },{
+                        text     : this.address2ColText,
+                        dataIndex: 'address_line2'
+                    },{
+                        text     : this.cityColText,
+                        dataIndex: 'address_city'
+                    },{
+                        text     : this.stateColText,
+                        dataIndex: 'address_state'
+                    },{
+                        text     : this.zipCodeColText,
+                        dataIndex: 'address_zip'
+                    },{
+                        text     : this.lastNameColText,
+                        dataIndex: 'person_lastname'
+                    },{
+                        text     : this.firstNameColText,
+                        dataIndex: 'person_firstname'
+                    },{
+                        text     : this.intPkgColText,
+                        dataIndex: 'integration_package_name'
                     }
-                },
-
-                {
-                    text     : 'Name',
-                    dataIndex: 'Name',
-                    flex     : 1
-                },
-
-                {
-                    text     : 'Federal ID',
-                    dataIndex: 'FederalID',
-                    flex     : 1
-                },
-
-                {
-                    text     : 'Tax Report Name',
-                    dataIndex: 'TaxReportName',
-                    flex     : 1
-                },
-
-                {
-                    text     : 'Status',
-                    dataIndex: 'Status',
-                    flex     : 1
-                },
-
-                {
-                    text     : 'Vendor Type',
-                    dataIndex: 'VendorType',
-                    flex     : 1
-                },
-
-                {
-                    text     : 'Pay Priority',
-                    dataIndex: 'PayPriority',
-                    flex     : 1
-                },
-
-                {
-                    text     : 'Created Date',
-                    dataIndex: 'CreatedDate',
-                    flex     : 1
-                },
-
-                {
-                    text     : 'Last Update Date',
-                    dataIndex: 'LastUpdateDate',
-                    flex     : 1
-                },
-
-                {
-                    text     : '1099 Reportable ?',
-                    dataIndex: '1099Reportable?',
-                    flex     : 1
-                },
-
-                {
-                    text     : 'Term Date Basis',
-                    dataIndex: 'TermDateBasis',
-                    flex     : 1
-                },
-
-                {
-                    text     : 'Pay Date Basis',
-                    dataIndex: 'PayDateBasis',
-                    flex     : 1
-                },
-
-                {
-                    text     : 'Default GL code',
-                    dataIndex: 'DefaultGLcode',
-                    flex     : 1
-                },
-
-                {
-                    text     : 'Phone',
-                    dataIndex: 'Phone',
-                    flex     : 1
-                },
-
-                {
-                    text     : 'Fax',
-                    dataIndex: 'Fax',
-                    flex     : 1
-                },
-
-                {
-                    text     : 'Address 1',
-                    dataIndex: 'Address1',
-                    flex     : 1
-                },
-
-                {
-                    text     : 'Address 2',
-                    dataIndex: 'Address2',
-                    flex     : 1
-                },
-
-                {
-                    text     : 'City',
-                    dataIndex: 'City',
-                    flex     : 1
-                },
-
-                {
-                    text     : 'State',
-                    dataIndex: 'State',
-                    flex     : 1
-                },
-
-                {
-                    text     : 'Zip Code',
-                    dataIndex: 'ZipCode',
-                    flex     : 1
-                },
-
-                {
-                    text     : 'Contact Last Name',
-                    dataIndex: 'ContactLastName',
-                    flex     : 1
-                },
-
-                {
-                    text     : 'Contact First Name',
-                    dataIndex: 'ContactFirstName',
-                    flex     : 1
-                },
-
-                {
-                    text     : 'IntegrationPackage',
-                    dataIndex: 'IntegrationPackage',
-                    flex     : 1,
-                    renderer : function(val, meta, rec) {
-                        var value = val.split(';');
-                        if (value[1]) {
-                            meta.tdAttr = 'data-qtip="' + value[1] + '"';
-                            return "<span style='color:red;font-weight:bold' >" + value[0] + "</span>";
-                        } else {
-                            return val;
-                        }
-
-                    }
-                 
-                }
-
-            ]
+                ]
+            }
         }
     }
 

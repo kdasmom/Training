@@ -28,178 +28,50 @@ Ext.define('NP.view.import.types.UnitType', {
     
       getGrid: function() {
         return {
-            columns: [
-                {
-                    text     : this.intPkgColText, 
-                    dataIndex: 'IntegrationPackage',
-                    flex     : 1,
-                    renderer : function(val, meta, rec) {
-                        var value = val.split(';');
-                        if (value[1]) {
-                            meta.tdAttr = 'data-qtip="' + value[1] + '"';
-                            return "<span style='color:red;font-weight:bold' >" + value[0] + "</span>";
-                        } else {
-                            return val;
-                        }
+            columns: {
+                items: [
+                    {
+                        text     : this.intPkgColText, 
+                        dataIndex: 'integration_package_name'
+                    },{
+                        text     : this.propertyCodeColText,
+                        dataIndex: 'property_id_alt'
+                    },{
+                        text     : this.nameColText,
+                        dataIndex: 'unittype_name'
+                    },{
+                        text     : this.bedroomsColText,
+                        dataIndex: 'unittype_bedrooms'
+                    },{
+                        text     : this.bathroomsColText,
+                        dataIndex: 'unittype_bathrooms'
+                    },{
+                        text     : this.carpetYdColText,
+                        dataIndex: 'carpet_yards'
+                    },{
+                        text     : this.vinylYdColText,
+                        dataIndex: 'vinyl_yards'
+                    },{
+                        text     : this.tileYdColText,
+                        dataIndex: 'tile_yards'
+                    },{
+                        text     : this.harwoodYdColText,
+                        dataIndex: 'hardwood_yards'
+                    },{
+                        text     : this.carpetFtColText,
+                        dataIndex: 'carpet_feet'
+                    },{
+                        text     : this.vinylFtColText,
+                        dataIndex: 'vinyl_feet'
+                    },{
+                        text     : this.tileFtColText,
+                        dataIndex: 'tile_feet'
+                    },{
+                        text     : this.harwoodFtColText,
+                        dataIndex: 'hardwood_feet'
                     }
-                },
-                {
-                    text     : this.propertyCodeColText,
-                    dataIndex: 'PropertyCode',
-                    flex     : 1,
-                    renderer : function(val, meta, rec) {
-                        var value = val.split(';');
-                        if (value[1]) {
-                            meta.tdAttr = 'data-qtip="' + value[1] + '"';
-                            return "<span style='color:red;font-weight:bold' >" + value[0] + "</span>";
-                        } else {
-                            return val;
-                        }
-                    }},
-                {
-                    text     : this.nameColText,
-                    dataIndex: 'Name',
-                    flex     : 1,
-                    renderer : function(val, meta, rec) {
-                        var value = val.split(';');
-                        if (value[1]) {
-                            meta.tdAttr = 'data-qtip="' + value[1] + '"';
-                            return "<span style='color:red;font-weight:bold' >" + value[0] + "</span>";
-                        } else {
-                            return val;
-                        }
-                    }},
-                {
-                    text     : this.bedroomsColText,
-                    dataIndex: 'Bedrooms',
-                    flex     : 1,
-                    renderer : function(val, meta, rec) {
-                        var value = val.split(';');
-                        if (value[1]) {
-                            meta.tdAttr = 'data-qtip="' + value[1] + '"';
-                            return "<span style='color:red;font-weight:bold' >" + value[0] + "</span>";
-                        } else {
-                            return val;
-                        }
-                    }},
-                {
-                    text     : this.bathroomsColText,
-                    dataIndex: 'Bathrooms',
-                    flex     : 1,
-                    renderer : function(val, meta, rec) {
-                        var value = val.split(';');
-                        if (value[1]) {
-                            meta.tdAttr = 'data-qtip="' + value[1] + '"';
-                            return "<span style='color:red;font-weight:bold' >" + value[0] + "</span>";
-                        } else {
-                            return val;
-                        }
-                    }},
-                {
-                    text     : this.carpetYdColText,
-                    dataIndex: 'CarpetYd',
-                    flex     : 1,
-                    renderer : function(val, meta, rec) {
-                        var value = val.split(';');
-                        if (value[1]) {
-                            meta.tdAttr = 'data-qtip="' + value[1] + '"';
-                            return "<span style='color:red;font-weight:bold' >" + value[0] + "</span>";
-                        } else {
-                            return val;
-                        }
-                    }},
-                {
-                    text     : this.vinylYdColText,
-                    dataIndex: 'VinylYd',
-                    flex     : 1,
-                    renderer : function(val, meta, rec) {
-                        var value = val.split(';');
-                        if (value[1]) {
-                            meta.tdAttr = 'data-qtip="' + value[1] + '"';
-                            return "<span style='color:red;font-weight:bold' >" + value[0] + "</span>";
-                        } else {
-                            return val;
-                        }
-                    }},
-                {
-                    text     : this.tileYdColText,
-                    dataIndex: 'TileYd',
-                    flex     : 1,
-                    renderer : function(val, meta, rec) {
-                        var value = val.split(';');
-                        if (value[1]) {
-                            meta.tdAttr = 'data-qtip="' + value[1] + '"';
-                            return "<span style='color:red;font-weight:bold' >" + value[0] + "</span>";
-                        } else {
-                            return val;
-                        }
-                    }},
-                {
-                    text     : this.harwoodYdColText,
-                    dataIndex: 'HarwoodYd',
-                    flex     : 1,
-                    renderer : function(val, meta, rec) {
-                        var value = val.split(';');
-                        if (value[1]) {
-                            meta.tdAttr = 'data-qtip="' + value[1] + '"';
-                            return "<span style='color:red;font-weight:bold' >" + value[0] + "</span>";
-                        } else {
-                            return val;
-                        }
-                    }},
-                {
-                    text     : this.carpetFtColText,
-                    dataIndex: 'CarpetFt',
-                    flex     : 1,
-                    renderer : function(val, meta, rec) {
-                        var value = val.split(';');
-                        if (value[1]) {
-                            meta.tdAttr = 'data-qtip="' + value[1] + '"';
-                            return "<span style='color:red;font-weight:bold' >" + value[0] + "</span>";
-                        } else {
-                            return val;
-                        }
-                    }},
-                {
-                    text     : this.vinylFtColText,
-                    dataIndex: 'VinylFt',
-                    flex     : 1,
-                    renderer : function(val, meta, rec) {
-                        var value = val.split(';');
-                        if (value[1]) {
-                            meta.tdAttr = 'data-qtip="' + value[1] + '"';
-                            return "<span style='color:red;font-weight:bold' >" + value[0] + "</span>";
-                        } else {
-                            return val;
-                        }
-                    }},
-                {
-                    text     : this.tileFtColText,
-                    dataIndex: 'TileFt',
-                    flex     : 1,
-                    renderer : function(val, meta, rec) {
-                        var value = val.split(';');
-                        if (value[1]) {
-                            meta.tdAttr = 'data-qtip="' + value[1] + '"';
-                            return "<span style='color:red;font-weight:bold' >" + value[0] + "</span>";
-                        } else {
-                            return val;
-                        }
-                    }},
-                {
-                    text     : this.harwoodFtColText,
-                    dataIndex: 'HarwoodFt',
-                    flex     : 1,
-                    renderer : function(val, meta, rec) {
-                        var value = val.split(';');
-                        if (value[1]) {
-                            meta.tdAttr = 'data-qtip="' + value[1] + '"';
-                            return "<span style='color:red;font-weight:bold' >" + value[0] + "</span>";
-                        } else {
-                            return val;
-                        }
-                    }},
-            ]
+                ]
+            }
         };
     }
 

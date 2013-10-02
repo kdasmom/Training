@@ -35,3 +35,6 @@
 .x-item-disabled .x-form-item-label, .x-item-disabled .x-form-field, .x-item-disabled .x-form-cb-label, .x-item-disabled .x-form-trigger {
     opacity: 0.5;
 }
+
+/* IMPORT SECTION */
+.importTemplates a { color: #000; margin-left: 16px; }

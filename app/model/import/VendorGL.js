@@ -7,9 +7,10 @@ Ext.define('NP.model.import.VendorGL', {
 	extend: 'Ext.data.Model',
 	
 	fields: [
-        {"name": "VendorCode"},
-        {"name": "GLCodes"},
-        {"name": "Integration Package"},
-        { name: 'validation_status' }
+        { name: "vendor_id_alt" },
+        { name: "glaccount_number" },
+        { name: "integration_package_name" },
+        { name: 'validation_status' },
+        { name: 'validation_errors' }
 	]
 });

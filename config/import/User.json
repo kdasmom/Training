@@ -1,22 +1,4 @@
 {
     "description": "User",
-    "service": "UserService",
-    "entity": "NP\\user\\UserEntity",
-    "columns": [
-        {"name": "FirstName", "entityField": "FirstName"},
-        {"name": "MiddleName", "entityField": "MiddleName"},
-        {"name": "LastName", "entityField": "LastName"},
-        {"name": "Username", "entityField": "Username"},
-        {"name": "UserGroup", "entityField": "UserGroup"},
-        {"name": "Address1", "entityField": "Address1"},
-        {"name": "Address2", "entityField": "Address2"},
-        {"name": "City", "entityField": "City"},
-        {"name": "State", "entityField": "State"},
-        {"name": "Zip", "entityField": "Zip"},
-        {"name": "EmailAddress", "entityField": "EmailAddress"},
-        {"name": "HomePhone", "entityField": "HomePhone"},
-        {"name": "WorkPhone", "entityField": "WorkPhone"}
-    ],
-    "customValidation": true,
-    "customValidationClass": "UserEntityValidator"
+    "service": "UserService"
 }

@@ -21,6 +21,16 @@ Ext.define('NP.view.import.types.AbstractImportType', {
 
     getGrid: function() {
         throw 'You must override this function in your import type implementation';
+    },
+
+    getColumnRenderer: function(val, meta, rec, arg4, colIdx) {
+        var dataIndex = this.columns[colIdx].dataIndex;
+        if (dataIndex in rec.get('validation_errors')) {
+            meta.tdAttr = 'data-qtip="' + rec.get('validation_errors')[dataIndex] + '"';
+            return "<span style='color:red;font-weight:bold' >" + val + "</span>";
+        } else {
+            return val;
+        }
     }
 
 });

@@ -238,6 +238,84 @@ class InvoiceService extends AbstractService {
 			$this->invoiceGateway->rollback();
 		}
 	}
+
+	/**
+	 * Save an invoice payment from the import tool
+	 */
+	public function saveInvoicePaymentFromImport($data) {
+		 $intPkg = $this->integrationPackageGateway->find(
+            'integration_package_name = ?',
+            array($data[0]['integration_package_name'])
+        );
+        $integration_package_id = $intPkg[0]['integration_package_id'];
+        
+        try {
+            $sessionKey = $this->soapService->login();
+
+            $soapSettings = $this->soapService->getSettings();
+
+            $headerXml = "<SecurityHeader xmlns=\"http://tempuri.org/\">
+                            <SessionKey>{$sessionKey}</SessionKey>
+                            <ClientName>{$soapSettings['wsdl_client']}</ClientName>
+                            <UserName>{$soapSettings['wsdl_user']}</UserName>
+                        </SecurityHeader>";
+
+            $xml = "<PN_SET_INVOICEPAYMENTS xmlns=\"http://tempuri.org/\">
+                        <invoicepayment>
+                            <INVOICEPAYMENTS xmlns=''>";
+
+            foreach ($data as $row) {
+            	$invoice_datetm = \DateTime::createFromFormat('m/d/Y', $row['invoice_datetm']);
+                $invoice_datetm = $invoice_datetm->format('Y-m-d');
+                $invoicepayment_datetm = \DateTime::createFromFormat('m/d/Y', $row['invoicepayment_datetm']);
+                $invoicepayment_datetm = $invoicepayment_datetm->format('Y-m-d');
+
+                $xml .=         "<INVOICEPAYMENT>
+		                            <Business_unit>{$row['property_id_alt']}</Business_unit>
+		                            <Invoice_Id_Alt>{$row['invoice_ref']}{$row['vendor_id_alt']}</Invoice_Id_Alt>
+		                            <VendorSite_Id_Alt>{$row['vendor_id_alt']}</VendorSite_Id_Alt>
+		                            <invoice_ref>{$row['invoice_ref']}</invoice_ref>
+		                            <Invoice_Date>{$invoice_datetm}</Invoice_Date>
+		                            <Invoice_Period>{$row['invoice_period']}</Invoice_Period>
+		                            <Invoice_Id>0</Invoice_Id>
+		                            <Invoice_Payment_Id_alt>{$row['invoicepayment_id_alt']}</Invoice_Payment_Id_alt>
+		                            <Invoice_Payment_Number>0</Invoice_Payment_Number>
+		                            <Invoice_Payment_Datetm>{$invoicepayment_datetm}</Invoice_Payment_Datetm>
+		                            <Invoice_Payment_CheckNum>{$row['invoicepayment_checknum']}</Invoice_Payment_CheckNum>
+		                            <Invoice_Payment_Amount>{$row['invoicepayment_amount']}</Invoice_Payment_Amount>
+		                            <Invoice_Payment_Status>".strtolower($row['invoicepayment_status'])."</Invoice_Payment_Status>
+		                        </INVOICEPAYMENT>";
+            }
+
+            $xml .=         "</INVOICEPAYMENTS>
+                        </invoicepayment>
+                        <integration_id>{$integration_package_id}</integration_id>
+                    </PN_SET_INVOICEPAYMENTS>";
+
+            $res = $this->soapService->request(
+                $soapSettings['wsdl_url'],
+                $xml,
+                $headerXml
+            );
+
+            $statusCode = (string)$res['soapResult']->PN_SET_INVOICEPAYMENTS->Status->StatusCode;
+
+            $error = null;
+            if ($statusCode === 'SUCCESS') {
+                $success = true;
+            } else {
+                throw new \NP\core\Exception('The SOAP request for saving invoice payments failed.');
+            }
+        } catch(\Exception $e) {
+            $success = false;
+            $error   = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+        }
+
+        return array(
+            'success' => $success,
+            'error'   => $error
+        );
+	}
 	
 }
 

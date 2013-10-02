@@ -1,43 +1,83 @@
 <?php
 namespace NP\gl;
 
-class GLAccountEntity extends \NP\core\AbstractEntity
-{
-
+/**
+ * Entity class for GlAccount
+ *
+ * @author Thomas Messier
+ */
+class GlAccountEntity extends \NP\core\AbstractEntity {
+    
     protected $fields = array(
-        'glaccount_id' => array(
+        'glaccount_id'   => array(
             'validation' => array(
                 'digits' => array()
             )
         ),
-        'glaccount_name' => array(
+        'glaccount_name'     => array(
+            'required'   => true,
             'validation' => array(
-                'stringLength' => array('max' => 255)
+                'stringLength' => array('max'=>255)
             )
         ),
-        'glaccount_number' => array(
+        'glaccount_number'   => array(
+            'required'   => true,
             'validation' => array(
-                'stringLength' => array('max' => 50)
+                'stringLength' => array('max'=>50)
             )
         ),
-        'glaccounttype_id' => array(
+        'glaccount_status'   => array(
+            'required'     => true,
+            'defaultValue' => 'active',
+            'validation'   => array(
+                'stringLength' => array('max'=>50)
+            )
+        ),
+        'glaccount_amount'   => array(
+            'validation' => array(
+                'numeric' => array()
+            )
+        ),
+        'glaccounttype_id'   => array(
+            'required'   => true,
             'validation' => array(
                 'digits' => array()
             )
         ),
-        'integration_package_id' => array(
+        'glaccount_level'    => array(
             'validation' => array(
                 'digits' => array()
             )
         ),
-        'glaccount_status' => array(
-            'defaultValue' => 'active'
+        'glaccount_usable'   => array(
+            'defaultValue' => 'Y',
+            'validation' => array(
+                'stringLength' => array('max'=>1)
+            )
         ),
-        'glaccount_usable' => array(
-            'defaultValue' => 'Y'
+        'glaccount_order'    => array(
+            'validation' => array(
+                'digits' => array()
+            )
         ),
-        'glaccount_updateby' => array()
+        'integration_package_id'     => array(
+            'required'   => true,
+            'validation' => array(
+                'digits' => array()
+            )
+        ),
+        'glaccount_updateby'     => array(
+            'validation' => array(
+                'digits' => array()
+            )
+        ),
+        'glaccount_updatetm'     => array(
+            'timestamp' => 'updated',
+            'validation' => array(
+                'date' => array('format'=>'Y-m-d H:i:s.u')
+            )
+        )
     );
 
-
 }
+?>

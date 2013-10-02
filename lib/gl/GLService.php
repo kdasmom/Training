@@ -4,33 +4,31 @@ namespace NP\gl;
 
 use NP\core\AbstractService;
 use NP\core\validation\EntityValidator;
-use NP\system\BaseImportService;
 use NP\system\TreeGateway;
+use NP\system\IntegrationPackageGateway;
+use NP\gl\GlAccountTypeGateway;
 
 /**
  * All operations that are closely related to GL accounts belong in this service
  *
  * @author Thomas Messier
  */
-class GLService extends BaseImportService {
+class GLService extends AbstractService {
 	
-    /**
-     * @var \NP\gl\GLAccountGateway
-     */
-    protected $glaccountGateway;
+    protected $securityService, $glAccountGateway, $treeGateway, $integrationPackageGateway;
 
-    protected $treeGateway;
-
-    protected $GLAccountEntityValidator;
-	
-	/**
-	 * @param \NP\gl\GLAccountGateway $glaccountGateway GLAccount gateway injected
-	 */
-	public function __construct(GLAccountGateway $glaccountGateway, TreeGateway $treeGateway, GLAccountEntityValidator $validator) {
-            $this->glaccountGateway = $glaccountGateway;
-            $this->treeGateway = $treeGateway;
-            $this->GLAccountEntityValidator = $validator;
+    public function __construct(GLAccountGateway $glAccountGateway, TreeGateway $treeGateway,
+                                IntegrationPackageGateway $integrationPackageGateway,
+                                GlAccountTypeGateway $glAccountTypeGateway) {
+            $this->glAccountGateway          = $glAccountGateway;
+            $this->treeGateway               = $treeGateway;
+            $this->integrationPackageGateway = $integrationPackageGateway;
+            $this->glAccountTypeGateway      = $glAccountTypeGateway;
 	}
+
+    public function setSecurityService(\NP\security\SecurityService $securityService) {
+        $this->securityService = $securityService;
+    }
 	
 	/**
 	 * Retrieves records from GLAccount table that display in an invoice line item combo box matching a
@@ -43,7 +41,7 @@ class GLService extends BaseImportService {
 	 * @return array
 	 */
 	public function getForInvoiceItemComboBox($vendorsite_id, $property_id, $glaccount_keyword='') {
-		return $this->glaccountGateway->findForInvoiceItemComboBox($vendorsite_id, $property_id, $glaccount_keyword);
+		return $this->glAccountGateway->findForInvoiceItemComboBox($vendorsite_id, $property_id, $glaccount_keyword);
 	}
 	
 	/**
@@ -53,62 +51,161 @@ class GLService extends BaseImportService {
 	 * @return array                         Array of GL account records
 	 */
 	public function getByIntegrationPackage($integration_package_id) {
-		return $this->glaccountGateway->findByIntegrationPackage($integration_package_id);
+		return $this->glAccountGateway->findByIntegrationPackage($integration_package_id);
 	}
 
-    public function save(\ArrayObject $data, $entityClass)
-    {
-        // Get entities
-        $accountNumber = $data['AccountNumber'];
-        $accountName = $data['GLAccountName'];
-        $categoryName = $data['CategoryName'];
-        $accountTypeName = $data['AccountType'];
-        $integrationPackageName = $data['IntegrationPackageName'];
-        $glaccount_updateby = $data['glaccount_updateby'];
-        $accountTypeId = $this->GLAccountEntityValidator->getAccountTypeIdByName($accountTypeName);
-        $integrationPackageId = $this->GLAccountEntityValidator->getIntegrationPackageIdByName($integrationPackageName);
-        $glAccountCategoryId = $this->GLAccountEntityValidator->getCategoryIdByName($categoryName, $integrationPackageId);
-        $parentTreeId  = $this->treeGateway->getTreeIdForCategory($glAccountCategoryId);
-        $treeOrder = $this->treeGateway->getTreeOrder($parentTreeId);
-        $account = array(
-            'glaccount_name' => $accountName,
-            'glaccount_number' => $accountNumber,
-            'glaccounttype_id' => $accountTypeId,
-            'integration_package_id' => $integrationPackageId,
-            'glaccount_updateby' => $glaccount_updateby
-        );
+    /**
+     * Saves a GL category
+     *
+     * @param array  $data
+     * @param string $entityType Valid values are 'category' or 'account'
+     */
+    public function save($data, $entityType) {
+        $className = '\NP\gl\GL' . ucfirst($entityType) . 'Entity';
+        $glaccount = new $className($data['glaccount']);
 
-        $exists = $oldGlAccountId = $this->GLAccountEntityValidator->glaccountExists($accountNumber, $integrationPackageId);
-        if($exists) {
-            $account['glaccount_id'] = $oldGlAccountId;
+        // Update some fields that aren't user generated
+        if ($glaccount->glaccount_id === null) {
+            $glaccount->glaccount_order = $this->glAccountGateway->getMaxOrder($data['tree_parent']);
+        } else {
+            $glaccount->glaccount_updateby = $this->securityService->getUserId();
         }
 
-        $glaccount     = new $entityClass($account);
-
-        // Run validation
-        $errors    = $this->validate($glaccount);
-
-        // If the data is valid, save it
-        if (count($errors) == 0) {
-            // Begin transaction
-            $this->glaccountGateway->beginTransaction();
+        $errors = $this->entityValidator->validate($glaccount);
+        
+        if (!count($errors)) {
+            $this->glAccountGateway->beginTransaction();
 
             try {
-                // Save the glaccount record
-                $this->glaccountGateway->save($glaccount);
-                $newGlAccountId = $glaccount->glaccount_id;
-                $this->treeGateway->updateTree($oldGlAccountId, $newGlAccountId, $parentTreeId, $treeOrder, $exists);
+                $this->glAccountGateway->save($glaccount);
 
+                $this->treeGateway->saveByTableNameAndId(
+                    'glaccount',
+                    $glaccount->glaccount_id,
+                    $data['tree_parent']
+                );
             } catch(\Exception $e) {
                 // Add a global error to the error array
                 $errors[] = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e), 'extra'=>null);
             }
+
+            if (count($errors)) {
+                $this->glAccountGateway->rollback();
+            } else {
+                $this->glAccountGateway->commit();
+            }
         }
 
-        if (count($errors)) {
-            $this->glaccountGateway->rollback();
-        } else {
-            $this->glaccountGateway->commit();
+        return array(
+            'success' => (count($errors)) ? false : true,
+            'errors'  => $errors
+        );
+    }
+
+    /**
+     * Saves a collection of categories imported using the import tool
+     *
+     * @param array $data
+     */
+    public function saveGLCategoryFromImport($data) {
+        // Use this to store integration package IDs
+        $intPkgs = array();
+        $errors  = array();
+
+        foreach ($data as $idx=>$row) {
+            // If there's been no record with this integration package, we need to retrieve the ID for it
+            if (!array_key_exists($row['integration_package_name'], $intPkgs)) {
+                $intPkg = $this->integrationPackageGateway->find(
+                    'integration_package_name = ?',
+                    array($row['integration_package_name'])
+                );
+                $intPkgs[$row['integration_package_name']] = $intPkg[0]['integration_package_id'];
+            }
+            $row['integration_package_id'] = $intPkgs[$row['integration_package_name']];
+            $row['glaccount_number']       = $row['glaccount_name'];
+
+            $result = $this->save(
+                array(
+                    'glaccount'   => $row,
+                    'tree_parent' => 0
+                ),
+                'category'
+            );
+
+            if (!$result['success']) {
+                $errorMsg = $this->localizationService->getMessage('importRecordSaveError') . " {$idx}";
+                $errors[] = $errorMsg;
+            }
         }
+
+        $error = implode('<br />', $errors);
+        return array(
+            'success' => (count($errors)) ? false : true,
+            'error'  => $error
+        );
+    }
+
+    public function saveGLCodeFromImport($data) {
+        // Use this to store integration package IDs
+        $intPkgs = array();
+        // Use this to store account type IDs
+        $accountTypes = array();
+        // Use this to store account type IDs
+        $categories = array();
+
+        $errors  = array();
+
+        // Loop through all the rows to import
+        foreach ($data as $idx=>$row) {
+            // If there's been no record with this integration package, we need to retrieve the ID for it
+            if (!array_key_exists($row['integration_package_name'], $intPkgs)) {
+                $rec = $this->integrationPackageGateway->find(
+                    'integration_package_name = ?',
+                    array($row['integration_package_name'])
+                );
+                $intPkgs[$row['integration_package_name']] = $rec[0]['integration_package_id'];
+            }
+            $row['integration_package_id'] = $intPkgs[$row['integration_package_name']];
+
+            // If there's been no record with this account type, we need to retrieve the ID for it
+            if (!array_key_exists($row['glaccounttype_name'], $accountTypes)) {
+                $rec = $this->glAccountTypeGateway->find(
+                    'glaccounttype_name = ?',
+                    array($row['glaccounttype_name'])
+                );
+                $accountTypes[$row['glaccounttype_name']] = $rec[0]['glaccounttype_id'];
+            }
+            $row['glaccounttype_id'] = $accountTypes[$row['glaccounttype_name']];
+
+            // If there's been no record with this category, we need to retrieve the ID for it
+            if (!array_key_exists($row['category_name'], $categories)) {
+                $rec = $this->glAccountGateway->getCategoryByName(
+                    $row['category_name'],
+                    $row['integration_package_id']
+                );
+                $categories[$row['category_name']] = $rec['tree_id'];
+            }
+
+            // Save the row
+            $result = $this->save(
+                array(
+                    'glaccount'   => $row,
+                    'tree_parent' => $categories[$row['category_name']]
+                ),
+                'account'
+            );
+
+            // Set errors
+            if (!$result['success']) {
+                $errorMsg = $this->localizationService->getMessage('importRecordSaveError') . " {$idx}";
+                $errors[] = $errorMsg;
+            }
+        }
+
+        $error = implode('<br />', $errors);
+        return array(
+            'success' => (count($errors)) ? false : true,
+            'error'  => $error
+        );
     }
 }

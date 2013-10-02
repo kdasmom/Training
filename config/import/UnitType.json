@@ -1,22 +1,4 @@
 {
     "description": "UnitType",
-    "service": "UnitTypeService",
-    "entity": "NP\\property\\UnitTypeEntity",
-    "columns": [
-        {"name": "IntegrationPackage", "entityField": "IntegrationPackage", "dataTable": "IntegrationPackage", "dataColumn": "integration_package_name"},
-        {"name": "PropertyCode", "entityField": "PropertyCode"},
-        {"name": "Name", "entityField": "Name"},
-        {"name": "Bedrooms", "entityField": "Bedrooms"},
-        {"name": "Bathrooms", "entityField": "Bathrooms"},
-        {"name": "CarpetYd", "entityField": "CarpetYd"},
-        {"name": "VinylYd", "entityField": "VinylYd"},
-        {"name": "TileYd", "entityField": "TileYd"},
-        {"name": "HarwoodYd", "entityField": "HarwoodYd"},
-        {"name": "CarpetFt", "entityField": "CarpetFt"},
-        {"name": "VinylFt", "entityField": "VinylFt"},
-        {"name": "TileFt", "entityField": "TileFt"},
-        {"name": "HarwoodFt", "entityField": "HarwoodFt"}
-    ],
-    "customValidation": true,
-    "customValidationClass": "UnitTypeEntityValidator"
+    "service": "PropertyService"
 }

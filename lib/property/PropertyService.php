@@ -2,7 +2,6 @@
 
 namespace NP\property;
 
-use NP\system\BaseImportService;
 use NP\core\AbstractService;
 use NP\core\validation\EntityValidator;
 use NP\security\SecurityService;
@@ -15,18 +14,20 @@ use NP\workflow\WfRuleTargetGateway;
 use NP\contact\AddressGateway;
 use NP\contact\PhoneGateway;
 use NP\contact\PhoneTypeGateway;
+use NP\contact\StateGateway;
 use NP\system\PnCustomFieldsGateway;
 use NP\system\PnCustomFieldDataGateway;
 use NP\system\ConfigService;
 use NP\system\IntegrationPackageGateway;
+use NP\gl\GLAccountGateway;
 
-class PropertyService extends BaseImportService {
+class PropertyService extends AbstractService {
 	
 	protected $securityService, $propertyGateway, $regionGateway, $fiscalcalGateway, $propertyUserprofileGateway, 
 				$unitGateway, $userprofileGateway, $invoiceService, $poService, $wfRuleTargetGateway,
 				$fiscalDisplayTypeGateway, $fiscalcalMonthGateway, $addressGateway, $phoneGateway, $pnCustomFieldsGateway,
 				$pnCustomFieldDataGateway, $propertyGlAccountGateway, $configService, $unitTypeGateway, $unitTypeValGateway,
-				$unitTypeMeasGateway, $propertyEntityValidator, $stateGateway, $integrationPackageGateway;
+				$unitTypeMeasGateway, $stateGateway, $integrationPackageGateway, $glAccountGateway;
 	
 	public function __construct(SecurityService $securityService, PropertyGateway $propertyGateway, RegionGateway $regionGateway,
 								FiscalcalGateway $fiscalcalGateway, PropertyUserprofileGateway $propertyUserprofileGateway,
@@ -37,8 +38,8 @@ class PropertyService extends BaseImportService {
 								RecAuthorGateway $recAuthorGateway, PnCustomFieldsGateway $pnCustomFieldsGateway,
 								PnCustomFieldDataGateway $pnCustomFieldDataGateway, PropertyGlAccountGateway $propertyGlAccountGateway,
 								UnitTypeGateway $unitTypeGateway, UnitTypeValGateway $unitTypeValGateway,
-								UnitTypeMeasGateway $unitTypeMeasGateway, PropertyEntityValidator $propertyEntityValidator,
-                                                                StateGateway $stateGateway, IntegrationPackageGateway $integrationPackageGateway) {
+								UnitTypeMeasGateway $unitTypeMeasGateway, StateGateway $stateGateway, 
+								IntegrationPackageGateway $integrationPackageGateway, GLAccountGateway $glAccountGateway) {
 		$this->securityService            = $securityService;
 		$this->propertyGateway            = $propertyGateway;
 		$this->regionGateway              = $regionGateway;
@@ -61,9 +62,9 @@ class PropertyService extends BaseImportService {
 		$this->unitTypeGateway            = $unitTypeGateway;
 		$this->unitTypeValGateway         = $unitTypeValGateway;
 		$this->unitTypeMeasGateway        = $unitTypeMeasGateway;
-                $this->propertyEntityValidator    = $propertyEntityValidator;
-                $this->stateGateway               = $stateGateway;
-                $this->integrationPackageGateway  = $integrationPackageGateway;
+		$this->stateGateway               = $stateGateway;
+		$this->integrationPackageGateway  = $integrationPackageGateway;
+		$this->glAccountGateway           = $glAccountGateway;
 	}
 
 	/**
@@ -654,9 +655,15 @@ class PropertyService extends BaseImportService {
 				if (array_key_exists('units', $data)) {
 					foreach ($data['units'] as $unitData) {
 						// Save the unit
-						$unit = new UnitEntity($unitData);
-						$unit->property_id = $property->property_id;
-						$this->unitGateway->save($unit);
+						$unitData['property_id'] = $property->property_id;
+						$saveStatus = $this->saveUnit($unitData);
+						if (!$saveStatus['success']) {
+							$errors[] = array(
+										'field' => 'global',
+										'msg'   => $this->localizationService->getMessage('unitSaveError')
+									);
+							break;
+						}
 					}
 				}
 
@@ -670,28 +677,18 @@ class PropertyService extends BaseImportService {
 				// Save unit types if any
 				if (array_key_exists('unitTypes', $data)) {
 					foreach ($data['unitTypes'] as $unitTypeData) {
-						// Save the fiscal calendar
-						$unitType = new UnitTypeEntity($unitTypeData);
-						$unitType->property_id = $property->property_id;
-						$unitType->unittype_updated_by = $data['userprofile_id'];
-						$unitType->unittype_updated_date = $now;
-						$this->unitTypeGateway->save($unitType);
+						// Save the unit type
+						$unitTypeData['property_id'] = $property->property_id;
+						$unitTypeData['unittype_updated_by'] = $data['userprofile_id'];
+						$unitTypeData['unittype_updated_date'] = $now;
 
-						// Save the values for the unit type
-						if (array_key_exists('vals', $unitTypeData)) {
-							foreach ($unitTypeData['vals'] as $unitTypeValData) {
-								$unitTypeVal = new UnitTypeValEntity($unitTypeValData);
-								$unitTypeVal->unittype_id = $unitType->unittype_id;
-								$this->unitTypeValGateway->save($unitTypeVal);
-							}
-						}
-
-						// Save the unit assignments
-						$this->unitGateway->update(array('unittype_id'=>null), 'unittype_id = ?', array($unitType->unittype_id));
-						foreach ($unitTypeData['units'] as $unitData) {
-							$unit = new UnitEntity($unitData);
-							$unit->unittype_id = $unitType->unittype_id;
-							$this->unitGateway->save($unit);
+						$saveStatus = $this->saveUnitType($unitTypeData);
+						if (!$saveStatus['success']) {
+							$errors[] = array(
+										'field' => 'global',
+										'msg'   => $this->localizationService->getMessage('unitTypeSaveError')
+									);
+							break;
 						}
 					}
 				}
@@ -714,76 +711,212 @@ class PropertyService extends BaseImportService {
 		);
 	}
 
-        public function save(\ArrayObject $data, $entityClass)
-        {
-            // Get entities
-            $propertyIdAlt = $data['PropertyCode'];
-            $propertyIdAltAp = $data['PropertyCode'];
-            $propertyName = $data['PropertyName'];
-            $propertySalesTax = $data['PropertySalesTax'];
-            $UserProfile_ID = $data['UserProfile_ID'];
-            $propertyNoUnits = $data['TotalNoUnits'];
-            $matchingThreshold = $data['POMatchingThreshhold'] / 100;
-            $cashAccural = strtolower($data['AccrualorCash']);
-            $createDateTM = substr(date('Y-m-d H:i:s.u'), 0, -3);
-            $propertyOptionBillAddress = (strtolower($data['BillToAddressOption']) == 'yes') ? 1 : 0;
-            $propertyOptionShipAddress = (strtolower($data['ShipToAddressOption']) == 'yes') ? 1 : 0;
-            $defaultBillToPropertyId = $data['DefaultBillToProperty'];
-            $defaultShipToPropertyId = $data['DefaultShipToProperty'];
-            $region = $this->regionGateway->find('region_name = ?', array($data['Region']));
-            $regionId = $region[0]['region_id'];
-            $integrationPackage = $this->integrationPackageGateway->find('integration_package_name = ?', array($data['IntegrationPackage']));
-            $integrationPackageId = $integrationPackage[0]['integration_package_id'];
-      
-            $entityData = array(
-                'property_id_alt' => $propertyIdAlt,
-                'property_id_alt_ap' => $propertyIdAltAp,
-                'property_name' => $propertyName,
-                'property_salestax' => $propertySalesTax,
-                'property_no_units' => $propertyNoUnits,
-                'matching_threshold' => $matchingThreshold,
-                'property_status' => 0,
-                'property_download' => 1,
-                'region_id' => $regionId,
-                'integration_package_id' => $integrationPackageId,
-                'sync' => 1,
-                'fiscaldisplaytype_value' => 1,
-                'cash_accural' => $cashAccural,
-                'UserProfile_ID' => $UserProfile_ID,
-                'createdatetm' => $createDateTM,
-                'property_optionBillAddress' => $propertyOptionBillAddress,
-                'property_optionShipAddress' => $propertyOptionShipAddress,
-                'default_billto_property_id' => $defaultBillToPropertyId,
-                'default_shipto_property_id' => $defaultShipToPropertyId,
-                'property_volume' => 'normal',
-                'property_NexusServices' => 1,
-                'property_VendorCatalog' => 1,
-                'last_updated_by' => $UserProfile_ID
+	/**
+	 * Saves a unit
+	 */
+	public function saveUnit($data) {
+		$unit = new UnitEntity($data);
+		$errors    = $this->entityValidator->validate($unit);
+
+		if (!count($errors)) {
+			try{
+				$this->unitGateway->save($unit);
+			} catch(\Exception $e) {
+				// Add a global error to the error array
+				$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
+			}
+		}
+
+		return array(
+			'success'    => (count($errors)) ? false : true,
+			'errors'     => $errors,
+			'id'         => $unit->unit_id
+		);
+	}
+
+	/**
+	 * Saves a unit type
+	 */
+	public function saveUnitType($data) {
+		$unitType = new UnitTypeEntity($data);
+		$errors    = $this->entityValidator->validate($unitType);
+
+		if (!count($errors)) {
+			$this->unitTypeGateway->beginTransaction();
+
+			try{
+				$this->unitTypeGateway->save($unitType);
+
+				if (array_key_exists('vals', $data)) {
+					foreach ($data['vals'] as $unitTypeValData) {
+						$unitTypeVal = new UnitTypeValEntity($unitTypeValData);
+						$unitTypeVal->unittype_id = $unitType->unittype_id;
+						$typeValErrors = $this->entityValidator->validate($unitTypeVal);
+						if (count($typeValErrors)) {
+							$errors[] = array('field'=>'global', 'msg'=>'unitTypeSaveError');
+							$this->loggingService->log('error', 'Error saving unittype_val record', $typeValErrors);
+							break;
+						} else {
+							$this->unitTypeValGateway->save($unitTypeVal);
+						}
+					}
+				}
+
+				// Save unit assignments
+				if (array_key_exists('units', $data)) {
+					$this->unitGateway->update(array('unittype_id'=>null), 'unittype_id = ?', array($unitType->unittype_id));
+					foreach ($data['units'] as $unitData) {
+						$unitData['unittype_id'] = $unitType->unittype_id;
+						$unitErrors = $this->saveUnit($unitData);
+						if (count($unitErrors)) {
+							$errors[] = array('field'=>'global', 'msg'=>'unitSaveError');
+							$this->loggingService->log('error', 'Error saving unit assignments', $unitErrors);
+							break;
+						}
+					}
+				}
+			} catch(\Exception $e) {
+				// Add a global error to the error array
+				$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
+			}
+		}
+
+		if (count($errors)) {
+			$this->unitTypeGateway->rollback();
+		} else {
+			$this->unitTypeGateway->commit();
+		}
+
+		return array(
+			'success'    => (count($errors)) ? false : true,
+			'errors'     => $errors,
+			'id'         => $unitType->unittype_id
+		);
+	}
+
+	/**
+	 * Saves a collection of properties imported from a file through the import tool
+	 */
+	public function savePropertyFromImport($data) {
+		// Use this to store integration package IDs
+		$intPkgs            = array();
+		$fiscalDisplayTypes = array();
+		$fiscalCals         = array();
+		$regions            = array();
+		$errors             = array();
+
+        // Loop through all the rows to import
+        foreach ($data as $idx=>$row) {
+        	// Check if property is new, if not include property_id
+        	$rec = $this->propertyGateway->find('property_id_alt = ?', array($row['property_id_alt']));
+        	if (count($rec)) {
+        		$row['property_id'] = $rec[0]['property_id'];
+        	}
+
+            // If there's been no record with this integration package, we need to retrieve the ID for it
+            if (!array_key_exists($row['integration_package_name'], $intPkgs)) {
+                $rec = $this->integrationPackageGateway->find(
+                    'integration_package_name = ?',
+                    array($row['integration_package_name'])
+                );
+                $intPkgs[$row['integration_package_name']] = $rec[0]['integration_package_id'];
+            }
+            $row['integration_package_id'] = $intPkgs[$row['integration_package_name']];
+
+            // If there's been no record with this fiscal display type, we need to retrieve the ID for it
+            if (!array_key_exists($row['fiscaldisplaytype_name'], $fiscalDisplayTypes)) {
+                $rec = $this->fiscalDisplayTypeGateway->find(
+                    'fiscaldisplaytype_name = ?',
+                    array($row['fiscaldisplaytype_name'])
+                );
+                $fiscalDisplayTypes[$row['fiscaldisplaytype_name']] = $rec[0]['fiscaldisplaytype_id'];
+            }
+            $row['fiscaldisplaytype_value'] = $fiscalDisplayTypes[$row['fiscaldisplaytype_name']];
+
+            // If there's been no record with this fiscal calendar, we need to retrieve the ID for it
+            if (!array_key_exists($row['fiscalcal_name'], $fiscalCals)) {
+                $rec = $this->fiscalcalGateway->findMasterFiscalCalendars($row['fiscalcal_name']);
+                $fiscalCals[$row['fiscalcal_name']] = $rec[0]['fiscalcal_id'];
+            }
+            $fiscalcal_id = $fiscalCals[$row['fiscalcal_name']];
+
+            if (!array_key_exists($row['region_name'], $regions)) {
+                $rec = $this->regionGateway->find(
+                	'region_name = ?',
+                    array($row['region_name'])
+                );
+                $regions[$row['region_name']] = $rec[0]['region_id'];
+            }
+            $row['region_id'] = $regions[$row['region_name']];
+
+            // Split the zip code if necessary
+            $row['address_zipext'] = '';
+            if ($row['address_zip'] != '') {
+            	$zip = explode('-', $row['address_zip']);
+            	if (count($zip) > 1) {
+            		$row['address_zip'] = $zip[0];
+            		$row['address_zipext'] = $zip[1];
+            	}
+            }
+            // Package the address record
+            $address = array_intersect_key(
+            	$row,
+            	array_flip(array('address_attn','address_line1','address_line2','address_state',
+            					'address_city','address_zip','address_zipext'))
             );
-            
-        $entity = new $entityClass($entityData);
-        $errors = $this->validate($entity);
 
-        // If the data is valid, save it
-        if (count($errors) == 0) {
-            // Begin transaction
-            $this->propertyGateway->beginTransaction();
+            // Package the phone record
+            $phone = array('phone_number'=>$row['phone_number']);
 
-            try {
-                // Save the glaccount record
-                $this->propertyGateway->save($entity);
-            } catch(\Exception $e) {
-                // Add a global error to the error array
-                $errors[] = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e), 'extra'=>null);
+            // Package the fax record
+            $fax   = array('phone_number'=>$row['fax_number']);
+
+            $row['property_optionBillAddress'] = strtolower($row['property_optionBillAddress']);
+            $row['property_optionBillAddress'] = ($row['property_optionBillAddress'] == 'yes') ? 1 : 0;
+            $row['property_optionShipAddress'] = strtolower($row['property_optionShipAddress']);
+            $row['property_optionShipAddress'] = ($row['property_optionShipAddress'] == 'yes') ? 1 : 0;
+            $row['property_id_alt_ap']         = $row['property_id_alt'];
+
+            $propertyData = array(
+				'property'                     => $row,
+				'address'                      => $address,
+				'phone'                        => $phone,
+				'fax_phone'                    => $fax,
+				'fiscalcal_id'                 => $fiscalcal_id,
+				'userprofile_id'               => $this->securityService->getUserId(),
+				'delegation_to_userprofile_id' => $this->securityService->getUserId()
+            );
+
+            // Process and package custom field values
+            for ($i=1; $i<=4; $i++) {
+	            $field = "customfielddata_value{$i}";
+	            $rec = $this->pnCustomFieldsGateway->find(
+	                array('customfield_name'=>'?', 'customfield_pn_type'=>'?'),
+	                array("propertyCustom{$i}", 'property')
+	            );
+	            $rec = $rec[0];
+	            $propertyData[$rec['customfield_name']] = $row[$field];
+	        }
+
+	        // Save the row
+            $result = $this->saveProperty($propertyData);
+
+            // Set errors
+            if (!$result['success']) {
+            	$rowNum = $idx + 1;
+                $errorMsg = $this->localizationService->getMessage('importRecordSaveError') . " {$rowNum}";
+                $errors[] = $errorMsg;
+
+                $this->loggingService->log('error', 'Error importing property data', $result['errors']);
             }
         }
 
-        if (count($errors)) {
-            $this->propertyGateway->rollback();
-        } else {
-            $this->propertyGateway->commit();
-        }
-    }
+        $error = implode('<br />', $errors);
+        return array(
+            'success' => (count($errors)) ? false : true,
+            'error'  => $error
+        );
+	}
     
 	/**
 	 * Save GL accounts assigned to a property
@@ -904,6 +1037,179 @@ class PropertyService extends BaseImportService {
 			'success'    => (count($errors)) ? false : true,
 			'errors'     => $errors,
 		);
+	}
+
+	/**
+	 * Saves a collection of property/GL assignments imported from a file through the import tool
+	 */
+	public function savePropertyGLFromImport($data) {
+		// Use this to store integration package IDs
+		$intPkgs            = array();
+		$errors             = array();
+
+        // Loop through all the rows to import
+        foreach ($data as $idx=>$row) {
+            // If there's been no record with this integration package, we need to retrieve the ID for it
+            if (!array_key_exists($row['integration_package_name'], $intPkgs)) {
+                $rec = $this->integrationPackageGateway->find(
+                    'integration_package_name = ?',
+                    array($row['integration_package_name'])
+                );
+                $intPkgs[$row['integration_package_name']] = $rec[0]['integration_package_id'];
+            }
+            $integration_package_id = $intPkgs[$row['integration_package_name']];
+
+            // Get property ID
+        	$prop = $this->propertyGateway->find(
+        		array('property_id_alt'=>'?', 'integration_package_id'=>'?'),
+        		array($row['property_id_alt'], $integration_package_id)
+        	);
+
+        	// Get GL account ID
+        	$gl = $this->glAccountGateway->find(
+        		array('glaccount_number'=>'?', 'integration_package_id'=>'?'),
+        		array($row['glaccount_number'], $integration_package_id)
+        	);
+
+            // Save the row
+            $result = $this->saveGlAssignment($prop[0]['property_id'], array($gl[0]['glaccount_id']));
+
+            // Set errors
+            if (!$result) {
+            	$rowNum = $idx + 1;
+                $errorMsg = $this->localizationService->getMessage('importRecordSaveError') . " {$rowNum}";
+                $errors[] = $errorMsg;
+
+                $this->loggingService->log('error', 'Error importing property/gl data');
+            }
+        }
+
+        $error = implode('<br />', $errors);
+        return array(
+            'success' => (count($errors)) ? false : true,
+            'error'  => $error
+        );
+	}
+
+	/**
+	 * Saves a collection of units imported from the import tool
+	 */
+	public function saveUnitFromImport($data) {
+		// Use this to store integration package IDs
+		$intPkgs = array();
+		$props   = array();
+		$errors  = array();
+
+        // Loop through all the rows to import
+        foreach ($data as $idx=>$row) {
+            // If there's been no record with this integration package, we need to retrieve the ID for it
+            if (!array_key_exists($row['integration_package_name'], $intPkgs)) {
+                $rec = $this->integrationPackageGateway->find(
+                    'integration_package_name = ?',
+                    array($row['integration_package_name'])
+                );
+                $intPkgs[$row['integration_package_name']] = $rec[0]['integration_package_id'];
+            }
+            $row['integration_package_id'] = $intPkgs[$row['integration_package_name']];
+
+            // If there's been no record with this property, we need to retrieve the ID for it
+            if (!array_key_exists($row['property_id_alt'], $intPkgs)) {
+                $rec = $this->propertyGateway->find(
+	        		array('property_id_alt'=>'?', 'integration_package_id'=>'?'),
+	        		array($row['property_id_alt'], $row['integration_package_id'])
+	        	);
+                $props[$row['integration_package_name']] = $rec[0]['property_id'];
+            }
+        	$row['property_id'] = $props[$row['property_id_alt']];
+
+            // Get unit type ID
+        	$unittype = $this->unitTypeGateway->find(
+        		array('ut.property_id'=>'?', 'ut.unittype_name'=>'?'),
+        		array($prop[0]['property_id'], $row['unittype_name'])
+        	);
+        	$row['unittype_id'] = $unittype[0]['unittype_id'];
+
+            // Save the row
+            $result = $this->saveUnit($row);
+
+            // Set errors
+            if (!$result['success']) {
+            	$rowNum = $idx + 1;
+                $errorMsg = $this->localizationService->getMessage('importRecordSaveError') . " {$rowNum}";
+                $errors[] = $errorMsg;
+
+                $this->loggingService->log('error', 'Error importing unit data', $result['errors']);
+            }
+        }
+
+        $error = implode('<br />', $errors);
+        return array(
+            'success' => (count($errors)) ? false : true,
+            'error'  => $error
+        );
+	}
+
+	/**
+	 * Saves a collection of units imported from the import tool
+	 */
+	public function saveUnitTypeFromImport($data) {
+		// Use this to store integration package IDs
+		$intPkgs = array();
+		$props   = array();
+		$errors  = array();
+
+        // Loop through all the rows to import
+        foreach ($data as $idx=>$row) {
+            // If there's been no record with this integration package, we need to retrieve the ID for it
+            if (!array_key_exists($row['integration_package_name'], $intPkgs)) {
+                $rec = $this->integrationPackageGateway->find(
+                    'integration_package_name = ?',
+                    array($row['integration_package_name'])
+                );
+                $intPkgs[$row['integration_package_name']] = $rec[0]['integration_package_id'];
+            }
+            $integration_package_id = $intPkgs[$row['integration_package_name']];
+
+            // If there's been no record with this property, we need to retrieve the ID for it
+            if (!array_key_exists($row['property_id_alt'], $intPkgs)) {
+                $rec = $this->propertyGateway->find(
+	        		array('property_id_alt'=>'?', 'integration_package_id'=>'?'),
+	        		array($row['property_id_alt'], $integration_package_id)
+	        	);
+                $props[$row['property_id_alt']] = $rec[0]['property_id'];
+            }
+        	$row['property_id'] = $props[$row['property_id_alt']];
+
+        	// Set material and measurement values
+        	$valTypeRecs = $this->getUnitTypeMeasurements();
+			$row['vals'] = array();
+        	foreach ($valTypeRecs as $valType) {
+        		$valKey = strtolower("{$valType['unittype_material_name']}_{$valType['unittype_meas_name']}");
+        		$row['vals'][] = array(
+					'unittype_material_id' => $valType['unittype_material_id'],
+					'unittype_meas_id'     => $valType['unittype_meas_id'],
+					'unittype_val_val'     => $row[$valKey]
+        		);
+        	}
+
+            // Save the row
+            $result = $this->saveUnitType($row);
+
+            // Set errors
+            if (!$result['success']) {
+            	$rowNum = $idx + 1;
+                $errorMsg = $this->localizationService->getMessage('importRecordSaveError') . " {$rowNum}";
+                $errors[] = $errorMsg;
+
+                $this->loggingService->log('error', 'Error importing unit type data', $result['errors']);
+            }
+        }
+
+        $error = implode('<br />', $errors);
+        return array(
+            'success' => (count($errors)) ? false : true,
+            'error'  => $error
+        );
 	}
 }
 

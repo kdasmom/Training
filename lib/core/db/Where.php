@@ -32,6 +32,34 @@ class Where implements SQLElement {
 	protected $logicalOperator;
 
 	/**
+	 * Utility static function to get a Where object (so we don't need to do $where = new Where() all the time)
+	 *
+	 * @param  string $logicalOperator Logical operator to use (can be "AND" or "OR")
+	 * @return NP\core\db\Where
+	 */
+	public static function get($logicalOperator=self::AND_OP) {
+		return new Where(null, $logicalOperator);
+	}
+
+	/**
+	 * Utility static function to get a Where object (so we don't need to do $where = new Where() all the time)
+	 *
+	 * @param  array $wheres Where clauses to use
+	 * @return NP\core\db\Where
+	 */
+	public static function buildCriteria($wheres, $logicalOperator=self::AND_OP) {
+		$combinedWhere = array();
+		foreach ($wheres as $where) {
+			if (!$where instanceOf Where) {
+				$where = new Where($where);
+			}
+			$combinedWhere[] = " {$where->toString()} ";
+		}
+
+		return new Where(implode($logicalOperator, $combinedWhere));
+	}
+
+	/**
 	 * @param $where           string|array|NP\core\db\Where Initial where criteria (optional)
 	 * @param $logicalOperator string                        Logical operator to use (can be "AND" or "OR")
 	 */
@@ -314,6 +342,32 @@ class Where implements SQLElement {
 	 */
 	public function isNotNull($left) {
 		return $this->op('notnull', $left);
+	}
+
+	/**
+	 * Returns predicates in this Where object
+	 *
+	 * @return  array
+	 */
+	public function getPredicates() {
+		return $this->predicates;
+	}
+
+	/**
+	 * Merges a Where object's predicates into another one
+	 *
+	 * @param  \NP\core\db\Where $where
+	 * @param  boolean           $atCurrentWhere=false
+	 */
+	public function merge(Where $where, $atCurrentWhere=false) {
+		$predicates = array_merge($this->predicates, $where->getPredicates());
+		if ($atCurrentWhere) {
+			$this->currentWhere->predicates = $predicates;
+		} else {
+			$this->predicates = $predicates;
+		}
+
+		return $this;
 	}
 
 	/**

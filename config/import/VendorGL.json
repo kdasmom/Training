@@ -1,12 +1,4 @@
 {
     "description": "Vendor GL Setup",
-    "service": "VendorGLService",
-    "entity": "NP\\vendor\\VendorGLEntity",
-    "columns": [
-        {"name": "VendorCode"},
-        {"name": "GLCodes"},
-        {"name": "Integration Package"}
-    ],
-    "customValidation": true,
-    "customValidationClass": "VendorGLEntityValidator"
+    "service": "VendorService"
 }

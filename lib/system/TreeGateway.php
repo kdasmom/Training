@@ -6,6 +6,7 @@ use NP\core\AbstractGateway;
 use NP\core\db\Select;
 use NP\core\db\Update;
 use NP\core\db\Insert;
+use NP\core\db\Expression;
 
 /**
  * Gateway for the TREE table
@@ -39,30 +40,62 @@ class TreeGateway extends AbstractGateway {
         return $result[0]['id'];
     }
 
-    public function updateTree($glaccountId, $newGlAccountId, $parentTreeId, $treeOrder, $exists)
-    {
-        if(!$exists) {
-            //Insert data to TREE
-            // INSERT INTO TREE (tree_parent, table_name, tablekey_id, tree_order) VALUES (@parent_tree_id, 'glaccount', @new_glaccount_id, @tree_order)
-            $treeValues = array(
-                'tree_parent' => $parentTreeId,
-                'table_name'  => "'glaccount'",
-                'tablekey_id' => $newGlAccountId,
-                'tree_order'  => $treeOrder
-            );
-            $query = new Insert('tree', $treeValues);
+    /**
+     * Creates a tree record for an entity if one doesn't already exist, otherwise updates only
+     * if tree_order is specified
+     */
+    public function saveByTableNameAndId($table_name, $tablekey_id, $tree_parent, $tree_order=null) {
+        $currentTree = $this->find(
+            array('table_name'=>'?', 'tablekey_id'=>'?'),
+            array($table_name, $tablekey_id)
+        );
+
+        if (!count($currentTree)) {
+            if ($tree_order === null) {
+                $tree_order = $this->getMaxOrder($table_name, $tree_parent);
+            }
+
+            $tree = new TreeEntity(array(
+                'tree_parent' => $tree_parent,
+                'table_name'  => $table_name,
+                'tablekey_id' => $tablekey_id,
+                'tree_order'  => $tree_order
+            ));
+
+            $this->save($tree);
+
+            $tree_id = $tree->tree_id;
         } else {
-            //UPDATE tree SET tree_parent = @parent_tree_id, tree_order = @tree_order WHERE table_name = 'glaccount' AND tablekey_id = @glaccount_id;
-            $values = array(
-                'tree_parent' => $parentTreeId,
-                'tree_order'  => $treeOrder
-            );
-            $where = array(
-                'table_name'  => "'glaccount'",
-                'tablekey_id' => $glaccountId,
-            );
-            $query = new Update('tree', $values, $where);
+            $tree_id = $currentTree[0]['tree_id'];
+            if ($tree_order !== null) {
+                $tree = new TreeEntity($currentTree[0]);
+                $tree->tree_order = $tree_order;
+
+                $this->save($tree);
+            }
         }
-        $this->adapter->query($query);
+
+        return $tree_id;
+    }
+
+    /**
+     * Gets the next number in the sequence for the tree_order field within a certain tree
+     *
+     * @param  string $table_name
+     * @param  int    $tree_parent
+     * @return int
+     */
+    public function getMaxOrder($table_name, $tree_parent) {
+        $select = new Select();
+        $select->column(new Expression("ISNULL(MAX(tree_order), 1) + 1"), 'max_order')
+                ->column(new Expression("COUNT(*) + 1 AS total"))
+                ->from('tree')
+                ->whereEquals('table_name', '?')
+                ->whereEquals('tree_parent', '?');
+
+        $res = $this->adapter->query($select, array($table_name, $tree_parent));
+
+        // Return whichever is bigger, the glaccount_order or the number of records
+        return ($res[0]['max_order'] > $res[0]['total']) ? $res[0]['max_order'] : $res[0]['total'];
     }
 }

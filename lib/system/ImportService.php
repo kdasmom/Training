@@ -46,6 +46,8 @@ class ImportService extends AbstractService
 
     protected $customValidator;
 
+    protected $csvFileRecords = null;
+
     /**
      * Magic method to get Gateways easy
      *
@@ -92,52 +94,33 @@ class ImportService extends AbstractService
      */
     protected function getImportColumnNames($type)
     {
-        $names = array();
-        $config = $this->getImportConfig($type);
-        foreach ($config['columns'] as $column) {
-            $names[] = $column['name'];
-        }
-        return $names;
-    }
+        $entityClass = $this->getImportEntityClass($type);
+        $entity = new $entityClass();
+        $fields = $entity->getFields();
 
-    protected function getImportDBColumnNames($type)
-    {
         $names = array();
-        $config = $this->getImportConfig($type);
-        foreach ($config['columns'] as $column) {
-            $names[$column['name']] = $column['entityField'];
+        
+        foreach ($fields as $fieldName=>$fieldDef) {
+            $names[] = $fieldName;
         }
+
         return $names;
     }
 
     /**
-     * Detect if custom validation exists
-     *
      * @param $type
-     * @return bool
-     */
-    protected function getImportCustomValidationFlag($type)
-    {
-        $config = $this->getImportConfig($type);
-        return !!$config['customValidation'];
-    }
-
-    /**
-     * @param $type
-     * @return BaseImportServiceEntityValidator
+     * @return \NP\core\validation\EntityValidator
      */
     protected function getCustomValidator($type)
     {
         $config = $this->getImportConfig($type);
-        $customValidationClass = $config['customValidationClass'];
-        $validator = $this->{$customValidationClass};
-
-        $validatorReflection = new ReflectionClass($validator);
-
-        // Inject the DI if gateway need it
-        if ($validatorReflection->hasMethod('setDI')) {
-            $validator->setDI($this->di);
+        if (array_key_exists('key', $config)) {
+            $customValidationClass = $config['customValidationClass'];
+        } else {
+            $customValidationClass = "{$type}ImportEntityValidator";
         }
+        
+        $validator = $this->{$customValidationClass};
 
         return $validator;
     }
@@ -145,7 +128,12 @@ class ImportService extends AbstractService
     protected function getImportEntityClass($type)
     {
         $config = $this->getImportConfig($type);
-        return $config['entity'];
+
+        if (array_key_exists('entity', $config)) {
+            return $config['entity'];
+        } else {
+            return "NP\\import\\{$type}ImportEntity";
+        }
     }
 
     protected function getImportService($type)
@@ -159,24 +147,30 @@ class ImportService extends AbstractService
     {
         $config = $this->getImportConfig($type);
 
-        return (array_key_exists('action', $config)) ? $config['action'] : 'save';
+        return (array_key_exists('action', $config)) ? $config['action'] : "save{$type}FromImport";
     }
 
-    public function validate(\ArrayObject $data, $type)
+    public function validate($data, $type)
     {
         $entityClass = $this->getImportEntityClass($type);
-        $entity = new $entityClass($data);
+        $entity = new $entityClass();
 
-        $errors = new \ArrayObject($this->entityValidator->validate($entity));
-
-        $this->errors = new \ArrayObject($errors->getArrayCopy());
-
-        if ($this->getImportCustomValidationFlag($type)) {
-            $validator = $this->getCustomValidator($type);
-            foreach ($data as $key => $row) {
-                $validator->validateRow($data[$key], $this->errors);
+        $validator = $this->getCustomValidator($type);
+        $hasError = false;
+        foreach ($data as $idx=>$rec) {
+            $entity->setFields($rec);
+            $errors = $validator->validate($entity);
+            $data[$idx]['validation_status'] = (count($errors)) ? 'invalid' : 'valid';
+            $data[$idx]['validation_errors'] = array();
+            foreach ($errors as $error) {
+                $data[$idx]['validation_errors'][$error['field']] = $error['msg'];
+                $hasError = true;
             }
         }
+
+        $validator->validateCollection($data);
+
+        return $data;
     }
 
 
@@ -239,10 +233,11 @@ class ImportService extends AbstractService
         if (!count($errors)) {
             $fileName = $fileUpload->getFile();
             $fileName = $fileName['uploaded_name'];
+
             //Check correct format data in CSV file
             $data = $this->csvFileToArray($this->getUploadPath() . "{$type}/" . $fileName, $type);
-            if (isset($data[0]['errors'])) {
-                $errors[] = $data[0]['errors'] . $type;
+            if (array_key_exists('error', $data)) {
+                $errors[] = $data['error'];
             }
         }
 
@@ -259,61 +254,33 @@ class ImportService extends AbstractService
      * @param  string $file A path to file
      * @return array
      */
-    public function getPreview($file = null, $type, $pageSize = null, $page = 1, $sortBy = 'glaccount_name')
+    public function getPreview($file = null, $type)
     {
         $data = $this->csvFileToArray($this->getUploadPath() . "{$type}/" . $file, $type);
-        $this->validate($data, $type);
-        return array('data' => (array)$data);
+        
+        return $this->validate($data, $type);
     }
 
     public function accept($file, $type)
     {
         $data = $this->csvFileToArray($this->getUploadPath() . "{$type}/" . $file, $type);
-        $this->validate($data, $type);
+        $data = $this->validate($data, $type);
         $entityClass = $this->getImportEntityClass($type);
 
-        /**
-         * @var $entity \NP\core\AbstractEntity
-         */
-        $entity = new $entityClass($data);
-        $service = $this->getImportService($type);
+        $entity       = new $entityClass($data);
+        $service      = $this->getImportService($type);
         $saveFunction = $this->getImportSaveAction($type);
 
         $success = false;
 
+        $importData = array();
         foreach ($data as $k => $row) {
-
             if ($row['validation_status'] == 'valid') {
-
-                /**
-                 * Hack to update glaccount_updateby
-                 */
-                if ($entity->hasField('glaccount_updateby')) {
-                    $data[$k]['glaccount_updateby'] = $this->securityService->getUserId();
-                }
-                if ($entity->hasField('UserProfile_ID')) {
-                    $data[$k]['UserProfile_ID'] = $this->securityService->getUserId();
-                }
-
-                if($service instanceof BaseImportService) {
-                    $service->preSave();
-                }                
-
-                $service->$saveFunction($data[$k], $entityClass);
-
-                if($service instanceof BaseImportService) {
-                    $service->postSave();
-                }
-
-                $success = true;
+                $importData[] = $row;
             }
         }
 
-
-        return array(
-            'success' => $success,
-            'errors' => (array)$this->errors
-        );
+        return $service->$saveFunction($importData);
     }
 
     public function decline($file, $type)
@@ -343,27 +310,37 @@ class ImportService extends AbstractService
      * @param $type
      * @return array
      */
-    protected function csvFileToArray($file, $type)
-    {
-        $csv = file_get_contents($file);
-        $rows = explode("\n", trim($csv));
-        array_shift($rows);
+    protected function csvFileToArray($file, $type) {
+        // We don't want to parse the CSV file every time this is called, only the first time
+        if ($this->csvFileRecords === null) {
+            $csv = file_get_contents($file);
+            $rows = explode("\n", trim($csv));
+            array_shift($rows);
 
-        $keys = $this->getImportColumnNames($type);
+            $keys = $this->getImportColumnNames($type);
 
-        $csvArray = array_map(function ($row) use ($keys) {
-            if (count($keys) != count(str_getcsv($row))) {
-                return new \ArrayObject(array('errors' => $this->localizationService->getMessage('uploadFileCSVFormatError')));
-            } else {
-                $array = str_getcsv($row);
-                foreach ($array as $key => $value) {
-                    $array[$key] = trim($value, ' ');
+            if (count($rows)) {
+                if (count($keys) != count(str_getcsv($rows[0]))) {
+                    return array('error' => $this->localizationService->getMessage('uploadFileCSVFormatError'));
+                } else {
+                    $this->csvFileRecords = array();
+                    
+                    foreach ($rows as $row) {
+                        $row = str_getcsv($row);
+
+                        foreach ($row as $idx=>$val) {
+                            $row[$idx] = trim($val);
+                        }
+
+                        $this->csvFileRecords[] = array_combine($keys, $row);
+                    }
+
+                    return $this->csvFileRecords;
                 }
-                return new \ArrayObject(array_combine($keys, $array));
-            } 
-        }, $rows);
-
-        return new \ArrayObject($csvArray);
+            } else {
+                return array('error' => $this->localizationService->getMessage('uploadFileCSVEmptyError'));
+            }
+        }
     }
 
 }

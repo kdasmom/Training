@@ -47,6 +47,8 @@ class Select extends AbstractFilterableSql implements SQLInterface, SQLElement {
 	 */
 	protected $group = null;
 
+	protected $having = null;
+
 	/**
 	 * @var \NP\core\db\Order ORDER BY clause for the SELECT statement
 	 */
@@ -61,6 +63,14 @@ class Select extends AbstractFilterableSql implements SQLInterface, SQLElement {
 	 * @var int Which row number to start returning records from (first row number is 1)
 	 */
 	protected $offset = null;
+
+	/**
+	 * Static function to retrieve a select object (to avoid having to use new Select() all the time)
+	 * @return \NP\core\db\Select
+	 */
+	public static function get() {
+		return new Select();
+	}
 
 	/**
 	 * @param $table string|array See from($table) method (optional)
@@ -149,15 +159,11 @@ class Select extends AbstractFilterableSql implements SQLInterface, SQLElement {
 	 * @return \NP\core\db\Select Caller object returned for easy chaining
 	 */
 	public function join($table, $condition=null, $cols=null, $type=self::JOIN_INNER) {
-		$type = strtoupper($type);
-		$validTypes = array(self::JOIN_INNER, self::JOIN_LEFT, self::JOIN_RIGHT, self::JOIN_CROSS);
-		if (!in_array($type, $validTypes)) {
-			throw new \NP\core\Exception('Invalid $values argument. Valid values are ' . implode(',', $validTypes));
+		if (!$table instanceOf Join) {
+			$table = new Join($table, $condition, $cols, $type);
 		}
-		if (!$table instanceOf Table) {
-			$table = new Table($table);
-		}
-		$this->joins[] = array('table'=>$table, 'condition'=>$condition, 'cols'=>$cols, 'type'=>$type);
+		
+		$this->joins[] = $table;
 		
 		return $this;
 	}
@@ -180,6 +186,24 @@ class Select extends AbstractFilterableSql implements SQLInterface, SQLElement {
 			$group = new Group($group);
 		}
 		$this->group = $group;
+		return $this;
+	}
+
+	/**
+	 * Adds a HAVING clause to the statement
+	 *
+	 * @param  $where string|array|NP\core\db\Where
+	 * @return \NP\core\db\Select                   Caller object returned for easy chaining
+	 */
+	public function having($having) {
+		if (!is_string($having) && !is_array($having) && !$having instanceOf Where) {
+			throw new \NP\core\Exception('The $having argument must be a string, array, or NP\core\db\Where object');
+		}
+		if (!$having instanceOf Where) {
+			$having = new Where($having);
+		}
+		$this->having = $having;
+
 		return $this;
 	}
 
@@ -326,30 +350,23 @@ class Select extends AbstractFilterableSql implements SQLInterface, SQLElement {
 			// Only add to the $cols array if not dealing with a count query
 			if (!$this->count) {
 				// If the columns are set to null, assume we're retrieving all of them
-				if ($join['cols'] === null) {
-					$cols[] = "{$join['table']->getColumnPrefix()}.*";
+				if ($join->getCols() === null) {
+					$cols[] = "{$join->getTable()->getColumnPrefix()}.*";
 				// Otherwise, need to see which columns we need
 				} else {
 					// Loop through ever column for that join
-					foreach ($join['cols'] as $alias=>$col) {
+					foreach ($join->getCols() as $alias=>$col) {
 						// If $alias is not a number, means we set a column alias
 						if (!is_numeric($alias)) {
 							$col .= " AS {$alias}";
 						}
-						$cols[] = "{$join['table']->getColumnPrefix()}.{$col}";
+						$cols[] = "{$join->getTable()->getColumnPrefix()}.{$col}";
 					}
 				}
 			}
-			// build the join clause
-			$joinSql = "{$join['type']} JOIN {$join['table']->toString()}";
-
-			// Add the table join condition if there is one
-			if (strtoupper($join['type']) != 'CROSS') {
-				$joinSql .= " ON {$join['condition']}";
-			}
 			
 			// Append to the join array for joining later
-			$joins[] = $joinSql;
+			$joins[] = $join->toString();
 		}
 
 		// Join all the columns separated by commas for the SELECT clause and add to the main $sql string
@@ -376,6 +393,14 @@ class Select extends AbstractFilterableSql implements SQLInterface, SQLElement {
 		// If there's a group by clause, add it
 		if ($this->group !== null) {
 			$sql .= " GROUP BY " . $this->group->toString();
+		}
+
+		// If there's a having clause, add it
+		if ($this->having !== null) {
+			$having = $this->having->toString();
+			if ($having != '') {
+				$sql .= ' HAVING ' . $having;
+			}
 		}
 
 		// If there's an order clause, add it

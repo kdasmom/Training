@@ -20,50 +20,22 @@ Ext.define('NP.view.import.types.PropertyGL', {
     glCodeColText       : 'GL Code',
     intPkgColText       : 'Integration Package',
     
-      getGrid: function() {
+    getGrid: function() {
         return {
-            columns: [
-                {
-                    text     : this.propertyCodeColText,
-                    dataIndex: 'PropertyCode',
-                    flex     : 1,
-                    renderer : function(val, meta, rec) {
-                        var value = val.split(';');
-                        if (value[1]) {
-                            meta.tdAttr = 'data-qtip="' + value[1] + '"';
-                            return "<span style='color:red;font-weight:bold' >" + value[0] + "</span>";
-                        } else {
-                            return val;
-                        }
-                    }},
-                {
-                    text     : this.glCodeColText,
-                    dataIndex: 'GLCode',
-                    flex     : 1,
-                    renderer : function(val, meta, rec) {
-                        var value = val.split(';');
-                        if (value[1]) {
-                            meta.tdAttr = 'data-qtip="' + value[1] + '"';
-                            return "<span style='color:red;font-weight:bold' >" + value[0] + "</span>";
-                        } else {
-                            return val;
-                        }
-                    }},
-                {
-                    text     : this.intPkgColText, 
-                    dataIndex: 'IntegrationPackage',
-                    flex     : 1,
-                    renderer : function(val, meta, rec) {
-                        var value = val.split(';');
-                        if (value[1]) {
-                            meta.tdAttr = 'data-qtip="' + value[1] + '"';
-                            return "<span style='color:red;font-weight:bold' >" + value[0] + "</span>";
-                        } else {
-                            return val;
-                        }
+            columns: {
+                items: [
+                    {
+                        text     : this.propertyCodeColText,
+                        dataIndex: 'property_id_alt'
+                    },{
+                        text     : this.glCodeColText,
+                        dataIndex: 'glaccount_number'
+                    },{
+                        text     : this.intPkgColText, 
+                        dataIndex: 'integration_package_name'
                     }
-                }
-            ]
+                ]
+            }
         };
     }
 

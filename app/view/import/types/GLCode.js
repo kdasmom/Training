@@ -20,52 +20,15 @@ Ext.define('NP.view.import.types.GLCode', {
 
     getGrid: function() {
         return {
-            columns: [
-                { text: this.nameColText, dataIndex: 'GLAccountName', flex: 1 },
-                { text: this.accountNumberColText, dataIndex: 'AccountNumber', flex: 1 },
-                {
-                    text     : this.accountTypeColText,
-                    dataIndex: 'AccountType',
-                    flex     : 1,
-                    renderer : function(val, meta, rec) {
-                        var value = val.split(';');
-                        if (value[1]) {
-                            meta.tdAttr = 'data-qtip="' + value[1] + '"';
-                            return "<span style='color:red;font-weight:bold' >" + value[0] + "</span>";
-                        } else {
-                            return val;
-                        }
-
-                    }
-                },
-                {
-                    text     : this.categoryColText,
-                    dataIndex: 'CategoryName',
-                    flex     : 1,
-                    renderer : function(val, meta, rec) {
-                        var value = val.split(';');
-                        if (value[1]) {
-                            meta.tdAttr = 'data-qtip="' + value[1] + '"';
-                            return "<span style='color:red;font-weight:bold' >" + value[0] + "</span>";
-                        } else {
-                            return val;
-                        }
-                    }},
-                {
-                    text     : this.intPkgColText, 
-                    dataIndex: 'IntegrationPackageName',
-                    flex     : 1,
-                    renderer : function(val, meta, rec) {
-                        var value = val.split(';');
-                        if (value[1]) {
-                            meta.tdAttr = 'data-qtip="' + value[1] + '"';
-                            return "<span style='color:red;font-weight:bold' >" + value[0] + "</span>";
-                        } else {
-                            return val;
-                        }
-                    }
-                }
-            ]
+            columns: {
+                items: [
+                    { text: this.nameColText, dataIndex: 'glaccount_name' },
+                    { text: this.accountNumberColText, dataIndex: 'glaccount_number' },
+                    { text: this.accountTypeColText, dataIndex: 'glaccounttype_name' },
+                    { text: this.categoryColText, dataIndex: 'category_name' },
+                    { text: this.intPkgColText, dataIndex: 'integration_package_name' }
+                ]
+            }
         };
     }
 

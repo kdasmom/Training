@@ -9,9 +9,6 @@
 
 namespace NP\vendor;
 
+use NP\core\AbstractGateway;
 
-use NP\system\BaseImportServiceGateway;
-
-class VendorFavoriteGateway extends BaseImportServiceGateway {
-
-}
+class VendorFavoriteGateway extends AbstractGateway {}
