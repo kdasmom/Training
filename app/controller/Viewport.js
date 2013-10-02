@@ -55,6 +55,11 @@ Ext.define('NP.controller.Viewport', {
 					this.addHistory(token);
 				}
 			},
+            '#vendorMenuBtn': {
+                click: function() {
+					this.addHistory('VendorManager:showVendorManager');
+                }
+            },
 
 			// Clicking on the Administration > My Settings menu
 			'#mySettingsMenuBtn': {

@@ -24,6 +24,7 @@ Ext.define('NP.view.viewport.menu.VendorMenu', {
         // New Vendors
 	    if ( NP.lib.core.Security.hasPermission(1023) ) {
     		this.menu.items.push({
+                itemId: 'vendorsAddMenuBtn',
 				text: this.newText
 			});
     	}
@@ -31,6 +32,7 @@ Ext.define('NP.view.viewport.menu.VendorMenu', {
         // Search Vendors
 		if ( NP.lib.core.Security.hasPermission(1024) ) {
     		this.menu.items.push({
+                itemId: 'vendorsSearchMenuBtn',
 				text: this.searchText
 			});
     	}

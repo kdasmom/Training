@@ -5,8 +5,13 @@
  */
 Ext.define('NP.view.vendor.VendorGrid', function() {
 	// This is the default list of columns available for Invoice grids
-	var colOptions = ['vendor.gridcol.SentForApprovalDate','vendor.gridcol.VendorName','vendor.gridcol.SentForApprovalBy',
-					'vendor.gridcol.ApprovalType','shared.gridcol.IntegrationPackageName'];
+	var colOptions = [
+		'vendor.gridcol.DateSubmitted',
+		'vendor.gridcol.VendorName',
+		'vendor.gridcol.ApprovalType',
+		'vendor.gridcol.SubmittedBy',
+		'vendor.gridcol.VendorStatus'
+	];
 
 	var requires = ['NP.lib.core.Config'];
 	
