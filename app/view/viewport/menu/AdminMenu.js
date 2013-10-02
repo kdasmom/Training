@@ -155,7 +155,7 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 			// Custom Field
 			if ( NP.lib.core.Security.hasPermission(6021) ) {
 				subsection.menu.items.push({
-					itemId: 'customfieldImportMenuBtn',
+					itemId: 'customFieldImportMenuBtn',
 					text: this.importCustomText
 				});
 			}

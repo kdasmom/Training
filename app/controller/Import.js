@@ -125,7 +125,9 @@ Ext.define('NP.controller.Import', {
             verticalTabPanel.suspendEvents(false);
             verticalTabPanel.setActiveTab(verticalActiveTab);
             verticalTabPanel.resumeEvents();
-
+        }
+        
+        if (activeTab != 'overview') {
             this.showFormUpload();
         }
     },
