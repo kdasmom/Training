@@ -7,6 +7,7 @@ use NP\core\db\Select;
 use NP\core\db\Where;
 use NP\system\ConfigService;
 use NP\property\PropertyService;
+use NP\vendor\sql\join\VendorRejectedJoin;
 use NP\vendor\VendorSelect;
 
 use NP\core\db\Adapter;
@@ -102,6 +103,47 @@ class VendorGateway extends AbstractGateway {
 		} else {
 			return $this->adapter->query($select);
 		}
+	}
+
+	/**
+	 * Retrieve vendors list by status
+	 *
+	 * @param null $pageSize
+	 * @param null $page
+	 * @param string $status
+	 * @param string $order
+	 * @param $aspClientId
+	 * @return array|bool
+	 */
+	public function findByStatus($pageSize = null, $page = null, $status = 'forapproval', $order = 'PersonName',  $aspClientId) {
+		$selectvendor = new sql\VendorSelect();
+
+
+		if ($status == 'Pending') {
+			$status = 'forapproval';
+		}
+
+		$status = strtolower($status);
+		$where = ['v.vendor_status' => '?', 'i.asp_client_id' => '?'];
+		$params = [$status, $aspClientId];
+		if ($status == 'rejected') {
+			$where['v.vendor_reject_dt >'] = '?';
+			$params[] = 'DateAdd(d, -30, GetDate())';
+		}
+		$selectvendor->columns(['vendor_id', 'vendor_name', 'vendor_status'])
+		  			->columnsPersonName()
+					->columnSentForApprovalDate()
+					->columnApprovalType()
+					->join(['i' => 'integrationpackage'], 'v.integration_package_id = i.integration_package_id', ['integration_package_name'])
+					->where(['v.vendor_status' => '?', 'i.asp_client_id' => '?'])
+					->order($order)
+					->limit($pageSize)
+					->offset($pageSize * ($page - 1));
+		if ($status == 'rejected') {
+			$selectvendor->join(new sql\join\VendorRejectedJoin());
+		}
+
+		return $this->adapter->query($selectvendor, $params);
 	}
 
 }

@@ -26,7 +26,6 @@ Ext.define('NP.view.vendor.VendorsManager', {
 	initComponent: function(){
 
 		this.title = this.titleText;
-		console.log('sdasd');
 
 		this.items = [
 			{
@@ -87,7 +86,14 @@ Ext.define('NP.view.vendor.VendorsManager', {
 				stateful: true,
 				stateId : 'vendor_grid_' + tab,
 				paging  : true,
-				store   : []
+				store   : Ext.create('NP.store.vendor.Vendors', {
+					service    : 'VendorService',
+					action     : 'findByStatus',
+					paging     : true,
+					extraParams: {
+						status : tab
+					}
+				})
 			});
 		});
 

@@ -9,5 +9,11 @@ Ext.define('NP.view.vendor.grid.VendorPending', {
 
 	title: 'Pending',
 
-	cols: ['VendorName','ApprovalType']
+	cols: [
+		'DateSubmitted',
+		'VendorName',
+		'ApprovalType',
+		'SubmittedBy',
+		'VendorStatus'
+	]
 });

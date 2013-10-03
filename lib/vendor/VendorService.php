@@ -3,6 +3,7 @@
 namespace NP\vendor;
 
 use NP\core\AbstractService;
+use NP\system\ConfigService;
 
 /**
  * Service class for operations related to vendors
@@ -11,11 +12,12 @@ use NP\core\AbstractService;
  */
 class VendorService extends AbstractService {
 	
-	protected $vendorGateway, $insuranceGateway;
+	protected $vendorGateway, $insuranceGateway, $configService;
 	
-	public function __construct(VendorGateway $vendorGateway, InsuranceGateway $insuranceGateway) {
+	public function __construct(VendorGateway $vendorGateway, InsuranceGateway $insuranceGateway, ConfigService $configService) {
 		$this->vendorGateway    = $vendorGateway;
 		$this->insuranceGateway = $insuranceGateway;
+		$this->configService = $configService;
 	}
 	
 	/**
@@ -116,7 +118,21 @@ class VendorService extends AbstractService {
 	public function getExpiredInsuranceCerts($countOnly, $pageSize=null, $page=null, $sort="insurance_expdatetm") {
 		return $this->insuranceGateway->findExpiredInsuranceCerts($countOnly, $pageSize, $page, $sort);
 	}
-	
+
+	/**
+	 * find
+	 *
+	 * @param null $pageSize
+	 * @param null $page
+	 * @param string $status
+	 * @param string $sort
+	 * @return array|bool
+	 */
+	public function findByStatus($pageSize = null, $page = null, $status = 'pending', $sort = 'PersonName') {
+		$aspClientId = $this->configService->getClientId();
+
+		return $this->vendorGateway->findByStatus($pageSize, $page, $status, $sort, $aspClientId);
+	}
 }
 
 ?>

@@ -10,7 +10,11 @@ Ext.define('NP.view.vendor.gridcol.ApprovalType', {
 	text     : 'Approval Type',
 	dataIndex: 'approval_type',
 
-	renderer: function(val) {
+	renderer: function(val, meta, rec) {
+		if (!val) {
+			val = rec.raw['approval_type'];
+		}
+
 		if (val != 'New') {
 			return 'Modification';
 		}

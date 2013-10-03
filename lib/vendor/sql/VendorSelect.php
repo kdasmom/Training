@@ -2,6 +2,7 @@
 
 namespace NP\vendor\sql;
 
+use NP\core\db\Expression;
 use NP\core\db\Select;
 
 /**
@@ -162,6 +163,43 @@ class VendorSelect extends Select {
 						->limit(1),
 			'sent_for_approval_by'
 		);
+	}
+
+	/**
+	 * add PersonName to the query
+	 *
+	 * @return Select
+	 */
+	public function columnsPersonName() {
+		$firstname = $this->column(
+			Select::get()->columns([new Expression('p.person_firstname+\' \'+p.person_lastname')])
+			  ->from(['upr'=>'userprofilerole'])
+			  ->join(['up' => 'userprofile'], 'upr.userprofile_id = up.userprofile_id', [])
+			  ->join(['s' => 'staff'], 'upr.tablekey_id = s.staff_id', [])
+			  ->join(['p' => 'person'], 'p.person_id = s.person_id', [])
+			  ->join(['ra' => 'recauthor'], 'upr.userprofile_id = ra.userprofile_id', [])
+			  ->whereEquals('v.approval_tracking_id', 'ra.tablekey_id')
+			  ->whereEquals('ra.table_name', "'vendor'")
+			  ->order('ra.recauthor_datetm desc')
+			  ->limit(1), 'PersonName');
+
+		return $firstname;
+	}
+
+	/**
+	 * add
+	 *
+	 * @return Select
+	 */
+	public function columnApprovalType() {
+		$result = $this->column(
+			Select::get()->column('vendor_ModificationType')
+					->from(['v2' => 'vendor'])
+					->whereEquals('v2.vendor_id', 'v.approval_tracking_id'),
+					'approval_type'
+		);
+
+		return $result;
 	}
 	
 }

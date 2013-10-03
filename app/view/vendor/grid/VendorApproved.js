@@ -8,5 +8,11 @@ Ext.define('NP.view.vendor.grid.VendorApproved', {
 
 	title: 'Approved',
 
-	cols: ['VendorName','ApprovalType']
+	cols: [
+		'DateSubmitted',
+		'VendorName',
+		'ApprovalType',
+		'SubmittedBy',
+		'VendorStatus'
+	]
 });

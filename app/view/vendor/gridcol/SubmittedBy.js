@@ -9,5 +9,8 @@ Ext.define('NP.view.vendor.gridcol.SubmittedBy', {
 	alias: 'widget.vendor.gridcol.submittedby',
 
 	text     : 'Submitted By',
-	dataIndex: 'person_name'
+	dataIndex: 'PersonName',
+	renderer: function(val, meta, rec) {
+		return rec.raw['PersonName'];
+	}
 });
