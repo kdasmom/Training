@@ -22,7 +22,10 @@ Ext.define('NP.view.viewport.menu.ImageMenu', {
 			showSeparator: false,
 			items: [
 				// Images to be Indexed
-				{ text: this.indexedText }
+				{ 
+                                     itemId: 'imageManagementMenuBtn',
+                                     text: this.indexedText 
+                                 }
 			]
 		};
 

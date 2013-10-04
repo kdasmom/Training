@@ -55,7 +55,12 @@ Ext.define('NP.controller.Viewport', {
 					this.addHistory(token);
 				}
 			},
-
+			// Clicking on the Administration > Image Management menu
+			'#imageManagementMenuBtn': {
+				click: function() {
+					this.addHistory('ImageManagement:showManagement');
+				}
+			},
 			// Clicking on the Administration > My Settings menu
 			'#mySettingsMenuBtn': {
 				click: function() {
