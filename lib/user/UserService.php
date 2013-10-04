@@ -1180,6 +1180,68 @@ class UserService extends AbstractService {
 		);
 	}
 
+    public function findAllMobileInfo($pageSize = null, $page = null, $sort = 'person_lastname') {
+        $mobiles = $this->userprofileGateway->findAllMobileInfo($pageSize, $page, $sort);
+
+        return $mobiles;
+    }
+
+    public function activateDevice($device_list) {
+
+        $this->mobInfoGateway->beginTransaction();
+
+        $device_list = explode(',', $device_list);
+        $success = true;
+        try {
+
+            foreach ($device_list as $mobinfo_id) {
+                $this->mobInfoGateway->update(
+                    array(
+                        'mobinfo_activated_datetm' => \NP\util\Util::formatDateForDB(),
+                        'mobinfo_status'             => 'active'
+                    ),
+                    array('mobinfo_id' => '?'),
+                    array($mobinfo_id)
+                );
+            }
+
+            $this->mobInfoGateway->commit();
+        } catch(\Exception $e) {
+            $this->mobInfoGateway->rollback();
+            $success = false;
+        }
+
+        return ['success' => $success];
+    }
+
+    public function deactivateDevice($device_list) {
+        $device_list = explode(',', $device_list);
+        $success = $this->disableMobileDevices($device_list);
+        return ['success' => $success];
+    }
+
+    public function deleteDevice($device_list) {
+        $device_list = explode(',', $device_list);
+        $this->mobInfoGateway->beginTransaction();
+
+        $success = true;
+        try {
+            foreach ($device_list as $item) {
+
+                $this->mobInfoGateway->delete('mobinfo_id = ?', [$item]);
+            }
+
+            $this->mobInfoGateway->commit();
+        } catch(\Exception $e) {
+            // If there was an error, rollback the transaction
+            $this->mobInfoGateway->rollback();
+            // Add a global error to the error array
+            $success = false;
+        }
+
+        return ['success' => $success];
+    }
+
 	/**
 	 * Save user imported with the import tool
 	 */

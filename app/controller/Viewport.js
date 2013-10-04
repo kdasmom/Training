@@ -123,6 +123,13 @@ Ext.define('NP.controller.Viewport', {
                 }
             },
 
+			// Clicking on the Administration > System Setup menu
+			'#mobileSetupMenuBtn': {
+				click: function() {
+					this.addHistory('MobileSetup:showMobileInfoGrid');
+				}
+			},
+
 			// Runs after Home panel has been rendered
 			'[xtype="viewport.home"]': {
 				afterrender: function() {
