@@ -29,9 +29,10 @@ class GLAccountGateway extends AbstractGateway {
         $this->configService = $configService;
     }
 
-    /**
-     * 
-     */
+    public function setSecurityService(\NP\security\SecurityService $securityService) {
+        $this->securityService = $securityService;
+    }
+
     public function getDefaultSortOrder() {
         return ($this->configService->get('PN.Budget.GLDisplayOrder') == 'Name') ? 'glaccount_name' : 'glaccount_number';
     }
@@ -175,6 +176,49 @@ class GLAccountGateway extends AbstractGateway {
         return ($res[0]['max_order'] > $res[0]['total']) ? $res[0]['max_order'] : $res[0]['total'];
     }
     
+    /**
+     * 
+     */
+    public function findByVendorsite($vendorsite_id, $property_id=null, $keyword=null, $glaccount_id=null) {
+        $usePropGL = $this->configService->get('CP.PROPERTYGLACCOUNT_USE', 0);
+        
+        $params = [];
+
+        $select = Select::get()->columns(array())
+                            ->from(['vs'=>'vendorsite'])
+                            ->join(new \NP\vendor\sql\join\VendorsiteVendorGlJoin(array()))
+                            ->join(new \NP\vendor\sql\join\VendorGlGlAccountJoin())
+                            ->whereEquals('vs.vendorsite_id', '?');
+        $params[] = $vendorsite_id;
+
+        if ($usePropGL == 1) {
+            if (is_numeric($property_id)) {
+                $select->whereMerge(new sql\criteria\GlPropertyCriteria('vg'));
+                $params[] = $property_id;
+            } else {
+                $select->whereMerge(
+                    new sql\criteria\GlUserPropertyCriteria($this->securityService->getUserId(), 'vg')
+                );
+            }
+        }
+
+        if ($keyword !== null) {
+            $select->whereNest('OR')
+                    ->whereLike('g.glaccount_name', '?')
+                    ->whereLike('g.glaccount_number', '?');
+            $params[] = "{$keyword}%";
+            $params[] = "{$keyword}%";
+        }
+
+        if ($glaccount_id !== null) {
+            $select->whereEquals('g.glaccount_id', '?');
+            $params[] = $glaccount_id;
+        }
+
+        $select->order($this->getDefaultSortOrder());
+
+        return $this->adapter->query($select, $params);
+    }
 }
 
 ?>

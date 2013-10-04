@@ -41,6 +41,34 @@ class PropertyGateway  extends AbstractGateway {
 	}
 
 	/**
+	 * Returns property
+	 */
+	public function findAll($property_id=null, $keyword=null, $property_status=null) {
+		$select = Select::get()->columns(array('property_id','property_id_alt','property_name','property_status','integration_package_id','property_no_units'))
+								->from('property')
+								->order('property_name');
+
+		$params = array();
+		if ($property_id !== null) {
+			$select->whereEquals('property_id', '?');
+			$params[] = $property_id;
+		}
+		if ($keyword !== null) {
+			$select->whereOr()
+					->whereLike('property_name', '?')
+					->whereLike('property_id_alt', '?');
+			$params[] = "{$keyword}%";
+			$params[] = "{$keyword}%";
+		}
+		if ($property_status !== null) {
+			$select->whereEquals('property_status', '?');
+			$params[] = $property_status;
+		}
+
+		return $this->adapter->query($select, $params);
+	}
+
+	/**
 	 * Find properties for a given user
 	 *
 	 * @param  int    $userprofile_id              The active user ID, can be a delegated account

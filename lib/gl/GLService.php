@@ -126,6 +126,10 @@ class GLService extends AbstractService {
         );
     }
 
+    public function getByVendorsite($vendorsite_id, $property_id=null, $keyword=null, $glaccount_id=null) {
+        return $this->glAccountGateway->findByVendorsite($vendorsite_id, $property_id, $keyword, $glaccount_id);
+    }
+
     /**
      * Saves a GL category
      *

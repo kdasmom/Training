@@ -180,7 +180,8 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 		// Utility Setup
 		if ( NP.lib.core.Security.hasPermission(1057) ) {
 			this.menu.items.push({
-				text: this.utilityText
+				text: this.utilityText,
+                itemId: 'utilitySetupMenuBtn'
 			});
 		}
 		

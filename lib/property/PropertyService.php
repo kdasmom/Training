@@ -115,8 +115,8 @@ class PropertyService extends AbstractService {
 	 *
 	 * @return array
 	 */
-	public function getAll() {
-		return $this->propertyGateway->find(null, array(), "property_name",  array('property_id','property_id_alt','property_name','property_status','integration_package_id','property_no_units'));
+	public function getAll($property_id=null, $keyword=null, $property_status=null) {
+		return $this->propertyGateway->findAll($property_id, $keyword, $property_status);
 	}
 
 	/**

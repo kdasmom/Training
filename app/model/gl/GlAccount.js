@@ -27,6 +27,9 @@ Ext.define('NP.model.gl.GlAccount', {
 		{
 			name: 'display_name',
 			convert: function(v, rec) {
+				if (rec.get('glaccount_id') === null) {
+					return '';
+				}
 				return NP.model.gl.GlAccount.formatName(rec.get('glaccount_number'), rec.get('glaccount_name'));
 			}
 		}

@@ -290,7 +290,12 @@ class Select extends AbstractFilterableSql implements SQLInterface, SQLElement {
 			// If we have a column specified, we need to add it to count()
 			if (is_array($this->cols) && count($this->cols)) {
 				$firstCol = $this->cols[0];
-				$sql .= "{$this->table->getColumnPrefix()}.{$firstCol}";
+				// Check if we're dealing with an expression or a string
+				if ($firstCol instanceOf Expression) {
+					$sql .= $firstCol->toString();
+				} else {
+					$sql .= "{$this->table->getColumnPrefix()}.{$firstCol}";
+				}
 			// If there are no columns, we can just do count(*)
 			} else {
 				$sql .= "*";

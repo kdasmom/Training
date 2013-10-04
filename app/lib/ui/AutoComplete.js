@@ -33,8 +33,10 @@ Ext.define('NP.lib.ui.AutoComplete', {
 						combo = combo[0];
 						var store = combo.getStore();
 						var proxy = store.getProxy();
-						proxy.extraParams[this.valueField] = recs[0].get(this.valueField);
-						store.load();
+						if (recs.length) {
+							proxy.extraParams[this.valueField] = recs[0].get(this.valueField);
+							store.load();
+						}
 					}
 				}
 			});

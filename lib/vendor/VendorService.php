@@ -17,8 +17,7 @@ class VendorService extends AbstractService {
     
     protected $vendorGateway, $integrationPackageGateway, $vendorTypeGateway, $glAccountGateway,
             $vendorGlAccountsGateway, $propertyGateway, $vendorFavoriteGateway, $insuranceTypeGateway,
-            $insuranceGateway, $linkInsurancePropertyGateway, $utilityTypeGateway, $utilityGateway,
-            $utilityAccountGateway, $unitGateway;
+            $insuranceGateway, $linkInsurancePropertyGateway, $unitGateway;
 
     public function __construct(        
                 VendorGateway $vendorGateway, VendorsiteGateway $vendorsiteGateway,
@@ -27,8 +26,7 @@ class VendorService extends AbstractService {
                 VendorGlAccountsGateway $vendorGlAccountsGateway, PropertyGateway $propertyGateway,
                 VendorFavoriteGateway $vendorFavoriteGateway, InsuranceTypeGateway $insuranceTypeGateway,
                 InsuranceGateway $insuranceGateway, LinkInsurancePropertyGateway $linkInsurancePropertyGateway,
-                UtilityTypeGateway $utilityTypeGateway, UtilityGateway $utilityGateway,
-                UtilityAccountGateway $utilityAccountGateway, UnitGateway $unitGateway) {
+                UnitGateway $unitGateway) {
         $this->vendorGateway                = $vendorGateway;
         $this->vendorsiteGateway            = $vendorsiteGateway;
         $this->integrationPackageGateway    = $integrationPackageGateway;
@@ -40,20 +38,26 @@ class VendorService extends AbstractService {
         $this->insuranceTypeGateway         = $insuranceTypeGateway;
         $this->insuranceGateway             = $insuranceGateway;
         $this->linkInsurancePropertyGateway = $linkInsurancePropertyGateway;
-        $this->utilityTypeGateway           = $utilityTypeGateway;
-        $this->utilityGateway               = $utilityGateway;
-        $this->utilityAccountGateway        = $utilityAccountGateway;
         $this->unitGateway                  = $unitGateway;
     }
     
+    public function getVendorBySiteId($vendorsite_id) {
+        $res = $this->vendorGateway->find('vs.vendorsite_id = ?', array($vendorsite_id));
+        return $res[0];
+    }
+
     /**
      * Retrieves vendor records for the vendor autocomplete when creating catalogs
      *
      * @param  string $keyword Keyword to use to search for a vendor
      * @return array           Array of vendor records
      */
-    public function getForCatalogDropDown($keyword) {
-        return $this->vendorGateway->getForCatalogDropDown($keyword);
+    public function getForCatalogDropDown($keyword=null) {
+        if ($keyword !== null) {
+            return $this->vendorGateway->getForCatalogDropDown($keyword);
+        } else {
+            return [];
+        }
     }
     
     /**
@@ -266,50 +270,6 @@ class VendorService extends AbstractService {
         return array(
             'success' => (count($errors)) ? false : true,
             'errors'  => $errors
-        );
-    }
-
-    /**
-     * Saves a utility for a vendor
-     */
-    public function saveUtility($data) {
-        $util = new UtilityEntity($data);
-        $errors = $this->entityValidator->validate($util);
-
-        if (!count($errors)) {
-            try {
-                $this->utilityGateway->save($util);
-            } catch (\Exception $e) {
-                $errors[]   = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
-            }
-        }
-
-        return array(
-            'success' => (count($errors)) ? false : true,
-            'errors'  => $errors,
-            'id'      => $util->Utility_Id
-        );
-    }
-
-    /**
-     * Saves a utility account for a vendor
-     */
-    public function saveUtilityAccount($data) {
-        $utilAccount = new UtilityAccountEntity($data);
-        $errors = $this->entityValidator->validate($utilAccount);
-
-        if (!count($errors)) {
-            try {
-                $this->utilityAccountGateway->save($utilAccount);
-            } catch (\Exception $e) {
-                $errors[]   = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
-            }
-        }
-
-        return array(
-            'success' => (count($errors)) ? false : true,
-            'errors'  => $errors,
-            'id'      => $utilAccount->UtilityAccount_Id
         );
     }
 
@@ -554,106 +514,5 @@ class VendorService extends AbstractService {
         $date = \DateTime::createFromFormat('Y-m-d H:i:s', $date);
 
         return \NP\util\Util::formatDateForDB($date);
-    }
-
-    /**
-     * Save utility account imported using import tool 
-     */
-    public function saveVendorUtilityFromImport($data) {
-        // Use this to store integration package IDs
-        $errors  = array();
-
-        // Loop through all the rows to import
-        foreach ($data as $idx=>$row) {
-            // Get vendorsite ID
-            $rec = $this->vendorsiteGateway->find('vendorsite_id_alt = ?', array($row['vendor_id_alt']));
-            $row['Vendorsite_Id'] = $rec[0]['vendorsite_id'];
-
-            // Get utility type ID
-            $rec = $this->utilityTypeGateway->find('UtilityType = ?', array($row['UtilityType']));
-            $row['UtilityType_Id'] = $rec[0]['UtilityType_Id'];
-
-            // Get property ID
-            $rec = $this->propertyGateway->find('property_id_alt = ?', array($row['property_id_alt']));
-            $row['property_id'] = $rec[0]['property_id'];
-
-            // Get unit ID
-            if ($row['unit_id_alt'] != '') {
-                $rec = $this->unitGateway->find(
-                    array('u.unit_id_alt' => '?', 'u.property_id' => '?'),
-                    array($row['unit_id_alt'], $row['property_id'])
-                );
-                $row['unit_id'] = $rec[0]['unit_id'];
-            } else {
-                $row['unit_id'] = null;
-            }
-
-            // Get GL Account ID
-            if ($row['glaccount_number'] != '') {
-                $rec = $this->glAccountGateway->find('glaccount_number = ?', array($row['glaccount_number']));
-                $row['glaccount_id'] = $rec[0]['glaccount_id'];
-            } else {
-                $row['glaccount_id'] = null;
-            }
-
-            // Get existing utility if any
-            $util = $this->utilityGateway->find(
-                array('Vendorsite_Id'=>'?', 'UtilityType_id'=>'?'),
-                array($row['Vendorsite_Id'], $row['UtilityType_Id'])
-            );
-            $utilData = (count($util)) ? $util[0] : array();
-            $utilData = array_merge($utilData, $row);
-
-            // Get existing utility account
-            if (count($util)) {
-                $utilAccount = $this->utilityAccountGateway->find(
-                    array(
-                        'Utility_Id'                   => '?',
-                        'property_id'                  => '?',
-                        'UtilityAccount_AccountNumber' => '?',
-                        'UtilityAccount_MeterSize'     => '?'
-                    ),
-                    array(
-                        $util[0]['Utility_Id'],
-                        $row['property_id'],
-                        $row['UtilityAccount_AccountNumber'],
-                        $row['UtilityAccount_MeterSize']
-                    )
-                );
-                $utilAccountData = (count($utilAccount)) ? $utilAccount[0] : array();
-            } else {
-                $utilAccountData = array();
-            }
-            $utilAccountData = array_merge($utilAccountData, $row);
-            
-            // Save the row
-            $this->utilityGateway->beginTransaction();
-
-            $result = $this->saveUtility($utilData);
-            
-            if ($result['success']) {
-                $utilAccountData['Utility_Id'] = $result['id'];
-                $result = $this->saveUtilityAccount($utilAccountData);
-            }
-            
-            // Set errors
-            if (!$result['success']) {
-                $this->utilityGateway->rollback();
-
-                $rowNum = $idx + 1;
-                $errorMsg = $this->localizationService->getMessage('importRecordSaveError') . " {$rowNum}";
-                $errors[] = $errorMsg;
-
-                $this->loggingService->log('error', 'Error importing vendor utility', $result['errors']);
-            } else {
-                $this->utilityGateway->commit();
-            }
-        }
-
-        $error = implode('<br />', $errors);
-        return array(
-            'success' => (count($errors)) ? false : true,
-            'error'  => $error
-        );
     }
 }

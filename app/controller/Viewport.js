@@ -97,7 +97,6 @@ Ext.define('NP.controller.Viewport', {
 					this.addHistory('SystemSetup:showSystemSetup');
 				}
 			},
-
             // Clicking on Import/Export Utility or any of the subitems under Import/Export Utility
             '#importMenuBtn,#importMenuBtn menuitem': {
                     click: function(itemClicked) {
@@ -115,6 +114,12 @@ Ext.define('NP.controller.Viewport', {
             '#budgetOverageMenuBtn': {
                 click: function() {
                     this.addHistory('BudgetOverage:showBudgetOverage');
+                }
+            },
+            
+            '#utilitySetupMenuBtn': {
+                click: function() {
+                    this.addHistory('UtilitySetup:showUtilGrid');
                 }
             },
 
