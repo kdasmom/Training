@@ -15,7 +15,7 @@ use NP\property\RegionEntity;
  * @author Thomas Messier
  */
 class PicklistService extends AbstractService {
-	protected $configService, $integrationPackageGateway, $regionGateway;
+	protected $configService, $integrationPackageGateway, $regionGateway, $invoicePaymentTypeGateway;
 
 	public function __construct(IntegrationPackageGateway $integrationPackageGateway, RegionGateway $regionGateway,
 								InvoicePaymentTypeGateway $invoicePaymentTypeGateway) {
