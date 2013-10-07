@@ -59,6 +59,21 @@ class VendorService extends AbstractService {
             return [];
         }
     }
+       
+    /**
+     * Get all vendors in the application
+     *
+     * @param  string $vendor_status The status of the vendor (optional); valid values are 'active' or 'inactive'
+     * @return array
+     */
+    public function getAll($vendor_status='active', $pageSize=null, $page=1, $sort='vendor_name') {
+             return $this->vendorGateway->find(
+                    array('vendor_status'=>'?'),
+                    array($vendor_status),
+                    'vendor_name ASC',
+                    array('vendor_name')
+            );
+    }
     
     /**
      * Retrieves vendor records by integration package, 

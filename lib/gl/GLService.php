@@ -7,6 +7,7 @@ use NP\core\db\Where;
 use NP\system\TreeGateway;
 use NP\system\IntegrationPackageGateway;
 use NP\gl\GlAccountTypeGateway;
+use NP\vendor\VendorGlAccountsGateway;
 
 /**
  * All operations that are closely related to GL accounts belong in this service
@@ -15,15 +16,18 @@ use NP\gl\GlAccountTypeGateway;
  */
 class GLService extends AbstractService {
     
-    protected $securityService, $glAccountGateway, $treeGateway, $integrationPackageGateway;
+    protected $securityService, $glAccountGateway, $treeGateway, $integrationPackageGateway,
+            $vendorGlAccountsGateway;
 
     public function __construct(GLAccountGateway $glAccountGateway, TreeGateway $treeGateway,
                                 IntegrationPackageGateway $integrationPackageGateway,
-                                GlAccountTypeGateway $glAccountTypeGateway) {
+                                GlAccountTypeGateway $glAccountTypeGateway,
+                                VendorGlAccountsGateway $vendorGlAccountsGateway) {
             $this->glAccountGateway          = $glAccountGateway;
             $this->treeGateway               = $treeGateway;
             $this->integrationPackageGateway = $integrationPackageGateway;
             $this->glAccountTypeGateway      = $glAccountTypeGateway;
+            $this->vendorGlAccountsGateway   = $vendorGlAccountsGateway;
     }
 
     public function setConfigService(\NP\system\ConfigService $configService) {
@@ -46,6 +50,69 @@ class GLService extends AbstractService {
             $order,
             array('glaccount_id','glaccount_number','glaccount_name')
         );
+    }
+    
+    /**
+     * Returns all Category in the system
+     */
+    public function getCategories() {
+            return $this->glAccountGateway->find(
+            'glaccount_order > 1',
+            array(),
+            'glaccount_number',
+            array('glaccount_id','glaccount_number')
+        );
+    }
+        
+    /**
+     * Retrieves all GL Accounts for grid GL Account Setup
+     *
+     * @return array
+     */
+    public function getAllGLAccounts($glaccount_status='active', $pageSize=null, $page=null, $sort="glaccount_name") {
+        return $this->glAccountGateway->find(
+            new sql\criteria\GlAccountStatusCriteria(), // filter
+            array($glaccount_status),           // params
+            $sort,                              // order by
+            null,                               // columns
+            $pageSize,
+            $page,
+            array(new sql\join\GLAccountTypeJoin())
+        );
+    }
+        
+    /**
+     * Retrieves all GL Accounts for grid GL Account Setup
+     *
+     * @return array
+     */
+    public function getTypes() {
+        return $this->glAccountTypeGateway->find(
+            null,
+            array(),
+            "glaccounttype_name",
+             array('glaccounttype_id','glaccounttype_name')
+        );
+    }
+        
+    /**
+     * Retrieves all GL Accounts for grid GL Account Setup
+     *
+     * @return array
+     */
+    public function getGLAccount($id) {
+        $res = $this->glAccountGateway->findById($id);
+        
+        $res['vendor_glaccounts'] = $this->vendorGlAccountsGateway->find(
+                                            array('glaccount_id'=>'?'),
+                                            array($id),
+                                            'vendor_id',
+                                            array('vendor_id')
+                                        );
+
+        $res['vendor_glaccounts'] = \NP\util\Util::valueList($res['vendor_glaccounts'], 'vendor_id');
+
+        return $res;
     }
     
     /**
@@ -175,6 +242,46 @@ class GLService extends AbstractService {
         return array(
             'success' => (count($errors)) ? false : true,
             'errors'  => $errors
+        );
+    }
+        
+    /**
+     * save GL Account
+     *
+     * @param $data
+     * @return array
+     */
+    public function saveGlAccount($data) {
+        $glaccount = new GLAccountEntity($data['glaccount']);
+
+        $now = \NP\util\Util::formatDateForDB();
+
+        if ($glaccount->glaccount_id == null) {
+            $glaccount->glaccount_updateby = $data['glaccount_updateby'];
+        }
+        $validator = new EntityValidator();
+
+        $validator->validate($glaccount);
+        $errors = $validator->getErrors();
+
+        if (count($errors) == 0) {
+            $this->glAccountGateway->beginTransaction();
+
+            try {
+                $this->glAccountGateway->save($glaccount);
+                $this->glAccountGateway->commit();
+            } catch(\Exception $e) {
+                // If there was an error, rollback the transaction
+                $this->glAccountGateway->rollback();
+                // Add a global error to the error array
+                $errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
+            }
+        }
+
+
+        return array(
+            'success'    => (count($errors)) ? false : true,
+            'errors'     => $errors,
         );
     }
 

@@ -85,6 +85,7 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 		// GL Account Setup
 		if ( NP.lib.core.Security.hasPermission(6014) ) {
 			this.menu.items.push({
+                                itemId: 'glaccountSetupMenuBtn',
 				text: this.gLText
 			});
 		}

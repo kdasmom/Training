@@ -65,3 +65,13 @@
 
 /* IMPORT SECTION */
 .importTemplates a { color: #000; margin-left: 16px; }
+
+/* GL ACCOUNT SETUP SECTION */
+#glAccountOverview p {
+	margin-bottom: 8px;
+}
+
+#glAccountOverview li {
+	margin: 8px 0 0 18px;
+	list-style: decimal;
+}

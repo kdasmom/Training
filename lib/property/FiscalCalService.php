@@ -32,7 +32,7 @@ class FiscalCalService extends AbstractService {
 		$cutoffDate = mktime(0, 0, 0, $month, $cutoffDay, $year);
 		
 		if ($today > $cutoffDate) {
-			date_add($cutoffDate, date_interval_create_from_date_string('1 month'));
+//			date_add($cutoffDate, date_interval_create_from_date_string('1 month'));
 		}
 		
 		$accountingPeriod = new \DateTime(date('Y', $cutoffDate) . '/' . date('n', $cutoffDate) . '/1');

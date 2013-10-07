@@ -97,6 +97,14 @@ Ext.define('NP.controller.Viewport', {
 					this.addHistory('SystemSetup:showSystemSetup');
 				}
 			},
+                                
+			// Clicking on the Administration > GL Account Setup menu
+			'#glaccountSetupMenuBtn': {
+				click: function() {
+					this.addHistory('GLAccountSetup:showGLAccountSetup');
+				}
+			},
+			
             // Clicking on Import/Export Utility or any of the subitems under Import/Export Utility
             '#importMenuBtn,#importMenuBtn menuitem': {
                     click: function(itemClicked) {
