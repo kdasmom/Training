@@ -14,24 +14,24 @@ Ext.define('NP.controller.MobileSetup', {
         'NP.lib.core.Util',
     ],
 
-//  for localization
+    // for localization
     saveSuccessText      : 'Your changes were saved.',
-//    delete action messages
+    // delete action messages
     deleteDialogTitleText: 'Delete device?',
     deleteDialogText     : 'Are you sure you want to delete this device?',
     deleteSuccessText    : 'Device info successfully deleted',
     deleteFailureText    : 'There was an error deleting the device. Please try again.',
-//    activate action messages
+    // activate action messages
     activateDialogTitleText : 'Activate?',
     activateDialogText      : 'Are you sure you want to activate the selected devices?',
     activateSuccessText     : 'Devices were activated',
     activateFailureText     : 'There was an error activating devices',
-//    deactivate
+    // deactivate
     deactivateDialogTitleText : 'Inactivate?',
     deactivateDialogText      : 'Are you sure you want to deactivate the selected devices?',
     deactivateSuccessText     : 'Devices were deactivated',
     deactivateFailureText     : 'There was an error deactivating devices',
-//    common
+    // common
     errorDialogTitleText : 'Error',
 
     /**
@@ -48,7 +48,7 @@ Ext.define('NP.controller.MobileSetup', {
                 }
             },
             '[xtype="mobilesetup.mobileinfoform"] [xtype="shared.button.save"]': {
-                click: function() {this.saveMobinfoForm(true);}
+                click: function() {this.saveMobinfoForm();}
             },
             '[xtype="mobilesetup.mobileinfoform"] [xtype="shared.button.cancel"]': {
                 click: function() {
@@ -56,26 +56,21 @@ Ext.define('NP.controller.MobileSetup', {
                 }
             },
             '[xtype="mobilesetup.mobilegrid"]': {
-                selectionchange: this.checkMobinfo,
-                itemclick: function (grid, rec, item, index, e) {
-                    if (e.getTarget().className != 'x-grid-row-checker') {
-                        app.addHistory('MobileSetup:showMobileInfoForm:' + rec.get('userprofile_id'));
-                    }
-                }
+                selectionchange: this.checkMobinfo
             },
             '[xtype="mobilesetup.mobilegrid"] [xtype="shared.button.activate"]': {
                 click: function() {
-                    this.actionHandler('activateDevice');
+                    this.actionHandler('activate');
                 }
             },
             '[xtype="mobilesetup.mobilegrid"] [xtype="shared.button.inactivate"]': {
                 click: function() {
-                    this.actionHandler('deactivateDevice');
+                    this.actionHandler('deactivate');
                 }
             },
             '[xtype="mobilesetup.mobilegrid"] [xtype="shared.button.delete"]': {
                 click: function() {
-                    this.actionHandler('deleteDevice');
+                    this.actionHandler('delete');
                 }
             }
         })
@@ -93,38 +88,11 @@ Ext.define('NP.controller.MobileSetup', {
         grid.reloadFirstPage();
     },
 
-    showMobileInfoForm: function(userprofile_id) {
-        var viewCfg = { bind: { models: ['user.MobInfo'] }};
-
-        if (arguments.length) {
-            Ext.apply(viewCfg.bind, {
-                service    : 'UserService',
-                action     : 'getMobileInfo',
-                extraParams: {
-                    userprofile_id: userprofile_id
-                }
-            });
-        }
-        var form = this.setView('NP.view.mobileSetup.MobileInfoForm', viewCfg);
-        if (arguments.length) {
-            NP.lib.core.Net.remoteCall({
-                requests: {
-                    service: 'UserService',
-                    action : 'get',
-                    userprofile_id: userprofile_id,
-                    success: function(success, deferred) {
-                        form.findField('username').setValue(success.person_lastname + ', ' + success.person_firstname + ' (' + success.userprofile_username + ')');
-                    }
-                }
-            });
-            form.findField('userprofile_id').setValue(userprofile_id);
-            form.down('[xtype="shared.button.activate"]').on('click', function() {
-                that.saveMobinfoForm(false);
-            });
-        }
+    showMobileInfoForm: function() {
+        this.setView('NP.view.mobileSetup.MobileInfoForm');
     },
 
-    saveMobinfoForm: function(newDevice) {
+    saveMobinfoForm: function() {
         var that = this;
         var form = this.getCmp('mobilesetup.mobileinfoform');
 
@@ -133,7 +101,7 @@ Ext.define('NP.controller.MobileSetup', {
                 service: 'UserService',
                 action: 'saveMobileInfo',
                 extraParams: {
-                    isNewDevice: newDevice ? newDevice : false
+                    isNewDevice: true
                 },
                 success: function(result, deferred) {
                     NP.Util.showFadingWindow({ html: that.saveSuccessText });
@@ -144,30 +112,11 @@ Ext.define('NP.controller.MobileSetup', {
     },
 
     actionHandler: function(action) {
-
-        var that = this;
-        var title, successMessage, failMessage, dialogtext;
-
-        switch (action) {
-            case 'activateDevice':
-                title = this.activateDialogTitleText;
-                successMessage = this.activateSuccessText;
-                failMessage = this.activateFailureText;
-                dialogtext = this.activateDialogText;
-                break;
-            case 'deactivateDevice':
-                title = this.deactivateDialogTitleText;
-                successMessage = this.deactivateSuccessText;
-                failMessage = this.deactivateFailureText;
-                dialogtext = this.deactivateDialogText;
-                break;
-            case 'deleteDevice':
-                title = this.deleteDialogTitleText;
-                successMessage = this.deleteSuccessText;
-                failMessage = this.deleteFailureText;
-                dialogtext = this.deleteDialogText;
-                break;
-        }
+        var that           = this,
+            title          = that[action+'DialogTitleText'],
+            successMessage = that[action+'SuccessText'],
+            failMessage    = that[action+'FailureText'],
+            dialogtext     = that[action+'DialogText'];
 
         // Show a confirmation dialog
         Ext.MessageBox.confirm(title, dialogtext, function(btn) {
@@ -185,15 +134,22 @@ Ext.define('NP.controller.MobileSetup', {
                     mask: grid,
                     requests: {
                         service: 'UserService',
-                        action : action,
+                        action : action + 'Device',
                         device_list: devices_id.join(','),
                         success: function(result, deferred) {
                             if (result.success) {
-                                if (action == 'deleteDevice') {
+                                if (action == 'delete') {
                                     grid.getStore().remove(devices);
+                                } else {
+                                    grid.getSelectionModel().deselectAll();
+                                    
+                                    Ext.each(devices, function(device) {
+                                        var status = (action == 'activate') ? 'active' : 'inactive';
+                                        device.set('mobinfo_status', status);
+                                        device.set('mobinfo_'+action+'d_datetm', new Date());
+                                    });
                                 }
-                                grid.getSelectionModel().deselectAll();
-                                grid.reloadFirstPage();
+
                                 NP.Util.showFadingWindow({ html: successMessage });
                             } else {
                                 Ext.MessageBox.alert(that.errorDialogTitleText, failMessage);

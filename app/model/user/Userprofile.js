@@ -44,7 +44,26 @@ Ext.define('NP.model.user.Userprofile', {
         { name: 'security_answer5' },
         { name: 'security_question6', type: 'int' },
         { name: 'security_answer6' },
-        { name: 'userprofile_dashboard_layout' }
+        { name: 'userprofile_dashboard_layout' },
+
+        // These fields are not DB columns in the USERPROFILE table
+        { name: 'person_firstname' },
+        { name: 'person_lastname' },
+
+        // Calculated field that doesn't exist in the DB
+        {
+            name: 'display_name',
+            convert: function(v, rec) {
+                var fName = rec.get('person_firstname'),
+                    lName = rec.get('person_lastname');
+
+                if (fName !== null && lName !== null) {
+                    return lName + ', ' + fName + ' (' + rec.get('userprofile_username') + ')';
+                }
+                
+                return rec.get('userprofile_username');
+            }
+        }
     ],
     
     belongsTo: [

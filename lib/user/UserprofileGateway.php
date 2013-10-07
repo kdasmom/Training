@@ -42,6 +42,23 @@ class UserprofileGateway extends AbstractGateway {
 	}
 
 	/**
+	 * @param int|array $module_id_list
+	 */
+	public function findUsersByPermission($module_id_list) {
+		$module_id_list = (is_array($module_id_list)) ? $module_id_list : array($module_id_list);
+		$select = Select::get()->columns(['userprofile_id','userprofile_username'])
+								->from(['u'=>'userprofile'])
+								->join(new sql\join\UserUserroleJoin())
+								->join(new sql\join\UserroleStaffJoin())
+								->join(new sql\join\StaffPersonJoin())
+								->whereEquals('u.userprofile_status', "'active'")
+								->whereMerge(new sql\criteria\UserHasPermissionCriteria($module_id_list))
+								->order('pe.person_lastname, pe.person_firstname');
+
+		return $this->adapter->query($select, $module_id_list);
+	}
+
+	/**
 	 * @param  string  $username 
 	 * @param  string  $pwd      
 	 * @return boolean True if authentication succeeds, false otherwise

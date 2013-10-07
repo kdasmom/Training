@@ -12,8 +12,13 @@ Ext.define('NP.view.mobileSetup.MobileInfoForm', {
         'NP.lib.core.Config',
         'NP.view.shared.button.Save',
         'NP.view.shared.button.Cancel',
-        'NP.lib.ui.ComboBox'
+        'NP.lib.ui.ComboBox',
+        'NP.view.mobileSetup.MobileForm'
     ],
+
+    bind: {
+        models: ['user.MobInfo']
+    },
 
     bodyPadding: 8,
     autoScroll : true,
@@ -42,89 +47,38 @@ Ext.define('NP.view.mobileSetup.MobileInfoForm', {
         this.bbar = bar;
 
         this.defaults = {
-            labelWidth: 200,
-            width: 500
+            width     : 500
         };
 
         this.items = [
             {
-                xtype           : 'combo',
-                fieldLabel      : this.userInputLabelText,
-                name            : 'username',
+                xtype       : 'customcombo',
+                fieldLabel  : this.userInputLabelText,
+                labelWidth  : 150,
+                name        : 'userprofile_id',
+                valueField  : 'userprofile_id',
+                displayField: 'display_name',
+                allowBlank  : false,
                 store       : Ext.create('NP.store.user.Userprofiles', {
-                    service           : 'UserService',
-                    action            : 'getAll',
-                    autoLoad          : true
-                }),
-                tpl         : '<tpl for="."><div class="x-boundlist-item">{userprofilerole.staff.person.person_lastname}, {userprofilerole.staff.person.person_firstname} ({userprofile_username})</div></tpl>',
-                valueField      : 'userprofile_id',
-                displayName     : 'userprofile_id',
-                listeners: {
-                    select: function(combo, record, index) {
-                        var userprofile = record[0].get('userprofilerole');
-                        var name = userprofile.staff.person.person_lastname + ',' + userprofile.staff.person.person_firstname + ' (' + record[0].get('userprofile_username') + ')';
-                        that.findField('userprofile_id').setValue(combo.getValue());
-                        combo.setValue(name);
-                    }
-                }
+                    service    : 'UserService',
+                    action     : 'getUsersByPermission',
+                    extraParams: {
+                        module_id_list: 6049
+                    },
+                    autoLoad   : true
+                })
             },
-            {
-                xtype: 'textfield',
-                fieldLabel: this.mobilePhoneNumberInputLabelText,
-                name: 'mobinfo_phone'
-
-            },
-            {
-                xtype: 'textfield',
-                fieldLabel: this.newPinInputLabelText,
-                name: 'mobinfo_pin'
-
-            },
-            {
-                xtype: 'textfield',
-                fieldLabel: this.newPinConfirmInputLabelText,
-                name: 'mobinfo_pin_confirm'
-
-            },
-            {
-                xtype: 'hiddenfield',
-                name: 'userprofile_id'
-            }
+            { xtype: 'mobilesetup.mobileform', defaults: { allowBlank: false } }
         ];
 
         this.callParent(arguments);
     },
 
     isValid: function() {
-        var isValid = this.callParent(arguments);
+        var me      = this,
+            isValid = me.callParent(arguments);
 
-        var userInput = this.findField('userprofile_id');
-        var phone = this.findField('mobinfo_phone');
-        var pin = this.findField('mobinfo_pin');
-        var pinconfirm = this.findField('mobinfo_pin_confirm');
-
-        if (userInput.getValue() == null) {
-            isValid = false;
-            userInput.markInvalid(this.userInputLabelText + ' ' + this.emptyErrorText);
-        }
-        var pattern = /^\d{10}$/;
-        if (pattern.exec(phone.getValue()) == null) {
-            isValid = false;
-            phone.markInvalid(this.mobilePhoneNumberInputLabelText + ' ' + this.incorrectFormatForThePhoneNumber);
-        }
-        pattern =/^\d{4}$/;
-        if (pattern.exec(pin.getValue()) == null) {
-            isValid = false;
-            pin.markInvalid(this.newPinInputLabelText + ' ' + this.incorrectFormatForThePIN);
-        }
-
-        if (pin.getValue() !== pinconfirm.getValue()) {
-            isValid = false;
-            pinconfirm.markInvalid(this.newPinConfirmInputLabelText + ' ' + this.incorrectPintConfirm);
-        }
-
-        console.log('form: ', this.getValues());
-        return isValid;
+        return isValid && me.query('[xtype="mobilesetup.mobileform"]')[0].isValid();
     }
 
 });

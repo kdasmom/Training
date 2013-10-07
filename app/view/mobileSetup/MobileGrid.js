@@ -19,25 +19,24 @@ Ext.define('NP.view.mobileSetup.MobileGrid', {
 
     // For localization
     title: 'Mobile Setup',
-//    columns
+    // columns
     userColText: 'User',
     userStatusColText: 'User status',
     mobilePhoneColText: 'Mobile phone number',
     deviceStatusColText: 'Device status',
     activeDateColText: 'Active date',
     inactiveDateColText: 'Inactive date',
-//    buttons
+    // buttons
     mobileReportButtonText: 'Mobile user report',
     mobileCreateNewButtonText: 'Create new',
     activateButtonText: 'Activate',
     inactivateButtonText: 'Inactivate device',
     deleteDeviceButtonText: 'Delete device',
 
-
     paging  : true,
     stateful: true,
     stateId : 'mobile_grid',
-
+    viewConfig: { markDirty: false },
 
     initComponent: function() {
         this.pagingToolbarButtons = [

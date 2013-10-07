@@ -103,6 +103,13 @@ class UserService extends AbstractService {
 	}
 
 	/**
+	 * 
+	 */
+	public function getUsersByPermission($module_id_list) {
+		return $this->userprofileGateway->findUsersByPermission($module_id_list);
+	}
+
+	/**
 	 * Retrieve settings for the currently logged in user
 	 *
 	 * @return array
@@ -753,16 +760,26 @@ class UserService extends AbstractService {
 		if (!is_array($mobinfo_id_list)) {
 			$mobinfo_id_list = array($mobinfo_id_list);
 		}
-		foreach ($mobinfo_id_list as $mobinfo_id) {
-			$this->mobInfoGateway->update(
-				array(
-					'mobinfo_deactivated_datetm' => \NP\util\Util::formatDateForDB(),
-					'mobinfo_status'             => 'inactive'
-				),
-				array('mobinfo_id' => '?'),
-				array($mobinfo_id)
-			);
+		$errors = array();
+		try {
+			foreach ($mobinfo_id_list as $mobinfo_id) {
+				$this->mobInfoGateway->update(
+					array(
+						'mobinfo_deactivated_datetm' => \NP\util\Util::formatDateForDB(),
+						'mobinfo_status'             => 'inactive'
+					),
+					array('mobinfo_id' => '?'),
+					array($mobinfo_id)
+				);
+			}
+		} catch(\Exception $e) {
+			$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e));
 		}
+
+		return [
+			'success' => (count($errors)) ? false : true,
+			'errors'  => $errors
+		];
 	}
 
 	/**
@@ -1216,8 +1233,8 @@ class UserService extends AbstractService {
 
     public function deactivateDevice($device_list) {
         $device_list = explode(',', $device_list);
-        $success = $this->disableMobileDevices($device_list);
-        return ['success' => $success];
+        $res = $this->disableMobileDevices($device_list);
+        return ['success' => $res['success']];
     }
 
     public function deleteDevice($device_list) {
