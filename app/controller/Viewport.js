@@ -60,6 +60,12 @@ Ext.define('NP.controller.Viewport', {
 					this.addHistory('VendorManager:showVendorManager');
                 }
             },
+			// clicking on "Add Vendor" menu button
+			'#vendorsAddMenuBtn': {
+				click: function() {
+					this.addHistory('VendorManager:showVendorForm');
+				}
+			},
 
 			// Clicking on the Administration > My Settings menu
 			'#mySettingsMenuBtn': {

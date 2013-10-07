@@ -23,11 +23,23 @@ Ext.define('NP.controller.VendorManager', {
         var app = this.application;
 
 		this.control({
-			// Clicking on an Invoice Register tab
+//			change tab
 			'[xtype="vendor.vendorsmanager"] tabpanel': {
 				tabchange: function(tabPanel, newCard, oldCard, eOpts) {
 					var activeTab = newCard.getItemId().replace('vendor_grid_', '').toLowerCase();
 					this.addHistory('VendorManager:showVendorManager:' + activeTab);
+				}
+			},
+//			add new vendor click button handler
+			'[xtype="vendor.vendorsmanager"] [xtype="shared.button.new"]': {
+				click: function() {
+					this.showVendorForm();
+				}
+			},
+//			cancel click button handler
+			'[xtype="vendor.vendorform"] [xtype="shared.button.cancel"]': {
+				click: function() {
+					this.showVendorManager();
 				}
 			}
 		});
@@ -54,7 +66,6 @@ Ext.define('NP.controller.VendorManager', {
 		}
 
 		this.loadVendorsGrid(tab);
-
     },
 
 	/**
@@ -63,7 +74,16 @@ Ext.define('NP.controller.VendorManager', {
 	 * @param grid
 	 */
 	loadVendorsGrid: function(grid) {
-
 		grid.reloadFirstPage();
+	},
+
+	/**
+	 * Load vendor's form
+	 * @param int vendor_id Vendor id to edit
+	 */
+	showVendorForm: function(vendor_id) {
+		var viewCfg = { bind: { models: ['vendor.Vendor'] }};
+
+		var form = this.setView('NP.view.vendor.VendorForm', viewCfg);
 	}
 });

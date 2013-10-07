@@ -19,6 +19,7 @@ Ext.define('NP.view.vendor.VendorsManager', {
 	},
 	//  for localization
 	titleText: 'Vendor Manager',
+	createNewVendorBtnLabel: 'Create new vendor',
 
 	/**
 	 * Init
@@ -26,6 +27,15 @@ Ext.define('NP.view.vendor.VendorsManager', {
 	initComponent: function(){
 
 		this.title = this.titleText;
+
+		var bar = [
+			{ xtype: 'shared.button.new',
+				text: this.createNewVendorBtnLabel
+			}
+		];
+
+		this.tbar = bar;
+		this.bbar = bar;
 
 		this.items = [
 			{
@@ -46,7 +56,7 @@ Ext.define('NP.view.vendor.VendorsManager', {
 	},
 
 	getGridConfigs: function() {
-		var gridConfigs		= [],					// This will store the configs for the different grids
+		var gridConfigs		= [],
 			baseCols		= [
 				'vendor.gridcol.DateSubmitted',
 				'vendor.gridcol.VendorName',
