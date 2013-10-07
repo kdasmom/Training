@@ -41,7 +41,13 @@ Ext.define('NP.controller.VendorManager', {
 				click: function() {
 					this.showVendorManager();
 				}
-			}
+			},
+//			cancel click button handler
+            '[xtype="vendor.vendorform"] [xtype="shared.button.save"]': {
+                click: function() {
+                    this.saveVendor();
+                }
+            }
 		});
 
     },
@@ -85,5 +91,12 @@ Ext.define('NP.controller.VendorManager', {
 		var viewCfg = { bind: { models: ['vendor.Vendor'] }};
 
 		var form = this.setView('NP.view.vendor.VendorForm', viewCfg);
-	}
+	},
+
+    saveVendor: function() {
+        var form = this.getCmp('vendor.vendorform');
+        var values = form.getValues();
+
+        console.log('form: ', values);
+    }
 });
