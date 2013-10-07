@@ -9,10 +9,16 @@ Ext.define('NP.view.vendor.VendorAssignGlAccouns', {
 
 	requires: [
 		'NP.lib.core.Security',
-		'NP.lib.ui.ComboBox'
+		'NP.lib.ui.ComboBox',
+        'NP.view.shared.GlAccountAssigner'
 	],
 
 	padding: 8,
+
+    layout: {
+        type: 'vbox',
+        align: 'stretch'
+    },
 
 	// For localization
 	title                     : 'Assign GL accounts',
@@ -22,10 +28,26 @@ Ext.define('NP.view.vendor.VendorAssignGlAccouns', {
 	initComponent: function() {
 		var that = this;
 
+        var glaccountsStore = Ext.create('NP.store.gl.GlAccounts', {
+            service           : 'GLService',
+            action            : 'getAll',
+            extraParams: {
+                pageSize: null
+            }
+        });
+        glaccountsStore.load();
+
 		this.defaults = {
 			labelWidth: 150
 		};
 
-		this.callParent(arguments);
+        this.items = [
+            {
+                xtype: 'shared.glaccountassigner',
+                store: glaccountsStore
+            }
+        ];
+
+        this.callParent(arguments);
 	}
 });

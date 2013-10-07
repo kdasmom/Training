@@ -22,9 +22,10 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
 	initComponent: function() {
 		var that = this;
 
-		this.defaults = {
-			labelWidth: 150
-		};
+        this.defaults = {
+            labelWidth: 150,
+            width: 500
+        };
 
 		this.callParent(arguments);
 	}

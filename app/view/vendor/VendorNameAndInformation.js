@@ -58,7 +58,8 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
 			{
 				xtype: 'displayfield',
 				fieldLabel: this.integrationPackageInputLabel,
-				value: ''
+				value: '',
+                name: 'integration_package_id'
 			},
 			{
 				xtype: 'textfield',
@@ -74,7 +75,8 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
 			{
 				xtype: 'textfield',
 				fieldLabel: this.mriVendorIdInputLabel,
-				name: 'vendor_id_alt'
+				name: 'vendor_id_alt',
+                allowBlank: false
 			},
 			{
 				xtype: 'combo',
@@ -101,7 +103,8 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
                         xtype: 'textfield',
                         fieldLabel: this.vendorAddressCommonInputLabel,
                         width: 345,
-                        name: 'vendorsite_address_line1'
+                        name: 'vendorsite_address_line1',
+                        allowBlank: false
                     },
                     {
                         xtype: 'textfield',
@@ -113,13 +116,15 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
                         xtype: 'textfield',
                         fieldLabel: this.vendorAddressCityInputLabel,
                         width: 345,
-                        name: 'vendorsite_address_city'
+                        name: 'vendorsite_address_city',
+                        allowBlank: false
                     },
                     {
                         xtype: 'combo',
                         fieldLabel: this.vendorAddressStateInputLabel,
                         width: 345,
-                        name: 'vendorsite_address_state'
+                        name: 'vendorsite_address_state',
+                        allowBlank: false
                     },
                     {
                         xtype: 'fieldcontainer',
@@ -130,7 +135,8 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
                                 xtype: 'textfield',
                                 fieldLabel: '',
                                 width: 110,
-                                name: 'vendorsite_address_zip'
+                                name: 'vendorsite_address_zip',
+                                allowBlank: false
                             },
                             {
                                 xtype: 'textfield',
