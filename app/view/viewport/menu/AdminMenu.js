@@ -100,11 +100,13 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 		if ( NP.lib.core.Security.hasPermission(6015) ) {
 			var subsection = {
 				// Import/Export Utility
+				itemId: 'importMenuBtn',
 				text: this.importText,
 				menu: {
 					showSeparator: false,
 					items: [{
 						// Overview
+						itemId: 'overviewImportMenuBtn',
 						text: this.importOverviewText
 					}]
 				}
@@ -113,6 +115,7 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 			// GL
 			if ( NP.lib.core.Security.hasPermission(6016) ) {
 				subsection.menu.items.push({
+					itemId: 'glImportMenuBtn',
 					text: this.importGLText
 				});
 			}
@@ -120,6 +123,7 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 			// Property
 			if ( NP.lib.core.Security.hasPermission(6017) ) {
 				subsection.menu.items.push({
+					itemId: 'propertyImportMenuBtn',
 					text: this.importPropertyText
 				});
 			}
@@ -127,6 +131,7 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 			// Vendor
 			if ( NP.lib.core.Security.hasPermission(6018) ) {
 				subsection.menu.items.push({
+					itemId: 'vendorImportMenuBtn',
 					text: this.importVendorText
 				});
 			}
@@ -134,6 +139,7 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 			// Invoice
 			if ( NP.lib.core.Security.hasPermission(6019) ) {
 				subsection.menu.items.push({
+					itemId: 'invoiceImportMenuBtn',
 					text: this.importInvoiceText
 				});
 			}
@@ -141,6 +147,7 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 			// User
 			if ( NP.lib.core.Security.hasPermission(6020) ) {
 				subsection.menu.items.push({
+					itemId: 'userImportMenuBtn',
 					text: this.importUserText
 				});
 			}
@@ -148,12 +155,14 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 			// Custom Field
 			if ( NP.lib.core.Security.hasPermission(6021) ) {
 				subsection.menu.items.push({
+					itemId: 'customFieldImportMenuBtn',
 					text: this.importCustomText
 				});
 			}
 			
 			// Splits
 			subsection.menu.items.push({
+				itemId: 'splitsImportMenuBtn',
 				text: this.importSplitsText
 			});
 			
@@ -163,6 +172,7 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 		// Set Approval Budget Overage
 		if ( NP.lib.core.Security.hasPermission(1043) ) {
 			this.menu.items.push({
+                itemId: 'budgetOverageMenuBtn',
 				text: this.approvalBudgetsText
 			});
 		}
@@ -170,13 +180,15 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 		// Utility Setup
 		if ( NP.lib.core.Security.hasPermission(1057) ) {
 			this.menu.items.push({
-				text: this.utilityText
+				text: this.utilityText,
+                itemId: 'utilitySetupMenuBtn'
 			});
 		}
 		
 		// Will need to add condition here to only show for admin users
 		Ext.log('Need to modify to only show Mobile Setup to admin users');
 		this.menu.items.push({
+            itemId: 'mobileSetupMenuBtn',
 			text: this.mobileText
 		});
 

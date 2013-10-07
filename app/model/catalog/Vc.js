@@ -36,6 +36,7 @@ Ext.define('NP.model.catalog.Vc', {
 	],
 
 	validations: [
+		{ field: 'vc_vendorname' },
 		{ field: 'vc_vendorname', type: 'length', max: 250 },
 		{ field: 'vc_catalogname', type: 'presence' },
 		{ field: 'vc_catalogname', type: 'length', max: 100 },

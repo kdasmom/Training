@@ -63,6 +63,8 @@
 /* GENERIC STYLES */
 .error-text { color: #c0272b; font: normal 11px tahoma, arial, verdana, sans-serif; }
 
+/* IMPORT SECTION */
+.importTemplates a { color: #000; margin-left: 16px; }
 
 /* INVOICE VIEW PAGE */
 .invoiceViewPanel {

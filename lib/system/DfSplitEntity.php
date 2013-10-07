@@ -22,6 +22,7 @@ class DfSplitEntity extends \NP\core\AbstractEntity {
 		),
 		'dfsplit_status'	 => array(
 			'required'   => true,
+			'defaultValue' => 'active',
 			'validation' => array(
 				'inArray' => array(
 					'haystack' => array('active','Active','inactive','Inactive')
@@ -31,7 +32,8 @@ class DfSplitEntity extends \NP\core\AbstractEntity {
 		'vendorsite_id'	 => array(
 			'validation' => array(
 				'digits' => array()
-			)
+			),
+			'tableConstraint' => array()
 		),
 		'dfsplit_datetm'	 => array(
 			'timestamp'  => 'created',
@@ -43,6 +45,10 @@ class DfSplitEntity extends \NP\core\AbstractEntity {
 			'required'   => true,
 			'validation' => array(
 				'digits' => array()
+			),
+			'tableConstraint' => array(
+				'table' => 'integrationpackage',
+				'field' => 'integration_package_id'
 			)
 		),
 		'dfsplit_update_datetm'	 => array(
@@ -54,6 +60,10 @@ class DfSplitEntity extends \NP\core\AbstractEntity {
 		'dfsplit_update_userprofile'	 => array(
 			'validation' => array(
 				'digits' => array()
+			),
+			'tableConstraint' => array(
+				'table' => 'userprofile',
+				'field' => 'userprofile_id'
 			)
 		)
 	);

@@ -6,7 +6,11 @@ use NP\core\AbstractService;
 use NP\core\db\Where;
 use NP\core\db\Expression;
 use NP\core\validation\EntityValidator;
+use NP\property\PropertyGateway;
 use NP\vendor\VendorGateway;
+use NP\property\UnitGateway;
+use NP\system\IntegrationPackageGateway;
+use NP\gl\GLAccountGateway;
 
 /**
  * All operations that are closely related to splits belong in this service
@@ -15,14 +19,20 @@ use NP\vendor\VendorGateway;
  */
 class SplitService extends AbstractService {
 	
-	protected $securityService, $dfSplitGateway, $dfSplitItemsGateway, $propertySplitGateway;
+	protected $securityService, $dfSplitGateway, $dfSplitItemsGateway, $propertyGateway,
+			$integrationPackageGateway, $glAccountGateway;
 	
 	public function __construct(DfSplitGateway $dfSplitGateway, DfSplitItemsGateway $dfSplitItemsGateway,
-								PropertySplitGateway $propertySplitGateway, VendorGateway $vendorGateway) {
-		$this->dfSplitGateway       = $dfSplitGateway;
-		$this->dfSplitItemsGateway  = $dfSplitItemsGateway;
-		$this->propertySplitGateway = $propertySplitGateway;
-		$this->vendorGateway = $vendorGateway;
+								PropertyGateway $propertyGateway, VendorGateway $vendorGateway,
+								UnitGateway $unitGateway, IntegrationPackageGateway $integrationPackageGateway,
+								GLAccountGateway $glAccountGateway) {
+		$this->dfSplitGateway            = $dfSplitGateway;
+		$this->dfSplitItemsGateway       = $dfSplitItemsGateway;
+		$this->propertyGateway           = $propertyGateway;
+		$this->vendorGateway             = $vendorGateway;
+		$this->unitGateway               = $unitGateway;
+		$this->integrationPackageGateway = $integrationPackageGateway;
+		$this->glAccountGateway          = $glAccountGateway;
 	}
 	
 	/**
@@ -184,9 +194,7 @@ class SplitService extends AbstractService {
 			}
 
 			// Validate the split record
-			$validator = new EntityValidator();
-			$validator->validate($dfSplit);
-			$errors    = $validator->getErrors();
+			$errors = $this->entityValidator->validate($dfSplit);
 
 			// If there are no errors, save the split record and line items
 			if (!count($errors)) {
@@ -247,9 +255,7 @@ class SplitService extends AbstractService {
 			$dfSplitItem = new \NP\system\DfSplitItemEntity($data);
 
 			// Validate the split line
-			$validator = new EntityValidator();
-			$validator->validate($dfSplitItem);
-			$errors    = $validator->getErrors();
+			$errors = $this->entityValidator->validate($dfSplitItem);
 
 			// If there were no errors, save the line item
 			if (!count($errors)) {
@@ -297,6 +303,100 @@ class SplitService extends AbstractService {
 			'success' => ($error === null) ? true : false,
 			'error'   => $error
 		);
+	}
+
+	/**
+	 * Save Split from import
+	 */
+	public function saveSplitFromImport($data) {
+		// Use this to store integration package IDs
+		$intPkgs      = array();
+		$errors       = array();
+		$dfSplitItems = array();
+
+        // Loop through all the rows to import
+        foreach ($data as $idx=>$row) {
+        	// If there's been no record with this integration package, we need to retrieve the ID for it
+            if (!array_key_exists($row['integration_package_name'], $intPkgs)) {
+                $rec = $this->integrationPackageGateway->find(
+                    'integration_package_name = ?',
+                    array($row['integration_package_name'])
+                );
+                $intPkgs[$row['integration_package_name']] = $rec[0]['integration_package_id'];
+            }
+            $integration_package_id = $intPkgs[$row['integration_package_name']];
+
+        	// Get property ID
+            $rec = $this->propertyGateway->find(
+            	array('property_id_alt'=>'?', 'integration_package_id'=>'?'),
+            	array($row['property_id_alt'], $integration_package_id)
+            );
+            $row['property_id'] = $rec[0]['property_id'];
+
+            // Get unit ID
+            if ($row['unit_id_alt'] != '') {
+                $rec = $this->unitGateway->find(
+                    array('u.unit_id_alt' => '?', 'u.property_id' => '?'),
+                    array($row['unit_id_alt'], $row['property_id'])
+                );
+                $row['unit_id'] = $rec[0]['unit_id'];
+            } else {
+                $row['unit_id'] = null;
+            }
+
+            // Get GL Account ID
+            $rec = $this->glAccountGateway->find(
+            	array('glaccount_number'=>'?', 'integration_package_id'=>'?'),
+            	array($row['glaccount_number'], $integration_package_id)
+            );
+            $row['glaccount_id'] = $rec[0]['glaccount_id'];
+
+            $dfSplitItems[] = $row;
+
+            // Only save once you've picked up one split group
+            if (($idx+1) === count($data) || $data[$idx+1]['dfsplit_name'] != $row['dfsplit_name']) {
+            	// Get vendor ID
+            	if ($row['vendor_id_alt'] != '') {
+	            	$vendor = $this->vendorGateway->find(
+	            		array('vendor_id_alt'=>'?', 'integration_package_id'=>'?'),
+	            		array($row['vendor_id_alt'], $integration_package_id)
+	            	);
+	            	$vendor_id = $vendor[0]['vendor_id'];
+	            } else {
+	            	$vendor_id = null;
+	            }
+
+        		$row['integration_package_id'] = $integration_package_id;
+
+            	$dfSplitData = array(
+					'dfsplit'             => $row,
+					'dfSplitItems'        => $dfSplitItems,
+					'vendor_id'           => $vendor_id,
+					'removedDfSplitItems' => array()
+	            );
+	            
+	            // Save the row
+	            $result = $this->saveSplit($dfSplitData);
+
+	            // Clear the array of items for the next split
+	            $dfSplitItems = array();
+
+	            // Set errors
+	            if (!$result['success']) {
+	                $rowNum = $idx + 1;
+	                $errorMsg = $this->localizationService->getMessage('importRecordSaveError') . " {$rowNum}";
+	                $errors[] = $errorMsg;
+
+	                $this->loggingService->log('error', 'Error importing split', $result['errors']);
+	            }
+            }
+        }
+
+        $error = implode('<br />', $errors);
+        return array(
+            'success' => (count($errors)) ? false : true,
+            'error'  => $error
+        );
 	}
 }
 

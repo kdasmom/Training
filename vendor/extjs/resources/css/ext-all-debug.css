@@ -243,7 +243,7 @@ dfn, em, strong, th, var {
 
 /* line 97, ../themes/stylesheets/ext4/default/core/_reset.scss */
 li {
-  list-style: none; }
+  list-style: disc; }
 
 /* line 101, ../themes/stylesheets/ext4/default/core/_reset.scss */
 caption, th {

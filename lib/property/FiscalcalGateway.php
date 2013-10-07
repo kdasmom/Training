@@ -93,13 +93,19 @@ class FiscalcalGateway extends AbstractGateway {
 	 *
 	 * @return array
 	 */
-	public function findMasterFiscalCalendars() {
+	public function findMasterFiscalCalendars($fiscalcal_name=null) {
 		$select = new Select();
 		$select->from('fiscalcal')
 				->whereIsNull('property_id')
 				->order('fiscalcal_year');
 
-		return $this->adapter->query($select);
+		$params = array();
+		if ($fiscalcal_name !== null) {
+			$select->whereEquals('fiscalcal_name', '?');
+			$params[] = $fiscalcal_name;
+		}
+
+		return $this->adapter->query($select, $params);
 	}
 
 	/**

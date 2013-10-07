@@ -1,0 +1,5 @@
+{
+    "description": "GL Accounts import",
+    "service"    : "BudgetService",
+    "entity"     : "NP\\import\\GLBudgetImportEntity"
+}

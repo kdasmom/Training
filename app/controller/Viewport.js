@@ -97,6 +97,38 @@ Ext.define('NP.controller.Viewport', {
 					this.addHistory('SystemSetup:showSystemSetup');
 				}
 			},
+            // Clicking on Import/Export Utility or any of the subitems under Import/Export Utility
+            '#importMenuBtn,#importMenuBtn menuitem': {
+                    click: function(itemClicked) {
+                            var token = 'Import:showImport';
+                            if (itemClicked.itemId != 'importMenuBtn') {
+                                    token += ':' + itemClicked.itemId.replace('ImportMenuBtn', '');
+                            } else {
+                                    token += ':overview';
+                            }
+                            this.addHistory(token);
+                    }
+            },
+
+            // Clicking on the Administration > System Setup menu
+            '#budgetOverageMenuBtn': {
+                click: function() {
+                    this.addHistory('BudgetOverage:showBudgetOverage');
+                }
+            },
+            
+            '#utilitySetupMenuBtn': {
+                click: function() {
+                    this.addHistory('UtilitySetup:showUtilGrid');
+                }
+            },
+
+			// Clicking on the Administration > System Setup menu
+			'#mobileSetupMenuBtn': {
+				click: function() {
+					this.addHistory('MobileSetup:showMobileInfoGrid');
+				}
+			},
 
 			// Runs after Home panel has been rendered
 			'[xtype="viewport.home"]': {

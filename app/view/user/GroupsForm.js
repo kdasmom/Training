@@ -41,7 +41,7 @@ Ext.define('NP.view.user.GroupsForm', {
             items : [
 	    		{ xtype: 'user.groupsforminfo' },
 	    		{ xtype: 'user.groupsformpermissions' },
-	    		{ xtype: 'user.usersformemail', showEmailOverwrite: true },
+	    		{ xtype: 'user.usersformemail', showEmailOverwrite: true, itemId: 'groupEmailAlertPanel' },
                 { xtype: 'user.groupsformdashboard', border: false }
 	    	]
 	    }];

@@ -12,8 +12,17 @@ use NP\core\db\Select;
  * @author Thomas Messier
  */
 class UserprofileGateway extends AbstractGateway {
-	protected $tableAlias = 'u';
+        protected $tableAlias = 'u';
 
+        public function getUserprofileIdByUsername($username) {
+            $select = new sql\UserprofileSelect();
+            $select ->columns(array('id' => 'userprofile_id'))
+                ->where("userprofile_username = ?");
+
+            $res = $this->adapter->query($select, array($username));
+
+            return $res[0]['id'];
+        }
 	/**
 	 * Override to retrieve more by default
 	 */
@@ -30,6 +39,23 @@ class UserprofileGateway extends AbstractGateway {
 				));
 
 		return $select;
+	}
+
+	/**
+	 * @param int|array $module_id_list
+	 */
+	public function findUsersByPermission($module_id_list) {
+		$module_id_list = (is_array($module_id_list)) ? $module_id_list : array($module_id_list);
+		$select = Select::get()->columns(['userprofile_id','userprofile_username'])
+								->from(['u'=>'userprofile'])
+								->join(new sql\join\UserUserroleJoin())
+								->join(new sql\join\UserroleStaffJoin())
+								->join(new sql\join\StaffPersonJoin())
+								->whereEquals('u.userprofile_status', "'active'")
+								->whereMerge(new sql\criteria\UserHasPermissionCriteria($module_id_list))
+								->order('pe.person_lastname, pe.person_firstname');
+
+		return $this->adapter->query($select, $module_id_list);
 	}
 
 	/**
@@ -61,7 +87,7 @@ class UserprofileGateway extends AbstractGateway {
 	 * @param  int   $userprofile_id The ID of the user you want details for
 	 * @return array                 An array with data for the specified user, including userprofile, role, person, address, and email
 	 */
-	public function findProfileById($userprofile_id) {
+	public function findProfileById($userprofile_id = null) {
 		$select = new sql\UserprofileSelect();
 		$select->columnsAll()
 				->joinUserprofilerole(null)
@@ -267,6 +293,22 @@ class UserprofileGateway extends AbstractGateway {
 			return $this->adapter->query($select, $params);
 		}
 	}
+
+    public function findAllMobileInfo($pageSize = null, $page = null, $order = 'person_lastname') {
+
+        $select = new sql\UserprofileSelect();
+        $select->columns(['userprofile_username', 'userprofile_id', 'userprofile_status'])
+            ->joinUserprofilerole([])
+            ->joinRole([])
+            ->joinStaff([])
+            ->joinPerson(array('person_firstname','person_lastname'))
+            ->joinMobinfo(['mobinfo_id', 'mobinfo_phone', 'mobinfo_activated_datetm', 'mobinfo_deactivated_datetm', 'mobinfo_status'])
+            ->order($order)
+            ->limit($pageSize)
+            ->offset($pageSize * ($page - 1));
+
+        return $this->adapter->query($select);
+    }
 }
 
 ?>

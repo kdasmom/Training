@@ -11,9 +11,12 @@ class En extends \NP\locale\Dictionary {
 	protected $messages = array(
 		'unexpectedError'               => 'Unexpected error. Please contact your system administrator.',
 		'requiredFieldError'            => 'This field is required',
+		'noRecordFoundError'            => 'No record found with value of',
 		'glAssignmentError'             => 'There was an error saving GL Assignments',
 		'userAssignmentError'           => 'There was an error saving user assignments',
 		'fiscalCalSaveError'            => 'There was an error saving fiscal calendars',
+		'unitSaveError'                 => 'There was an error saving units',
+		'unitTypeSaveError'             => 'There was an error saving unit types',
 		'duplicateFiscalCalError'       => 'There is already a Fiscal Calendar with that name and year. Please select a different date and/or year.',
 		'propertyAssignmentError'       => 'There was an error saving property assignments',
 		'codingPropertyAssignmentError' => 'There was an error saving coding property assignments',
@@ -61,7 +64,46 @@ The delegation starts on <strong>$delegation_startdate</strong>
 and ends on <strong>$delegation_stopdate</strong>.
 <br /><br />
 The following properties have been delegated: $property_name_list.',
-	);
+		
+		// Imports
+		'importFieldAccountTypeError'            => 'Error import field Account Type',
+		'importFieldCategoryNameError'           => 'Category already exists',
+		'importFieldIntegrationPackageNameError' => 'Integration Package was not found',
+		'importFieldGLAccountNameError'          => 'GL Account number was not found',
+		'importFieldGlAccounTypeError'           => 'Account Type was not found',
+		'importFieldDependentIntPkgError'        => 'This field could not be validated because Integration Package is invalid',
+		'importFieldGLCategoryError'             => 'Category Name was not found',
+		'importFieldRegionError'                 => 'Error import field Region',
+		'importFieldStateError'                  => 'State was not found',
+		'importFieldZipError'                    => 'Zip code is invalid',
+		'importFieldPhoneError'                  =>	'Phone number is invalid',
+		'importFieldFaxError'                    =>	'Fax is invalid',
+		'importFieldClosingCalendarError'        => 'Error import field Closing Calendar',
+		'importFieldPropertyCodeError'           => 'Property code was not found',
+		'importFieldPropertyGlExistsError'       => 'Property assignment already exists',
+		'importFieldUnitTypeError'               => 'Unit type not found',
+		'importFieldUnitExistsError'             => 'Unit already exists',
+		'importFieldUnitError'                   => 'Unit not found',
+		'importFieldUnitTypeExistsError'         => 'Unit type already exists',
+		'importFieldVendorCodeError'             => 'Vendor not found',
+		'importFieldVendorGlExistsError'         => 'Vendor GL already exists',
+		'importFieldVendorFavoriteExistsError'   => 'Vendor Favorite already exists',
+		'importFieldUsernameUniqueError'         => 'Username already exists',
+		'importFieldPropertyUserExistsError'     => 'User Property assignment already exists',
+		'importFieldSplitExistsError'            => 'Split already exists',
+		'importFieldSplitPercentError'           => 'Split percents don\'t add up to 100%',
+		'importFieldSplitIntPkgError'            => 'All lines for a split must be for the same integration package',
+		'importFieldSplitVendorError'            => 'All lines for a split must be for the same vendor',
+		'importFieldLengthError'                 => 'This field has exceeded the maximum character limit of',
+		'importFieldOptionError'                 => 'The following value is invalid for this custom field',
+		'importGlobalError'                      => 'Invalid record',
+		'importRecordSaveError'                  => 'There was an error saving a record for row',
+		'uploadFileCSVEmptyError'                => 'The CSV file contains no records',
+		'uploadFileCSVFormatError'               => 'The format of the CSV file is incorrect',
+
+		// Utility Setup section
+		'utilityExists' => 'This vendor is already setup for utilities. Please update that record instead.'
+    );
 }
 
 ?>

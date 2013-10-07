@@ -155,7 +155,6 @@ class Util {
 
 		return $wasResized;
 	}
-	
 }
 
 ?>

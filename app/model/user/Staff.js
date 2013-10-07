@@ -7,7 +7,7 @@ Ext.define('NP.model.user.Staff', {
 	extend: 'Ext.data.Model',
 	
 	requires: [
-		'NP.model.user.Person',
+		'NP.model.contact.Person',
         'NP.lib.data.JsonFlat'
 	],
 
@@ -21,18 +21,12 @@ Ext.define('NP.model.user.Staff', {
 
     belongsTo: [
         {
-            model         : 'NP.model.user.Person',
+            model         : 'NP.model.contact.Person',
             name          : 'person',
             getterName    : 'getPerson',
             foreignKey    : 'person_id',
             primaryKey    : 'person_id',
             reader        : 'jsonflat'
         }
-    ],
-
-	validations: [
-		{ field: 'staff_id_alt', type: 'length', max: 15 },
-		{ field: 'staff_status', type: 'presence' },
-		{ field: 'staff_status', type: 'length', max: 50 }
-	]
+    ]
 });

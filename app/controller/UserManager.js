@@ -539,8 +539,8 @@ Ext.define('NP.controller.UserManager', {
 				service: 'UserService',
 				action : 'saveUser',
 				extraParams: {
-					emailalerts    : this.getSelectedEmailAlerts(),
-					emailalerthours: this.getSelectedEmailHours()
+					emailalerts    : this.getSelectedEmailAlerts('userEmailAlertPanel'),
+					emailalerthours: this.getSelectedEmailHours('userEmailAlertPanel')
 				},
 				extraFields: {
 					userprofile_password_confirm: 'userprofile_password_confirm',
@@ -557,9 +557,9 @@ Ext.define('NP.controller.UserManager', {
 		}
 	},
 
-	getSelectedEmailAlerts: function() {
+	getSelectedEmailAlerts: function(panel) {
 		// Get the value for the alert checkboxes
-		var emailalerttype_id_alt_list = NP.Util.getCheckboxValue('emailalerttype_id_alt');
+		var emailalerttype_id_alt_list = NP.Util.getCheckboxValue('emailalerttype_id_alt', '#' + panel);
 		
 		// Build the email alert records
 		var emailalerts = [];
@@ -575,9 +575,9 @@ Ext.define('NP.controller.UserManager', {
 		return emailalerts;
 	},
 
-	getSelectedEmailHours: function() {
+	getSelectedEmailHours: function(panel) {
 		// Get the value for the frequency checkboxes
-		var emailalerthour_list = NP.Util.getCheckboxValue('emailalert_hours');
+		var emailalerthour_list = NP.Util.getCheckboxValue('emailalert_hours', '#' + panel);
 
 		// Build the email alert hour records
 		var emailalerthours = [];
@@ -716,8 +716,8 @@ Ext.define('NP.controller.UserManager', {
 				action : 'saveRole',
 				extraParams: {
 					permissions     : permissions,
-					emailalerts     : this.getSelectedEmailAlerts(),
-					emailalerthours : this.getSelectedEmailHours(),
+					emailalerts     : this.getSelectedEmailAlerts('groupEmailAlertPanel'),
+					emailalerthours : this.getSelectedEmailHours('groupEmailAlertPanel'),
 					dashboard_layout: this.getPortalCanvas().serialize()
 				},
 				extraFields: {
