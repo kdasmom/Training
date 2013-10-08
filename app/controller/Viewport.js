@@ -55,10 +55,16 @@ Ext.define('NP.controller.Viewport', {
 					this.addHistory(token);
 				}
 			},
-			// Clicking on the Administration > Image Management menu
-			'#imageManagementMenuBtn': {
-				click: function() {
-					this.addHistory('ImageManagement:showManagement');
+			// Clicking on the Administration > Image Management menu or sub menu
+			'#imageMenuBtn,#imageMenuBtn menuitem': {
+				click: function(itemClicked) {
+					var token = 'ImageManagement:showManagement';
+					if (itemClicked.itemId != 'imageMenuBtn') {
+						token += ':' + itemClicked.itemId.replace('ImageMenuBtn', '');
+					} else {
+						token += ':indexed';
+					}
+					this.addHistory(token);
 				}
 			},
 			// Clicking on the Administration > My Settings menu
