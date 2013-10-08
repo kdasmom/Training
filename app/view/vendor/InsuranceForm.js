@@ -29,6 +29,7 @@ Ext.define('NP.view.vendor.InsuranceForm', {
     additionalInsuranceInputLabelText: 'Additional Insured',
 
     // Custom options
+    startIndex: 0,
 
     initComponent: function() {
         var that = this;

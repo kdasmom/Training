@@ -146,6 +146,20 @@ class VendorGateway extends AbstractGateway {
 		return $this->adapter->query($selectvendor, $params);
 	}
 
+	/**
+	 * Retrieve vendor's types records list
+	 *
+	 * @return array|bool
+	 */
+	public function findVendorTypes() {
+		$select = new Select();
+
+		$select->from(['vt' => 'vendortype'])
+					->order('vt.vendortype_name');
+
+		return $this->adapter->query($select);
+	}
+
 }
 
 ?>

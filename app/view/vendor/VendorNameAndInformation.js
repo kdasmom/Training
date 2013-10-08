@@ -41,10 +41,6 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
 	accountNumberInputLabel: 'Account Number',
 	printViewInputLabel: 'Display on Purchase Order Print View',
 	taxReportableInputLabel: '1099 Tax Reportable',
-	taxReportableYesInputLabel: 'Yes',
-	taxReportableNoInputLabel: 'No',
-
-	// Custom options
 
 	initComponent: function() {
 		var that = this;
@@ -72,27 +68,12 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
 				fieldLabel: this.taxIDInputLabel,
 				name: 'vendor_fedid'
 			},
-			{
-				xtype: 'textfield',
-				fieldLabel: this.mriVendorIdInputLabel,
-				name: 'vendor_id_alt',
+            {
+                xtype: 'textfield',
+                fieldLabel: this.mriVendorIdInputLabel,
+                name: 'vendor_id_alt',
                 allowBlank: false
-			},
-			{
-				xtype: 'combo',
-				fieldLabel: this.vendorTypeInputLabel,
-				name: 'vendor_type_code'
-			},
-			{
-				xtype: 'combo',
-				fieldLabel: this.taxPayorTypeInputLabel,
-                name: 'taxpayor_type'
-			},
-			{
-				xtype: 'combo',
-				fieldLabel: this.payeeTypeInputLabel,
-                name: 'payee_type'
-			},
+            },
 			{
 				xtype: 'fieldcontainer',
 				fieldLabel: this.vendorAddressInputLabel,
@@ -124,6 +105,13 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
                         fieldLabel: this.vendorAddressStateInputLabel,
                         width: 345,
                         name: 'vendorsite_address_state',
+                        displayField: 'state_code',
+                        valueField: 'state_id',
+                        store: Ext.create('NP.store.contact.States', {
+                            service: 'AddressService',
+                            action: 'getStates',
+                            autoLoad: true
+                        }),
                         allowBlank: false
                     },
                     {
@@ -148,94 +136,7 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
                         ]
                     }
                 ]
-			},
-            {
-                xtype: 'textfield',
-                fieldLabel: this.emailAddressInputLabel,
-                name: 'vendorsite_email'
-            },
-            {
-                xtype: 'fieldcontainer',
-                fieldLabel: this.phoneInputLabel,
-                layout: 'hbox',
-                items: [
-                    {
-                        xtype: 'textfield',
-                        fieldLabel: '',
-                        width: 200,
-                        name: 'vendorsite_phone'
-                    },
-                    {
-                        labelWidth: 50,
-                        padding: '0 0 0 10',
-                        xtype: 'textfield',
-                        fieldLabel: this.phoneExtInputLabel,
-                        width: 135,
-                        name: 'vendorsite_phone_phone_ext'
-                    }
-                ]
-            },
-            {
-                xtype: 'textfield',
-                fieldLabel: this.faxInputLabel,
-                name: 'vendorsite_fax'
-            },
-            {
-                xtype: 'fieldcontainer',
-                fieldLabel: this.contactInputLabel,
-                layout: 'vbox',
-                items: [
-                    {
-                        xtype: 'textfield',
-                        fieldLabel: this.contactFirstnameInputLabel,
-                        width: 345,
-                        name: 'attention_first_name'
-                    },
-                    {
-                        xtype: 'textfield',
-                        fieldLabel: this.contactLastnameInputLabel,
-                        width: 345,
-                        name: 'attention_middle_name'
-                    }
-                ]
-            },
-            {
-                xtype: 'fieldcontainer',
-                fieldLabel: this.phoneContactInputLabel,
-                name: 'contact_phone',
-                layout: 'hbox',
-                items: [
-                    {
-                        xtype: 'textfield',
-                        fieldLabel: '',
-                        width: 200,
-                        name: 'attention_phone'
-                    },
-                    {
-                        labelWidth: 50,
-                        padding: '0 0 0 10',
-                        xtype: 'textfield',
-                        fieldLabel: this.phoneContactExtInputLabel,
-                        width: 135,
-                        name: 'attention_phone_phone_ext'
-                    }
-                ]
-            },
-            {
-                xtype: 'textfield',
-                fieldLabel: this.accountNumberInputLabel,
-                name: 'vendorsite_account_number'
-            },
-            {
-                xtype: 'checkbox',
-                fieldLabel:this.printViewInputLabel,
-                name: 'vendorsite_display_account_number_po'
-            },
-            {
-                xtype: 'shared.yesnofield',
-                fieldLabel: this.taxReportableInputLabel,
-                name: 'vendor_type1099'
-            }
+			}
 		];
 
 		this.callParent(arguments);

@@ -91,12 +91,28 @@ Ext.define('NP.controller.VendorManager', {
 		var viewCfg = { bind: { models: ['vendor.Vendor'] }};
 
 		var form = this.setView('NP.view.vendor.VendorForm', viewCfg);
+        this.findIntegrationPackage(form);
 	},
 
     saveVendor: function() {
         var form = this.getCmp('vendor.vendorform');
         var values = form.getValues();
+    },
 
-        console.log('form: ', values);
+    /**
+     * retrieve integration package info
+     * @returns {{name: null, id: null}}
+     */
+    findIntegrationPackage: function(form) {
+        NP.lib.core.Net.remoteCall({
+            requests: {
+                service: 'ConfigService',
+                action : 'findByAspClientIdAndUserprofileId',
+                userprofile_id: NP.lib.core.Security.getUser().get('userprofile_id'),
+                success: function(result, deferred) {
+                    form.findField('integration_package_id').setValue(result.integration_package_name);
+                }
+            }
+        });
     }
 });

@@ -18,6 +18,7 @@ Ext.define('NP.view.vendor.VendorInsuranceSetup', {
 	// For localization
 	title                     : 'Insurance setup',
     addInsuranceBtnText: 'Add',
+    daysNoticeLabelText: 'How many days notice prior to expiration for Expired Insurance Certificates Warning?',
 
 	// Custom options
 
@@ -37,6 +38,14 @@ Ext.define('NP.view.vendor.VendorInsuranceSetup', {
                 handler: function() {
                     Ext.bind(that.addInsurance(), that, []);
                 }
+            },
+            {
+                xtype: 'textfield',
+                name: 'DaysNotice_InsuranceExpires',
+                fieldLabel: this.daysNoticeLabelText,
+                labelWidth: 546,
+                width: 680,
+                value: 0
             }
         ];
 
@@ -47,8 +56,11 @@ Ext.define('NP.view.vendor.VendorInsuranceSetup', {
         var that = this;
 
         var item = this.add({
-            xtype: 'vendor.insuranceform'
+            xtype: 'vendor.insuranceform',
+            startIndex: that.startIndex
         });
+
+        this.startIndex++;
 
         return item;
     }

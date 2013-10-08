@@ -120,7 +120,7 @@ class VendorService extends AbstractService {
 	}
 
 	/**
-	 * find
+	 * find vendors by status
 	 *
 	 * @param null $pageSize
 	 * @param null $page
@@ -132,6 +132,15 @@ class VendorService extends AbstractService {
 		$aspClientId = $this->configService->getClientId();
 
 		return $this->vendorGateway->findByStatus($pageSize, $page, $status, $sort, $aspClientId);
+	}
+
+	/**
+	 * Retrieve vendor's types records list
+	 *
+	 * @return array|bool
+	 */
+	public function findVendorTypes() {
+		return $this->vendorGateway->findVendorTypes();
 	}
 }
 

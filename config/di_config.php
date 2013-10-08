@@ -53,6 +53,7 @@ $diDefinition = array(
 	'NP\catalog\VcItemGateway'                 => array('Adapter'),
 	'NP\catalog\CatalogService'                => array('VcGateway','LinkVcitemcatGlGateway','LinkVcPropertyGateway','LinkVcVccatGateway','LinkVcVendorGateway','VcItemGateway','VcCatGateway','VendorGateway','PropertyGateway'),
 	'NP\contact\AddressGateway'                => array('Adapter'),
+	'NP\contact\AddressService'                => array('AddressGateway'),
 	'NP\contact\AddressTypeGateway'            => array('Adapter'),
 	'NP\contact\EmailGateway'                  => array('Adapter'),
 	'NP\contact\EmailTypeGateway'              => array('Adapter'),

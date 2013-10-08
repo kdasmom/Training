@@ -193,7 +193,7 @@ class ConfigService extends AbstractService {
 			array('lookupcode_type'=>"'{$lookupcode_type}'"), 
 			array(), 
 			'lookupcode_description ASC',
-			array('lookupcode_id','lookupcode_description')
+			array('lookupcode_id','lookupcode_description', 'lookupcode_code')
 		);
 	}
 
@@ -335,7 +335,20 @@ class ConfigService extends AbstractService {
 			'errors'     => $errors
 		);
 	}
-	
+
+	/**
+	 * Retrieve integrationpackage info
+	 *
+	 * @param int|null $asp_client_id
+	 * @param int|null $userprofile_id
+	 * @return array|mixed
+	 */
+	public function findByAspClientIdAndUserprofileId($userprofile_id = null) {
+		if (!$userprofile_id) {
+			return [];
+		}
+		return $this->intPkgGateway->findByAspClientIdAndUserprofileId($this->getClientId(), $userprofile_id);
+	}
 }
 
 ?>
