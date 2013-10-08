@@ -13,11 +13,18 @@ Ext.define('NP.controller.GLAccountSetup', {
 		'NP.lib.core.Util'
 	],
 	
-	// For localization
-	errorDialogTitleText : 'Error',
-	newGLAccountTitleText: 'New GL Account',
-	editPropertyTitleText: 'Editing',
-	saveSuccessText      : 'Your changes were saved.',
+        refs: [
+		{ ref: 'glaccountGrid', selector: '[xtype="gl.glaccountsgrid"] customgrid' },
+		{ ref: 'glaccountActivateBtn', selector: '[xtype="gl.glaccountsgrid"] [xtype="shared.button.activate"]' },
+		{ ref: 'glaccountInactivateBtn', selector: '[xtype="gl.glaccountsgrid"] [xtype="shared.button.inactivate"]' },
+		{ ref: 'glaccountForm', selector: '[xtype="gl.glaccountsform"]' },
+        ],
+	
+        // For localization
+        activateSuccessText       : 'GLAccounts were activated',
+	activateFailureText       : 'There was an error activating glaccounts',
+	inactivateSuccessText     : 'GLAccounts were inactivated',
+	inactivateFailureText     : 'There was an error inactivating glaccounts',
 
 	init: function() {
 		Ext.log('GLAccountSetup controller initialized');
@@ -37,16 +44,12 @@ Ext.define('NP.controller.GLAccountSetup', {
 				}
 			},
                         // The GLAccounts grid
-			'[xtype="gl.glaccountsmain"] customgrid': {
+			'[xtype="gl.glaccountsgrid"] customgrid': {
 				selectionchange: this.gridSelectionChange,
 				itemclick      : this.viewGLAccount
 			},
-                        // The GLAccounts grid drop down
-			'[xtype="gl.glaccountsmain"] [name="glaccount_status"]': {
-				change: this.changeGLAccountStatus
-			},
                         // The Create New GL Account
-			'[xtype="gl.glaccountsmain"] [xtype="shared.button.new"]': {
+			'[xtype="gl.glaccountsgrid"] [xtype="shared.button.new"]': {
 				click: function() {
 					this.addHistory('GLAccountSetup:showGLAccountSetup:GLAccounts:Form');
 				}
@@ -55,7 +58,7 @@ Ext.define('NP.controller.GLAccountSetup', {
 			'#glaccountCancelBtn': {
 				click: function() {
 					this.activeGLAccountRecord = null;
-					this.addHistory('GLAccountSetup:showGLAccountSetup:GLAccounts:Main');
+					this.addHistory('GLAccountSetup:showGLAccountSetup:GLAccounts:Grid');
 				}
 			},
 			// The save button on the glaccount form
@@ -108,35 +111,27 @@ Ext.define('NP.controller.GLAccountSetup', {
 		}
 	},
         showGLAccounts: function(subSection, glaccount_id) {
-		if (!subSection) subSection = 'Main';
+		if (!subSection) subSection = 'Grid';
 
 		this['showGLAccounts' + subSection](glaccount_id);
 	},
 
-	showGLAccountsMain: function() {
-		this.setView('NP.view.gl.GLAccountsMain', {}, '[xtype="gl.glaccounts"]');
-
-		this.changeGLAccountStatus();
+	showGLAccountsGrid: function() {
+		this.setView('NP.view.gl.GLAccountsGrid', {}, '[xtype="gl.glaccounts"]');
+                var grid = this.getCmp('gl.glaccounts').query('customgrid')[0];
+                grid.reloadFirstPage();
 	},
                 
         gridSelectionChange: function(selectionModel, selected) {
-		var grid = this.getCmp('gl.glaccounts').query('customgrid')[0];
-			
-		var glaccount_status = grid.query('[name="glaccount_status"]')[0].getValue();
+		var fn = (selected.length) ? 'enable' : 'disable';
+//		this.getUserActivateBtn()[fn]();
+//		this.getUserInactivateBtn()[fn]();
 	},
         
         viewGLAccount: function(grid, rec, item, index, e) {
 		if (e.getTarget().className != 'x-grid-row-checker') {
 			this.addHistory('GLAccountSetup:showGLAccountSetup:GLAccounts:Form:' + rec.get('glaccount_id'));
 		}
-	},
-        
-        changeGLAccountStatus: function() {
-		// Reload the grid
-		var grid = this.getCmp('gl.glaccounts').query('customgrid')[0];
-		var glaccount_status = grid.query('[name="glaccount_status"]')[0].getValue();
-		grid.addExtraParams({ glaccount_status: glaccount_status });
-		grid.reloadFirstPage();
 	},
                 
         showGLAccountsForm: function(glaccount_id) {
