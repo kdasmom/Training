@@ -63,7 +63,7 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
                             glaccount_status  : null,
                             property_id       : null,
                             glaccounttype_id  : null,
-                            glaccount_level   : null
+                            glaccount_category: null
                         }
                 });
         glAccountsStore.load();
@@ -142,12 +142,12 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
                             }, 
                             {
                                 xtype: 'customcombo',
-                                name: 'glaccountcategory_id',
+                                name: 'glaccount_category',
                                 fieldLabel: 'Category',
                                 labelWidth: filterLabelWidth,
                                 store: glCategoryStore,
-                                displayField: 'glaccountcategory_name',
-                                valueField: 'glaccountcategory_id',
+                                displayField: 'glaccount_name',
+                                valueField: 'glaccount_name',
                                 emptyText: 'All'
                             }
                         ]
@@ -162,17 +162,7 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
                 selModel: Ext.create('Ext.selection.CheckboxModel'),
                 stateful: true,
                 stateId: 'glaccount_setup_grid',
-                store: Ext.create('NP.store.gl.GlAccounts', {
-                    service: 'GLService',
-                    action: 'getAllGLAccounts',
-                    paging: true,
-                    extraParams: {
-                            glaccount_status  : null,
-                            property_id       : null,
-                            glaccounttype_id  : null,
-                            glaccount_level   : null
-                        }
-                }),
+                store: glAccountsStore,
                 columns: [
                     {
                         text: this.numberColText,
@@ -189,7 +179,7 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
                         dataIndex: 'glaccount_category',
                         flex: 1,
                         renderer: function(val, meta, rec) {
-                            console.log(rec)
+                            return rec.raw['glaccount_category']
                         }
                     },
                     {
@@ -232,7 +222,7 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
         this.statusFilter = this.query('[name="glaccount_status"]')[0];
         this.propertyFilter = this.query('[name="property_id"]')[0];
         this.typeFilter = this.query('[name="glaccounttype_id"]')[0];
-        this.categoryFilter = this.query('[name="glaccountcategory_id"]')[0];
+        this.categoryFilter = this.query('[name="glaccount_category"]')[0];
 
         this.filterFields = ['statusFilter', 'propertyFilter', 'typeFilter', 'categoryFilter'];
 
@@ -247,7 +237,7 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
             glaccount_status: this.statusFilter.getValue(),
             property_id: this.propertyFilter.getValue(),
             glaccounttype_id: this.typeFilter.getValue(),
-            glaccountcategory_id: this.categoryFilter.getValue()
+            glaccount_category: this.categoryFilter.getValue()
         };
 
         Ext.Object.each(newParams, function(key, val) {
