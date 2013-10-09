@@ -88,7 +88,19 @@ Ext.define('NP.controller.VendorManager', {
 	 * @param int vendor_id Vendor id to edit
 	 */
 	showVendorForm: function(vendor_id) {
-		var viewCfg = { bind: { models: ['vendor.Vendor'] }};
+		var viewCfg = {
+            bind: {
+                models: [
+                    'vendor.Vendor',
+                    'vendor.Vendorsite',
+                    'contact.Person',
+                    'contact.Address',
+                    'contact.Phone',
+                    'contact.Email',
+                    'vendor.Insurance'
+                ]
+            }
+        };
 
 		var form = this.setView('NP.view.vendor.VendorForm', viewCfg);
         this.findIntegrationPackage(form);

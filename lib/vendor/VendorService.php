@@ -2,6 +2,10 @@
 
 namespace NP\vendor;
 
+use NP\contact\AddressEntity;
+use NP\contact\EmailEntity;
+use NP\contact\PersonEntity;
+use NP\contact\PhoneEntity;
 use NP\core\AbstractService;
 use NP\system\ConfigService;
 use NP\user\UserprofileGateway;
@@ -151,7 +155,26 @@ class VendorService extends AbstractService {
 	 * @param $data
 	 */
 	public function saveVendor($data) {
+
+		/**
+		 * 'vendor.Vendor',
+		'vendor.Vendorsite',
+		'contact.Person',
+		'contact.Address',
+		'contact.Phone',
+		'contact.Email',
+		'vendor.Insurance'
+		 */
+		$vendor = new VendorEntity($data['vendor']);
+		$vendorsite = new VendorsiteEntity($data['vendorsite']);
+		$person  = new PersonEntity($data['person']);
+		$address = new AddressEntity($data['address']);
+		$phone = new PhoneEntity($data['phone']);
+		$email = new EmailEntity($data['email']);
+
 		$in_app_user = $this->userprofileGateway->isInAppUser($data['role_id'], $data['userprofile_id']);
+		$approval_vendor_id = $this->userprofileGateway->find(['vendor_id' => '?'], [$data['vendor_id']], null, ['approval_tracking_id']);
+		$this->vendorGateway->validateVendor($data);
 	}
 }
 

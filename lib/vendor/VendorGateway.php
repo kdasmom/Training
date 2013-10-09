@@ -12,10 +12,6 @@ use NP\vendor\VendorSelect;
 
 use NP\core\db\Adapter;
 
-define('VALIDATE_NAME', 0);
-define('VALIDATE_TAX_ID', 0);
-define('VALIDATE_ID_ALT', 1);
-
 /**
  * Gateway for the VENDOR table
  *
@@ -165,6 +161,7 @@ class VendorGateway extends AbstractGateway {
 	}
 
 	public function validateVendor($data) {
+		var_dump($data);
 		/**
 		 * @in_asp_client_id int,
 		@in_vendor_id int,
@@ -180,14 +177,16 @@ class VendorGateway extends AbstractGateway {
 		@out_vendor_id int OUTPUT,
 		@out_vendor_name varchar(500) OUTPUT
 		 */
-
+		$approval_tracking_id = $this->find(['vendor_id' => '?'], [$data['vendor_id']], null, ['approval_tracking_id']);
 
 	}
 
-	protected function isIssetVendorId($useVendorName = VALIDATE_NAME) {
+	protected function isIssetVendorId($useVendorName, $vendorName, $approval_tracking_id, $integrationPackageId, $asp_client_id) {
 		$select = new Select();
 
+		if ($useVendorName) {
 		$select->from(['v' => 'vendor'])
+					->columns(['vendor_id'])
 					->join(['i' => 'integrationpackage'], 'i.integration_package_id = v.integration_package_id', [])
 					->where(['rtrim((v.vendor_name)' => 'rtrim(?)'])
 					->whereNotEquals('v.approval_tracking_id', '?')
@@ -197,7 +196,17 @@ class VendorGateway extends AbstractGateway {
 					->whereUnNest()
 					->whereNest('OR')
 					->whereGreaterThan('v.vendor_active_enddate', 'GetDate()')
-					->whereIsNull('v.vendor_active_enddate');
+					->whereIsNull('v.vendor_active_enddate')
+					->whereUnNest()
+					->whereNotEqual('v.vendor_status', "'rejected'")
+					->whereEquals('v.Integration_Package_id', "?")
+					->where(['ip.asp_client_id' => '?']);
+			$result = $this->adapter->query($select, [$vendorName, $approval_tracking_id, $integrationPackageId, $asp_client_id]);
+
+			return $result[0]['vendor_id'];
+		} else {
+			return null;
+		}
 	}
 
 }
