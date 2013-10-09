@@ -196,7 +196,7 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
                         renderer: function(val, meta, rec) {
                             var returnVal = Ext.Date.format(val, NP.Config.getDefaultDateFormat() + ' h:iA');
                             if (rec.get('glaccount_updateby') != null) {
-//                                returnVal += ' (' + rec.getUpdatedByUser().get('userprofile_username') + ')'
+                                 val += ' (' + rec.getUpdater().get('userprofile_username') + ')'
                             }
 
                             return returnVal;

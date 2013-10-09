@@ -47,5 +47,15 @@ Ext.define('NP.model.gl.GlAccount', {
 	    		return glaccount_name + ' (' + glaccount_number + ')';
 	    	}
 		}
-	}
+	},
+        belongsTo: [
+        {
+            model     : 'NP.model.user.Userprofile',
+            name      : 'updater',
+            getterName: 'getUpdater',
+            foreignKey: 'glaccount_updateby',
+            primaryKey: 'userprofile_id',
+            reader    : 'jsonflat'
+        }
+    ],
 });
