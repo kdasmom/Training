@@ -225,6 +225,9 @@ class GLAccountGateway extends AbstractGateway {
     public function getSelect() {
             $select = new sql\GLAccountSelect();
             $select->columnsAll()
+                            ->joinTree()
+                            ->joinTree2()
+                            ->joinCategory(array('glaccount_category' => 'glaccount_name'))
                             ->joinType(array('glaccounttype_id','glaccounttype_name'))
                             ->joinUpdatedBy(array('glaccount_updateby' => 'userprofile_id', 'userprofile_username'));
 

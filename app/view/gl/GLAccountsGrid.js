@@ -162,27 +162,43 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
                 selModel: Ext.create('Ext.selection.CheckboxModel'),
                 stateful: true,
                 stateId: 'glaccount_setup_grid',
-                store: glAccountsStore,
+                store: Ext.create('NP.store.gl.GlAccounts', {
+                    service: 'GLService',
+                    action: 'getAllGLAccounts',
+                    paging: true,
+                    extraParams: {
+                            glaccount_status  : null,
+                            property_id       : null,
+                            glaccounttype_id  : null,
+                            glaccount_level   : null
+                        }
+                }),
                 columns: [
+                    {
+                        text: this.numberColText,
+                        dataIndex: 'glaccount_number',
+                        flex: 1
+                    },
                     {
                         text: this.nameColText,
                         dataIndex: 'glaccount_name',
                         flex: 1
                     },
                     {
-                        text: this.numberColText,
-                        dataIndex: 'glaccount_number',
-                        flex: 2
-                    },
-                    {
                         text: this.categoryColText,
                         dataIndex: 'glaccount_category',
-                        flex: 2
+                        flex: 1,
+                        renderer: function(val, meta, rec) {
+                            console.log(rec)
+                        }
                     },
                     {
                         text: this.typeColText,
                         dataIndex: 'glaccounttype_name',
-                        flex: 1
+                        flex: 1,
+                        renderer: function(val, meta, rec) {
+                            return rec.getType().get('glaccounttype_name')
+                        }
                     },
                     {
                         text: this.statusColText,
@@ -194,14 +210,14 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
                         text: this.lastUpdatedColText,
                         dataIndex: 'glaccount_updatetm',
                         renderer: function(val, meta, rec) {
-                            var returnVal = Ext.Date.format(val, NP.Config.getDefaultDateFormat() + ' h:iA');
-                            if (rec.get('glaccount_updateby') != null) {
-                                 val += ' (' + rec.getUpdater().get('userprofile_username') + ')'
-                            }
+                              var returnVal = Ext.Date.format(val, NP.Config.getDefaultDateFormat() + ' h:iA');
+                              if (rec.get('glaccount_updateby') != null) {
+                                  returnVal += ' (' + rec.getUpdatedByUser().get('userprofile_username') + ')'
+                              }
 
-                            return returnVal;
-                        },
-                        flex: 1.5
+                              return returnVal;
+                          },
+                          flex : 1.5
                     }
                 ],
                 pagingToolbarButtons: [

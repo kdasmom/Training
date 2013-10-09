@@ -50,12 +50,20 @@ Ext.define('NP.model.gl.GlAccount', {
 	},
         belongsTo: [
         {
-            model     : 'NP.model.user.Userprofile',
-            name      : 'updater',
-            getterName: 'getUpdater',
-            foreignKey: 'glaccount_updateby',
-            primaryKey: 'userprofile_id',
-            reader    : 'jsonflat'
+            model         : 'NP.model.user.Userprofile',
+            name          : 'updatedByUser',
+            getterName    : 'getUpdatedByUser',
+            foreignKey    : 'UserProfile_ID',
+            primaryKey    : 'userprofile_id',
+            reader        : 'jsonflat'
+        },
+        {
+            model         : 'NP.model.gl.GlAccountType',
+            name          : 'type',
+            getterName    : 'getType',
+            foreignKey    : 'glaccounttype_id',
+            primaryKey    : 'glaccounttype_id',
+            reader        : 'jsonflat'
         }
     ],
 });

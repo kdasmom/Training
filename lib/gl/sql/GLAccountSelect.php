@@ -60,6 +60,41 @@ class GLAccountSelect extends Select {
 						$cols,
 						Select::JOIN_LEFT);
 	}
+        
+        /**
+	 * Joins TREE table for tree_id column
+	 *
+	 * @param  string[] $cols                 Columns to retrieve from the GLACOOUNT table
+	 * @return \NP\gl\sql\GLAccountSelect Returns caller object for easy chaining
+	 */
+	public function joinTree($cols=array()) {
+		return $this->join(array('t1' => 'tree'),
+						"t1.tablekey_id =  g.glaccount_id AND  t1.table_name = 'glaccount'",
+						$cols);
+	}
+        
+         /**
+	 * Joins TREE table for tree_id column
+	 *
+	 * @param  string[] $cols                 Columns to retrieve from the GLACOOUNT table
+	 * @return \NP\gl\sql\GLAccountSelect Returns caller object for easy chaining
+	 */
+	public function joinTree2($cols=array()) {
+		return $this->join(array('t2' => 'tree'),
+						"t2.tree_id =  t1.tree_parent AND  t1.table_name = 'glaccount'",
+						$cols);
+	}
+        /**
+	 * Joins GLACOOUNT table for glaccount_category column
+	 *
+	 * @param  string[] $cols                 Columns to retrieve from the GLACOOUNT table
+	 * @return \NP\gl\sql\GLAccountSelect Returns caller object for easy chaining
+	 */
+	public function joinCategory($cols=array()) {
+		return $this->join(array('g2' => 'glaccount'),
+						'g2.glaccount_id = t2.tablekey_id',
+						$cols);
+	}
 	
 }
 
