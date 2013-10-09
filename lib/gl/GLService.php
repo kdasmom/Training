@@ -56,12 +56,7 @@ class GLService extends AbstractService {
      * Returns all Category in the system
      */
     public function getCategories() {
-            return $this->glAccountGateway->find(
-            'glaccount_order > 1',
-            array(),
-            'glaccount_number',
-            array('glaccount_id','glaccount_number')
-        );
+        return $this->glAccountGateway->getCategories();
     }
         
     /**
@@ -69,16 +64,8 @@ class GLService extends AbstractService {
      *
      * @return array
      */
-    public function getAllGLAccounts($glaccount_status='active', $pageSize=null, $page=null, $sort="glaccount_name") {
-        return $this->glAccountGateway->find(
-            new sql\criteria\GlAccountStatusCriteria(), // filter
-            array($glaccount_status),           // params
-            $sort,                              // order by
-            null,                               // columns
-            $pageSize,
-            $page,
-            array(new sql\join\GLAccountTypeJoin())
-        );
+    public function getAllGLAccounts($glaccount_status=null, $property_id=null, $glaccounttype_id=null, $glaccountcategory_id=null, $pageSize=null, $page=1, $sort='glaccount_name') {
+            return $this->glAccountGateway->findByFilter($glaccount_status, $property_id, $glaccounttype_id, $glaccountcategory_id, $pageSize, $page, $sort);
     }
         
     /**

@@ -219,6 +219,75 @@ class GLAccountGateway extends AbstractGateway {
 
         return $this->adapter->query($select, $params);
     }
+    /**
+    * Override to retrieve more by default
+    */
+    public function getSelect() {
+            $select = new sql\GLAccountSelect();
+            $select->columnsAll()
+                            ->joinType(array('glaccounttype_id','glaccounttype_name'))
+                            ->joinUpdatedBy(array('glaccount_updateby' => 'userprofile_id', 'userprofile_username'));
+
+            return $select;
+}
+        
+    /**
+     * 
+     */
+    public function findByFilter($glaccount_status=null, $property_id=null, $glaccounttype_id=null, $glaccountcategory_id=null, $pageSize=null, $page=1, $sort='glaccount_name') {
+            $select = $this->getSelect()->order($sort);
+            $params = array();
+
+            if ($glaccount_status !== null && $glaccount_status != '') {
+                    $select->whereEquals('g.glaccount_status', '?');
+                    $params[] = $glaccount_status;
+            }
+
+            if ($property_id !== null && $property_id != '') {
+                    $propSelect = new Select();
+                    $select->whereExists(
+                            $propSelect->from(array('pg'=>'propertyglaccount'))
+                                                    ->whereEquals('g.glaccount_id', 'pg.glaccount_id')
+                                                    ->whereEquals('pg.property_id', '?')
+                    );
+                    $params[] = $property_id;
+            }
+
+            if ($glaccounttype_id !== null && $glaccounttype_id != '') {
+                    $select->whereEquals('gt.glaccounttype_id', '?');
+                    $params[] = $glaccounttype_id;
+            }
+
+            if ($glaccountcategory_id !== null && $glaccountcategory_id != '') {
+                    $categorySelect = new Select();
+                    $select->whereExists(
+                            $categorySelect->from(array('mp'=>'modulepriv'))
+                                                    ->whereEquals('mp.tablekey_id', 'ur.role_id')
+                                                    ->whereEquals('mp.module_id', '?')
+                    );
+                    $params[] = $glaccountcategory_id;
+            }
+
+            // If paging is needed
+            if ($pageSize !== null) {
+                    return $this->getPagingArray($select, $params, $pageSize, $page);
+            } else {
+                    return $this->adapter->query($select, $params);
+            }
+	}
+        
+    /**
+     * 
+     */
+    public function getCategories() {
+        $select = new Select();
+        $select->from(array('g'=>'glaccount'))
+                ->join(new sql\join\GlAccountTreeJoin(array('tree_id')))
+                ->whereIsNull('glaccounttype_id');
+
+        return $this->adapter->query($select);
+
+    }
 }
 
 ?>

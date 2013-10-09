@@ -181,21 +181,22 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
                     },
                     {
                         text: this.typeColText,
-                        dataIndex: 'glaccount_type',
+                        dataIndex: 'glaccounttype_name',
                         flex: 1
                     },
                     {
                         text: this.statusColText,
                         dataIndex: 'glaccount_status',
-                        flex: 1
+                        flex: 0.5,
+                        renderer: Ext.util.Format.capitalize
                     },
                     {
                         text: this.lastUpdatedColText,
                         dataIndex: 'glaccount_updatetm',
                         renderer: function(val, meta, rec) {
                             var returnVal = Ext.Date.format(val, NP.Config.getDefaultDateFormat() + ' h:iA');
-                            if (rec.get('last_updated_by') != null) {
-                                returnVal += ' (' + rec.getUpdatedByUser().get('userprofile_username') + ')'
+                            if (rec.get('glaccount_updateby') != null) {
+//                                returnVal += ' (' + rec.getUpdatedByUser().get('userprofile_username') + ')'
                             }
 
                             return returnVal;
