@@ -138,6 +138,7 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
                 ]
 			}
 		];
+        console.log('user: ', NP.lib.core.Security.getUser());
 
 		this.callParent(arguments);
 	}

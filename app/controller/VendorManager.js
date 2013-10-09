@@ -97,6 +97,20 @@ Ext.define('NP.controller.VendorManager', {
     saveVendor: function() {
         var form = this.getCmp('vendor.vendorform');
         var values = form.getValues();
+
+        if (form.isValid()) {
+            form.submitWithBindings({
+                service: 'VendorService',
+                action: 'saveVendor',
+                extraParams: {
+                    userprofile_id: NP.Security.getUser().get('userprofile_id'),
+                    role_id:        NP.Security.getRole().get('role_id')
+                },
+                success: function(result, deferred) {
+                    console.log('result: ', result);
+                }
+            });
+        }
     },
 
     /**

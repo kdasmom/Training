@@ -5,6 +5,7 @@ namespace NP\user;
 use NP\core\AbstractGateway;
 use NP\core\db\Update;
 use NP\core\db\Select;
+use NP\user\sql\criteria\IsUserInAppWhere;
 
 /**
  * Gateway for the USERPROFILE table
@@ -266,6 +267,27 @@ class UserprofileGateway extends AbstractGateway {
 		} else {
 			return $this->adapter->query($select, $params);
 		}
+	}
+
+	/**
+	 * Check is user in app
+	 *
+	 * @param $role_id
+	 * @param $userprofile_id
+	 * @return bool
+	 */
+	public function isInAppUser($role_id, $userprofile_id) {
+		$select = new Select();
+
+		$select->count(true, 'privcount')
+					->from(['mp' => 'modulepriv'])
+					->join(['m' => 'module'], 'mp.module_id = m.module_id', [])
+					->where(new sql\criteria\IsUserInAppWhere());
+
+		$count = $this->adapter->query($select, [$role_id, $userprofile_id]);
+
+		return $count[0]['privcount'] > 0 ? true : false;
+
 	}
 }
 

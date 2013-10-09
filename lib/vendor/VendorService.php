@@ -4,6 +4,7 @@ namespace NP\vendor;
 
 use NP\core\AbstractService;
 use NP\system\ConfigService;
+use NP\user\UserprofileGateway;
 
 /**
  * Service class for operations related to vendors
@@ -12,12 +13,13 @@ use NP\system\ConfigService;
  */
 class VendorService extends AbstractService {
 	
-	protected $vendorGateway, $insuranceGateway, $configService;
+	protected $vendorGateway, $insuranceGateway, $configService, $userprofileGateway;
 	
-	public function __construct(VendorGateway $vendorGateway, InsuranceGateway $insuranceGateway, ConfigService $configService) {
+	public function __construct(VendorGateway $vendorGateway, InsuranceGateway $insuranceGateway, ConfigService $configService, UserprofileGateway $userprofileGateway) {
 		$this->vendorGateway    = $vendorGateway;
 		$this->insuranceGateway = $insuranceGateway;
 		$this->configService = $configService;
+		$this->userprofileGateway = $userprofileGateway;
 	}
 	
 	/**
@@ -141,6 +143,15 @@ class VendorService extends AbstractService {
 	 */
 	public function findVendorTypes() {
 		return $this->vendorGateway->findVendorTypes();
+	}
+
+	/**
+	 * Save vendor
+	 *
+	 * @param $data
+	 */
+	public function saveVendor($data) {
+		$in_app_user = $this->userprofileGateway->isInAppUser($data['role_id'], $data['userprofile_id']);
 	}
 }
 

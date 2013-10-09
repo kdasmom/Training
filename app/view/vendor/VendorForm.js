@@ -18,6 +18,7 @@ Ext.define('NP.view.vendor.VendorForm', {
 	],
 
 	title: 'Vendor',
+    emptyErrorText: 'Cannot be empty',
 
 	initComponent: function() {
 		var bar = [
@@ -46,6 +47,38 @@ Ext.define('NP.view.vendor.VendorForm', {
 
 	isValid: function() {
 		var isValid = this.callParent(arguments);
+
+        var vendorNameInput = this.findField('vendor_name');
+        var mriInput = this.findField('vendor_id_alt');
+        var addressLine1Input = this.findField('vendorsite_address_line1');
+        var cityInput = this.findField('vendorsite_address_city');
+        var stateInput = this.findField('vendorsite_address_state');
+        var zipInput = this.findField('vendorsite_address_zip');
+
+        if (!vendorNameInput.getValue() || vendorNameInput.getValue() == '') {
+            isValid = false;
+            vendorNameInput.markInvalid(this.emptyErrorText);
+        }
+        if (!mriInput.getValue() || mriInput.getValue() == '') {
+            isValid = false;
+            mriInput.markInvalid(this.emptyErrorText);
+        }
+        if (!addressLine1Input.getValue() || addressLine1Input.getValue() == '') {
+            isValid = false;
+            addressLine1Input.markInvalid(this.emptyErrorText);
+        }
+        if (!cityInput.getValue() || cityInput.getValue() == '') {
+            isValid = false;
+            cityInput.markInvalid(this.emptyErrorText);
+        }
+        if (!stateInput.getValue()) {
+            isValid = false;
+            stateInput.markInvalid(this.emptyErrorText);
+        }
+        if (!zipInput.getValue() || zipInput.getValue() == '') {
+            isValid = false;
+            zipInput.markInvalid(this.emptyErrorText);
+        }
 
 		return isValid;
 	}

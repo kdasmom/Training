@@ -12,6 +12,10 @@ use NP\vendor\VendorSelect;
 
 use NP\core\db\Adapter;
 
+define('VALIDATE_NAME', 0);
+define('VALIDATE_TAX_ID', 0);
+define('VALIDATE_ID_ALT', 1);
+
 /**
  * Gateway for the VENDOR table
  *
@@ -158,6 +162,41 @@ class VendorGateway extends AbstractGateway {
 					->order('vt.vendortype_name');
 
 		return $this->adapter->query($select);
+	}
+
+	public function validateVendor($data) {
+		/**
+		 * @in_asp_client_id int,
+		@in_vendor_id int,
+		@in_vendor_name varchar(500),
+		@in_vendor_fedid varchar(30),
+		@in_vendor_id_alt varchar(50),
+		@in_useVendorName int,
+		@in_useVendorFedId int,
+		@in_UseVendorIdAlt int,
+		@in_Integration_Package_id int,
+
+		@out_check_status varchar(20) OUTPUT,
+		@out_vendor_id int OUTPUT,
+		@out_vendor_name varchar(500) OUTPUT
+		 */
+
+
+	}
+
+	protected function isIssetVendorId($useVendorName = VALIDATE_NAME) {
+		$select = new Select();
+
+		$select->from(['v' => 'vendor'])
+					->join(['i' => 'integrationpackage'], 'i.integration_package_id = v.integration_package_id', [])
+					->where(['rtrim((v.vendor_name)' => 'rtrim(?)'])
+					->whereNotEquals('v.approval_tracking_id', '?')
+					->whereNest('OR')
+					->whereLessThanOrEqual('v.vendor_active_startdate', 'GetDate()')
+					->whereIsNull('v.vendor_active_startdate')
+					->whereUnNest()
+					->whereNest('OR')
+					->whereGreaterThan('v.vendor_active_enddate', )
 	}
 
 }
