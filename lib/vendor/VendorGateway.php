@@ -196,7 +196,8 @@ class VendorGateway extends AbstractGateway {
 					->whereIsNull('v.vendor_active_startdate')
 					->whereUnNest()
 					->whereNest('OR')
-					->whereGreaterThan('v.vendor_active_enddate', )
+					->whereGreaterThan('v.vendor_active_enddate', 'GetDate()')
+					->whereIsNull('v.vendor_active_enddate');
 	}
 
 }
