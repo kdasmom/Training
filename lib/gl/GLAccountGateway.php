@@ -237,10 +237,19 @@ class GLAccountGateway extends AbstractGateway {
     /**
      * 
      */
-    public function findByFilter($glaccount_status=null, $property_id=null, $glaccounttype_id=null, $glaccount_category=null, $pageSize=null, $page=1, $sort='glaccount_name') {
+    public function findByFilter($glaccount_from=null,$glaccount_to=null,$glaccount_status=null, $property_id=null, $glaccounttype_id=null, $glaccount_category=null, $pageSize=null, $page=1, $sort='glaccount_name') {
             $select = $this->getSelect()->order($sort);
             $params = array();
-
+            
+            if ($glaccount_from !== null && $glaccount_from != '') {
+                    $select->whereGreaterThanOrEqual('g.glaccount_number', '?');
+                    $params[] = $glaccount_from;
+            }
+            if ($glaccount_to !== null && $glaccount_to != '') {
+                    $select->whereLessThanOrEqual('g.glaccount_number', '?');
+                    $params[] = $glaccount_to;
+            }
+            
             if ($glaccount_status !== null && $glaccount_status != '') {
                     $select->whereEquals('g.glaccount_status', '?');
                     $params[] = $glaccount_status;

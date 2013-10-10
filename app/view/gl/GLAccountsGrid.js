@@ -60,6 +60,8 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
                     action: 'getAllGLAccounts',
                     paging: true,
                     extraParams: {
+                            glaccount_from    : null,
+                            glaccount_to      : null,
                             glaccount_status  : null,
                             property_id       : null,
                             glaccounttype_id  : null,
@@ -98,7 +100,28 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
                     ]
                 },
                 items: [
-                    {
+                     {
+                        xtype: 'container',
+                        columnWidth: 1,
+                        layout: 'column',
+                        margin: '8 0 0 0',
+                         defaults: {
+                            xtype     : 'textfield',
+                            columnWidth: 0.5,
+                            labelAlign: 'left',
+                            labelWidth: filterLabelWidth,
+                            margin    : '0 16 0 16'
+                        },
+                        items: [
+                            {
+                                name: 'glaccount_from',
+                                fieldLabel: 'From'
+                            }, {
+                                name: 'glaccount_to',
+                                fieldLabel: 'To'
+                            }
+                        ]
+                    }, {
                         xtype: 'container',
                         columnWidth: 0.5,
                         layout: 'form',
@@ -218,22 +241,26 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
         ];
 
         this.callParent(arguments);
-
+        
+        this.fromFilter = this.query('[name="glaccount_from"]')[0];
+        this.toFilter = this.query('[name="glaccount_to"]')[0];
         this.statusFilter = this.query('[name="glaccount_status"]')[0];
         this.propertyFilter = this.query('[name="property_id"]')[0];
         this.typeFilter = this.query('[name="glaccounttype_id"]')[0];
         this.categoryFilter = this.query('[name="glaccount_category"]')[0];
 
-        this.filterFields = ['statusFilter', 'propertyFilter', 'typeFilter', 'categoryFilter'];
+        this.filterFields = ['fromFilter','toFilter','statusFilter', 'propertyFilter', 'typeFilter', 'categoryFilter'];
 
     },
     applyFilter: function() {
         var that = this;
-
+         
         var grid = this.query('customgrid')[0];
 
         var currentParams = grid.getStore().getProxy().extraParams;
         var newParams = {
+            glaccount_from: this.fromFilter.getValue(),
+            glaccount_to: this.toFilter.getValue(),
             glaccount_status: this.statusFilter.getValue(),
             property_id: this.propertyFilter.getValue(),
             glaccounttype_id: this.typeFilter.getValue(),
@@ -253,7 +280,11 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
         var that = this;
 
         Ext.Array.each(this.filterFields, function(field) {
-            that[field].clearValue();
+            if (that[field].xtype != 'textfield') {
+                that[field].clearValue();
+            } else {
+                that[field].setValue('');
+            }              
         });
 
         this.applyFilter();
