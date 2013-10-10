@@ -16,7 +16,7 @@ Ext.define('NP.view.gl.GLAccountsForm', {
     ],
 
     autoScroll: true,
-
+      
     bodyPadding: 8,
     
     glNumberFieldText : 'GL Number',
@@ -95,20 +95,13 @@ Ext.define('NP.view.gl.GLAccountsForm', {
                 displayField: 'glaccounttype_name',
                 valueField  : 'glaccounttype_id',
                 store       : glTypeStore,
-                fieldLabel  : this.typesFieldText
+                fieldLabel  : this.typesFieldText,
+                allowBlank  : false
             },                                
-//           // Vendor Assignment
-//           {
-//                xtype     : 'shared.vendorassigner',
-//                title     : 'Vendor Assignment',
-//                hideLabel : true,
-//                name      : 'vendor_glaccounts',
-//                displayField    : 'glaccounttype_name',
-//                fromTitle : 'Unassigned',
-//                toTitle   : 'Assigned',
-//                autoScroll: true,
-//                margin    : 8
-//            }
+           // Vendor Assignment
+           {
+//                xtype     : 'shared.vendorassigner'
+            }
         ];
 
         this.callParent(arguments);
