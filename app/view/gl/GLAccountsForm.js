@@ -10,7 +10,7 @@ Ext.define('NP.view.gl.GLAccountsForm', {
     requires: [
     	'NP.lib.core.Config',
         'NP.lib.core.Security',
-        'NP.view.shared.VendorAssigner',
+//        'NP.view.shared.VendorAssigner',
         'NP.view.shared.button.Cancel',
         'NP.view.shared.button.Save',
     ],
@@ -36,11 +36,17 @@ Ext.define('NP.view.gl.GLAccountsForm', {
         this.tbar = bar;
         this.bbar = bar;
         
-        var glStore = Ext.create('NP.store.gl.GlAccounts', {
+//        var glStore = Ext.create('NP.store.gl.GlAccounts', {
+//            service : 'GLService',
+//            action  : 'getAll'
+//        });
+//        glStore.load();
+        
+        var glCategoryStore = Ext.create('NP.store.gl.GlAccounts', {
             service : 'GLService',
-            action  : 'getAll'
+            action  : 'getCategories'
         });
-        glStore.load();
+        glCategoryStore.load();
         
         var glTypeStore = Ext.create('NP.store.gl.GlAccountTypes', {
             service : 'GLService',
@@ -52,62 +58,57 @@ Ext.define('NP.view.gl.GLAccountsForm', {
             // GL Number
             { xtype: 'textfield', fieldLabel: this.glNumberFieldText, name: 'glaccount_number', width: defaultWidth, allowBlank: false },
             // GL Name
-            { xtype: 'textfield', fieldLabel: this.glNameFieldText, name: 'glaccount_name', width: defaultWidth },
+            { xtype: 'textfield', fieldLabel: this.glNameFieldText, name: 'glaccount_name', width: defaultWidth, allowBlank: false },
             // Category
             {
-                xtype           : 'customcombo',
-                emptyText       : this.allCategoriesEmptyText,
-                width           : defaultWidth,
-                name            : 'glaccount_level',
-                displayField    : 'glaccount_name',
-                valueField      : 'glaccount_id',
-                store           : glStore,
-                fieldLabel      : this.categoryFieldText
+                xtype       : 'customcombo',
+                fieldLabel  : this.categoryFieldText,
+                name        : 'glaccount_category',
+                width       : defaultWidth,
+                store       : glCategoryStore,
+                displayField: 'glaccount_name',
+                valueField  : 'glaccount_name',
+                allowBlank  : false
             },
             // Status
-    		{ xtype: 'combo',
-                    width: defaultWidth,
-                    allowBlank: false,
-                    mode:           'local',
-                    value:          'mrs',
-                    triggerAction:  'all',
-                    forceSelection: true,
-                    editable:       false,
-                    fieldLabel:     this.statusFieldText,
-                    name:           'glaccount_status',
-                    displayField:   'name',
-                    valueField:     'value',
-                    queryMode: 'local',
-                    store:          Ext.create('Ext.data.Store', {
-                        fields : ['name', 'value'],
-                        data   : [
-                            {name : 'Active',   value: 'active'},
-                            {name : 'Inactive',  value: 'inactive'},
-                        ]
-                    })},
+            {
+                xtype       : 'customcombo',
+                fieldLabel  : this.statusFieldText,
+                name        : 'glaccount_status',
+                width       : defaultWidth,
+                store       : Ext.create('Ext.data.Store', {
+                    fields: ['name', 'value'],
+                    data: [
+                        {name: 'Active', value: 'active'},
+                        {name: 'Inactive', value: 'inactive'}
+                    ]
+                }),
+                displayField: 'name',
+                valueField  : 'value',
+                allowBlank  : false
+            },
             // Types
             {
-                xtype           : 'customcombo',
-                emptyText       : this.allCategoriesEmptyText,
-                width           : defaultWidth,
-                name            : 'glaccounttype_id',
-                displayField    : 'glaccounttype_name',
-                valueField      : 'glaccounttype_id',
-                store           : glTypeStore,
-                fieldLabel      : this.typesFieldText
+                xtype       : 'customcombo',
+                name        : 'glaccounttype_id',
+                width       : defaultWidth,
+                displayField: 'glaccounttype_name',
+                valueField  : 'glaccounttype_id',
+                store       : glTypeStore,
+                fieldLabel  : this.typesFieldText
             },                                
-           // Vendor Assignment
-           {
-                xtype     : 'shared.vendorassigner',
-                title     : 'Vendor Assignment',
-                hideLabel : true,
-                name      : 'vendor_glaccounts',
-                displayField    : 'glaccounttype_name',
-                fromTitle : 'Unassigned',
-                toTitle   : 'Assigned',
-                autoScroll: true,
-                margin    : 8
-            }
+//           // Vendor Assignment
+//           {
+//                xtype     : 'shared.vendorassigner',
+//                title     : 'Vendor Assignment',
+//                hideLabel : true,
+//                name      : 'vendor_glaccounts',
+//                displayField    : 'glaccounttype_name',
+//                fromTitle : 'Unassigned',
+//                toTitle   : 'Assigned',
+//                autoScroll: true,
+//                margin    : 8
+//            }
         ];
 
         this.callParent(arguments);

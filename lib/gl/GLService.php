@@ -89,7 +89,6 @@ class GLService extends AbstractService {
      */
     public function getGLAccount($id) {
         $res = $this->glAccountGateway->findById($id);
-        
         $res['vendor_glaccounts'] = $this->vendorGlAccountsGateway->find(
                                             array('glaccount_id'=>'?'),
                                             array($id),

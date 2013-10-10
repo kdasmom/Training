@@ -15,8 +15,9 @@ Ext.define('NP.controller.GLAccountSetup', {
 	
         refs: [
 		{ ref: 'glaccountGrid', selector: '[xtype="gl.glaccountsgrid"] customgrid' },
-		{ ref: 'glaccountActivateBtn', selector: '[xtype="gl.glaccountsgrid"] [xtype="shared.button.activate"]' },
-		{ ref: 'glaccountInactivateBtn', selector: '[xtype="gl.glaccountsgrid"] [xtype="shared.button.inactivate"]' },
+		{ ref: 'glaccountEditBtn', selector: '[xtype="gl.glaccountsgrid"] [xtype="shared.button.edit"]' },
+		{ ref: 'glaccountDistributiveVendorsBtn', selector: '#distributiveToAllVendors' },
+		{ ref: 'glaccountDistributivePropertiesBtn', selector: '#distributiveToAllProperties' },
 		{ ref: 'glaccountForm', selector: '[xtype="gl.glaccountsform"]' },
         ],
 	
@@ -48,6 +49,10 @@ Ext.define('NP.controller.GLAccountSetup', {
 				selectionchange: this.gridSelectionChange,
 				itemclick      : this.viewGLAccount
 			},
+                        // Edit GLAccounts
+                        '[xtype="gl.glaccountsgrid"] [xtype="shared.button.edit"]' : {
+                                click : this.viewGLAccount
+                        },
                         // The Create New GL Account
 			'[xtype="gl.glaccountsgrid"] [xtype="shared.button.new"]': {
 				click: function() {
@@ -124,8 +129,9 @@ Ext.define('NP.controller.GLAccountSetup', {
                 
         gridSelectionChange: function(selectionModel, selected) {
 		var fn = (selected.length) ? 'enable' : 'disable';
-//		this.getUserActivateBtn()[fn]();
-//		this.getUserInactivateBtn()[fn]();
+		this.getGlaccountEditBtn()[fn]();
+		this.getGlaccountDistributiveVendorsBtn()[fn]();
+		this.getGlaccountDistributivePropertiesBtn()[fn]();
 	},
         
         viewGLAccount: function(grid, rec, item, index, e) {
