@@ -95,7 +95,6 @@ Ext.define('NP.controller.VendorManager', {
                     'vendor.Vendorsite',
                     'contact.Person',
                     'contact.Address',
-                    'contact.Phone',
                     'contact.Email',
                     'vendor.Insurance'
                 ]
@@ -136,7 +135,8 @@ Ext.define('NP.controller.VendorManager', {
                 action : 'findByAspClientIdAndUserprofileId',
                 userprofile_id: NP.lib.core.Security.getUser().get('userprofile_id'),
                 success: function(result, deferred) {
-                    form.findField('integration_package_id').setValue(result.integration_package_name);
+                    form.findField('integration_package_name').setValue(result.integration_package_name);
+                    form.findField('integration_package_id').setValue(result.integration_package_id);
                 }
             }
         });

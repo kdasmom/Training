@@ -10,6 +10,11 @@ use NP\core\AbstractService;
 use NP\system\ConfigService;
 use NP\user\UserprofileGateway;
 
+define('VALIDATE_CHECK_STATUS_OK', 'OK');
+define('VALIDATE_CHECK_STATUS_NAME', 'name');
+define('VALIDATE_CHECK_STATUS_TAX_ID', 'taxid');
+define('VALIDATE_CHECK_STATUS_ID_ALT', 'idalt');
+
 /**
  * Service class for operations related to vendors
  *
@@ -155,26 +160,41 @@ class VendorService extends AbstractService {
 	 * @param $data
 	 */
 	public function saveVendor($data) {
-
-		/**
-		 * 'vendor.Vendor',
-		'vendor.Vendorsite',
-		'contact.Person',
-		'contact.Address',
-		'contact.Phone',
-		'contact.Email',
-		'vendor.Insurance'
-		 */
 		$vendor = new VendorEntity($data['vendor']);
 		$vendorsite = new VendorsiteEntity($data['vendorsite']);
 		$person  = new PersonEntity($data['person']);
 		$address = new AddressEntity($data['address']);
-		$phone = new PhoneEntity($data['phone']);
 		$email = new EmailEntity($data['email']);
 
 		$in_app_user = $this->userprofileGateway->isInAppUser($data['role_id'], $data['userprofile_id']);
-		$approval_vendor_id = $this->userprofileGateway->find(['vendor_id' => '?'], [$data['vendor_id']], null, ['approval_tracking_id']);
-		$this->vendorGateway->validateVendor($data);
+		$approval_vendor_id = $this->vendorGateway->find(['v.vendor_id' => '?'], [$vendor->vendor_id], null, ['approval_tracking_id']);
+		$approval_data = [
+			'asp_client_id'						=> $this->configService->getClientId(),
+			'approval_tracking_id'		=> count($approval_vendor_id) > 0 ? $approval_vendor_id[0]['approval_tracking_id'] : null,
+			'vendor_id'							=> $vendor->vendor_id,
+			'vendor_name'					=> $vendor->vendor_name,
+			'vendor_fed_id'					=> $vendor->vendor_fedid,
+			'vendor_id_alt'					=> $vendor->vendor_id_alt,
+			'use_vendor_name'			=> $this->configService->get('PN.VendorOptions.ValidateName'),
+			'use_vendor_fed_id'			=> $this->configService->get('PN.VendorOptions.ValidateTaxId'),
+			'use_vendor_id_alt'			=> $this->configService->get('PN.VendorOptions.ValidateIdAlt'),
+			'integration_package_id'	=> $vendor->integration_package_id
+		];
+
+		$validate = $this->vendorGateway->validateVendor($approval_data);
+
+		if ($validate['check_status'] == VALIDATE_CHECK_STATUS_OK) {
+			if ($vendor->vendor_id == NULL) {
+
+			}
+
+		}
+	}
+
+	public function saveVendorsite($data) {
+		$vendorsite = new VendorsiteEntity($data['vendorsite']);
+
+
 	}
 }
 

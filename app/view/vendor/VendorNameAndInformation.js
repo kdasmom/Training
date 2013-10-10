@@ -55,8 +55,12 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
 				xtype: 'displayfield',
 				fieldLabel: this.integrationPackageInputLabel,
 				value: '',
-                name: 'integration_package_id'
+                name: 'integration_package_name'
 			},
+            {
+                xtype: 'hidden',
+                name: 'integration_package_id'
+            },
 			{
 				xtype: 'textfield',
 				fieldLabel: this.vendorNameInputLabel,
@@ -84,27 +88,27 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
                         xtype: 'textfield',
                         fieldLabel: this.vendorAddressCommonInputLabel,
                         width: 345,
-                        name: 'vendorsite_address_line1',
+                        name: 'address_line1',
                         allowBlank: false
                     },
                     {
                         xtype: 'textfield',
                         fieldLabel: '',
                         width: 345,
-                        name: 'vendorsite_address_line2'
+                        name: 'address_line2'
                     },
                     {
                         xtype: 'textfield',
                         fieldLabel: this.vendorAddressCityInputLabel,
                         width: 345,
-                        name: 'vendorsite_address_city',
+                        name: 'address_city',
                         allowBlank: false
                     },
                     {
                         xtype: 'combo',
                         fieldLabel: this.vendorAddressStateInputLabel,
                         width: 345,
-                        name: 'vendorsite_address_state',
+                        name: 'address_state',
                         displayField: 'state_code',
                         valueField: 'state_id',
                         store: Ext.create('NP.store.contact.States', {
@@ -123,14 +127,14 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
                                 xtype: 'textfield',
                                 fieldLabel: '',
                                 width: 110,
-                                name: 'vendorsite_address_zip',
+                                name: 'address_zip',
                                 allowBlank: false
                             },
                             {
                                 xtype: 'textfield',
                                 fieldLabel: '',
                                 width: 120,
-                                name: 'vendorsite_address_zipext',
+                                name: 'address_zipext',
                                 padding: '0 0 0 10'
                             }
                         ]
@@ -138,7 +142,6 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
                 ]
 			}
 		];
-        console.log('user: ', NP.lib.core.Security.getUser());
 
 		this.callParent(arguments);
 	}

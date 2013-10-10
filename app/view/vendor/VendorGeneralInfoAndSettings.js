@@ -78,7 +78,7 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
             {
                 xtype: 'textfield',
                 fieldLabel: this.emailAddressInputLabel,
-                name: 'vendorsite_email'
+                name: 'email_address'
             },
             {
                 xtype: 'fieldcontainer',

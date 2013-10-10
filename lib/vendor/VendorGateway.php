@@ -7,6 +7,7 @@ use NP\core\db\Select;
 use NP\core\db\Where;
 use NP\system\ConfigService;
 use NP\property\PropertyService;
+use NP\vendor\sql\criteria\VendorExistsCriteria;
 use NP\vendor\sql\join\VendorRejectedJoin;
 use NP\vendor\VendorSelect;
 
@@ -160,53 +161,117 @@ class VendorGateway extends AbstractGateway {
 		return $this->adapter->query($select);
 	}
 
+	/**
+	 * Validate vendor
+	 *
+	 * @param $data
+	 * @return array
+	 */
 	public function validateVendor($data) {
-		var_dump($data);
-		/**
-		 * @in_asp_client_id int,
-		@in_vendor_id int,
-		@in_vendor_name varchar(500),
-		@in_vendor_fedid varchar(30),
-		@in_vendor_id_alt varchar(50),
-		@in_useVendorName int,
-		@in_useVendorFedId int,
-		@in_UseVendorIdAlt int,
-		@in_Integration_Package_id int,
 
-		@out_check_status varchar(20) OUTPUT,
-		@out_vendor_id int OUTPUT,
-		@out_vendor_name varchar(500) OUTPUT
-		 */
-		$approval_tracking_id = $this->find(['vendor_id' => '?'], [$data['vendor_id']], null, ['approval_tracking_id']);
+		$vendor_id = $this->checkVendorName($data['use_vendor_name'], $data['vendor_name'], $data['approval_tracking_id'], $data['integration_package_id'], $data['asp_client_id']);
+		$vendor_name = '';
+		$check_status = 'name';
+
+		if (is_null($vendor_id)) {
+			$result = $this->checkByVendorFedId($data['use_vendor_fed_id'], $data['vendor_fed_id'], $data['approval_tracking_id'], $data['integration_package_id'], $data['asp_client_id']);
+			$vendor_id = $result['vendor_id'];
+			$vendor_name = $result['vendor_name'];
+
+			if (!is_null($vendor_id)) {
+				$check_status = 'taxid';
+			} else {
+				$result = $this->checkByVendorAlt($data['use_vendor_id_alt'], $data['vendor_id_alt'], $data['approval_tracking_id'], $data['integration_package_id'], $data['asp_client_id']);
+
+				$vendor_id = $result['vendor_id'];
+				$vendor_name = $result['vendor_name'];
+				$check_status = $result['check_status'];
+			}
+		}
+
+		return [
+			'vendor_id'			=> $vendor_id,
+			'vendor_name'	=> $vendor_name,
+			'check_status'		=> $check_status
+		];
 
 	}
 
-	protected function isIssetVendorId($useVendorName, $vendorName, $approval_tracking_id, $integrationPackageId, $asp_client_id) {
+	protected function checkVendorName($useVendorName, $vendorName, $approvalTrackingId, $integrationPackageId, $aspClientId) {
 		$select = new Select();
 
 		if ($useVendorName) {
-		$select->from(['v' => 'vendor'])
+			$select->from(['v' => 'vendor'])
 					->columns(['vendor_id'])
 					->join(['i' => 'integrationpackage'], 'i.integration_package_id = v.integration_package_id', [])
+					->where(new  sql\criteria\VendorExistsCriteria())
 					->where(['rtrim((v.vendor_name)' => 'rtrim(?)'])
-					->whereNotEquals('v.approval_tracking_id', '?')
-					->whereNest('OR')
-					->whereLessThanOrEqual('v.vendor_active_startdate', 'GetDate()')
-					->whereIsNull('v.vendor_active_startdate')
-					->whereUnNest()
-					->whereNest('OR')
-					->whereGreaterThan('v.vendor_active_enddate', 'GetDate()')
-					->whereIsNull('v.vendor_active_enddate')
-					->whereUnNest()
-					->whereNotEqual('v.vendor_status', "'rejected'")
-					->whereEquals('v.Integration_Package_id', "?")
-					->where(['ip.asp_client_id' => '?']);
-			$result = $this->adapter->query($select, [$vendorName, $approval_tracking_id, $integrationPackageId, $asp_client_id]);
+					->where(new sql\criteria\VendorInActiveDateCriteria());
+			$result = $this->adapter->query($select, [$approvalTrackingId, 'rejected', $integrationPackageId, $aspClientId, $vendorName]);
 
-			return $result[0]['vendor_id'];
+			return count($result) > 1 ? $result[0]['vendor_id'] : null;
 		} else {
 			return null;
 		}
+	}
+
+	protected function checkByVendorFedId($useVendorFedId, $vendorFedId, $approvalTrackingId, $integrationPackageId, $aspClientId) {
+		$vendorId = null;
+		$vendorName = '';
+
+		if ($useVendorFedId == 1 && !is_null($vendorFedId)) {
+			$select = new Select();
+
+			$select->from(['v' => 'vendor'])
+						->columns(['vendor_id', 'vendor_name'])
+						->join(['i' => 'integrationpackage'], 'i.integration_package_id = v.integration_package_id', [])
+						->where(new sql\criteria\VendorExistsCriteria())
+						->whereEquals('rtrim(v.vendor_fedid)', 'rtrim(?)')
+						->where(new sql\criteria\VendorInActiveDateCriteria())
+						->whereNotEquals('v.vendor_fedid', '')
+						->whereIsNotNull('v.vendor_fedid');
+
+			$result = $this->adapter->query($select, [$approvalTrackingId, 'rejected', $integrationPackageId, $aspClientId, $vendorFedId]);
+
+			$vendorId = count($result) > 1 ? $result[0]['vendor_id'] : null;
+			$vendorName = count($result) > 1 ? $result[0]['vendor_name'] : '';
+		}
+
+		return array(
+			'vendor_id' => $vendorId,
+			'vendor_name'	=> $vendorName
+		);
+	}
+
+	public  function  checkByVendorAlt($useVendorIdAlt, $vendorIdAlt, $approvalTrackingId, $integrationPackageId, $aspClientId) {
+		$vendorId = null;
+		$vendorName = '';
+		$checkStatus = 'OK';
+
+		if ($useVendorIdAlt == 1) {
+			$select = new Select();
+
+			$select->from(['v' => 'vendor'])
+				->columns(['vendor_id', 'vendor_name'])
+				->join(['i' => 'integrationpackage'], 'i.integration_package_id = v.integration_package_id', [])
+				->where(new sql\criteria\VendorExistsCriteria())
+				->whereEquals('rtrim(v.vendor_id_alt)', 'rtrim(?)');
+
+			$result = $this->adapter->query($select, [$approvalTrackingId, 'rejected', $integrationPackageId, $aspClientId, $vendorIdAlt]);
+
+			$vendorId = count($result) > 1 ? $result[0]['vendor_id'] : null;
+			$vendorName = count($result) > 1 ? $result[0]['vendor_name'] : '';
+		}
+
+		if (!is_null($vendorId)) {
+			$checkStatus = 'idalt';
+		}
+
+		return array(
+			'vendor_id'			=> $vendorId,
+			'vendor_name'	=> $vendorName,
+			'check_status'		=> $checkStatus
+		);
 	}
 
 }

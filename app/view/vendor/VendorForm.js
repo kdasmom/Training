@@ -50,10 +50,10 @@ Ext.define('NP.view.vendor.VendorForm', {
 
         var vendorNameInput = this.findField('vendor_name');
         var mriInput = this.findField('vendor_id_alt');
-        var addressLine1Input = this.findField('vendorsite_address_line1');
-        var cityInput = this.findField('vendorsite_address_city');
-        var stateInput = this.findField('vendorsite_address_state');
-        var zipInput = this.findField('vendorsite_address_zip');
+        var addressLine1Input = this.findField('address_line1');
+        var cityInput = this.findField('address_city');
+        var stateInput = this.findField('address_state');
+        var zipInput = this.findField('address_zip');
 
         if (!vendorNameInput.getValue() || vendorNameInput.getValue() == '') {
             isValid = false;
