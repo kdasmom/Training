@@ -148,7 +148,7 @@ Ext.define('NP.controller.GLAccountSetup', {
                     extraParams: {
                         id: glaccount_id
                     },
-                    extraFields: ['vendor_glaccounts', 'glaccount_category']
+                    extraFields: ['glaccount_vendors', 'glaccount_properties', 'glaccount_category']
                 });
             }
        }

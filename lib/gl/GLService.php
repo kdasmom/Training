@@ -8,6 +8,7 @@ use NP\system\TreeGateway;
 use NP\system\IntegrationPackageGateway;
 use NP\gl\GlAccountTypeGateway;
 use NP\vendor\VendorGlAccountsGateway;
+use NP\property\PropertyGlAccountGateway;
 
 /**
  * All operations that are closely related to GL accounts belong in this service
@@ -17,17 +18,19 @@ use NP\vendor\VendorGlAccountsGateway;
 class GLService extends AbstractService {
     
     protected $securityService, $glAccountGateway, $treeGateway, $integrationPackageGateway,
-            $vendorGlAccountsGateway;
+            $vendorGlAccountsGateway, $propertyGlAccountGateway;
 
     public function __construct(GLAccountGateway $glAccountGateway, TreeGateway $treeGateway,
                                 IntegrationPackageGateway $integrationPackageGateway,
                                 GlAccountTypeGateway $glAccountTypeGateway,
-                                VendorGlAccountsGateway $vendorGlAccountsGateway) {
+                                VendorGlAccountsGateway $vendorGlAccountsGateway,
+                                PropertyGlAccountGateway $propertyGlAccountGateway) {
             $this->glAccountGateway          = $glAccountGateway;
             $this->treeGateway               = $treeGateway;
             $this->integrationPackageGateway = $integrationPackageGateway;
             $this->glAccountTypeGateway      = $glAccountTypeGateway;
             $this->vendorGlAccountsGateway   = $vendorGlAccountsGateway;
+            $this->propertyGlAccountGateway  = $propertyGlAccountGateway;
     }
 
     public function setConfigService(\NP\system\ConfigService $configService) {
@@ -89,15 +92,23 @@ class GLService extends AbstractService {
      */
     public function getGLAccount($id) {
         $res = $this->glAccountGateway->findById($id);
-        //$res['glaccount_category'] = $this->glaccountGateway->getCategoryByName($res['glaccount_name'], $res['integration_package_id']);
-        $res['vendor_glaccounts'] = $this->vendorGlAccountsGateway->find(
+        $res['glaccount_vendors'] = $this->vendorGlAccountsGateway->find(
                                             array('glaccount_id'=>'?'),
                                             array($id),
                                             'vendor_id',
                                             array('vendor_id')
                                         );
 
-        $res['vendor_glaccounts'] = \NP\util\Util::valueList($res['vendor_glaccounts'], 'vendor_id');
+        $res['glaccount_vendors'] = \NP\util\Util::valueList($res['glaccount_vendors'], 'vendor_id');
+        
+        $res['glaccount_properties'] = $this->propertyGlAccountGateway->find(
+                                            array('glaccount_id'=>'?'),
+                                            array($id),
+                                            'property_id',
+                                            array('property_id')
+                                        );
+
+        $res['glaccount_properties'] = \NP\util\Util::valueList($res['glaccount_properties'], 'properties_id');
 
         return $res;
     }
