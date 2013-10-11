@@ -54,6 +54,7 @@ Ext.define('NP.view.vendor.VendorForm', {
         var cityInput = this.findField('address_city');
         var stateInput = this.findField('address_state');
         var zipInput = this.findField('address_zip');
+        var vendorTypeInput = this.findField('vendor_type_code');
 
         if (!vendorNameInput.getValue() || vendorNameInput.getValue() == '') {
             isValid = false;
@@ -78,6 +79,10 @@ Ext.define('NP.view.vendor.VendorForm', {
         if (!zipInput.getValue() || zipInput.getValue() == '') {
             isValid = false;
             zipInput.markInvalid(this.emptyErrorText);
+        }
+        if (!vendorTypeInput.getValue()) {
+            isValid = false;
+            vendorTypeInput.markInvalid(this.emptyErrorText);
         }
 
 		return isValid;

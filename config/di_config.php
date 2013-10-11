@@ -133,8 +133,9 @@ $diDefinition = array(
 	'NP\user\VendorAccessUsersGateway'         => array('Adapter'),
 	'NP\user\VendorConnectService'             => array('VendorAccessUsersGateway'),
 	'NP\vendor\VendorGateway'                  => array('Adapter'),
+	'NP\vendor\VendorsiteGateway'                  => array('Adapter'),
 	'NP\vendor\InsuranceGateway'               => array('Adapter'),
-	'NP\vendor\VendorService'                  => array('VendorGateway','InsuranceGateway', 'ConfigService', 'UserprofileGateway'),
+	'NP\vendor\VendorService'                  => array('VendorGateway','InsuranceGateway', 'ConfigService', 'UserprofileGateway', 'VendorsiteGateway'),
 	'NP\workflow\WfRuleTargetGateway'          => array('Adapter'),
 );
 

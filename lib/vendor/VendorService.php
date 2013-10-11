@@ -7,8 +7,10 @@ use NP\contact\EmailEntity;
 use NP\contact\PersonEntity;
 use NP\contact\PhoneEntity;
 use NP\core\AbstractService;
+use NP\core\validation\EntityValidator;
 use NP\system\ConfigService;
 use NP\user\UserprofileGateway;
+use NP\util\Util;
 
 define('VALIDATE_CHECK_STATUS_OK', 'OK');
 define('VALIDATE_CHECK_STATUS_NAME', 'name');
@@ -22,13 +24,14 @@ define('VALIDATE_CHECK_STATUS_ID_ALT', 'idalt');
  */
 class VendorService extends AbstractService {
 	
-	protected $vendorGateway, $insuranceGateway, $configService, $userprofileGateway;
+	protected $vendorGateway, $insuranceGateway, $configService, $userprofileGateway, $vendorsiteGateway;
 	
-	public function __construct(VendorGateway $vendorGateway, InsuranceGateway $insuranceGateway, ConfigService $configService, UserprofileGateway $userprofileGateway) {
+	public function __construct(VendorGateway $vendorGateway, InsuranceGateway $insuranceGateway, ConfigService $configService, UserprofileGateway $userprofileGateway, VendorsiteGateway $vendorsiteGateway) {
 		$this->vendorGateway    = $vendorGateway;
 		$this->insuranceGateway = $insuranceGateway;
 		$this->configService = $configService;
 		$this->userprofileGateway = $userprofileGateway;
+		$this->vendorsiteGateway = $vendorsiteGateway;
 	}
 	
 	/**
@@ -174,7 +177,7 @@ class VendorService extends AbstractService {
 			'vendor_id'							=> $vendor->vendor_id,
 			'vendor_name'					=> $vendor->vendor_name,
 			'vendor_fed_id'					=> $vendor->vendor_fedid,
-			'vendor_id_alt'					=> $vendor->vendor_id_alt,
+			'vendor_id_alt'					=> $this->configService->get('PN.VendorOptions.VendorCapsOn') ? strtoupper($vendor->vendor_id_alt) : $vendor->vendor_id_alt,
 			'use_vendor_name'			=> $this->configService->get('PN.VendorOptions.ValidateName'),
 			'use_vendor_fed_id'			=> $this->configService->get('PN.VendorOptions.ValidateTaxId'),
 			'use_vendor_id_alt'			=> $this->configService->get('PN.VendorOptions.ValidateIdAlt'),
@@ -182,19 +185,161 @@ class VendorService extends AbstractService {
 		];
 
 		$validate = $this->vendorGateway->validateVendor($approval_data);
+		$vendorstatus = $in_app_user ? $this->configService->get('PN.VendorOptions.OnApprovalStatus') : 'forapproval';
 
 		if ($validate['check_status'] == VALIDATE_CHECK_STATUS_OK) {
 			if ($vendor->vendor_id == NULL) {
+				$aspClientId = $this->configService->getClientId();
+				$vendorSaved = $this->saveVendorRecord($data);
+				$lastInsertId = $vendorSaved['lastInsertId'];
+				if (!$vendorSaved['success']) {
+					return $vendorSaved;
+				} else {
+					if (count($approval_vendor_id) == 0) {
+						$this->vendorGateway->update(
+							['approval_tracking_id'	=> $lastInsertId],
+							['vendor_id'	=> '?'],
+							[$lastInsertId]
+						);
+						$approval_tracking_id = $lastInsertId;
+					} else {
+						$this->vendorGateway->update(
+							['approval_tracking_id'	=> $approval_vendor_id[0]['approval_tracking_id']],
+							['vendor_id'	=> '?'],
+							[$lastInsertId]
+						);
+						$approval_tracking_id = $approval_vendor_id[0]['approval_tracking_id'];
+					}
 
+					$approvedVendor = $this->vendorGateway->approveVendor($aspClientId, $data['userprofile_id'], $lastInsertId, $approval_tracking_id, $vendorstatus);
+					if (!$approvedVendor) {
+						return [
+							'success'		=> false,
+							'errors'			=> [array('field'=>'global', 'msg'=>'Cannot approve vendor', 'extra'=>null)]
+						];
+					}
+					$vendorsitecode = $this->vendorsiteGateway->getVendositeCode($lastInsertId, $data['address']['address_city'], 'active', $aspClientId);
+					$vendorsiteSaved = $this->saveVendorsite($data, $vendorstatus, $lastInsertId, $vendorsitecode);
+					if (!$vendorsiteSaved['success']) {
+						return $vendorsiteSaved;
+					}
+					$vendorsite_id = $vendorsiteSaved['lastInsertId'];
+					if (count($approval_vendor_id) == 0) {
+						$this->vendorsiteGateway->update(
+							['approval_tracking_id'	=> $vendorsite_id],
+							['vendorsite_id'	=> '?'],
+							[$vendorsite_id]
+						);
+					} else {
+						$approvalvendorsite = $this->vendorsiteGateway->find(['vendor_id' => '?'], [$approval_vendor_id[0]['approval_tracking_id']], null, ['vendorsite_id']);
+						$this->vendorGateway->update(
+							['approval_tracking_id'	=> $approvalvendorsite[0]['vendorsite_id']],
+							['vendorsite_id'	=> '?'],
+							[$vendorsite_id]
+						);
+					}
+
+					$this->vendorGateway->recauthorSave($data['userprofile_id'], 'vendor', $lastInsertId);
+
+				}
 			}
-
 		}
+
+		return [
+			'success'		=> true
+		];
 	}
 
-	public function saveVendorsite($data) {
-		$vendorsite = new VendorsiteEntity($data['vendorsite']);
+	public function saveVendorsite($data, $vendorstatus, $vendorId, $vendorsiteCode) {
+		if (!is_object($data) && isset($data['vendorsite'])) {
+			$vendorsite = new VendorsiteEntity($data['vendorsite']);
+
+			$vendorsite->vendorsite_lastupdate_date = Util::formatDateForDB(new \DateTime());
+			$vendorsite->vendorsite_ship_to_location_id = 1;
+			$vendorsite->vendorsite_bill_to_location_id = 1;
+			$vendorsite->vendorsite_status =$vendorstatus;
+			$vendorsite->vendor_id = $vendorId;
+			$vendorsite->vendorsite_id_alt = $this->configService->get('PN.VendorOptions.VendorCapsOn') ? strtoupper($data['vendor']['vendor_id_alt']) : $data['vendor']['vendor_id_alt'];
+			$vendorsite->submit_userprofile_id = $data['userprofile_id'];
+			$vendorsite->term_id = $vendorsite->term_id == '' ? null : $vendorsite->term_id;
+			$vendorsite->bill_contact_id = $vendorsite->bill_contact_id == '' ? null : $vendorsite->bill_contact_id;
+			$vendorsite->paygroup_code = $vendorsite->paygroup_code == '' ? null : $vendorsite->paygroup_code;
+			$vendorsite->paydatebasis_code = $this->configService->get('PN.VendorOptions.VendorCapsOn') ? strtoupper($vendorsite->paydatebasis_code) : $vendorsite->paydatebasis_code;
+			$vendorsite->vendorsite_note = $vendorsite->vendorsite_note == '' ? null : $vendorsite->vendorsite_note;
+			$vendorsite->vendorsite_tax_reporting_flag = $vendorsite->vendorsite_tax_reporting_flag == '' ? null : $vendorsite->vendorsite_tax_reporting_flag;
+			$vendorsite->vendor_universalfield1 = $vendorsite->vendor_universalfield1 == '' ? null : $vendorsite->vendor_universalfield1;
+			$vendorsite->vendorsite_code = $vendorsiteCode;
+			$vendorsite->vendorsite_display_account_number_po = strval($vendorsite->vendorsite_display_account_number_po);
+		} else {
+			$vendorsite = $data;
+		}
+
+		$validator = new EntityValidator();
+		$validator->validate($vendorsite);
+		$errors = $validator->getErrors();
+		$id = null;
+
+		if(count($errors) == 0) {
+			$this->vendorsiteGateway->beginTransaction();
+			try {
+				$this->vendorsiteGateway->save($vendorsite);
+				$id = $this->vendorsiteGateway->getLastId();
+				$this->vendorsiteGateway->commit();
+			} catch (\Exception $e) {
+				$this->vendorsiteGateway->rollback();
+				$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
+			}
+		}
+
+		return [
+			'success'    			=> (count($errors)) ? false : true,
+			'errors'					=> $errors,
+			'lastInsertId'		=> $id
+		];
+
+	}
+
+	public function saveVendorRecord($data) {
+		foreach ($data['vendor'] as $key => $item) {
+			if ($key !== 'paydatebasis_code' && $key !== 'paygroup_code')
+			$data['vendor'][$key] = empty($item) ? null : $item;
+		}
+		$vendor = new VendorEntity($data['vendor']);
+
+		$vendor->vendor_type1099 = $vendor->vendor_type1099 == 0 ? '0' : strval($vendor->vendor_type1099);
+		$vendor->vendor_fedid = $vendor->vendor_fedid == '' ? null : ($this->configService->get('PN.VendorOptions.VendorCapsOn') ? strtoupper($vendor->vendor_fedid) : $vendor->vendor_fedid);
+		$vendor->vendor_id_alt = $this->configService->get('PN.VendorOptions.VendorCapsOn') ? strtoupper($vendor->vendor_id_alt) : $vendor->vendor_id_alt;
+		$vendor->vendor_type_code = $this->configService->get('PN.VendorOptions.VendorCapsOn') ? strtoupper($vendor->vendor_type_code) : $vendor->vendor_type_code;
+		$vendor->vendor_w9onfile = $vendor->vendor_w9onfile == '' ? null : $vendor->vendor_w9onfile;
+		$vendor->remit_req = $vendor->remit_req ? $vendor->remit_req : 0;
+		$vendor->insurance_req = $vendor->insurance_req ? $vendor->insurance_req : 0;
 
 
+
+		$validator = new EntityValidator();
+		$validator->validate($vendor);
+		$errors = $validator->getErrors();
+
+		$id = null;
+
+		if (count($errors) == 0) {
+			$this->vendorGateway->beginTransaction();
+
+			try {
+				$this->vendorGateway->save($vendor);
+				$id = $this->vendorGateway->getLastId();
+				$this->vendorGateway->commit();
+			} catch (\Exception $e) {
+				$this->vendorGateway->rollback();
+				$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
+			}
+		}
+
+		return [
+			'success'    			=> (count($errors)) ? false : true,
+			'errors'					=> $errors,
+			'lastInsertId'		=> $id
+		];
 	}
 }
 

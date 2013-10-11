@@ -15,6 +15,7 @@ Ext.define('NP.controller.VendorManager', {
     ],
 //  for localization
 
+    saveSuccessText      : 'Your changes were saved.',
     /**
      * Init
      */
@@ -106,6 +107,8 @@ Ext.define('NP.controller.VendorManager', {
 	},
 
     saveVendor: function() {
+        var that  = this;
+
         var form = this.getCmp('vendor.vendorform');
         var values = form.getValues();
 
@@ -118,7 +121,10 @@ Ext.define('NP.controller.VendorManager', {
                     role_id:        NP.Security.getRole().get('role_id')
                 },
                 success: function(result, deferred) {
-                    console.log('result: ', result);
+                    if (result.success) {
+                        NP.Util.showFadingWindow({ html: that.saveSuccessText });
+                        that.application.addHistory('VendorManager:showVendorManager');
+                    }
                 }
             });
         }

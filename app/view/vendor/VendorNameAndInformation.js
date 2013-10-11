@@ -9,8 +9,7 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
 
 	requires: [
 		'NP.lib.core.Security',
-		'NP.lib.ui.ComboBox',
-        'NP.view.shared.YesNoField'
+		'NP.lib.ui.ComboBox'
 	],
 
 	padding: 8,

@@ -1,16 +1,16 @@
 <?php
 namespace NP\vendor;
+use NP\core\AbstractEntity;
 
 /**
  * Entity class for Vendor
  *
  * @author 
  */
-class VendorEntity extends \NP\core\AbstractEntity {
+class VendorEntity extends AbstractEntity {
 	
 	protected $fields = array(
 		'vendor_id'	 => array(
-			'required' => true,
 			'validation' => array(
 				'digits' => array()
 			)

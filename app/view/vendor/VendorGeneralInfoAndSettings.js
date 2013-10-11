@@ -9,7 +9,8 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
 
 	requires: [
 		'NP.lib.core.Security',
-		'NP.lib.ui.ComboBox'
+		'NP.lib.ui.ComboBox',
+        'NP.view.shared.YesNoField'
 	],
 
 	padding: 8,
@@ -46,14 +47,25 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
             {
                 xtype: 'combo',
                 fieldLabel: this.vendorTypeInputLabel,
-                name: 'vendor_type_code',
-                displayField: 'vendortype_name',
+                name: 'vendortype_id',
+                displayField: 'vendortype_code',
                 valueField: 'vendortype_id',
                 store: Ext.create('NP.store.vendor.VendorTypes', {
                     service: 'VendorService',
                     action: 'findVendorTypes',
                     autoLoad: true
-                })
+                }),
+                allowBlank: false,
+                listeners: {
+                    change: function(combo, value) {
+                        var form = that.up('form');
+                        form.findField('vendor_type_code').setValue(combo.getRawValue());
+                    }
+                }
+            },
+            {
+                xtype: 'hidden',
+                name: 'vendor_type_code'
             },
             {
                 xtype: 'combo',
@@ -161,7 +173,63 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
                 xtype: 'shared.yesnofield',
                 fieldLabel: this.taxReportableInputLabel,
                 name: 'vendor_type1099'
+            },
+            {
+                xtype: 'hidden',
+                name: 'term_id',
+                value: ''
+            },
+            {
+                xtype: 'hidden',
+                name: 'paydatebasis_code',
+                value: ''
+            },
+            {
+                xtype: 'hidden',
+                name: 'paymentmethod_code',
+                value: ''
+            },
+            {
+                xtype: 'hidden',
+                name: 'paygroup_code',
+                value: 'DEFAULT'
+            },
+            {
+                xtype: 'hidden',
+                name: 'vendor_termsdatebasis',
+                value: ''
+            },
+            {
+                xtype: 'hidden',
+                name: 'vendor_paypriority',
+                value: ''
+            },
+            {
+                xtype: 'hidden',
+                name: 'approval_tracking_id',
+                value: ''
+            },
+            {
+                xtype: 'hidden',
+                name: 'vendor_status',
+                value: ''
+            },
+            {
+                xtype: 'hidden',
+                name: 'vendorsite_favorite',
+                value: 'Y'
+            },
+            {
+                xtype: 'hidden',
+                name: 'default_paymenttype_id',
+                value: '0'
+            },
+            {
+                xtype: 'hidden',
+                name: 'default_due_datetm',
+                value: '30'
             }
+
         ];
 
 		this.callParent(arguments);

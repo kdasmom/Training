@@ -3,6 +3,8 @@
 namespace NP\vendor;
 
 use NP\core\AbstractGateway;
+use NP\core\db\Expression;
+use NP\core\db\Insert;
 use NP\core\db\Select;
 use NP\core\db\Where;
 use NP\system\ConfigService;
@@ -10,6 +12,7 @@ use NP\property\PropertyService;
 use NP\vendor\sql\criteria\VendorExistsCriteria;
 use NP\vendor\sql\join\VendorRejectedJoin;
 use NP\vendor\VendorSelect;
+use NP\util\Util;
 
 use NP\core\db\Adapter;
 
@@ -20,6 +23,8 @@ use NP\core\db\Adapter;
  */
 class VendorGateway extends AbstractGateway {
 	protected $tableAlias = 'v';
+	protected $table      = 'vendor';
+	protected $pk         = 'vendor_id';
 	/**
 	 * Override getSelect() to get the vendorsite_id by default
 	 */
@@ -197,6 +202,16 @@ class VendorGateway extends AbstractGateway {
 
 	}
 
+	/**
+	 * Check vendor name
+	 *
+	 * @param $useVendorName
+	 * @param $vendorName
+	 * @param $approvalTrackingId
+	 * @param $integrationPackageId
+	 * @param $aspClientId
+	 * @return null
+	 */
 	protected function checkVendorName($useVendorName, $vendorName, $approvalTrackingId, $integrationPackageId, $aspClientId) {
 		$select = new Select();
 
@@ -215,6 +230,16 @@ class VendorGateway extends AbstractGateway {
 		}
 	}
 
+	/**
+	 * check by vendor fed id
+	 *
+	 * @param $useVendorFedId
+	 * @param $vendorFedId
+	 * @param $approvalTrackingId
+	 * @param $integrationPackageId
+	 * @param $aspClientId
+	 * @return array
+	 */
 	protected function checkByVendorFedId($useVendorFedId, $vendorFedId, $approvalTrackingId, $integrationPackageId, $aspClientId) {
 		$vendorId = null;
 		$vendorName = '';
@@ -243,6 +268,16 @@ class VendorGateway extends AbstractGateway {
 		);
 	}
 
+	/**
+	 * check for the vendor alt
+	 *
+	 * @param $useVendorIdAlt
+	 * @param $vendorIdAlt
+	 * @param $approvalTrackingId
+	 * @param $integrationPackageId
+	 * @param $aspClientId
+	 * @return array
+	 */
 	public  function  checkByVendorAlt($useVendorIdAlt, $vendorIdAlt, $approvalTrackingId, $integrationPackageId, $aspClientId) {
 		$vendorId = null;
 		$vendorName = '';
@@ -272,6 +307,48 @@ class VendorGateway extends AbstractGateway {
 			'vendor_name'	=> $vendorName,
 			'check_status'		=> $checkStatus
 		);
+	}
+
+	public function getLastId() {
+		$lastInsertId =$this->adapter->query("SELECT IDENT_CURRENT('vendor') as  lastinsertid");
+		return $lastInsertId[0]['lastinsertid'];
+	}
+
+	public function approveVendor($aspClientId = null, $userProfileId = null, $vendorId, $approvalTrackingId, $approvalStatus) {
+		if ($approvalTrackingId == $vendorId) {
+			$vendor = $this->update(
+				['vendor_status' => $approvalStatus],
+				['vendor_id'	=> '?'],
+				[$vendorId]
+			);
+
+			return $vendor;
+		} else {
+
+		}
+	}
+
+	public function recauthorSave($userprofile_id, $tablename, $tablekey_id, $delegation_to_userprofile_id = null) {
+		$delegation_to_userprofile_id = is_null($delegation_to_userprofile_id) ? $userprofile_id : $delegation_to_userprofile_id;
+		$count = 0;
+		if ($tablename !== 'vendor') {
+			$select = new Select();
+			$select->from(['r' => 'recauthor'])
+						->count(true, 'tablekey_count')
+						->where(
+								[
+									'r.tablekey_id' => '?',
+									'r.table_name' => '?'
+								]
+						);
+			$result = $this->adapter->query($select, [$tablekey_id, $tablename]);
+			$count = $result[0]['tablekey_count'];
+		}
+
+		if ($count == 0) {
+			$sql = "insert into recauthor (userprofile_id, delegation_to_userprofile_id, table_name, tablekey_id, recauthor_datetm) values ({$userprofile_id}, {$delegation_to_userprofile_id}, '{$tablename}', {$tablekey_id}, GetDate())";
+			$this->adapter->query($sql);
+		}
 	}
 
 }
