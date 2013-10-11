@@ -22,10 +22,7 @@ Ext.define('NP.controller.GLAccountSetup', {
         ],
 	
         // For localization
-        activateSuccessText       : 'GLAccounts were activated',
-	activateFailureText       : 'There was an error activating glaccounts',
-	inactivateSuccessText     : 'GLAccounts were inactivated',
-	inactivateFailureText     : 'There was an error inactivating glaccounts',
+        changesSavedText          : 'Changes saved successfully',
 
 	init: function() {
 		Ext.log('GLAccountSetup controller initialized');
@@ -172,11 +169,10 @@ Ext.define('NP.controller.GLAccountSetup', {
                 service: 'GLService',
                 action: 'saveGlAccount',
                 extraParams: {
-                    glaccount_updateby: NP.Security.getUser().get('userprofile_id')
+                    glaccount_category: form.findField('glaccount_category').getValue(),
                 },
                 success: function(result, deferred) {
-                    NP.Util.showFadingWindow({ html: that.saveSuccessText });
-                    that.application.addHistory('GLAccountSetup:showGLAccountSetup');
+                    NP.Util.showFadingWindow({ html: that.changesSavedText });
                 }
             });
         }
@@ -197,8 +193,7 @@ Ext.define('NP.controller.GLAccountSetup', {
                     glaccount_updateby: NP.Security.getUser().get('userprofile_id')
                 },
                 success: function(result, deferred) {
-                    NP.Util.showFadingWindow({ html: that.saveSuccessText });
-                    that.application.addHistory('GLAccountSetup:showGLAccountSetup');
+                    NP.Util.showFadingWindow({ html: that.changesSavedText });
                 }
             });
         }

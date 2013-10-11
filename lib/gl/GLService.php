@@ -239,37 +239,32 @@ class GLService extends AbstractService {
      * @return array
      */
     public function saveGlAccount($data) {
-        $glaccount = new GLAccountEntity($data['glaccount']);
+        $errors  = array();
+         
+        $rec = $this->glAccountGateway->getCategoryByName(
+                  $data['glaccount_category'],
+                  $data['glaccount']['integration_package_id']
+              );
+        $tree_id = $rec['tree_id'];
 
-        $now = \NP\util\Util::formatDateForDB();
-
-        if ($glaccount->glaccount_id == null) {
-            $glaccount->glaccount_updateby = $data['glaccount_updateby'];
-        }
-        $validator = new EntityValidator();
-
-        $validator->validate($glaccount);
-        $errors = $validator->getErrors();
-
-        if (count($errors) == 0) {
-            $this->glAccountGateway->beginTransaction();
-
-            try {
-                $this->glAccountGateway->save($glaccount);
-                $this->glAccountGateway->commit();
-            } catch(\Exception $e) {
-                // If there was an error, rollback the transaction
-                $this->glAccountGateway->rollback();
-                // Add a global error to the error array
-                $errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
-            }
-        }
-
-
-        return array(
-            'success'    => (count($errors)) ? false : true,
-            'errors'     => $errors,
+        
+        $result = $this->save(
+            array(
+                'glaccount'   => $data['glaccount'],
+                'tree_parent' => $tree_id
+            ),
+            'account'
         );
+
+        // Set errors
+        if (!$result['success']) {
+            $errors = $result['$errors'];
+        }
+        return array(
+            'success' => (count($errors)) ? false : true,
+            'errors'  => $errors
+        );
+           
     }
 
     /**

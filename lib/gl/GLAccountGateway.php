@@ -5,7 +5,7 @@ namespace NP\gl;
 use NP\core\AbstractGateway;
 use NP\core\db\Select;
 use NP\system\ConfigService;
-
+use NP\core\db\Expression;
 use NP\core\db\Adapter;
 
 /**
