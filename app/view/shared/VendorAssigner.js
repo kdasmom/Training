@@ -10,17 +10,31 @@ Ext.define('NP.view.shared.VendorAssigner', {
     fieldLabel: 'Vendors',
 
     name        : 'vendors',
-    store       : Ext.create('NP.store.vendor.Vendors', {
-					service           : 'VendorService',
-					action            : 'getAll',
-                                        vendor_status     : 'active',
-					autoLoad          : true
-			    }),
-    tpl         : '<tpl for="."><div class="x-boundlist-item">{vendor_name}</div></tpl>',
-    displayField: 'vendor_id',
+    displayField: 'vendor_name',
     valueField  : 'vendor_id',
+//    tpl         : '<tpl for=".">' +
+//                    '<div class="x-boundlist-item">{vendor_name}' +
+//                        '<tpl if="vendor_status == "approved"">' +
+//                            ' (Approved)' +
+//                        '<tpl elseif="vendor_status == "inactive"">' +
+//                            ' (Inactive)' +
+//                        '</tpl>' +
+//                    '</div>' +
+//                '</tpl>',
     fromTitle   : 'Unassigned',
     toTitle     : 'Assigned',
     buttons     : ['add','remove'],
-    msgTarget   : 'under'
+    msgTarget   : 'under',
+    
+    initComponent: function() {
+        if (!this.store) {
+            this.store = Ext.create('NP.store.vendor.Vendors', {
+					service           : 'VendorService',
+					action            : 'getAll',
+					autoLoad          : true
+			    });
+        }
+
+        this.callParent(arguments);
+    }
 });

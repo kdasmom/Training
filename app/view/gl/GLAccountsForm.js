@@ -10,7 +10,8 @@ Ext.define('NP.view.gl.GLAccountsForm', {
     requires: [
     	'NP.lib.core.Config',
         'NP.lib.core.Security',
-//        'NP.view.shared.VendorAssigner',
+        'NP.view.shared.VendorAssigner',
+        'NP.view.shared.PropertyAssigner',
         'NP.view.shared.button.Cancel',
         'NP.view.shared.button.Save',
     ],
@@ -100,7 +101,30 @@ Ext.define('NP.view.gl.GLAccountsForm', {
             },                                
            // Vendor Assignment
            {
-//                xtype     : 'shared.vendorassigner'
+                xtype     : 'shared.vendorassigner',
+                title     : 'Vendor Assignment',
+                hideLabel : true,
+                name      : 'glaccount_vendors',
+                fromTitle : 'Unassigned Vendors',
+                toTitle   : 'Assigned Vendors',
+                autoScroll: true,
+                margin    : 8,
+                height : 200,
+                width : defaultWidth
+            },
+            // Property Assignment
+             {
+                xtype     : 'shared.propertyassigner',
+                title     : 'Property Assignment',
+                hideLabel : true,
+                name      : 'glaccount_properties',
+                fromTitle : 'Unassigned Properties',
+                toTitle   : 'Assigned Properties',
+                autoScroll: true,
+                margin    : 8,
+                height : 200,
+                width : defaultWidth,
+                hidden: (parseInt(NP.Config.getSetting('CP.PROPERTYGLACCOUNT_USE')) === 0) ? true : false
             }
         ];
 

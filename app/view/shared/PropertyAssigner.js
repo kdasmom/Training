@@ -39,4 +39,4 @@ Ext.define('NP.view.shared.PropertyAssigner', {
 
         this.callParent(arguments);
     }
-});
+}); 
