@@ -118,7 +118,9 @@ Ext.define('NP.controller.VendorManager', {
                 action: 'saveVendor',
                 extraParams: {
                     userprofile_id: NP.Security.getUser().get('userprofile_id'),
-                    role_id:        NP.Security.getRole().get('role_id')
+                    role_id:        NP.Security.getRole().get('role_id'),
+                    property_id: NP.Security.getCurrentContext().property_id,
+                    glaccounts: values['glaccounts']
                 },
                 success: function(result, deferred) {
                     if (result.success) {

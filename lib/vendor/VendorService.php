@@ -16,6 +16,8 @@ define('VALIDATE_CHECK_STATUS_OK', 'OK');
 define('VALIDATE_CHECK_STATUS_NAME', 'name');
 define('VALIDATE_CHECK_STATUS_TAX_ID', 'taxid');
 define('VALIDATE_CHECK_STATUS_ID_ALT', 'idalt');
+define("VENDORSITE_FAVORITE_NO", 'N');
+define("VENDORSITE_FAVORITE_YES", 'Y');
 
 /**
  * Service class for operations related to vendors
@@ -169,7 +171,14 @@ class VendorService extends AbstractService {
 		$address = new AddressEntity($data['address']);
 		$email = new EmailEntity($data['email']);
 
-		$in_app_user = $this->userprofileGateway->isInAppUser($data['role_id'], $data['userprofile_id']);
+		$aspClientId = $this->configService->getClientId();
+		$propertyId = $data['property_id'];
+		$userprofileId = $data['userprofile_id'];
+		$roleId = $data['role_id'];
+		$vendorsite_favorite = isset($data['vendorsite_favorite']) ? $data['vendorsite_favorite'] : VENDORSITE_FAVORITE_NO;
+		$glaccounts = $data['glaccounts'];
+
+		$in_app_user = $this->userprofileGateway->isInAppUser($roleId, $userprofileId);
 		$approval_vendor_id = $this->vendorGateway->find(['v.vendor_id' => '?'], [$vendor->vendor_id], null, ['approval_tracking_id']);
 		$approval_data = [
 			'asp_client_id'						=> $this->configService->getClientId(),
@@ -184,42 +193,45 @@ class VendorService extends AbstractService {
 			'integration_package_id'	=> $vendor->integration_package_id
 		];
 
+//		validate vendor
 		$validate = $this->vendorGateway->validateVendor($approval_data);
 		$vendorstatus = $in_app_user ? $this->configService->get('PN.VendorOptions.OnApprovalStatus') : 'forapproval';
 
 		if ($validate['check_status'] == VALIDATE_CHECK_STATUS_OK) {
 			if ($vendor->vendor_id == NULL) {
-				$aspClientId = $this->configService->getClientId();
+//				save vendor
 				$vendorSaved = $this->saveVendorRecord($data);
-				$lastInsertId = $vendorSaved['lastInsertId'];
+				$vendorId = $vendorSaved['lastInsertId'];
 				if (!$vendorSaved['success']) {
 					return $vendorSaved;
 				} else {
 					if (count($approval_vendor_id) == 0) {
 						$this->vendorGateway->update(
-							['approval_tracking_id'	=> $lastInsertId],
+							['approval_tracking_id'	=> $vendorId],
 							['vendor_id'	=> '?'],
-							[$lastInsertId]
+							[$vendorId]
 						);
-						$approval_tracking_id = $lastInsertId;
+						$approval_tracking_id = $vendorId;
 					} else {
 						$this->vendorGateway->update(
 							['approval_tracking_id'	=> $approval_vendor_id[0]['approval_tracking_id']],
 							['vendor_id'	=> '?'],
-							[$lastInsertId]
+							[$vendorId]
 						);
 						$approval_tracking_id = $approval_vendor_id[0]['approval_tracking_id'];
 					}
-
-					$approvedVendor = $this->vendorGateway->approveVendor($aspClientId, $data['userprofile_id'], $lastInsertId, $approval_tracking_id, $vendorstatus);
+//					approve vendor
+					$approvedVendor = $this->vendorGateway->approveVendor($aspClientId, $data['userprofile_id'], $vendorId, $approval_tracking_id, $vendorstatus);
 					if (!$approvedVendor) {
 						return [
 							'success'		=> false,
 							'errors'			=> [array('field'=>'global', 'msg'=>'Cannot approve vendor', 'extra'=>null)]
 						];
 					}
-					$vendorsitecode = $this->vendorsiteGateway->getVendositeCode($lastInsertId, $data['address']['address_city'], 'active', $aspClientId);
-					$vendorsiteSaved = $this->saveVendorsite($data, $vendorstatus, $lastInsertId, $vendorsitecode);
+//					get vendorsite code
+					$vendorsitecode = $this->vendorsiteGateway->getVendositeCode($vendorId, $data['address']['address_city'], 'active', $aspClientId);
+//					save vendorsite
+					$vendorsiteSaved = $this->saveVendorsite($data, $vendorstatus, $vendorId, $vendorsitecode);
 					if (!$vendorsiteSaved['success']) {
 						return $vendorsiteSaved;
 					}
@@ -238,10 +250,25 @@ class VendorService extends AbstractService {
 							[$vendorsite_id]
 						);
 					}
-
-					$this->vendorGateway->recauthorSave($data['userprofile_id'], 'vendor', $lastInsertId);
+//					save vendorsite favorite
+					if ($vendorsite_favorite == VENDORSITE_FAVORITE_YES && !is_null($propertyId)) {
+						$this->vendorsiteGateway->insertFavorite($vendorsite_id, $propertyId);
+					}
+//					save author data
+					$this->vendorGateway->recauthorSave($data['userprofile_id'], 'vendor', $vendorId);
+//					assign glaccounts
+					if ($glaccounts !== '') {
+						if (!$this->vendorsiteGateway->assignGlAccounts($glaccounts, $vendorId)) {
+							return [
+								'success'		=> false,
+								'errors'			=> [array('field'=>'global', 'msg'=>'Cannot assign glaccounts', 'extra'=>null)]
+							];
+						}
+					}
 
 				}
+			} else {
+
 			}
 		}
 

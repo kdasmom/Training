@@ -11,6 +11,7 @@ namespace NP\vendor;
 
 use NP\core\AbstractGateway;
 use NP\core\db\Expression;
+use NP\core\db\Insert;
 use NP\core\db\Select;
 
 class VendorsiteGateway extends AbstractGateway {
@@ -44,5 +45,47 @@ class VendorsiteGateway extends AbstractGateway {
 	public function getLastId() {
 		$lastInsertId =$this->adapter->query("SELECT IDENT_CURRENT('vendorsite') as  lastinsertid");
 		return $lastInsertId[0]['lastinsertid'];
+	}
+
+	/**
+	 * Save vendorsite favorite
+	 *
+	 * @param $vendorsiteId
+	 * @param $propertyId
+	 * @return array|bool
+	 */
+	public function insertFavorite($vendorsiteId, $propertyId) {
+		$insert = new Insert();
+
+		$insert->into('vendorfavorite')
+					->columns(['vendorsite_id', 'property_id'])
+					->values([$vendorsiteId, $propertyId]);
+
+		return $this->adapter->query($insert);
+	}
+
+	/**
+	 * assign GlAccounts to vendor
+	 *
+	 * @param $glaccounts
+	 * @param $vendor_id
+	 * @return bool
+	 */
+	public function assignGlAccounts($glaccounts, $vendor_id) {
+
+		foreach (explode(',', $glaccounts) as $glaccount) {
+			$insert = new Insert();
+			$select = new Select();
+			$insert->into('vendorglaccounts')
+						->columns(array('vendor_id', 'glaccount_id'))
+						->values($select->columns([new Expression('?'), new Expression('?')]));
+
+			$result = $this->adapter->query($insert, [$vendor_id, $glaccount]);
+			if (!$result) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 }
