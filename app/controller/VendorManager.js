@@ -97,7 +97,6 @@ Ext.define('NP.controller.VendorManager', {
                     'contact.Person',
                     'contact.Address',
                     'contact.Email',
-                    'vendor.Insurance',
                     {class: 'contact.Phone', prefix: 'vendorsite_'},
                     {class: 'contact.Phone', prefix: 'vendorsite_fax_'},
                     {class: 'contact.Phone', prefix: 'attention_'}
@@ -114,6 +113,35 @@ Ext.define('NP.controller.VendorManager', {
 
         var form = this.getCmp('vendor.vendorform');
         var values = form.getValues();
+        var insurance = [];
+
+        if (values.insurancetype_id && typeof (values.insurancetype_id) !== 'Array') {
+            insurance.push({
+                insurancetype_id: values.insurancetype_id,
+                insurance_company: values.insurance_company,
+                insurance_policynum: values.insurance_policynum,
+                insurance_policy_effective_datetm: values.insurance_policy_effective_datetm,
+                insurance_expdatetm: values.insurance_expdatetm,
+                insurance_policy_limit: values.insurance_policy_limit,
+                insurance_additional_insured_listed: values.insurance_additional_insured_listed,
+                insurance_id: values.insurance_id
+            });
+        } else {
+            if (values.insurancetype_id.length > 1) {
+                for (var index = 0; index < values.insurancetype_id.length; index++) {
+                    insurance.push({
+                        insurancetype_id: values.insurancetype_id[index],
+                        insurance_company: values.insurance_company[index],
+                        insurance_policynum: values.insurance_policynum[index],
+                        insurance_policy_effective_datetm: values.insurance_policy_effective_datetm[index],
+                        insurance_expdatetm: values.insurance_expdatetm[index],
+                        insurance_policy_limit: values.insurance_policy_limit[index],
+                        insurance_additional_insured_listed: values.insurance_additional_insured_listed[index],
+                        insurance_id: values.insurance_id[index]
+                    });
+                }
+            }
+        }
 
         if (form.isValid()) {
             form.submitWithBindings({
@@ -123,7 +151,9 @@ Ext.define('NP.controller.VendorManager', {
                     userprofile_id: NP.Security.getUser().get('userprofile_id'),
                     role_id:        NP.Security.getRole().get('role_id'),
                     property_id: NP.Security.getCurrentContext().property_id,
-                    glaccounts: values['glaccounts']
+                    glaccounts: values['glaccounts'],
+                    insurances: JSON.stringify(insurance),
+                    DaysNotice_InsuranceExpires: values['DaysNotice_InsuranceExpires']
                 },
                 success: function(result, deferred) {
                     if (result.success) {

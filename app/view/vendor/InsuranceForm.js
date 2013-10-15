@@ -102,6 +102,10 @@ Ext.define('NP.view.vendor.InsuranceForm', {
                         labelWidth: 80
                     },
                     {
+                        xtype: 'hidden',
+                        name: 'insurance_id'
+                    },
+                    {
                         xtype: 'shared.button.delete',
                         hidden: that.startIndex > 0 ? false : true,
                         margin: '3 0 0 15',

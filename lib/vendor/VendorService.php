@@ -289,6 +289,24 @@ class VendorService extends AbstractService {
 				if (!$result['success']) {
 					return result;
 				}
+//				save insurances
+				$insurances = json_decode($data['insurances']);
+				if (count($insurances) > 0) {
+					$this->insuranceGateway->delete(['table_name' => '?', 'tablekey_id' => '?'], ['vendor', $vendorId]);
+					if ($data['DaysNotice_InsuranceExpires'] > 0) {
+						$this->vendorsiteGateway->update(
+							['vendorsite_DaysNotice_InsuranceExpires' => $data['DaysNotice_InsuranceExpires']],
+							['vendor_id' => '?'],
+							[$vendorId]
+						);
+					}
+					foreach ($insurances as $insurance) {
+						$result = $this->saveInsurance(['insurance' => (array)$insurance], $vendorId);
+						if (!$result['success']) {
+							return $result;
+						}
+					}
+				}
 //					approve vendor
 				$approvedVendor = $this->vendorGateway->approveVendor($aspClientId, $data['userprofile_id'], $vendorId, $approval_tracking_id, $vendorstatus);
 				if (!$approvedVendor) {
@@ -655,6 +673,48 @@ class VendorService extends AbstractService {
 			'success'    						=> (count($errors) > 0) ? false : true,
 			'errors'								=> $errors,
 			'lastInsertEmailId'			=> $email_id
+		];
+	}
+
+	/**
+	 * save Insurances
+	 *
+	 * @param $data
+	 * @param $vendor_id
+	 * @return array
+	 */
+	protected function saveInsurance($data, $vendor_id) {
+		$insurance = new InsuranceEntity($data['insurance']);
+		$insurance->insurance_expdatetm = Util::formatDateForDB(new \DateTime($insurance->insurance_expdatetm));
+		$insurance->insurance_policy_effective_datetm = Util::formatDateForDB(new \DateTime($insurance->insurance_policy_effective_datetm));
+
+		$insurance->table_name = 'vendor';
+		$insurance->tablekey_id = $vendor_id;
+
+		$validator = new EntityValidator();
+		$validator->validate($insurance);
+		$errors = $validator->getErrors();
+
+		$id = null;
+
+		if (count($errors) == 0) {
+			$this->insuranceGateway->beginTransaction();
+			try {
+				$id = $this->insuranceGateway->save($insurance);
+				if ($data['insurance']['insurance_id']) {
+					$this->insuranceGateway->saveLinkInsuranceProperty($data['insurance']['insurance_id'], $id);
+				}
+				$this->insuranceGateway->commit();
+			} catch (\Exception $e) {
+				$this->insuranceGateway->rollback();
+				$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
+			}
+		}
+
+		return [
+			'success'    						=> (count($errors) > 0) ? false : true,
+			'errors'								=> $errors,
+			'lastInsertInsuranceId'			=> $id
 		];
 	}
 }

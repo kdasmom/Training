@@ -3,6 +3,7 @@
 namespace NP\vendor;
 
 use NP\core\AbstractGateway;
+use NP\core\db\Insert;
 use NP\core\db\Select;
 use NP\core\db\Expression;
 
@@ -72,6 +73,34 @@ class InsuranceGateway extends AbstractGateway {
 					->order('insurancetype_name');
 
 		return $this->adapter->query($select);
+	}
+
+	/**
+	 * Save link insurance property
+	 *
+	 * @param $oldInsuranceId
+	 * @param $newInsuranceId
+	 */
+	public function saveLinkInsuranceProperty($oldInsuranceId, $newInsuranceId) {
+		$select = new Select();
+		$select->from(['lip' => 'link_insurance_property'])
+					->where(['insurance_id' => '?'])
+					->columns(['property_id']);
+
+		$properties = $this->adapter->query($select, [$oldInsuranceId]);
+		if (count($properties) > 0) {
+			$insert = new Insert();
+
+			foreach ($properties as $property) {
+				$insert->into('link_insurance_property')
+							->columns(['insurance_id', 'property_id'])
+							->values(Select::get()->columns([new Expression('?'), new Expression('?')]));
+
+				$this->adapter->query($insert, [$newInsuranceId, $property['property_id']]);
+			}
+
+			$this->delete(['insurance_id' => '?'], [$oldInsuranceId]);
+		}
 	}
 }
 
