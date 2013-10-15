@@ -98,17 +98,17 @@ class GLService extends AbstractService {
                                             'vendor_id',
                                             array('vendor_id')
                                         );
-
         $res['glaccount_vendors'] = \NP\util\Util::valueList($res['glaccount_vendors'], 'vendor_id');
         
-        $res['glaccount_properties'] = $this->propertyGlAccountGateway->find(
-                                            array('glaccount_id'=>'?'),
-                                            array($id),
-                                            'property_id',
-                                            array('property_id')
-                                        );
-
-        $res['glaccount_properties'] = \NP\util\Util::valueList($res['glaccount_properties'], 'properties_id');
+        if ($this->configService->get('CP.PROPERTYGLACCOUNT_USE', 0) && $this->securityService->hasPermission(12)) {
+            $res['property_gls'] = $this->propertyGlAccountGateway->find(
+                                                                                    array('pg.glaccount_id'=>'?'),
+                                                                                    array($id),
+                                                                                    'p.property_name',
+                                                                                    array('property_id')
+                                                                            );
+            $res['property_gls'] = \NP\util\Util::valueList($res['property_gls'], 'property_id');
+        }
 
         return $res;
     }

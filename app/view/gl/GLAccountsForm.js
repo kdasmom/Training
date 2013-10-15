@@ -55,6 +55,17 @@ Ext.define('NP.view.gl.GLAccountsForm', {
         });
         glTypeStore.load();
         
+        var propertyStore = Ext.create('NP.store.property.Properties', {
+            service : 'PropertyService',
+            action  : 'getAll'
+         });
+        propertyStore.load();
+        
+        var vendorStore = Ext.create('NP.store.vendor.Vendors', {
+            service : 'VendorService',
+            action  : 'getAll'
+         });
+        vendorStore.load();
         this.items = [
             // GL Number
             { xtype: 'textfield', fieldLabel: this.glNumberFieldText, name: 'glaccount_number', width: defaultWidth, allowBlank: false },
@@ -102,31 +113,24 @@ Ext.define('NP.view.gl.GLAccountsForm', {
            // Vendor Assignment
            {
                 xtype     : 'shared.vendorassigner',
-                title     : 'Vendor Assignment',
-                hideLabel : true,
                 name      : 'glaccount_vendors',
-                fromTitle : 'Unassigned Vendors',
-                toTitle   : 'Assigned Vendors',
+                store     : vendorStore,  
                 autoScroll: true,
                 margin    : 8,
-                height : 200,
-                width : defaultWidth
-            },
-            // Property Assignment
-             {
-                xtype     : 'shared.propertyassigner',
-                title     : 'Property Assignment',
-                hideLabel : true,
-                name      : 'glaccount_properties',
-                fromTitle : 'Unassigned Properties',
-                toTitle   : 'Assigned Properties',
-                autoScroll: true,
-                margin    : 8,
-                height : 200,
-                width : defaultWidth,
-                hidden: (parseInt(NP.Config.getSetting('CP.PROPERTYGLACCOUNT_USE')) === 0) ? true : false
+                height    : 200
             }
         ];
+        // Property Assignment
+         if (NP.Config.getSetting('CP.PROPERTYGLACCOUNT_USE', 0) == 1 && NP.Security.hasPermission(12)) {
+             this.items.push(
+                     { 
+                        xtype     : 'shared.propertyassigner', 
+                        store     : propertyStore,  
+                        autoScroll: true,
+                        margin    : 8,
+                        height    : 200
+                    });       
+         }       
 
         this.callParent(arguments);
     }

@@ -9,7 +9,7 @@ Ext.define('NP.view.shared.VendorAssigner', {
     
     fieldLabel: 'Vendors',
 
-    name        : 'vendors',
+    name        : 'glaccount_vendors',
     displayField: 'vendor_name',
     valueField  : 'vendor_id',
     fromTitle   : 'Unassigned',
