@@ -48,7 +48,7 @@ Ext.define('NP.controller.GLAccountSetup', {
 			},
                         // Edit GLAccounts
                         '[xtype="gl.glaccountsgrid"] [xtype="shared.button.edit"]' : {
-                                click : this.viewGLAccount
+//                                click : this.selectedGLAccounts('edit')
                         },
                         // The Create New GL Account
 			'[xtype="gl.glaccountsgrid"] [xtype="shared.button.new"]': {
@@ -131,6 +131,39 @@ Ext.define('NP.controller.GLAccountSetup', {
 		this.getGlaccountDistributivePropertiesBtn()[fn]();
 	},
         
+        selectedGLAccounts: function(action) {
+//                var grid = Ext.ComponentQuery.query('[xtype="import.glaccounts"] [xtype="customgrid"]')[0];
+            // var grid = this.getCmp('gl.glaccounts').query('customgrid')[0];
+//                var items = grid.getStore().getRange();
+//		var glaccount_id_list = [];
+//		Ext.each(items, function(item) {
+//			glaccount_id_list.push(item.get('glaccount_id'));
+//		});
+//                if (action === 'edit') {
+//                    this.addHistory('GLAccountSetup:showGLAccountSetup:GLAccounts:Form:' + glaccount_id_list[0]);
+//                } else {
+//                    NP.lib.core.Net.remoteCall({
+//                        method  : 'POST',
+//                        mask    : grid,
+//                        requests: {
+//                                service               : 'GLService',
+//                                action                : action+'GlAccounts',
+//                                glaccount_id_list     : glaccount_id_list,
+//                                success: function(result, deferred) {
+//                                        // Unmark items in the grid
+//                                        grid.getStore().commitChanges();
+//                                        // Show a friendly message saying action was successful
+//                                        NP.Util.showFadingWindow({ html: that[action + 'SuccessText'] });
+//                                },
+//                                failure: function(response, options, deferred) {
+//                                        grid.getStore().rejectChanges();
+//                                        Ext.MessageBox.alert(that.errorDialogTitleText, that[action + 'FailureText']);
+//                                }
+//                        }
+//                    });
+//                }
+	},
+        
         viewGLAccount: function(grid, rec, item, index, e) {
 		if (e.getTarget().className != 'x-grid-row-checker') {
 			this.addHistory('GLAccountSetup:showGLAccountSetup:GLAccounts:Form:' + rec.get('glaccount_id'));
@@ -148,7 +181,7 @@ Ext.define('NP.controller.GLAccountSetup', {
                     extraParams: {
                         id: glaccount_id
                     },
-                    extraFields: ['glaccount_vendors', 'glaccount_properties', 'glaccount_category']
+                    extraFields: ['glaccount_vendors', 'properties', 'glaccount_category']
                 });
             }
        }

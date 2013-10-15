@@ -71,6 +71,11 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
                 });
         glAccountsStore.load();
         
+        var pagingToolbarButtons = [
+                    { xtype: 'shared.button.edit', itemId: 'editGlaccount', disabled: true },
+                    { xtype: 'button', text: 'Distribute to All Vendors', itemId: 'distributiveToAllVendors', disabled: true },
+        ];
+        
         this.items = [
             {
                 xtype: 'panel',
@@ -234,14 +239,18 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
                           flex : 1.5
                     }
                 ],
-                pagingToolbarButtons: [
-                    { xtype: 'shared.button.edit', itemId: 'editGlaccount', disabled: true },
-                    { xtype: 'button', text: 'Distribute to All Vendors', itemId: 'distributiveToAllVendors', disabled: true },
-                    { xtype: 'button', text: 'Distribute to All Properties', itemId: 'distributiveToAllProperties', hidden: (parseInt(NP.Config.getSetting('CP.PROPERTYGLACCOUNT_USE')) === 0) ? true : false}
-            ]
+                pagingToolbarButtons: pagingToolbarButtons
             }
         ];
-
+        if (NP.Config.getSetting('CP.PROPERTYGLACCOUNT_USE', 0) == 0 && NP.Security.hasPermission(12)) {
+                     pagingToolbarButtons.push(
+                             { 
+                                xtype: 'button', 
+                                text: 'Distribute to All Properties', 
+                                itemId: 'distributiveToAllProperties',
+                                disabled: true 
+                            });       
+        }       
         this.callParent(arguments);
         
         this.fromFilter = this.query('[name="glaccount_from"]')[0];

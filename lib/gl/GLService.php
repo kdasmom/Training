@@ -271,13 +271,68 @@ class GLService extends AbstractService {
         if (!$result['success']) {
             $errors = $result['$errors'];
         }
+        // If no errors, save vendors
+        if (!count($errors)) {
+                $success = $this->saveVendorAssignment($glaccount_id, $data['glaccount_vendors']);
+                if (!$success) {
+                        $errors[] = array(
+                                        'field' => 'glaccount_vendors',
+                                        'msg'   => $this->localizationService->getMessage('vendorAssignmentError')
+                                );
+                }
+        }
+        // Save GL assignments if any
+        if (array_key_exists('property_gls', $data) && is_array($data['property_gls'])) {
+                $success = $this->savePropertyAssignment($glaccount_id, $data['properties']);
+                if (!$success) {
+                        $errors[] = array(
+                                        'field' => 'properties',
+                                        'msg'   => $this->localizationService->getMessage('propertyAssignmentError')
+                                );
+                }
+        }
         return array(
             'success' => (count($errors)) ? false : true,
             'errors'  => $errors
         );
            
     }
+    
+    /**
+    * Saves property assignments for a user
+    *
+    * @param  int   $glaccount_id The ID for the glaccount we want to assign properties to
+    * @param  array $property_id_list
+    * @return boolean
+    */
+   public function savePropertyAssignment($glaccount_id, $property_id_list) {
+           // Start a DB transaction
+        $this->propertyGlAccountGateway->beginTransaction();
 
+        $success = true;
+        try {
+                // Remove all property associations for this user
+                $this->propertyGlAccountGateway->delete('glaccount_id = ?', array($glaccount_id));
+
+                // Insert new property associations for this user
+                foreach ($property_id_list as $property_id) {
+                        $this->propertyGlAccountGateway->insert(array(
+                                'property_id'  => $property_id,
+                                'glaccount_id' => $glaccount_id
+                        ));
+                }
+
+                // Commit the data
+                $this->propertyGlAccountGateway->commit();
+        } catch(\Exception $e) {
+                // If there was an error, rollback the transaction
+                $this->propertyGlAccountGateway->rollback();
+                // Change success to indicate failure
+                $success = false;
+        }
+
+        return $success;
+   }
     /**
      * Saves a collection of categories imported using the import tool
      *
