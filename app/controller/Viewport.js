@@ -67,6 +67,12 @@ Ext.define('NP.controller.Viewport', {
 				}
 			},
 
+            '#vendorsSearchMenuBtn': {
+                click: function() {
+                    this.addHistory('VendorManager:showVendorSearchForm');
+                }
+            },
+
 			// Clicking on the Administration > My Settings menu
 			'#mySettingsMenuBtn': {
 				click: function() {

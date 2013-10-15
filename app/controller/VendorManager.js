@@ -48,6 +48,12 @@ Ext.define('NP.controller.VendorManager', {
                 click: function() {
                     this.saveVendor();
                 }
+            },
+
+            '[xtype="vendor.vendorsmanager"] [xtype="vendor.vendorgrid"]': {
+                itemclick: function(grid, rec) {
+                    this.showVendorForm(rec.internalId);
+                }
             }
 		});
 
@@ -103,6 +109,15 @@ Ext.define('NP.controller.VendorManager', {
                 ]
             }
         };
+        if (arguments.length > 0) {
+            Ext.apply(viewCfg.bind, {
+                service    : 'VendorService',
+                action     : 'getVendor',
+                extraParams: {
+                    vendor_id: vendor_id
+                }
+            });
+        }
 
 		var form = this.setView('NP.view.vendor.VendorForm', viewCfg);
         this.findIntegrationPackage(form);
@@ -181,5 +196,9 @@ Ext.define('NP.controller.VendorManager', {
                 }
             }
         });
+    },
+
+    showVendorSearchForm: function() {
+        this.setView('NP.view.vendor.VendorSearch');
     }
 });

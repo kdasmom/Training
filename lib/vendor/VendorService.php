@@ -186,10 +186,6 @@ class VendorService extends AbstractService {
 	 */
 	public function saveVendor($data) {
 		$vendor = new VendorEntity($data['vendor']);
-		$vendorsite = new VendorsiteEntity($data['vendorsite']);
-		$person  = new PersonEntity($data['person']);
-		$address = new AddressEntity($data['address']);
-		$email = new EmailEntity($data['email']);
 
 		$aspClientId = $this->configService->getClientId();
 		$propertyId = $data['property_id'];
@@ -716,6 +712,18 @@ class VendorService extends AbstractService {
 			'errors'								=> $errors,
 			'lastInsertInsuranceId'			=> $id
 		];
+	}
+
+	/**
+	 * retrieve saved vendor
+	 *
+	 * @param null $vendor_id
+	 * @return array
+	 */
+	public function getVendor($vendor_id = null) {
+		$vendor = $this->vendorGateway->findById($vendor_id);
+
+		return $vendor;
 	}
 }
 
