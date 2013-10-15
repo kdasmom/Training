@@ -101,7 +101,7 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
                         xtype: 'textfield',
                         fieldLabel: '',
                         width: 200,
-                        name: 'vendorsite_phone'
+                        name: 'vendorsite_phone_number'
                     },
                     {
                         labelWidth: 50,
@@ -109,14 +109,14 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
                         xtype: 'textfield',
                         fieldLabel: this.phoneExtInputLabel,
                         width: 135,
-                        name: 'vendorsite_phone_phone_ext'
+                        name: 'vendorsite_phone_ext'
                     }
                 ]
             },
             {
                 xtype: 'textfield',
                 fieldLabel: this.faxInputLabel,
-                name: 'vendorsite_fax'
+                name: 'vendorsite_fax_phone_number'
             },
             {
                 xtype: 'fieldcontainer',
@@ -127,13 +127,13 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
                         xtype: 'textfield',
                         fieldLabel: this.contactFirstnameInputLabel,
                         width: 345,
-                        name: 'attention_first_name'
+                        name: 'person_firstname'
                     },
                     {
                         xtype: 'textfield',
                         fieldLabel: this.contactLastnameInputLabel,
                         width: 345,
-                        name: 'attention_middle_name'
+                        name: 'person_lastname'
                     }
                 ]
             },
@@ -147,7 +147,7 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
                         xtype: 'textfield',
                         fieldLabel: '',
                         width: 200,
-                        name: 'attention_phone'
+                        name: 'attention_phone_number'
                     },
                     {
                         labelWidth: 50,
@@ -155,7 +155,7 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
                         xtype: 'textfield',
                         fieldLabel: this.phoneContactExtInputLabel,
                         width: 135,
-                        name: 'attention_phone_phone_ext'
+                        name: 'attention_phone_ext'
                     }
                 ]
             },

@@ -3,9 +3,15 @@
 namespace NP\vendor;
 
 use NP\contact\AddressEntity;
+use NP\contact\AddressGateway;
+use NP\contact\ContactEntity;
+use NP\contact\ContactGateway;
+use NP\contact\EmailGateway;
+use NP\contact\PersonGateway;
 use NP\contact\EmailEntity;
 use NP\contact\PersonEntity;
 use NP\contact\PhoneEntity;
+use NP\contact\PhoneGateway;
 use NP\core\AbstractService;
 use NP\core\validation\EntityValidator;
 use NP\system\ConfigService;
@@ -26,14 +32,28 @@ define("VENDORSITE_FAVORITE_YES", 'Y');
  */
 class VendorService extends AbstractService {
 	
-	protected $vendorGateway, $insuranceGateway, $configService, $userprofileGateway, $vendorsiteGateway;
+	protected $vendorGateway, $insuranceGateway, $configService, $userprofileGateway, $vendorsiteGateway, $phoneGateway, $addressGateway, $personGateway, $contactGateway, $emailGateway;
 	
-	public function __construct(VendorGateway $vendorGateway, InsuranceGateway $insuranceGateway, ConfigService $configService, UserprofileGateway $userprofileGateway, VendorsiteGateway $vendorsiteGateway) {
+	public function __construct(VendorGateway $vendorGateway,
+														InsuranceGateway $insuranceGateway,
+														ConfigService $configService,
+														UserprofileGateway $userprofileGateway,
+														VendorsiteGateway $vendorsiteGateway,
+														PhoneGateway $phoneGateway,
+														AddressGateway $addressGateway,
+														PersonGateway $personGateway,
+														ContactGateway $contactGateway,
+														EmailGateway $emailGateway) {
 		$this->vendorGateway    = $vendorGateway;
 		$this->insuranceGateway = $insuranceGateway;
 		$this->configService = $configService;
 		$this->userprofileGateway = $userprofileGateway;
 		$this->vendorsiteGateway = $vendorsiteGateway;
+		$this->phoneGateway = $phoneGateway;
+		$this->addressGateway = $addressGateway;
+		$this->personGateway = $personGateway;
+		$this->contactGateway = $contactGateway;
+		$this->emailGateway = $emailGateway;
 	}
 	
 	/**
@@ -198,74 +218,84 @@ class VendorService extends AbstractService {
 		$vendorstatus = $in_app_user ? $this->configService->get('PN.VendorOptions.OnApprovalStatus') : 'forapproval';
 
 		if ($validate['check_status'] == VALIDATE_CHECK_STATUS_OK) {
+//			new vendor
 			if ($vendor->vendor_id == NULL) {
 //				save vendor
 				$vendorSaved = $this->saveVendorRecord($data);
 				$vendorId = $vendorSaved['lastInsertId'];
 				if (!$vendorSaved['success']) {
 					return $vendorSaved;
+				}
+				$this->vendorGateway->update(
+					['approval_tracking_id'	=> count($approval_vendor_id) == 0 ? $vendorId : $approval_vendor_id[0]['approval_tracking_id']],
+					['vendor_id'	=> '?'],
+					[$vendorId]
+				);
+				$approval_tracking_id = count($approval_vendor_id) == 0 ? $vendorId : $approval_vendor_id[0]['approval_tracking_id'];
+//					get vendorsite code
+				$vendorsitecode = $this->vendorsiteGateway->getVendositeCode($vendorId, $data['address']['address_city'], 'active', $aspClientId);
+//					save vendorsite
+				$vendorsiteSaved = $this->saveVendorsite($data, $vendorstatus, $vendorId, $vendorsitecode);
+				$vendorsite_id = $vendorsiteSaved['lastInsertId'];
+				if (!$vendorsiteSaved['success']) {
+					return $vendorsiteSaved;
+				}
+				if (count($approval_vendor_id) == 0) {
+					$this->vendorsiteGateway->update(
+						['approval_tracking_id'	=> $vendorsite_id],
+						['vendorsite_id'	=> '?'],
+						[$vendorsite_id]
+					);
 				} else {
-					if (count($approval_vendor_id) == 0) {
-						$this->vendorGateway->update(
-							['approval_tracking_id'	=> $vendorId],
-							['vendor_id'	=> '?'],
-							[$vendorId]
-						);
-						$approval_tracking_id = $vendorId;
-					} else {
-						$this->vendorGateway->update(
-							['approval_tracking_id'	=> $approval_vendor_id[0]['approval_tracking_id']],
-							['vendor_id'	=> '?'],
-							[$vendorId]
-						);
-						$approval_tracking_id = $approval_vendor_id[0]['approval_tracking_id'];
-					}
-//					approve vendor
-					$approvedVendor = $this->vendorGateway->approveVendor($aspClientId, $data['userprofile_id'], $vendorId, $approval_tracking_id, $vendorstatus);
-					if (!$approvedVendor) {
+					$approvalvendorsite = $this->vendorsiteGateway->find(['vendor_id' => '?'], [$approval_vendor_id[0]['approval_tracking_id']], null, ['vendorsite_id']);
+					$this->vendorGateway->update(
+						['approval_tracking_id'	=> $approvalvendorsite[0]['vendorsite_id']],
+						['vendorsite_id'	=> '?'],
+						[$vendorsite_id]
+					);
+				}
+//					save vendorsite favorite
+				if ($vendorsite_favorite == VENDORSITE_FAVORITE_YES && !is_null($propertyId)) {
+					$this->vendorsiteGateway->insertFavorite($vendorsite_id, $propertyId);
+				}
+//					save author data
+				$this->vendorGateway->recauthorSave($data['userprofile_id'], 'vendor', $vendorId);
+//					assign glaccounts
+				if ($glaccounts !== '') {
+					if (!$this->vendorsiteGateway->assignGlAccounts($glaccounts, $vendorId)) {
 						return [
 							'success'		=> false,
-							'errors'			=> [array('field'=>'global', 'msg'=>'Cannot approve vendor', 'extra'=>null)]
+							'errors'			=> [array('field'=>'global', 'msg'=>'Cannot assign glaccounts', 'extra'=>null)]
 						];
 					}
-//					get vendorsite code
-					$vendorsitecode = $this->vendorsiteGateway->getVendositeCode($vendorId, $data['address']['address_city'], 'active', $aspClientId);
-//					save vendorsite
-					$vendorsiteSaved = $this->saveVendorsite($data, $vendorstatus, $vendorId, $vendorsitecode);
-					if (!$vendorsiteSaved['success']) {
-						return $vendorsiteSaved;
-					}
-					$vendorsite_id = $vendorsiteSaved['lastInsertId'];
-					if (count($approval_vendor_id) == 0) {
-						$this->vendorsiteGateway->update(
-							['approval_tracking_id'	=> $vendorsite_id],
-							['vendorsite_id'	=> '?'],
-							[$vendorsite_id]
-						);
-					} else {
-						$approvalvendorsite = $this->vendorsiteGateway->find(['vendor_id' => '?'], [$approval_vendor_id[0]['approval_tracking_id']], null, ['vendorsite_id']);
-						$this->vendorGateway->update(
-							['approval_tracking_id'	=> $approvalvendorsite[0]['vendorsite_id']],
-							['vendorsite_id'	=> '?'],
-							[$vendorsite_id]
-						);
-					}
-//					save vendorsite favorite
-					if ($vendorsite_favorite == VENDORSITE_FAVORITE_YES && !is_null($propertyId)) {
-						$this->vendorsiteGateway->insertFavorite($vendorsite_id, $propertyId);
-					}
-//					save author data
-					$this->vendorGateway->recauthorSave($data['userprofile_id'], 'vendor', $vendorId);
-//					assign glaccounts
-					if ($glaccounts !== '') {
-						if (!$this->vendorsiteGateway->assignGlAccounts($glaccounts, $vendorId)) {
-							return [
-								'success'		=> false,
-								'errors'			=> [array('field'=>'global', 'msg'=>'Cannot assign glaccounts', 'extra'=>null)]
-							];
-						}
-					}
-
+				}
+//					save address
+				$result = $this->saveAddress($data, $vendorsite_id);
+				if (!$result['success'] ) {
+					return $result;
+				}
+//				save phone and fax
+				$result = $this->savePhoneAndFax($data, $vendorsite_id);
+				if (!$result['success']) {
+					return $result;
+				}
+//				save person and contact and contact phone
+				$result = $this->saveContact($data, $vendorsite_id, $aspClientId);
+				if (!$result['success']) {
+					return result;
+				}
+//				save email
+				$result = $this->saveEmailRecord($data, $vendorsite_id);
+				if (!$result['success']) {
+					return result;
+				}
+//					approve vendor
+				$approvedVendor = $this->vendorGateway->approveVendor($aspClientId, $data['userprofile_id'], $vendorId, $approval_tracking_id, $vendorstatus);
+				if (!$approvedVendor) {
+					return [
+						'success'		=> false,
+						'errors'			=> [array('field'=>'global', 'msg'=>'Cannot approve vendor', 'extra'=>null)]
+					];
 				}
 			} else {
 
@@ -277,6 +307,15 @@ class VendorService extends AbstractService {
 		];
 	}
 
+	/**
+	 * Save vendorsite
+	 *
+	 * @param $data
+	 * @param $vendorstatus
+	 * @param $vendorId
+	 * @param $vendorsiteCode
+	 * @return array
+	 */
 	public function saveVendorsite($data, $vendorstatus, $vendorId, $vendorsiteCode) {
 		if (!is_object($data) && isset($data['vendorsite'])) {
 			$vendorsite = new VendorsiteEntity($data['vendorsite']);
@@ -309,8 +348,7 @@ class VendorService extends AbstractService {
 		if(count($errors) == 0) {
 			$this->vendorsiteGateway->beginTransaction();
 			try {
-				$this->vendorsiteGateway->save($vendorsite);
-				$id = $this->vendorsiteGateway->getLastId();
+				$id = $this->vendorsiteGateway->save($vendorsite);
 				$this->vendorsiteGateway->commit();
 			} catch (\Exception $e) {
 				$this->vendorsiteGateway->rollback();
@@ -326,6 +364,12 @@ class VendorService extends AbstractService {
 
 	}
 
+	/**
+	 * Save vendor record
+	 *
+	 * @param $data
+	 * @return array
+	 */
 	public function saveVendorRecord($data) {
 		foreach ($data['vendor'] as $key => $item) {
 			if ($key !== 'paydatebasis_code' && $key !== 'paygroup_code')
@@ -353,8 +397,8 @@ class VendorService extends AbstractService {
 			$this->vendorGateway->beginTransaction();
 
 			try {
-				$this->vendorGateway->save($vendor);
-				$id = $this->vendorGateway->getLastId();
+				$id = $this->vendorGateway->save($vendor);
+//				$id = $this->vendorGateway->getLastId();
 				$this->vendorGateway->commit();
 			} catch (\Exception $e) {
 				$this->vendorGateway->rollback();
@@ -366,6 +410,251 @@ class VendorService extends AbstractService {
 			'success'    			=> (count($errors)) ? false : true,
 			'errors'					=> $errors,
 			'lastInsertId'		=> $id
+		];
+	}
+
+	/**
+	 * save address info for the vendor
+	 *
+	 * @param $data
+	 * @param $vendorsite_id
+	 * @return array
+	 */
+	protected function saveAddress($data, $vendorsite_id) {
+		$tmpAddress = $this->addressGateway->find(['table_name' => '?', 'tablekey_id' => '?'], ['vendorsite', $vendorsite_id], null, ['address_id']);
+		$address = new AddressEntity($data['address']);
+		if (count($tmpAddress) > 0) {
+			$address->address_id = $tmpAddress[0]['address_id'];
+		}
+
+		$address->addresstype_id = ADDRESS_TYPE_MAILING;
+		$address->tablekey_id = $vendorsite_id;
+		$address->table_name = 'vendorsite';
+		$address->address_state = strval($address->address_state);
+
+		$validator = new EntityValidator();
+		$validator->validate($address);
+		$errors = $validator->getErrors();
+
+		$address_id = null;
+		if (count($errors) == 0) {
+			$this->addressGateway->beginTransaction();
+			try {
+				$address_id = $this->addressGateway->save($address);
+				$this->addressGateway->commit();
+			} catch (\Exception $e) {
+				$this->addressGateway->rollback();
+				$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
+			}
+		}
+
+		return [
+			'success'    			=> (count($errors)) ? false : true,
+			'errors'					=> $errors,
+			'lastInsertId'		=> $address_id
+		];
+
+	}
+
+	/**
+	 * save phone and fax
+	 *
+	 * @param $data
+	 * @param $vendorsite_id
+	 * @return array
+	 */
+	protected function savePhoneAndFax($data, $vendorsite_id) {
+		$tmpPhone = $this->phoneGateway->find(['table_name' => '?', 'tablekey_id' => '?', 'phonetype_id' => '?'], ['vendorsite', $vendorsite_id, PHONE_TYPE_MAIN], null, ['phone_id']);
+		$tmpFax = $this->phoneGateway->find(['table_name' => '?', 'tablekey_id' => '?', 'phonetype_id' => '?'], ['vendorsite', $vendorsite_id, PHONE_TYPE_FAX], null, ['phone_id']);
+
+		$phone = new PhoneEntity($data['vendorsite_phone']);
+		$phone->phone_id = count($tmpPhone) > 0 ? $tmpPhone[0]['phone_id'] : $phone->phone_id;
+		$phone->phonetype_id =PHONE_TYPE_MAIN;
+		$phone->tablekey_id = $vendorsite_id;
+		$phone->table_name = 'vendorsite';
+		$errors = [];
+
+		$result = $this->savePhoneRecord($phone);
+		$phone_id = $result['lastInsertPhoneId'];
+		$fax_id = null;
+
+		if (count($result['errors']) > 0 ) {
+			$errors[] = $result['errors'];
+		}
+
+		if ($phone_id) {
+			$fax = new PhoneEntity($data['vendorsite_fax_phone']);
+			$fax->phone_id = count($tmpFax) > 0 ? $tmpFax[0]['phone_id'] : $fax->phone_id;
+			$fax->phonetype_id =PHONE_TYPE_FAX;
+			$fax->tablekey_id = $vendorsite_id;
+			$fax->table_name = 'vendorsite';
+
+			$result = $this->savePhoneRecord($fax);
+			$fax_id = $result['lastInsertPhoneId'];
+			if (count($result['errors']) > 0 ) {
+				$errors[] = $result['errors'];
+			}
+		}
+
+		return [
+			'success'    						=> (count($errors) > 0) ? false : true,
+			'errors'								=> $errors,
+			'lastInsertPhoneId'		=> $phone_id,
+			'lastInsertFaxId'				=> $fax_id
+		];
+	}
+
+	/**
+	 * save person and contact info
+	 *
+	 * @param $data
+	 * @param $vendorsite_id
+	 * @param $asp_client_id
+	 * @return array
+	 */
+	protected function saveContact($data, $vendorsite_id, $asp_client_id) {
+		$tmpPerson = $this->contactGateway->find(['table_name' => '?', 'tablekey_id' => '?'], ['vendorsite', $vendorsite_id], null, ['person_id', 'contact_id']);
+		$tmpContactPhone = null;
+		if (count($tmpPerson) > 0) {
+			$tmpContactPhone = $this->phoneGateway->find(['table_name' => '?', 'tablekey_id' => '?', 'phonetype_id' => '?'], ['contact', $tmpPerson[0]['contact_id'], PHONE_TYPE_MAIN], null, ['phone_id']);
+		}
+
+		$person = new PersonEntity($data['person']);
+		$person->person_id = count($tmpPerson) > 0 ? $tmpPerson[0]['person_id'] : $person->person_id;
+		$person->asp_client_id = $asp_client_id;
+
+		$person_id = null;
+		$contact_id = null;
+		$phone_id = null;
+
+		$validator = new EntityValidator();
+		$validator->validate($person);
+		$errors = $validator->getErrors();
+
+		if (count($errors) == 0) {
+			$this->personGateway->beginTransaction();
+
+			try {
+				$person_id = $this->personGateway->save($person);
+				$this->personGateway->commit();
+			} catch (\Exception $e) {
+				$this->personGateway->rollback();
+				$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
+			}
+
+			if ($person_id) {
+				$contact = new ContactEntity([
+					'contact_id'				=> count($tmpPerson) > 0 ? $tmpPerson[0]['contact_id'] : null,
+					'contacttype_id'		=> CONTACT_TYPE_VENDOR,
+					'table_name'			=> 'vendorsite',
+					'tablekey_id'			=> $vendorsite_id,
+					'person_id'				=> $person_id
+				]);
+
+				$validator->validate($contact);
+				$errors = $validator->getErrors();
+
+				$this->contactGateway->beginTransaction();
+
+				try {
+					$contact_id = $this->contactGateway->save($contact);
+					$this->contactGateway->commit();
+				} catch (\Exception $e) {
+					$this->contactGateway->rollback();
+					$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
+				}
+
+				if ($contact_id) {
+					$phone = new PhoneEntity($data['attention_phone']);
+					$phone->phone_id = count($tmpContactPhone) > 0 ? $tmpContactPhone[0]['phone_id'] : $phone->phone_id;
+					$phone->phonetype_id = PHONE_TYPE_MAIN;
+					$phone->table_name = 'contact';
+					$phone->tablekey_id = $contact_id;
+
+					$result = $this->savePhoneRecord($phone);
+					$phone_id = $result['lastInsertPhoneId'];
+					if (count($result['errors']) > 0) {
+						$errors[] = $result['errors'];
+					}
+				}
+			}
+		}
+
+		return [
+			'success'    						=> (count($errors) > 0) ? false : true,
+			'errors'								=> $errors,
+			'lastInsertPersonId'		=> $person_id,
+			'lastInsertContactId'		=> $contact_id,
+			'lastInsertPhoneId'		=> $phone_id
+		];
+
+	}
+	/**
+	 * save phone record (and fax too)
+	 *
+	 * @param $phone
+	 * @return array
+	 */
+	protected function savePhoneRecord($phone) {
+		$validator = new EntityValidator();
+		$validator->validate($phone);
+		$errors = $validator->getErrors();
+
+		$phone_id = null;
+
+		if (count($errors) == 0) {
+			$this->phoneGateway->beginTransaction();
+			try {
+				$phone_id = $this->phoneGateway->save($phone);
+				$this->phoneGateway->commit();
+			} catch (\Exception $e) {
+				$this->phoneGateway->rollback();
+				$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
+			}
+		}
+
+		return [
+			'success'    						=> (count($errors) > 0) ? false : true,
+			'errors'								=> $errors,
+			'lastInsertPhoneId'		=> $phone_id
+		];
+	}
+
+	/**
+	 * Save email
+	 *
+	 * @param $data
+	 * @param $vendorsite_id
+	 * @return array
+	 */
+	protected function saveEmailRecord($data, $vendorsite_id) {
+		$email = new EmailEntity($data['email']);
+
+		$email->emailtype_id = EMAIL_TYPE_PRIMARY;
+		$email->table_name = 'vendorsite';
+		$email->tablekey_id = $vendorsite_id;
+
+		$validator = new EntityValidator();
+		$validator->validate($email);
+		$errors = $validator->getErrors();
+
+		$email_id = null;
+
+		if (count($errors) == 0) {
+			$this->emailGateway->beginTransaction();
+			try {
+				$email_id = $this->emailGateway->save($email);
+				$this->emailGateway->commit();
+			} catch (\Exception $e) {
+				$this->emailGateway->rollback();
+				$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
+			}
+		}
+
+		return [
+			'success'    						=> (count($errors) > 0) ? false : true,
+			'errors'								=> $errors,
+			'lastInsertEmailId'			=> $email_id
 		];
 	}
 }

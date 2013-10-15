@@ -97,7 +97,10 @@ Ext.define('NP.controller.VendorManager', {
                     'contact.Person',
                     'contact.Address',
                     'contact.Email',
-                    'vendor.Insurance'
+                    'vendor.Insurance',
+                    {class: 'contact.Phone', prefix: 'vendorsite_'},
+                    {class: 'contact.Phone', prefix: 'vendorsite_fax_'},
+                    {class: 'contact.Phone', prefix: 'attention_'}
                 ]
             }
         };

@@ -50,7 +50,14 @@ Ext.define('NP.view.vendor.InsuranceForm', {
                         fieldLabel: this.typeInputLabelText,
                         name: 'insurancetype_id',
                         padding: '0 0 0 5',
-                        labelWidth: 80
+                        labelWidth: 80,
+                        displayField: 'insurancetype_name',
+                        valueField: 'insurancetype_id',
+                        store: Ext.create('NP.store.vendor.InsuranceTypes', {
+                                service         : 'InsuranceService',
+                                action          : 'getAllTypes',
+                                autoLoad    : true
+                        })
                     },
                     {
                         xtype: 'textfield',

@@ -309,11 +309,6 @@ class VendorGateway extends AbstractGateway {
 		);
 	}
 
-	public function getLastId() {
-		$lastInsertId =$this->adapter->query("SELECT IDENT_CURRENT('vendor') as  lastinsertid");
-		return $lastInsertId[0]['lastinsertid'];
-	}
-
 	public function approveVendor($aspClientId = null, $userProfileId = null, $vendorId, $approvalTrackingId, $approvalStatus) {
 		if ($approvalTrackingId == $vendorId) {
 			$vendor = $this->update(

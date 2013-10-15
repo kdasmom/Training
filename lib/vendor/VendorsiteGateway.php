@@ -42,11 +42,6 @@ class VendorsiteGateway extends AbstractGateway {
 		return $vendorsitecode;
 	}
 
-	public function getLastId() {
-		$lastInsertId =$this->adapter->query("SELECT IDENT_CURRENT('vendorsite') as  lastinsertid");
-		return $lastInsertId[0]['lastinsertid'];
-	}
-
 	/**
 	 * Save vendorsite favorite
 	 *

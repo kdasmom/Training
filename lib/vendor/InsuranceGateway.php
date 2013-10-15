@@ -59,6 +59,20 @@ class InsuranceGateway extends AbstractGateway {
 			return $this->adapter->query($select);
 		}
 	}
+
+	/**
+	 * Retrieve insurance types list
+	 *
+	 * @return array|bool
+	 */
+	public function findTypes() {
+		$select = new Select();
+
+		$select->from(['it' => 'insurancetype'])
+					->order('insurancetype_name');
+
+		return $this->adapter->query($select);
+	}
 }
 
 ?>

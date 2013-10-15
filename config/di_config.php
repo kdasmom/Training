@@ -60,6 +60,7 @@ $diDefinition = array(
 	'NP\contact\PersonGateway'                 => array('Adapter'),
 	'NP\contact\PhoneGateway'                  => array('Adapter'),
 	'NP\contact\PhoneTypeGateway'              => array('Adapter'),
+	'NP\contact\ContactGateway'              => array('Adapter'),
 	'NP\core\Config'                           => array('config','reloadCache','WinCache','SiteService','ConfigsysGateway'),
 	'NP\gl\GLAccountGateway'                   => array('Adapter'),
 	'NP\gl\GLService'                          => array('GLAccountGateway'),
@@ -135,7 +136,8 @@ $diDefinition = array(
 	'NP\vendor\VendorGateway'                  => array('Adapter'),
 	'NP\vendor\VendorsiteGateway'                  => array('Adapter'),
 	'NP\vendor\InsuranceGateway'               => array('Adapter'),
-	'NP\vendor\VendorService'                  => array('VendorGateway','InsuranceGateway', 'ConfigService', 'UserprofileGateway', 'VendorsiteGateway'),
+	'NP\vendor\InsuranceService'               => array('InsuranceGateway'),
+	'NP\vendor\VendorService'                  => array('VendorGateway','InsuranceGateway', 'ConfigService', 'UserprofileGateway', 'VendorsiteGateway', 'PhoneGateway', 'AddressGateway', 'PersonGateway', 'ContactGateway', 'EmailGateway'),
 	'NP\workflow\WfRuleTargetGateway'          => array('Adapter'),
 );
 
