@@ -114,9 +114,7 @@ Ext.define('NP.view.gl.GLAccountsForm', {
            {
                 xtype     : 'shared.vendorassigner',
                 name      : 'glaccount_vendors',
-                displayField: 'vendor_name',
-                valueField: 'vendor_id',
-                value     : 'glaccount_vendors',
+                displayField : 'glaccount_name',
                 store     : vendorStore, 
                 autoScroll: true,
                 margin    : 8,

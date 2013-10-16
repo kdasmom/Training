@@ -9,6 +9,8 @@ use NP\system\IntegrationPackageGateway;
 use NP\gl\GlAccountTypeGateway;
 use NP\vendor\VendorGlAccountsGateway;
 use NP\property\PropertyGlAccountGateway;
+use NP\property\PropertyGateway;
+use NP\vendor\VendorGateway;
 
 /**
  * All operations that are closely related to GL accounts belong in this service
@@ -18,19 +20,23 @@ use NP\property\PropertyGlAccountGateway;
 class GLService extends AbstractService {
     
     protected $securityService, $glAccountGateway, $treeGateway, $integrationPackageGateway,
-            $vendorGlAccountsGateway, $propertyGlAccountGateway;
+            $vendorGlAccountsGateway, $propertyGlAccountGateway, $vendorGateway, $propertyGateway;
 
     public function __construct(GLAccountGateway $glAccountGateway, TreeGateway $treeGateway,
                                 IntegrationPackageGateway $integrationPackageGateway,
                                 GlAccountTypeGateway $glAccountTypeGateway,
                                 VendorGlAccountsGateway $vendorGlAccountsGateway,
-                                PropertyGlAccountGateway $propertyGlAccountGateway) {
+                                PropertyGlAccountGateway $propertyGlAccountGateway,
+                                VendorGateway $vendorGateway,
+                                PropertyGateway $propertyGateway) {
             $this->glAccountGateway          = $glAccountGateway;
             $this->treeGateway               = $treeGateway;
             $this->integrationPackageGateway = $integrationPackageGateway;
             $this->glAccountTypeGateway      = $glAccountTypeGateway;
             $this->vendorGlAccountsGateway   = $vendorGlAccountsGateway;
             $this->propertyGlAccountGateway  = $propertyGlAccountGateway;
+            $this->vendorGateway             = $vendorGateway;
+            $this->propertyGateway           = $propertyGateway;
     }
 
     public function setConfigService(\NP\system\ConfigService $configService) {
@@ -93,23 +99,22 @@ class GLService extends AbstractService {
     public function getGLAccount($id) {
         $res = $this->glAccountGateway->findById($id);
         $res['glaccount_vendors'] = $this->vendorGlAccountsGateway->find(
-                                            array('glaccount_id'=>'?'),
+                                            array('vg.glaccount_id'=>'?'),
                                             array($id),
-                                            'vendor_id',
+                                            'v.vendor_name',
                                             array('vendor_id')
                                         );
         $res['glaccount_vendors'] = \NP\util\Util::valueList($res['glaccount_vendors'], 'vendor_id');
         
-        if ($this->configService->get('CP.PROPERTYGLACCOUNT_USE', 0) && $this->securityService->hasPermission(12)) {
-            $res['property_gls'] = $this->propertyGlAccountGateway->find(
+//        if ($this->configService->get('CP.PROPERTYGLACCOUNT_USE', 0) && $this->securityService->hasPermission(12)) {
+            $res['properties'] = $this->propertyGlAccountGateway->find(
                                                                                     array('pg.glaccount_id'=>'?'),
                                                                                     array($id),
                                                                                     'p.property_name',
                                                                                     array('property_id')
                                                                             );
-            $res['property_gls'] = \NP\util\Util::valueList($res['property_gls'], 'property_id');
-        }
-
+            $res['properties'] = \NP\util\Util::valueList($res['properties'], 'property_id');
+//        }
         return $res;
     }
     
@@ -239,7 +244,8 @@ class GLService extends AbstractService {
 
         return array(
             'success' => (count($errors)) ? false : true,
-            'errors'  => $errors
+            'errors'  => $errors,
+            'glaccount_id' => $glaccount->glaccount_id
         );
     }
         
@@ -269,11 +275,11 @@ class GLService extends AbstractService {
 
         // Set errors
         if (!$result['success']) {
-            $errors = $result['$errors'];
+            $errors = $result['errors'];
         }
         // If no errors, save vendors
         if (!count($errors)) {
-                $success = $this->saveVendorAssignment($glaccount_id, $data['glaccount_vendors']);
+                $success = $this->saveVendorAssignment($result['glaccount_id'], $data['glaccount_vendors']);
                 if (!$success) {
                         $errors[] = array(
                                         'field' => 'glaccount_vendors',
@@ -282,8 +288,8 @@ class GLService extends AbstractService {
                 }
         }
         // Save GL assignments if any
-        if (array_key_exists('property_gls', $data) && is_array($data['property_gls'])) {
-                $success = $this->savePropertyAssignment($glaccount_id, $data['properties']);
+        if (array_key_exists('properties', $data) && is_array($data['properties'])) {
+                $success = $this->savePropertyAssignment($result['glaccount_id'], $data['properties']);
                 if (!$success) {
                         $errors[] = array(
                                         'field' => 'properties',
@@ -299,7 +305,7 @@ class GLService extends AbstractService {
     }
     
     /**
-    * Saves property assignments for a user
+    * Saves property assignments for a glaccount
     *
     * @param  int   $glaccount_id The ID for the glaccount we want to assign properties to
     * @param  array $property_id_list
@@ -317,8 +323,8 @@ class GLService extends AbstractService {
                 // Insert new property associations for this user
                 foreach ($property_id_list as $property_id) {
                         $this->propertyGlAccountGateway->insert(array(
-                                'property_id'  => $property_id,
-                                'glaccount_id' => $glaccount_id
+                                'glaccount_id' => $glaccount_id,
+                                'property_id'  => $property_id
                         ));
                 }
 
@@ -333,6 +339,133 @@ class GLService extends AbstractService {
 
         return $success;
    }
+   
+   /**
+    * Saves vendor assignments for a glaccount
+    *
+    * @param  int   $glaccount_id The ID for the glaccount we want to assign vendors to
+    * @param  array $vendor_id_list
+    * @return boolean
+    */
+   public function saveVendorAssignment($glaccount_id, $vendor_id_list) {
+           // Start a DB transaction
+        $this->vendorGlAccountsGateway->beginTransaction();
+
+        $success = true;
+        try {
+                // Remove all property associations for this user
+                $this->vendorGlAccountsGateway->delete('glaccount_id = ?', array($glaccount_id));
+
+                // Insert new property associations for this user
+                foreach ($vendor_id_list as $vendor_id) {
+                        $this->vendorGlAccountsGateway->insert(array(
+                                'vendor_id'  => $vendor_id,
+                                'glaccount_id' => $glaccount_id
+                        ));
+                }
+
+                // Commit the data
+                $this->vendorGlAccountsGateway->commit();
+        } catch(\Exception $e) {
+                // If there was an error, rollback the transaction
+                $this->vendorGlAccountsGateway->rollback();
+                // Change success to indicate failure
+                $success = false;
+        }
+
+        return $success;
+   }
+   
+   /**
+    * Distribute To All Vendors for a glaccount_id_list
+    *
+    * @param  array $glaccount_id_list
+    * @return boolean
+    */
+   public function distributeToAllVendors($glaccount_id_list) {
+       $vendor_id_list = $this->vendorGateway->find(
+                    null,
+                    array(),
+                    "vendor_id",
+                    array('vendor_id')
+               );
+       $vendor_id_list = \NP\util\Util::valueList($vendor_id_list, 'vendor_id');
+           
+       foreach ($glaccount_id_list as $glaccount_id) {
+            // Start a DB transaction
+            $this->vendorGlAccountsGateway->beginTransaction();
+
+            $success = true;
+            try {
+                    // Remove all property associations for this user
+                    $this->vendorGlAccountsGateway->delete('glaccount_id = ?', array($glaccount_id));
+
+                    // Insert new property associations for this user
+                    foreach ($vendor_id_list as $vendor_id) {
+                            $this->vendorGlAccountsGateway->insert(array(
+                                    'vendor_id'  => $vendor_id,
+                                    'glaccount_id' => $glaccount_id
+                            ));
+                    }
+
+                    // Commit the data
+                    $this->vendorGlAccountsGateway->commit();
+            } catch(\Exception $e) {
+                    // If there was an error, rollback the transaction
+                    $this->vendorGlAccountsGateway->rollback();
+                    // Change success to indicate failure
+                    $success = false;
+            }
+
+            return $success;
+       }
+   }
+   
+   /**
+    * Distribute To All Properties for a glaccount_id_list
+    *
+    * @param  array $glaccount_id_list
+    * @return boolean
+    */
+   public function distributeToAllProperties($glaccount_id_list) {
+       $propery_id_list = $this->propertyGateway->find(
+                    null,
+                    array(),
+                    "property_id",
+                    array('property_id')
+        );
+       $propery_id_list = \NP\util\Util::valueList($propery_id_list, 'property_id');
+       
+       foreach ($glaccount_id_list as $glaccount_id) {
+            // Start a DB transaction
+            $this->propertyGlAccountGateway->beginTransaction();
+
+            $success = true;
+            try {
+                    // Remove all property associations for this user
+                    $this->propertyGlAccountGateway->delete('glaccount_id = ?', array($glaccount_id));
+
+                    // Insert new property associations for this user
+                    foreach ($propery_id_list as $propery_id) {
+                            $this->propertyGlAccountGateway->insert(array(
+                                    'property_id'  => $propery_id,
+                                    'glaccount_id' => $glaccount_id
+                            ));
+                    }
+
+                    // Commit the data
+                    $this->propertyGlAccountGateway->commit();
+            } catch(\Exception $e) {
+                    // If there was an error, rollback the transaction
+                    $this->propertyGlAccountGateway->rollback();
+                    // Change success to indicate failure
+                    $success = false;
+            }
+
+            return $success;
+       }
+   }
+   
     /**
      * Saves a collection of categories imported using the import tool
      *

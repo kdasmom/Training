@@ -13,9 +13,7 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
         'NP.view.shared.PropertyCombo',
         'NP.view.shared.button.Cancel',
         'NP.view.shared.button.New',
-        'NP.view.shared.button.Edit',
-        'NP.view.shared.button.Inactivate',
-    	'NP.view.shared.button.Activate'
+        'NP.view.shared.button.Edit'
     ],
     // For localization
     createNewText: 'Create New',
@@ -72,8 +70,8 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
         glAccountsStore.load();
         
         var pagingToolbarButtons = [
-                    { xtype: 'shared.button.edit', itemId: 'editGlaccount', disabled: true },
-                    { xtype: 'button', text: 'Distribute to All Vendors', itemId: 'distributiveToAllVendors', disabled: true },
+                    { xtype: 'shared.button.edit', itemId: 'editGLAccountsBtn', disabled: true },
+                    { xtype: 'button', text: 'Distribute to All Vendors', itemId: 'distributeToAllVendorsBtn', disabled: true },
         ];
         
         this.items = [
@@ -247,7 +245,7 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
                              { 
                                 xtype: 'button', 
                                 text: 'Distribute to All Properties', 
-                                itemId: 'distributiveToAllProperties',
+                                itemId: 'distributeToAllPropertiesBtn',
                                 disabled: true 
                             });       
         }       
