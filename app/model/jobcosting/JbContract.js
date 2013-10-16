@@ -22,14 +22,24 @@ Ext.define('NP.model.jobcosting.JbContract', {
 		{
 			name: 'display_name',
 			convert: function(v, rec) {
-				var val = rec.get('jbcontract_name') + ' - ';
-				if (rec.get('jbcontract_desc') != '') {
-					val += rec.get('jbcontract_desc');
-				} else {
-					val += 'No Desc.';
-				}
-				return val;
+				return NP.model.jobcosting.JbContract.formatName(rec);
 			}
 		}
-	]
+	],
+
+	statics: {
+		formatName: function(rec) {
+			if (rec.get('jbcontract_id') === null) {
+				return '';
+			}
+
+			var val = rec.get('jbcontract_name') + ' - ';
+			if (rec.get('jbcontract_desc') != '') {
+				val += rec.get('jbcontract_desc');
+			} else {
+				val += 'No Desc.';
+			}
+			return val;
+		}
+	}
 });

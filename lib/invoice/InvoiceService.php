@@ -2,7 +2,7 @@
 
 namespace NP\invoice;
 
-use NP\core\AbstractService;
+use NP\shared\AbstractInvoicePoService;
 use NP\security\SecurityService;
 use NP\budget\BudgetService;
 use NP\shared\InvoicePoForwardGateway;
@@ -11,40 +11,46 @@ use NP\jobcosting\JbContractGateway;
 use NP\jobcosting\JbJobCodeGateway;
 use NP\image\ImageIndexGateway;
 use NP\po\PurchaseorderGateway;
+use NP\vendor\InsuranceGateway;
+use NP\system\RecurringSchedulerGateway;
+use NP\workflow\WfRuleGateway;
 
 /**
  * Service class for operations related to Invoices
  *
  * @author Thomas Messier
  */
-class InvoiceService extends AbstractService {
+class InvoiceService extends AbstractInvoicePoService {
 	
+	protected $type = 'invoice';
+
 	protected $configService, $securityService, $invoiceGateway, $invoiceItemGateway, $budgetService, 
-			  $jbContractGateway, $jbJobCodeGateway, $imageIndexGateway;
+			  $jbContractGateway, $jbJobCodeGateway, $imageIndexGateway, $invoicePaymentGateway,
+			  $wfRuleGateway;
 	
 	public function __construct(SecurityService $securityService, FiscalCalService $fiscalCalService,
 								BudgetService $budgetService, InvoiceGateway $invoiceGateway,
 								InvoiceItemGateway $invoiceItemGateway, InvoicePoForwardGateway $invoicePoForwardGateway,
 								JbContractGateway $jbContractGateway, JbJobCodeGateway $jbJobCodeGateway,
-								ImageIndexGateway $imageIndexGateway, PurchaseorderGateway $purchaseorderGateway) {
-		$this->securityService         = $securityService;
-		$this->fiscalCalService        = $fiscalCalService;
-		$this->budgetService           = $budgetService;
-		$this->invoiceGateway          = $invoiceGateway;
-		$this->invoiceItemGateway      = $invoiceItemGateway;
-		$this->invoicePoForwardGateway = $invoicePoForwardGateway;
-		$this->jbContractGateway       = $jbContractGateway;
-		$this->jbJobCodeGateway        = $jbJobCodeGateway;
-		$this->imageIndexGateway       = $imageIndexGateway;
-		$this->purchaseorderGateway    = $purchaseorderGateway;
-	}
-	
-	/**
-	 * Setter function required by DI to set the config service via setter injection
-	 * @param \NP\system\ConfigService $configService
-	 */
-	public function setConfigService(\NP\system\ConfigService $configService) {
-		$this->configService = $configService;
+								ImageIndexGateway $imageIndexGateway, PurchaseorderGateway $purchaseorderGateway,
+								InvoicePaymentGateway $invoicePaymentGateway, InsuranceGateway $insuranceGateway,
+								RecurringSchedulerGateway $recurringSchedulerGateway, WfRuleGateway $wfRuleGateway) {
+		parent::__construct();
+
+		$this->securityService           = $securityService;
+		$this->fiscalCalService          = $fiscalCalService;
+		$this->budgetService             = $budgetService;
+		$this->invoiceGateway            = $invoiceGateway;
+		$this->invoiceItemGateway        = $invoiceItemGateway;
+		$this->invoicePoForwardGateway   = $invoicePoForwardGateway;
+		$this->jbContractGateway         = $jbContractGateway;
+		$this->jbJobCodeGateway          = $jbJobCodeGateway;
+		$this->imageIndexGateway         = $imageIndexGateway;
+		$this->purchaseorderGateway      = $purchaseorderGateway;
+		$this->invoicePaymentGateway     = $invoicePaymentGateway;
+		$this->insuranceGateway          = $insuranceGateway;
+		$this->recurringSchedulerGateway = $recurringSchedulerGateway;
+		$this->wfRuleGateway             = $wfRuleGateway;
 	}
 	
 	/**
@@ -72,60 +78,198 @@ class InvoiceService extends AbstractService {
 				$invoice_id,
 				$this->securityService->getUserId()
 			);
+			$invoice['has_optional_rule'] = $this->wfRuleGateway->hasOptionalRule(
+				$invoice['property_id'],
+				$this->securityService->getUserId()
+			);
 		} else {
 			$invoice['is_approver'] = false;
 		}
 
 		// Get invoice images
-		$invoice['images'] = $this->imageIndexGateway->findEntityImages($invoice_id, 'Invoice');
+		$invoice['images'] = $this->imageIndexGateway->findEntityImages($invoice_id, 'Invoice', true);
 
 		// Get linkable POs
 		$invoice['has_linkable_pos'] = (count($this->getLinkablePOs($invoice_id))) ? true : false;
+
+		// Check if there are any schedules if invoice is a draft
+		if ($invoice['invoice_status'] == 'draft') {
+			$res = $this->recurringSchedulerGateway->find([
+				'table_name'      => "'invoice'",
+				'tablekey_id'     => '?',
+				'schedule_status' => "'active'"
+			], [$invoice_id]);
+
+			$invoice['schedule_exists'] = (count($res)) ? true : false;
+		}
+
+		if (
+			$invoice['invoice_status'] == 'saved' 
+			&& $this->configService->get('PN.InvoiceOptions.SkipSave', '0') === '0'
+		) {
+			$invoice['has_dummy_accounts'] = $this->invoiceGateway->hasDummyAccounts($invoice_id);
+		} else {
+			$invoice['has_dummy_accounts'] = false;
+		}
 
 		return $invoice;
 	}
 
 	/**
-	 * Saves an invoice entity; invoices should always be saved through this method
+	 * Get all warnings for an invoice; can do it using either an invoice record or an invoice ID.
+	 * Using an invoice record makes it so some queries don't need to be run
 	 *
-	 * @param  array $dataSet An associative array with the data to save; line items should be in a "lines" key
-	 * @return array          Errors that occurred while attempting to save the entity
+	 * @param  array $invoice    An record from the INVOICE database table
+	 * @param  int   $invoice_id An ID for a record in the INVOICE table
+	 * @return array             An array of warnings
 	 */
-	public function save($dataSet) {
-		// Create an invoice entity
-		$invoiceEntity = new InvoiceEntity($dataSet);
+	public function getWarnings($invoice=null, $invoice_id=null) {
+		// If no invoice record was provided, get one using the ID
+		if ($invoice === null) {
+			$invoice = $this->invoiceGateway->findById($invoice_id);
+		}
 
-		// Get invoice validator
-		$invoiceValidator = new validation\InvoiceValidator();
+		$warnings = [];
 
-		// If the data is valid, save it
-		if ($invoiceValidator->validate($invoiceEntity)) {
-			// Begin transaction
-			$connection = $this->invoiceGateway->getAdapter()->driver->getConnection()->beginTransaction();
+		$warningTypes = ['Job','VendorInsurance','VendorInactive','InvoiceDuplicate',
+						'InvoiceDuplicateDateAmount','LinkablePo','PoThreshold','InvalidPeriod'];
 
-			try {
-				// Save the invoice entity
-				$id = $this->invoiceGateway->save($invoiceEntity);
-
-				// Loop through each line in the invoice and save them
-				foreach($dataSet['lines'] as $line) {
-					$line['invoice_id'] = $id;
-					$this->invoiceItemGateway->save($line);
-				}
-
-				$connection->commit();
-			} catch(\Exception $e) {
-				$connection->rollback();
-				$invoiceValidator->addError('global', 'Unexpected database error');
+		foreach ($warningTypes as $warningType) {
+			$fn = "get{$warningType}Warning";
+			$warning = $this->$fn($invoice, $invoice_id);
+			if ($warning !== null) {
+				$warnings[] = $warning;
 			}
 		}
 
-		$errors = $invoiceValidator->getErrors();
-		return array(
-			'success'    => (count($errors)) ? false : true,
-			'invoice_id' => $id,
-			'errors'     => $errors,
-		);
+		return $warnings;
+	}
+
+	/**
+	 * Warning for if an invoice is a duplicate based on the invoice number and vendor
+	 */
+	public function getInvoiceDuplicateWarning($invoice=null, $invoice_id=null) {
+		if ($invoice_id === null) {
+			$invoice_id = $invoice['invoice_id'];
+		}
+
+		$res = $this->invoiceGateway->findDuplicates($invoice_id);
+		if (count($res)) {
+			return [
+				'warning_type'  => 'invoiceDuplicate',
+				'warning_title' => 'Error!',
+				'warning_icon'  => 'stop',
+				'warning_data'  => []
+			];
+		}
+
+		return null;
+	}
+
+	/**
+	 * Warning for if an invoice is a duplicate based on the date, property, and amount
+	 */
+	public function getInvoiceDuplicateDateAmountWarning($invoice=null, $invoice_id=null) {
+		if ($invoice_id === null) {
+			$invoice_id = $invoice['invoice_id'];
+		}
+
+		$res = $this->invoiceGateway->findDuplicateDateAndAmount($invoice_id);
+		if (count($res)) {
+			return [
+				'warning_type'  => 'invoiceDuplicateDateAmount',
+				'warning_title' => 'Warning!',
+				'warning_icon'  => 'alert',
+				'warning_data'  => []
+			];
+		}
+
+		return null;
+	}
+
+	/**
+	 * Warning for if an invoice has available PO
+	 */
+	public function getLinkablePoWarning($invoice=null, $invoice_id=null) {
+		if ($invoice_id === null) {
+			$invoice_id = $invoice['invoice_id'];
+		} else if ($invoice === null) {
+			$invoice = $this->invoiceGateway->find(
+				'i.invoice_id = ?', 
+				[$invoice_id],
+				null,
+				['invoice_status']
+			);
+			$invoice = $invoice[0];
+		}
+
+		$linkable = $this->getLinkablePOs($invoice_id);
+		$linked = $this->getAssociatedPOs($invoice_id);
+
+		if (
+			$invoice['invoice_status'] == 'open'			// Invoice is in Open Status
+			&& $this->securityService->hasPermission(1026)	// Purchase Orders permission
+			&& count($linkable)								// Invoice has linkable POs
+			&& !count($linked)								// Invoice has no POs linked to it
+		) {
+			return [
+				'warning_type'  => 'linkablePo',
+				'warning_title' => 'Alert!',
+				'warning_icon'  => 'alert',
+				'warning_data'  => []
+			];
+		}
+
+		return null;
+	}
+
+	/**
+	 * Warning for when invoice hsa POs above matching threshhold for the property
+	 */
+	public function getPoThresholdWarning($invoice=null, $invoice_id=null) {
+		if ($invoice_id === null) {
+			$invoice_id = $invoice['invoice_id'];
+		} else if ($invoice === null) {
+			$invoice = $this->invoiceGateway->findById($invoice_id);
+		}
+
+		$po = $this->getAssociatedPOs($invoice_id);
+		if (count($po)) {
+			$po = $po[0];
+			$comparisonAmount = $po['po_total'] + ($po['po_total'] * $po['matching_threshold']);
+			if ($invoice['entity_amount'] > $comparisonAmount) {
+				return [
+					'warning_type'  => 'poThreshold',
+					'warning_title' => 'Alert!',
+					'warning_icon'  => 'alert',
+					'warning_data'  => []
+				];
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * 
+	 */
+	public function getInvalidPeriodWarning($invoice=null, $invoice_id=null) {
+		if ($this->configService->get('PN.InvoiceOptions.differentPostPeriodWarning', '0') == '1') {
+			if ($invoice_id === null) {
+				$invoice_id = $invoice['invoice_id'];
+			}
+			$invalid = $this->invoiceGateway->findInvalidPostDates($invoice_id);
+			if (count($invalid)) {
+				return [
+					'warning_type'  => 'poThreshold',
+					'warning_title' => 'Alert!',
+					'warning_icon'  => 'alert',
+					'warning_data'  => $invalid
+				];
+			}
+		}
+
+		return null;
 	}
 	
 	/**
@@ -270,6 +414,22 @@ class InvoiceService extends AbstractService {
 	 */
 	public function getLinkablePOs($invoice_id) {
 		return $this->purchaseorderGateway->findPosLinkableToInvoice($invoice_id);
+	}
+
+	public function getHistoryLog($invoice_id, $pageSize=null, $page=null, $sort="approve_datetm") {
+		return $this->invoiceGateway->findHistoryLog($invoice_id, $pageSize, $page, $sort);
+	}
+
+	public function getPayments($invoice_id) {
+		return $this->invoicePaymentGateway->findForInvoice($invoice_id);
+	}
+
+	public function getDuplicates($invoice_id) {
+		return $this->invoiceGateway->findDuplicates($invoice_id);
+	}
+
+	public function getDuplicateDateAndAmount($invoice_id) {
+		return $this->invoiceGateway->findDuplicateDateAndAmount($invoice_id);
 	}
 
 	public function rollPeriod($property_id, $newAccountingPeriod, $oldAccountingPeriod) {

@@ -5,22 +5,44 @@
 #npHeaderRightWelcomeText { margin-top: 8px; color: #9FCCFA; font-style:italic; }
 
 /* BUTTONS */
+.activate-btn { background-image: url("../images/buttons/activate.gif"); }
+.allocate-btn { background-image: url("../images/buttons/allocate.gif"); }
+.approve-btn { background-image: url("../images/buttons/approve.gif"); }
+.approve-next-btn { background-image: url("../images/buttons/approve_next.gif"); }
+.back-btn { background-image: url("../images/buttons/back.gif"); }
+.camera-btn { background-image: url("../images/buttons/camera.gif"); }
+.cancel-btn { background-image: url("../images/buttons/cancel.gif"); }
+.copy-btn { background-image: url("../images/buttons/copy.gif"); }
+.delete-btn { background-image: url("../images/buttons/delete.gif"); }
+.edit-btn { background-image: url("../images/buttons/edit.gif"); }
+.hold-activate-btn { background-image: url("../images/buttons/hold_activate.gif"); }
+.hourglass-btn { background-image: url("../images/buttons/hourglass.gif"); }
+.image-add-btn { background-image: url("../images/buttons/image_add.gif"); }
+.image-manage-btn { background-image: url("../images/buttons/image_manage.gif"); }
+.image-view-btn { background-image: url("../images/buttons/image_view.gif"); }
+.inactivate-btn { background-image: url("../images/buttons/inactivate.gif"); }
+.link-btn { background-image: url("../images/buttons/link.gif"); }
+.message-btn { background-image: url("../images/buttons/message.gif"); }
+.new-btn { background-image: url("../images/buttons/new.gif"); }
+.payment-btn { background-image: url("../images/buttons/payment.gif"); }
+.print-btn { background-image: url("../images/buttons/print.gif"); }
+.process-btn { background-image: url("../images/buttons/process.gif"); }
+.reclass-btn { background-image: url("../images/buttons/reclass.gif"); }
+.reject-btn { background-image: url("../images/buttons/reject.gif"); }
+.report-btn { background-image: url("../images/buttons/report.gif"); }
+.reset-btn { background-image: url("../images/buttons/reset.gif"); }
+.revert-btn { background-image: url("../images/buttons/revert.gif"); }
+.route-btn { background-image: url("../images/buttons/route.gif"); }
 .save-btn { background-image: url("../images/buttons/save.gif"); }
 .save-and-add-btn { background-image: url("../images/buttons/save_and_add.gif"); }
-.cancel-btn { background-image: url("../images/buttons/cancel.gif"); }
-.back-btn { background-image: url("../images/buttons/back.gif"); }
-.edit-btn { background-image: url("../images/buttons/edit.gif"); }
-.new-btn { background-image: url("../images/buttons/new.gif"); }
+.schedule-btn { background-image: url("../images/buttons/schedule.gif"); }
+.template-apply-btn { background-image: url("../images/buttons/template_apply.gif"); }
+.template-save-btn { background-image: url("../images/buttons/template_save.gif"); }
+.template-save-user-btn { background-image: url("../images/buttons/template_save_user.gif"); }
 .upload-btn { background-image: url("../images/buttons/upload.gif"); }
-.camera-btn { background-image: url("../images/buttons/camera.gif"); }
-.activate-btn { background-image: url("../images/buttons/activate.gif"); }
-.inactivate-btn { background-image: url("../images/buttons/inactivate.gif"); }
+.upload-sheet-btn { background-image: url("../images/buttons/upload_sheet.gif"); }
 .view-btn { background-image: url("../images/buttons/view.gif"); }
-.hourglass-btn { background-image: url("../images/buttons/hourglass.gif"); }
-.delete-btn { background-image: url("../images/buttons/delete.gif"); }
-.message-btn { background-image: url("../images/buttons/message.gif"); }
-.reset-btn { background-image: url("../images/buttons/reset.gif"); }
-.allocate-btn { background-image: url("../images/buttons/allocate.gif"); }
+.void-btn { background-image: url("../images/buttons/void.gif"); }
 
 /* STYLE FOR USING AN IMAGE AS A BUTTON IN A GRID BY SPECIFYING THIS AS tdCls CONFIG OPTION */
 .image-button-cell .x-grid-cell-inner { padding-bottom: 0; }
@@ -84,7 +106,7 @@
 
 #lineItemTable th, #lineItemTable tfoot td {
 	font-weight     : bold;
-	background-color: #CECECE;
+	background-color: #E3E4E6;
 }
 
 #lineItemTable td {
@@ -118,4 +140,13 @@
 
 #lineItemTable tfoot td input {
 	text-align: right;
+}
+
+#warningTable td {
+	background-color: #ccc;
+	padding         : 3px;
+}
+
+#warningTable .warning_title {
+	font-weight: bold;	
 }

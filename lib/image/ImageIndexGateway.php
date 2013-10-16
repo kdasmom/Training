@@ -210,6 +210,20 @@ class ImageIndexGateway extends AbstractGateway {
 
 		return $this->adapter->query($select, array($tablekey_id, $image_tableref_name));
 	}
+
+	public function findImagePath($image_index_id) {
+		$select = Select::get()->columns([])
+								->from(array('img'=>'image_index'))
+								->join(new sql\join\ImageIndexImageTransferJoin(['transfer_filename']))
+								->whereEquals('img.image_index_id', '?');
+
+		$res = $this->adapter->query($select, [$image_index_id]);
+		if (count($res)) {
+			return $res[0]['transfer_filename'];
+		} else {
+			return null;
+		}
+	}
 }
 
 ?>

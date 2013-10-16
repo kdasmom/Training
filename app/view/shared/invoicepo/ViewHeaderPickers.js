@@ -9,8 +9,11 @@ Ext.define('NP.view.shared.invoicepo.ViewHeaderPickers', {
 
     requires: [
     	'NP.lib.core.Config',
+        'NP.lib.core.Security',
     	'NP.view.shared.VendorAutoComplete',
-    	'NP.view.shared.PropertyCombo'
+    	'NP.view.shared.PropertyCombo',
+        'NP.store.property.Properties',
+        'NP.store.vendor.Vendors'
     ],
 
     margin  : '0 16 0 0',
@@ -23,16 +26,33 @@ Ext.define('NP.view.shared.invoicepo.ViewHeaderPickers', {
 
     	me.items = [
     		{
-				xtype     : 'shared.propertycombo',
-				labelAlign: 'top',
-				disabled  : true
+                xtype          : 'shared.propertycombo',
+                labelAlign     : 'top',
+                disabled       : true,
+                dependentCombos: ['invoiceVendorCombo'],
+                store          : {
+                    type   : 'property.properties',
+                    service: 'UserService',
+                    action : 'getUserProperties',
+                    extraParams: {
+                        userprofile_id             : NP.Security.getUser().get('userprofile_id'),
+                        delegated_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id'),
+                        includeCodingOnly          : true
+                    }
+                }
 			},{
 				xtype     : 'shared.vendorautocomplete',
+                itemId    : 'invoiceVendorCombo',
 				labelAlign: 'top',
-				disabled  : true
+				disabled  : true,
+                store     : {
+                    type   : 'vendor.vendors',
+                    service: 'VendorService',
+                    action : 'getVendorsForInvoice'
+                }
 			},{
 				xtype : 'component',
-				itemId: 'vendor_display',
+				itemId: 'vendorDisplay',
 				hidden: true
 			}
     	];

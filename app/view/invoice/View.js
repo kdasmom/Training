@@ -10,20 +10,21 @@ Ext.define('NP.view.invoice.View', {
     requires: [
     	'NP.lib.core.Security',
     	'NP.view.invoice.ViewToolbar',
+        'NP.view.shared.invoicepo.ViewWarnings',
     	'NP.view.invoice.ViewHeader',
     	'NP.view.invoice.ViewCustomFields',
     	'NP.view.invoice.ViewLineItems',
     	'NP.view.invoice.ViewNotes',
     	'NP.view.invoice.ViewReclass',
-    	'NP.view.invoice.ViewHistory',
     	'NP.view.invoice.ViewPayments',
-    	'NP.view.shared.invoicepo.ForwardsGrid'
+    	'NP.view.shared.invoicepo.ForwardsGrid',
+        'NP.view.shared.invoicepo.HistoryLogGrid'
     ],
 
-    layout: 'border',
+    layout: 'fit',
 
     // For localization
-    title: 'Invoice: ',
+    title: 'Invoice',
 
     initComponent: function() {
     	var me           = this,
@@ -34,52 +35,31 @@ Ext.define('NP.view.invoice.View', {
 				autoScroll: true,
 				defaults  : { cls: 'invoiceViewPanel', frame: true },
 				items     : [
+                    { xtype: 'shared.invoicepo.viewwarnings', type: 'invoice' },
 		    		{ xtype: 'invoice.viewheader' },
 		    		{ xtype: 'invoice.viewcustomfields' },
-                    { xtype: 'invoice.viewlineitems' },
+                    { xtype: 'invoice.viewlineitems', type: 'invoice' },
 		    		{ xtype: 'invoice.viewnotes' }
 		    	]
 			};
 
     	me.tbar = { xtype: 'invoice.viewtoolbar' };
-    	me.bbar = { xtype: 'invoice.viewtoolbar' };
 
-    	me.items = [
-    		{
-				region     : 'west',
-				xtype      : 'panel',
-				layout     : 'fit',
-				border     : false,
-				style      : 'border-right-style: solid; border-right-width: 1px',
-				width      : '50%',
-				collapsible: true,
-				resizable  : true,
-				collapsed  : true,
-				items      : [{
-					xtype: 'component',
-					html: '<iframe src="about:blank" height="100%" width="100%"></iframe>'
-				}]
-    		}
-    	];
+        me.items = [];
 
 		if (NP.Security.hasPermission(2094) || NP.Security.hasPermission(6093)) {
 			centerRegion.items.push({ xtype: 'invoice.viewreclass', hidden: true });
 		}
 
 		centerRegion.items.push(
-			{ xtype: 'invoice.viewhistory', hidden: true },
-    		{ xtype: 'invoice.viewpayments', hidden: true },
-		    { xtype: 'shared.invoicepo.forwardsgrid', title: 'Invoice Forwards', type: 'invoice' }
+            { xtype: 'shared.invoicepo.historyloggrid', type: 'invoice', maxHeight: 400 },
+    		{ xtype: 'invoice.viewpayments', hidden: true, maxHeight: 400 },
+		    { xtype: 'shared.invoicepo.forwardsgrid', title: 'Invoice Forwards', type: 'invoice', maxHeight: 400 }
 		);
 
 		me.items.push(centerRegion);
 
     	me.callParent(arguments);
-
-    	// This is to remove the top and bottom borders on the collapsed panel placeholder
-    	me.on('render', function(panel) {
-    		panel.getEl().down('.x-region-collapsed-placeholder').setStyle('border-width', '0 1px 0 1px');
-    	});
     },
 
     getInvoiceRecord: function() {
@@ -88,6 +68,7 @@ Ext.define('NP.view.invoice.View', {
 
         return invoice;
     },
+
     isInvoiceModifiable: function() {
         var me      = this,
             invoice = me.getInvoiceRecord();
@@ -103,6 +84,7 @@ Ext.define('NP.view.invoice.View', {
 
         return false;
     },
+    
     isInvoiceLineEditable: function() {
         var me      = this,
             status  = me.getInvoiceRecord().get('invoice_status');

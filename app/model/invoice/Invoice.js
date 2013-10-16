@@ -83,7 +83,16 @@ Ext.define('NP.model.invoice.Invoice', {
 		{ name: 'rejected_reason' },
 		{ name: 'invoice_pending_days', type: 'int' },
 		{ name: 'invoice_onhold_by' },
-		{ name: 'invoice_days_onhold', type: 'int' }
+		{ name: 'invoice_days_onhold', type: 'int' },
+		{ name: 'invoice_hold_datetm', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
+		{ name: 'pending_approval_days', type: 'int' },
+		{ name: 'pending_approval_for' },
+		{ name: 'last_approved_datetm', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
+		{ name: 'last_approved_by' },
+		{ name: 'void_datetm', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
+		{ name: 'void_by' },
+		{ name: 'payment_details' },
+		{ name: 'payment_amount_remaining', type: 'float' }
     ],
 
     belongsTo: [
@@ -168,5 +177,23 @@ Ext.define('NP.model.invoice.Invoice', {
 		}
 
 		return false;
+	},
+
+	getDisplayStatus: function() {
+		var status = this.get('invoice_status');
+
+		if (status == 'forapproval') {
+			return 'Pending Approval';
+		} else if (status == 'open') {
+			return 'In Progress';
+		} else if (status == 'saved') {
+			return 'Completed';
+		} else if (status == 'draft') {
+			return 'Template';
+		} else if (status == 'closed') {
+			return 'Invoiced';
+		} else {
+			return Ext.util.Format.capitalize(status);
+		}
 	}
 });

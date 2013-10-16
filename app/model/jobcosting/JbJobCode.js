@@ -23,14 +23,24 @@ Ext.define('NP.model.jobcosting.JbJobCode', {
 		{
 			name: 'display_name',
 			convert: function(v, rec) {
-				var val = rec.get('jbjobcode_name') + ' - ';
-				if (rec.get('jbjobcode_desc') != '') {
-					val += rec.get('jbjobcode_desc');
-				} else {
-					val += 'No Desc.';
-				}
-				return val;
+				return NP.model.jobcosting.JbJobCode.formatName(rec);
 			}
 		}
-	]
+	],
+
+	statics: {
+		formatName: function(rec) {
+			if (rec.get('jbjobcode_id') === null) {
+				return '';
+			}
+
+			var val = rec.get('jbjobcode_name') + ' - ';
+			if (rec.get('jbjobcode_desc') != '') {
+				val += rec.get('jbjobcode_desc');
+			} else {
+				val += 'No Desc.';
+			}
+			return val;
+		}
+	}
 });

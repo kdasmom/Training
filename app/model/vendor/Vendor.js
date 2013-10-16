@@ -9,7 +9,9 @@ Ext.define('NP.model.vendor.Vendor', {
 	requires: [
 		'NP.lib.core.Config',
 		'NP.model.user.RecAuthor',
-		'NP.model.system.IntegrationPackage'
+		'NP.model.system.IntegrationPackage',
+		'NP.model.contact.Address',
+		'NP.model.contact.Phone'
 	],
 
 	idProperty: 'vendor_id',
@@ -126,7 +128,20 @@ Ext.define('NP.model.vendor.Vendor', {
 		// This field does not exist in the DB, we are retrieving it to simplify
 		{ name: 'vendorsite_id', type: 'int' },
 		{ name: 'sent_for_approval_date', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
-		{ name: 'sent_for_approval_by' }
+		{ name: 'sent_for_approval_by' },
+
+		{ name: 'address_line1', useNull: false },
+		{ name: 'address_line2', useNull: false },
+		{ name: 'address_line3', useNull: false },
+		{ name: 'address_city', useNull: false },
+		{ name: 'address_state', useNull: false },
+		{ name: 'address_zip', useNull: false },
+		{ name: 'address_zipext', useNull: false },
+		{ name: 'address_country', type: 'int' },
+
+		{ name: 'phone_number', useNull: false },
+		{ name: 'phone_ext', useNull: false },
+		{ name: 'phone_countrycode', useNull: false }
 	],
 
 	belongsTo: [
@@ -148,5 +163,17 @@ Ext.define('NP.model.vendor.Vendor', {
             foreignKey  : 'vendorsite_id',
             primaryKey  : 'vendorsite_id'
         }
-    ]
+    ],
+
+    getAddressHtml: function() {
+    	var address = Ext.create('NP.model.contact.Address', this.getData());
+
+    	return address.getHtml();
+    },
+
+    getFullPhone: function() {
+    	var phone = Ext.create('NP.model.contact.Phone', this.getData());
+
+    	return phone.getFullPhone();
+    }
 });

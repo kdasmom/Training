@@ -12,7 +12,7 @@ use NP\core\db\Select;
  */
 class PoItemPurchaseorderJoin extends Join {
 	
-	public function __construct($cols=array('purchaseorder_status'), $type=Select::JOIN_INNER, $toAlias='p', $fromAlias='pi') {
+	public function __construct($cols=array('purchaseorder_ref','purchaseorder_status'), $type=Select::JOIN_INNER, $toAlias='p', $fromAlias='pi') {
 		$this->setTable(array($toAlias=>'purchaseorder'))
 			->setCondition("{$fromAlias}.purchaseorder_id = {$toAlias}.purchaseorder_id")
 			->setCols($cols)

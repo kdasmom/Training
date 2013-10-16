@@ -20,7 +20,7 @@ if (!$isAuth) {
 	<link rel="stylesheet" type="text/css" href="vendor/BoxSelect/src/BoxSelect.css" />
 	<link rel="stylesheet" type="text/css" href="resources/css/main.css" />
 	<link rel="stylesheet" type="text/css" href="resources/css/VerticalTabPanel.css" />
-	<script type="text/javascript" src="vendor/extjs/ext-all<?php echo ($__CONFIG['serverType'] == 'dev') ? '-dev' : ''; ?>.js"></script>
+	<script type="text/javascript" src="vendor/extjs/ext-all-dev.js"></script>
 	<script type="text/javascript" src="vendor/extjs/examples/ux/form/MultiSelect.js"></script>
 	<script type="text/javascript" src="vendor/extjs/examples/ux/form/ItemSelector.js"></script>
 	<script type="text/javascript" src="vendor/BoxSelect/src/BoxSelect.js"></script>

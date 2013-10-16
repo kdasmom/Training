@@ -84,6 +84,9 @@ Ext.define('NP.lib.ui.BoundForm', {
 					service    : this.bind.service,
 					action     : this.bind.action,
 					success    : function(result, deferred) {
+						// Save the data loaded
+						that.loadedData = result;
+
 						that.fireEvent('beforemodelupdate', that, result);
 
 						// If data is returned, set the field values on the models
@@ -412,5 +415,9 @@ Ext.define('NP.lib.ui.BoundForm', {
 				}
 			}
 		});
+	},
+
+	getLoadedData: function() {
+		return this.loadedData;
 	}
 });

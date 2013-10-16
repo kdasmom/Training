@@ -18,14 +18,24 @@ Ext.define('NP.model.jobcosting.JbChangeOrder', {
 		{
 			name: 'display_name',
 			convert: function(v, rec) {
-				var val = rec.get('jbchangeorder_name') + ' - ';
-				if (rec.get('jbchangeorder_desc') != '') {
-					val += rec.get('jbchangeorder_desc');
-				} else {
-					val += 'No Desc.';
-				}
-				return val;
+				return NP.model.jobcosting.JbChangeOrder.formatName(rec);
 			}
 		}
-	]
+	],
+
+	statics: {
+		formatName: function(rec) {
+			if (rec.get('jbchangeorder_id') === null) {
+				return '';
+			}
+
+			var val = rec.get('jbchangeorder_name') + ' - ';
+			if (rec.get('jbchangeorder_desc') != '') {
+				val += rec.get('jbchangeorder_desc');
+			} else {
+				val += 'No Desc.';
+			}
+			return val;
+		}
+	}
 });

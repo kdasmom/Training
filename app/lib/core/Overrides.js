@@ -11,7 +11,7 @@ Ext.define('NP.lib.core.Overrides', function() {
 		setValue: function(val) {
 			this.callParent(arguments);
 
-			if (this.decimalPrecision && val && val.toFixed) {
+			if (this.allowDecimals && this.decimalPrecision && val && val.toFixed) {
 				this.setRawValue(val.toFixed(this.decimalPrecision));
 			}
 	    }
@@ -226,7 +226,7 @@ Ext.define('NP.lib.core.Overrides', function() {
 		        fn = function(m, a, b) {
 		            return a + b.toUpperCase();
 		        };
-		    return val.toLowerCase().replace(re, fn);
+		    return val.replace(re, fn);
 		}
 	});
 

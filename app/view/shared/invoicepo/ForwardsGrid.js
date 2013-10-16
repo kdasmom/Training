@@ -11,7 +11,8 @@ Ext.define('NP.view.shared.invoicepo.ForwardsGrid', {
     	'NP.store.shared.InvoicePoForwards'
     ],
 
-    frame : true,
+    frame      : true,
+    bodyPadding: 0,
 
     /**
      * @cfg {String}  type Type of entity this custom field is for; valid values are 'invoice' or 'po'
@@ -36,7 +37,7 @@ Ext.define('NP.view.shared.invoicepo.ForwardsGrid', {
 
 
         me.columns = {
-            defaults : { width: '19%' },
+            defaults : { width: '24%' },
             items    : [
                 {
                     text     : me.sentFromColName,

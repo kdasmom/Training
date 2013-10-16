@@ -15,7 +15,7 @@ Ext.define('NP.view.invoice.ViewHeader', {
     ],
 
     // For localization
-	title            : 'Header',
+    title            : 'Header',
 	createdOnLbl     : 'Created On',
 	createdByLbl     : 'Created By',
 	remitAdviceLbl   : 'Remittance Advice',
@@ -38,9 +38,7 @@ Ext.define('NP.view.invoice.ViewHeader', {
     },
 
     initComponent: function() {
-    	var me        = this,
-    		col2Items = me.buildCol2Items(),
-    		col3Items = me.buildCol3Items();
+    	var me        = this;
 
     	me.defaults = { layout: 'form' };
     	me.items = [
@@ -52,12 +50,12 @@ Ext.define('NP.view.invoice.ViewHeader', {
 				flex    : 1,
 				margin  : '0 16 0 0',
 				defaults: { labelWidth: 130 },
-				items   : col2Items
+				items   : me.buildCol2Items()
     		},{
 				xtype   : 'container',
 				flex    : 1,
 				defaults: { labelWidth: 130 },
-				items   : col3Items
+				items   : me.buildCol3Items()
     		}
     	];
 

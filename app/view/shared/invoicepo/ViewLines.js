@@ -22,12 +22,14 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
         
         me.fieldPrefix  = me.type + 'item';
         me.itemSelector = 'tbody tr';
-        me.emptyText    = 'No lines found';
 
         me.tpl = new Ext.XTemplate(me.buildTpl(), {
             getSetting: function(name, defaultVal) {
                 defaultVal = defaultVal || '';
                 return NP.Config.getSetting(name, defaultVal);
+            },
+            hasPermission: function(moduleId) {
+                return NP.Security.hasPermission(moduleId);
             },
             getStoreCount: function() {
                 return me.getStore().getCount();
@@ -41,6 +43,9 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
             getInvoiceRecord: function() {
                 return me.up('[xtype="'+me.type+'.view"]').getInvoiceRecord();
             },
+            getFormDataVal: function(key) {
+                return me.up('boundform').getLoadedData()[key];
+            },
             getSum: function(field) {
                 var total = 0;
                 for (var i=0; i<me.getStore().getCount(); i++) {
@@ -50,9 +55,11 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                 return total;
             },
             getGrossTotal: function() {
-                return this.getSum(me.fieldPrefix + '_amount', 0) +
+                me.totalAmount = this.getSum(me.fieldPrefix + '_amount', 0) +
                         this.getSum(me.fieldPrefix + '_shipping', 0) +
                         this.getSum(me.fieldPrefix + '_salestax', 0);
+
+                return me.totalAmount;
             },
             getRetentionTotal: function() {
                 var total = 0;
@@ -61,6 +68,11 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                 }
 
                 return total;
+            },
+            getNetAmount: function() {
+                me.totalAmount = this.getGrossTotal() - this.getRetentionTotal();
+
+                return me.totalAmount;
             },
             arrayContains: function() {
                 var item = arguments[0],
@@ -102,15 +114,21 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
             '</tr>' +
             '</thead>' +
             '<tbody>' +
-            '<tpl for=".">' +
+            '<tpl if="this.getStoreCount() &gt; 0">' +
+                '<tpl for=".">' +
+                    '<tr>' +
+                        me.buildQuantityCol() +
+                        me.buildDescriptionCol() +
+                        me.buildGlCol() +
+                        me.buildBudgetCol() +
+                        me.buildBudgetRemainingCol() +
+                        me.buildItemPriceCol() +
+                        me.buildAmountCol() +
+                    '</tr>' +
+                '</tpl>' +
+            '<tpl else>' +
                 '<tr>' +
-                    me.buildQuantityCol() +
-                    me.buildDescriptionCol() +
-                    me.buildGlCol() +
-                    me.buildBudgetCol() +
-                    me.buildBudgetRemainingCol() +
-                    me.buildItemPriceCol() +
-                    me.buildAmountCol() +
+                    '<td colspan="7">There are no line items for this invoice.</td>' +
                 '</tr>' +
             '</tpl>' +
             '</tbody>' +
@@ -174,10 +192,25 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                 '</div>' +
             '</tpl>' + 
             me.buildCustomFields() +
+            // TODO: add calendar alerts here
+            '<tpl if="property_id !== this.getInvoiceRecord().get(\'property_id\')">' +
+                '<b>{[this.getSetting(\'PN.Main.PropertyLabel\', \'Property\')]}:</b> ' +
+                '{property.property_name}' +
+            '</tpl>' +
             '<tpl if="unit_id !== null">' +
                 '<div>' +
                     '<b>{[this.getSetting("PN.InvoiceOptions.UnitAttachDisplay")]}:</b>' +
-                    ' {unit.unit_number}' +
+                    ' {unit_number}' +
+                '</div>' +
+            '</tpl>' +
+            '<tpl if="purchaseorder_id !== null">' +
+                '<div>' +
+                    '<b>PO:</b> ' +
+                    // TODO: fix the link to the PO and add the readonly condition (latter might not be needed)
+                    '<a href="#">{purchaseorde_ref}</a>' +
+                    '<tpl if="poitem_amount > 0">' +
+                        ' - <i>{[NP.Util.currencyRenderer(values.poitem_amount)]}</i>' +
+                    '</tpl>' +
                 '</div>' +
             '</tpl>' +
             '<tpl if="dfsplit_id !== null">' +
@@ -328,16 +361,22 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                             '</tpl>' +
                         '</tpl>' +
                     '</div>' +
-                    '<tpl if="this.getInvoiceRecord().get(\'invoice_status\') != \'paid\'">' +
-                        '<a href="#" class="deleteLineBtn">Delete</a> ' +
-                    '</tpl>' +
-                    // TODO: complete this condition
-                    '<tpl if="this.getInvoiceRecord().get(\'invoice_status\') != \'paid\'">' +
-                        '<a href="#" class="linkLineBtn">Link</a>' +
-                    '</tpl>' +
-                // TODO: complete this condition
-                '<tpl elseif="this.getInvoiceRecord().get(\'invoice_status\') == \'forapproval\'">' +
-                    '<a href="#" class="modifyGlBtn">Modify GL</a>' +
+                    '<div>' +
+                        '<tpl if="this.getInvoiceRecord().get(\'invoice_status\') != \'paid\'">' +
+                            '<a href="#" class="deleteLineBtn">Delete</a> ' +
+                        '</tpl>' +
+                        // TODO: still need to see if we need to add the reclass condition
+                        '<tpl if="(this.getInvoiceRecord().get(\'invoice_status\') != \'paid\') ' +
+                                    '&& purchaseorder_id === null && this.getFormDataVal(\'has_linkable_pos\') ' +
+                                    '&& this.hasPermission(2038)">' +
+                            '<a href="#" class="linkLineBtn">Link</a>' +
+                        '</tpl>' +
+                    '</div>' +
+                '<tpl elseif="this.getInvoiceRecord().get(\'invoice_status\') == \'forapproval\' ' +
+                                '&& this.getFormDataVal(\'is_approver\') && this.hasPermission(3001)">' +
+                    '<div>' +
+                        '<a href="#" class="modifyGlBtn">Modify&nbsp;GL</a>' +
+                    '</div>' +
                 '</tpl>' +
             '</td>';
     },
@@ -376,8 +415,12 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                     'Net Amount:' +
                 '</th>' +
                 '<td>' +
-                    '{[this.renderCurrency(this.getGrossTotal() - this.getRetentionTotal())]}' +
+                    '{[this.renderCurrency(this.getNetAmount())]}' +
                 '</td>' +
             '</tpl>';
+    },
+
+    getTotalAmount: function() {
+        return this.totalAmount;
     }
 });

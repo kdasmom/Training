@@ -16,20 +16,23 @@ Ext.define('NP.controller.Invoice', {
 	refs: [
 		{ ref: 'invoiceView', selector: '[xtype="invoice.view"]' },
 		{ ref: 'invoiceViewToolbar', selector: '[xtype="invoice.viewtoolbar"]' },
-		{ ref: 'forwardsGrid', selector: '[xtype="shared.invoicepo.forwardsgrid"]' },
 		{ ref: 'lineView', selector: '[xtype="shared.invoicepo.viewlines"]' },
-		{ ref: 'lineGrid', selector: '[xtype="shared.invoicepo.viewlinegrid"]' }
+		{ ref: 'lineGrid', selector: '[xtype="shared.invoicepo.viewlinegrid"]' },
+		{ ref: 'forwardsGrid', selector: '[xtype="shared.invoicepo.forwardsgrid"]' },
+		{ ref: 'historyLogGrid', selector: '[xtype="shared.invoicepo.historyloggrid"]' },
+		{ ref: 'paymentGrid', selector: '[xtype="invoice.viewpayments"]' },
+		{ ref: 'warningsView', selector: '[xtype="shared.invoicepo.viewwarnings"] dataview' }
 	],
+
+	showInvoiceImage: true,
 
 	init: function() {
 		Ext.log('Invoice controller initialized');
 
-		var app = this.application;
-
 		// Setup event handlers
 		this.control({
 			// Clicking on an Invoice Register tab
-			'[xtype="invoice.register"] tabpanel': {
+			'[xtype="invoice.register"]': {
 				tabchange: function(tabPanel, newCard, oldCard, eOpts) {
 					Ext.log('Invoice.onTabChange() running');
 					
@@ -37,12 +40,21 @@ Ext.define('NP.controller.Invoice', {
 					this.addHistory('Invoice:showRegister:' + activeTab);
 				}
 			},
+			
 			// Clicking on an invoice in an Invoice Register grid
-			'[xtype="invoice.register"] tabpanel > grid': {
+			'[xtype="invoice.register"] > grid': {
 				itemclick: function(gridView, record, item, index, e, eOpts) {
 					this.addHistory( 'Invoice:showView:' + record.get('invoice_id') );
 				}
 			},
+			
+			// Clicking on cancel button on the invoice view page
+			'[xtype="invoice.viewtoolbar"] [xtype="shared.button.cancel"]': {
+				click: function() {
+					Ext.util.History.back();
+				}
+			},
+
 			// Making a change to the context picker (picking from drop-down or clicking radio button)
 			'#invoiceRegisterContextPicker': {
 				change: function(toolbar, filterType, selected) {
@@ -54,6 +66,26 @@ Ext.define('NP.controller.Invoice', {
 							this.loadRegisterGrid(activeTab);
 						}
 					}
+				}
+			},
+
+			'[xtype="invoice.view"]': {
+				destroy: this.onInvoiceViewDestroy
+			},
+
+			// Vendor combo on the invoice view page
+			'#invoiceVendorCombo': {
+				select: this.onVendorComboSelect
+			},
+
+			// Invoice image panel
+			'[xtype="viewport.imagepanel"]': {
+				expand: function() {
+					this.showInvoiceImage = true;
+					this.loadImage(true);
+				},
+				collapse: function() {
+					this.showInvoiceImage = false;
 				}
 			}
 		});
@@ -124,28 +156,23 @@ Ext.define('NP.controller.Invoice', {
 					dataloaded: function(boundForm, data) {
 						me.buildViewToolbar(data);
 
-						var vendorField   = boundForm.findField('vendor_id')
-							vendorDisplay = boundForm.down('#vendor_display'),
+						// Set the title
+						me.setInvoiceViewTitle();
+
+						var vendorField   = boundForm.findField('vendor_id'),
 							propertyField = boundForm.findField('property_id'),
 							periodField   = boundForm.findField('invoice_period'),
 							payByField    = boundForm.findField('invoicepayment_type_id');
 
 						// Set the vendor
-						vendorField.setDefaultRec(Ext.create('NP.model.vendor.Vendor', {
-														vendor_id    : data['vendor_id'],
-														vendor_id_alt: data['vendor_id_alt'],
-														vendor_name  : data['vendor_name']
-													}));
-						
-						vendorDisplay.update('<b>' + data['vendor_name'] + ' ( ' + data['vendor_id_alt'] + ' )</b>');
-						vendorDisplay.show();
+						vendorField.setDefaultRec(Ext.create('NP.model.vendor.Vendor', data));
+						vendorField.addExtraParams({
+							property_id: data['property_id']
+						});
+						me.onVendorComboSelect();
 
 						// Set the property
-						propertyField.setDefaultRec(Ext.create('NP.model.property.Property', {
-														property_id    : data['property_id'],
-														property_id_alt: data['property_id_alt'],
-														property_name  : data['property_name']
-													}));
+						propertyField.setDefaultRec(Ext.create('NP.model.property.Property', data));
 						// Add valid periods to the invoice period store
 						me.populatePeriods(data['accounting_period'], data['invoice_period']);
 
@@ -158,26 +185,60 @@ Ext.define('NP.controller.Invoice', {
 						if (payByField.getValue() === null || payByField.getValue() === 0) {
 							me.setDefaultPayBy();
 						}
+
+						// Initiate some stores that depend on an invoice_id
+						Ext.each(['WarningsView','HistoryLogGrid','ForwardsGrid'], function(viewName) {
+							var store = me['get'+viewName]().getStore();
+							store.addExtraParams({ invoice_id: invoice_id });
+							store.load();
+						});
+
+						// Load image if needed
+						me.loadImage();
 					}
 				}
 			});
 		}
 
-		me.setView('NP.view.invoice.View', viewCfg);
+		var form = me.setView('NP.view.invoice.View', viewCfg);
 
 		if (invoice_id) {
-			// Get forwards
-			var forwardStore = me.getForwardsGrid().getStore();
-			forwardStore.addExtraParams({ invoice_id: invoice_id });
-			forwardStore.load();
+			var lineView     = me.getLineView(),
+				lineStore    = me.getLineView().getStore(),
+				paymentGrid  = me.getPaymentGrid(),
+				paymentStore = paymentGrid.getStore();
 
-			// Get invoice line items
-			var lineStore = me.getLineView().getStore();
+			// Add invoice_id to the line and payment stores
 			lineStore.addExtraParams({ invoice_id: invoice_id });
-			lineStore.load();
+			paymentStore.addExtraParams({ invoice_id: invoice_id });
+
+			// Load the line store
+			lineStore.load(function() {
+				// Only load the payment store after the line store because we need the total amount
+				paymentGrid.totalAmount = lineView.getTotalAmount();
+				paymentStore.load(function() {
+					if (paymentStore.getCount()) {
+						me.getPaymentGrid().show();
+					}
+				});
+			});
 		} else {
+			// Set the title
+			me.setInvoiceViewTitle();
+
+			// Enable the vendor and property field when dealing with a new invoice
+			form.findField('vendor_id').enable();
+			form.findField('property_id').enable();
+
 			me.setDefaultPayBy();
 		}
+	},
+
+	setInvoiceViewTitle: function() {
+		var me   = this,
+			view = me.getInvoiceView();
+
+		view.setTitle('Invoice: ' + view.getModel('invoice.Invoice').getDisplayStatus());
 	},
 
 	buildViewToolbar: function(data) {
@@ -188,14 +249,88 @@ Ext.define('NP.controller.Invoice', {
 		data = data || { is_approver: false, images: [] };
 		toolbar.displayConditionData = {};
 
-		Ext.apply(toolbar.displayConditionData, {
-			invoice         : invoice,
-			is_approver     : data['is_approver'],
-			images          : data['images'],
-			has_linkable_pos: data['has_linkable_pos']
-		});
+		Ext.apply(toolbar.displayConditionData, Ext.apply(data, { invoice: invoice }));
 
 		toolbar.refresh();
+	},
+
+	loadImage: function(showImage) {
+		var me           = this,
+			data         = me.getInvoiceView().getLoadedData(),
+            user         = NP.Security.getUser(),
+            isHorizontal = user.get('userprofile_splitscreen_isHorizontal'),
+            imageOrder   = user.get('userprofile_splitscreen_ImageOrder'),
+            hideImg      = user.get('userprofile_splitscreen_LoadWithoutImage'),
+            splitSize    = user.get('userprofile_splitscreen_size'),
+            imageRegion  = 'west',
+            showImage    = showImage || false,
+            sizeProp,
+            imagePanel,
+            iframeId,
+            iframeEl;
+
+		if (data['images'].length) {
+			if (isHorizontal == 1) {
+	            imageRegion = (imageOrder == 1) ? 'north' : 'south';
+	            sizeProp = 'height';
+	        } else if (isHorizontal == 0) {
+	            imageRegion = (imageOrder == 1) ? 'east' : 'west';
+	            sizeProp = 'width';
+	        }
+	        imagePanel = Ext.ComponentQuery.query('#' + imageRegion + 'Panel')[0];
+	        
+	        iframeId = 'invoice-image-iframe-' + imageRegion;
+			iframeEl = Ext.get(iframeId);
+			if (!iframeEl) {
+				imagePanel[sizeProp] = splitSize + '%';
+
+				if (hideImg != 1 || showImage) {
+					imagePanel.update('<iframe id="' + iframeId + '" src="about:blank" height="100%" width="100%"></iframe>');
+					iframeEl = Ext.get(iframeId);
+				}
+				if (hideImg != 1 && !showImage && me.showInvoiceImage) {
+		        	imagePanel.expand(false);
+		        	showImage = true;
+		        }
+		    }
+
+		    if (showImage) {
+		    	var src = 'showImage.php?image_index_id=' + data['images'][0]['Image_Index_Id'];
+		    	if (iframeEl.dom.src != src) {
+					iframeEl.dom.src = src;
+				}
+			}
+
+			me.showInvoiceImage = showImage;
+
+			imagePanel.show();
+		}
+	},
+
+	onInvoiceViewDestroy: function() {
+		var panels = Ext.ComponentQuery.query('[xtype="viewport.imagepanel"]');
+		
+		Ext.suspendLayouts();
+		for (var i=0; i<panels.length; i++) {
+			panels[i].hide();
+		}
+		Ext.resumeLayouts(true);
+	},
+
+	onVendorComboSelect: function() {
+		var me            = this,
+			vendorDisplay = Ext.ComponentQuery.query('#vendorDisplay')[0],
+			vendorField   = Ext.ComponentQuery.query('#invoiceVendorCombo')[0],
+			vendor        = vendorField.findRecordByValue(vendorField.getValue());
+
+		vendorDisplay.update(
+			'<b>' + vendor.get('vendor_name') + 
+			' (' + vendor.get('vendor_id_alt') + ')</b>' +
+			vendor.getAddressHtml() +
+			'<div>' + vendor.getFullPhone() + '</div>'
+		);
+
+		vendorDisplay.show();
 	},
 
 	populatePeriods: function(accounting_period, invoice_period) {
@@ -206,7 +341,8 @@ Ext.define('NP.controller.Invoice', {
 			periodForward    = parseInt(NP.Config.getSetting('CP.INVOICE_POST_DATE_FORWARD', '0')),
 			currentPeriod,
 			invoicePeriod    = Ext.Date.parse(invoice_period, NP.Config.getServerDateFormat()),
-			periods          = [];
+			periods          = [],
+			periodField      = this.getCmp('invoice.view').findField('invoice_period');
 
 		if (periodBack > 0) {
 			startPeriod = Ext.Date.add(startPeriod, Ext.Date.MONTH, periodBack);

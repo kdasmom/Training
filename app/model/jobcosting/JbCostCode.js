@@ -23,14 +23,24 @@ Ext.define('NP.model.jobcosting.JbCostCode', {
 		{
 			name: 'display_name',
 			convert: function(v, rec) {
-				var val = rec.get('jbcostcode_name') + ' - ';
-				if (rec.get('jbcostcode_desc') != '') {
-					val += rec.get('jbcostcode_desc');
-				} else {
-					val += 'No Desc.';
-				}
-				return val;
+				return NP.model.jobcosting.JbCostCode.formatName(rec);
 			}
 		}
-	]
+	],
+
+	statics: {
+		formatName: function(rec) {
+			if (rec.get('jbcostcode_id') === null) {
+				return '';
+			}
+
+			var val = rec.get('jbcostcode_name') + ' - ';
+			if (rec.get('jbcostcode_desc') != '') {
+				val += rec.get('jbcostcode_desc');
+			} else {
+				val += 'No Desc.';
+			}
+			return val;
+		}
+	}
 });

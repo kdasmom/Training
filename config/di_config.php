@@ -87,9 +87,9 @@ $diDefinition = array(
 	'NP\image\ImageIndexGateway'                     => array('Adapter'),
 	'NP\image\ImageTransferGateway'                  => array('Adapter'),
 	'NP\image\ImageService'                          => array('ImageIndexGateway','ImageTransferGateway'),
-	'NP\invoice\InvoiceGateway'                      => array('Adapter','RoleGateway'),
+	'NP\invoice\InvoiceGateway'                      => array('Adapter','FiscalCalService','RoleGateway','RegionGateway'),
 	'NP\invoice\InvoiceItemGateway'                  => array('Adapter'),
-	'NP\invoice\InvoiceService'                      => array('SecurityService','FiscalCalService','BudgetService','InvoiceGateway','InvoiceItemGateway','InvoicePoForwardGateway','JbContractGateway','JbJobCodeGateway','ImageIndexGateway','PurchaseOrderGateway'),
+	'NP\invoice\InvoiceService'                      => array('SecurityService','FiscalCalService','BudgetService','InvoiceGateway','InvoiceItemGateway','InvoicePoForwardGateway','JbContractGateway','JbJobCodeGateway','ImageIndexGateway','PurchaseOrderGateway','InvoicePaymentGateway','InsuranceGateway','RecurringSchedulerGateway','WfRuleGateway'),
 	'NP\invoice\InvoiceServiceInterceptor',
 	'NP\invoice\InvoicePaymentStatusGateway'         => array('Adapter'),
 	'NP\invoice\InvoicePaymentTypeGateway'           => array('Adapter'),
@@ -139,6 +139,7 @@ $diDefinition = array(
 	'NP\system\PnCustomFieldDataGateway'             => array('Adapter'),
 	'NP\system\PnUniversalFieldGateway'              => array('Adapter'),
 	'NP\system\PropertySplitGateway'                 => array('Adapter'),
+	'NP\system\RecurringSchedulerGateway'            => array('Adapter'),
 	'NP\system\SessionService'                       => array('Config','SiteService'),
 	'NP\system\SiteService'                          => array('WinCache','configPath','reloadCache'),
 	'NP\system\SplitService'                         => array('DfSplitGateway','DfSplitItemsGateway','PropertyGateway','VendorGateway','UnitGateway','IntegrationPackageGateway','GLAccountGateway'),
@@ -174,6 +175,7 @@ $diDefinition = array(
 	'NP\vendor\VendorsiteGateway'                    => array('Adapter'),
 	'NP\vendor\VendorService'                        => array('VendorGateway','VendorsiteGateway','IntegrationPackageGateway','VendorTypeGateway','GLAccountGateway','VendorGlAccountsGateway','PropertyGateway','VendorFavoriteGateway','InsuranceTypeGateway','InsuranceGateway','LinkInsurancePropertyGateway','UnitGateway'),
 	'NP\vendor\VendorTypeGateway'                    => array('Adapter'),
+	'NP\workflow\WfRuleGateway'                      => array('Adapter','UserprofileroleGateway'),
 	'NP\workflow\WfRuleTargetGateway'                => array('Adapter'),
 );
 

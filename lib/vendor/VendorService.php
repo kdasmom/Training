@@ -45,6 +45,17 @@ class VendorService extends AbstractService {
         $res = $this->vendorGateway->find('vs.vendorsite_id = ?', array($vendorsite_id));
         return $res[0];
     }
+    
+    /**
+     * Get vendors that will show up on the vendor drop down of the invoice view page
+     *
+     * @param  int    $property_id Property selected on the invoice page
+     * @param  string $keyword     Keyword to filter list of vendors by
+     * @return array               List of vendor records
+     */
+    public function getVendorsForInvoice($property_id, $vendor_id=null, $keyword=null) {
+        return $this->vendorGateway->findVendorsForInvoice($property_id, $vendor_id, $keyword);
+    }
 
     /**
      * Retrieves vendor records for the vendor autocomplete when creating catalogs

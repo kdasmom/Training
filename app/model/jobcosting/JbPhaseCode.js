@@ -20,14 +20,24 @@ Ext.define('NP.model.jobcosting.JbPhaseCode', {
 		{
 			name: 'display_name',
 			convert: function(v, rec) {
-				var val = rec.get('jbphasecode_name') + ' - ';
-				if (rec.get('jbphasecode_desc') != '') {
-					val += rec.get('jbphasecode_desc');
-				} else {
-					val += 'No Desc.';
-				}
-				return val;
+				return NP.model.jobcosting.JbPhaseCode.formatName(rec);
 			}
 		}
-	]
+	],
+
+	statics: {
+		formatName: function(rec) {
+			if (rec.get('jbphasecode_id') === null) {
+				return '';
+			}
+
+			var val = rec.get('jbphasecode_name') + ' - ';
+			if (rec.get('jbphasecode_desc') != '') {
+				val += rec.get('jbphasecode_desc');
+			} else {
+				val += 'No Desc.';
+			}
+			return val;
+		}
+	}
 });

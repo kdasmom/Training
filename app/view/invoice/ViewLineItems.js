@@ -13,24 +13,44 @@ Ext.define('NP.view.invoice.ViewLineItems', {
     	'NP.store.invoice.InvoiceItems'
     ],
 
-    // For localization
-    title: 'Line Items',
-    
-    layout : 'card',
+    layout     : 'card',
     border     : false,
     bodyPadding: 0,
 
-    initComponent: function() {
-    	var me = this;
+    // Additional options
+    type: null,             // Needs to be set to 'invoice' or 'po'
 
-    	var storeCfg = Ext.create('NP.store.invoice.InvoiceItems', {
-    		service: 'InvoiceService',
-    		action : 'getInvoiceLines'
+    // For localization
+    title: 'Line Items',
+    
+    initComponent: function() {
+    	var me   = this,
+            capType = Ext.util.Format.capitalize(me.type);
+
+    	var storeCfg = Ext.create('NP.store.' + me.type + '.' + capType + 'Items', {
+            service  : capType + 'Service',
+            action   : 'get' + capType + 'Lines',
+            listeners: {
+                datachanged: function(store) {
+                    var form = me.up('boundform');
+
+                    // Enable the vendor and property fields if there are no line items
+                    if (store.getCount() === 0) {
+                        form.findField('vendor_id').enable();
+                        form.findField('property_id').enable();
+                    // Otherwise, if not lines, disable them
+                    } else {
+                        form.findField('vendor_id').disable();
+                        form.findField('property_id').disable();
+                    }
+                }
+            }
     	});
     	
+        me.defaults = { type: me.type, store: storeCfg };
     	me.items = [
-    		{ xtype: 'shared.invoicepo.viewlines', type: 'invoice', store: storeCfg },
-    		{ xtype: 'shared.invoicepo.viewlinegrid', type: 'invoice', store: storeCfg }
+    		{ xtype: 'shared.invoicepo.viewlines' },
+    		{ xtype: 'shared.invoicepo.viewlinegrid' }
     	];
 
     	this.callParent(arguments);

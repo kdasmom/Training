@@ -97,21 +97,55 @@ abstract class AbstractEntitySelect extends Select {
 		$alias = '__a';
 
 		return $this->column(
-			new Expression('DateDiff(day, (' . 
-								Select::get()->column('approve_datetm')
-											->from(array($alias=>'approve'))
-											->whereEquals("{$alias}.tablekey_id", "{$this->tableAlias}.{$this->tableName}_id")
-											->whereEquals("{$alias}.table_name", "'{$this->tableName}'")
-											->whereEquals("{$alias}.approve_status", "'active'")
-											->whereEquals(
-												"{$alias}.approvetype_id",
-												$this->getApproveTypeSubSelect('submitted')
-											)
-											->limit(1)
-											->order("{$alias}.approve_datetm ASC")
-											->toString() .
-							'), getDate())'),
+			Select::get()->column(new Expression("DateDiff(day,{$alias}.approve_datetm,getDate())"))
+						->from(array($alias=>'approve'))
+						->whereEquals("{$alias}.tablekey_id", "{$this->tableAlias}.{$this->tableName}_id")
+						->whereEquals("{$alias}.table_name", "'{$this->tableName}'")
+						->whereEquals(
+							"{$alias}.approvetype_id",
+							$this->getApproveTypeSubSelect('submitted')
+						)
+						->limit(1)
+						->order("{$alias}.approve_id DESC"),
 			'pending_approval_days'
+		);
+	}
+
+	/**
+	 * 
+	 */
+	public function columnPendingApprovalFor() {
+		$alias = '__a';
+
+		return $this->column(
+			Select::get()->column(new Expression("
+								CASE 
+									WHEN forwardto_tablename = 'role' THEN (
+										SELECT role_name FROM ROLE WHERE role_id = forwardto_tablekeyid
+									) 
+									ELSE (
+										SELECT DISTINCT p.person_firstname + ' ' + p.person_lastname
+										FROM USERPROFILE u
+											INNER JOIN USERPROFILEROLE ur ON u.userprofile_id = ur.userprofile_id 
+											INNER JOIN ROLE r ON ur.role_id = r.role_id
+											INNER JOIN STAFF s ON ur.tablekey_id = s.staff_id
+											INNER JOIN PERSON p ON s.person_id = p.person_id
+										WHERE r.table_name = 'staff'
+											AND ur.userprofilerole_id = forwardto_tablekeyid
+									)
+								END
+						"))
+						->from(array($alias=>'approve'))
+						->whereEquals("{$alias}.tablekey_id", "{$this->tableAlias}.{$this->tableName}_id")
+						->whereEquals("{$alias}.table_name", "'{$this->tableName}'")
+						->whereEquals("{$alias}.approve_status", "'active'")
+						->whereEquals(
+							"{$alias}.approvetype_id",
+							$this->getApproveTypeSubSelect('submitted')
+						)
+						->limit(1)
+						->order("{$alias}.approve_id DESC"),
+			'pending_approval_for'
 		);
 	}
 
@@ -200,7 +234,7 @@ abstract class AbstractEntitySelect extends Select {
 	}
 
 	protected function getApproveSelect($alias, $approvetype_name) {
-		if (strpos($approvetype_name, '%')) {
+		if (strpos($approvetype_name, '%') !== false) {
 			$whereFn = 'whereIn';
 		} else {
 			$whereFn = 'whereEquals';
@@ -218,7 +252,7 @@ abstract class AbstractEntitySelect extends Select {
 	}
 
 	public function getApproveTypeSubSelect($approvetype_name) {
-		if (strpos($approvetype_name, '%')) {
+		if (strpos($approvetype_name, '%') !== false) {
 			$whereFn = 'whereLike';
 		} else {
 			$whereFn = 'whereEquals';
@@ -226,7 +260,6 @@ abstract class AbstractEntitySelect extends Select {
 
 		return Select::get()->from('approvetype')
 							->column('approvetype_id')
-							->$whereFn('approvetype_name', "'{$approvetype_name}'")
-							->limit(1);
+							->$whereFn('approvetype_name', "'{$approvetype_name}'");
 	}
 }

@@ -12,7 +12,7 @@ use NP\core\db\Select;
  */
 class InvoiceItemPropertyJoin extends Join {
 	
-	public function __construct($cols=array('property_name,property_id_alt,property_status'), $type=Select::JOIN_INNER, $toAlias='pr', $fromAlias='ii') {
+	public function __construct($cols=array('property_name','property_id_alt','property_status'), $type=Select::JOIN_INNER, $toAlias='pr', $fromAlias='ii') {
 		$this->setTable(array($toAlias=>'property'))
 			->setCondition("{$fromAlias}.property_id = {$toAlias}.property_id")
 			->setCols($cols)

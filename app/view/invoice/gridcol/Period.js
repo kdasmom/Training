@@ -8,5 +8,6 @@ Ext.define('NP.view.invoice.gridcol.Period', {
 	alias: 'widget.invoice.gridcol.period',
 
 	text     : 'Post Date',
-	dataIndex: 'invoice_period'
+	dataIndex: 'invoice_period',
+	format   : 'm/Y'
 });

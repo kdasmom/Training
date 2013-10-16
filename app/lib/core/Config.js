@@ -304,6 +304,7 @@ Ext.define('NP.lib.core.Config', function() {
 		 */
 		saveUserSetting: function(name, value, callback) {
 			return NP.lib.core.Net.remoteCall({
+				method  : 'POST',
 	            requests: {
 	                service: 'UserService', 
 	                action: 'saveSetting',

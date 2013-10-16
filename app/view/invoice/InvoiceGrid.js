@@ -10,11 +10,13 @@ Ext.define('NP.view.invoice.InvoiceGrid', function() {
 					'vendor.gridcol.VendorCode','invoice.gridcol.Date','invoice.gridcol.CreatedDate',
 					'shared.gridcol.CreatedBy','shared.gridcol.RejectedDate','shared.gridcol.RejectedBy',
 					'shared.gridcol.RejectedReason','invoice.gridcol.Period','invoice.gridcol.DueDate',
-					'invoice.gridcol.NeededByDate','invoice.gridcol.Number','shared.gridcol.Amount',
-					'invoice.gridcol.PendingDays','invoice.gridcol.Status','shared.gridcol.PriorityFlag',
-					'invoice.gridcol.RemittanceAdvice','invoice.gridcol.Notes','invoice.gridcol.BudgetNotes',
-					'shared.gridcol.LastApprovedDate','shared.gridcol.LastApprovedBy','invoice.gridcol.HoldDate',
-					'invoice.gridcol.DaysOnHold','invoice.gridcol.OnHoldBy'];
+					'invoice.gridcol.NeededByDate','invoice.gridcol.Number','invoice.gridcol.TemplateName','shared.gridcol.Amount',
+					'invoice.gridcol.PendingDays','shared.gridcol.PendingApprovalDays','shared.gridcol.PendingApprovalFor',
+					'invoice.gridcol.Status','shared.gridcol.PriorityFlag','invoice.gridcol.RemittanceAdvice',
+					'invoice.gridcol.Notes','invoice.gridcol.BudgetNotes','shared.gridcol.LastApprovedDate',
+					'shared.gridcol.LastApprovedBy','invoice.gridcol.HoldDate','invoice.gridcol.DaysOnHold',
+					'invoice.gridcol.OnHoldBy','invoice.gridcol.VoidDate','invoice.gridcol.VoidBy',
+					'invoice.gridcol.PaymentDetails','invoice.gridcol.PaymentAmountRemaining'];
 
 	var requires = ['NP.lib.core.Util','NP.lib.core.Config'];
 	
@@ -29,6 +31,8 @@ Ext.define('NP.view.invoice.InvoiceGrid', function() {
 	 	alias : 'widget.invoice.invoicegrid',
 
 	    requires: requires,
+
+	    emptyText: 'No invoices found.',
 	    
 	    /**
 	     * @cfg {Array} cols         Columns that you want to display on the grid by default

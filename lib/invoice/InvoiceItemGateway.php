@@ -24,9 +24,11 @@ class InvoiceItemGateway extends AbstractGateway {
 	public function findInvoiceLines($invoice_id) {
 		$select = new sql\InvoiceItemSelect();
 
-		$select->column(new Expression('*'))
+		$select->allColumns('ii')
 				->columnBudgetVariance($this->configService->get('PN.Intl.budgetCompareWithTax', '1'))
 				->join(new sql\join\InvoiceItemInvoiceJoin())
+				->join(new sql\join\InvoiceItemPoItemJoin())
+				->join(new \NP\po\sql\join\PoItemPurchaseorderJoin(['purchaseorder_ref'], Select::JOIN_LEFT))
 				->join(new sql\join\InvoiceItemPropertyJoin())
 				->join(new sql\join\InvoiceItemGlAccountJoin())
 				->join(new sql\join\InvoiceItemUnitJoin())

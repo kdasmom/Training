@@ -17,6 +17,11 @@ Ext.define('NP.model.invoice.InvoiceItem', {
 		'NP.model.system.DfSplit',
 		'NP.model.jobcosting.JbJobAssociation',
 		'NP.model.jobcosting.JbContractBudget'
+		/*'NP.model.jobcosting.JbContract',
+		'NP.model.jobcosting.JbChangeOrder',
+		'NP.model.jobcosting.JbJobCode',
+		'NP.model.jobcosting.JbCostCode',
+		'NP.model.jobcosting.JbPhaseCode'*/
 	],
 
 	idProperty: 'invoiceitem_id',
@@ -69,7 +74,71 @@ Ext.define('NP.model.invoice.InvoiceItem', {
 		{ name: 'jbcontractbudget_amt_actual', type: 'float', useNull: false },
 		{ name: 'jbcontractbudget_amt_pnactual', type: 'float', useNull: false },
 		{ name: 'budget_amount', type: 'float', useNull: false },
-		{ name: 'budget_variance', type: 'float', useNull: false }
+		{ name: 'budget_variance', type: 'float', useNull: false },
+		{ name: 'purchaseorder_id' },
+		{ name: 'purchaseorder_ref' },
+		{ name: 'poitem_amount', type: 'float', useNull: false }
+
+		// TODO: determine if this is needed for optimization */
+		/*{ name: 'property_id', type: 'int' },
+		{ name: 'property_id_alt' },
+		{ name: 'property_name' },
+
+		{ name: 'glaccount_id', type: 'int' },
+		{ name: 'glaccount_number' },
+		{ name: 'glaccount_name' },
+
+		{ name: 'unit_id', type: 'int' },
+		{ name: 'unit_id_alt' },
+		{ name: 'unit_number' },
+
+		{ name: 'jbcontractbudget_id', type: 'int' },
+		{ name: 'jbcontractbudget_amt', type: 'float', useNull: false },
+		{ name: 'jbcontractbudget_amt_actual', type: 'float', useNull: false },
+		{ name: 'jbcontractbudget_amt_pnactual', type: 'float', useNull: false },
+
+		{ name: 'budget_amount', type: 'float', useNull: false },
+		{ name: 'budget_variance', type: 'float', useNull: false },
+
+		{ name: 'purchaseorder_id' },
+		{ name: 'purchaseorder_ref' },
+		{ name: 'poitem_amount', type: 'float', useNull: false },
+
+		{ name: 'UtilityColumn_UsageType_Name' },
+
+		{ name: 'UtilityAccount_AccountNumber' },
+		{ name: 'UtilityAccount_MeterSize' },
+
+		{ name: 'unittype_material_name' },
+
+		{ name: 'dfsplit_name' },
+
+		{ name: 'jbcontract_id', type: 'int' },
+		{ name: 'jbcontract_name' },
+		{ name: 'jbcontract_desc' },
+		{ name: 'jbcontract_display', convert: function(v, rec) { NP.model.jobcosting.JbContract.formatName(rec); }},
+
+		{ name: 'jbchangeorder_id', type: 'int' },
+		{ name: 'jbchangeorder_name' },
+		{ name: 'jbchangeorder_desc' },
+		{ name: 'jbchangeorder_display', convert: function(v, rec) { NP.model.jobcosting.JbChangeOrder.formatName(rec); }},
+
+		{ name: 'jbjobcode_id', type: 'int' },
+		{ name: 'jbjobcode_name' },
+		{ name: 'jbjobcode_desc' },
+		{ name: 'jbjobcode_display', convert: function(v, rec) { NP.model.jobcosting.JbJobCode.formatName(rec); }},
+
+		{ name: 'jbcostcode_id', type: 'int' },
+		{ name: 'jbcostcode_name' },
+		{ name: 'jbcostcode_desc' },
+		{ name: 'jbcostcode_display', convert: function(v, rec) { NP.model.jobcosting.JbCostCode.formatName(rec); }},
+
+		{ name: 'jbphasecode_id', type: 'int' },
+		{ name: 'jbphasecode_name' },
+		{ name: 'jbphasecode_desc' },
+		{ name: 'jbphasecode_display', convert: function(v, rec) { NP.model.jobcosting.JbPhaseCode.formatName(rec); }},
+
+		{ name: 'jbassociation_retamt', type: 'float', useNull: false }*/
 	],
 
     belongsTo: [

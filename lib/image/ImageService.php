@@ -91,6 +91,23 @@ class ImageService extends AbstractService {
 		return $this->imageIndexGateway->findImagesToIndex($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
 	}
 
+	/**
+	 * Get images for an invoice (all or primary only)
+	 */
+	public function getInvoiceImages($invoice_id, $mainOnly=false) {
+		return $this->imageIndexGateway->findEntityImages($invoice_id, 'Invoice', $mainOnly);
+	}
+
+	/**
+	 * Get the absolute path to a specific image file
+	 *
+	 * @param  int    $image_index_id
+	 * @return string
+	 */
+	public function getImagePath($image_index_id) {
+		return $this->imageIndexGateway->findImagePath($image_index_id);
+	}
+
 }
 
 ?>

@@ -4,7 +4,7 @@
  * @author Thomas Messier
  */
 Ext.define('NP.view.invoice.Register', {
-	extend: 'Ext.panel.Panel',
+	extend: 'Ext.tab.Panel',
     alias: 'widget.invoice.register',
     
     requires: [
@@ -14,12 +14,7 @@ Ext.define('NP.view.invoice.Register', {
     	'NP.store.invoice.Invoices'
     ],
     
-    layout: {
-        type: 'vbox',
-        align: 'stretch'
-   	},
-    
-   	defaults: {
+    defaults: {
    		border: false
    	},
 
@@ -33,36 +28,27 @@ Ext.define('NP.view.invoice.Register', {
     initComponent: function() {
     	this.title = this.titleText;
 
-    	this.items = [
-	    	{
-	    		dockedItems: [{
-					xtype: 'toolbar',
-					dock: 'top',
-					layout: 'hbox',
-					items: [
-						{ xtype: 'button', text: this.getPOBtnText }
-				    	,{ xtype: 'button', text: this.newInvoiceBtnText }
-				    	,{ xtype: 'button', text: this.reportsBtnText }
-				    	,{ xtype: 'button', text: this.searchBtnText }
-				    	,{ xtype: 'button', text: this.receiptRegisterBtnText }
-				    	,{ xtype: 'tbspacer', flex: 1 }
-				    	,{ xtype: 'shared.contextpicker', itemId: 'invoiceRegisterContextPicker' }
-					]
-				}]
-	    	},
-	    	{
-	    		xtype: 'tabpanel',
-	    		
-	    		flex: 1,
-	    		
-	    		defaults :{
-			        autoScroll: true,
-			        border: false
-			    },
-			    
-			    items: this.getGridConfigs()
-	    	}
-	    ];
+    	this.dockedItems = [{
+			xtype: 'toolbar',
+			dock: 'top',
+			layout: 'hbox',
+			items: [
+				{ xtype: 'button', text: this.getPOBtnText },
+		    	{ xtype: 'button', text: this.newInvoiceBtnText },
+		    	{ xtype: 'button', text: this.reportsBtnText },
+		    	{ xtype: 'button', text: this.searchBtnText },
+		    	{ xtype: 'button', text: this.receiptRegisterBtnText },
+		    	{ xtype: 'tbspacer', flex: 1 },
+		    	{ xtype: 'shared.contextpicker', itemId: 'invoiceRegisterContextPicker' }
+			]
+		}];
+
+		this.defaults = {
+			autoScroll: true,
+			border    : false
+	    };
+
+	    this.items = this.getGridConfigs();
 
 	    this.callParent(arguments);
     },
@@ -74,88 +60,129 @@ Ext.define('NP.view.invoice.Register', {
 			openCols      = baseCols.slice(0),
 			rejectedCols,
 			overdueCols   = baseCols.slice(0),
-			templateCols,
-			onHoldCols,
+			grids         = [],
+			excludedCols  = ['shared.gridcol.RejectedDate','shared.gridcol.RejectedBy',
+							'shared.gridcol.RejectedReason','shared.gridcol.LastApprovedDate',
+							'shared.gridcol.LastApprovedBy','invoice.gridcol.HoldDate',
+							'invoice.gridcol.DaysOnHold','invoice.gridcol.OnHoldBy',
+							'invoice.gridcol.TemplateName','shared.gridcol.PendingApprovalDays',
+							'shared.gridcol.PendingApprovalFor','invoice.gridcol.VoidDate',
+							'invoice.gridcol.VoidBy','invoice.gridcol.PaymentDetails',
+							'invoice.gridcol.PaymentAmountRemaining'],
+			templateCols  = baseCols.slice(0),
+			onHoldCols    = baseCols.slice(0),
 			pendingCols,
-			approvedCols,
+			approvedCols  = baseCols.slice(0),
 			submittedCols,
 			transferredCols,
-			paidCols,
-			voidCols,
-			grids         = [];
+			paidCols      = baseCols.slice(0),
+			voidCols      = baseCols.slice(0);
 
+		// Setup columns for Open grid
 		openCols.push('invoice.gridcol.Date','invoice.gridcol.CreatedDate','invoice.gridcol.DueDate');
+		
+		// Setup columns for Rejected grid
 		rejectedCols = openCols.slice(0);
-		rejectedCols.push('shared.gridcol.CreatedBy','shared.gridcol.RejectedDate','shared.gridcol.RejectedBy')
-		overdueCols.push('invoice.gridcol.Date','invoice.gridcol.DueDate');
+		rejectedCols.push('shared.gridcol.CreatedBy','shared.gridcol.RejectedDate','shared.gridcol.RejectedBy');
+		
+		// Setup columns for Overdue grid
+		overdueCols.push('invoice.gridcol.Date','invoice.gridcol.DueDate','invoice.gridcol.Status');
 
-		templateCols    = openCols.slice(0);
-		onHoldCols      = openCols.slice(0);
+		// Setup columns for Template grid
+		templateCols.push('invoice.gridcol.TemplateName','invoice.gridcol.CreatedDate','invoice.gridcol.DueDate','shared.gridcol.CreatedBy');
+
+		// Setup columns for On Hold grid
+		onHoldCols.push('invoice.gridcol.DueDate','invoice.gridcol.HoldDate','invoice.gridcol.DaysOnHold','invoice.gridcol.OnHoldBy');
+
+		// Setup columns for Pending grid
 		pendingCols     = openCols.slice(0);
-		approvedCols    = openCols.slice(0);
-		approvedCols.push('shared.gridcol.LastApprovedDate','shared.gridcol.LastApprovedBy');
-		submittedCols   = openCols.slice(0);
-		approvedCols.push('shared.gridcol.LastApprovedDate','shared.gridcol.LastApprovedBy');
-		transferredCols = openCols.slice(0);
-		approvedCols.push('shared.gridcol.LastApprovedDate','shared.gridcol.LastApprovedBy');
-		paidCols        = openCols.slice(0);
-		approvedCols.push('shared.gridcol.LastApprovedDate','shared.gridcol.LastApprovedBy');
-		voidCols        = openCols.slice(0);
+		pendingCols.push('shared.gridcol.PendingApprovalDays','shared.gridcol.PendingApprovalFor');
+
+		// Setup columns for Approved grid
+		approvedCols.push('invoice.gridcol.Date','invoice.gridcol.DueDate','invoice.gridcol.Period','shared.gridcol.PriorityFlag');
+
+		// Setup columns for Submitted for Payment grid
+		submittedCols = approvedCols.slice(0);
+
+		// Setup columns for Transferred to GL grid
+		transferredCols = approvedCols.slice(0);
+		transferredCols.push('invoice.gridcol.Status');
+
+		// Setup columns for Paid grid
+		paidCols.push('invoice.gridcol.Date','invoice.gridcol.PaymentDetails','invoice.gridcol.PaymentAmountRemaining');
+
+		// Setup columns for Void grid
+		voidCols.push('invoice.gridcol.Date','invoice.gridcol.VoidDate','invoice.gridcol.VoidBy');
 
 		grids.push(
 			{
-				title: 'Open',
-				cols : openCols
+				title       : 'Open',
+				cols        : openCols,
+				excludedCols: excludedCols
 			},{
 				title: 'Rejected',
 				cols : rejectedCols
 			},{
 				title: 'Overdue',
-				cols : overdueCols
+				cols : overdueCols,
+				excludedCols: excludedCols
 			},{
 				title: 'Template',
-				cols : templateCols
+				cols : templateCols,
+				excludedCols: excludedCols
 			},{
 				tab  : 'OnHold',
 				title: 'On Hold',
-				cols : onHoldCols
+				cols : onHoldCols,
+				excludedCols: excludedCols
 			},{
 				title: 'Pending',
-				cols : pendingCols
+				cols : pendingCols,
+				excludedCols: excludedCols
 			},{
 				title: 'Approved',
-				cols : approvedCols
+				cols : approvedCols,
+				excludedCols: ['shared.gridcol.RejectedDate','shared.gridcol.RejectedBy',
+							'shared.gridcol.RejectedReason','invoice.gridcol.HoldDate',
+							'invoice.gridcol.DaysOnHold','invoice.gridcol.OnHoldBy',
+							'invoice.gridcol.TemplateName','shared.gridcol.PendingApprovalDays',
+							'shared.gridcol.PendingApprovalFor','invoice.gridcol.VoidDate',
+							'invoice.gridcol.VoidBy']
 			},{
 				tab  : 'Submitted',
 				title: 'Submitted for Payment',
-				cols : submittedCols
+				cols : submittedCols,
+				excludedCols: excludedCols
 			},{
 				tab  : 'Transferred',
 				title: 'Transferred to GL',
-				cols : transferredCols
+				cols : transferredCols,
+				excludedCols: excludedCols
 			},{
 				title: 'Paid',
-				cols : paidCols
+				cols : paidCols,
+				excludedCols: excludedCols
 			},{
 				title: 'Void',
-				cols : voidCols
+				cols : voidCols,
+				excludedCols: excludedCols
 			}
 		);
-
 
     	// Loop throw grid names to create the configs
     	Ext.each(grids, function(grid) {
     		var tab = grid.tab || grid.title;
     		// Add config to the main array
     		gridConfigs.push({
-				xtype   : 'invoice.invoicegrid',
-				itemId  : 'invoice_grid_' + tab.toLowerCase(),
-				title   : grid.title,
-				cols    : grid.cols,
-				stateful: true,
-				stateId : 'invoice_register_' + tab,
-				paging  : true,
-				store   : Ext.create('NP.store.invoice.Invoices', {
+				xtype       : 'invoice.invoicegrid',
+				itemId      : 'invoice_grid_' + tab.toLowerCase(),
+				title       : grid.title,
+				cols        : grid.cols,
+				excludedCols: grid.excludedCols,
+				stateful    : true,
+				stateId     : 'invoice_register_' + tab,
+				paging      : true,
+				store       : Ext.create('NP.store.invoice.Invoices', {
 					service    : 'InvoiceService',
 					action     : 'getInvoiceRegister',
 			        paging     : true,
