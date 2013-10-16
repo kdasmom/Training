@@ -98,15 +98,15 @@ class GLService extends AbstractService {
      */
     public function getGLAccount($id) {
         $res = $this->glAccountGateway->findById($id);
-        $res['glaccount_vendors'] = $this->vendorGlAccountsGateway->find(
+        $res['vendors'] = $this->vendorGlAccountsGateway->find(
                                             array('vg.glaccount_id'=>'?'),
                                             array($id),
                                             'v.vendor_name',
                                             array('vendor_id')
                                         );
-        $res['glaccount_vendors'] = \NP\util\Util::valueList($res['glaccount_vendors'], 'vendor_id');
+        $res['vendors'] = \NP\util\Util::valueList($res['vendors'], 'vendor_id');
         
-//        if ($this->configService->get('CP.PROPERTYGLACCOUNT_USE', 0) && $this->securityService->hasPermission(12)) {
+        if ($this->configService->get('CP.PROPERTYGLACCOUNT_USE', 0) && $this->securityService->hasPermission(12)) {
             $res['properties'] = $this->propertyGlAccountGateway->find(
                                                                                     array('pg.glaccount_id'=>'?'),
                                                                                     array($id),
@@ -114,7 +114,7 @@ class GLService extends AbstractService {
                                                                                     array('property_id')
                                                                             );
             $res['properties'] = \NP\util\Util::valueList($res['properties'], 'property_id');
-//        }
+        }
         return $res;
     }
     
@@ -279,10 +279,10 @@ class GLService extends AbstractService {
         }
         // If no errors, save vendors
         if (!count($errors)) {
-                $success = $this->saveVendorAssignment($result['glaccount_id'], $data['glaccount_vendors']);
+                $success = $this->saveVendorAssignment($result['glaccount_id'], $data['vendors']);
                 if (!$success) {
                         $errors[] = array(
-                                        'field' => 'glaccount_vendors',
+                                        'field' => 'vendors',
                                         'msg'   => $this->localizationService->getMessage('vendorAssignmentError')
                                 );
                 }

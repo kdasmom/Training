@@ -113,23 +113,20 @@ Ext.define('NP.view.gl.GLAccountsForm', {
            // Vendor Assignment
            {
                 xtype     : 'shared.vendorassigner',
-                name      : 'glaccount_vendors',
-                displayField : 'glaccount_name',
+                name      : 'vendors',
                 store     : vendorStore, 
                 autoScroll: true,
-                margin    : 8,
                 height    : 200
             }
         ];
         // Property Assignment
-        if (NP.Config.getSetting('CP.PROPERTYGLACCOUNT_USE', 0) == 0 && NP.Security.hasPermission(12)) {
+        if (NP.Config.getSetting('CP.PROPERTYGLACCOUNT_USE', 0) == 1 && NP.Security.hasPermission(12)) {
              this.items.push(
                      { 
                         xtype     : 'shared.propertyassigner', 
                         name      : 'properties',
                         store     : propertyStore,  
                         autoScroll: true,
-                        margin    : 8,
                         height    : 200
                     });       
          }       

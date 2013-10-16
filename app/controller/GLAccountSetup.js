@@ -163,7 +163,6 @@ Ext.define('NP.controller.GLAccountSetup', {
             Ext.each(items, function(item) {
                     glaccount_id_list.push(item.get('glaccount_id'));
             });
-            console.log(glaccount_id_list);
             if (action === 'edit') {
                 this.addHistory('GLAccountSetup:showGLAccountSetup:GLAccounts:Form:' + glaccount_id_list[0]);
             } else {
@@ -201,7 +200,6 @@ Ext.define('NP.controller.GLAccountSetup', {
 	},
                 
         showGLAccountsForm: function(glaccount_id) {
-
             var viewCfg = { bind: { models: ['gl.GlAccount'] }};
             if (glaccount_id) {
                 if (arguments.length) {
@@ -211,12 +209,12 @@ Ext.define('NP.controller.GLAccountSetup', {
                         extraParams: {
                             id: glaccount_id
                         },
-                        extraFields: ['glaccount_vendors', 'properties', 'glaccount_category']
+                        extraFields: ['vendors', 'properties', 'glaccount_category']
                     });
                 }
            }
 
-            var form = this.setView('NP.view.gl.GLAccountsForm', viewCfg, '[xtype="gl.glaccounts"]');
+            var form = this.setView('NP.view.gl.GLAccountsForm', viewCfg, '[xtype="gl.glaccounts"]'); 
         },
 
         /**
@@ -235,8 +233,8 @@ Ext.define('NP.controller.GLAccountSetup', {
                         glaccount_category: form.findField('glaccount_category').getValue(),
                     },
                     extraFields: {
-                        glaccount_vendors           : 'glaccount_vendors',
-                        properties                  : 'properties'
+                        vendors    : 'vendors',
+                        properties : 'properties'
                     },
                     success: function(result, deferred) {
                         NP.Util.showFadingWindow({ html: that.changesSavedText });

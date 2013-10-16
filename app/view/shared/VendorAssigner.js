@@ -22,9 +22,6 @@ Ext.define('NP.view.shared.VendorAssigner', {
             this.store = Ext.create('NP.store.vendor.Vendors', {
 					service           : 'VendorService',
 					action            : 'getAll',
-                                        extraParams : {
-                                            vendor_status     : 'active'
-                                         },
 					autoLoad          : true
 			    });
         }
