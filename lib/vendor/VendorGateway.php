@@ -132,10 +132,6 @@ class VendorGateway extends AbstractGateway {
 		$status = strtolower($status);
 		$where = ['v.vendor_status' => '?', 'i.asp_client_id' => '?'];
 		$params = [$status, $aspClientId];
-		if ($status == 'rejected') {
-			$where['v.vendor_reject_dt >'] = '?';
-			$params[] = 'DateAdd(d, -30, GetDate())';
-		}
 		$selectvendor->columns(['vendor_id', 'vendor_name', 'vendor_status'])
 		  			->columnsPersonName()
 					->columnSentForApprovalDate()
@@ -146,7 +142,9 @@ class VendorGateway extends AbstractGateway {
 					->limit($pageSize)
 					->offset($pageSize * ($page - 1));
 		if ($status == 'rejected') {
-			$selectvendor->join(new sql\join\VendorRejectedJoin());
+			$selectvendor->join(new sql\join\VendorRejectedJoin())
+									->whereGreaterThan('v.vendor_reject_dt', '?');
+			$params[] = 'DateAdd(d, -30, GetDate())';
 		}
 
 		return $this->adapter->query($selectvendor, $params);
@@ -346,6 +344,49 @@ class VendorGateway extends AbstractGateway {
 		}
 	}
 
+	/**
+	 * Retrieve vendors list by vendor_name
+	 *
+	 * @param $keyword
+	 * @return array|bool
+	 */
+	public function findByKeyword($keyword, $order = 'vendor_name', $category, $status, $asp_client_id, $integration_package_id ) {
+		$select = new Select();
+
+		$status = !$status ? "'active', 'inactive'" : $status;
+		if ($category == 'all') {
+			$select->from(['v' => 'vendor'])
+						->distinct()
+						->join(['vs' => 'vendorsite'], 'vs.vendor_id = v.vendor_id', ['vendorsite_id'])
+						->join(['a' => 'address'], 'a.tablekey_id = vs.vendorsite_id', ['address_line1', 'address_line2', 'address_city', 'address_state', 'address_zip', 'address_zipext'])
+						->join(['i' => 'integrationpackage'], 'i.integration_package_id = v.integration_package_id', [])
+						->whereEquals('a.table_name', "'vendorsite'")
+						->whereNest('OR')
+						->whereLike('v.vendor_name', '?')
+						->whereLike('v.vendor_id_alt', '?')
+						->whereLike('v.vendor_name', '?')
+						->whereLike('v.vendor_id_alt', '?')
+						->whereLike('a.address_line1', '?')
+						->whereLike('a.address_line2', '?')
+						->whereUnNest()
+						->whereEquals('i.asp_client_id', $asp_client_id)
+						->whereIn('v.integration_package_id', $integration_package_id)
+						->whereIn('v.vendor_status', $status)
+						->order($order);
+		}
+
+		if (intval($category) == 1) {
+
+		}
+		if ($category == 'favorites') {
+
+		}
+		if ($category == 'top20') {
+
+		}
+
+		return $this->adapter->query($select, [$keyword . '%', $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%']);
+	}
 }
 
 ?>

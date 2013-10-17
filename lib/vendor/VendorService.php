@@ -15,6 +15,7 @@ use NP\contact\PhoneGateway;
 use NP\core\AbstractService;
 use NP\core\validation\EntityValidator;
 use NP\system\ConfigService;
+use NP\system\IntegrationPackageGateway;
 use NP\user\UserprofileGateway;
 use NP\util\Util;
 
@@ -32,7 +33,7 @@ define("VENDORSITE_FAVORITE_YES", 'Y');
  */
 class VendorService extends AbstractService {
 	
-	protected $vendorGateway, $insuranceGateway, $configService, $userprofileGateway, $vendorsiteGateway, $phoneGateway, $addressGateway, $personGateway, $contactGateway, $emailGateway;
+	protected $vendorGateway, $insuranceGateway, $configService, $userprofileGateway, $vendorsiteGateway, $phoneGateway, $addressGateway, $personGateway, $contactGateway, $emailGateway, $integrationPackageGateway;
 	
 	public function __construct(VendorGateway $vendorGateway,
 														InsuranceGateway $insuranceGateway,
@@ -43,7 +44,8 @@ class VendorService extends AbstractService {
 														AddressGateway $addressGateway,
 														PersonGateway $personGateway,
 														ContactGateway $contactGateway,
-														EmailGateway $emailGateway) {
+														EmailGateway $emailGateway,
+														IntegrationPackageGateway $integrationPackageGateway) {
 		$this->vendorGateway    = $vendorGateway;
 		$this->insuranceGateway = $insuranceGateway;
 		$this->configService = $configService;
@@ -54,6 +56,7 @@ class VendorService extends AbstractService {
 		$this->personGateway = $personGateway;
 		$this->contactGateway = $contactGateway;
 		$this->emailGateway = $emailGateway;
+		$this->integrationPackageGateway = $integrationPackageGateway;
 	}
 	
 	/**
@@ -681,6 +684,7 @@ class VendorService extends AbstractService {
 	 */
 	protected function saveInsurance($data, $vendor_id) {
 		$insurance = new InsuranceEntity($data['insurance']);
+
 		$insurance->insurance_expdatetm = Util::formatDateForDB(new \DateTime($insurance->insurance_expdatetm));
 		$insurance->insurance_policy_effective_datetm = Util::formatDateForDB(new \DateTime($insurance->insurance_policy_effective_datetm));
 
@@ -724,6 +728,22 @@ class VendorService extends AbstractService {
 		$vendor = $this->vendorGateway->findById($vendor_id);
 
 		return $vendor;
+	}
+
+	/**
+	 * find by keyword
+	 *
+	 * @param null $keyword
+	 * @return array|bool
+	 */
+	public function findByKeyword($userprofile_id, $keyword = null, $sort = 'vendor_name', $category_id = 'all', $status = null) {
+		if (!$keyword) {
+			return [];
+		}
+		$asp_client_id = $this->configService->getClientId();
+		$integration_package_id = $this->integrationPackageGateway->findByAspClientIdAndUserprofileId($asp_client_id, $userprofile_id);
+
+		return $this->vendorGateway->findByKeyword($keyword, $sort, $category_id, $status, $asp_client_id, $integration_package_id['integration_package_id']);
 	}
 }
 

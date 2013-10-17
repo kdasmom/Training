@@ -7,9 +7,8 @@ Ext.define('NP.view.vendor.VendorSearch', {
     alias: 'widget.vendor.vendorsearch',
     requires: [
         'NP.lib.core.Security',
-        'NP.view.vendor.VendorGrid',
-        'NP.store.vendor.Vendors',
         'NP.view.shared.button.Search',
+        'NP.lib.ui.Grid',
         'NP.view.shared.SearchByAlphabetButtons'
     ],
 
@@ -31,7 +30,7 @@ Ext.define('NP.view.vendor.VendorSearch', {
      * Init
      */
     initComponent: function(){
-
+        var that = this;
         this.title = this.titleText;
 
         this.items = [
@@ -60,12 +59,15 @@ Ext.define('NP.view.vendor.VendorSearch', {
                                 items: [
                                     {
                                         xtype: 'textfield',
-                                        name: 'searchname',
+                                        name: 'keyword',
                                         fieldLabel: this.searchInputLabel,
                                         margin: '0 5 0 0'
                                     },
                                     {
-                                        xtype: 'shared.button.search'
+                                        xtype: 'shared.button.search',
+                                        handler: function() {
+                                            Ext.bind(that.vendorSearchByKeyword(), that, []);
+                                        }
                                     }
                                 ]
                             },
@@ -76,9 +78,44 @@ Ext.define('NP.view.vendor.VendorSearch', {
                                 xtype: 'customgrid',
                                 title: this.searchResultsTitle,
                                 width: '100%',
+                                paging  : true,
+                                stateful: true,
+                                store: Ext.create('NP.store.vendor.Vendors', {
+                                    service           : 'VendorService',
+                                    action            : 'findByKeyword',
+                                    paging            : true,
+                                    extraParams: {
+                                        keyword: null,
+                                        order       : 'vendor_name',
+                                        property_id: NP.Security.getCurrentContext().property_id,
+                                        userprofile_id: NP.Security.getUser().get('userprofile_id')
+                                    }
+                                }),
                                 columns: [
                                     {
-                                        text: this.vendorIdColumnTitle,
+                                        xtype: 'actioncolumn',
+                                        items: [
+                                            {
+                                                icon: 'resources/images/buttons/new.gif',
+                                                tooltip: 'Add to favorite',
+                                                width: 10
+                                            }
+                                        ],
+                                        align: 'center'
+                                    },
+                                    {
+                                        xtype: 'actioncolumn',
+                                        items: [
+                                            {
+                                                icon: 'resources/images/buttons/view.gif',
+                                                tooltip: 'View',
+                                                width: 10
+                                            }
+                                        ],
+                                        align: 'center'
+                                    },
+                                    {
+                                        text: this.venproperdorIdColumnTitle,
                                         dataIndex: 'vendor_id',
                                         flex: 1
                                     },
@@ -89,27 +126,18 @@ Ext.define('NP.view.vendor.VendorSearch', {
                                     },
                                     {
                                         text: this.vendorAddressColumnTitle,
-                                        dataIndex: 'vendor_address',
-                                        flex: 1
+                                        dataIndex: 'address_line1',
+                                        flex: 1,
+                                        renderer: function(val, meta, rec) {
+                                            console.log('rec: ', rec);
+                                            var val = rec.raw.address_line1 +(rec.raw.address_line2 !== '' ? ' ' + rec.raw.address_line2 + ' ' : '') + ', ' + rec.raw.address_city + ', ' + rec.raw.address_state + ' ' + rec.raw.address_zip;
+                                            return val;
+                                        }
                                     },
                                     {
                                         text: this.vendorStatusColumnTitle,
                                         dataIndex: 'vendor_status',
                                         flex: 1
-                                    },
-                                    {
-                                        xtype: 'actioncolumn',
-                                        items: [
-                                            {
-                                                icon: 'resources/images/buttons/new.gif',
-                                                tooltip: 'Add to favorite'
-                                            },
-                                            {
-                                                icon: 'resources/images/buttons/view.gif',
-                                                tooltip: 'View'
-                                            }
-                                        ],
-                                        align: 'center'
                                     }
                                 ]
                             }
@@ -120,5 +148,21 @@ Ext.define('NP.view.vendor.VendorSearch', {
         ];
 
         this.callParent(arguments);
+    },
+
+    vendorSearchByKeyword: function(keyword) {
+        if (!keyword) {
+            keyword = this.query('[name="keyword"]')[0].getValue();
+        }
+
+        var grid = this.query('customgrid')[0];
+        console.log('grid: ', grid);
+        grid.getStore().addExtraParams({
+            keyword : keyword,
+            order       : 'vendor_name',
+            property_id: NP.Security.getCurrentContext().property_id,
+            userprofile_id: NP.Security.getUser().get('userprofile_id')
+        });
+        grid.reloadFirstPage();
     }
 });
