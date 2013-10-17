@@ -10,11 +10,11 @@ namespace NP\contact;
 
 use NP\core\AbstractGateway;
 
-
-define('CONTACT_TYPE_VENDOR', 6);
 /**
  * Gateway for the CONTACT table
  *
  * @author
  */
-class ContactGateway extends AbstractGateway {}
+class ContactGateway extends AbstractGateway {
+	const CONTACT_TYPE_VENDOR = 6;
+}

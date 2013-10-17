@@ -2,6 +2,7 @@
 
 namespace NP\vendor;
 
+use NP\contact\AddressGateway;
 use NP\core\AbstractGateway;
 use NP\core\db\Expression;
 use NP\core\db\Insert;
@@ -13,6 +14,7 @@ use NP\vendor\sql\criteria\VendorExistsCriteria;
 use NP\vendor\sql\join\VendorRejectedJoin;
 use NP\vendor\VendorSelect;
 use NP\util\Util;
+use NP\vendor\sql\criteria\VendorSearchCriteria;
 
 use NP\core\db\Adapter;
 
@@ -350,29 +352,21 @@ class VendorGateway extends AbstractGateway {
 	 * @param $keyword
 	 * @return array|bool
 	 */
-	public function findByKeyword($keyword, $sort = 'vendor_name', $category, $status, $asp_client_id, $integration_package_id,  $pageSize=null, $page=1) {
+	public function findByKeyword($keyword, $sort = 'vendor_name',$category, $status, $asp_client_id, $integration_package_id,  $pageSize=null, $page=1) {
 		$select = new Select();
 
 		$status = !$status ? "'active', 'inactive'" : $status;
 		if ($category == 'all') {
 			$select->from(['v' => 'vendor'])
 						->distinct()
-						->join(['vs' => 'vendorsite'], 'vs.vendor_id = v.vendor_id', ['vendorsite_id'])
+						->join(['vs' => 'vendorsite'], 'vs.vendor_id = v.vendor_id', ['vendorsite_id', 'vendorsite_id_alt'])
 						->join(['a' => 'address'], 'a.tablekey_id = vs.vendorsite_id', ['address_line1', 'address_line2', 'address_city', 'address_state', 'address_zip', 'address_zipext'])
-						->join(['i' => 'integrationpackage'], 'i.integration_package_id = v.integration_package_id', [])
-						->join(['f' => 'vendorfavorite'], 'f.vendorsite_id = vs.vendorsite_id', ['vendorfavorite_id'], Select::JOIN_LEFT)
-						->whereEquals('a.table_name', "'vendorsite'")
-						->whereNest('OR')
-						->whereLike('v.vendor_name', '?')
-						->whereLike('v.vendor_id_alt', '?')
-						->whereLike('v.vendor_name', '?')
-						->whereLike('v.vendor_id_alt', '?')
-						->whereLike('a.address_line1', '?')
-						->whereLike('a.address_line2', '?')
-						->whereUnNest()
-						->whereEquals('i.asp_client_id', $asp_client_id)
-						->whereIn('v.integration_package_id', $integration_package_id)
-						->whereIn('v.vendor_status', $status)
+						->join(['i' => 'integrationpackage'], 'i.integration_package_id = v.integration_package_id', ['integration_package_name'])
+						->join(['f' => 'vendorfavorite'], 'f.vendorsite_id = vs.vendorsite_id', ['vendorfavorite_id, property_id'], Select::JOIN_LEFT)
+						->join(['vt' => 'vendortype'], 'vt.vendortype_id = v.vendortype_id', ['vendortype_name'], Select::JOIN_LEFT)
+						->join(['c' => 'country'], 'a.address_country = c.country_id', ['country_name'], Select::JOIN_LEFT)
+						->where(['a.addresstype_id' => '?'])
+						->whereMerge(new VendorSearchCriteria($asp_client_id, $integration_package_id, $status))
 						->order($sort);
 		}
 
@@ -385,8 +379,11 @@ class VendorGateway extends AbstractGateway {
 		if ($category == 'top20') {
 
 		}
+		return $this->getPagingArray($select, [AddressGateway::ADDRESS_TYPE_MAILING, $keyword . '%', $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%'] , $pageSize, $page, 'vendor_id');
+	}
 
-		return $this->getPagingArray($select, [$keyword . '%', $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%'] , $pageSize, $page, 'vendor_id');
+	public function findByKeywordWithTaskType($allowExpInsurance) {
+			$select = new Select();
 	}
 }
 

@@ -10,9 +10,9 @@ use NP\core\db\Select;
  *
  * @author Thomas Messier
  */
-
-define('ADDRESS_TYPE_MAILING', 25);
 class AddressGateway extends AbstractGateway {
+
+	const ADDRESS_TYPE_MAILING = 25;
 
 	/**
 	 * Retrieve states list

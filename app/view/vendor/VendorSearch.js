@@ -31,6 +31,7 @@ Ext.define('NP.view.vendor.VendorSearch', {
      */
     initComponent: function(){
         var that = this;
+        var property_id = NP.Security.getCurrentContext().property_id;
 
         this.title = this.titleText;
         this.tbar = [];
@@ -99,12 +100,19 @@ Ext.define('NP.view.vendor.VendorSearch', {
                                     {
                                         xtype: 'actioncolumn',
                                         renderer: function(val, meta, rec) {
-                                            if (rec.raw.vendorfavorite_id !== null) {
+                                            this.items[0].disable();
+                                            if (rec.raw.vendorfavorite_id !== null && rec.raw.property_id == property_id) {
                                                 this.items[0].icon = 'resources/images/buttons/delete.gif';
                                                 this.items[0].tooltip = 'Remove from favorite';
+                                                this.items[0].enable();
                                             } else {
-                                                this.items[0].icon = 'resources/images/buttons/new.gif';
-                                                this.items[0].tooltip = 'Add to favorite';
+                                                if (!rec.raw.vendorfavorite_id) {
+                                                    this.items[0].icon = 'resources/images/buttons/new.gif';
+                                                    this.items[0].tooltip = 'Add to favorite';
+                                                    this.items[0].enable();
+                                                } else {
+                                                    this.items[0].icon = '';
+                                                }
                                             }
                                         },
                                         handler: function (grid, rowIndex, colIndex) {
@@ -144,8 +152,11 @@ Ext.define('NP.view.vendor.VendorSearch', {
                                     },
                                     {
                                         text: this.vendorIdColumnTitle,
-                                        dataIndex: 'vendor_id',
-                                        flex: 1
+                                        dataIndex: 'vendorsite_id_alt',
+                                        flex: 1,
+                                        renderer: function(val, meta, rec) {
+                                            return rec.raw.vendorsite_id_alt;
+                                        }
                                     },
                                     {
                                         text: this.vendorNameColumnTitle,

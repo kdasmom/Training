@@ -19,20 +19,20 @@ use NP\system\IntegrationPackageGateway;
 use NP\user\UserprofileGateway;
 use NP\util\Util;
 
-define('VALIDATE_CHECK_STATUS_OK', 'OK');
-define('VALIDATE_CHECK_STATUS_NAME', 'name');
-define('VALIDATE_CHECK_STATUS_TAX_ID', 'taxid');
-define('VALIDATE_CHECK_STATUS_ID_ALT', 'idalt');
-define("VENDORSITE_FAVORITE_NO", 'N');
-define("VENDORSITE_FAVORITE_YES", 'Y');
-
 /**
  * Service class for operations related to vendors
  *
  * @author Thomas Messier
  */
 class VendorService extends AbstractService {
-	
+
+	const VALIDATE_CHECK_STATUS_OK = 'OK';
+	const VALIDATE_CHECK_STATUS_NAME = 'name';
+	const VALIDATE_CHECK_STATUS_TAX_ID = 'taxid';
+	const VALIDATE_CHECK_STATUS_ID_ALT = 'idalt';
+	const VENDORSITE_FAVORITE_NO = 'N';
+	const VENDORSITE_FAVORITE_YES = 'Y';
+
 	protected $vendorGateway, $insuranceGateway, $configService, $userprofileGateway, $vendorsiteGateway, $phoneGateway, $addressGateway, $personGateway, $contactGateway, $emailGateway, $integrationPackageGateway;
 	
 	public function __construct(VendorGateway $vendorGateway,
@@ -194,7 +194,7 @@ class VendorService extends AbstractService {
 		$propertyId = $data['property_id'];
 		$userprofileId = $data['userprofile_id'];
 		$roleId = $data['role_id'];
-		$vendorsite_favorite = isset($data['vendorsite_favorite']) ? $data['vendorsite_favorite'] : VENDORSITE_FAVORITE_NO;
+		$vendorsite_favorite = isset($data['vendorsite_favorite']) ? $data['vendorsite_favorite'] : self::VENDORSITE_FAVORITE_NO;
 		$glaccounts = $data['glaccounts'];
 
 		$in_app_user = $this->userprofileGateway->isInAppUser($roleId, $userprofileId);
@@ -216,7 +216,7 @@ class VendorService extends AbstractService {
 		$validate = $this->vendorGateway->validateVendor($approval_data);
 		$vendorstatus = $in_app_user ? $this->configService->get('PN.VendorOptions.OnApprovalStatus') : 'forapproval';
 
-		if ($validate['check_status'] == VALIDATE_CHECK_STATUS_OK) {
+		if ($validate['check_status'] == self::VALIDATE_CHECK_STATUS_OK) {
 //			new vendor
 			if ($vendor->vendor_id == NULL) {
 //				save vendor
@@ -254,7 +254,7 @@ class VendorService extends AbstractService {
 					);
 				}
 //					save vendorsite favorite
-				if ($vendorsite_favorite == VENDORSITE_FAVORITE_YES && !is_null($propertyId)) {
+				if ($vendorsite_favorite == self::VENDORSITE_FAVORITE_YES && !is_null($propertyId)) {
 					$this->updateFavorite($vendorsite_id,$propertyId);
 				}
 //					save author data
@@ -444,7 +444,7 @@ class VendorService extends AbstractService {
 			$address->address_id = $tmpAddress[0]['address_id'];
 		}
 
-		$address->addresstype_id = ADDRESS_TYPE_MAILING;
+		$address->addresstype_id = AddressGateway::ADDRESS_TYPE_MAILING;
 		$address->tablekey_id = $vendorsite_id;
 		$address->table_name = 'vendorsite';
 		$address->address_state = strval($address->address_state);
@@ -481,12 +481,12 @@ class VendorService extends AbstractService {
 	 * @return array
 	 */
 	protected function savePhoneAndFax($data, $vendorsite_id) {
-		$tmpPhone = $this->phoneGateway->find(['table_name' => '?', 'tablekey_id' => '?', 'phonetype_id' => '?'], ['vendorsite', $vendorsite_id, PHONE_TYPE_MAIN], null, ['phone_id']);
-		$tmpFax = $this->phoneGateway->find(['table_name' => '?', 'tablekey_id' => '?', 'phonetype_id' => '?'], ['vendorsite', $vendorsite_id, PHONE_TYPE_FAX], null, ['phone_id']);
+		$tmpPhone = $this->phoneGateway->find(['table_name' => '?', 'tablekey_id' => '?', 'phonetype_id' => '?'], ['vendorsite', $vendorsite_id, PhoneGateway::PHONE_TYPE_MAIN], null, ['phone_id']);
+		$tmpFax = $this->phoneGateway->find(['table_name' => '?', 'tablekey_id' => '?', 'phonetype_id' => '?'], ['vendorsite', $vendorsite_id, PhoneGateway::PHONE_TYPE_FAX], null, ['phone_id']);
 
 		$phone = new PhoneEntity($data['vendorsite_phone']);
 		$phone->phone_id = count($tmpPhone) > 0 ? $tmpPhone[0]['phone_id'] : $phone->phone_id;
-		$phone->phonetype_id =PHONE_TYPE_MAIN;
+		$phone->phonetype_id =PhoneGateway::PHONE_TYPE_MAIN;
 		$phone->tablekey_id = $vendorsite_id;
 		$phone->table_name = 'vendorsite';
 		$errors = [];
@@ -502,7 +502,7 @@ class VendorService extends AbstractService {
 		if ($phone_id) {
 			$fax = new PhoneEntity($data['vendorsite_fax_phone']);
 			$fax->phone_id = count($tmpFax) > 0 ? $tmpFax[0]['phone_id'] : $fax->phone_id;
-			$fax->phonetype_id =PHONE_TYPE_FAX;
+			$fax->phonetype_id =PhoneGateway::PHONE_TYPE_FAX;
 			$fax->tablekey_id = $vendorsite_id;
 			$fax->table_name = 'vendorsite';
 
@@ -533,7 +533,7 @@ class VendorService extends AbstractService {
 		$tmpPerson = $this->contactGateway->find(['table_name' => '?', 'tablekey_id' => '?'], ['vendorsite', $vendorsite_id], null, ['person_id', 'contact_id']);
 		$tmpContactPhone = null;
 		if (count($tmpPerson) > 0) {
-			$tmpContactPhone = $this->phoneGateway->find(['table_name' => '?', 'tablekey_id' => '?', 'phonetype_id' => '?'], ['contact', $tmpPerson[0]['contact_id'], PHONE_TYPE_MAIN], null, ['phone_id']);
+			$tmpContactPhone = $this->phoneGateway->find(['table_name' => '?', 'tablekey_id' => '?', 'phonetype_id' => '?'], ['contact', $tmpPerson[0]['contact_id'], PhoneGateway::PHONE_TYPE_MAIN], null, ['phone_id']);
 		}
 
 		$person = new PersonEntity($data['person']);
@@ -562,7 +562,7 @@ class VendorService extends AbstractService {
 			if ($person_id) {
 				$contact = new ContactEntity([
 					'contact_id'				=> count($tmpPerson) > 0 ? $tmpPerson[0]['contact_id'] : null,
-					'contacttype_id'		=> CONTACT_TYPE_VENDOR,
+					'contacttype_id'		=> ContactGateway::CONTACT_TYPE_VENDOR,
 					'table_name'			=> 'vendorsite',
 					'tablekey_id'			=> $vendorsite_id,
 					'person_id'				=> $person_id
@@ -584,7 +584,7 @@ class VendorService extends AbstractService {
 				if ($contact_id) {
 					$phone = new PhoneEntity($data['attention_phone']);
 					$phone->phone_id = count($tmpContactPhone) > 0 ? $tmpContactPhone[0]['phone_id'] : $phone->phone_id;
-					$phone->phonetype_id = PHONE_TYPE_MAIN;
+					$phone->phonetype_id = PhoneGateway::PHONE_TYPE_MAIN;
 					$phone->table_name = 'contact';
 					$phone->tablekey_id = $contact_id;
 
@@ -647,7 +647,7 @@ class VendorService extends AbstractService {
 	protected function saveEmailRecord($data, $vendorsite_id) {
 		$email = new EmailEntity($data['email']);
 
-		$email->emailtype_id = EMAIL_TYPE_PRIMARY;
+		$email->emailtype_id = EmailGateway::EMAIL_TYPE_PRIMARY;
 		$email->table_name = 'vendorsite';
 		$email->tablekey_id = $vendorsite_id;
 
@@ -736,14 +736,20 @@ class VendorService extends AbstractService {
 	 * @param null $keyword
 	 * @return array|bool
 	 */
-	public function findByKeyword($userprofile_id, $keyword = null, $sort = 'vendor_name', $category_id = 'all', $status = null, $pageSize = null, $page = null) {
+	public function findByKeyword($userprofile_id, $keyword = null, $sort = 'vendor_name', $category_id = 'all', $status = null, $pageSize = null, $page = null, $task_type = null) {
 		if (!$keyword) {
 			return [];
 		}
 		$asp_client_id = $this->configService->getClientId();
 		$integration_package_id = $this->integrationPackageGateway->findByAspClientIdAndUserprofileId($asp_client_id, $userprofile_id);
 
-		return $this->vendorGateway->findByKeyword($keyword, $sort, $category_id, $status, $asp_client_id, $integration_package_id['integration_package_id'], $pageSize, $page);
+		if (!$task_type) {
+			return $this->vendorGateway->findByKeyword($keyword, $sort, $category_id, $status, $asp_client_id, $integration_package_id['integration_package_id'], $pageSize, $page);
+		} else {
+			$allowExpInsurance = $this->configService->findSysValueByName('CP.AllowExpiredInsurance');
+			return $this->vendorGateway->findByKeywordWithTaskType($allowExpInsurance['configsysval_val']);
+		}
+
 	}
 
 	/**

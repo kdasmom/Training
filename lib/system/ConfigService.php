@@ -349,6 +349,16 @@ class ConfigService extends AbstractService {
 		}
 		return $this->intPkgGateway->findByAspClientIdAndUserprofileId($this->getClientId(), $userprofile_id);
 	}
+
+	/**
+	 * Retrieve sys value by name
+	 *
+	 * @param $name
+	 * @return mixed
+	 */
+	public function findSysValueByName($name) {
+		return $this->configsysGateway->findConfigSysValByName($name);
+	}
 }
 
 ?>

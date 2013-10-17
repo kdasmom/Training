@@ -106,7 +106,24 @@ class ConfigsysGateway extends AbstractGateway {
 	
 		return $errors;
 	}
-	
+
+	/**
+	 * Retrieve sys value by name
+	 *
+	 * @param $name
+	 * @return mixed
+	 */
+	public function findConfigSysValByName($name) {
+		$select  = new Select();
+
+		$select->from(['c' => 'configsys'])
+					->join(['cv' => 'configsysval'], 'c.configsys_id = cv.configsys_id', ['configsysval_val'])
+					->where(['c.configsys_name' => '?']);
+
+		$result = $this->adapter->query($select, [$name]);
+
+		return $result[0];
+	}
 }
 
 ?>
