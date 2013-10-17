@@ -119,7 +119,8 @@ Ext.define('NP.controller.VendorManager', {
                 action     : 'getVendor',
                 extraParams: {
                     vendor_id: vendor_id
-                }
+                },
+                extraFields: ['vendorsite']
             });
         }
 

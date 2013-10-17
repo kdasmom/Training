@@ -299,7 +299,25 @@ class VendorService extends AbstractService {
 							[$vendorId]
 						);
 					}
-					foreach ($insurances as $insurance) {
+					$insurance = $insurances[0];
+					if (is_array($insurance->insurancetype_id)) {
+						for ($index = 0; $index < count($insurance->insurancetype_id); $index++) {
+							$saveInsurance = [
+								'insurancetype_id'											=> $insurance->insurancetype_id[$index],
+								'insurance_company'									=> $insurance->insurance_company[$index],
+								'insurance_policynum'									=> $insurance->insurance_policynum[$index],
+								'insurance_policy_effective_datetm'		=> $insurance->insurance_policy_effective_datetm[$index],
+								'insurance_expdatetm'									=> $insurance->insurance_expdatetm[$index],
+								'insurance_policy_limit'								=> $insurance->insurance_policy_limit[$index],
+								'insurance_additional_insured_listed'	=> $insurance->insurance_additional_insured_listed[$index],
+								'insurance_id'													=> $insurance->insurance_id[$index]
+							];
+							$result = $this->saveInsurance(['insurance' => $saveInsurance], $vendorId);
+							if (!$result['success']) {
+								return $result;
+							}
+						}
+					} else {
 						$result = $this->saveInsurance(['insurance' => (array)$insurance], $vendorId);
 						if (!$result['success']) {
 							return $result;
@@ -725,9 +743,10 @@ class VendorService extends AbstractService {
 	 * @return array
 	 */
 	public function getVendor($vendor_id = null) {
-		$vendor = $this->vendorGateway->findById($vendor_id);
+		$res = $this->vendorGateway->findById($vendor_id);
+		$res['vendorsite'] = $this->vendorsiteGateway->find(['vendor_id' => '?'], [$vendor_id]);
 
-		return $vendor;
+		return $res;
 	}
 
 	/**
