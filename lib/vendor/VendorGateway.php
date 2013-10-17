@@ -350,7 +350,7 @@ class VendorGateway extends AbstractGateway {
 	 * @param $keyword
 	 * @return array|bool
 	 */
-	public function findByKeyword($keyword, $order = 'vendor_name', $category, $status, $asp_client_id, $integration_package_id ) {
+	public function findByKeyword($keyword, $sort = 'vendor_name', $category, $status, $asp_client_id, $integration_package_id,  $pageSize=null, $page=1) {
 		$select = new Select();
 
 		$status = !$status ? "'active', 'inactive'" : $status;
@@ -372,7 +372,7 @@ class VendorGateway extends AbstractGateway {
 						->whereEquals('i.asp_client_id', $asp_client_id)
 						->whereIn('v.integration_package_id', $integration_package_id)
 						->whereIn('v.vendor_status', $status)
-						->order($order);
+						->order($sort);
 		}
 
 		if (intval($category) == 1) {
@@ -385,7 +385,7 @@ class VendorGateway extends AbstractGateway {
 
 		}
 
-		return $this->adapter->query($select, [$keyword . '%', $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%']);
+		return $this->getPagingArray($select, [$keyword . '%', $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%'] , $pageSize, $page, 'vendor_id');
 	}
 }
 

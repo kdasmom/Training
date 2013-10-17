@@ -4,14 +4,15 @@
 
 Ext.define('NP.view.shared.SearchByAlphabetButtons', {
     extend: 'Ext.container.Container',
+//    extend: 'Ext.container.ButtonGroup',
     alias: 'widget.shared.searchbyalphabetbuttons',
-
 
     initComponent: function() {
         this. layout = 'hbox';
         this.padding = '5';
         this.defaults = {
-            margin: '0 10 5 0'
+            margin: '0 10 5 0',
+            handler: this.onButton
         };
         this.items = [
             {
@@ -149,7 +150,7 @@ Ext.define('NP.view.shared.SearchByAlphabetButtons', {
                 text: 'Z',
                 name: 'startZbtn'
             }
-        ]
+        ];
 
         this.callParent(arguments);
     }

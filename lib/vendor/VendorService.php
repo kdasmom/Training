@@ -736,14 +736,14 @@ class VendorService extends AbstractService {
 	 * @param null $keyword
 	 * @return array|bool
 	 */
-	public function findByKeyword($userprofile_id, $keyword = null, $sort = 'vendor_name', $category_id = 'all', $status = null) {
+	public function findByKeyword($userprofile_id, $keyword = null, $sort = 'vendor_name', $category_id = 'all', $status = null, $pageSize = null, $page = null) {
 		if (!$keyword) {
 			return [];
 		}
 		$asp_client_id = $this->configService->getClientId();
 		$integration_package_id = $this->integrationPackageGateway->findByAspClientIdAndUserprofileId($asp_client_id, $userprofile_id);
 
-		return $this->vendorGateway->findByKeyword($keyword, $sort, $category_id, $status, $asp_client_id, $integration_package_id['integration_package_id']);
+		return $this->vendorGateway->findByKeyword($keyword, $sort, $category_id, $status, $asp_client_id, $integration_package_id['integration_package_id'], $pageSize, $page);
 	}
 }
 
