@@ -4,7 +4,6 @@
 
 Ext.define('NP.view.shared.SearchByAlphabetButtons', {
     extend: 'Ext.container.Container',
-//    extend: 'Ext.container.ButtonGroup',
     alias: 'widget.shared.searchbyalphabetbuttons',
 
     initComponent: function() {

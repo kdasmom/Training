@@ -31,6 +31,7 @@ Ext.define('NP.view.vendor.VendorSearch', {
      */
     initComponent: function(){
         var that = this;
+
         this.title = this.titleText;
         this.tbar = [];
 
@@ -97,13 +98,33 @@ Ext.define('NP.view.vendor.VendorSearch', {
                                 columns: [
                                     {
                                         xtype: 'actioncolumn',
-                                        items: [
-                                            {
-                                                icon: 'resources/images/buttons/new.gif',
-                                                tooltip: 'Add to favorite',
-                                                width: 10
+                                        renderer: function(val, meta, rec) {
+                                            if (rec.raw.vendorfavorite_id !== null) {
+                                                this.items[0].icon = 'resources/images/buttons/delete.gif';
+                                                this.items[0].tooltip = 'Remove from favorite';
+                                            } else {
+                                                this.items[0].icon = 'resources/images/buttons/new.gif';
+                                                this.items[0].tooltip = 'Add to favorite';
                                             }
-                                        ],
+                                        },
+                                        handler: function (grid, rowIndex, colIndex) {
+                                            var rec = grid.getStore().getAt(rowIndex);
+                                            var vendorsite_id = rec.get('vendorsite_id');
+                                            var op = !rec.raw['vendorfavorite_id'] ? 'add' : 'remove';
+                                            NP.lib.core.Net.remoteCall({
+                                                        requests: {
+                                                            service: 'VendorService',
+                                                            action : 'updateFavorite',
+                                                            vendorsite_id    : vendorsite_id,
+                                                            property_id: NP.Security.getCurrentContext().property_id,
+                                                            op: op,
+                                                            success: function(result, deferred) {
+                                                                var page = grid.getStore().currentPage;
+                                                                grid.getStore().reload();
+                                                            }
+                                                        }
+                                                    });
+                                        },
                                         align: 'center'
                                     },
                                     {
@@ -112,7 +133,9 @@ Ext.define('NP.view.vendor.VendorSearch', {
                                             {
                                                 icon: 'resources/images/buttons/view.gif',
                                                 tooltip: 'View',
-                                                width: 10
+                                                width: 10,
+                                                handler: function(grid, rowIndex, colIndex) {
+                                                }
                                             }
                                         ],
                                         align: 'center'

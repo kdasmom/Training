@@ -10,6 +10,7 @@ namespace NP\vendor;
 
 
 use NP\core\AbstractGateway;
+use NP\core\db\Delete;
 use NP\core\db\Expression;
 use NP\core\db\Insert;
 use NP\core\db\Select;
@@ -49,14 +50,26 @@ class VendorsiteGateway extends AbstractGateway {
 	 * @param $propertyId
 	 * @return array|bool
 	 */
-	public function insertFavorite($vendorsiteId, $propertyId) {
+	public function insertFavorite($vendorsiteId, $propertyId, $action) {
+		$delete = new Delete();
+
+		$delete->from('vendorfavorite')
+					->where(['vendorsite_id' => '?', 'property_id' => '?']);
+
+		$result = $this->adapter->query($delete, [$vendorsiteId, $propertyId]);
+		if ($action == 'remove') {
+			return $result;
+		}
+
 		$insert = new Insert();
 
 		$insert->into('vendorfavorite')
 					->columns(['vendorsite_id', 'property_id'])
-					->values([$vendorsiteId, $propertyId]);
+					->values(Select::get()->columns([new Expression('?'), new Expression('?')]));
 
-		return $this->adapter->query($insert);
+		$result =$this->adapter->query($insert, [$vendorsiteId, $propertyId]);
+
+		return $result;
 	}
 
 	/**

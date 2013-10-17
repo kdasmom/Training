@@ -255,7 +255,7 @@ class VendorService extends AbstractService {
 				}
 //					save vendorsite favorite
 				if ($vendorsite_favorite == VENDORSITE_FAVORITE_YES && !is_null($propertyId)) {
-					$this->vendorsiteGateway->insertFavorite($vendorsite_id, $propertyId);
+					$this->updateFavorite($vendorsite_id,$propertyId);
 				}
 //					save author data
 				$this->vendorGateway->recauthorSave($data['userprofile_id'], 'vendor', $vendorId);
@@ -744,6 +744,20 @@ class VendorService extends AbstractService {
 		$integration_package_id = $this->integrationPackageGateway->findByAspClientIdAndUserprofileId($asp_client_id, $userprofile_id);
 
 		return $this->vendorGateway->findByKeyword($keyword, $sort, $category_id, $status, $asp_client_id, $integration_package_id['integration_package_id'], $pageSize, $page);
+	}
+
+	/**
+	 * Update favorite
+	 *
+	 * @param $vendorsite
+	 * @param $property_id
+	 * @return array|bool
+	 */
+	public function updateFavorite($vendorsite_id = null, $property_id = null, $op = 'add') {
+		if ($vendorsite_id == null || $property_id == null) {
+			return false;
+		}
+		return $this->vendorsiteGateway->insertFavorite($vendorsite_id, $property_id, $op);
 	}
 }
 

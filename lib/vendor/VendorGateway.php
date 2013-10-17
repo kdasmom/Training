@@ -360,6 +360,7 @@ class VendorGateway extends AbstractGateway {
 						->join(['vs' => 'vendorsite'], 'vs.vendor_id = v.vendor_id', ['vendorsite_id'])
 						->join(['a' => 'address'], 'a.tablekey_id = vs.vendorsite_id', ['address_line1', 'address_line2', 'address_city', 'address_state', 'address_zip', 'address_zipext'])
 						->join(['i' => 'integrationpackage'], 'i.integration_package_id = v.integration_package_id', [])
+						->join(['f' => 'vendorfavorite'], 'f.vendorsite_id = vs.vendorsite_id', ['vendorfavorite_id'], Select::JOIN_LEFT)
 						->whereEquals('a.table_name', "'vendorsite'")
 						->whereNest('OR')
 						->whereLike('v.vendor_name', '?')
