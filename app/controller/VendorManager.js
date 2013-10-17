@@ -54,6 +54,10 @@ Ext.define('NP.controller.VendorManager', {
                 itemclick: function(grid, rec) {
                     this.showVendorForm(rec.internalId);
                 }
+            },
+
+            '[xtype="vendor.vendorsearch"] customgrid': {
+                viewvendor: this.viewVendor
             }
 		});
 
@@ -123,6 +127,9 @@ Ext.define('NP.controller.VendorManager', {
         this.findIntegrationPackage(form);
 	},
 
+    /**
+     * save vendor
+     */
     saveVendor: function() {
         var that  = this;
 
@@ -198,7 +205,20 @@ Ext.define('NP.controller.VendorManager', {
         });
     },
 
+    /**
+     *  show search form
+     */
     showVendorSearchForm: function() {
         this.setView('NP.view.vendor.VendorSearch');
+    },
+
+    /**
+     *  view vendor from search form
+     * @param grid
+     * @param rec
+     * @param rowIndex
+     */
+    viewVendor: function(grid, rec, rowIndex) {
+        this.showVendorForm(rec.internalId);
     }
 });

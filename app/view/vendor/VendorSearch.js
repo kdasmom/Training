@@ -22,7 +22,7 @@ Ext.define('NP.view.vendor.VendorSearch', {
     vendorIdColumnTitle: 'Vendor Id',
     vendorNameColumnTitle: 'Vendor name',
     vendorAddressColumnTitle: 'Address',
-    vendorStatusColumnTitle: 'AddressStatus',
+    vendorStatusColumnTitle: 'Vendor Status',
     searchResultsTitle: 'Search results',
     searchBtnText: 'Search',
 
@@ -134,7 +134,9 @@ Ext.define('NP.view.vendor.VendorSearch', {
                                                 icon: 'resources/images/buttons/view.gif',
                                                 tooltip: 'View',
                                                 width: 10,
-                                                handler: function(grid, rowIndex, colIndex) {
+                                                handler: function(gridView, rowIndex, colIndex) {
+                                                    var grid = gridView.ownerCt;
+                                                    grid.fireEvent('viewvendor', grid, grid.getStore().getAt(rowIndex), rowIndex);
                                                 }
                                             }
                                         ],
@@ -173,6 +175,7 @@ Ext.define('NP.view.vendor.VendorSearch', {
         ];
 
         this.callParent(arguments);
+        this.query('customgrid')[0].addEvents('viewvendor');
     },
 
     vendorSearchByKeyword: function(keyword) {
