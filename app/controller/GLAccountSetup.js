@@ -200,6 +200,12 @@ Ext.define('NP.controller.GLAccountSetup', {
 	},
                 
         showGLAccountsForm: function(glaccount_id) {
+            var grid = this.getGlaccountGrid();
+            var items = grid.getSelectionModel().getSelection();
+            var glaccount_id_list = [];
+            Ext.each(items, function(item) {
+                glaccount_id_list.push(item.get('glaccount_id'));
+            });
             var viewCfg = { bind: { models: ['gl.GlAccount'] }};
             if (glaccount_id) {
                 if (arguments.length) {
@@ -207,9 +213,10 @@ Ext.define('NP.controller.GLAccountSetup', {
                         service    : 'GLService',
                         action     : 'getGLAccount',
                         extraParams: {
-                            id: glaccount_id
+                            id: glaccount_id,
+                            ids: glaccount_id_list
                         },
-                        extraFields: ['vendors', 'properties', 'glaccount_category']
+                        extraFields: ['vendors', 'properties', 'glaccount_category', 'glaccount_id_last', 'glaccount_id_next']
                     });
                 }
            }

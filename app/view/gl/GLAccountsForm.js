@@ -130,7 +130,6 @@ Ext.define('NP.view.gl.GLAccountsForm', {
                         height    : 200
                     });       
          }       
-
         this.callParent(arguments);
     }
 });
