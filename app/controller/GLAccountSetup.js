@@ -18,8 +18,10 @@ Ext.define('NP.controller.GLAccountSetup', {
 		{ ref: 'glaccountForm', selector: '[xtype="gl.glaccountsform"]' },
                 { ref: 'glaccountEditBtn', selector: '[xtype="gl.glaccountsgrid"] [xtype="shared.button.edit"]' },
 		{ ref: 'glaccountDistributeVendorsBtn', selector: '#distributeToAllVendorsBtn' },
-		{ ref: 'glaccountDistributePropertiesBtn', selector: '#distributeToAllPropertiesBtn' }
-      
+		{ ref: 'glaccountDistributePropertiesBtn', selector: '#distributeToAllPropertiesBtn' },
+                { ref: 'glaccountPrevBtn', selector : '#prevGlacoountBtn' },
+                { ref: 'glaccountNextBtn', selector : '#nextGlacoountBtn' },
+                      
         ],
 	
         // For localization
@@ -33,7 +35,7 @@ Ext.define('NP.controller.GLAccountSetup', {
 	vendorsFailureText        : 'Distribute To All Vendors Failure',
 	propertiesSuccessText     : 'Distribute To All Properties Success',
 	propertiesFailureText     : 'Distribute To All Properties Failure',
-
+        glaccount_id_list         : [],
 	init: function() {
 		Ext.log('GLAccountSetup controller initialized');
 
@@ -101,6 +103,12 @@ Ext.define('NP.controller.GLAccountSetup', {
 			'#glcategorySaveBtn': {
 				click: this.saveGlCategory
 			},
+                        // Prev glaccount 
+                        '#prevGlacoountBtn, #nextGlacoountBtn': {
+                                click: function() {
+                                    this.updateGlAccount(900);
+                                }
+                        }
 		});
 	},
 	
@@ -158,13 +166,15 @@ Ext.define('NP.controller.GLAccountSetup', {
         selectedGLAccounts: function(action) {
             var that = this;
             var grid = this.getGlaccountGrid();
-            var items = grid.getSelectionModel().getSelection();
             var glaccount_id_list = [];
+            var items = grid.getSelectionModel().getSelection();
             Ext.each(items, function(item) {
                     glaccount_id_list.push(item.get('glaccount_id'));
             });
+            this.glaccount_id_list = glaccount_id_list;
+            console.log(this.glaccount_id_list);
             if (action === 'edit') {
-                this.addHistory('GLAccountSetup:showGLAccountSetup:GLAccounts:Form:' + glaccount_id_list[0]);
+                this.addHistory('GLAccountSetup:showGLAccountSetup:GLAccounts:Form:' + this.glaccount_id_list[0]);
             } else {
                 Ext.MessageBox.confirm(this.distributeDialogTitleText + Ext.util.Format.capitalize(action), 
                 this.distributeDialogText + action + '?', function(btn) {
@@ -198,14 +208,16 @@ Ext.define('NP.controller.GLAccountSetup', {
 			this.addHistory('GLAccountSetup:showGLAccountSetup:GLAccounts:Form:' + rec.get('glaccount_id'));
 		}
 	},
-                
-        showGLAccountsForm: function(glaccount_id) {
-            var grid = this.getGlaccountGrid();
-            var items = grid.getSelectionModel().getSelection();
-            var glaccount_id_list = [];
-            Ext.each(items, function(item) {
-                glaccount_id_list.push(item.get('glaccount_id'));
-            });
+              
+        updateGlAccount: function (glaccount_id) {
+            var that = this;
+
+            var form = this.getGlaccountForm();
+            form.getForm().reset();
+            var glaccount_id = form.findField('glaccount_id').getValue();
+
+            this.form.updateBoundFields();
+            this.addHistory('GLAccountSetup:showGLAccountSetup:GLAccounts:Form:' + glaccount_id);
             var viewCfg = { bind: { models: ['gl.GlAccount'] }};
             if (glaccount_id) {
                 if (arguments.length) {
@@ -213,15 +225,53 @@ Ext.define('NP.controller.GLAccountSetup', {
                         service    : 'GLService',
                         action     : 'getGLAccount',
                         extraParams: {
-                            id: glaccount_id,
-                            ids: glaccount_id_list
+                            id: glaccount_id
                         },
-                        extraFields: ['vendors', 'properties', 'glaccount_category', 'glaccount_id_last', 'glaccount_id_next']
+                        extraFields: ['vendors', 'properties', 'glaccount_category']
+                    });
+                }
+           }
+
+            var form = this.setView('NP.view.gl.GLAccountsForm', viewCfg, '[xtype="gl.glaccounts"]');
+		
+        },
+                
+        showGLAccountsForm: function(glaccount_id) {
+    
+            var viewCfg = { bind: { models: ['gl.GlAccount'] }};
+            if (glaccount_id) {
+                if (arguments.length) {
+                    Ext.apply(viewCfg.bind, {
+                        service    : 'GLService',
+                        action     : 'getGLAccount',
+                        extraParams: {
+                            id: glaccount_id
+                        },
+                        extraFields: ['vendors', 'properties', 'glaccount_category']
                     });
                 }
            }
 
             var form = this.setView('NP.view.gl.GLAccountsForm', viewCfg, '[xtype="gl.glaccounts"]'); 
+            if (this.glaccount_id_list.length >1) {
+                form.findField('glaccount_id_list').setValue(glaccount_id_list);
+                var  curr = glaccount_id_list.indexOf(parseInt(glaccount_id));
+                var prevBtn = this.getGlaccountPrevBtn();
+                var nextBtn = this.getGlaccountNextBtn();
+                if (curr > 0) {
+                    prevBtn.show();
+                } else {
+                    prevBtn.hide();
+                }
+                if (curr < glaccount_id_list.length-1 ) {
+                    nextBtn.show();
+                } else {
+                    nextBtn.hide();
+                }
+            } else {
+                this.glaccount_id_list = form.findField('glaccount_id_list').getValue();
+            }
+            console.log(this.glaccount_id_list);
         },
 
         /**

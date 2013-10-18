@@ -32,7 +32,9 @@ Ext.define('NP.view.gl.GLAccountsForm', {
         
         var bar = [
             { xtype: 'shared.button.cancel', itemId: 'glaccountCancelBtn' },
-            { xtype: 'shared.button.save', itemId: 'glaccountSaveBtn' }
+            { xtype: 'shared.button.save', itemId: 'glaccountSaveBtn' },
+            { xtype: 'button', text: 'Prev', itemId: 'prevGlacoountBtn', hidden: true },
+            { xtype: 'button', text: 'Next', itemId: 'nextGlacoountBtn', hidden: true },
         ];
         this.tbar = bar;
         this.bbar = bar;
@@ -67,6 +69,11 @@ Ext.define('NP.view.gl.GLAccountsForm', {
          });
         vendorStore.load();
         this.items = [
+            // Ids
+            {
+                xtype       : 'hidden',
+                name        : 'glaccount_id_list',
+            },
             // GL Number
             { xtype: 'textfield', fieldLabel: this.glNumberFieldText, name: 'glaccount_number', width: defaultWidth, allowBlank: false },
             // GL Name
