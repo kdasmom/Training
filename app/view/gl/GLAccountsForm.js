@@ -67,7 +67,7 @@ Ext.define('NP.view.gl.GLAccountsForm', {
             service : 'VendorService',
             action  : 'getAll'
          });
-        vendorStore.load();
+//        vendorStore.load();
         this.items = [
             // Ids
             {

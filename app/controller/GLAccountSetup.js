@@ -106,6 +106,8 @@ Ext.define('NP.controller.GLAccountSetup', {
                         // Prev glaccount 
                         '#prevGlacoountBtn, #nextGlacoountBtn': {
                                 click: function() {
+                                    var  curr = this.glaccount_id_list.indexOf(parseInt(glaccount_id));
+                
                                     this.updateGlAccount(900);
                                 }
                         }
@@ -172,7 +174,6 @@ Ext.define('NP.controller.GLAccountSetup', {
                     glaccount_id_list.push(item.get('glaccount_id'));
             });
             this.glaccount_id_list = glaccount_id_list;
-            console.log(this.glaccount_id_list);
             if (action === 'edit') {
                 this.addHistory('GLAccountSetup:showGLAccountSetup:GLAccounts:Form:' + this.glaccount_id_list[0]);
             } else {
@@ -209,35 +210,40 @@ Ext.define('NP.controller.GLAccountSetup', {
 		}
 	},
               
-        updateGlAccount: function (glaccount_id) {
+        updateGlAccount: function (glaccount_id) {           
             var that = this;
-
-            var form = this.getGlaccountForm();
-            form.getForm().reset();
-            var glaccount_id = form.findField('glaccount_id').getValue();
-
-            this.form.updateBoundFields();
+            
             this.addHistory('GLAccountSetup:showGLAccountSetup:GLAccounts:Form:' + glaccount_id);
-            var viewCfg = { bind: { models: ['gl.GlAccount'] }};
-            if (glaccount_id) {
-                if (arguments.length) {
-                    Ext.apply(viewCfg.bind, {
-                        service    : 'GLService',
-                        action     : 'getGLAccount',
-                        extraParams: {
-                            id: glaccount_id
-                        },
-                        extraFields: ['vendors', 'properties', 'glaccount_category']
-                    });
-                }
-           }
+        
+            var bindCfg = {
+			models   : ['gl.GlAccount']
+            };
 
-            var form = this.setView('NP.view.gl.GLAccountsForm', viewCfg, '[xtype="gl.glaccounts"]');
+	    if (glaccount_id) {
+	    	Ext.apply(bindCfg, {
+				service    : 'GLService',
+				action     : 'getGLAccount',
+				extraParams: {
+					id: glaccount_id
+                                },
+                                extraFields: ['vendors', 'properties', 'glaccount_category']
+	    	});
+	    }
+
+	    var form = Ext.create('NP.view.gl.GLAccountsForm', {
+			bind           : bindCfg,
+			listeners      : {
+				dataloaded: function(boundForm, data) {
+				}
+			}
+		});
+
+		this.setView(form, '','[xtype="gl.glaccounts"]');
 		
         },
                 
         showGLAccountsForm: function(glaccount_id) {
-    
+               
             var viewCfg = { bind: { models: ['gl.GlAccount'] }};
             if (glaccount_id) {
                 if (arguments.length) {
@@ -247,15 +253,15 @@ Ext.define('NP.controller.GLAccountSetup', {
                         extraParams: {
                             id: glaccount_id
                         },
-                        extraFields: ['vendors', 'properties', 'glaccount_category']
+                        extraFields: ['vendors', 'properties', 'glaccount_category', 'glaccount_id_list']
                     });
                 }
            }
 
             var form = this.setView('NP.view.gl.GLAccountsForm', viewCfg, '[xtype="gl.glaccounts"]'); 
-            if (this.glaccount_id_list.length >1) {
-                form.findField('glaccount_id_list').setValue(glaccount_id_list);
-                var  curr = glaccount_id_list.indexOf(parseInt(glaccount_id));
+            if (this.glaccount_id_list.length > 1) {
+                form.findField('glaccount_id_list').setValue(this.glaccount_id_list);
+                var  curr = this.glaccount_id_list.indexOf(parseInt(glaccount_id));
                 var prevBtn = this.getGlaccountPrevBtn();
                 var nextBtn = this.getGlaccountNextBtn();
                 if (curr > 0) {
@@ -263,7 +269,7 @@ Ext.define('NP.controller.GLAccountSetup', {
                 } else {
                     prevBtn.hide();
                 }
-                if (curr < glaccount_id_list.length-1 ) {
+                if (curr < this.glaccount_id_list.length-1 ) {
                     nextBtn.show();
                 } else {
                     nextBtn.hide();
@@ -271,7 +277,6 @@ Ext.define('NP.controller.GLAccountSetup', {
             } else {
                 this.glaccount_id_list = form.findField('glaccount_id_list').getValue();
             }
-            console.log(this.glaccount_id_list);
         },
 
         /**
