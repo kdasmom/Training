@@ -180,7 +180,7 @@ Ext.define('NP.controller.GLAccountSetup', {
             var grid = this.getGlaccountGrid();
             var items = grid.getSelectionModel().getSelection();
             Ext.each(items, function(item) {
-                    this.glaccount_id_list.push(item.get('glaccount_id'));
+                    that.glaccount_id_list.push(item.get('glaccount_id'));
             });
             if (action === 'edit') {
                 this.addHistory('GLAccountSetup:showGLAccountSetup:GLAccounts:Form:' + this.glaccount_id_list[0]);
