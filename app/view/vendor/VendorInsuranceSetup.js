@@ -41,7 +41,7 @@ Ext.define('NP.view.vendor.VendorInsuranceSetup', {
             },
             {
                 xtype: 'textfield',
-                name: 'DaysNotice_InsuranceExpires',
+                name: 'vendorsite_DaysNotice_InsuranceExpires',
                 fieldLabel: this.daysNoticeLabelText,
                 labelWidth: 546,
                 width: 680,

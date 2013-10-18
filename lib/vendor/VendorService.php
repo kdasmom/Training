@@ -292,9 +292,9 @@ class VendorService extends AbstractService {
 				$insurances = json_decode($data['insurances']);
 				if (count($insurances) > 0) {
 					$this->insuranceGateway->delete(['table_name' => '?', 'tablekey_id' => '?'], ['vendor', $vendorId]);
-					if ($data['DaysNotice_InsuranceExpires'] > 0) {
+					if ($data['vendorsite_DaysNotice_InsuranceExpires'] > 0) {
 						$this->vendorsiteGateway->update(
-							['vendorsite_DaysNotice_InsuranceExpires' => $data['DaysNotice_InsuranceExpires']],
+							['vendorsite_DaysNotice_InsuranceExpires' => $data['vendorsite_DaysNotice_InsuranceExpires']],
 							['vendor_id' => '?'],
 							[$vendorId]
 						);
@@ -743,8 +743,8 @@ class VendorService extends AbstractService {
 	 * @return array
 	 */
 	public function getVendor($vendor_id = null) {
-		$res = $this->vendorGateway->findById($vendor_id);
-		$res['vendorsite'] = $this->vendorsiteGateway->find(['vendor_id' => '?'], [$vendor_id]);
+		$res = $this->vendorGateway->getVendor($vendor_id);
+		$res['glaccounts'] = $this->vendorGateway->findAssignedGlaccounts($vendor_id);
 
 		return $res;
 	}

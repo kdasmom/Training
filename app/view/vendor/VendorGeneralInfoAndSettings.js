@@ -93,6 +93,10 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
                 name: 'email_address'
             },
             {
+                xtype: 'hidden',
+                name: 'email_id'
+            },
+            {
                 xtype: 'fieldcontainer',
                 fieldLabel: this.phoneInputLabel,
                 layout: 'hbox',
@@ -110,6 +114,10 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
                         fieldLabel: this.phoneExtInputLabel,
                         width: 135,
                         name: 'vendorsite_phone_ext'
+                    },
+                    {
+                        xtype: 'hidden',
+                        name: 'vendorsite_phone_id'
                     }
                 ]
             },
@@ -117,6 +125,10 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
                 xtype: 'textfield',
                 fieldLabel: this.faxInputLabel,
                 name: 'vendorsite_fax_phone_number'
+            },
+            {
+                xtype: 'hidden',
+                name: 'vendorsite_fax_id'
             },
             {
                 xtype: 'fieldcontainer',
@@ -156,6 +168,10 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
                         fieldLabel: this.phoneContactExtInputLabel,
                         width: 135,
                         name: 'attention_phone_ext'
+                    },
+                    {
+                        xtype: 'hidden',
+                        name: 'attention_phone_id'
                     }
                 ]
             },

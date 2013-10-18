@@ -84,6 +84,10 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
                 layout: 'vbox',
                 items: [
                     {
+                        xtype: 'hidden',
+                        name: 'address_id'
+                    },
+                    {
                         xtype: 'textfield',
                         fieldLabel: this.vendorAddressCommonInputLabel,
                         width: 345,

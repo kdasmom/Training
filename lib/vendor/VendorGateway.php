@@ -3,6 +3,8 @@
 namespace NP\vendor;
 
 use NP\contact\AddressGateway;
+use NP\contact\EmailGateway;
+use NP\contact\PhoneGateway;
 use NP\core\AbstractGateway;
 use NP\core\db\Expression;
 use NP\core\db\Insert;
@@ -384,6 +386,62 @@ class VendorGateway extends AbstractGateway {
 
 	public function findByKeywordWithTaskType($allowExpInsurance) {
 			$select = new Select();
+	}
+
+	/**
+	 * get vendor
+	 *
+	 * @param $vendor_id
+	 * @return mixed
+	 */
+	public function getVendor($vendor_id) {
+		$select = new Select();
+
+		$select->from(['v' => 'vendor'])
+					->join(['vs' => 'vendorsite'], 'vs.vendor_id = v.vendor_id')
+					->join(['p' => 'phone'], 'p.tablekey_id = vs.vendorsite_id', ['vendorsite_phone_number' => 'phone_number', 'vendorsite_phone_ext' => 'phone_ext', 'vendorsite_phone_id' => 'phone_id'], Select::JOIN_LEFT)
+					->join(['f' => 'phone'], 'f.tablekey_id = vs.vendorsite_id', ['vendorsite_fax_phone_number' => 'phone_number', 'vendorsite_fax_id' => 'phone_id'], Select::JOIN_LEFT)
+					->join(['a' => 'address'], 'a.tablekey_id = vs.vendorsite_id')
+					->join(['c' => 'contact'], 'c.tablekey_id = vs.vendorsite_id', [], Select::JOIN_LEFT)
+					->join(['ps' => 'person'], 'ps.person_id = c.person_id')
+					->join(['pc' => 'phone'], 'pc.tablekey_id = c.contact_id', ['attention_phone_number' => 'phone_number', 'attention_phone_ext' => 'phone_ext', 'attention_phone_id' => 'phone_id'], Select::JOIN_LEFT)
+					->join(['e' => 'email'], 'e.tablekey_id = vs.vendorsite_id', ['email_id', 'email_address'], Select::JOIN_LEFT)
+					->where(
+								[
+									'v.vendor_id' => '?',
+									'p.table_name' => '?',
+									'p.phonetype_id' => '?',
+									'f.table_name'		=> '?',
+									'f.phonetype_id'		=> '?',
+									'a.table_name'		=> '?',
+									'c.table_name'		=> '?',
+									'pc.table_name'		=> '?',
+									'e.table_name'		=> '?',
+									'e.emailtype_id'		=> '?'
+								]
+					);
+		$result = $this->adapter->query($select, [$vendor_id, 'vendorsite', PhoneGateway::PHONE_TYPE_MAIN, 'vendorsite', PhoneGateway::PHONE_TYPE_FAX, 'vendorsite', 'vendorsite', 'contact', 'vendorsite', EmailGateway::EMAIL_TYPE_PRIMARY]);
+
+		return $result[0];
+	}
+
+	public function findAssignedGlaccounts($vendor_id) {
+		$select = new Select();
+
+		$select->from(['vg' => 'vendorglaccounts'])
+						->columns(['glaccount_id'])
+						->where(['vg.vendor_id' => '?']);
+
+		$result = $this->adapter->query($select, [$vendor_id]);
+
+		$glaccounts = [];
+		if (count($result) > 0) {
+			foreach ($result as $item) {
+				$glaccounts[] = $item['glaccount_id'];
+			}
+		}
+
+		return implode(',', $glaccounts);
 	}
 }
 

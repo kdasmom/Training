@@ -120,7 +120,14 @@ Ext.define('NP.controller.VendorManager', {
                 extraParams: {
                     vendor_id: vendor_id
                 },
-                extraFields: ['vendorsite']
+                extraFields: ['glaccounts']
+            });
+            Ext.apply(viewCfg, {
+                listeners: {
+                    dataloaded: function(formPanel, data) {
+                        formPanel.findField('address_state').setValue(parseInt(data['address_state']));
+                    }
+                }
             });
         }
 
@@ -150,7 +157,7 @@ Ext.define('NP.controller.VendorManager', {
                 insurance_id: values.insurance_id
             });
         } else {
-            if (values.insurancetype_id.length > 1) {
+            if (values.insurancetype_id && values.insurancetype_id.length > 1) {
                 for (var index = 0; index < values.insurancetype_id.length; index++) {
                     insurance.push({
                         insurancetype_id: values.insurancetype_id[index],
@@ -176,7 +183,7 @@ Ext.define('NP.controller.VendorManager', {
                     property_id: NP.Security.getCurrentContext().property_id,
                     glaccounts: values['glaccounts'],
                     insurances: JSON.stringify(insurance),
-                    DaysNotice_InsuranceExpires: values['DaysNotice_InsuranceExpires']
+                    vendorsite_DaysNotice_InsuranceExpires: values['vendorsite_DaysNotice_InsuranceExpires']
                 },
                 success: function(result, deferred) {
                     if (result.success) {
