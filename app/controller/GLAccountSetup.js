@@ -104,11 +104,21 @@ Ext.define('NP.controller.GLAccountSetup', {
 				click: this.saveGlCategory
 			},
                         // Prev glaccount 
-                        '#prevGlacoountBtn, #nextGlacoountBtn': {
+                        '#prevGlacoountBtn': {
                                 click: function() {
-                                    var  curr = this.glaccount_id_list.indexOf(parseInt(glaccount_id));
-                
-                                    this.updateGlAccount(900);
+                                    var token = Ext.History.getToken();
+                                    var glaccount_id = token.split(':')[4];
+                                    var curr = this.glaccount_id_list.indexOf(parseInt(glaccount_id));
+                                    this.updateGlAccount(this.glaccount_id_list[curr-1]);
+                                }
+                        },
+                        // Next glacount
+                        '#nextGlacoountBtn': {
+                                click: function() {
+                                    var token = Ext.History.getToken();
+                                    var glaccount_id = token.split(':')[4];
+                                    var curr = this.glaccount_id_list.indexOf(parseInt(glaccount_id));
+                                    this.updateGlAccount(this.glaccount_id_list[curr+1]);
                                 }
                         }
 		});
@@ -168,12 +178,10 @@ Ext.define('NP.controller.GLAccountSetup', {
         selectedGLAccounts: function(action) {
             var that = this;
             var grid = this.getGlaccountGrid();
-            var glaccount_id_list = [];
             var items = grid.getSelectionModel().getSelection();
             Ext.each(items, function(item) {
-                    glaccount_id_list.push(item.get('glaccount_id'));
+                    this.glaccount_id_list.push(item.get('glaccount_id'));
             });
-            this.glaccount_id_list = glaccount_id_list;
             if (action === 'edit') {
                 this.addHistory('GLAccountSetup:showGLAccountSetup:GLAccounts:Form:' + this.glaccount_id_list[0]);
             } else {
