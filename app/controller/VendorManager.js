@@ -99,6 +99,10 @@ Ext.define('NP.controller.VendorManager', {
 	 * @param int vendor_id Vendor id to edit
 	 */
 	showVendorForm: function(vendor_id) {
+		var insurances = [];
+
+		var that = this;
+
 		var viewCfg = {
             bind: {
                 models: [
@@ -126,18 +130,14 @@ Ext.define('NP.controller.VendorManager', {
                 listeners: {
                     dataloaded: function(formPanel, data) {
                         formPanel.findField('address_state').setValue(parseInt(data['address_state']));
+						insurances = data['insurances'];
 
-                        var insConf = null;
-                        var insForm = null;
-                        var insurances = data['insurances'];
-                        for (var index in insurances) {
-                            insConf ={
-                                bind: {
-                                    models: ['vendor.Insurance']
-                                }
-                            };
-                            insForm = Ext.create('NP.view.vendor.InsuranceForm', insConf);
-                        }
+						var insuranceForm = that.getCmp('vendor.vendorinsurancesetup');
+
+						for (var index in insurances) {
+							var model = Ext.create('NP.model.vendor.Insurance', insurances[index]);
+							insuranceForm.addInsurance(model);
+						}
                     }
                 }
             });

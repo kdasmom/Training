@@ -52,16 +52,23 @@ Ext.define('NP.view.vendor.VendorInsuranceSetup', {
 		this.callParent(arguments);
 	},
 
-    addInsurance: function () {
+    addInsurance: function (model) {
         var that = this;
 
-        var item = this.add({
-            xtype: 'vendor.insuranceform',
-            startIndex: that.startIndex
-        });
+		var insConf ={
+			bind: {
+				models: ['vendor.Insurance']
+			},
+			startIndex: that.startIndex
+		};
+		insForm = Ext.create('NP.view.vendor.InsuranceForm', insConf);
+
+		if (model) {
+			insForm.setModel('vendor.Insurance', model);
+		}
+
+		this.add(insForm);
 
         this.startIndex++;
-
-        return item;
     }
 });

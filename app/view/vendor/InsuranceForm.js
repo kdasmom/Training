@@ -4,7 +4,7 @@
 
 
 Ext.define('NP.view.vendor.InsuranceForm', {
-    extend: 'Ext.container.Container',
+    extend: 'NP.lib.ui.BoundForm',
     alias: 'widget.vendor.insuranceform',
 
     requires: [
@@ -38,6 +38,8 @@ Ext.define('NP.view.vendor.InsuranceForm', {
             labelWidth: 150,
             width: '100%'
         };
+
+		this.border = 0;
 
         this.items = [
             {
