@@ -99,6 +99,10 @@ Ext.define('NP.controller.GLAccountSetup', {
                                     this.addHistory('GLAccountSetup:showGLAccountSetup:Overview');
                                 }
 			},
+                                // The fiscal calendar grid on the add/edit properties page
+			'[xtype="gl.category"] shared.glcategoryorder': {
+				onSelectChange: this.selectCategory
+			},
 			// The save button on the glcategory form
 			'#glcategorySaveBtn': {
 				click: this.saveGlCategory
@@ -311,6 +315,10 @@ Ext.define('NP.controller.GLAccountSetup', {
                     }
                 });
             }
+        },
+        
+        selectCategory: function() {
+            alert('here');
         },
         /**
          * Save GL Category

@@ -24,6 +24,11 @@ Ext.define('NP.view.gl.Category', {
     	models: ['gl.GlAccount']
     },
     bodyPadding: 8,
+    
+    layout: {
+        type: 'hbox',
+        align: 'stretch'
+    },
 
     initComponent: function() {
         var defaultWidth = 578;
@@ -41,33 +46,42 @@ Ext.define('NP.view.gl.Category', {
         });
         glCategoryStore.load();
         
-        this.items = [ 
-            {
+        this.items = [{
                 xtype     : 'shared.glcategoryorder',
                 title     : this.categoryFieldText,
                 name      : 'glaccount_order',
-                displayField    : 'glaccount_number',
-                valueField      : 'glaccount_id',
                 autoScroll: true,
                 ddReorder: true,
                 height : 200,
                 width : defaultWidth
+            }],
+        this.form = Ext.create('NP.lib.ui.BoundForm', {
+            bind       : {
+                    models: ['gl.GlAccount']
             },
-        // Status
-        	{
-    			xtype: 'radiogroup',
-    			fieldLabel: this.statusFieldText,
-                        width: 250,
-                        name: 'glaccount_status',
-                        style: 'white-space: nowrap;margin-right:12px;',
-    			items: [
-		    		{ boxLabel: 'Active', inputValue: 'active', checked: true },
-		    		{ boxLabel: 'Inactive', inputValue: 'inactive' }
-		    	]
-    		},
-            //Name
-            { xtype: 'textfield', fieldLabel: this.nameFieldText, name: 'glaccount_name', allowBlank: false, width: defaultWidth },
-            ],
+                    title      : 'Category',
+                    layout     : 'form',
+                    bodyPadding: 8,
+                    flex       : 1,
+                    items      : [
+                        {
+                            xtype     : 'textfield',
+                            fieldLabel: 'Category Name',
+                            name      : 'glaccount_name',
+                            allowBlank: false
+                        },{
+                            xtype: 'radiogroup',
+                            fieldLabel: this.statusFieldText,
+                            width: 250,
+                            name: 'glaccount_status',
+                            style: 'white-space: nowrap;margin-right:12px;',
+                            items: [
+                                    { boxLabel: 'Active', inputValue: 'active', checked: true },
+                                    { boxLabel: 'Inactive', inputValue: 'inactive' }
+                            ]
+                        }
+                ]
+    	});
     	this.callParent(arguments);
     }
 });

@@ -15,8 +15,7 @@ Ext.define('NP.view.shared.GlCategoryOrder', {
 					action            : 'getCategories',
 					autoLoad          : true
 			    }),
-    displayField: 'glaccount_number',
-    valueField  : 'glaccount_number',
+    displayField: 'glaccount_name',
     buttons     : ['up','down'],
     msgTarget   : 'under'
 });
