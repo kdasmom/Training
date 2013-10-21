@@ -745,6 +745,7 @@ class VendorService extends AbstractService {
 	public function getVendor($vendor_id = null) {
 		$res = $this->vendorGateway->getVendor($vendor_id);
 		$res['glaccounts'] = $this->vendorGateway->findAssignedGlaccounts($vendor_id);
+		$res['insurances'] = $this->insuranceGateway->find(['table_name' => '?', 'tablekey_id' => '?'], ['vendor', $vendor_id]);
 
 		return $res;
 	}

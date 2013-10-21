@@ -120,12 +120,24 @@ Ext.define('NP.controller.VendorManager', {
                 extraParams: {
                     vendor_id: vendor_id
                 },
-                extraFields: ['glaccounts']
+                extraFields: ['glaccounts', 'insurances']
             });
             Ext.apply(viewCfg, {
                 listeners: {
                     dataloaded: function(formPanel, data) {
                         formPanel.findField('address_state').setValue(parseInt(data['address_state']));
+
+                        var insConf = null;
+                        var insForm = null;
+                        var insurances = data['insurances'];
+                        for (var index in insurances) {
+                            insConf ={
+                                bind: {
+                                    models: ['vendor.Insurance']
+                                }
+                            };
+                            insForm = Ext.create('NP.view.vendor.InsuranceForm', insConf);
+                        }
                     }
                 }
             });
