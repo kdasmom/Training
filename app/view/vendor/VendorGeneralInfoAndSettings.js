@@ -33,15 +33,34 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
     printViewInputLabel: 'Display on Purchase Order Print View',
     taxReportableInputLabel: '1099 Tax Reportable',
 
+	activeStartDateInputLabel: 'Active Start Date',
+	activeEndDateInputLabel: 'Active End Date',
+	customerNumberInputLabel: 'Customer number',
+	defaultGlAccountInputLabel: 'Default GL Account',
+	defaultPaymentTypeInputLabel: 'Default Payment Type',
+	defaultDateSettingsInputLabel: 'Default Due Date Setting (# of days)',
+	financeVendorInputLabel: 'Finance Vendor',
+	remittanceAdviceInputLabel: 'Requires a Remittance Advice',
+	requiresVendorInputLabel: 'Requires Vendor Insurance',
+	requiresServiceCustomFieldsInputLabel: 'Requires Service Custom Fields on Purchase Order',
+	submitPosToVendorInputLabel: 'Electronically Submit Pos to Vendor',
+	autoEmailInputLabel: 'Auto email approved PO to vendor',
+
+
+
 	// Custom options
+	opened: false,
 
 	initComponent: function() {
 		var that = this;
 
         this.defaults = {
             labelWidth: 150,
-            width: 500
+            width: 500,
+			autoScroll: true,
+			autoHeight: true
         };
+//		this.autoScroll = true;
 
         this.items = [
             {
@@ -234,19 +253,86 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
                 xtype: 'hidden',
                 name: 'vendorsite_favorite',
                 value: 'Y'
-            },
-            {
-                xtype: 'hidden',
-                name: 'default_paymenttype_id',
-                value: '0'
-            },
-            {
-                xtype: 'hidden',
-                name: 'default_due_datetm',
-                value: '30'
             }
 
         ];
+
+
+		if (this.opened) {
+			this.items.push({
+				xtype: 'textfield',
+				name: 'vendor_customernum',
+				fieldLabel: this.customerNumberInputLabel
+			});
+			this.items.push({
+				xtype: 'datefield',
+				name: 'vendor_active_startdate',
+				fieldLabel: this.activeStartDateInputLabel
+			});
+			this.items.push({
+				xtype: 'datefield',
+				name: 'vendor_active_enddate',
+				fieldLabel: this.activeEndDateInputLabel
+			});
+			this.items.push({
+				xtype: 'combobox',
+				name: 'default_glaccount_id',
+				fieldLabel: this.defaultGlAccountInputLabel
+			});
+			this.items.push({
+				xtype: 'combobox',
+				name: 'default_paymenttype_id',
+				fieldLabel: this.defaultPaymentTypeInputLabel
+			});
+			this.items.push({
+				xtype: 'combobox',
+				name: 'default_due_datetm',
+				fieldLabel: this.defaultDateSettingsInputLabel
+			});
+			this.items.push({
+				xtype: 'shared.yesnofield',
+				name: 'Finance_Vendor',
+				fieldLabel: this.financeVendorInputLabel
+			});
+			this.items.push({
+				xtype: 'checkbox',
+				name: 'remit_req',
+				fieldLabel: this.remittanceAdviceInputLabel
+			});
+			this.items.push({
+				xtype: 'checkbox',
+				name: 'insurance_req',
+				fieldLabel: this.requiresVendorInputLabel
+			});
+			this.items.push({
+				xtype: 'checkbox',
+				name: '0_1_is_service_vendor',
+				fieldLabel: this.requiresServiceCustomFieldsInputLabel
+			});
+			this.items.push({
+				xtype: 'checkbox',
+				name: '0_10_po_electronic_submit',
+				fieldLabel: this.submitPosToVendorInputLabel
+			});
+			this.items.push({
+				xtype: 'checkbox',
+				name: '0_15_auto_email_po',
+				fieldLabel: this.autoEmailInputLabel
+			});
+		} else {
+			this.items.push(
+				{
+					xtype: 'hidden',
+					name: 'default_paymenttype_id',
+					value: '0'
+				},
+				{
+					xtype: 'hidden',
+					name: 'default_due_datetm',
+					value: '30'
+				}
+			);
+		}
 
 		this.callParent(arguments);
 	}

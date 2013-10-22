@@ -19,6 +19,7 @@ Ext.define('NP.view.vendor.VendorForm', {
 
 	title: 'Vendor',
     emptyErrorText: 'Cannot be empty',
+	opened: false,
 
 	initComponent: function() {
 		var bar = [
@@ -37,7 +38,7 @@ Ext.define('NP.view.vendor.VendorForm', {
 			border: false,
 			items : [
 				{ xtype: 'vendor.vendornameandinformation'},
-				{ xtype: 'vendor.vendorgeneralinfoandsettings'},
+				{ xtype: 'vendor.vendorgeneralinfoandsettings', opened: this.opened},
 				{ xtype: 'vendor.vendorassignglaccouns'},
 				{ xtype: 'vendor.vendorinsurancesetup'}
 			]

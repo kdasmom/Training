@@ -115,8 +115,10 @@ Ext.define('NP.controller.VendorManager', {
                     {class: 'contact.Phone', prefix: 'vendorsite_fax_'},
                     {class: 'contact.Phone', prefix: 'attention_'}
                 ]
-            }
+            },
+			opened: vendor_id ? true : false
         };
+
         if (arguments.length > 0) {
             Ext.apply(viewCfg.bind, {
                 service    : 'VendorService',
