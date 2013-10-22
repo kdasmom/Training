@@ -14,6 +14,7 @@ Ext.define('NP.view.gl.GLAccountsForm', {
         'NP.view.shared.PropertyAssigner',
         'NP.view.shared.button.Cancel',
         'NP.view.shared.button.Save',
+        'NP.view.shared.button.SaveAndAdd',
     ],
 
     autoScroll: true,
@@ -33,18 +34,15 @@ Ext.define('NP.view.gl.GLAccountsForm', {
         var bar = [
             { xtype: 'shared.button.cancel', itemId: 'glaccountCancelBtn' },
             { xtype: 'shared.button.save', itemId: 'glaccountSaveBtn' },
-            { xtype: 'button', text: 'Prev', itemId: 'prevGlacoountBtn', hidden: true },
-            { xtype: 'button', text: 'Next', itemId: 'nextGlacoountBtn', hidden: true },
+            { xtype: 'shared.button.saveandadd', itemId: 'glaccountSaveAndCreateNewBtn', text: 'Save and Create New'},
+            { xtype: 'button', text: 'Previous', itemId: 'prevGlacoountBtn', hidden: true, iconCls: 'back-btn' },
+            { xtype: 'button', text: 'Save and Previous', itemId: 'prevSaveGlacoountBtn', hidden: true, iconCls: 'save-back-btn' },
+            { xtype: 'button', text: 'Save and Next', itemId: 'nextSaveGlacoountBtn', hidden: true, iconCls: 'save-next-btn' },
+            { xtype: 'button', text: 'Next', itemId: 'nextGlacoountBtn', hidden: true, iconCls: 'next-btn' },
         ];
         this.tbar = bar;
         this.bbar = bar;
-        
-//        var glStore = Ext.create('NP.store.gl.GlAccounts', {
-//            service : 'GLService',
-//            action  : 'getAll'
-//        });
-//        glStore.load();
-        
+               
         var glCategoryStore = Ext.create('NP.store.gl.GlAccounts', {
             service : 'GLService',
             action  : 'getCategories'
@@ -68,6 +66,7 @@ Ext.define('NP.view.gl.GLAccountsForm', {
             action  : 'getAll'
          });
         vendorStore.load();
+        
         this.items = [
             // Ids
             {

@@ -6,9 +6,12 @@
 
 /* BUTTONS */
 .save-btn { background-image: url("../images/buttons/save.gif"); }
+.save-back-btn { background-image: url("../images/buttons/save_back.gif"); }
+.save-next-btn { background-image: url("../images/buttons/save_next.gif"); }
 .save-and-add-btn { background-image: url("../images/buttons/save_and_add.gif"); }
 .cancel-btn { background-image: url("../images/buttons/cancel.gif"); }
 .back-btn { background-image: url("../images/buttons/back.gif"); }
+.next-btn { background-image: url("../images/buttons/next.gif"); }
 .edit-btn { background-image: url("../images/buttons/edit.gif"); }
 .new-btn { background-image: url("../images/buttons/new.gif"); }
 .upload-btn { background-image: url("../images/buttons/upload.gif"); }

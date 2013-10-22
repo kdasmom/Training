@@ -13,7 +13,7 @@ Ext.define('NP.view.gl.CategoryForm', {
     	'NP.view.shared.button.Save'
     ],
 
-    title      : 'Category detatils',
+    title      : 'Category',
 
     layout     : 'form',
 	bodyPadding: 8,

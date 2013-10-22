@@ -257,7 +257,8 @@ class GLService extends AbstractService {
      */
     public function saveGlAccount($data) {
         $errors  = array();
-         
+        $data['glaccount']['integration_package_id'] = ($data['glaccount']['integration_package_id'] == null) ? 1 : $data['glaccount']['integration_package_id']; 
+        $data['glaccount']['glaccount_updatetm'] = \NP\util\Util::formatDateForDB();
         $rec = $this->glAccountGateway->getCategoryByName(
                   $data['glaccount_category'],
                   $data['glaccount']['integration_package_id']
@@ -299,7 +300,8 @@ class GLService extends AbstractService {
         }
         return array(
             'success' => (count($errors)) ? false : true,
-            'errors'  => $errors
+            'errors'  => $errors,
+            'id'      => $result['glaccount_id']
         );
            
     }
@@ -313,9 +315,11 @@ class GLService extends AbstractService {
     public function saveGlCategory($data) {
         $errors  = array();
          
+        $data['glaccount_updatetm'] = \NP\util\Util::formatDateForDB();
             
         if ($data['glaccount_id'] == null){
             $data['glaccount_number'] = $data['glaccount_name'];
+            $data['glaccount_order'] = $this->glAccountGateway->getMaxOrder($data['glaccount_id']);
             $result = $this->save(
                 array(
                     'glaccount'   => $data,

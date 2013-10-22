@@ -39,7 +39,7 @@ Ext.define('NP.view.gl.Category', {
         var bar = [
             { xtype: 'shared.button.cancel', itemId: 'glcategoryCancelBtn' },
             { xtype: 'shared.button.save', itemId: 'glcategoryOrderSaveBtn', text: 'Save Order' },
-            { xtype: 'shared.button.new', itemId: 'glcategoryNewBtn', text: 'Add new' }
+            { xtype: 'shared.button.new', itemId: 'glcategoryNewBtn', text: 'Add New' }
         ];
         this.tbar = bar;
         this.bbar = bar;
