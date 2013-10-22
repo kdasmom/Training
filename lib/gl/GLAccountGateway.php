@@ -288,10 +288,11 @@ class GLAccountGateway extends AbstractGateway {
      */
     public function getCategories() {
         $select = new Select();
-        $select->columns(array('glaccount_name','glaccount_status','glaccount_category' =>'glaccount_name'))
+        $select->columns(array('glaccount_id','integration_package_id','glaccount_name','glaccount_status','glaccount_category' =>'glaccount_name', 'glaccount_order'))
                 ->from(array('g'=>'glaccount'))
                 ->join(new sql\join\GlAccountTreeJoin(array('tree_id')))
-                ->whereIsNull('glaccounttype_id');
+                ->whereIsNull('glaccounttype_id')
+                ->order('g.glaccount_order');
 
         return $this->adapter->query($select);
 

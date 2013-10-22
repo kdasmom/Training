@@ -35,6 +35,10 @@ Ext.define('NP.controller.GLAccountSetup', {
 	vendorsFailureText        : 'Distribute To All Vendors Failure',
 	propertiesSuccessText     : 'Distribute To All Properties Success',
 	propertiesFailureText     : 'Distribute To All Properties Failure',
+	orderSuccessText          : 'Order Category Success',
+	orderFailureText          : 'Order Category Failure',
+	categorySuccessText       : 'Category saved Success',
+	categoryFailureText       : 'Category saved Failure',
         glaccount_id_list         : [],
 	init: function() {
 		Ext.log('GLAccountSetup controller initialized');
@@ -99,13 +103,25 @@ Ext.define('NP.controller.GLAccountSetup', {
                                     this.addHistory('GLAccountSetup:showGLAccountSetup:Overview');
                                 }
 			},
-                                // The fiscal calendar grid on the add/edit properties page
-			'[xtype="gl.category"] shared.glcategoryorder': {
-				onSelectChange: this.selectCategory
+                        // The category grid
+			'[xtype="gl.categorygrid"]': {
+				selectionchange: this.selectCategory
 			},
-			// The save button on the glcategory form
-			'#glcategorySaveBtn': {
-				click: this.saveGlCategory
+                        // The category grid
+			'[xtype="gl.category"] [xtype="shared.button.new"]': {
+				click: this.newCategory
+			},
+                        // The cancel button on the category form 
+			'[xtype="gl.categoryform"] [xtype="shared.button.cancel"]': {
+				click: this.cancelCategory
+			},
+			// The save button on the category form
+			'[xtype="gl.categoryform"] [xtype="shared.button.save"]': {
+				click: this.saveCategory
+			},
+                        // The save button on the glcategory form
+			'#glcategoryOrderSaveBtn': {
+				click: this.saveOrderCategory
 			},
                         // Prev glaccount 
                         '#prevGlacoountBtn': {
@@ -316,29 +332,93 @@ Ext.define('NP.controller.GLAccountSetup', {
                 });
             }
         },
+        newCategory: function() {
+		// Show the panel with the category details
+		var form = this.getCmp('gl.categoryform'); 
+            	form.show();
+		
+	},
+                
+        selectCategory: function(selModel, recs) {
+		// Show the panel with the category details
+		var categoryPanel = selModel.view.up('customgrid').nextNode('[xtype="gl.categoryform"]');
+
+		var form = categoryPanel.getForm();
+
+		if (recs.length) {
+			this.selectedCategory = recs[0];
+			form.loadRecord(this.selectedCategory);
+			categoryPanel.show();
+		} else {
+			this.selectedCategory = null;
+			categoryPanel.hide();
+		}
+	},
+                
+        cancelCategory: function(button, e) {
+		var form = button.up('[xtype="gl.categoryform"]');
+		form.hide();
+		form.getForm().reset();
+		var grid = button.previousNode('[xtype="gl.categorygrid"]');
+		grid.getSelectionModel().deselectAll();
+		this.selectedCategory = null;
+	},
+
+	saveCategory: function(button, e) {
+		var that = this;
+                var form = button.up('[xtype="gl.categoryform"]');
+		var grid = form.previousNode('[xtype="gl.categorygrid"]');
+                NP.lib.core.Net.remoteCall({
+                        method  : 'POST',
+                        requests: {
+                                service               : 'GLService',
+                                action                : 'saveGlCategory',
+                                data                  : form.getValues(),
+                                success: function(result, deferred) {
+                                        // Unmark items in the grid
+                                        grid.getStore().commitChanges();
+                                        grid.getStore().reload();
+                                        // Show a friendly message saying action was successful
+                                        NP.Util.showFadingWindow({ html: that['categorySuccessText'] });
+                                },
+                                failure: function(response, options, deferred) {
+                                        grid.getStore().rejectChanges();
+                                        Ext.MessageBox.alert(that.errorDialogTitleText, that['categoryFailureText']);
+                                }
+                        }
+                    });
+	},
         
-        selectCategory: function() {
-            alert('here');
-        },
         /**
-         * Save GL Category
+         * Save Order Category
          */
-        saveGlCategory: function() {
+        saveOrderCategory: function() {
             var that = this;
 
-            var form = this.getCmp('gl.category');
-
-            if (form.isValid()) {
-                form.submitWithBindings({
-                    service: 'GLService',
-                    action: 'saveGlAccount',
-                    extraParams: {
-                        glaccount_updateby: NP.Security.getUser().get('userprofile_id')
-                    },
-                    success: function(result, deferred) {
-                        NP.Util.showFadingWindow({ html: that.changesSavedText });
-                    }
-                });
-            }
+            var grid = this.getCmp('gl.categorygrid');
+            var items = grid.getStore().data.items;
+            var glaccount_id_list = [];
+            Ext.each(items, function(item) {
+                    glaccount_id_list.push(item.get('glaccount_id'));
+            });
+            NP.lib.core.Net.remoteCall({
+                        method  : 'POST',
+                        mask    : grid,
+                        requests: {
+                                service               : 'GLService',
+                                action                : 'saveOrderCategory',
+                                glaccount_id_list     : glaccount_id_list,
+                                success: function(result, deferred) {
+                                        grid.getStore().commitChanges();
+                                        // Show a friendly message saying action was successful
+                                        NP.Util.showFadingWindow({ html: that['orderSuccessText'] });
+                                },
+                                failure: function(response, options, deferred) {
+                                        grid.getStore().rejectChanges();
+                                        Ext.MessageBox.alert(that.errorDialogTitleText, that['orderFailureText']);
+                                }
+                        }
+                    });
+  
         },
 });

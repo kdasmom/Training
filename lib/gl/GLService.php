@@ -305,6 +305,67 @@ class GLService extends AbstractService {
     }
     
     /**
+     * save GL Category
+     *
+     * @param $data
+     * @return array
+     */
+    public function saveGlCategory($data) {
+        $errors  = array();
+         
+            
+        if ($data['glaccount_id'] == null){
+            $data['glaccount_number'] = $data['glaccount_name'];
+            $result = $this->save(
+                array(
+                    'glaccount'   => $data,
+                    'tree_parent' => 0
+                ),
+                'category'
+            );
+        } else {
+            $result = $this->glAccountGateway->update($data, 'glaccount_id = ?', array($data['glaccount_id']));
+        }
+
+        // Set errors
+        if (!$result['success']) {
+            $errors = $result['errors'];
+        }
+        
+        return array(
+            'success' => (count($errors)) ? false : true,
+            'errors'  => $errors
+        );
+           
+    }
+    /**
+     * save order Category
+     *
+     * @param $data
+     * @return array
+     */
+    public function saveOrderCategory($glaccount_id_list) {
+        $errors  = array();
+        $order = 1;
+        foreach ($glaccount_id_list as $glaccount_id) {
+            $glaccount['glaccount_order'] = $order++;
+            
+            $result = $this->glAccountGateway->update($glaccount, 'glaccount_id = ?', array($glaccount_id));
+             
+            if (!$result['success']) {
+                $errorMsg = $this->localizationService->getMessage('orderCategoryError') . " {$glaccount_id}";
+                $errors[] = $errorMsg;
+            }
+        }
+        
+        return array(
+            'success' => (count($errors)) ? false : true,
+            'errors'  => $errors
+        );
+           
+    }
+    
+    /**
     * Saves property assignments for a glaccount
     *
     * @param  int   $glaccount_id The ID for the glaccount we want to assign properties to

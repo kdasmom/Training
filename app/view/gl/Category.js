@@ -10,10 +10,13 @@ Ext.define('NP.view.gl.Category', {
     title: 'Category',
     
     requires: [
-        'NP.lib.core.Config',
+        'NP.lib.core.Config',    	
+        'NP.view.gl.CategoryGrid',
+    	'NP.view.gl.CategoryForm',
         'NP.view.shared.GlCategoryOrder',
     	'NP.view.shared.button.Cancel',
     	'NP.view.shared.button.Save',
+    	'NP.view.shared.button.New',
     ],
     
     nameFieldText : 'Name',
@@ -35,7 +38,8 @@ Ext.define('NP.view.gl.Category', {
          
         var bar = [
             { xtype: 'shared.button.cancel', itemId: 'glcategoryCancelBtn' },
-            { xtype: 'shared.button.save', itemId: 'glcategorySaveBtn' }
+            { xtype: 'shared.button.save', itemId: 'glcategoryOrderSaveBtn', text: 'Save Order' },
+            { xtype: 'shared.button.new', itemId: 'glcategoryNewBtn', text: 'Add new' }
         ];
         this.tbar = bar;
         this.bbar = bar;
@@ -45,43 +49,16 @@ Ext.define('NP.view.gl.Category', {
             action  : 'getCategories'
         });
         glCategoryStore.load();
-        
-        this.items = [{
-                xtype     : 'shared.glcategoryorder',
-                title     : this.categoryFieldText,
-                name      : 'glaccount_order',
-                autoScroll: true,
-                ddReorder: true,
-                height : 200,
-                width : defaultWidth
-            }],
-        this.form = Ext.create('NP.lib.ui.BoundForm', {
-            bind       : {
-                    models: ['gl.GlAccount']
-            },
-                    title      : 'Category',
-                    layout     : 'form',
-                    bodyPadding: 8,
-                    flex       : 1,
-                    items      : [
-                        {
-                            xtype     : 'textfield',
-                            fieldLabel: 'Category Name',
-                            name      : 'glaccount_name',
-                            allowBlank: false
-                        },{
-                            xtype: 'radiogroup',
-                            fieldLabel: this.statusFieldText,
-                            width: 250,
-                            name: 'glaccount_status',
-                            style: 'white-space: nowrap;margin-right:12px;',
-                            items: [
-                                    { boxLabel: 'Active', inputValue: 'active', checked: true },
-                                    { boxLabel: 'Inactive', inputValue: 'inactive' }
-                            ]
-                        }
-                ]
-    	});
+        this.items = [
+    			{
+                            xtype: 'gl.categorygrid',
+                            store: glCategoryStore,
+                            flex: 1
+		    	},{
+                            xtype: 'gl.categoryform',
+                            flex : 1
+		    	}
+                    ];
     	this.callParent(arguments);
     }
 });
