@@ -6,6 +6,7 @@ use NP\contact\AddressGateway;
 use NP\contact\EmailGateway;
 use NP\contact\PhoneGateway;
 use NP\core\AbstractGateway;
+use NP\core\db\Delete;
 use NP\core\db\Expression;
 use NP\core\db\Insert;
 use NP\core\db\Select;
@@ -134,7 +135,6 @@ class VendorGateway extends AbstractGateway {
 		}
 
 		$status = strtolower($status);
-		$where = ['v.vendor_status' => '?', 'i.asp_client_id' => '?'];
 		$params = [$status, $aspClientId];
 		$selectvendor->columns(['vendor_id', 'vendor_name', 'vendor_status'])
 		  			->columnsPersonName()
@@ -148,7 +148,8 @@ class VendorGateway extends AbstractGateway {
 		if ($status == 'rejected') {
 			$selectvendor->join(new sql\join\VendorRejectedJoin())
 									->whereGreaterThan('v.vendor_reject_dt', '?');
-			$params[] = 'DateAdd(d, -30, GetDate())';
+			$date = date('Y-m-d', strtotime('-30 day'));
+			$params[] = Util::formatDateForDB(new \DateTime($date));
 		}
 
 		return $this->adapter->query($selectvendor, $params);
@@ -176,9 +177,13 @@ class VendorGateway extends AbstractGateway {
 	 */
 	public function validateVendor($data) {
 
-		$vendor_id = $this->checkVendorName($data['use_vendor_name'], $data['vendor_name'], $data['approval_tracking_id'], $data['integration_package_id'], $data['asp_client_id']);
+		$vendor_id = null;
 		$vendor_name = '';
 		$check_status = 'name';
+
+		if ($data['use_vendor_name']) {
+			$vendor_id = $this->checkVendorName($data['use_vendor_name'], $data['vendor_name'], $data['approval_tracking_id'], $data['integration_package_id'], $data['asp_client_id']);
+		}
 
 		if (is_null($vendor_id)) {
 			$result = $this->checkByVendorFedId($data['use_vendor_fed_id'], $data['vendor_fed_id'], $data['approval_tracking_id'], $data['integration_package_id'], $data['asp_client_id']);
@@ -198,7 +203,7 @@ class VendorGateway extends AbstractGateway {
 
 		return [
 			'vendor_id'			=> $vendor_id,
-			'vendor_name'	=> $vendor_name,
+			'vendor_name'		=> $vendor_name,
 			'check_status'		=> $check_status
 		];
 
@@ -312,19 +317,128 @@ class VendorGateway extends AbstractGateway {
 	}
 
 	public function approveVendor($aspClientId = null, $userProfileId = null, $vendorId, $approvalTrackingId, $approvalStatus) {
-		if ($approvalTrackingId == $vendorId) {
+
+		if ($approvalTrackingId === $vendorId) {
 			$vendor = $this->update(
 				['vendor_status' => $approvalStatus],
 				['vendor_id'	=> '?'],
 				[$vendorId]
 			);
 
+
+			if ($vendor) {
+
+				return [
+					'vendor_id'			=> $vendorId,
+					'approval_status'	=> $approvalStatus
+				];
+			}
 			return $vendor;
 		} else {
+			$compare = $this->transferCompareVendor($vendorId, $approvalTrackingId);
+			$vendor = $this->find(['v.vendor_id' => '?'], [$vendorId]);
+
+			$this->update([
+				'vendor_name'			=> $vendor[0]['vendor_name'],
+				'vendor_fedid'			=> $vendor[0]['vendor_fedid'],
+				'default_glaccount_id'			=> $vendor[0]['default_glaccount_id'],
+				'vendor_type_code'			=> $vendor[0]['vendor_type_code'],
+				'vendorclass_id'			=> $vendor[0]['vendorclass_id'],
+				'term_id'			=> $vendor[0]['term_id'],
+				'vendor_industry_class'			=> $vendor[0]['vendor_industry_class'],
+				'minoritygroup_code'			=> $vendor[0]['minoritygroup_code'],
+				'vendor_women_flag'			=> $vendor[0]['vendor_women_flag'],
+				'vendor_lastupdate_date'			=> $vendor[0]['vendor_lastupdate_date'],
+				'vendor_add_reason'			=> $vendor[0]['vendor_add_reason'],
+				'vendor_customernum'			=> $vendor[0]['vendor_customernum'],
+				'vendor_suppliernum'			=> $vendor[0]['vendor_suppliernum'],
+				'vendortype_id'			=> $vendor[0]['vendortype_id'],
+				'vendor_active_startdate'			=> $vendor[0]['vendor_active_startdate'],
+				'vendor_active_enddate'			=> $vendor[0]['vendor_active_enddate'],
+				'vendor_bank_accname'			=> $vendor[0]['vendor_bank_accname'],
+				'vendor_bank_accnum'			=> $vendor[0]['vendor_bank_accnum'],
+				'vendor_banknum'			=> $vendor[0]['vendor_banknum'],
+				'vendor_bank_acctype'			=> $vendor[0]['vendor_bank_acctype'],
+				'vendor_auto_calc_interest_flag'			=> $vendor[0]['vendor_auto_calc_interest_flag'],
+				'vendor_tax_reporting_name'			=> $vendor[0]['vendor_tax_reporting_name'],
+				'vendor_name_control'			=> $vendor[0]['vendor_name_control'],
+				'vendor_type1099'			=> $vendor[0]['vendor_type1099'],
+				'withholdingstatus_code'			=> $vendor[0]['withholdingstatus_code'],
+				'vendor_withhold_startdate'			=> $vendor[0]['vendor_withhold_startdate'],
+				'vendor_tax_rounding'			=> $vendor[0]['vendor_tax_rounding'],
+				'vendor_tax_calc_flag'			=> $vendor[0]['vendor_tax_calc_flag'],
+				'vendor_tax_calc_override'			=> $vendor[0]['vendor_tax_calc_override'],
+				'vendor_amt_include_tax_flag'			=> $vendor[0]['vendor_amt_include_tax_flag'],
+				'vendor_awt_flag'			=> $vendor[0]['vendor_awt_flag'],
+				'vendor_tax_verif_date'			=> $vendor[0]['vendor_tax_verif_date'],
+				'vendor_smallbusiness_flag'			=> $vendor[0]['vendor_smallbusiness_flag'],
+				'paymentmethod_code'			=> $vendor[0]['paymentmethod_code'],
+				'paydatebasis_code'			=> $vendor[0]['paydatebasis_code'],
+				'paygroup_code'			=> $vendor[0]['paygroup_code'],
+				'vendor_ap_bank_number'			=> $vendor[0]['vendor_ap_bank_number'],
+				'vendor_check_digits'			=> $vendor[0]['vendor_check_digits'],
+				'vendor_paypriority'			=> $vendor[0]['vendor_paypriority'],
+				'vendor_allowunordered_flag'			=> $vendor[0]['vendor_allowunordered_flag'],
+				'vendor_match'			=> $vendor[0]['vendor_match'],
+				'vendor_holdunmatched_invc_flag'			=> $vendor[0]['vendor_holdunmatched_invc_flag'],
+				'vendor_exclusive_payment_flag'			=> $vendor[0]['vendor_exclusive_payment_flag'],
+				'vendor_debit_memo_flag'			=> $vendor[0]['vendor_debit_memo_flag'],
+				'vendor_paymenthold_flag'			=> $vendor[0]['vendor_paymenthold_flag'],
+				'vendor_paymenthold_fut_flag'			=> $vendor[0]['vendor_paymenthold_fut_flag'],
+				'vendor_paymenthold_reason'			=> $vendor[0]['vendor_paymenthold_reason'],
+				'vendor_invoice_currency'			=> $vendor[0]['vendor_invoice_currency'],
+				'vendor_payment_currency'			=> $vendor[0]['vendor_payment_currency'],
+				'vendor_allowsub_flag'			=> $vendor[0]['vendor_allowsub_flag'],
+				'vendor_termsdatebasis'			=> $vendor[0]['vendor_termsdatebasis'],
+				'vendor_minorder'			=> $vendor[0]['vendor_minorder'],
+				'vendor_invoice_maxamount'			=> $vendor[0]['vendor_invoice_maxamount'],
+				'vendor_purchasehold_flag'			=> $vendor[0]['vendor_purchasehold_flag'],
+				'vendor_purchasehold_reason'			=> $vendor[0]['vendor_purchasehold_reason'],
+				'vendor_purchasehold_date'			=> $vendor[0]['vendor_purchasehold_date'],
+				'vendor_inspectionreq_flag'			=> $vendor[0]['vendor_inspectionreq_flag'],
+				'vendor_receiptreq_flag'			=> $vendor[0]['vendor_receiptreq_flag'],
+				'vendor_discount_exclude_freight'			=> $vendor[0]['vendor_discount_exclude_freight'],
+				'vendor_fed_report_flag'			=> $vendor[0]['vendor_fed_report_flag'],
+				'submit_userprofile_id'			=> $vendor[0]['submit_userprofile_id'],
+				'default_paymenttype_id'			=> $vendor[0]['default_paymenttype_id'],
+				'organization_type_code'			=> $vendor[0]['organization_type_code'],
+				'finance_vendor'			=> $vendor[0]['finance_vendor'],
+				'default_due_date'			=> $vendor[0]['default_due_date'],
+			], ['vendor_id' => '?'], [$approvalTrackingId]);
+			if (!$compare && $approvalStatus == 'approved') {
+				$approvalStatus = 'active';
+			}
+
+			$this->update(['vendor_status' => $approvalStatus], ['vendor_id' => '?'], [$approvalTrackingId]);
+			$out_vendor_id = $approvalTrackingId;
+			$this->deleteAssignedGlaccounts($approvalTrackingId);
+
+			$insert = new Insert();
+
+			$insert->into('vendorglaccounts')
+					->columns(['vendor_id', 'glaccount_id'])
+					->values(Select::get()->from(['g' => 'vendorglaccounts'])
+										->columns([new Expression('?'), 'glaccount_id'])
+										->where(['g.vendor_id' => '?']));
+
+			$result = $this->adapter->query($insert, [$approvalTrackingId, $vendorId]);
+
+			return [
+				'vendor_id'			=> $out_vendor_id,
+				'approval_status'	=> $approvalStatus
+			];
 
 		}
 	}
 
+	/**
+	 * Assign author
+	 *
+	 * @param $userprofile_id
+	 * @param $tablename
+	 * @param $tablekey_id
+	 * @param null $delegation_to_userprofile_id
+	 */
 	public function recauthorSave($userprofile_id, $tablename, $tablekey_id, $delegation_to_userprofile_id = null) {
 		$delegation_to_userprofile_id = is_null($delegation_to_userprofile_id) ? $userprofile_id : $delegation_to_userprofile_id;
 		$count = 0;
@@ -398,7 +512,23 @@ class VendorGateway extends AbstractGateway {
 		$select = new Select();
 
 		$select->from(['v' => 'vendor'])
-					->join(['vs' => 'vendorsite'], 'vs.vendor_id = v.vendor_id')
+					->join(['vs' => 'vendorsite'], 'vs.vendor_id = v.vendor_id', [
+						'vs_vendorsite_id' => 'vendorsite_id',
+						'vs_vendorsite_id_alt' => 'vendorsite_id_alt',
+						'vs_vendorsite_lastupdate_date' => 'vendorsite_lastupdate_date',
+						'vs_vendorsite_code' => 'vendorsite_code',
+						'vs_vendorsite_ship_to_location_id' => 'vendorsite_ship_to_location_id',
+						'vs_vendorsite_bill_to_location_id' => 'vendorsite_bill_to_location_id',
+						'vs_term_id' => 'term_id',
+						'vs_bill_contact_id' => 'bill_contact_id',
+						'vs_paydatebasis_code' => 'paydatebasis_code',
+						'vs_vendorsite_note' => 'vendorsite_note',
+						'vs_vendorsite_tax_reporting_flag' => 'vendorsite_tax_reporting_flag',
+						'vs_vendorsite_status' => 'vendorsite_status',
+						'vs_vendor_universalfield1' => 'vendor_universalfield1',
+						'vs_vendorsite_account_number' => 'vendorsite_account_number',
+						'vs_vendorsite_display_account_number_po' => 'vendorsite_display_account_number_po',
+					])
 					->join(['p' => 'phone'], 'p.tablekey_id = vs.vendorsite_id', ['vendorsite_phone_number' => 'phone_number', 'vendorsite_phone_ext' => 'phone_ext', 'vendorsite_phone_id' => 'phone_id'], Select::JOIN_LEFT)
 					->join(['f' => 'phone'], 'f.tablekey_id = vs.vendorsite_id', ['vendorsite_fax_phone_number' => 'phone_number', 'vendorsite_fax_id' => 'phone_id'], Select::JOIN_LEFT)
 					->join(['a' => 'address'], 'a.tablekey_id = vs.vendorsite_id')
@@ -442,6 +572,194 @@ class VendorGateway extends AbstractGateway {
 		}
 
 		return implode(',', $glaccounts);
+	}
+
+	/**
+	 * delete vendor messages
+	 *
+	 * @param $vendor_id
+	 * @return array|bool
+	 */
+	public function deleteMessages($vendor_id) {
+		$delete = new Delete();
+
+		$delete->from('messages')
+				->where(['table_name' => '?', 'tablekey_id' => '?']);
+
+		return $this->adapter->query($delete, ['vendor', $vendor_id]);
+	}
+
+	public function transferCompareVendor($vendor_id, $approval_tracking_id) {
+
+		$compare = false;
+
+		$select = new Select();
+
+//		find by vendor_id
+		$select->from(['v' => 'vendor'])
+				->columns([
+					'vendor_id_alt' => new Expression("ISNULL(v.vendor_id_alt, '')"),
+					'vendor_name' => new Expression("ISNULL(v.vendor_name, '')"),
+					'vendor_fedid' => new Expression("ISNULL(v.vendor_fedid, '')"),
+					'vendor_tax_reporting_name' => new Expression("ISNULL(v.vendor_tax_reporting_name, '')"),
+					'vendor_type_code' => new Expression("ISNULL(v.vendor_type_code, '')"),
+					'paygroup_code' => new Expression("ISNULL(v.paygroup_code, '')"),
+					'vendor_paypriority' => new Expression("ISNULL(v.vendor_paypriority, '')"),
+					'vendor_type1099' => new Expression("ISNULL(v.vendor_type1099, '')"),
+					'Vendor_Active_StartDate' => new Expression("ISNULL(v.Vendor_Active_StartDate, '')"),
+					'Vendor_Active_EndDate' => new Expression("ISNULL(v.Vendor_Active_EndDate, '')"),
+					'vendor_termsdatebasis' => new Expression("ISNULL(v.vendor_termsdatebasis, '')"),
+					'paydatebasis_code' => new Expression("ISNULL(v.paydatebasis_code, '')"),
+					'person_firstname' => new Expression("ISNULL(p.person_firstname,'')"),
+					'person_lastname' => new Expression("ISNULL(p.person_lastname,'')"),
+					'person_phone' => new Expression("REPLACE(REPLACE(REPLACE(REPLACE(ISNULL(ph.phone_number,''), '(', ''), ')', ''), '-', ''), ' ', '')"),
+					'vendor_phone' => new Expression("REPLACE(REPLACE(REPLACE(REPLACE(ISNULL(vp.phone_number,''), '(', ''), ')', ''), '-', ''), ' ', '')"),
+					'fax' => new Expression("REPLACE(REPLACE(REPLACE(REPLACE(ISNULL(f.phone_number,''), '(', ''), ')', ''), '-', ''), ' ', '')"),
+					'address_line1' => new Expression("ISNULL(a.address_line1,'')"),
+					'address_line2' => new Expression("ISNULL(a.address_line2,'')"),
+					'address_city' => new Expression("ISNULL(a.address_city,'')"),
+					'address_state' => new Expression("ISNULL(a.address_state,'')"),
+					'address_zip' => new Expression("ISNULL(a.address_zip,'')"),
+					'address_zipext' => new Expression("ISNULL(a.address_zipext,'')")
+				])
+				->join(['vs' => 'vendorsite'], 'vs.vendor_id = v.vendor_id', [])
+				->join(['c' => 'contact'], 'c.tablekey_id = vs.vendorsite_id and c.table_name=\'vendorsite\'', [], Select::JOIN_LEFT)
+				->join(['p' => 'person'], 'p.person_id = c.person_id', [], Select::JOIN_LEFT)
+				->join(['ph' => 'phone'], 'ph.tablekey_id = c.contact_id and ph.table_name = \'contact\' and ph.phonetype_id = ' . PhoneGateway::PHONE_TYPE_MAIN, [], Select::JOIN_LEFT)
+				->join(['vp' => 'phone'], 'vp.table_name=\'vendorsite\' and vp.tablekey_id =vs.vendorsite_id and vp.phonetype_id = ' . PhoneGateway::PHONE_TYPE_MAIN, [], Select::JOIN_LEFT)
+				->join(['f' => 'phone'], 'f.table_name = \'vendorsite\' and f.tablekey_id = vs.vendorsite_id and f.phonetype_id = ' . PhoneGateway::PHONE_TYPE_FAX, [], Select::JOIN_LEFT)
+				->join(['a' => 'address'], 'a.tablekey_id = vs.vendorsite_id and a.table_name = \'vendorsite\'', [], Select::JOIN_LEFT)
+				->where([
+					'v.vendor_id' => '?',
+					'vs.vendorsite_status' => '?'
+				]);
+
+		$vendor_a = $this->adapter->query($select, [$vendor_id, 'active']);
+
+		$select = new Select();
+		$select->from(['v' => 'vendor'])
+			->columns([
+				'vendor_id_alt' => new Expression("ISNULL(v.vendor_id_alt, '')"),
+				'vendor_name' => new Expression("ISNULL(v.vendor_name, '')"),
+				'vendor_fedid' => new Expression("ISNULL(v.vendor_fedid, '')"),
+				'vendor_tax_reporting_name' => new Expression("ISNULL(v.vendor_tax_reporting_name, '')"),
+				'vendor_type_code' => new Expression("ISNULL(v.vendor_type_code, '')"),
+				'paygroup_code' => new Expression("ISNULL(v.paygroup_code, '')"),
+				'vendor_paypriority' => new Expression("ISNULL(v.vendor_paypriority, '')"),
+				'vendor_type1099' => new Expression("ISNULL(v.vendor_type1099, '')"),
+				'Vendor_Active_StartDate' => new Expression("ISNULL(v.Vendor_Active_StartDate, '')"),
+				'Vendor_Active_EndDate' => new Expression("ISNULL(v.Vendor_Active_EndDate, '')"),
+				'vendor_termsdatebasis' => new Expression("ISNULL(v.vendor_termsdatebasis, '')"),
+				'paydatebasis_code' => new Expression("ISNULL(v.paydatebasis_code, '')"),
+				'person_firstname' => new Expression("ISNULL(p.person_firstname,'')"),
+				'person_lastname' => new Expression("ISNULL(p.person_lastname,'')"),
+				'person_phone' => new Expression("REPLACE(REPLACE(REPLACE(REPLACE(ISNULL(ph.phone_number,''), '(', ''), ')', ''), '-', ''), ' ', '')"),
+				'vendor_phone' => new Expression("REPLACE(REPLACE(REPLACE(REPLACE(ISNULL(vp.phone_number,''), '(', ''), ')', ''), '-', ''), ' ', '')"),
+				'fax' => new Expression("REPLACE(REPLACE(REPLACE(REPLACE(ISNULL(f.phone_number,''), '(', ''), ')', ''), '-', ''), ' ', '')"),
+				'address_line1' => new Expression("ISNULL(a.address_line1,'')"),
+				'address_line2' => new Expression("ISNULL(a.address_line2,'')"),
+				'address_city' => new Expression("ISNULL(a.address_city,'')"),
+				'address_state' => new Expression("ISNULL(a.address_state,'')"),
+				'address_zip' => new Expression("ISNULL(a.address_zip,'')"),
+				'address_zipext' => new Expression("ISNULL(a.address_zipext,'')")
+			])
+			->join(['vs' => 'vendorsite'], 'vs.vendor_id = v.vendor_id', [])
+			->join(['c' => 'contact'], 'c.tablekey_id = vs.vendorsite_id and c.table_name=\'vendorsite\'', [], Select::JOIN_LEFT)
+			->join(['p' => 'person'], 'p.person_id = c.person_id', [], Select::JOIN_LEFT)
+			->join(['ph' => 'phone'], 'ph.tablekey_id = c.contact_id and ph.table_name = \'contact\' and ph.phonetype_id = ' . PhoneGateway::PHONE_TYPE_MAIN, [], Select::JOIN_LEFT)
+			->join(['vp' => 'phone'], 'vp.table_name=\'vendorsite\' and vp.tablekey_id =vs.vendorsite_id and vp.phonetype_id = ' . PhoneGateway::PHONE_TYPE_MAIN, [], Select::JOIN_LEFT)
+			->join(['f' => 'phone'], 'f.table_name = \'vendorsite\' and f.tablekey_id = vs.vendorsite_id and f.phonetype_id = ' . PhoneGateway::PHONE_TYPE_FAX, [], Select::JOIN_LEFT)
+			->join(['a' => 'address'], 'a.tablekey_id = vs.vendorsite_id and a.table_name = \'vendorsite\'', [], Select::JOIN_LEFT)
+			->where([
+				'v.vendor_id' => '?',
+				'vs.vendorsite_status' => '?'
+			]);
+
+		$vendor_b = $this->adapter->query($select, [$approval_tracking_id, 'forapproval']);
+
+
+		if (!$vendor_a || !$vendor_b) {
+			return false;
+		}
+
+		foreach ($vendor_a[0] as $key => $value) {
+			if ($vendor_a[0][$key] !== $vendor_b[0][$key]) {
+				return true;
+			}
+		}
+
+
+		return $compare;
+	}
+
+	/**
+	 * Delete glaccounts
+	 *
+	 * @param $vendor_id
+	 * @return array|bool
+	 */
+	public function deleteAssignedGlaccounts($vendor_id) {
+		$delete = new Delete();
+
+		$delete->from('vendorglaccounts')
+				->where(['vendor_id' => '?']);
+
+		return $this->adapter->query($delete, [$vendor_id]);
+	}
+
+	/**
+	 * Find vendorsite id
+	 *
+	 * @param $vendor_id
+	 * @param $status
+	 * @param $asp_client_id
+	 * @return null
+	 */
+	public function findLocalVendorsiteId($vendor_id, $status, $asp_client_id) {
+		$select = new Select();
+
+		$select->from(['vo' => 'vendor'])
+			->columns([])
+			->join(['v' => 'vendor'], 'vo.vendor_id = v.approval_tracking_id', [], Select::JOIN_INNER)
+			->join(['vs' => 'vendorsite'], null, ['vendorsite_id'], Select::JOIN_CROSS)
+			->join(['vso' => 'vendorsite'], 'vs.approval_tracking_id = vso.vendorsite_id and vo.vendor_id = vso.vendor_id', [], Select::JOIN_INNER)
+			->join(['i' => 'integrationpackage'], ' i.integration_package_id = v.integration_package_id', [], Select::JOIN_INNER)
+			->where([
+				'v.vendor_id'	=> '?',
+				'vs.vendorsite_status'	=> '?',
+				'i.asp_client_id'		=> '?'
+			]);
+
+		$local_vendorsite_id = $this->adapter->query($select, [$vendor_id, $status, $asp_client_id]);
+
+		if (!isset($local_vendorsite_id[0]['vendorsite_id'])) {
+			return null;
+		}
+
+		return $local_vendorsite_id[0]['vendorsite_id'];
+	}
+
+	/**
+	 * Retrieve vendortype id
+	 *
+	 * @param $vendortype_code
+	 * @param $integrationPackage_id
+	 * @return mixed
+	 */
+	public function findVendortypeByCodeAndIntegrationPackageId($vendortype_code, $integrationPackage_id) {
+		$select = new Select();
+
+		$select->from(['vt' => 'vendortype'])
+				->where(
+					[
+						'vt.vendortype_code' => '?',
+						'vt.integration_package_id' => '?'
+					])
+				->columns(['vendortype_id']);
+
+		$retult = $this->adapter->query($select, [$vendortype_code, $integrationPackage_id]);
+
+		return $retult[0]['vendortype_id'];
 	}
 }
 

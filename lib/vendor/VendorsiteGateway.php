@@ -38,7 +38,7 @@ class VendorsiteGateway extends AbstractGateway {
 
 		$count = $this->adapter->query($select, [$vendorId, $vendorsiteAddressCity, $vendorsiteStatus, $aspClientId, 'vendorsite']);
 
-		$vendorsitecode = substr($vendorsiteAddressCity, 0, 15-strlen($count[0]['site_count'])) . strval($count[0]['site_count']);
+		$vendorsitecode = strtoupper(substr($vendorsiteAddressCity, 0, 15-strlen($count[0]['site_count'])) . strval($count[0]['site_count']));
 
 		return $vendorsitecode;
 	}
@@ -95,5 +95,142 @@ class VendorsiteGateway extends AbstractGateway {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Approve vendorsite
+	 *
+	 * @param $asp_client_id
+	 * @param $vendor_id
+	 * @param $vendorsite_id
+	 * @param $userprofile_id
+	 * @param $approvalStatus
+	 * @param $skipMessages
+	 */
+	public function vendorsiteApprove($asp_client_id, $vendor_id, $vendorsite_id, $userprofile_id, $approvalStatus, $skipMessages) {
+		$approval_id = $this->findApproval($vendorsite_id, $asp_client_id);
+
+		if ($approval_id && $approval_id == $vendorsite_id) {
+			$result = $this->update(
+				[
+					'vendorsite_status'	=> $approvalStatus
+				],
+				[
+					'vendorsite_id'	=> '?'
+				],
+				[$vendorsite_id]
+			);
+
+			if ($result) {
+				return $vendorsite_id;
+			}
+
+			return false;
+		} else {
+			$select = new Select();
+
+			$select->from(['vs' => 'vendorsite'])
+					->columns([
+						'vendorsite_code',
+						'vendorsite_lastupdate_date',
+						'vendorsite_ship_to_location_id',
+						'vendorsite_bill_to_location_id',
+						'term_id',
+						'bill_contact_id',
+						'paygroup_code',
+						'paydatebasis_code',
+						'freightterms_code',
+						'vendorsite_note',
+						'submit_userprofile_id',
+						'vendor_universalfield1'
+					])
+					->join(['v' => 'vendor'], 'vs.vendor_id = v.vendor_id', [])
+					->join(['i' => 'integrationpackage'], 'i.integration_package_id = v.integration_package_id', [])
+					->join(['a' => 'address_view'], "vs.vendorsite_id = a.tablekey_id AND a.table_name = 'vendorsite' AND a.addresstype_name = 'Mailing'", ['addresstype_id', 'address_line1', 'address_line2', 'address_city', 'address_state', 'address_zip', 'address_zipext'])
+					->join(['p' => 'phone_view'], "vs.vendorsite_id = p.tablekey_id AND p.table_name = 'vendorsite' AND p.phonetype_name = 'Main'", ['phone_number', 'phone_ext'])
+					->join(['p2' => 'phone_view'], "vs.vendorsite_id = p2.tablekey_id AND p2.table_name = 'vendorsite' AND p2.phonetype_name = 'Fax'", ['phone_number'])
+					->join(['e' => 'email_view'], "vs.vendorsite_id = e.tablekey_id AND e.table_name = 'vendorsite' AND e.emailtype_name = 'Primary'", ['email_address'])
+					->join(['c' => 'contact_view'], "vs.vendorsite_id = c.tablekey_id AND c.table_name = 'vendorsite' AND c.contacttype_name = 'Vendor Contact'", ['person_firstname', 'person_lastname'])
+					->join(['p3' => 'phone_view'], "c.contact_id = p3.tablekey_id AND p3.table_name = 'contact' AND p3.phonetype_name = 'Main'", ['phone_number', 'phone_ext'])
+					->where(['vs.vendorsite_id' => '?', 'i.asp_client_id' => '?']);
+
+			$vendor = $this->adapter->query($select, [$vendorsite_id, $asp_client_id]);
+
+
+			$this->update(
+				[
+					'vendorsite_code'	=> $vendor[0]['vendorsite_code'],
+					'vendorsite_lastupdate_date'	=> $vendor[0]['vendorsite_lastupdate_date'],
+					'vendorsite_ship_to_location_id'	=> $vendor[0]['vendorsite_ship_to_location_id'],
+					'vendorsite_bill_to_location_id'	=> $vendor[0]['vendorsite_bill_to_location_id'],
+					'term_id'	=> $vendor[0]['term_id'],
+					'bill_contact_id'	=> $vendor[0]['bill_contact_id'],
+					'paygroup_code'	=> $vendor[0]['paygroup_code'],
+					'paydatebasis_code'	=> $vendor[0]['paydatebasis_code'],
+					'freightterms_code'	=> $vendor[0]['freightterms_code'],
+					'vendorsite_note'	=> $vendor[0]['vendorsite_note'],
+					'submit_userprofile_id'	=> $vendor[0]['submit_userprofile_id'],
+					'vendor_universalfield1'	=> $vendor[0]['vendor_universalfield1'],
+					'vendorsite_status'		=> $approvalStatus
+				],
+				[
+					'vendorsite_id'	=> '?'
+				],
+				[$approval_id]
+			);
+		}
+	}
+
+	/**
+	 * Retrieve approval id
+	 *
+	 * @param $vendorsite_id
+	 * @param $asp_client_id
+	 * @return null
+	 */
+	protected function findApproval($vendorsite_id, $asp_client_id) {
+		$select = new Select();
+
+		$select->from(['vs' => 'vendorsite'])
+			->columns(['approval_tracking_id'])
+			->join(['v' => 'vendor'], 'vs.vendor_id = v.vendor_id', [], Select::JOIN_INNER)
+			->join(['i' => 'integrationpackage'], 'i.integration_package_id = v.integration_package_id', [], Select::JOIN_INNER)
+			->where([
+				'vs.vendorsite_id'	=> '?',
+				'i.asp_client_id'	=> '?'
+			]);
+
+		$approval_id = $this->adapter->query($select, [$vendorsite_id, $asp_client_id]);
+
+		return isset($approval_id[0]['approval_tracking_id']) ? $approval_id[0]['approval_tracking_id'] : null;
+	}
+
+	/**
+	 * find address
+	 *
+	 * @param $vendorsite_id
+	 * @param $asp_client_id
+	 */
+	public function findAddressAndPhoneInfoByVendorsiteId($vendorsite_id, $asp_client_id) {
+		$approval_id = $this->findApproval($vendorsite_id, $asp_client_id);
+		$address = [];
+		if ($approval_id) {
+			$select = new Select();
+			$select->from(['vs' => 'vendorsite'])
+				->columns([])
+				->join(['v' => 'vendor'], 'vs.vendor_id = v.vendor_id', [])
+				->join(['i' => 'integrationpackage'], 'i.integration_package_id = v.integration_package_id')
+				->join(['a' => 'address_view'], "vs.vendorsite_id = a.tablekey_id AND a.table_name = 'vendorsite' AND a.addresstype_name = 'Mailing'", ['address_id'])
+				->join(['p' => 'phone_view'], "vs.vendorsite_id = p.tablekey_id AND p.table_name = 'vendorsite' AND p.phonetype_name = 'Main'", ['phone_id'])
+				->join(['p2' => 'phone_view'], "vs.vendorsite_id = p2.tablekey_id AND p2.table_name = 'vendorsite' AND p2.phonetype_name = 'Fax'", ['phone_id'])
+				->join(['e' => 'email_view'], "vs.vendorsite_id = e.tablekey_id AND e.table_name = 'vendorsite' AND e.emailtype_name = 'Primary'", ['email_id'])
+				->join(['c' => 'contact_view'], "vs.vendorsite_id = c.tablekey_id AND c.table_name = 'vendorsite' AND c.contacttype_name = 'Vendor Contact'", ['person_id'])
+				->join(['p3' => 'phone_view'], "c.contact_id = p3.tablekey_id AND p3.table_name = 'contact' AND p3.phonetype_name = 'Main'", ['phone_id'])
+				->where(['vs.vendorsite_id' => '?', 'i.asp_client_id' => '?']);
+
+			$address = $this->adapter->query($select, [$approval_id, $asp_client_id]);
+		}
+
+		return $address;
 	}
 }

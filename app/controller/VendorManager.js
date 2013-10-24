@@ -115,7 +115,7 @@ Ext.define('NP.controller.VendorManager', {
             bind: {
                 models: [
                     'vendor.Vendor',
-                    'vendor.Vendorsite',
+					{class: 'vendor.Vendorsite', prefix: 'vs_'},
                     'contact.Person',
                     'contact.Address',
                     'contact.Email',
@@ -210,6 +210,7 @@ Ext.define('NP.controller.VendorManager', {
                     vendorsite_DaysNotice_InsuranceExpires: values['vendorsite_DaysNotice_InsuranceExpires']
                 },
                 success: function(result, deferred) {
+					console.log('success');
                     if (result.success) {
                         NP.Util.showFadingWindow({ html: that.saveSuccessText });
                         that.application.addHistory('VendorManager:showVendorManager');

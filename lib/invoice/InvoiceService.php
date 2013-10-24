@@ -238,6 +238,16 @@ class InvoiceService extends AbstractService {
 			$this->invoiceGateway->rollback();
 		}
 	}
+
+	/**
+	 * Retrieve invoice payment types
+	 *
+	 * @param null $paymentType_id
+	 * @return array|bool
+	 */
+	public function getPaymentTypes($paymentType_id = null) {
+		return $this->invoiceGateway->getPaymentTypes($paymentType_id);
+	}
 	
 }
 

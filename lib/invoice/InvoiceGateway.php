@@ -528,6 +528,26 @@ class InvoiceGateway extends AbstractGateway {
 
 		$this->adapter->query($update, $params);
 	}
+
+	/**
+	 *
+	 * Retrieve payments types
+	 *
+	 * @param $paymentType
+	 * @return array|bool
+	 */
+	public function getPaymentTypes($paymentType) {
+		$select = new Select();
+
+		$select->from(['pt' => 'invoicepaymenttype'])
+				->whereNest('OR')
+				->whereEquals('pt.invoicepayment_type_id', $paymentType)
+				->whereIsNull('pt.invoicepayment_type_id')
+				->whereUnNest()
+				->where(['pt.universal_field_status' => '?']);
+
+		return $this->adapter->query($select, [1]);
+	}
 }
 
 ?>

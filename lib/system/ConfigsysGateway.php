@@ -113,7 +113,7 @@ class ConfigsysGateway extends AbstractGateway {
 	 * @param $name
 	 * @return mixed
 	 */
-	public function findConfigSysValByName($name) {
+	public function findConfigSysValByName($name, $default_value = null) {
 		$select  = new Select();
 
 		$select->from(['c' => 'configsys'])
@@ -122,7 +122,7 @@ class ConfigsysGateway extends AbstractGateway {
 
 		$result = $this->adapter->query($select, [$name]);
 
-		return $result[0];
+		return isset($result[0]['configsysval_val']) ? $result[0]['configsysval_val'] : $default_value;
 	}
 }
 
