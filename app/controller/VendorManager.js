@@ -11,7 +11,8 @@ Ext.define('NP.controller.VendorManager', {
         'NP.lib.core.Config',
         'NP.lib.core.Security',
         'NP.lib.core.Net',
-        'NP.lib.core.Util'
+        'NP.lib.core.Util',
+		'NP.view.shared.button.Upload'
     ],
 //  for localization
 
@@ -31,19 +32,26 @@ Ext.define('NP.controller.VendorManager', {
 					this.addHistory('VendorManager:showVendorManager:' + activeTab);
 				}
 			},
+//			change tab
+			'[xtype="vendor.vendorform"] tabpanel': {
+				tabchange: function(tabPanel, newCard, oldCard, eOpts) {
+					var activeTab = newCard.getItemId();
+					this.showFormTab(activeTab);
+				}
+			},
 //			add new vendor click button handler
-			'[xtype="vendor.vendorsmanager"] [xtype="shared.button.new"]': {
+			'[xtype="vendor.vendorsmanager"]  [xtype="shared.button.new"]': {
 				click: function() {
 					this.showVendorForm();
 				}
 			},
 //			cancel click button handler
-			'[xtype="vendor.vendorform"] [xtype="shared.button.cancel"]': {
+			'[xtype="vendor.vendorform"] vendortbar [xtype="shared.button.cancel"]': {
 				click: function() {
 					this.showVendorManager();
 				}
 			},
-//			cancel click button handler
+
             '[xtype="vendor.vendorform"] [xtype="shared.button.save"]': {
                 click: function() {
                     this.saveVendor();
@@ -145,8 +153,10 @@ Ext.define('NP.controller.VendorManager', {
             });
         }
 
+
 		var form = this.setView('NP.view.vendor.VendorForm', viewCfg);
         this.findIntegrationPackage(form);
+		this.showFormTab('baseinformation', vendor_id ? true : false);
 	},
 
     /**
@@ -242,5 +252,139 @@ Ext.define('NP.controller.VendorManager', {
      */
     viewVendor: function(grid, rec, rowIndex) {
         this.showVendorForm(rec.internalId);
-    }
+    },
+
+	showFormTab: function(itemId, opened, isReject, insurance) {
+		var that = this;
+		var opened = !opened ? false :true;
+		var appCount = 1;
+		var vendorStatus = '';
+
+		var bar = [
+			{
+				xtype: 'shared.button.cancel',
+				handler: function() {
+					that.showVendorManager();
+				}
+			}
+		];
+		var form = this.getCmp('vendor.vendorform');
+		var opened = !opened ? form.opened : opened;
+		if (!opened) {
+			if (isReject) {
+				bar.push({
+					xtype: 'shared.button.delete'
+				});
+			}
+			if (appCount > 0 && vendorStatus !== 'forapproval') {
+				bar.push(
+					{
+						xtype: 'shared.button.save'
+					}
+				);
+			}
+			if (appCount == 0 && vendorStatus !== 'forapproval') {
+				bar.push(
+					{
+						xtype: 'button',
+						text: this.submitForApprovalTextBtn
+					},
+					{
+						xtype: 'button',
+						text: this.submitForApprovalAndUploadTextBtn
+					}
+				);
+			}
+			if (vendorStatus == 'forapproval') {
+				bar.push(
+					{
+						xtype: 'button',
+						text: this.approveTextBtn
+					},
+					{
+						xtype: 'button',
+						text: this.rejectTextBtn
+					}
+				);
+			}
+		} else {
+			if (NP.Security.getRole().get('role_name') == 'Auditor') {
+
+			} else {
+				if (insurance) {
+
+				} else {
+					console.log('not opened');
+					bar.push(
+						{
+							xtype: 'shared.button.save',
+							handler: function() {
+								that.saveVendor();
+							}
+						}
+					);
+
+					bar.push(
+						{
+							xtype: 'shared.button.new',
+							text: 'Add image'
+						}
+					);
+				}
+			}
+
+		}
+
+		if (!itemId) {
+			itemId = 'baseinformation';
+		}
+
+
+		switch (itemId) {
+			case ('baseinformation'):
+			default:
+				break;
+			case ('settings'):
+				break;
+			case ('glaccounts'):
+				bar.push(
+					{
+						xtype: 'button',
+						text: 'Update GL Assignment'
+					}
+				);
+				break;
+			case ('insurances'):
+				bar.push(
+					{
+						xtype: 'shared.button.upload',
+						text: 'Insurance upload'
+					}
+				);
+				break;
+			case ('documents'):
+				bar.push(
+					{
+						xtype: 'shared.button.upload',
+						text: 'Image upload'
+					}
+				);
+				break;
+		}
+
+
+		var docketItems = form.getDockedItems();
+		form.addDocked({
+			xtype: 'toolbar',
+			itemId: 'vendortbar',
+			dock: 'top',
+			items:bar
+		});
+		form.addDocked({
+			xtype: 'toolbar',
+			itemId: 'vendorbbar',
+			dock: 'bottom',
+			items:bar
+		});
+	}
 });

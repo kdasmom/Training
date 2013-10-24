@@ -54,13 +54,22 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
 	initComponent: function() {
 		var that = this;
 
+		var days = [];
+
+		for (var index = 1; index <=60; index++) {
+			days.push([index]);
+		}
+		var daysStore = new Ext.data.ArrayStore({
+			data   : days,
+			fields : ['day']
+		});
+
         this.defaults = {
             labelWidth: 150,
             width: 500,
-			autoScroll: true,
 			autoHeight: true
         };
-//		this.autoScroll = true;
+
 
         this.items = [
             {
@@ -277,17 +286,40 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
 			this.items.push({
 				xtype: 'combobox',
 				name: 'default_glaccount_id',
+				displayField: 'glaccount_name',
+				valueField: 'glaccount_id',
+				store: Ext.create('NP.store.gl.GlAccounts', {
+					service           : 'GLService',
+					action            : 'getAll',
+					autoLoad          : true,
+					extraParams: {
+						pageSize: null
+					}
+				}),
 				fieldLabel: this.defaultGlAccountInputLabel
 			});
 			this.items.push({
 				xtype: 'combobox',
 				name: 'default_paymenttype_id',
-				fieldLabel: this.defaultPaymentTypeInputLabel
+				valueField: 'invoicepayment_type_id',
+				displayField: 'invoicepayment_type',
+				fieldLabel: this.defaultPaymentTypeInputLabel,
+				store: Ext.create('NP.store.invoice.InvoicePaymentTypes', {
+					service           : 'InvoiceService',
+					action            : 'getPaymentTypes',
+					autoLoad          : true,
+					extraParams: {
+						pageSize: null,
+						paymentType_id: null
+					}
+				})
 			});
 			this.items.push({
 				xtype: 'combobox',
 				name: 'default_due_datetm',
-				fieldLabel: this.defaultDateSettingsInputLabel
+				displayField: 'day',
+				fieldLabel: this.defaultDateSettingsInputLabel,
+				store: daysStore
 			});
 			this.items.push({
 				xtype: 'shared.yesnofield',

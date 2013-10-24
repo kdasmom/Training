@@ -14,20 +14,24 @@ Ext.define('NP.view.vendor.VendorForm', {
 		'NP.view.vendor.VendorNameAndInformation',
 		'NP.view.vendor.VendorAssignGlAccouns',
 		'NP.view.vendor.VendorInsuranceSetup',
-		'NP.view.vendor.VendorGeneralInfoAndSettings'
+		'NP.view.vendor.VendorGeneralInfoAndSettings',
+		'NP.view.vendor.VendorDocumentsForm'
 	],
 
+//	localization
 	title: 'Vendor',
     emptyErrorText: 'Cannot be empty',
+	submitForApprovalTextBtn: 'Submit for approval',
+	submitForApprovalAndUploadTextBtn: 'Submit for approval and upload',
+	approveTextBtn: 'Approve',
+	rejectTextBtn: 'Reject',
+
 	opened: false,
+	isReject: false,
+	appCount: 0,
+	vendorStatus: '',
 
 	initComponent: function() {
-		var bar = [
-			{ xtype: 'shared.button.cancel' },
-			{ xtype: 'shared.button.save'}
-		];
-		this.tbar = bar;
-		this.bbar = bar;
 
 		this.defaults = {
 			labelWidth: 125
@@ -37,12 +41,19 @@ Ext.define('NP.view.vendor.VendorForm', {
 			xtype : 'tabpanel',
 			border: false,
 			items : [
-				{ xtype: 'vendor.vendornameandinformation'},
-				{ xtype: 'vendor.vendorgeneralinfoandsettings', opened: this.opened},
-				{ xtype: 'vendor.vendorassignglaccouns'},
-				{ xtype: 'vendor.vendorinsurancesetup'}
+				{ xtype: 'vendor.vendornameandinformation', itemId: 'baseinformation'},
+				{ xtype: 'vendor.vendorgeneralinfoandsettings', opened: this.opened, itemId: 'settings'},
+				{ xtype: 'vendor.vendorassignglaccouns', itemId: 'glaccounts'},
+				{ xtype: 'vendor.vendorinsurancesetup', itemId: 'insurances'}
 			]
 		}];
+
+		if (this.opened) {
+			this.items[0].items.push({
+				xtype: 'vendor.vendordocumentsform',
+				itemId: 'documents'
+			})
+		}
 		this.callParent(arguments);
 	},
 
