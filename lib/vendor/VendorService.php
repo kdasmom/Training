@@ -191,9 +191,10 @@ class VendorService extends AbstractService {
 	 * @param $data
 	 */
 	public function saveVendor($data) {
+
 		$data['vendorsite'] = $data['vs_vendorsite'];
 		unset($data['vs_vendorsite']);
-		
+
 		$vendor = new VendorEntity($data['vendor']);
 
 		$aspClientId = $this->configService->getClientId();

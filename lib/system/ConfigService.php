@@ -74,6 +74,7 @@ class ConfigService extends AbstractService {
 	 * @return array                            An associative array with the custom field data
 	 */
 	public function getCustomFieldData($customfield_pn_type, $customfielddata_table_id) {
+
 		return $this->pnCustomFieldsGateway->findCustomFieldData($customfield_pn_type, $customfielddata_table_id);
 	}
 

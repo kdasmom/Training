@@ -10,7 +10,8 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
 	requires: [
 		'NP.lib.core.Security',
 		'NP.lib.ui.ComboBox',
-        'NP.view.shared.YesNoField'
+        'NP.view.shared.YesNoField',
+		'NP.view.shared.CustomField'
 	],
 
 	padding: 8,
@@ -336,21 +337,21 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
 				name: 'insurance_req',
 				fieldLabel: this.requiresVendorInputLabel
 			});
-			this.items.push({
-				xtype: 'checkbox',
-				name: '0_1_is_service_vendor',
-				fieldLabel: this.requiresServiceCustomFieldsInputLabel
-			});
-			this.items.push({
-				xtype: 'checkbox',
-				name: '0_10_po_electronic_submit',
-				fieldLabel: this.submitPosToVendorInputLabel
-			});
-			this.items.push({
-				xtype: 'checkbox',
-				name: '0_15_auto_email_po',
-				fieldLabel: this.autoEmailInputLabel
-			});
+//			this.items.push({
+//				xtype: 'checkbox',
+//				name: '0_1_is_service_vendor',
+//				fieldLabel: this.requiresServiceCustomFieldsInputLabel
+//			});
+//			this.items.push({
+//				xtype: 'checkbox',
+//				name: '0_10_po_electronic_submit',
+//				fieldLabel: this.submitPosToVendorInputLabel
+//			});
+//			this.items.push({
+//				xtype: 'checkbox',
+//				name: '0_15_auto_email_po',
+//				fieldLabel: this.autoEmailInputLabel
+//			});
 		} else {
 			this.items.push(
 				{
@@ -367,5 +368,22 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
 		}
 
 		this.callParent(arguments);
+	},
+
+	addCustomFields: function(fields) {
+		var that = this;
+
+		Ext.Array.each(fields, function(fieldData) {
+			that.add({
+				xtype     : 'shared.customfield',
+				fieldLabel: fieldData['customfield_label'],
+				entityType: fieldData['customfield_pn_type'],
+				type      : fieldData['customfield_type'],
+				name      : fieldData['customfield_name'],
+				number    : fieldData['universal_field_number'],
+				allowBlank: !fieldData['customfield_required'],
+				fieldCfg  : {value: fieldData['customfielddata_value'] }
+			});
+		});
 	}
 });

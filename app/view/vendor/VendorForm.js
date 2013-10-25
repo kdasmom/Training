@@ -26,10 +26,12 @@ Ext.define('NP.view.vendor.VendorForm', {
 	approveTextBtn: 'Approve',
 	rejectTextBtn: 'Reject',
 
+	// custom params
 	opened: false,
 	isReject: false,
 	appCount: 0,
 	vendorStatus: '',
+	customFieldData: [],
 
 	initComponent: function() {
 
@@ -42,7 +44,7 @@ Ext.define('NP.view.vendor.VendorForm', {
 			border: false,
 			items : [
 				{ xtype: 'vendor.vendornameandinformation', itemId: 'baseinformation'},
-				{ xtype: 'vendor.vendorgeneralinfoandsettings', opened: this.opened, itemId: 'settings'},
+				{ xtype: 'vendor.vendorgeneralinfoandsettings', opened: this.opened, itemId: 'settings', customFields: this.customFieldData},
 				{ xtype: 'vendor.vendorassignglaccouns', itemId: 'glaccounts'},
 				{ xtype: 'vendor.vendorinsurancesetup', itemId: 'insurances'}
 			]

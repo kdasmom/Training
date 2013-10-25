@@ -126,8 +126,26 @@ Ext.define('NP.controller.VendorManager', {
             },
 			opened: vendor_id ? true : false
         };
+		var customFieldsData = [];
 
         if (arguments.length > 0) {
+
+
+			NP.lib.core.Net.remoteCall({
+				requests: {
+					service                 : 'ConfigService',
+					action                  : 'getCustomFieldData',
+					customfield_pn_type     : 'vendor',
+					customfielddata_table_id: (vendor_id) ? vendor_id : 0,
+					success                 : function(result, deferred) {
+						customFieldsData = result;
+						var settingsForm = that.getCmp('vendor.vendorgeneralinfoandsettings');
+						settingsForm.addCustomFields(result);
+
+					},
+					failure: function(response, options, deferred) {}
+				}
+			});
             Ext.apply(viewCfg.bind, {
                 service    : 'VendorService',
                 action     : 'getVendor',
@@ -137,6 +155,7 @@ Ext.define('NP.controller.VendorManager', {
                 extraFields: ['glaccounts', 'insurances']
             });
             Ext.apply(viewCfg, {
+				customFieldData: customFieldsData,
                 listeners: {
                     dataloaded: function(formPanel, data) {
                         formPanel.findField('address_state').setValue(parseInt(data['address_state']));
@@ -151,11 +170,23 @@ Ext.define('NP.controller.VendorManager', {
                     }
                 }
             });
-        }
 
+
+        }
 
 		var form = this.setView('NP.view.vendor.VendorForm', viewCfg);
         this.findIntegrationPackage(form);
+
+		form.addDocked({
+			xtype: 'toolbar',
+			id: 'vendortbar',
+			dock: 'top'
+		});
+		form.addDocked({
+			xtype: 'toolbar',
+			id: 'vendorbbar',
+			dock: 'bottom'
+		});
 		this.showFormTab('baseinformation', vendor_id ? true : false);
 	},
 
@@ -210,7 +241,6 @@ Ext.define('NP.controller.VendorManager', {
                     vendorsite_DaysNotice_InsuranceExpires: values['vendorsite_DaysNotice_InsuranceExpires']
                 },
                 success: function(result, deferred) {
-					console.log('success');
                     if (result.success) {
                         NP.Util.showFadingWindow({ html: that.saveSuccessText });
                         that.application.addHistory('VendorManager:showVendorManager');
@@ -315,7 +345,6 @@ Ext.define('NP.controller.VendorManager', {
 				if (insurance) {
 
 				} else {
-					console.log('not opened');
 					bar.push(
 						{
 							xtype: 'shared.button.save',
@@ -373,19 +402,11 @@ Ext.define('NP.controller.VendorManager', {
 				break;
 		}
 
-
-		var docketItems = form.getDockedItems();
-		form.addDocked({
-			xtype: 'toolbar',
-			itemId: 'vendortbar',
-			dock: 'top',
-			items:bar
-		});
-		form.addDocked({
-			xtype: 'toolbar',
-			itemId: 'vendorbbar',
-			dock: 'bottom',
-			items:bar
-		});
+		var tbar = Ext.getCmp('vendortbar');
+		var bbar = Ext.getCmp('vendorbbar');
+		tbar.removeAll();
+		bbar.removeAll();
+		tbar.add(bar);
+		bbar.add(bar);
 	}
 });

@@ -142,5 +142,9 @@ Ext.define('NP.view.shared.CustomField', {
         if (keyNav) {
             keyNav.selectHighlighted(e);
         }
-    }
+    },
+
+	getSubmitValue: function() {
+		return this.getValue();
+	}
 });
