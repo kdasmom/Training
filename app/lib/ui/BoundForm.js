@@ -16,7 +16,7 @@ Ext.define('NP.lib.ui.BoundForm', {
 	 * @cfg {String[]/Object[]} bind.models (required)  Model(s) to bind the form against; this can be specified as a single item or an array of item; each item can be just a string with the model class (omit NP.model part) or an object if you need to specify a prefix (see docs)
 	 */
 	/**
-	 * @cfg {String}            bind.models.class       The class path of the model to bind
+	 * @cfg {String}            bind.models.classPath   The class path of the model to bind
 	 */
 	/**
 	 * @cfg {String}            bind.models.prefix      A prefix used by the form field that when added to a model field name makes it match the form field name
@@ -59,12 +59,12 @@ Ext.define('NP.lib.ui.BoundForm', {
 		Ext.each(that.bind.models, function(model, idx) {
 			// If model is not an object (just a string), make it an object for consistency
 			if ((model instanceof Object) == false) {
-				model = { class: model, prefix: '' };
+				model = { classPath: model, prefix: '' };
 				that.bind.models[idx] = model;
 			}
 			// Create an empty model
-			that.bind.models[idx].instance = Ext.create('NP.model.' + model.class);
-			that.bind.modelPointer[model.class] = idx;
+			that.bind.models[idx].instance = Ext.create('NP.model.' + model.classPath);
+			that.bind.modelPointer[model.classPath] = idx;
 		});
 
 		// Only run ajax event if service/action has been provided, otherwise just bind the models
@@ -77,13 +77,13 @@ Ext.define('NP.lib.ui.BoundForm', {
 			// Do the data binding once the form has been shown
 			this.on(this.bind.evt, function() {
 				// Create a loading mask
-				var mask = new Ext.LoadMask(that);
+				var mask = new Ext.LoadMask({ target: that });
 
 				// Build the request object 
 				var req = {
 					service    : this.bind.service,
 					action     : this.bind.action,
-					success    : function(result, deferred) {
+					success    : function(result) {
 						// Save the data loaded
 						that.loadedData = result;
 
@@ -338,14 +338,14 @@ Ext.define('NP.lib.ui.BoundForm', {
 		
 		// Add model fields to the data object
 		Ext.each(this.bind.models, function(model) {
-			var paramName = model.class.split('.');
+			var paramName = model.classPath.split('.');
 			paramName = paramName[paramName.length-1].toLowerCase();
 			data[model.prefix + paramName] = model.instance.getData();
 		});
 
 		// Create a mask if option is on
 		if (options.useMask) {
-			var mask = new Ext.LoadMask(this, { msg: options.maskText });
+			var mask = new Ext.LoadMask({ target: this, msg: options.maskText });
 			mask.show();
 		}
 
@@ -369,14 +369,14 @@ Ext.define('NP.lib.ui.BoundForm', {
 				service : options.service,
 				action  : options.action,
 				data    : data,
-				success : function(result, deferred) {
+				success : function(result) {
 					// If save is successful, run success callback
 					if (result.success) {
 						// Update models if relevant data is returned
 						if (result.updatedData) {
 							that.updateModels(result.updatedData);
 						}
-						options.success(result, deferred);
+						options.success(result);
 					// If there's a failure, process the errors
 					} else {
 						// Only try to process results if there's an errors array
@@ -398,7 +398,7 @@ Ext.define('NP.lib.ui.BoundForm', {
 							}
 						}
 						// Run the failure callback
-						options.failure(result, deferred);
+						options.failure(result);
 					}
 					// If mask option is on, remove the mask
 					if (options.useMask) {

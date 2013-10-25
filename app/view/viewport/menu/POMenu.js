@@ -7,51 +7,37 @@ Ext.define('NP.view.viewport.menu.POMenu', {
     extend: 'NP.lib.ui.HoverButton',
     alias: 'widget.viewport.menu.pomenu',
 
-    requires: ['NP.lib.core.Config','NP.lib.core.Security'],
-
-	poText                      : 'Purchase Orders',
-	registerText                : 'PO Register',
-	registerOpenText            : 'Open',
-	registerTemplateText        : 'Template',
-	registerPendingText         : 'Pending',
-	registerApprovedText        : 'Approved',
-	registerInvoicedText        : 'Invoiced',
-	registerRejectedText        : 'Rejected',
-	registerCancelledText       : 'Cancelled',
-	receiptRegisterText         : 'Receipt Register',
-	receiptRegisterOpenText     : 'Open',
-	receiptRegisterRejectedText : 'Rejected',
-	receiptRegisterPendingText  : 'Pending Approval',
-	receiptRegisterPendingstText: 'Pending Post Approval',
-	receiptRegisterApprovedText : 'Approved',
-	newText                     : 'New PO',
-	searchText                  : 'Search POs',
+    requires: [
+    	'NP.lib.core.Config',
+    	'NP.lib.core.Security',
+    	'NP.lib.core.Translator'
+    ],
 
     initComponent: function() {
-    	this.text = this.poText;
+    	this.text = NP.Translator.translate('Purchase Orders');
 		this.menu = {
 			showSeparator: false,
 			items: [
 				// PO Register
 				{
-					text: this.registerText,
+					text: NP.Translator.translate('PO Register'),
 					menu: {
 						showSeparator: false,
 						items: [
 							// Open
-							{ text: this.registerOpenText },
+							{ text: NP.Translator.translate('Open') },
 							// Template
-							{ text: this.registerTemplateText },
+							{ text: NP.Translator.translate('Template') },
 							// Pending
-							{ text: this.registerPendingText },
+							{ text: NP.Translator.translate('Pending') },
 							// Approved
-							{ text: this.registerApprovedText },
+							{ text: NP.Translator.translate('Approved') },
 							// Invoiced
-							{ text: this.registerInvoicedText },
+							{ text: NP.Translator.translate('Invoiced') },
 							// Rejected
-							{ text: this.registerRejectedText },
+							{ text: NP.Translator.translate('Rejected') },
 							// Cancelled
-							{ text: this.registerCancelledText }
+							{ text: NP.Translator.translate('Cancelled') }
 						]
 					}
 				}
@@ -61,16 +47,16 @@ Ext.define('NP.view.viewport.menu.POMenu', {
     	if ( NP.lib.core.Config.getSetting('CP.RECEIVING_ON') == 1 ) {
 			var subSection = {
 				// Receipt Register
-				text: this.receiptRegisterText,
+				text: NP.Translator.translate('Receipt Register'),
 				menu: {
 					showSeparator: false,
 					items: [
 						// Open
-						{ text: this.receiptRegisterOpenText },
+						{ text: NP.Translator.translate('Open') },
 						// Rejected
-						{ text: this.receiptRegisterRejectedText },
+						{ text: NP.Translator.translate('Rejected') },
 						// Pending Approval
-						{ text: this.receiptRegisterPendingText }
+						{ text: NP.Translator.translate('Pending Approval') }
 					]
 				}
 			};
@@ -78,13 +64,13 @@ Ext.define('NP.view.viewport.menu.POMenu', {
 			// Pending Post Approval
 			if ( NP.lib.core.Config.getSetting('RECEIPT_postapproval') == 1 ) {
 				subSection.menu.items.push({
-					text: this.receiptRegisterPendingstText
+					text: NP.Translator.translate('Pending Post Approval')
 				});
 			}
 			
 			// Approved
 			subSection.menu.items.push({
-				text: this.receiptRegisterApprovedText
+				text: NP.Translator.translate('Approved')
 			});
 			
 			this.menu.items.push(subSection);
@@ -92,12 +78,12 @@ Ext.define('NP.view.viewport.menu.POMenu', {
 		
 		// New PO
 		if ( NP.lib.core.Security.hasPermission(1027) ) {
-			this.menu.items.push({ text: this.newText });
+			this.menu.items.push({ text: NP.Translator.translate('New PO') });
 		}
 		
 		// Search POs
 		if ( NP.lib.core.Security.hasPermission(1028) ) {
-			this.menu.items.push({ text: this.searchText });
+			this.menu.items.push({ text: NP.Translator.translate('Search POs') });
 		}
 		
 		this.callParent(arguments);

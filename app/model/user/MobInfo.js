@@ -17,8 +17,8 @@ Ext.define('NP.model.user.MobInfo', {
 		{ name: 'mobinfo_phone' },
 		{ name: 'mobinfo_pin' },
 		{ name: 'userprofile_id', type: 'int' },
-		{ name: 'mobinfo_activated_datetm', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
-		{ name: 'mobinfo_deactivated_datetm', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
+		{ name: 'mobinfo_activated_datetm', type: 'date' },
+		{ name: 'mobinfo_deactivated_datetm', type: 'date' },
 		{ name: 'mobinfo_status', defaultValue: 'active' }
 	],
 

@@ -9,7 +9,7 @@ Ext.define('NP.view.shared.PropertyAssigner', {
     
     requires: ['NP.lib.core.Config'],
 
-    fieldLabel: NP.Config.getPropertyLabel(true),
+    fieldLabel: 'Properties',
 
     name        : 'properties',
     displayField: 'property_name',

@@ -9,29 +9,14 @@ Ext.define('NP.view.invoice.ViewHeader', {
 
     requires: [
     	'NP.lib.core.Config',
+    	'NP.lib.core.Translator',
     	'NP.view.shared.invoicepo.ViewHeaderPickers',
     	'NP.store.system.PriorityFlags',
-    	'NP.store.invoice.InvoicePaymentTypes'
+    	'NP.store.invoice.InvoicePaymentTypes',
+    	'Ext.layout.container.Form',
+    	'Ext.form.field.Date'
     ],
 
-    // For localization
-    title            : 'Header',
-	createdOnLbl     : 'Created On',
-	createdByLbl     : 'Created By',
-	remitAdviceLbl   : 'Remittance Advice',
-	priorityLbl      : 'Priority',
-	neededByLbl      : 'Needed By',
-	payByLbl         : 'Pay By',
-	invoiceNumLbl    : 'Invoice Number',
-	invoiceTotalLbl  : 'Invoice Total',
-	invoiceDateLbl   : 'Invoice Date',
-	invoiceDueDateLbl: 'Due Date',
-	invoicePeriodLbl : 'Invoice ' + NP.Config.getSetting('PN.General.postPeriodTerm', 'Post Period'),
-	associatedPOLbl  : 'Associated POs',
-	vendorCodeLbl    : 'Vendor Code',
-	cycleFromLbl     : 'Cycle From',
-	cycleToLbl       : 'Cycle To',
-    
     layout: {
 		type : 'hbox',
 		align: 'stretch'
@@ -39,6 +24,10 @@ Ext.define('NP.view.invoice.ViewHeader', {
 
     initComponent: function() {
     	var me        = this;
+
+    	me.title = NP.Translator.translate('Header');
+
+    	me.translateText();
 
     	me.defaults = { layout: 'form' };
     	me.items = [
@@ -204,5 +193,26 @@ Ext.define('NP.view.invoice.ViewHeader', {
 		);
 
 		return items;
+    },
+
+    translateText: function() {
+    	var me = this,
+    		periodText = NP.Config.getSetting('PN.General.postPeriodTerm', 'Post Period');
+
+    	me.createdOnLbl      = NP.Translator.translate('Created On');
+		me.createdByLbl      = NP.Translator.translate('Created By');
+		me.remitAdviceLbl    = NP.Translator.translate('Remittance Advice');
+		me.priorityLbl       = NP.Translator.translate('Priority');
+		me.neededByLbl       = NP.Translator.translate('Needed By');
+		me.payByLbl          = NP.Translator.translate('Pay By');
+		me.invoiceNumLbl     = NP.Translator.translate('Invoice Number');
+		me.invoiceTotalLbl   = NP.Translator.translate('Invoice Total');
+		me.invoiceDateLbl    = NP.Translator.translate('Invoice Date');
+		me.invoiceDueDateLbl = NP.Translator.translate('Due Date');
+		me.invoicePeriodLbl  = NP.Translator.translate('Invoice {postPeriod}', { postPeriod: periodText });
+		me.associatedPOLbl   = NP.Translator.translate('Associated POs');
+		me.vendorCodeLbl     = NP.Translator.translate('Vendor Code');
+		me.cycleFromLbl      = NP.Translator.translate('Cycle From');
+		me.cycleToLbl        = NP.Translator.translate('Cycle To');
     }
 });

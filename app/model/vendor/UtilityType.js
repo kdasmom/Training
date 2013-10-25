@@ -3,10 +3,8 @@
  * @date 9/24/13
  */
 
-Ext.define('NP.model.utility.UtilityType', {
+Ext.define('NP.model.vendor.UtilityType', {
     extend: 'Ext.data.Model',
-
-    requires: ['NP.lib.core.Config'],
 
     idProperty: 'UtilityType_Id',
     fields: [

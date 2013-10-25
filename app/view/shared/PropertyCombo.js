@@ -9,7 +9,7 @@ Ext.define('NP.view.shared.PropertyCombo', {
     
     requires: ['NP.lib.core.Config'],
 
-    fieldLabel: NP.Config.getPropertyLabel(),
+    fieldLabel: 'Property',
 
     name        : 'property_id',
     displayField: 'property_name',

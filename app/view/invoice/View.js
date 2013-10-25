@@ -12,7 +12,7 @@ Ext.define('NP.view.invoice.View', {
     	'NP.view.invoice.ViewToolbar',
         'NP.view.shared.invoicepo.ViewWarnings',
     	'NP.view.invoice.ViewHeader',
-    	'NP.view.invoice.ViewCustomFields',
+        'NP.view.shared.CustomFieldContainer',
     	'NP.view.invoice.ViewLineItems',
     	'NP.view.invoice.ViewNotes',
     	'NP.view.invoice.ViewReclass',
@@ -21,43 +21,39 @@ Ext.define('NP.view.invoice.View', {
         'NP.view.shared.invoicepo.HistoryLogGrid'
     ],
 
-    layout: 'fit',
+    layout: {
+        type : 'vbox',
+        align: 'stretch'
+    },
+
+    autoScroll: true,
+    defaults  : { cls: 'invoiceViewPanel', frame: true },
 
     // For localization
     title: 'Invoice',
 
     initComponent: function() {
-    	var me           = this,
-    		centerRegion = {
-				region    : 'center',
-				xtype     : 'panel',
-				border    : false,
-				autoScroll: true,
-				defaults  : { cls: 'invoiceViewPanel', frame: true },
-				items     : [
-                    { xtype: 'shared.invoicepo.viewwarnings', type: 'invoice' },
-		    		{ xtype: 'invoice.viewheader' },
-		    		{ xtype: 'invoice.viewcustomfields' },
-                    { xtype: 'invoice.viewlineitems', type: 'invoice' },
-		    		{ xtype: 'invoice.viewnotes' }
-		    	]
-			};
+    	var me    = this;
 
-    	me.tbar = { xtype: 'invoice.viewtoolbar' };
+        me.tbar = { xtype: 'invoice.viewtoolbar' };
 
-        me.items = [];
+		me.items = [
+            { xtype: 'shared.invoicepo.viewwarnings', type: 'invoice' },
+            { xtype: 'invoice.viewheader' },
+            { xtype: 'shared.customfieldcontainer', title: 'Custom Fields', type: 'invoice', isLineItem: 0 },
+            { xtype: 'invoice.viewlineitems', type: 'invoice' },
+            { xtype: 'invoice.viewnotes' }
+        ];
 
 		if (NP.Security.hasPermission(2094) || NP.Security.hasPermission(6093)) {
-			centerRegion.items.push({ xtype: 'invoice.viewreclass', hidden: true });
+			me.items.push({ xtype: 'invoice.viewreclass', hidden: true });
 		}
 
-		centerRegion.items.push(
+		me.items.push(
             { xtype: 'shared.invoicepo.historyloggrid', type: 'invoice', maxHeight: 400 },
     		{ xtype: 'invoice.viewpayments', hidden: true, maxHeight: 400 },
 		    { xtype: 'shared.invoicepo.forwardsgrid', title: 'Invoice Forwards', type: 'invoice', maxHeight: 400 }
 		);
-
-		me.items.push(centerRegion);
 
     	me.callParent(arguments);
     },

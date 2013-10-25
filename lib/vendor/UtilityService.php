@@ -11,34 +11,13 @@ namespace NP\vendor;
 
 use NP\core\AbstractService;
 use NP\system\ConfigService;
-use NP\property\UnitGateway;
-use NP\contact\PhoneGateway;
-use NP\contact\ContactGateway;
-use NP\contact\PersonGateway;
-use NP\property\PropertyGateway;
 use NP\util\Util;
 
 class UtilityService extends AbstractService {
-    protected $configService, $utilityGateway, $utilityAccountGateway, $utilityTypeGateway,
-            $vendorGateway, $unitGateway, $phoneGateway, $contactGateway, $personGateway,
-            $propertyGateway;
+    protected $configService;
 
-    public function __construct(ConfigService $configService, UtilityGateway $utilityGateway, 
-                                UtilityAccountGateway $utilityAccountGateway, 
-                                UtilityTypeGateway $utilityTypeGateway, VendorGateway $vendorGateway,
-                                UnitGateway $unitGateway, PhoneGateway $phoneGateway,
-                                ContactGateway $contactGateway, PersonGateway $personGateway,
-                                PropertyGateway $propertyGateway) {
+    public function __construct(ConfigService $configService) {
         $this->configService         = $configService;
-        $this->utilityGateway        = $utilityGateway;
-        $this->utilityAccountGateway = $utilityAccountGateway;
-        $this->utilityTypeGateway    = $utilityTypeGateway;
-        $this->vendorGateway         = $vendorGateway;
-        $this->unitGateway           = $unitGateway;
-        $this->phoneGateway          = $phoneGateway;
-        $this->contactGateway        = $contactGateway;
-        $this->personGateway         = $personGateway;
-        $this->propertyGateway       = $propertyGateway;
     }
 
     /**

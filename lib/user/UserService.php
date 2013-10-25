@@ -5,17 +5,7 @@ namespace NP\user;
 use NP\core\AbstractService;
 use NP\core\validation\EntityValidator;
 use NP\security\SecurityService;
-use NP\contact\PersonGateway;
-use NP\contact\AddressTypeGateway;
-use NP\contact\AddressGateway;
-use NP\contact\EmailTypeGateway;
-use NP\contact\EmailGateway;
-use NP\contact\PhoneTypeGateway;
-use NP\contact\PhoneGateway;
-use NP\property\PropertyGateway;
-use NP\property\RegionGateway;
 use NP\notification\NotificationService;
-use NP\system\TreeGateway;
 use NP\system\TreeEntity;
 
 /**
@@ -24,42 +14,11 @@ use NP\system\TreeEntity;
  * @author Thomas Messier
  */
 class UserService extends AbstractService {
-	protected $securityService, $delegationGateway, $userSettingGateway, $userprofileGateway, $roleGateway,
-			  $personGateway, $addressGateway, $emailGateway, $phoneGateway, $propertyUserprofileGateway,
-			  $mobInfoGateway, $delegationPropGateway, $propertyGateway, $regionGateway, $notificationService,
-			  $propertyUserCodingGateway, $userprofileroleGateway, $staffGateway, $addressTypeGateway,
-			  $emailTypeGateway, $phoneTypeGateway, $treeGateway, $configService;
+	protected $securityService, $notificationService, $configService;
 
-	public function __construct(SecurityService $securityService, DelegationGateway $delegationGateway, UserSettingGateway $userSettingGateway, 
-								UserprofileGateway $userprofileGateway, RoleGateway $roleGateway, PersonGateway $personGateway,
-								AddressGateway $addressGateway, EmailGateway $emailGateway, PhoneGateway $phoneGateway,
-								PropertyUserprofileGateway $propertyUserprofileGateway, MobInfoGateway $mobInfoGateway,
-								DelegationPropGateway $delegationPropGateway, PropertyGateway $propertyGateway, RegionGateway $regionGateway,
-								NotificationService $notificationService, PropertyUserCodingGateway $propertyUserCodingGateway,
-								UserprofileroleGateway $userprofileroleGateway, StaffGateway $staffGateway, AddressTypeGateway $addressTypeGateway,
-								EmailTypeGateway $emailTypeGateway, PhoneTypeGateway $phoneTypeGateway, TreeGateway $treeGateway) {
+	public function __construct(SecurityService $securityService, NotificationService $notificationService) {
 		$this->securityService            = $securityService;
-		$this->delegationGateway          = $delegationGateway;
-		$this->userSettingGateway         = $userSettingGateway;
-		$this->userprofileGateway         = $userprofileGateway;
-		$this->roleGateway                = $roleGateway;
-		$this->personGateway              = $personGateway;
-		$this->addressGateway             = $addressGateway;
-		$this->emailGateway               = $emailGateway;
-		$this->phoneGateway               = $phoneGateway;
-		$this->propertyUserprofileGateway = $propertyUserprofileGateway;
-		$this->mobInfoGateway             = $mobInfoGateway;
-		$this->delegationPropGateway      = $delegationPropGateway;
-		$this->propertyGateway            = $propertyGateway;
-		$this->regionGateway              = $regionGateway;
 		$this->notificationService        = $notificationService;
-		$this->propertyUserCodingGateway  = $propertyUserCodingGateway;
-		$this->userprofileroleGateway     = $userprofileroleGateway;
-		$this->staffGateway               = $staffGateway;
-		$this->addressTypeGateway         = $addressTypeGateway;
-		$this->emailTypeGateway           = $emailTypeGateway;
-		$this->phoneTypeGateway           = $phoneTypeGateway;
-		$this->treeGateway                = $treeGateway;
 	}
 	
 	/**
@@ -79,7 +38,7 @@ class UserService extends AbstractService {
 	public function get($userprofile_id) {
 		$res = $this->userprofileGateway->findProfileById($userprofile_id);
 		// Get property assignments for user
-		$res['properties'] = $this->getUserProperties($userprofile_id, $userprofile_id, array('property_id'));
+		$res['properties'] = $this->getUserProperties($userprofile_id, $userprofile_id, null, false, array('property_id'));
 		$res['properties'] = \NP\util\Util::valueList($res['properties'], 'property_id');
 		// Get coding property assignments for user
 		$res['coding_properties'] = $this->getUserCodingProperties($userprofile_id, array('property_id'));

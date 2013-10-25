@@ -7,39 +7,21 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
     extend: 'NP.lib.ui.HoverButton',
     alias: 'widget.viewport.menu.adminmenu',
     
-    requires: ['NP.lib.core.Config','NP.lib.core.Security'],
+    requires: [
+    	'NP.lib.core.Config',
+    	'NP.lib.core.Security',
+    	'NP.lib.core.Translator'
+    ],
 
-	adminText          : 'Administration',
-	mySettingsText     : 'My Settings',
-	userText           : 'User Manager',
-	messageText        : 'Message Center',
-	integrationText    : 'Integration',
-	propertyText       : NP.lib.core.Config.getSetting('PN.main.PropertyLabel', 'Property') + ' Setup',
-	systemText         : 'System Setup',
-	gLText             : 'GL Account Setup',
-	catalogText        : 'Catalog Maintenance',
-	importText         : 'Import/Export Utility',
-	importOverviewText : 'Overview',
-	importGLText       : 'GL',
-	importPropertyText : NP.lib.core.Config.getSetting('PN.main.PropertyLabel', 'Property'),
-	importVendorText   : 'Vendor',
-	importInvoiceText  : 'Invoice',
-	importUserText     : 'User',
-	importCustomText   : 'Custom Field',
-	importSplitsText   : 'Splits',
-	approvalBudgetsText: 'Set Approval Budget Overage',
-	utilityText        : 'Utility Setup',
-	mobileText         : 'Mobile Setup',
-
-    initComponent: function() {
-    	this.text = this.adminText;
+	initComponent: function() {
+    	this.text = NP.Translator.translate('Administration');
 		this.menu = {
 			showSeparator: false,
 			items: [
 				// My Settings
 				{
 					itemId: 'mySettingsMenuBtn',
-					text: this.mySettingsText
+					text: NP.Translator.translate('My Settings')
 				}
 			]
 		};
@@ -48,7 +30,7 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 	    if ( NP.lib.core.Security.hasPermission(4) ) {
 			this.menu.items.push({
 				itemId: 'userManagerMenuBtn',
-				text: this.userText
+				text: NP.Translator.translate('User Manager')
 			});
 		}
 		
@@ -56,13 +38,13 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 		if ( NP.lib.core.Security.hasPermission(6091) ) {
 			this.menu.items.push({
 				itemId: 'messageCenterMenuBtn',
-				text: this.messageText
+				text: NP.Translator.translate('Message Center')
 			});
 		}
 		// Integration
 		if ( NP.lib.core.Security.hasPermission(6047) ) {
 			this.menu.items.push({
-				text: this.integrationText
+				text: NP.Translator.translate('Integration')
 			});
 		}
 		
@@ -70,7 +52,7 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 		if ( NP.lib.core.Security.hasPermission(12) ) {
 			this.menu.items.push({
 				itemId: 'propertySetupMenuBtn',
-				text: this.propertyText
+				text: NP.Translator.translate('{property} Setup', { property: NP.Config.getPropertyLabel() })
 			});
 		}
 		
@@ -78,14 +60,14 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 		if ( NP.lib.core.Security.hasPermission(1066) ) {
 			this.menu.items.push({
 				itemId: 'systemSetupMenuBtn',
-				text: this.systemText
+				text: NP.Translator.translate('System Setup')
 			});
 		}
 		
 		// GL Account Setup
 		if ( NP.lib.core.Security.hasPermission(6014) ) {
 			this.menu.items.push({
-				text: this.gLText
+				text: NP.Translator.translate('GL Account Setup')
 			});
 		}
 		
@@ -93,7 +75,7 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 		if ( NP.lib.core.Security.hasPermission(6066) && NP.lib.core.Config.getSetting('VC_isOn') == 1 ) {
 			this.menu.items.push({
 				itemId: 'catalogMaintenanceMenuBtn',
-				text: this.catalogText
+				text: NP.Translator.translate('Catalog Maintenance')
 			});
 		}
 		
@@ -101,13 +83,13 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 			var subsection = {
 				// Import/Export Utility
 				itemId: 'importMenuBtn',
-				text: this.importText,
+				text: NP.Translator.translate('Import/Export Utility'),
 				menu: {
 					showSeparator: false,
 					items: [{
 						// Overview
 						itemId: 'overviewImportMenuBtn',
-						text: this.importOverviewText
+						text: NP.Translator.translate('Overview')
 					}]
 				}
 			};
@@ -116,7 +98,7 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 			if ( NP.lib.core.Security.hasPermission(6016) ) {
 				subsection.menu.items.push({
 					itemId: 'glImportMenuBtn',
-					text: this.importGLText
+					text: NP.Translator.translate('GL')
 				});
 			}
 
@@ -124,7 +106,7 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 			if ( NP.lib.core.Security.hasPermission(6017) ) {
 				subsection.menu.items.push({
 					itemId: 'propertyImportMenuBtn',
-					text: this.importPropertyText
+					text: NP.Config.getPropertyLabel()
 				});
 			}
 			
@@ -132,7 +114,7 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 			if ( NP.lib.core.Security.hasPermission(6018) ) {
 				subsection.menu.items.push({
 					itemId: 'vendorImportMenuBtn',
-					text: this.importVendorText
+					text: NP.Translator.translate('Vendor')
 				});
 			}
 			
@@ -140,7 +122,7 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 			if ( NP.lib.core.Security.hasPermission(6019) ) {
 				subsection.menu.items.push({
 					itemId: 'invoiceImportMenuBtn',
-					text: this.importInvoiceText
+					text: NP.Translator.translate('Invoice')
 				});
 			}
 			
@@ -148,7 +130,7 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 			if ( NP.lib.core.Security.hasPermission(6020) ) {
 				subsection.menu.items.push({
 					itemId: 'userImportMenuBtn',
-					text: this.importUserText
+					text: NP.Translator.translate('User')
 				});
 			}
 			
@@ -156,14 +138,14 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 			if ( NP.lib.core.Security.hasPermission(6021) ) {
 				subsection.menu.items.push({
 					itemId: 'customFieldImportMenuBtn',
-					text: this.importCustomText
+					text: NP.Translator.translate('Custom Field')
 				});
 			}
 			
 			// Splits
 			subsection.menu.items.push({
 				itemId: 'splitsImportMenuBtn',
-				text: this.importSplitsText
+				text: NP.Translator.translate('Splits')
 			});
 			
 			this.menu.items.push(subsection);
@@ -173,15 +155,15 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 		if ( NP.lib.core.Security.hasPermission(1043) ) {
 			this.menu.items.push({
                 itemId: 'budgetOverageMenuBtn',
-				text: this.approvalBudgetsText
+				text: NP.Translator.translate('Set Approval Budget Overage')
 			});
 		}
 		
 		// Utility Setup
 		if ( NP.lib.core.Security.hasPermission(1057) ) {
 			this.menu.items.push({
-				text: this.utilityText,
-                itemId: 'utilitySetupMenuBtn'
+                itemId: 'utilitySetupMenuBtn',
+				text: NP.Translator.translate('Utility Setup')
 			});
 		}
 		
@@ -189,7 +171,7 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 		Ext.log('Need to modify to only show Mobile Setup to admin users');
 		this.menu.items.push({
             itemId: 'mobileSetupMenuBtn',
-			text: this.mobileText
+			text: NP.Translator.translate('Mobile Setup')
 		});
 
 	    this.callParent(arguments);

@@ -13,7 +13,7 @@ Ext.define('NP.model.jobcosting.JbJobCode', {
 		{ name: 'jbjobcode_id', type: 'int' },
 		{ name: 'jbjobcode_desc', useNull: false },
 		{ name: 'jbjobtype_id', type: 'int' },
-		{ name: 'create_datetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+		{ name: 'create_datetm', type: 'date' },
 		{ name: 'jbjobcode_name' },
 		{ name: 'property_id', type: 'int' },
 		{ name: 'jbjobcode_status' },

@@ -70,20 +70,25 @@ Ext.define('NP.view.catalogMaintenance.types.Punchout', {
 	},
 
 	getView: function(vc) {
-		var deferred = NP.lib.core.Net.remoteCall({
+		var deferred = {};
+
+		NP.lib.core.Net.remoteCall({
 			requests: {
-				service: 'CatalogService',
-				action : 'getPunchoutUrl',
-				vc_id  : vc.get('vc_id'),
-				success: function(result, deferred) {
+				service       : 'CatalogService',
+				action        : 'getPunchoutUrl',
+				vc_id         : vc.get('vc_id'),
+				userprofile_id: NP.Security.getUser().get('userprofile_id'),
+				// TODO: need to make the property_id be pulled from a property drop-down
+				//property_id   : 158,
+				success       : function(result) {
 					var view = Ext.create('Ext.container.Container', {
 						layout: 'fit',
 						autoEl: {
 							tag: 'iframe',
-							src: result
+							src: result.url
 						}
 					});
-					deferred.resolve(view);
+					deferred.view = view;
 				}
 			}
 		});

@@ -14,7 +14,9 @@ Ext.define('NP.view.shared.CustomField', {
     requires: [
         'NP.lib.core.Config',
         'NP.lib.core.Security',
-        'NP.lib.ui.AutoComplete'
+        'NP.lib.ui.AutoComplete',
+        'NP.model.system.PnUniversalField',
+        'NP.store.system.PnUniversalFields'
     ],
 
     /**

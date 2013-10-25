@@ -9,10 +9,15 @@ Ext.define('NP.controller.UtilitySetup', {
         'NP.lib.core.Net',
         'NP.lib.core.Config',
         'NP.lib.core.Util',
-        'NP.lib.core.Security',
-        'Ext.util.History',
-        'NP.model.utility.Utility'
+        'NP.lib.core.Security'
     ],
+
+    models: ['vendor.Utility','vendor.UtilityType','contact.Person','contact.Phone'],
+
+    stores: ['vendor.UtilityTypes','property.Units','gl.GlAccounts','vendor.UtilityAccounts',
+            'vendor.Vendors'],
+
+    views: ['utilitySetup.UtilityGrid','utilitySetup.UtilitySetupForm','utilitySetup.AccountForm'],
 
     refs: [
         { ref: 'accountsGrid', selector: '[xtype="utilitysetup.utilityaccountlist"]' },
@@ -59,8 +64,7 @@ Ext.define('NP.controller.UtilitySetup', {
                     }
                 },
                 '[xtype="utilitysetup.utilityaccountlist"] [xtype="shared.button.new"]': {
-                    scope: this,
-                    click: this.onNewAccountClick
+                    click: Ext.bind(this.onNewAccountClick, this)
                 },
                 '[xtype="utilitysetup.utilityaccountlist"] [xtype="shared.button.delete"]': {
                     click: this.deleteAccounts
@@ -74,8 +78,7 @@ Ext.define('NP.controller.UtilitySetup', {
                     }
                 },
                 '[xtype="utilitysetup.accountform"] [xtype="shared.propertycombo"]': {
-                    scope : this,
-                    select: this.onSelectProperty
+                    select: Ext.bind(this.onSelectProperty, this)
                 },
                 '[xtype="utilitysetup.accountform"] [xtype="shared.button.save"]': {
                     click: function() {
@@ -207,7 +210,7 @@ Ext.define('NP.controller.UtilitySetup', {
                         utilitytypes : utilitytypes,
                         isNew        : (that.activeVendorId) ? 0 : 1
                     },
-                    success: function(result, deferred) {
+                    success: function(result) {
                         NP.Util.showFadingWindow({ html: that.saveSuccessText });
                         var util = form.getModel('vendor.Utility');
                         if (!that.activeVendorId) {
@@ -299,7 +302,7 @@ Ext.define('NP.controller.UtilitySetup', {
                     service      : 'VendorService',
                     action       : 'getVendorBySiteId',
                     vendorsite_id: vendorsite_id,
-                    success: function(result, deferred) {
+                    success: function(result) {
                         form.findField('vendor_name').setValue(result['vendor_name']);
                         that.activeVendorId = result['vendor_id'];
                     }
@@ -327,7 +330,7 @@ Ext.define('NP.controller.UtilitySetup', {
                     vendorsite_id : vendorsite_id,
                     UtilityType_Id: form.findField('UtilityType_Id').getValue()
                 },
-                success: function(result, deferred) {
+                success: function(result) {
                     NP.Util.showFadingWindow({ html: me.saveSuccessText });
                     if (add) {
                         Ext.suspendLayouts();
@@ -369,7 +372,7 @@ Ext.define('NP.controller.UtilitySetup', {
                         service         : 'UtilityAccountService',
                         action          : 'deleteUtilityAccount',
                         accounts        : accounts_id.join(','),
-                        success: function(success, deferred) {
+                        success: function(success) {
                             if (success) {
                                 NP.Util.showFadingWindow({ html: that.deleteSuccessText });
                                 Ext.each(accounts, function(account) {

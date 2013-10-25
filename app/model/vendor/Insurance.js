@@ -20,12 +20,12 @@ Ext.define('NP.model.vendor.Insurance', {
 		{ name: 'insurancetype_id', type: 'int' },
 		{ name: 'insurance_company' },
 		{ name: 'insurance_policynum' },
-		{ name: 'insurance_expdatetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+		{ name: 'insurance_expdatetm', type: 'date' },
 		{ name: 'insurance_status' },
-		{ name: 'insurance_policy_effective_datetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+		{ name: 'insurance_policy_effective_datetm', type: 'date' },
 		{ name: 'insurance_policy_limit' },
 		{ name: 'insurance_additional_insured_listed' },
-		{ name: 'insurance_policyreqthru', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+		{ name: 'insurance_policyreqthru', type: 'date' },
 
 		// These fields are not database columns
 		{ name: 'days_to_expiration', type: 'int' }

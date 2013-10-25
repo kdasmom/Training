@@ -13,13 +13,10 @@ use NP\budget\BudgetService;
  */
 class PoService extends AbstractService {
 
-	protected $securityService, $purchaseorderGateway, $poItemGateway, $budgetService;
+	protected $securityService, $budgetService;
 
-	public function __construct(PurchaseorderGateway $purchaseorderGateway, PoItemGateway $poItemGateway,
-								BudgetService $budgetService) {
-		$this->purchaseorderGateway = $purchaseorderGateway;
-		$this->poItemGateway        = $poItemGateway;
-		$this->budgetService        = $budgetService;
+	public function __construct(BudgetService $budgetService) {
+		$this->budgetService = $budgetService;
 	}
 
 	public function setSecurityService(SecurityService $securityService) {
@@ -40,7 +37,7 @@ class PoService extends AbstractService {
 	 * @return array                                Array of invoice records
 	 */
 	public function getPosToApprove($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-		return $this->purchaseorderGateway->findPosToApprove($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
+		return $this->purchaseOrderGateway->findPosToApprove($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
 	}
 
 	/**
@@ -57,7 +54,7 @@ class PoService extends AbstractService {
 	 * @return array                                Array of invoice records
 	 */
 	public function getPosReleased($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-		return $this->purchaseorderGateway->findPosReleased($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
+		return $this->purchaseOrderGateway->findPosReleased($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
 	}
 
 	/**
@@ -74,7 +71,7 @@ class PoService extends AbstractService {
 	 * @return array                                Array of invoice records
 	 */
 	public function getPosByUser($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-		return $this->purchaseorderGateway->findPosByUser($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
+		return $this->purchaseOrderGateway->findPosByUser($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
 	}
 
 	/**
@@ -91,18 +88,18 @@ class PoService extends AbstractService {
 	 * @return array                                Array of invoice records
 	 */
 	public function getPosRejected($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-		return $this->purchaseorderGateway->findPosRejected($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
+		return $this->purchaseOrderGateway->findPosRejected($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
 	}
 
 	public function rollPeriod($property_id, $newAccountingPeriod, $oldAccountingPeriod) {
-		$this->purchaseorderGateway->beginTransaction();
+		$this->purchaseOrderGateway->beginTransaction();
 
 		try {
 			// Roll PO lines
 			$this->poItemGateway->rollPeriod($property_id, $newAccountingPeriod, $oldAccountingPeriod);
 			
 			// Roll POs
-			$this->purchaseorderGateway->rollPeriod($property_id, $newAccountingPeriod, $oldAccountingPeriod);
+			$this->purchaseOrderGateway->rollPeriod($property_id, $newAccountingPeriod, $oldAccountingPeriod);
 
 			// Create new budgets if needed
 			$this->budgetService->createMissingBudgets('po');
@@ -112,9 +109,9 @@ class PoService extends AbstractService {
 				$this->budgetService->activateGlAccountYear($newAccountingPeriod->format('Y'));
 			}
 
-			$this->purchaseorderGateway->commit();
+			$this->purchaseOrderGateway->commit();
 		} catch(\Exception $e) {
-			$this->purchaseorderGateway->rollback();
+			$this->purchaseOrderGateway->rollback();
 		}
 	}
 

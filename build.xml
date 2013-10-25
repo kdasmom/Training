@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="NexusPayables" default=".help">
+    <!--
+    The build-impl.xml file imported here contains the guts of the build process. It is
+    a great idea to read that file to understand how the process works, but it is best to
+    limit your changes to this file.
+    -->
+    <import file="${basedir}/.sencha/app/build-impl.xml"/>
+
+    <!--
+    The following targets can be provided to inject logic before and/or after key steps
+    of the build process:
+
+        The "init-local" target is used to initialize properties that may be personalized
+        for the local machine.
+
+            <target name="-before-init-local"/>
+            <target name="-after-init-local"/>
+
+        The "clean" target is used to clean build output from the build.dir.
+
+            <target name="-before-clean"/>
+            <target name="-after-clean"/>
+
+        The general "init" target is used to initialize all other properties, including
+        those provided by Sencha Cmd.
+
+            <target name="-before-init"/>
+            <target name="-after-init"/>
+        
+        The "page" target performs the call to Sencha Cmd to build the 'all-classes.js' file.
+
+            <target name="-before-page"/>
+            <target name="-after-page"/>
+
+        The "build" target performs the call to Sencha Cmd to build the application.
+
+            <target name="-before-build"/>
+            <target name="-after-build"/>
+    -->
+
+    <!-- copy application files -->
+    <target name="-after-build">
+        <copy todir="${build.dir}" overwrite="true">
+            <fileset dir="${app.dir}" includes="*.php" excludes="index.php" />
+        </copy>
+
+        <copy todir="${build.dir}/vendor" file="${app.dir}/vendor/autoload.php" overwrite="true" />
+
+        <copy todir="${build.dir}/clients" overwrite="true">
+            <fileset dir="${app.dir}/clients" includes="**" />
+        </copy>
+
+        <copy todir="${build.dir}/lib" overwrite="true">
+            <fileset dir="${app.dir}/lib" includes="**" />
+        </copy>
+
+        <copy todir="${build.dir}/migrations" overwrite="true">
+            <fileset dir="${app.dir}/migrations" includes="**" />
+        </copy>
+
+        <copy todir="${build.dir}/app/locale" overwrite="true">
+            <fileset dir="${app.dir}/app/locale" includes="**" />
+        </copy>
+
+        <copy todir="${build.dir}/config" overwrite="true">
+            <fileset dir="${app.dir}/config" includes="**"
+                excludes="config.php,config.php-sample,site_config.xml,site_config.xml-sample" />
+        </copy>
+
+        <copy todir="${build.dir}/vendor/bin" overwrite="true">
+            <fileset dir="${app.dir}/vendor/bin" includes="**" />
+        </copy>
+
+        <copy todir="${build.dir}/vendor/dBug" overwrite="true">
+            <fileset dir="${app.dir}/vendor/dBug" includes="**" />
+        </copy>
+
+        <copy todir="${build.dir}/vendor/composer" overwrite="true">
+            <fileset dir="${app.dir}/vendor/composer" includes="**" />
+        </copy>
+
+        <copy todir="${build.dir}/vendor/FirePHP" overwrite="true">
+            <fileset dir="${app.dir}/vendor/FirePHP" includes="**" />
+        </copy>
+
+        <copy todir="${build.dir}/vendor/ChromePhp" overwrite="true">
+            <fileset dir="${app.dir}/vendor/ChromePhp" includes="**" />
+        </copy>
+
+        <copy todir="${build.dir}/vendor/pimple" overwrite="true">
+            <fileset dir="${app.dir}/vendor/pimple" includes="**" />
+        </copy>
+
+        <copy todir="${build.dir}/vendor/SwiftMailer" overwrite="true">
+            <fileset dir="${app.dir}/vendor/SwiftMailer" includes="**" />
+        </copy>
+
+        <copy todir="${build.dir}/vendor/symfony" overwrite="true">
+            <fileset dir="${app.dir}/vendor/symfony" includes="**" />
+        </copy>
+
+        <copy todir="${build.dir}/vendor/zendframework" overwrite="true">
+            <fileset dir="${app.dir}/vendor/zendframework" includes="**" />
+        </copy>
+
+        <copy todir="${build.dir}/resources/images" overwrite="true">
+            <fileset dir="${app.dir}/ext/src/ux/css/images"
+                includes="top2.gif,up2.gif,right2.gif,left2.gif,down2.gif,bottom2.gif" />
+        </copy>
+
+        <macrodef name="x-compress-files">
+            <attribute name="from"/>
+            <attribute name="to"/>
+            <attribute name="type"/>
+
+            <sequential>
+                <if>
+                    <equals arg1="@{type}" arg2="css"/>
+                    <then>
+                        <x-compress-css srcfile="@{from}"
+                            outfile="@{to}-min"
+                            verbose="True" />
+                    </then>
+                </if>
+
+                <if>
+                    <equals arg1="@{type}" arg2="js"/>
+                    <then>
+                        <x-compress-js srcfile="@{from}"
+                            outfile="@{to}-min"
+                            verbose="True" />
+                    </then>
+                </if>
+
+                <move file="@{to}-min"
+                    tofile="@{to}"
+                    overwrite="true" />
+
+            </sequential>
+        </macrodef>
+
+        <concat destfile="${build.dir}/resources/all.css">
+            <filelist dir="${build.dir}/resources" files="app.css,VerticalTabPanel.css"/>
+            <filelist dir="${app.dir}/ext/src/ux/css" files="ItemSelector.css"/>
+            <filelist dir="${app.dir}/vendor/BoxSelect/src" files="BoxSelect.css"/>
+        </concat>
+
+        <x-compress-files
+            from="${build.dir}/resources/all.css"
+            to="${build.dir}/resources/all.css"
+            type="css" />
+
+        <concat destfile="${build.dir}/resources/NP-all-concat.css">
+            <filelist dir="${build.dir}/resources" files="NP-all.css"/>
+            <filelist dir="${build.dir}/resources" files="all.css"/>
+        </concat>
+
+        <move file="${build.dir}/resources/NP-all-concat.css"
+            tofile="${build.dir}/resources/NP-all.css"
+            overwrite="true" />
+
+        <delete>
+            <fileset dir="${build.dir}/resources" includes="*.css" excludes="NP-all.css" />
+        </delete>
+    </target>
+
+</project>

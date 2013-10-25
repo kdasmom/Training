@@ -6,21 +6,9 @@
 Ext.define('NP.view.mySettings.Display', {
     extend: 'NP.lib.ui.BoundForm',
     alias: 'widget.mysettings.display',
+
+    requires: ['NP.lib.core.Translator'],
     
-    title: 'Display',
-
-	viewingSizeLabelText       : 'Split Screen Viewing Size',
-	customBoxText              : 'Custom',
-	viewingOrientationLabelText: 'Split Screen Viewing Orientation',
-	verticalLabelText          : 'Vertical',
-	horizontalLabelText        : 'Horizontal',
-	imagePositionLabelText     : 'Split Screen Image Position',
-	leftPositionText           : 'Left (Bottom for Horizontal View)',
-	rightPositionText          : 'Right (Top for Horizontal View)',
-	defaultViewLabelText       : 'Default View',
-	splitScreenViewText        : 'Split Screen',
-	poReceiptInvoiceViewText   : 'PO / Receipt / Invoice',
-
     layout: 'vbox',
     bodyPadding: 8,
     autoScroll: true,
@@ -31,6 +19,8 @@ Ext.define('NP.view.mySettings.Display', {
 
     initComponent: function() {
     	var that = this;
+
+        that.title = NP.Translator.translate('Display');
 
     	var bar = [
 	    	 { xtype: 'shared.button.save' }
@@ -43,38 +33,38 @@ Ext.define('NP.view.mySettings.Display', {
     		{
     			xtype: 'radiogroup',
     			itemId: 'userprofile_splitscreen_size',
-    			fieldLabel: this.viewingSizeLabelText,
+    			fieldLabel: NP.Translator.translate('Split Screen Viewing Size'),
     			defaults: { name: 'userprofile_splitscreen_size', margin: '0 5 0 0' },
     			items: [
     				{ boxLabel: '25%', inputValue: 25 },
     				{ boxLabel: '50%', inputValue: 50 },
     				{ boxLabel: '65%', inputValue: 65 },
-    				{ boxLabel: this.customBoxText, name: 'userprofile_splitscreen_size', inputValue: -1 },
+    				{ boxLabel: NP.Translator.translate('Custom'), name: 'userprofile_splitscreen_size', inputValue: -1 },
     				{ xtype: 'numberfield', hidden: true, hideLabel: true, name: 'userprofile_splitscreen_size_custom', size: 3, minValue: 0, maxValue: 75 }
     			]
     		},{
     			xtype: 'radiogroup',
-    			fieldLabel: this.viewingOrientationLabelText,
+    			fieldLabel: NP.Translator.translate('Split Screen Viewing Orientation'),
     			defaults: { name: 'userprofile_splitscreen_isHorizontal', margin: '0 5 0 0' },
     			items: [
-    				{ boxLabel: this.verticalLabelText, inputValue: 0, checked: true },
-    				{ boxLabel: this.horizontalLabelText, inputValue: 1 }
+    				{ boxLabel: NP.Translator.translate('Vertical'), inputValue: 0, checked: true },
+    				{ boxLabel: NP.Translator.translate('Horizontal'), inputValue: 1 }
     			]
     		},{
     			xtype: 'radiogroup',
-    			fieldLabel: this.imagePositionLabelText,
+    			fieldLabel: NP.Translator.translate('Split Screen Image Position'),
     			defaults: { name: 'userprofile_splitscreen_ImageOrder', margin: '0 5 0 0' },
     			items: [
-    				{ boxLabel: this.leftPositionText, inputValue: 0, checked: true },
-    				{ boxLabel: this.rightPositionText, inputValue: 1 }
+    				{ boxLabel: NP.Translator.translate('Left (Bottom for Horizontal View)'), inputValue: 0, checked: true },
+    				{ boxLabel: NP.Translator.translate('Right (Top for Horizontal View)'), inputValue: 1 }
     			]
     		},{
     			xtype: 'radiogroup',
-    			fieldLabel: this.defaultViewLabelText,
+    			fieldLabel: NP.Translator.translate('Default View'),
     			defaults: { name: 'userprofile_splitscreen_LoadWithoutImage', margin: '0 5 0 0' },
     			items: [
-    				{ boxLabel: this.splitScreenViewText, inputValue: 0, checked: true },
-    				{ boxLabel: this.poReceiptInvoiceViewText, inputValue: 1 }
+    				{ boxLabel: NP.Translator.translate('Split Screen'), inputValue: 0, checked: true },
+    				{ boxLabel: NP.Translator.translate('PO / Receipt / Invoice'), inputValue: 1 }
     			]
     		}
     	];

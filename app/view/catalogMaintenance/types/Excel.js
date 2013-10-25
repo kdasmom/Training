@@ -40,7 +40,7 @@ Ext.define('NP.view.catalogMaintenance.types.Excel', {
 	},
 
 	getView: function(vc) {
-		var deferred = Ext.create('Deft.Deferred');
+		var deferred = {};
 
 		var store = Ext.create('NP.store.catalog.VcItemCategories', {
 			storeId    : 'catalog.VcItemCategories',
@@ -83,7 +83,7 @@ Ext.define('NP.view.catalogMaintenance.types.Excel', {
 				}
 			}
 
-			deferred.resolve(grid);
+			deferred.view = grid;
 		});
 
 		return deferred;

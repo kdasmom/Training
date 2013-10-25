@@ -5,7 +5,7 @@ namespace NP\import;
 use NP\locale\LocalizationService;
 use NP\core\db\Adapter;
 use NP\system\IntegrationPackageGateway;
-use NP\gl\GLAccountGateway;
+use NP\gl\GlAccountGateway;
 use NP\property\PropertyGateway;
 use NP\property\PropertyGlAccountGateway;
 
@@ -16,7 +16,7 @@ class PropertyGLImportEntityValidator extends AbstractImportEntityValidator {
     public function __construct(LocalizationService $localizationService,
                                 Adapter $adapter,
                                 IntegrationPackageGateway $integrationPackageGateway,
-                                PropertyGateway $propertyGateway, GLAccountGateway $glAccountGateway,
+                                PropertyGateway $propertyGateway, GlAccountGateway $glAccountGateway,
                                 PropertyGlAccountGateway $propertyGlAccountGateway) {
         // Initialize the class
         parent::__construct($localizationService, $adapter);

@@ -11,8 +11,11 @@ Ext.define('NP.controller.Invoice', {
 		'NP.lib.core.Security'
 	],
 	
-	stores: ['invoice.Invoices'],
+	stores: ['invoice.Invoices','system.PriorityFlags','invoice.InvoicePaymentTypes',
+			'invoice.InvoiceItems','invoice.InvoicePayments'],
 	
+	views: ['invoice.Register','invoice.View'],
+
 	refs: [
 		{ ref: 'invoiceView', selector: '[xtype="invoice.view"]' },
 		{ ref: 'invoiceViewToolbar', selector: '[xtype="invoice.viewtoolbar"]' },
@@ -194,7 +197,7 @@ Ext.define('NP.controller.Invoice', {
 						});
 
 						// Load image if needed
-						me.loadImage();
+						/*me.loadImage();*/
 					}
 				}
 			});

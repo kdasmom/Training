@@ -19,7 +19,9 @@ Ext.define('NP.view.utilitySetup.UtilityAccountList', {
         'NP.view.shared.GlCombo',
         'NP.view.property.gridcol.PropertyName',
         'NP.view.gl.gridcol.GlAccountName',
-        'NP.view.property.gridcol.UnitNumber'
+        'NP.view.property.gridcol.UnitNumber',
+        'NP.store.gl.GlAccounts',
+        'NP.store.vendor.UtilityTypes'
     ],
 
     // For localization

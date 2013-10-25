@@ -21,7 +21,7 @@ Ext.define('NP.model.gl.GlAccount', {
 		{ name: 'glaccount_order', type: 'int' },
 		{ name: 'integration_package_id', type: 'int' },
 		{ name: 'glaccount_updateby', type: 'int' },
-		{ name: 'glaccount_updatetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+		{ name: 'glaccount_updatetm', type: 'date' },
 
 		// Calculated field that doesn't exist in the DB
 		{

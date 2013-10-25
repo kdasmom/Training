@@ -4,9 +4,6 @@ namespace NP\gl;
 
 use NP\core\AbstractService;
 use NP\core\db\Where;
-use NP\system\TreeGateway;
-use NP\system\IntegrationPackageGateway;
-use NP\gl\GlAccountTypeGateway;
 
 /**
  * All operations that are closely related to GL accounts belong in this service
@@ -15,16 +12,7 @@ use NP\gl\GlAccountTypeGateway;
  */
 class GLService extends AbstractService {
     
-    protected $securityService, $glAccountGateway, $treeGateway, $integrationPackageGateway;
-
-    public function __construct(GLAccountGateway $glAccountGateway, TreeGateway $treeGateway,
-                                IntegrationPackageGateway $integrationPackageGateway,
-                                GlAccountTypeGateway $glAccountTypeGateway) {
-            $this->glAccountGateway          = $glAccountGateway;
-            $this->treeGateway               = $treeGateway;
-            $this->integrationPackageGateway = $integrationPackageGateway;
-            $this->glAccountTypeGateway      = $glAccountTypeGateway;
-    }
+    protected $configService, $securityService;
 
     public function setConfigService(\NP\system\ConfigService $configService) {
         $this->configService = $configService;

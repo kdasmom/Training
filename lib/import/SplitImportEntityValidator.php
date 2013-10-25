@@ -7,7 +7,7 @@ use NP\system\IntegrationPackageGateway;
 use NP\vendor\VendorGateway;
 use NP\property\PropertyGateway;
 use NP\property\UnitGateway;
-use NP\gl\GLAccountGateway;
+use NP\gl\GlAccountGateway;
 use NP\system\DfSplitGateway;
 use NP\system\PnUniversalFieldGateway;
 use NP\system\ConfigService;
@@ -25,7 +25,7 @@ class SplitImportEntityValidator extends AbstractImportEntityValidator {
     public function __construct(LocalizationService $localizationService,
                                 Adapter $adapter, IntegrationPackageGateway $integrationPackageGateway,
                                 VendorGateway $vendorGateway, PropertyGateway $propertyGateway, UnitGateway $unitGateway,
-                                GLAccountGateway $glAccountGateway, DfSplitGateway $dfSplitGateway,
+                                GlAccountGateway $glAccountGateway, DfSplitGateway $dfSplitGateway,
                                 PnUniversalFieldGateway $pnUniversalFieldGateway, ConfigService $configService) {
         // Initialize the class
         parent::__construct($localizationService, $adapter);

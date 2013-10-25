@@ -6,6 +6,8 @@
 Ext.define('NP.view.shared.gridcol.PriorityFlag', {
 	extend   : 'Ext.grid.column.Column',
 	alias    : 'widget.shared.gridcol.priorityflag',
+
+	requires: ['NP.lib.core.Translator'],
 	
 	text     : 'Priority',
 	dataIndex: 'PriorityFlag_Display',
@@ -16,5 +18,11 @@ Ext.define('NP.view.shared.gridcol.PriorityFlag', {
 		}
 
 		return val;
-	}
+	},
+
+    initComponent: function() {
+    	this.text = NP.Translator.translate(this.text);
+    	
+    	this.callParent(arguments);
+    }
 });

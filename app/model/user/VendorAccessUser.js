@@ -15,7 +15,7 @@ Ext.define('NP.model.user.VendorAccessUser', {
 		{ name: 'access_password' },
 		{ name: 'active_flag', type: 'int' },
 		{ name: 'po_access', type: 'int' },
-		{ name: 'last_update_datetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+		{ name: 'last_update_datetm', type: 'date' },
 		{ name: 'default_property_id', type: 'int' },
 		{ name: 'default_vendor_id', type: 'int' },
 		{ name: 'vendor_name' },

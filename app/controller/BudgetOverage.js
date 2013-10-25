@@ -11,7 +11,14 @@ Ext.define('NP.controller.BudgetOverage', {
         'NP.lib.core.Config',
         'NP.lib.core.Security',
         'NP.lib.core.Net',
-        'NP.lib.core.Util',
+        'NP.lib.core.Util'
+    ],
+
+    models: ['budget.BudgetOverage'],
+
+    views: [
+        'budget.BudgetOverageGrid',
+        'budget.BudgetOverageForm'
     ],
 
     refs: [
@@ -132,7 +139,7 @@ Ext.define('NP.controller.BudgetOverage', {
                     userprofile_id: NP.Security.getUser().get('userprofile_id'),
                     role_id:        NP.Security.getRole().get('role_id')
                 },
-                success: function(result, deferred) {
+                success: function(result) {
                     NP.Util.showFadingWindow({ html: that.saveSuccessText });
                     that.application.addHistory('BudgetOverage:showBudgetOverage');
                 }
@@ -169,7 +176,7 @@ Ext.define('NP.controller.BudgetOverage', {
                         service: 'BudgetService',
                         action : 'budgetOverageDelete',
                         id     : id,
-                        success: function(success, deferred) {
+                        success: function(success) {
                             if (success) {
                                 NP.Util.showFadingWindow({ html: that.deleteSuccessText });
                                 grid.getStore().remove(rec);

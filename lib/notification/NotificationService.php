@@ -4,7 +4,6 @@ namespace NP\notification;
 
 use NP\core\AbstractService;
 use NP\core\validation\EntityValidator;
-use NP\user\UserprofileGateway;
 use NP\core\notification\EmailerInterface;
 use NP\core\notification\EmailMessage;
 use NP\core\Config;
@@ -16,16 +15,10 @@ use NP\core\Config;
  */
 class NotificationService extends AbstractService {
 
-	protected $config, $emailAlertTypeGateway, $emailAlertHourGateway, $emailAlertGateway, $userprofileGateway, $emailer;
+	protected $config, $emailer;
 
-	public function __construct(Config $config, EmailAlertTypeGateway $emailAlertTypeGateway,
-								EmailAlertGateway $emailAlertGateway, EmailAlertHourGateway $emailAlertHourGateway,
-								UserprofileGateway $userprofileGateway, EmailerInterface $emailer) {
+	public function __construct(Config $config, EmailerInterface $emailer) {
 		$this->config                = $config;
-		$this->emailAlertTypeGateway = $emailAlertTypeGateway;
-		$this->emailAlertGateway     = $emailAlertGateway;
-		$this->emailAlertHourGateway = $emailAlertHourGateway;
-		$this->userprofileGateway    = $userprofileGateway;
 		$this->emailer               = $emailer;
 	}
 	

@@ -13,7 +13,7 @@ Ext.define('NP.model.shared.InvoicePoForward', {
 		{ name: 'invoicepo_forward_id', type: 'int' },
 		{ name: 'table_name' },
 		{ name: 'tablekey_id', type: 'int' },
-		{ name: 'forward_datetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+		{ name: 'forward_datetm', type: 'date' },
 		{ name: 'forward_to_email' },
 		{ name: 'forward_to_userprofile_id', type: 'int' },
 		{ name: 'forward_from_userprofile_id', type: 'int' },

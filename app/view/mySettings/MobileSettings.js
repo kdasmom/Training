@@ -15,15 +15,6 @@ Ext.define('NP.view.mySettings.MobileSettings', {
         'NP.view.mobileSetup.MobileForm'
     ],
 
-    bind: {
-    	models     : ['user.MobInfo'],
-		service    : 'UserService',
-		action     : 'getMobileInfo',
-		extraParams: {
-			userprofile_id: NP.Security.getUser().get('userprofile_id')
-        }
-	},
-
     title: 'Mobile Settings',
 
     bodyPadding: 8,
@@ -37,6 +28,15 @@ Ext.define('NP.view.mySettings.MobileSettings', {
 
     	this.tbar = bar;
     	this.bbar = bar;
+
+        this.bind = {
+            models     : ['user.MobInfo'],
+            service    : 'UserService',
+            action     : 'getMobileInfo',
+            extraParams: {
+                userprofile_id: NP.Security.getUser().get('userprofile_id')
+            }
+        };
 
     	this.items = [{ xtype: 'mobilesetup.mobileform' }];
 

@@ -7,6 +7,8 @@ Ext.define('NP.store.system.PriorityFlags', {
     extend: 'Ext.data.Store',
     alias : 'store.system.priorityflags',
 	
+	requires: ['NP.lib.core.Translator'],
+	
 	model: 'NP.model.system.PriorityFlag',
 
 	data: [
@@ -32,5 +34,19 @@ Ext.define('NP.store.system.PriorityFlags', {
 			PriorityFlag_Image  : 'icon2005_urgent_priority.gif',
 			PriorityFlag_ImgAlt : 'Priority: Urgent'
 		}
-	]
+	],
+
+	constructor: function() {
+		var me = this;
+
+		me.callParent(arguments);
+
+		// We need the locale to be loaded before we can run this because we need to localize the text
+		NP.Translator.on('localeloaded', function() {
+			var recs = me.getRange();
+			for (var i=0; i<recs.length; i++) {
+				recs[i].set('PriorityFlag_Display', NP.Translator.translate(recs[i].get('PriorityFlag_Display')));
+			}
+		});
+	}
 });

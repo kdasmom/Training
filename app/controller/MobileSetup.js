@@ -11,8 +11,14 @@ Ext.define('NP.controller.MobileSetup', {
         'NP.lib.core.Config',
         'NP.lib.core.Security',
         'NP.lib.core.Net',
-        'NP.lib.core.Util',
+        'NP.lib.core.Util'
     ],
+
+    models: ['user.MobInfo'],
+
+    stores: ['user.Mobinfos','user.Userprofiles'],
+
+    views: ['mobileSetup.MobileGrid','mobileSetup.MobileInfoForm','mobileSetup.MobileForm'],
 
     // for localization
     saveSuccessText      : 'Your changes were saved.',
@@ -103,7 +109,7 @@ Ext.define('NP.controller.MobileSetup', {
                 extraParams: {
                     isNewDevice: true
                 },
-                success: function(result, deferred) {
+                success: function(result) {
                     NP.Util.showFadingWindow({ html: that.saveSuccessText });
                     that.application.addHistory('MobileSetup:showMobileInfoGrid');
                 }
@@ -136,7 +142,7 @@ Ext.define('NP.controller.MobileSetup', {
                         service: 'UserService',
                         action : action + 'Device',
                         device_list: devices_id.join(','),
-                        success: function(result, deferred) {
+                        success: function(result) {
                             if (result.success) {
                                 if (action == 'delete') {
                                     grid.getStore().remove(devices);
@@ -155,7 +161,7 @@ Ext.define('NP.controller.MobileSetup', {
                                 Ext.MessageBox.alert(that.errorDialogTitleText, failMessage);
                             }
                         },
-                        failure: function(response, options, deferred) {
+                        failure: function(response, options) {
                             Ext.MessageBox.alert(that.errorDialogTitleText, failMessage);
                         }
                     }

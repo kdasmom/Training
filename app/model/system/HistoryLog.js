@@ -11,7 +11,7 @@ Ext.define('NP.model.system.HistoryLog', {
 	idProperty: 'auditlog_id',
 	fields: [
 		{ name: 'approve_id', type: 'int' },
-		{ name: 'approve_datetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+		{ name: 'approve_datetm', type: 'date' },
 		{ name: 'approvetype_name' },
 		{ name: 'message' },
 		{ name: 'userprofile_username' },

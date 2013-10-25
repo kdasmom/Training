@@ -7,6 +7,14 @@ Ext.define('NP.view.shared.button.Reset', {
     extend: 'Ext.button.Button',
     alias: 'widget.shared.button.reset',
 
-    text: 'Reset',
-    iconCls: 'reset-btn'
+    requires: ['NP.lib.core.Translator'],
+
+    text   : 'Reset',
+    iconCls: 'reset-btn',
+
+    initComponent: function() {
+    	this.text = NP.Translator.translate(this.text);
+    	
+    	this.callParent(arguments);
+    }
 });

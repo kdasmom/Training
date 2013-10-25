@@ -11,7 +11,14 @@ Ext.define('NP.controller.SystemSetup', {
 	    'NP.lib.core.Net',
 	    'NP.lib.core.Util',
 	    'NP.lib.core.Config',
+    	'NP.lib.core.Translator'
 	],
+
+	models: ['system.DfSplit'],
+
+	stores: ['property.Properties','gl.GlAccounts','system.DfSplits'],
+
+	views: ['systemSetup.Main','systemSetup.DefaultSplitGrid','systemSetup.DefaultSplitForm'],
 
 	refs : [
 		{ ref: 'passwordConfiguration', selector: '[xtype="systemsetup.passwordconfiguration"]' },
@@ -29,24 +36,26 @@ Ext.define('NP.controller.SystemSetup', {
 		{ ref: 'addSplitAllocBtn',      selector: '#addSplitAllocBtn' }
 	],
 	
-	// For localization
-	changesSavedText       : 'Changes saved successfully',
-	errorDialogTitleText   : 'Error',
-	deleteSplitDialogTitle : 'Delete Split?',
-	deleteSplitsDialogText : 'Are you sure you want to delete the selected split(s)?',
-	deleteSplitDialogText  : 'Are you sure you want to delete this split?',
-	editSplitFormTitle     : 'Editing',
-	newSplitFormTitle      : 'New Split',
-	intPkgChangeDialogTitle: 'Change integration package?',
-	intPkgChangeDialogText : 'Are you sure you want to change integration package? Doing so will clear the entire form, removing all splits you have entered.',
-	
 	init: function() {
 		Ext.log('SystemSetup controller initialized');
 
-		var app = this.application;
+		var me = this;
+
+		// For localization
+		NP.Translator.on('localeloaded', function() {
+			me.changesSavedText       = NP.Translator.translate('Changes saved successfully');
+			me.errorDialogTitleText   = NP.Translator.translate('Error');
+			me.deleteSplitDialogTitle = NP.Translator.translate('Delete Split?');
+			me.deleteSplitsDialogText = NP.Translator.translate('Are you sure you want to delete the selected split(s)?');
+			me.deleteSplitDialogText  = NP.Translator.translate('Are you sure you want to delete this split?');
+			me.editSplitFormTitle     = NP.Translator.translate('Editing');
+			me.newSplitFormTitle      = NP.Translator.translate('New Split');
+			me.intPkgChangeDialogTitle= NP.Translator.translate('Change integration package?');
+			me.intPkgChangeDialogText = NP.Translator.translate('Are you sure you want to change integration package? Doing so will clear the entire form, removing all splits you have entered.');
+		});
 
 		// Setup event handlers
-		this.control({
+		me.control({
 			// The main System Setup panel
 			'[xtype="systemsetup.main"]': {
 				// Run this whenever the user clicks on a tab on the System Setup page
@@ -54,75 +63,75 @@ Ext.define('NP.controller.SystemSetup', {
 					Ext.log('SystemSetup onTabChange() running');
 					
 					var activeTab = Ext.getClassName(newCard).split('.').pop();
-					this.addHistory('SystemSetup:showSystemSetup:' + activeTab);
+					me.addHistory('SystemSetup:showSystemSetup:' + activeTab);
 				}
 			},
 			
 			// The Save button on the Password Configuration page
 			'[xtype="systemsetup.passwordconfiguration"] [xtype="shared.button.save"]': {
 				// Run this whenever the save button is clicked
-				click: this.savePasswordConfiguration
+				click: me.savePasswordConfiguration
 			},
 			// The Split grid
 			'[xtype="systemsetup.defaultsplitgrid"] customgrid': {
 				// Making a selection on the grid
-				selectionchange: this.selectSplit,
+				selectionchange: me.selectSplit,
 				cellclick: function(view, td, cellIndex, rec, tr, rowIndex, e) {
 					if (cellIndex != 0) {
-						this.addHistory('SystemSetup:showSystemSetup:DefaultSplits:Form:' + rec.get('dfsplit_id'));
+						me.addHistory('SystemSetup:showSystemSetup:DefaultSplits:Form:' + rec.get('dfsplit_id'));
 					}
 				}
 			},
 			// The Create New Split button
 			'[xtype="systemsetup.defaultsplitgrid"] [xtype="shared.button.new"]': {
 				click: function() {
-					this.addHistory('SystemSetup:showSystemSetup:DefaultSplits:Form');
+					me.addHistory('SystemSetup:showSystemSetup:DefaultSplits:Form');
 				}
 			},
 			// The Delete button on the split grid
 			'[xtype="systemsetup.defaultsplitgrid"] [xtype="shared.button.delete"]': {
-				click: this.deleteSplits
+				click: me.deleteSplits
 			},
 			// The default split form integration package field
 			'[xtype="systemsetup.defaultsplitform"] [name="integration_package_id"]': {
-				select: function(combo) { this.selectIntegrationPackage(combo, true) }
+				select: function(combo) { me.selectIntegrationPackage(combo, true) }
 			},
 			// The default split form allocation grid
 			'[xtype="systemsetup.defaultsplitform"] customgrid': {
 				beforeedit: function(editor, e) {
 					if (e.field == 'property_id') {
-						this.openPropertyEditor(e.record);
+						me.openPropertyEditor(e.record);
 					} else if (e.field == 'glaccount_id') {
-						this.openGlAccountEditor(e.record);
+						me.openGlAccountEditor(e.record);
 					} else if (e.field == 'unit_id') {
-						this.openUnitEditor(e.record);
+						me.openUnitEditor(e.record);
 					}
 				},
-				deleterow: this.deleteSplitItem,
-				updateproperty: this.updateProperty
+				deleterow: me.deleteSplitItem,
+				updateproperty: me.updateProperty
 			},
 			'#saveSplitFormBtn': {
-				click: this.saveSplitForm
+				click: me.saveSplitForm
 			},
 			'#copySplitFormBtn': {
-				click: this.copySplit
+				click: me.copySplit
 			},
 			'#deleteSplitFormBtn': {
-				click: this.deleteSplit
+				click: me.deleteSplit
 			},
 			'#resetSplitFormBtn': {
-				click: this.resetSplitForm
+				click: me.resetSplitForm
 			},
 			'#cancelSplitFormBtn': {
 				click: function() {
-					this.addHistory('SystemSetup:showSystemSetup:DefaultSplits');
+					me.addHistory('SystemSetup:showSystemSetup:DefaultSplits');
 				}
 			},
 			'#addSplitAllocBtn': {
-				click: this.addSplitLine
+				click: me.addSplitLine
 			},
 			'#autoAllocBtn': {
-				click: this.autoAllocSplit
+				click: me.autoAllocSplit
 			}
 		});
 
@@ -171,7 +180,7 @@ Ext.define('NP.controller.SystemSetup', {
 			requests: {
 				service    : 'ConfigService',
 				action     : 'getPasswordConfiguration',
-				success    : function(result, deferred) {
+				success    : function(result) {
 					//Formating results to integer so value types will match expecting values for form, needed for combobox
 					for( i in result){
 						result[i] = parseInt(result[i]);
@@ -200,7 +209,7 @@ Ext.define('NP.controller.SystemSetup', {
 					service    : 'ConfigService',
 					action     : 'setPasswordConfiguration',
 					data	   : values,
-					success    : function(result, deferred) {
+					success    : function(result) {
 						// If save is successful, run success callback
 						if (result.success) {
 							//Setting new password configuration settings
@@ -292,7 +301,7 @@ Ext.define('NP.controller.SystemSetup', {
 				service   : 'SplitService',
 				action    : 'deleteSplit',
 				dfsplit_id: dfsplit_id,
-				success: function(result, deferred) {
+				success: function(result) {
 					if (result.success) {
 						if (callbacks.success) {
 							callbacks.success();
@@ -434,8 +443,15 @@ Ext.define('NP.controller.SystemSetup', {
 		}
     },
 
-    openPropertyEditor: function() {
-    	this.addIntegrationPkgToStore(this.getSplitGridPropertyCombo().getStore());
+    openPropertyEditor: function(rec) {
+    	var me    = this,
+    		store = me.getSplitGridPropertyCombo().getStore(),
+    		combo = me.getSplitGridPropertyCombo();
+
+    	me.addIntegrationPkgToStore(store);
+    	store.load(function() {
+    		combo.setValue(rec.get('property_id'));
+    	});
     },
 
     updateProperty: function(store, rec) {
@@ -449,7 +465,7 @@ Ext.define('NP.controller.SystemSetup', {
 						action      : 'isGlAssigned',
 						property_id : rec.get('property_id'),
 						glaccount_id: rec.get('glaccount_id'),
-						success     : function(result, deferred) {
+						success     : function(result) {
 							// If the GL is not assigned to the property, clear it
 							if (!result) {
 								rec.set('glaccount_id', null);
@@ -464,41 +480,48 @@ Ext.define('NP.controller.SystemSetup', {
     },
 
     openGlAccountEditor: function(rec) {
-    	var that = this;
-
-    	var glStore = this.getSplitGridGlCombo().getStore();
+    	var me    = this,
+    		combo = me.getSplitGridGlCombo(),
+    		store = combo.getStore();
 
     	// Only run this if property/GL association is on
     	if (NP.Config.getSetting('CP.PROPERTYGLACCOUNT_USE') == '1') {
             var property_id = rec.get('property_id');
 
             if (property_id !== null) {
-            	if (property_id != glStore.getExtraParam('property_id')) {
-            		glStore.addExtraParams({ property_id: property_id });
-            		glStore.load();
+            	if (property_id != store.getExtraParam('property_id')) {
+            		store.addExtraParams({ property_id: property_id });
+            		store.load(function() {
+            			combo.setValue(rec.get('glaccount_id'));
+            		});
                 }
             } else {
-                glStore.removeAll();
+                store.removeAll();
             }
         // Otherwise run code for associating with integration package
         } else {
-        	this.addIntegrationPkgToStore(glStore);
+        	me.addIntegrationPkgToStore(store);
+        	store.load(function() {
+    			combo.setValue(rec.get('glaccount_id'));
+    		});
         }
     },
 
     openUnitEditor: function(rec) {
-    	var that = this;
-
-    	var unitStore = this.getSplitGridUnitCombo().getStore();
-    	var property_id = rec.get('property_id');
+    	var me          = this,
+    		combo       = me.getSplitGridUnitCombo(),
+    		store       = combo.getStore(),
+    		property_id = rec.get('property_id');
 
     	if (property_id !== null) {
-        	if (property_id != unitStore.getExtraParam('property_id')) {
-        		unitStore.addExtraParams({ property_id: property_id });
-        		unitStore.load();
+        	if (property_id != store.getExtraParam('property_id')) {
+        		store.addExtraParams({ property_id: property_id });
+        		store.load(function() {
+        			combo.setValue(rec.get('unit_id'));
+        		});
             }
         } else {
-            unitStore.removeAll();
+            store.removeAll();
         }
     },
 
@@ -573,7 +596,7 @@ Ext.define('NP.controller.SystemSetup', {
 				service     : 'SplitService',
 				action      : 'copySplit',
 				dfsplit_id  : splitRec.get('dfsplit_id'),
-				success     : function(result, deferred) {
+				success     : function(result) {
 					NP.Util.showFadingWindow({ html: that.changesSavedText });
 					that.addHistory('SystemSetup:showSystemSetup:DefaultSplits:Form:' + result.dfsplit_id);
 				}
@@ -627,7 +650,7 @@ Ext.define('NP.controller.SystemSetup', {
 					removedDfSplitItems: removedDfSplitItems
 				},
 				extraFields: { vendor_id: 'vendor_id' },
-				success: function(result, deferred) {
+				success: function(result) {
 					NP.Util.showFadingWindow({ html: that.changesSavedText });
 					that.addHistory('SystemSetup:showSystemSetup:DefaultSplits');
 				}

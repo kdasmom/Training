@@ -10,7 +10,8 @@ Ext.define('NP.view.shared.PortalTilePicker', {
 	requires: [
 		'NP.lib.core.Security',
 		'NP.store.system.SummaryStats',
-		'NP.store.system.Tiles'
+		'NP.store.system.Tiles',
+        'Ext.grid.plugin.DragDrop'
 	],
 
 	enableDragDrop: true,
