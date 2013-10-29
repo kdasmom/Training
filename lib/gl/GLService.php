@@ -148,8 +148,8 @@ class GLService extends AbstractService {
     public function getByProperty($property_id, $keyword=null) {
         $wheres = array(
             array(
-                'glaccount_usable'       => '?',
-                'glaccount_status'       => '?'
+                'g.glaccount_usable'       => '?',
+                'g.glaccount_status'       => '?'
             ),
             new sql\criteria\GlPropertyCriteria(),
             new sql\criteria\GlIsCategoryCriteria()

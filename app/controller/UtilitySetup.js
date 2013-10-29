@@ -277,6 +277,12 @@ Ext.define('NP.controller.UtilitySetup', {
                         }
 
                         form.findField('vendor_name').setValue(data['vendor_name']);
+                        
+                        form.findField('property_id').setDefaultRec(Ext.create('NP.model.property.Property', {
+                            property_id    : data['property_id'],
+                            property_id_alt: data['property_id_alt'],
+                            property_name  : data['property_name']
+                        }));
 
                         that.activeVendorId = data['vendor_id'];
                     }

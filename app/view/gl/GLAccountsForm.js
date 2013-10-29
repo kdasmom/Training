@@ -24,6 +24,10 @@ Ext.define('NP.view.gl.GLAccountsForm', {
     autoScroll: true,
       
     bodyPadding: 8,
+    layout: {
+        type : 'vbox',
+        align: 'stretch'
+    },
     
     intPkgText       : 'Integration Package',
     glNumberFieldText: 'GL Number',

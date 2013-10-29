@@ -72,15 +72,26 @@
 /* BOXSELECT */
 /* We need to override this style and make it !important to get the right size for a BoxSelect component in an editing grid */
 .x-border-box .x-grid-editor .auto-complete .x-form-trigger, .x-border-box .x-grid-row-editor .auto-complete .x-form-trigger {
-    height: 20px !important;
+    height: 22px !important;
+}
+
+.x-border-box .x-grid-editor .auto-complete .x-boxselect-input-field {
+	height: 16px !important;
 }
 
 /* This is to fix the issue where tabbing from previous field to boxselect will jump over it if no value is selected */
-.x-boxselect-emptyinput {
-	display: block;
-	position: absolute;
-	left: -500px;
+.x-boxselect-input .x-form-empty-field {
+	display: inline;
 }
+
+.x-boxselect-list.x-boxselect-singleselect.form-focus .x-boxselect-input .x-form-empty-field {
+	display: none;
+}
+
+.x-boxselect-emptyinput {
+	display: inline !important;
+}
+
 
 /* GENERIC STYLES */
 .error-text { color: #c0272b; font: normal 11px tahoma, arial, verdana, sans-serif; }

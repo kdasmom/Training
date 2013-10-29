@@ -13,7 +13,8 @@ Ext.define('NP.view.user.UsersFormDetails', {
     	'NP.lib.ui.ComboBox'
     ],
     
-	padding: 8,
+    padding   : 8,
+    autoScroll: true,
 
     // Custom options
     isMySettings    : false,

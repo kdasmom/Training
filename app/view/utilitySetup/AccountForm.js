@@ -101,7 +101,7 @@ Ext.define('NP.view.utilitySetup.AccountForm', {
             },{
                 xtype    : 'shared.glcombo',
                 minChars : 1,
-                emptyText: (NP.Config.getSetting('CP.PROPERTYGLACCOUNT_USE', '0') == '1') ? this.emptyTextForDependedByProperty : null,
+                emptyText: (NP.Config.getSetting('CP.PROPERTYGLACCOUNT_USE', '0') == '1') ? this.emptyTextForDependedByProperty : '',
                 store    : Ext.create('NP.store.gl.GlAccounts', {
                             service: 'GLService',
                             action : 'getByVendorsite',

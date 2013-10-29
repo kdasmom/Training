@@ -46,7 +46,6 @@ $diDefinition = array(
 	'NP\budget\BudgetGateway'                        => array('Adapter','FiscalCalService'),
 	'NP\budget\BudgetService'                        => array('SoapService'),
 	'NP\core\Config'                                 => array('config','reloadCache','WinCache','SiteService','ConfigsysGateway'),
-	'NP\gl\GLService'                                => array('GLAccountGateway','TreeGateway','IntegrationPackageGateway','GlAccountTypeGateway','VendorGlAccountsGateway', 'PropertyGlAccountGateway','VendorGateway', 'PropertyGateway'),
 	'NP\import\GLActualImportEntityValidator'        => array('LocalizationService','Adapter','IntegrationPackageGateway','GLAccountGateway','PropertyGateway','Config','SoapService'),
 	'NP\import\GLBudgetImportEntityValidator'        => array('LocalizationService','Adapter','IntegrationPackageGateway','GLAccountGateway','PropertyGateway','Config','SoapService'),
 	'NP\import\GLCategoryImportEntityValidator'      => array('LocalizationService','Adapter','IntegrationPackageGateway','GLAccountGateway'),
