@@ -6,12 +6,6 @@ use NP\core\AbstractService;
 
 class FiscalCalService extends AbstractService {
 	
-	protected $fiscalcalGateway;
-	
-	public function __construct(FiscalcalGateway $fiscalcalGateway) {
-		$this->fiscalcalGateway = $fiscalcalGateway;
-	}
-
 	/**
 	 * Returns the current accounting period for a property
 	 *

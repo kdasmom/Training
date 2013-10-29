@@ -10,12 +10,14 @@ Ext.define('NP.view.Viewport', {
     extend: 'Ext.container.Viewport',
     
     requires: [
-    	'NP.lib.ui.HoverButton'
-		,'NP.lib.core.Config'
-		,'NP.lib.core.Security'
-		,'NP.view.viewport.TopToolbar'
-		,'NP.view.viewport.TopMenu'
-		,'NP.view.viewport.Home'
+    	'Ext.layout.container.Border',
+    	'NP.lib.ui.HoverButton',
+    	'NP.lib.core.Config',
+    	'NP.lib.core.Security',
+    	'NP.view.viewport.TopToolbar',
+    	'NP.view.viewport.TopMenu',
+    	'NP.view.viewport.Home',
+    	'NP.view.viewport.ImagePanel'
 	],
 	
 	layout: 'border',
@@ -23,67 +25,96 @@ Ext.define('NP.view.Viewport', {
 	initComponent: function() {
 	    var that = this;
 
-		this.items = {
-	    	xtype: 'panel',
-	    	region: 'center',
-	    	layout: {
-	            type: 'vbox',
-	            align: 'stretch'
-	       	},
-	       	border: false,
-	       	items: [
-	       		// This displays the NP logo at the top, right below the menu
-		       	{
-			        xtype: 'container',
-			        height: 53,
-			        layout: {
-			            type: 'hbox',
-			            align: 'stretch'
-			       	},
-			       	items: [
-			       		{ xtype: 'component', html: '<img id="npHeaderLogo" src="resources/images/payables-top.jpg" />' },
-			       		{
-			       			xtype: 'container',
-			       			style: {
-					        	backgroundColor: '#1E244D'
-					        },
-					        flex: 1,
-					        padding: '10 12 0 0',
-					        items: [
-					        	{
-					        		xtype: 'component',
-					        		html: '<div align="right" id="npHeaderRight">' +
-						        			'<img id="learningNexusImg" src="resources/images/learningnexus.gif" align="top" />' +
-						        			'<span id="npHeaderRightLinks">' + 
-						        				'<a href="javascript:void(0)" id="npHomeLink">Home</a>' + ' | ' + 
-						        				'<a href="javascript:void(0);" id="npHelpLink">Help</a>' + ' | ' + 
-						        				'<a href="javascript:void(0);" id="npLogoutLink">Logout</a>' + 
-						        			'</span>' +
-						        		'</div>'
-					        	},
-					        	{ xtype: 'viewport.delegationpicker' }
-					        ]
-					    }
-			       	]
-			    },
-			    {
-			    	xtype: 'viewport.topmenu'
-			    },
-			    // This is the main content panel where all other things get loaded
-			    {
-					flex: 1,
-			       	autoScroll: true,
-			       	border: false,
-			       	itemId: 'contentPanel',
-		       		layout: 'border',
-		       		border: false,
-		       		items: {
-		       			region:'center',
-		       			html: ''
-		       		}
-				}
-			]
-	    };
+		this.items = [
+			{
+		    	xtype: 'panel',
+		    	region: 'center',
+		    	layout: {
+		            type: 'vbox',
+		            align: 'stretch'
+		       	},
+		       	border: false,
+		       	items: [
+		       		// This displays the NP logo at the top, right below the menu
+			       	{
+				        xtype: 'container',
+				        height: 53,
+				        layout: {
+				            type: 'hbox',
+				            align: 'stretch'
+				       	},
+				       	items: [
+				       		// This is the large NP Logo top left
+				       		{
+				       			xtype: 'component',
+				       			html : '<img id="npHeaderLogo" src="resources/images/payables-top.jpg" />',
+				       			width: 658
+				       		},
+				       		{
+				       			xtype: 'container',
+				       			style: {
+						        	backgroundColor: '#1E244D'
+						        },
+						        flex: 1,
+						        padding: '10 12 0 0',
+						        layout: {
+						        	type: 'vbox',
+						        	align: 'right'
+						        },
+						        items: [
+						        	{
+						        		xtype: 'component',
+						        		html: '<div id="npHeaderRight">' +
+							        			'<img id="learningNexusImg" src="resources/images/learningnexus.gif" align="top" />' +
+							        			'<span id="npHeaderRightLinks">' + 
+							        				'<a href="javascript:void(0)" id="npHomeLink">Home</a>' + ' | ' + 
+							        				'<a href="javascript:void(0);" id="npHelpLink">Help</a>' + ' | ' + 
+							        				'<a href="javascript:void(0);" id="npLogoutLink">Logout</a>' + 
+							        			'</span>' +
+							        		'</div>'
+						        	},
+						        	{ xtype: 'viewport.delegationpicker' }
+						        ]
+						    }
+				       	]
+				    },
+				    {
+				    	xtype: 'viewport.topmenu'
+				    },
+				    // This is the main content panel where all other things get loaded
+				    {
+						flex: 1,
+				       	autoScroll: true,
+				       	border: false,
+				       	itemId: 'contentPanel',
+			       		layout: 'fit',
+			       		border: false,
+			       		items: {
+			       			html: ''
+			       		}
+					}
+				]
+		    },
+		    // Panels for loading invoice/po images into; it's easier to predefine for all regions
+		    // than having to create on the fly
+		    {
+				xtype      : 'viewport.imagepanel',
+				itemId     : 'westPanel',
+				region     : 'west'
+		    },{
+				xtype      : 'viewport.imagepanel',
+				itemId     : 'eastPanel',
+				region     : 'east'
+		    },{
+				xtype      : 'viewport.imagepanel',
+				itemId     : 'southPanel',
+				region     : 'south'
+		    },{
+				xtype      : 'viewport.imagepanel',
+				itemId     : 'northPanel',
+				region     : 'north'
+		    }
+	    ];
 	    
 	    // Add custom event for clicking on the NP logo
 	    this.addEvents('nplogoclicked','nphomelinkclick','nphelplink','nplogoutlink');

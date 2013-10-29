@@ -14,23 +14,14 @@ use NP\security\SecurityService;
  */
 class ConfigService extends AbstractService {
 	
-	protected $config, $securityService, $siteService, $configsysGateway, $intReqGateway, $intPkgGateway, $lookupcodeGateway,
-				$pnCustomFieldsGateway, $appName;
+	protected $config, $securityService, $siteService, $appName;
 	
-	public function __construct(Config $config, SecurityService $securityService, SiteService $siteService, ConfigsysGateway $configsysGateway, 
-								PnUniversalFieldGateway $pnUniversalFieldGateway,  IntegrationRequirementsGateway $intReqGateway, 
-								IntegrationPackageGateway $intPkgGateway, LookupcodeGateway $lookupcodeGateway,
-								PnCustomFieldsGateway $pnCustomFieldsGateway) {
-		$this->config                  = $config;
-		$this->securityService         = $securityService;
-		$this->siteService             = $siteService;
-		$this->configsysGateway        = $configsysGateway;
-		$this->pnUniversalFieldGateway = $pnUniversalFieldGateway;
-		$this->intReqGateway           = $intReqGateway;
-		$this->intPkgGateway           = $intPkgGateway;
-		$this->lookupcodeGateway       = $lookupcodeGateway;
-		$this->pnCustomFieldsGateway   = $pnCustomFieldsGateway;
-		$this->appName                 = $siteService->getAppName();
+	public function __construct(Config $config, SecurityService $securityService, SiteService $siteService) {
+		$this->config          = $config;
+		$this->securityService = $securityService;
+		$this->siteService     = $siteService;
+
+		$this->appName         = $siteService->getAppName();
 		
 		// Defaulting locale to "en" for now until we implement this, will then probably come from session
 		$this->setLocale('en');
@@ -85,7 +76,7 @@ class ConfigService extends AbstractService {
 	public function getInvoicePoCustomFields() {
 		$arCustomSettings = $this->configsysGateway->getCustomFieldSettings();
 		
-		$arIntReqs = $this->intReqGateway->find();
+		$arIntReqs = $this->integrationRequirementsGateway->find();
 		
 		$arFields = array(
 			"header" => array("fields"=>array()),
@@ -115,19 +106,18 @@ class ConfigService extends AbstractService {
 		$invLineOnCount = 0;
 		
 		for ($i=1; $i<=8; $i++) {
-			if ($i <= 6) {
-				$fieldType = 'select';
-			} else {
-				$fieldType = 'text';
-			}
-			$lineFieldType = $fieldType;
-			if (array_key_exists("CP.CUSTOM_FIELD".$i."_TYPE", $arTemp) && sizeof($arTemp["CP.CUSTOM_FIELD".$i."_TYPE"])) {
-				$fieldType = $arTemp["CP.CUSTOM_FIELD".$i."_TYPE"];
-			}
-			
 			// Loop through this twice just to avoid code repetition for header and line item fields
 			for ($j=1; $j<=2; $j++) {
-				if ($j == 1) { 
+				if ($i <= 6) {
+					$fieldType = 'select';
+				} else {
+					$fieldType = 'text';
+				}
+				
+				if ($j == 1) {
+					if (array_key_exists("CP.CUSTOM_FIELD".$i."_TYPE", $arTemp)) {
+						$fieldType = $arTemp["CP.CUSTOM_FIELD".$i."_TYPE"];
+					}
 					$suffix = '';
 					$key = 'header';
 					$invOnCount += $arTemp["CP.INVOICE_CUSTOM_FIELD".$i."_ON_OFF"];
@@ -299,7 +289,7 @@ class ConfigService extends AbstractService {
 	 * @return array Array of integration package records
 	 */
 	public function getIntegrationPackages() {
-		return $this->intPkgGateway->find(null, null, 'integration_package_name');
+		return $this->integrationPackageGateway->find(null, null, 'integration_package_name');
 	}
 	
 	

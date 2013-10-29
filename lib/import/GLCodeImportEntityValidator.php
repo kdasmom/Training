@@ -5,7 +5,7 @@ namespace NP\import;
 use NP\locale\LocalizationService;
 use NP\core\db\Adapter;
 use NP\system\IntegrationPackageGateway;
-use NP\gl\GLAccountGateway;
+use NP\gl\GlAccountGateway;
 
 class GLCodeImportEntityValidator extends AbstractImportEntityValidator {
 
@@ -14,7 +14,7 @@ class GLCodeImportEntityValidator extends AbstractImportEntityValidator {
     public function __construct(LocalizationService $localizationService,
                                 Adapter $adapter,
                                 IntegrationPackageGateway $integrationPackageGateway,
-                                GLAccountGateway $glAccountGateway) {
+                                GlAccountGateway $glAccountGateway) {
         // Initialize the class
         parent::__construct($localizationService, $adapter);
 

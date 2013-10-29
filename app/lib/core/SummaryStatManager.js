@@ -19,9 +19,6 @@ Ext.define('NP.lib.core.SummaryStatManager', function() {
 	    	// Add custom event
 	    	this.addEvents('countreceive');
 
-	    	// Create a store with the different summary stats available
-	    	this.summaryStatStore = Ext.getStore('system.SummaryStats');
-
 	    	this.callParent(arguments);
 	    },
 
@@ -32,7 +29,7 @@ Ext.define('NP.lib.core.SummaryStatManager', function() {
 		getStats: function() {
 			// If the stats have already been retrieved, don't bother doing it again, just get them from the private variable
 			if (!userStatsLoaded) {
-				this.summaryStatStore.each(function(rec) {
+				Ext.getStore('system.SummaryStats').each(function(rec) {
 					var module_id = rec.get('module_id');
 					if (module_id == 0 || NP.lib.core.Security.hasPermission(module_id)) {
 						var cat = rec.get('category');
@@ -54,7 +51,7 @@ Ext.define('NP.lib.core.SummaryStatManager', function() {
 		 * @return {Object}      Summary stat data that corresponds to the name passed
 		 */
 		getStat: function(name) {
-			return this.summaryStatStore.findRecord('name', name);
+			return Ext.getStore('system.SummaryStats').findRecord('name', name);
 		},
 
 		/**
@@ -80,7 +77,7 @@ Ext.define('NP.lib.core.SummaryStatManager', function() {
 					// mask each of the preview panels until the stats are loaded
 					if (!initCall) {
 						// Create the mask
-						batch.mask = new Ext.LoadMask(Ext.ComponentQuery.query('#' + category + '_summary_stat_cat_panel')[0]);
+						batch.mask = new Ext.LoadMask({ target: Ext.ComponentQuery.query('#' + category + '_summary_stat_cat_panel')[0] });
 						// Show the mask
 						batch.mask.show();
 						// Run this callback once the ajax request has completed for this batch
@@ -104,7 +101,7 @@ Ext.define('NP.lib.core.SummaryStatManager', function() {
 							contextType                : contextType,
 							contextSelection           : contextSelection,
 							property_id                : property_id,
-							success: function(result, deferred) {
+							success: function(result) {
 								// Update the stat count for this requests' summary stat
 								var listPanel = Ext.ComponentQuery.query('[xtype="viewport.summarystatlist"]')[0];
         						listPanel.updateStatCount(stat.name, result);

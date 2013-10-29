@@ -19,9 +19,9 @@ Ext.define('NP.model.system.UserMessage', {
 		{ name: 'subject' },
 		{ name: 'body' },
 		{ name: 'createdBy', type: 'int' },
-		{ name: 'createdAt', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
-		{ name: 'sentAt', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
-		{ name: 'displayUntil', type: 'date', dateFormat: NP.Config.getServerDateFormat() }
+		{ name: 'createdAt', type: 'date' },
+		{ name: 'sentAt', type: 'date' },
+		{ name: 'displayUntil', type: 'date' }
 	],
 
 	belongsTo: [

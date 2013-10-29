@@ -8,15 +8,15 @@ Ext.define('NP.view.viewport.TopMenu', {
     alias: 'widget.viewport.topmenu',
 
     requires: [
-    	'NP.lib.core.Security'
-    	,'NP.view.viewport.menu.VCMenu'
-    	,'NP.view.viewport.menu.POMenu'
-    	,'NP.view.viewport.menu.InvoiceMenu'
-    	,'NP.view.viewport.menu.VendorMenu'
-    	,'NP.view.viewport.menu.ImageMenu'
-    	,'NP.view.viewport.menu.BudgetMenu'
-    	,'NP.view.viewport.menu.ReportMenu'
-    	,'NP.view.viewport.menu.AdminMenu'
+    	'NP.lib.core.Security',
+    	'NP.view.viewport.menu.VCMenu',
+    	'NP.view.viewport.menu.POMenu',
+    	'NP.view.viewport.menu.InvoiceMenu',
+    	'NP.view.viewport.menu.VendorMenu',
+    	'NP.view.viewport.menu.ImageMenu',
+    	'NP.view.viewport.menu.BudgetMenu',
+    	'NP.view.viewport.menu.ReportMenu',
+    	'NP.view.viewport.menu.AdminMenu'
     ],
 
     dock: 'top',

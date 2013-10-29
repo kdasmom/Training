@@ -7,6 +7,14 @@ Ext.define('NP.view.image.gridcol.InvoiceDate', {
 	extend: 'Ext.grid.column.Date',
 	alias: 'widget.image.gridcol.invoicedate',
 
+	requires: ['NP.lib.core.Translator'],
+
 	text     : 'Invoice Date',
-	dataIndex: 'Image_Index_Invoice_Date'
+	dataIndex: 'Image_Index_Invoice_Date',
+
+    initComponent: function() {
+    	this.text = NP.Translator.translate(this.text);
+    	
+    	this.callParent(arguments);
+    }
 });

@@ -22,18 +22,18 @@ Ext.define('NP.view.property.PropertiesMain', {
         'NP.view.property.gridcol.TotalUnits'
     ],
 
-    createNewPropertyText: 'Create New ' + NP.Config.getPropertyLabel(),
-    placeOnHoldText: 'Place On Hold',
-
     layout: 'fit',
     border: false,
 
     initComponent: function() {
-        var that = this;
+        var that = this,
+            propertyText = NP.Config.getPropertyLabel();
 
-    	var bar = [
-    		{ xtype: 'shared.button.new', text: this.createNewPropertyText }
-	    ];
+    	var bar = [{
+            xtype: 'shared.button.new',
+            text: NP.Translator.translate('Create New {property}', { property: propertyText })
+        }];
+        
 	    this.tbar = bar;
 	    this.bbar = bar;
 
@@ -67,10 +67,9 @@ Ext.define('NP.view.property.PropertiesMain', {
                     renderer: function(val, meta, rec) {
                         var user = rec.getCreatedByUser();
                         var returnVal = user.get('userprofile_username');
-                        var person = user.getUserprofilerole().getStaff().getPerson();
-                        if (person.get('person_id') != null) {
-                            var firstName = person.get('person_firstname');
-                            var lastName = person.get('person_lastname');
+                        if (user.get('person_id') != null) {
+                            var firstName = user.get('person_firstname');
+                            var lastName = user.get('person_lastname');
                             if (firstName != '' || lastName != '') {
                                 returnVal += ' (' + firstName + ' ' + lastName + ')'
                             }
@@ -119,7 +118,7 @@ Ext.define('NP.view.property.PropertiesMain', {
                 { xtype: 'tbseparator' },
                 { xtype: 'shared.button.inactivate', hidden: true },
                 { xtype: 'shared.button.activate', hidden: true },
-                { xtype: 'shared.button.hourglass', text: this.placeOnHoldText, hidden: true }
+                { xtype: 'shared.button.hourglass', text: NP.Translator.translate('Place On Hold'), hidden: true }
             ]
         }];
 

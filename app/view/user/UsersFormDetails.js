@@ -9,31 +9,20 @@ Ext.define('NP.view.user.UsersFormDetails', {
 
     requires: [
     	'NP.lib.core.Security',
+        'NP.lib.core.Translator',
     	'NP.lib.ui.ComboBox'
     ],
     
 	padding: 8,
 
-    // For localization
-	title                     : 'User Details',
-	usernameFieldLabel        : 'Username',
-	currentPasswordFieldLabel : 'Current Password',
-	passwordFieldLabel        : 'New Password',
-	passwordDescriptionText   : 'The minimum password length required is 6 characters. Password security requires that a minimum of one letter, number and special character be used when setting up user passwords in the system. Special characters include !, @, #, $, %, &, *, and ?.',
-	passwordFieldConfirmLabel : 'Confirm Password',
-	passwordMatchErrorText    : 'The password fields need to match',
-	positionFieldLabel        : 'Position',
-	startDateFieldLabel       : 'Start Date',
-	endDateFieldLabel         : 'End Date',
-	securityQuestionFieldLabel: 'Security Question',
-	securityAnswerFieldLabel  : 'Answer',
-
-	// Custom options
+    // Custom options
     isMySettings    : false,
     passwordRequired: false,
 
     initComponent: function() {
     	var that = this;
+
+        that.title = NP.Translator.translate('User Details');
 
     	this.defaults = { labelWidth: 150 };
 
@@ -41,7 +30,7 @@ Ext.define('NP.view.user.UsersFormDetails', {
     		{
 				xtype     : 'textfield',
 				name      : 'userprofile_username',
-				fieldLabel: this.usernameFieldLabel,
+				fieldLabel: NP.Translator.translate('Username'),
 				allowBlank: false,
 				disabled  : this.isMySettings
     		}
@@ -52,14 +41,14 @@ Ext.define('NP.view.user.UsersFormDetails', {
     		this.items.push({
                 xtype     : 'displayfield',
                 name      : 'userprofile_password_current',
-                fieldLabel: this.currentPasswordFieldLabel,
+                fieldLabel: NP.Translator.translate('Current Password'),
                 value     : '**********',
                 hidden    : !this.isMySettings
     		});
     	} else {
     		this.items.push({
                 xtype     : 'textfield',
-                fieldLabel: this.currentPasswordFieldLabel,
+                fieldLabel: NP.Translator.translate('Current Password'),
                 name      : 'userprofile_password_current',
                 inputType : 'password'
     		});
@@ -70,17 +59,17 @@ Ext.define('NP.view.user.UsersFormDetails', {
 				xtype     : 'textfield',
 				name      : 'userprofile_password',
 				inputType : 'password',
-				fieldLabel: this.passwordFieldLabel,
+				fieldLabel: NP.Translator.translate('New Password'),
                 allowBlank: !this.passwordRequired
     		},{
                 xtype     : 'displayfield',
                 itemId    : 'pwdExplanationField',
-                value     : this.passwordDescriptionText
+                value     : NP.Translator.translate('The minimum password length required is 6 characters. Password security requires that a minimum of one letter, number and special character be used when setting up user passwords in the system. Special characters include !, @, #, $, %, &, *, and ?.')
     		},{
 				xtype     : 'textfield',
 				name      : 'userprofile_password_confirm',
 				inputType : 'password',
-				fieldLabel: this.passwordFieldConfirmLabel,
+				fieldLabel: NP.Translator.translate('Confirm Password'),
                 allowBlank: !this.passwordRequired,
                 validator: function(val) {
                     var form = that.up('boundform');
@@ -88,13 +77,13 @@ Ext.define('NP.view.user.UsersFormDetails', {
                     if (password_new == val) {
                         return true;
                     } else {
-                        return that.passwordMatchErrorText;
+                        return NP.Translator.translate('The password fields need to match');
                     }
                 }
     		},{
 				xtype     : 'customcombo',
 				name      : 'role_id',
-				fieldLabel: this.positionFieldLabel,
+				fieldLabel: NP.Translator.translate('Position'),
 				allowBlank: false,
 				store     : 'user.RoleTree',
 				width     : 500,
@@ -110,12 +99,12 @@ Ext.define('NP.view.user.UsersFormDetails', {
     		},{
 				xtype     : 'datefield',
 				name      : 'userprofile_startdate',
-				fieldLabel: this.startDateFieldLabel,
+				fieldLabel: NP.Translator.translate('Start Date'),
 				hidden    : this.isMySettings
     		},{
 				xtype     : 'datefield',
 				name      : 'userprofile_enddate',
-				fieldLabel: this.endDateFieldLabel,
+				fieldLabel: NP.Translator.translate('End Date'),
 				hidden    : this.isMySettings
     		}
     	);
@@ -128,7 +117,7 @@ Ext.define('NP.view.user.UsersFormDetails', {
 		    		{
 		    			xtype: 'combobox',
 		    			queryMode: 'local',
-		    			fieldLabel: this.securityQuestionFieldLabel + ' ' + i,
+		    			fieldLabel: NP.Translator.translate('Security Question') + ' ' + i,
 		    			name: 'security_question' + i,
 		    			store: 'system.SecurityQuestions',
 		    			displayField: 'lookupcode_description',
@@ -136,7 +125,7 @@ Ext.define('NP.view.user.UsersFormDetails', {
 		    			width: 600
 		    		},{
 		    			xtype: 'textfield',
-		    			fieldLabel: this.securityAnswerFieldLabel + ' ' + i,
+		    			fieldLabel: NP.Translator.translate('Answer') + ' ' + i,
 		    			name: 'security_answer' + i,
 		    			width: 600
 		    		}

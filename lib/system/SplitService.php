@@ -6,11 +6,6 @@ use NP\core\AbstractService;
 use NP\core\db\Where;
 use NP\core\db\Expression;
 use NP\core\validation\EntityValidator;
-use NP\property\PropertyGateway;
-use NP\vendor\VendorGateway;
-use NP\property\UnitGateway;
-use NP\system\IntegrationPackageGateway;
-use NP\gl\GLAccountGateway;
 
 /**
  * All operations that are closely related to splits belong in this service
@@ -19,21 +14,7 @@ use NP\gl\GLAccountGateway;
  */
 class SplitService extends AbstractService {
 	
-	protected $securityService, $dfSplitGateway, $dfSplitItemsGateway, $propertyGateway,
-			$integrationPackageGateway, $glAccountGateway;
-	
-	public function __construct(DfSplitGateway $dfSplitGateway, DfSplitItemsGateway $dfSplitItemsGateway,
-								PropertyGateway $propertyGateway, VendorGateway $vendorGateway,
-								UnitGateway $unitGateway, IntegrationPackageGateway $integrationPackageGateway,
-								GLAccountGateway $glAccountGateway) {
-		$this->dfSplitGateway            = $dfSplitGateway;
-		$this->dfSplitItemsGateway       = $dfSplitItemsGateway;
-		$this->propertyGateway           = $propertyGateway;
-		$this->vendorGateway             = $vendorGateway;
-		$this->unitGateway               = $unitGateway;
-		$this->integrationPackageGateway = $integrationPackageGateway;
-		$this->glAccountGateway          = $glAccountGateway;
-	}
+	protected $securityService;
 	
 	/**
 	 * Setter function required by DI to set the config service via setter injection

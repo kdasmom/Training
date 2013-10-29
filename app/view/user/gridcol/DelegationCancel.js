@@ -7,6 +7,8 @@ Ext.define('NP.view.user.gridcol.DelegationCancel', {
 	extend: 'NP.view.shared.gridcol.ButtonImg',
 	alias: 'widget.user.gridcol.delegationcancel',
 
+	requires: ['NP.lib.core.Translator'],
+
 	text     : 'Cancel',
 	dataIndex: 'delegation_status_name',
 	sortable : false,
@@ -14,6 +16,8 @@ Ext.define('NP.view.user.gridcol.DelegationCancel', {
 
 	initComponent: function() {
 		var that = this;
+		
+		this.text = NP.Translator.translate(this.text);
 		
 		this.renderer = function(val) {
 			if (val == 'Future' || val == 'Active') {

@@ -8,8 +8,11 @@ require_once("config/config.php");
 set_include_path(get_include_path() . PATH_SEPARATOR . $__CONFIG['zendPath']);
 
 // Include a couple third party library files that aren't namespaced
-require_once("vendor\FirePHP\FirePHP.class.php");
-require_once("vendor\dBug\dBug.php");
+if ($__CONFIG['debugLogEnabled']) {
+    require_once("vendor\FirePHP\FirePHP.class.php");
+    require_once("vendor\ChromePhp\ChromePhp.php");
+    require_once("vendor\dBug\dBug.php");
+}
 require_once("vendor\SwiftMailer\lib\swift_required.php");
 
 // Setup the Zend Autoloader
@@ -45,9 +48,7 @@ function np_global_exception_handler($e) {
     // Throw an HTTP 500 error
     header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
 };
-if($__CONFIG['serverType'] !== 'dev') {
-    set_exception_handler('np_global_exception_handler');
-}
+set_exception_handler('np_global_exception_handler');
 
 // Use this to catch errors not caught by the other handlers
 register_shutdown_function(function() use ($di) {

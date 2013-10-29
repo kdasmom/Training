@@ -14,12 +14,12 @@
  *				fname : 'Thomas',						// This will be passed as an argument to the function
  *				lname : 'Messier',						// This will be passed as an argument to the function
  *				// This function gets called if the ajax request succeeds
- *				success: function(result, deferred) {
- *					deferred.resolve(result);
+ *				success: function(result) {
+ *					... handle success here ...
  *				},
  *				// This function gets called if the ajax request fails
- *				failure: function(response, options, deferred) {
- *					deferred.reject('There was an error saving the user');
+ *				failure: function(response, options) {
+ *					... handle failure here ...
  *				}
  *			}
  *		});
@@ -33,11 +33,11 @@
  *				fname  : 'Thomas',
  *				lname  : 'Messier',
  *				// This function gets called if the ajax request succeeds with only the result returned for this operation
- *				success: function(result, deferred) {
+ *				success: function(result) {
  *					Ext.log('Thomas saved');
  *				},
  *				// This function gets called if the ajax request fails with only the result returned for this operation
- *				failure: function(response, options, deferred) {
+ *				failure: function(response, options) {
  *					Ext.log('Saving Thomas failed');
  *				}
  *			},{
@@ -45,10 +45,10 @@
  *				action : 'save',
  *				fname  : 'Sud',
  *				lname  : 'Luthra',
- *				success: function(result, deferred) {
+ *				success: function(result) {
  *					Ext.log('Sud saved');
  *				},
- *				failure: function(response, options, deferred) {
+ *				failure: function(response, options) {
  *					Ext.log('Saving Sud failed');
  *				}
  *			}],
@@ -56,29 +56,26 @@
  *          method : 'GET',
  *			// This function gets called if the ajax request succeeds after all callbacks for individual requests have run
  *			// The first parameter is an array with the results for all the operations above
- *			success: function(results, deferred) {
+ *			success: function(results) {
  *				// Look through results for each operation
  *				for (var i=0; i<results.length; i++) {
  *					// Do something here for each one of the ajax operations above
  *					...	
  *				}
- *				deferred.resolve(results);
  *			},
  *			// This function gets called if the ajax request fails after all callbacks for individual requests have run
- *			failure: function(response, options, deferred) {
- *				deferred.reject('There was an error with one of the operations.');
+ *			failure: function(response, options) {
+ *				... handle failure here ...
  *			}
  *		});
  *
  * Note how this example has success and failure functions for both the individual functions and for the
- * operation as a whole. This is not required, you can have as many or as few callbacks as you want. Also
- * note how the function returns a Deft.Promise object that can be used if needed, otherwise it can be ignored.
+ * operation as a whole. This is not required, you can have as many or as few callbacks as you want.
  *
  * @author Thomas Messier
  */
 Ext.define('NP.lib.core.Net', {
 	alternateClassName: 'NP.Net',
-	requires: ['Deft.*'],
 	singleton: true,
 	
 	/**
@@ -100,12 +97,8 @@ Ext.define('NP.lib.core.Net', {
 	 * @param  {Boolean}                        [cfg.isUpload]           Set to true if the form object is a file upload.
 	 * @param  {Function}                       [cfg.success]            Function to call after all ajax requests have run if ajax request is successful
 	 * @param  {Function}                       [cfg.failure]            Function to call after all ajax requests have run if ajax request fails
-	 * @return {Deft.Promise}
 	 */
 	remoteCall: function(cfg) { // There can be more arguments, you can use either a config object or (success, method) as args
-		// Create a deferred object to be used later
-		var deferred = Ext.create('Deft.Deferred');
-
 		// If config is for a single call, convert it to an array to avoid code duplication
 		if ((cfg.requests instanceof Array) == false) {
 			cfg.requests = [cfg.requests];
@@ -122,7 +115,7 @@ Ext.define('NP.lib.core.Net', {
 		});
 
 		if (cfg.mask) {
-			var mask = new Ext.LoadMask(cfg.mask, { msg: cfg.maskText });
+			var mask = new Ext.LoadMask({ target: cfg.mask, msg: cfg.maskText });
 			mask.show();
 		}
 
@@ -160,31 +153,31 @@ Ext.define('NP.lib.core.Net', {
 							// Create the store and set it as the return variable
 							res[i] = Ext.create(cfg.requests[i].store, storeCfg);
 						}
-						// If a success callback was defined, run it, passing it the result and the deferred object
+						// If a success callback was defined, run it, passing it the result
 						if (cfg.requests[i].success) {
-							cfg.requests[i].success(res[i], deferred);
+							cfg.requests[i].success(res[i]);
 						}
 					// If HTTP request failed, process the failure
 					} else {
-						// If a failure callback was defined, run it, passing it the response, options, and deferred object
+						// If a failure callback was defined, run it, passing it the response, options
 						if (cfg.requests[i].failure) {
-							cfg.requests[i].failure(response, options, deferred);
+							cfg.requests[i].failure(response, options);
 						}
 					}
 				}
 				// If HTTP request was successful, process
 				if (success) {
-					// If we had a single request, just return a single result and the deferred object
+					// If we had a single request, just return a single result
 					if (returnStruct) {
-						cfg.success(res[0], deferred);
-					// If we had multiple requests, return the array of results and the deferred object
+						cfg.success(res[0]);
+					// If we had multiple requests, return the array of results
 					} else {
-						cfg.success(res, deferred);
+						cfg.success(res);
 					}
 				// If HTTP request was successful, process failure
 				} else {
 					// Run the failure callback
-					cfg.failure(response, options, deferred);
+					cfg.failure(response, options);
 				}
 
 				if (cfg.mask) {
@@ -192,8 +185,5 @@ Ext.define('NP.lib.core.Net', {
 				}
 			}
 		});
-		
-		// Return a promise object in case we want to use deferreds
-		return deferred.promise;
 	}
 });

@@ -3,14 +3,9 @@
 namespace NP\security;
 
 use NP\core\AbstractService;
-use NP\user\UserprofileGateway;
-use NP\user\RoleGateway;
-use NP\user\UserprofileLogonGateway;
 use NP\system\ConfigService;
 use NP\system\SessionService;
 use NP\system\SiteService;
-use NP\property\RegionGateway;
-use NP\property\PropertyGateway;
 use NP\util\Util;
 use NP\core\validation\EntityValidator;
 
@@ -21,23 +16,12 @@ use NP\core\validation\EntityValidator;
  */
 class SecurityService extends AbstractService {
 	
-	protected $siteService, $sessionService, $userprofileGateway, $roleGateway, $userprofileLogonGateway, 
-			$modulePrivGateway, $regionGateway, $propertyGateway, $configService, $moduleGateway;
+	protected $siteService, $sessionService;
 	
-	public function __construct($config, SiteService $siteService, SessionService $sessionService, UserprofileGateway $userprofileGateway,
-								RoleGateway $roleGateway, UserprofileLogonGateway $userprofileLogonGateway,
-								ModulePrivGateway $modulePrivGateway, RegionGateway $regionGateway,
-								PropertyGateway $propertyGateway, ModuleGateway $moduleGateway) {
+	public function __construct($config, SiteService $siteService, SessionService $sessionService) {
 		$this->config                  = $config;
 		$this->siteService             = $siteService;
 		$this->sessionService          = $sessionService;
-		$this->userprofileGateway      = $userprofileGateway;
-		$this->roleGateway             = $roleGateway;
-		$this->userprofileLogonGateway = $userprofileLogonGateway;
-		$this->modulePrivGateway       = $modulePrivGateway;
-		$this->regionGateway           = $regionGateway;
-		$this->propertyGateway         = $propertyGateway;
-		$this->moduleGateway           = $moduleGateway;
 	}
 
 	/**
@@ -117,7 +101,7 @@ class SecurityService extends AbstractService {
 		$preferredProp = $user['userprofile_preferred_property'];
 		$preferredRegion = $user['userprofile_preferred_region'];
 		$regions = $this->regionGateway->findByUser($this->getUserId(), $this->getDelegatedUserId());
-		$props = $this->propertyGateway->findByUser($this->getUserId(), $this->getDelegatedUserId(), array('property_id'));
+		$props = $this->propertyGateway->findByUser($this->getUserId(), $this->getDelegatedUserId(), null, false, array('property_id'));
 		if (is_numeric($preferredRegion) && $preferredRegion) {
 			$this->setContext('region', $props[0]['property_id'], $preferredRegion);
 		} else if (is_numeric($preferredProp) && $preferredProp) {

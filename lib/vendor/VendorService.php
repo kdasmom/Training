@@ -3,10 +3,6 @@
 namespace NP\vendor;
 
 use NP\core\AbstractService;
-use NP\system\IntegrationPackageGateway;
-use NP\gl\GLAccountGateway;
-use NP\property\PropertyGateway;
-use NP\property\UnitGateway;
 
 /**
  * Service class for operations related to vendors
@@ -15,35 +11,20 @@ use NP\property\UnitGateway;
  */
 class VendorService extends AbstractService {
     
-    protected $vendorGateway, $integrationPackageGateway, $vendorTypeGateway, $glAccountGateway,
-            $vendorGlAccountsGateway, $propertyGateway, $vendorFavoriteGateway, $insuranceTypeGateway,
-            $insuranceGateway, $linkInsurancePropertyGateway, $unitGateway;
-
-    public function __construct(        
-                VendorGateway $vendorGateway, VendorsiteGateway $vendorsiteGateway,
-                IntegrationPackageGateway $integrationPackageGateway,
-                VendorTypeGateway $vendorTypeGateway, GLAccountGateway $glAccountGateway,
-                VendorGlAccountsGateway $vendorGlAccountsGateway, PropertyGateway $propertyGateway,
-                VendorFavoriteGateway $vendorFavoriteGateway, InsuranceTypeGateway $insuranceTypeGateway,
-                InsuranceGateway $insuranceGateway, LinkInsurancePropertyGateway $linkInsurancePropertyGateway,
-                UnitGateway $unitGateway) {
-        $this->vendorGateway                = $vendorGateway;
-        $this->vendorsiteGateway            = $vendorsiteGateway;
-        $this->integrationPackageGateway    = $integrationPackageGateway;
-        $this->vendorTypeGateway            = $vendorTypeGateway;
-        $this->glAccountGateway             = $glAccountGateway;
-        $this->vendorGlAccountsGateway      = $vendorGlAccountsGateway;
-        $this->propertyGateway              = $propertyGateway;
-        $this->vendorFavoriteGateway        = $vendorFavoriteGateway;
-        $this->insuranceTypeGateway         = $insuranceTypeGateway;
-        $this->insuranceGateway             = $insuranceGateway;
-        $this->linkInsurancePropertyGateway = $linkInsurancePropertyGateway;
-        $this->unitGateway                  = $unitGateway;
-    }
-    
     public function getVendorBySiteId($vendorsite_id) {
         $res = $this->vendorGateway->find('vs.vendorsite_id = ?', array($vendorsite_id));
         return $res[0];
+    }
+    
+    /**
+     * Get vendors that will show up on the vendor drop down of the invoice view page
+     *
+     * @param  int    $property_id Property selected on the invoice page
+     * @param  string $keyword     Keyword to filter list of vendors by
+     * @return array               List of vendor records
+     */
+    public function getVendorsForInvoice($property_id, $vendor_id=null, $keyword=null) {
+        return $this->vendorGateway->findVendorsForInvoice($property_id, $vendor_id, $keyword);
     }
 
     /**

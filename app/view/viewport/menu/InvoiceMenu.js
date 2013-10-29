@@ -7,39 +7,27 @@ Ext.define('NP.view.viewport.menu.InvoiceMenu', {
     extend: 'NP.lib.ui.HoverButton',
     alias: 'widget.viewport.menu.invoicemenu',
 
-    requires: ['NP.lib.core.Config','NP.lib.core.Security'],
+    requires: [
+    	'NP.lib.core.Config',
+    	'NP.lib.core.Security',
+    	'NP.lib.core.Translator'
+    ],
 
-	invoiceText            : 'Invoices',
-	registerText           : 'Invoice Register',
-	registerOpenText       : 'Open',
-	registerOverdueText    : 'Overdue',
-	registerTemplateText   : 'Template',
-	registerHoldText       : 'On Hold',
-	registerPendingText    : 'Pending',
-	registerApprovedText   : 'Approved',
-	registerSubmittedText  : 'Submitted for Payment',
-	registerTransferredText: 'Transferred to GL',
-	registerPaidText       : 'Paid',
-	registerVoidText       : 'Void',
-	registerRejectedText   : 'Rejected',
-	newText                : 'New Invoice',
-	searchText             : 'Search Invoices',
-
-    initComponent: function() {
-    	this.text = this.invoiceText;
+	initComponent: function() {
+    	this.text = NP.Translator.translate('Invoices');
 		this.menu = {
 			showSeparator: false,
 			items: [
 				// Invoice Register
 				{
 					itemId: 'invRegisterMenuBtn',
-					text: this.registerText,
+					text: NP.Translator.translate('Invoice Register'),
 					menu: {
 						showSeparator: false,
 						items: [{
 							// Open
 							itemId: 'openInvRegisterMenuBtn',
-							text: this.registerOpenText
+							text: NP.Translator.translate('Open')
 						}]
 					}
 				}
@@ -52,21 +40,21 @@ Ext.define('NP.view.viewport.menu.InvoiceMenu', {
 	    if ( NP.lib.core.Config.getSetting('PN.InvoiceOptions.OverDueOn') == 1 ) {
     		subSection.push({
 				itemId: 'overdueInvRegisterMenuBtn',
-				text: this.registerOverdueText
+				text: NP.Translator.translate('Overdue')
 			});
     	}
     	
     	// Template
     	subSection.push({
 			itemId: 'templateInvRegisterMenuBtn',
-			text: this.registerTemplateText
+			text: NP.Translator.translate('Template')
 		});
     	
     	// On Hold
     	if ( NP.lib.core.Config.getSetting('PN.InvoiceOptions.HoldOn') == 1 ) {
     		subSection.push({
 				itemId: 'onholdInvRegisterMenuBtn',
-				text: this.registerHoldText
+				text: NP.Translator.translate('On Hold')
 			});
     	}
     	
@@ -74,54 +62,54 @@ Ext.define('NP.view.viewport.menu.InvoiceMenu', {
     	// Pending
     	{
 			itemId: 'pendingInvRegisterMenuBtn',
-			text: this.registerPendingText
+			text: NP.Translator.translate('Pending')
 		},
 		// Approved
 		{
 			itemId: 'approvedInvRegisterMenuBtn',
-			text: this.registerApprovedText
+			text: NP.Translator.translate('Approved')
 		},
 		// Submitted for Payment
 		{
 			itemId: 'submittedInvRegisterMenuBtn',
-			text: this.registerSubmittedText
+			text: NP.Translator.translate('Submitted for Payment')
 		},
 		// Transferred to GL
 		{
 			itemId: 'transferredInvRegisterMenuBtn',
-			text: this.registerTransferredText
+			text: NP.Translator.translate('Transferred to GL')
 		},
 		// Paid
 		{
 			itemId: 'paidInvRegisterMenuBtn',
-			text: this.registerPaidText
+			text: NP.Translator.translate('Paid')
 		});
     	
     	// Void
     	if ( NP.lib.core.Config.getSetting('PN.InvoiceOptions.VoidOn') == 1 ) {
     		subSection.push({
 				itemId: 'voidInvRegisterMenuBtn',
-				text: this.registerVoidText
+				text: NP.Translator.translate('Void')
 			});
     	}
     	
     	// Rejected
     	subSection.push({
 			itemId: 'rejectedInvRegisterMenuBtn',
-			text: this.registerRejectedText
+			text: NP.Translator.translate('Rejected')
 		});
     	
     	// New Invoice
     	if ( NP.lib.core.Security.hasPermission(1032) ) {
     		this.menu.items.push({
-				text: this.newText
+				text: NP.Translator.translate('New Invoice')
 			});
     	}
     	
     	// Search Invoices
     	if ( NP.lib.core.Security.hasPermission(1033) ) {
     		this.menu.items.push({
-				text: this.searchText
+				text: NP.Translator.translate('Search Invoices')
 			});
     	}
 

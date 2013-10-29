@@ -4,13 +4,6 @@ namespace NP\gl;
 
 use NP\core\AbstractService;
 use NP\core\db\Where;
-use NP\system\TreeGateway;
-use NP\system\IntegrationPackageGateway;
-use NP\gl\GlAccountTypeGateway;
-use NP\vendor\VendorGlAccountsGateway;
-use NP\property\PropertyGlAccountGateway;
-use NP\property\PropertyGateway;
-use NP\vendor\VendorGateway;
 
 /**
  * All operations that are closely related to GL accounts belong in this service
@@ -19,25 +12,7 @@ use NP\vendor\VendorGateway;
  */
 class GLService extends AbstractService {
     
-    protected $securityService, $glAccountGateway, $treeGateway, $integrationPackageGateway,
-            $vendorGlAccountsGateway, $propertyGlAccountGateway, $vendorGateway, $propertyGateway;
-
-    public function __construct(GLAccountGateway $glAccountGateway, TreeGateway $treeGateway,
-                                IntegrationPackageGateway $integrationPackageGateway,
-                                GlAccountTypeGateway $glAccountTypeGateway,
-                                VendorGlAccountsGateway $vendorGlAccountsGateway,
-                                PropertyGlAccountGateway $propertyGlAccountGateway,
-                                VendorGateway $vendorGateway,
-                                PropertyGateway $propertyGateway) {
-            $this->glAccountGateway          = $glAccountGateway;
-            $this->treeGateway               = $treeGateway;
-            $this->integrationPackageGateway = $integrationPackageGateway;
-            $this->glAccountTypeGateway      = $glAccountTypeGateway;
-            $this->vendorGlAccountsGateway   = $vendorGlAccountsGateway;
-            $this->propertyGlAccountGateway  = $propertyGlAccountGateway;
-            $this->vendorGateway             = $vendorGateway;
-            $this->propertyGateway           = $propertyGateway;
-    }
+    protected $configService, $securityService;
 
     public function setConfigService(\NP\system\ConfigService $configService) {
         $this->configService = $configService;
@@ -275,43 +250,6 @@ class GLService extends AbstractService {
     public function saveGlCategory($data) {
         return $this->saveGl($data, 'category');
     }
-    
-    /**
-     * save GL Category
-     *
-     * @param $data
-     * @return array
-     */
-    /*public function saveGlCategory($data) {
-        $errors  = array();
-         
-        $data['glaccount_updatetm'] = \NP\util\Util::formatDateForDB();
-            
-        if ($data['glaccount_id'] == null){
-            $data['glaccount_number'] = $data['glaccount_name'];
-            $data['glaccount_order'] = $this->glAccountGateway->getMaxOrder($data['glaccount_id']);
-            $result = $this->save(
-                array(
-                    'glaccount'   => $data,
-                    'tree_parent' => 0
-                ),
-                'category'
-            );
-        } else {
-            $result = $this->glAccountGateway->update($data, 'glaccount_id = ?', array($data['glaccount_id']));
-        }
-
-        // Set errors
-        if (!$result['success']) {
-            $errors = $result['errors'];
-        }
-        
-        return array(
-            'success' => (count($errors)) ? false : true,
-            'errors'  => $errors
-        );
-           
-    }*/
 
     /**
      * save order Category
@@ -501,7 +439,7 @@ class GLService extends AbstractService {
             return $success;
        }
    }
-   
+
     /**
      * Saves a collection of categories imported using the import tool
      *

@@ -1,6 +1,8 @@
 <?php
 namespace NP\core\db;
 
+use NP\core\db\Expression;
+
 /**
  * Abstracts a SQL SELECT statement to an object
  *
@@ -41,6 +43,11 @@ class Select extends AbstractFilterableSql implements SQLInterface, SQLElement {
 	 * @var array Joins for the SELECT statement
 	 */
 	protected $joins = array();
+
+	/**
+	 * @var array Unions for the select statement
+	 */
+	protected $unions = array();
 
 	/**
 	 * @var \NP\core\db\Group GROUP BY clause for the SELECT statement
@@ -117,12 +124,26 @@ class Select extends AbstractFilterableSql implements SQLInterface, SQLElement {
 	/**
 	 * Adds columns to be fetched
 	 *
-	 * @param  $cols array       An array of columns; see the column($col) method for valid column definitions
+	 * @param  array $cols An array of columns; see the column($col) method for valid column definitions
 	 * @return \NP\core\db\Select Caller object returned for easy chaining
 	 */
 	public function columns($cols) {
 		$this->cols = $cols;
 		return $this;
+	}
+
+	/**
+	 * Returns all columns for a table (adds a * to the column list)
+	 *
+	 * @param string $alias Table alias for the table we want to retrieve all columns from
+	 * @return \NP\core\db\Select Caller object returned for easy chaining
+	 */
+	public function allColumns($alias=null) {
+		$expr = '*';
+		if ($alias != null) {
+			$expr = "{$alias}.{$expr}";
+		}
+		return $this->column(new Expression($expr));
 	}
 
 	/**
@@ -164,6 +185,19 @@ class Select extends AbstractFilterableSql implements SQLInterface, SQLElement {
 		}
 		
 		$this->joins[] = $table;
+		
+		return $this;
+	}
+
+	/**
+	 * Adds a join to the statement
+	 *
+	 * @param  Select  $select A Select statement to unionize with this one (cannot have an order by, must have same number of columns)
+	 * @param  boolean $isAll  Whether or not to do UNION ALL
+	 * @return \NP\core\db\Select Caller object returned for easy chaining
+	 */
+	public function union(Select $select, $isAll=true) {
+		$this->unions[] = ['select'=>$select, 'isAll'=>$isAll];
 		
 		return $this;
 	}
@@ -267,10 +301,6 @@ class Select extends AbstractFilterableSql implements SQLInterface, SQLElement {
 		// Start building the SQL string
 		$sql = 'SELECT ';
 
-		// If there is a limit set but no offset, use the SQL Server specific TOP clause
-		if ($this->limit !== null && $this->offset === null) {
-			$sql .= "TOP {$this->limit} ";
-		}
 		// Do this if count has been set
 		if ($this->count) {
 			// If count is set, you can only have one column defined ( to do SELECT count(col_name) )
@@ -307,6 +337,11 @@ class Select extends AbstractFilterableSql implements SQLInterface, SQLElement {
 		// If distinct is set, add the distinct directive before the columns
 		} else if ($this->distinct) {
 			$sql .= 'DISTINCT ';
+		}
+
+		// If there is a limit set but no offset, use the SQL Server specific TOP clause
+		if ($this->limit !== null && ($this->offset === null || $this->offset === 0)) {
+			$sql .= "TOP {$this->limit} ";
 		}
 
 		// Track the columns to be included
@@ -395,6 +430,15 @@ class Select extends AbstractFilterableSql implements SQLInterface, SQLElement {
 			}
 		}
 
+		// If there are unions, process them
+		foreach ($this->unions as $union) {
+			$unionClause = ($union['isAll']) ? 'UNION ALL' : 'UNION';
+			$sql .= "
+				{$unionClause}
+				{$union['select']->toString()}
+			";
+		}
+
 		// If there's a group by clause, add it
 		if ($this->group !== null) {
 			$sql .= " GROUP BY " . $this->group->toString();
@@ -409,12 +453,12 @@ class Select extends AbstractFilterableSql implements SQLInterface, SQLElement {
 		}
 
 		// If there's an order clause, add it
-		if ($this->order !== null && $this->offset === null) {
+		if ($this->order !== null && ($this->offset === null || $this->offset === 0)) {
 			$sql .= " ORDER BY " . $this->order->toString();
 		}
 
 		// If there's an offset, process it
-		if ($this->offset !== null) {
+		if ($this->limit !== null && $this->offset !== null && $this->offset !== 0) {
 			// In the case of an offset, we want to remove aliases from the order fields
 			$offsetOrder = preg_replace('/\w+\./', '', $this->order->toString());
 			// Wrap the table in two selects to use ROW_NUMBER() for pagination

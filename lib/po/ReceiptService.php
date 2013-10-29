@@ -12,12 +12,7 @@ use NP\security\SecurityService;
  */
 class ReceiptService extends AbstractService {
 
-	protected $securityService, $receiptGateway;
-
-	public function __construct(ReceiptGateway $receiptGateway, RctItemGateway $rctItemGateway) {
-		$this->receiptGateway = $receiptGateway;
-		$this->rctItemGateway = $rctItemGateway;
-	}
+	protected $securityService;
 
 	public function setSecurityService(SecurityService $securityService) {
 		$this->securityService = $securityService;

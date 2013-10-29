@@ -21,7 +21,7 @@ Ext.define('NP.model.gl.GlAccount', {
 		{ name: 'glaccount_order', type: 'int' },
 		{ name: 'integration_package_id', type: 'int' },
 		{ name: 'glaccount_updateby', type: 'int' },
-		{ name: 'glaccount_updatetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+		{ name: 'glaccount_updatetm', type: 'date' },
 
 		// Fields that don't exist in the DB
 		{ name: 'tree_id', type: 'int' },

@@ -22,7 +22,6 @@ Ext.define('NP.view.catalogMaintenance.types.Url', {
 	},
 
 	getView: function(vc) {
-		var deferred = Ext.create('Deft.Deferred');
 		var view = Ext.create('Ext.container.Container', {
 			layout: 'fit',
 			autoEl: {
@@ -31,9 +30,7 @@ Ext.define('NP.view.catalogMaintenance.types.Url', {
 			}
 		});
 
-		deferred.resolve(view);
-
-		return deferred;
+		return { view: view };
 	}
 
 });

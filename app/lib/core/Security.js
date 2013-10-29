@@ -60,7 +60,10 @@ Ext.define('NP.lib.core.Security', function() {
 
 		singleton: true,
 		
-		requires: ['NP.lib.core.Net'],
+		requires: [
+			'NP.lib.core.Net',
+			'Ext.window.MessageBox'
+		],
 		
 		// For localization
 		errorDialogTitleText: 'Error',
@@ -100,155 +103,25 @@ Ext.define('NP.lib.core.Security', function() {
 
 			this.callParent(arguments);
 		},
-
-		/**
-		 * Loads all permissions for logged in user and gets information for the logged in user
-		 * and the user being delegated to. This function runs at application startup.
-		 * @return {Deft.Promise}
-		 */
-		loadPermissions: function() {
-			Ext.log('Loading permissions');
-			
-			var that = this;
-
-			return NP.lib.core.Net.remoteCall({
-				requests: [
-					// Load user permissions
-					getPermissionAjaxRequestConfig,
-					// Get the logged in user
-					{
-						service: 'SecurityService', 
-						action: 'getUser',
-						success: function(result) {
-							// Save the current user
-							user = Ext.create('NP.model.user.Userprofile', result);
-
-							// Set the default property/region
-						},
-						failure: function() {
-							Ext.log('Could not load user');
-						}
-					},
-					// Get the user being delegated to
-					{
-						service: 'SecurityService', 
-						action: 'getDelegatedToUser',
-						success: function(result) {
-							// Save the user being delegated to by current user
-							delegatedToUser = Ext.create('NP.model.user.Userprofile', result);
-						},
-						failure: function() {
-							Ext.log('Could not load delegated to user');
-						}
-					},
-					// Get the logged in user's role
-					{
-						service: 'SecurityService', 
-						action: 'getRole',
-						success: function(result) {
-							// Save the current user
-							role = Ext.create('NP.model.user.Role', result);
-						},
-						failure: function() {
-							Ext.log('Could not load user');
-						}
-					},
-					// Get the logged in user's property context
-					{
-						service: 'SecurityService', 
-						action: 'getContext',
-						success: function(result) {
-							// Save the current user
-							currentContext = result;
-						},
-						failure: function() {
-							Ext.log('Could not load property context');
-						}
-					},
-					// Get module tree
-					{ 
-						service                    : 'SecurityService',
-						action                     : 'getModuleTree',
-						store                      : 'NP.store.security.ModuleTree',
-						storeId                    : 'security.ModuleTree'
-					}
-				],
-				success: function(results, deferred) {
-					// We need to run a second ajax request to get some settings that depend on the user info
-					NP.lib.core.Net.remoteCall({
-						requests: [
-							// This request gets regions for the user
-							{ 
-								service                    : 'UserService',
-								action                     : 'getUserRegions',
-								store                      : 'NP.store.property.Regions',
-								storeId                    : 'user.Regions',
-								userprofile_id             : that.getUser().get('userprofile_id'),
-								delegated_to_userprofile_id: that.getDelegatedToUser().get('userprofile_id')
-							},
-							// This request gets properties for the user
-							{ 
-								service                    : 'UserService',
-								action                     : 'getUserProperties',
-								store                      : 'NP.store.property.Properties',
-								storeId                    : 'user.Properties',
-								userprofile_id             : that.getUser().get('userprofile_id'),
-								delegated_to_userprofile_id: that.getDelegatedToUser().get('userprofile_id')
-							},
-							// This request gets delegations for the user
-							{ 
-								service          : 'UserService',
-								action           : 'getDelegationsTo',
-								store            : 'NP.store.user.Delegations',
-								storeId          : 'user.Delegations',
-								userprofile_id   : that.getDelegatedToUser().get('userprofile_id'),
-								delegation_status: 1,
-								success: function(store) {
-									var currentUser = that.getDelegatedToUser();
-
-						    		store.insert(0, {
-										userprofile_username: currentUser.get('userprofile_username'),
-										UserProfile_Id      : currentUser.get('userprofile_id')
-						    		});
-								}
-							}
-						],
-						success: function(results) {
-							// Resolve the deferred to indicate Ajax request successful
-							deferred.resolve(results);
-						},
-						failure: function(response, options, deferred) {
-							Ext.log('Could not load user data');
-							deferred.reject('Could not load user data');
-						}
-					});
-				},
-				failure: function(response, options, deferred) {
-					Ext.log('Could not load security data');
-					deferred.reject('Could not load security data');
-				}
-			});
-		},
 		
 		/**
 		 * Logs the user out
 		 * @param  {Function} [callback] Function to call once logout is complete
-		 * @return {Deft.Promise}
 		 */
 		logout: function(callback) {
-			return NP.Net.remoteCall({
+			NP.Net.remoteCall({
 				requests: { 
 					service: 'SecurityService', 
 					action: 'logout',
-					success: function(result, deferred) {
+					success: function(result) {
 						permissions = null;
-						deferred.resolve(result);
+						
 						if (callback) {
 							callback(result);
 						}
 					},
-					failure: function(response, options, deferred) {
-						deferred.reject('Could not log out');	
+					failure: function(response, options) {
+						throw 'Could not log out';
 					}
 				}
 			});
@@ -261,6 +134,10 @@ Ext.define('NP.lib.core.Security', function() {
 		getUser: function() {
 			return user;
 		},
+
+		setUser: function(val) {
+			user = val;
+		},
 		
 		/**
 		 * Returns user being delegated to by current logged in user
@@ -270,6 +147,10 @@ Ext.define('NP.lib.core.Security', function() {
 			return delegatedToUser;
 		},
 		
+		setDelegatedToUser: function(val) {
+			delegatedToUser = val;
+		},
+
 		/**
 		 * Returns role currently logged in
 		 * @return {NP.model.user.Role}
@@ -278,12 +159,20 @@ Ext.define('NP.lib.core.Security', function() {
 			return role;
 		},
 
+		setRole: function(val) {
+			role = val;
+		},
+
 		/**
 		 * Returns the permissions the logged in user has
 		 * @return {Object}
 		 */
 		getPermissions: function() {
 			return permissions;
+		},
+
+		setPermission: function(val) {
+			permissions = val;
 		},
 
 		/**
@@ -303,10 +192,9 @@ Ext.define('NP.lib.core.Security', function() {
 		 * Changes the logged in user to a different user (used when there are active delegations)
 		 * @param  {Number}   userprofile_id ID of the user
 		 * @param  {Function} [callback]     Function to call once user has been changed
-		 * @return {Deft.Promise}
 		 */
 		changeUser: function(userprofile_id, callback) {
-			return NP.lib.core.Net.remoteCall({
+			NP.lib.core.Net.remoteCall({
 				requests: [
 					{
 						service       : 'SecurityService', 
@@ -318,17 +206,25 @@ Ext.define('NP.lib.core.Security', function() {
 						failure       : function() {
 							Ext.log('Could not change user')
 						}
-					},
-					getPermissionAjaxRequestConfig
+					},{
+						service: 'SecurityService', 
+						action: 'getPermissions',
+						success: function(result) {
+							// Save permissions
+							NP.Security.setPermission(result);
+						},
+						failure: function() {
+							Ext.log('Could not load permissions')
+						}
+					}
 				],
-				success: function(result, deferred) {
-					deferred.resolve();
+				success: function(result) {
 					if (callback) {
 						callback();
 					}
 				},
-				failure: function(response, options, deferred) {
-					deferred.reject('Could not change user');	
+				failure: function(response, options) {
+					throw 'Could not change user';
 				}
 			});
 		},
@@ -339,6 +235,10 @@ Ext.define('NP.lib.core.Security', function() {
 		 */
 		getCurrentContext: function() {
 			return currentContext;
+		},
+
+		setCurrentContextNoAjax: function(val) {
+			currentContext = val;
 		},
 
 		/**
@@ -354,8 +254,8 @@ Ext.define('NP.lib.core.Security', function() {
 					type       : context.type,
 					property_id: context.property_id,
 					region_id  : context.region_id,
-					failure    : function(response, options, deferred) {
-						Ext.log('Failed to save context');
+					failure    : function(response, options) {
+						throw 'Failed to save context';
 					}
 				}
 			});

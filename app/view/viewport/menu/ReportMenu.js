@@ -7,39 +7,29 @@ Ext.define('NP.view.viewport.menu.ReportMenu', {
     extend: 'NP.lib.ui.HoverButton',
     alias: 'widget.viewport.menu.reportmenu',
     
-    requires: ['NP.lib.core.Config','NP.lib.core.Security'],
+    requires: [
+    	'NP.lib.core.Config',
+    	'NP.lib.core.Security',
+    	'NP.lib.core.Translator'
+    ],
 
-	reportText        : 'Reports',
-	customText        : 'Custom Reports',
-	customOverviewText: 'Overview',
-	customSystemText  : 'System Saved Reports',
-	customMyText      : 'My Saved Reports',
-	pOText            : 'PO Register Reports',
-	receiptText       : 'Receipt Reports',
-	invoiceText       : 'Invoice Register Reports',
-	jobText           : 'Job Costing Reports',
-	utilityText       : 'Utility Reports',
-	vendorText        : 'Vendor History Reports',
-	budgetText        : NP.lib.core.Config.getSetting('pn.budget.BudgetForecastLabel') + 's',
-	adminText         : 'Admin Reports',
-
-    menu: {},
+	menu: {},
 
     initComponent: function() {
-    	this.text = this.reportText;
+    	this.text = NP.Translator.translate('Reports');
     	this.menu.showSeparator = false;
     	this.menu.items = [];
 
     	// Custom Reports
 	    if ( NP.lib.core.Security.hasPermission(2098) ) {
 			this.menu.items.push({
-				text: this.customText,
+				text: NP.Translator.translate('Custom Reports'),
 				menu: {
 					showSeparator: false,
 					items: [
-						{ text: this.customOverviewText },
-						{ text: this.customSystemText },
-						{ text: this.customMyText }
+						{ text: NP.Translator.translate('Overview') },
+						{ text: NP.Translator.translate('System Saved Reports') },
+						{ text: NP.Translator.translate('My Saved Reports') }
 					]
 				}
 			});
@@ -49,14 +39,14 @@ Ext.define('NP.view.viewport.menu.ReportMenu', {
 			// PO Register Reports
 			if ( NP.lib.core.Security.hasPermission(1029) ) {
 				this.menu.items.push({
-					text: this.pOText
+					text: NP.Translator.translate('PO Register Reports')
 				});
 			}
 			
 			// Receipt Reports
 			if ( NP.lib.core.Security.hasPermission(6040) && NP.lib.core.Config.getSetting('CP.RECEIVING_ON') == 1 ) {
 				this.menu.items.push({
-					text: this.receiptText
+					text: NP.Translator.translate('Receipt Reports')
 				});
 			}
 		}
@@ -64,42 +54,42 @@ Ext.define('NP.view.viewport.menu.ReportMenu', {
 		// Invoice Reports
 		if ( NP.lib.core.Security.hasPermission(1034) ) {
 			this.menu.items.push({
-				text: this.invoiceText
+				text: NP.Translator.translate('Invoice Register Reports')
 			});
 		}
 		
 		// Job Costing Reports
 		if ( NP.lib.core.Security.hasPermission(2048) ) {
 			this.menu.items.push({
-				text: this.jobText
+				text: NP.Translator.translate('Job Costing Reports')
 			});
 		}
 		
 		// Utility Reports
 		if ( NP.lib.core.Security.hasPermission(1063) ) {
 			this.menu.items.push({
-				text: this.utilityText
+				text: NP.Translator.translate('Utility Reports')
 			});
 		}
 		
 		// Vendor History Reports
 		if ( NP.lib.core.Security.hasPermission(2009) ) {
 			this.menu.items.push({
-				text: this.vendorText
+				text: NP.Translator.translate('Vendor History Reports')
 			});
 		}
 		
 		// Budget Forecast Reports
 		if ( NP.lib.core.Security.hasPermission(1039) ) {
 			this.menu.items.push({
-				text: this.budgetText
+				text: NP.lib.core.Config.getSetting('pn.budget.BudgetForecastLabel')
 			});
 		}
 		
 		// Admin Reports
 		if ( NP.lib.core.Security.hasPermission(1069) ) {
 			this.menu.items.push({
-				text: this.adminText
+				text: NP.Translator.translate('Admin Reports')
 			});
 		}
 

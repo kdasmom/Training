@@ -47,6 +47,57 @@ class VendorGateway extends AbstractGateway {
 		
 		return $res[0];
 	}
+
+	/**
+	 * Get vendors that will show up as available options for an invoice
+	 */
+	public function findVendorsForInvoice($property_id, $vendor_id=null, $keyword=null) {
+		$now = \NP\util\Util::formatDateForDB();
+
+		$select = $this->getSelect()
+						->columns(['vendor_id','vendor_id_alt','vendor_name'])
+						->join(new sql\join\VendorsiteAddressJoin())
+						->join(new sql\join\VendorsitePhoneJoin());
+
+		if ($vendor_id !== null && $keyword === null) {
+			$select->whereEquals('v.vendor_id', '?');
+			$params = [$vendor_id];
+		} else {
+			$select->whereEquals('v.vendor_status', "'active'")
+					->whereNotIn(
+						'v.vendor_id',
+						Select::get()->column('vendor_id')
+									->from('vendor')
+									->whereOr()
+									->whereGreaterThan('v.vendor_active_startdate', "'{$now}'")
+									->whereLessThan('v.vendor_active_enddate', "'{$now}'")
+					)
+					->whereNotExists(
+						Select::get()->from(['ins'=>'insurance'])
+									->join(new sql\join\InsuranceLinkPropertyJoin())
+									->whereIsNotNull('ins.insurancetype_id')
+									->whereLessThanOrEqual('ins.insurance_expdatetm', "'{$now}'")
+									->whereEquals('ins.tablekey_id', 'v.vendor_id')
+									->whereEquals('lip.property_id', '?')
+					)
+					->order('v.vendor_name')
+					->limit(200);
+
+			$params = [$property_id];
+
+			if ($keyword !== null) {
+				$keyword = "%{$keyword}%";
+				$select->whereNest('OR')
+							->whereLike('v.vendor_name', '?')
+							->whereLike('v.vendor_id_alt', '?')
+						->whereUnnest();
+
+				array_push($params, $keyword, $keyword);
+			}
+		}
+
+		return $this->adapter->query($select, $params);
+	}
 	
 	/**
 	 * Retrieves vendor records based on some criteria. This function is used by autocomplete combos

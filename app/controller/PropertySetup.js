@@ -10,33 +10,49 @@ Ext.define('NP.controller.PropertySetup', {
 		'NP.lib.core.Config',
 		'NP.lib.core.Security',
 		'NP.lib.core.Net',
-		'NP.lib.core.Util'
+		'NP.lib.core.Util',
+        'NP.lib.core.Translator'
 	],
 	
-	// For localization
-	errorDialogTitleText      : 'Error',
-	placeOnHoldDialogTitleText: 'Place On Hold?',
-	placeOnHoldDialogText     : 'Are you sure you want to place the selected ' + NP.Config.getPropertyLabel(true).toLowerCase() + ' on hold?',
-	onHoldSuccessText         : NP.Config.getPropertyLabel(true) + ' were placed on hold',
-	onHoldFailureText         : 'There was an error placing ' + NP.Config.getPropertyLabel(true) + ' on hold',
-	activateDialogTitleText : 'Activate?',
-	activateDialogText      : 'Are you sure you want to activate the selected ' + NP.Config.getPropertyLabel(true).toLowerCase() + '?',
-	activateSuccessText     : NP.Config.getPropertyLabel(true) + ' were activated',
-	activateFailureText     : 'There was an error activating ' + NP.Config.getPropertyLabel(true),
-	inactivateDialogTitleText : 'Inactivate?',
-	inactivateDialogText      : 'Are you sure you want to inactivate the selected ' + NP.Config.getPropertyLabel(true).toLowerCase() + '?',
-	inactivateSuccessText     : NP.Config.getPropertyLabel(true) + ' were inactivated',
-	inactivateFailureText     : 'There was an error inactivating ' + NP.Config.getPropertyLabel(true),
-	changesSavedText          : 'Changes saved successfully',
-	invalidDayErrorText       : 'Invalid day',
-	unassignedUniTypeTitle    : 'View ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + 's Not Assigned to a ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + ' Type',
-	newPropertyTitleText      : 'New Property',
-	editPropertyTitleText     : 'Editing',
+	models: ['property.FiscalCal','system.IntegrationPackage','property.Region',
+			'property.Property'],
 
+	stores: ['property.FiscalCals','system.IntegrationPackages','property.Properties',
+			'property.VolumeTypes','property.UnitTypes','property.Units'],
+
+	views: ['property.Main','property.PropertiesMain','property.PropertiesForm'],
+	
 	init: function() {
 		Ext.log('PropertySetup controller initialized');
 
-		var app = this.application;
+		var me = this,
+			unitText, propertyText, propertiesText;
+
+		// For localization
+		NP.Translator.on('localeloaded', function() {
+			unitText       = NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit'),
+			propertyText   = NP.Config.getPropertyLabel(),
+			propertiesText = NP.Config.getPropertyLabel(true);
+			
+			me.errorDialogTitleText       = NP.Translator.translate('Error');
+			me.placeOnHoldDialogTitleText = NP.Translator.translate('Place On Hold?');
+			me.placeOnHoldDialogText      = NP.Translator.translate('Are you sure you want to place the selected {property} on hold?', { property: propertyText });
+			me.onHoldSuccessText          = NP.Translator.translate('{properties} were placed on hold', { properties: propertiesText });
+			me.onHoldFailureText          = NP.Translator.translate('There was an error placing {properties} on hold', { properties: propertiesText });
+			me.activateDialogTitleText    = NP.Translator.translate('Activate') + '?';
+			me.activateDialogText         = NP.Translator.translate('Are you sure you want to activate the selected {properties}?', { properties: propertiesText });
+			me.activateSuccessText        = NP.Translator.translate('{properties} were activated', { properties: propertiesText });
+			me.activateFailureText        = NP.Translator.translate('There was an error activating {properties}', { property: propertyText });
+			me.inactivateDialogTitleText  = NP.Translator.translate('Inactivate') + '?';
+			me.inactivateDialogText       = NP.Translator.translate('Are you sure you want to inactivate the selected {properties}?', { properties: propertiesText });
+			me.inactivateSuccessText      = NP.Translator.translate('{properties} were inactivated', { properties: propertiesText });
+			me.inactivateFailureText      = NP.Translator.translate('There was an error inactivating {properties}', { properties: propertiesText });
+			me.changesSavedText           = NP.Translator.translate('Changes saved successfully');
+			me.invalidDayErrorText        = NP.Translator.translate('Invalid day');
+			me.unassignedUniTypeTitle     = NP.Translator.translate('View {unit} Not Assigned to a {unit} Type', { unit: unitText });
+			me.newPropertyTitleText       = NP.Translator.translate('New {property}', { property: propertyText });
+			me.editPropertyTitleText      = NP.Translator.translate('Editing');
+		});
 
 		// Setup event handlers
 		this.control({
@@ -287,7 +303,7 @@ Ext.define('NP.controller.PropertySetup', {
 						action : action,
 						userprofile_id: NP.Security.getUser().get('userprofile_id'),
 						property_id_list: property_id_list,
-						success: function(result, deferred) {
+						success: function(result) {
 							// If operation successful
 							if (result.success) {
 								// Remove the row from the grid
@@ -299,7 +315,7 @@ Ext.define('NP.controller.PropertySetup', {
 								Ext.MessageBox.alert(that.errorDialogTitleText, failureDialogText);
 							}
 						},
-						failure: function(response, options, deferred) {
+						failure: function(response, options) {
 							Ext.MessageBox.alert(that.errorDialogTitleText, failureDialogText);
 						}
 					}
@@ -318,7 +334,7 @@ Ext.define('NP.controller.PropertySetup', {
 				action                  : 'getCustomFieldData',
 				customfield_pn_type     : 'property',
 				customfielddata_table_id: (property_id) ? property_id : 0,
-				success                 : function(result, deferred) {
+				success                 : function(result) {
 					// Setup the binding for the form
 					var viewCfg = {
 						customFieldData: result,
@@ -327,7 +343,7 @@ Ext.define('NP.controller.PropertySetup', {
 					        	'property.Property',
 					        	'contact.Address',
 					        	'contact.Phone',
-					        	{ class: 'contact.Phone', prefix: 'fax_' }
+					        	{ classPath: 'contact.Phone', prefix: 'fax_' }
 					        ]
 					    }
 					};
@@ -473,7 +489,7 @@ Ext.define('NP.controller.PropertySetup', {
 					// Resume layouts now that fields and tabs have been updated
 					Ext.resumeLayouts(true);
 				},
-				failure: function(response, options, deferred) {}
+				failure: function(response, options) {}
 			}
 		});
 	},
@@ -633,7 +649,7 @@ Ext.define('NP.controller.PropertySetup', {
 				action : 'saveProperty',
 				extraFields: extraFields,
 				extraParams: extraParams,
-				success: function(result, deferred) {
+				success: function(result) {
 					// If dealing with a new record, redirect
 					var propertyModel = form.getModel('property.Property');
 					if (propertyModel.get('property_id') === null) {
@@ -822,7 +838,7 @@ Ext.define('NP.controller.PropertySetup', {
 	viewUnitType: function(grid, rec, item, index, e) {
 		if (e.getTarget().className != 'x-grid-row-checker') {
 			var form = this.getCmp('property.unittypeform');
-			var mask = new Ext.LoadMask(form);
+			var mask = new Ext.LoadMask({ target: form });
 			mask.show();
 
 			form.setTitle('Edit ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit'));
@@ -865,7 +881,7 @@ Ext.define('NP.controller.PropertySetup', {
 			unittype_id: null
 		});
 
-		var mask = new Ext.LoadMask(form);
+		var mask = new Ext.LoadMask({ target: form });
 		mask.show();
 
 		unitStore.load(function() {
@@ -973,7 +989,7 @@ Ext.define('NP.controller.PropertySetup', {
 				service    : 'PropertyService',
 				action     : 'getUnitsWithoutType',
 				property_id: this.activePropertyRecord.get('property_id'),
-				success: function(result, deferred) {
+				success: function(result) {
 					var unit_list = NP.Util.valueList(result, 'unit_number');
 					unit_list = unit_list.join(',');
 					if (unit_list == '') {
@@ -1027,7 +1043,7 @@ Ext.define('NP.controller.PropertySetup', {
 					service: 'PropertyService',
 					action : 'saveFiscalCal',
 					data   : modifiedFiscalCal.getData(true),
-					success: function(result, deferred) {
+					success: function(result) {
 						if (result.success) {
 							// Close form panel
 							that.cancelCalendarCutoffs(button);

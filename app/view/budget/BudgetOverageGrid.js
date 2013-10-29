@@ -96,7 +96,7 @@ Ext.define('NP.view.budget.BudgetOverageGrid', {
             }
         ];
 
-        this.store = Ext.create('NP.store.budget.BudgetOverage', {
+        this.store = Ext.create('NP.store.budget.BudgetOverages', {
             service    : 'BudgetService',
             action     : 'getBudgetOveragesByProperty',
             paging     : true,

@@ -3,8 +3,6 @@
 namespace NP\catalog;
 
 use NP\core\AbstractService;
-use NP\vendor\VendorGateway;
-use NP\property\PropertyGateway;
 use NP\util\Util;
 
 /**
@@ -19,25 +17,7 @@ class CatalogService extends AbstractService {
 	const CATALOG_PENDING    = -1;
 	const CATALOG_PROCESSING = -2;
 
-	protected $vcGateway, $linkVcitemcatGlGateway, $linkVcPropertyGateway, $linkVcVccatGateway,
-				$linkVcVendorGateway, $vcItemGateway, $vcCatGateway, $vendorGateway, $configService,
-				$propertyGateway;
-
-	public function __construct(VcGateway $vcGateway, LinkVcitemcatGlGateway $linkVcitemcatGlGateway,
-								LinkVcPropertyGateway $linkVcPropertyGateway, LinkVcVccatGateway $linkVcVccatGateway,
-								LinkVcVendorGateway $linkVcVendorGateway, VcItemGateway $vcItemGateway,
-								VcCatGateway $vcCatGateway, VendorGateway $vendorGateway,
-								PropertyGateway $propertyGateway) {
-		$this->vcGateway              = $vcGateway;
-		$this->linkVcitemcatGlGateway = $linkVcitemcatGlGateway;
-		$this->linkVcPropertyGateway  = $linkVcPropertyGateway;
-		$this->linkVcVccatGateway     = $linkVcVccatGateway;
-		$this->linkVcVendorGateway    = $linkVcVendorGateway;
-		$this->vcItemGateway          = $vcItemGateway;
-		$this->vcCatGateway           = $vcCatGateway;
-		$this->vendorGateway          = $vendorGateway;
-		$this->propertyGateway        = $propertyGateway;
-	}
+	protected $configService;
 	
 	public function setConfigService(\NP\system\ConfigService $configService) {
 		$this->configService = $configService;

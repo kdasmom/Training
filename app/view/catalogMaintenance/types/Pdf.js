@@ -24,7 +24,6 @@ Ext.define('NP.view.catalogMaintenance.types.Pdf', {
 	},
 
 	getView: function(vc) {
-		var deferred = Ext.create('Deft.Deferred');
 		var view = Ext.create('Ext.container.Container', {
 			layout: 'fit',
 			autoEl: {
@@ -33,9 +32,7 @@ Ext.define('NP.view.catalogMaintenance.types.Pdf', {
 			}
 		});
 
-		deferred.resolve(view);
-
-		return deferred;
+		return { view: view };
 	}
 
 });

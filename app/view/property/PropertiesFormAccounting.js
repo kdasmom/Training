@@ -8,16 +8,18 @@ Ext.define('NP.view.property.PropertiesFormAccounting', {
     alias: 'widget.property.propertiesformaccounting',
     
     requires: [
-    	'NP.lib.core.Config'
+    	'NP.lib.core.Config',
+        'NP.lib.core.Translator'
     ],
 
     autoScroll: true,
     
-    title: 'Accounting Info',
-    thresholdFieldText: 'Acceptable PO Matching Threshold (%)',
-    fiscalCalStartFieldText: 'Fiscal Calendar Start Month',
-
     initComponent: function() {
+        var propertyText = NP.Config.getPropertyLabel(),
+            taxText      = NP.Config.getSetting('PN.General.salesTaxTerm', 'Sales Tax');
+
+        this.title = NP.Translator.translate('Accounting Info');
+
     	this.defaults = {
     		labelWidth: 245
     	};
@@ -26,7 +28,7 @@ Ext.define('NP.view.property.PropertiesFormAccounting', {
                 xtype           : 'numberfield',
                 name            : 'property_salestax',
                 decimalPrecision: 6,
-                fieldLabel      : NP.Config.getPropertyLabel() + ' ' + NP.Config.getSetting('PN.General.salesTaxTerm', 'Sales Tax'),
+                fieldLabel      : NP.Translator.translate('{property} {salesTax}', { property: propertyText, salesTax: taxText }),
                 width           : 350,
                 minValue        : 0,
                 maxValue        : 1,
@@ -35,14 +37,14 @@ Ext.define('NP.view.property.PropertiesFormAccounting', {
     		{
 				xtype     : 'numberfield',
 				name      : 'matching_threshold',
-				fieldLabel: this.thresholdFieldText,
+				fieldLabel: NP.Translator.translate('Acceptable PO Matching Threshold (%)'),
 				width     : 350,
                 minValue  : 0,
                 maxValue  : 100
     		},
     		{
 				xtype         : 'customcombo',
-				fieldLabel    : this.fiscalCalStartFieldText,
+				fieldLabel    : NP.Translator.translate('Fiscal Calendar Start Month'),
 				width         : 450,
 				name          : 'fiscaldisplaytype_value',
 				store         : 'property.FiscalDisplayTypes',

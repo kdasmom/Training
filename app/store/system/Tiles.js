@@ -13,33 +13,24 @@ Ext.define('NP.store.system.Tiles', {
 		{ name: 'iconCls' }
 	],
 	
-	// For localization
-	//poChart: 'PO Chart',
-
 	constructor: function() {
-		var that = this;
+		var that = this,
+			stats = Ext.getStore('system.SummaryStats');
 
 		this.data = [];
 
-		// By default, add all summary stats as tiles
-		var stats = Ext.getStore('system.SummaryStats').getRange();
-		Ext.each(stats, function(stat) {
-			// Only add stats that are within the permissions granted
-			that.data.push({
-				name     : stat.get('title'),
-				className: stat.get('name'),
-				moduleId : stat.get('module_id')
+		// We need to wait for the SummaryStats store to have data before we can populate this one
+		stats.on('statsloaded', function() {
+			// By default, add all summary stats as tiles
+			Ext.each(stats.getRange(), function(stat) {
+				// Only add stats that are within the permissions granted
+				that.add({
+					name     : stat.get('title'),
+					className: stat.get('name'),
+					moduleId : stat.get('module_id')
+				});
 			});
 		});
-
-		// Then add any other custom tiles
-		/*this.data.push(
-			{
-				name     : this.poChart,
-				className: 'PoChart',
-				moduleId : null
-			}
-		);*/
 
 		this.callParent(arguments);
 	}

@@ -39,33 +39,13 @@ $di['mailEncryptionType'] = $__CONFIG['mailServer']['encryptionType'];
 // DI Definitions
 $diDefinition = array(
 	'Zend\Cache\Storage\Adapter\WinCache',
+	'NP\core\GatewayManager',
 	'NP\core\db\Adapter'                             => array('dbServer','dbName','dbUsername','dbPassword'),
 	'NP\core\notification\Emailer'                   => array('mailHost','mailPort','mailUsername','mailPassword','mailEncryptionType'),
 	'NP\core\validation\EntityValidator'             => array('LocalizationService','Adapter'),
 	'NP\budget\BudgetGateway'                        => array('Adapter','FiscalCalService'),
-	'NP\budget\BudgetOverageGateway'                 => array('Adapter'),
-	'NP\budget\BudgetService'                        => array('BudgetGateway','IntegrationPackageGateway','GLAccountGateway','PropertyGateway','GlAccountYearGateway','SoapService','BudgetOverageGateway'),
-	'NP\budget\GlAccountYearGateway'                 => array('Adapter'),
-	'NP\catalog\LinkVcitemcatGlGateway'              => array('Adapter'),
-	'NP\catalog\LinkVcPropertyGateway'               => array('Adapter'),
-	'NP\catalog\LinkVcVccatGateway'                  => array('Adapter'),
-	'NP\catalog\LinkVcVendorGateway'                 => array('Adapter'),
-	'NP\catalog\VcCatGateway'                        => array('Adapter'),
-	'NP\catalog\VcGateway'                           => array('Adapter'),
-	'NP\catalog\VcItemGateway'                       => array('Adapter'),
-	'NP\catalog\CatalogService'                      => array('VcGateway','LinkVcitemcatGlGateway','LinkVcPropertyGateway','LinkVcVccatGateway','LinkVcVendorGateway','VcItemGateway','VcCatGateway','VendorGateway','PropertyGateway'),
-	'NP\contact\AddressGateway'                      => array('Adapter'),
-	'NP\contact\AddressTypeGateway'                  => array('Adapter'),
-	'NP\contact\ContactGateway'                      => array('Adapter'),
-	'NP\contact\EmailGateway'                        => array('Adapter'),
-	'NP\contact\EmailTypeGateway'                    => array('Adapter'),
-	'NP\contact\PersonGateway'                       => array('Adapter'),
-	'NP\contact\PhoneGateway'                        => array('Adapter'),
-	'NP\contact\PhoneTypeGateway'                    => array('Adapter'),
-	'NP\contact\StateGateway'                        => array('Adapter'),
+	'NP\budget\BudgetService'                        => array('SoapService'),
 	'NP\core\Config'                                 => array('config','reloadCache','WinCache','SiteService','ConfigsysGateway'),
-	'NP\gl\GLAccountGateway'                         => array('Adapter'),
-	'NP\gl\GlAccountTypeGateway'                     => array('Adapter'),
 	'NP\gl\GLService'                                => array('GLAccountGateway','TreeGateway','IntegrationPackageGateway','GlAccountTypeGateway','VendorGlAccountsGateway', 'PropertyGlAccountGateway','VendorGateway', 'PropertyGateway'),
 	'NP\import\GLActualImportEntityValidator'        => array('LocalizationService','Adapter','IntegrationPackageGateway','GLAccountGateway','PropertyGateway','Config','SoapService'),
 	'NP\import\GLBudgetImportEntityValidator'        => array('LocalizationService','Adapter','IntegrationPackageGateway','GLAccountGateway','PropertyGateway','Config','SoapService'),
@@ -73,8 +53,8 @@ $diDefinition = array(
 	'NP\import\GLCodeImportEntityValidator'          => array('LocalizationService','Adapter','IntegrationPackageGateway','GLAccountGateway'),
 	'NP\import\InvoicePaymentImportEntityValidator'  => array('LocalizationService','Adapter','IntegrationPackageGateway','VendorGateway','PropertyGateway','SoapService'),
 	'NP\import\PropertyImportEntityValidator'        => array('LocalizationService','Adapter','Config','IntegrationPackageGateway','StateGateway','PnCustomFieldsGateway','PnUniversalFieldGateway'),
-	'NP\import\PropertyGLImportEntityValidator'      => array('LocalizationService','Adapter','IntegrationPackageGateway','PropertyGateway','GLAccountGateway','PropertyGlAccountGateway'),
-	'NP\import\SplitImportEntityValidator'           => array('LocalizationService','Adapter','IntegrationPackageGateway','VendorGateway','PropertyGateway','UnitGateway','GLAccountGateway','DfSplitGateway','PnUniversalFieldGateway','ConfigService'),
+	'NP\import\PropertyGLImportEntityValidator'      => array('LocalizationService','Adapter','IntegrationPackageGateway','PropertyGateway','GlAccountGateway','PropertyGlAccountGateway'),
+	'NP\import\SplitImportEntityValidator'           => array('LocalizationService','Adapter','IntegrationPackageGateway','VendorGateway','PropertyGateway','UnitGateway','GlAccountGateway','DfSplitGateway','PnUniversalFieldGateway','ConfigService'),
 	'NP\import\UnitImportEntityValidator'            => array('LocalizationService','Adapter','IntegrationPackageGateway','PropertyGateway','UnitGateway','UnitTypeGateway'),
 	'NP\import\UnitTypeImportEntityValidator'        => array('LocalizationService','Adapter','IntegrationPackageGateway','PropertyGateway','UnitTypeGateway'),
 	'NP\import\UserImportEntityValidator'            => array('LocalizationService','Adapter','Config','StateGateway','UserprofileGateway'),
@@ -82,96 +62,71 @@ $diDefinition = array(
 	'NP\import\VendorFavoriteImportEntityValidator'  => array('LocalizationService','Adapter','IntegrationPackageGateway','VendorsiteGateway','PropertyGateway','VendorFavoriteGateway'),
 	'NP\import\VendorUtilityImportEntityValidator'   => array('LocalizationService','Adapter','PropertyGateway','UnitGateway'),
 	'NP\import\VendorInsuranceImportEntityValidator' => array('LocalizationService','Adapter','IntegrationPackageGateway','VendorGateway','PropertyGateway'),
-	'NP\import\VendorImportEntityValidator'          => array('LocalizationService','Adapter','Config','IntegrationPackageGateway','StateGateway','VendorTypeGateway','GLAccountGateway','SoapService'),
-	'NP\import\VendorGLImportEntityValidator'        => array('LocalizationService','Adapter','IntegrationPackageGateway','VendorGateway','GLAccountGateway','VendorGlAccountsGateway'),
-	'NP\image\ImageIndexGateway'                     => array('Adapter'),
-	'NP\image\ImageTransferGateway'                  => array('Adapter'),
-	'NP\image\ImageService'                          => array('ImageIndexGateway','ImageTransferGateway'),
-	'NP\invoice\InvoiceGateway'                      => array('Adapter','RoleGateway'),
-	'NP\invoice\InvoiceItemGateway'                  => array('Adapter'),
-	'NP\invoice\InvoiceService'                      => array('SecurityService','InvoiceGateway','InvoiceItemGateway','BudgetService'),
+	'NP\import\VendorImportEntityValidator'          => array('LocalizationService','Adapter','Config','IntegrationPackageGateway','StateGateway','VendorTypeGateway','GlAccountGateway','SoapService'),
+	'NP\import\VendorGLImportEntityValidator'        => array('LocalizationService','Adapter','IntegrationPackageGateway','VendorGateway','GlAccountGateway','VendorGlAccountsGateway'),
+	'NP\invoice\InvoiceGateway'                      => array('Adapter','FiscalCalService','RoleGateway','RegionGateway'),
+	'NP\invoice\InvoiceService'                      => array('SecurityService','FiscalCalService','BudgetService'),
 	'NP\invoice\InvoiceServiceInterceptor',
-	'NP\invoice\InvoicePaymentStatusGateway'         => array('Adapter'),
-	'NP\invoice\InvoicePaymentGateway'               => array('Adapter'),
 	'NP\locale\LocalizationService'                  => array('locale','LoggingService'),
-	'NP\notification\EmailAlertGateway'              => array('Adapter'),
-	'NP\notification\EmailAlertHourGateway'          => array('Adapter'),
-	'NP\notification\EmailAlertTypeGateway'          => array('Adapter'),
-	'NP\notification\NotificationService'            => array('Config','EmailAlertTypeGateway','EmailAlertGateway','EmailAlertHourGateway','UserprofileGateway','Emailer'),
-	'NP\po\PoItemGateway'                            => array('Adapter'),
+	'NP\notification\NotificationService'            => array('Config','Emailer'),
 	'NP\po\PurchaseOrderGateway'                     => array('Adapter','RoleGateway'),
-	'NP\po\PoService'                                => array('PurchaseOrderGateway','PoItemGateway','BudgetService'),
+	'NP\po\PoService'                                => array('BudgetService'),
 	'NP\po\ReceiptGateway'                           => array('Adapter','RoleGateway'),
-	'NP\po\RctItemGateway'                           => array('Adapter'),
-	'NP\po\ReceiptService'                           => array('ReceiptGateway','RctItemGateway'),
-	'NP\property\FiscalcalGateway'                   => array('Adapter'),
-	'NP\property\FiscalcalMonthGateway'              => array('Adapter'),
-	'NP\property\FiscalDisplayTypeGateway'           => array('Adapter'),
-	'NP\property\FiscalCalService'                   => array('FiscalcalGateway'),
-	'NP\property\PropertyGateway'                    => array('Adapter'),
-	'NP\property\PropertyGlAccountGateway'           => array('Adapter'),
-	'NP\property\PropertyService'                    => array('SecurityService','PropertyGateway','RegionGateway','FiscalcalGateway','PropertyUserprofileGateway','UnitGateway','UserprofileGateway','InvoiceService','PoService','WfRuleTargetGateway','FiscalDisplayTypeGateway','FiscalcalMonthGateway','AddressGateway','PhoneGateway','PhoneTypeGateway','RecAuthorGateway','PnCustomFieldsGateway','PnCustomFieldDataGateway','PropertyGlAccountGateway','UnitTypeGateway','UnitTypeValGateway','UnitTypeMeasGateway','FiscalCalService','StateGateway','IntegrationPackageGateway','GLAccountGateway'),
-	'NP\property\RegionGateway'                      => array('Adapter'),
-	'NP\property\UnitGateway'                        => array('Adapter'),
-	'NP\property\UnitTypeGateway'                    => array('Adapter'),
-	'NP\property\UnitTypeValGateway'                 => array('Adapter'),
-	'NP\property\UnitTypeMeasGateway'                => array('Adapter'),
-	'NP\security\ModuleGateway'                      => array('Adapter'),
-	'NP\security\ModulePrivGateway'                  => array('Adapter'),
-	'NP\security\SecurityService'                    => array('config','SiteService','SessionService','UserprofileGateway','RoleGateway','UserprofileLogonGateway','ModulePrivGateway','RegionGateway','PropertyGateway','ModuleGateway'),
-	'NP\system\ConfigsysGateway'                     => array('Adapter'),
-	'NP\system\ConfigService'                        => array('Config','SecurityService','SiteService','ConfigsysGateway','PnUniversalFieldGateway','IntegrationRequirementsGateway','IntegrationPackageGateway','LookupcodeGateway','PnCustomFieldsGateway'),
-	'NP\system\DfSplitGateway'                       => array('Adapter'),
-	'NP\system\DfSplitItemsGateway'                  => array('Adapter'),
-	'NP\system\DfSplitGateway'                       => array('Adapter'),
-	'NP\system\ImportService',
-	'NP\system\IntegrationRequirementsGateway'       => array('Adapter'),
-	'NP\system\IntegrationPackageGateway'            => array('Adapter'),
+	'NP\property\PropertyService'                    => array('SecurityService','InvoiceService','PoService','FiscalCalService'),
+	'NP\security\SecurityService'                    => array('config','SiteService','SessionService'),
+	'NP\system\ConfigService'                        => array('Config','SecurityService','SiteService'),
 	'NP\system\LoggingService'                       => array('logPath','enabledNamespaces','fileEnabled','debugEnabled'),
-	'NP\system\LookupcodeGateway'                    => array('Adapter'),
-	'NP\system\MessageService'                       => array('UserMessageGateway','UserMessageRecipientGateway'),
-	'NP\system\PicklistService'                      => array('IntegrationPackageGateway','RegionGateway'),
-	'NP\system\PnCustomFieldsGateway'                => array('Adapter'),
-	'NP\system\PnCustomFieldDataGateway'             => array('Adapter'),
-	'NP\system\PnUniversalFieldGateway'              => array('Adapter'),
-	'NP\system\PropertySplitGateway'                 => array('Adapter'),
 	'NP\system\SessionService'                       => array('Config','SiteService'),
 	'NP\system\SiteService'                          => array('WinCache','configPath','reloadCache'),
-	'NP\system\SplitService'                         => array('DfSplitGateway','DfSplitItemsGateway','PropertyGateway','VendorGateway','UnitGateway','IntegrationPackageGateway','GLAccountGateway'),
-	'NP\system\TreeGateway'                          => array('Adapter'),
-	'NP\system\UserMessageGateway'                   => array('Adapter'),
-	'NP\system\UserMessageRecipientGateway'          => array('Adapter'),
 	'NP\user\DelegationGateway'                      => array('Adapter','RoleGateway'),
-	'NP\user\DelegationPropGateway'                  => array('Adapter'),
-	'NP\user\MobInfoGateway'                         => array('Adapter'),
-	'NP\user\PropertyUserprofileGateway'             => array('Adapter'),
-	'NP\user\PropertyUserCodingGateway'              => array('Adapter'),
-	'NP\user\RecAuthorGateway'                       => array('Adapter'),
-	'NP\user\RoleGateway'                            => array('Adapter'),
-	'NP\user\StaffGateway'                           => array('Adapter'),
-	'NP\user\UserprofileGateway'                     => array('Adapter'),
-	'NP\user\UserprofileroleGateway'                 => array('Adapter'),
-	'NP\user\UserSettingGateway'                     => array('Adapter'),
-	'NP\user\UserService'                            => array('SecurityService','DelegationGateway','UserSettingGateway','UserprofileGateway','RoleGateway','PersonGateway','AddressGateway','EmailGateway','PhoneGateway','PropertyUserprofileGateway','MobInfoGateway','DelegationPropGateway','PropertyGateway','RegionGateway','NotificationService','PropertyUserCodingGateway','UserprofileroleGateway','StaffGateway','AddressTypeGateway','EmailTypeGateway','PhoneTypeGateway','TreeGateway'),
-	'NP\user\UserprofileLogonGateway'                => array('Adapter'),
-	'NP\user\VendorAccessUsersGateway'               => array('Adapter'),
-	'NP\user\VendorConnectService'                   => array('VendorAccessUsersGateway'),
-	'NP\util\SoapService',
-	'NP\vendor\InsuranceGateway'                     => array('Adapter'),
-	'NP\vendor\InsuranceTypeGateway'                 => array('Adapter'),
-	'NP\vendor\LinkInsurancePropertyGateway'         => array('Adapter'),
-	'NP\vendor\UtilityGateway'                       => array('Adapter'),
-	'NP\vendor\UtilityAccountGateway'                => array('Adapter'),
-	'NP\vendor\UtilityTypeGateway'                   => array('Adapter'),
-	'NP\vendor\UtilityService'                       => array('ConfigService','UtilityGateway','UtilityAccountGateway','UtilityTypeGateway','VendorGateway','UnitGateway','PhoneGateway','ContactGateway','PersonGateway','PropertyGateway'),
-	'NP\vendor\VendorFavoriteGateway'                => array('Adapter'),
-	'NP\vendor\VendorGateway'                        => array('Adapter'),
-	'NP\vendor\VendorGlAccountsGateway'              => array('Adapter'),
-	'NP\vendor\VendorsiteGateway'                    => array('Adapter'),
-	'NP\vendor\VendorService'                        => array('VendorGateway','VendorsiteGateway','IntegrationPackageGateway','VendorTypeGateway','GLAccountGateway','VendorGlAccountsGateway','PropertyGateway','VendorFavoriteGateway','InsuranceTypeGateway','InsuranceGateway','LinkInsurancePropertyGateway','UnitGateway'),
-	'NP\vendor\VendorTypeGateway'                    => array('Adapter'),
-	'NP\workflow\WfRuleTargetGateway'                => array('Adapter'),
+	'NP\user\UserService'                            => array('SecurityService','NotificationService'),
+	'NP\vendor\UtilityService'                       => array('ConfigService'),
+	'NP\workflow\WfRuleGateway'                      => array('Adapter','UserprofileroleGateway'),
 );
+
+// Now we're gonna figure out some automatic definitions for gateways and services
+$rootLibDir = "{$__CONFIG['appRoot']}lib";
+$setAutoDi = function($directory, $recursive) use (&$setAutoDi, &$diDefinition, $rootLibDir) {
+	// Recursively scan through lib directory
+    if ($handle = opendir($directory)) {
+        while (false !== ($file = readdir($handle))) {
+        	// Check if dealing with a valid file
+            if ($file != "." && $file != "..") {
+            	// If directory, just recurse 
+                if (is_dir($directory. "/" . $file)) {
+                    if($recursive) {
+                        $setAutoDi($directory. "/" . $file, $recursive);
+                    }
+                // If file, process it
+                } else {
+                	$className = explode('.', $file);
+                	$className = array_shift($className);
+                	$suffix = substr($className, -7);
+                	// If we're dealing with a gateway or service, we can process it
+                	if ($suffix == 'Gateway' || $suffix == 'Service') {
+                		$module = explode('/', $directory);
+	                	$module = array_pop($module);
+	                	$classPath = "NP\\{$module}\\{$className}";
+	                	// If this service or class hasn't year been defined, add it to the definitions
+	                	if (!array_key_exists($classPath, $diDefinition)) {
+	                		// Gateway always takes an Adapter as first argument
+	                		if ($suffix == 'Gateway') {
+	                			$diDefinition[$classPath] = array('Adapter');
+	                		// Service requires no arguments
+	                		} else {
+	                			$diDefinition[] = $classPath;
+	                		}
+	                	}
+                	}
+                }
+            }
+        }
+        closedir($handle);
+    }
+};
+
+// Call the recursive function
+$setAutoDi($rootLibDir, true);
 
 // Loop through all the definitions
 foreach($diDefinition as $classPath=>$dependencies) {
@@ -200,6 +155,11 @@ foreach($diDefinition as $classPath=>$dependencies) {
         if ($r->hasMethod('setPimple')) {
             $obj->setPimple($di);
         }
+
+		// Inject the GatewayManager via setter injection
+		if ($r->hasMethod('setGatewayManager')) {
+			$obj->setGatewayManager($di['GatewayManager']);
+		}
 
 		// Inject the Logging service via setter injection to all services and gateways
 		if ($r->hasMethod('setLoggingService')) {

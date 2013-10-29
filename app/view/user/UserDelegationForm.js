@@ -10,6 +10,7 @@ Ext.define('NP.view.user.UserDelegationForm', {
     requires: [
         'NP.lib.core.Config',
         'NP.lib.core.Security',
+        'NP.lib.core.Translator',
         'NP.view.shared.button.Cancel',
         'NP.view.shared.button.Save',
         'Ext.ux.form.field.BoxSelect'
@@ -18,12 +19,6 @@ Ext.define('NP.view.user.UserDelegationForm', {
     autoScroll : true,
     border     : false,
     bodyPadding: 8,
-
-    startDateLabelText      : 'Start Date',
-    stopDateLabelText       : 'Stop Date',
-    delegateToLabelText     : 'Delegate to Whom',
-    delegPropertiesLabelText: NP.Config.getSetting('PN.Main.PropertiesLabel') + ' to Delegate',
-    delegPropertiesEmptyText: 'Select ' + NP.Config.getSetting('PN.Main.PropertiesLabel') + '...',
 
     initComponent: function() {
         var bar = [
@@ -40,15 +35,15 @@ Ext.define('NP.view.user.UserDelegationForm', {
         this.items = [
             {
                 xtype     : 'datefield',
-                fieldLabel: this.startDateLabelText,
+                fieldLabel: NP.Translator.translate('Start Date'),
                 name      : 'Delegation_StartDate'
             },{
                 xtype     : 'datefield',
-                fieldLabel: this.stopDateLabelText,
+                fieldLabel: NP.Translator.translate('Stop Date'),
                 name      : 'Delegation_StopDate'
             },{
                 xtype       : 'combo',
-                fieldLabel  : this.delegateToLabelText,
+                fieldLabel  : NP.Translator.translate('Delegate to Whom'),
                 forceSelection: true,
                 queryMode   : 'local',
                 width       : 600,
@@ -60,13 +55,13 @@ Ext.define('NP.view.user.UserDelegationForm', {
                     action     : 'getAllowedDelegationUsers'
                 }),
                 listConfig: {
-                    itemTpl: '{userprofilerole.staff.person.person_lastname}, {userprofilerole.staff.person.person_lastname} ({userprofile_username})'
+                    itemTpl: '{person_lastname}, {person_lastname} ({userprofile_username})'
                 }
             },{
                 xtype       : 'boxselect',
-                fieldLabel  : this.delegPropertiesLabelText,
+                fieldLabel  : NP.Translator.translate('{properties} to Delegate', { properties: NP.Config.getPropertyLabel(true) }),
                 name        : 'delegation_properties',
-                emptyText   : this.delegPropertiesEmptyText,
+                emptyText   : NP.Translator.translate('Select {properties}...', { properties: NP.Config.getPropertyLabel(true) }),
                 queryMode   : 'local',
                 selectOnTab : false,
                 displayField: 'property_name',
