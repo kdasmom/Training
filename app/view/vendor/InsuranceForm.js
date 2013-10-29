@@ -12,7 +12,8 @@ Ext.define('NP.view.vendor.InsuranceForm', {
         'NP.lib.ui.ComboBox',
         'NP.lib.core.Config',
         'NP.view.shared.button.New',
-        'NP.view.shared.button.Delete'
+        'NP.view.shared.button.Delete',
+		'NP.lib.core.Util'
     ],
 
     padding: 8,
@@ -59,53 +60,61 @@ Ext.define('NP.view.vendor.InsuranceForm', {
                                 service         : 'InsuranceService',
                                 action          : 'getAllTypes',
                                 autoLoad    : true
-                        })
+                        }),
+						value: this.modelData ? this.modelData['insurancetype_id'] : ''
                     },
                     {
                         xtype: 'textfield',
                         fieldLabel: this.companyInputLabelText,
                         name: 'insurance_company',
                         padding: '0 0 0 5',
-                        labelWidth: 80
+                        labelWidth: 80,
+						value: this.modelData ? this.modelData['insurance_company'] : ''
                     },
                     {
                         xtype: 'textfield',
                         fieldLabel: this.policyNumberInputLabelText,
                         name: 'insurance_policynum',
                         padding: '0 0 0 5',
-                        labelWidth: 80
+                        labelWidth: 80,
+						value: this.modelData ? this.modelData['insurance_policynum'] : ''
                     },
                     {
                         xtype: 'datefield',
                         fieldLabel: this.effectiveDateInputLabelText,
                         name: 'insurance_policy_effective_datetm',
                         padding: '0 0 0 5',
-                        labelWidth: 80
+                        labelWidth: 80,
+						value: this.modelData ? Ext.Date.format(new Date(this.modelData['insurance_policy_effective_datetm']), 'm/d/Y') : ''
                     },
                     {
                         xtype: 'datefield',
                         fieldLabel: this.expDateInputLabelText,
                         name: 'insurance_expdatetm',
                         padding: '0 0 0 5',
-                        labelWidth: 80
+                        labelWidth: 80,
+						value: this.modelData ? Ext.Date.format(new Date(this.modelData['insurance_expdatetm']), 'm/d/Y') : ''
                     },
                     {
                         xtype: 'textfield',
                         fieldLabel: this.policyLimitInputLabelText,
                         name: 'insurance_policy_limit',
                         padding: '0 0 0 5',
-                        labelWidth: 80
+                        labelWidth: 80,
+						value: this.modelData ? this.modelData['insurance_policy_limit'] : ''
                     },
                     {
                         xtype: 'textfield',
                         fieldLabel: this.additionalInsuranceInputLabelText,
                         name: 'insurance_additional_insured_listed',
                         padding: '0 0 0 5',
-                        labelWidth: 80
+                        labelWidth: 80,
+						value: this.modelData ? this.modelData['insurance_additional_insured_listed'] : ''
                     },
                     {
                         xtype: 'hidden',
-                        name: 'insurance_id'
+                        name: 'insurance_id',
+						value: this.modelData ? this.modelData['insurance_id'] : ''
                     },
                     {
                         xtype: 'shared.button.delete',

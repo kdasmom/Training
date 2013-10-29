@@ -26,4 +26,14 @@ class InsuranceService extends AbstractService {
 	public function getAllTypes() {
 		return $this->insuranceGateway->findTypes();
 	}
+
+	/**
+	 * find insurances
+	 *
+	 * @param $vendor_id
+	 * @return array
+	 */
+	public function getVendorInsurances($vendor_id) {
+		return $this->insuranceGateway->find(['table_name' => '?', 'tablekey_id' => '?'], ['vendor', $vendor_id]);
+	}
 } 

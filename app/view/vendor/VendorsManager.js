@@ -10,7 +10,8 @@ Ext.define('NP.view.vendor.VendorsManager', {
 	requires: [
 		'NP.lib.core.Security',
 		'NP.view.vendor.VendorGrid',
-		'NP.store.vendor.Vendors'
+		'NP.store.vendor.Vendors',
+		'NP.view.vendor.VendorImageUploadForm'
 	],
 
 	layout: {

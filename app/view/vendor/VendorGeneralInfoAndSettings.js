@@ -367,6 +367,7 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
 			);
 		}
 
+		this.addCustomFields(this.customFields);
 		this.callParent(arguments);
 	},
 
@@ -374,16 +375,18 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
 		var that = this;
 
 		Ext.Array.each(fields, function(fieldData) {
-			that.add({
-				xtype     : 'shared.customfield',
-				fieldLabel: fieldData['customfield_label'],
-				entityType: fieldData['customfield_pn_type'],
-				type      : fieldData['customfield_type'],
-				name      : fieldData['customfield_name'],
-				number    : fieldData['universal_field_number'],
-				allowBlank: !fieldData['customfield_required'],
-				fieldCfg  : {value: fieldData['customfielddata_value'] }
-			});
+			that.items.push(
+				{
+					xtype     : 'shared.customfield',
+					fieldLabel: fieldData['customfield_label'],
+					entityType: fieldData['customfield_pn_type'],
+					type      : fieldData['customfield_type'],
+					name      : fieldData['customfield_name'],
+					number    : fieldData['universal_field_number'],
+					allowBlank: !fieldData['customfield_required'],
+					fieldCfg  : {value: fieldData['customfield_name']},
+					value: "checked"
+				});
 		});
 	}
 });

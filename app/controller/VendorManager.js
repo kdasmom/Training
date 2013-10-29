@@ -42,7 +42,8 @@ Ext.define('NP.controller.VendorManager', {
 //			add new vendor click button handler
 			'[xtype="vendor.vendorsmanager"]  [xtype="shared.button.new"]': {
 				click: function() {
-					this.showVendorForm();
+//					this.showVendorForm();
+					this.addHistory('VendorManager:showVendorForm');
 				}
 			},
 //			cancel click button handler
@@ -52,15 +53,10 @@ Ext.define('NP.controller.VendorManager', {
 				}
 			},
 
-            '[xtype="vendor.vendorform"] [xtype="shared.button.save"]': {
-                click: function() {
-                    this.saveVendor();
-                }
-            },
-
             '[xtype="vendor.vendorsmanager"] [xtype="vendor.vendorgrid"]': {
                 itemclick: function(grid, rec) {
-                    this.showVendorForm(rec.internalId);
+//                    this.showVendorForm(rec.internalId);
+					this.addHistory('VendorManager:showVendorForm:' + rec.internalId);
                 }
             },
 
@@ -126,68 +122,72 @@ Ext.define('NP.controller.VendorManager', {
             },
 			opened: vendor_id ? true : false
         };
-		var customFieldsData = [];
+
+		var form = null;
+		var customFieldData = [];
 
         if (arguments.length > 0) {
-
-
 			NP.lib.core.Net.remoteCall({
 				requests: {
-					service                 : 'ConfigService',
-					action                  : 'getCustomFieldData',
-					customfield_pn_type     : 'vendor',
-					customfielddata_table_id: (vendor_id) ? vendor_id : 0,
+					service                 : 'VendorService',
+					action                  : 'getCustomFields',
+					vendor_id     			: (vendor_id) ? vendor_id : 0,
 					success                 : function(result, deferred) {
-						customFieldsData = result;
-						var settingsForm = that.getCmp('vendor.vendorgeneralinfoandsettings');
-						settingsForm.addCustomFields(result);
+						customFieldData = vendor_id ? result['custom_fields'] : [];
+						Ext.apply(viewCfg, {
+							customFieldData: customFieldData,
+							insurances: result['insurances']
+						});
 
+						Ext.apply(viewCfg.bind, {
+							service    : 'VendorService',
+							action     : 'getVendor',
+							extraParams: {
+								vendor_id: vendor_id
+							},
+							extraFields: ['glaccounts', 'insurances']
+						});
+						Ext.apply(viewCfg, {
+							listeners: {
+								dataloaded: function(formPanel, data) {
+									formPanel.findField('address_state').setValue(parseInt(data['address_state']));
+								}
+							}
+						});
+
+						var form = that.setVendorView(viewCfg, vendor_id);
+						Ext.Array.each(customFieldData, function(field) {
+							form.findField(field['customfield_name']).setValue(field['customfielddata_value']);
+						});
 					},
 					failure: function(response, options, deferred) {}
 				}
 			});
-            Ext.apply(viewCfg.bind, {
-                service    : 'VendorService',
-                action     : 'getVendor',
-                extraParams: {
-                    vendor_id: vendor_id
-                },
-                extraFields: ['glaccounts', 'insurances']
-            });
-            Ext.apply(viewCfg, {
-				customFieldData: customFieldsData,
-                listeners: {
-                    dataloaded: function(formPanel, data) {
-                        formPanel.findField('address_state').setValue(parseInt(data['address_state']));
-						insurances = data['insurances'];
-
-						var insuranceForm = that.getCmp('vendor.vendorinsurancesetup');
-
-						for (var index in insurances) {
-							var model = Ext.create('NP.model.vendor.Insurance', insurances[index]);
-							insuranceForm.addInsurance(model);
-						}
-                    }
-                }
-            });
 
 
-        }
+        } else {
 
-		var form = this.setView('NP.view.vendor.VendorForm', viewCfg);
-        this.findIntegrationPackage(form);
+			this.setVendorView(viewCfg, vendor_id);
+		}
+	},
 
-		form.addDocked({
-			xtype: 'toolbar',
-			id: 'vendortbar',
-			dock: 'top'
-		});
-		form.addDocked({
-			xtype: 'toolbar',
-			id: 'vendorbbar',
-			dock: 'bottom'
-		});
+	/**
+	 * Set form view
+	 *
+	 * @param config
+	 * @param vendor_id
+	 * @returns {*}
+	 */
+	setVendorView: function(config, vendor_id) {
+		var form = this.setView('NP.view.vendor.VendorForm', config);
+		if (!vendor_id) {
+			form.getForm().reset();
+		}
+		this.findIntegrationPackage(form);
+
 		this.showFormTab('baseinformation', vendor_id ? true : false);
+
+		return form;
 	},
 
     /**
@@ -227,6 +227,11 @@ Ext.define('NP.controller.VendorManager', {
                 }
             }
         }
+		var customFields = {};
+		Ext.Array.each(form.customFieldData, function(fieldData) {
+			customFields[fieldData['customfield_name']] = form.findField(fieldData['customfield_name']).getValue();
+		});
+
 
         if (form.isValid()) {
             form.submitWithBindings({
@@ -238,7 +243,8 @@ Ext.define('NP.controller.VendorManager', {
                     property_id: NP.Security.getCurrentContext().property_id,
                     glaccounts: values['glaccounts'],
                     insurances: JSON.stringify(insurance),
-                    vendorsite_DaysNotice_InsuranceExpires: values['vendorsite_DaysNotice_InsuranceExpires']
+                    vendorsite_DaysNotice_InsuranceExpires: values['vendorsite_DaysNotice_InsuranceExpires'],
+					customFields: customFields
                 },
                 success: function(result, deferred) {
                     if (result.success) {
@@ -282,10 +288,12 @@ Ext.define('NP.controller.VendorManager', {
      * @param rowIndex
      */
     viewVendor: function(grid, rec, rowIndex) {
-        this.showVendorForm(rec.internalId);
+		this.addHistory('VendorManager:showVendorForm:' + rec.internalId);
+//        this.showVendorForm(rec.internalId);
     },
 
 	showFormTab: function(itemId, opened, isReject, insurance) {
+
 		var that = this;
 		var opened = !opened ? false :true;
 		var appCount = 1;
@@ -300,7 +308,11 @@ Ext.define('NP.controller.VendorManager', {
 			}
 		];
 		var form = this.getCmp('vendor.vendorform');
+		var tbar = form.getDockedItems()[1];
+		var bbar = form.getDockedItems()[2];
 		var opened = !opened ? form.opened : opened;
+
+
 		if (!opened) {
 			if (isReject) {
 				bar.push({
@@ -360,53 +372,62 @@ Ext.define('NP.controller.VendorManager', {
 							text: 'Add image'
 						}
 					);
+
+					if (!itemId) {
+						itemId = 'baseinformation';
+					}
+
+
+					switch (itemId) {
+						case ('baseinformation'):
+						default:
+							break;
+						case ('settings'):
+							break;
+						case ('glaccounts'):
+							bar.push(
+								{
+									xtype: 'button',
+									text: 'Update GL Assignment'
+								}
+							);
+							break;
+						case ('insurances'):
+							bar.push(
+								{
+									xtype: 'shared.button.upload',
+									text: 'Insurance upload'
+								}
+							);
+							break;
+						case ('documents'):
+							bar.push(
+								{
+									xtype: 'shared.button.upload',
+									text: 'Image upload',
+									handler: function() {
+										that.showUploadImageForm();
+									}
+								}
+							);
+							break;
+					}
 				}
 			}
 
 		}
 
-		if (!itemId) {
-			itemId = 'baseinformation';
-		}
-
-
-		switch (itemId) {
-			case ('baseinformation'):
-			default:
-				break;
-			case ('settings'):
-				break;
-			case ('glaccounts'):
-				bar.push(
-					{
-						xtype: 'button',
-						text: 'Update GL Assignment'
-					}
-				);
-				break;
-			case ('insurances'):
-				bar.push(
-					{
-						xtype: 'shared.button.upload',
-						text: 'Insurance upload'
-					}
-				);
-				break;
-			case ('documents'):
-				bar.push(
-					{
-						xtype: 'shared.button.upload',
-						text: 'Image upload'
-					}
-				);
-				break;
-		}
-
-		var tbar = Ext.getCmp('vendortbar');
-		var bbar = Ext.getCmp('vendorbbar');
 		tbar.removeAll();
 		bbar.removeAll();
 		tbar.add(bar);
 		bbar.add(bar);
+	},
+
+
+	/**
+	 * Show upload form widget
+	 */
+	showUploadImageForm: function() {
+		var win = Ext.create('NP.view.vendor.VendorImageUploadForm').show();
 	}
 });

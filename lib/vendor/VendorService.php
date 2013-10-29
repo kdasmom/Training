@@ -17,6 +17,7 @@ use NP\core\validation\EntityValidator;
 use NP\invoice\InvoiceGateway;
 use NP\system\ConfigService;
 use NP\system\IntegrationPackageGateway;
+use NP\system\PnCustomFieldDataGateway;
 use NP\user\UserprofileGateway;
 use NP\util\Util;
 
@@ -36,7 +37,8 @@ class VendorService extends AbstractService {
 	const VENDOR_STATUS_APPROVED = 'approved';
 	const VENDOR_STATUS_REJECTED = 'rejected';
 
-	protected $vendorGateway, $insuranceGateway, $configService, $userprofileGateway, $vendorsiteGateway, $phoneGateway, $addressGateway, $personGateway, $contactGateway, $emailGateway, $integrationPackageGateway;
+	protected $vendorGateway, $insuranceGateway, $configService, $userprofileGateway, $vendorsiteGateway, $phoneGateway,
+		$addressGateway, $personGateway, $contactGateway, $emailGateway, $integrationPackageGateway, $pnCustomFieldDataGateway;
 	
 	public function __construct(VendorGateway $vendorGateway,
 														InsuranceGateway $insuranceGateway,
@@ -48,7 +50,8 @@ class VendorService extends AbstractService {
 														PersonGateway $personGateway,
 														ContactGateway $contactGateway,
 														EmailGateway $emailGateway,
-														IntegrationPackageGateway $integrationPackageGateway) {
+														IntegrationPackageGateway $integrationPackageGateway,
+														PnCustomFieldDataGateway $pnCustomFieldDataGateway) {
 		$this->vendorGateway    = $vendorGateway;
 		$this->insuranceGateway = $insuranceGateway;
 		$this->configService = $configService;
@@ -60,6 +63,7 @@ class VendorService extends AbstractService {
 		$this->contactGateway = $contactGateway;
 		$this->emailGateway = $emailGateway;
 		$this->integrationPackageGateway = $integrationPackageGateway;
+		$this->pnCustomFieldDataGateway = $pnCustomFieldDataGateway;
 	}
 	
 	/**
@@ -232,6 +236,7 @@ class VendorService extends AbstractService {
 		$result = $this->vendorGateway->validateVendor($approval_data);
 
 		if ($result['check_status'] !== self::VALIDATE_CHECK_STATUS_OK) {
+//			something wrong in check
 			if ($result['check_status'] == self::VALIDATE_CHECK_STATUS_ID_ALT) {
 				$message = 'The vendor ' . $vendor->vendor_name . '  already uses this ' . $integration_package[0]['Integration_Package_Type_Display_Name'] . ' Vendor Id. Please update that vendor or select a different Vendor ID.';
 			}
@@ -241,7 +246,6 @@ class VendorService extends AbstractService {
 			if ($result['check_status'] == self::VALIDATE_CHECK_STATUS_TAX_ID) {
 				$message = 'The vendor ' . $vendor->vendor_name . ' already uses this taxid. Please update that vendor or select a different tax id';
 			}
-//			something wrong in check
 			$result = [
 				'success'	=> false,
 				'errors'	=> array('field'=>'global', 'msg'=> $message, 'extra'=>null)
@@ -324,8 +328,8 @@ class VendorService extends AbstractService {
 			}
 //				save insurances
 			$insurances = json_decode($data['insurances']);
+			$savedInsurances = [];
 			if (count($insurances) > 0) {
-				$this->insuranceGateway->delete(['table_name' => '?', 'tablekey_id' => '?'], ['vendor', $out_vendor_id]);
 				if ($data['vendorsite_DaysNotice_InsuranceExpires'] > 0) {
 					$this->vendorsiteGateway->update(
 						['vendorsite_DaysNotice_InsuranceExpires' => $data['vendorsite_DaysNotice_InsuranceExpires']],
@@ -334,6 +338,7 @@ class VendorService extends AbstractService {
 					);
 				}
 				$insurance = $insurances[0];
+
 				if (is_array($insurance->insurancetype_id)) {
 					for ($index = 0; $index < count($insurance->insurancetype_id); $index++) {
 						$saveInsurance = [
@@ -346,21 +351,31 @@ class VendorService extends AbstractService {
 							'insurance_additional_insured_listed'	=> $insurance->insurance_additional_insured_listed[$index],
 							'insurance_id'							=> $insurance->insurance_id[$index]
 						];
+
 						$result = $this->saveInsurance(['insurance' => $saveInsurance], $out_vendor_id);
+
 						if (!$result['success']) {
 							return $result;
 						}
+						$savedInsurances[] = $result['lastInsertInsuranceId'];
+
 					}
 				} else {
 					$result = $this->saveInsurance(['insurance' => (array)$insurance], $out_vendor_id);
 					if (!$result['success']) {
 						return $result;
 					}
+					$savedInsurances[] = $result['lastInsertInsuranceId'];
 				}
+
+				$this->insuranceGateway->deleteInsuranceList($savedInsurances, 'vendor', $out_vendor_id);
+//				$this->insuranceGateway->delete(['table_name' => '?', 'tablekey_id' => '?'], ['vendor', $out_vendor_id]);
 			}
 
 //			save recauthor
 			$this->vendorGateway->recauthorSave($data['userprofile_id'], 'vendor', $out_vendor_id);
+
+			$this->saveCustomFields($data['customFields'], $out_vendor_id, $data['userprofile_id']);
 		}
 
 		return [
@@ -761,9 +776,9 @@ class VendorService extends AbstractService {
 		}
 
 		return [
-			'success'    						=> (count($errors) > 0) ? false : true,
-			'errors'								=> $errors,
-			'lastInsertInsuranceId'			=> $id
+			'success'    					=> (count($errors) > 0) ? false : true,
+			'errors'						=> $errors,
+			'lastInsertInsuranceId'			=> $insurance->insurance_id ? $insurance->insurance_id : $id
 		];
 	}
 
@@ -776,7 +791,6 @@ class VendorService extends AbstractService {
 	public function getVendor($vendor_id = null) {
 		$res = $this->vendorGateway->getVendor($vendor_id);
 		$res['glaccounts'] = $this->vendorGateway->findAssignedGlaccounts($vendor_id);
-		$res['insurances'] = $this->insuranceGateway->find(['table_name' => '?', 'tablekey_id' => '?'], ['vendor', $vendor_id]);
 
 		return $res;
 	}
@@ -815,6 +829,49 @@ class VendorService extends AbstractService {
 			return false;
 		}
 		return $this->vendorsiteGateway->insertFavorite($vendorsite_id, $property_id, $op);
+	}
+
+	/**
+	 * Retrieve custom fields for the edit form
+	 *
+	 * @param integer $vendor_id
+	 * @return mixed
+	 */
+	public function getCustomFields($vendor_id) {
+		$result['custom_fields'] = $this->configService->getCustomFieldData('vendor', $vendor_id);
+		$result['insurances'] = $this->insuranceGateway->find(['table_name' => '?', 'tablekey_id' => '?'], ['vendor', $vendor_id]);
+
+		return $result;
+	}
+
+	/**
+	 * Sve vendor custom fields value
+	 *
+	 * @param $custom_fields_values
+	 * @param $vendor_id
+	 * @param $userprofile_id
+	 */
+	protected function saveCustomFields($custom_fields_values, $vendor_id, $userprofile_id) {
+		$custom_fields = $this->configService->getCustomFieldData('vendor', $vendor_id);
+		foreach ($custom_fields as $field) {
+			$formFieldName = $field['customfield_name'];
+			// Build the data array
+			$fieldData = array(
+				'customfielddata_id'           => $field['customfielddata_id'],
+				'customfield_id'               => $field['customfield_id'],
+				'customfielddata_table_id'     => $vendor_id,
+				'customfielddata_value'        => $custom_fields_values[$formFieldName],
+				'customfielddata_lastupdatedt' => \NP\util\Util::formatDateForDB(),
+				'customfielddata_lastupdateby' => $userprofile_id
+			);
+			// If the custom field data is new, also give it a created date and user
+			if ($field['customfielddata_id'] === null) {
+				$fieldData['customfielddata_createdt']  = \NP\util\Util::formatDateForDB();
+				$fieldData['customfielddata_createdby'] = $userprofile_id;
+			}
+			// Save the custom field data
+			$this->pnCustomFieldDataGateway->save($fieldData);
+		}
 	}
 }
 

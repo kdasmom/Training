@@ -32,12 +32,21 @@ Ext.define('NP.view.vendor.VendorForm', {
 	appCount: 0,
 	vendorStatus: '',
 	customFieldData: [],
+	layout: 'fit',
 
 	initComponent: function() {
 
 		this.defaults = {
 			labelWidth: 125
 		};
+
+		var bar = [
+			{
+				xtype: 'shared.button.cancel'
+			}
+		];
+
+		this.tbar = this.bbar = bar;
 
 		this.items = [{
 			xtype : 'tabpanel',
@@ -46,7 +55,7 @@ Ext.define('NP.view.vendor.VendorForm', {
 				{ xtype: 'vendor.vendornameandinformation', itemId: 'baseinformation'},
 				{ xtype: 'vendor.vendorgeneralinfoandsettings', opened: this.opened, itemId: 'settings', customFields: this.customFieldData},
 				{ xtype: 'vendor.vendorassignglaccouns', itemId: 'glaccounts'},
-				{ xtype: 'vendor.vendorinsurancesetup', itemId: 'insurances'}
+				{ xtype: 'vendor.vendorinsurancesetup', itemId: 'insurances', insurances: this.insurances}
 			]
 		}];
 
@@ -56,6 +65,7 @@ Ext.define('NP.view.vendor.VendorForm', {
 				itemId: 'documents'
 			})
 		}
+
 		this.callParent(arguments);
 	},
 

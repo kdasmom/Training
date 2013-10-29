@@ -3,9 +3,11 @@
 namespace NP\vendor;
 
 use NP\core\AbstractGateway;
+use NP\core\db\Delete;
 use NP\core\db\Insert;
 use NP\core\db\Select;
 use NP\core\db\Expression;
+use NP\core\db\Where;
 
 /**
  * Gateway for the INSURANCE table
@@ -101,6 +103,26 @@ class InsuranceGateway extends AbstractGateway {
 
 			$this->delete(['insurance_id' => '?'], [$oldInsuranceId]);
 		}
+	}
+
+
+	/**
+	 * Delete insurances list
+	 *
+	 * @param $list
+	 * @param $table_name
+	 * @param $table_key
+	 */
+	public function deleteInsuranceList($list, $table_name, $table_key) {
+		$delete = new Delete();
+		$where = Where::get()->notIn('insurance_id', implode(',', $list))
+							->equals('tablekey_id', '?')
+							->equals('table_name', '?');
+
+		$delete->from('insurance')
+				->where($where);
+
+		$this->adapter->query($delete, [$table_key, $table_name]);
 	}
 }
 

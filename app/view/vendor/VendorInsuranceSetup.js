@@ -49,6 +49,10 @@ Ext.define('NP.view.vendor.VendorInsuranceSetup', {
             }
         ];
 
+		Ext.Array.each(this.insurances, function(insurance) {
+			that.addInsurance(insurance);
+		});
+
 		this.callParent(arguments);
 	},
 
@@ -59,15 +63,17 @@ Ext.define('NP.view.vendor.VendorInsuranceSetup', {
 			bind: {
 				models: ['vendor.Insurance']
 			},
-			startIndex: that.startIndex
+			startIndex: that.startIndex,
+			modelData: model
 		};
 		insForm = Ext.create('NP.view.vendor.InsuranceForm', insConf);
 
 		if (model) {
 			insForm.setModel('vendor.Insurance', model);
+			this.items.push(insForm);
+		} else {
+			this.add(insForm);
 		}
-
-		this.add(insForm);
 
         this.startIndex++;
     }
