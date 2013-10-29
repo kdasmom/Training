@@ -64,8 +64,8 @@ class GLService extends AbstractService {
     /**
      * Returns all Category in the system
      */
-    public function getCategories() {
-        return $this->glAccountGateway->getCategories();
+    public function getCategories($integration_package_id=null) {
+        return $this->glAccountGateway->getCategories($integration_package_id);
     }
         
     /**
@@ -73,8 +73,8 @@ class GLService extends AbstractService {
      *
      * @return array
      */
-    public function getAllGLAccounts($glaccount_from=null,$glaccount_to=null,$glaccount_status=null, $property_id=null, $glaccounttype_id=null, $glaccount_category=null, $pageSize=null, $page=1, $sort='glaccount_name') {
-            return $this->glAccountGateway->findByFilter($glaccount_from, $glaccount_to, $glaccount_status, $property_id, $glaccounttype_id, $glaccount_category, $pageSize, $page, $sort);
+    public function getAllGLAccounts($integration_package_id=null, $glaccount_from=null,$glaccount_to=null,$glaccount_status=null, $property_id=null, $glaccounttype_id=null, $glaccount_category=null, $pageSize=null, $page=1, $sort='glaccount_name') {
+        return $this->glAccountGateway->findByFilter($integration_package_id, $glaccount_from, $glaccount_to, $glaccount_status, $property_id, $glaccounttype_id, $glaccount_category, $pageSize, $page, $sort);
     }
         
     /**
@@ -201,13 +201,13 @@ class GLService extends AbstractService {
     }
 
     /**
-     * Saves a GL category
+     * Saves a GL category or GL Account
      *
      * @param array  $data
      * @param string $entityType Valid values are 'category' or 'account'
      */
-    public function save($data, $entityType) {
-        $className = '\NP\gl\GL' . ucfirst($entityType) . 'Entity';
+    protected function saveGl($data, $entityType) {
+        $className = '\NP\gl\Gl' . ucfirst($entityType) . 'Entity';
         $glaccount = new $className($data['glaccount']);
 
         // Update some fields that aren't user generated
@@ -230,6 +230,22 @@ class GLService extends AbstractService {
                     $glaccount->glaccount_id,
                     $data['tree_parent']
                 );
+
+                if ($entityType == 'account') {
+                    if (array_key_exists('vendors', $data)) {
+                        $success = $this->saveVendorAssignment($glaccount->glaccount_id, $data['vendors']);
+                        if (!$success) {
+                            $this->entityValidator->addError($errors, 'vendors', 'vendorAssignmentError');
+                        }
+                    }
+
+                    if (array_key_exists('properties', $data)) {
+                        $success = $this->savePropertyAssignment($glaccount->glaccount_id, $data['properties']);
+                        if (!$success) {
+                            $this->entityValidator->addError($errors, 'properties', 'propertyAssignmentError');
+                        }
+                    }
+                }
             } catch(\Exception $e) {
                 // Add a global error to the error array
                 $errors[] = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e), 'extra'=>null);
@@ -243,67 +259,21 @@ class GLService extends AbstractService {
         }
 
         return array(
-            'success' => (count($errors)) ? false : true,
-            'errors'  => $errors,
+            'success'      => (count($errors)) ? false : true,
+            'errors'       => $errors,
             'glaccount_id' => $glaccount->glaccount_id
         );
     }
-        
+
     /**
-     * save GL Account
-     *
-     * @param $data
-     * @return array
+     * Sve
      */
     public function saveGlAccount($data) {
-        $errors  = array();
-        $data['glaccount']['integration_package_id'] = ($data['glaccount']['integration_package_id'] == null) ? 1 : $data['glaccount']['integration_package_id']; 
-        $data['glaccount']['glaccount_updatetm'] = \NP\util\Util::formatDateForDB();
-        $rec = $this->glAccountGateway->getCategoryByName(
-                  $data['glaccount_category'],
-                  $data['glaccount']['integration_package_id']
-              );
-        $tree_id = $rec['tree_id'];
+        return $this->saveGl($data, 'account');
+    }
 
-        
-        $result = $this->save(
-            array(
-                'glaccount'   => $data['glaccount'],
-                'tree_parent' => $tree_id
-            ),
-            'account'
-        );
-
-        // Set errors
-        if (!$result['success']) {
-            $errors = $result['errors'];
-        }
-        // If no errors, save vendors
-        if (!count($errors)) {
-                $success = $this->saveVendorAssignment($result['glaccount_id'], $data['vendors']);
-                if (!$success) {
-                        $errors[] = array(
-                                        'field' => 'vendors',
-                                        'msg'   => $this->localizationService->getMessage('vendorAssignmentError')
-                                );
-                }
-        }
-        // Save GL assignments if any
-        if (array_key_exists('properties', $data) && is_array($data['properties'])) {
-                $success = $this->savePropertyAssignment($result['glaccount_id'], $data['properties']);
-                if (!$success) {
-                        $errors[] = array(
-                                        'field' => 'properties',
-                                        'msg'   => $this->localizationService->getMessage('propertyAssignmentError')
-                                );
-                }
-        }
-        return array(
-            'success' => (count($errors)) ? false : true,
-            'errors'  => $errors,
-            'id'      => $result['glaccount_id']
-        );
-           
+    public function saveGlCategory($data) {
+        return $this->saveGl($data, 'category');
     }
     
     /**
@@ -312,7 +282,7 @@ class GLService extends AbstractService {
      * @param $data
      * @return array
      */
-    public function saveGlCategory($data) {
+    /*public function saveGlCategory($data) {
         $errors  = array();
          
         $data['glaccount_updatetm'] = \NP\util\Util::formatDateForDB();
@@ -341,7 +311,8 @@ class GLService extends AbstractService {
             'errors'  => $errors
         );
            
-    }
+    }*/
+
     /**
      * save order Category
      *
@@ -553,7 +524,7 @@ class GLService extends AbstractService {
             $row['integration_package_id'] = $intPkgs[$row['integration_package_name']];
             $row['glaccount_number']       = $row['glaccount_name'];
 
-            $result = $this->save(
+            $result = $this->saveGl(
                 array(
                     'glaccount'   => $row,
                     'tree_parent' => 0
@@ -616,7 +587,7 @@ class GLService extends AbstractService {
             }
 
             // Save the row
-            $result = $this->save(
+            $result = $this->saveGl(
                 array(
                     'glaccount'   => $row,
                     'tree_parent' => $categories[$row['category_name']]

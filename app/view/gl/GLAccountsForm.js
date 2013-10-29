@@ -10,6 +10,10 @@ Ext.define('NP.view.gl.GLAccountsForm', {
     requires: [
     	'NP.lib.core.Config',
         'NP.lib.core.Security',
+        'NP.store.gl.GlAccounts',
+        'NP.store.gl.GlAccountTypes',
+        'NP.store.property.Properties',
+        'NP.store.vendor.Vendors',
         'NP.view.shared.VendorAssigner',
         'NP.view.shared.PropertyAssigner',
         'NP.view.shared.button.Cancel',
@@ -21,11 +25,12 @@ Ext.define('NP.view.gl.GLAccountsForm', {
       
     bodyPadding: 8,
     
-    glNumberFieldText : 'GL Number',
-    glNameFieldText : 'GL Name',
-    categoryFieldText : 'Category',
-    statusFieldText : 'Status',
-    typesFieldText : 'Types',
+    intPkgText       : 'Integration Package',
+    glNumberFieldText: 'GL Number',
+    glNameFieldText  : 'GL Name',
+    categoryFieldText: 'Category',
+    statusFieldText  : 'Status',
+    typesFieldText   : 'Types',
 
     initComponent: function() {
         
@@ -43,49 +48,53 @@ Ext.define('NP.view.gl.GLAccountsForm', {
         this.tbar = bar;
         this.bbar = bar;
                
-        var glCategoryStore = Ext.create('NP.store.gl.GlAccounts', {
-            service : 'GLService',
-            action  : 'getCategories'
-        });
-        glCategoryStore.load();
-        
-        var glTypeStore = Ext.create('NP.store.gl.GlAccountTypes', {
-            service : 'GLService',
-            action  : 'getTypes'
-        });
-        glTypeStore.load();
-        
-        var propertyStore = Ext.create('NP.store.property.Properties', {
-            service : 'PropertyService',
-            action  : 'getAll'
-         });
-        propertyStore.load();
-        
-        var vendorStore = Ext.create('NP.store.vendor.Vendors', {
-            service : 'VendorService',
-            action  : 'getAll'
-         });
-        vendorStore.load();
-        
         this.items = [
             // Ids
             {
                 xtype       : 'hidden',
                 name        : 'glaccount_id_list',
             },
+            // Integration Packages
+            {
+                xtype       : 'customcombo',
+                fieldLabel  : this.intPkgText,
+                store       : 'system.IntegrationPackages',
+                name        : 'integration_package_id',
+                displayField: 'integration_package_name',
+                valueField  : 'integration_package_id',
+                width       : defaultWidth,
+                allowBlank  : false
+            },
             // GL Number
-            { xtype: 'textfield', fieldLabel: this.glNumberFieldText, name: 'glaccount_number', width: defaultWidth, allowBlank: false },
+            {
+                xtype     : 'textfield',
+                fieldLabel: this.glNumberFieldText,
+                name      : 'glaccount_number',
+                width     : defaultWidth,
+                allowBlank: false
+            },
             // GL Name
-            { xtype: 'textfield', fieldLabel: this.glNameFieldText, name: 'glaccount_name', width: defaultWidth, allowBlank: false },
+            {
+                xtype     : 'textfield',
+                fieldLabel: this.glNameFieldText,
+                name      : 'glaccount_name',
+                width     : defaultWidth,
+                allowBlank: false
+            },
             // Category
             {
                 xtype       : 'customcombo',
                 fieldLabel  : this.categoryFieldText,
-                name        : 'glaccount_category',
+                itemId      : 'gl_category',
+                name        : 'tree_parent',
                 width       : defaultWidth,
-                store       : glCategoryStore,
+                store       : {
+                                type   : 'gl.glaccounts',
+                                service: 'GLService',
+                                action : 'getCategories'
+                            },
                 displayField: 'glaccount_name',
-                valueField  : 'glaccount_name',
+                valueField  : 'tree_id',
                 allowBlank  : false
             },
             // Status
@@ -112,15 +121,25 @@ Ext.define('NP.view.gl.GLAccountsForm', {
                 width       : defaultWidth,
                 displayField: 'glaccounttype_name',
                 valueField  : 'glaccounttype_id',
-                store       : glTypeStore,
+                store       : {
+                                type    : 'gl.glaccounttypes',
+                                service : 'GLService',
+                                action  : 'getTypes',
+                                autoLoad: true
+                            },
                 fieldLabel  : this.typesFieldText,
                 allowBlank  : false
             },                                
            // Vendor Assignment
            {
                 xtype     : 'shared.vendorassigner',
+                itemId    : 'vendors',
                 name      : 'vendors',
-                store     : vendorStore, 
+                store     : {
+                                type    : 'vendor.vendors',
+                                service : 'VendorService',
+                                action  : 'getAll'
+                            }, 
                 autoScroll: true,
                 height    : 200
             }
@@ -129,9 +148,14 @@ Ext.define('NP.view.gl.GLAccountsForm', {
         if (NP.Config.getSetting('CP.PROPERTYGLACCOUNT_USE', 0) == 1 && NP.Security.hasPermission(12)) {
              this.items.push(
                      { 
-                        xtype     : 'shared.propertyassigner', 
+                        xtype     : 'shared.propertyassigner',
+                        itemId    : 'properties',
                         name      : 'properties',
-                        store     : propertyStore,  
+                        store     : {
+                                        type   : 'property.properties',
+                                        service: 'PropertyService',
+                                        action : 'getAll'
+                                    },  
                         autoScroll: true,
                         height    : 200
                     });       

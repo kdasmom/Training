@@ -13,17 +13,22 @@ Ext.define('NP.model.gl.GlAccount', {
 		{ name: 'glaccount_id', type: 'int' },
 		{ name: 'glaccount_name' },
 		{ name: 'glaccount_number' },
-		{ name: 'glaccount_status' },
+		{ name: 'glaccount_status', defaultValue: 'active' },
 		{ name: 'glaccount_amount' },
 		{ name: 'glaccounttype_id', type: 'int' },
 		{ name: 'glaccount_level', type: 'int' },
-		{ name: 'glaccount_usable' },
+		{ name: 'glaccount_usable', defaultValue: 'Y' },
 		{ name: 'glaccount_order', type: 'int' },
 		{ name: 'integration_package_id', type: 'int' },
 		{ name: 'glaccount_updateby', type: 'int' },
 		{ name: 'glaccount_updatetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
 
-		// Calculated field that doesn't exist in the DB
+		// Fields that don't exist in the DB
+		{ name: 'tree_id', type: 'int' },
+		{ name: 'tree_parent', type: 'int' },
+		
+		{ name: 'integration_package_name' },
+
 		{
 			name: 'display_name',
 			convert: function(v, rec) {

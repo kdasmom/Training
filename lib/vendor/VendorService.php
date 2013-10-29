@@ -66,13 +66,18 @@ class VendorService extends AbstractService {
      * @param  string $vendor_status The status of the vendor (optional); valid values are 'active' or 'inactive'
      * @return array
      */
-    public function getAll($vendor_status='active', $pageSize=null, $page=1, $sort='vendor_name') {
-             return $this->vendorGateway->find(
-                    array('vendor_status'=>'?'),
-                    array($vendor_status),
-                    'vendor_name ASC',
-                    array('vendor_id','vendor_name')
-            );
+    public function getAll($vendor_status='active', $integration_package_id=null, $pageSize=null, $page=1, $sort='vendor_name') {
+        $filter = ['vendor_status'=>'?'];
+        if ($integration_package_id === null) {
+            $filter['integration_package_id'] = $integration_package_id;
+        }
+
+        return $this->vendorGateway->find(
+            $filter,
+            array($vendor_status),
+            'vendor_name ASC',
+            array('vendor_id','vendor_name')
+        );
     }
     
     /**

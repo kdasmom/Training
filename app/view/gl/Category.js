@@ -44,15 +44,14 @@ Ext.define('NP.view.gl.Category', {
         this.tbar = bar;
         this.bbar = bar;
         
-        var glCategoryStore = Ext.create('NP.store.gl.GlAccounts', {
-            service : 'GLService',
-            action  : 'getCategories'
-        });
-        glCategoryStore.load();
         this.items = [
     			{
                             xtype: 'gl.categorygrid',
-                            store: glCategoryStore,
+                            store: {
+                                type   : 'gl.glaccounts',
+                                service: 'GLService',
+                                action : 'getCategories'
+                            },
                             flex: 1
 		    	},{
                             xtype: 'gl.categoryform',
