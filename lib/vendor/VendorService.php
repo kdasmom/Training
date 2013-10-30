@@ -375,7 +375,9 @@ class VendorService extends AbstractService {
 //			save recauthor
 			$this->vendorGateway->recauthorSave($data['userprofile_id'], 'vendor', $out_vendor_id);
 
-			$this->saveCustomFields($data['customFields'], $out_vendor_id, $data['userprofile_id']);
+			if ($data['vendor']['vendor_id']) {
+				$this->saveCustomFields($data['customFields'], $out_vendor_id, $data['userprofile_id']);
+			}
 		}
 
 		return [

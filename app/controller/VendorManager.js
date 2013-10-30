@@ -12,6 +12,9 @@ Ext.define('NP.controller.VendorManager', {
         'NP.lib.core.Security',
         'NP.lib.core.Net',
         'NP.lib.core.Util',
+		'NP.view.shared.button.Upload',
+		'NP.view.vendor.VendorImageUploadForm',
+		'NP.view.vendor.InsuranceUploadForm',
 		'NP.view.shared.button.Upload'
     ],
 //  for localization
@@ -322,7 +325,10 @@ Ext.define('NP.controller.VendorManager', {
 			if (appCount > 0 && vendorStatus !== 'forapproval') {
 				bar.push(
 					{
-						xtype: 'shared.button.save'
+						xtype: 'shared.button.save',
+						handler: function() {
+							that.saveVendor();
+						}
 					}
 				);
 			}
@@ -396,7 +402,10 @@ Ext.define('NP.controller.VendorManager', {
 							bar.push(
 								{
 									xtype: 'shared.button.upload',
-									text: 'Insurance upload'
+									text: 'Insurance upload',
+									handler: function() {
+										that.showInsuranceUploadForm();
+									}
 								}
 							);
 							break;
@@ -429,5 +438,9 @@ Ext.define('NP.controller.VendorManager', {
 	 */
 	showUploadImageForm: function() {
 		var win = Ext.create('NP.view.vendor.VendorImageUploadForm').show();
+	},
+
+	showInsuranceUploadForm: function() {
+		var win = Ext.create('NP.view.vendor.InsuranceUploadForm').show();
 	}
 });
