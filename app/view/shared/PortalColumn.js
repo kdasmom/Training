@@ -65,8 +65,10 @@ Ext.define('NP.view.shared.PortalColumn', {
 				    });
 				},
 				beforedestroy: function(colPanel) {
-					colPanel._dropTarget.destroy();
-					colPanel._dropTarget = null;
+					if (colPanel._dropTarget) {
+						colPanel._dropTarget.destroy();
+						colPanel._dropTarget = null;
+					}
 				}
 			}
 		}

@@ -7,14 +7,17 @@ Ext.define('NP.view.shared.RoleAssigner', {
     extend: 'Ext.ux.form.ItemSelector',
     alias: 'widget.shared.roleassigner',
     
+    requires: ['NP.store.user.Roles'],
+
     fieldLabel: 'User Groups',
 
     name        : 'roles',
-    store       : Ext.create('NP.store.user.Roles', {
-					service           : 'UserService',
-					action            : 'getRoles',
-					autoLoad          : true
-			    }),
+    store       : {
+                    type    : 'user.roles',
+                    service : 'UserService',
+                    action  : 'getRoles',
+                    autoLoad: true
+			    },
     displayField: 'role_name',
     valueField  : 'role_id',
     fromTitle   : 'Unassigned',

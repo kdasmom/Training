@@ -36,7 +36,7 @@ class ConfigsysGateway extends AbstractGateway {
 		$select = new Select();
 		$where = new Where(null, 'or');
 		$where->like('c.configsys_name', "'%_CUSTOM_FIELD%_ON_OFF'")
-			  ->like('c.configsys_name', "'CUSTOM_FIELD%_TYPE'")
+			  ->like('c.configsys_name', "'CP.CUSTOM_FIELD%_TYPE'")
 			  ->like('c.configsys_name', "'%_CUSTOM_FIELD%_REQ'")
 			  ->like('c.configsys_name', "'%CUSTOM_FIELD_LABEL%'");
 

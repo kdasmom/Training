@@ -33,8 +33,10 @@ Ext.define('NP.lib.ui.AutoComplete', {
 						combo = combo[0];
 						var store = combo.getStore();
 						var proxy = store.getProxy();
-						proxy.extraParams[this.valueField] = recs[0].get(this.valueField);
-						store.load();
+						if (recs.length) {
+							proxy.extraParams[this.valueField] = recs[0].get(this.valueField);
+							store.load();
+						}
 					}
 				}
 			});
@@ -43,10 +45,14 @@ Ext.define('NP.lib.ui.AutoComplete', {
 
 	/* Override this function to fire the select event even when clearing the field */
 	setValue: function(value, doSelect, skipLoad) {
-		this.callParent(arguments);
+		// If the store has no records, don't do anything (this is to prevent store from
+		// getting loaded when setValue() gets called)
+        if (this.getStore().getCount() > 0) {
+			this.callParent(arguments);
 
-		if (value && !value.length) {
-			this.fireEvent('select', this, [], {});
+			if (value && !value.length) {
+				this.fireEvent('select', this, [], {});
+			}
 		}
 	},
 

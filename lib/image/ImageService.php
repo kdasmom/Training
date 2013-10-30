@@ -12,12 +12,7 @@ use NP\security\SecurityService;
  */
 class ImageService extends AbstractService {
 
-	protected $securityService, $imageIndexGateway, $imageTransferGateway;
-
-	public function __construct(ImageIndexGateway $imageIndexGateway, ImageTransferGateway $imageTransferGateway) {
-		$this->imageIndexGateway    = $imageIndexGateway;
-		$this->imageTransferGateway = $imageTransferGateway;
-	}
+	protected $securityService;
 
 	public function setSecurityService(SecurityService $securityService) {
 		$this->securityService = $securityService;
@@ -89,6 +84,23 @@ class ImageService extends AbstractService {
 	 */
 	public function getImagesToIndex($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
 		return $this->imageIndexGateway->findImagesToIndex($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
+	}
+
+	/**
+	 * Get images for an invoice (all or primary only)
+	 */
+	public function getInvoiceImages($invoice_id, $mainOnly=false) {
+		return $this->imageIndexGateway->findEntityImages($invoice_id, 'Invoice', $mainOnly);
+	}
+
+	/**
+	 * Get the absolute path to a specific image file
+	 *
+	 * @param  int    $image_index_id
+	 * @return string
+	 */
+	public function getImagePath($image_index_id) {
+		return $this->imageIndexGateway->findImagePath($image_index_id);
 	}
 
 }

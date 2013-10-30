@@ -25,6 +25,7 @@ class StaffEntity extends \NP\core\AbstractEntity {
 			)
 		),
 		'staff_status'	 => array(
+			'defaultValue' => 'active',
 			'validation' => array(
 				'stringLength' => array('max'=>50)
 			)

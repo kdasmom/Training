@@ -22,9 +22,6 @@ Ext.define('NP.view.user.UsersForm', {
     layout: 'fit',
     border: false,
 
-    // For localization
-    delegationTabText: 'Delegation',
-    infoTabText      : 'User Information',
     passwordRequired : false,
     
     initComponent: function() {
@@ -42,13 +39,13 @@ Ext.define('NP.view.user.UsersForm', {
 			border: false,
             items : [
 	    		{ xtype: 'user.usersformdetails', passwordRequired: this.passwordRequired },
-	    		{ xtype: 'user.usercontactinfo', padding: 8, title: this.infoTabText },
+	    		{ xtype: 'user.usercontactinfo', padding: 8, title: NP.Translator.translate('User Information') },
 	    		{ xtype: 'user.usersformpermissions' },
-	    		{ xtype: 'user.usersformemail' },
+	    		{ xtype: 'user.usersformemail', itemId: 'userEmailAlertPanel' },
                 {
                     xtype : 'user.userdelegation',
                     itemId: 'userManagerDelegation',
-                    title : 'Delegation',
+                    title : NP.Translator.translate('Delegation'),
                     border: false,
                     items : [{ xtype: 'user.userdelegationmain' }],
                     hidden: true

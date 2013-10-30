@@ -10,7 +10,7 @@ namespace NP\core;
  */
 abstract class AbstractService {
 	
-	protected $loggingService, $localizationService;
+	protected $loggingService, $localizationService, $gatewayManager, $entityValidator;
 
 	/**
 	 * @internal Setter function required by DI framework to set the logging service via setter injection
@@ -21,12 +21,38 @@ abstract class AbstractService {
 	}
 
 	/**
+	 * @internal Setter function required by DI framework to set the GatewayManager via setter injection
+	 * @param \NP\core\GatewayManager $gatewayManager
+	 */
+	public function setGatewayManager(\NP\core\GatewayManager $gatewayManager) {
+		$this->gatewayManager = $gatewayManager;
+	}
+
+	/**
 	 * @internal Setter function required by DI framework to set the localization service via setter injection
 	 * @param \NP\locale\LocalizationService $localizationService
 	 */
 	public function setLocalizationService(\NP\locale\LocalizationService $localizationService) {
 		$this->localizationService = $localizationService;
 	}
+
+	/**
+	 * @internal Setter function required by DI framework to set the entity validator via setter injection
+	 * @param \NP\core\validation\EntityValidator $entityValidator
+	 */
+	public function setEntityValidator(\NP\core\validation\EntityValidator $entityValidator) {
+		$this->entityValidator = $entityValidator;
+	}
+
+	/**
+	 * Magic function to get gateways from the gateway manager
+	 *
+	 * @param string $name
+	 */
+	public function __get($name) {
+		return $this->gatewayManager->get(ucfirst($name));
+	}
+	
 
 	/**
 	 * Utility function to handle unexpected exceptions caught in catch blocks
@@ -41,5 +67,3 @@ abstract class AbstractService {
 		return $this->localizationService->getMessage('unexpectedError');
 	}
 }
-
-?>

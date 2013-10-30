@@ -14,5 +14,5 @@ Ext.define('NP.view.shared.tile.InvoicesRejected', {
 
     getExcludedCols: function() {
         return [];
-    },
+    }
 });

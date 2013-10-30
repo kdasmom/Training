@@ -158,7 +158,7 @@ Ext.define('NP.view.viewport.SummaryStatList', {
         }
         
         return selection;
-    },
+    }
 
     /*getState: function() {
         return { selection: this.getSelection() };

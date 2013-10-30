@@ -41,41 +41,100 @@ class PropertyGateway  extends AbstractGateway {
 	}
 
 	/**
+	 * Returns property
+	 */
+	public function findAll($property_id=null, $integration_package_id=null, $keyword=null, $property_status=null) {
+		$select = Select::get()->columns(array('property_id','property_id_alt','property_name','property_status','integration_package_id','property_no_units'))
+								->from('property')
+								->order('property_name');
+
+		$params = array();
+		if ($property_id !== null) {
+			$select->whereEquals('property_id', '?');
+			$params[] = $property_id;
+		}
+		if ($keyword !== null) {
+			$select->whereOr()
+					->whereLike('property_name', '?')
+					->whereLike('property_id_alt', '?');
+
+			$params[] = "{$keyword}%";
+			$params[] = "{$keyword}%";
+		}
+		if ($property_status !== null) {
+			$select->whereEquals('property_status', '?');
+			$params[] = $property_status;
+		}
+
+		if ($integration_package_id !== null) {
+			$select->whereEquals('integration_package_id', '?');
+			$params[] = $integration_package_id;
+		}
+
+		return $this->adapter->query($select, $params);
+	}
+
+	/**
 	 * Find properties for a given user
 	 *
 	 * @param  int    $userprofile_id              The active user ID, can be a delegated account
 	 * @param  int    $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
 	 * @return array                               Array of property records
 	 */
-	public function findByUser($userprofile_id, $delegation_to_userprofile_id, $cols=null) {
-		$select = new Select();
-		$select->from(array('pr'=>'property'))
-				->columns($cols)
-				->order("pr.property_name");
+	public function findByUser($userprofile_id, $delegation_to_userprofile_id, $keyword=null, $includeCodingOnly=false, $cols=null) {
+		$select = Select::get()->columns($cols)
+								->from(array('pr'=>'property'))
+								->order("pr.property_name");
+
 		if ($userprofile_id == $delegation_to_userprofile_id) {
-			$select->join(array('pu'=>'propertyuserprofile'),
-							"pr.property_id = pu.property_id",
-							array())
-					->where("
-						pu.userprofile_id = ?
-						AND pr.property_status <> 0
-					");
+			$select->join(new sql\join\PropertyPropertyUserJoin([]))
+					->whereEquals('pu.userprofile_id', '?')
+					->whereNotEquals('pr.property_status', '0');
+
 			$params = array($userprofile_id);
 		} else {
-			$select->join(array('dp'=>'delegationprop'),
-							"pr.property_id = dp.property_id",
-							array())
-					->join(array('d'=>'delegation'),
-							"dp.delegation_id = d.delegation_id",
-							array())
-					->where('
-						d.userprofile_id = ?
-						AND d.delegation_to_userprofile_id = ?
-						AND d.delegation_status = 1
-						AND d.delegation_startdate <= getDate()
-						AND d.delegation_stopdate > getDate()
-					');
+			$now = \NP\util\Util::formatDateForDB();
+
+			$select->join(new sql\join\PropertyDelegationPropJoin([]))
+					->join(new \NP\user\sql\join\DelegationPropDelegationJoin([]))
+					->whereEquals('d.userprofile_id', '?')
+					->whereEquals('d.delegation_to_userprofile_id', '?')
+					->whereEquals('d.delegation_status', '1')
+					->whereLessThanOrEqual('d.delegation_startdate', "'{$now}'")
+					->whereGreaterThan('d.delegation_stopdate', "'{$now}'");
+
 			$params = array($userprofile_id, $delegation_to_userprofile_id);
+		}
+
+		if ($keyword !== null) {
+			$keyword = "{$keyword}%";
+
+			$select->whereNest('OR')
+						->whereLike('pr.property_name', '?')
+						->whereLike('pr.property_id_alt', '?')
+					->whereUnnest();
+
+			array_push($params, $keyword, $keyword);
+		}
+
+		if ($includeCodingOnly) {
+			$unionSelect = Select::get()->columns($cols)
+										->from(['pr'=>'property'])
+										->join(new sql\join\PropertyPropertyUserCodingJoin([]))
+										->whereEquals('pu.userprofile_id', '?');
+			
+			$params[] = $userprofile_id;
+
+			if ($keyword !== null) {
+				$unionSelect->whereNest('OR')
+								->whereLike('pr.property_name', '?')
+								->whereLike('pr.property_id_alt', '?')
+							->whereUnnest();
+
+				array_push($params, $keyword, $keyword);
+			}
+
+			$select->union($unionSelect, false);
 		}
 
 		return $this->adapter->query($select, $params);

@@ -7,39 +7,21 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
     extend: 'NP.lib.ui.HoverButton',
     alias: 'widget.viewport.menu.adminmenu',
     
-    requires: ['NP.lib.core.Config','NP.lib.core.Security'],
+    requires: [
+    	'NP.lib.core.Config',
+    	'NP.lib.core.Security',
+    	'NP.lib.core.Translator'
+    ],
 
-	adminText          : 'Administration',
-	mySettingsText     : 'My Settings',
-	userText           : 'User Manager',
-	messageText        : 'Message Center',
-	integrationText    : 'Integration',
-	propertyText       : NP.lib.core.Config.getSetting('PN.main.PropertyLabel', 'Property') + ' Setup',
-	systemText         : 'System Setup',
-	gLText             : 'GL Account Setup',
-	catalogText        : 'Catalog Maintenance',
-	importText         : 'Import/Export Utility',
-	importOverviewText : 'Overview',
-	importGLText       : 'GL',
-	importPropertyText : NP.lib.core.Config.getSetting('PN.main.PropertyLabel', 'Property'),
-	importVendorText   : 'Vendor',
-	importInvoiceText  : 'Invoice',
-	importUserText     : 'User',
-	importCustomText   : 'Custom Field',
-	importSplitsText   : 'Splits',
-	approvalBudgetsText: 'Set Approval Budget Overage',
-	utilityText        : 'Utility Setup',
-	mobileText         : 'Mobile Setup',
-
-    initComponent: function() {
-    	this.text = this.adminText;
+	initComponent: function() {
+    	this.text = NP.Translator.translate('Administration');
 		this.menu = {
 			showSeparator: false,
 			items: [
 				// My Settings
 				{
 					itemId: 'mySettingsMenuBtn',
-					text: this.mySettingsText
+					text: NP.Translator.translate('My Settings')
 				}
 			]
 		};
@@ -48,7 +30,7 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 	    if ( NP.lib.core.Security.hasPermission(4) ) {
 			this.menu.items.push({
 				itemId: 'userManagerMenuBtn',
-				text: this.userText
+				text: NP.Translator.translate('User Manager')
 			});
 		}
 		
@@ -56,13 +38,13 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 		if ( NP.lib.core.Security.hasPermission(6091) ) {
 			this.menu.items.push({
 				itemId: 'messageCenterMenuBtn',
-				text: this.messageText
+				text: NP.Translator.translate('Message Center')
 			});
 		}
 		// Integration
 		if ( NP.lib.core.Security.hasPermission(6047) ) {
 			this.menu.items.push({
-				text: this.integrationText
+				text: NP.Translator.translate('Integration')
 			});
 		}
 		
@@ -70,7 +52,7 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 		if ( NP.lib.core.Security.hasPermission(12) ) {
 			this.menu.items.push({
 				itemId: 'propertySetupMenuBtn',
-				text: this.propertyText
+				text: NP.Translator.translate('{property} Setup', { property: NP.Config.getPropertyLabel() })
 			});
 		}
 		
@@ -78,14 +60,15 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 		if ( NP.lib.core.Security.hasPermission(1066) ) {
 			this.menu.items.push({
 				itemId: 'systemSetupMenuBtn',
-				text: this.systemText
+				text: NP.Translator.translate('System Setup')
 			});
 		}
 		
 		// GL Account Setup
 		if ( NP.lib.core.Security.hasPermission(6014) ) {
 			this.menu.items.push({
-				text: this.gLText
+                itemId: 'glaccountSetupMenuBtn',
+				text: NP.Translator.translate('GL Account Setup')
 			});
 		}
 		
@@ -93,19 +76,21 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 		if ( NP.lib.core.Security.hasPermission(6066) && NP.lib.core.Config.getSetting('VC_isOn') == 1 ) {
 			this.menu.items.push({
 				itemId: 'catalogMaintenanceMenuBtn',
-				text: this.catalogText
+				text: NP.Translator.translate('Catalog Maintenance')
 			});
 		}
 		
 		if ( NP.lib.core.Security.hasPermission(6015) ) {
 			var subsection = {
 				// Import/Export Utility
-				text: this.importText,
+				itemId: 'importMenuBtn',
+				text: NP.Translator.translate('Import/Export Utility'),
 				menu: {
 					showSeparator: false,
 					items: [{
 						// Overview
-						text: this.importOverviewText
+						itemId: 'overviewImportMenuBtn',
+						text: NP.Translator.translate('Overview')
 					}]
 				}
 			};
@@ -113,48 +98,55 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 			// GL
 			if ( NP.lib.core.Security.hasPermission(6016) ) {
 				subsection.menu.items.push({
-					text: this.importGLText
+					itemId: 'glImportMenuBtn',
+					text: NP.Translator.translate('GL')
 				});
 			}
 
 			// Property
 			if ( NP.lib.core.Security.hasPermission(6017) ) {
 				subsection.menu.items.push({
-					text: this.importPropertyText
+					itemId: 'propertyImportMenuBtn',
+					text: NP.Config.getPropertyLabel()
 				});
 			}
 			
 			// Vendor
 			if ( NP.lib.core.Security.hasPermission(6018) ) {
 				subsection.menu.items.push({
-					text: this.importVendorText
+					itemId: 'vendorImportMenuBtn',
+					text: NP.Translator.translate('Vendor')
 				});
 			}
 			
 			// Invoice
 			if ( NP.lib.core.Security.hasPermission(6019) ) {
 				subsection.menu.items.push({
-					text: this.importInvoiceText
+					itemId: 'invoiceImportMenuBtn',
+					text: NP.Translator.translate('Invoice')
 				});
 			}
 			
 			// User
 			if ( NP.lib.core.Security.hasPermission(6020) ) {
 				subsection.menu.items.push({
-					text: this.importUserText
+					itemId: 'userImportMenuBtn',
+					text: NP.Translator.translate('User')
 				});
 			}
 			
 			// Custom Field
 			if ( NP.lib.core.Security.hasPermission(6021) ) {
 				subsection.menu.items.push({
-					text: this.importCustomText
+					itemId: 'customFieldImportMenuBtn',
+					text: NP.Translator.translate('Custom Field')
 				});
 			}
 			
 			// Splits
 			subsection.menu.items.push({
-				text: this.importSplitsText
+				itemId: 'splitsImportMenuBtn',
+				text: NP.Translator.translate('Splits')
 			});
 			
 			this.menu.items.push(subsection);
@@ -163,21 +155,24 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 		// Set Approval Budget Overage
 		if ( NP.lib.core.Security.hasPermission(1043) ) {
 			this.menu.items.push({
-				text: this.approvalBudgetsText
+                itemId: 'budgetOverageMenuBtn',
+				text: NP.Translator.translate('Set Approval Budget Overage')
 			});
 		}
 		
 		// Utility Setup
 		if ( NP.lib.core.Security.hasPermission(1057) ) {
 			this.menu.items.push({
-				text: this.utilityText
+                itemId: 'utilitySetupMenuBtn',
+				text: NP.Translator.translate('Utility Setup')
 			});
 		}
 		
 		// Will need to add condition here to only show for admin users
 		Ext.log('Need to modify to only show Mobile Setup to admin users');
 		this.menu.items.push({
-			text: this.mobileText
+            itemId: 'mobileSetupMenuBtn',
+			text: NP.Translator.translate('Mobile Setup')
 		});
 
 	    this.callParent(arguments);

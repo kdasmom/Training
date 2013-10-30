@@ -10,7 +10,8 @@ Ext.define('NP.view.shared.Phone', {
     statics: {
         COUNTRYCODE: 'phone_countrycode',
         NUMBER     : 'phone_number',
-        FIELDS     : ['COUNTRYCODE','NUMBER']
+        EXT        : 'phone_ext',
+        FIELDS     : ['COUNTRYCODE','NUMBER','EXT']
     },
 
     // FIELD VALUES
@@ -22,6 +23,10 @@ Ext.define('NP.view.shared.Phone', {
      * @cfg {String} [phone_number=""]      Value to populate the phone number
      */
     phone_number: '',
+    /**
+     * @cfg {String} [phone_ext=""]         Value to populate the phone number
+     */
+    phone_ext: '',
 
     // OPTIONS
     /**
@@ -44,13 +49,22 @@ Ext.define('NP.view.shared.Phone', {
      * @cfg {String}  [prefix=""]           Prefix for the fields' name config option
      */
     prefix      : '',
+    /**
+     * @cfg {String}  [hideCountry=false]    Whether or not to hide the country code
+     */
+    hideCountry : true,
+    /**
+     * @cfg {String}  [hideExt=true]        Whether or not to hide the extension field
+     */
+    hideExt     : true,
 
     initComponent: function() {
         this.items = [];
 
         var countryCodeWidth = (this.showFieldDescriptions) ? 80 : 40,
-            numberWidth = 120, 
-            totalWidth = countryCodeWidth + numberWidth + 20;
+            numberWidth = 120,
+            extWidth = 40,
+            totalWidth = countryCodeWidth + numberWidth + extWidth + 20;
         this.width = totalWidth;
 
         this.items.push(
@@ -72,6 +86,7 @@ Ext.define('NP.view.shared.Phone', {
                         xtype      : 'textfield',
                         fieldLabel : 'Country Code',
                         hideLabel  : !this.showFieldDescriptions,
+                        hidden     : this.hideCountry,
                         name       : this.prefix + NP.view.shared.Phone.COUNTRYCODE,
                         allowBlank : !this.required,
                         width      : countryCodeWidth,
@@ -84,9 +99,20 @@ Ext.define('NP.view.shared.Phone', {
                         fieldLabel : 'Number',
                         hideLabel  : !this.showFieldDescriptions,
                         name       : this.prefix + NP.view.shared.Phone.NUMBER,
+                        allowBlank : !this.required,
                         width      : numberWidth,
                         maxLength  : 25,
                         value      : this.phone_number,
+                        maskRe     : /[()\d- ]/
+                    },{
+                        xtype      : 'textfield',
+                        fieldLabel : 'Ext',
+                        hideLabel  : !this.showFieldDescriptions,
+                        hidden     : this.hideExt,
+                        name       : this.prefix + NP.view.shared.Phone.EXT,
+                        width      : extWidth,
+                        maxLength  : 10,
+                        value      : this.phone_ext,
                         maskRe     : /[()\d- ]/
                     }
                 ]
@@ -106,6 +132,10 @@ Ext.define('NP.view.shared.Phone', {
 
     getNumber: function() {
         return this.getField('NUMBER');
+    },
+
+    getExt: function() {
+        return this.getField('EXT');
     },
 
     validate: function() {

@@ -12,13 +12,6 @@ use NP\core\validation\EntityValidator;
  */
 class MessageService extends AbstractService {
 	
-	protected $userMessageGateway, $userMessageRecipientGateway;
-	
-	public function __construct(UserMessageGateway $userMessageGateway, UserMessageRecipientGateway $userMessageRecipientGateway) {
-		$this->userMessageGateway          = $userMessageGateway;
-		$this->userMessageRecipientGateway = $userMessageRecipientGateway;
-	}
-
 	/**
 	 * Returns all user messages in the system
 	 */
@@ -90,9 +83,7 @@ class MessageService extends AbstractService {
 			$userMessage->createdAt = $now;
 		}
 
-		$validator   = new EntityValidator();
-		$validator->validate($userMessage);
-		$errors      = $validator->getErrors();
+		$errors      = $this->entityValidator->validate($userMessage);
 
 		if (!count($errors)) {
 			$this->userMessageGateway->beginTransaction();

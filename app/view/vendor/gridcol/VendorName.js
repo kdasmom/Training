@@ -7,6 +7,8 @@ Ext.define('NP.view.vendor.gridcol.VendorName', {
 	extend: 'Ext.grid.column.Column',
 	alias: 'widget.vendor.gridcol.vendorname',
 
+	requires: ['NP.lib.core.Translator'],
+
 	text     : 'Vendor',
 	dataIndex: 'vendor_name',
 	
@@ -18,5 +20,11 @@ Ext.define('NP.view.vendor.gridcol.VendorName', {
 		}
 
 		return val;
-	}
+	},
+
+    initComponent: function() {
+    	this.text = NP.Translator.translate(this.text);
+    	
+    	this.callParent(arguments);
+    }
 });

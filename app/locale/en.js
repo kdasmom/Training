@@ -1,1028 +1,667 @@
 /**
- * TOP MENU
+ * Localization file for the english language
+ *
+ * @author Thomas Messier
  */
+Ext.define('NP.Locale', {
+	singleton: true,
 
-// Validation messages
-Ext.define('Ext.locale.en.data.validations', {
-	override: 'Ext.data.validations',
+	contructor: function() {
+		Ext.define('Ext.locale.en.data.validations', {
+			override: 'Ext.data.validations',
 
-	presenceMessage : 'This field is required',
-	lengthMessage   : 'This field is the wrong length',
-	formatMessage   : 'This field is the wrong format',
-	inclusionMessage: 'This field is not included in the list of valid values',
-	exclusionMessage: 'This field is not an valid value',
-	emailMessage    : 'This field is not a valid email address',
-	passwordMessage : 'Password needs to have at least on letter, one number, one special character, and be 6 characters or more',
-	digitsMessage   : 'This field only accepts digits',
-	numericMessage  : 'This field must be a number'
-});
+			presenceMessage : 'This field is required',
+			lengthMessage   : 'This field is the wrong length',
+			formatMessage   : 'This field is the wrong format',
+			inclusionMessage: 'This field is not included in the list of valid values',
+			exclusionMessage: 'This field is not an valid value',
+			emailMessage    : 'This field is not a valid email address',
+			passwordMessage : 'Password needs to have at least on letter, one number, one special character, and be 6 characters or more',
+			digitsMessage   : 'This field only accepts digits',
+			numericMessage  : 'This field must be a number'
+		});
+	},
 
-// Vendor Catalog Menu
-Ext.define('NP.locale.en.view.viewport.VCMenu', {
-	override: 'NP.view.viewport.menu.VCMenu',
+	/**
+	 * TOP MENU
+	 */
 
-	vcText        : 'Vendor Catalog',
-	listingsText  : 'Vendor Catalog Listings',
-	openOrdersText: 'Open Orders',
-	favoritesText : 'Favorite Items'
-});
+	 // Vendor Catalog Menu
+	'Vendor Catalog'         : 'Vendor Catalog',
+	'Vendor Catalog Listings': 'Vendor Catalog Listings',
+	'Open Orders'            : 'Open Orders',
+	'Favorite Items'         : 'Favorite Items',
 
-// PO Menu
-Ext.define('NP.locale.en.view.viewport.POMenu', {
-	override: 'NP.view.viewport.menu.POMenu',
+	// PO Menu
+	'Purchase Orders'      : 'Purchase Orders',
+	'PO Register'          : 'PO Register',
+	'Open'                 : 'Open',
+	'Template'             : 'Template',
+	'Pending'              : 'Pending',
+	'Approved'             : 'Approved',
+	'Invoiced'             : 'Invoiced',
+	'Rejected'             : 'Rejected',
+	'Cancelled'            : 'Cancelled',
+	'Receipt Register'     : 'Receipt Register',
+	'Pending Approval'     : 'Pending Approval',
+	'Pending Post Approval': 'Pending Post Approval',
+	'New PO'               : 'New PO',
+	'Search POs'           : 'Search POs',
 
-	poText                      : 'Purchase Orders',
-	registerText                : 'PO Register',
-	registerOpenText            : 'Open',
-	registerTemplateText        : 'Template',
-	registerPendingText         : 'Pending',
-	registerApprovedText        : 'Approved',
-	registerInvoicedText        : 'Invoiced',
-	registerRejectedText        : 'Rejected',
-	registerCancelledText       : 'Cancelled',
-	receiptRegisterText         : 'Receipt Register',
-	receiptRegisterOpenText     : 'Open',
-	receiptRegisterRejectedText : 'Rejected',
-	receiptRegisterPendingText  : 'Pending Approval',
-	receiptRegisterPendingstText: 'Pending Post Approval',
-	receiptRegisterApprovedText : 'Approved',
-	newText                     : 'New PO',
-	searchText                  : 'Search POs'
-});
+	// Invoice Menu
+	'Invoices'             : 'Invoices',
+	'Invoice Register'     : 'Invoice Register',
+	'Overdue'              : 'Overdue',
+	'On Hold'              : 'On Hold',
+	'Submitted for Payment': 'Submitted for Payment',
+	'Transferred to GL'    : 'Transferred to GL',
+	'Paid'                 : 'Paid',
+	'Void'                 : 'Void',
+	'New Invoice'          : 'New Invoice',
+	'Search Invoices'      : 'Search Invoices',
 
-// Invoice Menu
-Ext.define('NP.locale.en.view.viewport.InvoiceMenu', {
-	override: 'NP.view.viewport.menu.InvoiceMenu',
+	// Vendor Menu
+	'Vendors'            : 'Vendors',
+	'New Vendor'         : 'New Vendor',
+	'Search Vendors'     : 'Search Vendors',
+	'VendorConnect Users': 'VendorConnect Users',
 
-	invoiceText            : 'Invoices',
-	registerText           : 'Invoice Register',
-	registerOpenText       : 'Open',
-	registerOverdueText    : 'Overdue',
-	registerTemplateText   : 'Template',
-	registerHoldText       : 'On Hold',
-	registerPendingText    : 'Pending',
-	registerApprovedText   : 'Approved',
-	registerSubmittedText  : 'Submitted for Payment',
-	registerTransferredText: 'Transferred to GL',
-	registerPaidText       : 'Paid',
-	registerVoidText       : 'Void',
-	registerRejectedText   : 'Rejected',
-	newText                : 'New Invoice',
-	searchText             : 'Search Invoices'
-});
+	// Image Menu
+	'Image Management'     : 'Image Management',
+	'Images To Be Indexed' : 'Images To Be Indexed',
+	'Invoice Images'       : 'Invoice Images',
+	'Purchase Order Images': 'Purchase Order Images',
+	'Search Images'        : 'Search Images',
+	'Exceptions'           : 'Exceptions',
 
-// Vendor Menu
-Ext.define('NP.locale.en.view.viewport.VendorMenu', {
-	override: 'NP.view.viewport.menu.VendorMenu',
+	// Budget Menu
+	'Budget'       : 'Budget',
+	'At-a-Glance'  : 'At-a-Glance',
+	'Budget Search': 'Budget Search',
 
-	vendorText      : 'Vendors',
-    newText         : 'New Vendor',
-    searchText      : 'Search Vendors',
-    connectUsersText: 'VendorConnect Users'
-});
+	// Report Menu
+	'Reports'                 : 'Reports',
+	'Custom Reports'          : 'Custom Reports',
+	'Overview'                : 'Overview',
+	'System Saved Reports'    : 'System Saved Reports',
+	'My Saved Reports'        : 'My Saved Reports',
+	'PO Register Reports'     : 'PO Register Reports',
+	'Receipt Reports'         : 'Receipt Reports',
+	'Invoice Register Reports': 'Invoice Register Reports',
+	'Job Costing Reports'     : 'Job Costing Reports',
+	'Utility Reports'         : 'Utility Reports',
+	'Vendor History Reports'  : 'Vendor History Reports',
+	'Admin Reports'           : 'Admin Reports',
 
-// Image Menu
-Ext.define('NP.locale.en.view.viewport.ImageMenu', {
-	override: 'NP.view.viewport.menu.ImageMenu',
+	// Admin Menu
+	'Administration'             : 'Administration',
+	'My Settings'                : 'My Settings',
+	'User Manager'               : 'User Manager',
+	'Message Center'             : 'Message Center',
+	'Integration'                : 'Integration',
+	'{property} Setup'           : '{property} Setup',
+	'System Setup'               : 'System Setup',
+	'GL Account Setup'           : 'GL Account Setup',
+	'Catalog Maintenance'        : 'Catalog Maintenance',
+	'Import/Export Utility'      : 'Import/Export Utility',
+	'GL'                         : 'GL',
+	'Vendor'                     : 'Vendor',
+	'Invoice'                    : 'Invoice',
+	'User'                       : 'User',
+	'Custom Field'               : 'Custom Field',
+	'Splits'                     : 'Splits',
+	'Set Approval Budget Overage': 'Set Approval Budget Overage',
+	'Utility Setup'              : 'Utility Setup',
+	'Mobile Setup'               : 'Mobile Setup',
 
-	imgText       : 'Image Management',
-	indexedText   : 'Images To Be Indexed',
-	invoiceText   : 'Invoice Images',
-	pOText        : 'Purchase Order Images',
-	searchText    : 'Search Images',
-	exceptionsText: 'Exceptions'
-});
+	/**
+	 * DELEGATION PICKER
+	 */
+	'You are signed on as': 'You are signed on as',
 
-// Budget Menu
-Ext.define('NP.locale.en.view.viewport.BudgetMenu', {
-	override: 'NP.view.viewport.menu.BudgetMenu',
+	/**
+	 * CONTEXT PICKER
+	 */
+	'Current': 'Current',
+	'All'    : 'All',
 
-	budgetText  : 'Budget',
-	atGlanceText: 'At-a-Glance',
-	searchText  : 'Budget Search'
-});
+	/**
+	 * ADDRESS BLOCK
+	 */
+	'Street': 'Street',
+	'City'  : 'City',
+	'State' : 'State',
+	'Zip'   : 'Zip',
 
-// Report Menu
-Ext.define('NP.locale.en.view.viewport.ReportMenu', {
-	override: 'NP.view.viewport.menu.ReportMenu',
+	/**
+	 * BUTTONS
+	 */
+	'Activate'            : 'Activate',
+	'Allocate'            : 'Allocate',
+	'Back'                : 'Back',
+	'Camera'              : 'Camera',
+	'Cancel'              : 'Cancel',
+	'Delete'              : 'Delete',
+	'Edit'                : 'Edit',
+	'Place On Hold'       : 'Place On Hold',
+	'Inactivate'          : 'Inactivate',
+	'New'                 : 'New',
+	'Print'               : 'Print',
+	'Report'              : 'Report',
+	'Reset'               : 'Reset',
+	'Save'                : 'Save',
+	'Save And Add Another': 'Save And Add Another',
+	'Upload'              : 'Upload',
+	'View'                : 'View',
 
-	requires: ['NP.lib.core.Config'],
+	/**
+	 * VIEWPORT
+	 */
 
-	reportText        : 'Reports',
-	customText        : 'Custom Reports',
-	customOverviewText: 'Overview',
-	customSystemText  : 'System Saved Reports',
-	customMyText      : 'My Saved Reports',
-	pOText            : 'PO Register Reports',
-	receiptText       : 'Receipt Reports',
-	invoiceText       : 'Invoice Register Reports',
-	jobText           : 'Job Costing Reports',
-	utilityText       : 'Utility Reports',
-	vendorText        : 'Vendor History Reports',
-	budgetText        : NP.lib.core.Config.getSetting('pn.budget.BudgetForecastLabel') + 's',
-	adminText         : 'Admin Reports'
-});
+	// Home
+	'Home'              : 'Home',
+	'Summary Statistics': 'Summary Statistics',
 
-// Admin Menu
-Ext.define('NP.locale.en.view.viewport.AdminMenu', {
-	override: 'NP.view.viewport.menu.AdminMenu',
+	// Summary Stat Names
+	'Purchase Orders To Approve'          : 'Purchase Orders To Approve',
+	'Approved Purchase Orders for Review' : 'Approved Purchase Orders for Review',
+	'My Purchase Orders'                  : 'My Purchase Orders',
+	'Rejected Purchase Orders'            : 'Rejected Purchase Orders',
+	'Receipts To Approve'                 : 'Receipts To Approve',
+	'Rejected Receipts'                   : 'Rejected Receipts',
+	'Receipts Pending Post Approval'      : 'Receipts Pending Post Approval',
+	'Invoices to Approve'                 : 'Invoices to Approve',
+	'Invoices on Hold'                    : 'Invoices on Hold',
+	'Completed Invoices to Approve'       : 'Completed Invoices to Approve',
+	'Rejected Invoices'                   : 'Rejected Invoices',
+	'My Invoices'                         : 'My Invoices',
+	'Images to Convert to Invoice'        : 'Images to Convert to Invoice',
+	'Image Invoices to be Processed'      : 'Image Invoices to be Processed',
+	'Image Exceptions'                    : 'Image Exceptions',
+	'Images to be Indexed'                : 'Images to be Indexed',
+	'Vendors to Approve'                  : 'Vendors to Approve',
+	'VendorConnect Authorization Request' : 'VendorConnect Authorization Request',
+	'Expired Insurance Certificates'      : 'Expired Insurance Certificates',
+	'Month-to-Date Over Budget Categories': 'Month-to-Date Over Budget Categories',
+	'Year-to-Date Over Budget Categories' : 'Year-to-Date Over Budget Categories',
 
-	requires: ['NP.lib.core.Config'],
+	/**
+	 * GRID COLUMNS
+	 */
+	'Amount'                : 'Amount',
+	'Date'                  : 'Date',
+	'Number of Days On Hold': 'Number of Days On Hold',
+	'Due Date'              : 'Due Date',
+	'On Hold Date'          : 'On Hold Date',
+	'Needed By'             : 'Needed By',
+	'Invoice Number'        : 'Invoice Number',
+	'On Hold By'            : 'On Hold By',
+	'Days Pending'          : 'Days Pending',
+	'Post Date'             : 'Post Date',
+	'Priority'              : 'Priority',
+	'Receipt Number'        : 'Receipt Number',
+	'PO Number'             : 'PO Number',
 
-	adminText          : 'Administration',
-	mySettingsText     : 'My Settings',
-	userText           : 'User Manager',
-	messageText        : 'Message Center',
-	integrationText    : 'Integration',
-	propertyText       : NP.lib.core.Config.getSetting('PN.main.PropertyLabel', 'Property') + ' Setup',
-	systemText         : 'System Setup',
-	gLText             : 'GL Account Setup',
-	catalogText        : 'Catalog Maintenance',
-	importText         : 'Import/Export Utility',
-	importOverviewText : 'Overview',
-	importGLText       : 'GL',
-	importPropertyText : NP.lib.core.Config.getSetting('PN.main.PropertyLabel', 'Property'),
-	importVendorText   : 'Vendor',
-	importInvoiceText  : 'Invoice',
-	importUserText     : 'User',
-	importCustomText   : 'Custom Field',
-	importSplitsText   : 'Splits',
-	approvalBudgetsText: 'Set Approval Budget Overage',
-	utilityText        : 'Utility Setup',
-	mobileText         : 'Mobile Setup'
-});
 
-/**
- * TOP TOOLBAR
- */
-Ext.define('NP.locale.en.view.viewport.DelegationPicker', {
-	override: 'NP.view.viewport.DelegationPicker',
+	/**
+	 * INVOICE SECTION
+	 */
+
+	// Invoice Register
+	'Invoice Register'     : 'Invoice Register',
+	'Get PO'               : 'Get PO',
+	'New Invoice'          : 'New Invoice',
+	'Invoice Reports'      : 'Invoice Reports',
+	'Search'               : 'Search',
+	'Receipt Register'     : 'Receipt Register',
+	'Overdue'              : 'Overdue',
+	'Submitted for Payment': 'Submitted for Payment',
+	'Transferred to GL'    : 'Transferred to GL',
+	'Paid'                 : 'Paid',
+	'Void'                 : 'Void',
+
+	/**
+	 * MY SETTINGS SECTION
+	 */
+	'Changes saved successfully'                                                                                       : 'Changes saved successfully',
+	'Error'                                                                                                            : 'Error',
+	'Register New Device?'                                                                                             : 'Register New Device?',
+	'Registering a new device will disable the active one. Do you still want to proceed anyway?'                       : 'Registering a new device will disable the active one. Do you still want to proceed anyway?',
+	'Disable Mobile Number?'                                                                                           : 'Disable Mobile Number?',
+	'Are you sure you want to disable this mobile number?'                                                             : 'Are you sure you want to disable this mobile number?',
+	'Cancel Delegation?'                                                                                               : 'Cancel Delegation?',
+	'Are you sure you want to cancel this delegation?'                                                                 : 'Are you sure you want to cancel this delegation?',
+	'Active Delegation'                                                                                                : 'Active Delegation',
+	'You have an active delegation. You cannot delegate to another user until that delegation expires or is cancelled.': 'You have an active delegation. You cannot delegate to another user until that delegation expires or is cancelled.',
+	'You have left one or more columns empty. Please fill those columns or remove them.'                               : 'You have left one or more columns empty. Please fill those columns or remove them.',
+
+	'My Settings allows users to change their personal user information as well as manage certain system settings. The following tabs contain information to allow the user to manage the following information'                                        : 'My Settings allows users to change their personal user information as well as manage certain system settings. The following tabs contain information to allow the user to manage the following information:',
+	'<b>User Information</b> - allows the user to change their password and update personal information such as their contact information and email address.'                                                                                           : '<b>User Information</b> - allows the user to change their password and update personal information such as their contact information and email address.',
+	'<b>Settings</b> - allows the user to configure their dashboard default settings of what property they want to automatically log into as well as what summary statistic they want to auto display.'                                                 : '<b>Settings</b> - allows the user to configure their dashboard default settings of what property they want to automatically log into as well as what summary statistic they want to auto display.',
+	'<b>Display</b> - allows the user to choose which default percentage setting they want to view on split screen views.  Note this is only applicable for users with access to view images in the system.'                                            : '<b>Display</b> - allows the user to choose which default percentage setting they want to view on split screen views.  Note this is only applicable for users with access to view images in the system.',
+	'<b>Email Notification</b> - allows the user to manage specific email alert frequencies for Purchase Orders and/or Invoices that require approval and for budget overage notifications.'                                                            : '<b>Email Notification</b>- allows the user to manage specific email alert frequencies for Purchase Orders and/or Invoices that require approval and for budget overage notifications.',
+	'<b>Mobile Settings</b> - allows users to register their mobile phone to begin using the Mobile Application for PO, Receipt and Invoice approvals. If you do not see this tab display, your role right has not been granted access to this section.': '<b>Mobile Settings</b>- allows users to register their mobile phone to begin using the Mobile Application for PO, Receipt and Invoice approvals. If you do not see this tab display, your role right has not been granted access to this section.',
+	'<b>User Delegation</b> - allows the user to delegate approval authority to another user while they are away.  Please note this will appear only on the Settings tab and for users who have been given rights to this functionality.'               : '<b>User Delegation</b> - allows the user to delegate approval authority to another user while they are away.  Please note this will appear only on the Settings tab and for users who have been given rights to this functionality.',
+
+	'Display'                          : 'Display',
+	'Split Screen Viewing Size'        : 'Split Screen Viewing Size',
+	'Custom'                           : 'Custom',
+	'Split Screen Viewing Orientation' : 'Split Screen Viewing Orientation',
+	'Vertical'                         : 'Vertical',
+	'Horizontal'                       : 'Horizontal',
+	'Split Screen Image Position'      : 'Split Screen Image Position',
+	'Left (Bottom for Horizontal View)': 'Left (Bottom for Horizontal View)',
+	'Right (Top for Horizontal View)'  : 'Right (Top for Horizontal View)',
+	'Default View'                     : 'Default View',
+	'Split Screen'                     : 'Split Screen',
+	'PO / Receipt / Invoice'           : 'PO / Receipt / Invoice',
+
+	/**
+	 * USER MANAGER SECTION
+	 */
+	'User Delegation'           : 'User Delegation',
+	'Add a Delegation'          : 'Add a Delegation',
+	'Users you delegated to'    : 'Users you delegated to',
+	'Users who delegated to you': 'Users who delegated to you',
+	'No delegations found.'     : 'No delegations found.',
+	'Start Date'                : 'Start Date',
+	'Stop Date'                 : 'Stop Date',
+	'Delegate to Whom'          : 'Delegate to Whom',
+	'{properties} to Delegate'  : '{properties} to Delegate',
+	'Select {properties}...'    : 'Select {properties}...',
+
+	'Users were activated'                                                                                             : 'Users were activated',
+	'There was an error activating users'                                                                              : 'There was an error activating users',
+	'Users were inactivated'                                                                                           : 'Users were inactivated',
+	'There was an error inactivating users'                                                                            : 'There was an error inactivating users',
+	'Active Delegation'                                                                                                : 'Active Delegation',
+	'You have an active delegation. You cannot delegate to another user until that delegation expires or is cancelled.': 'You have an active delegation. You cannot delegate to another user until that delegation expires or is cancelled.',
+	'Cancel Delegation?'                                                                                               : 'Cancel Delegation?',
+	'Are you sure you want to cancel this delegation?'                                                                 : 'Are you sure you want to cancel this delegation?',
+	'Add a Delegation'                                                                                                 : 'Add a Delegation',
+	'Update Delegation'                                                                                                : 'Update Delegation',
+	'New User'                                                                                                         : 'New User',
+	'Editing'                                                                                                          : 'Editing',
+	'New Group'                                                                                                        : 'New Group',
+	'Editing Group'                                                                                                    : 'Editing Group',
+	'You have left one or more dashboard columns empty. Please fill those columns or remove them.'                     : 'You have left one or more dashboard columns empty. Please fill those columns or remove them.',
+
+	'User Manager': 'User Manager',
+
+	'Create a New User'      : 'Create a New User',
+	'Create a New User Group': 'Create a New User Group',
+
+	'Users': 'Users',
+
+	'Create New User': 'Create New User',
+	'Function'       : 'Function',
+	'Name'           : 'Name',
+	'Group'          : 'Group',
+	'Username'       : 'Username',
+	'Last Updated'   : 'Last Updated',
+	'Status'         : 'Status',
+
+	'Delegation'      : 'Delegation',
+	'User Information': 'User Information',
+
+	'User Details'                                                                                                                                                                                                                                            : 'User Details',
+	'Username'                                                                                                                                                                                                                                                : 'Username',
+	'Current Password'                                                                                                                                                                                                                                        : 'Current Password',
+	'New Password'                                                                                                                                                                                                                                            : 'New Password',
+	'The minimum password length required is 6 characters. Password security requires that a minimum of one letter, number and special character be used when setting up user passwords in the system. Special characters include !, @, #, $, %, &, *, and ?.': 'The minimum password length required is 6 characters. Password security requires that a minimum of one letter, number and special character be used when setting up user passwords in the system. Special characters include !, @, #, $, %, &, *, and ?.',
+	'Confirm Password'                                                                                                                                                                                                                                        : 'Confirm Password',
+	'The password fields need to match'                                                                                                                                                                                                                       : 'The password fields need to match',
+	'Position'                                                                                                                                                                                                                                                : 'Position',
+	'End Date'                                                                                                                                                                                                                                                : 'End Date',
+	'Security Question'                                                                                                                                                                                                                                       : 'Security Question',
+	'Answer'                                                                                                                                                                                                                                                  : 'Answer',
+
+	'Permissions'                        : 'Permissions',
+	'{properties} for Coding Access Only': '{properties} for Coding Access Only',
+
+	'User Groups': 'User Groups',
+
+	'Create Copy': 'Create Copy',
+
+	'Group Information': 'Group Information',
+	'Group Name'       : 'Group Name',
+	'Next Level'       : 'Next Level',
+
+	'Responsibilities': 'Responsibilities',
+	'Expand All'      : 'Expand All',
+	'Collapse All'    : 'Collapse All',
+
+	'Create New Group': 'Create New Group',
+	'Create Copy'     : 'Create Copy',
+	'Users'           : 'Users',
+	'Function'        : 'Function',
+
+	/**
+	 * MESSAGE CENTER SECTION
+	 */
+	'Your changes were saved.'                                  : 'Your changes were saved.',
+	'Delete Message?'                                           : 'Delete Message?',
+	'Are you sure you want to delete this message?'             : 'Are you sure you want to delete this message?',
+	'Message succesfully deleted'                               : 'Message succesfully deleted',
+	'There was an error deleting the message. Please try again.': 'There was an error deleting the message. Please try again.',
+
+	'Message'                  : 'Message',
+	'Message Type'             : 'Message Type',
+	'Title of Message'         : 'Title of Message',
+	'Message'                  : 'Message',
+	'Sent Date'                : 'Sent Date',
+	'Display Until Date'       : 'Display Until Date',
+	'Message For'              : 'Message For',
+	'Users'                    : 'Users',
+	'Users to Send To'         : 'Users to Send To',
+	'Groups'                   : 'Groups',
+	'Groups to Send To'        : 'Groups to Send To',
+	'cannot be in the past'    : 'cannot be in the past',
+	'must be a later date than': 'must be a later date than',
+
+
+	/**
+	 * PROPERTY SETUP SECTION
+	 */
+
+	'Place On Hold?'                                                 : 'Place On Hold?',
+	'Are you sure you want to place the selected {property} on hold?': 'Are you sure you want to place the selected {property} on hold?',
+	'{properties} were placed on hold'                               : '{properties} were placed on hold',
+	'There was an error placing {properties} on hold'                : 'There was an error placing {properties} on hold',
+	'Are you sure you want to activate the selected {properties}?'   : 'Are you sure you want to activate the selected {properties}?',
+	'{properties} were activated'                                    : '{properties} were activated',
+	'There was an error activating {properties}'                     : 'There was an error activating {properties}',
+	'Inactivate'                                                     : 'Inactivate',
+	'Are you sure you want to inactivate the selected {properties}?' : 'Are you sure you want to inactivate the selected {properties}?',
+	'{properties} were inactivated'                                  : '{properties} were inactivated',
+	'There was an error inactivating {properties}'                   : 'There was an error inactivating {properties}',
+	'Invalid day'                                                    : 'Invalid day',
+	'View {unit} Not Assigned to a {unit} Type'                      : 'View {unit} Not Assigned to a {unit} Type',
+	'New {property}'                                                 : 'New {property}',
+
+	'The {property} Setup section lists all {properties}, broken into three tabs: Current, On Hold, and Inactive.  Current {properties} includes the full list of {properties} that are available for use in the system.  On Hold {properties} includes the full list of {properties} that are in the process of being set up in the system or are in the process of being made inactive.  On Hold {properties} can not be assigned to a PO or Invoice but their historical information can still be included on reports.  Inactive {properties} include the full list of {properties} that are no longer in use on the system. Inactive {properties} are not available to be included on any reports.' : 'The {property} Setup section lists all {properties}, broken into three tabs: Current, On Hold, and Inactive.  Current {properties} includes the full list of {properties} that are available for use in the system.  On Hold {properties} includes the full list of {properties} that are in the process of being set up in the system or are in the process of being made inactive.  On Hold {properties} can not be assigned to a PO or Invoice but their historical information can still be included on reports.  Inactive {properties} include the full list of {properties} that are no longer in use on the system. Inactive {properties} are not available to be included on any reports.',
+	'<b><i>Reminder</i></b>, the following fields are required to be completed before a new {property} can be added to the system.'                                                                                                                                    : '<b><i>Reminder</i></b>, the following fields are required to be completed before a new {property} can be added to the system.',
+	'<b>{property} Status: </b>defaults to &quot;On Hold&quot; once the {property} has been saved'                                                                                                                                                                     : '<b>{property} Status: </b>defaults to &quot;On Hold&quot; once the {property} has been saved',
+	'<b>{property} Code:</b> a unique code identifier for this {property} found in your GL Package'                                                                                                                                                                    : '<b>{property} Code:</b> a unique code identifier for this {property} found in your GL Package',
+	'<b>{property} AP Code:</b> use this to further identify the {property} (this is not required)'                                                                                                                                                                    : '<b>{property} AP Code:</b> use this to further identify the {property} (this is not required)',
+	'<b>Department Code:</b> use this in conjunction with the AP Code to even further identify the {property} (this is not required)'                                                                                                                                  : '<b>Department Code:</b> use this in conjunction with the AP Code to even further identify the {property} (this is not required)',
+	'<b>{property} Name:</b> enter the name that should be used to refer to the {property}'                                                                                                                                                                            : '<b>{property} Name:</b> enter the name that should be used to refer to the {property}',
+	'<b>Total # of {unit}s/Square Feet:</b> enter the number of {unit}s or square feet in the building'                                                                                                                                                                : '<b>Total # of {unit}s/Square Feet:</b> enter the number of {unit}s or square feet in the building',
+	'<b>Attention: </b>enter the name of the contact person for the {property}'                                                                                                                                                                                        : '<b>Attention: </b>enter the name of the contact person for the {property}',
+	'<b>Address, City, State, Zip: </b>enter the address of the {property}'                                                                                                                                                                                            : '<b>Address, City, State, Zip: </b>enter the address of the {property}',
+	'<b>Phone number: </b>enter the phone number of the {property}'                                                                                                                                                                                                    : '<b>Phone number: </b>enter the phone number of the {property}',
+	'<b>{region}: </b>use the drop down list to select the {region} where the {property} is located.'                                                                                                                                                                  : '<b>{region}: </b>use the drop down list to select the {region} where the {property} is located.',
+	'<b>Sync {property}:</b> Yes/No - indicate whether the {property} should sync actuals, invoices, and budgets with the backend accounting package'                                                                                                                  : '<b>Sync {property}:</b> Yes/No - indicate whether the {property} should sync actuals, invoices, and budgets with the backend accounting package',
+	'<b>Accrual or Cash:</b> indicate whether the {property} uses cash or accrual based accounting methods'                                                                                                                                                            : '<b>Accrual or Cash:</b> indicate whether the {property} uses cash or accrual based accounting methods',
+	'<b>Closing Calendar:</b> indicates which closing calendar (which day of the month the fiscal period rolls) will be used by the {property}'                                                                                                                        : '<b>Closing Calendar:</b> indicates which closing calendar (which day of the month the fiscal period rolls) will be used by the {property}',
+	'<b>{property} {salesTax}:</b>  enter the default {salesTax} for the {property} that will be used to assist with the entry of {salesTax} on new purchase orders and invoices; enter the {salesTax} percentage as a decimal point (e.g., enter a 7% tax as .07)': '<b>{property} {salesTax}:</b>  enter the default {salesTax} for the {property} that will be used to assist with the entry of {salesTax} on new purchase orders and invoices; enter the {salesTax} percentage as a decimal point (e.g., enter a 7% tax as .07)',
+	'<b>Acceptable PO Matching Threshold:</b>  enter the percentage an Invoice amount can exceed its Purchase Order amount before the invoice is routed for approval; enter the percentage as a whole number (e.g., enter 5% as 5)'                                    : '<b>Acceptable PO Matching Threshold:</b>  enter the percentage an Invoice amount can exceed its Purchase Order amount before the invoice is routed for approval; enter the percentage as a whole number (e.g., enter 5% as 5)',
+	'<b>Fiscal Calendar Start Month:</b>  indicates which month of the year the fiscal calendar begins'                                                                                                                                                                : '<b>Fiscal Calendar Start Month:</b>  indicates which month of the year the fiscal calendar begins',
+
+	'{property} Info'           : '{property} Info',
+	'{property} Code'           : '{property} Code',
+	'{property} AP Code'        : '{property} AP Code',
+	'Department Code'           : 'Department Code',
+	'{property} Name'           : '{property} Name',
+	'Total No. of {unit}s'      : 'Total No. of {unit}s',
+	'Attention'                 : 'Attention',
+	'Address'                   : 'Address',
+	'Phone Number'              : 'Phone Number',
+	'Fax Number'                : 'Fax Number',
+	'Bill To Address Option'    : 'Bill To Address Option',
+	'Default Bill To {property}': 'Default Bill To {property}',
+	'Ship To Address Option'    : 'Ship To Address Option',
+	'Default Ship To {property}': 'Default Ship To {property}',
+	'Sync {property}'           : 'Sync {property}',
+	'Accrual or Cash'           : 'Accrual or Cash',
+	'Nexus Services'            : 'Nexus Services',
+	'Vendor Catalog'            : 'Vendor Catalog',
+	'Integration Package'       : 'Integration Package',
+	'Closing Calendar'          : 'Closing Calendar',
+	'Volume Type'               : 'Volume Type',
+
+	'Accounting Info'                     : 'Accounting Info',
+	'{property} {salesTax}'               : '{property} {salesTax}',
+	'Acceptable PO Matching Threshold (%)': 'Acceptable PO Matching Threshold (%)',
+	'Fiscal Calendar Start Month'         : 'Fiscal Calendar Start Month',
+
+	'GL Assignments': 'GL Assignments',
+	'Assigned'      : 'Assigned',
+	'Unassigned'    : 'Unassigned',
 	
-	signedOnText: 'You are signed on as'
-});
+	'Fiscal Calendars': 'Fiscal Calendars',
+
+	'Add {unit}'   : 'Add {unit}',
+	'Remove {unit}': 'Remove {unit}',
+	'Code'         : 'Code',
+	'Type'         : 'Type',
+
+	'{unit} Measurements' : '{unit} Measurements',
+
+	/**
+	 * USER MANAGER SECTION
+	 */
+
+	// Delegation grid columns	
+	'Setup By': 'Setup By',
+
+	/**
+	 * SYSTEM SETUP SECTION
+	 */
+
+	'Delete Split?'                                                                                                                  : 'Delete Split?',
+	'Are you sure you want to delete the selected split(s)?'                                                                         : 'Are you sure you want to delete the selected split(s)?',
+	'Are you sure you want to delete this split?'                                                                                    : 'Are you sure you want to delete this split?',
+	'New Split'                                                                                                                      : 'New Split',
+	'Change integration package?'                                                                                                    : 'Change integration package?',
+	'Are you sure you want to change integration package? Doing so will clear the entire form, removing all splits you have entered.': 'Are you sure you want to change integration package? Doing so will clear the entire form, removing all splits you have entered.',
+
+	'Much of the information in System Setup is established at the time that the system is first deployed or a new feature is added.  However, the system administrator can access this information, as necessary, for review or update.'                               : 'Much of the information in System Setup is established at the time that the system is first deployed or a new feature is added.  However, the system administrator can access this information, as necessary, for review or update.',
+	'<b>Settings</b> - this section should be accessed only by your NexusPayables support staff.'                                                                                                                                                                       : '<b>Settings</b> - this section should be accessed only by your NexusPayables support staff.',
+	'<b>Workflow Manager</b> - this tab contains the full list of Workflow rules set up in the system and provides a way for you to add, edit, and delete these rules at any time.  Please refer to the specific overview section within this tab for more information.': '<b>Workflow Manager</b> - this tab contains the full list of Workflow rules set up in the system and provides a way for you to add, edit, and delete these rules at any time.  Please refer to the specific overview section within this tab for more information.',
+	'<b>GL Accounts</b> - this tab contains the full list of GL accounts set up in the system and provides a way for you to add, edit, and delete these accounts. Please refer to the specific overview section within this tab for more information.'                  : '<b>GL Accounts</b> - this tab contains the full list of GL accounts set up in the system and provides a way for you to add, edit, and delete these accounts. Please refer to the specific overview section within this tab for more information.',
+	'<b>Password Configuration</b> - the Password Configuration options available in this tab are provided as a means to control how users set up and change their passwords.'                                                                                          : '<b>Password Configuration</b> - the Password Configuration options available in this tab are provided as a means to control how users set up and change their passwords.',
+	'<b>Custom Fields</b> - this tab provides a way to manage up to three custom fields, to be defined by you, for use on Purchase Orders and Invoices'                                                                                                                 : '<b>Custom Fields</b> - this tab provides a way to manage up to three custom fields, to be defined by you, for use on Purchase Orders and Invoices',
+	'<b>Picklists</b> - this tab provides a way to manage the values that should display on Rejection Notes, Vendor Types, and Vendor Document Types.  These values can be updated and added to at any time.'                                                           : '<b>Picklists</b> - this tab provides a way to manage the values that should display on Rejection Notes, Vendor Types, and Vendor Document Types.  These values can be updated and added to at any time.',
+	'<b>Default Splits</b> - this tab displays a list of current default splits set up in the system and provides a way to upload new default splits in the system.'                                                                                                    : '<b>Default Splits</b> - this tab displays a list of current default splits set up in the system and provides a way to upload new default splits in the system.',
+
+
+	'Custom Fields': 'Custom Fields',
+
+	'Default Splits': 'Default Splits',
+
+	'Create New Split': 'Create New Split',
+	'Alert'           : 'Alert',
+	'Inactive'        : 'Inactive',
+
+	'Copy Split'                                                     : 'Copy Split',
+	'Split Name'                                                     : 'Split Name',
+	'Allocation Details'                                             : 'Allocation Details',
+	'GL Account'                                                     : 'GL Account',
+	'Percentage'                                                     : 'Percentage',
+	'{property} is inactive'                                         : '{property} is inactive',
+	'{property} is on hold'                                          : '{property} is on hold',
+	'GL Account is inactive'                                         : 'GL Account is inactive',
+	'Add Split'                                                      : 'Add Split',
+	'Auto Allocate by {unit}'                                        : 'Auto Allocate by {unit}',
+	'Left to allocate'                                               : 'Left to allocate',
+	'Allocation must add up to 100%'                                 : 'Allocation must add up to 100%',
+	'Please make sure each allocation line has a {property} selected': 'Please make sure each allocation line has a {property} selected',
+
+	'GL Accounts': 'GL Accounts',
+
+	'Password Configuration'                                                                                                                                                                        : 'Password Configuration',
+	'Password security requires that a minimum of one letter, number and special character be used when setting up user passwords in the system. Special characters include !, @, $, %, &, *, and ?': 'Password security requires that a minimum of one letter, number and special character be used when setting up user passwords in the system. Special characters include !, @, $, %, &, *, and ?',
+	'Please select the minimum password length'                                                                                                                                                     : 'Please select the minimum password length',
+	'Expiration Interval (days)'                                                                                                                                                                    : 'Expiration Interval (days)',
+	'Days until same password can be reused'                                                                                                                                                        : 'Days until same password can be reused',
+	'User must change password on login'                                                                                                                                                            : 'User must change password on login',
+	'Yes'                                                                                                                                                                                           : 'Yes',
+	'No'                                                                                                                                                                                            : 'No',
+
+	'Picklist'        : 'Picklist',
+	'Settings'        : 'Settings',
+	'Workflow Manager': 'Workflow Manager',
+
+	/**
+	 * IMPORT/EXPORT UTILITY SECTION
+	 */
+
+	 '<b>Overview</b><br />The Import/Export tool allows you to easily import and export key information in and from the NexusPayables system. This tool will enable you to easily upload setup information to help you quickly get started in using the system as well as upload additional values to these sections as your setup changes. Please note, edits to these uploaded values must be made in the respective administration management and setup areas.<br /><br /><b>Instructions</b><br />All uploads are made by using a .CSV file. A .CSV is a Comma Separated Value (CSV) file which is easily created by creating an Excel file and saving it as this file type. All versions of Excel allow you to save a workbook as a .CSV file type. The upload will not work with any other file types. <b>Please remember to delete the upload instruction prior to uploading the file.</b><br /><br />All uploads must include the column headings EXACTLY how they are listed in the worksheet and will not work if these do not match.<br /><br />When you upload a file, the system will mark any row with an invalid entry with an X. The review screen of your upload will give you the option to accept the file for import as is or decline it to re-upload. If you choose to Accept the file, any invalid entries will be skipped and WILL NOT be included in the upload.<br /><br />Please note that there is a limit of 1000 rows per file for all imports and exports.<br /><br /><b>Sample Worksheets</b><br />A sample worksheet for every import and export tool is provided below. Each worksheet includes the field definition and parameters. To utilize these worksheets, simply save the file to your computer and delete the definitions.<br /><br />If you are extracting this information from your GL system or another source, please note that the output you have must be reformatted to match the outlined file layout and must be a .CSV file type.' :
+    '<b>Overview</b><br />'+
+        'The Import/Export tool allows you to easily import and export key information in and from the NexusPayables system. '+
+        'This tool will enable you to easily upload setup information to help you quickly get started in using the system as well'+
+        'as upload additional values to these sections as your setup changes. Please note, edits to these uploaded values must be made'+
+        'in the respective administration management and setup areas.' +
+        '<br /><br />' +
+        '<b>Instructions</b><br />' +
+        'All uploads are made by using a .CSV file. A .CSV is a Comma Separated Value (CSV) file which is ' +
+        'easily created by creating an Excel file and saving it as this file type. All versions of Excel ' +
+        'allow you to save a workbook as a .CSV file type. The upload will not work with any other file ' +
+        'types. <b>Please remember to delete the upload instruction prior to uploading the file.</b>' +
+        '<br /><br />' +
+        'All uploads must include the column headings EXACTLY how they are listed in the worksheet and ' +
+        'will not work if these do not match.' +
+        '<br /><br />' +
+        'When you upload a file, the system will mark any row with an invalid entry with an X. The review ' +
+        'screen of your upload will give you the option to accept the file for import as is or decline it ' +
+        'to re-upload. If you choose to Accept the file, any invalid entries will be skipped and WILL NOT ' +
+        'be included in the upload.' +
+        '<br /><br />' +
+        'Please note that there is a limit of 1000 rows per file for all imports and exports.' +
+        '<br /><br />' +
+        '<b>Sample Worksheets</b><br />' +
+        'A sample worksheet for every import and export tool is provided below. Each worksheet ' +
+        'includes the field definition and parameters. To utilize these worksheets, simply save ' +
+        'the file to your computer and delete the definitions.' +
+        '<br /><br />' +
+        'If you are extracting this information from your GL system or another source, please ' +
+        'note that the output you have must be reformatted to match the outlined file layout ' +
+        'and must be a .CSV file type.',
+
+    '<b>GL Worksheets</b><ul><li><a href="resources/import/glcategory_template.csv" target="_blank">GL Category</a></li><li><a href="resources/import/glaccounts_template.csv" target="_blank">GL Account</a></li><li><a href="resources/import/budgets_template.csv" target="_blank">GL Budgets</a></li><li><a href="resources/import/actuals_template.csv" target="_blank">GL Actuals</a></li></ul>' :
+    '<b>GL Worksheets</b>' +
+        '<ul>' +
+            '<li><a href="resources/import/glcategory_template.csv" target="_blank">GL Category</a></li>' +
+            '<li><a href="resources/import/glaccounts_template.csv" target="_blank">GL Account</a></li>' +
+            '<li><a href="resources/import/budgets_template.csv" target="_blank">GL Budgets</a></li>' +
+            '<li><a href="resources/import/actuals_template.csv" target="_blank">GL Actuals</a></li>' +
+        '</ul>',
+
+    '<b>Invoice Worksheets</b><ul><li><a href="resources/import/invoice_export_sample.csv" target="_blank">Invoice Export</a></li><li><a href="resources/import/payment_template.csv" target="_blank">Invoice Payments</a></li><li><a href="resources/import/invoice_items_template.csv" target="_blank">Invoice Item Import</a></li></ul>' :
+	'<b>Invoice Worksheets</b>' +
+	    '<ul>' +
+	        '<li><a href="resources/import/invoice_export_sample.csv" target="_blank">Invoice Export</a></li>' +
+	        '<li><a href="resources/import/payment_template.csv" target="_blank">Invoice Payments</a></li>' +
+	        '<li><a href="resources/import/invoice_items_template.csv" target="_blank">Invoice Item Import</a></li>' +
+	    '</ul>',
+
+	'<b>Purchase Order Worksheets</b><ul><li><a href="resources/import/po_items_template.csv" target="_blank">Purchase Order Item Import</a></li></ul>' :
+    '<b>Purchase Order Worksheets</b>' +
+        '<ul>' +
+            '<li><a href="resources/import/po_items_template.csv" target="_blank">Purchase Order Item Import</a></li>' +
+        '</ul>',
+
+    '<b>{property} Worksheets</b><ul><li><a href="resources/import/entity_template.csv" target="_blank">{property}</a></li><li><a href="resources/import/entitygl_template.csv" target="_blank">{property} GL Assignment</a></li><li><a href="resources/import/department_template.csv" target="_blank">Dept</a></li><li><a href="resources/import/department_type_template.csv" target="_blank">Dept Type</a></li></ul>' :
+    '<b>{property} Worksheets</b>' +
+        '<ul>' +
+            '<li><a href="resources/import/entity_template.csv" target="_blank">{property}</a></li>' +
+            '<li><a href="resources/import/entitygl_template.csv" target="_blank">{property} GL Assignment</a></li>' +
+            '<li><a href="resources/import/department_template.csv" target="_blank">Dept</a></li>' +
+            '<li><a href="resources/import/department_type_template.csv" target="_blank">Dept Type</a></li>' +
+        '</ul>',
+
+    '<b>User Worksheets</b><ul><li><a href="resources/import/user_template.csv" target="_blank">Users</a></li><li><a href="resources/import/userentity_template.csv" target="_blank">User {property} Assignment</a></li></ul>' :
+    '<b>User Worksheets</b>' +
+        '<ul>' +
+            '<li><a href="resources/import/user_template.csv" target="_blank">Users</a></li>' +
+            '<li><a href="resources/import/userentity_template.csv" target="_blank">User {property} Assignment</a></li>' +
+        '</ul>',
+
+    '<b>Help</b><ul><li><a href="resources/help/upload_help.pdf" target="_blank">Upload</a></li></ul>' :
+	'<b>Help</b>' +
+	    '<ul>' +
+	        '<li><a href="resources/help/upload_help.pdf" target="_blank">Upload</a></li>' +
+	    '</ul>',
+
+	'<b>Vendor Worksheets</b><ul><li><a href="resources/import/vendor_template.csv" target="_blank">Vendors</a></li><li><a href="resources/import/vendorgl_template.csv" target="_blank">Vendor GL Assignment</a></li><li><a href="resources/import/vendorfav_template.csv" target="_blank">Vendor Favorites</a></li><li><a href="resources/import/vendorinsurance_template.csv" target="_blank">Vendor Insurance</a></li><li><a href="resources/import/vendorutility_template.csv" target="_blank">Vendor Utility Account</a></li></ul>' :
+    '<b>Vendor Worksheets</b>' +
+        '<ul>' +
+            '<li><a href="resources/import/vendor_template.csv" target="_blank">Vendors</a></li>' +
+            '<li><a href="resources/import/vendorgl_template.csv" target="_blank">Vendor GL Assignment</a></li>' +
+            '<li><a href="resources/import/vendorfav_template.csv" target="_blank">Vendor Favorites</a></li>' +
+            '<li><a href="resources/import/vendorinsurance_template.csv" target="_blank">Vendor Insurance</a></li>' +
+            '<li><a href="resources/import/vendorutility_template.csv" target="_blank">Vendor Utility Account</a></li>' +
+        '</ul>',
+
+    '<b>Custom Field Worksheets</b><ul><li><a href="resources/import/customfields_template.csv" target="_blank">Custom Field - Header</a></li><li><a href="resources/import/customfields_template.csv" target="_blank">Custom Field - Line Item</a></li></ul>' :
+    '<b>Custom Field Worksheets</b>' +
+        '<ul>' +
+            '<li><a href="resources/import/customfields_template.csv" target="_blank">Custom Field - Header</a></li>' +
+            '<li><a href="resources/import/customfields_template.csv" target="_blank">Custom Field - Line Item</a></li>' +
+        '</ul>',
+
+    '<b>Splits Worksheets</b><ul><li><a href="resources/import/split_template.csv" target="_blank">Splits</a></li></ul>' :
+    '<b>Splits Worksheets</b>' +
+        '<ul>' +
+            '<li><a href="resources/import/split_template.csv" target="_blank">Splits</a></li>' +
+        '</ul>',
+
+    'Contact Name'          : 'Contact Name',
+    'Address1'              : 'Address1',
+    'Address2'              : 'Address2',
+	'PO Matching Threshhold': 'PO Matching Threshhold',
+	'Custom Field 1'        : 'Custom Field 1',
+	'Custom Field 2'        : 'Custom Field 2',
+	'Custom Field 3'        : 'Custom Field 3',
+	'Custom Field 4'        : 'Custom Field 4',
+
+	'Bedrooms'  : 'Bedrooms',
+	'Bathrooms' : 'Bathrooms',
+	'Carpet Yd' : 'Carpet Yd',
+	'Vinyl Yd'  : 'Vinyl Yd',
+	'Tile Yd'   : 'Tile Yd',
+	'Harwood Yd': 'Harwood Yd',
+	'Carpet Ft' : 'Carpet Ft',
+	'Vinyl Ft'  : 'Vinyl Ft',
+	'Tile Ft'   : 'Tile Ft',
+	'Harwood Ft': 'Harwood Ft',
+
+	'User {property} Assignment': 'User {property} Assignment',
+	'User {property}'           : 'User {property}',
+	'Create New {property}'     : 'Create New {property}',
+
+	'Select {regions}...'  : 'Select {regions}...',
+	'Multiple {properties}': 'Multiple {properties}',
+	'All {properties}'     : 'All {properties}',
+
+	'Utility Account': 'Utility Account',
+
+	'Choose {property} first': 'Choose {property} first',
+	'Default GL Account'     : 'Default GL Account',
+	'Meter Number'           : 'Meter Number',
+	'Default {unit}'         : 'Default {unit}',
+	'Account Number'         : 'Account Number',
+	'Utility Type'           : 'Utility Type',
+
+	'{unit} Type'                               : '{unit} Type',
+	'View {unit}s Not Assigned to a {unit} Type': 'View {unit}s Not Assigned to a {unit} Type',
+	'Add {unit} Type'                           : 'Add {unit} Type',
+
+	/**
+	 * INVOICE SECTION
+	 */
+
+	'Created On'           : 'Created On',
+	'Created By'           : 'Created By',
+	'Remittance Advice'    : 'Remittance Advice',
+	'Pay By'               : 'Pay By',
+	'Invoice Total'        : 'Invoice Total',
+	'Invoice Date'         : 'Invoice Date',
+	'Invoice {postPeriod}': 'Invoice {postPeriod}',
+	'Associated POs'       : 'Associated POs',
+	'Vendor Code'          : 'Vendor Code',
+	'Cycle From'           : 'Cycle From',
+	'Cycle To'             : 'Cycle To'
 
-/**
- * CONTEXT PICKER
- */
-Ext.define('NP.locale.en.view.shared.ContextPicker', {
-	override: 'NP.view.shared.ContextPicker',
-	
-	requires: ['NP.lib.core.Config'],
-
-	propertyComboText       : NP.lib.core.Config.getSetting('PN.main.PropertyLabel'),
-    regionComboText         : NP.lib.core.Config.getSetting('PN.Main.RegionLabel'),
-    currentPropertyRadioText: 'Current ' + NP.lib.core.Config.getSetting('PN.main.PropertyLabel'),
-    regionRadioText         : NP.lib.core.Config.getSetting('PN.Main.RegionLabel'),
-    allPropertiesRadioText  : 'All ' + NP.lib.core.Config.getSetting('PN.Main.PropertiesLabel')
-});
-
-/**
- * ADDRESS BLOCK
- */
-Ext.define('NP.locale.en.view.shared.Address', {
-	override: 'NP.view.shared.Address',
-
-	streetFieldText: 'Street',
-    cityFieldText  : 'City',
-    stateFieldText : 'State',
-    zipFieldText   : 'Zip'
-});
-
-/**
- * BUTTONS
- */
-Ext.define('NP.locale.en.view.shared.button.Activate', {
-	override: 'NP.view.shared.button.Activate',
-
-	text: 'Activate'
-});
-
-Ext.define('NP.locale.en.view.shared.button.Back', {
-	override: 'NP.view.shared.button.Back',
-
-	text: 'Back'
-});
-
-Ext.define('NP.locale.en.view.shared.button.Camera', {
-	override: 'NP.view.shared.button.Camera',
-
-	text: 'Camera'
-});
-
-Ext.define('NP.locale.en.view.shared.button.Cancel', {
-	override: 'NP.view.shared.button.Cancel',
-
-	text: 'Cancel'
-});
-
-Ext.define('NP.locale.en.view.shared.button.Delete', {
-	override: 'NP.view.shared.button.Delete',
-
-	text: 'Delete'
-});
-
-Ext.define('NP.locale.en.view.shared.button.Edit', {
-	override: 'NP.view.shared.button.Edit',
-
-	text: 'Edit'
-});
-
-Ext.define('NP.locale.en.view.shared.button.Hourglass', {
-	override: 'NP.view.shared.button.Hourglass',
-
-	text: 'Place On Hold'
-});
-
-Ext.define('NP.locale.en.view.shared.button.Inactivate', {
-	override: 'NP.view.shared.button.Inactivate',
-
-	text: 'Inactivate'
-});
-
-Ext.define('NP.locale.en.view.shared.button.New', {
-	override: 'NP.view.shared.button.New',
-
-	text: 'New'
-});
-
-Ext.define('NP.locale.en.view.shared.button.Save', {
-	override: 'NP.view.shared.button.Save',
-
-	text: 'Save'
-});
-
-Ext.define('NP.locale.en.view.shared.button.SaveAndAdd', {
-	override: 'NP.view.shared.button.SaveAndAdd',
-
-	text: 'Save And Add Another'
-});
-
-Ext.define('NP.locale.en.view.shared.button.Upload', {
-	override: 'NP.view.shared.button.Upload',
-
-	text: 'Upload'
-});
-
-Ext.define('NP.locale.en.view.shared.button.View', {
-	override: 'NP.view.shared.button.View',
-
-	text: 'View'
-});
-
-/**
- * VIEWPORT
- */
-
-// Home
-Ext.define('NP.locale.en.view.viewport.Home', {
-	override: 'NP.view.viewport.Home',
-
-	title          : 'Home',
-	summaryStatText: 'Summary Statistics'
-});
-
-// Summary Stat Names
-Ext.define('NP.locale.en.store.system.SummaryStats', {
-	override: 'NP.store.system.SummaryStats',
-
-	invoicesToApproveText: 'Invoices to Approve',
-	invoicesOnHoldText   : 'Invoices on Hold',
-	invoicesCompletedText: 'Completed Invoices to Approve',
-	invoicesRejectedText : 'Rejected Invoices',
-	invoicesMyText       : 'My Invoices'
-});
-
-/**
- * GRID COLUMNS
- */
-
-Ext.define('NP.locale.en.view.shared.gridcol.InvoiceAmount', {
-	override: 'NP.view.shared.gridcol.InvoiceAmount',
-
-	text: 'Amount'
-});
-
-Ext.define('NP.locale.en.view.shared.gridcol.InvoiceDate', {
-	override: 'NP.view.shared.gridcol.InvoiceDate',
-
-	text: 'Date'
-});
-
-Ext.define('NP.locale.en.view.shared.gridcol.InvoiceDaysOnHold', {
-	override: 'NP.view.shared.gridcol.InvoiceDaysOnHold',
-
-	text: 'Number of Days On Hold'
-});
-
-Ext.define('NP.locale.en.view.shared.gridcol.InvoiceDueDate', {
-	override: 'NP.view.shared.gridcol.InvoiceDueDate',
-
-	text: 'Due Date'
-});
-
-Ext.define('NP.locale.en.view.shared.gridcol.InvoiceHoldDate', {
-	override: 'NP.view.shared.gridcol.InvoiceHoldDate',
-
-	text: 'On Hold Date'
-});
-
-Ext.define('NP.locale.en.view.shared.gridcol.InvoiceNeededByDate', {
-	override: 'NP.view.shared.gridcol.InvoiceNeededByDate',
-
-	text: 'Needed By'
-});
-
-Ext.define('NP.locale.en.view.shared.gridcol.InvoiceNumber', {
-	override: 'NP.view.shared.gridcol.InvoiceNumber',
-
-	text: 'Invoice Number'
-});
-
-Ext.define('NP.locale.en.view.shared.gridcol.InvoiceOnHoldBy', {
-	override: 'NP.view.shared.gridcol.InvoiceOnHoldBy',
-
-	text: 'On Hold By'
-});
-
-Ext.define('NP.locale.en.view.shared.gridcol.InvoicePendingDays', {
-	override: 'NP.view.shared.gridcol.InvoicePendingDays',
-
-	text: 'Days Pending'
-});
-
-Ext.define('NP.locale.en.view.shared.gridcol.InvoicePeriod', {
-	override: 'NP.view.shared.gridcol.InvoicePeriod',
-
-	text: 'Post Date'
-});
-
-Ext.define('NP.locale.en.view.shared.gridcol.PriorityFlag', {
-	override: 'NP.view.shared.gridcol.PriorityFlag',
-
-	text: 'Priority'
-});
-
-Ext.define('NP.locale.en.view.vendor.gridcol.VendorName', {
-	override: 'NP.view.vendor.gridcol.VendorName',
-
-	text: 'Vendor'
-});
-
-
-/**
- * INVOICE SECTION
- */
-
-// Invoice Register
-Ext.define('NP.locale.en.view.invoice.Register', {
-	override: 'NP.view.invoice.Register',
-
-	titleText             : 'Invoice Register',
-	getPOBtnText          : 'Get PO',
-	newInvoiceBtnText     : 'New Invoice',
-	reportsBtnText        : 'Invoice Reports',
-	searchBtnText         : 'Search',
-	receiptRegisterBtnText: 'Receipt Register',
-	openTabText           : 'Open',
-	rejectedTabText       : 'Rejected',
-	overdueTabText        : 'Overdue',
-	templateTabText       : 'Template',
-	holdTabText           : 'On Hold',
-	templateTabText       : 'Template',
-	pendingTabText        : 'Pending',
-	approvedTabText       : 'Approved',
-	submittedTabText      : 'Submitted for Payment',
-	transferredTabText    : 'Transferred to GL',
-	paidTabText           : 'Paid',
-	voidTabText           : 'Void'
-});
-
-Ext.define('NP.locale.en.view.invoice.Register', {
-	override: 'NP.view.invoice.Register',
-
-	titleText             : 'Invoice Register',
-	getPOBtnText          : 'Get PO',
-	newInvoiceBtnText     : 'New Invoice',
-	reportsBtnText        : 'Invoice Reports',
-	searchBtnText         : 'Search',
-	receiptRegisterBtnText: 'Receipt Register'
-});
-
-// Abstract register grid
-Ext.define('NP.locale.en.view.invoice.AbstractRegisterGrid', {
-	override: 'NP.view.invoice.AbstractRegisterGrid',
-
-	vendorColumnText  : 'Vendor',
-	amountColumnText  : 'Amount',
-	propertyColumnText: NP.lib.core.Config.getSetting('PN.main.PropertyLabel'),
-	numberColumnText  : 'Invoice Number',
-	dateColumnText    : 'Invoice Date'
-});
-
-// Open register grid
-Ext.define('NP.locale.en.view.invoice.grid.RegisterOpen', {
-	override: 'NP.view.invoice.grid.RegisterOpen',
-
-	title: 'Open'
-});
-
-// Rejected register grid
-Ext.define('NP.locale.en.view.invoice.grid.RegisterRejected', {
-	override: 'NP.view.invoice.grid.RegisterRejected',
-
-	title: 'Rejected'
-});
-
-// Rejected register grid
-Ext.define('NP.locale.en.view.invoice.grid.RegisterApproved', {
-	override: 'NP.view.invoice.grid.RegisterApproved',
-
-	title: 'Approved'
-});
-
-// Rejected register grid
-Ext.define('NP.locale.en.view.invoice.grid.RegisterOnHold', {
-	override: 'NP.view.invoice.grid.RegisterOnHold',
-
-	title: 'On Hold'
-});
-
-// Rejected register grid
-Ext.define('NP.locale.en.view.invoice.grid.RegisterOverdue', {
-	override: 'NP.view.invoice.grid.RegisterOverdue',
-
-	title: 'Overdue'
-});
-
-// Rejected register grid
-Ext.define('NP.locale.en.view.invoice.grid.RegisterPaid', {
-	override: 'NP.view.invoice.grid.RegisterPaid',
-
-	title: 'Paid'
-});
-
-// Rejected register grid
-Ext.define('NP.locale.en.view.invoice.grid.RegisterPending', {
-	override: 'NP.view.invoice.grid.RegisterPending',
-
-	title: 'Pending'
-});
-
-// Rejected register grid
-Ext.define('NP.locale.en.view.invoice.grid.RegisterSubmitted', {
-	override: 'NP.view.invoice.grid.RegisterSubmitted',
-
-	title: 'Submitted for Payment'
-});
-
-// Rejected register grid
-Ext.define('NP.locale.en.view.invoice.grid.RegisterTemplate', {
-	override: 'NP.view.invoice.grid.RegisterTemplate',
-
-	title: 'Template'
-});
-
-// Rejected register grid
-Ext.define('NP.locale.en.view.invoice.grid.RegisterTransferred', {
-	override: 'NP.view.invoice.grid.RegisterTransferred',
-
-	title: 'Transferred to GL'
-});
-
-// Rejected register grid
-Ext.define('NP.locale.en.view.invoice.grid.RegisterVoid', {
-	override: 'NP.view.invoice.grid.RegisterVoid',
-
-	title: 'Void'
-});
-
-/**
- * MY SETTINGS SECTION
- */
-Ext.define('NP.locale.en.controller.MySettings', {
-	override: 'NP.controller.MySettings',
-
-	changesSavedText                : 'Changes saved successfully',
-	errorDialogTitleText            : 'Error',
-	registerNewDeviceDialogTitleText: 'Register New Device?',
-	registerNewDeviceDialogText     : 'Registering a new device will disable the active one. Do you still want to proceed anyway?',
-	disableMobileDialogTitleText    : 'Disable Mobile Number?',
-	disableMobileDialogText         : 'Are you sure you want to disable this mobile number?',
-	cancelDelegDialogTitleText      : 'Cancel Delegation?',
-	cancelDelegDialogText           : 'Are you sure you want to cancel this delegation?',
-	activeDelegErrorTitleText       : 'Active Delegation',
-	activeDelegErrorText            : 'You have an active delegation. You cannot delegate to another user until that delegation expires or is cancelled.'
-});
-
-Ext.define('NP.locale.en.view.mySettings.Overview', {
-	override: 'NP.view.mySettings.Overview',
-
-	introText         : 'My Settings allows users to change their personal user information as well as manage certain system settings. The following tabs contain information to allow the user to manage the following information:',
-	userInfoText      : '<b>User Information</b> - allows the user to change their password and update personal information such as their contact information and email address.',
-	settingsText      : '<b>Settings</b> - allows the user to configure their dashboard default settings of what property they want to automatically log into as well as what summary statistic they want to auto display.',
-	displayText       :  '<b>Display</b> - allows the user to choose which default percentage setting they want to view on split screen views.  Note this is only applicable for users with access to view images in the system.',
-	emailNotifText    : '<b>Email Notification</b>- allows the user to manage specific email alert frequencies for Purchase Orders and/or Invoices that require approval and for budget overage notifications.',
-	mobileSettingsText: '<b>Mobile Settings</b>- allows users to register their mobile phone to begin using the Mobile Application for PO, Receipt and Invoice approvals. If you do not see this tab display, your role right has not been granted access to this section.',
-	userDelegText     : '<b>User Delegation</b> - allows the user to delegate approval authority to another user while they are away.  Please note this will appear only on the Settings tab and for users who have been given rights to this functionality.'
-});
-
-Ext.define('NP.locale.en.view.mySettings.Display', {
-	override: 'NP.view.mySettings.Display',
-
-	title                      : 'Display',
-	viewingSizeLabelText       : 'Split Screen Viewing Size',
-	customBoxText              : 'Custom',
-	viewingOrientationLabelText: 'Split Screen Viewing Orientation',
-	verticalLabelText          : 'Vertical',
-	horizontalLabelText        : 'Horizontal',
-	imagePositionLabelText     : 'Split Screen Image Position',
-	leftPositionText           : 'Left (Bottom for Horizontal View)',
-	rightPositionText          : 'Right (Top for Horizontal View)',
-	defaultViewLabelText       : 'Default View',
-	splitScreenViewText        : 'Split Screen',
-	poReceiptInvoiceViewText   : 'PO / Receipt / Invoice'
-});
-
-Ext.define('NP.locale.en.view.mySettings.UserDelegation', {
-	override: 'NP.view.mySettings.UserDelegation',
-
-	title: 'User Delegation'
-});
-
-Ext.define('NP.locale.en.view.mySettings.UserDelegationMain', {
-	override: 'NP.view.mySettings.UserDelegationMain',
-
-	addDelegationText : 'Add a Delegation',
-	delegationFromText: 'Users you delegated to',
-	delegationToText  : 'Users who delegated to you'
-});
-
-Ext.define('NP.locale.en.view.mySettings.UserDelegationGrid', {
-	override: 'NP.view.mySettings.UserDelegationGrid',
-
-	emptyText: 'No delegations found.'
-});
-
-Ext.define('NP.locale.en.view.mySettings.UserDelegationForm', {
-	override: 'NP.view.mySettings.UserDelegationForm',
-
-	requires: ['NP.lib.core.Config'],
-
-	startDateLabelText      : 'Start Date',
-    stopDateLabelText       : 'Stop Date',
-    delegateToLabelText     : 'Delegate to Whom',
-    delegPropertiesLabelText: NP.Config.getSetting('PN.Main.PropertiesLabel') + ' to Delegate',
-    delegPropertiesEmptyText: 'Select ' + NP.Config.getSetting('PN.Main.PropertiesLabel') + '...'
-});
-
-
-/**
- * USER MANAGER SECTION
- */
-Ext.define('NP.locale.en.controller.UserManager', {
-	override: 'NP.controller.UserManager'
-});
-
-Ext.define('NP.locale.en.view.user.UserManager', {
-	override: 'NP.view.user.UserManager',
-
-	title: 'User Manager'
-});
-
-Ext.define('NP.locale.en.view.user.Overview', {
-	override: 'NP.view.user.Overview',
-
-	title           : 'Overview',
-	newUserBtnLabel : 'Create a New User',
-	newGroupBtnLabel: 'Create a New User Group'
-});
-
-Ext.define('NP.locale.en.view.user.Users', {
-	override: 'NP.view.user.Users',
-
-	title                : 'Users'
-});
-
-Ext.define('NP.locale.en.view.user.UsersGrid', {
-	override: 'NP.view.user.UsersGrid',
-
-	createNewUserBtnLabel: 'Create New User',
-    nameColText          : 'Name',
-    groupColText         : 'Group',
-    usernameColText      : 'Username',
-    lastUpdatedColText   : 'Last Updated',
-    statusColText        : 'Status'
-});
-
-Ext.define('NP.locale.en.view.user.UsersForm', {
-	override: 'NP.view.user.UsersForm',
-
-	delegationTabText: 'Delegation',
-	infoTabText      : 'User Information'
-});
-
-Ext.define('NP.locale.en.view.user.UsersFormDetails', {
-	override: 'NP.view.user.UsersFormDetails',
-
-	title                     : 'User Details',
-	usernameFieldLabel        : 'Username',
-	currentPasswordFieldLabel : 'Current Password',
-	passwordFieldLabel        : 'New Password',
-	passwordDescriptionText   : 'The minimum password length required is 6 characters. Password security requires that a minimum of one letter, number and special character be used when setting up user passwords in the system. Special characters include !, @, #, $, %, &, *, and ?.',
-	passwordFieldConfirmLabel : 'Confirm Password',
-	passwordMatchErrorText    : 'The password fields need to match',
-	positionFieldLabel        : 'Position',
-	startDateFieldLabel       : 'Start Date',
-	endDateFieldLabel         : 'End Date',
-	securityQuestionFieldLabel: 'Security Question',
-	securityAnswerFieldLabel  : 'Answer',
-});
-
-Ext.define('NP.locale.en.view.user.UsersFormPermissions', {
-	override: 'NP.view.user.UsersFormPermissions',
-
-	requires: ['NP.lib.core.Config'],
-
-	title              : 'Permissions',
-	codingPropertyLabel: NP.Config.getPropertyLabel(true) + ' for Coding Access Only'
-});
-
-Ext.define('NP.locale.en.view.user.Groups', {
-	override: 'NP.view.user.Groups',
-
-	title: 'User Groups'
-});
-
-Ext.define('NP.locale.en.view.user.GroupsForm', {
-	override: 'NP.view.user.GroupsForm',
-
-	createCopyBtnText: 'Create Copy'
-});
-
-Ext.define('NP.locale.en.view.user.GroupsFormInfo', {
-	override: 'NP.view.user.GroupsFormInfo',
-
-	title              : 'Group Information',
-	roleNameFieldLabel : 'Group Name',
-	nextLevelFieldLabel: 'Next Level'
-});
-
-Ext.define('NP.locale.en.view.user.GroupsFormPermissions', {
-	override: 'NP.view.user.GroupsFormPermissions',
-
-	title             : 'Responsibilities',
-	expandAllBtnText  : 'Expand All',
-	collapseAllBtnText: 'Collapse All'
-});
-
-Ext.define('NP.locale.en.view.user.GroupsGrid', {
-	override: 'NP.view.user.GroupsGrid',
-
-	createNewGroupBtnLabel: 'Create New Group',
-    createCopyBtnLabel    : 'Create Copy',
-    nameColText           : 'Name',
-    usersColText          : 'Users',
-    lastUpdatedColText    : 'Last Updated',
-    moduleFilterLabel     : 'Function'
-});
-
-/**
- * MESSAGE CENTER SECTION
- */
- Ext.define('NP.locale.en.controller.MessageCenter', {
-	override: 'NP.controller.MessageCenter',
-	
-	saveSuccessText      : 'Your changes were saved.',
-	deleteDialogTitleText: 'Delete Message?',
-	deleteDialogText     : 'Are you sure you want to delete this message?',
-	deleteSuccessText    : 'Message succesfully deleted',
-	deleteFailureText    : 'There was an error deleting the message. Please try again.',
-	errorDialogTitleText : 'Error'
-});
-
- Ext.define('NP.locale.en.view.messageCenter.MessageForm', {
-	override: 'NP.view.messageCenter.MessageForm',
-	
-	title                 : 'Message',
-	typeFieldLabel        : 'Message Type',
-	titleFieldLabel       : 'Title of Message',
-	messageFieldLabel     : 'Message',
-	sentFieldLabel        : 'Sent Date',
-	displayUntilFieldLabel: 'Display Until Date',
-	messageForFieldLabel  : 'Message For',
-	userUnassignedText    : 'Users',
-	userAssignedText      : 'Users to Send To',
-	groupUnassignedText   : 'Groups',
-	groupAssignedText     : 'Groups to Send To',
-	pastErrorText         : 'cannot be in the past',
-	laterThanErrorText    : 'must be a later date than'
-});
-
-/**
- * PROPERTY SETUP SECTION
- */
-Ext.define('NP.locale.en.controller.PropertySetup', {
-	override: 'NP.controller.PropertySetup',
-	
-	requires: ['NP.lib.core.Config'],
-
-	errorDialogTitleText      : 'Error',
-	placeOnHoldDialogTitleText: 'Place On Hold?',
-	placeOnHoldDialogText     : 'Are you sure you want to place the selected ' + NP.Config.getPropertyLabel(true).toLowerCase() + ' on hold?',
-	onHoldSuccessText         : NP.Config.getPropertyLabel(true) + ' were placed on hold',
-	onHoldFailureText         : 'There was an error placing ' + NP.Config.getPropertyLabel(true) + ' on hold',
-	activateDialogTitleText : 'Activate?',
-	activateDialogText      : 'Are you sure you want to activate the selected ' + NP.Config.getPropertyLabel(true).toLowerCase() + '?',
-	activateSuccessText     : NP.Config.getPropertyLabel(true) + ' were activated',
-	activateFailureText     : 'There was an error activating ' + NP.Config.getPropertyLabel(true),
-	inactivateDialogTitleText : 'Inactivate?',
-	inactivateDialogText      : 'Are you sure you want to inactivate the selected ' + NP.Config.getPropertyLabel(true).toLowerCase() + '?',
-	inactivateSuccessText     : NP.Config.getPropertyLabel(true) + ' were inactivated',
-	inactivateFailureText     : 'There was an error inactivating ' + NP.Config.getPropertyLabel(true),
-	changesSavedText          : 'Changes saved successfully',
-	invalidDayErrorText       : 'Invalid day',
-	unassignedUniTypeTitle    : 'View ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + 's Not Assigned to a ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + ' Type',
-	newPropertyTitleText      : 'New Property',
-	editPropertyTitleText     : 'Editing'
-});
-
-Ext.define('NP.locale.en.view.propertySetup.Overview', {
-	override: 'NP.view.property.Overview',
-	
-	requires: ['NP.lib.core.Config'],
-
-	introText         : 'The ' + NP.Config.getPropertyLabel() + ' Setup section lists all ' + NP.Config.getPropertyLabel(true).toLowerCase() +', broken into three tabs: Current, On Hold, and Inactive.  Current ' + NP.Config.getPropertyLabel(true).toLowerCase() + ' includes the full list of ' + NP.Config.getPropertyLabel(true).toLowerCase() + ' that are available for use in the system.  On Hold ' + NP.Config.getPropertyLabel(true).toLowerCase() + ' includes the full list of ' + NP.Config.getPropertyLabel(true).toLowerCase() + ' that are in the process of being set up in the system or are in the process of being made inactive.  On Hold ' + NP.Config.getPropertyLabel(true).toLowerCase() + ' can not be assigned to a PO or Invoice but their historical information can still be included on reports.  Inactive ' + NP.Config.getPropertyLabel(true).toLowerCase() + ' include the full list of ' + NP.Config.getPropertyLabel(true).toLowerCase() + ' that are no longer in use on the system.  Inactive ' + NP.Config.getPropertyLabel(true).toLowerCase() +  ' are not available to be included on any reports.',
-	reminderText      : '<b><i>Reminder</i></b>, the following fields are required to be completed before a new ' + NP.Config.getPropertyLabel().toLowerCase() + ' can be added to the system.',
-	propertyStatusText: '<b>' + NP.Config.getPropertyLabel() + ' Status: </b>defaults to &quot;On Hold&quot; once the ' + NP.Config.getPropertyLabel().toLowerCase() + ' has been saved',
-	propertyCodeText  : '<b>' + NP.Config.getPropertyLabel() + ' Code:</b> a unique code identifier for this ' + NP.Config.getPropertyLabel().toLowerCase() + ' found in your GL Package',
-	propertyApCodeText: '<b>' + NP.Config.getPropertyLabel() + ' AP Code:</b> use this to further identify the ' + NP.Config.getPropertyLabel().toLowerCase() + ' (this is not required)',
-	departmentCodeText: '<b>Department Code:</b> use this in conjunction with the AP Code to even further identify the ' + NP.Config.getPropertyLabel().toLowerCase() + ' (this is not required)',
-	propertyNameText  : '<b>' + NP.Config.getPropertyLabel() + ' Name:</b> enter the name that should be used to refer to the ' + NP.Config.getPropertyLabel().toLowerCase() + '',
-	totalUnitsText    : '<b>Total # of Units/Square Feet:</b> enter the number of units or square feet in the building',
-	attentionText     : '<b>Attention: </b>enter the name of the contact person for the ' + NP.Config.getPropertyLabel().toLowerCase() + '',
-	addressText       : '<b>Address, City, State, Zip: </b>enter the address of the ' + NP.Config.getPropertyLabel().toLowerCase() + '',
-	phoneNumberText   : '<b>Phone number: </b>enter the phone number of the ' + NP.Config.getPropertyLabel().toLowerCase() + '',
-	regionText        : '<b>' + NP.Config.getSetting('PN.main.RegionLabel', 'Region') + ': </b>use the drop down list to select the ' + NP.Config.getSetting('PN.main.RegionLabel', 'Region') + ' where the ' + NP.Config.getPropertyLabel().toLowerCase() + ' is located.  ',
-	syncText          : '<b>Sync ' + NP.Config.getPropertyLabel() + ':</b> Yes/No - indicate whether the ' + NP.Config.getPropertyLabel().toLowerCase() + ' should sync actuals, invoices, and budgets with the backend accounting package',
-	accrualCashText   : '<b>Accrual or Cash:</b> indicate whether the ' + NP.Config.getPropertyLabel().toLowerCase() + ' uses cash or accrual based accounting methods',
-	calendarText      : '<b>Closing Calendar:</b> indicates which closing calendar (which day of the month the fiscal period rolls) will be used by the ' + NP.Config.getPropertyLabel().toLowerCase() + ' ',
-	salesTaxText      : '<b>' + NP.Config.getPropertyLabel() + ' ' + NP.Config.getSetting('PN.General.salesTaxTerm', 'Sales Tax') + ':</b>  enter the default ' + NP.Config.getSetting('PN.General.salesTaxTerm', 'Sales Tax').toLowerCase() + ' for the ' + NP.Config.getPropertyLabel().toLowerCase() + ' that will be used to assist with the entry of ' + NP.Config.getSetting('PN.General.salesTaxTerm', 'Sales Tax').toLowerCase() + ' on new purchase orders and invoices; enter the ' + NP.Config.getSetting('PN.General.salesTaxTerm', 'Sales Tax').toLowerCase() + ' percentage as a decimal point (e.g., enter a 7% tax as .07)',
-	thresholdText     : '<b>Acceptable PO Matching Threshold:</b>  enter the percentage an Invoice amount can exceed its Purchase Order amount before the invoice is routed for approval; enter the percentage as a whole number (e.g., enter 5% as 5) ',
-	startMonthText    : '<b>Fiscal Calendar Start Month:</b>  indicates which month of the year the fiscal calendar begins'
-});
-
-Ext.define('NP.locale.en.view.property.PropertiesFormInfo', {
-	override: 'NP.view.property.PropertiesFormInfo',
-	
-	requires: ['NP.lib.core.Config'],
-
-	title                  : NP.Config.getPropertyLabel() + ' Info',
-	codeFieldText          : NP.Config.getPropertyLabel() + ' Code',
-	apCodeFieldText        : NP.Config.getPropertyLabel() + ' AP Code',
-	deptCodeFieldText      : 'Department Code',
-	propertyNameFieldText  : NP.Config.getPropertyLabel() + ' Name',
-	totalUnitsFieldText    : 'Total No. of ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + 's',
-	attnFieldText          : 'Attention',
-	addressFieldText       : 'Address',
-	phoneFieldText         : 'Phone Number',
-	faxFieldText           : 'Fax Number',
-	billToFieldText        : 'Bill To Address Option',
-	billToPropertyFieldText: 'Default Bill To Property',
-	shipToFieldText        : 'Ship To Address Option',
-	shipToPropertyFieldText: 'Default Ship To Property',
-	syncFieldText          : 'Sync ' + NP.Config.getPropertyLabel(),
-	accrualCashFieldText   : 'Accrual or Cash',
-	nexusServicesFieldText : 'Nexus Services',
-	vendorCatalogFieldText : 'Vendor Catalog',
-	intPackageFieldText    : 'Integration Package',
-	calendarFieldText      : 'Closing Calendar',
-	volumeTypeFieldText    : 'Volume Type'
-});
-
-Ext.define('NP.locale.en.view.property.PropertiesFormAccounting', {
-	override: 'NP.view.property.PropertiesFormAccounting',
-	
-	title: 'Accounting Info',
-    thresholdFieldText: 'Acceptable PO Matching Threshold (%)',
-    fiscalCalStartFieldText: 'Fiscal Calendar Start Month'
-});
-
-Ext.define('NP.locale.en.view.property.PropertiesFormGl', {
-	override: 'NP.view.property.PropertiesFormGl',
-	
-	requires: ['NP.lib.core.Config'],
-	
-	title        : 'GL Assignments',
-	fromTitleText: 'Assigned',
-	toTitleText  : 'Unassigned'
-});
-
-Ext.define('NP.locale.en.view.property.PropertiesFormCal', {
-	override: 'NP.view.property.PropertiesFormCal',
-	
-	title: 'Fiscal Calendars'
-});
-
-Ext.define('NP.locale.en.view.property.UnitGrid', {
-	override: 'NP.view.property.UnitGrid',
-	
-	addButtonText   : 'Add',
-    removeButtonText: 'Remove',
-    gridCodeColText : 'Code',
-    gridNameColText : 'Name'
-});
-
-Ext.define('NP.locale.en.view.property.UnitForm', {
-	override: 'NP.view.property.UnitForm',
-	
-	codeLabelText: 'Code',
-	nameLabelText: 'Name',
-	typeLabelText: 'Type'
-});
-
-Ext.define('NP.locale.en.view.property.PropertiesFormUnitMeasurements', {
-	override: 'NP.view.property.PropertiesFormUnitMeasurements',
-	
-	measurementTitleText: 'Measurements'
-});
-
-/**
- * USER MANAGER SECTION
- */
-
-// Delegation grid columns
-Ext.define('NP.locale.en.view.user.gridcol.DelegationCreatedBy', {
-	override: 'NP.view.user.gridcol.DelegationCreatedBy',
-
-	text: 'Setup By'
-});
-
-Ext.define('NP.locale.en.view.user.gridcol.DelegationEndDate', {
-	override: 'NP.view.user.gridcol.DelegationEndDate',
-
-	text: 'End Date'
-});
-
-Ext.define('NP.locale.en.view.user.gridcol.DelegationFromName', {
-	override: 'NP.view.user.gridcol.DelegationFromName',
-
-	text: 'Name'
-});
-
-Ext.define('NP.locale.en.view.user.gridcol.DelegationStartDate', {
-	override: 'NP.view.user.gridcol.DelegationStartDate',
-
-	text: 'Start Date'
-});
-
-Ext.define('NP.locale.en.view.user.gridcol.DelegationStatus', {
-	override: 'NP.view.user.gridcol.DelegationStatus',
-
-	text: 'Status'
-});
-
-Ext.define('NP.locale.en.view.user.gridcol.DelegationToName', {
-	override: 'NP.view.user.gridcol.DelegationToName',
-
-	text: 'Name'
-});
-
-Ext.define('NP.locale.en.view.user.gridcol.DelegationCancel', {
-	override: 'NP.view.user.gridcol.DelegationToName',
-
-	text: 'Cancel'
-});
-
-Ext.define('NP.locale.en.view.user.gridcol.DelegationView', {
-	override: 'NP.view.user.gridcol.DelegationToName',
-
-	text: 'Name'
-});
-
-/**
- * SYSTEM SETUP SECTION
- */
-
-Ext.define('NP.locale.en.controller.SystemSetup', {
-	override: 'NP.controller.SystemSetup',
-
-	changesSavedText       : 'Changes saved successfully',
-	errorDialogTitleText   : 'Error',
-	deleteSplitDialogTitle : 'Delete Split?',
-	deleteSplitsDialogText : 'Are you sure you want to delete the selected split(s)?',
-	deleteSplitDialogText  : 'Are you sure you want to delete this split?',
-	editSplitFormTitle     : 'Editing',
-	newSplitFormTitle      : 'New Split',
-	intPkgChangeDialogTitle: 'Change integration package?',
-	intPkgChangeDialogText : 'Are you sure you want to change integration package? Doing so will clear the entire form, removing all splits you have entered.'
-});
-
-Ext.define('NP.locale.en.controller.systemSetup.Main', {
-	override: 'NP.view.systemSetup.Main',
-
-	title: 'System Setup'
-});
-
-Ext.define('NP.locale.en.view.systemSetup.Overview', {
-	override: 'NP.view.systemSetup.Overview',
-
-	title						: 'Overview',
-	introText					: 'Much of the information in System Setup is established at the time that the system is first deployed or a new feature is added.  However, the system administrator can access this information, as necessary, for review or update.',
-	settingsText				: '<b>Settings</b> - this section should be accessed only by your NexusPayables support staff.',
-	workflowManagerText			: '<b>Workflow Manager</b> - this tab contains the full list of Workflow rules set up in the system and provides a way for you to add, edit, and delete these rules at any time.  Please refer to the specific overview section within this tab for more information.',
-	glAccountsText				: '<b>GL Accounts</b> - this tab contains the full list of GL accounts set up in the system and provides a way for you to add, edit, and delete these accounts. Please refer to the specific overview section within this tab for more information.',
-	passwordConfigurationText	: '<b>Password Configuration</b> - the Password Configuration options available in this tab are provided as a means to control how users set up and change their passwords.',
-	customFieldsText			: '<b>Custom Fields</b> - this tab provides a way to manage up to three custom fields, to be defined by you, for use on Purchase Orders and Invoices',
-	picklistsText				: '<b>Picklists</b> - this tab provides a way to manage the values that should display on Rejection Notes, Vendor Types, and Vendor Document Types.  These values can be updated and added to at any time.',
-	defaultSplitsText			: '<b>Default Splits</b> - this tab displays a list of current default splits set up in the system and provides a way to upload new default splits in the system.'
-});
-
-
-Ext.define('NP.locale.en.controller.systemSetup.CustomFields', {
-	override: 'NP.view.systemSetup.CustomFields',
-
-	title: 'Custom Fields'
-});
-
-Ext.define('NP.locale.en.controller.systemSetup.DefaultSplits', {
-	override: 'NP.view.systemSetup.DefaultSplits',
-
-	title: 'Default Splits'
-});
-
-Ext.define('NP.locale.en.view.systemSetup.DefaultSplitGrid', {
-	override: 'NP.view.systemSetup.DefaultSplitGrid',
-
-	createNewSplitBtnLabel: 'Create New Split',
-    nameColText           : 'Name',
-    lastUpdatedColText    : 'Last Updated',
-    alertColText          : 'Alert',
-    inactiveText          : 'Inactive',
-    onHoldText            : 'On Hold',
-    glText                : 'GL'
-});
-
-Ext.define('NP.locale.en.view.systemSetup.DefaultSplitForm', {
-	override: 'NP.view.systemSetup.DefaultSplitForm',
-
-	copySplitBtnText   : 'Copy Split',
-    splitNameLabel     : 'Split Name',
-    intPkgFieldLabel   : 'Integration Package',
-    allocationGridTitle: 'Allocation Details',
-    glAccountColText   : 'GL Account',
-    percentColText     : 'Percentage',
-    propInactiveError  : NP.Config.getPropertyLabel() + ' is inactive',
-    propOnHoldError    : NP.Config.getPropertyLabel() + ' is on hold',
-    glInactiveError    : 'GL Account is inactive',
-    addSplitBtnText    : 'Add Split',
-    autoAllocBtnText   : 'Auto Allocate by ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit'),
-    leftToAllocateText : 'Left to allocate',
-    allocationErrorText: 'Allocation must add up to 100%',
-    propertyErrorText  : 'Please make sure each allocation line has a ' + NP.Config.getPropertyLabel() + ' selected',
-    dialogErrorText    : 'Error'
-});
-
-Ext.define('NP.locale.en.controller.systemSetup.GLAccounts', {
-	override: 'NP.view.systemSetup.GLAccounts',
-
-	title: 'GL Accounts'
-});
-
-Ext.define('NP.locale.en.controller.systemSetup.PasswordConfiguration', {
-	override: 'NP.view.systemSetup.PasswordConfiguration',
-
-	title: 'Password Configuration',
-	pwdCfgExplanationText			: 'Password security requires that a minimum of one letter, number and special character be used when setting up user passwords in the system. Special characters include !, @, $, %, &, *, and ?',
-    passwordMinLengthText			: 'Please select the minimum password length',
-    passwordExpireIntervalText		: 'Expiration Interval (days)',
-    passwordHistoryIntervalText		: 'Days until same password can be reused',
-    passwordChangeOnLoginText		: 'User must change password on login',
-    passwordChangeOnLoginYesText	: 'Yes',
-    passwordChangeOnLoginNoText		: 'No'
-});
-
-Ext.define('NP.locale.en.controller.systemSetup.Picklist', {
-	override: 'NP.view.systemSetup.Picklist',
-
-	title: 'Picklist'
-});
-
-Ext.define('NP.locale.en.controller.systemSetup.Settings', {
-	override: 'NP.view.systemSetup.Settings',
-
-	title: 'Settings'
-});
-
-Ext.define('NP.locale.en.controller.systemSetup.WorkflowManager', {
-	override: 'NP.view.systemSetup.WorkflowManager',
-
-	title: 'Workflow Manager'
-});
-
-// Security component
-Ext.define('NP.locale.en.lib.core.Security', {
-	override: 'NP.lib.core.Security',
-
-	errorDialogTitleText: 'Error',
-	errorText           : 'An unexpected error has occurred. Please contact your system administrator'
 });

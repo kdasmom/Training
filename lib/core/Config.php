@@ -73,9 +73,7 @@ class Config {
 	public function get($key, $defaultVal=null) {
 		$val = "";
 		$key = strtolower($key);
-		if ( !$this->isCached($key) ) {
-			throw new Exception("The value you tried to retrieve doesn't exist");
-		}
+		
 		$configs = $this->cache->getItem($this->cacheName);
 		// Check the cache from DB items first, if found there return
 		if ( array_key_exists($key, $configs) ) {
@@ -89,7 +87,7 @@ class Config {
 				$val = $siteConfigs[$key];
 			// Otherwise just pull it from the DB
 			} else {
-				$configRec = $this->configsysGateway->find(array("configsys_name"=>$key));
+				$configRec = $this->configsysGateway->find(array("configsys_name"=>'?'), array($key));
 				if (sizeof($configRec)) {
 					$val = $configRec[0]["configsysval_val"];
 				}

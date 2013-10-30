@@ -5,7 +5,7 @@
  */
 Ext.define('NP.view.catalogMaintenance.types.Punchout', {
 	extend: 'NP.view.catalogMaintenance.types.AbstractCatalog',
-
+	
 	requires: 'NP.lib.core.Security',
 	
 	// For localization
@@ -70,64 +70,26 @@ Ext.define('NP.view.catalogMaintenance.types.Punchout', {
 	},
 
 	getView: function(vc) {
-		var that = this;
+		var deferred = {};
 
-		var context  = NP.Security.getCurrentContext();
-
-		function getUrl(property_id, callback) {
-			return NP.lib.core.Net.remoteCall({
-				requests: [
-					{
-						service       : 'CatalogService',
-						action        : 'getPunchoutUrl',
-						vc_id         : vc.get('vc_id'),
-						userprofile_id: NP.Security.getUser().get('userprofile_id'),
-						property_id   : property_id,
-						success       : callback
-					}
-				]
-			});
-		}
-
-		var deferred = getUrl(context['property_id'], function(result, deferred) {
-			if (result.success) {
-				var view = Ext.create('Ext.container.Container', {
-					layout: {
-						type : 'vbox',
-						align: 'stretch'
-					},
-					items: [
-						{
-							xtype: 'container',
-							items: [{
-								xtype : 'shared.propertycombo',
-								store : 'user.Properties',
-								value : context['property_id'],
-								margin: 8,
-								listeners: {
-									select: function(combo, recs) {
-										getUrl(recs[0].get('property_id'), function(result, deferred) {
-											view.query('#punchoutFrame')[0].getEl().set({ src: result['url'] });
-										});
-									}
-								}
-							}]
-						},{
-							xtype: 'container',
-							itemId: 'punchoutFrame',
-							autoEl: {
-								tag: 'iframe',
-								src: result['url']
-							},
-							flex: 1
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service       : 'CatalogService',
+				action        : 'getPunchoutUrl',
+				vc_id         : vc.get('vc_id'),
+				userprofile_id: NP.Security.getUser().get('userprofile_id'),
+				// TODO: need to make the property_id be pulled from a property drop-down
+				//property_id   : 158,
+				success       : function(result) {
+					var view = Ext.create('Ext.container.Container', {
+						layout: 'fit',
+						autoEl: {
+							tag: 'iframe',
+							src: result.url
 						}
-					]
-				});
-				
-				deferred.resolve(view);
-			} else {
-				Ext.MessageBox.alert(that.punchoutErrorTitleText, that.punchoutErrorText);
-				deferred.reject(that.punchoutErrorText);
+					});
+					deferred.view = view;
+				}
 			}
 		});
 

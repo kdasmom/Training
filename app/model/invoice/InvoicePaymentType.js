@@ -1,11 +1,11 @@
 /**
- * Created by rnixx on 10/22/13.
+ * Model for a InvoicePaymentType
+ *
+ * @author Thomas Messier
  */
-
-
 Ext.define('NP.model.invoice.InvoicePaymentType', {
 	extend: 'Ext.data.Model',
-
+	
 	requires: ['NP.lib.core.Config'],
 
 	idProperty: 'invoicepayment_type_id',
@@ -13,7 +13,6 @@ Ext.define('NP.model.invoice.InvoicePaymentType', {
 		{ name: 'invoicepayment_type_id', type: 'int' },
 		{ name: 'invoicepayment_type' },
 		{ name: 'active', type: 'int' },
-		{ name: 'invoicepayment_type_code' },
 		{ name: 'universal_field_status', type: 'int' }
 	],
 

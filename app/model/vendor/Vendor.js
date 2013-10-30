@@ -9,7 +9,9 @@ Ext.define('NP.model.vendor.Vendor', {
 	requires: [
 		'NP.lib.core.Config',
 		'NP.model.user.RecAuthor',
-		'NP.model.system.IntegrationPackage'
+		'NP.model.system.IntegrationPackage',
+		'NP.model.contact.Address',
+		'NP.model.contact.Phone'
 	],
 
 	idProperty: 'vendor_id',
@@ -54,9 +56,9 @@ Ext.define('NP.model.vendor.Vendor', {
 		{ name: 'prepay_glcodecombination_id', type: 'int' },
 		{ name: 'vendor_type1099' },
 		{ name: 'withholdingstatus_code' },
-		{ name: 'vendor_withhold_startdate', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
-		{ name: 'vendor_active_startdate', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
-		{ name: 'vendor_active_enddate', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
+		{ name: 'vendor_withhold_startdate', type: 'date' },
+		{ name: 'vendor_active_startdate', type: 'date' },
+		{ name: 'vendor_active_enddate', type: 'date' },
 		{ name: 'minoritygroup_code' },
 		{ name: 'paymentmethod_code' },
 		{ name: 'vendor_bank_accname' },
@@ -69,7 +71,7 @@ Ext.define('NP.model.vendor.Vendor', {
 		{ name: 'vendor_purchasehold_flag' },
 		{ name: 'purchasehold_userprofile_id', type: 'int' },
 		{ name: 'vendor_purchasehold_reason' },
-		{ name: 'vendor_purchasehold_date', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
+		{ name: 'vendor_purchasehold_date', type: 'date' },
 		{ name: 'vendor_termsdatebasis' },
 		{ name: 'vendor_inspectionreq_flag' },
 		{ name: 'vendor_receiptreq_flag' },
@@ -83,7 +85,7 @@ Ext.define('NP.model.vendor.Vendor', {
 		{ name: 'vendor_tax_calc_flag' },
 		{ name: 'vendor_tax_calc_override' },
 		{ name: 'vendor_amt_include_tax_flag' },
-		{ name: 'vendor_tax_verif_date', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
+		{ name: 'vendor_tax_verif_date', type: 'date' },
 		{ name: 'vendor_name_control' },
 		{ name: 'vendor_state_report_flag' },
 		{ name: 'vendor_fed_report_flag' },
@@ -104,7 +106,7 @@ Ext.define('NP.model.vendor.Vendor', {
 		{ name: 'vendor_debit_memo_flag' },
 		{ name: 'vendor_offset_tax_flag' },
 		{ name: 'vendor_status' },
-		{ name: 'vendor_lastupdate_date', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
+		{ name: 'vendor_lastupdate_date', type: 'date' },
 		{ name: 'table_status' },
 		{ name: 'vendor_add_reason' },
 		{ name: 'vendor_note' },
@@ -112,10 +114,10 @@ Ext.define('NP.model.vendor.Vendor', {
 		{ name: 'submit_userprofile_id', type: 'int' },
 		{ name: 'vendor_reject_note' },
 		{ name: 'integration_package_id', type: 'int' },
-		{ name: 'vendor_createddatetm', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
+		{ name: 'vendor_createddatetm', type: 'date' },
 		{ name: 'finance_vendor', type: 'int' },
 		{ name: 'default_due_date', type: 'int' },
-		{ name: 'vendor_reject_dt', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
+		{ name: 'vendor_reject_dt', type: 'date' },
 		{ name: 'vendor_reject_userprofile_id', type: 'int' },
 		{ name: 'taxpayor_type', type: 'int' },
 		{ name: 'payee_type', type: 'int' },
@@ -125,8 +127,21 @@ Ext.define('NP.model.vendor.Vendor', {
 
 		// This field does not exist in the DB, we are retrieving it to simplify
 		{ name: 'vendorsite_id', type: 'int' },
-		{ name: 'sent_for_approval_date', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
-		{ name: 'sent_for_approval_by' }
+		{ name: 'sent_for_approval_date', type: 'date' },
+		{ name: 'sent_for_approval_by' },
+
+		{ name: 'address_line1', useNull: false },
+		{ name: 'address_line2', useNull: false },
+		{ name: 'address_line3', useNull: false },
+		{ name: 'address_city', useNull: false },
+		{ name: 'address_state', useNull: false },
+		{ name: 'address_zip', useNull: false },
+		{ name: 'address_zipext', useNull: false },
+		{ name: 'address_country', type: 'int' },
+
+		{ name: 'phone_number', useNull: false },
+		{ name: 'phone_ext', useNull: false },
+		{ name: 'phone_countrycode', useNull: false }
 	],
 
 	belongsTo: [
@@ -138,5 +153,27 @@ Ext.define('NP.model.vendor.Vendor', {
 			primaryKey: 'integration_package_id',
 			reader    : 'jsonflat'
         }
-	]
+	],
+
+    hasOne: [
+        {
+            model       : 'NP.model.vendor.Vendorsite',
+            name        : 'vendorsite',
+            getterName  : 'getVendorsite',
+            foreignKey  : 'vendorsite_id',
+            primaryKey  : 'vendorsite_id'
+        }
+    ],
+
+    getAddressHtml: function() {
+    	var address = Ext.create('NP.model.contact.Address', this.getData());
+
+    	return address.getHtml();
+    },
+
+    getFullPhone: function() {
+    	var phone = Ext.create('NP.model.contact.Phone', this.getData());
+
+    	return phone.getFullPhone();
+    }
 });

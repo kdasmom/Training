@@ -58,6 +58,24 @@ class PnUniversalFieldGateway extends AbstractGateway {
 		
 		return $this->adapter->query($select, $params);
 	}
+
+	/**
+	 * Checks if a value is a valid option for a certain custom field type
+	 */
+	public function isValueValid($customfield_pn_type, $universal_field_number, $customfielddata_value, $isLineItem=1) {
+		$select = Select::get()->from('pnuniversalfield')
+							->whereEquals('customfield_pn_type', '?')
+							->whereEquals('universal_field_number', '?')
+							->whereEquals('universal_field_data', '?')
+							->whereEquals('islineitem', '?')
+							->whereNotEquals('universal_field_status', '0');
+		$res = $this->adapter->query(
+			$select,
+			array($customfield_pn_type, $universal_field_number, $customfielddata_value, $isLineItem)
+		);
+
+		return (count($res)) ? true : false;
+	}
 }
 
 ?>

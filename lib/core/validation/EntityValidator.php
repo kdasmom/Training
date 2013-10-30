@@ -1,55 +1,33 @@
 <?php
 namespace NP\core\validation;
 
+use NP\locale\LocalizationService;
+use NP\core\db\Adapter;
+use NP\core\db\Select;
+
+
 /**
  * A class to validate entities
  * 
  * @author Thomas Messier
  */
 class EntityValidator implements ValidatorInterface {
-	
-	/**
-	 * @var array An array of errors
-	 */
-	protected $errors;
+	protected $localizationService, $adapter, $configService;
 
-	/**
-	 * Checks the state of the validator since validate() was last run
-	 *
-	 * @return boolean Returns true if the data set last validated is valid
-	 */
-	public function isValid() {
-		return (count($this->errors) == 0) ? true : false;
-	}
-
-	/**
-	 * Add an error
-	 *
-	 * @param string The field for which the error occurred
-	 * @param string The error message
-	 */
-	public function addError($field, $msg, $extra=null) {
-		$this->errors[] = array('field'=>$field, 'msg'=>$msg, 'extra'=>$extra);
-	}
-
-	/**
-	 * Gets errors generated when validation was last run
-	 *
-	 * @return array
-	 */
-	public function getErrors() {
-		return $this->errors;
+	public function __construct(LocalizationService $localizationService, Adapter $adapter) {
+		$this->localizationService = $localizationService;
+		$this->adapter             = $adapter;
 	}
 
 	/**
 	 * Validates an entity object
 	 *
 	 * @param  NP\core\AbstractEntity $dataSet The entity to validate
-	 * @return boolean                 If data set is valid, returns true
+	 * @return array An array of errors
 	 */
 	public function validate(\NP\core\AbstractEntity $entity) {
 		// Reset the errors array
-		$this->errors = array();
+		$errors = array();
 
 		// Get the entity field values as an array
 		$dataSet = $entity->toArray();
@@ -59,6 +37,8 @@ class EntityValidator implements ValidatorInterface {
 
 		// Loop through the rules
 		foreach ($fields as $field=>$definition) {
+			$isValid = true;
+
 			// Check if the field has no definition (if it's not an associative array)
 			if ( is_string($definition) ) {
    				$field = $definition;
@@ -72,7 +52,7 @@ class EntityValidator implements ValidatorInterface {
 			if ($fieldVal === null || $fieldVal === '') {
 				// If the field is required, add an error
 				if (array_key_exists('required', $definition) && $definition['required']) {
-					$this->addError($field, "This field is required.");
+					$this->addError($errors, $field, 'requiredFieldError');
 				}
 				// Break out of the loop, validation is done for this field
 				continue;
@@ -81,7 +61,8 @@ class EntityValidator implements ValidatorInterface {
 			// Check for validation key in the definition
 			if (array_key_exists('validation', $definition)) {
 				$displayName = (array_key_exists('displayName', $definition)) ? $definition['displayName'] : $field;
-
+				$displayName = $this->localizationService->getMessage($displayName);
+				
 				// Loop through each validation setting
 				foreach ($definition['validation'] as $key=>$val) {
 					// Check if we're working with a validator or a validator chain
@@ -98,17 +79,81 @@ class EntityValidator implements ValidatorInterface {
 					}
 
 					// Run the validator
-					$validator->isValid($fieldVal);
+					if ($isValid) {
+						$isValid = $validator->isValid($fieldVal);
+					}
 
 					// Append the errors to the result object
 					foreach ($validator->getMessages() as $messageId => $message) {
-				        $this->addError($field, $message);
+				        $this->addError($errors, $field, $message);
 				    }
+				}
+			}
+
+			// Only do foreign key checks if the object is valid
+			if ($isValid && array_key_exists('tableConstraint', $definition)) {
+				$contraint = $definition['tableConstraint'];
+				$errorMsg  = null;
+				$typeField = null;
+				$typeValue = null;
+				if (is_string($contraint) || empty($contraint)) {
+					$tableName = str_replace('_id', '', $field);
+					$relationField = $field;
+				} else {
+					$tableName = $contraint['table'];
+					if (array_key_exists('field', $contraint)) {
+						$relationField = $contraint['field'];
+					} else {
+						$relationField = $tableName . '_id';
+					}
+					if (array_key_exists('typeField', $contraint)) {
+						$typeField = $contraint['typeField'];
+					}
+					if (array_key_exists('typeValue', $contraint)) {
+						$typeValue = $contraint['typeValue'];
+					}
+					if (array_key_exists('errorMsg', $contraint)) {
+						$errorMsg = $contraint['errorMsg'];
+					}
+				}
+
+				$select = new Select();
+				$select->from($tableName)
+						->whereEquals($relationField, '?');
+
+				if ($typeField !== null) {
+					$select->whereEquals($typeField, "'{$typeField}'");
+				}
+
+				$res = $this->adapter->query($select, array($fieldVal));
+
+				if (!count($res)) {
+					if ($errorMsg === null) {
+						$errorMsg = $this->localizationService->getMessage('noRecordFoundError') . " {$fieldVal}";
+					}
+					$this->addError($errors, $field, $errorMsg);
 				}
 			}
 		}
 
-		return $this->isValid();
+		return $errors;
+	}
+	
+	/**
+	 * Add an error
+	 *
+	 * @param string The field for which the error occurred
+	 * @param string The error message
+	 */
+	public function addError(&$errors, $field, $msg, $extra=null) {
+		array_push(
+			$errors,
+			array(
+				'field' => $field,
+				'msg'   => $this->localizationService->getMessage($msg),
+				'extra' => $extra
+			)
+		);
 	}
 
 	/**
@@ -144,4 +189,3 @@ class EntityValidator implements ValidatorInterface {
 		return new $classPath($options);
 	}
 }
-?>

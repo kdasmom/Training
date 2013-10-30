@@ -14,15 +14,15 @@ Ext.define('NP.model.contact.Address', {
 		{ name: 'addresstype_id', type: 'int' },
 		{ name: 'tablekey_id', type: 'int' },
 		{ name: 'table_name' },
-		{ name: 'address_attn' },
-		{ name: 'address_company' },
-		{ name: 'address_line1' },
-		{ name: 'address_line2' },
-		{ name: 'address_line3' },
-		{ name: 'address_city' },
-		{ name: 'address_state' },
-		{ name: 'address_zip' },
-		{ name: 'address_zipext' },
+		{ name: 'address_attn', useNull: false },
+		{ name: 'address_company', useNull: false },
+		{ name: 'address_line1', useNull: false },
+		{ name: 'address_line2', useNull: false },
+		{ name: 'address_line3', useNull: false },
+		{ name: 'address_city', useNull: false },
+		{ name: 'address_state', useNull: false },
+		{ name: 'address_zip', useNull: false },
+		{ name: 'address_zipext', useNull: false },
 		{ name: 'address_country', type: 'int' },
 		{ name: 'address_id_alt' }
 	],
@@ -40,5 +40,53 @@ Ext.define('NP.model.contact.Address', {
 		{ field: 'address_zipext', type: 'format', matcher: /(\d{4})/ },
 		{ field: 'address_country', type: 'length', max: 100 },
 		{ field: 'address_id_alt', type: 'length', max: 50 }
-	]
+	],
+
+	getHtml: function() {
+		var html  = '',
+			city  = (this.get('address_city') === null) ? '' : this.get('address_city'),
+			state = (this.get('address_state') === null) ? '' : this.get('address_state'),
+			zip   = (this.get('address_zip') === null) ? '' : this.get('address_zip');
+
+		for (var i=1; i<=3; i++) {
+			if (this.get('address_line'+i) !== '' && this.get('address_line'+i) !== null) {
+				html += '<div>' + this.get('address_line'+i) + '</div>';
+			}
+		}
+
+		if (city != '' || state != '' || zip) {
+			html += '<div>';
+			if (city != '') {
+				html += city;
+				if (state != '') {
+					html += ', ';
+				} else if (zip != '') {
+					html += ' ';
+				}
+			}
+			if (state != '') {
+				html += state;
+				if (zip != '') {
+					html += ' ';
+				}
+			}
+			if (zip != '') {
+				html += zip;
+				if (this.get('address_zipext') != '' && this.get('address_zipext') !== null) {
+					html += '-' + this.get('address_zipext');
+				}
+			}
+
+			html += '</div>';
+		}
+
+		if (this.get('address_country') !== null) {
+			var country = Ext.getStore('system.Countries').query('id', this.get('address_country'));
+			if (country.getCount()) {
+				html += '<div>' + country.getAt(0).get('name') + '</div>';
+			}
+		}
+
+		return html;
+	}
 });

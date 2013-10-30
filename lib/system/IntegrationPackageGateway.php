@@ -34,5 +34,3 @@ class IntegrationPackageGateway extends AbstractGateway {
 		return $result[0];
 	}
 }
-
-?>

@@ -20,8 +20,8 @@ Ext.define('NP.model.user.Userprofile', {
         { name: 'userprofile_status', defaultValue: 'active' },
         { name: 'userprofile_session' },
         { name: 'oracle_authentication' },
-        { name: 'userprofile_startdate', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
-        { name: 'userprofile_enddate', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
+        { name: 'userprofile_startdate', type: 'date' },
+        { name: 'userprofile_enddate', type: 'date' },
         { name: 'userprofile_password' },
         { name: 'userprofile_preferred_property', type: 'int' },
         { name: 'userprofile_default_dashboard', type: 'int' },
@@ -31,7 +31,7 @@ Ext.define('NP.model.user.Userprofile', {
         { name: 'userprofile_splitscreen_LoadWithoutImage', type: 'int', defaultValue: 0 },
         { name: 'userprofile_preferred_region', type: 'int' },
         { name: 'userprofile_updated_by', type: 'int' },
-        { name: 'userprofile_updated_datetm', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
+        { name: 'userprofile_updated_datetm', type: 'date' },
         { name: 'security_question1', type: 'int' },
         { name: 'security_answer1' },
         { name: 'security_question2', type: 'int' },
@@ -44,29 +44,31 @@ Ext.define('NP.model.user.Userprofile', {
         { name: 'security_answer5' },
         { name: 'security_question6', type: 'int' },
         { name: 'security_answer6' },
-        { name: 'userprofile_dashboard_layout' }
-    ],
-    
-    belongsTo: [
-        {
-            model     : 'NP.model.user.Userprofile',
-            name      : 'updater',
-            getterName: 'getUpdater',
-            foreignKey: 'userprofile_updated_by',
-            primaryKey: 'userprofile_id',
-            reader    : 'jsonflat',
-            prefix    : 'updated_by_'
-        }
-    ],
+        { name: 'userprofile_dashboard_layout' },
 
-    hasOne: [
+        // These fields are not DB columns in the USERPROFILE table
+        { name: 'userprofilerole_id', type: 'int' },
+        { name: 'role_id', type: 'int' },
+        { name: 'role_name' },
+        { name: 'staff_id', type: 'int' },
+        { name: 'person_id', type: 'int' },
+        { name: 'person_firstname' },
+        { name: 'person_lastname' },
+        { name: 'updated_by_userprofile_username' },
+
+        // Calculated field that doesn't exist in the DB
         {
-            model     : 'NP.model.user.Userprofilerole',
-            name      : 'userprofilerole',
-            getterName: 'getUserprofilerole',
-            foreignKey: 'userprofile_id',
-            primaryKey: 'userprofile_id',
-            reader    : 'jsonflat'
+            name: 'display_name',
+            convert: function(v, rec) {
+                var fName = rec.get('person_firstname'),
+                    lName = rec.get('person_lastname');
+
+                if (fName !== null && lName !== null) {
+                    return lName + ', ' + fName + ' (' + rec.get('userprofile_username') + ')';
+                }
+                
+                return rec.get('userprofile_username');
+            }
         }
     ],
 

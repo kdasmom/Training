@@ -10,9 +10,36 @@ Ext.define('NP.controller.Viewport', {
 	requires: [
 		'NP.lib.core.Security',
 		'NP.lib.core.Config',
-		'NP.lib.core.SummaryStatManager',
-		'NP.view.shared.PortalCanvas'
+		'NP.lib.core.SummaryStatManager'
 	],
+
+	uses: [
+		'NP.view.shared.tile.ExpiredInsuranceCerts',
+		'NP.view.shared.tile.ImageExceptions',
+		'NP.view.shared.tile.ImagesToConvert',
+		'NP.view.shared.tile.ImagesToIndex',
+		'NP.view.shared.tile.ImagesToProcess',
+		'NP.view.shared.tile.InvoicesByUser',
+		'NP.view.shared.tile.InvoicesCompleted',
+		'NP.view.shared.tile.InvoicesOnHold',
+		'NP.view.shared.tile.InvoicesRejected',
+		'NP.view.shared.tile.InvoicesToApprove',
+		'NP.view.shared.tile.MtdOverBudgetCategories',
+		'NP.view.shared.tile.PosByUser',
+		'NP.view.shared.tile.PosRejected',
+		'NP.view.shared.tile.PosReleased',
+		'NP.view.shared.tile.PosToApprove',
+		'NP.view.shared.tile.ReceiptsPendingPost',
+		'NP.view.shared.tile.ReceiptsRejected',
+		'NP.view.shared.tile.ReceiptsToApprove',
+		'NP.view.shared.tile.VcAuthRequests',
+		'NP.view.shared.tile.VendorsToApprove',
+		'NP.view.shared.tile.YtdOverBudgetCategories'
+	],
+
+    stores: ['system.SummaryStatCategories'],
+
+    views: ['viewport.Home','shared.PortalCanvas'],
 	
 	refs: [
 		{ ref: 'contextPicker', selector: '#homeContextPicker' }
@@ -112,6 +139,46 @@ Ext.define('NP.controller.Viewport', {
 			'#systemSetupMenuBtn': {
 				click: function() {
 					this.addHistory('SystemSetup:showSystemSetup');
+				}
+			},
+                                
+			// Clicking on the Administration > GL Account Setup menu
+			'#glaccountSetupMenuBtn': {
+				click: function() {
+					this.addHistory('GLAccountSetup:showGLAccountSetup');
+				}
+			},
+			
+            // Clicking on Import/Export Utility or any of the subitems under Import/Export Utility
+            '#importMenuBtn,#importMenuBtn menuitem': {
+                    click: function(itemClicked) {
+                            var token = 'Import:showImport';
+                            if (itemClicked.itemId != 'importMenuBtn') {
+                                    token += ':' + itemClicked.itemId.replace('ImportMenuBtn', '');
+                            } else {
+                                    token += ':overview';
+                            }
+                            this.addHistory(token);
+                    }
+            },
+
+            // Clicking on the Administration > System Setup menu
+            '#budgetOverageMenuBtn': {
+                click: function() {
+                    this.addHistory('BudgetOverage:showBudgetOverage');
+                }
+            },
+            
+            '#utilitySetupMenuBtn': {
+                click: function() {
+                    this.addHistory('UtilitySetup:showUtilGrid');
+                }
+            },
+
+			// Clicking on the Administration > System Setup menu
+			'#mobileSetupMenuBtn': {
+				click: function() {
+					this.addHistory('MobileSetup:showMobileInfoGrid');
 				}
 			},
 

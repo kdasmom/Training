@@ -9,9 +9,9 @@ Ext.define('NP.view.catalogMaintenance.CatalogFormInfo', {
     
     requires: [
         'NP.lib.core.Config',
-    	'NP.lib.core.Security',
+        'NP.lib.core.Security',
         'NP.store.catalog.CatalogTypes',
-    	'NP.lib.ui.ComboBox',
+        'NP.lib.ui.ComboBox',
         'NP.lib.ui.AutoComplete'
     ],
 
@@ -22,8 +22,8 @@ Ext.define('NP.view.catalogMaintenance.CatalogFormInfo', {
     initComponent: function() {
         var that = this;
 
-    	var fieldWidth = 450;
-    	
+        var fieldWidth = 450;
+        
         var catalogTypes = Ext.create('NP.store.catalog.CatalogTypes').getRange();
         var radioGroup;
         
@@ -83,6 +83,6 @@ Ext.define('NP.view.catalogMaintenance.CatalogFormInfo', {
             });
         }
 
-    	this.callParent(arguments);
+        this.callParent(arguments);
     }
 });

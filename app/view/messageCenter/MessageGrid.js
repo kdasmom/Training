@@ -29,8 +29,7 @@ Ext.define('NP.view.messageCenter.MessageGrid', {
                 var returnVal = '';
                 if (rec.get('createdBy') !== null) {
                     var user = rec.getCreatedByUser();
-                    var person = user.getUserprofilerole().getStaff().getPerson();
-                    returnVal = person.get('person_lastname') + ', ' + person.get('person_firstname')
+                    returnVal = user.get('person_lastname') + ', ' + user.get('person_firstname')
                                 + ' (' + user.get('userprofile_username') + ')';
                 }
 

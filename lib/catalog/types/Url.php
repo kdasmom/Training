@@ -9,7 +9,7 @@ namespace NP\catalog\types;
  */
 class Url extends AbstractCatalog {
 
-	protected function getAssignmentFields() {
+	public function getAssignmentFields() {
 		return array('categories');
 	}
 

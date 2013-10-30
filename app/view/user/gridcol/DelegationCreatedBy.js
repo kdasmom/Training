@@ -7,6 +7,8 @@ Ext.define('NP.view.user.gridcol.DelegationCreatedBy', {
 	extend: 'Ext.grid.column.Column',
 	alias: 'widget.user.gridcol.delegationcreatedby',
 
+	requires: ['NP.lib.core.Translator'],
+
 	text     : 'Setup By',
 	dataIndex: 'delegation_createdby_userprofile_username',
 	renderer : function(val, meta, rec) {
@@ -15,5 +17,11 @@ Ext.define('NP.view.user.gridcol.DelegationCreatedBy', {
 		} else {
 			return '';
 		}
-	}
+	},
+
+    initComponent: function() {
+    	this.text = NP.Translator.translate(this.text);
+    	
+    	this.callParent(arguments);
+    }
 });

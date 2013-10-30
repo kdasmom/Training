@@ -9,6 +9,7 @@ Ext.define('NP.view.user.UsersGrid', {
 
     requires: [
     	'NP.lib.core.Config',
+        'NP.lib.core.Translator',
     	'NP.view.shared.button.New',
     	'NP.view.shared.button.Inactivate',
     	'NP.view.shared.button.Activate',
@@ -17,14 +18,6 @@ Ext.define('NP.view.user.UsersGrid', {
         'NP.view.shared.PropertyCombo'
     ],
     
-    // For localization
-    createNewUserBtnLabel: 'Create New User',
-    nameColText          : 'Name',
-    groupColText         : 'Group',
-    usernameColText      : 'Username',
-    lastUpdatedColText   : 'Last Updated',
-    statusColText        : 'Status',
-
     layout: {
         type : 'vbox',
         align: 'stretch'
@@ -35,7 +28,7 @@ Ext.define('NP.view.user.UsersGrid', {
     	var that = this;
 
     	var bar = [
-    		{ xtype: 'shared.button.new', text: this.createNewUserBtnLabel }
+    		{ xtype: 'shared.button.new', text: NP.Translator.translate('Create New User') }
 	    ];
 	    this.tbar = bar;
 	    this.bbar = bar;
@@ -80,7 +73,7 @@ Ext.define('NP.view.user.UsersGrid', {
                             {
                                 xtype     : 'customcombo',
                                 name      : 'userprofile_status',
-                                fieldLabel: 'Status',
+                                fieldLabel: NP.Translator.translate('Status'),
                                 labelWidth: filterLabelWidth,
                                 store     : Ext.create('Ext.data.Store', {
                                             fields: ['name','value'],
@@ -107,7 +100,7 @@ Ext.define('NP.view.user.UsersGrid', {
                             {
                                 xtype       : 'customcombo',
                                 name        : 'role_id',
-                                fieldLabel  : 'Group',
+                                fieldLabel  : NP.Translator.translate('Group'),
                                 labelWidth  : filterLabelWidth,
                                 store       : 'user.RoleTree',
                                 valueField  : 'role_id',
@@ -122,7 +115,7 @@ Ext.define('NP.view.user.UsersGrid', {
                             },{
                                 xtype       : 'customcombo',
                                 name        : 'module_id',
-                                fieldLabel  : 'Function',
+                                fieldLabel  : NP.Translator.translate('Function'),
                                 labelWidth  : filterLabelWidth,
                                 store       : 'security.ModuleTree',
                                 valueField  : 'module_id',
@@ -159,38 +152,34 @@ Ext.define('NP.view.user.UsersGrid', {
                         }),
                 columns : [
                     {
-                        text: this.nameColText,
+                        text: NP.Translator.translate('Name'),
                         dataIndex: 'person_lastname',
                         flex: 1,
                         renderer: function(val, meta, rec) {
-                            var person = rec.getUserprofilerole().getStaff().getPerson();
-                            return person.get('person_lastname') + ', ' + person.get('person_firstname');
+                            return rec.get('person_lastname') + ', ' + rec.get('person_firstname');
                         }
                     },{
-                        text: this.groupColText,
+                        text: NP.Translator.translate('Group'),
                         dataIndex: 'role_name',
                         flex: 1,
-                        tdCls: 'grid-clickable-col',
-                        renderer: function(val, meta, rec) {
-                            return rec.getUserprofilerole().getRole().get('role_name');
-                        }
+                        tdCls: 'grid-clickable-col'
                     },{
-                        text: this.usernameColText,
+                        text: NP.Translator.translate('Username'),
                         dataIndex: 'userprofile_username',
                         flex: 0.5
                     },{
-                        text: this.lastUpdatedColText,
+                        text: NP.Translator.translate('Last Updated'),
                         dataIndex: 'userprofile_updated_datetm',
                         flex: 1,
                         renderer: function(val, meta, rec) {
                             val = Ext.Date.format(val, NP.Config.getDefaultDateFormat() + ' h:iA');
                             if (rec.get('userprofile_updated_by') !== null) {
-                                val += ' (' + rec.getUpdater().get('userprofile_username') + ')'
+                                val += ' (' + rec.get('updated_by_userprofile_username') + ')'
                             }
                             return val;
                         }
                     },{
-                        text: this.statusColText,
+                        text: NP.Translator.translate('Status'),
                         dataIndex: 'userprofile_status',
                         flex: 0.5,
                         renderer: Ext.util.Format.capitalize

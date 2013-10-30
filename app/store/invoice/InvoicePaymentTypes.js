@@ -1,10 +1,11 @@
 /**
- * Created by rnixx on 10/22/13.
+ * Store for InvoicePaymentTypes.
+ *
+ * @author Thomas Messier
  */
-
-
 Ext.define('NP.store.invoice.InvoicePaymentTypes', {
-	extend: 'NP.lib.data.Store',
-
-	model: 'NP.model.invoice.InvoicePaymentType'
+    extend: 'NP.lib.data.Store',
+    alias : 'store.invoice.invoicepaymenttypes',
+	
+	model: 'NP.model.invoice.InvoicePaymentType'    
 });

@@ -15,6 +15,7 @@ class UnitEntity extends \NP\core\AbstractEntity {
 			)
 		),
 		'unit_id_alt'	 => array(
+			'required'   => true,
 			'validation' => array(
 				'stringLength' => array('max'=>10)
 			)
@@ -25,16 +26,20 @@ class UnitEntity extends \NP\core\AbstractEntity {
 			)
 		),
 		'unittype_id'	 => array(
+			'required'   => true,
 			'validation' => array(
 				'digits' => array()
-			)
+			),
+			'tableConstraint' => array()
 		),
 		'unit_number'	 => array(
+			'required'   => true,
 			'validation' => array(
 				'stringLength' => array('max'=>50)
 			)
 		),
 		'unit_status'	 => array(
+			'required'   => true,
 			'defaultValue' => 'active',
 			'validation' => array(
 				'stringLength' => array('max'=>50)
@@ -51,9 +56,11 @@ class UnitEntity extends \NP\core\AbstractEntity {
 			)
 		),
 		'property_id'	 => array(
+			'required'   => true,
 			'validation' => array(
 				'digits' => array()
-			)
+			),
+			'tableConstraint' => array()
 		)
 	);
 

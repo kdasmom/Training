@@ -20,6 +20,7 @@ class UnitTypeEntity extends \NP\core\AbstractEntity {
 			)
 		),
 		'unittype_name'	 => array(
+			'required'   => true,
 			'validation' => array(
 				'stringLength' => array('max'=>255)
 			)
@@ -30,20 +31,33 @@ class UnitTypeEntity extends \NP\core\AbstractEntity {
 			)
 		),
 		'unittype_bedrooms'	 => array(
-			'required' => true),
-		'unittype_bathrooms'	 => array(
-			'required' => true),
+			'validation' => array(
+				'numeric' => array()
+			)
+		),
+		'unittype_bathrooms' => array(
+			'validation' => array(
+				'numeric' => array()
+			)
+		),
 		'property_id'	 => array(
+			'required'   => true,
 			'validation' => array(
 				'digits' => array()
-			)
+			),
+			'tableConstraint' => array()
 		),
 		'unittype_updated_by'	 => array(
 			'validation' => array(
 				'digits' => array()
+			),
+			'tableConstraint' => array(
+				'table' => 'userprofile',
+				'field' => 'userprofile_id'
 			)
 		),
 		'unittype_updated_date'	 => array(
+			'timestamp'  => 'updated',
 			'validation' => array(
 				'date' => array('format'=>'Y-m-d H:i:s.u')
 			)

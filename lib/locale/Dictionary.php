@@ -29,8 +29,6 @@ abstract class Dictionary {
 	}
 
 	public function messageExists($messageName) {
-		return array_key_exists($messageName, $this->messages);
+		return array_key_exists($this->messages, $messageName);
 	}
 }
-
-?>
