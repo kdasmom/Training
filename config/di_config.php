@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <?php
 
 require_once("vendor/pimple/pimple/lib/Pimple.php");
