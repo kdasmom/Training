@@ -385,6 +385,7 @@ class VendorService extends AbstractService {
 		$vendor->vendor_w9onfile = $vendor->vendor_w9onfile == '' ? null : $vendor->vendor_w9onfile;
 		$vendor->remit_req = $vendor->remit_req ? $vendor->remit_req : 0;
 		$vendor->insurance_req = $vendor->insurance_req ? $vendor->insurance_req : 0;
+		$vendor->vendor_ModificationType = $vendor->vendor_id ? $vendor->vendor_ModificationType : 'New';
 
 		$vendor->vendor_lastupdate_date = Util::formatDateForDB(new \DateTime());
 
