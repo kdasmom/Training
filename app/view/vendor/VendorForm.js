@@ -15,7 +15,8 @@ Ext.define('NP.view.vendor.VendorForm', {
 		'NP.view.vendor.VendorAssignGlAccouns',
 		'NP.view.vendor.VendorInsuranceSetup',
 		'NP.view.vendor.VendorGeneralInfoAndSettings',
-		'NP.view.vendor.VendorDocumentsForm'
+		'NP.view.vendor.VendorDocumentsForm',
+		'NP.view.vendor.AlternativeAddresses'
 	],
 
 //	localization
@@ -63,7 +64,13 @@ Ext.define('NP.view.vendor.VendorForm', {
 			this.items[0].items.push({
 				xtype: 'vendor.vendordocumentsform',
 				itemId: 'documents'
-			})
+			});
+			if ( NP.Config.getSetting('PN.VendorOptions.AllowAltAddresses') == 1) {
+				this.items[0].items.push({
+					xtype: 'vendor.alternativeaddresses',
+					itemId: 'altaddresses'
+				});
+			}
 		}
 
 		this.callParent(arguments);

@@ -308,7 +308,7 @@ class UserprofileGateway extends AbstractGateway {
 		$select->count(true, 'privcount')
 					->from(['mp' => 'modulepriv'])
 					->join(['m' => 'module'], 'mp.module_id = m.module_id', [])
-					->where(new sql\criteria\IsUserInAppWhere());
+					->where(new sql\criteria\IsUserInAppWhere('Vendor Approval'));
 
 		$count = $this->adapter->query($select, [$role_id, $userprofile_id]);
 

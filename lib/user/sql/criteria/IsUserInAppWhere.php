@@ -12,7 +12,7 @@ namespace NP\user\sql\criteria;
 use NP\core\db\Where;
 
 class IsUserInAppWhere extends Where {
-		public function __construct() {
+		public function __construct($module_name) {
 			parent::__construct();
 
 			return $this->nest('OR')
@@ -30,6 +30,6 @@ class IsUserInAppWhere extends Where {
 				->greaterThan('mp.modulepriv_expirationdate', 'GetDate()')
 				->isNull('mp.modulepriv_expirationdate')
 				->unnest()
-				->equals('m.module_name', "'Vendor Approval'");
+				->equals('m.module_name', "'" . $module_name . "'");
 		}
 } 

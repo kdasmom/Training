@@ -141,7 +141,17 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
                                 padding: '0 0 0 10'
                             }
                         ]
-                    }
+                    },
+					{
+						xtype: 'hidden',
+						name: 'vendor_action',
+						value: ''
+					},
+					{
+						xtype: 'hidden',
+						name: 'submit_userprofile_id',
+						value: ''
+					}
                 ]
 			}
 		];

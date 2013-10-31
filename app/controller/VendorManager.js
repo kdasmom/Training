@@ -14,12 +14,13 @@ Ext.define('NP.controller.VendorManager', {
         'NP.lib.core.Util',
 		'NP.view.shared.button.Upload',
 		'NP.view.vendor.VendorImageUploadForm',
-		'NP.view.vendor.InsuranceUploadForm',
+		'NP.view.vendor.InsuranceUploadForm'
 //		'NP.view.shared.button.Upload',
     ],
 //  for localization
 
-    saveSuccessText      : 'Your changes were saved.',
+    saveSuccessText		: 'Your changes were saved.',
+	vendor_status		: '',
     /**
      * Init
      */
@@ -154,6 +155,7 @@ Ext.define('NP.controller.VendorManager', {
 							listeners: {
 								dataloaded: function(formPanel, data) {
 									formPanel.findField('address_state').setValue(parseInt(data['address_state']));
+									that.vendor_status = data['vendor_status'];
 								}
 							}
 						});
@@ -196,7 +198,7 @@ Ext.define('NP.controller.VendorManager', {
     /**
      * save vendor
      */
-    saveVendor: function() {
+    saveVendor: function(status) {
         var that  = this;
 
         var form = this.getCmp('vendor.vendorform');
@@ -300,7 +302,6 @@ Ext.define('NP.controller.VendorManager', {
 		var that = this;
 		var opened = !opened ? false :true;
 		var appCount = 1;
-		var vendorStatus = '';
 
 		var bar = [
 			{
@@ -314,6 +315,18 @@ Ext.define('NP.controller.VendorManager', {
 		var tbar = form.getDockedItems()[1];
 		var bbar = form.getDockedItems()[2];
 		var opened = !opened ? form.opened : opened;
+		var appCount = false;
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service: 'VendorService',
+				action : 'isApprovalRights',
+				userprofile_id: NP.lib.core.Security.getUser().get('userprofile_id'),
+				role_id: NP.lib.core.Security.getRole().get('role_id'),
+				success: function(result, deferred) {
+					appCount = result.ap_count ? result.ap_count : appCount;
+				}
+			}
+		});
 
 
 		if (!opened) {
@@ -322,7 +335,7 @@ Ext.define('NP.controller.VendorManager', {
 					xtype: 'shared.button.delete'
 				});
 			}
-			if (appCount > 0 && vendorStatus !== 'forapproval') {
+			if (appCount && this.vendor_status !== 'forapproval' || this.vendor_status == '') {
 				bar.push(
 					{
 						xtype: 'shared.button.save',
@@ -332,7 +345,8 @@ Ext.define('NP.controller.VendorManager', {
 					}
 				);
 			}
-			if (appCount == 0 && vendorStatus !== 'forapproval') {
+			if (!appCount && this.vendor_status !== 'forapproval') {
+				console.log(1);
 				bar.push(
 					{
 						xtype: 'button',
@@ -344,7 +358,7 @@ Ext.define('NP.controller.VendorManager', {
 					}
 				);
 			}
-			if (vendorStatus == 'forapproval') {
+			if (this.vendor_status == 'forapproval') {
 				bar.push(
 					{
 						xtype: 'button',
@@ -363,120 +377,8 @@ Ext.define('NP.controller.VendorManager', {
 				if (insurance) {
 
 				} else {
-					bar.push(
-						{
-							xtype: 'shared.button.save',
-							handler: function() {
-								that.saveVendor();
-							}
-						}
-					);
-
-					bar.push(
-						{
-							xtype: 'shared.button.new',
-							text: 'Add image'
-						}
-					);
-
-					if (!itemId) {
-						itemId = 'baseinformation';
-					}
-
-
-					switch (itemId) {
-						case ('baseinformation'):
-						default:
-							break;
-						case ('settings'):
-							break;
-						case ('glaccounts'):
-							bar.push(
-								{
-									xtype: 'button',
-									text: 'Update GL Assignment'
-								}
-							);
-							break;
-						case ('insurances'):
-							bar.push(
-//								{
-//									xtype: 'shared.button.upload',
-//									text: 'Insurance upload',
-//									handler: function() {
-//										that.showInsuranceUploadForm();
-//									}
-//								}
-//								{
-//									xtype: 'uploadbutton',
-//									text: 'Upload insurance'
-//								}
-							);
-							break;
-						case ('documents'):
-							bar.push(
-//								{
-//									xtype: 'shared.button.upload',
-//									text: 'Image upload',
-//									handler: function() {
-//										that.showUploadImageForm();
-//									}
-//								},
-								/*{
-									xtype: 'uploadbutton',
-									text: 'Upload image',
-									plugins: [{
-										ptype: 'ux.upload.window',
-										title: 'Upload',
-										width: 520,
-										height: 350
-									}
-									],
-									multi_selection: true,
-									singleFile: false,
-									uploader:
-									{
-										url: 'upload.php',
-										uploadpath: '',
-										autoStart: false,
-										max_file_size: '2020mb',
-										drop_element: false,
-										statusQueuedText: 'Ready to upload',
-										statusUploadingText: 'Uploading ({0}%)',
-										statusFailedText: '<span style="color: red">Error</span>',
-										statusDoneText: '<span style="color: green">Complete</span>',
-
-										statusInvalidSizeText: 'File too large',
-										statusInvalidExtensionText: 'Invalid file type'
-									},
-									listeners:
-									{
-										filesadded: function(uploader, files)
-										{
-											//console.log('filesadded');
-											return true;
-										},
-
-										beforeupload: function(uploader, file)
-										{
-											//console.log('beforeupload');
-										},
-
-										fileuploaded: function(uploader, file)
-										{
-//											console.log('fileuploaded');
-										},
-
-										uploadcomplete: function(uploader, success, failed)
-										{
-											//console.log('uploadcomplete');
-										},
-										scope: this
-									}
-								}*/
-							);
-							break;
-					}
+					var submit_userprofile_id = form.findField('submit_userprofile_id').getValue();
+					bar = buttonForNonAddresTab(appCount, this.vendor_status, itemId, bar, form, submit_userprofile_id);
 				}
 			}
 
@@ -486,6 +388,228 @@ Ext.define('NP.controller.VendorManager', {
 		bbar.removeAll();
 		tbar.add(bar);
 		bbar.add(bar);
+
+		function buttonForNonAddresTab(app_count, vendor_status, tabName, bar, form, submit_userprofile_id) {
+			if (tabName !== 'altaddresses') {
+
+//				Non-Approver editing an active vendor with no pending edits
+				if (!app_count && vendor_status == 'active') {
+					if (tabName == 'glaccounts') {
+						bar.push(
+							{
+								xtype: 'button',
+								text: 'Update GL Assignment'
+							}
+						);
+					} else {
+						if (tabName == 'insurances') {
+							bar.push(
+								{
+									xtype: 'shared.button.save',
+									handler: function() {
+										that.saveVendor('approve');
+									}
+								}
+							);
+						} else {
+							if (tabName == 'baseinformation') {
+								if (NP.Security.hasPermission(6092) && NP.Security.hasPermission(1025)) {
+									bar.push(
+										{
+											xtype: 'shared.button.save',
+											handler: function() {
+												that.saveVendor('approve');
+											}
+										}
+									);
+								}
+								if (NP.Security.hasPermission(6092) && !NP.Security.hasPermission(1025)) {
+									bar.push(
+										{
+											xtype: 'shared.button.save',
+											text: 'Submit Changes for Approval',
+											handler: function() {
+												that.saveVendor();
+											}
+										}
+									);
+								}
+							} else {
+								if (tabName == 'settings' && !NP.Security.hasPermission(2083)) {
+									bar.push(
+										{
+											xtype: 'shared.button.save',
+											handler: function() {
+												that.saveVendor('active');
+											}
+										}
+									);
+								} else {
+									if (tabName !== 'baseinformation' && tabName !== 'settings') {
+										bar.push(
+											{
+												xtype: 'shared.button.save',
+												text: 'Submit Changes for Approval',
+												handler: function() {
+													that.saveVendor();
+												}
+											}
+										);
+									}
+								}
+							}
+						}
+					}
+				}
+//				Vendor-creator viewing rejected vendor
+				if (vendor_status == 'rejected' && submit_userprofile_id && submit_userprofile_id == NP.Security.getUser().get('userprofile_id')) {
+					bar.push(
+						{
+							xtype: 'shared.button.save',
+							text: 'Submit Changes for Approval',
+							handler: function() {
+								that.saveVendor('forapproval');
+							}
+						}
+					);
+				}
+//				Approver editing an active vendor that has no pending edits
+				if (app_count && vendor_status == 'active') {
+					if (tabName !== 'glaccounts' && tabName !== 'documents' && tabName !== 'baseinformation' && tabName !== 'settings') {
+						bar.push(
+							{
+								xtype: 'shared.button.save',
+								handler: function() {
+									that.saveVendor('approve');
+								}
+							}
+						);
+					} else {
+						if (tabName == 'baseinformation') {
+							if (NP.Security.hasPermission(6092) || NP.Security.hasPermission(1025)) {
+								bar.push(
+									{
+										xtype: 'shared.button.save',
+										handler: function() {
+											that.saveVendor('approve');
+										}
+									}
+								);
+							} else {
+								if (NP.Security.hasPermission(6092) || !NP.Security.hasPermission(1025)) {
+									bar.push(
+										{
+											xtype: 'shared.button.save',
+											text: 'Submit Changes for Approval',
+											handler: function() {
+												that.saveVendor();
+											}
+										}
+									);
+								}
+							}
+						} else {
+							if (tabName == 'settings' && NP.Security.hasPermission(2083)) {
+								bar.push(
+									{
+										xtype: 'shared.button.save',
+										handler: function() {
+											that.saveVendor('active');
+										}
+									}
+								);
+							} else {
+								if (tabName == 'glaccounts') {
+									bar.push(
+										{
+											xtype: 'button',
+											text: 'Update GL Assignment'
+										}
+									);
+								}
+							}
+						}
+					}
+				}
+				bar.push(
+					{
+						xtype: 'shared.button.new',
+						text: 'Add image'
+					}
+				);
+				if (tabName == 'documents') {
+					bar.push(
+						{
+							xtype: 'shared.button.upload',
+							text: 'Upload image'
+						}
+					);
+				}
+
+				if (tabName == 'insurances') {
+					bar.push(
+						{
+							xtype: 'shared.button.upload',
+							text: 'Upload insurance'
+						}
+					);
+				}
+			}
+
+			if (vendor_status == 'forapproval' && tabName == 'glaccounts') {
+				bar.push(
+					{
+						xtype: 'button',
+						text: 'Update GL Assignment'
+					}
+				);
+			}
+//			Settings page
+// 			Approver editing vendor that is forapproval
+			if (vendor_status == 'forapproval' && tabName == 'settings') {
+				if (NP.Security.hasPermission(2083)) {
+					bar.push(
+						{
+							xtype: 'shared.button.save',
+							handler: function() {
+								that.saveVendor('forapproval');
+							}
+						}
+					);
+				} else {
+					form.findField('vendor_action').setValue('');
+					bar.push(
+						{
+							xtype: 'shared.button.save',
+							text: 'Submit Changes for Approval',
+							handler: function() {
+								that.saveVendor();
+							}
+						}
+					);
+				}
+			}
+
+			if (vendor_status == 'forapproval' && tabname == 'baseinformation') {
+				bar.push(
+					{
+						xtype: 'shared.button.save',
+						text: NP.Translator.translate('Approve'),
+						handler: function() {
+							that.saveVendor('approve');
+						}
+					}
+				);
+				bar.push(
+					{
+						xtype: 'shared.button.save',
+						text: NP.Translator.translate('Reject')
+					}
+				);
+			}
+
+			return bar;
+		}
 	},
 
 

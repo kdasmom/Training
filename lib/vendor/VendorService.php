@@ -112,6 +112,9 @@ class VendorService extends AbstractService {
 		$vendorsite_favorite = isset($data['vendorsite_favorite']) ? $data['vendorsite_favorite'] : self::VENDORSITE_FAVORITE_NO;
 		$glaccounts = $data['glaccounts'];
 
+		$data['vendor']['submit_userprofile_id'] = !($data['vendor']['vendor_id']) ? $data['userprofile_id'] : $data['vendor']['submit_userprofile_id'];
+		$data['vendorsite']['submit_userprofile_id'] = !($data['vendor']['vendor_id']) ? $data['userprofile_id'] : $data['vendorsite']['submit_userprofile_id'];
+
 //		integration package id
 		$integration_package = $this->configService->findByAspClientIdAndUserprofileId($data['userprofile_id']);
 //		approval tracking id
@@ -378,9 +381,7 @@ class VendorService extends AbstractService {
 
 		$vendor->vendor_lastupdate_date = Util::formatDateForDB(new \DateTime());
 
-//		$validator = new EntityValidator();
-//		$validator->validate($vendor);
-		$errors = $this->entityValidator->validate($vendor);// $validator->getErrors();
+		$errors = $this->entityValidator->validate($vendor);
 
 		$id = null;
 
@@ -422,9 +423,7 @@ class VendorService extends AbstractService {
 		$address->table_name = 'vendorsite';
 		$address->address_state = strval($address->address_state);
 
-//		$validator = new EntityValidator();
-//		$validator->validate($address);
-		$errors = $this->entityValidator->validate($address);// $validator->getErrors();
+		$errors = $this->entityValidator->validate($address);
 
 		$address_id = null;
 		if (count($errors) == 0) {
@@ -518,9 +517,7 @@ class VendorService extends AbstractService {
 		$contact_id = null;
 		$phone_id = null;
 
-//		$validator = new EntityValidator();
-//		$validator->validate($person);
-		$errors = $this->entityValidator->validate($person);// $validator->getErrors();
+		$errors = $this->entityValidator->validate($person);
 
 		if (count($errors) == 0) {
 			$this->personGateway->beginTransaction();
@@ -542,8 +539,8 @@ class VendorService extends AbstractService {
 					'person_id'				=> $person->person_id ? $person->person_id : $person_id
 				]);
 
-//				$validator->validate($contact);
-				$errors = $this->entityValidator->validate($contact);// $validator->getErrors();
+
+				$errors = $this->entityValidator->validate($contact);
 
 				$this->contactGateway->beginTransaction();
 
@@ -587,9 +584,7 @@ class VendorService extends AbstractService {
 	 * @return array
 	 */
 	protected function savePhoneRecord($phone) {
-//		$validator = new EntityValidator();
-//		$validator->validate($phone);
-		$errors = $this->entityValidator->validate($phone);// $validator->getErrors();
+		$errors = $this->entityValidator->validate($phone);
 
 		$phone_id = null;
 
@@ -625,9 +620,7 @@ class VendorService extends AbstractService {
 		$email->table_name = 'vendorsite';
 		$email->tablekey_id = $vendorsite_id;
 
-//		$validator = new EntityValidator();
-//		$validator->validate($email);
-		$errors = $this->entityValidator->validate($email);// $validator->getErrors();
+		$errors = $this->entityValidator->validate($email);
 
 		$email_id = null;
 
@@ -1252,6 +1245,23 @@ class VendorService extends AbstractService {
         return \NP\util\Util::formatDateForDB($date);
     }
 
-	public function saveImage() {
+	/**
+	 * Check user's rights to approve
+	 *
+	 * @param $userprofile_id
+	 * @param $role_id
+	 * @return bool
+	 */
+	public function isApprovalRights($userprofile_id = null, $role_id = null) {
+		if (!$userprofile_id || !$role_id) {
+			return [
+				'success'	=> false,
+				'errors'	=> ['field'=>'global', 'msg'=>'Empty userprofile or user role', 'extra'=>null]
+			];
+		}
+		return [
+			'success'	=> true,
+			'ap_count'	=> $this->userprofileGateway->isInAppUser($role_id, $userprofile_id)
+		];
 	}
 }
