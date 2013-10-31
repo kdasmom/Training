@@ -15,6 +15,7 @@ use NP\contact\PhoneGateway;
 use NP\core\AbstractService;
 use NP\core\validation\EntityValidator;
 use NP\invoice\InvoiceGateway;
+use NP\locale\LocalizationService;
 use NP\system\ConfigService;
 use NP\system\IntegrationPackageGateway;
 use NP\system\PnCustomFieldDataGateway;
@@ -66,16 +67,7 @@ class VendorService extends AbstractService {
 		$this->integrationPackageGateway = $integrationPackageGateway;
 		$this->pnCustomFieldDataGateway = $pnCustomFieldDataGateway;
 	}
-	
-	/**
-	 * Retrieves vendor records for the vendor autocomplete when creating catalogs
-	 *
-	 * @param  string $keyword Keyword to use to search for a vendor
-	 * @return array           Array of vendor records
-	 */
-	public function getForCatalogDropDown($keyword) {
-		return $this->vendorGateway->getForCatalogDropDown($keyword);
-	}
+
 
 	/**
 	 * find vendors by status
@@ -261,7 +253,9 @@ class VendorService extends AbstractService {
 							'insurance_expdatetm'					=> $insurance->insurance_expdatetm[$index],
 							'insurance_policy_limit'					=> $insurance->insurance_policy_limit[$index],
 							'insurance_additional_insured_listed'	=> $insurance->insurance_additional_insured_listed[$index],
-							'insurance_id'							=> $insurance->insurance_id[$index]
+							'insurance_id'							=> $insurance->insurance_id[$index],
+							'tablekey_id'							=> $out_vendor_id,
+							'table_name'								=> 'vendor'
 						];
 
 						$result = $this->saveInsurance(['insurance' => $saveInsurance], $out_vendor_id);
@@ -273,6 +267,8 @@ class VendorService extends AbstractService {
 
 					}
 				} else {
+					$insurance->tablekey_id = $out_vendor_id;
+					$insurance->table_name = 'vendor';
 					$result = $this->saveInsurance(['insurance' => (array)$insurance], $out_vendor_id);
 					if (!$result['success']) {
 						return $result;
@@ -331,9 +327,9 @@ class VendorService extends AbstractService {
 			$vendorsite = $data;
 		}
 
-		$validator = new EntityValidator();
-		$validator->validate($vendorsite);
-		$errors = $validator->getErrors();
+//		$validator = new EntityValidator($this->localizationService);
+//		$validator->validate($vendorsite);
+		$errors = $this->entityValidator->validate($vendorsite);// $validator->getErrors();
 		$id = null;
 
 		if(count($errors) == 0) {
@@ -382,9 +378,9 @@ class VendorService extends AbstractService {
 
 		$vendor->vendor_lastupdate_date = Util::formatDateForDB(new \DateTime());
 
-		$validator = new EntityValidator();
-		$validator->validate($vendor);
-		$errors = $validator->getErrors();
+//		$validator = new EntityValidator();
+//		$validator->validate($vendor);
+		$errors = $this->entityValidator->validate($vendor);// $validator->getErrors();
 
 		$id = null;
 
@@ -426,9 +422,9 @@ class VendorService extends AbstractService {
 		$address->table_name = 'vendorsite';
 		$address->address_state = strval($address->address_state);
 
-		$validator = new EntityValidator();
-		$validator->validate($address);
-		$errors = $validator->getErrors();
+//		$validator = new EntityValidator();
+//		$validator->validate($address);
+		$errors = $this->entityValidator->validate($address);// $validator->getErrors();
 
 		$address_id = null;
 		if (count($errors) == 0) {
@@ -522,9 +518,9 @@ class VendorService extends AbstractService {
 		$contact_id = null;
 		$phone_id = null;
 
-		$validator = new EntityValidator();
-		$validator->validate($person);
-		$errors = $validator->getErrors();
+//		$validator = new EntityValidator();
+//		$validator->validate($person);
+		$errors = $this->entityValidator->validate($person);// $validator->getErrors();
 
 		if (count($errors) == 0) {
 			$this->personGateway->beginTransaction();
@@ -546,8 +542,8 @@ class VendorService extends AbstractService {
 					'person_id'				=> $person->person_id ? $person->person_id : $person_id
 				]);
 
-				$validator->validate($contact);
-				$errors = $validator->getErrors();
+//				$validator->validate($contact);
+				$errors = $this->entityValidator->validate($contact);// $validator->getErrors();
 
 				$this->contactGateway->beginTransaction();
 
@@ -591,9 +587,9 @@ class VendorService extends AbstractService {
 	 * @return array
 	 */
 	protected function savePhoneRecord($phone) {
-		$validator = new EntityValidator();
-		$validator->validate($phone);
-		$errors = $validator->getErrors();
+//		$validator = new EntityValidator();
+//		$validator->validate($phone);
+		$errors = $this->entityValidator->validate($phone);// $validator->getErrors();
 
 		$phone_id = null;
 
@@ -629,9 +625,9 @@ class VendorService extends AbstractService {
 		$email->table_name = 'vendorsite';
 		$email->tablekey_id = $vendorsite_id;
 
-		$validator = new EntityValidator();
-		$validator->validate($email);
-		$errors = $validator->getErrors();
+//		$validator = new EntityValidator();
+//		$validator->validate($email);
+		$errors = $this->entityValidator->validate($email);// $validator->getErrors();
 
 		$email_id = null;
 
@@ -1014,13 +1010,16 @@ class VendorService extends AbstractService {
      */
     public function saveInsurance($data) {
         $insurance = new InsuranceEntity($data['insurance']);
+		$insurance->insurance_expdatetm = Util::formatDateForDB(new \DateTime($data['insurance']['insurance_expdatetm']));
+		$insurance->insurance_policy_effective_datetm = Util::formatDateForDB(new \DateTime($data['insurance']['insurance_policy_effective_datetm']));
         $errors = $this->entityValidator->validate($insurance);
+		$id = null;
 
         if (!count($errors)) {
             $this->insuranceGateway->beginTransaction();
             
             try {
-                $this->insuranceGateway->save($insurance);
+                $id = $this->insuranceGateway->save($insurance);
 
                 if (array_key_exists('property_id_list', $data)) {
                     if (array_key_exists('insurance_id', $data['insurance'])) {
@@ -1056,7 +1055,8 @@ class VendorService extends AbstractService {
 
         return array(
             'success' => (count($errors)) ? false : true,
-            'errors'  => $errors
+            'errors'  => $errors,
+			'lastInsertInsuranceId'	=> !$insurance->insurance_id ? $id : $insurance->insurance_id
         );
     }
 
@@ -1251,4 +1251,7 @@ class VendorService extends AbstractService {
 
         return \NP\util\Util::formatDateForDB($date);
     }
+
+	public function saveImage() {
+	}
 }

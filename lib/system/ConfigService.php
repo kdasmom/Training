@@ -14,12 +14,13 @@ use NP\security\SecurityService;
  */
 class ConfigService extends AbstractService {
 	
-	protected $config, $securityService, $siteService, $appName;
+	protected $config, $securityService, $siteService, $appName, $intPkgGateway;
 	
-	public function __construct(Config $config, SecurityService $securityService, SiteService $siteService) {
+	public function __construct(Config $config, SecurityService $securityService, SiteService $siteService, IntegrationPackageGateway $intPkgGateway) {
 		$this->config          = $config;
 		$this->securityService = $securityService;
 		$this->siteService     = $siteService;
+		$this->intPkgGateway		= $intPkgGateway;
 
 		$this->appName         = $siteService->getAppName();
 		

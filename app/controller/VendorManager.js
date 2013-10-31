@@ -15,7 +15,7 @@ Ext.define('NP.controller.VendorManager', {
 		'NP.view.shared.button.Upload',
 		'NP.view.vendor.VendorImageUploadForm',
 		'NP.view.vendor.InsuranceUploadForm',
-		'NP.view.shared.button.Upload'
+//		'NP.view.shared.button.Upload',
     ],
 //  for localization
 
@@ -114,13 +114,13 @@ Ext.define('NP.controller.VendorManager', {
             bind: {
                 models: [
                     'vendor.Vendor',
-					{class: 'vendor.Vendorsite', prefix: 'vs_'},
+					{classPath: 'vendor.Vendorsite', prefix: 'vs_'},
                     'contact.Person',
                     'contact.Address',
                     'contact.Email',
-                    {class: 'contact.Phone', prefix: 'vendorsite_'},
-                    {class: 'contact.Phone', prefix: 'vendorsite_fax_'},
-                    {class: 'contact.Phone', prefix: 'attention_'}
+                    {classPath: 'contact.Phone', prefix: 'vendorsite_'},
+                    {classPath: 'contact.Phone', prefix: 'vendorsite_fax_'},
+                    {classPath: 'contact.Phone', prefix: 'attention_'}
                 ]
             },
 			opened: vendor_id ? true : false
@@ -400,24 +400,80 @@ Ext.define('NP.controller.VendorManager', {
 							break;
 						case ('insurances'):
 							bar.push(
-								{
-									xtype: 'shared.button.upload',
-									text: 'Insurance upload',
-									handler: function() {
-										that.showInsuranceUploadForm();
-									}
-								}
+//								{
+//									xtype: 'shared.button.upload',
+//									text: 'Insurance upload',
+//									handler: function() {
+//										that.showInsuranceUploadForm();
+//									}
+//								}
+//								{
+//									xtype: 'uploadbutton',
+//									text: 'Upload insurance'
+//								}
 							);
 							break;
 						case ('documents'):
 							bar.push(
-								{
-									xtype: 'shared.button.upload',
-									text: 'Image upload',
-									handler: function() {
-										that.showUploadImageForm();
+//								{
+//									xtype: 'shared.button.upload',
+//									text: 'Image upload',
+//									handler: function() {
+//										that.showUploadImageForm();
+//									}
+//								},
+								/*{
+									xtype: 'uploadbutton',
+									text: 'Upload image',
+									plugins: [{
+										ptype: 'ux.upload.window',
+										title: 'Upload',
+										width: 520,
+										height: 350
 									}
-								}
+									],
+									multi_selection: true,
+									singleFile: false,
+									uploader:
+									{
+										url: 'upload.php',
+										uploadpath: '',
+										autoStart: false,
+										max_file_size: '2020mb',
+										drop_element: false,
+										statusQueuedText: 'Ready to upload',
+										statusUploadingText: 'Uploading ({0}%)',
+										statusFailedText: '<span style="color: red">Error</span>',
+										statusDoneText: '<span style="color: green">Complete</span>',
+
+										statusInvalidSizeText: 'File too large',
+										statusInvalidExtensionText: 'Invalid file type'
+									},
+									listeners:
+									{
+										filesadded: function(uploader, files)
+										{
+											//console.log('filesadded');
+											return true;
+										},
+
+										beforeupload: function(uploader, file)
+										{
+											//console.log('beforeupload');
+										},
+
+										fileuploaded: function(uploader, file)
+										{
+//											console.log('fileuploaded');
+										},
+
+										uploadcomplete: function(uploader, success, failed)
+										{
+											//console.log('uploadcomplete');
+										},
+										scope: this
+									}
+								}*/
 							);
 							break;
 					}

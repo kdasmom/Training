@@ -6,14 +6,6 @@
 Ext.define('NP.view.vendor.VendorGrid', {
 	extend: 'NP.lib.ui.Grid',
  	alias : 'widget.vendor.vendorgrid',
-	// This is the default list of columns available for Invoice grids
-	/*var colOptions = [
-		'vendor.gridcol.DateSubmitted',
-		'vendor.gridcol.VendorName',
-		'vendor.gridcol.ApprovalType',
-		'vendor.gridcol.SubmittedBy',
-		'vendor.gridcol.VendorStatus'
-	],*/
 
     requires: [
     	'NP.lib.core.Config',
@@ -21,12 +13,22 @@ Ext.define('NP.view.vendor.VendorGrid', {
     	'NP.view.vendor.gridcol.VendorName',
     	'NP.view.vendor.gridcol.SentForApprovalBy',
 		'NP.view.vendor.gridcol.ApprovalType',
-		'NP.view.shared.gridcol.IntegrationPackageName'
+		'NP.view.shared.gridcol.IntegrationPackageName',
+		'NP.view.vendor.gridcol.DateSubmitted',
+		'NP.view.vendor.gridcol.SubmittedBy',
+		'NP.view.vendor.gridcol.VendorStatus'
     ],
-    
+
+	colOptions: [
+		'vendor.gridcol.DateSubmitted',
+		'vendor.gridcol.VendorName',
+		'vendor.gridcol.ApprovalType',
+		'vendor.gridcol.SubmittedBy',
+		'vendor.gridcol.VendorStatus'
+	],
     // This is the default list of columns available for Invoice grids
-	colOptions: ['vendor.gridcol.SentForApprovalDate','vendor.gridcol.VendorName','vendor.gridcol.SentForApprovalBy',
-				'vendor.gridcol.ApprovalType','shared.gridcol.IntegrationPackageName'],
+//	colOptions: ['vendor.gridcol.SentForApprovalDate','vendor.gridcol.VendorName','vendor.gridcol.SentForApprovalBy',
+//				'vendor.gridcol.ApprovalType','shared.gridcol.IntegrationPackageName'],
 
     /**
      * @cfg {Array} cols         Columns that you want to display on the grid by default
