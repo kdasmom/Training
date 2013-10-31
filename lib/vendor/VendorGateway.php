@@ -812,6 +812,90 @@ class VendorGateway extends AbstractGateway {
 
 		return $retult[0]['vendortype_id'];
 	}
+
+	/**
+	 * Check dependencies before delete
+	 *
+	 * @param $vendor_id
+	 * @return bool
+	 */
+	public function isReadyToDeleteVendor($vendor_id) {
+//		check dependings
+//		penging edits
+		$select = new Select();
+		$select->from(['v' => 'vendor'])
+				->count(true, 'reccount')
+				->where(['approval_tracking_id' => '?'])
+				->whereNotEquals('vendor_id', $vendor_id);
+
+		$result = $this->adapter->query($select, [$vendor_id]);
+
+		if ($result[0]['reccount'] > 0) {
+			return false;
+		}
+//		invoices
+		$select = new Select();
+		$select->from(['i' => 'invoice'])
+				->count(true, 'icount')
+				->join(['vs'	=> 'vendorsite'], 'vs.vendorsite_id = i.paytablekey_id', [])
+				->join(['v' => 'vendor'], 'v.vendor_id = vs.vendor_id', [])
+				->where([
+						'i.paytable_name'	=> '?',
+						'v.vendor_id'		=> '?'
+				]);
+		$result = $this->adapter->query($select, ['vendorsite', $vendor_id]);
+
+		if ($result[0]['reccount'] > 0) {
+			return false;
+		}
+
+//		po
+		$select = new Select();
+		$select->from(['po' => 'purchaseorder'])
+				->count(true, 'pocount')
+				->join(['vs'	=> 'vendorsite'], 'vs.vendorsite_id = po.vendorsite_id', [])
+				->join(['v' => 'vendor'], 'v.vendor_id = vs.vendor_id', [])
+				->where([
+					'v.vendor_id'		=> '?'
+				]);
+		$result = $this->adapter->query($select, [$vendor_id]);
+
+		if ($result[0]['reccount'] > 0) {
+			return false;
+		}
+
+//		vef
+		$select = new Select();
+		$select->from(['vef' => 'vendorest'])
+					->count(true, 'vefcount')
+					->join(['vs' => 'vendorsite'], 'vs.vendorsite_id = vef.vendorsite_id', [])
+					->join(['v' => 'vendor'], 'v.vendor_id = vs.vendor_id', [])
+					->where([
+						'v.vendor_id'		=> '?'
+					]);
+
+		if ($result[0]['reccount'] > 0) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Delete vendor category by vendor_id
+	 *
+	 * @param int $vendor_id
+	 * @return array|bool
+	 */
+	public function deleteVendorCategory($vendor_id) {
+		$delete = new Delete();
+
+		$delete->from('vendorcategory')
+				->where(['vendor_id' => '?']);
+
+		return $this->adapter->query($delete, [$vendor_id]);
+	}
+
 }
 
 ?>

@@ -51,12 +51,9 @@ class VendorsiteGateway extends AbstractGateway {
 	 * @return array|bool
 	 */
 	public function insertFavorite($vendorsiteId, $propertyId, $action) {
-		$delete = new Delete();
 
-		$delete->from('vendorfavorite')
-					->where(['vendorsite_id' => '?', 'property_id' => '?']);
+		$result = $this->deleteVendorFavorite($vendorsiteId, $propertyId);
 
-		$result = $this->adapter->query($delete, [$vendorsiteId, $propertyId]);
 		if ($action == 'remove') {
 			return $result;
 		}
@@ -246,4 +243,29 @@ class VendorsiteGateway extends AbstractGateway {
 
 		return $this->adapter->query($select, array($vendor_id_alt, $integration_package_id, 'active'));
 	}
+
+
+	/**
+	 * Delete vendorfavorite
+	 *
+	 * @param $vendorsite_id
+	 * @param null $property_id
+	 */
+	public function deleteVendorFavorite($vendorsite_id, $property_id = null) {
+		$delete = new Delete();
+
+		$where = [
+			'vendorsite_id'	=> '?'
+		];
+		if ($property_id) {
+			$where['property_id'] = '?';
+		}
+		$delete->from('vendorfavorite')
+			->where($where);
+
+		$result = $this->adapter->query($delete, [$vendorsite_id, $property_id]);
+
+		return $result;
+	}
+
 }

@@ -59,8 +59,7 @@ Ext.define('NP.controller.VendorManager', {
 
             '[xtype="vendor.vendorsmanager"] [xtype="vendor.vendorgrid"]': {
                 itemclick: function(grid, rec) {
-//                    this.showVendorForm(rec.internalId);
-					this.addHistory('VendorManager:showVendorForm:' + rec.internalId);
+					this.addHistory('VendorManager:showVendorForm:' + rec.internalId + ':' + rec.get('vendor_status'));
                 }
             },
 
@@ -106,8 +105,12 @@ Ext.define('NP.controller.VendorManager', {
 	 * Load vendor's form
 	 * @param int vendor_id Vendor id to edit
 	 */
-	showVendorForm: function(vendor_id) {
+	showVendorForm: function(vendor_id, status) {
 		var insurances = [];
+
+		if (status) {
+			this.vendor_status = status;
+		}
 
 		var that = this;
 
@@ -293,7 +296,7 @@ Ext.define('NP.controller.VendorManager', {
      * @param rowIndex
      */
     viewVendor: function(grid, rec, rowIndex) {
-		this.addHistory('VendorManager:showVendorForm:' + rec.internalId);
+		this.addHistory('VendorManager:showVendorForm:' + rec.internalId + ':' + rec.get('vendor_status'));
 //        this.showVendorForm(rec.internalId);
     },
 
@@ -316,6 +319,7 @@ Ext.define('NP.controller.VendorManager', {
 		var bbar = form.getDockedItems()[2];
 		var opened = !opened ? form.opened : opened;
 		var appCount = false;
+
 		NP.lib.core.Net.remoteCall({
 			requests: {
 				service: 'VendorService',
@@ -378,7 +382,7 @@ Ext.define('NP.controller.VendorManager', {
 
 				} else {
 					var submit_userprofile_id = form.findField('submit_userprofile_id').getValue();
-					bar = buttonForNonAddresTab(appCount, this.vendor_status, itemId, bar, form, submit_userprofile_id);
+					bar = buttonForTab(appCount, this.vendor_status, itemId, bar, form, submit_userprofile_id);
 				}
 			}
 
@@ -389,7 +393,7 @@ Ext.define('NP.controller.VendorManager', {
 		tbar.add(bar);
 		bbar.add(bar);
 
-		function buttonForNonAddresTab(app_count, vendor_status, tabName, bar, form, submit_userprofile_id) {
+		function buttonForTab(app_count, vendor_status, tabName, bar, form, submit_userprofile_id) {
 			if (tabName !== 'altaddresses') {
 
 //				Non-Approver editing an active vendor with no pending edits
@@ -422,20 +426,22 @@ Ext.define('NP.controller.VendorManager', {
 											}
 										}
 									);
-								}
-								if (NP.Security.hasPermission(6092) && !NP.Security.hasPermission(1025)) {
-									bar.push(
-										{
-											xtype: 'shared.button.save',
-											text: 'Submit Changes for Approval',
-											handler: function() {
-												that.saveVendor();
+								} else {
+									if (NP.Security.hasPermission(6092) && !NP.Security.hasPermission(1025)) {
+										bar.push(
+											{
+												xtype: 'shared.button.save',
+												text: 'Submit Changes for Approval',
+												handler: function() {
+													that.saveVendor();
+												}
 											}
-										}
-									);
+										);
+									}
 								}
 							} else {
-								if (tabName == 'settings' && !NP.Security.hasPermission(2083)) {
+//								<!--- Privelage 2083 - Modify General Info / Settingscheck_ap --->
+								if (tabName == 'settings' && NP.Security.hasPermission(2083)) {
 									bar.push(
 										{
 											xtype: 'shared.button.save',

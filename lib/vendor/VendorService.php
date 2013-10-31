@@ -13,6 +13,8 @@ use NP\contact\PersonEntity;
 use NP\contact\PhoneEntity;
 use NP\contact\PhoneGateway;
 use NP\core\AbstractService;
+use NP\core\db\Delete;
+use NP\core\db\Select;
 use NP\core\validation\EntityValidator;
 use NP\invoice\InvoiceGateway;
 use NP\locale\LocalizationService;
@@ -102,6 +104,11 @@ class VendorService extends AbstractService {
 
 		$data['vendorsite'] = $data['vs_vendorsite'];
 		unset($data['vs_vendorsite']);
+
+		if ($data['vendor']['vendor_id'] && $data['vendorsite']['vendorsite_id'] && $data['action'] == 'delete_vendor') {
+			$this->deleteVendor($data['vendor']['vendor_id'], $data['vendorsite']['vendorsite_id']);
+			$this->vendorGateway->deleteMessages($data['vendor']['vendor_id']);
+		}
 
 		$vendor = new VendorEntity($data['vendor']);
 
@@ -1263,5 +1270,30 @@ class VendorService extends AbstractService {
 			'success'	=> true,
 			'ap_count'	=> $this->userprofileGateway->isInAppUser($role_id, $userprofile_id)
 		];
+	}
+
+	/**
+	 * Delete vendor and all dependencies
+	 *
+	 * @param $vendor_id
+	 * @param $vendorsite_id
+	 */
+	public function deleteVendor($vendor_id, $vendorsite_id) {
+		$ready = $this->vendorGateway->isReadyToDeleteVendor($vendor_id);
+
+		if ($ready) {
+			$this->vendorsiteGateway->deleteVendorFavorite($vendorsite_id);
+			$this->addressGateway->delete(['table_name' => '?', 'tablekey_id' => '?'], ['vendorsite', $vendorsite_id]);
+			$this->phoneGateway->delete(['table_name' => '?', 'tablekey_id' => '?'], ['vendorsite', $vendorsite_id]);
+			$this->emailGateway->delete(['table_name' => '?', 'tablekey_id' => '?'], ['vendorsite', $vendorsite_id]);
+			$this->phoneGateway->deleteByTablenameAndKey('vendorsite', $vendorsite_id);
+			$this->contactGateway->delete(['table_name' => '?', 'tablekey_id' => '?'], ['vendorsite', $vendorsite_id]);
+			$this->vendorGateway->deleteAssignedGlaccounts($vendor_id);
+			$this->insuranceGateway->deleteInsuranceLinkProperty($vendor_id, 'vendor');
+			$this->insuranceGateway->delete(['tablekey_id' => '?', 'table_name' => '?'], [$vendor_id, 'vendor']);
+			$this->vendorGateway->deleteVendorCategory($vendor_id);
+			$this->vendorsiteGateway->delete(['vendorsite_id' => '?'], [$vendorsite_id]);
+			$this->vendorGateway->delete(['vendor_id' => '?'], [$vendor_id]);
+		}
 	}
 }

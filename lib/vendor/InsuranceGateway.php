@@ -180,7 +180,25 @@ class InsuranceGateway extends AbstractGateway {
 		}
 
 		return ['expired'=>$expired, 'days_to_expiration'=>$days_to_expiration];
-	}	
+	}
+
+	/**
+	 * Delete insurance link property for insurances depending by table_name and tablekey_id
+	 *
+	 * @param $tablekey_id
+	 * @param $table_name
+	 * @return array|bool
+	 */
+	public function deleteInsuranceLinkProperty($tablekey_id, $table_name) {
+		$delete = new Delete();
+		$delete->from('link_insurance_property')
+			->whereIn('insurance_id', Select::get()->column('insurance_id')
+					->from('insurance')
+					->where(['table_name' => '?', 'tablekey_id' => '?'])
+			);
+
+		return $this->adapter->query($delete, [$table_name, $tablekey_id]);
+	}
 }
 
 ?>
