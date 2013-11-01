@@ -14,13 +14,14 @@ use NP\security\SecurityService;
  */
 class ConfigService extends AbstractService {
 	
-	protected $config, $securityService, $siteService, $appName, $intPkgGateway;
+	protected $config, $securityService, $siteService, $appName, $intPkgGateway, $configsysGateway;
 	
-	public function __construct(Config $config, SecurityService $securityService, SiteService $siteService, IntegrationPackageGateway $intPkgGateway) {
+	public function __construct(Config $config, SecurityService $securityService, SiteService $siteService, IntegrationPackageGateway $intPkgGateway, ConfigsysGateway $configsysGateway) {
 		$this->config          = $config;
 		$this->securityService = $securityService;
 		$this->siteService     = $siteService;
 		$this->intPkgGateway		= $intPkgGateway;
+		$this->configsysGateway = $configsysGateway;
 
 		$this->appName         = $siteService->getAppName();
 		
@@ -350,6 +351,21 @@ class ConfigService extends AbstractService {
 	 */
 	public function findSysValueByName($name) {
 		return $this->configsysGateway->findConfigSysValByName($name);
+	}
+
+	/**
+	 * Save audit log
+	 *
+	 * @param $userprofile_id
+	 * @param $tablekey_id
+	 * @param $audittype_id
+	 * @param $field_name
+	 * @param $field_new_value
+	 * @param $control_value
+	 */
+	public function saveAuditLog($userprofile_id, $tablekey_id, $audittype_id, $field_name, $field_new_value, $control_value = null) {
+
+		$this->configsysGateway->saveAuditLog($userprofile_id, $tablekey_id, $audittype_id, $field_name, $field_new_value, $control_value);
 	}
 }
 

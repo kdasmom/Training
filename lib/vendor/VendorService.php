@@ -1306,4 +1306,10 @@ class VendorService extends AbstractService {
 	public function findAlternateAddresses($vendor_id = null, $vendorsite_id = null, $returnAll = false) {
 		return $this->vendorsiteGateway->findAlternateAddresses($vendor_id, $vendorsite_id, $returnAll);
 	}
+
+	public function vendorActive($vendor_id, $vendorsite_id, $userprofile_id, $active_status) {
+		$this->vendorGateway->update(['vendor_status' => $active_status], ['vendor_id' => '?'], [$vendor_id]);
+		$this->vendorsiteGateway->vendorsiteActive($vendor_id, $active_status);
+		$this->configService->saveAuditLog($userprofile_id, $vendorsite_id, 5, 'vendor_status', $active_status);
+	}
 }

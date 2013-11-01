@@ -3,6 +3,8 @@
 namespace NP\system;
 
 use NP\core\AbstractGateway;
+use NP\core\db\Expression;
+use NP\core\db\Insert;
 use NP\core\db\Update;
 use NP\core\db\Select;
 use NP\core\db\Where;
@@ -123,6 +125,47 @@ class ConfigsysGateway extends AbstractGateway {
 		$result = $this->adapter->query($select, [$name]);
 
 		return isset($result[0]['configsysval_val']) ? $result[0]['configsysval_val'] : $default_value;
+	}
+
+
+	/**
+	 * Save audit log
+	 *
+	 * @param $userprofile_id
+	 * @param $tablekey_id
+	 * @param $audittype_id
+	 * @param $field_name
+	 * @param $field_new_value
+	 * @param $control_value
+	 */
+	public function saveAuditLog($userprofile_id, $tablekey_id, $audittype_id, $field_name, $field_new_value, $control_value = null) {
+		if ($control_value) {
+			$select = new Select();
+
+			$select->from(['c' => 'configsys'])
+					->join(['cv' => 'configsysval'], 'c.configsys_id = cv.configsys_id', ['configsysval_val'])
+					->where(['c.configsys_name' => '?']);
+
+			$result = $this->adapter->query($select, ['C' . $control_value]);
+		}
+		if ($control_value && $result[0]['configsysval_val'] == 1) {
+			$insert = new Insert();
+
+			$insert->into('auditlog')
+				->columns(['userprofile_id', 'tablekey_id', 'auditactivity_id', 'audittype_id', 'field_name', 'field_new_value'])
+				->values(Select::get()->columns([
+					new Expression('?'),
+					new Expression('?'),
+					'auditactivity_id',
+					new Expression('?'),
+					new Expression('?'),
+					new Expression('?')
+					])
+					->from('auditactivity')
+					->where(['auditactivity' => '?']));
+
+			$this->adapter->query($insert, [$userprofile_id, $tablekey_id, $audittype_id, $field_name, $field_new_value]);
+		}
 	}
 }
 

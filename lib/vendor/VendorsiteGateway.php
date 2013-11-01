@@ -14,6 +14,7 @@ use NP\core\db\Delete;
 use NP\core\db\Expression;
 use NP\core\db\Insert;
 use NP\core\db\Select;
+use NP\core\db\Update;
 
 class VendorsiteGateway extends AbstractGateway {
 
@@ -305,6 +306,27 @@ class VendorsiteGateway extends AbstractGateway {
 				->where($where);
 
 		return $this->adapter->query($select, $params);
+	}
+
+	/**
+	 * active vendor
+	 *
+	 * @param $vendor_id
+	 * @param $vendor_status
+	 */
+	public function vendorsiteActive($vendor_id, $vendor_status) {
+		$update = new Update();
+
+		$update->table('vendorsite')
+				->values([
+					'vendorsite_status'	=> '?'
+				])
+				->where(['vendor_id' => '?'])
+				->whereNest('OR')
+				->whereEquals('vendorsite_status', "'active'")
+				->whereEquals('vendorsite_status', "'inactive'");
+
+		$this->adapter->query($update, [$vendor_status, $vendor_id]);
 	}
 
 }
