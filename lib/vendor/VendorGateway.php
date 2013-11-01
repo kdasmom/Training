@@ -367,94 +367,109 @@ class VendorGateway extends AbstractGateway {
 		);
 	}
 
+
+	/**
+	 * Approve vendor
+	 *
+	 * @param null $aspClientId
+	 * @param null $userProfileId
+	 * @param $vendorId
+	 * @param $approvalTrackingId
+	 * @param $approvalStatus
+	 * @return array
+	 */
 	public function approveVendor($aspClientId = null, $userProfileId = null, $vendorId, $approvalTrackingId, $approvalStatus) {
 
 		if ($approvalTrackingId === $vendorId) {
-			$vendor = $this->update(
+			$result = $this->update(
 				['vendor_status' => $approvalStatus],
 				['vendor_id'	=> '?'],
 				[$vendorId]
 			);
-
-
-			if ($vendor) {
-
+			if (!$result) {
 				return [
-					'vendor_id'			=> $vendorId,
-					'approval_status'	=> $approvalStatus
+					'success'	=> false,
+					'errors'	=> ['field'=>'global', 'msg'=>'Can\'t update vendor', 'extra'=>null]
 				];
 			}
-			return $vendor;
+			$out_vendor_id = $vendorId;
 		} else {
 			$compare = $this->transferCompareVendor($vendorId, $approvalTrackingId);
-			$vendor = $this->find(['v.vendor_id' => '?'], [$vendorId]);
+			$select = new Select();
+			$select->from(['v' => 'vendor'])
+					->join(['i' => 'integrationpackage'], 'i.integration_package_id = VENDOR.integration_package_id', [])
+					->where([
+						'v.vendor_id' 		=> '?',
+						'i.asp_client_id'	=> '?'
+				]);
+			$result = $this->adapter->query($select, [$vendorId, $aspClientId]);
 
 			$this->update([
-				'vendor_name'			=> $vendor[0]['vendor_name'],
-				'vendor_fedid'			=> $vendor[0]['vendor_fedid'],
-				'default_glaccount_id'			=> $vendor[0]['default_glaccount_id'],
-				'vendor_type_code'			=> $vendor[0]['vendor_type_code'],
-				'vendorclass_id'			=> $vendor[0]['vendorclass_id'],
-				'term_id'			=> $vendor[0]['term_id'],
-				'vendor_industry_class'			=> $vendor[0]['vendor_industry_class'],
-				'minoritygroup_code'			=> $vendor[0]['minoritygroup_code'],
-				'vendor_women_flag'			=> $vendor[0]['vendor_women_flag'],
-				'vendor_lastupdate_date'			=> $vendor[0]['vendor_lastupdate_date'],
-				'vendor_add_reason'			=> $vendor[0]['vendor_add_reason'],
-				'vendor_customernum'			=> $vendor[0]['vendor_customernum'],
-				'vendor_suppliernum'			=> $vendor[0]['vendor_suppliernum'],
-				'vendortype_id'			=> $vendor[0]['vendortype_id'],
-				'vendor_active_startdate'			=> $vendor[0]['vendor_active_startdate'],
-				'vendor_active_enddate'			=> $vendor[0]['vendor_active_enddate'],
-				'vendor_bank_accname'			=> $vendor[0]['vendor_bank_accname'],
-				'vendor_bank_accnum'			=> $vendor[0]['vendor_bank_accnum'],
-				'vendor_banknum'			=> $vendor[0]['vendor_banknum'],
-				'vendor_bank_acctype'			=> $vendor[0]['vendor_bank_acctype'],
-				'vendor_auto_calc_interest_flag'			=> $vendor[0]['vendor_auto_calc_interest_flag'],
-				'vendor_tax_reporting_name'			=> $vendor[0]['vendor_tax_reporting_name'],
-				'vendor_name_control'			=> $vendor[0]['vendor_name_control'],
-				'vendor_type1099'			=> $vendor[0]['vendor_type1099'],
-				'withholdingstatus_code'			=> $vendor[0]['withholdingstatus_code'],
-				'vendor_withhold_startdate'			=> $vendor[0]['vendor_withhold_startdate'],
-				'vendor_tax_rounding'			=> $vendor[0]['vendor_tax_rounding'],
-				'vendor_tax_calc_flag'			=> $vendor[0]['vendor_tax_calc_flag'],
-				'vendor_tax_calc_override'			=> $vendor[0]['vendor_tax_calc_override'],
-				'vendor_amt_include_tax_flag'			=> $vendor[0]['vendor_amt_include_tax_flag'],
-				'vendor_awt_flag'			=> $vendor[0]['vendor_awt_flag'],
-				'vendor_tax_verif_date'			=> $vendor[0]['vendor_tax_verif_date'],
-				'vendor_smallbusiness_flag'			=> $vendor[0]['vendor_smallbusiness_flag'],
-				'paymentmethod_code'			=> $vendor[0]['paymentmethod_code'],
-				'paydatebasis_code'			=> $vendor[0]['paydatebasis_code'],
-				'paygroup_code'			=> $vendor[0]['paygroup_code'],
-				'vendor_ap_bank_number'			=> $vendor[0]['vendor_ap_bank_number'],
-				'vendor_check_digits'			=> $vendor[0]['vendor_check_digits'],
-				'vendor_paypriority'			=> $vendor[0]['vendor_paypriority'],
-				'vendor_allowunordered_flag'			=> $vendor[0]['vendor_allowunordered_flag'],
-				'vendor_match'			=> $vendor[0]['vendor_match'],
-				'vendor_holdunmatched_invc_flag'			=> $vendor[0]['vendor_holdunmatched_invc_flag'],
-				'vendor_exclusive_payment_flag'			=> $vendor[0]['vendor_exclusive_payment_flag'],
-				'vendor_debit_memo_flag'			=> $vendor[0]['vendor_debit_memo_flag'],
-				'vendor_paymenthold_flag'			=> $vendor[0]['vendor_paymenthold_flag'],
-				'vendor_paymenthold_fut_flag'			=> $vendor[0]['vendor_paymenthold_fut_flag'],
-				'vendor_paymenthold_reason'			=> $vendor[0]['vendor_paymenthold_reason'],
-				'vendor_invoice_currency'			=> $vendor[0]['vendor_invoice_currency'],
-				'vendor_payment_currency'			=> $vendor[0]['vendor_payment_currency'],
-				'vendor_allowsub_flag'			=> $vendor[0]['vendor_allowsub_flag'],
-				'vendor_termsdatebasis'			=> $vendor[0]['vendor_termsdatebasis'],
-				'vendor_minorder'			=> $vendor[0]['vendor_minorder'],
-				'vendor_invoice_maxamount'			=> $vendor[0]['vendor_invoice_maxamount'],
-				'vendor_purchasehold_flag'			=> $vendor[0]['vendor_purchasehold_flag'],
-				'vendor_purchasehold_reason'			=> $vendor[0]['vendor_purchasehold_reason'],
-				'vendor_purchasehold_date'			=> $vendor[0]['vendor_purchasehold_date'],
-				'vendor_inspectionreq_flag'			=> $vendor[0]['vendor_inspectionreq_flag'],
-				'vendor_receiptreq_flag'			=> $vendor[0]['vendor_receiptreq_flag'],
-				'vendor_discount_exclude_freight'			=> $vendor[0]['vendor_discount_exclude_freight'],
-				'vendor_fed_report_flag'			=> $vendor[0]['vendor_fed_report_flag'],
-				'submit_userprofile_id'			=> $vendor[0]['submit_userprofile_id'],
-				'default_paymenttype_id'			=> $vendor[0]['default_paymenttype_id'],
-				'organization_type_code'			=> $vendor[0]['organization_type_code'],
-				'finance_vendor'			=> $vendor[0]['finance_vendor'],
-				'default_due_date'			=> $vendor[0]['default_due_date'],
+				'vendor_name'						=> $result[0]['vendor_name'],
+				'vendor_fedid'						=> $result[0]['vendor_fedid'],
+				'default_glaccount_id'				=> $result[0]['default_glaccount_id'],
+				'vendor_type_code'					=> $result[0]['vendor_type_code'],
+				'vendorclass_id'					=> $result[0]['vendorclass_id'],
+				'term_id'							=> $result[0]['term_id'],
+				'vendor_industry_class'				=> $result[0]['vendor_industry_class'],
+				'minoritygroup_code'					=> $result[0]['minoritygroup_code'],
+				'vendor_women_flag'					=> $result[0]['vendor_women_flag'],
+				'vendor_lastupdate_date'			=> $result[0]['vendor_lastupdate_date'],
+				'vendor_add_reason'					=> $result[0]['vendor_add_reason'],
+				'vendor_customernum'					=> $result[0]['vendor_customernum'],
+				'vendor_suppliernum'					=> $result[0]['vendor_suppliernum'],
+				'vendortype_id'						=> $result[0]['vendortype_id'],
+				'vendor_active_startdate'			=> $result[0]['vendor_active_startdate'],
+				'vendor_active_enddate'				=> $result[0]['vendor_active_enddate'],
+				'vendor_bank_accname'				=> $result[0]['vendor_bank_accname'],
+				'vendor_bank_accnum'					=> $result[0]['vendor_bank_accnum'],
+				'vendor_banknum'						=> $result[0]['vendor_banknum'],
+				'vendor_bank_acctype'				=> $result[0]['vendor_bank_acctype'],
+				'vendor_auto_calc_interest_flag'	=> $result[0]['vendor_auto_calc_interest_flag'],
+				'vendor_tax_reporting_name'			=> $result[0]['vendor_tax_reporting_name'],
+				'vendor_name_control'				=> $result[0]['vendor_name_control'],
+				'vendor_type1099'					=> $result[0]['vendor_type1099'],
+				'withholdingstatus_code'			=> $result[0]['withholdingstatus_code'],
+				'vendor_withhold_startdate'			=> $result[0]['vendor_withhold_startdate'],
+				'vendor_tax_rounding'				=> $result[0]['vendor_tax_rounding'],
+				'vendor_tax_calc_flag'				=> $result[0]['vendor_tax_calc_flag'],
+				'vendor_tax_calc_override'			=> $result[0]['vendor_tax_calc_override'],
+				'vendor_amt_include_tax_flag'		=> $result[0]['vendor_amt_include_tax_flag'],
+				'vendor_awt_flag'					=> $result[0]['vendor_awt_flag'],
+				'vendor_tax_verif_date'				=> $result[0]['vendor_tax_verif_date'],
+				'vendor_smallbusiness_flag'			=> $result[0]['vendor_smallbusiness_flag'],
+				'paymentmethod_code'					=> $result[0]['paymentmethod_code'],
+				'paydatebasis_code'					=> $result[0]['paydatebasis_code'],
+				'paygroup_code'						=> $result[0]['paygroup_code'],
+				'vendor_ap_bank_number'				=> $result[0]['vendor_ap_bank_number'],
+				'vendor_check_digits'				=> $result[0]['vendor_check_digits'],
+				'vendor_paypriority'				=> $result[0]['vendor_paypriority'],
+				'vendor_allowunordered_flag'		=> $result[0]['vendor_allowunordered_flag'],
+				'vendor_match'						=> $result[0]['vendor_match'],
+				'vendor_holdunmatched_invc_flag'		=> $result[0]['vendor_holdunmatched_invc_flag'],
+				'vendor_exclusive_payment_flag'		=> $result[0]['vendor_exclusive_payment_flag'],
+				'vendor_debit_memo_flag'				=> $result[0]['vendor_debit_memo_flag'],
+				'vendor_paymenthold_flag'			=> $result[0]['vendor_paymenthold_flag'],
+				'vendor_paymenthold_fut_flag'		=> $result[0]['vendor_paymenthold_fut_flag'],
+				'vendor_paymenthold_reason'			=> $result[0]['vendor_paymenthold_reason'],
+				'vendor_invoice_currency'			=> $result[0]['vendor_invoice_currency'],
+				'vendor_payment_currency'			=> $result[0]['vendor_payment_currency'],
+				'vendor_allowsub_flag'				=> $result[0]['vendor_allowsub_flag'],
+				'vendor_termsdatebasis'				=> $result[0]['vendor_termsdatebasis'],
+				'vendor_minorder'					=> $result[0]['vendor_minorder'],
+				'vendor_invoice_maxamount'			=> $result[0]['vendor_invoice_maxamount'],
+				'vendor_purchasehold_flag'			=> $result[0]['vendor_purchasehold_flag'],
+				'vendor_purchasehold_reason'		=> $result[0]['vendor_purchasehold_reason'],
+				'vendor_purchasehold_date'			=> $result[0]['vendor_purchasehold_date'],
+				'vendor_inspectionreq_flag'			=> $result[0]['vendor_inspectionreq_flag'],
+				'vendor_receiptreq_flag'			=> $result[0]['vendor_receiptreq_flag'],
+				'vendor_discount_exclude_freight'	=> $result[0]['vendor_discount_exclude_freight'],
+				'vendor_fed_report_flag'			=> $result[0]['vendor_fed_report_flag'],
+				'submit_userprofile_id'				=> $result[0]['submit_userprofile_id'],
+				'default_paymenttype_id'				=> $result[0]['default_paymenttype_id'],
+				'organization_type_code'			=> $result[0]['organization_type_code'],
+				'finance_vendor'					=> $result[0]['finance_vendor'],
+				'default_due_date'					=> $result[0]['default_due_date'],
 			], ['vendor_id' => '?'], [$approvalTrackingId]);
 			if (!$compare && $approvalStatus == 'approved') {
 				$approvalStatus = 'active';
@@ -641,6 +656,13 @@ class VendorGateway extends AbstractGateway {
 		return $this->adapter->query($delete, ['vendor', $vendor_id]);
 	}
 
+	/**
+	 * Vendor transfer compare
+	 *
+	 * @param $vendor_id
+	 * @param $approval_tracking_id
+	 * @return bool
+	 */
 	public function transferCompareVendor($vendor_id, $approval_tracking_id) {
 
 		$compare = false;

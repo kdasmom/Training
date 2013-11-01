@@ -127,7 +127,8 @@ Ext.define('NP.controller.VendorManager', {
                     {classPath: 'contact.Phone', prefix: 'attention_'}
                 ]
             },
-			opened: vendor_id ? true : false
+			opened: vendor_id ? true : false,
+			vendor_id: vendor_id
         };
 
 		var form = null;

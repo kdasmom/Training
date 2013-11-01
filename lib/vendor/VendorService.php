@@ -287,7 +287,6 @@ class VendorService extends AbstractService {
 				}
 
 				$this->insuranceGateway->deleteInsuranceList($savedInsurances, 'vendor', $out_vendor_id);
-//				$this->insuranceGateway->delete(['table_name' => '?', 'tablekey_id' => '?'], ['vendor', $out_vendor_id]);
 			}
 
 //			save recauthor
@@ -337,9 +336,7 @@ class VendorService extends AbstractService {
 			$vendorsite = $data;
 		}
 
-//		$validator = new EntityValidator($this->localizationService);
-//		$validator->validate($vendorsite);
-		$errors = $this->entityValidator->validate($vendorsite);// $validator->getErrors();
+		$errors = $this->entityValidator->validate($vendorsite);
 		$id = null;
 
 		if(count($errors) == 0) {
@@ -408,7 +405,7 @@ class VendorService extends AbstractService {
 		return [
 			'success'    			=> (count($errors)) ? false : true,
 			'errors'				=> $errors,
-			'lastInsertId'		=> $id
+			'lastInsertId'			=> $id
 		];
 	}
 
@@ -1296,5 +1293,17 @@ class VendorService extends AbstractService {
 			$this->vendorsiteGateway->delete(['vendorsite_id' => '?'], [$vendorsite_id]);
 			$this->vendorGateway->delete(['vendor_id' => '?'], [$vendor_id]);
 		}
+	}
+
+	/**
+	 * Retrieve alternate addresses
+	 *
+	 * @param null $vendor_id
+	 * @param null $vendorsite_id
+	 * @param bool $returnAll
+	 * @return array|bool
+	 */
+	public function findAlternateAddresses($vendor_id = null, $vendorsite_id = null, $returnAll = false) {
+		return $this->vendorsiteGateway->findAlternateAddresses($vendor_id, $vendorsite_id, $returnAll);
 	}
 }

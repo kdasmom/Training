@@ -34,6 +34,7 @@ Ext.define('NP.view.vendor.VendorForm', {
 	vendorStatus: '',
 	customFieldData: [],
 	layout: 'fit',
+	vendor_id: null,
 
 	initComponent: function() {
 
@@ -68,7 +69,8 @@ Ext.define('NP.view.vendor.VendorForm', {
 			if ( NP.Config.getSetting('PN.VendorOptions.AllowAltAddresses') == 1) {
 				this.items[0].items.push({
 					xtype: 'vendor.alternativeaddresses',
-					itemId: 'altaddresses'
+					itemId: 'altaddresses',
+					vendor_id: this.vendor_id
 				});
 			}
 		}

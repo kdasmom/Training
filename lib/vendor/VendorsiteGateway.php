@@ -268,4 +268,43 @@ class VendorsiteGateway extends AbstractGateway {
 		return $result;
 	}
 
+
+	/**
+	 * Rertieve alternate addresses
+	 *
+	 * @param $vendorsite_id
+	 * @param $vendor_id
+	 * @param bool $returnAll
+	 * @return array|bool
+	 */
+	public function findAlternateAddresses($vendor_id, $vendorsite_id, $returnAll = false) {
+		$select = new Select();
+
+		$where = [
+			'a.table_name' => '?'
+		];
+		$params = ['vendorsite'];
+		if ($vendor_id) {
+			$where['vs.vendor_id'] = '?';
+			$params[] = $vendor_id;
+		}
+		if ($vendorsite_id) {
+			$where['vs.vendorsite_id'] = '?';
+			$params[] = $vendorsite_id;
+		}
+		if (!$returnAll) {
+			$where['at.addresstype_name'] = '?';
+			$params[] = 'Alternate';
+		}
+
+
+		$select->from(['vs' => 'vendorsite'])
+				->join(['a' => 'address'], 'a.tablekey_id = vs.vendorsite_id', ['address_id', 'address_id_alt', 'address_line1', 'address_line2', 'address_city', 'address_state', 'address_zip', 'address_zipext', 'address_country'])
+				->join(['at' => 'addresstype'], 'a.addresstype_id = at.addresstype_id', [])
+				->join(['c' => 'country'], 'a.address_country = c.country_id', ['country_name'], Select::JOIN_LEFT)
+				->where($where);
+
+		return $this->adapter->query($select, $params);
+	}
+
 }
