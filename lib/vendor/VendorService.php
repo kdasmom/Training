@@ -1418,9 +1418,12 @@ class VendorService extends AbstractService {
 	 * @param $approvalStatus
 	 */
 	public function vendorApprove($aspClientId = null,  $vendorId, $approvalTrackingId, $approvalStatus, $vendorsite_id) {
-		$sitecount = $this->vendorsiteGateway->findSiteCount($vendorId);
+
 		$result = $this->vendorGateway->approveVendor($aspClientId, $vendorId, $approvalTrackingId, $approvalStatus);
-		$this->vendorsiteApprove($aspClientId, !$result['local_vendorsite_id'] ? $vendorsite_id : $result['local_vendorsite_id'], $approvalStatus);
+		if ($result['local_vendorsite_id']) {
+			$this->vendorsiteApprove($aspClientId, $result['local_vendorsite_id'], $approvalStatus);
+		}
+		$sitecount = $this->vendorsiteGateway->findSiteCount($vendorId);
 		if ($sitecount == 0) {
 			$this->vendorGateway->deleteAssignedGlaccounts($vendorId);
 			$this->vendorGateway->delete(['vendor_id' => '?'], [$vendorId]);
