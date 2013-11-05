@@ -202,7 +202,7 @@ Ext.define('NP.controller.VendorManager', {
     /**
      * save vendor
      */
-    saveVendor: function(status) {
+    saveVendor: function(action) {
         var that  = this;
 
         var form = this.getCmp('vendor.vendorform');
@@ -243,18 +243,24 @@ Ext.define('NP.controller.VendorManager', {
 
 
         if (form.isValid()) {
+			var extraParams = {
+				userprofile_id: NP.Security.getUser().get('userprofile_id'),
+				role_id:        NP.Security.getRole().get('role_id'),
+				property_id: NP.Security.getCurrentContext().property_id,
+				glaccounts: values['glaccounts'],
+				insurances: JSON.stringify(insurance),
+				vendorsite_DaysNotice_InsuranceExpires: values['vendorsite_DaysNotice_InsuranceExpires'],
+				customFields: customFields
+			};
+
+			if (action) {
+				extraParams.action = action;
+			}
+
             form.submitWithBindings({
                 service: 'VendorService',
                 action: 'saveVendor',
-                extraParams: {
-                    userprofile_id: NP.Security.getUser().get('userprofile_id'),
-                    role_id:        NP.Security.getRole().get('role_id'),
-                    property_id: NP.Security.getCurrentContext().property_id,
-                    glaccounts: values['glaccounts'],
-                    insurances: JSON.stringify(insurance),
-                    vendorsite_DaysNotice_InsuranceExpires: values['vendorsite_DaysNotice_InsuranceExpires'],
-					customFields: customFields
-                },
+                extraParams: extraParams,
                 success: function(result, deferred) {
                     if (result.success) {
                         NP.Util.showFadingWindow({ html: that.saveSuccessText });

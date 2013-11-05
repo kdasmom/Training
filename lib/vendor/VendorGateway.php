@@ -378,7 +378,7 @@ class VendorGateway extends AbstractGateway {
 	 * @param $approvalStatus
 	 * @return array
 	 */
-	public function approveVendor($aspClientId = null, $userProfileId = null, $vendorId, $approvalTrackingId, $approvalStatus) {
+	public function approveVendor($aspClientId = null, $vendorId, $approvalTrackingId, $approvalStatus) {
 
 		if ($approvalTrackingId === $vendorId) {
 			$result = $this->update(
@@ -669,7 +669,7 @@ class VendorGateway extends AbstractGateway {
 	 * @param $approval_tracking_id
 	 * @return bool
 	 */
-	public function transferCompareVendor($vendor_id, $approval_tracking_id) {
+	public function transferCompareVendor($vendor_id, $approval_tracking_id = null, $compareData = null) {
 
 		$compare = false;
 
@@ -700,7 +700,8 @@ class VendorGateway extends AbstractGateway {
 					'address_city' => new Expression("ISNULL(a.address_city,'')"),
 					'address_state' => new Expression("ISNULL(a.address_state,'')"),
 					'address_zip' => new Expression("ISNULL(a.address_zip,'')"),
-					'address_zipext' => new Expression("ISNULL(a.address_zipext,'')")
+					'address_zipext' => new Expression("ISNULL(a.address_zipext,'')"),
+					'address_country' => new Expression("ISNULL(a.address_country,'')")
 				])
 				->join(['vs' => 'vendorsite'], 'vs.vendor_id = v.vendor_id', [])
 				->join(['c' => 'contact'], 'c.tablekey_id = vs.vendorsite_id and c.table_name=\'vendorsite\'', [], Select::JOIN_LEFT)
@@ -716,55 +717,79 @@ class VendorGateway extends AbstractGateway {
 
 		$vendor_a = $this->adapter->query($select, [$vendor_id, 'active']);
 
-		$select = new Select();
-		$select->from(['v' => 'vendor'])
-			->columns([
-				'vendor_id_alt' => new Expression("ISNULL(v.vendor_id_alt, '')"),
-				'vendor_name' => new Expression("ISNULL(v.vendor_name, '')"),
-				'vendor_fedid' => new Expression("ISNULL(v.vendor_fedid, '')"),
-				'vendor_tax_reporting_name' => new Expression("ISNULL(v.vendor_tax_reporting_name, '')"),
-				'vendor_type_code' => new Expression("ISNULL(v.vendor_type_code, '')"),
-				'paygroup_code' => new Expression("ISNULL(v.paygroup_code, '')"),
-				'vendor_paypriority' => new Expression("ISNULL(v.vendor_paypriority, '')"),
-				'vendor_type1099' => new Expression("ISNULL(v.vendor_type1099, '')"),
-				'Vendor_Active_StartDate' => new Expression("ISNULL(v.Vendor_Active_StartDate, '')"),
-				'Vendor_Active_EndDate' => new Expression("ISNULL(v.Vendor_Active_EndDate, '')"),
-				'vendor_termsdatebasis' => new Expression("ISNULL(v.vendor_termsdatebasis, '')"),
-				'paydatebasis_code' => new Expression("ISNULL(v.paydatebasis_code, '')"),
-				'person_firstname' => new Expression("ISNULL(p.person_firstname,'')"),
-				'person_lastname' => new Expression("ISNULL(p.person_lastname,'')"),
-				'person_phone' => new Expression("REPLACE(REPLACE(REPLACE(REPLACE(ISNULL(ph.phone_number,''), '(', ''), ')', ''), '-', ''), ' ', '')"),
-				'vendor_phone' => new Expression("REPLACE(REPLACE(REPLACE(REPLACE(ISNULL(vp.phone_number,''), '(', ''), ')', ''), '-', ''), ' ', '')"),
-				'fax' => new Expression("REPLACE(REPLACE(REPLACE(REPLACE(ISNULL(f.phone_number,''), '(', ''), ')', ''), '-', ''), ' ', '')"),
-				'address_line1' => new Expression("ISNULL(a.address_line1,'')"),
-				'address_line2' => new Expression("ISNULL(a.address_line2,'')"),
-				'address_city' => new Expression("ISNULL(a.address_city,'')"),
-				'address_state' => new Expression("ISNULL(a.address_state,'')"),
-				'address_zip' => new Expression("ISNULL(a.address_zip,'')"),
-				'address_zipext' => new Expression("ISNULL(a.address_zipext,'')")
-			])
-			->join(['vs' => 'vendorsite'], 'vs.vendor_id = v.vendor_id', [])
-			->join(['c' => 'contact'], 'c.tablekey_id = vs.vendorsite_id and c.table_name=\'vendorsite\'', [], Select::JOIN_LEFT)
-			->join(['p' => 'person'], 'p.person_id = c.person_id', [], Select::JOIN_LEFT)
-			->join(['ph' => 'phone'], 'ph.tablekey_id = c.contact_id and ph.table_name = \'contact\' and ph.phonetype_id = ' . PhoneGateway::PHONE_TYPE_MAIN, [], Select::JOIN_LEFT)
-			->join(['vp' => 'phone'], 'vp.table_name=\'vendorsite\' and vp.tablekey_id =vs.vendorsite_id and vp.phonetype_id = ' . PhoneGateway::PHONE_TYPE_MAIN, [], Select::JOIN_LEFT)
-			->join(['f' => 'phone'], 'f.table_name = \'vendorsite\' and f.tablekey_id = vs.vendorsite_id and f.phonetype_id = ' . PhoneGateway::PHONE_TYPE_FAX, [], Select::JOIN_LEFT)
-			->join(['a' => 'address'], 'a.tablekey_id = vs.vendorsite_id and a.table_name = \'vendorsite\'', [], Select::JOIN_LEFT)
-			->where([
-				'v.vendor_id' => '?',
-				'vs.vendorsite_status' => '?'
-			]);
+		if (!$compareData) {
 
-		$vendor_b = $this->adapter->query($select, [$approval_tracking_id, 'forapproval']);
+			$select = new Select();
+			$select->from(['v' => 'vendor'])
+				->columns([
+					'vendor_id_alt' => new Expression("ISNULL(v.vendor_id_alt, '')"),
+					'vendor_name' => new Expression("ISNULL(v.vendor_name, '')"),
+					'vendor_fedid' => new Expression("ISNULL(v.vendor_fedid, '')"),
+					'vendor_tax_reporting_name' => new Expression("ISNULL(v.vendor_tax_reporting_name, '')"),
+					'vendor_type_code' => new Expression("ISNULL(v.vendor_type_code, '')"),
+					'paygroup_code' => new Expression("ISNULL(v.paygroup_code, '')"),
+					'vendor_paypriority' => new Expression("ISNULL(v.vendor_paypriority, '')"),
+					'vendor_type1099' => new Expression("ISNULL(v.vendor_type1099, '')"),
+					'Vendor_Active_StartDate' => new Expression("ISNULL(v.Vendor_Active_StartDate, '')"),
+					'Vendor_Active_EndDate' => new Expression("ISNULL(v.Vendor_Active_EndDate, '')"),
+					'vendor_termsdatebasis' => new Expression("ISNULL(v.vendor_termsdatebasis, '')"),
+					'paydatebasis_code' => new Expression("ISNULL(v.paydatebasis_code, '')"),
+					'person_firstname' => new Expression("ISNULL(p.person_firstname,'')"),
+					'person_lastname' => new Expression("ISNULL(p.person_lastname,'')"),
+					'person_phone' => new Expression("REPLACE(REPLACE(REPLACE(REPLACE(ISNULL(ph.phone_number,''), '(', ''), ')', ''), '-', ''), ' ', '')"),
+					'vendor_phone' => new Expression("REPLACE(REPLACE(REPLACE(REPLACE(ISNULL(vp.phone_number,''), '(', ''), ')', ''), '-', ''), ' ', '')"),
+					'fax' => new Expression("REPLACE(REPLACE(REPLACE(REPLACE(ISNULL(f.phone_number,''), '(', ''), ')', ''), '-', ''), ' ', '')"),
+					'address_line1' => new Expression("ISNULL(a.address_line1,'')"),
+					'address_line2' => new Expression("ISNULL(a.address_line2,'')"),
+					'address_city' => new Expression("ISNULL(a.address_city,'')"),
+					'address_state' => new Expression("ISNULL(a.address_state,'')"),
+					'address_zip' => new Expression("ISNULL(a.address_zip,'')"),
+					'address_zipext' => new Expression("ISNULL(a.address_zipext,'')"),
+					'address_country' => new Expression("ISNULL(a.address_country,'')")
+				])
+				->join(['vs' => 'vendorsite'], 'vs.vendor_id = v.vendor_id', [])
+				->join(['c' => 'contact'], 'c.tablekey_id = vs.vendorsite_id and c.table_name=\'vendorsite\'', [], Select::JOIN_LEFT)
+				->join(['p' => 'person'], 'p.person_id = c.person_id', [], Select::JOIN_LEFT)
+				->join(['ph' => 'phone'], 'ph.tablekey_id = c.contact_id and ph.table_name = \'contact\' and ph.phonetype_id = ' . PhoneGateway::PHONE_TYPE_MAIN, [], Select::JOIN_LEFT)
+				->join(['vp' => 'phone'], 'vp.table_name=\'vendorsite\' and vp.tablekey_id =vs.vendorsite_id and vp.phonetype_id = ' . PhoneGateway::PHONE_TYPE_MAIN, [], Select::JOIN_LEFT)
+				->join(['f' => 'phone'], 'f.table_name = \'vendorsite\' and f.tablekey_id = vs.vendorsite_id and f.phonetype_id = ' . PhoneGateway::PHONE_TYPE_FAX, [], Select::JOIN_LEFT)
+				->join(['a' => 'address'], 'a.tablekey_id = vs.vendorsite_id and a.table_name = \'vendorsite\'', [], Select::JOIN_LEFT)
+				->where([
+					'v.vendor_id' => '?',
+					'vs.vendorsite_status' => '?'
+				]);
+
+			$vendor_b = $this->adapter->query($select, [$approval_tracking_id, 'forapproval']);
 
 
-		if (!$vendor_a || !$vendor_b) {
-			return false;
-		}
-
-		foreach ($vendor_a[0] as $key => $value) {
-			if ($vendor_a[0][$key] !== $vendor_b[0][$key]) {
+			if (!$vendor_a || !$vendor_b) {
 				return true;
+			}
+
+			foreach ($vendor_a[0] as $key => $value) {
+				if ($vendor_a[0][$key] !== $vendor_b[0][$key]) {
+					return false;
+				}
+			}
+		} else {
+			if (!$vendor_a) {
+				return true;
+			}
+			if (
+				$vendor_a[0]['vendor_phone'] !== $compareData['phone_number'] ||
+				$vendor_a[0]['fax'] !== $compareData['fax_number'] ||
+				$vendor_a[0]['address_line1'] !== $compareData['address_line1'] ||
+				$vendor_a[0]['address_line2'] !== $compareData['address_line2'] ||
+				$vendor_a[0]['address_city'] !== $compareData['address_city'] ||
+				$vendor_a[0]['address_state'] !== $compareData['address_state'] ||
+				$vendor_a[0]['address_zip'] !== $compareData['address_zip'] ||
+				$vendor_a[0]['address_zipext'] !== $compareData['address_zipext'] ||
+				$vendor_a[0]['address_country'] !== $compareData['address_country'] ||
+				$vendor_a[0]['person_firstname'] !== $compareData['person_firstname'] ||
+				$vendor_a[0]['person_lastname'] !== $compareData['person_lastname'] ||
+				$vendor_a[0]['person_phone'] !== $compareData['person_phone']
+				){
+				return false;
 			}
 		}
 
@@ -801,7 +826,7 @@ class VendorGateway extends AbstractGateway {
 		$select->from(['vo' => 'vendor'])
 			->columns([])
 			->join(['v' => 'vendor'], 'vo.vendor_id = v.approval_tracking_id', [], Select::JOIN_INNER)
-			->join(['vs' => 'vendorsite'], null, ['vendorsite_id'], Select::JOIN_CROSS)
+			->join(['vs' => 'vendorsite'], 'vs.vendor_id = v.vendor_id', ['vendorsite_id'])
 			->join(['vso' => 'vendorsite'], 'vs.approval_tracking_id = vso.vendorsite_id and vo.vendor_id = vso.vendor_id', [], Select::JOIN_INNER)
 			->join(['i' => 'integrationpackage'], ' i.integration_package_id = v.integration_package_id', [], Select::JOIN_INNER)
 			->where([
@@ -956,8 +981,35 @@ class VendorGateway extends AbstractGateway {
 		);
 	}
 
+	/**
+	 * Retrieve recauthor id
+	 *
+	 * @param $vendor_id
+	 * @return mixed
+	 */
+	public function getRecauthor($vendor_id) {
+		$result = $this->find(['vendor_id' => '?'], [$vendor_id], null, ['approval_tracking_id', 'vendor_status']);
 
+		return $result[0];
+	}
 
+	/**
+	 * Retrieve vendortype code by vendortype_id
+	 *
+	 * @param $vendortype_id
+	 * @return mixed
+	 */
+	public function findVendorTypeById($vendortype_id) {
+		$select = new Select();
+
+		$select->from('vendortype')
+				->columns(['vendortype_code'])
+				->where(['vendortype_id' => '?']);
+
+		$result = $this->adapter->query($select, [$vendortype_id]);
+
+		return $result[0]['vendortype_code'];
+	}
 }
 
 ?>

@@ -27,7 +27,7 @@ class MessageGateway extends AbstractGateway{
 				->columns(['messagetype_id'])
 				->where(['messagetype_name' => '?']);
 
-		$result = $this->adapter->query($select, $name);
+		$result = $this->adapter->query($select, [$name]);
 
 		return $result[0]['messagetype_id'];
 	}

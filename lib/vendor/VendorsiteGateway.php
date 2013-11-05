@@ -18,28 +18,33 @@ use NP\core\db\Update;
 
 class VendorsiteGateway extends AbstractGateway {
 
-	public function getVendositeCode($vendorId, $vendorsiteAddressCity, $vendorsiteStatus = 'active', $aspClientId) {
+	public function getVendositeCode($vendorId, $vendorsiteAddressCity, $vendorsiteStatus = null, $aspClientId) {
 		$select = new Select();
 		$vendorsitecode = '';
+
+		$where = [
+			'v.vendor_id' 						=> '?',
+			'a.address_city'					=> '?',
+			'i.asp_client_id'					=> '?',
+			'a.table_name'					=> '?'
+		];
+
+		$params = [$vendorId, $vendorsiteAddressCity, $aspClientId, 'vendorsite'];
+		if ($vendorsiteStatus) {
+			$where['vs.vendorsite_status'] = '?';
+			$params[] = $vendorsiteStatus;
+		}
 
 		$select->from(['vs' => 'vendorsite'])
 					->count(true, 'site_count')
 					->join(['a' => 'address'], 'vs.vendorsite_id = a.tablekey_id', [])
 					->join(['v' => 'vendor'], 'vs.vendor_id = v.vendor_id', [])
 					->join(['i' => 'integrationpackage'], 'v.integration_package_id = i.integration_package_id', [])
-					->where(
-							[
-								'v.vendor_id' 						=> '?',
-								'a.address_city'					=> '?',
-								'vs.vendorsite_status'		=> '?',
-								'i.asp_client_id'					=> '?',
-								'a.table_name'					=> '?'
-							]
-					);
+					->where($where);
 
-		$count = $this->adapter->query($select, [$vendorId, $vendorsiteAddressCity, $vendorsiteStatus, $aspClientId, 'vendorsite']);
+		$count = $this->adapter->query($select, $params);
 
-		$vendorsitecode = strtoupper(substr($vendorsiteAddressCity, 0, 15-strlen($count[0]['site_count'])) . strval($count[0]['site_count']));
+		$vendorsitecode = strtoupper(substr($vendorsiteAddressCity, 0, 15-strlen($count[0]['site_count'] + 1)) . strval($count[0]['site_count']));
 
 		return $vendorsitecode;
 	}
@@ -152,7 +157,6 @@ class VendorsiteGateway extends AbstractGateway {
 
 			$vendor = $this->adapter->query($select, [$vendorsite_id, $asp_client_id]);
 
-
 			$this->update(
 				[
 					'vendorsite_code'					=> $vendor[0]['vendorsite_code'],
@@ -179,7 +183,7 @@ class VendorsiteGateway extends AbstractGateway {
 
 			$insert->into('vendorfavorite')
 					->columns(['vendorsite_id', 'property_id'])
-					->values(Select::get()->columns([new Expression('?'), 'vf.property_id'])
+					->values(Select::get()->columns([new Expression('?'), 'property_id'])
 										->from(['vf' => 'vendorfavorite'])
 										->whereEquals('vf.vendorsite_id', $vendorsite_id)
 										->whereNotExists(Select::get()->columns([new Expression('?')])
@@ -207,7 +211,7 @@ class VendorsiteGateway extends AbstractGateway {
 	 * @param $asp_client_id
 	 * @return null
 	 */
-	protected function findApproval($vendorsite_id, $asp_client_id) {
+	public function findApproval($vendorsite_id, $asp_client_id) {
 		$select = new Select();
 
 		$select->from(['vs' => 'vendorsite'])
@@ -250,7 +254,7 @@ class VendorsiteGateway extends AbstractGateway {
 			$address = $this->adapter->query($select, [$approval_id, $asp_client_id]);
 		}
 
-		return $address[0];
+		return count($address) ? $address[0] : $address;
 	}
 	
 	/**
@@ -366,6 +370,28 @@ class VendorsiteGateway extends AbstractGateway {
 		$result = $this->adapter->query($select, [$vendor_id]);
 
 		return $result[0]['sitecount'];
+	}
+
+	/**
+	 * Retrieve city and vendorstite code
+	 *
+	 * @param $vendorsite_id
+	 * @param $asp_client_id
+	 */
+	public function getCurrentCityAndVendorsiteCode($vendorsite_id, $asp_client_id) {
+		$select = new Select();
+		$select->from(['vs' => 'vendorsite'])
+				->columns(['vendorsite_code'])
+				->join(['a' => 'address'], 'vs.vendorsite_id = a.tablekey_id', ['address_city'])
+				->join(['v' => 'vendor'], 'v.vendor_id = vs.vendor_id', [])
+				->join(['ip' => 'integrationpackage'], 'v.integration_package_id = ip.integration_package_id', [])
+				->where(
+					['vs.vendorsite_id' => '?', 'ip.asp_client_id' => '?']
+			);
+
+		$result = $this->adapter->query($select, [$vendorsite_id, $asp_client_id]);
+
+		return $result[0];
 	}
 
 }

@@ -107,7 +107,6 @@ class VendorService extends AbstractService {
 	 * @param $data
 	 */
 	public function saveVendor($data) {
-
 		$data['vendorsite'] = $data['vs_vendorsite'];
 		unset($data['vs_vendorsite']);
 
@@ -192,7 +191,7 @@ class VendorService extends AbstractService {
 				);
 			} else {
 				$current_vendor_status = $this->vendorGateway->find(['v.vendor_id' => '?'], [$vendor->vendor_id], null, ['vendor_status']);
-				if ($current_vendor_status[0]['vendor_status'] == self::VENDOR_STATUS_REJECTED) {
+				if (count($current_vendor_status) > 0 && $current_vendor_status[0]['vendor_status'] == self::VENDOR_STATUS_REJECTED) {
 					$this->vendorGateway->deleteMessages($vendor->vendor_id);
 				}
 			}
@@ -301,12 +300,40 @@ class VendorService extends AbstractService {
 			if ($data['vendor']['vendor_id']) {
 				$this->saveCustomFields($data['customFields'], $out_vendor_id, $data['userprofile_id']);
 			}
+
+			if ($data['action'] && $data['action'] == 'approve') {
+				$compare_date = [
+					'phone_number'		=> is_null($data['vendorsite_phone']['phone_number']) ? '' : $data['vendorsite_phone']['phone_number'],
+					'fax'				=> is_null($data['vendorsite_fax_phone']['phone_number']) ? '' : $data['vendorsite_fax_phone']['phone_number'],
+					'address_line1'		=> is_null($data['address']['address_line1']) ? '' : $data['address']['address_line1'],
+					'address_line2'		=> is_null($data['address']['address_line2']) ? '' : $data['address']['address_line2'],
+					'address_city'		=> is_null($data['address']['address_city']) ? '' : $data['address']['address_city'],
+					'address_state'		=> is_null($data['address']['address_state']) ? '' : $data['address']['address_state'],
+					'address_zip'		=> is_null($data['address']['address_zip']) ? '' : $data['address']['address_zip'],
+					'address_zipext'		=> is_null($data['address']['address_zipext']) ? '' : $data['address']['address_zipext'],
+					'address_country'		=> is_null($data['address']['address_country']) ? '' : $data['address']['address_country'],
+					'person_firstname'		=> is_null($data['person']['person_firstname']) ? '' : $data['person']['person_firstname'],
+					'person_lastname'		=> is_null($data['person']['person_lastname']) ? '' : $data['person']['person_lastname'],
+					'phone_number'		=> is_null($data['attention_phone']['phone_number']) ? '' : $data['attention_phone']['phone_number']
+				];
+				$vendorsite_transfer_compare = $this->vendorGateway->transferCompareVendor($data['vendor']['vendor_id'], null, $compare_date);
+				$vendor_transfer_compare = $this->vendorGateway->transferCompareVendor($out_vendor_id, $approval_tracking_id);
+				$status = (!$vendor_transfer_compare && !$vendorsite_transfer_compare) ? 'active' : $this->configService->get('PN.VendorOptions.OnApprovalStatus');
+
+				$this->vendorApprove($aspClientId, $out_vendor_id, $approval_tracking_id, $status, $out_vendorsite_id);
+			}
+
+			if ($data['action'] && ($data['action'] == 'inactive' || $data['action'] == 'active')) {
+				$this->vendorActive($out_vendor_id, $out_vendorsite_id, $userprofileId, $data['action']);
+			}
 		}
 
 		return [
 			'success'		=> true
 		];
 	}
+
+
 
 	/**
 	 * Save vendorsite
@@ -317,7 +344,7 @@ class VendorService extends AbstractService {
 	 * @param $vendorsiteCode
 	 * @return array
 	 */
-	public function saveVendorsite($data, $vendorstatus, $vendorId, $vendorsiteCode) {
+	public function saveVendorsite($data, $vendorstatus = null, $vendorId = null, $vendorsiteCode = null) {
 		if (!is_object($data) && isset($data['vendorsite'])) {
 			$vendorsite = new VendorsiteEntity($data['vendorsite']);
 
@@ -1386,18 +1413,17 @@ class VendorService extends AbstractService {
 	 * Approve vendor
 	 *
 	 * @param null $aspClientId
-	 * @param null $userProfileId
 	 * @param $vendorId
 	 * @param $approvalTrackingId
 	 * @param $approvalStatus
 	 */
-	public function vendorApprove($aspClientId = null, $userProfileId = null, $vendorId, $approvalTrackingId, $approvalStatus) {
-		$result = $this->vendorGateway->approveVendor($aspClientId, $userProfileId, $vendorId, $approvalTrackingId, $approvalStatus);
-		$this->vendorsiteApprove($aspClientId, $result['local_vendorsite_id'], $approvalStatus);
+	public function vendorApprove($aspClientId = null,  $vendorId, $approvalTrackingId, $approvalStatus, $vendorsite_id) {
 		$sitecount = $this->vendorsiteGateway->findSiteCount($vendorId);
+		$result = $this->vendorGateway->approveVendor($aspClientId, $vendorId, $approvalTrackingId, $approvalStatus);
+		$this->vendorsiteApprove($aspClientId, !$result['local_vendorsite_id'] ? $vendorsite_id : $result['local_vendorsite_id'], $approvalStatus);
 		if ($sitecount == 0) {
 			$this->vendorGateway->deleteAssignedGlaccounts($vendorId);
-			$this->vendorGateway->delete(['vendor_id' => '?'], $vendorId);
+			$this->vendorGateway->delete(['vendor_id' => '?'], [$vendorId]);
 		}
 		$message_type_id = $this->messageGateway->findMessageType('Alert');
 		$this->saveMessages($approvalTrackingId, $message_type_id, 'vendor', 'Approved');
@@ -1414,62 +1440,64 @@ class VendorService extends AbstractService {
 	 * @param bool $skipMessages
 	 */
 	public function vendorsiteApprove($asp_client_id, $vendorsite_id, $approvalStatus, $skipMessages = true) {
-		$approval_tracking_id= $this->findApproval($vendorsite_id, $asp_client_id);
+		$approval_tracking_id= $this->vendorsiteGateway->findApproval($vendorsite_id, $asp_client_id);
 		$vendorsite = $this->vendorsiteGateway->vendorsiteApprove($asp_client_id, $approval_tracking_id, $vendorsite_id, $approvalStatus);
 
 		if (is_array($vendorsite)) {
 			$address = $this->vendorsiteGateway->findAddressAndPhoneInfoByVendorsiteId($vendorsite_id, $asp_client_id);
-			$this->addressGateway->update(
-				[
-					'addresstype_id'	=> $vendorsite['addresstype_id'],
-					'address_line1'		=> $vendorsite['address_line1'],
-					'address_line2'		=> $vendorsite['address_line2'],
-					'address_city'		=> $vendorsite['address_city'],
-					'address_state'		=> $vendorsite['address_state'],
-					'address_zip'		=> $vendorsite['address_zip'],
-					'address_zipext'	=> $vendorsite['address_zipext']
-				],
-				['address_id' => '?'],
-				[$address['address_id']]
-			);
-			$this->phoneGateway->update(
-				[
-					'phone_number'		=> $vendorsite['site_phone_number'],
-					'phone_ext'			=> $vendorsite['site_phone_ext']
-				],
-				['phone_id' => '?'],
-				[$address['site_phone_id']]
-			);
-			$this->phoneGateway->update(
-				[
-					'phone_number'	=> $vendorsite['site_fax_number']
-				],
-				['phone_id'	=> '?'],
-				[$address['site_fax_id']]
-			);
-			$this->emailGateway->update(
-				[
-					'email_address'	=> $vendorsite['site_email_address']
-				],
-				['email_id' => '?'],
-				[$address['site_email_id']]
-			);
-			$this->personGateway->update(
-				[
-					'person_firstname'	=> $vendorsite['person_firstname'],
-					'person_lastname'	=> $vendorsite['person_lastname']
-				],
-				['person_id' => '?'],
-				[$address['person_id']]
-			);
-			$this->phoneGateway->update(
-				[
-					'phone_number'	=> $vendorsite['contact_phone_number'],
-					'phone_ext'		=> $vendorsite['contact_phone_ext'],
-				],
-				['phone_id' => '?'],
-				[$address['contact_phone_id']]
-			);
+			if (isset($address['address_id'])) {
+				$this->addressGateway->update(
+					[
+						'addresstype_id'	=> $vendorsite['addresstype_id'],
+						'address_line1'		=> $vendorsite['address_line1'],
+						'address_line2'		=> $vendorsite['address_line2'],
+						'address_city'		=> $vendorsite['address_city'],
+						'address_state'		=> $vendorsite['address_state'],
+						'address_zip'		=> $vendorsite['address_zip'],
+						'address_zipext'	=> $vendorsite['address_zipext']
+					],
+					['address_id' => '?'],
+					[$address['address_id']]
+				);
+				$this->phoneGateway->update(
+					[
+						'phone_number'		=> $vendorsite['site_phone_number'],
+						'phone_ext'			=> $vendorsite['site_phone_ext']
+					],
+					['phone_id' => '?'],
+					[$address['site_phone_id']]
+				);
+				$this->phoneGateway->update(
+					[
+						'phone_number'	=> $vendorsite['site_fax_number']
+					],
+					['phone_id'	=> '?'],
+					[$address['site_fax_id']]
+				);
+				$this->emailGateway->update(
+					[
+						'email_address'	=> $vendorsite['site_email_address']
+					],
+					['email_id' => '?'],
+					[$address['site_email_id']]
+				);
+				$this->personGateway->update(
+					[
+						'person_firstname'	=> $vendorsite['person_firstname'],
+						'person_lastname'	=> $vendorsite['person_lastname']
+					],
+					['person_id' => '?'],
+					[$address['person_id']]
+				);
+				$this->phoneGateway->update(
+					[
+						'phone_number'	=> $vendorsite['contact_phone_number'],
+						'phone_ext'		=> $vendorsite['contact_phone_ext'],
+					],
+					['phone_id' => '?'],
+					[$address['contact_phone_id']]
+				);
+			}
 
 			$this->vendorsiteGateway->deleteVendorFavorite($vendorsite_id);
 			$this->vendorsiteGateway->delete(['vendorsite_id' => '?'], [$vendorsite_id]);
@@ -1483,6 +1511,110 @@ class VendorService extends AbstractService {
 			$messagetype_id = $this->messageGateway->findMessageType('Alert');
 			$result = $this->saveMessages($approval_tracking_id, $messagetype_id, 'vendorsite', 'Approved');
 		}
+	}
+
+	public function vendorViewSiteSave($data) {
+		$on_approval_status =	$this->configService->get('PN.VendorOptions.OnApprovalStatus');
+		$compare_date = [
+			'phone_number'		=> is_null($data['vendorsite_phone']['phone_number']) ? '' : $data['vendorsite_phone']['phone_number'],
+			'fax'				=> is_null($data['vendorsite_fax_phone']['phone_number']) ? '' : $data['vendorsite_fax_phone']['phone_number'],
+			'address_line1'		=> is_null($data['address']['address_line1']) ? '' : $data['address']['address_line1'],
+			'address_line2'		=> is_null($data['address']['address_line2']) ? '' : $data['address']['address_line2'],
+			'address_city'		=> is_null($data['address']['address_city']) ? '' : $data['address']['address_city'],
+			'address_state'		=> is_null($data['address']['address_state']) ? '' : $data['address']['address_state'],
+			'address_zip'		=> is_null($data['address']['address_zip']) ? '' : $data['address']['address_zip'],
+			'address_zipext'		=> is_null($data['address']['address_zipext']) ? '' : $data['address']['address_zipext'],
+			'address_country'		=> is_null($data['address']['address_country']) ? '' : $data['address']['address_country'],
+			'person_firstname'		=> is_null($data['person']['person_firstname']) ? '' : $data['person']['person_firstname'],
+			'person_lastname'		=> is_null($data['person']['person_lastname']) ? '' : $data['person']['person_lastname'],
+			'phone_number'		=> is_null($data['attention_phone']['phone_number']) ? '' : $data['attention_phone']['phone_number']
+		];
+		$vendorsite_transfer_compare = $this->vendorGateway->transferCompareVendor($data['vendor']['vendor_id'], null, $compare_date);
+		$aspClientId = $this->configService->getClientId();
+
+		if (!$data['vendorsite']['vendorsite_id']) {
+			$vendorsitecode = $this->vendorsiteGateway->getVendositeCode($data['vendor']['vendor_id'], $data['address']['address_city'], null, $aspClientId);
+		} else {
+			$result = $this->vendorsiteGateway->getCurrentCityAndVendorsiteCode($data['vendorsite']['vendorsite_id'], $aspClientId);
+			if ($result['address_city'] !== $data['address']['address_city'] || is_null($result['address_city'])) {
+				$vendorsitecode = $this->vendorsiteGateway->getVendositeCode($data['vendor']['vendor_id'], $data['address']['address_city'], null, $aspClientId);
+			}
+		}
+		if (!$data['vendorsite']['vendorsite_id']) {
+			$out_vendorsite_id = null;
+			$out_approval_tracking_id = null;
+		} else {
+			$out_vendorsite_id = $data['vendorsite']['vendorsite_id'];
+			$out_approval_tracking_id = $data['vendorsite']['vendorsite_id'];
+		}
+
+		$in_app_user = $this->userprofileGateway->isInAppUser($data['role_id'], $data['userprofile_id']);
+
+		if (is_null($out_vendorsite_id) && $data['vendor']['vendor_status'] !== 'forapproval') {
+			$vendorsite_status = !$in_app_user ? 'forapproval' : $on_approval_status;
+		} else {
+			if (is_null($out_vendorsite_id) && $data['vendor']['vendor_status'] == 'forapproval') {
+				if ($out_approval_tracking_id !== $data['vendor']['vendor_id']) {
+					$out_vendor_id = $out_approval_tracking_id;
+				}
+				$vendorsite_status = !$in_app_user ? 'forapproval' : $on_approval_status;
+			} else {
+				if ($out_vendorsite_id) {
+					$vendorsite_status = !$in_app_user ? 'forapproval' : $data['vendorsite']['vendorsite_status'];
+					if ($data['vendorsite']['vendorsite_status'] !== 'forapproval' && !$in_app_user) {
+						$out_vendorsite_id = null;
+						$moddate = Util::formatDateForDB(new \DateTime());
+					}
+				}
+			}
+		}
+
+		if (is_null($out_vendorsite_id)) {
+			if (!$data['vendorsite']['term_id']) {
+				$out_term_id = $data['vendor']['term_id'];
+			}
+			if (!$data['vendorsite']['paygroup_code']) {
+				$out_paygroup_code = $data['vendor']['paygroup_code'];
+			}
+		}
+		if ($out_vendorsite_id == null) {
+
+			$vendorsite = new VendorsiteEntity();
+			$vendorsite->vendorsite_id_alt = $data['vendorsite']['vendorsite_id_alt'];
+			$vendorsite->vendor_id = $data['vendor']['vendor_id'];
+			$vendorsite->vendorsite_code = $vendorsitecode;
+			$vendorsite->term_id = $out_term_id;
+			$vendorsite->bill_contact_id = $data['vendorsite']['bill_contact_id'];
+			$vendorsite->shipvia_code = $data['vendorsite']['shipvia_code'];
+			$vendorsite->paygroup_code = $out_paygroup_code;
+			$vendorsite->freightterms_code = $data['vendorsite']['freightterms_code'];
+			$vendorsite->vendorsite_reject_note = $data['vendorsite']['vendorsite_reject_note'];
+			$vendorsite->vendorsite_ship_to_location_id = 1;
+			$vendorsite->vendorsite_bill_to_location_id = 1;
+			$vendorsite->vendorsite_discount_exclude_freight = $data['vendorsite']['vendorsite_discount_exclude_freight'];
+			$vendorsite->vendorsite_status = $vendorsite_status;
+			$vendorsite->approval_tracking_id = $out_approval_tracking_id;
+			$vendorsite->submit_userprofile_id = $data['userprofile_id'];
+			$vendorsite->vendorsite_lastupdate_date = $moddate;
+			$vendorsite->vendor_universalfield1 = $data['vendorsite']['vendor_universalfield1'];
+			$vendorsite->vendorsite_display_account_number_po = $data['vendorsite']['vendorsite_display_account_number_po'];
+			$vendorsite->vendorsite_account_number = $data['vendorsite']['vendorsite_account_number'];
+
+			$result = $this->saveVendorsite($vendorsite);
+			if (!$result['success']) {
+				return $result;
+			}
+
+			$out_vendorsite_id = $result['lastInsertId'];
+			if (!$out_approval_tracking_id) {
+				$this->vendorsiteGateway->update(
+					['approval_tracking_id' => $out_vendorsite_id],
+					['vendorsite_id' => '?'],
+					[$out_vendorsite_id]
+				);
+			}
+		}
+
 	}
 
 }
