@@ -10,6 +10,7 @@ use NP\core\db\Delete;
 use NP\core\db\Expression;
 use NP\core\db\Insert;
 use NP\core\db\Select;
+use NP\core\db\Update;
 use NP\core\db\Where;
 use NP\system\ConfigService;
 use NP\property\PropertyService;
@@ -969,16 +970,17 @@ class VendorGateway extends AbstractGateway {
 
 		$old_vendor_id = $result[0]['approval_tracking_id'];
 
-		$this->update(
-			[
-				'vendor_status'		=> 'rejected',
-				'vendor_reject_note'	=> $vendor_note,
-				'vendor_reject_dt'		=> Util::formatDateForDB(new \DateTime()),
-				'vendor_reject_userprofile_id'	=> $userprofile_id
-			],
-			['vendor_id'	=> '?'],
-			[$vendor_id]
-		);
+		$update = new Update();
+		$update->table('vendor')
+				->values([
+					'vendor_status'		=> '?',
+					'vendor_reject_note'	=> '?',
+					'vendor_reject_dt'		=> '?',
+					'vendor_reject_userprofile_id'	=> '?'
+				])
+				->where(['vendor_id'	=> '?']);
+
+		$this->adapter->query($update, ['rejected', $vendor_note, Util::formatDateForDB(new \DateTime()), $userprofile_id, $old_vendor_id]);
 	}
 
 	/**

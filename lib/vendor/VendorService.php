@@ -1620,4 +1620,29 @@ class VendorService extends AbstractService {
 
 	}
 
+	/**
+	 * Reject vendor
+	 *
+	 * @param null $vendor_id
+	 * @param null $reject_note
+	 * @param null $userprofile_id
+	 * @return array
+	 */
+	public function rejectVendor($vendor_id = null, $reject_note = null, $userprofile_id = null) {
+		if (!$vendor_id || !$reject_note || !$userprofile_id) {
+			return [
+				'success'	=> false,
+				'errors'	=> ['field'=>'global', 'msg'=> 'Can\'t reject vendor!', 'extra'=>null]
+			];
+		}
+		$this->vendorGateway->vendorReject($vendor_id, $reject_note, $userprofile_id);
+		$messageType = $this->messageGateway->findMessageType('Alert');
+		$this->saveMessages($vendor_id, $messageType, 'vendor', 'Rejected');
+
+		return [
+			'success'	=> true,
+			'errors'	=> []
+		];
+	}
+
 }

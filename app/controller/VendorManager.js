@@ -14,12 +14,14 @@ Ext.define('NP.controller.VendorManager', {
         'NP.lib.core.Util',
 		'NP.view.shared.button.Upload',
 		'NP.view.vendor.VendorImageUploadForm',
-		'NP.view.vendor.InsuranceUploadForm'
-//		'NP.view.shared.button.Upload',
+		'NP.view.vendor.InsuranceUploadForm',
+		'NP.view.vendor.VendorRejectWindow',
+		'NP.lib.core.Translator'
     ],
 //  for localization
 
-    saveSuccessText		: 'Your changes were saved.',
+    saveSuccessText		: NP.Translator.translate('Your changes were saved.'),
+//	custom
 	vendor_status		: '',
     /**
      * Init
@@ -65,7 +67,19 @@ Ext.define('NP.controller.VendorManager', {
 
             '[xtype="vendor.vendorsearch"] customgrid': {
                 viewvendor: this.viewVendor
-            }
+            },
+
+			'[xtype="vendor.vendorrejectwindow"]  [xtype="shared.button.cancel"]': {
+				click: function() {
+					this.getCmp('vendor.vendorrejectwindow').destroy();
+				}
+			},
+
+			'[xtype="vendor.vendorrejectwindow"]  [xtype="shared.button.save"]': {
+				click: function() {
+					this.rejectVendor();
+				}
+			}
 		});
 
     },
@@ -194,7 +208,7 @@ Ext.define('NP.controller.VendorManager', {
 		}
 		this.findIntegrationPackage(form);
 
-		this.showFormTab('baseinformation', vendor_id ? true : false);
+		this.showFormTab('baseinformation', vendor_id ? true : false, null, null, vendor_id);
 
 		return form;
 	},
@@ -307,7 +321,7 @@ Ext.define('NP.controller.VendorManager', {
 //        this.showVendorForm(rec.internalId);
     },
 
-	showFormTab: function(itemId, opened, isReject, insurance) {
+	showFormTab: function(itemId, opened, isReject, insurance, vendor_id) {
 
 		var that = this;
 		var opened = !opened ? false :true;
@@ -357,7 +371,6 @@ Ext.define('NP.controller.VendorManager', {
 				);
 			}
 			if (!appCount && this.vendor_status !== 'forapproval') {
-				console.log(1);
 				bar.push(
 					{
 						xtype: 'button',
@@ -389,7 +402,7 @@ Ext.define('NP.controller.VendorManager', {
 
 				} else {
 					var submit_userprofile_id = form.findField('submit_userprofile_id').getValue();
-					bar = buttonForTab(appCount, this.vendor_status, itemId, bar, form, submit_userprofile_id);
+					bar = buttonForTab(appCount, this.vendor_status, itemId, bar, form, submit_userprofile_id, vendor_id);
 				}
 			}
 
@@ -400,7 +413,7 @@ Ext.define('NP.controller.VendorManager', {
 		tbar.add(bar);
 		bbar.add(bar);
 
-		function buttonForTab(app_count, vendor_status, tabName, bar, form, submit_userprofile_id) {
+		function buttonForTab(app_count, vendor_status, tabName, bar, form, submit_userprofile_id, vendor_id) {
 			if (tabName !== 'altaddresses') {
 
 //				Non-Approver editing an active vendor with no pending edits
@@ -603,7 +616,7 @@ Ext.define('NP.controller.VendorManager', {
 				}
 			}
 
-			if (vendor_status == 'forapproval' && tabname == 'baseinformation') {
+			if (vendor_status == 'forapproval' && tabName == 'baseinformation') {
 				bar.push(
 					{
 						xtype: 'shared.button.save',
@@ -616,7 +629,10 @@ Ext.define('NP.controller.VendorManager', {
 				bar.push(
 					{
 						xtype: 'shared.button.save',
-						text: NP.Translator.translate('Reject')
+						text: NP.Translator.translate('Reject'),
+						handler: function() {
+							that.showRejectForm(vendor_id);
+						}
 					}
 				);
 			}
@@ -635,5 +651,37 @@ Ext.define('NP.controller.VendorManager', {
 
 	showInsuranceUploadForm: function() {
 		var win = Ext.create('NP.view.vendor.InsuranceUploadForm').show();
+	},
+
+	showRejectForm: function(vendor_id) {
+		var win = Ext.create('NP.view.vendor.VendorRejectWindow', {vendor_id: vendor_id}).show();
+	},
+
+	rejectVendor: function() {
+		var that = this;
+
+		var formSelector = '[xtype="vendor.vendorrejectwindow"] form';
+		var form = Ext.ComponentQuery.query(formSelector)[0];
+		var values = form.getValues();
+		if (form.isValid()) {
+
+			NP.lib.core.Net.remoteCall({
+				requests: {
+					service: 'VendorService',
+					action : 'rejectVendor',
+					vendor_id		: values.vendor_id,
+					reject_note		: values.reject_note,
+					userprofile_id	: NP.Security.getUser().get('userprofile_id'),
+					success: function(result, deferred) {
+						if (result.success) {
+							that.getCmp('vendor.vendorrejectwindow').destroy();
+							NP.Util.showFadingWindow({ html: that.saveSuccessText });
+							that.application.addHistory('VendorManager:showVendorManager');
+						}
+
+					}
+				}
+			});
+		}
 	}
 });
