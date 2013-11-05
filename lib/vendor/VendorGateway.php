@@ -471,6 +471,7 @@ class VendorGateway extends AbstractGateway {
 				'finance_vendor'					=> $result[0]['finance_vendor'],
 				'default_due_date'					=> $result[0]['default_due_date'],
 			], ['vendor_id' => '?'], [$approvalTrackingId]);
+
 			if (!$compare && $approvalStatus == 'approved') {
 				$approvalStatus = 'active';
 			}
@@ -488,13 +489,18 @@ class VendorGateway extends AbstractGateway {
 										->where(['g.vendor_id' => '?']));
 
 			$result = $this->adapter->query($insert, [$approvalTrackingId, $vendorId]);
-
-			return [
-				'vendor_id'			=> $out_vendor_id,
-				'approval_status'	=> $approvalStatus
-			];
-
 		}
+
+//		local_vendorsite_id
+		$localvendorsite_id = $this->findLocalVendorsiteId($vendorId, 'forapproval', $aspClientId);
+		if (is_null($localvendorsite_id)) {
+			$localvendorsite_id = $this->findLocalVendorsiteId($vendorId, 'active', $aspClientId);
+		}
+
+		return [
+			'out_vendor_id'			=> $out_vendor_id,
+			'local_vendorsite_id'	=> $localvendorsite_id
+		];
 	}
 
 	/**
@@ -918,6 +924,39 @@ class VendorGateway extends AbstractGateway {
 
 		return $this->adapter->query($delete, [$vendor_id]);
 	}
+
+	/**
+	 * Vendor reject
+	 *
+	 * @param $vendor_id
+	 * @param $vendor_note
+	 * @param $userprofile_id
+	 */
+	public function vendorReject($vendor_id, $vendor_note, $userprofile_id) {
+		$select = new Select();
+
+		$select->from(['v' => 'vendor'])
+				->join(['vt' => 'vendortype'], 'v.vendor_type_code = vt.vendortype_code', [])
+				->columns(['approval_tracking_id'])
+				->where(['v.vendor_id' => '?']);
+
+		$result = $this->adapter->query($select, [$vendor_id]);
+
+		$old_vendor_id = $result[0]['approval_tracking_id'];
+
+		$this->update(
+			[
+				'vendor_status'		=> 'rejected',
+				'vendor_reject_note'	=> $vendor_note,
+				'vendor_reject_dt'		=> Util::formatDateForDB(new \DateTime()),
+				'vendor_reject_userprofile_id'	=> $userprofile_id
+			],
+			['vendor_id'	=> '?'],
+			[$vendor_id]
+		);
+	}
+
+
 
 }
 

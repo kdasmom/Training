@@ -129,6 +129,7 @@ $diDefinition = array(
 	'NP\system\TreeGateway'                    => array('Adapter'),
 	'NP\system\UserMessageGateway'             => array('Adapter'),
 	'NP\system\UserMessageRecipientGateway'    => array('Adapter'),
+	'NP\system\MessageGateway'				   => array('Adapter'),
 	'NP\system\MessageService'                 => array('UserMessageGateway','UserMessageRecipientGateway'),
 	'NP\system\LoggingService'                 => array('logPath','enabledNamespaces','fileEnabled','debugEnabled'),
 	'NP\system\SessionService'                 => array('Config','SiteService'),
@@ -152,7 +153,7 @@ $diDefinition = array(
 	'NP\vendor\UtilityService'                       => array('ConfigService'),
 	'NP\vendor\InsuranceGateway'               => array('Adapter'),
 	'NP\vendor\InsuranceService'               => array('InsuranceGateway'),
-	'NP\vendor\VendorService'                  => array('VendorGateway','InsuranceGateway', 'ConfigService', 'UserprofileGateway', 'VendorsiteGateway', 'PhoneGateway', 'AddressGateway', 'PersonGateway', 'ContactGateway', 'EmailGateway', 'IntegrationPackageGateway', 'PnCustomFieldDataGateway'),
+	'NP\vendor\VendorService'                  => array('VendorGateway','InsuranceGateway', 'ConfigService', 'UserprofileGateway', 'VendorsiteGateway', 'PhoneGateway', 'AddressGateway', 'PersonGateway', 'ContactGateway', 'EmailGateway', 'IntegrationPackageGateway', 'PnCustomFieldDataGateway', 'MessageGateway'),
 	'NP\workflow\WfRuleGateway'                      => array('Adapter','UserprofileroleGateway'),
 );
 

@@ -14,12 +14,15 @@ use NP\contact\PhoneEntity;
 use NP\contact\PhoneGateway;
 use NP\core\AbstractService;
 use NP\core\db\Delete;
+use NP\core\db\Insert;
 use NP\core\db\Select;
 use NP\core\validation\EntityValidator;
 use NP\invoice\InvoiceGateway;
 use NP\locale\LocalizationService;
 use NP\system\ConfigService;
 use NP\system\IntegrationPackageGateway;
+use NP\system\MessageEntity;
+use NP\system\MessageGateway;
 use NP\system\PnCustomFieldDataGateway;
 use NP\user\UserprofileGateway;
 use NP\util\Util;
@@ -42,7 +45,8 @@ class VendorService extends AbstractService {
 	const VENDOR_STATUS_REJECTED = 'rejected';
 
 	protected $vendorGateway, $insuranceGateway, $configService, $userprofileGateway, $vendorsiteGateway, $phoneGateway,
-		$addressGateway, $personGateway, $contactGateway, $emailGateway, $integrationPackageGateway, $pnCustomFieldDataGateway;
+		$addressGateway, $personGateway, $contactGateway, $emailGateway, $integrationPackageGateway, $pnCustomFieldDataGateway,
+		$messageGateway;
 	
 	public function __construct(VendorGateway $vendorGateway,
 														InsuranceGateway $insuranceGateway,
@@ -55,7 +59,8 @@ class VendorService extends AbstractService {
 														ContactGateway $contactGateway,
 														EmailGateway $emailGateway,
 														IntegrationPackageGateway $integrationPackageGateway,
-														PnCustomFieldDataGateway $pnCustomFieldDataGateway) {
+														PnCustomFieldDataGateway $pnCustomFieldDataGateway,
+														MessageGateway $messageGateway) {
 		$this->vendorGateway    = $vendorGateway;
 		$this->insuranceGateway = $insuranceGateway;
 		$this->configService = $configService;
@@ -68,6 +73,7 @@ class VendorService extends AbstractService {
 		$this->emailGateway = $emailGateway;
 		$this->integrationPackageGateway = $integrationPackageGateway;
 		$this->pnCustomFieldDataGateway = $pnCustomFieldDataGateway;
+		$this->messageGateway = $messageGateway;
 	}
 
 
@@ -1307,9 +1313,176 @@ class VendorService extends AbstractService {
 		return $this->vendorsiteGateway->findAlternateAddresses($vendor_id, $vendorsite_id, $returnAll);
 	}
 
+	/**
+	 * Active vendor
+	 *
+	 * @param $vendor_id
+	 * @param $vendorsite_id
+	 * @param $userprofile_id
+	 * @param $active_status
+	 */
 	public function vendorActive($vendor_id, $vendorsite_id, $userprofile_id, $active_status) {
 		$this->vendorGateway->update(['vendor_status' => $active_status], ['vendor_id' => '?'], [$vendor_id]);
 		$this->vendorsiteGateway->vendorsiteActive($vendor_id, $active_status);
 		$this->configService->saveAuditLog($userprofile_id, $vendorsite_id, 5, 'vendor_status', $active_status);
 	}
+
+	/**
+	 * Reject vendor
+	 *
+	 * @param $vendor_id
+	 * @param $vendor_note
+	 * @param $userprofile_id
+	 * @return array
+	 */
+	public function vendorReject($vendor_id, $vendor_note, $userprofile_id) {
+		$this->vendorGateway->vendorReject($vendor_id, $vendor_note, $userprofile_id);
+		$this->configService->saveAuditLog($userprofile_id, $vendor_id, 5, 'vendor_status', 'rejected', 'auditvendor');
+		$this->vendorsiteGateway->update(['vendorsite_status' => 'rejected'], ['vendor_id' => '?', 'vendorsite_status' => '?']. [$vendor_id, 'forapproval']);
+		$messagetype_id = $this->messageGateway->findMessageType('Alert');
+		$result = $this->saveMessages($vendor_id, $messagetype_id, 'vendor', 'Rejected');
+		if (!$result['success']) {
+			return $result;
+		}
+
+	}
+
+	/**
+	 * Save messages
+	 *
+	 * @param $vendor_id
+	 * @return array
+	 */
+	public function saveMessages($tablekey_id, $messagetype_id, $table_name,$message_flagstatus) {
+		$message = new MessageEntity();
+		$message->messagetype_id = $messagetype_id;
+		$message->table_name = $table_name;
+		$message->tablekey_id = $tablekey_id;
+		$message->message_flagstatus = $message_flagstatus;
+		$message->message_datetm = Util::formatDateForDB(new \DateTime());
+
+		$errors = $this->entityValidator->validate($message);
+
+		if (count($errors) == 0 ) {
+
+			$this->messageGateway->beginTransaction();
+			try {
+				$id = $this->messageGateway->save($message);
+				$this->messageGateway->commit();
+			} catch (\Exception $e) {
+				$this->messageGateway->rollback();
+				$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
+			}
+		}
+
+		return [
+			'success'    			=> (count($errors)) ? false : true,
+			'errors'				=> $errors
+		];
+	}
+
+
+	/**
+	 * Approve vendor
+	 *
+	 * @param null $aspClientId
+	 * @param null $userProfileId
+	 * @param $vendorId
+	 * @param $approvalTrackingId
+	 * @param $approvalStatus
+	 */
+	public function vendorApprove($aspClientId = null, $userProfileId = null, $vendorId, $approvalTrackingId, $approvalStatus) {
+		$result = $this->vendorGateway->approveVendor($aspClientId, $userProfileId, $vendorId, $approvalTrackingId, $approvalStatus);
+		$this->vendorsiteApprove($aspClientId, $result['local_vendorsite_id'], $approvalStatus);
+		$sitecount = $this->vendorsiteGateway->findSiteCount($vendorId);
+		if ($sitecount == 0) {
+			$this->vendorGateway->deleteAssignedGlaccounts($vendorId);
+			$this->vendorGateway->delete(['vendor_id' => '?'], $vendorId);
+		}
+		$message_type_id = $this->messageGateway->findMessageType('Alert');
+		$this->saveMessages($approvalTrackingId, $message_type_id, 'vendor', 'Approved');
+	}
+
+	/**
+	 * Approve vendorsite
+	 *
+	 * @param $asp_client_id
+	 * @param $vendor_id
+	 * @param $vendorsite_id
+	 * @param $userprofile_id
+	 * @param $approvalStatus
+	 * @param bool $skipMessages
+	 */
+	public function vendorsiteApprove($asp_client_id, $vendorsite_id, $approvalStatus, $skipMessages = true) {
+		$approval_tracking_id= $this->findApproval($vendorsite_id, $asp_client_id);
+		$vendorsite = $this->vendorsiteGateway->vendorsiteApprove($asp_client_id, $approval_tracking_id, $vendorsite_id, $approvalStatus);
+
+		if (is_array($vendorsite)) {
+			$address = $this->vendorsiteGateway->findAddressAndPhoneInfoByVendorsiteId($vendorsite_id, $asp_client_id);
+			$this->addressGateway->update(
+				[
+					'addresstype_id'	=> $vendorsite['addresstype_id'],
+					'address_line1'		=> $vendorsite['address_line1'],
+					'address_line2'		=> $vendorsite['address_line2'],
+					'address_city'		=> $vendorsite['address_city'],
+					'address_state'		=> $vendorsite['address_state'],
+					'address_zip'		=> $vendorsite['address_zip'],
+					'address_zipext'	=> $vendorsite['address_zipext']
+				],
+				['address_id' => '?'],
+				[$address['address_id']]
+			);
+			$this->phoneGateway->update(
+				[
+					'phone_number'		=> $vendorsite['site_phone_number'],
+					'phone_ext'			=> $vendorsite['site_phone_ext']
+				],
+				['phone_id' => '?'],
+				[$address['site_phone_id']]
+			);
+			$this->phoneGateway->update(
+				[
+					'phone_number'	=> $vendorsite['site_fax_number']
+				],
+				['phone_id'	=> '?'],
+				[$address['site_fax_id']]
+			);
+			$this->emailGateway->update(
+				[
+					'email_address'	=> $vendorsite['site_email_address']
+				],
+				['email_id' => '?'],
+				[$address['site_email_id']]
+			);
+			$this->personGateway->update(
+				[
+					'person_firstname'	=> $vendorsite['person_firstname'],
+					'person_lastname'	=> $vendorsite['person_lastname']
+				],
+				['person_id' => '?'],
+				[$address['person_id']]
+			);
+			$this->phoneGateway->update(
+				[
+					'phone_number'	=> $vendorsite['contact_phone_number'],
+					'phone_ext'		=> $vendorsite['contact_phone_ext'],
+				],
+				['phone_id' => '?'],
+				[$address['contact_phone_id']]
+			);
+
+			$this->vendorsiteGateway->deleteVendorFavorite($vendorsite_id);
+			$this->vendorsiteGateway->delete(['vendorsite_id' => '?'], [$vendorsite_id]);
+			$this->addressGateway->delete(['table_name' => '?', 'tablekey_id' => '?'], ['vendorsite', $vendorsite_id]);
+			$this->phoneGateway->delete(['table_name' => '?', 'tablekey_id' => '?'], ['vendorsite', $vendorsite_id]);
+			$this->emailGateway->delete(['table_name' => '?', 'tablekey_id' => '?'], ['vendorsite', $vendorsite_id]);
+			$this->phoneGateway->deleteByTablenameAndKey('vendorsite', $vendorsite_id);
+		}
+
+		if (!$skipMessages) {
+			$messagetype_id = $this->messageGateway->findMessageType('Alert');
+			$result = $this->saveMessages($approval_tracking_id, $messagetype_id, 'vendorsite', 'Approved');
+		}
+	}
+
 }
