@@ -22,6 +22,7 @@ if (!$isAuth) {
             <link rel="stylesheet" href="ext/src/ux/css/ItemSelector.css" />
             <link rel="stylesheet" href="resources/VerticalTabPanel.css" />
             <link rel="stylesheet" href="resources/app.css" />
+            <link rel="stylesheet" href="resources/css/uploader.css" />
             <script src="ext/ext-dev.js"></script>
             <script src="bootstrap.js"></script>
         <!-- </x-bootstrap> -->
