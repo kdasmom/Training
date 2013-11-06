@@ -27,7 +27,6 @@ Ext.define('NP.view.vendor.VendorRejectWindow', {
 
 	initComponent: function() {
 		var that = this;
-		console.log('vendor_id: ', this.vendor_id);
 
 		this.tbar = [
 			{ xtype: 'shared.button.cancel' },

@@ -17,6 +17,7 @@ use NP\core\db\Delete;
 use NP\core\db\Insert;
 use NP\core\db\Select;
 use NP\core\validation\EntityValidator;
+use NP\image\ImageIndexGateway;
 use NP\invoice\InvoiceGateway;
 use NP\locale\LocalizationService;
 use NP\system\ConfigService;
@@ -46,7 +47,7 @@ class VendorService extends AbstractService {
 
 	protected $vendorGateway, $insuranceGateway, $configService, $userprofileGateway, $vendorsiteGateway, $phoneGateway,
 		$addressGateway, $personGateway, $contactGateway, $emailGateway, $integrationPackageGateway, $pnCustomFieldDataGateway,
-		$messageGateway;
+		$messageGateway, $imageIndexGateway;
 	
 	public function __construct(VendorGateway $vendorGateway,
 														InsuranceGateway $insuranceGateway,
@@ -60,7 +61,8 @@ class VendorService extends AbstractService {
 														EmailGateway $emailGateway,
 														IntegrationPackageGateway $integrationPackageGateway,
 														PnCustomFieldDataGateway $pnCustomFieldDataGateway,
-														MessageGateway $messageGateway) {
+														MessageGateway $messageGateway,
+														ImageIndexGateway $imageIndexGateway) {
 		$this->vendorGateway    = $vendorGateway;
 		$this->insuranceGateway = $insuranceGateway;
 		$this->configService = $configService;
@@ -74,6 +76,7 @@ class VendorService extends AbstractService {
 		$this->integrationPackageGateway = $integrationPackageGateway;
 		$this->pnCustomFieldDataGateway = $pnCustomFieldDataGateway;
 		$this->messageGateway = $messageGateway;
+		$this->imageIndexGateway = $imageIndexGateway;
 	}
 
 
@@ -1668,6 +1671,16 @@ class VendorService extends AbstractService {
 			}
 		}
 		return true;
+	}
+
+	public function findImages($vendor_id = null) {
+		if (!$vendor_id) {
+			return [];
+		}
+
+		$images = $this->imageIndexGateway->findEntityImages($vendor_id, 'Vendor');
+
+		return $images;
 	}
 
 }

@@ -569,7 +569,10 @@ Ext.define('NP.controller.VendorManager', {
 				bar.push(
 					{
 						xtype: 'shared.button.new',
-						text: 'Add image'
+						text: 'Add image',
+						handler: function() {
+							that.showAddImageWindow(vendor_id);
+						}
 					}
 				);
 				if (tabName == 'documents') {
@@ -725,5 +728,9 @@ Ext.define('NP.controller.VendorManager', {
 				}
 			}
 		});
+	},
+
+	showAddImageWindow: function(vendor_id) {
+		var win = Ext.create('NP.view.vendor.AddImagesWindow', {vendor_id: vendor_id}).show();
 	}
 });

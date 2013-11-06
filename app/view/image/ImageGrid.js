@@ -26,7 +26,9 @@ Ext.define('NP.view.image.ImageGrid', {
 		'NP.view.image.gridcol.DocType',
 		'NP.view.shared.gridcol.PendingDays',
 		'NP.view.image.gridcol.ExceptionBy',
-		'NP.view.shared.gridcol.UniversalField'
+		'NP.view.shared.gridcol.UniversalField',
+		'NP.view.image.gridcol.ImageStatus',
+		'NP.view.image.gridcol.InvoiceNumber'
     ],
     
     // This is the default list of columns available for Invoice grids
