@@ -1645,4 +1645,29 @@ class VendorService extends AbstractService {
 		];
 	}
 
+	/**
+	 * @param $glaccounts
+	 * @param $vendor_id
+	 * @return array|bool
+	 */
+	public function refreshGlAccounts($glaccounts = null, $vendor_id = null) {
+		if (!$vendor_id) {
+			return [
+				'success'		=> false,
+				'errors'		=> [array('field'=>'global', 'msg'=>'Cannot assign glaccounts', 'extra'=>null)]
+			];
+		}
+		if ($glaccounts == '') {
+			$this->vendorGateway->deleteAssignedGlaccounts($vendor_id);
+		} else {
+			if (!$this->vendorsiteGateway->assignGlAccounts($glaccounts, $vendor_id)) {
+				return [
+					'success'		=> false,
+					'errors'		=> [array('field'=>'global', 'msg'=>'Cannot assigns glaccounts', 'extra'=>null)]
+				];
+			}
+		}
+		return true;
+	}
+
 }

@@ -23,6 +23,7 @@ Ext.define('NP.controller.VendorManager', {
     saveSuccessText		: NP.Translator.translate('Your changes were saved.'),
 //	custom
 	vendor_status		: '',
+	vendor_id			: null,
     /**
      * Init
      */
@@ -121,6 +122,7 @@ Ext.define('NP.controller.VendorManager', {
 	 */
 	showVendorForm: function(vendor_id, status) {
 		var insurances = [];
+		this.vendor_id = vendor_id;
 
 		if (status) {
 			this.vendor_status = status;
@@ -323,6 +325,7 @@ Ext.define('NP.controller.VendorManager', {
 
 	showFormTab: function(itemId, opened, isReject, insurance, vendor_id) {
 
+		var vendor_id = this.vendor_id;
 		var that = this;
 		var opened = !opened ? false :true;
 		var appCount = 1;
@@ -422,7 +425,10 @@ Ext.define('NP.controller.VendorManager', {
 						bar.push(
 							{
 								xtype: 'button',
-								text: 'Update GL Assignment'
+								text: 'Update GL Assignment',
+								handler: function() {
+									that.refreshGlAccounts(vendor_id);
+								}
 							}
 						);
 					} else {
@@ -549,7 +555,10 @@ Ext.define('NP.controller.VendorManager', {
 									bar.push(
 										{
 											xtype: 'button',
-											text: 'Update GL Assignment'
+											text: 'Update GL Assignment',
+											handler: function() {
+												that.refreshGlAccounts(vendor_id);
+											}
 										}
 									);
 								}
@@ -586,7 +595,10 @@ Ext.define('NP.controller.VendorManager', {
 				bar.push(
 					{
 						xtype: 'button',
-						text: 'Update GL Assignment'
+						text: 'Update GL Assignment',
+						handler: function() {
+							that.refreshGlAccounts(vendor_id);
+						}
 					}
 				);
 			}
@@ -657,6 +669,9 @@ Ext.define('NP.controller.VendorManager', {
 		var win = Ext.create('NP.view.vendor.VendorRejectWindow', {vendor_id: vendor_id}).show();
 	},
 
+	/**
+	 * set reject status to vendor
+	 */
 	rejectVendor: function() {
 		var that = this;
 
@@ -683,5 +698,32 @@ Ext.define('NP.controller.VendorManager', {
 				}
 			});
 		}
+	},
+
+	/**
+	 * Refresh glaccounts list
+	 *
+	 * @param vendor_id
+	 */
+	refreshGlAccounts: function (vendor_id) {
+		var that = this;
+		var form = this.getCmp('vendor.vendorform');
+		var values = form.getValues();
+
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service: 'VendorService',
+				action : 'refreshGlAccounts',
+				vendor_id		: vendor_id,
+				glaccounts		: values['glaccounts'],
+				success: function(result, deferred) {
+					if (result) {
+						NP.Util.showFadingWindow({ html: that.saveSuccessText });
+						that.application.addHistory('VendorManager:showVendorManager');
+					}
+
+				}
+			}
+		});
 	}
 });
