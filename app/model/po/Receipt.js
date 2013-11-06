@@ -20,20 +20,20 @@ Ext.define('NP.model.po.Receipt', {
 		{ name: 'property_id', type: 'int' },
 		{ name: 'vendor_id', type: 'int' },
 		{ name: 'userprofile_id', type: 'int' },
-		{ name: 'receipt_createdt', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
-		{ name: 'receipt_approvedt', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
-		{ name: 'receipt_lastupdatedt', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+		{ name: 'receipt_createdt', type: 'date' },
+		{ name: 'receipt_approvedt', type: 'date' },
+		{ name: 'receipt_lastupdatedt', type: 'date' },
 		{ name: 'receipt_ref' },
 		{ name: 'receipt_reject_note' },
 		{ name: 'receipt_note' },
 		{ name: 'receipt_status' },
 		{ name: 'receipt_vendorref' },
-		{ name: 'sysdatetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
-		{ name: 'receipt_period', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
-		{ name: 'receipt_receivedondt', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+		{ name: 'sysdatetm', type: 'date' },
+		{ name: 'receipt_period', type: 'date' },
+		{ name: 'receipt_receivedondt', type: 'date' },
 		{ name: 'receipt_customnote' },
 		{ name: 'gl_transfer', type: 'int' },
-		{ name: 'transfer_dt', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+		{ name: 'transfer_dt', type: 'date' },
 		{ name: 'receipt_revert_note' },
 		{ name: 'delegation_to_userprofile_id', type: 'int' },
 
@@ -42,9 +42,9 @@ Ext.define('NP.model.po.Receipt', {
 		{ name: 'created_by' },
 		{ name: 'pending_days', type: 'int' },
 		{ name: 'pending_approval_days', type: 'int' },
-		{ name: 'last_approved_datetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+		{ name: 'last_approved_datetm', type: 'date' },
 		{ name: 'last_approved_by' },
-		{ name: 'rejected_datetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+		{ name: 'rejected_datetm', type: 'date' },
 		{ name: 'rejected_by' },
 		{ name: 'rejected_reason' }
 	],
@@ -72,5 +72,5 @@ Ext.define('NP.model.po.Receipt', {
 			primaryKey: 'PriorityFlag_ID_Alt',
 			reader    : 'jsonflat'
         }
-    ],
+    ]
 });

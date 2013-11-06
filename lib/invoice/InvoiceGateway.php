@@ -63,7 +63,7 @@ class InvoiceGateway extends AbstractGateway {
 				->columnShippingAmount()
 				->columnTaxAmount()
 				->join(new sql\join\InvoiceVendorsiteJoin())
-				->join(new \NP\vendor\sql\join\VendorsiteVendorJoin())
+				->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(['vendor_name','vendor_id_alt','vendor_status','integration_package_id']))
 				->join(new \NP\vendor\sql\join\VendorsiteAddressJoin())
 				->join(new \NP\vendor\sql\join\VendorsitePhoneJoin())
 				->join(new \NP\contact\sql\join\PhonePhoneTypeJoin('Main'))

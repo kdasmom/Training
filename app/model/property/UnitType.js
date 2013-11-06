@@ -22,7 +22,7 @@ Ext.define('NP.model.property.UnitType', {
 		{ name: 'unittype_bathrooms', type: 'float' },
 		{ name: 'property_id', type: 'int' },
 		{ name: 'unittype_updated_by', type: 'int' },
-		{ name: 'unittype_updated_date', type: 'date', dateFormat: NP.Config.getServerDateFormat() }
+		{ name: 'unittype_updated_date', type: 'date' }
 	],
 
 	belongsTo: {

@@ -7,7 +7,7 @@ use NP\core\db\Select;
 use NP\core\db\Adapter;
 use NP\core\Config;
 use NP\system\IntegrationPackageGateway;
-use NP\gl\GLAccountGateway;
+use NP\gl\GlAccountGateway;
 use NP\property\PropertyGateway;
 use NP\locale\LocalizationService;
 use NP\util\SoapService;
@@ -18,7 +18,7 @@ abstract class AbstractBudgetImportEntityValidator extends EntityValidator {
             $propertyGateway, $config, $soapService;
 
     public function __construct(LocalizationService $localizationService, Adapter $adapter, IntegrationPackageGateway $integrationPackageGateway,
-                                GLAccountGateway $glAccountGateway, PropertyGateway $propertyGateway,
+                                GlAccountGateway $glAccountGateway, PropertyGateway $propertyGateway,
                                 Config $config, SoapService $soapService) {
         // Make sure a type was set in the extended class
         if ($this->type === null) {

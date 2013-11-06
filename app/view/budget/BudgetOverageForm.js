@@ -16,6 +16,8 @@ Ext.define('NP.view.budget.BudgetOverageForm', {
         'NP.model.gl.GlAccount'
     ],
 
+    layout: 'vbox',
+
     bodyPadding: 8,
     autoScroll : true,
 

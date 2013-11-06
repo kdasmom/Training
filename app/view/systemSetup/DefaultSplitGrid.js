@@ -9,6 +9,7 @@ Ext.define('NP.view.systemSetup.DefaultSplitGrid', {
 
     requires: [
     	'NP.lib.core.Config',
+        'NP.lib.core.Translator',
     	'NP.view.shared.button.New',
     	'NP.view.shared.button.Delete',
         'NP.lib.ui.Grid',
@@ -16,16 +17,6 @@ Ext.define('NP.view.systemSetup.DefaultSplitGrid', {
         'NP.view.shared.GlCombo'
     ],
     
-    // For localization
-    createNewSplitBtnLabel: 'Create New Split',
-    nameColText           : 'Name',
-    createdDateColText    : 'Created Date',
-    lastUpdatedColText    : 'Last Updated',
-    alertColText          : 'Alert',
-    inactiveText          : 'Inactive',
-    onHoldText            : 'On Hold',
-    glText                : 'GL',
-
     layout: {
         type : 'vbox',
         align: 'stretch'
@@ -34,6 +25,8 @@ Ext.define('NP.view.systemSetup.DefaultSplitGrid', {
     
     initComponent: function() {
     	var that = this;
+
+        that.translateText();
 
     	var bar = [
     		{ xtype: 'shared.button.new', text: this.createNewSplitBtnLabel }
@@ -152,6 +145,19 @@ Ext.define('NP.view.systemSetup.DefaultSplitGrid', {
         this.glFilter       = this.query('[name="glaccount_id"]')[0];
 
         this.filterFields = ['propertyFilter','glFilter'];
+    },
+
+    translateText: function() {
+        var me = this;
+        
+        me.createNewSplitBtnLabel= NP.Translator.translate('Create New Split');
+        me.nameColText           = NP.Translator.translate('Name');
+        me.createdDateColText    = NP.Translator.translate('Created Date');
+        me.lastUpdatedColText    = NP.Translator.translate('Last Updated');
+        me.alertColText          = NP.Translator.translate('Alert');
+        me.inactiveText          = NP.Translator.translate('Inactive');
+        me.onHoldText            = NP.Translator.translate('On Hold');
+        me.glText                = NP.Translator.translate('GL');
     },
 
     applyFilter: function() {

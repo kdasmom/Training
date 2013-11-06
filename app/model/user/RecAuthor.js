@@ -17,7 +17,7 @@ Ext.define('NP.model.user.RecAuthor', {
 		{ name: 'userprofile_id', type: 'int' },
 		{ name: 'table_name' },
 		{ name: 'tablekey_id', type: 'int' },
-		{ name: 'recauthor_datetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+		{ name: 'recauthor_datetm', type: 'date' },
 		{ name: 'delegation_to_userprofile_id', type: 'int' }
 	],
 

@@ -8,13 +8,12 @@ Ext.define('NP.view.property.PropertiesFormCal', {
     alias: 'widget.property.propertiesformcal',
     
     requires: [
+    	'NP.lib.core.Translator',
     	'NP.view.property.FiscalCalendarGrid',
     	'NP.view.property.FiscalCalendarForm',
     	'NP.view.shared.button.Cancel',
     	'NP.view.shared.button.Save'
     ],
-
-    title: 'Fsical Calendars',
 
     layout: {
 		type : 'vbox',
@@ -22,6 +21,8 @@ Ext.define('NP.view.property.PropertiesFormCal', {
     },
 
     initComponent: function() {
+    	this.title = NP.Translator.translate('Fiscal Calendars');
+
     	var months = [];
     	var pos = -1;
     	for (var i=1; i<=12; i++) {
@@ -47,6 +48,7 @@ Ext.define('NP.view.property.PropertiesFormCal', {
     		fieldLabel: 'Select a Closing Calendar to Add',
     		labelAlign: 'top',
     		layout: 'column',
+    		margin: '0 0 24 0',
     		items: [
     			{
 					xtype                : 'customcombo',

@@ -7,6 +7,8 @@
 Ext.define('NP.store.system.SummaryStats', {
 	extend: 'Ext.data.Store',
 	
+	requires: ['NP.lib.core.Translator'],
+
 	fields: [
 		{ name: 'id', type: 'int' },
 		{ name: 'title' },
@@ -17,67 +19,47 @@ Ext.define('NP.store.system.SummaryStats', {
 		{ name: 'category' },
 		{ name: 'config' }
 	],
-	
-	invoicesToApproveText      : 'Invoices to Approve',
-	invoicesOnHoldText         : 'Invoices on Hold',
-	invoicesCompletedText      : 'Completed Invoices to Approve',
-	invoicesRejectedText       : 'Rejected Invoices',
-	invoicesMyText             : 'My Invoices',
-	posToApproveText           : 'Purchase Orders To Approve',
-	posReleasedText            : 'Approved Purchase Orders for Review',
-	posByUserText              : 'My Purchase Orders',
-	posRejectedText            : 'Rejected Purchase Orders',
-	receiptsToApproveText      : 'Receipts To Approve',
-	receiptsRejectedText       : 'Rejected Receipts',
-	receiptsPendingPostText    : 'Receipts Pending Post Approval',
-	imagesToConvertText        : 'Images to Convert to Invoice',
-	imagesToProcessText        : 'Image Invoices to be Processed',
-	imagesToIndexText          : 'Images to be Indexed',
-	imageExceptionsText        : 'Image Exceptions',
-	vendorsToApproveText       : 'Vendors to Approve',
-	vcAuthRequestsText         : 'VendorConnect Authorization Request',
-	expiredInsuranceCertsText  : 'Expired Insurance Certificates',
-	mtdOverBudgetCategoriesText: 'Month-to-Date Over Budget Categories',
-	ytdOverBudgetCategoriesText: 'Year-to-Date Over Budget Categories',
 
 	constructor: function() {
-		var that = this;
+		var me = this;
 
-		this.data = [];
+		me.data = [];
+
+		me.addEvents('statsloaded');
 
 		// First we define a basic array of stats to loop over
 		var stats = [
 			// PO category
-			{ id: 3, title: this.posToApproveText, name: 'PosToApprove', module_id: 1055, store: 'po.Purcasheorders', service: 'PoService', category: 'po' },
-			{ id: 29, title: this.posReleasedText, name: 'PosReleased', module_id: 6039, store: 'po.Purcasheorders', service: 'PoService', category: 'po' },
-			{ id: 9, title: this.posByUserText, name: 'PosByUser', module_id: 2050, store: 'po.Purcasheorders', service: 'PoService', category: 'po' },
-			{ id: 26, title: this.posRejectedText, name: 'PosRejected', module_id: 6035, store: 'po.Purcasheorders', service: 'PoService', category: 'po' },
-			{ id: 27, title: this.receiptsToApproveText, name: 'ReceiptsToApprove', module_id: 6026, store: 'po.Receipts', service: 'ReceiptService', category: 'po' },
-			{ id: 28, title: this.receiptsRejectedText, name: 'ReceiptsRejected', module_id: 6028, store: 'po.Receipts', service: 'ReceiptService', category: 'po' },
-			{ id: 34, title: this.receiptsPendingPostText, name: 'ReceiptsPendingPost', module_id: 6059, store: 'po.Receipts', service: 'ReceiptService', category: 'po' },
+			{ id: 3, title: 'Purchase Orders To Approve', name: 'PosToApprove', module_id: 1055, store: 'po.Purcasheorders', service: 'PoService', category: 'po' },
+			{ id: 29, title: 'Approved Purchase Orders for Review', name: 'PosReleased', module_id: 6039, store: 'po.Purcasheorders', service: 'PoService', category: 'po' },
+			{ id: 9, title: 'My Purchase Orders', name: 'PosByUser', module_id: 2050, store: 'po.Purcasheorders', service: 'PoService', category: 'po' },
+			{ id: 26, title: 'Rejected Purchase Orders', name: 'PosRejected', module_id: 6035, store: 'po.Purcasheorders', service: 'PoService', category: 'po' },
+			{ id: 27, title: 'Receipts To Approve', name: 'ReceiptsToApprove', module_id: 6026, store: 'po.Receipts', service: 'ReceiptService', category: 'po' },
+			{ id: 28, title: 'Rejected Receipts', name: 'ReceiptsRejected', module_id: 6028, store: 'po.Receipts', service: 'ReceiptService', category: 'po' },
+			{ id: 34, title: 'Receipts Pending Post Approval', name: 'ReceiptsPendingPost', module_id: 6059, store: 'po.Receipts', service: 'ReceiptService', category: 'po' },
 			// Invoice category
-			{ id: 4, title: this.invoicesToApproveText, name: 'InvoicesToApprove', module_id: 1053, store: 'invoice.Invoices', service: 'InvoiceService', category: 'invoice' },
-			{ id: 31, title: this.invoicesOnHoldText, name: 'InvoicesOnHold', module_id: 6052, store: 'invoice.Invoices', service: 'InvoiceService', category: 'invoice' },
-			{ id: 6, title: this.invoicesCompletedText, name: 'InvoicesCompleted', module_id: 2004, store: 'invoice.Invoices', service: 'InvoiceService', category: 'invoice' },
-			{ id: 23, title: this.invoicesRejectedText, name: 'InvoicesRejected', module_id: 6036, store: 'invoice.Invoices', service: 'InvoiceService', category: 'invoice' },
-			{ id: 10, title: this.invoicesMyText, name: 'InvoicesByUser', module_id: 2060, store: 'invoice.Invoices', service: 'InvoiceService', category: 'invoice' },
+			{ id: 4, title: 'Invoices to Approve', name: 'InvoicesToApprove', module_id: 1053, store: 'invoice.Invoices', service: 'InvoiceService', category: 'invoice' },
+			{ id: 31, title: 'Invoices on Hold', name: 'InvoicesOnHold', module_id: 6052, store: 'invoice.Invoices', service: 'InvoiceService', category: 'invoice' },
+			{ id: 6, title: 'Completed Invoices to Approve', name: 'InvoicesCompleted', module_id: 2004, store: 'invoice.Invoices', service: 'InvoiceService', category: 'invoice' },
+			{ id: 23, title: 'Rejected Invoices', name: 'InvoicesRejected', module_id: 6036, store: 'invoice.Invoices', service: 'InvoiceService', category: 'invoice' },
+			{ id: 10, title: 'My Invoices', name: 'InvoicesByUser', module_id: 2060, store: 'invoice.Invoices', service: 'InvoiceService', category: 'invoice' },
 			// Image category
-			{ id: 7, title: this.imagesToConvertText, name: 'ImagesToConvert', module_id: 1050, store: 'image.ImageIndexes', service: 'ImageService', category: 'image' },
-			{ id: 8, title: this.imagesToProcessText, name: 'ImagesToProcess', module_id: 2040, store: 'image.ImageIndexes', service: 'ImageService', category: 'image' },
-			{ id: 30, title: this.imageExceptionsText, name: 'ImageExceptions', module_id: 6050, store: 'image.ImageIndexes', service: 'ImageService', category: 'image' },
-			{ id: 24, title: this.imagesToIndexText, name: 'ImagesToIndex', module_id: 2200, store: 'image.ImageIndexes', service: 'ImageService', category: 'image' },
+			{ id: 7, title: 'Images to Convert to Invoice', name: 'ImagesToConvert', module_id: 1050, store: 'image.ImageIndexes', service: 'ImageService', category: 'image' },
+			{ id: 8, title: 'Image Invoices to be Processed', name: 'ImagesToProcess', module_id: 2040, store: 'image.ImageIndexes', service: 'ImageService', category: 'image' },
+			{ id: 30, title: 'Image Exceptions', name: 'ImageExceptions', module_id: 6050, store: 'image.ImageIndexes', service: 'ImageService', category: 'image' },
+			{ id: 24, title: 'Images to be Indexed', name: 'ImagesToIndex', module_id: 2200, store: 'image.ImageIndexes', service: 'ImageService', category: 'image' },
 			// Vendor category
-			{ id: 5, title: this.vendorsToApproveText, name: 'VendorsToApprove', module_id: 1051, store: 'vendor.Vendors', service: 'VendorService', category: 'vendor' },
-			{ id: 36, title: this.vcAuthRequestsText, name: 'VcAuthRequests', module_id: 6062, store: 'user.VendorAccessUsers', service: 'VendorConnectService', category: 'vendor' },
-			{ id: 13, title: this.expiredInsuranceCertsText, name: 'ExpiredInsuranceCerts', module_id: 1054, store: 'user.VendorAccessUsers', service: 'VendorService', category: 'vendor' },
+			{ id: 5, title: 'Vendors to Approve', name: 'VendorsToApprove', module_id: 1051, store: 'vendor.Vendors', service: 'VendorService', category: 'vendor' },
+			{ id: 36, title: 'VendorConnect Authorization Request', name: 'VcAuthRequests', module_id: 6062, store: 'user.VendorAccessUsers', service: 'VendorConnectService', category: 'vendor' },
+			{ id: 13, title: 'Expired Insurance Certificates', name: 'ExpiredInsuranceCerts', module_id: 1054, store: 'user.VendorAccessUsers', service: 'VendorService', category: 'vendor' },
 			// Budget category
-			{ id: 11, title: this.mtdOverBudgetCategoriesText, name: 'MtdOverBudgetCategories', module_id: 1054, store: 'budget.Budgets', service: 'BudgetService', category: 'budget' },
-			{ id: 12, title: this.ytdOverBudgetCategoriesText, name: 'YtdOverBudgetCategories', module_id: 2070, store: 'budget.Budgets', service: 'BudgetService', category: 'budget' }
+			{ id: 11, title: 'Month-to-Date Over Budget Categories', name: 'MtdOverBudgetCategories', module_id: 1054, store: 'budget.Budgets', service: 'BudgetService', category: 'budget' },
+			{ id: 12, title: 'Year-to-Date Over Budget Categories', name: 'YtdOverBudgetCategories', module_id: 2070, store: 'budget.Budgets', service: 'BudgetService', category: 'budget' }
 		];
 
 		// Now we loop over the simple array to create the bigger record with the config field
 		Ext.each(stats, function(stat) {
-			that.data.push({
+			me.data.push({
 				id       : stat.id,
 				title    : stat.title,
 				name     : stat.name,
@@ -92,9 +74,19 @@ Ext.define('NP.store.system.SummaryStats', {
 						tiles: [{ className: stat.name }]
 					}]
 				}]
-			}); 
+			});
 		});
 
-		this.callParent(arguments);
+		me.callParent(arguments);
+
+		// We need the locale to be loaded before we can run this because we need to localize the text
+		NP.Translator.on('localeloaded', function() {
+			var recs = me.getRange();
+			for (var i=0; i<recs.length; i++) {
+				recs[i].set('title', NP.Translator.translate(recs[i].get('title')));
+			}
+
+			me.fireEvent('statsloaded');
+		});
 	}
 });

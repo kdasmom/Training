@@ -12,13 +12,6 @@ use NP\core\validation\EntityValidator;
  */
 class MessageService extends AbstractService {
 	
-	protected $userMessageGateway, $userMessageRecipientGateway;
-	
-	public function __construct(UserMessageGateway $userMessageGateway, UserMessageRecipientGateway $userMessageRecipientGateway) {
-		$this->userMessageGateway          = $userMessageGateway;
-		$this->userMessageRecipientGateway = $userMessageRecipientGateway;
-	}
-
 	/**
 	 * Returns all user messages in the system
 	 */

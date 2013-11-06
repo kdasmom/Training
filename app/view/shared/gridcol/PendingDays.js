@@ -7,8 +7,16 @@ Ext.define('NP.view.shared.gridcol.PendingDays', {
 	extend: 'Ext.grid.column.Number',
 	alias: 'widget.shared.gridcol.pendingdays',
 
+	requires: ['NP.lib.core.Translator'],
+
 	text     : 'Days Pending',
 	dataIndex: 'pending_days',
 	align    : 'right',
-	format   : '0,000'
+	format   : '0,000',
+
+    initComponent: function() {
+    	this.text = NP.Translator.translate(this.text);
+    	
+    	this.callParent(arguments);
+    }
 });

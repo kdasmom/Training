@@ -8,7 +8,8 @@ Ext.define('NP.view.invoice.ViewNotes', {
     alias: 'widget.invoice.viewnotes',
 
     requires: [
-    	'NP.lib.core.Config'
+    	'NP.lib.core.Config',
+    	'Ext.layout.container.Table'
     ],
 
     // For localization

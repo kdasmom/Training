@@ -12,12 +12,7 @@ use NP\security\SecurityService;
  */
 class ImageService extends AbstractService {
 
-	protected $securityService, $imageIndexGateway, $imageTransferGateway;
-
-	public function __construct(ImageIndexGateway $imageIndexGateway, ImageTransferGateway $imageTransferGateway) {
-		$this->imageIndexGateway    = $imageIndexGateway;
-		$this->imageTransferGateway = $imageTransferGateway;
-	}
+	protected $securityService;
 
 	public function setSecurityService(SecurityService $securityService) {
 		$this->securityService = $securityService;

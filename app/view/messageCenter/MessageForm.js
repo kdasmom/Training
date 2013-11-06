@@ -9,6 +9,7 @@ Ext.define('NP.view.messageCenter.MessageForm', {
     
     requires: [
     	'NP.lib.ui.DateTimeField',
+        'NP.lib.core.Translator',
     	'NP.view.shared.UserAssigner',
     	'NP.view.shared.RoleAssigner',
     	'NP.view.shared.button.Save',
@@ -20,22 +21,30 @@ Ext.define('NP.view.messageCenter.MessageForm', {
     bodyPadding: 8,
     autoScroll : true,
 
-    // For locatization
-    title                 : 'Message',
-	typeFieldLabel        : 'Message Type',
-	titleFieldLabel       : 'Title of Message',
-	messageFieldLabel     : 'Message',
-	sentFieldLabel        : 'Sent Date',
-	displayUntilFieldLabel: 'Display Until Date',
-	messageForFieldLabel  : 'Message For',
-	userUnassignedText    : 'Users',
-	userAssignedText      : 'Users to Send To',
-	groupUnassignedText   : 'Groups',
-	groupAssignedText     : 'Groups to Send To',
-	pastErrorText         : 'cannot be in the past',
-	laterThanErrorText    : 'must be a later date than',
+    layout: {
+        type: 'vbox',
+        align: 'stretch'
+    },
 
     initComponent: function() {
+        var me = this;
+
+        me.title = NP.Translator.translate('Message');
+
+        // For locatization
+        me.typeFieldLabel         = NP.Translator.translate('Message Type');
+        me.titleFieldLabel        = NP.Translator.translate('Title of Message');
+        me.messageFieldLabel      = NP.Translator.translate('Message');
+        me.sentFieldLabel         = NP.Translator.translate('Sent Date');
+        me.displayUntilFieldLabel = NP.Translator.translate('Display Until Date');
+        me.messageForFieldLabel   = NP.Translator.translate('Message For');
+        me.userUnassignedText     = NP.Translator.translate('Users');
+        me.userAssignedText       = NP.Translator.translate('Users to Send To');
+        me.groupUnassignedText    = NP.Translator.translate('Groups');
+        me.groupAssignedText      = NP.Translator.translate('Groups to Send To');
+        me.pastErrorText          = NP.Translator.translate('cannot be in the past');
+        me.laterThanErrorText     = NP.Translator.translate('must be a later date than');
+        
     	var bar = [
     		{ xtype: 'shared.button.cancel' },
     		{ xtype: 'shared.button.message' },

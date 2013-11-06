@@ -43,7 +43,7 @@ class PropertyGateway  extends AbstractGateway {
 	/**
 	 * Returns property
 	 */
-	public function findAll($property_id=null, $keyword=null, $property_status=null) {
+	public function findAll($property_id=null, $integration_package_id=null, $keyword=null, $property_status=null) {
 		$select = Select::get()->columns(array('property_id','property_id_alt','property_name','property_status','integration_package_id','property_no_units'))
 								->from('property')
 								->order('property_name');
@@ -57,12 +57,18 @@ class PropertyGateway  extends AbstractGateway {
 			$select->whereOr()
 					->whereLike('property_name', '?')
 					->whereLike('property_id_alt', '?');
+
 			$params[] = "{$keyword}%";
 			$params[] = "{$keyword}%";
 		}
 		if ($property_status !== null) {
 			$select->whereEquals('property_status', '?');
 			$params[] = $property_status;
+		}
+
+		if ($integration_package_id !== null) {
+			$select->whereEquals('integration_package_id', '?');
+			$params[] = $integration_package_id;
 		}
 
 		return $this->adapter->query($select, $params);

@@ -10,13 +10,14 @@ Ext.define('NP.view.Viewport', {
     extend: 'Ext.container.Viewport',
     
     requires: [
-    	'NP.lib.ui.HoverButton'
-		,'NP.lib.core.Config'
-		,'NP.lib.core.Security'
-		,'NP.view.viewport.TopToolbar'
-		,'NP.view.viewport.TopMenu'
-		,'NP.view.viewport.Home'
-		,'NP.view.viewport.ImagePanel'
+    	'Ext.layout.container.Border',
+    	'NP.lib.ui.HoverButton',
+    	'NP.lib.core.Config',
+    	'NP.lib.core.Security',
+    	'NP.view.viewport.TopToolbar',
+    	'NP.view.viewport.TopMenu',
+    	'NP.view.viewport.Home',
+    	'NP.view.viewport.ImagePanel'
 	],
 	
 	layout: 'border',
@@ -43,7 +44,12 @@ Ext.define('NP.view.Viewport', {
 				            align: 'stretch'
 				       	},
 				       	items: [
-				       		{ xtype: 'component', html: '<img id="npHeaderLogo" src="resources/images/payables-top.jpg" />' },
+				       		// This is the large NP Logo top left
+				       		{
+				       			xtype: 'component',
+				       			html : '<img id="npHeaderLogo" src="resources/images/payables-top.jpg" />',
+				       			width: 658
+				       		},
 				       		{
 				       			xtype: 'container',
 				       			style: {
@@ -51,10 +57,14 @@ Ext.define('NP.view.Viewport', {
 						        },
 						        flex: 1,
 						        padding: '10 12 0 0',
+						        layout: {
+						        	type: 'vbox',
+						        	align: 'right'
+						        },
 						        items: [
 						        	{
 						        		xtype: 'component',
-						        		html: '<div align="right" id="npHeaderRight">' +
+						        		html: '<div id="npHeaderRight">' +
 							        			'<img id="learningNexusImg" src="resources/images/learningnexus.gif" align="top" />' +
 							        			'<span id="npHeaderRightLinks">' + 
 							        				'<a href="javascript:void(0)" id="npHomeLink">Home</a>' + ' | ' + 

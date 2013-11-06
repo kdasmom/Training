@@ -10,6 +10,7 @@ Ext.define('NP.view.invoice.Register', {
     requires: [
     	'NP.view.shared.ContextPicker',
     	'NP.lib.core.Security',
+    	'NP.lib.core.Translator',
     	'NP.view.invoice.InvoiceGrid',
     	'NP.store.invoice.Invoices'
     ],
@@ -18,26 +19,19 @@ Ext.define('NP.view.invoice.Register', {
    		border: false
    	},
 
-	titleText             : 'Invoice Register',
-	getPOBtnText          : 'Get PO',
-	newInvoiceBtnText     : 'New Invoice',
-	reportsBtnText        : 'Invoice Reports',
-	searchBtnText         : 'Search',
-	receiptRegisterBtnText: 'Receipt Register',
-	
-    initComponent: function() {
-    	this.title = this.titleText;
+	initComponent: function() {
+    	this.title = NP.Translator.translate('Invoice Register');
 
     	this.dockedItems = [{
 			xtype: 'toolbar',
 			dock: 'top',
 			layout: 'hbox',
 			items: [
-				{ xtype: 'button', text: this.getPOBtnText },
-		    	{ xtype: 'button', text: this.newInvoiceBtnText },
-		    	{ xtype: 'button', text: this.reportsBtnText },
-		    	{ xtype: 'button', text: this.searchBtnText },
-		    	{ xtype: 'button', text: this.receiptRegisterBtnText },
+				{ xtype: 'button', text: NP.Translator.translate('Get PO') },
+		    	{ xtype: 'button', text: NP.Translator.translate('New Invoice') },
+		    	{ xtype: 'button', text: NP.Translator.translate('Invoice Reports') },
+		    	{ xtype: 'button', text: NP.Translator.translate('Search') },
+		    	{ xtype: 'button', text: NP.Translator.translate('Receipt Register') },
 		    	{ xtype: 'tbspacer', flex: 1 },
 		    	{ xtype: 'shared.contextpicker', itemId: 'invoiceRegisterContextPicker' }
 			]
@@ -116,31 +110,31 @@ Ext.define('NP.view.invoice.Register', {
 
 		grids.push(
 			{
-				title       : 'Open',
+				title       : NP.Translator.translate('Open'),
 				cols        : openCols,
 				excludedCols: excludedCols
 			},{
-				title: 'Rejected',
+				title: NP.Translator.translate('Rejected'),
 				cols : rejectedCols
 			},{
-				title: 'Overdue',
+				title: NP.Translator.translate('Overdue'),
 				cols : overdueCols,
 				excludedCols: excludedCols
 			},{
-				title: 'Template',
+				title: NP.Translator.translate('Template'),
 				cols : templateCols,
 				excludedCols: excludedCols
 			},{
 				tab  : 'OnHold',
-				title: 'On Hold',
+				title: NP.Translator.translate('On Hold'),
 				cols : onHoldCols,
 				excludedCols: excludedCols
 			},{
-				title: 'Pending',
+				title: NP.Translator.translate('Pending'),
 				cols : pendingCols,
 				excludedCols: excludedCols
 			},{
-				title: 'Approved',
+				title: NP.Translator.translate('Approved'),
 				cols : approvedCols,
 				excludedCols: ['shared.gridcol.RejectedDate','shared.gridcol.RejectedBy',
 							'shared.gridcol.RejectedReason','invoice.gridcol.HoldDate',
@@ -150,20 +144,20 @@ Ext.define('NP.view.invoice.Register', {
 							'invoice.gridcol.VoidBy']
 			},{
 				tab  : 'Submitted',
-				title: 'Submitted for Payment',
+				title: NP.Translator.translate('Submitted for Payment'),
 				cols : submittedCols,
 				excludedCols: excludedCols
 			},{
 				tab  : 'Transferred',
-				title: 'Transferred to GL',
+				title: NP.Translator.translate('Transferred to GL'),
 				cols : transferredCols,
 				excludedCols: excludedCols
 			},{
-				title: 'Paid',
+				title: NP.Translator.translate('Paid'),
 				cols : paidCols,
 				excludedCols: excludedCols
 			},{
-				title: 'Void',
+				title: NP.Translator.translate('Void'),
 				cols : voidCols,
 				excludedCols: excludedCols
 			}

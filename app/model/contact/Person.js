@@ -19,7 +19,7 @@ Ext.define('NP.model.contact.Person', {
 		{ name: 'person_suffix' },
 		{ name: 'person_ssn' },
 		{ name: 'person_gender' },
-		{ name: 'person_birthdate', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
+		{ name: 'person_birthdate', type: 'date' },
 		{ name: 'personmarital_id', type: 'int' },
 		{ name: 'person_passport_no' }
 	]

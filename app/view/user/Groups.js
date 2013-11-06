@@ -10,5 +10,11 @@ Ext.define('NP.view.user.Groups', {
    	// For localization 
     title: 'User Groups',
 
-    layout: 'fit'
+    layout: 'fit',
+
+	initComponent: function() {
+		this.title = NP.Translator.translate(this.title);
+		
+		this.callParent(arguments);
+	}
 });

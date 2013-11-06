@@ -9,25 +9,23 @@ Ext.define('NP.view.utilitySetup.AccountForm', {
 
     requires: [
         'NP.lib.core.Config',
+        'NP.lib.core.Translator',
         'NP.view.shared.button.Save',
         'NP.view.shared.button.Cancel',
         'NP.view.shared.button.SaveAndAdd',
         'NP.lib.ui.ComboBox',
         'NP.lib.ui.AutoComplete',
         'NP.view.shared.PropertyCombo',
-        'NP.view.shared.GlCombo'
+        'NP.view.shared.GlCombo',
+        'NP.store.vendor.UtilityTypes'
     ],
 
-    // for localization
-    title                         : 'Utility Account',
-    vendorInputLabel              : 'Vendor',
-    utilityTypeInputLabel         : 'Utility type',
-    accountNumberInputLabel       : 'Account number',
-    propertyInputlabel            : 'Property',
-    unitInputLabel                : 'Default' + ' ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit'),
-    meterInputLabel               : 'Meter Number',
-    glaccountInputLabel           : 'Default GL Account',
-    emptyTextForDependedByProperty: 'Choose property first',
+    bodyPadding: 8,
+
+    layout: {
+        type : 'vbox',
+        align: 'stretch'
+    },
 
     initComponent: function() {
         var that = this,
@@ -37,14 +35,14 @@ Ext.define('NP.view.utilitySetup.AccountForm', {
                 { xtype: 'shared.button.saveandadd', hidden: true }
             ];
 
+        that.title = NP.Translator.translate('Utility Account');
+
+        that.translateText();
+
         this.tbar = bar;
         this.bbar = bar;
 
-        this.defaults = {
-            labelWidth: 125,
-            padding   : '5',
-            width     : 500
-        };
+        this.defaults = { labelWidth: 125 };
 
         this.items = [
             {
@@ -58,13 +56,14 @@ Ext.define('NP.view.utilitySetup.AccountForm', {
                 valueField  : 'UtilityType_Id',
                 displayField: 'UtilityType',
                 allowBlank  : false,
-                store       : Ext.create('NP.store.vendor.UtilityTypes', {
+                store       : {
+                                type   : 'vendor.utilitytypes',
                                 service: 'UtilityService',
                                 action: 'getUtilTypesByVendorsiteId',
                                 extraParams: {
                                     vendorsite_id: null
                                 }
-                            })
+                            }
             },{
                 xtype     : 'textfield',
                 fieldLabel: this.accountNumberInputLabel,
@@ -102,7 +101,7 @@ Ext.define('NP.view.utilitySetup.AccountForm', {
             },{
                 xtype    : 'shared.glcombo',
                 minChars : 1,
-                emptyText: (NP.Config.getSetting('CP.PROPERTYGLACCOUNT_USE', '0') == '1') ? this.emptyTextForDependedByProperty : null,
+                emptyText: (NP.Config.getSetting('CP.PROPERTYGLACCOUNT_USE', '0') == '1') ? this.emptyTextForDependedByProperty : '',
                 store    : Ext.create('NP.store.gl.GlAccounts', {
                             service: 'GLService',
                             action : 'getByVendorsite',
@@ -121,6 +120,21 @@ Ext.define('NP.view.utilitySetup.AccountForm', {
         this.callParent(arguments);
 
         this.addEvents('selectproperty');
+    },
+
+    translateText: function() {
+        var me = this,
+            propertyText = NP.Config.getPropertyLabel(),
+            unitText     = NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit');
+
+        me.vendorInputLabel               = NP.Translator.translate('Vendor');
+        me.utilityTypeInputLabel          = NP.Translator.translate('Utility Type');
+        me.accountNumberInputLabel        = NP.Translator.translate('Account Number');
+        me.propertyInputlabel             = propertyText;
+        me.unitInputLabel                 = NP.Translator.translate('Default {unit}', { unit: unitText});
+        me.meterInputLabel                = NP.Translator.translate('Meter Number');
+        me.glaccountInputLabel            = NP.Translator.translate('Default GL Account');
+        me.emptyTextForDependedByProperty = NP.Translator.translate('Choose {property} first', { property: propertyText });
     }
 
 });

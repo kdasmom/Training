@@ -5,15 +5,7 @@ namespace NP\invoice;
 use NP\shared\AbstractInvoicePoService;
 use NP\security\SecurityService;
 use NP\budget\BudgetService;
-use NP\shared\InvoicePoForwardGateway;
 use NP\property\FiscalCalService;
-use NP\jobcosting\JbContractGateway;
-use NP\jobcosting\JbJobCodeGateway;
-use NP\image\ImageIndexGateway;
-use NP\po\PurchaseorderGateway;
-use NP\vendor\InsuranceGateway;
-use NP\system\RecurringSchedulerGateway;
-use NP\workflow\WfRuleGateway;
 
 /**
  * Service class for operations related to Invoices
@@ -24,33 +16,15 @@ class InvoiceService extends AbstractInvoicePoService {
 	
 	protected $type = 'invoice';
 
-	protected $configService, $securityService, $invoiceGateway, $invoiceItemGateway, $budgetService, 
-			  $jbContractGateway, $jbJobCodeGateway, $imageIndexGateway, $invoicePaymentGateway,
-			  $wfRuleGateway;
+	protected $securityService, $fiscalCalService, $budgetService;
 	
 	public function __construct(SecurityService $securityService, FiscalCalService $fiscalCalService,
-								BudgetService $budgetService, InvoiceGateway $invoiceGateway,
-								InvoiceItemGateway $invoiceItemGateway, InvoicePoForwardGateway $invoicePoForwardGateway,
-								JbContractGateway $jbContractGateway, JbJobCodeGateway $jbJobCodeGateway,
-								ImageIndexGateway $imageIndexGateway, PurchaseorderGateway $purchaseorderGateway,
-								InvoicePaymentGateway $invoicePaymentGateway, InsuranceGateway $insuranceGateway,
-								RecurringSchedulerGateway $recurringSchedulerGateway, WfRuleGateway $wfRuleGateway) {
+								BudgetService $budgetService) {
 		parent::__construct();
 
 		$this->securityService           = $securityService;
 		$this->fiscalCalService          = $fiscalCalService;
 		$this->budgetService             = $budgetService;
-		$this->invoiceGateway            = $invoiceGateway;
-		$this->invoiceItemGateway        = $invoiceItemGateway;
-		$this->invoicePoForwardGateway   = $invoicePoForwardGateway;
-		$this->jbContractGateway         = $jbContractGateway;
-		$this->jbJobCodeGateway          = $jbJobCodeGateway;
-		$this->imageIndexGateway         = $imageIndexGateway;
-		$this->purchaseorderGateway      = $purchaseorderGateway;
-		$this->invoicePaymentGateway     = $invoicePaymentGateway;
-		$this->insuranceGateway          = $insuranceGateway;
-		$this->recurringSchedulerGateway = $recurringSchedulerGateway;
-		$this->wfRuleGateway             = $wfRuleGateway;
 	}
 	
 	/**
@@ -413,7 +387,7 @@ class InvoiceService extends AbstractInvoicePoService {
 	 * @return array           List of linkable POs
 	 */
 	public function getLinkablePOs($invoice_id) {
-		return $this->purchaseorderGateway->findPosLinkableToInvoice($invoice_id);
+		return $this->purchaseOrderGateway->findPosLinkableToInvoice($invoice_id);
 	}
 
 	public function getHistoryLog($invoice_id, $pageSize=null, $page=null, $sort="approve_datetm") {

@@ -13,7 +13,7 @@ Ext.define('NP.model.jobcosting.JbJobCode', {
 		{ name: 'jbjobcode_id', type: 'int' },
 		{ name: 'jbjobcode_desc', useNull: false },
 		{ name: 'jbjobtype_id', type: 'int' },
-		{ name: 'create_datetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+		{ name: 'create_datetm', type: 'date' },
 		{ name: 'jbjobcode_name' },
 		{ name: 'property_id', type: 'int' },
 		{ name: 'jbjobcode_status' },
@@ -35,7 +35,7 @@ Ext.define('NP.model.jobcosting.JbJobCode', {
 			}
 
 			var val = rec.get('jbjobcode_name') + ' - ';
-			if (rec.get('jbjobcode_desc') != '') {
+			if (rec.get('jbjobcode_desc') != '' && rec.get('jbjobcode_desc') !== null) {
 				val += rec.get('jbjobcode_desc');
 			} else {
 				val += 'No Desc.';

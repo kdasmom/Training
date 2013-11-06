@@ -3,10 +3,6 @@
 namespace NP\vendor;
 
 use NP\core\AbstractService;
-use NP\system\IntegrationPackageGateway;
-use NP\gl\GLAccountGateway;
-use NP\property\PropertyGateway;
-use NP\property\UnitGateway;
 
 /**
  * Service class for operations related to vendors
@@ -14,32 +10,6 @@ use NP\property\UnitGateway;
  * @author Thomas Messier
  */
 class VendorService extends AbstractService {
-    
-    protected $vendorGateway, $integrationPackageGateway, $vendorTypeGateway, $glAccountGateway,
-            $vendorGlAccountsGateway, $propertyGateway, $vendorFavoriteGateway, $insuranceTypeGateway,
-            $insuranceGateway, $linkInsurancePropertyGateway, $unitGateway;
-
-    public function __construct(        
-                VendorGateway $vendorGateway, VendorsiteGateway $vendorsiteGateway,
-                IntegrationPackageGateway $integrationPackageGateway,
-                VendorTypeGateway $vendorTypeGateway, GLAccountGateway $glAccountGateway,
-                VendorGlAccountsGateway $vendorGlAccountsGateway, PropertyGateway $propertyGateway,
-                VendorFavoriteGateway $vendorFavoriteGateway, InsuranceTypeGateway $insuranceTypeGateway,
-                InsuranceGateway $insuranceGateway, LinkInsurancePropertyGateway $linkInsurancePropertyGateway,
-                UnitGateway $unitGateway) {
-        $this->vendorGateway                = $vendorGateway;
-        $this->vendorsiteGateway            = $vendorsiteGateway;
-        $this->integrationPackageGateway    = $integrationPackageGateway;
-        $this->vendorTypeGateway            = $vendorTypeGateway;
-        $this->glAccountGateway             = $glAccountGateway;
-        $this->vendorGlAccountsGateway      = $vendorGlAccountsGateway;
-        $this->propertyGateway              = $propertyGateway;
-        $this->vendorFavoriteGateway        = $vendorFavoriteGateway;
-        $this->insuranceTypeGateway         = $insuranceTypeGateway;
-        $this->insuranceGateway             = $insuranceGateway;
-        $this->linkInsurancePropertyGateway = $linkInsurancePropertyGateway;
-        $this->unitGateway                  = $unitGateway;
-    }
     
     public function getVendorBySiteId($vendorsite_id) {
         $res = $this->vendorGateway->find('vs.vendorsite_id = ?', array($vendorsite_id));
@@ -69,6 +39,26 @@ class VendorService extends AbstractService {
         } else {
             return [];
         }
+    }
+       
+    /**
+     * Get all vendors in the application
+     *
+     * @param  string $vendor_status The status of the vendor (optional); valid values are 'active' or 'inactive'
+     * @return array
+     */
+    public function getAll($vendor_status='active', $integration_package_id=null, $pageSize=null, $page=1, $sort='vendor_name') {
+        $filter = ['vendor_status'=>'?'];
+        if ($integration_package_id === null) {
+            $filter['integration_package_id'] = $integration_package_id;
+        }
+
+        return $this->vendorGateway->find(
+            $filter,
+            array($vendor_status),
+            'vendor_name ASC',
+            array('vendor_id','vendor_name')
+        );
     }
     
     /**

@@ -14,7 +14,10 @@ Ext.define('NP.view.shared.CustomField', {
     requires: [
         'NP.lib.core.Config',
         'NP.lib.core.Security',
-        'NP.lib.ui.AutoComplete'
+        'NP.lib.ui.AutoComplete',
+        'NP.lib.ui.ComboBox',
+        'NP.model.system.PnUniversalField',
+        'NP.store.system.PnUniversalFields'
     ],
 
     /**
@@ -42,6 +45,10 @@ Ext.define('NP.view.shared.CustomField', {
 	 * @cfg {0/1}     isLineItem Whether we're dealing with invoice/po line items or not; only relevant if 'entityType' is set to 'customInvoicePO'
 	 */
 	isLineItem: 1,
+    /**
+     * @cfg {"autocomplete"/"customcombo"} comboUi 
+     */
+    comboUi: 'autocomplete',
 
     layout    : 'fit',
 
@@ -73,8 +80,11 @@ Ext.define('NP.view.shared.CustomField', {
     		});
     	// Configuration for a combo custom field
     	} else if (this.type == 'select') {
+            var queryMode = (this.comboUi == 'autocomplete') ? 'remote' : 'local';
+
     		Ext.apply(field, {
-				xtype                : 'autocomplete',
+				xtype                : this.comboUi,
+                queryMode            : queryMode,
 				displayField         : 'universal_field_data',
 				valueField           : 'universal_field_data',
 				store                : Ext.create('NP.store.system.PnUniversalFields', {
@@ -110,11 +120,18 @@ Ext.define('NP.view.shared.CustomField', {
 
         this.field = this.down('[name="'+fieldName+'"]');
 
-        // We need to add the specialkey event so we can tab in the editor
-        this.addEvents('specialkey');
-        // Subscribe to the field's event and re-fire it from our fieldcontainer component
+        // We need to add some events so that the custom field works in the grid editor
+        this.addEvents('specialkey','blur','focus');
+
+        // Subscribe to the field's events and re-fire them from our fieldcontainer component
         this.field.on('specialkey', function(field, e, eOpts) {
             me.fireEvent('specialkey', field, e, eOpts);
+        });
+        this.field.on('blur', function(field, e, eOpts) {
+            me.fireEvent('blur', field, e, eOpts);
+        });
+        this.field.on('focus', function(field, e, eOpts) {
+            me.fireEvent('focus', field, e, eOpts);
         });
     },
 
@@ -123,9 +140,9 @@ Ext.define('NP.view.shared.CustomField', {
     },
 
     setValue: function(val) {
-        // If we're dealing with a custom field drop down that's not loaded, we need to make sure
+        // If we're dealing with an autocomplete custom field drop down that's not loaded, we need to make sure
         // the record is in the store, so we can add the setDefaultRec() custom method for that
-        if (this.type == 'select' && !this.field.getStore().isLoaded) {
+        if (this.comboUi == 'autocomplete' && this.type == 'select' && !this.field.getStore().isLoaded) {
             this.field.setDefaultRec(Ext.create('NP.model.system.PnUniversalField', {
                                         universal_field_data: val
                                     }));

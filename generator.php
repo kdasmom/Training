@@ -184,7 +184,7 @@ if (!array_key_exists("classGen", $_POST) && !array_key_exists("formGen", $_POST
 $tables = $di['Adapter']->query("SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' ORDER BY TABLE_NAME");
 ?>
 
-<script type="text/javascript" src="vendor/extjs/ext-all.js"></script>
+<script type="text/javascript" src="ext/ext-all.js"></script>
 <script>
 Ext.onReady(function() {
 	var classPath = Ext.DomQuery.selectNode('input[name=classPath]');

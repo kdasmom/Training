@@ -83,6 +83,15 @@ Ext.define('NP.lib.data.Store', {
 					return sortStrs.join(",");
 				}
 	    	});
+		} else {
+			Ext.applyIf(me, {
+	    		proxy: {
+					type: 'memory',
+					reader: {
+						type: me.reader
+					}
+				}
+	    	});
 		}
 		
     	me.callParent(arguments);
@@ -139,6 +148,15 @@ Ext.define('NP.lib.data.Store', {
 	 */
 	getExtraParam: function(name) {
     	return this.getProxy().extraParams[name];
+    },
+
+    /**
+	 * Sets extraparams set on the store's proxy
+	 * @return {Object}
+	 */
+	setExtraParams: function(val) {
+    	this.getProxy().extraParams = val;
+    	return this;
     },
 
     /**

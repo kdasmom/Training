@@ -21,10 +21,10 @@ Ext.define('NP.model.budget.BudgetOverage', {
         { name: 'userprofile_id', type: 'int' },
         { name: 'property_id', type: 'int' },
         { name: 'glaccount_id', type: 'int' },
-        { name: 'budgetoverage_period', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+        { name: 'budgetoverage_period', type: 'date' },
         { name: 'budgetoverage_amount' },
         { name: 'budgetoverage_note' },
-        { name: 'budgetoverage_created', type: 'date', dateFormat: NP.Config.getServerDateFormat() }
+        { name: 'budgetoverage_created', type: 'date' }
     ],
 
     belongsTo: [

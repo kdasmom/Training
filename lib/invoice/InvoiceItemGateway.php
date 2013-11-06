@@ -35,6 +35,8 @@ class InvoiceItemGateway extends AbstractGateway {
 				->join(new sql\join\InvoiceItemDfSplitJoin())
 				->join(new sql\join\InvoiceItemUtilUsageTypeJoin())
 				->join(new sql\join\InvoiceItemUtilityAccountJoin())
+				->join(new \NP\vendor\sql\join\UtilityAccountUtilityJoin(['UtilityType_Id']))
+				->join(new \NP\vendor\sql\join\UtilityUtilityTypeJoin())
 				->join(new sql\join\InvoiceItemUnitTypeMaterialJoin())
 				->join(new sql\join\InvoiceItemJobAssociationJoin())
 				->join(new \NP\jobcosting\sql\join\JobAssociationJbContractJoin())

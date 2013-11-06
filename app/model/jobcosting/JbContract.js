@@ -16,7 +16,7 @@ Ext.define('NP.model.jobcosting.JbContract', {
 		{ name: 'jbcontract_desc', useNull: false },
 		{ name: 'vendorsite_id', type: 'int' },
 		{ name: 'jbcontract_status' },
-		{ name: 'create_datetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+		{ name: 'create_datetm', type: 'date' },
 
 		// Calculated field that doesn't exist in the DB
 		{
@@ -34,7 +34,7 @@ Ext.define('NP.model.jobcosting.JbContract', {
 			}
 
 			var val = rec.get('jbcontract_name') + ' - ';
-			if (rec.get('jbcontract_desc') != '') {
+			if (rec.get('jbcontract_desc') != '' && rec.get('jbcontract_desc') !== null) {
 				val += rec.get('jbcontract_desc');
 			} else {
 				val += 'No Desc.';

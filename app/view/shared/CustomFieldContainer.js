@@ -4,7 +4,7 @@
  * @author Thomas Messier
  */
 Ext.define('NP.view.shared.CustomFieldContainer', {
-    extend: 'Ext.container.Container',
+    extend: 'Ext.panel.Panel',
     alias: 'widget.shared.customfieldcontainer',
 
     requires: [

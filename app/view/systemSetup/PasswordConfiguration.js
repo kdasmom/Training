@@ -8,13 +8,12 @@ Ext.define('NP.view.systemSetup.PasswordConfiguration', {
     alias: 'widget.systemsetup.passwordconfiguration',
     
     requires: [
-            'NP.lib.core.Config',
-           	'NP.lib.core.Security',
-           	'NP.view.shared.button.Save'
-           ],
+      'NP.lib.core.Config',
+      'NP.lib.core.Security',
+      'NP.lib.core.Translator',
+      'NP.view.shared.button.Save'
+   ],
     
-    title: 'Password Configuration',
-
     layout: 'vbox',
     bodyPadding: 8,
     autoScroll: true,
@@ -23,17 +22,12 @@ Ext.define('NP.view.systemSetup.PasswordConfiguration', {
     	allowBlank: false
     },
     
-    pwdCfgExplanationText			: 'Password security requires that a minimum of one letter, number and special character be used when setting up user passwords in the system. Special characters include !, @, $, %, &, *, and ?',
-    passwordMinLengthText			: 'Please select the minimum password length',
-    passwordExpireIntervalText		: 'Expiration Interval (days)',
-    passwordHistoryIntervalText		: 'Days until same password can be reused',
-    passwordChangeOnLoginText		: 'User must change password on login',
-    passwordChangeOnLoginYesText	: 'Yes',
-    passwordChangeOnLoginNoText		: 'No',
-    
-    initComponent: function() {
-    	
+    initComponent: function() {	
     	var that = this;
+
+      that.title = NP.Translator.translate('Password Configuration');
+
+      that.translateText();
 
     	var bar = [
 	    	 { xtype: 'shared.button.save' }
@@ -93,5 +87,17 @@ Ext.define('NP.view.systemSetup.PasswordConfiguration', {
               	];
     	
     	this.callParent(arguments);
+    },
+
+    translateText: function() {
+      var me = this;
+
+      me.pwdCfgExplanationText        = NP.Translator.translate('Password security requires that a minimum of one letter, number and special character be used when setting up user passwords in the system. Special characters include !, @, $, %, &, *, and ?');
+      me.passwordMinLengthText        = NP.Translator.translate('Please select the minimum password length');
+      me.passwordExpireIntervalText   = NP.Translator.translate('Expiration Interval (days)');
+      me.passwordHistoryIntervalText  = NP.Translator.translate('Days until same password can be reused');
+      me.passwordChangeOnLoginText    = NP.Translator.translate('User must change password on login');
+      me.passwordChangeOnLoginYesText = NP.Translator.translate('Yes');
+      me.passwordChangeOnLoginNoText  = NP.Translator.translate('No');
     }
 });

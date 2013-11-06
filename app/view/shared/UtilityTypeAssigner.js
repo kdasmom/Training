@@ -8,6 +8,8 @@ Ext.define('NP.view.shared.UtilityTypeAssigner', {
     extend: 'Ext.ux.form.field.BoxSelect',
     alias: 'widget.shared.utilitytypeassigner',
 
+    requires: ['NP.store.vendor.UtilityTypes'],
+
     fieldLabel: 'Utility Type',
 
     name        : 'utilitytypes',
@@ -16,9 +18,10 @@ Ext.define('NP.view.shared.UtilityTypeAssigner', {
     msgTarget   : 'under',
     width       : 500,
     queryMode   : 'local',
-    store       : Ext.create('NP.store.vendor.UtilityTypes', {
-        service     : 'UtilityService',
-        action      : 'getAllUtilityTypes',
-        autoLoad    : true
-    })
+    store       : {
+        type    : 'vendor.utilitytypes',
+        service : 'UtilityService',
+        action  : 'getAllUtilityTypes',
+        autoLoad: true
+    }
 });

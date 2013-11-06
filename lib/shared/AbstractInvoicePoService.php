@@ -16,7 +16,7 @@ Abstract class AbstractInvoicePoService extends AbstractService {
 	 */
 	protected $type;
 
-	protected $table, $itemTable, $pkField, $itemPkField;
+	protected $table, $itemTable, $pkField, $itemPkField, $configService;
 	
 	public function __construct() {
 		if ($this->type === 'invoice') {

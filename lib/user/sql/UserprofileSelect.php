@@ -131,14 +131,11 @@ class UserprofileSelect extends Select {
 	 */
 	public function joinPhone($phonetype_name, $cols=array()) {
 		$alias = $phonetype_name.'p';
-		$typeAlias = $phonetype_name.'pt';
+		
 		return $this->join(array($alias => 'phone'),
-						"s.staff_id = {$alias}.tablekey_id AND {$alias}.table_name = 'staff'",
+						"s.staff_id = {$alias}.tablekey_id AND {$alias}.table_name = 'staff'
+						AND {$alias}.phonetype_id = (SELECT phonetype_id FROM phonetype WHERE phonetype_name = '{$phonetype_name}')",
 						$cols,
-						Select::JOIN_LEFT)
-					->join(array($typeAlias => 'phonetype'),
-						"{$alias}.phonetype_id = {$typeAlias}.phonetype_id AND {$typeAlias}.phonetype_name = '{$phonetype_name}'",
-						array(),
 						Select::JOIN_LEFT);
 	}
 	

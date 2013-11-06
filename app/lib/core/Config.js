@@ -46,155 +46,9 @@ Ext.define('NP.lib.core.Config', function() {
 		
 		singleton: true,
 		
-		requires: ['NP.lib.core.Net','NP.store.system.States','NP.store.system.Countries'],
-		
-		/**
-		 * Loads all application configuration settings, custom field settings, and user settings with
-		 * one ajax request. This function runs at application startup.
-		 * @return {Deft.Promise}
-		 */
-		loadConfigSettings: function() {
-			Ext.log('Loading config settings');
-			
-			// Create the state store
-			Ext.create('NP.store.system.States', { storeId: 'system.States' });
-			
-			// Create the country store
-			Ext.create('NP.store.system.Countries', { storeId: 'system.Countries' });
-			
-			// Create the Summary Stat Categories store
-			Ext.create('NP.store.system.SummaryStatCategories', { storeId: 'system.SummaryStatCategories' });
-
-			// Create the Summary Stat store
-			Ext.create('NP.store.system.SummaryStats', { storeId: 'system.SummaryStats' });
-
-			// Create the Tiles store
-			Ext.create('NP.store.system.Tiles', { storeId: 'system.Tiles' });
-
-			// Make the ajax request
-			return NP.lib.core.Net.remoteCall({
-				requests: [
-					// This request gets the app name
-					{
-						service: 'ConfigService', 
-						action: 'getAppName',
-						success: function(result) {
-							// Save app name in application
-							appName = result;
-						}
-					},
-					// This request gets config settings for the app
-					{
-						service: 'ConfigService', 
-						action: 'getAll',
-						success: function(result) {
-							// Save settings in application
-							settings = result;
-							
-							// Set the default currency sign
-							Ext.apply(Ext.util.Format, {
-					            currencySign: NP.lib.core.Config.getSetting('PN.Intl.currencySymbol')
-					        });
-						}
-					},
-					// This request gets custom field config for the app
-					{ 
-						service: 'ConfigService', 
-						action: 'getInvoicePoCustomFields',
-						success: function(result) {
-							// Save custom fields in application
-							customFields = result;
-						}
-					},
-					// This request gets all integration packages for the app
-					{ 
-						service: 'ConfigService',
-						action : 'getIntegrationPackages',
-						store  : 'NP.store.system.IntegrationPackages',
-						storeId: 'system.IntegrationPackages'
-					},
-					// This request gets all properties in the app
-					{ 
-						service: 'PropertyService',
-						action : 'getAll',
-						store  : 'NP.store.property.Properties',
-						storeId: 'property.AllProperties'
-					},
-					// This request gets all units in the app
-					{ 
-						service: 'PropertyService',
-						action : 'getAllUnits',
-						store  : 'NP.store.property.Units',
-						storeId: 'property.AllUnits'
-					},
-					// This request gets all integration packages for the app
-					{ 
-						service: 'PropertyService',
-						action : 'getFiscalDisplayTypes',
-						store  : 'NP.store.property.FiscalDisplayTypes',
-						storeId: 'property.FiscalDisplayTypes'
-					},
-					// This request gets all regions for the app
-					{ 
-						service: 'PropertyService',
-						action : 'getRegions',
-						store  : 'NP.store.property.Regions',
-						storeId: 'property.Regions'
-					},
-					// This request gets all properties in the app
-					{ 
-						service: 'GLService',
-						action : 'getAll',
-						store  : 'NP.store.gl.GlAccounts',
-						storeId: 'gl.AllGlAccounts'
-					},
-					// This request gets all unit type measurement options for the app
-					{ 
-						service: 'PropertyService',
-						action : 'getUnitTypeMeasurements',
-						store  : 'NP.store.property.UnitTypeMeasurements',
-						storeId: 'property.UnitTypeMeasurements'
-					},
-					// This request gets config settings for the user
-					{
-						service: 'UserService', 
-						action: 'getSettings',
-						success: function(result) {
-							// Save user settings in application
-							userSettings = {};
-							Ext.each(result, function(item, idx) {
-								userSettings[item['usersetting_name']] = Ext.JSON.decode(item['usersetting_value']);
-							});
-						}
-					},
-					// This request gets config settings for the user
-					{
-						service: 'ConfigService', 
-						action: 'getTimezoneAbr',
-						success: function(result) {
-							// Save timezone
-							timezone = result;
-						}
-					},
-					// This requests gets the tree for all the roles in the system
-					{ 
-						service: 'UserService',
-						action : 'getRoleTree',
-						store  : 'NP.store.user.RoleTree',
-						storeId: 'user.RoleTree'
-					}
-				],
-				success: function(results, deferred) {
-					// If all ajax requests are successful, resolve the deferred
-					deferred.resolve(results);
-				},
-				failure: function(response, options, deferred) {
-					Ext.log('Could not load config data');
-					// If any of the ajax requests fails, reject the deferred
-					deferred.reject('Could not load config data');
-				}
-			});
-		},
+		requires: [
+			'NP.lib.core.Net'
+		],
 
 		/**
 		 * Gets the name of the app
@@ -202,6 +56,10 @@ Ext.define('NP.lib.core.Config', function() {
 		 */
 		getAppName: function() {
 			return appName;
+		},
+
+		setAppName: function(name) {
+			appName = name;
 		},
 		
 		/**
@@ -239,6 +97,10 @@ Ext.define('NP.lib.core.Config', function() {
 				return true;
 			}
 		},
+
+		setSettings: function(val) {
+			settings = val;
+		},
 		
 		
 		/**
@@ -247,6 +109,10 @@ Ext.define('NP.lib.core.Config', function() {
 		 */
 		getCustomFields: function() {
 			return customFields;
+		},
+
+		setCustomFields: function(val) {
+			customFields = val;
 		},
 
 		/**
@@ -296,23 +162,26 @@ Ext.define('NP.lib.core.Config', function() {
 			return userSettings;
 		},
 
+		setUserSettings: function(val) {
+			userSettings = val;
+		},
+
 		/**
 		 * Saves a user setting to the database via an ajax request
 		 * @param  {String} name  Name of the setting
 		 * @param  {Mixed}  value Value for the setting
-		 * @return {Deft.Promise}
 		 */
 		saveUserSetting: function(name, value, callback) {
-			return NP.lib.core.Net.remoteCall({
+			NP.lib.core.Net.remoteCall({
 				method  : 'POST',
 	            requests: {
 	                service: 'UserService', 
 	                action: 'saveSetting',
 	                name:   name,
 	                value:  Ext.JSON.encode(value),
-	                success: function(result, deferred) {
+	                success: function(result) {
 	                    Ext.log('Setting was saved');
-	                	deferred.resolve();
+	                	
 	                	if (callback) {
 	                		callback();
 	                	}
@@ -335,6 +204,10 @@ Ext.define('NP.lib.core.Config', function() {
 		 */
 		getTimezoneAbr: function() {
 			return timezone;
+		},
+
+		setTimezoneAbr: function(val) {
+			timezone = val;
 		}
 	}
 }());

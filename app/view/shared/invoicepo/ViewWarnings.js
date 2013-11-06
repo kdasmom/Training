@@ -146,6 +146,6 @@ Ext.define('NP.view.shared.invoicepo.ViewWarnings', {
     },
 
     renderInvalidPeriod: function(data) {
-        return 'One or more line properties are not in the same accounting period as the header property.';
+        return 'One or more line {properties} are not in the same accounting period as the header {property}.';
     }
 });

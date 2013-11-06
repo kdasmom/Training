@@ -1,5 +1,5 @@
 /**
- * The Admin controller deals with operations in the Administration section of the app
+ * The CatalogMaintenance controller deals with operations to setup vendor catalogs
  *
  * @author Thomas Messier
  */
@@ -10,16 +10,25 @@ Ext.define('NP.controller.CatalogMaintenance', {
 		'NP.lib.core.Net',
 		'NP.lib.core.Config',
 		'NP.lib.core.Util',
-		'NP.lib.core.Security',
-		'NP.store.catalog.VcCats',
-		'NP.view.catalogMaintenance.CatalogFormUploadLogo',
-		'NP.view.catalogMaintenance.CatalogFormUploadInfoPdf'
+		'NP.lib.core.Security'
 	],
 	
+	models: ['catalog.Vc','catalog.VcCat','vendor.Vendor'],
+
+	stores: ['catalog.Vc','catalog.VcCats','vendor.Vendors'],
+
+	views: ['catalogMaintenance.CatalogRegister','catalogMaintenance.CatalogForm',
+			'catalogMaintenance.CatalogView','catalogMaintenance.CatalogFormUploadLogo',
+			'catalogMaintenance.CatalogFormUploadInfoPdf'],
+
 	vc_has_pdf: null,
 
+	// For localization
+	errorDialogTitleText: 'Error',
+	showCatalogErrorText: 'Error loading catalog',
+
 	init: function() {
-		Ext.log('Admin controller initialized');
+		Ext.log('CatalogMaintenance controller initialized');
 
 		var app = this.application;
 
@@ -130,10 +139,8 @@ Ext.define('NP.controller.CatalogMaintenance', {
 			'[xtype="catalogmaintenance.catalogview"] [xtype="shared.button.activate"],[xtype="catalogmaintenance.catalogview"] [xtype="shared.button.inactivate"]': {
 				click: function() {
 					var that = this;
-					this.toggleActivation(this.vc).then({
-						success: function() {
-							that.updateActivationButton(that.vc);
-						}
+					this.toggleActivation(this.vc, function() {
+						that.updateActivationButton(that.vc);
 					});
 				}
 			},
@@ -194,7 +201,9 @@ Ext.define('NP.controller.CatalogMaintenance', {
 		tab.reloadFirstPage();
 	},
 
-	toggleActivation: function(record) {
+	toggleActivation: function(record, callback) {
+		callback = callback || Ext.emptyFn;
+
 		if (record.get('vc_status') == 0 || record.get('vc_status') == -1) {
 			var newStatus = 1;
 		} else if (record.get('vc_status') == 1) {
@@ -203,15 +212,15 @@ Ext.define('NP.controller.CatalogMaintenance', {
 			throw 'Catalog status can only be changed for catalogs that are pending, active, or inactive.'
 		}
 
-		return NP.lib.core.Net.remoteCall({
+		NP.lib.core.Net.remoteCall({
 			requests: {
 				service: 'CatalogService',
 				action : 'setCatalogStatus',
 				vc_id    : record.get('vc_id'),
 				vc_status: newStatus,
-				success: function(result, deferred) {
+				success: function(result) {
 					record.set('vc_status', newStatus);
-					deferred.resolve(newStatus);
+					callback(newStatus);
 				}
 			}
 		});
@@ -228,7 +237,7 @@ Ext.define('NP.controller.CatalogMaintenance', {
 						service: 'CatalogService',
 						action : 'deleteCatalog',
 						vc_id    : record.get('vc_id'),
-						success: function(result, deferred) {
+						success: function(result) {
 							// Once deleted, remove the record from the store so it's taken off the grid
 							grid.getStore().remove(record);
 						}
@@ -361,7 +370,7 @@ Ext.define('NP.controller.CatalogMaintenance', {
 					vc_vendors   : 'vc_vendors',
 					vc_properties: 'vc_properties'
 				},
-				success: function(result, deferred) {
+				success: function(result) {
 					// Show info message
 					NP.Util.showFadingWindow({ html: 'Catalog saved successfully' });
 
@@ -379,19 +388,36 @@ Ext.define('NP.controller.CatalogMaintenance', {
 				service    : 'CatalogService',
 				action     : 'get',
 				vc_id      : vc_id,
-				success: function(result, deferred) {
+				success: function(result) {
 					that.vc = Ext.create('NP.model.catalog.Vc', result);
 					var view = that.setView('NP.view.catalogMaintenance.CatalogView', {
 						title: that.vc.get('vc_catalogname')
 					});
-					var type = Ext.util.Format.capitalize(that.vc.get('vc_catalogtype'));
-        			var catalogImpl = Ext.create('NP.view.catalogMaintenance.types.' + type);
-        			catalogImpl.getView(that.vc).then({
-        				success: function(subView) {
-        					view.add(subView);
+					var type         = Ext.util.Format.capitalize(that.vc.get('vc_catalogtype')),
+						catalogImpl  = Ext.create('NP.view.catalogMaintenance.types.' + type),
+						deferredView = catalogImpl.getView(that.vc),
+						tries        = 0;
+
+        			function setView() {
+        				tries++;
+        				if (deferredView.view) {
+        					view.add(deferredView.view);
         					that.updateActivationButton(that.vc);
+        				} else {
+        					if (tries < 50) {
+        						Ext.defer(setView, 750, that);
+        					} else {
+        						Ext.MessageBox.alert(
+		                            that.errorDialogTitleText,
+		                            that.showCatalogErrorText
+		                        );
+        					}
         				}
-        			});
+        			}
+
+        			// We need to call a recursive function so that we can defer
+        			// processing in case we have to wait on an ajax call
+        			setView();
 				}
 			}
 		});
@@ -432,7 +458,7 @@ Ext.define('NP.controller.CatalogMaintenance', {
 					service : 'CatalogService',
 					action  : 'saveCatalogLogo',
 					vc      : that.vc.getData(),
-					success : function(result, deferred) {
+					success : function(result) {
 						if (result.success) {
 							// Update the model
 							that.vc.set('vc_logo_filename', result.vc_logo_filename);
@@ -472,7 +498,7 @@ Ext.define('NP.controller.CatalogMaintenance', {
 						service : 'CatalogService',
 						action  : 'removeCatalogLogo',
 						vc      : that.vc.getData(),
-						success : function(result, deferred) {
+						success : function(result) {
 							that.vc.set('vc_logo_filename', null);
 							var container = Ext.ComponentQuery.query('[xtype="catalogmaintenance.catalogformuploadlogo"] form container')[0];
 							container.hide();
@@ -510,7 +536,7 @@ Ext.define('NP.controller.CatalogMaintenance', {
 					service : 'CatalogService',
 					action  : 'saveCatalogPdf',
 					vc      : that.vc.getData(),
-					success : function(result, deferred) {
+					success : function(result) {
 						if (result.success) {
 							// Change flag to indicate this catalog now has a PDF
 							that.vc_has_pdf = true;
@@ -552,7 +578,7 @@ Ext.define('NP.controller.CatalogMaintenance', {
 						service : 'CatalogService',
 						action  : 'removeCatalogPdf',
 						vc      : that.vc.getData(),
-						success : function(result, deferred) {
+						success : function(result) {
 							// Change flag to indicate this catalog no longer has a PDF
 							that.vc_has_pdf = false;
 

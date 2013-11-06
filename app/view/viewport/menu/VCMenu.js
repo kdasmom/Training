@@ -7,22 +7,19 @@ Ext.define('NP.view.viewport.menu.VCMenu', {
     extend: 'NP.lib.ui.HoverButton',
     alias: 'widget.viewport.menu.vcmenu',
 
-	vcText        : 'Vendor Catalog',
-	listingsText  : 'Vendor Catalog Listings',
-	openOrdersText: 'Open Orders',
-	favoritesText : 'Favorite Items',
+    requires: ['NP.lib.core.Translator'],
 
-    initComponent: function() {
-    	this.text = this.vcText,
+	initComponent: function() {
+    	this.text = NP.Translator.translate('Vendor Catalog');
 		this.menu = {
 			showSeparator: false,
 			items: [
 				// Vendor Catalog Listings
-				{ text: this.listingsText },
+				{ text: NP.Translator.translate('Vendor Catalog Listings') },
 				// Open Orders
-				{ text: this.openOrdersText },
+				{ text: NP.Translator.translate('Open Orders') },
 				// Favorite Items
-				{ text: this.favoritesText }
+				{ text: NP.Translator.translate('Favorite Items') }
 			]
 		};
 

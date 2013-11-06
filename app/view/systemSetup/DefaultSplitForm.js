@@ -9,6 +9,7 @@ Ext.define('NP.view.systemSetup.DefaultSplitForm', {
 
     requires: [
         'NP.lib.core.Config',
+        'NP.lib.core.Translator',
     	'NP.view.shared.button.Save',
         'NP.view.shared.button.New',
         'NP.view.shared.button.Delete',
@@ -32,25 +33,10 @@ Ext.define('NP.view.systemSetup.DefaultSplitForm', {
     border          : false,
     trackResetOnLoad: true,
 
-    // For localization
-    copySplitBtnText   : 'Copy Split',
-    splitNameLabel     : 'Split Name',
-    intPkgFieldLabel   : 'Integration Package',
-    allocationGridTitle: 'Allocation Details',
-    glAccountColText   : 'GL Account',
-    percentColText     : 'Percentage',
-    propInactiveError  : NP.Config.getPropertyLabel() + ' is inactive',
-    propOnHoldError    : NP.Config.getPropertyLabel() + ' is on hold',
-    glInactiveError    : 'GL Account is inactive',
-    addSplitBtnText    : 'Add Split',
-    autoAllocBtnText   : 'Auto Allocate by ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit'),
-    leftToAllocateText : 'Left to allocate',
-    allocationErrorText: 'Allocation must add up to 100%',
-    propertyErrorText  : 'Please make sure each allocation line has a ' + NP.Config.getPropertyLabel() + ' selected',
-    dialogErrorText    : 'Error',
-    
     initComponent: function() {
     	var that = this;
+
+        that.translateText();
 
     	var bar = [
     		{ xtype: 'shared.button.save', itemId: 'saveSplitFormBtn' },
@@ -108,7 +94,7 @@ Ext.define('NP.view.systemSetup.DefaultSplitForm', {
                     hideLabel: true,
                     hidden   : true,
                     name     : 'allocationErrors',
-                    margin   : '12 0 0 0',
+                    margin   : '12 0 0 0'
                 }
             ]
         }];
@@ -342,6 +328,28 @@ Ext.define('NP.view.systemSetup.DefaultSplitForm', {
         this.callParent(arguments);
         
         this.query('customgrid')[0].addEvents('deleterow','updateproperty');
+    },
+
+    translateText: function() {
+        var me = this,
+            propertyText = NP.Config.getPropertyLabel(),
+            unitText     = NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit');
+
+        me.copySplitBtnText    = NP.Translator.translate('Copy Split');
+        me.splitNameLabel      = NP.Translator.translate('Split Name');
+        me.intPkgFieldLabel    = NP.Translator.translate('Integration Package');
+        me.allocationGridTitle = NP.Translator.translate('Allocation Details');
+        me.glAccountColText    = NP.Translator.translate('GL Account');
+        me.percentColText      = NP.Translator.translate('Percentage');
+        me.propInactiveError   = NP.Translator.translate('{property} is inactive', { property: propertyText});
+        me.propOnHoldError     = NP.Translator.translate('{property} is on hold', { property: propertyText});
+        me.glInactiveError     = NP.Translator.translate('GL Account is inactive');
+        me.addSplitBtnText     = NP.Translator.translate('Add Split');
+        me.autoAllocBtnText    = NP.Translator.translate('Auto Allocate by {unit}', { unit: unitText});
+        me.leftToAllocateText  = NP.Translator.translate('Left to allocate');
+        me.allocationErrorText = NP.Translator.translate('Allocation must add up to 100%');
+        me.propertyErrorText   = NP.Translator.translate('Please make sure each allocation line has a {property} selected', { property: propertyText});
+        me.dialogErrorText     = NP.Translator.translate('Error');
     },
 
     isValid: function() {

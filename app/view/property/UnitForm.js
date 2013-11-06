@@ -7,30 +7,38 @@ Ext.define('NP.view.property.UnitForm', {
     extend: 'Ext.form.Panel',
     alias: 'widget.property.unitform',
     
-    requires: ['NP.lib.core.Config'],
+    requires: [
+    	'NP.lib.core.Config',
+    	'NP.lib.core.Translator'
+    ],
 
     bodyPadding: 8,
 	margin     : '0 0 0 8',
 
 	layout: 'form',
 
-	// For localization
-	codeLabelText: 'Code',
-	nameLabelText: 'Name',
-	typeLabelText: 'Type',
-
-    initComponent: function() {
+	initComponent: function() {
     	var that = this;
 
     	this.items = [
-    		{ xtype: 'textfield', name: 'unit_id_alt', fieldLabel: this.codeLabelText, allowBlank: false },
-    		{ xtype: 'textfield', name: 'unit_number', fieldLabel: this.nameLabelText, allowBlank: false }
+    		{
+				xtype     : 'textfield',
+				name      : 'unit_id_alt',
+				fieldLabel: NP.Translator.translate('Code'),
+				allowBlank: false
+    		},
+    		{
+				xtype     : 'textfield', 
+				name      : 'unit_number', 
+				fieldLabel: NP.Translator.translate('Name'), 
+				allowBlank: false
+    		}
     	];
 
     	if (NP.Config.getSetting('VC_isOn') == '1') {
     		this.items.push({
 				xtype       : 'customcombo',
-				fieldLabel  : this.typeLabelText,
+				fieldLabel  : NP.Translator.translate('Type'),
 				name        : 'unittype_id',
 				displayField: 'unittype_name',
 				valueField  : 'unittype_id',

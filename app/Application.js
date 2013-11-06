@@ -1,80 +1,106 @@
-Ext.Loader.setConfig({
-	enabled: true
-});
-
 /**
- * This call is responsible for creating and starting an application
+ * Application definition file
  *
  * @author Thomas Messier
- * @singleton
  */
-Ext.application({
-	name: 'NP',
+Ext.define('NP.Application', {
+    name: 'NP',
+
+    extend: 'Ext.app.Application',
+
 	requires: [
-		'NP.lib.core.Overrides'
-		,'Ext.util.History'
-		,'Ext.state.*'
-		,'NP.lib.core.Config'
-		,'NP.lib.core.Net'
-		,'NP.lib.core.Util'
-		,'NP.lib.core.Security'
+		'overrides.app.EventDomain',
+		'overrides.data.Field',
+		'overrides.data.Model',
+		'overrides.data.Validations',
+		'overrides.form.field.Base',
+		'overrides.form.field.ComboBox',
+		'overrides.form.field.Number',
+		'overrides.form.Basic',
+		'overrides.form.Panel',
+		'overrides.grid.plugin.CellEditing',
+		'overrides.util.Format',
+		'overrides.ux.form.ItemSelector',
+		'overrides.Component',
+		'overrides.JSON',
+		'Ext.util.History',
+		'Ext.state.*',
+		'NP.lib.core.DataLoader',
+		'NP.lib.core.DBProvider',
+		'NP.lib.core.Security',
+		'NP.lib.core.Translator',
+		'NP.view.Viewport'
 	],
 	
-	// We only want to define the Viewport controller since it's always needed to run main navigation
-	// Do not include any other controllers here, they will be lazy loaded as needed on dev
-	controllers: [],
+	controllers: [
+		'Viewport',
+		'BudgetOverage',
+		'CatalogMaintenance',
+		'Import',
+		'Invoice',
+		'MessageCenter',
+		'MobileSetup',
+		'MySettings',
+		'PropertySetup',
+		'SystemSetup',
+		'UserManager',
+		'UtilitySetup'
+	],
 
-	// This is to track controllers that have already been initialized to make sure we don't initialize
-	// them twice
-	initializedControllers: {},
+	statcategoriesloaded: false,
+	statsloaded         : false,
 
 	/**
      * @private
 	 * @param {Ext.app.Application} app The application object for the app being launched
 	 */
 	launch: function(app) {
-		var that = this;
+		var me = this;
 		
 		// Start loading the minimum inital data we need to be able to run the application
-		this.loadInitialData().then({
-			success: function(res) {
-				// Language to load; static for now, will be updated in future when we offer more languages
-				var lang = 'en';
-				var time = new Date().getTime();
-				// Inject the correct file for localization
-				Ext.Loader.injectScriptElement('app/locale/'+lang+'.js?_dc='+time, function() {
-					// Initialize the viewport controller
-					that.initController('Viewport');
+		NP.lib.core.DataLoader.loadStartupData(function(res) {
+            // Language to load; static for now, will be updated in future when we offer more languages
+            var lang = 'en';
+            
+            // Inject the correct file for localization
+            NP.Translator.loadLocale(lang);
 
-					// Create the ViewPort
-					Ext.create('NP.view.Viewport');
-					
-					// Init the history module so we can use the back and forward buttons
-					that.initHistory();
-					
-					// Initialize state manager
-					that.stateProvider = Ext.create('NP.lib.core.DBProvider');
-					Ext.state.Manager.setProvider(that.stateProvider);
-					
-					// Initialize the UI state so that we start on whatever page is in the URL fragment
-					that.initState();
-				});
-			},
-			failure: function(error) {
-				Ext.log(error);
-			}
-		});
+			// We need to wait for our summary stats to be loaded before we can proceed
+        	Ext.getStore('system.SummaryStatCategories').on('statcategoriesloaded', function() {
+                me.statcategoriesloaded = true;
+        	});
+
+        	// We need to wait for our summary stats to be loaded before we can proceed
+        	Ext.getStore('system.SummaryStats').on('statsloaded', function() {
+                me.statsloaded = true;
+        	});
+
+        	me.startApp();
+        });
 	},
-   	
-	/**
-	 * Loads initial data using other classes that is needed to run the application
-     * @private
-	 * @return  {Deft.promise.Promise}
-	 */
-    loadInitialData: function() {
-    	return Deft.Promise.all([NP.lib.core.Security.loadPermissions(),NP.lib.core.Config.loadConfigSettings()]);
-    },
     
+	startApp: function() {
+		var me = this;
+
+		// Only start the app if all our data has been properly loaded
+		if (me.statcategoriesloaded && me.statsloaded) {
+			// Create the ViewPort
+	        Ext.create('NP.view.Viewport');
+	        
+	        // Init the history module so we can use the back and forward buttons
+	        me.initHistory();
+	        
+	        // Initialize state manager
+	        me.stateProvider = Ext.create('NP.lib.core.DBProvider');
+	        Ext.state.Manager.setProvider(me.stateProvider);
+	        
+	        // Initialize the UI state so that we start on whatever page is in the URL fragment
+	        me.initState();
+		} else {
+			Ext.defer(Ext.bind(me.startApp, me), 500);
+		}
+	},
+
     /**
 	 * Initializes the Ext.History module so we can track where we are through the URL fragment
      * @private
@@ -134,7 +160,7 @@ Ext.application({
 		// If token is null, go to home page; otherwise, hash the token (minus last item) 
 		// and compare with the hash that was embedded in the token (last item)
 		if (token) {
-			if (userHash == CryptoJS.SHA1(NP.lib.core.Security.getUser().get('userprofile_id')+'') && tokenHash == CryptoJS.SHA1(newToken)) {
+			if (userHash == CryptoJS.SHA1(NP.Security.getUser().get('userprofile_id')+'') && tokenHash == CryptoJS.SHA1(newToken)) {
 				var args = newToken.split(':');
 				this.runAction.apply(this, args);
 			} else {
@@ -143,18 +169,6 @@ Ext.application({
 			}
 		} else {
 			this.runAction('Viewport', 'home');
-		}
-	},
-    
-    /**
-     * Calls a controller's init() method if it hasn't already been initialized
-     * @private
-     * @param {String} controller The name of the controller
-     */
-	initController: function(controller) {
-		if (!this.initializedControllers[controller]) {
-			this.getController(controller).init();
-			this.initializedControllers[controller] = true;
 		}
 	},
     
@@ -170,7 +184,7 @@ Ext.application({
 		if (oldToken === null || oldToken !== newToken) {
 			// Hash the entire token
 			var tokenHash = CryptoJS.SHA1(newToken);
-			var userIdHash = CryptoJS.SHA1(NP.lib.core.Security.getUser().get('userprofile_id')+'');
+			var userIdHash = CryptoJS.SHA1(NP.Security.getUser().get('userprofile_id')+'');
 			Ext.History.add(newToken+':'+tokenHash + ':' + userIdHash);
 		}
 	},
@@ -184,7 +198,6 @@ Ext.application({
 	runAction: function(controller, action) {
 		Ext.log('Running controller "' + controller + '" and action "' + action + '"');
 		
-		this.initController(controller);
 		var ctl = this.getController(controller);
 		
 		var args = [];
