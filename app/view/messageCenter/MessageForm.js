@@ -83,21 +83,47 @@ Ext.define('NP.view.messageCenter.MessageForm', {
 				height    : 125,
 				allowBlank: false
     		},{
-    			xtype     : 'datetimefield',
-    			fieldLabel: this.sentFieldLabel,
-    			name      : 'sentAt',
-    			allowBlank: false,
-    			timeFieldConfig: {
-    				increment     : 60
-    			}
+				xtype: 'fieldcontainer',
+				layout: 'hbox',
+				items: [
+					{
+						xtype     : 'datetimefield',
+						name      : 'sentAt',
+						fieldLabel: this.sentFieldLabel,
+						labelWidth: 125,
+						allowBlank: false,
+						timeFieldConfig: {
+							increment     : 60
+						}
+					},
+					{
+						xtype: 'displayfield',
+						value: NP.Translator.translate('(Time represents where application is hosted)'),
+						padding: '0 0 0 5'
+					}
+				]
     		},{
-    			xtype     : 'datetimefield',
-    			fieldLabel: this.displayUntilFieldLabel,
-    			name      : 'displayUntil',
-    			hidden    : true,
-    			timeFieldConfig: {
-    				increment     : 60
-    			}
+				xtype: 'fieldcontainer',
+				layout: 'hbox',
+				items: [
+					{
+						xtype     : 'datetimefield',
+						name      : 'displayUntil',
+						fieldLabel: this.displayUntilFieldLabel,
+						labelWidth: 125,
+						hidden    : true,
+						timeFieldConfig: {
+							increment     : 60
+						}
+					},
+					{
+						xtype: 'displayfield',
+						name: 'time_info',
+						value: NP.Translator.translate('(Time represents where application is hosted)'),
+						padding: '0 0 0 5',
+						hidden    : true
+					}
+				]
     		},{
 				xtype     : 'radiogroup',
 				itemId    : 'recipientTypeField',
