@@ -36,7 +36,8 @@ Ext.define('NP.view.mobileSetup.MobileForm', {
 				name      : 'mobinfo_phone',
 				margin    : '0 0 0 0',
 				maxLength : 10,
-                regex     : /^\d{10}$/
+                regex     : /^\d{10}$/,
+				allowBlank: false
     		},{
 				xtype    : 'displayfield',
 				value    : me.phoneNumberInstructions
