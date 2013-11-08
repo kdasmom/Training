@@ -9,8 +9,7 @@ Ext.define('NP.view.mySettings.EmailNotification', {
 	
 	requires: [
 		'NP.lib.core.Security',
-		'NP.view.mySettings.EmailAlerts',
-		'NP.view.mySettings.EmailFrequency'
+		'NP.view.mySettings.EmailAlerts'
 	],
 
 	title : 'Email Notification',
@@ -35,8 +34,8 @@ Ext.define('NP.view.mySettings.EmailNotification', {
 	        },
 	        items   : [
 	            { xtype: 'mysettings.emailalerts', title: 'Status Alerts', emailalerttype_function: 2, permissions: permissions },
-	            { xtype: 'mysettings.emailalerts', title: 'Frequency-Based Alerts', emailalerttype_function: 1, permissions: permissions },
-	            { xtype: 'mysettings.emailfrequency' }
+	            { xtype: 'mysettings.emailalerts', title: 'Frequency-Based Alerts', emailalerttype_function: 1, permissions: permissions }/*,
+	            { xtype: 'mysettings.emailfrequency' }*/
 	        ]
 	    }];
 

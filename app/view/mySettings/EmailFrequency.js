@@ -34,7 +34,8 @@ Ext.define('NP.view.mySettings.EmailFrequency', {
     			itemId: 'emailalert_hours_' + i,
     			name: 'emailalert_hours',
     			boxLabel: hour + ':00 ' + amPm + ' ' + timezone,
-    			inputValue: i
+    			inputValue: i,
+				padding: '0 15 0 0'
     		});
     	}
 
