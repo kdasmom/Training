@@ -11,6 +11,7 @@ Ext.define('NP.view.shared.button.Message', {
 
     text   : 'Send',
     iconCls: 'message-btn',
+	width: 75,
 
     initComponent: function() {
     	this.text = NP.Translator.translate(this.text);

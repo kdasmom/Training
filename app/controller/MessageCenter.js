@@ -131,12 +131,15 @@ Ext.define('NP.controller.MessageCenter', {
 
 	changeMessageType: function(group, newVal, oldVal) {
 		var displayField = this.getCmp('messagecenter.messageform').findField('displayUntil');
+		var timeInfoField = this.getCmp('messagecenter.messageform').findField('time_info');
 		if (newVal.type == 'email') {
 			displayField.allowBlank = true;
 			displayField.hide();
+			timeInfoField.hide();
 		} else {
 			displayField.allowBlank = false;
 			displayField.show();
+			timeInfoField.show();
 		}
 	},
 
