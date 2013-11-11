@@ -357,8 +357,8 @@ Ext.define('NP.controller.MySettings', {
 				action         : 'saveNotifications',
 				type           : 'userprofile',
 				tablekey_id    : userprofile_id,
-				emailalerts    : that.application.getController('UserManager').getSelectedEmailAlerts(),
-				emailalerthours: that.application.getController('UserManager').getSelectedEmailHours(),
+				emailalerts    : that.application.getController('UserManager').getSelectedEmailAlerts('emailnotification'),
+				emailalerthours: that.application.getController('UserManager').getSelectedEmailHours('emailnotification'),
 				success: function(result) {
 					if (result.success) {
 						// Show info message
