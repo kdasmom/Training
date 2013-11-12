@@ -82,7 +82,9 @@ Ext.define('NP.controller.Invoice', {
 			'[xtype="invoice.view"] [xtype="shared.invoicepo.viewlinegrid"]': {
 				beforeedit          : Ext.bind(this.onBeforeInvoiceLineGridEdit, this),
 				edit                : Ext.bind(this.onAfterInvoiceLineGridEdit, this),
-				selectjcfield       : Ext.bind(this.onSelectJcField, this)
+				selectjcfield       : Ext.bind(this.onSelectJcField, this),
+				selectutilityaccount: Ext.bind(this.onSelectUtilityAccount, this),
+				selectusagetype     : Ext.bind(this.onSelectUsageType, this)
 			},
 
 			// Vendor combo on the invoice view page
@@ -276,6 +278,8 @@ Ext.define('NP.controller.Invoice', {
 			me.onOpenCostCodeEditor(editor, e.record, field);
 		} else if (e.field == 'utilityaccount_id') {
 			me.onOpenUtilityAccountEditor(editor, e.record, field);
+		} else if (e.field == 'utilitycolumn_usagetype_id') {
+			me.onOpenUsageTypeEditor(editor, e.record, field);
 		} else if (e.field.substr(0, 15) == 'universal_field') {
 			me.onOpenCustomFieldEditor(editor, e.record, field);
 		}
@@ -602,6 +606,51 @@ Ext.define('NP.controller.Invoice', {
 		}
 	},
 
+	onOpenUsageTypeEditor: function(editor, rec, field) {
+		var me = this;
+
+		me.loadUsageTypeStore(rec, function(store) {
+			if (store.getCount() === 0) {
+				field.setReadOnly(true);
+			} else {
+				field.setReadOnly(false);
+			}
+		});
+	},
+
+	loadUsageTypeStore: function(rec, callback) {
+		var me             = this,
+			store          = me.getLineGrid().usageTypeStore,
+			UtilityType_Id = rec.get('UtilityType_Id'),
+			extraParams    = store.getExtraParams(),
+			newExtraParams = {
+				service: 'UtilityService',
+                action : 'getUsageTypesByUtilityType'
+			};
+		
+		if (UtilityType_Id !== null) {
+			newExtraParams['UtilityType_Id'] = UtilityType_Id;
+			
+			/* If a utility account has been specified and it's not the same as the one currently
+			used by the store, we need to load the usage type that belong to the
+			type for the utility account */
+			if (Ext.JSON.encode(extraParams) != Ext.JSON.encode(newExtraParams)) {
+				// Add the extra parameters to the store
+				store.setExtraParams(newExtraParams);
+
+				// Load the data into the store
+				store.load(function() {
+					if (callback) {
+						callback(store);
+					}
+				});
+			}
+		} else {
+			store.setExtraParams({});
+			store.removeAll();
+		}
+	},
+
 	onAfterInvoiceLineGridEdit: function(editor, e) {
 		var me    = this,
 			field = e.column.getEditor(),
@@ -655,6 +704,11 @@ Ext.define('NP.controller.Invoice', {
 		grid.selectedRec.set('UtilityType', null);
 	},
 
+	clearUsageType: function(grid) {
+		grid.selectedRec.set('utilitycolumn_usagetype_id', null);
+		grid.selectedRec.set('UtilityColumn_UsageType_Name', null);
+	},
+
 	onSelectJcField: function(field, grid, combo, recs) {
 		var me     = this,
 			newRec = {};
@@ -687,6 +741,21 @@ Ext.define('NP.controller.Invoice', {
         	grid.selectedRec.set(newRec);
         } else {
             me.clearUtilityAccount(grid);
+        }
+	},
+
+	onSelectUsageType: function(grid, combo, recs) {
+		var me = this;
+
+        if (recs.length) {
+            var newRec = {
+                utilitycolumn_usagetype_id  : recs[0].get('UtilityColumn_UsageType_Id'),
+                UtilityColumn_UsageType_Name: recs[0].get('UtilityColumn_UsageType_Name')
+            }
+
+        	grid.selectedRec.set(newRec);
+        } else {
+            me.clearUsageType(grid);
         }
 	},
 

@@ -28,7 +28,8 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
         'NP.model.jobcosting.JbPhaseCode',
         'NP.store.jobcosting.JbCostCodes',
         'NP.model.jobcosting.JbCostCode',
-        'NP.store.vendor.UtilityAccounts'
+        'NP.store.vendor.UtilityAccounts',
+        'NP.store.vendor.UtilityColumnUsageTypes'
     ],
 
     bodyPadding    : 0,
@@ -57,11 +58,14 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
         me.columns = [
             // Quantity column
             {
+                xtype    : 'numbercolumn',
                 text     : NP.Translator.translate('QTY'),
                 dataIndex: 'invoiceitem_quantity',
-                width    : 50,
+                format   : '0,000.000000',
+                width    : 100,
                 editor   : {
-                    xtype: 'numberfield'
+                    xtype           : 'numberfield',
+                    decimalPrecision: 6
                 }
             },
             // Description column
@@ -75,6 +79,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
             },
             // Amount column
             {
+                xtype    : 'numbercolumn',
                 text     : NP.Translator.translate('Amount'),
                 dataIndex: 'invoiceitem_amount',
                 width    : 50,
@@ -373,31 +378,57 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
             service: 'UtilityService',
             action : 'getAccountsByVendorsite'
         });
+        
+        me.usageTypeStore = Ext.create('NP.store.vendor.UtilityColumnUsageTypes', {
+            service: 'UtilityService',
+            action : 'getUsageTypesByUtilityType'
+        });
 
         // Utility Account column
-        me.columns.push({
-            text     : 'Utility Account',
-            dataIndex: 'utilityaccount_id',
-            width    : 300,
-            renderer : function(val, meta, rec) {
-                return NP.model.vendor.UtilityAccount.formatName(rec);
-            },
-            editor: {
-                xtype       : 'customcombo',
-                displayField: 'display_name',
-                valueField  : 'UtilityAccount_Id',
-                queryMode   : 'local',
-                store       : me.utilityAccountStore,
-                listeners: {
-                    select: function(combo, recs) {
-                        me.fireEvent('selectutilityaccount', me, combo, recs);
+        me.columns.push(
+            {
+                text     : 'Utility Account',
+                dataIndex: 'utilityaccount_id',
+                width    : 300,
+                renderer : function(val, meta, rec) {
+                    return NP.model.vendor.UtilityAccount.formatName(rec);
+                },
+                editor: {
+                    xtype       : 'customcombo',
+                    displayField: 'display_name',
+                    valueField  : 'UtilityAccount_Id',
+                    queryMode   : 'local',
+                    store       : me.utilityAccountStore,
+                    listeners: {
+                        select: function(combo, recs) {
+                            me.fireEvent('selectutilityaccount', me, combo, recs);
+                        }
+                    }
+                }
+            },{
+                text     : 'Usage Type',
+                dataIndex: 'utilitycolumn_usagetype_id',
+                width    : 200,
+                renderer : function(val, meta, rec) {
+                    return rec.get('UtilityColumn_UsageType_Name');
+                },
+                editor: {
+                    xtype       : 'customcombo',
+                    displayField: 'UtilityColumn_UsageType_Name',
+                    valueField  : 'UtilityColumn_UsageType_Id',
+                    queryMode   : 'local',
+                    store       : me.usageTypeStore,
+                    listeners: {
+                        select: function(combo, recs) {
+                            me.fireEvent('selectusagetype', me, combo, recs);
+                        }
                     }
                 }
             }
-        });
+        );
 
     	me.callParent(arguments);
 
-        me.addEvents('selectjcfield','selectutilityaccount');
+        me.addEvents('selectjcfield','selectutilityaccount','selectusagetype');
     }
 });

@@ -22,7 +22,7 @@ Ext.define('NP.model.invoice.InvoiceItem', {
 		{ name: 'invoiceitem_linenum' },
 		{ name: 'glaccount_id', type: 'int' },
 		{ name: 'invoiceitem_description' },
-		{ name: 'invoiceitem_quantity' },
+		{ name: 'invoiceitem_quantity', type: 'float', defaultValue: 1 },
 		{ name: 'invoiceitem_unitprice' },
 		{ name: 'invoiceitem_amount', type: 'float', useNull: false },
 		{ name: 'invoiceitem_budgetvariance' },
@@ -67,8 +67,8 @@ Ext.define('NP.model.invoice.InvoiceItem', {
 		{ name: 'unittype_meas_id', type: 'int' },
 		{ name: 'reftable_name' },
 		{ name: 'reftablekey_id', type: 'int' },
-		{ name: 'invoiceitem_quantity_long' },
-		{ name: 'invoiceitem_unitprice_long' },
+		{ name: 'invoiceitem_quantity_long', type: 'float' },
+		{ name: 'invoiceitem_unitprice_long', type: 'float' },
 
 		// These fields are not database columns
 		{ name: 'property_id_alt' },
