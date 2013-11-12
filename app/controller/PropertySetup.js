@@ -392,7 +392,8 @@ Ext.define('NP.controller.PropertySetup', {
 									var intPkgNameField = form.findField('integration_package_name');
 									intPkgNameField.setValue(intPkgField.getRawValue());
 								}
-					        }
+					        },
+							property_id: property_id
 						});
 						// Specify the service to use to retrieve the data for the property being edited
 				    	Ext.apply(viewCfg.bind, {
