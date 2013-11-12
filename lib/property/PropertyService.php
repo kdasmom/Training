@@ -36,6 +36,8 @@ class PropertyService extends AbstractService {
 	 */
 	public function get($property_id) {
 		$res = $this->propertyGateway->findById($property_id);
+		$res['property_name'] = htmlspecialchars_decode($res['property_name']);
+
 
 		if ($this->configService->get('CP.PROPERTYGLACCOUNT_USE', 0) && $this->securityService->hasPermission(12)) {
 			$res['property_gls'] = $this->propertyGlAccountGateway->find(

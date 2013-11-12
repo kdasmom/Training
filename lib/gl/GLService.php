@@ -116,9 +116,9 @@ class GLService extends AbstractService {
     public function getByIntegrationPackage($integration_package_id, $glaccount_keyword=null) {
         $wheres = array(
             array(
-                'integration_package_id' => '?',
-                'glaccount_usable'       => '?',
-                'glaccount_status'       => '?'
+                'g.integration_package_id' => '?',
+                'g.glaccount_usable'       => '?',
+                'g.glaccount_status'       => '?'
             ),
             new sql\criteria\GlIsCategoryCriteria()
         );

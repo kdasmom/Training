@@ -19,7 +19,9 @@ Ext.define('NP.view.property.PropertiesMain', {
         'NP.view.property.gridcol.LastUpdated',
         'NP.view.property.gridcol.PropertyName',
         'NP.view.property.gridcol.RegionName',
-        'NP.view.property.gridcol.TotalUnits'
+        'NP.view.property.gridcol.TotalUnits',
+		'NP.view.property.gridcol.PropertyStatus',
+		'NP.view.property.gridcol.PropertyApCode'
     ],
 
     layout: 'fit',
@@ -49,7 +51,15 @@ Ext.define('NP.view.property.PropertiesMain', {
                 paging: true
             }),
             columns : [
-                { xtype: 'property.gridcol.propertyname', flex: 2 },
+				{
+					xtype: 'property.gridcol.propertystatus'
+				},
+                {
+					xtype: 'property.gridcol.propertyname',
+					flex: 2,
+					enableColumnHide: false,
+					hideable: false
+				},
                 {
                     text: 'Integration Package',
                     dataIndex: 'integration_package_name',
@@ -60,6 +70,7 @@ Ext.define('NP.view.property.PropertiesMain', {
                 },
                 { xtype: 'templatecolumn', text: NP.Config.getSetting('PN.main.RegionLabel', 'Region'), tpl: '{region.region_name}', flex: 1.5 },
                 { xtype: 'property.gridcol.code', flex: 1 },
+                { xtype: 'property.gridcol.propertyapcode', flex: 1 },
                 { xtype: 'property.gridcol.totalunits', flex: 1 },
                 {
                     text : 'Created By',

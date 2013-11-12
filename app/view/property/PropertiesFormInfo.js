@@ -40,11 +40,11 @@ Ext.define('NP.view.property.PropertiesFormInfo', {
             // Property Code
     		{ xtype: 'textfield', fieldLabel: me.codeFieldText, name: 'property_id_alt', width: defaultWidth, allowBlank: false },
     		// Property AP Code
-            { xtype: 'textfield', fieldLabel: me.apCodeFieldText, name: 'property_id_alt_ap', width: defaultWidth },
+            { xtype: 'textfield', fieldLabel: me.apCodeFieldText, name: 'property_id_alt_ap', width: defaultWidth},
             // Property Department Code
     		{ xtype: 'textfield', fieldLabel: me.deptCodeFieldText, name: 'property_department_code', width: defaultWidth },
             // Property Name
-    		{ xtype: 'textfield', fieldLabel: me.propertyNameFieldText, name: 'property_name', width: defaultWidth, allowBlank: false },
+    		{ xtype: 'textfield', fieldLabel: me.propertyNameFieldText, name: 'property_name', width: defaultWidth, allowBlank: false},
             // Number of Units
     		{ xtype: 'textfield', fieldLabel: me.totalUnitsFieldText, name: 'property_no_units', allowBlank: false },
             // Attention
@@ -144,6 +144,14 @@ Ext.define('NP.view.property.PropertiesFormInfo', {
                 displayField: 'integration_package_name',
                 allowBlank  : false
     		},
+			{
+				xtype: 'displayfield',
+				fieldLabel  : me.intPackageFieldText,
+				name        : 'integration_package_name',
+				value: '',
+				hidden: true
+
+			},
             // Closing Calendar
     		{
 				xtype         : 'customcombo',
