@@ -51,7 +51,7 @@ Ext.define('NP.view.property.PropertiesFormAccounting', {
 				name          : 'fiscaldisplaytype_value',
 				store         : 'property.FiscalDisplayTypes',
 				displayField  : 'fiscaldisplaytype_name',
-				valueField    : 'fiscaldisplaytype_value',
+				valueField    : 'fiscaldisplaytype_id',
 				allowBlank	  : false
     		}
     	];
