@@ -7,7 +7,8 @@ Ext.define('NP.view.mySettings.EmailAlerts', {
     extend: 'Ext.container.Container',
     alias: 'widget.mysettings.emailalerts',
 
-	requires: [,
+	requires: [
+        'NP.lib.core.Translator',
 		'NP.view.mySettings.EmailFrequency'
 	],
     
@@ -37,16 +38,18 @@ Ext.define('NP.view.mySettings.EmailAlerts', {
 		if (this.emailalerttype_function == 2) {
 			this.items = [
 				{
-					xtype: 'displayfield',
-					value: "Status Based Alerts notifies a user each time a document enters into the selected part of the life-cycle that matches the alert settings.  These alerts run once daily based on the general system email notification setup.  These alerts are for more informational purposes.",
+					xtype  : 'component',
+                    width  : '100%',
+					html   : NP.Translator.translate("Status Based Alerts notifies a user each time a document enters into the selected part of the life-cycle that matches the alert settings.  These alerts run once daily based on the general system email notification setup.  These alerts are for more informational purposes."),
 					padding: '0 0 10 0'
 				}];
 		}
 		if (this.emailalerttype_function == 1) {
 			this.items = [
 				{
-					xtype: 'displayfield',
-					value: "Frequency Based Alerts notifies a user when a document enters into the selected part of the lift-cycle that matches the alert settings that requires the use to perform an action.  These alerts run at the frequencies set by the user.  These alerts require the user to take action versus the informational status alerts.",
+					xtype  : 'component',
+                    width  : '100%',
+					html   : NP.Translator.translate("Frequency Based Alerts notifies a user when a document enters into the selected part of the lift-cycle that matches the alert settings that requires the use to perform an action.  These alerts run at the frequencies set by the user.  These alerts require the user to take action versus the informational status alerts."),
 					padding: '0 0 10 0'
 				}];
 		}
@@ -112,8 +115,8 @@ Ext.define('NP.view.mySettings.EmailAlerts', {
 
 		if (this.emailalerttype_function == 1) {
 			this.items.push({
-				xtype: 'displayfield',
-				value: 'Email Frequency',
+				xtype  : 'component',
+                html   : '<b>' + NP.Translator.translate('Email Frequency') + '</b>',
 				padding: '10 0'
 			});
 			this.items.push({xtype: 'mysettings.emailfrequency'});
