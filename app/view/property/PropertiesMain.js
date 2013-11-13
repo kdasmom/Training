@@ -103,7 +103,142 @@ Ext.define('NP.view.property.PropertiesMain', {
                         return returnVal;
                     },
                     flex : 1.5
-                }
+                },
+				{
+					text: NP.Translator.translate('Department Code'),
+					dataIndex: 'property_department_code',
+					hidden: true,
+					flex: 1
+				},
+				{
+					text: NP.Translator.translate('Default Bill to Property'),
+					dataIndex: 'default_billto_property_id',
+					hidden: true,
+					flex: 1,
+					renderer: function(val, rec, meta) {
+						return rec.record.raw.default_bill_to_property;
+					}
+				},
+				{
+					text: NP.Translator.translate('Bill To Address Option'),
+					dataIndex: 'property_optionBillAddress',
+					renderer: function (val, rec, meta) {
+						return val == 1 ? 'Yes' : 'No';
+					},
+					hidden: true,
+					flex: 1
+				},
+				{
+					text: NP.Translator.translate('Default Ship to Property'),
+					dataIndex: 'default_shipto_property_id',
+					hidden: true,
+					flex: 1,
+					renderer: function(val, rec, meta) {
+						return rec.record.raw.default_ship_to_property;
+					}
+				},
+				{
+					text: NP.Translator.translate('Ship To Address Option'),
+					dataIndex: 'property_optionShipAddress',
+					renderer: function (val, rec, meta) {
+						return val == 1 ? 'Yes' : 'No';
+					},
+					hidden: true,
+					flex: 1
+				},
+				{
+					text: NP.Translator.translate('Sync Property'),
+					dataIndex: 'sync',
+					renderer: function (val, rec, meta) {
+						return val == 1 ? 'Yes' : 'No';
+					},
+					hidden: true,
+					flex: 1
+				},
+				{
+					text: NP.Translator.translate('Accrual or cash'),
+					dataIndex: 'cash_accural',
+					hidden: true,
+					flex: 1
+				},
+				{
+					text: NP.Translator.translate('Nexus Services'),
+					dataIndex: 'property_NexusServices',
+					renderer: function (val, rec, meta) {
+						return val == 1 ? 'Yes' : 'No';
+					},
+					hidden: true,
+					flex: 1
+				},
+				{
+					text: NP.Translator.translate('Vendor Catalog'),
+					dataIndex: 'property_VendorCatalog',
+					renderer: function (val, rec, meta) {
+						return val == 1 ? 'Yes' : 'No';
+					},
+					hidden: true,
+					flex: 1
+				},
+				{
+					text: NP.Translator.translate('Volume Type'),
+					dataIndex: 'property_volume',
+					hidden: true,
+					flex: 1
+				},
+				{
+					text: NP.Translator.translate('Property Sales Tax'),
+					dataIndex: 'property_salestax',
+					xtype: 'numbercolumn',
+					hidden: true,
+					flex: 1
+				},
+				{
+					text: NP.Translator.translate('Acceptable PO Matching Threshold (%)'),
+					dataIndex: 'matching_threshold',
+					xtype: 'numbercolumn',
+					hidden: true,
+					flex: 1
+				},
+				{
+					text: NP.Translator.translate('Fiscal Calendar Start Month'),
+					dataIndex: 'fiscaldisplaytype_value',
+					hidden: true,
+					flex: 1,
+					renderer: function (val, rec, meta) {
+						return rec.record.raw['fiscaldisplaytype_name'];
+					}
+				},
+				{
+					text: NP.Translator.translate('Address'),
+					dataIndex: 'address_line1',
+					hidden: true,
+					flex: 1,
+					renderer: function (val, rec, meta) {
+						return rec.record.raw['address_line1'] +
+							(rec.record.raw['address_line2'] !== '' ? ', ' + rec.record.raw['address_line2'] : '') +
+							(rec.record.raw['address_city'] !== '' ? ', ' + rec.record.raw['address_city'] : '') +
+							(rec.record.raw['address_state'] !== '' ? ', ' + rec.record.raw['address_state'] : '') +
+							(rec.record.raw['address_zip'] !== '' ? ', ' + rec.record.raw['address_zip'] : '');
+					}
+				},
+				{
+					text: NP.Translator.translate('Phone'),
+					dataIndex: 'phone_number',
+					hidden: true,
+					flex: 1,
+					renderer: function (val, rec, meta) {
+						return rec.record.raw['phone_number'] ? rec.record.raw['phone_number'] : '';
+					}
+				},
+				{
+					text: NP.Translator.translate('Fax'),
+					dataIndex: 'phone_number',
+					hidden: true,
+					flex: 1,
+					renderer: function (val, rec, meta) {
+						return rec.record.raw['fax_phone_number'] ? rec.record.raw['fax_phone_number'] : '';
+					}
+				}
             ],
             pagingToolbarButtons: [
                 {

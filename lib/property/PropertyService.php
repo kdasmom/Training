@@ -3,6 +3,7 @@
 namespace NP\property;
 
 use NP\core\AbstractService;
+use NP\core\db\Select;
 use NP\security\SecurityService;
 use NP\invoice\InvoiceService;
 use NP\po\PoService;
@@ -122,6 +123,12 @@ class PropertyService extends AbstractService {
 			new sql\join\PropertyIntPkgJoin(),
 			new sql\join\PropertyRegionJoin(),
 			new sql\join\PropertyCreatedByUserJoin(),
+			new sql\join\FiscalDisplayTypeJoin(),
+			new sql\join\PropertyPropertyShipToJoin(),
+			new sql\join\PropertyPropertyBillToJoin(),
+			new sql\join\PropertyAddressJoin(),
+			new sql\join\PropertyPhoneJoin(),
+			new sql\join\PropertyFaxJoin(),
 			new \NP\user\sql\join\UserUserroleJoin(array(
 				'created_by_userprofilerole_id' =>'userprofilerole_id',
 				'created_by_tablekey_id'        =>'tablekey_id'
