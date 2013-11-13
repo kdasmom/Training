@@ -173,6 +173,8 @@ Ext.define('NP.view.images.Index', {
             // Invoice date
             {
                 id: 'field-invoice-date',
+                //name: 'Image_Index_Invoice_Date',
+                name: 'image_index_invoice_date',
                 //name             $request['invoiceimage_invoice_date'] = $_REQUEST['field-invoice-date-inputEl'];
                 xtype: 'datefield',
                 fieldLabel: 'Invoice Date:',
@@ -181,6 +183,7 @@ Ext.define('NP.view.images.Index', {
             // Invoice due date
             {
                 id: 'field-due-date',
+                name: 'Image_Index_Due_Date',
                 //name $request['invoiceimage_invoice_duedate'] = $_REQUEST['field-due-date-inputEl'];
                 xtype: 'datefield',
                 labelWidth: widthLabel,
@@ -194,7 +197,7 @@ Ext.define('NP.view.images.Index', {
             },
             // Amount
             {
-                id: 'field-amount',
+                //id: 'field-amount',
                 name: 'Image_Index_Amount',
                 xtype: 'textfield',
                 fieldLabel: 'Amount:'
@@ -255,7 +258,7 @@ Ext.define('NP.view.images.Index', {
                 labelWidth: widthLabel,
                 fieldLabel: 'Exception Reason:'
             },
-        ]
+        ];
 
 /*
         var form  = [
@@ -278,11 +281,11 @@ Ext.define('NP.view.images.Index', {
                 href: 'http://google.com'
             },
         ];*/
-        var form = fields;
 
         this.id = 'panel-index';
         this.layout = 'border';
 
+/*
         this.items = [
             {
                 xtype: 'panel',
@@ -309,13 +312,14 @@ Ext.define('NP.view.images.Index', {
                 xtype: 'panel', 
                 //itemId: 'tExperiment'
                 border: 0,
-                layout: 'form',
+                //layout: 'form',
                 region: 'center',
                 bodyPadding: 10,
                 overflowY: 'scroll',
-                items: form
+                items: fields
             }
-        ];
+        ];*/
+        this.items = fields;
         this.tbar = [
             {xtype: 'button', itemId: this.ids.buttonReturn,  text: this.locale.buttonReturn},
 

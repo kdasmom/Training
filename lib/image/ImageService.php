@@ -676,7 +676,18 @@ class ImageService extends AbstractService {
             $doctypes = $this->imageDoctypeGateway->getIdByNames(['receipt', 'Utility Invoice']);
             $tablerefs = $this->imageTablerefGateway->getIdByNames(['receipt', 'Utility Invoice']);
 
-            return $this->imageIndexGateway->updateImage($request, $params);
+            $data['mark_as_exception'] = null;
+            $data['indexing_complete'] = null;
+            $data['image_delete'] = null;
+            $data['image_index_draft_invoice_id'] = null;
+
+            $entity = new ImageIndexEntity($data['imageindex']);
+            //return $this->imageIndexGateway->save($entity);
+
+print_r($entity); die();
+//print_r($params);
+
+            //return $this->imageIndexGateway->updateImage($data['imageindex'], $params, $doctypes, $tablerefs);
         }
 
         private function indexPrepareRequest() {

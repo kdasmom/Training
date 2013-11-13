@@ -451,182 +451,187 @@ class ImageIndexGateway extends AbstractGateway {
             }
         }
 
-        public function updateImage($data, $params) {
-            $name = $data['invoiceimage_name'];
-            $name = str_replace('\'', '', $name);
+        public function updateImage($data, $params, $doctypes, $tablerefs) {
+            if (!empty($data['Image_Index_Id'])) {
+                $name = $data['Image_Index_Name'];
+                $name = str_replace('\'', '', $name);
 
-            $update = Update::get()->table($this->table)
-                ->value('image_index_name', $name)
-            ;
-            if (isset($data['universal_field1'])) 
-                $update->value('universal_field1', $data['universal_field1']);
-            if (isset($data['universal_field2'])) 
-                $update->value('universal_field2', $data['universal_field2']);
-            if (isset($data['universal_field3'])) 
-                $update->value('universal_field3', $data['universal_field3']);
-            if (isset($data['universal_field4'])) 
-                $update->value('universal_field4', $data['universal_field4']);
-            if (isset($data['universal_field5'])) 
-                $update->value('universal_field5', $data['universal_field5']);
-            if (isset($data['universal_field6'])) 
-                $update->value('universal_field6', $data['universal_field6']);
-            if (isset($data['universal_field7'])) 
-                $update->value('universal_field7', $data['universal_field7']);
-            if (isset($data['universal_field8'])) 
-                $update->value('universal_field8', $data['universal_field8']);
+                $update = Update::get()->table($this->table)
+                    ->value('image_index_name', $name)
+                ;
+                if (isset($data['universal_field1'])) 
+                    $update->value('universal_field1', $data['universal_field1']);
+                if (isset($data['universal_field2'])) 
+                    $update->value('universal_field2', $data['universal_field2']);
+                if (isset($data['universal_field3'])) 
+                    $update->value('universal_field3', $data['universal_field3']);
+                if (isset($data['universal_field4'])) 
+                    $update->value('universal_field4', $data['universal_field4']);
+                if (isset($data['universal_field5'])) 
+                    $update->value('universal_field5', $data['universal_field5']);
+                if (isset($data['universal_field6'])) 
+                    $update->value('universal_field6', $data['universal_field6']);
+                if (isset($data['universal_field7'])) 
+                    $update->value('universal_field7', $data['universal_field7']);
+                if (isset($data['universal_field8'])) 
+                    $update->value('universal_field8', $data['universal_field8']);
 
-            $property_id = null;
-            if ($data['doctype'] == $params['doctypes']['Utility Invoice']) {
-                $data['property_id'] = $data['utility_property_id'];
-                $property_id = $data['property_id'];
-            } elseif (!empty($data['property_id'])) {
-                $property_id = $data['property_id'];
-            } elseif (!empty($data['property_alt_id'])) {
-                $property_id = $data['property_alt_id'];
-            }
-            $update->value('property_id', $property_id);
+                $property_id = null;
+                if ($data['Image_Doctype_Id'] == $doctypes['Utility Invoice']) {
+                    $data['property_id'] = $data['utility_property_id'];
+                    $property_id = $data['property_id'];
+                } elseif (!empty($data['property_id'])) {
+                    $property_id = $data['property_id'];
+                } elseif (!empty($data['property_alt_id'])) {
+                    $property_id = $data['property_alt_id'];
+                }
+                $update->value('property_id', $property_id);
 
-            $image_index_vendorsite_id = null;
-            if ($data['doctype'] == $params['doctypes']['Utility Invoice']) {
-                $image_index_vendorsite_id = $data['utility_vendorsite_id'];
-            } elseif (!empty($data['invoiceimage_vendorsite_id'])) {
-                $image_index_vendorsite_id = $data['invoiceimage_vendorsite_id'];
-            } elseif (!empty($data['invoiceimage_vendorsite_alt_id'])) {
-                $image_index_vendorsite_id = $data['invoiceimage_vendorsite_alt_id'];
-            }
-            $update->value('invoiceimage_vendorsite_alt_id', $image_index_vendorsite_id);
+                $image_index_vendorsite_id = null;
+                if ($data['Image_Doctype_Id'] == $doctypes['Utility Invoice']) {
+                    $image_index_vendorsite_id = $data['utility_vendorsite_id'];
+                } elseif (!empty($data['invoiceimage_vendorsite_id'])) {
+                    $image_index_vendorsite_id = $data['invoiceimage_vendorsite_id'];
+                } elseif (!empty($data['invoiceimage_vendorsite_alt_id'])) {
+                    $image_index_vendorsite_id = $data['invoiceimage_vendorsite_alt_id'];
+                }
+//if (!empty) {
+                $update->value('invoiceimage_vendorsite_alt_id', $image_index_vendorsite_id);
+//}
 
-            $update->value('image_index_amount', 
-                !empty($data['image_index_amount']) ? $data['image_index_amount'] : null
-            );
+                $update->value('image_index_amount', 
+                    !empty($data['image_index_amount']) ? $data['image_index_amount'] : null
+                );
 
-            $refnum = "";
-            if (!empty($data['invoiceimage_ref'])) {
-                $refnum = $data['invoiceimage_ref'];
-            } elseif (!empty($data['po_ref'])) {
-                $refnum = $data['po_ref'];
-            } elseif (!empty($data['job_number'])) {
-                $refnum = $data['job_number'];
-            }
-            $refnum = str_replace('\'', '', $refnum);
-            $update->value('image_index_ref', 
-                !empty($refnum) ? $refnum : null
-            );
+                $refnum = "";
+                if (!empty($data['invoiceimage_ref'])) {
+                    $refnum = $data['invoiceimage_ref'];
+                } elseif (!empty($data['po_ref'])) {
+                    $refnum = $data['po_ref'];
+                } elseif (!empty($data['job_number'])) {
+                    $refnum = $data['job_number'];
+                }
+                $refnum = str_replace('\'', '', $refnum);
+                $update->value('image_index_ref', 
+                    !empty($refnum) ? $refnum : null
+                );
 
-            $update->value('image_index_invoice_date', 
-                !empty($data['invoiceimage_invoice_date']) ? $data['invoiceimage_invoice_date'] : null
-            );
+                $update->value('image_index_invoice_date', 
+                    !empty($data['invoiceimage_invoice_date']) ? $data['invoiceimage_invoice_date'] : null
+                );
 
-            //Start:image is being marked as exception
-            if (!empty($data['mark_as_exception'])) {
-                $update->value('Image_Index_Exception_by', $params['userprofile_id']);
-                $update->value('Image_Index_Exception_datetm', date('Y-m-d H:i:s'));
+                //Start:image is being marked as exception
+                if (!empty($data['mark_as_exception'])) {
+                    $update->value('Image_Index_Exception_by', $params['userprofile_id']);
+                    $update->value('Image_Index_Exception_datetm', date('Y-m-d H:i:s'));
 
-                $image_index_status = 2;
-            } elseif (!empty($data['indexing_complete'])) {
-                $update->value('Image_Index_Exception_End_datetm', date('Y-m-d H:i:s'));
-
-                $image_index_status = 1;
-            } elseif (!empty($data['image_delete'])) {
-                $update->value('image_index_deleted_datetm', date('Y-m-d H:i:s'));
-                $update->value('image_index_deleted_by', $params['userprofile_id']);
-
-                $image_index_status = -1;
-            } else {
-                if (strtolower($params['section']) == 'exceptions') {
                     $image_index_status = 2;
-                } elseif (strtolower($params['section']) == 'index') {
+                } elseif (!empty($data['indexing_complete'])) {
+                    $update->value('Image_Index_Exception_End_datetm', date('Y-m-d H:i:s'));
+
                     $image_index_status = 1;
+                } elseif (!empty($data['image_delete'])) {
+                    $update->value('image_index_deleted_datetm', date('Y-m-d H:i:s'));
+                    $update->value('image_index_deleted_by', $params['userprofile_id']);
+
+                    $image_index_status = -1;
+                } else {
+                    if (strtolower($params['section']) == 'exceptions') {
+                        $image_index_status = 2;
+                    } elseif (strtolower($params['section']) == 'index') {
+                        $image_index_status = 1;
+                    }
                 }
-            }
-            $update->value('image_index_status', $image_index_status);
+                $update->value('image_index_status', $image_index_status);
 
-            if (!empty($data['indexing_complete']) && empty($data['image_delete'])) {
-                $update->value('image_index_indexed_by', $params['userprofile_id']);
-                $update->value('image_index_indexed_datetm', date('Y-m-d H:i:s'));
-            }
-
-            if (!empty($data['exception_reason'])) {
-                $update->value('Image_Index_Exception_reason', $data['exception_reason']);
-            }
-
-            $priority = "";
-            if (!empty($data['doctype'])) {
-                switch ($data['doctype']) {
-                    case 1:
-                        $priority = $data['PriorityFlag_ID_Alt_invoice'];
-                        break;
-                    case 2:
-                        $priority = $data['PriorityFlag_ID_Alt_po'];
-                        break;
-                    case 3:
-                        $priority = $request['PriorityFlag_ID_Alt_vef'];
-                        break;
+                if (!empty($data['indexing_complete']) && empty($data['image_delete'])) {
+                    $update->value('image_index_indexed_by', $params['userprofile_id']);
+                    $update->value('image_index_indexed_datetm', date('Y-m-d H:i:s'));
                 }
-            }
-            if (!empty($priority)) {
-                $update->value('PriorityFlag_ID_Alt', $priority);
-            }
 
-            if (!empty($request['invoiceimage_invoice_duedate'])) {
-                $update->value('Image_Index_Due_Date', $request['invoiceimage_invoice_duedate']);
-            }
-
-            if (!empty($request['NeededBy_datetm'])) {
-                $update->value('image_index_NeededBy_datetm', $request['NeededBy_datetm']);
-            }
-
-            if (!empty($request['image_index_draft_invoice_id'])) {
-                $update->value('image_index_draft_invoice_id', $request['image_index_draft_invoice_id']);
-            }
-
-            $tableref_id = null;
-            $image_doctype_id = null;
-            if (!empty($request['doctype']) && $request['doctype'] == 1) {
-                    $image_doctype_id = $request['doctype'];
-                    $tableref_id = 1;
-
-                    $update->value('remit_advice', $request['remit_advice']);
-            } elseif (!empty($request['doctype']) && $request['doctype'] == 2) {
-                    $image_doctype_id = $request['doctype'];
-                    $tableref_id = 3;
-            } elseif (!empty($request['doctype']) && $request['doctype'] == 3) {
-                    $image_doctype_id = $request['doctype'];
-                    $tableref_id = 4;
-            } elseif (!empty($request['doctype']) && $request['doctype'] == $params['doctypes']['receipt']) {
-                    $image_doctype_id = $request['doctype'];
-                    $tableref_id = $params['tablerefs']['receipt'];//getreceipt_ref.image_tableref_id
-            } elseif (!empty($request['doctype']) && $request['doctype'] == $params['doctypes']['Utility Invoice']) {
-                    $image_doctype_id = $request['doctype'];
-                    $tableref_id = $params['tablerefs']['Utility Invoice'];//qUtilityRef.image_tableref_id
-
-                    $update->value('utilityaccount_id', $request['utilityaccount_id']);//#listFirst(request.utilityaccount_id)#
-                    $update->value('utilityaccount_accountnumber', $request['utilityaccount_accountnumber']);//#listFirst(request.utilityaccount_id)#
-                    $update->value('utilityaccount_metersize', $request['utilityaccount_metersize']);//#listFirst(request.utilityaccount_id)#
-                
-                    $update->value('cycle_from', !empty($request['cycle_from']) ? $request['cycle_from'] : null);//#listFirst(request.utilityaccount_id)#
-                    $update->value('cycle_to', !empty($request['cycle_to']) ? $request['cycle_to'] : null);//#listFirst(request.utilityaccount_id)#
-            } elseif (!empty($request['doctype']) && $request['doctype'] > 3) { //If doctype is "Vendor", then automatically attach image to vendor
-                $image_doctype_id = $request['doctype'];
-                $tableref_id = 2;
-
-                if (!empty($request['invoiceimage_vendorsite_id'])) {
-                    $update->value('tablekey_id', $request['invoiceimage_vendorsite_id']);//#listFirst(request.utilityaccount_id)#
-                } elseif (!empty($request['invoiceimage_vendorsite_alt_id'])) {
-                    $update->value('tablekey_id', $request['invoiceimage_vendorsite_alt_id']);//#listFirst(request.utilityaccount_id)#
+                if (!empty($data['exception_reason'])) {
+                    $update->value('Image_Index_Exception_reason', $data['exception_reason']);
                 }
-            }
-            $update->value('image_doctype_id', !empty($image_doctype_id) ? $image_doctype_id : null);
-            $update->value('tableref_id', !empty($tableref_id) ? $tableref_id : null);
 
-            $update->where(
-                Where::get()->equals(
-                    'image_index_id',
-                    $data['Image_Index_Id']
-                )
-            );
- 
- print_r($update->toString());
+                $priority = "";
+                if (!empty($data['Image_Doctype_Id'])) {
+                    switch ($data['Image_Doctype_Id']) {
+                        case 1:
+                            $priority = $data['PriorityFlag_ID_Alt_invoice'];
+                            break;
+                        case 2:
+                            $priority = $data['PriorityFlag_ID_Alt_po'];
+                            break;
+                        case 3:
+                            $priority = $data['PriorityFlag_ID_Alt_vef'];
+                            break;
+                    }
+                }
+                if (!empty($priority)) {
+                    $update->value('PriorityFlag_ID_Alt', $priority);
+                }
+
+                if (!empty($data['invoiceimage_invoice_duedate'])) {
+                    $update->value('Image_Index_Due_Date', $data['invoiceimage_invoice_duedate']);
+                }
+
+                if (!empty($data['NeededBy_datetm'])) {
+                    $update->value('image_index_NeededBy_datetm', $data['NeededBy_datetm']);
+                }
+
+                if (!empty($data['image_index_draft_invoice_id'])) {
+                    $update->value('image_index_draft_invoice_id', $data['image_index_draft_invoice_id']);
+                }
+
+                $tableref_id = null;
+                $image_doctype_id = null;
+                if (!empty($data['Image_Doctype_Id']) && $data['Image_Doctype_Id'] == 1) {
+                        $image_doctype_id = $data['Image_Doctype_Id'];
+                        $tableref_id = 1;
+
+                        $update->value('remit_advice', $data['remit_advice']);
+                } elseif (!empty($data['Image_Doctype_Id']) && $data['Image_Doctype_Id'] == 2) {
+                        $image_doctype_id = $data['Image_Doctype_Id'];
+                        $tableref_id = 3;
+                } elseif (!empty($data['Image_Doctype_Id']) && $data['Image_Doctype_Id'] == 3) {
+                        $image_doctype_id = $data['Image_Doctype_Id'];
+                        $tableref_id = 4;
+                } elseif (!empty($data['Image_Doctype_Id']) && $data['Image_Doctype_Id'] == $doctypes['receipt']) {
+                        $image_doctype_id = $data['Image_Doctype_Id'];
+                        $tableref_id = $tablerefs['receipt'];//getreceipt_ref.image_tableref_id
+                } elseif (!empty($data['Image_Doctype_Id']) && $data['Image_Doctype_Id'] == $doctypes['Utility Invoice']) {
+                        $image_doctype_id = $data['Image_Doctype_Id'];
+                        $tableref_id = $tablerefs['Utility Invoice'];//qUtilityRef.image_tableref_id
+
+                        $update->value('utilityaccount_id', $data['utilityaccount_id']);//#listFirst(request.utilityaccount_id)#
+                        $update->value('utilityaccount_accountnumber', $data['utilityaccount_accountnumber']);//#listFirst(request.utilityaccount_id)#
+                        $update->value('utilityaccount_metersize', $data['utilityaccount_metersize']);//#listFirst(request.utilityaccount_id)#
+
+                        $update->value('cycle_from', !empty($data['cycle_from']) ? $data['cycle_from'] : null);//#listFirst(request.utilityaccount_id)#
+                        $update->value('cycle_to', !empty($data['cycle_to']) ? $data['cycle_to'] : null);//#listFirst(request.utilityaccount_id)#
+                } elseif (!empty($data['Image_Doctype_Id']) && $data['Image_Doctype_Id'] > 3) { //If doctype is "Vendor", then automatically attach image to vendor
+                    $image_doctype_id = $data['Image_Doctype_Id'];
+                    $tableref_id = 2;
+
+                    if (!empty($data['invoiceimage_vendorsite_id'])) {
+                        $update->value('tablekey_id', $data['invoiceimage_vendorsite_id']);//#listFirst(request.utilityaccount_id)#
+                    } elseif (!empty($data['invoiceimage_vendorsite_alt_id'])) {
+                        $update->value('tablekey_id', $data['invoiceimage_vendorsite_alt_id']);//#listFirst(request.utilityaccount_id)#
+                    }
+                }
+                $update->value('image_doctype_id', !empty($image_doctype_id) ? $image_doctype_id : null);
+                $update->value('tableref_id', !empty($tableref_id) ? $tableref_id : null);
+
+                $update->where(
+                    Where::get()->equals(
+                        'image_index_id',
+                        $data['Image_Index_Id']
+                    )
+                );
+print_r($update->toString());
+                //return $this->adapter-query($update);
+            }
+            return null;
         }
         
         

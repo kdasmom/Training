@@ -184,6 +184,7 @@ Ext.define('NP.controller.Images', {
     processButtonSaveAndNext: function() {
         //var form = Ext.ComponentQuery.query('[id~="index-form"]')[0].getForm();
         var form = this.getCmp('images.index');
+console.dir(form.getValues());
 
         form.submitWithBindings({
             action: 'update',
