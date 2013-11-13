@@ -20,6 +20,10 @@ Ext.define('NP.view.user.UserDelegationForm', {
     autoScroll : true,
     border     : false,
     bodyPadding: 8,
+	layout: {
+		type : 'vbox',
+		align: 'stretch'
+	},
 
     initComponent: function() {
         var bar = [
