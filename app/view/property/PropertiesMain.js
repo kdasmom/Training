@@ -238,6 +238,15 @@ Ext.define('NP.view.property.PropertiesMain', {
 					renderer: function (val, rec, meta) {
 						return rec.record.raw['fax_phone_number'] ? rec.record.raw['fax_phone_number'] : '';
 					}
+				},
+				{
+					text: NP.Translator.translate('Attention'),
+					dataIndex: 'address_attn',
+					hidden: true,
+					flex: 1,
+					renderer: function (val, rec, meta) {
+						return rec.record.raw['address_attn'] ? rec.record.raw['address_attn'] : '';
+					}
 				}
             ],
             pagingToolbarButtons: [

@@ -127,7 +127,7 @@ class PropertyService extends AbstractService {
 			new sql\join\PropertyPropertyShipToJoin(),
 			new sql\join\PropertyPropertyBillToJoin(),
 			new sql\join\PropertyAddressJoin(),
-			new sql\join\PropertyPhoneJoin(),
+			new sql\join\PropertyPhoneJoin(['phone_id', 'phone_number']),
 			new sql\join\PropertyFaxJoin(),
 			new \NP\user\sql\join\UserUserroleJoin(array(
 				'created_by_userprofilerole_id' =>'userprofilerole_id',
