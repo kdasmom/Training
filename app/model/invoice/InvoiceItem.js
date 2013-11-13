@@ -23,7 +23,7 @@ Ext.define('NP.model.invoice.InvoiceItem', {
 		{ name: 'glaccount_id', type: 'int' },
 		{ name: 'invoiceitem_description' },
 		{ name: 'invoiceitem_quantity', type: 'float', defaultValue: 1 },
-		{ name: 'invoiceitem_unitprice' },
+		{ name: 'invoiceitem_unitprice', type: 'float' },
 		{ name: 'invoiceitem_amount', type: 'float', useNull: false },
 		{ name: 'invoiceitem_budgetvariance' },
 		{ name: 'invoiceitem_created', type: 'date' },

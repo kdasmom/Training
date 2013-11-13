@@ -65,7 +65,12 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                 width    : 100,
                 editor   : {
                     xtype           : 'numberfield',
-                    decimalPrecision: 6
+                    decimalPrecision: 6,
+                    listeners       : {
+                        blur: function(field, e) {
+                            me.fireEvent('changequantity', me, field, e);
+                        }
+                    }
                 }
             },
             // Description column
@@ -77,15 +82,38 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     xtype: 'textfield'
                 }
             },
+            // Unit Price column
+            {
+                xtype    : 'numbercolumn',
+                text     : NP.Translator.translate('Unit Price'),
+                dataIndex: 'invoiceitem_unitprice',
+                format   : '0,000.000000',
+                width    : 100,
+                editor   : {
+                    xtype           : 'numberfield',
+                    decimalPrecision: 6,
+                    listeners       : {
+                        blur: function(field, e) {
+                            me.fireEvent('changeunitprice', me, field, e);
+                        }
+                    }
+                }
+            },
             // Amount column
             {
                 xtype    : 'numbercolumn',
                 text     : NP.Translator.translate('Amount'),
                 dataIndex: 'invoiceitem_amount',
-                width    : 50,
+                format   : '0,000.000000',
+                width    : 100,
                 editor   : {
                     xtype           : 'numberfield',
-                    decimalPrecision: 2
+                    decimalPrecision: 6,
+                    listeners       : {
+                        blur: function(field, e) {
+                            me.fireEvent('changeamount', me, field, e);
+                        }
+                    }
                 }
             },
             // Property column
@@ -114,7 +142,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                 dataIndex: 'glaccount_id',
                 width    : 250,
                 renderer : function(val, meta) {
-                    if (val == null || val == '') {
+                    if (val == null || val == '' || isNaN(val)) {
                         return '';
                     }
                     var rec = Ext.getStore('gl.AllGlAccounts').findRecord('glaccount_id', val, 0, false, false, true);
@@ -126,7 +154,6 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     itemId      : 'lineGridGlCombo',
                     displayField: 'display_name',
                     valueField  : 'glaccount_id',
-                    queryMode   : 'local',
                     store       : me.glStore
                 }
             }
@@ -147,7 +174,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                 dataIndex: 'unit_id',
                 width    : 200,
                 renderer : function(val, meta) {
-                    if (val == null || val == '') {
+                    if (val == null || val == '' || isNaN(val)) {
                         return '';
                     }
                     var rec = Ext.getStore('property.AllUnits').findRecord('unit_id', val, 0, false, false, true);
@@ -159,7 +186,6 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     itemId      : 'lineGridUnitCombo',
                     displayField: 'unit_number',
                     valueField  : 'unit_id',
-                    queryMode   : 'local',
                     store       : me.unitStore,
                     hideLabel   : true
                 }
@@ -252,7 +278,6 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                         xtype       : 'customcombo',
                         displayField: 'display_name',
                         valueField  : 'jbcontract_id',
-                        queryMode   : 'local',
                         store       : {
                             type: 'jobcosting.jbcontracts',
                             service: 'JobCostingService',
@@ -279,7 +304,6 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     xtype       : 'customcombo',
                     displayField: 'display_name',
                     valueField  : 'jbchangeorder_id',
-                    queryMode   : 'local',
                     store       : {
                         type   : 'jobcosting.jbchangeorders',
                         service: 'JobCostingService',
@@ -305,7 +329,6 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     xtype       : 'customcombo',
                     displayField: 'display_name',
                     valueField  : 'jbjobcode_id',
-                    queryMode   : 'local',
                     store       : {
                         type   : 'jobcosting.jbjobcodes',
                         service: 'JobCostingService',
@@ -331,7 +354,6 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     xtype       : 'customcombo',
                     displayField: 'display_name',
                     valueField  : 'jbphasecode_id',
-                    queryMode   : 'local',
                     store       : {
                         type   : 'jobcosting.jbphasecodes',
                         service: 'JobCostingService',
@@ -358,7 +380,6 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                         xtype       : 'customcombo',
                         displayField: 'display_name',
                         valueField  : 'jbcostcode_id',
-                        queryMode   : 'local',
                         store       : {
                             type   : 'jobcosting.jbcostcodes',
                             service: 'JobCostingService',
@@ -397,7 +418,6 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     xtype       : 'customcombo',
                     displayField: 'display_name',
                     valueField  : 'UtilityAccount_Id',
-                    queryMode   : 'local',
                     store       : me.utilityAccountStore,
                     listeners: {
                         select: function(combo, recs) {
@@ -416,7 +436,6 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     xtype       : 'customcombo',
                     displayField: 'UtilityColumn_UsageType_Name',
                     valueField  : 'UtilityColumn_UsageType_Id',
-                    queryMode   : 'local',
                     store       : me.usageTypeStore,
                     listeners: {
                         select: function(combo, recs) {
@@ -429,6 +448,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
 
     	me.callParent(arguments);
 
-        me.addEvents('selectjcfield','selectutilityaccount','selectusagetype');
+        me.addEvents('selectjcfield','selectutilityaccount','selectusagetype',
+                    'changequantity','changeunitprice','changeamount');
     }
 });

@@ -35,6 +35,8 @@ Ext.define('NP.controller.Invoice', {
 	init: function() {
 		Ext.log('Invoice controller initialized');
 
+		var app = this.application;
+
 		// Setup event handlers
 		this.control({
 			// Clicking on an Invoice Register tab
@@ -84,7 +86,10 @@ Ext.define('NP.controller.Invoice', {
 				edit                : Ext.bind(this.onAfterInvoiceLineGridEdit, this),
 				selectjcfield       : Ext.bind(this.onSelectJcField, this),
 				selectutilityaccount: Ext.bind(this.onSelectUtilityAccount, this),
-				selectusagetype     : Ext.bind(this.onSelectUsageType, this)
+				selectusagetype     : Ext.bind(this.onSelectUsageType, this),
+				changequantity      : Ext.bind(this.onChangeQuantity, this),
+				changeunitprice     : Ext.bind(this.onChangeUnitPrice, this),
+				changeamount        : Ext.bind(this.onChangeAmount, this)
 			},
 
 			// Vendor combo on the invoice view page
@@ -259,6 +264,7 @@ Ext.define('NP.controller.Invoice', {
 			field = e.column.getEditor();
 
 		me.getLineGrid().selectedRec = e.record;
+		me.originalRecValue = e.record.copy();
 
 		if (e.field == 'glaccount_id') {
 			me.onOpenGlAccountEditor(editor, e.record, field);
@@ -655,6 +661,10 @@ Ext.define('NP.controller.Invoice', {
 		var me    = this,
 			field = e.column.getEditor(),
 			grid  = me.getLineGrid();
+		
+		if (e.value instanceof Array) {
+			grid.selectedRec.set(me.originalRecValue.getData());
+		}
 
 		// If we edited the property, we need to make sure fields with drop downs that depend
 		// on the property are checked and cleared if their value no longer exists in the store
@@ -757,6 +767,27 @@ Ext.define('NP.controller.Invoice', {
         } else {
             me.clearUsageType(grid);
         }
+	},
+
+	onChangeQuantity: function(grid, field) {
+		var unitPrice = grid.selectedRec.get('invoiceitem_unitprice'),
+			qty       = field.getValue();
+
+		grid.selectedRec.set('invoiceitem_amount', qty * unitPrice);
+	},
+
+	onChangeUnitPrice: function(grid, field) {
+		var qty       = grid.selectedRec.get('invoiceitem_quantity'),
+			unitPrice = field.getValue();
+
+		grid.selectedRec.set('invoiceitem_amount', qty * unitPrice);
+	},
+
+	onChangeAmount: function(grid, field) {
+		var qty   = grid.selectedRec.get('invoiceitem_quantity'),
+			amount = field.getValue();
+
+		grid.selectedRec.set('invoiceitem_unitprice', amount / qty);
 	},
 
 	setInvoiceViewTitle: function() {
