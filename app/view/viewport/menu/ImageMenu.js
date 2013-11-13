@@ -23,7 +23,7 @@ Ext.define('NP.view.viewport.menu.ImageMenu', {
 			items: [
 				// Images to be Indexed
 				{ 
-                                     itemId: 'indexedImageMenuBtn',
+                                     itemId: 'indexImageMenuBtn',
                                      text: this.indexedText 
                                  }
 			]
@@ -40,7 +40,7 @@ Ext.define('NP.view.viewport.menu.ImageMenu', {
 		// Purchase Order Images
 		if ( NP.lib.core.Config.getSetting('PN.POOptions.POSwitch') == 1 && NP.lib.core.Security.hasPermission(2087) ) {
 			this.menu.items.push({
-                                itemId: 'posImageMenuBtn',
+                                itemId: 'purchase-ordersImageMenuBtn',
 				text: this.pOText
 			});
 		}

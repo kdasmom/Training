@@ -58,7 +58,8 @@ Ext.define('NP.controller.Viewport', {
 			// Clicking on the Administration > Image Management menu or sub menu
 			'#imageMenuBtn,#imageMenuBtn menuitem': {
 				click: function(itemClicked) {
-					var token = 'ImageManagement:showManagement';
+					//var token = 'ImageManagement:showManagement';
+                                        var token = 'Images:showMain';
 					if (itemClicked.itemId != 'imageMenuBtn') {
 						token += ':' + itemClicked.itemId.replace('ImageMenuBtn', '');
 					} else {

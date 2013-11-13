@@ -20,6 +20,10 @@ if (!$isAuth) {
 	<link rel="stylesheet" type="text/css" href="vendor/BoxSelect/src/BoxSelect.css" />
 	<link rel="stylesheet" type="text/css" href="resources/css/main.css" />
 	<link rel="stylesheet" type="text/css" href="resources/css/VerticalTabPanel.css" />
+	<link rel="stylesheet" type="text/css" href="resources/css/uploader.css" />
+        <link rel="stylesheet" type="text/css" href="vendor/jquery-uploadify/uploadify.css" />
+        <script type="text/javascript" src="vendor/jquery/jquery-2.0.3.min.js"></script>
+        <script type="text/javascript" src="vendor/jquery-uploadify/jquery.uploadify.min.js"></script>
 	<script type="text/javascript" src="vendor/extjs/ext-all<?php echo ($__CONFIG['serverType'] == 'dev') ? '-dev' : ''; ?>.js"></script>
 	<script type="text/javascript" src="vendor/extjs/examples/ux/form/MultiSelect.js"></script>
 	<script type="text/javascript" src="vendor/extjs/examples/ux/form/ItemSelector.js"></script>
@@ -30,7 +34,7 @@ if (!$isAuth) {
 	
 </head>
 <body>
-	
+
 	<!-- Fields required for history management -->
 	<form id="history-form" class="x-hide-display">
 		<input type="hidden" id="x-history-field" />

@@ -6,6 +6,10 @@ use NP\core\AbstractGateway;
 
 use NP\core\db\Where;
 use NP\core\db\Select;
+use NP\core\db\Insert;
+use NP\core\db\Delete;
+use NP\core\db\Update;
+use NP\core\db\Expression;
 use NP\property\PropertyContext;
 use NP\property\sql\PropertyFilterSelect;
 
@@ -16,6 +20,42 @@ use NP\property\sql\PropertyFilterSelect;
  */
 class ImageIndexGateway extends AbstractGateway {
 	protected $table = 'image_index';
+
+        private $columns = [
+            'Image_Index_Id',
+            'Image_Index_VendorSite_Id',
+            'Property_Id',
+            'Image_Index_Name',
+            'Image_Index_Ref',
+            'Image_Index_Invoice_Date',
+            'Image_Index_Due_Date',
+            'Image_Index_Amount',
+            'Image_Index_Date_Entered',
+            'Tablekey_Id',
+            'Image_Index_Source_Id',
+            'Tableref_Id',
+            'Image_Doctype_Id',
+            'remit_advice',
+            'PriorityFlag_ID_Alt',
+            'image_index_NeededBy_datetm',
+            'Image_Index_Exception_by',
+            'Image_Index_Exception_datetm',
+            'Image_Index_Exception_End_datetm',
+            'image_index_indexed_datetm',
+            'image_index_indexed_by',
+            'cycle_from',
+            'cycle_to',
+            'utilityaccount_accountnumber',
+            'utilityaccount_metersize',
+            'universal_field1',
+            'universal_field2',
+            'universal_field3',
+            'universal_field4',
+            'universal_field5',
+            'universal_field6',
+            'universal_field7',
+            'universal_field8'            
+        ];
 
 	public function findImagesToConvert($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
 		$select = $this->getDashboardSelect($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
@@ -87,7 +127,6 @@ class ImageIndexGateway extends AbstractGateway {
 
 	public function findImagesToIndex($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
 		$select = $this->getDashboardSelect($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
-		
 		$propertyFilterSelect = new PropertyFilterSelect(new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection));
 		
 		// We're going to create a where object to overwrite the entire where clause because
@@ -171,6 +210,480 @@ class ImageIndexGateway extends AbstractGateway {
 
 		return $select;
 	}
-}
+        
 
-?>
+        
+        
+
+        
+        
+        
+       	public function findImagesToDelete($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
+		$select = $this->getDashboardSelect($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
+		
+		$select->whereMerge(new sql\criteria\ImageInvoiceDocCriteria())
+				->whereMerge(new sql\criteria\ImageInvoiceUnassigned())
+				->whereEquals('img.Image_Index_Status', -1);
+
+		// If paging is needed
+		if ($pageSize !== null && $countOnly == 'false') {
+			return $this->getPagingArray($select, array(), $pageSize, $page, 'image_index_id');
+		} else if ($countOnly == 'true') {
+			$res = $this->adapter->query($select);
+			return $res[0]['totalRecs'];
+		} else {
+			return $this->adapter->query($select);
+		}
+	}
+ 
+        
+        
+        
+        
+        
+        
+	public function getImageToIndex($id, $userprofile_id = 1, $delegated_to_userprofile_id = 1, $contextType = 'all', $contextSelection = null, $pageSize=null, $page=null, $sort="vendor_name") {
+            $select = $this->getDashboardSelect('false', $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
+            $propertyFilterSelect = new PropertyFilterSelect(new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection));
+
+            $where = Where::get()
+                ->nest('OR')
+                    ->equals('img.property_id', 0)
+                    ->isNull('img.property_id')
+                    ->in('img.property_id', $propertyFilterSelect)
+                ->unnest()
+                ->merge(new sql\criteria\ImageNotIndexedCriteria())
+                ->equals("Image_Index_Id", $id)
+            ;
+            $select->where($where);
+
+            return $this->adapter->query($select)[0];
+	}
+        
+        
+        
+        
+        
+        
+        private function insertINTOAUDITLOG() {
+            $select01 = new Select();
+            $select02 = new Select();
+            $select01
+                ->from('IMAGE_TABLEREF')
+                ->column('REPLACE(image_tableref_name, \' \', \'\')')
+                ->whereEquals('image_tableref_id', 'ISNULL(0, 1)')
+            ;
+            $select02
+                ->from('AUDITTYPE')
+                ->column('audittype_id')
+                //->whereEquals('audittype', $select01)
+                    ->whereEquals('audittype', '(SELECT REPLACE(image_tableref_name, \' \', \'\')
+                    FROM IMAGE_TABLEREF
+                    WHERE image_tableref_id = ISNULL(1, 1))')
+            ;
+            $type = $this->adapter->query($select02);
+            $type = $type[0]['audittype_id'];
+
+            $select03 = new Select();
+            $select03
+                ->from('AUDITACTIVITY')
+                ->column('auditactivity_id')
+                ->whereEquals('auditactivity', '\'ImgUploaded\'')
+            ;
+            $activity = $this->adapter->query($select03);
+            $activity = $activity[0]['auditactivity_id'];
+            
+            //echo "***********************************************************";
+            //print_r($type);
+            //echo "***********************************************************";
+            //print_r($activity);
+            
+            //TODO: REAL INSERT
+        }
+
+        public function getInvoiceRef($invoice_id) {
+            $select = new \NP\core\db\Select();
+            $select->column('invoice_ref')->from('INVOICE')->whereEquals('invoice_id', $invoice_id);
+
+            $result = $this->adapter->query($select);
+            if (!empty($result) && !empty($result[0]) && !empty($result[0]['invoice_ref'])) {
+                return $result[0]['invoice_ref'];
+            }
+            return null;
+        }
+
+
+
+        public function countImagesByDoctype($invoiceid, $doctype) {
+            $where = new Where();
+            $where
+                ->equals('tablekey_id', $invoiceid)
+                ->equals('image_doctype_id', $doctype)
+            ;
+
+            $select = new Select();
+            $select
+                ->count(true, 'image_index_id')
+                ->from('IMAGE_INDEX')
+                ->where($where)
+            ;
+
+            $result = $this->adapter->query($select);
+            if (!empty($result) && !empty($result[0])) {
+                return $result[0]['image_index_id'];
+            }
+            return 0;
+        }
+        public function countImagesByTableref($invoiceid, $tableref) {
+            $where = new Where();
+            $where
+                ->equals('tablekey_id', $invoiceid)
+                ->equals('tableref_id', $tableref)
+            ;
+
+            $select = new Select();
+            $select
+                ->count(true, 'image_index_id')
+                ->from('IMAGE_INDEX')
+                ->where($where)
+            ;
+
+            $result = $this->adapter->query($select);
+            if (!empty($result) && !empty($result[0])) {
+                return $result[0]['image_index_id'];
+            }
+            return 0;
+        }
+
+        public function lookupImage($tablekey, $tableref) {
+            $where = Where::get()
+                ->equals('tablekey_id', $tablekey)
+                ->equals('image_index_primary', 1)
+                ->equals('tableref_id', $tableref)
+            ;
+            $select = Select::get()
+                ->column('image_index_id')
+                ->from('image_index')
+                ->where($where)
+            ;
+            $result = $this->adapter->query($select);
+
+            if (!empty($result) && !empty($result[0])) {
+                return $result[0]['image_index_id'];
+            }
+            return null;
+        }
+
+        public function deletePermanently($identifiers) {
+            if (!empty($identifiers)) {
+                $where = Where::get()
+                    ->in('image_index_id', implode(',', $identifiers))
+                ;
+                $delete = new Delete($this->table, $where);
+
+                return $this->adapter->query($delete);
+            }
+        }
+
+        public function deleteTemporary($identifiers, $userprofile_id) {
+            $update = Update::get()
+                ->table($this->table)
+                    ->value('image_index_status', -1)
+                    ->value('tablekey_id', 0)
+                    ->value('image_index_primary', 0)
+                    ->value('image_index_deleted_datetm', '\''.date('Y-m-d H:i:s').'\'')
+                    ->value('image_index_deleted_by', $userprofile_id)
+                ->where(
+                    Where::get()
+                        ->in('image_index_id', implode(',', $identifiers))
+                )
+            ;
+            return $this->adapter->query($update);
+        }
+
+        public function getMainParametersForImages($identifiers) {
+            $select = Select::get()
+                ->from($this->table)
+                ->columns(['tablekey_id', 'tableref_id', 'image_index_name', 'image_index_id'])
+                ->where(
+                    Where::get()
+                        ->in('image_index_id', implode(',', $identifiers))
+                )
+            ;
+            $params = $this->adapter->query($select);
+
+            $result = [];
+            if (!empty($params)) {
+                foreach ($params as $values) {
+                    $result[$values['image_index_id']] = [
+                        'tablekey_id' => $values['tablekey_id'],
+                        'tableref_id' => $values['tableref_id'],
+                        'image_index_name' => $values['image_index_name']
+                    ];
+                }
+            }
+            return $result;
+        }
+
+        public function updatePrimary($identifiers, $params) {
+            foreach ($params as $key => $values) {
+                $where = Where::get()
+                    ->notIn('image_index_id', implode(',', $identifiers))
+                    ->equals('tablekey_id', $values['tablekey_id'])
+                    ->equals('tableref_id', $values['tableref_id'])
+                ;
+                $select = Select::get()
+                    ->from($this->table)
+                    ->column('image_index_id')
+                    ->where($where)
+                    ->limit(1)
+                ;
+
+                $update = Update::get()
+                    ->table($this->table)
+                    ->value('image_index_primary', 1)
+                    ->where(
+                        Where::get()->in('image_index_id', $select)
+                    )
+                ;
+
+                $this->adapter->query($update);
+            }
+        }
+
+        public function updateImage($data, $params) {
+            $name = $data['invoiceimage_name'];
+            $name = str_replace('\'', '', $name);
+
+            $update = Update::get()->table($this->table)
+                ->value('image_index_name', $name)
+            ;
+            if (isset($data['universal_field1'])) 
+                $update->value('universal_field1', $data['universal_field1']);
+            if (isset($data['universal_field2'])) 
+                $update->value('universal_field2', $data['universal_field2']);
+            if (isset($data['universal_field3'])) 
+                $update->value('universal_field3', $data['universal_field3']);
+            if (isset($data['universal_field4'])) 
+                $update->value('universal_field4', $data['universal_field4']);
+            if (isset($data['universal_field5'])) 
+                $update->value('universal_field5', $data['universal_field5']);
+            if (isset($data['universal_field6'])) 
+                $update->value('universal_field6', $data['universal_field6']);
+            if (isset($data['universal_field7'])) 
+                $update->value('universal_field7', $data['universal_field7']);
+            if (isset($data['universal_field8'])) 
+                $update->value('universal_field8', $data['universal_field8']);
+
+            $property_id = null;
+            if ($data['doctype'] == $params['doctypes']['Utility Invoice']) {
+                $data['property_id'] = $data['utility_property_id'];
+                $property_id = $data['property_id'];
+            } elseif (!empty($data['property_id'])) {
+                $property_id = $data['property_id'];
+            } elseif (!empty($data['property_alt_id'])) {
+                $property_id = $data['property_alt_id'];
+            }
+            $update->value('property_id', $property_id);
+
+            $image_index_vendorsite_id = null;
+            if ($data['doctype'] == $params['doctypes']['Utility Invoice']) {
+                $image_index_vendorsite_id = $data['utility_vendorsite_id'];
+            } elseif (!empty($data['invoiceimage_vendorsite_id'])) {
+                $image_index_vendorsite_id = $data['invoiceimage_vendorsite_id'];
+            } elseif (!empty($data['invoiceimage_vendorsite_alt_id'])) {
+                $image_index_vendorsite_id = $data['invoiceimage_vendorsite_alt_id'];
+            }
+            $update->value('invoiceimage_vendorsite_alt_id', $image_index_vendorsite_id);
+
+            $update->value('image_index_amount', 
+                !empty($data['image_index_amount']) ? $data['image_index_amount'] : null
+            );
+
+            $refnum = "";
+            if (!empty($data['invoiceimage_ref'])) {
+                $refnum = $data['invoiceimage_ref'];
+            } elseif (!empty($data['po_ref'])) {
+                $refnum = $data['po_ref'];
+            } elseif (!empty($data['job_number'])) {
+                $refnum = $data['job_number'];
+            }
+            $refnum = str_replace('\'', '', $refnum);
+            $update->value('image_index_ref', 
+                !empty($refnum) ? $refnum : null
+            );
+
+            $update->value('image_index_invoice_date', 
+                !empty($data['invoiceimage_invoice_date']) ? $data['invoiceimage_invoice_date'] : null
+            );
+
+            //Start:image is being marked as exception
+            if (!empty($data['mark_as_exception'])) {
+                $update->value('Image_Index_Exception_by', $params['userprofile_id']);
+                $update->value('Image_Index_Exception_datetm', date('Y-m-d H:i:s'));
+
+                $image_index_status = 2;
+            } elseif (!empty($data['indexing_complete'])) {
+                $update->value('Image_Index_Exception_End_datetm', date('Y-m-d H:i:s'));
+
+                $image_index_status = 1;
+            } elseif (!empty($data['image_delete'])) {
+                $update->value('image_index_deleted_datetm', date('Y-m-d H:i:s'));
+                $update->value('image_index_deleted_by', $params['userprofile_id']);
+
+                $image_index_status = -1;
+            } else {
+                if (strtolower($params['section']) == 'exceptions') {
+                    $image_index_status = 2;
+                } elseif (strtolower($params['section']) == 'index') {
+                    $image_index_status = 1;
+                }
+            }
+            $update->value('image_index_status', $image_index_status);
+
+            if (!empty($data['indexing_complete']) && empty($data['image_delete'])) {
+                $update->value('image_index_indexed_by', $params['userprofile_id']);
+                $update->value('image_index_indexed_datetm', date('Y-m-d H:i:s'));
+            }
+
+            if (!empty($data['exception_reason'])) {
+                $update->value('Image_Index_Exception_reason', $data['exception_reason']);
+            }
+
+            $priority = "";
+            if (!empty($data['doctype'])) {
+                switch ($data['doctype']) {
+                    case 1:
+                        $priority = $data['PriorityFlag_ID_Alt_invoice'];
+                        break;
+                    case 2:
+                        $priority = $data['PriorityFlag_ID_Alt_po'];
+                        break;
+                    case 3:
+                        $priority = $request['PriorityFlag_ID_Alt_vef'];
+                        break;
+                }
+            }
+            if (!empty($priority)) {
+                $update->value('PriorityFlag_ID_Alt', $priority);
+            }
+
+            if (!empty($request['invoiceimage_invoice_duedate'])) {
+                $update->value('Image_Index_Due_Date', $request['invoiceimage_invoice_duedate']);
+            }
+
+            if (!empty($request['NeededBy_datetm'])) {
+                $update->value('image_index_NeededBy_datetm', $request['NeededBy_datetm']);
+            }
+
+            if (!empty($request['image_index_draft_invoice_id'])) {
+                $update->value('image_index_draft_invoice_id', $request['image_index_draft_invoice_id']);
+            }
+
+            $tableref_id = null;
+            $image_doctype_id = null;
+            if (!empty($request['doctype']) && $request['doctype'] == 1) {
+                    $image_doctype_id = $request['doctype'];
+                    $tableref_id = 1;
+
+                    $update->value('remit_advice', $request['remit_advice']);
+            } elseif (!empty($request['doctype']) && $request['doctype'] == 2) {
+                    $image_doctype_id = $request['doctype'];
+                    $tableref_id = 3;
+            } elseif (!empty($request['doctype']) && $request['doctype'] == 3) {
+                    $image_doctype_id = $request['doctype'];
+                    $tableref_id = 4;
+            } elseif (!empty($request['doctype']) && $request['doctype'] == $params['doctypes']['receipt']) {
+                    $image_doctype_id = $request['doctype'];
+                    $tableref_id = $params['tablerefs']['receipt'];//getreceipt_ref.image_tableref_id
+            } elseif (!empty($request['doctype']) && $request['doctype'] == $params['doctypes']['Utility Invoice']) {
+                    $image_doctype_id = $request['doctype'];
+                    $tableref_id = $params['tablerefs']['Utility Invoice'];//qUtilityRef.image_tableref_id
+
+                    $update->value('utilityaccount_id', $request['utilityaccount_id']);//#listFirst(request.utilityaccount_id)#
+                    $update->value('utilityaccount_accountnumber', $request['utilityaccount_accountnumber']);//#listFirst(request.utilityaccount_id)#
+                    $update->value('utilityaccount_metersize', $request['utilityaccount_metersize']);//#listFirst(request.utilityaccount_id)#
+                
+                    $update->value('cycle_from', !empty($request['cycle_from']) ? $request['cycle_from'] : null);//#listFirst(request.utilityaccount_id)#
+                    $update->value('cycle_to', !empty($request['cycle_to']) ? $request['cycle_to'] : null);//#listFirst(request.utilityaccount_id)#
+            } elseif (!empty($request['doctype']) && $request['doctype'] > 3) { //If doctype is "Vendor", then automatically attach image to vendor
+                $image_doctype_id = $request['doctype'];
+                $tableref_id = 2;
+
+                if (!empty($request['invoiceimage_vendorsite_id'])) {
+                    $update->value('tablekey_id', $request['invoiceimage_vendorsite_id']);//#listFirst(request.utilityaccount_id)#
+                } elseif (!empty($request['invoiceimage_vendorsite_alt_id'])) {
+                    $update->value('tablekey_id', $request['invoiceimage_vendorsite_alt_id']);//#listFirst(request.utilityaccount_id)#
+                }
+            }
+            $update->value('image_doctype_id', !empty($image_doctype_id) ? $image_doctype_id : null);
+            $update->value('tableref_id', !empty($tableref_id) ? $tableref_id : null);
+
+            $update->where(
+                Where::get()->equals(
+                    'image_index_id',
+                    $data['Image_Index_Id']
+                )
+            );
+ 
+ print_r($update->toString());
+        }
+        
+        
+
+        /**
+         * Get Image information by id.
+         * 
+         * @param int $id Image index id
+         * @param String $filter Property filter
+         * @return ImageIndexEntity Image index entity
+         */
+        public function get($id, $filter) {
+            $valid = 
+                !empty($filter['userprofile_id']) &&
+                !empty($filter['delegated_to_userprofile_id']) &&
+                !empty($filter['contextType'])
+            ;
+            if (!$valid) {
+                return null;
+            }
+
+            $select = new sql\ImageSelect();
+            $filter = new PropertyFilterSelect(
+                new PropertyContext(
+                    $filter['userprofile_id'],
+                    $filter['delegated_to_userprofile_id'],
+                    $filter['contextType'],
+                    $filter['contextSelection']
+                )
+            );
+            $where = Where::get()
+                ->nest('OR')
+                    ->equals('img.property_id', 0)
+                    ->isNull('img.property_id')
+                    ->in('img.property_id', $filter)
+                ->unnest()
+                ->merge(new sql\criteria\ImageNotIndexedCriteria())
+                ->equals("Image_Index_Id", $id)
+            ;
+
+            $select
+                ->columns($this->columns)
+                    ->columnDaysOustanding()
+                ->join(new sql\join\ImageIndexImageSourceJoin())
+                    ->join(new sql\join\ImageIndexDocTypeJoin())
+                    ->join(new sql\join\ImageIndexIndexedByJoin())
+                    ->join(new sql\join\ImageIndexPropertyJoin())
+                    ->join(new sql\join\ImageIndexVendorsiteJoin())
+                    ->join(new sql\join\ImageIndexPriorityFlagJoin())
+                    ->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(array('vendor_name,vendor_id_alt,vendor_status'), Select::JOIN_LEFT))
+                ->where($where)
+            ;
+
+            $result = $this->adapter->query($select);
+            if (!empty($result) && !empty($result[0])) {
+                return $result[0];
+            }
+            return null;
+        }
+}

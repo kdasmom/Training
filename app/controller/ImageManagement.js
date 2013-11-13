@@ -27,11 +27,11 @@ Ext.define('NP.controller.ImageManagement', {
 				}
 			},
 			// Clicking on an invoice in an Invoice Register grid
-			'[xtype="imagemanagement.management"] tabpanel > grid': {
+			/*'[xtype="imagemanagement.management"] tabpanel > grid': {
 				itemclick: function(gridView, record, item, index, e, eOpts) {
 					this.addHistory( 'ImageManagement:showView:' + record.get('image_index_id') );
 				}
-			},
+			},*/
 			// Making a change to the context picker (picking from drop-down or clicking radio button)
 			'#imageManagementContextPicker': {
 				change: function(toolbar, filterType, selected) {
@@ -55,6 +55,7 @@ Ext.define('NP.controller.ImageManagement', {
 	 */
 	loadManagementGrid: function(grid) {
 		var state = Ext.ComponentQuery.query('[xtype="shared.contextpicker"]')[0].getState();
+                // extra params to store
 		grid.addExtraParams({
 			contextType     : state.type,
 			contextSelection: state.selected
