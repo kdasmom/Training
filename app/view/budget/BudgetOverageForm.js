@@ -24,7 +24,7 @@ Ext.define('NP.view.budget.BudgetOverageForm', {
     title                          : 'New Budget Overage',
     propertyInputLabel             : 'Property',
     periodInputLabel               : 'Period',
-    categoryInputLabel             : 'Category',
+    categoryInputLabel             : 'GL Code',
     approvalBudgetOverageInputLabel: 'Approval Budget Overage',
     reasonInputLabel               : 'Budget Overage Reason',
 

@@ -13,7 +13,7 @@ Ext.define('NP.view.user.UserContactInfo', {
         'NP.view.shared.Phone'
     ],
 
-    title: 'User Contact Info',
+    title: 'User Details',
 
     autoScroll: true,
 

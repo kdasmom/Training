@@ -444,6 +444,8 @@ Ext.define('NP.controller.UserManager', {
 	    	viewCfg.listeners = {
 	    		dataloaded: function(boundForm, data) {
 					boundForm.findField('Delegation_To_UserProfile_Id').setRawValue(data['Delegation_To_UserProfile_Id']);
+					boundForm.findField('Delegation_StartDate').setValue(new Date(data['Delegation_StartDate']));
+					boundForm.findField('Delegation_StopDate').setValue(new Date(data['Delegation_StopDate']));
 				}
 			};
 	    }
