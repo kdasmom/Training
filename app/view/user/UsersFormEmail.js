@@ -29,11 +29,7 @@ Ext.define('NP.view.user.UsersFormEmail', {
     	this.defaults = { margin: '0 0 5 0' };
     	this.items = [
     		{ xtype: 'component', html: '<b>Status Alerts</b>' },
-    		{ xtype: 'mysettings.emailalerts', emailalerttype_function: 2, permissions: permissions },
-    		{ xtype: 'component', html: '<b>Frequency-Based Alerts</b>' },
-            { xtype: 'mysettings.emailalerts', emailalerttype_function: 1, permissions: permissions },
-            { xtype: 'component', html: '<b>Email Frequency</b>' },
-            { xtype: 'mysettings.emailfrequency' }
+    		{ xtype: 'mysettings.emailalerts', emailalerttype_function: 2, permissions: permissions }
     	];
 
         if (this.showEmailOverwrite) {
