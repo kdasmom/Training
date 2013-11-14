@@ -38,7 +38,7 @@ class ImageDoctypeGateway extends AbstractGateway {
         if (!empty($result)) {
             $data = [];
             foreach($result as $key => $value) {
-                $data[$value['image_doctype_name']] = $value['image_doctype_id'];
+                $data[strtolower($value['image_doctype_name'])] = $value['image_doctype_id'];
             }
             return $data;
         }

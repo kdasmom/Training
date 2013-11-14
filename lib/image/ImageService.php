@@ -667,28 +667,200 @@ class ImageService extends AbstractService {
                     null
             ;
 
-            return $this->imageIndexGateway->get($id, $filter);
+            return $this->imageIndexGateway->get3($id, $filter);
         }
 
         public function update($data) {
-            $params = $data['params'];
-
             $doctypes = $this->imageDoctypeGateway->getIdByNames(['receipt', 'Utility Invoice']);
             $tablerefs = $this->imageTablerefGateway->getIdByNames(['receipt', 'Utility Invoice']);
 
-            $data['mark_as_exception'] = null;
+            $params = $data['params'];
+            $entity = $data['imageindex'];
+
+            $entity['Image_Index_Name'] =
+                str_replace('\'', '', $entity['Image_Index_Name'])
+            ;
+
+
+//request.utilityaccount_id
+//request.utility_property_id
+//request.utility_vendorsite_id
+//request.invoiceimage_ref
+//request.po_ref
+//request.job_number
+//request.top_tab_type
+
+//invoiceimage_vendorsite_id
+
+
+            if ($entity['Image_Doctype_Id'] == $doctypes[strtolower('Utility Invoice')]) {
+                //$entity['Property_Id'] = $entity[] request.property_id = request.utility_property_id не в модели -> требует отдельного разбора
+
+                //<cfset request.property_id = request.utility_property_id />
+                //<cfqueryparam cfsqltype="CF_SQL_INTEGER" value="#request.property_id#" null="No">
+            } elseif (!empty($entity['Property_Id'])) {
+                //<cfqueryparam cfsqltype="CF_SQL_INTEGER" value="#request.property_id#" null="No">
+            } elseif (!empty($params['Property_Alt_Id'])) {
+                $entity['Property_Id'] = $params['Property_Alt_Id'];
+            } else {
+                $entity['Property_Id'] = null;
+            }
+
+            if ($entity['Image_Doctype_Id'] == $doctypes[strtolower('Utility Invoice')]) {
+                //$entity['Image_Index_VendorSite_Id'] = 
+                //<cfqueryparam cfsqltype="CF_SQL_INTEGER" value="#request.utility_vendorsite_id#" null="No">
+            } elseif (true) {//<cfelseif isDefined("invoiceimage_vendorsite_id") and len(invoiceimage_vendorsite_id)>
+                //<cfqueryparam cfsqltype="CF_SQL_INTEGER" value="#invoiceimage_vendorsite_id#" null="No">
+            } elseif (true) {//<cfelseif isDefined("invoiceimage_vendorsite_alt_id") and len(invoiceimage_vendorsite_alt_id)>
+                //<cfqueryparam cfsqltype="CF_SQL_INTEGER" value="#invoiceimage_vendorsite_alt_id#" null="No">
+            } else {
+                $entity['Image_Index_VendorSite_Id'] = null;
+            }
+
+            $refnum = '';
+            if (!empty($refnum)) { //<cfif isDefined("request.invoiceimage_ref") AND request.invoiceimage_ref NEQ "">
+                //<cfset ref_num = request.invoiceimage_ref>
+            } elseif (true) {//<cfelseif isDefined("request.po_ref") AND request.po_ref NEQ "">
+                //<cfset ref_num = request.po_ref>
+            } elseif (true) {//<cfelseif isDefined("request.job_number") AND request.job_number NEQ "">
+                //<cfset ref_num = request.job_number>
+            } else {
+                //<cfset ref_num = "">
+            }
+            $entity['Image_Index_Ref'] = str_replace('\'', '', $refnum);
+
+            if (!empty($params['mark_as_exception'])) {
+//                Image_Index_Exception_by = <cfqueryparam cfsqltype="CF_SQL_INTEGER" value="#client.userprofile_id#" null="No">,
+//                Image_Index_Exception_datetm = <cfqueryparam cfsqltype="CF_SQL_TIMESTAMP" value="#DateFormat(NOW(),'mm/dd/yyyy')#" null="No">,
+//                image_index_status = 2, 
+//                    $update->value('Image_Index_Exception_by', $params['userprofile_id']);
+//                    $update->value('Image_Index_Exception_datetm', date('Y-m-d H:i:s'));
+//                    $image_index_status = 2;
+            } elseif (!empty($params['indexing_complete'])) {
+//                Image_Index_Exception_End_datetm = <cfqueryparam cfsqltype="CF_SQL_TIMESTAMP" value="#DateFormat(NOW(),'mm/dd/yyyy')#" null="No">,
+//                image_index_status = 1,
+//                    $update->value('Image_Index_Exception_End_datetm', date('Y-m-d H:i:s'));
+//                    $image_index_status = 1;
+            } elseif (!empty($params['image_delete'])) {
+//                image_index_status = -1,
+//                image_index_deleted_datetm = getDate(),
+//                image_index_deleted_by = <cfqueryparam value="#client.userprofile_id#" />,
+//                    $update->value('image_index_deleted_datetm', date('Y-m-d H:i:s'));
+//                    $update->value('image_index_deleted_by', $params['userprofile_id']);
+//                    $image_index_status = -1;
+            } else {
+//                image_index_status = <cfif request.top_tab_type EQ "Exceptions">2<cfelseif request.top_tab_type EQ "Scanned">1</cfif>,
+//                    if (strtolower($params['section']) == 'exceptions') {
+//                        $image_index_status = 2;
+//                    } elseif (strtolower($params['section']) == 'index') {
+//                        $image_index_status = 1;
+//                    }
+            }
+            //$update->value('image_index_status', $image_index_status);
+            //$entity['Image_Index_Status']
+
+            if (!empty($params['indexing_complete']) && empty($params['image_delete'])) {
+//			image_index_indexed_datetm = getDate(),
+//			image_index_indexed_by = <cfqueryparam value="#client.userprofile_id#" />,
+//                    $update->value('image_index_indexed_by', $params['userprofile_id']);
+//                    $update->value('image_index_indexed_datetm', date('Y-m-d H:i:s'));
+            }
+
+            $flag = "";
+            switch ($entity['Image_Doctype_Id']) {
+                case 1:
+                    $flag = $params['PriorityFlag_ID_Alt_invoice'];
+                    break;
+                case 2:
+                    $flag = $params['PriorityFlag_ID_Alt_po'];
+                    break;
+                case 3:
+                    $flag = $params['PriorityFlag_ID_Alt_vef'];
+                    break;
+                default:
+                    $flag = '';
+            }
+            if (!empty($flag)) {
+                $entity['PriorityFlag_ID_Alt'] = $flag;
+            }
+
+
+
+            if ($entity['Image_Doctype_Id'] == 1) {
+                $tableref_id = 1;
+            } elseif ($entity['Image_Doctype_Id'] == 2) {
+                $tableref_id = 3;
+            } elseif ($entity['Image_Doctype_Id'] == 3) {
+                $tableref_id = 4;
+            } elseif ($entity['Image_Doctype_Id'] == $doctypes[strtolower('receipt')]) {
+                $tableref_id = $tablerefs[strtolower('receipt')];
+            } elseif ($entity['Image_Doctype_Id'] == $doctypes[strtolower('Utility Invoice')]) {
+                $tableref_id = $tablerefs[strtolower('Utility Invoice')];
+
+//                        $update->value('utilityaccount_id', $data['utilityaccount_id']);//#listFirst(request.utilityaccount_id)#
+//                        $update->value('utilityaccount_accountnumber', $data['utilityaccount_accountnumber']);//#listFirst(request.utilityaccount_id)#
+//                        $update->value('utilityaccount_metersize', $data['utilityaccount_metersize']);//#listFirst(request.utilityaccount_id)#
+//
+//                        $update->value('cycle_from', !empty($data['cycle_from']) ? $data['cycle_from'] : null);//#listFirst(request.utilityaccount_id)#
+//                        $update->value('cycle_to', !empty($data['cycle_to']) ? $data['cycle_to'] : null);//#listFirst(request.utilityaccount_id)#
+            } elseif ($entity['Image_Doctype_Id'] > 3) {
+                $tableref_id = 2;
+//                    if (!empty($data['invoiceimage_vendorsite_id'])) {
+//                        $update->value('tablekey_id', $data['invoiceimage_vendorsite_id']);//#listFirst(request.utilityaccount_id)#
+//                    } elseif (!empty($data['invoiceimage_vendorsite_alt_id'])) {
+//                        $update->value('tablekey_id', $data['invoiceimage_vendorsite_alt_id']);//#listFirst(request.utilityaccount_id)#
+//                    }
+            }
+//                $update->value('image_doctype_id', !empty($image_doctype_id) ? $image_doctype_id : null);
+//                $update->value('tableref_id', !empty($tableref_id) ? $tableref_id : null);
+                
+
+            /*$data['mark_as_exception'] = null;
             $data['indexing_complete'] = null;
             $data['image_delete'] = null;
-            $data['image_index_draft_invoice_id'] = null;
+            $data['image_index_draft_invoice_id'] = null;*/
+            
+            
 
-            $entity = new ImageIndexEntity($data['imageindex']);
-            //return $this->imageIndexGateway->save($entity);
 
-print_r($entity); die();
+
+
+            $data['imageindex']['Image_Index_Id'] = intval($data['imageindex']['Image_Index_Id']);
+            $data['imageindex']['asp_client_id'] =  $this->configService->getClientId();
+            
+            $image = new ImageIndexEntity($data['imageindex']);
+
+            $errors = $this->entityValidator->validate($image);
+            if (!count($errors)) {
+                try {
+                    $this->imageIndexGateway->save($image);
+                } catch (\Exception $e) {
+                    $errors[] = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+                }
+            }
+
+            return array(
+                'success' => (count($errors)) ? false : true,
+                'errors'  => $errors
+            );
+
+            /*print_r($errors);
+print_r($data);
+print_r($entity);
+            return ;
+*/
+//print_r($entity); die();
 //print_r($params);
 
             //return $this->imageIndexGateway->updateImage($data['imageindex'], $params, $doctypes, $tablerefs);
         }
+}
+
+
+/*
+
+
+
 
         private function indexPrepareRequest() {
             $request = [];
@@ -741,15 +913,15 @@ $request = $_REQUEST;
             //$request['utility_property_id'] = $_REQUEST['utility_property_id'];
             //$request['utility_vendorsite_id'] = $_REQUEST['utility_vendorsite_id'];
             //$request['utilityaccount_id'] = $_REQUEST['utilityaccount_id'];
-*/
-            /*$request['universal_field1'] = $_REQUEST['universal_field1'];
+* /
+            / *$request['universal_field1'] = $_REQUEST['universal_field1'];
             $request['universal_field2'] = $_REQUEST['universal_field2'];
             $request['universal_field3'] = $_REQUEST['universal_field3'];
             $request['universal_field4'] = $_REQUEST['universal_field4'];
             $request['universal_field5'] = $_REQUEST['universal_field5'];
             $request['universal_field6'] = $_REQUEST['universal_field6'];
             $request['universal_field7'] = $_REQUEST['universal_field7'];
-            $request['universal_field8'] = $_REQUEST['universal_field8'];*/
+            $request['universal_field8'] = $_REQUEST['universal_field8'];* /
             return $request;
         }
         
@@ -772,7 +944,14 @@ $request = $_REQUEST;
         }
 
 
-}
+
+
+
+
+
+*/
+
+
 
 /*
 @in_invoiceimage_id varchar(8000),

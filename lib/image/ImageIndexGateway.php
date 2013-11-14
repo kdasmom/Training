@@ -20,6 +20,7 @@ use NP\property\sql\PropertyFilterSelect;
  */
 class ImageIndexGateway extends AbstractGateway {
 	protected $table = 'image_index';
+        protected $pk = 'Image_Index_Id';
 
         private $columns = [
             'Image_Index_Id',
@@ -691,4 +692,321 @@ print_r($update->toString());
             }
             return null;
         }
+
+
+    public function get2($id, $params) {
+        $select = new sql\ImageSelect();
+
+        $columns = [
+            'Image_Index_Id',
+            'Image_Index_Date_Entered',
+            'Image_Index_Due_Date',
+            'Image_Index_Invoice_Date',
+            'Image_Index_Amount',
+            'Image_Index_Ref',
+            'Image_Index_PO_Ref',
+            'Image_Index_VendorSite_Id',
+            'Image_Index_Vendor_Id_Alt',
+            'Image_Index_Status',
+            'universal_field1',
+            'universal_field2',
+            'universal_field3',
+            'universal_field4',
+            'universal_field5',
+            'universal_field6',
+            'universal_field7',
+            'universal_field8',
+            'Image_Index_Name',
+            'Tableref_Id',
+            'Tablekey_id',
+            'Image_Doctype_Id',
+            'remit_advice',
+            'image_index_draft_invoice_id',
+            'PriorityFlag_ID_Alt',
+            'Image_Index_neededby_datetm AS neededby_datetm',
+            'Image_Index_Exception_reason',
+            'utilityaccount_id',
+            'utilityAccount_accountNumber',
+            'utilityAccount_meterSize',
+            'cycle_from',
+            'cycle_to',
+        ];
+        $select->columns($columns);
+/*
+		CASE ii.tableref_id
+			WHEN '3' THEN 'PO'
+			WHEN @receiptdoc THEN 'Receipt'
+		END as doc_type
+ */
+        $select
+            ->join(new sql\join\ImageIndexImageSourceJoin())
+            ->join(new sql\join\ImageIndexImageTransferJoin())
+            ->join(new sql\join\ImageIndexUserprofileJoin(
+                ['userprofile_username', 'userprofile_username AS scan_source']
+            ))
+            ->join(new sql\join\ImageIndexVendorsiteJoin())
+            ->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(
+                ['vendor_name, vendor_id_alt'],
+                Select::JOIN_LEFT
+            ))
+            ->join(new sql\join\ImageIndexPropertyJoin())
+            ->join(new sql\join\ImageIndexDocTypeJoin())
+            ->join(new sql\join\ImageIndexTablerefJoin())
+        ;
+
+        $where = new \NP\core\db\Where();
+        $where
+            ->equals('itransfer.transfer_srcTableName', '\'userprofile\'')
+            ->nest('OR')
+                ->isNull('@in_tableref_id') //@in_tableref_id IS NULL OR 
+                ->in('img.Tableref_id', '$right')//ii.Tableref_id IN (SELECT value FROM dbo.ListToQuery(@tableref_list,','))
+            ->unnest()
+            ->nest('OR')
+                ->equals('img.Image_Index_Id', $id)
+                ->nest('AND')
+                    ->isNull($id)
+                    ->nest('OR')
+                        ->isNull('img.Property_Id')
+                        ->in('img.Property_Id', '$right') //(SELECT value FROM dbo.ListToQuery(@in_property_id,','))
+                    ->unnest()
+                    ->equals('img.asp_client_id', $params['asp_client_id'])
+                    ->nest('OR')
+                        ->isNull('img.Tablekey_Id')
+                        ->equals('img.Tablekey_Id', 0)
+                    ->unnest()
+                    ->in('img.Image_Index_Status', '1, 2')
+                ->unnest()
+            ->unnest()
+        ;
+        $select->where($where);
+
+        echo $select->toString();            
+        die("==============================================");
+    }
+
+    public function get3($id, $params) {
+        $select = new sql\ImageSelect();
+
+        $columns = [
+            'Image_Index_Id',
+            'Image_Index_Date_Entered',
+            'Image_Index_Due_Date',
+            'Image_Index_Invoice_Date',
+            'Image_Index_Amount',
+            'Image_Index_Ref',
+            'Image_Index_PO_Ref',
+            'Image_Index_VendorSite_Id',
+            'Image_Index_Vendor_Id_Alt',
+            'Image_Index_Status',
+            'universal_field1',
+            'universal_field2',
+            'universal_field3',
+            'universal_field4',
+            'universal_field5',
+            'universal_field6',
+            'universal_field7',
+            'universal_field8',
+            'Image_Index_Name',
+            'Tableref_Id',
+            'Tablekey_id',
+            'Image_Doctype_Id',
+            'remit_advice',
+            'image_index_draft_invoice_id',
+            'PriorityFlag_ID_Alt',
+            'Image_Index_neededby_datetm AS neededby_datetm',
+            'Image_Index_Exception_reason',
+            'utilityaccount_id',
+            'utilityAccount_accountNumber',
+            'utilityAccount_meterSize',
+            'cycle_from',
+            'cycle_to',
+        ];
+        $select->columns($columns);
+
+        $select
+            ->join(new sql\join\ImageIndexImageSourceJoin())
+            ->join(new sql\join\ImageIndexImageTransferJoin())
+            ->join(new sql\join\ImageIndexVendorsiteJoin(
+                [],
+                Select::JOIN_LEFT,
+                'vs',
+                'img',
+                'transfer_srcTablekey_id'
+            ))
+            ->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(
+                ['vendor_name', 'vendor_name AS scan_source, vendor_id_alt'],
+                Select::JOIN_LEFT
+            ))
+            ->join(new sql\join\ImageIndexPropertyJoin())
+            ->join(new sql\join\ImageIndexDocTypeJoin())
+            ->join(new sql\join\ImageIndexTablerefJoin())
+        ;
+
+        $where = new \NP\core\db\Where();
+        $where
+            ->equals('itransfer.transfer_srcTableName', '\'vendorsite\'')
+            ->nest('OR')
+                ->isNull('@in_tableref_id') //@in_tableref_id IS NULL OR 
+                ->in('img.Tableref_id', '$right')//ii.Tableref_id IN (SELECT value FROM dbo.ListToQuery(@tableref_list,','))
+            ->unnest()
+            ->nest('OR')
+                ->equals('img.Image_Index_Id', $id)
+                ->nest('AND')
+                    ->isNull($id)
+                    ->nest('OR')
+                        ->isNull('img.Property_Id')
+                        ->in('img.Property_Id', '$right') //(SELECT value FROM dbo.ListToQuery(@in_property_id,','))
+                    ->unnest()
+                    ->equals('img.asp_client_id', $params['asp_client_id'])//
+                    ->nest('OR')
+                        ->isNull('img.Tablekey_Id')
+                        ->equals('img.Tablekey_Id', 0)
+                    ->unnest()
+                    ->in('img.Image_Index_Status', '1, 2')
+                ->unnest()
+            ->unnest()
+        ;
+        $select->where($where);
+
+        echo $select->toString();            
+        die("==============================================");        
+    }
+
+    public function get4($id, $params) {
+        $select = new sql\ImageSelect();
+
+        $columns = [
+            'Image_Index_Id',
+            'Image_Index_Date_Entered',
+            'Image_Index_Due_Date',
+            'Image_Index_Invoice_Date',
+            'Image_Index_Amount',
+            'Image_Index_Ref',
+            'Image_Index_PO_Ref',
+            'Image_Index_VendorSite_Id',
+            'Image_Index_Vendor_Id_Alt',
+            'Image_Index_Status',
+            'universal_field1',
+            'universal_field2',
+            'universal_field3',
+            'universal_field4',
+            'universal_field5',
+            'universal_field6',
+            'universal_field7',
+            'universal_field8',
+            'Image_Index_Name',
+            'Tableref_Id',
+            'Tablekey_id',
+            'Image_Doctype_Id',
+            'remit_advice',
+            'image_index_draft_invoice_id',
+            'PriorityFlag_ID_Alt',
+            'Image_Index_neededby_datetm AS neededby_datetm',
+            'Image_Index_Exception_reason',
+            'utilityaccount_id',
+            'utilityAccount_accountNumber',
+            'utilityAccount_meterSize',
+            'cycle_from',
+            'cycle_to',
+        ];
+        $select->columns($columns);
+
+        $select
+            ->join(new sql\join\ImageIndexImageSourceJoin(
+                ['invoiceimage_source_name', 'invoiceimage_source_name AS scan_source']
+            ))
+            ->join(new sql\join\ImageIndexImageTransferJoin())
+            ->join(new sql\join\ImageIndexVendorsiteJoin())
+            ->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(
+                ['vendor_name, vendor_id_alt'],
+                Select::JOIN_LEFT
+            ))
+            ->join(new sql\join\ImageIndexPropertyJoin())
+            ->join(new sql\join\ImageIndexDocTypeJoin())
+            ->join(new sql\join\ImageIndexTablerefJoin())
+        ;
+
+        $where = new \NP\core\db\Where();
+        $where
+            ->nest('OR')
+                ->equals('itransfer.transfer_srcTableName', '\'invoiceimagesource\'')
+                ->isNull('itransfer.transfer_srcTableName')
+            ->unnest()
+            ->nest('OR')
+                ->isNull('@in_tableref_id') //@in_tableref_id IS NULL OR 
+                ->in('img.Tableref_id', '$right')//ii.Tableref_id IN (SELECT value FROM dbo.ListToQuery(@tableref_list,','))
+            ->unnest()
+            ->nest('OR')
+                ->equals('img.Image_Index_Id', $id)
+                ->nest('AND')
+                    ->isNull()
+                    ->nest('OR')
+                        ->isNull('img.Property_Id')
+                        ->in('img.Property_Id', '$right') //(SELECT value FROM dbo.ListToQuery(@in_property_id,','))
+                    ->unnest()
+                    ->equals('img.asp_client_id', $params['asp_client_id'])//
+                    ->nest('OR')
+                        ->isNull('img.Tablekey_Id')
+                        ->equals('img.Tablekey_Id', 0)
+                    ->unnest()
+                    ->in('img.Image_Index_Status', '1, 2')
+                ->unnest()
+            ->unnest()
+        ;
+        $select->where($where);
+
+        echo $select->toString();            
+        die("==============================================");       
+}
+/*
+ii   = img
+iis  = imgs
+ *   = itransfer
+p    = pr
+idt  = imgd
+it   = imgt
+
+
+
+@in_property_id varchar(8000) = NULL,
+@in_invoiceimage_id int       = $id
+@in_tableref_id int           = NULL
+
+	---PO scan page needs to also display receipts
+	DECLARE @receiptdoc int, @tableref_list varchar(25), @utilitydoc int;
+	IF @in_tableref_id = 3
+	BEGIN
+		SELECT @receiptdoc = image_tableref_id
+		FROM IMAGE_TABLEREF
+		WHERE image_tableref_name = 'receipt'
+	
+		SET @tableref_list = CAST(@in_tableref_id as varchar(5)) + ',' + CAST(@receiptdoc as varchar(5))
+	END
+	ELSE IF @in_tableref_id = 1
+	BEGIN
+		SELECT @utilitydoc = image_tableref_id
+		FROM IMAGE_TABLEREF
+		WHERE image_tableref_name = 'Utility Invoice'
+	
+		SET @tableref_list = CAST(@in_tableref_id as varchar(5)) + ',' + CAST(@utilitydoc as varchar(5))
+	END
+	ELSE
+		SET @tableref_list = CAST(@in_tableref_id as varchar(5))
+	
+	IF  @OrderBy = 'Vendor' 
+	BEGIN
+		SELECT * 
+		FROM @IMAGE_INDEX 
+		ORDER BY Vendor_Name
+	END
+	ELSE IF @OrderBy = 'Date' 
+	BEGIN
+		SELECT * 
+		FROM @IMAGE_INDEX
+		ORDER BY image_index_Date_Entered 
+	END
+END
+SET IMPLICIT_TRANSACTIONS ON
+        
+        */
 }

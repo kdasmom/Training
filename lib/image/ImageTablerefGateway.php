@@ -39,7 +39,7 @@ class ImageTablerefGateway extends AbstractGateway {
         if (!empty($result)) {
             $data = [];
             foreach($result as $key => $value) {
-                $data[$value['image_tableref_name']] = $value['image_tableref_id'];
+                $data[strtolower($value['image_tableref_name'])] = $value['image_tableref_id'];
             }
             return $data;
         }

@@ -87,6 +87,7 @@ Ext.define('NP.view.images.Index', {
             {
                 id: 'field-property-code',
                 //name: '' $request['property_alt_id'] = $_REQUEST['field-property-code-inputEl'];
+                name: 'Property_Alt_Id',
                 xtype: 'combobox',
                 fieldLabel: 'Property Code:',
 
@@ -285,7 +286,6 @@ Ext.define('NP.view.images.Index', {
         this.id = 'panel-index';
         this.layout = 'border';
 
-/*
         this.items = [
             {
                 xtype: 'panel',
@@ -312,14 +312,14 @@ Ext.define('NP.view.images.Index', {
                 xtype: 'panel', 
                 //itemId: 'tExperiment'
                 border: 0,
-                //layout: 'form',
+                layout: 'form',
                 region: 'center',
                 bodyPadding: 10,
                 overflowY: 'scroll',
                 items: fields
             }
-        ];*/
-        this.items = fields;
+        ];
+
         this.tbar = [
             {xtype: 'button', itemId: this.ids.buttonReturn,  text: this.locale.buttonReturn},
 

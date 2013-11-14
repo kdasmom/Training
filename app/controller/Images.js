@@ -184,11 +184,26 @@ Ext.define('NP.controller.Images', {
     processButtonSaveAndNext: function() {
         //var form = Ext.ComponentQuery.query('[id~="index-form"]')[0].getForm();
         var form = this.getCmp('images.index');
-console.dir(form.getValues());
 
-        form.submitWithBindings({
-            action: 'update',
-            service: 'ImageService',
+        if (form.isValid()) {
+            form.submitWithBindings({
+                action: 'update',
+                service: 'ImageService',
+                extraParams: {
+                    params: {
+                        section: 'index',
+                        userprofile_id              : NP.Security.getUser().get('userprofile_id'),
+                        delegated_to_userprofile_id : NP.Security.getDelegatedToUser().get('userprofile_id')
+                    }
+                },
+                success: function(result) {
+
+                }
+            });
+        }
+
+/*
+
             extraParams: {
                 params: {
                     section: 'index',
@@ -200,10 +215,7 @@ console.dir(form.getValues());
                 }
             },
 
-            success: function(result) {
-                
-            }
-        });
+ */
         /*var values = form.getValues();
         values['action'] = 'indexImages';
         values['service'] = 'ImageService';
@@ -337,6 +349,8 @@ console.dir(form.getValues());
                         }
                     }
                 };
+
+//ImageIndexForm
                 this.application.setView('NP.view.images.Index', viewCfg);
                 Ext.ComponentQuery.query('panel[id="panel-index"]')[0].setTitle('Image Index - ' + this.imageQueue[this.imageQueueCurrent]);
                 this.indexRefreshImage();
