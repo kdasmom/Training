@@ -16,7 +16,6 @@ Ext.define('NP.view.shared.invoicepo.ViewLineItems', {
     layout     : 'card',
     border     : false,
     bodyPadding: 0,
-    autoScroll : true,
 
     // Additional options
     type: null,             // Needs to be set to 'invoice' or 'po'
@@ -50,8 +49,8 @@ Ext.define('NP.view.shared.invoicepo.ViewLineItems', {
     	
         me.defaults = { type: me.type, store: storeCfg };
     	me.items = [
-            { xtype: 'shared.invoicepo.viewlinegrid', type: me.type },
-    		{ xtype: 'shared.invoicepo.viewlines', type: me.type }
+            { xtype: 'shared.invoicepo.viewlines', type: me.type },
+            { xtype: 'shared.invoicepo.viewlinegrid', type: me.type }
     	];
 
     	this.callParent(arguments);

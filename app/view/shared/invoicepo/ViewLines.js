@@ -4,96 +4,112 @@
  * @author Thomas Messier
  */
 Ext.define('NP.view.shared.invoicepo.ViewLines', {
-    extend: 'Ext.view.View',
+    extend: 'Ext.panel.Panel',
     alias: 'widget.shared.invoicepo.viewlines',
 
     requires: [
         'NP.lib.core.Config',
         'NP.lib.core.Security',
-    	'NP.lib.core.Util'
+    	'NP.lib.core.Util',
+        'Ext.view.View',
+        'NP.view.shared.button.Edit'
     ],
 
-    type: null,
+    layout     : 'fit',
+    border     : false,
+    bodyPadding: 0,
+    autoScroll : true,
+    
+    type       : null,
 
     // For localization
 
     initComponent: function() {
     	var me = this;
         
+        me.tbar = [
+            { xtype: 'shared.button.edit', itemId: 'invoiceLineEditBtn' }
+        ];
+
         me.fieldPrefix  = me.type + 'item';
-        me.itemSelector = 'tbody tr';
 
-        me.tpl = new Ext.XTemplate(me.buildTpl(), {
-            getSetting: function(name, defaultVal) {
-                defaultVal = defaultVal || '';
-                return NP.Config.getSetting(name, defaultVal);
-            },
-            hasPermission: function(moduleId) {
-                return NP.Security.hasPermission(moduleId);
-            },
-            getStoreCount: function() {
-                return me.getStore().getCount();
-            },
-            showBudgetComparison: function(invoiceitem_jobflag) {
-                return NP.Config.getSetting("PN.InvoiceOptions.showBudgetComparison") == '1' && (
-                        NP.Config.getSetting("PN.InvoiceOptions.showBudgetComparisonJC") == '1'
-                        || invoiceitem_jobflag != 1
-                );
-            },
-            getInvoiceRecord: function() {
-                return me.up('[xtype="'+me.type+'.view"]').getInvoiceRecord();
-            },
-            getFormDataVal: function(key) {
-                return me.up('boundform').getLoadedData()[key];
-            },
-            getSum: function(field) {
-                var total = 0;
-                for (var i=0; i<me.getStore().getCount(); i++) {
-                    total += me.getStore().getAt(i).get(field);
+        me.items = [{
+            xtype       : 'dataview',
+            itemSelector: 'tbody tr',
+            store       : me.store,
+            tpl         : new Ext.XTemplate(me.buildTpl(), {
+                getSetting: function(name, defaultVal) {
+                    defaultVal = defaultVal || '';
+                    return NP.Config.getSetting(name, defaultVal);
+                },
+                hasPermission: function(moduleId) {
+                    return NP.Security.hasPermission(moduleId);
+                },
+                getStoreCount: function() {
+                    return me.store.getCount();
+                },
+                showBudgetComparison: function(invoiceitem_jobflag) {
+                    return NP.Config.getSetting("PN.InvoiceOptions.showBudgetComparison") == '1' && (
+                            NP.Config.getSetting("PN.InvoiceOptions.showBudgetComparisonJC") == '1'
+                            || invoiceitem_jobflag != 1
+                    );
+                },
+                getInvoiceRecord: function() {
+                    return me.up('[xtype="'+me.type+'.view"]').getInvoiceRecord();
+                },
+                getFormDataVal: function(key) {
+                    return me.up('boundform').getLoadedData()[key];
+                },
+                getSum: function(field) {
+                    var total = 0;
+                    
+                    for (var i=0; i<me.store.getCount(); i++) {
+                        total += me.store.getAt(i).get(field);
+                    }
+
+                    return total;
+                },
+                getGrossTotal: function() {
+                    me.totalAmount = this.getSum(me.fieldPrefix + '_amount') +
+                            this.getSum(me.fieldPrefix + '_shipping') +
+                            this.getSum(me.fieldPrefix + '_salestax');
+
+                    return me.totalAmount;
+                },
+                getRetentionTotal: function() {
+                    var total = 0;
+                    for (var i=0; i<me.store.getCount(); i++) {
+                        total += me.store.getAt(i).get('jbassociation_retamt');
+                    }
+
+                    return total;
+                },
+                getNetAmount: function() {
+                    me.totalAmount = this.getGrossTotal() - this.getRetentionTotal();
+
+                    return me.totalAmount;
+                },
+                arrayContains: function() {
+                    var item = arguments[0],
+                        collection = [];
+
+                    for (var i=1; i<arguments.length; i++) {
+                        collection.push(arguments[i]);
+                    }                
+
+                    return Ext.Array.contains(collection, item);
+                },
+                renderCurrency: function(val) {
+                    return NP.Util.currencyRenderer(val);
+                },
+                isLineEditable: function() {
+                    return this.getInvoiceRecord().isLineEditable();
+                },
+                isEditable: function() {
+                    return this.getInvoiceRecord().isEditable();
                 }
-
-                return total;
-            },
-            getGrossTotal: function() {
-                me.totalAmount = this.getSum(me.fieldPrefix + '_amount', 0) +
-                        this.getSum(me.fieldPrefix + '_shipping', 0) +
-                        this.getSum(me.fieldPrefix + '_salestax', 0);
-
-                return me.totalAmount;
-            },
-            getRetentionTotal: function() {
-                var total = 0;
-                for (var i=0; i<me.getStore().getCount(); i++) {
-                    total += me.getStore().getAt(i).get('jbassociation_retamt');
-                }
-
-                return total;
-            },
-            getNetAmount: function() {
-                me.totalAmount = this.getGrossTotal() - this.getRetentionTotal();
-
-                return me.totalAmount;
-            },
-            arrayContains: function() {
-                var item = arguments[0],
-                    collection = [];
-
-                for (var i=1; i<arguments.length; i++) {
-                    collection.push(arguments[i]);
-                }                
-
-                return Ext.Array.contains(collection, item);
-            },
-            renderCurrency: function(val) {
-                return NP.Util.currencyRenderer(val);
-            },
-            isLineEditable: function() {
-                return this.getInvoiceRecord().isLineEditable();
-            },
-            isEditable: function() {
-                return this.getInvoiceRecord().isEditable();
-            }
-        });
+            })
+        }];
 
     	this.callParent(arguments);
     },
@@ -144,7 +160,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
 
         html = 
             '<td>' +
-                '<div>{[values.'+me.fieldPrefix+'_quantity_long*1]}</div>';
+                '<div>{[values.'+me.fieldPrefix+'_quantity*1]}</div>';
 
         if (me.type == 'invoice') {
             html +=
@@ -402,7 +418,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
             '<tr>' +
                 '<th colspan="6">' +
                     '<tpl if="this.getSetting(\'pn.jobcosting.jobcostingEnabled\', \'0\') == \'1\'">' +
-                        'Gross' +
+                        'Gross ' +
                     '</tpl>' +
                     'Total:' +
                 '</th>' +

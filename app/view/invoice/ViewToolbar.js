@@ -337,7 +337,7 @@ Ext.define('NP.view.invoice.ViewToolbar', {
         // wait for some views to render or stores to load
         function showBtn() {
             tries++;
-            var lineView = Ext.ComponentQuery.query('[xtype="shared.invoicepo.viewlines"]');
+            var lineView = Ext.ComponentQuery.query('[xtype="shared.invoicepo.viewlines"] dataview');
 
             // If views aren't ready or stores haven't loaded, defer the process
             if (!lineView.length || !lineView[0].getStore().isLoaded) {
@@ -393,7 +393,7 @@ Ext.define('NP.view.invoice.ViewToolbar', {
         function showBtn() {
             tries++;
             var warningView = Ext.ComponentQuery.query('[xtype="shared.invoicepo.viewwarnings"] dataview'),
-                lineView    = Ext.ComponentQuery.query('[xtype="shared.invoicepo.viewlines"]');
+                lineView    = Ext.ComponentQuery.query('[xtype="shared.invoicepo.viewlines"] dataview');
 
             // If views aren't ready or stores haven't loaded, defer the process
             if (!warningView.length || !lineView.length

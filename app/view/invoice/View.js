@@ -38,7 +38,7 @@ Ext.define('NP.view.invoice.View', {
         me.tbar = { xtype: 'invoice.viewtoolbar' };
 
 		me.items = [
-            { xtype: 'shared.invoicepo.viewlineitems', type: 'invoice', height: 200 },
+            { xtype: 'shared.invoicepo.viewlineitems', type: 'invoice' },
             { xtype: 'shared.invoicepo.viewwarnings', type: 'invoice' },
             { xtype: 'invoice.viewheader' },
             { xtype: 'shared.customfieldcontainer', title: 'Custom Fields', type: 'invoice', isLineItem: 0 },

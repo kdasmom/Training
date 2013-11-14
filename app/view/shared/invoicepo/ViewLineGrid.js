@@ -11,7 +11,10 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
         'NP.lib.core.Config',
         'NP.lib.core.Translator',
         'Ext.grid.plugin.CellEditing',
+        'Ext.grid.column.Action',
         'NP.lib.ui.AutoComplete',
+        'NP.view.shared.button.Save',
+        'NP.view.shared.button.Cancel',
         'NP.view.shared.gridcol.UniversalField',
         'NP.view.shared.PropertyCombo',
         'NP.view.shared.CustomField',
@@ -33,14 +36,39 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
     ],
 
     bodyPadding    : 0,
+    height         : 200,
     autoScroll     : true,
     sortableColumns: false,
 
     initComponent: function() {
-    	var me = this
-            customFields = NP.Config.getCustomFields().line.fields,
-            typeShort = (me.type == 'invoice') ? 'inv' : 'po';
+    	var me               = this
+            customFields     = NP.Config.getCustomFields().line.fields,
+            typeShort        = (me.type == 'invoice') ? 'inv' : 'po',
+            invoice          = null,
+            invoiceStatus    = null;
 
+        me.tbar = [
+            {
+                xtype : 'shared.button.save',
+                itemId: 'invoiceLineSaveBtn',
+                text  : NP.Translator.translate('Done With Changes')
+            },{
+                xtype : 'shared.button.cancel',
+                itemId: 'invoiceLineCancelBtn',
+                text  : NP.Translator.translate('Undo Changes')
+            }
+        ];
+
+        // We need the invoice status to determine if the row is deletable or not, but we
+        // can't get it until the data has loaded
+        me.on('render', function() {
+            invoice = me.up('[xtype="'+me.type+'.view"]')
+            invoice.on('dataloaded', function(form, data) {
+                invoiceStatus = data['invoice_status'];
+            });
+        });
+
+        // Set the CellEditing plugin on the grid
         me.plugins = [
             Ext.create('Ext.grid.plugin.CellEditing', { clicksToEdit: 1 })
         ];
@@ -56,6 +84,23 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
         });
 
         me.columns = [
+            {
+                xtype   : 'actioncolumn',
+                width   : 25,
+                align   : 'center',
+                getClass: function(v, meta, rec, rowIndex) {
+                    if (invoiceStatus == 'paid') {
+                        return '';
+                    } else {
+                        return 'delete-btn';
+                    }
+                },
+                handler: function(view, rowIndex, colIndex, item, e, rec, row) {
+                    if (invoiceStatus != 'paid') {
+                        me.getStore().removeAt(rowIndex);
+                    }
+                }
+            },
             // Quantity column
             {
                 xtype    : 'numbercolumn',
@@ -293,79 +338,85 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
             }
 
             // Change Order column
-            me.columns.push({
-                text     : NP.Config.getSetting('PN.jobcosting.changeOrderTerm'),
-                dataIndex: 'jbchangeorder_id',
-                width    : 300,
-                renderer : function(val, meta, rec) {
-                    return NP.model.jobcosting.JbChangeOrder.formatName(rec);
-                },
-                editor: {
-                    xtype       : 'customcombo',
-                    displayField: 'display_name',
-                    valueField  : 'jbchangeorder_id',
-                    store       : {
-                        type   : 'jobcosting.jbchangeorders',
-                        service: 'JobCostingService',
-                        action : 'getChangeOrders'
+            if (NP.Config.getSetting('JB_UseChangeOrders', '0') == '1') {
+                me.columns.push({
+                    text     : NP.Config.getSetting('PN.jobcosting.changeOrderTerm'),
+                    dataIndex: 'jbchangeorder_id',
+                    width    : 300,
+                    renderer : function(val, meta, rec) {
+                        return NP.model.jobcosting.JbChangeOrder.formatName(rec);
                     },
-                    listeners: {
-                        select: function(combo, recs) {
-                            me.fireEvent('selectjcfield', 'jbchangeorder', me, combo, recs);
+                    editor: {
+                        xtype       : 'customcombo',
+                        displayField: 'display_name',
+                        valueField  : 'jbchangeorder_id',
+                        store       : {
+                            type   : 'jobcosting.jbchangeorders',
+                            service: 'JobCostingService',
+                            action : 'getChangeOrders'
+                        },
+                        listeners: {
+                            select: function(combo, recs) {
+                                me.fireEvent('selectjcfield', 'jbchangeorder', me, combo, recs);
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
             
             // Job Code column
-            me.columns.push({
-                text: NP.Config.getSetting('PN.jobcosting.jobCodeTerm'),
-                dataIndex: 'jbjobcode_id',
-                width    : 300,
-                renderer : function(val, meta, rec) {
-                    return NP.model.jobcosting.JbJobCode.formatName(rec); 
-                },
-                editor: {
-                    xtype       : 'customcombo',
-                    displayField: 'display_name',
-                    valueField  : 'jbjobcode_id',
-                    store       : {
-                        type   : 'jobcosting.jbjobcodes',
-                        service: 'JobCostingService',
-                        action : 'getJobCodes'
+            if (NP.Config.getSetting('pn.jobcosting.useJobCodes', '0') == '1') {
+                me.columns.push({
+                    text: NP.Config.getSetting('PN.jobcosting.jobCodeTerm'),
+                    dataIndex: 'jbjobcode_id',
+                    width    : 300,
+                    renderer : function(val, meta, rec) {
+                        return NP.model.jobcosting.JbJobCode.formatName(rec); 
                     },
-                    listeners: {
-                        select: function(combo, recs) {
-                            me.fireEvent('selectjcfield', 'jbjobcode', me, combo, recs);
+                    editor: {
+                        xtype       : 'customcombo',
+                        displayField: 'display_name',
+                        valueField  : 'jbjobcode_id',
+                        store       : {
+                            type   : 'jobcosting.jbjobcodes',
+                            service: 'JobCostingService',
+                            action : 'getJobCodes'
+                        },
+                        listeners: {
+                            select: function(combo, recs) {
+                                me.fireEvent('selectjcfield', 'jbjobcode', me, combo, recs);
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
 
             // Phase Code column
-            me.columns.push({
-                text: NP.Config.getSetting('PN.jobcosting.phaseCodeTerm'),
-                dataIndex: 'jbphasecode_id',
-                width    : 300,
-                renderer : function(val, meta, rec) {
-                    return NP.model.jobcosting.JbPhaseCode.formatName(rec);
-                },
-                editor: {
-                    xtype       : 'customcombo',
-                    displayField: 'display_name',
-                    valueField  : 'jbphasecode_id',
-                    store       : {
-                        type   : 'jobcosting.jbphasecodes',
-                        service: 'JobCostingService',
-                        action : 'getPhaseCodes'
+            if (NP.Config.getSetting('JB_UsePhaseCodes', '0') == '1') {
+                me.columns.push({
+                    text: NP.Config.getSetting('PN.jobcosting.phaseCodeTerm'),
+                    dataIndex: 'jbphasecode_id',
+                    width    : 300,
+                    renderer : function(val, meta, rec) {
+                        return NP.model.jobcosting.JbPhaseCode.formatName(rec);
                     },
-                    listeners: {
-                        select: function(combo, recs) {
-                            me.fireEvent('selectjcfield', 'jbphasecode', me, combo, recs);
+                    editor: {
+                        xtype       : 'customcombo',
+                        displayField: 'display_name',
+                        valueField  : 'jbphasecode_id',
+                        store       : {
+                            type   : 'jobcosting.jbphasecodes',
+                            service: 'JobCostingService',
+                            action : 'getPhaseCodes'
+                        },
+                        listeners: {
+                            select: function(combo, recs) {
+                                me.fireEvent('selectjcfield', 'jbphasecode', me, combo, recs);
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
 
             // Cost Code column
             if (NP.Config.getSetting('pn.jobcosting.useCostCodes', '0') == '1') {
@@ -390,6 +441,21 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                                 me.fireEvent('selectjcfield', 'jbcostcode', me, combo, recs);
                             }
                         }
+                    }
+                });
+            }
+
+            if (NP.Config.getSetting('pn.jobcosting.useRetention', '0') == '1') {
+                // Retention column
+                me.columns.push({
+                    xtype    : 'numbercolumn',
+                    text     : NP.Translator.translate('Retention'),
+                    dataIndex: 'jbassociation_retamt',
+                    format   : '0,000.000000',
+                    width    : 75,
+                    editor   : {
+                        xtype           : 'numberfield',
+                        decimalPrecision: 2
                     }
                 });
             }

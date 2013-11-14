@@ -19,15 +19,17 @@ Ext.define('NP.controller.Invoice', {
 	refs: [
 		{ ref: 'invoiceView', selector: '[xtype="invoice.view"]' },
 		{ ref: 'invoiceViewToolbar', selector: '[xtype="invoice.viewtoolbar"]' },
-		{ ref: 'lineView', selector: '[xtype="shared.invoicepo.viewlines"]' },
+		{ ref: 'lineMainView', selector: '[xtype="shared.invoicepo.viewlineitems"]' },
+		{ ref: 'lineView', selector: '[xtype="shared.invoicepo.viewlines"] dataview' },
 		{ ref: 'lineGrid', selector: '[xtype="shared.invoicepo.viewlinegrid"]' },
 		{ ref: 'forwardsGrid', selector: '[xtype="shared.invoicepo.forwardsgrid"]' },
 		{ ref: 'historyLogGrid', selector: '[xtype="shared.invoicepo.historyloggrid"]' },
 		{ ref: 'paymentGrid', selector: '[xtype="invoice.viewpayments"]' },
 		{ ref: 'warningsView', selector: '[xtype="shared.invoicepo.viewwarnings"] dataview' },
 		{ ref: 'lineGridPropertyCombo',selector: '#lineGridPropertyCombo' },
-		{ ref: 'lineGridGlCombo',      selector: '#lineGridGlCombo' },
-		{ ref: 'lineGridUnitCombo',    selector: '#lineGridUnitCombo' }
+		{ ref: 'lineGridGlCombo', selector: '#lineGridGlCombo' },
+		{ ref: 'lineGridUnitCombo', selector: '#lineGridUnitCombo' },
+		{ ref: 'lineEditBtn', selector: '#invoiceLineEditBtn' }
 	],
 
 	showInvoiceImage: true,
@@ -106,6 +108,18 @@ Ext.define('NP.controller.Invoice', {
 				collapse: function() {
 					this.showInvoiceImage = false;
 				}
+			},
+
+			'#invoiceLineEditBtn': {
+				click: Ext.bind(this.onLineEditClick, this)
+			},
+
+			'#invoiceLineSaveBtn': {
+				click: Ext.bind(this.onLineSaveClick, this)
+			},
+
+			'#invoiceLineCancelBtn': {
+				click: Ext.bind(this.onLineCancelClick, this)
 			}
 		});
 	},
@@ -173,16 +187,37 @@ Ext.define('NP.controller.Invoice', {
 			Ext.apply(viewCfg, {
 				listeners      : {
 					dataloaded: function(boundForm, data) {
+						// Set the title
+						me.setInvoiceViewTitle();
+
+						// Build the toolbar
 						me.buildViewToolbar(data);
 						
+						var lineView     = me.getLineView(),
+							lineStore    = lineView.getStore(),
+							paymentGrid  = me.getPaymentGrid(),
+							paymentStore = paymentGrid.getStore();
+
+						// Add invoice_id to the line and payment stores
+						lineStore.addExtraParams({ invoice_id: invoice_id });
+						//paymentStore.addExtraParams({ invoice_id: invoice_id });
+
+						// Load the line store
+						lineStore.load(function() {
+							// Only load the payment store after the line store because we need the total amount
+							/*paymentGrid.totalAmount = lineView.getTotalAmount();
+							paymentStore.load(function() {
+								if (paymentStore.getCount()) {
+									me.getPaymentGrid().show();
+								}
+							});*/
+						});
+
 						// Add integration package to the line grid
 						me.getLineGrid().propertyStore.addExtraParams({
 							integration_package_id: data['integration_package_id']
 						});
 						me.getLineGrid().propertyStore.load();
-
-						// Set the title
-						me.setInvoiceViewTitle();
 
 						var vendorField   = boundForm.findField('vendor_id'),
 							propertyField = boundForm.findField('property_id'),
@@ -227,27 +262,7 @@ Ext.define('NP.controller.Invoice', {
 
 		var form = me.setView('NP.view.invoice.View', viewCfg);
 
-		if (invoice_id) {
-			var lineView     = me.getLineView(),
-				lineStore    = me.getLineView().getStore(),
-				paymentGrid  = me.getPaymentGrid(),
-				paymentStore = paymentGrid.getStore();
-
-			// Add invoice_id to the line and payment stores
-			lineStore.addExtraParams({ invoice_id: invoice_id });
-			//paymentStore.addExtraParams({ invoice_id: invoice_id });
-
-			// Load the line store
-			lineStore.load(function() {
-				// Only load the payment store after the line store because we need the total amount
-				/*paymentGrid.totalAmount = lineView.getTotalAmount();
-				paymentStore.load(function() {
-					if (paymentStore.getCount()) {
-						me.getPaymentGrid().show();
-					}
-				});*/
-			});
-		} else {
+		if (!invoice_id) {
 			// Set the title
 			me.setInvoiceViewTitle();
 
@@ -259,6 +274,23 @@ Ext.define('NP.controller.Invoice', {
 		}
 	},
 
+	onLineEditClick: function() {
+		this.getLineMainView().getLayout().setActiveItem(1);
+	},
+
+	onLineSaveClick: function() {
+		var me = this;
+		
+		me.getLineGrid().getStore().commitChanges();
+		me.getLineMainView().getLayout().setActiveItem(0);
+	},
+
+	onLineCancelClick: function() {
+		var me = this;
+		
+		me.getLineGrid().getStore().rejectChanges();
+	},
+
 	onBeforeInvoiceLineGridEdit: function(editor, e) {
 		var me    = this,
 			field = e.column.getEditor();
@@ -266,7 +298,10 @@ Ext.define('NP.controller.Invoice', {
 		me.getLineGrid().selectedRec = e.record;
 		me.originalRecValue = e.record.copy();
 
-		if (e.field == 'glaccount_id') {
+		if (e.field == 'invoiceitem_quantity' || e.field == 'invoiceitem_unitprice' 
+				|| e.field == 'invoiceitem_amount' || e.field == 'invoiceitem_description') {
+			me.onOpenInvalidSplitField(editor, e.record, field);
+		} else if (e.field == 'glaccount_id') {
 			me.onOpenGlAccountEditor(editor, e.record, field);
 		} else if (e.field == 'unit_id') {
 			me.onOpenUnitEditor(editor, e.record);
@@ -288,6 +323,14 @@ Ext.define('NP.controller.Invoice', {
 			me.onOpenUsageTypeEditor(editor, e.record, field);
 		} else if (e.field.substr(0, 15) == 'universal_field') {
 			me.onOpenCustomFieldEditor(editor, e.record, field);
+		}
+	},
+
+	onOpenInvalidSplitField: function(editor, rec, field) {
+		if (rec.get('invoiceitem_split') === 1) {
+			field.setReadOnly(true);
+		} else {
+			field.setReadOnly(false);
 		}
 	},
 
@@ -658,11 +701,14 @@ Ext.define('NP.controller.Invoice', {
 	},
 
 	onAfterInvoiceLineGridEdit: function(editor, e) {
-		var me    = this,
-			field = e.column.getEditor(),
-			grid  = me.getLineGrid();
+		var me        = this,
+			field     = e.column.getEditor(),
+			grid      = me.getLineGrid(),
+			intCombos = ['glaccount_id','unit_id','jbcontract_id','jbchangeorder_id',
+						'jbjobcode_id','jbphasecode_id','jbcostcode_id','utilityaccount_id',
+						'utilitycolumn_usagetype_id'];
 		
-		if (e.value instanceof Array) {
+		if (Ext.Array.contains(intCombos, field.getName()) && (e.value instanceof Array || isNaN(e.value))) {
 			grid.selectedRec.set(me.originalRecValue.getData());
 		}
 
