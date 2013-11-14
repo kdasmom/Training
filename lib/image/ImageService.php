@@ -667,7 +667,7 @@ class ImageService extends AbstractService {
                     null
             ;
 
-            return $this->imageIndexGateway->get3($id, $filter);
+            return $this->imageIndexGateway->get($id, $filter);
         }
 
         public function update($data) {

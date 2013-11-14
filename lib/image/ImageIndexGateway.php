@@ -730,14 +730,10 @@ print_r($update->toString());
             'utilityAccount_meterSize',
             'cycle_from',
             'cycle_to',
+            'CASE ii.tableref_id WHEN \'3\' THEN \'PO\' WHEN ' . $params['tableref'] . ' THEN \'Receipt\' END as doc_type'
         ];
         $select->columns($columns);
-/*
-		CASE ii.tableref_id
-			WHEN '3' THEN 'PO'
-			WHEN @receiptdoc THEN 'Receipt'
-		END as doc_type
- */
+
         $select
             ->join(new sql\join\ImageIndexImageSourceJoin())
             ->join(new sql\join\ImageIndexImageTransferJoin())
@@ -820,6 +816,7 @@ print_r($update->toString());
             'utilityAccount_meterSize',
             'cycle_from',
             'cycle_to',
+            'CASE ii.tableref_id WHEN \'3\' THEN \'PO\' WHEN ' . $params['tableref'] . ' THEN \'Receipt\' END as doc_type'
         ];
         $select->columns($columns);
 
@@ -908,6 +905,7 @@ print_r($update->toString());
             'utilityAccount_meterSize',
             'cycle_from',
             'cycle_to',
+            'CASE ii.tableref_id WHEN \'3\' THEN \'PO\' WHEN ' . $params['tableref'] . ' THEN \'Receipt\' END as doc_type'
         ];
         $select->columns($columns);
 
