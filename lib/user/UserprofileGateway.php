@@ -32,6 +32,10 @@ class UserprofileGateway extends AbstractGateway {
 				->joinUserprofilerole(array('userprofilerole_id','tablekey_id'))
 				->joinRole(array('role_id','role_name'))
 				->joinStaff(array('staff_id'))
+				->joinAddress(['address_line1', 'address_line2', 'address_city', 'address_state', 'address_zip'])
+				->joinEmail(['email_address'])
+				->joinPhone('Work', ['work_number' =>'phone_number'])
+				->joinPhone('Home', ['home_number' =>'phone_number'])
 				->joinPerson(array('person_id','person_firstname','person_lastname'))
 				->joinUpdatedBy(array(
 					'updated_by_userprofile_id' => 'userprofile_id',
@@ -253,7 +257,10 @@ class UserprofileGateway extends AbstractGateway {
 			$sort = 'p.person_lastname DESC, p.person_firstname DESC';
 		}
 
-		$select = $this->getSelect()->order($sort);
+		$select = $this->getSelect()
+					->getIncomingDelegationsCount()
+					->getOutgoingDelegationsCount()
+					->order($sort);
 		$params = array();
 
 		if ($userprofile_status !== null && $userprofile_status != '') {

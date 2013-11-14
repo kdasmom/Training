@@ -20,15 +20,16 @@ Ext.define('NP.view.user.UserManager', {
     title: 'User Manager',
     
     items: [
-        {
-            xtype: 'user.overview'
-        },{
+		{
             xtype: 'user.users'
         },{
             xtype: 'user.groups'
         },{
             xtype: 'user.reports'
-        }
+        },
+		{
+			xtype: 'user.overview'
+		}
     ],
 
     initComponent: function() {
