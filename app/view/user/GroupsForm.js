@@ -25,12 +25,11 @@ Ext.define('NP.view.user.GroupsForm', {
     	var that = this;
 
     	var bar = [
+			{ xtype: 'shared.button.cancel' },
     		{ xtype: 'shared.button.save' },
-    		{ xtype: 'shared.button.cancel' },
             { xtype: 'shared.button.new', itemId: 'createGroupCopyBtn', text: NP.Translator.translate('Create Copy') }
 	    ];
 	    this.tbar = bar;
-	    this.bbar = bar;
 
 	    this.items = [{
 			xtype : 'verticaltabpanel',

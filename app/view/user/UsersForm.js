@@ -28,11 +28,10 @@ Ext.define('NP.view.user.UsersForm', {
     	var that = this;
 
     	var bar = [
-    		{ xtype: 'shared.button.save' },
-    		{ xtype: 'shared.button.cancel' }
+			{ xtype: 'shared.button.cancel' },
+    		{ xtype: 'shared.button.save' }
 	    ];
 	    this.tbar = bar;
-	    this.bbar = bar;
 
 	    this.items = [{
 			xtype : 'verticaltabpanel',

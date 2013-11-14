@@ -25,7 +25,6 @@ Ext.define('NP.view.user.UserDelegationMain', {
 	    	 { xtype: 'shared.button.new', text: NP.Translator.translate('Add a Delegation') }
 	    ];
 	    this.tbar = bar;
-	    this.bbar = bar;
 
 	    this.items = [
             {

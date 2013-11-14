@@ -26,7 +26,6 @@ Ext.define('NP.view.user.GroupsGrid', {
     		{ xtype: 'shared.button.new', text: NP.Translator.translate('Create New Group') }
 	    ];
 	    this.tbar = bar;
-	    this.bbar = bar;
 
         this.items = [{
             xtype   : 'customgrid',

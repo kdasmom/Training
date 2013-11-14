@@ -31,7 +31,6 @@ Ext.define('NP.view.user.UserDelegationForm', {
             { xtype: 'shared.button.save' }
         ];
         this.tbar = bar;
-        this.bbar = bar;
 
         this.defaults = {
             labelWidth: 180

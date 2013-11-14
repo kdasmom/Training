@@ -31,7 +31,6 @@ Ext.define('NP.view.user.UsersGrid', {
     		{ xtype: 'shared.button.new', text: NP.Translator.translate('Create New User') }
 	    ];
 	    this.tbar = bar;
-	    this.bbar = bar;
 
         var filterLabelWidth = 80;
         var filterButtonWidth = 120;

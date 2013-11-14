@@ -24,7 +24,6 @@ Ext.define('NP.view.user.GroupsFormPermissions', {
     		{ text: NP.Translator.translate('Collapse All'), handler: function() { that.collapseAll(); } }
     	];
 	    this.tbar = bar;
-	    this.bbar = bar;
 
     	this.store = Ext.create('Ext.data.TreeStore', {
     		fields: [
