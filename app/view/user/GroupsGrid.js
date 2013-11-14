@@ -42,7 +42,8 @@ Ext.define('NP.view.user.GroupsGrid', {
                 {
                     text: NP.Translator.translate('Name'),
                     dataIndex: 'role_name',
-                    flex: 1
+                    flex: 1,
+					hideable: false
                 },{
                     text: NP.Translator.translate('Users'),
                     dataIndex: 'role_user_count',
@@ -58,7 +59,16 @@ Ext.define('NP.view.user.GroupsGrid', {
                         }
                         return val;
                     }
-                }
+                },
+				{
+					text: NP.Translator.translate('Group Parent'),
+					dataIndex: 'parent_role_name',
+					flex: 1,
+					renderer: function (val, meta, rec) {
+						return rec.raw['parent_role_name'];
+					},
+					hidden: true
+				}
             ],
             pagingToolbarButtons: [
                 NP.Translator.translate('Function') + ':',
