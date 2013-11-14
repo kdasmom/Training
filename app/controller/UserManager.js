@@ -633,7 +633,7 @@ Ext.define('NP.controller.UserManager', {
 		    	listeners       : {
 			    	dataloaded: function(formPanel, data) {
 			    		// Set the form title
-			    		formPanel.setTitle(that.editGroupFormTitle + ' "' + data['role_name'] + '"');
+			    		formPanel.setTitle(that.editGroupFormTitle + ' - ' + data['role_name']);
 
 			    		// Set the active user for easy access later
 			    		that.activeRole = formPanel.getModel('user.Role');
