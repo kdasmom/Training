@@ -143,7 +143,7 @@ Ext.define('NP.view.user.UsersGrid', {
                             action            : 'getAll',
                             paging            : true,
                             extraParams: {
-                                userprofile_status: null,
+                                userprofile_status: 'active',
                                 property_id       : null,
                                 role_id           : null,
                                 module_id         : null
