@@ -38,6 +38,11 @@ Ext.define('NP.view.user.GroupsForm', {
 	    		{ xtype: 'user.groupsforminfo' },
 	    		{ xtype: 'user.groupsformpermissions' },
 	    		{ xtype: 'user.usersformemail', showEmailOverwrite: true, itemId: 'groupEmailAlertPanel' },
+				{
+					xtype: 'user.usersfrequentlybasedemailalertsform',
+					itemId: 'groupFrequentlyBasedEmailAlertPanel',
+					title: NP.Translator.translate('Frequency-Based Alerts')
+				},
                 { xtype: 'user.groupsformdashboard', border: false }
 	    	]
 	    }];

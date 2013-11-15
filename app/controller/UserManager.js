@@ -716,13 +716,17 @@ Ext.define('NP.controller.UserManager', {
 				}
 			});
 
+			emailalerts = this.getSelectedEmailAlerts('groupEmailAlertPanel');
+			Ext.each(this.getSelectedEmailAlerts('groupFrequentlyBasedEmailAlertPanel'), function (emailalert){
+				emailalerts.push(emailalert);
+			});
 			form.submitWithBindings({
 				service: 'UserService',
 				action : 'saveRole',
 				extraParams: {
 					permissions     : permissions,
-					emailalerts     : this.getSelectedEmailAlerts('groupEmailAlertPanel'),
-					emailalerthours : this.getSelectedEmailHours('groupEmailAlertPanel'),
+					emailalerts     : emailalerts,
+					emailalerthours : this.getSelectedEmailHours('groupFrequentlyBasedEmailAlertPanel'),
 					dashboard_layout: this.getPortalCanvas().serialize()
 				},
 				extraFields: {
