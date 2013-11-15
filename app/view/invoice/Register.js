@@ -12,7 +12,8 @@ Ext.define('NP.view.invoice.Register', {
     	'NP.lib.core.Security',
     	'NP.lib.core.Translator',
     	'NP.view.invoice.InvoiceGrid',
-    	'NP.store.invoice.Invoices'
+    	'NP.store.invoice.Invoices',
+    	'NP.view.shared.button.New'
     ],
     
     defaults: {
@@ -28,7 +29,7 @@ Ext.define('NP.view.invoice.Register', {
 			layout: 'hbox',
 			items: [
 				{ xtype: 'button', text: NP.Translator.translate('Get PO') },
-		    	{ xtype: 'button', text: NP.Translator.translate('New Invoice') },
+		    	{ xtype: 'shared.button.new', itemId:'newInvoiceBtn', text: NP.Translator.translate('New Invoice') },
 		    	{ xtype: 'button', text: NP.Translator.translate('Invoice Reports') },
 		    	{ xtype: 'button', text: NP.Translator.translate('Search') },
 		    	{ xtype: 'button', text: NP.Translator.translate('Receipt Register') },

@@ -13,6 +13,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
         'Ext.grid.plugin.CellEditing',
         'Ext.grid.column.Action',
         'NP.lib.ui.AutoComplete',
+        'NP.view.shared.button.New',
         'NP.view.shared.button.Save',
         'NP.view.shared.button.Cancel',
         'NP.view.shared.gridcol.UniversalField',
@@ -49,6 +50,10 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
 
         me.tbar = [
             {
+                xtype : 'shared.button.new',
+                itemId: 'invoiceLineAddBtn',
+                text  : NP.Translator.translate('Add Line')
+            },{
                 xtype : 'shared.button.save',
                 itemId: 'invoiceLineSaveBtn',
                 text  : NP.Translator.translate('Done With Changes')
@@ -167,7 +172,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                 dataIndex: 'property_id',
                 width    : 200,
                 renderer : function(val, meta) {
-                    if (val == null || val == '') {
+                    if (val == null || val == '' || isNaN(val)) {
                         return '';
                     }
                     var rec = Ext.getStore('property.AllProperties').findRecord('property_id', val, 0, false, false, true);
@@ -175,10 +180,11 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     return rec.get('property_name');
                 },
                 editor: {
-                    xtype     : 'shared.propertycombo',
-                    itemId    : 'lineGridPropertyCombo',
-                    store     : me.propertyStore,
-                    hideLabel : true
+                    xtype       : 'customcombo',
+                    itemId      : 'lineGridPropertyCombo',
+                    displayField: 'property_name',
+                    valueField  : 'property_id',
+                    store       : me.propertyStore
                 }
             },
             // GL Account column
@@ -243,7 +249,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
             dataIndex: 'invoiceitem_taxflag',
             width    : 50,
             renderer : function(val) {
-                if (val === 1) {
+                if (val === 'Y') {
                     return 'Yes';
                 } else {
                     return 'No';

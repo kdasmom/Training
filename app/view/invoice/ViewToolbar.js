@@ -134,10 +134,14 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                 moduleId        : 2038,
                 displayCondition: me.isLinkPoBtnVisible
             },
-            '-',
+            {
+                xtype: 'tbseparator',
+                displayCondition: me.isMenuVisible
+            },
             {
                 text    : 'Actions',
                 defaults: { hidden: false },
+                displayCondition: me.isMenuVisible,
                 menu    : [
                     {
                         text            : 'Print',
@@ -173,10 +177,14 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                     }
                 ]
             },
-            '-',
+            {
+                xtype: 'tbseparator',
+                displayCondition: me.isMenuVisible
+            },
             {
                 text    : 'Images',
                 defaults: { hidden: false },
+                displayCondition: me.isMenuVisible,
                 menu    : [
                     {
                         text            : 'Upload Image',
@@ -232,6 +240,10 @@ Ext.define('NP.view.invoice.ViewToolbar', {
     isDeleteBtnVisible: function(data) {
         var invoice_status = data['invoice'].get('invoice_status');
 
+        if (data['invoice'].get('invoice_id') === null) {
+            return false;
+        }
+
         return (
             (
                 invoice_status == 'draft' 
@@ -249,7 +261,10 @@ Ext.define('NP.view.invoice.ViewToolbar', {
     },
 
     isOnHoldBtnVisible: function(data) {
-        return Ext.Array.contains(['open','forapproval','saved'], data['invoice'].get('invoice_status'));
+        return (
+            data['invoice'].get('invoice_id') !== null &&
+            Ext.Array.contains(['open','forapproval','saved'], data['invoice'].get('invoice_status'))
+        );
     },
 
     isVoidBtnVisible: function(data) {
@@ -261,6 +276,7 @@ Ext.define('NP.view.invoice.ViewToolbar', {
 
     isApplyTemplateBtnVisible: function(data) {
         return (
+            data['invoice'].get('invoice_id') !== null &&
             data['invoice'].get('invoice_status') == 'open'
             && (
                 NP.Security.hasPermission(2006)     // Invoice User Templates permission
@@ -295,6 +311,10 @@ Ext.define('NP.view.invoice.ViewToolbar', {
             data['invoice'].get('invoice_status') == 'forapproval'
             && data['is_approver']
         );
+    },
+
+    isMenuVisible: function(data) {
+        return (data['invoice'].get('invoice_id') !== null);
     },
 
     isManageImagesBtnVisible: function(data) {

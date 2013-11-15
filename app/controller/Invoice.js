@@ -11,6 +11,8 @@ Ext.define('NP.controller.Invoice', {
 		'NP.lib.core.Security'
 	],
 	
+	models: ['NP.model.invoice.InvoiceItem'],
+
 	stores: ['invoice.Invoices','system.PriorityFlags','invoice.InvoicePaymentTypes',
 			'invoice.InvoiceItems','invoice.InvoicePayments'],
 	
@@ -19,8 +21,10 @@ Ext.define('NP.controller.Invoice', {
 	refs: [
 		{ ref: 'invoiceView', selector: '[xtype="invoice.view"]' },
 		{ ref: 'invoiceViewToolbar', selector: '[xtype="invoice.viewtoolbar"]' },
+		{ ref: 'headerPropertyCombo', selector: '#headerPropertyCombo' },
 		{ ref: 'lineMainView', selector: '[xtype="shared.invoicepo.viewlineitems"]' },
-		{ ref: 'lineView', selector: '[xtype="shared.invoicepo.viewlines"] dataview' },
+		{ ref: 'lineView', selector: '[xtype="shared.invoicepo.viewlines"]' },
+		{ ref: 'lineDataView', selector: '[xtype="shared.invoicepo.viewlines"] dataview' },
 		{ ref: 'lineGrid', selector: '[xtype="shared.invoicepo.viewlinegrid"]' },
 		{ ref: 'forwardsGrid', selector: '[xtype="shared.invoicepo.forwardsgrid"]' },
 		{ ref: 'historyLogGrid', selector: '[xtype="shared.invoicepo.historyloggrid"]' },
@@ -57,6 +61,13 @@ Ext.define('NP.controller.Invoice', {
 					this.addHistory( 'Invoice:showView:' + record.get('invoice_id') );
 				}
 			},
+
+			// Clicking on the New Invoice button
+			'#newInvoiceBtn': {
+				click: function() {
+					this.addHistory('Invoice:showView');
+				}
+			},
 			
 			// Clicking on cancel button on the invoice view page
 			'[xtype="invoice.viewtoolbar"] [xtype="shared.button.cancel"]': {
@@ -71,7 +82,7 @@ Ext.define('NP.controller.Invoice', {
 					var contentView = app.getCurrentView();
 					// If user picks a different property/region and we're on a register, update the grid
 					if (contentView.getXType() == 'invoice.register') {
-						var activeTab = contentView.query('tabpanel')[0].getActiveTab();
+						var activeTab = contentView.getActiveTab();
 						if (activeTab.getStore) {
 							this.loadRegisterGrid(activeTab);
 						}
@@ -110,14 +121,22 @@ Ext.define('NP.controller.Invoice', {
 				}
 			},
 
+			// Clicking the Edit button on the line item list
 			'#invoiceLineEditBtn': {
 				click: Ext.bind(this.onLineEditClick, this)
 			},
 
+			// Clicking on the Add Line button
+			'#invoiceLineAddBtn': {
+				click: Ext.bind(this.onLineAddClick, this)
+			},
+
+			// Clicking on the Done With Changes button
 			'#invoiceLineSaveBtn': {
 				click: Ext.bind(this.onLineSaveClick, this)
 			},
 
+			// Clicking on the Undo Changes button
 			'#invoiceLineCancelBtn': {
 				click: Ext.bind(this.onLineCancelClick, this)
 			}
@@ -194,30 +213,24 @@ Ext.define('NP.controller.Invoice', {
 						me.buildViewToolbar(data);
 						
 						var lineView     = me.getLineView(),
-							lineStore    = lineView.getStore(),
+							lineStore    = me.getLineDataView().getStore(),
 							paymentGrid  = me.getPaymentGrid(),
 							paymentStore = paymentGrid.getStore();
 
 						// Add invoice_id to the line and payment stores
 						lineStore.addExtraParams({ invoice_id: invoice_id });
-						//paymentStore.addExtraParams({ invoice_id: invoice_id });
+						paymentStore.addExtraParams({ invoice_id: invoice_id });
 
 						// Load the line store
 						lineStore.load(function() {
 							// Only load the payment store after the line store because we need the total amount
-							/*paymentGrid.totalAmount = lineView.getTotalAmount();
+							paymentGrid.totalAmount = lineView.getTotalAmount();
 							paymentStore.load(function() {
 								if (paymentStore.getCount()) {
 									me.getPaymentGrid().show();
 								}
-							});*/
+							});
 						});
-
-						// Add integration package to the line grid
-						me.getLineGrid().propertyStore.addExtraParams({
-							integration_package_id: data['integration_package_id']
-						});
-						me.getLineGrid().propertyStore.load();
 
 						var vendorField   = boundForm.findField('vendor_id'),
 							propertyField = boundForm.findField('property_id'),
@@ -226,7 +239,7 @@ Ext.define('NP.controller.Invoice', {
 
 						// Set the vendor
 						vendorField.setDefaultRec(Ext.create('NP.model.vendor.Vendor', data));
-						/*vendorField.addExtraParams({
+						vendorField.addExtraParams({
 							property_id: data['property_id']
 						});
 						me.onVendorComboSelect();
@@ -254,7 +267,7 @@ Ext.define('NP.controller.Invoice', {
 						});
 
 						// Load image if needed
-						me.loadImage();*/
+						me.loadImage();
 					}
 				}
 			});
@@ -265,6 +278,8 @@ Ext.define('NP.controller.Invoice', {
 		if (!invoice_id) {
 			// Set the title
 			me.setInvoiceViewTitle();
+
+			me.buildViewToolbar();
 
 			// Enable the vendor and property field when dealing with a new invoice
 			form.findField('vendor_id').enable();
@@ -278,11 +293,47 @@ Ext.define('NP.controller.Invoice', {
 		this.getLineMainView().getLayout().setActiveItem(1);
 	},
 
+	onLineAddClick: function() {
+		var me = this;
+		
+		me.getLineGrid().getStore().add(Ext.create('NP.model.invoice.InvoiceItem'));
+	},
+
 	onLineSaveClick: function() {
 		var me = this;
 		
-		me.getLineGrid().getStore().commitChanges();
-		me.getLineMainView().getLayout().setActiveItem(0);
+		if (me.validateLineItems()) {
+			me.getLineMainView().getLayout().setActiveItem(0);
+		}
+	},
+
+	validateLineItems: function() {
+		var me    = this,
+			grid  = me.getLineGrid(),
+			store = grid.getStore(),
+			count = store.getCount(),
+			reqFields = ['glaccount_id','property_id'],
+			valid = true,
+			rec,
+			col,
+			cellNode;
+
+		for (var i=0; i<count; i++) {
+			rec = store.getAt(i);
+			for (var j=0; j<grid.columns.length; j++) {
+				col = grid.columns[j];
+				if (Ext.Array.contains(reqFields, col.dataIndex) && rec.get(col.dataIndex) == null) {
+					cellNode = grid.getView().getCell(rec, col);
+					cellNode.addCls('grid-invalid-cell');
+					cellNode.set({
+						'data-qtip': 'This field is required'
+					});
+					valid = false;
+				}
+			}
+		}
+
+		return valid;
 	},
 
 	onLineCancelClick: function() {
@@ -293,14 +344,23 @@ Ext.define('NP.controller.Invoice', {
 
 	onBeforeInvoiceLineGridEdit: function(editor, e) {
 		var me    = this,
-			field = e.column.getEditor();
+			field = e.column.getEditor(),
+			grid  = me.getLineGrid();
 
-		me.getLineGrid().selectedRec = e.record;
+		grid.selectedRec = e.record;
 		me.originalRecValue = e.record.copy();
+
+		cellNode = grid.getView().getCell(e.record, e.column);
+		cellNode.removeCls('grid-invalid-cell');
+		cellNode.set({
+			'data-qtip': ''
+		});
 
 		if (e.field == 'invoiceitem_quantity' || e.field == 'invoiceitem_unitprice' 
 				|| e.field == 'invoiceitem_amount' || e.field == 'invoiceitem_description') {
 			me.onOpenInvalidSplitField(editor, e.record, field);
+		} else if (e.field == 'property_id') {
+			me.onOpenPropertyEditor(editor, e.record, field);
 		} else if (e.field == 'glaccount_id') {
 			me.onOpenGlAccountEditor(editor, e.record, field);
 		} else if (e.field == 'unit_id') {
@@ -334,11 +394,37 @@ Ext.define('NP.controller.Invoice', {
 		}
 	},
 
-	onOpenGlAccountEditor: function(editor, rec, field) {
-		var me    = this,
-			combo = me.getLineGridGlCombo();
+	onOpenPropertyEditor: function(editor, rec, field) {
+		this.loadPropertyStore();
+	},
 
-		me.loadGlAccountStore(rec);
+	loadPropertyStore: function(callback) {
+		var me    = this,
+    		store = me.getLineGrid().propertyStore,
+    		propertyField = me.getHeaderPropertyCombo(),
+    		property_id   = propertyField.getValue(),
+			integration_package_id;
+
+		if (property_id !== null) {
+			integration_package_id = propertyField.findRecordByValue(property_id).get('integration_package_id')
+		}
+
+		if (integration_package_id) {
+	    	if (integration_package_id != store.getExtraParam('integration_package_id')) {
+	    		store.addExtraParams({ integration_package_id: integration_package_id });
+	    		store.load(function() {
+	    			if (callback) {
+	    				callback(store);
+	    			}
+	    		});
+			}
+		} else {
+			store.removeAll();
+		}
+	},
+
+	onOpenGlAccountEditor: function(editor, rec, field) {
+		this.loadGlAccountStore(rec);
 	},
 
 	loadGlAccountStore: function(rec, callback) {
@@ -363,7 +449,7 @@ Ext.define('NP.controller.Invoice', {
             }
         // Otherwise run code for associating with integration package
         } else {
-        	var integration_package_id = me.getInvoiceNew().getLoadedData().integration_package_id;
+        	var integration_package_id = me.getInvoiceView().getLoadedData().integration_package_id;
         	if (integration_package_id != store.getExtraParam('integration_package_id')) {
         		store.addExtraParams({ integration_package_id: integration_package_id });
         		store.load(function() {
@@ -704,7 +790,7 @@ Ext.define('NP.controller.Invoice', {
 		var me        = this,
 			field     = e.column.getEditor(),
 			grid      = me.getLineGrid(),
-			intCombos = ['glaccount_id','unit_id','jbcontract_id','jbchangeorder_id',
+			intCombos = ['property_id','glaccount_id','unit_id','jbcontract_id','jbchangeorder_id',
 						'jbjobcode_id','jbphasecode_id','jbcostcode_id','utilityaccount_id',
 						'utilitycolumn_usagetype_id'];
 		

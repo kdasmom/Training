@@ -23,9 +23,9 @@ Ext.define('NP.model.invoice.InvoiceItem', {
 		{ name: 'glaccount_id', type: 'int' },
 		{ name: 'invoiceitem_description' },
 		{ name: 'invoiceitem_quantity', type: 'float', defaultValue: 1 },
-		{ name: 'invoiceitem_unitprice', type: 'float' },
+		{ name: 'invoiceitem_unitprice', type: 'float', useNull: false },
 		{ name: 'invoiceitem_amount', type: 'float', useNull: false },
-		{ name: 'invoiceitem_budgetvariance' },
+		{ name: 'invoiceitem_budgetvariance', type: 'float', useNull: false },
 		{ name: 'invoiceitem_created', type: 'date' },
 		{ name: 'invoiceitem_salestax', type: 'float', useNull: false },
 		{ name: 'invoiceitem_shipping', type: 'float', useNull: false },
@@ -62,7 +62,7 @@ Ext.define('NP.model.invoice.InvoiceItem', {
 		{ name: 'vcitem_uom' },
 		{ name: 'universal_field7' },
 		{ name: 'universal_field8' },
-		{ name: 'is_from_catalog', type: 'int' },
+		{ name: 'is_from_catalog', type: 'int', defaultValue: 0 },
 		{ name: 'unittype_material_id', type: 'int' },
 		{ name: 'unittype_meas_id', type: 'int' },
 		{ name: 'reftable_name' },
@@ -111,11 +111,11 @@ Ext.define('NP.model.invoice.InvoiceItem', {
 			name: 'jbcontract_id',
 			type: 'int',
 			convert: function(v) {
-				if (v === 0) {
+				if (v === null || v === 0 || v === '') {
 					return null;
 				}
 
-				return v;
+				return parseInt(v);
 			}
 		},
 		{ name: 'jbcontract_name' },
@@ -125,11 +125,11 @@ Ext.define('NP.model.invoice.InvoiceItem', {
 			name: 'jbchangeorder_id',
 			type: 'int',
 			convert: function(v) {
-				if (v === 0) {
+				if (v === null || v === 0 || v === '') {
 					return null;
 				}
 
-				return v;
+				return parseInt(v);
 			}
 		},
 
@@ -140,11 +140,11 @@ Ext.define('NP.model.invoice.InvoiceItem', {
 			name: 'jbjobcode_id',
 			type: 'int',
 			convert: function(v) {
-				if (v === 0) {
+				if (v === null || v === 0 || v === '') {
 					return null;
 				}
 
-				return v;
+				return parseInt(v);
 			}
 		},
 		{ name: 'jbjobcode_name' },
@@ -154,11 +154,11 @@ Ext.define('NP.model.invoice.InvoiceItem', {
 			name: 'jbphasecode_id',
 			type: 'int',
 			convert: function(v) {
-				if (v === 0) {
+				if (v === null || v === 0 || v === '') {
 					return null;
 				}
 
-				return v;
+				return parseInt(v);
 			}
 		},
 		{ name: 'jbphasecode_name' },
@@ -168,11 +168,11 @@ Ext.define('NP.model.invoice.InvoiceItem', {
 			name: 'jbcostcode_id',
 			type: 'int',
 			convert: function(v) {
-				if (v === 0) {
+				if (v === null || v === 0 || v === '') {
 					return null;
 				}
 
-				return v;
+				return parseInt(v);
 			}
 		},
 		{ name: 'jbcostcode_name' },

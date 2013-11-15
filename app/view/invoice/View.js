@@ -38,10 +38,10 @@ Ext.define('NP.view.invoice.View', {
         me.tbar = { xtype: 'invoice.viewtoolbar' };
 
 		me.items = [
-            { xtype: 'shared.invoicepo.viewlineitems', type: 'invoice' },
             { xtype: 'shared.invoicepo.viewwarnings', type: 'invoice' },
             { xtype: 'invoice.viewheader' },
             { xtype: 'shared.customfieldcontainer', title: 'Custom Fields', type: 'invoice', isLineItem: 0 },
+            { xtype: 'shared.invoicepo.viewlineitems', type: 'invoice' },
             { xtype: 'invoice.viewnotes' }
         ];
 
@@ -50,9 +50,9 @@ Ext.define('NP.view.invoice.View', {
 		}
 
 		me.items.push(
-            { xtype: 'shared.invoicepo.historyloggrid', type: 'invoice', maxHeight: 400 },
-    		{ xtype: 'invoice.viewpayments', hidden: true, maxHeight: 400 },
-		    { xtype: 'shared.invoicepo.forwardsgrid', title: 'Invoice Forwards', type: 'invoice', maxHeight: 400 }
+            { xtype: 'shared.invoicepo.historyloggrid', type: 'invoice', maxHeight: 200 },
+    		{ xtype: 'invoice.viewpayments', hidden: true, maxHeight: 200 },
+		    { xtype: 'shared.invoicepo.forwardsgrid', title: 'Invoice Forwards', type: 'invoice', maxHeight: 200 }
 		);
 
     	me.callParent(arguments);
