@@ -41,7 +41,8 @@ Ext.define('NP.view.user.GroupsForm', {
 				{
 					xtype: 'user.usersfrequentlybasedemailalertsform',
 					itemId: 'groupFrequentlyBasedEmailAlertPanel',
-					title: NP.Translator.translate('Frequency-Based Alerts')
+					title: NP.Translator.translate('Frequency-Based Alerts'),
+					isGroup: true
 				},
                 { xtype: 'user.groupsformdashboard', border: false }
 	    	]

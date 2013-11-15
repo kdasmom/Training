@@ -35,23 +35,25 @@ Ext.define('NP.view.mySettings.EmailAlerts', {
         // Loop through the alerts to add checkboxes to the container
         this.items = [];
 
-		if (this.emailalerttype_function == 2) {
-			this.items = [
-				{
-					xtype  : 'component',
-                    width  : '100%',
-					html   : NP.Translator.translate("Status Based Alerts notifies a user each time a document enters into the selected part of the life-cycle that matches the alert settings.  These alerts run once daily based on the general system email notification setup.  These alerts are for more informational purposes."),
-					padding: '0 0 10 0'
-				}];
-		}
-		if (this.emailalerttype_function == 1) {
-			this.items = [
-				{
-					xtype  : 'component',
-                    width  : '100%',
-					html   : NP.Translator.translate("Frequency Based Alerts notifies a user when a document enters into the selected part of the lift-cycle that matches the alert settings that requires the use to perform an action.  These alerts run at the frequencies set by the user.  These alerts require the user to take action versus the informational status alerts."),
-					padding: '0 0 10 0'
-				}];
+		if (!this.isGroup) {
+			if (this.emailalerttype_function == 2) {
+				this.items = [
+					{
+						xtype  : 'component',
+						width  : '100%',
+						html   : NP.Translator.translate("Status Based Alerts notifies a user each time a document enters into the selected part of the life-cycle that matches the alert settings.  These alerts run once daily based on the general system email notification setup.  These alerts are for more informational purposes."),
+						padding: '0 0 10 0'
+					}];
+			}
+			if (this.emailalerttype_function == 1) {
+				this.items = [
+					{
+						xtype  : 'component',
+						width  : '100%',
+						html   : NP.Translator.translate("Frequency Based Alerts notifies a user when a document enters into the selected part of the lift-cycle that matches the alert settings that requires the use to perform an action.  These alerts run at the frequencies set by the user.  These alerts require the user to take action versus the informational status alerts."),
+						padding: '0 0 10 0'
+					}];
+			}
 		}
         types.each(function(alertType) {
             // Check if user has permission to use this notification
