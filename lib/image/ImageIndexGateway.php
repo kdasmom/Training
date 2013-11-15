@@ -22,7 +22,7 @@ class ImageIndexGateway extends AbstractGateway {
 	protected $table = 'image_index';
         protected $pk = 'Image_Index_Id';
 
-        private $columns = [
+        private $columns1 = [
             'Image_Index_Id',
             'Image_Index_VendorSite_Id',
             'Property_Id',
@@ -674,7 +674,7 @@ print_r($update->toString());
             ;
 
             $select
-                ->columns($this->columns)
+                ->columns($this->columns1)
                     ->columnDaysOustanding()
                 ->join(new sql\join\ImageIndexImageSourceJoin())
                     ->join(new sql\join\ImageIndexDocTypeJoin())
@@ -693,11 +693,10 @@ print_r($update->toString());
             return null;
         }
 
-
-    public function get2($id, $params) {
+    public function prepare() {
         $select = new sql\ImageSelect();
 
-        $columns = [
+        $select->columns([
             'Image_Index_Id',
             'Image_Index_Date_Entered',
             'Image_Index_Due_Date',
@@ -729,10 +728,14 @@ print_r($update->toString());
             'utilityAccount_accountNumber',
             'utilityAccount_meterSize',
             'cycle_from',
-            'cycle_to',
-            'CASE ii.tableref_id WHEN \'3\' THEN \'PO\' WHEN ' . $params['tableref'] . ' THEN \'Receipt\' END as doc_type'
-        ];
-        $select->columns($columns);
+            'cycle_to'
+        ]);
+        return $select;
+    }
+
+
+    private function getImageScanLocal($id, $params, $tablerefs) {
+        $select = new sql\ImageIndexSelect();
 
         $select
             ->join(new sql\join\ImageIndexImageSourceJoin())
@@ -750,75 +753,56 @@ print_r($update->toString());
             ->join(new sql\join\ImageIndexTablerefJoin())
         ;
 
-        $where = new \NP\core\db\Where();
+//        $where = new \NP\core\db\Where();
+        $where = new sql\criteria\ImageScanGetCriteria();
         $where
             ->equals('itransfer.transfer_srcTableName', '\'userprofile\'')
-            ->nest('OR')
-                ->isNull('@in_tableref_id') //@in_tableref_id IS NULL OR 
-                ->in('img.Tableref_id', '$right')//ii.Tableref_id IN (SELECT value FROM dbo.ListToQuery(@tableref_list,','))
-            ->unnest()
-            ->nest('OR')
-                ->equals('img.Image_Index_Id', $id)
-                ->nest('AND')
-                    ->isNull($id)
-                    ->nest('OR')
-                        ->isNull('img.Property_Id')
-                        ->in('img.Property_Id', '$right') //(SELECT value FROM dbo.ListToQuery(@in_property_id,','))
-                    ->unnest()
-                    ->equals('img.asp_client_id', $params['asp_client_id'])
-                    ->nest('OR')
-                        ->isNull('img.Tablekey_Id')
-                        ->equals('img.Tablekey_Id', 0)
-                    ->unnest()
-                    ->in('img.Image_Index_Status', '1, 2')
-                ->unnest()
-            ->unnest()
+//            ->nest('OR')
+//                ->isNull(new Expression('?'))//$params['tableref_id']
+//                ->in('img.Tableref_id', new Expression('?'))
+//            ->unnest()
+//            ->nest('OR')
+//                ->equals('img.Image_Index_Id', new Expression('?'))
+//                ->nest('AND')
+//                    ->isNull(new Expression('?'))// $id
+//                    ->nest('OR')
+//                        ->isNull('img.Property_Id')
+//                        ->in('img.Property_Id', new Expression('?'))
+//                    ->unnest()
+//                    ->equals('img.asp_client_id', new Expression('?'))
+//                    ->nest('OR')
+//                        ->isNull('img.Tablekey_Id')
+//                        ->equals('img.Tablekey_Id', 0)
+//                    ->unnest()
+//                    ->in('img.Image_Index_Status', implode(',', [1, 2]))
+//                ->unnest()
+//            ->unnest()
         ;
         $select->where($where);
 
-        echo $select->toString();            
-        die("==============================================");
+        $result = $this->adapter->query(
+            $select,
+            [
+                $params['tableref_id'],
+                empty($tablerefs) ? 
+                    null :
+                    implode(',', $tablerefs)
+                ,
+                $id,
+                $id,
+                empty($params['property_id']) ? 
+                    null :
+                    implode(',', $params['property_id'])
+                ,
+                $params['asp_client_id']
+            ]
+        );
+
+        return $result;
     }
 
-    public function get3($id, $params) {
-        $select = new sql\ImageSelect();
-
-        $columns = [
-            'Image_Index_Id',
-            'Image_Index_Date_Entered',
-            'Image_Index_Due_Date',
-            'Image_Index_Invoice_Date',
-            'Image_Index_Amount',
-            'Image_Index_Ref',
-            'Image_Index_PO_Ref',
-            'Image_Index_VendorSite_Id',
-            'Image_Index_Vendor_Id_Alt',
-            'Image_Index_Status',
-            'universal_field1',
-            'universal_field2',
-            'universal_field3',
-            'universal_field4',
-            'universal_field5',
-            'universal_field6',
-            'universal_field7',
-            'universal_field8',
-            'Image_Index_Name',
-            'Tableref_Id',
-            'Tablekey_id',
-            'Image_Doctype_Id',
-            'remit_advice',
-            'image_index_draft_invoice_id',
-            'PriorityFlag_ID_Alt',
-            'Image_Index_neededby_datetm AS neededby_datetm',
-            'Image_Index_Exception_reason',
-            'utilityaccount_id',
-            'utilityAccount_accountNumber',
-            'utilityAccount_meterSize',
-            'cycle_from',
-            'cycle_to',
-            'CASE ii.tableref_id WHEN \'3\' THEN \'PO\' WHEN ' . $params['tableref'] . ' THEN \'Receipt\' END as doc_type'
-        ];
-        $select->columns($columns);
+    private function getImageScanVendor($id, $params) {
+        $select = new sql\ImageIndexSelect();
 
         $select
             ->join(new sql\join\ImageIndexImageSourceJoin())
@@ -827,7 +811,7 @@ print_r($update->toString());
                 [],
                 Select::JOIN_LEFT,
                 'vs',
-                'img',
+                'itransfer',
                 'transfer_srcTablekey_id'
             ))
             ->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(
@@ -839,75 +823,53 @@ print_r($update->toString());
             ->join(new sql\join\ImageIndexTablerefJoin())
         ;
 
-        $where = new \NP\core\db\Where();
+        //$where = new \NP\core\db\Where();
+        $where = new sql\criteria\ImageScanGetCriteria();
         $where
             ->equals('itransfer.transfer_srcTableName', '\'vendorsite\'')
-            ->nest('OR')
-                ->isNull('@in_tableref_id') //@in_tableref_id IS NULL OR 
-                ->in('img.Tableref_id', '$right')//ii.Tableref_id IN (SELECT value FROM dbo.ListToQuery(@tableref_list,','))
-            ->unnest()
-            ->nest('OR')
-                ->equals('img.Image_Index_Id', $id)
-                ->nest('AND')
-                    ->isNull($id)
-                    ->nest('OR')
-                        ->isNull('img.Property_Id')
-                        ->in('img.Property_Id', '$right') //(SELECT value FROM dbo.ListToQuery(@in_property_id,','))
-                    ->unnest()
-                    ->equals('img.asp_client_id', $params['asp_client_id'])//
-                    ->nest('OR')
-                        ->isNull('img.Tablekey_Id')
-                        ->equals('img.Tablekey_Id', 0)
-                    ->unnest()
-                    ->in('img.Image_Index_Status', '1, 2')
-                ->unnest()
-            ->unnest()
+//            ->nest('OR')
+//                ->isNull(new Expression('?'))//$params['tableref_id']
+//                ->equals('img.Tableref_id', new Expression('?'))
+//            ->unnest()
+//            ->nest('OR')
+//                ->equals('img.Image_Index_Id', new Expression('?'))
+//                ->nest('AND')
+//                    ->isNull(new Expression('?'))// $id
+//                    ->nest('OR')
+//                        ->isNull('img.Property_Id')
+//                        ->in('img.Property_Id', new Expression('?'))
+//                    ->unnest()
+//                    ->equals('img.asp_client_id', new Expression('?'))
+//                    ->nest('OR')
+//                        ->isNull('img.Tablekey_Id')
+//                        ->equals('img.Tablekey_Id', 0)
+//                    ->unnest()
+//                    ->in('img.Image_Index_Status', implode(',', [1, 2]))
+//                ->unnest()
+//            ->unnest()
         ;
         $select->where($where);
 
-        echo $select->toString();            
-        die("==============================================");        
+        $result = $this->adapter->query(
+            $select,
+            [
+                $params['tableref_id'],
+                $params['tableref_id'],
+                $id,
+                $id,
+                empty($params['property_id']) ? 
+                    null :
+                    implode(',', $params['property_id'])
+                ,
+                $params['asp_client_id']
+            ]
+        );
+
+        return $result;
     }
 
-    public function get4($id, $params) {
-        $select = new sql\ImageSelect();
-
-        $columns = [
-            'Image_Index_Id',
-            'Image_Index_Date_Entered',
-            'Image_Index_Due_Date',
-            'Image_Index_Invoice_Date',
-            'Image_Index_Amount',
-            'Image_Index_Ref',
-            'Image_Index_PO_Ref',
-            'Image_Index_VendorSite_Id',
-            'Image_Index_Vendor_Id_Alt',
-            'Image_Index_Status',
-            'universal_field1',
-            'universal_field2',
-            'universal_field3',
-            'universal_field4',
-            'universal_field5',
-            'universal_field6',
-            'universal_field7',
-            'universal_field8',
-            'Image_Index_Name',
-            'Tableref_Id',
-            'Tablekey_id',
-            'Image_Doctype_Id',
-            'remit_advice',
-            'image_index_draft_invoice_id',
-            'PriorityFlag_ID_Alt',
-            'Image_Index_neededby_datetm AS neededby_datetm',
-            'Image_Index_Exception_reason',
-            'utilityaccount_id',
-            'utilityAccount_accountNumber',
-            'utilityAccount_meterSize',
-            'cycle_from',
-            'cycle_to',
-            'CASE ii.tableref_id WHEN \'3\' THEN \'PO\' WHEN ' . $params['tableref'] . ' THEN \'Receipt\' END as doc_type'
-        ];
-        $select->columns($columns);
+    private function getImageScanLegacy($id, $params) {
+        $select = new sql\ImageIndexSelect();
 
         $select
             ->join(new sql\join\ImageIndexImageSourceJoin(
@@ -924,38 +886,71 @@ print_r($update->toString());
             ->join(new sql\join\ImageIndexTablerefJoin())
         ;
 
-        $where = new \NP\core\db\Where();
+        $where = new sql\criteria\ImageScanGetCriteria();
         $where
             ->nest('OR')
                 ->equals('itransfer.transfer_srcTableName', '\'invoiceimagesource\'')
                 ->isNull('itransfer.transfer_srcTableName')
             ->unnest()
-            ->nest('OR')
-                ->isNull('@in_tableref_id') //@in_tableref_id IS NULL OR 
-                ->in('img.Tableref_id', '$right')//ii.Tableref_id IN (SELECT value FROM dbo.ListToQuery(@tableref_list,','))
-            ->unnest()
-            ->nest('OR')
-                ->equals('img.Image_Index_Id', $id)
-                ->nest('AND')
-                    ->isNull()
-                    ->nest('OR')
-                        ->isNull('img.Property_Id')
-                        ->in('img.Property_Id', '$right') //(SELECT value FROM dbo.ListToQuery(@in_property_id,','))
-                    ->unnest()
-                    ->equals('img.asp_client_id', $params['asp_client_id'])//
-                    ->nest('OR')
-                        ->isNull('img.Tablekey_Id')
-                        ->equals('img.Tablekey_Id', 0)
-                    ->unnest()
-                    ->in('img.Image_Index_Status', '1, 2')
-                ->unnest()
-            ->unnest()
         ;
         $select->where($where);
 
-        echo $select->toString();            
-        die("==============================================");       
-}
+        $result = $this->adapter->query(
+            $select,
+            [
+                $params['tableref_id'],
+                empty($tablerefs) ? 
+                    null :
+                    implode(',', $tablerefs)
+                ,
+                $id,
+                $id,
+                empty($params['property_id']) ? 
+                    null :
+                    implode(',', $params['property_id'])
+                ,
+                $params['asp_client_id']
+            ]
+        );
+
+        return $result;
+    }
+
+    public function getImageScan($id, $params, $tablerefs) {
+        $reflist = null;
+        if (!empty($params['tableref_id'])) {
+            $reflist = [
+                $params['tableref_id']
+            ];
+        }
+
+        switch ($params['tableref_id']) {
+            case 3:
+                $tableref = $tablerefs[strtolower(['receipt'])];
+                $reflist[] = $tableref;
+                break;
+            case 1:
+                $tableref = $tablerefs[strtolower(['Utility Invoice'])];
+                $reflist[] = $tableref;
+                break;
+        }
+
+        // Property id could be number or string with comma-separated identifiers
+        if (is_string($params['property_id'])) {
+            $params['property_id'] = explode(',', $params['property_id']);
+        } elseif (!empty($params['property_id'])) {
+            $params['property_id'] = [$params['property_id']];
+        } else {
+            $params['property_id'] = [];
+        }
+
+        $scans =  $this->getImageScanLocal($id, $params, $reflist);
+        $scans = array_merge($scans, $this->getImageScanVendor($id, $params, $reflist));
+        $scans = array_merge($scans, $this->getImageScanLegacy($id, $params, $reflist));
+
+        return $scans;
+    }
+
 /*
 ii   = img
 iis  = imgs

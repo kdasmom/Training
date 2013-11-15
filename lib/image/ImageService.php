@@ -638,6 +638,12 @@ class ImageService extends AbstractService {
 
         
         
+        
+        
+        
+        
+        
+        
         /**
          * Get Image information by id.
          * 
@@ -646,28 +652,24 @@ class ImageService extends AbstractService {
          * @return ImageIndexEntity Image index entity
          */
         public function get($id, $filter = []) {
-            $filter['userprofile_id'] =
-                !empty($filter['userprofile_id']) ?
-                    intval($filter['userprofile_id']) :
-                    $this->securityService->getUserId()
+            $tablerefs =
+                $this->imageTablerefGateway->getIdByNames(
+                    ['receipt', 'Utility Invoice']
+                )
             ;
-            $filter['delegated_to_userprofile_id'] =
-                !empty($filter['delegated_to_userprofile_id']) ?
-                    intval($filter['delegated_to_userprofile_id']) :
-                    $this->securityService->getUserId()
-            ;
-            $filter['contextType'] =
-                !empty($filter['contextType']) ?
-                    $filter['contextType'] :
-                    'all'
-            ;
-            $filter['contextSelection'] =
-                !empty($filter['contextSelection']) ?
-                    $filter['contextSelection'] :
-                    null
-            ;
+            $scans = $this->imageIndexGateway->getImageScan(
+                $id,
+                [
+                    'property_id'   => null,
+                    'tableref_id'   => null,
+                    'asp_client_id' => $this->configService->getClientId()
+                ],
+                $tablerefs
+            );
 
-            return $this->imageIndexGateway->get($id, $filter);
+            if (!empty($scans) && !empty($scans[0])) {
+                return $scans[0];
+            }
         }
 
         public function update($data) {
@@ -856,6 +858,28 @@ print_r($entity);
         }
 }
 
+
+
+ /*$filter['userprofile_id'] =
+                !empty($filter['userprofile_id']) ?
+                    intval($filter['userprofile_id']) :
+                    $this->securityService->getUserId()
+            ;
+            $filter['delegated_to_userprofile_id'] =
+                !empty($filter['delegated_to_userprofile_id']) ?
+                    intval($filter['delegated_to_userprofile_id']) :
+                    $this->securityService->getUserId()
+            ;
+            $filter['contextType'] =
+                !empty($filter['contextType']) ?
+                    $filter['contextType'] :
+                    'all'
+            ;
+            $filter['contextSelection'] =
+                !empty($filter['contextSelection']) ?
+                    $filter['contextSelection'] :
+                    null
+            ;
 
 /*
 
