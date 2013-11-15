@@ -644,7 +644,7 @@ print_r($update->toString());
          * @param String $filter Property filter
          * @return ImageIndexEntity Image index entity
          */
-        public function get($id, $filter) {
+        /*public function get($id, $filter) {
             $valid = 
                 !empty($filter['userprofile_id']) &&
                 !empty($filter['delegated_to_userprofile_id']) &&
@@ -691,48 +691,18 @@ print_r($update->toString());
                 return $result[0];
             }
             return null;
-        }
+        }*/
 
-    public function prepare() {
-        $select = new sql\ImageSelect();
 
-        $select->columns([
-            'Image_Index_Id',
-            'Image_Index_Date_Entered',
-            'Image_Index_Due_Date',
-            'Image_Index_Invoice_Date',
-            'Image_Index_Amount',
-            'Image_Index_Ref',
-            'Image_Index_PO_Ref',
-            'Image_Index_VendorSite_Id',
-            'Image_Index_Vendor_Id_Alt',
-            'Image_Index_Status',
-            'universal_field1',
-            'universal_field2',
-            'universal_field3',
-            'universal_field4',
-            'universal_field5',
-            'universal_field6',
-            'universal_field7',
-            'universal_field8',
-            'Image_Index_Name',
-            'Tableref_Id',
-            'Tablekey_id',
-            'Image_Doctype_Id',
-            'remit_advice',
-            'image_index_draft_invoice_id',
-            'PriorityFlag_ID_Alt',
-            'Image_Index_neededby_datetm AS neededby_datetm',
-            'Image_Index_Exception_reason',
-            'utilityaccount_id',
-            'utilityAccount_accountNumber',
-            'utilityAccount_meterSize',
-            'cycle_from',
-            'cycle_to'
-        ]);
-        return $select;
-    }
+        
+        
+        
+        
+        
 
+        
+        
+        
 
     private function getImageScanLocal($id, $params, $tablerefs) {
         $select = new sql\ImageIndexSelect();
@@ -753,30 +723,9 @@ print_r($update->toString());
             ->join(new sql\join\ImageIndexTablerefJoin())
         ;
 
-//        $where = new \NP\core\db\Where();
         $where = new sql\criteria\ImageScanGetCriteria();
         $where
             ->equals('itransfer.transfer_srcTableName', '\'userprofile\'')
-//            ->nest('OR')
-//                ->isNull(new Expression('?'))//$params['tableref_id']
-//                ->in('img.Tableref_id', new Expression('?'))
-//            ->unnest()
-//            ->nest('OR')
-//                ->equals('img.Image_Index_Id', new Expression('?'))
-//                ->nest('AND')
-//                    ->isNull(new Expression('?'))// $id
-//                    ->nest('OR')
-//                        ->isNull('img.Property_Id')
-//                        ->in('img.Property_Id', new Expression('?'))
-//                    ->unnest()
-//                    ->equals('img.asp_client_id', new Expression('?'))
-//                    ->nest('OR')
-//                        ->isNull('img.Tablekey_Id')
-//                        ->equals('img.Tablekey_Id', 0)
-//                    ->unnest()
-//                    ->in('img.Image_Index_Status', implode(',', [1, 2]))
-//                ->unnest()
-//            ->unnest()
         ;
         $select->where($where);
 
@@ -823,30 +772,9 @@ print_r($update->toString());
             ->join(new sql\join\ImageIndexTablerefJoin())
         ;
 
-        //$where = new \NP\core\db\Where();
         $where = new sql\criteria\ImageScanGetCriteria();
         $where
             ->equals('itransfer.transfer_srcTableName', '\'vendorsite\'')
-//            ->nest('OR')
-//                ->isNull(new Expression('?'))//$params['tableref_id']
-//                ->equals('img.Tableref_id', new Expression('?'))
-//            ->unnest()
-//            ->nest('OR')
-//                ->equals('img.Image_Index_Id', new Expression('?'))
-//                ->nest('AND')
-//                    ->isNull(new Expression('?'))// $id
-//                    ->nest('OR')
-//                        ->isNull('img.Property_Id')
-//                        ->in('img.Property_Id', new Expression('?'))
-//                    ->unnest()
-//                    ->equals('img.asp_client_id', new Expression('?'))
-//                    ->nest('OR')
-//                        ->isNull('img.Tablekey_Id')
-//                        ->equals('img.Tablekey_Id', 0)
-//                    ->unnest()
-//                    ->in('img.Image_Index_Status', implode(',', [1, 2]))
-//                ->unnest()
-//            ->unnest()
         ;
         $select->where($where);
 
