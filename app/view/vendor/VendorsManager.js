@@ -36,7 +36,6 @@ Ext.define('NP.view.vendor.VendorsManager', {
 		];
 
 		this.tbar = bar;
-		this.bbar = bar;
 
 		this.items = [
 			{

@@ -48,7 +48,7 @@ Ext.define('NP.view.vendor.VendorForm', {
 			}
 		];
 
-		this.tbar = this.bbar = bar;
+		this.tbar = bar;
 
 		this.items = [{
 			xtype : 'tabpanel',

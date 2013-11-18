@@ -15,7 +15,7 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
 	padding: 8,
 
 	// For localization
-	title                     : 'Vendor name and information',
+	title                     : 'GL Information',
 	integrationPackageInputLabel: 'Integration Package',
 	vendorNameInputLabel: 'Vendor Name',
 	taxIDInputLabel: 'Tax ID',

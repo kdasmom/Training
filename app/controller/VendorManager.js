@@ -95,7 +95,7 @@ Ext.define('NP.controller.VendorManager', {
 
         var tabPanel = that.setView('NP.view.vendor.VendorsManager');
 
-		if (!activeTab) var activeTab = 'approved';
+		if (!activeTab) var activeTab = 'pending';
 
 		var tab = Ext.ComponentQuery.query('#vendor_grid_' + activeTab)[0];
 		var tabPanel = Ext.ComponentQuery.query('tabpanel')[0];
