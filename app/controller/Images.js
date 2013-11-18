@@ -8,6 +8,7 @@ Ext.define('NP.controller.Images', {
         this.controlMain(control);
         this.controlIndex(control);
         this.controlSearch(control);
+        this.controlSearchCDIndex(control);
 
         this.control(control);
     },
@@ -76,6 +77,27 @@ Ext.define('NP.controller.Images', {
 
         control[prefix + 'button[itemId~="buttonReturn"]'] = {
             click: this.processButtonReturn
+        }
+        
+        control[prefix + 'button[itemId~="buttonSearchProcess"]'] = {
+            click: this.processButtonSearchProcess
+        }
+        control[prefix + 'button[itemId~="buttonSearchCDIndex"]'] = {
+            click: this.processButtonSearchCDIndex
+        }
+    },
+    controlSearchCDIndex: function(control) {
+        var prefix = '[xtype="images.searchcdindex"] ';
+
+        control[prefix + 'button[itemId~="buttonReturn"]'] = {
+            click: this.processButtonReturn
+        }
+        
+        control[prefix + 'button[itemId~="buttonSearchCDIndexProcess"]'] = {
+            click: this.processButtonSearchCDIndexProcess
+        }
+        control[prefix + 'button[itemId~="buttonSearchCDIndexPrint"]'] = {
+            click: this.processButtonSearchCDIndexPrint
         }
     },
 
@@ -233,6 +255,124 @@ Ext.define('NP.controller.Images', {
         });*/
     },
 
+    processButtonSearchProcess: function() {
+        var searchtype = Ext.ComponentQuery.query(
+            '[itemId="field-image-searchtype"]'
+        )[0];
+
+        var imagename = Ext.ComponentQuery.query(
+            '[itemId="field-image-name"]'
+        )[0];
+        var scandate = Ext.ComponentQuery.query(
+            '[itemId="field-scan-date"]'
+        )[0];
+        var vendor = Ext.ComponentQuery.query(
+            '[itemId="field-vendor"]'
+        )[0];
+
+        if (searchtype.getValue() == 1 && imagename.getValue().length < 4) {
+            alert("Please enter an image name with more than 4 characters.");
+            imagename.focus();
+        } else if (searchtype.getValue() == 2 && scandate.getValue() == '') {
+            alert("Please enter a scan date");
+            scandate.focus();
+        } else if (searchtype.getValue() == 3 && vendor.getValue().length < 4) {
+            alert("Please enter a vendor with more than 4 characters.");
+            vendor.focus();
+        } else {
+            var searchstring = '';
+            if (searchtype.getValue() == 1) {
+                searchstring = imagename.getValue();
+            } else if (searchtype.getValue() == 2) {
+                searchstring = scandate.getValue();
+            } else if (searchtype.getValue() == 3) {
+                searchstring = vendor.getValue();
+            }
+
+            var result = Ext.ComponentQuery.query(
+                '[itemId="grid-search-results"]'
+            )[0];
+
+            var doctype = Ext.ComponentQuery.query(
+                '[itemId="field-image-doctype"]'
+            )[0];
+
+            var contextpicker = Ext.ComponentQuery.query(
+                '[xtype="shared.contextpickermulti"]'
+            )[0];
+
+            var params = {
+                doctype: doctype.getValue(),
+                searchtype: searchtype.getValue(),
+                searchstring: searchstring,
+
+                contextType     : contextpicker.getState().type,
+                contextSelection: contextpicker.getState().selected
+            }
+
+            if (params.contextSelection && params.contextSelection.join) {
+                params.contextSelection = params.contextSelection.join(',');
+            }
+
+            result.store.load({params: params});
+        }
+    },
+    processButtonSearchCDIndex: function() {
+        this.application.addHistory('Images:showSearchCDIndex');
+    },
+
+    processButtonSearchCDIndexProcess: function() {
+        var doctype = Ext.ComponentQuery.query(
+            '[itemId~="field-image-doctype"]'
+        )[0].getValue();
+        var refnum  = Ext.ComponentQuery.query(
+            '[itemId~="field-refnumber"]'
+        )[0].getValue();
+
+        if (!doctype) {
+            alert('Please choose a document type.');
+            return;
+        }
+        if (!refnum || refnum.length < 2) {
+            alert('Please enter at least 2 characters for reference number search.');
+            return;
+        }
+
+        if (doctype > 3) { 
+            //grid-search-cdindex-results
+
+            //SearchDocType NEQ "invoice" AND SearchDocType NEQ "purchase order" AND SearchDocType NEQ "vendor estimate"
+//            var result = Ext.ComponentQuery.query(
+//                '[itemId="grid-search-results"]'
+//            )[0];
+//            var params = {
+//                doctype: doctype.getValue(),
+//                searchtype: searchtype.getValue(),
+//                searchstring: searchstring,
+//
+//                contextType     : contextpicker.getState().type,
+//                contextSelection: contextpicker.getState().selected
+//            }
+//
+//            if (params.contextSelection && params.contextSelection.join) {
+//                params.contextSelection = params.contextSelection.join(',');
+//            }
+//
+//            result.store.load({params: params});
+            
+        } else {
+            
+        }
+
+    },
+    processButtonSearchCDIndexPrint: function() {
+        window.print();
+    },
+    
+    
+    
+    
+
     showMain: function(tab) {
         this.application.setView('NP.view.images.Main');
 
@@ -381,5 +521,8 @@ Ext.define('NP.controller.Images', {
     },
     showSearch: function() {
         this.application.setView('NP.view.images.Search');
+    },
+    showSearchCDIndex: function() {
+        this.application.setView('NP.view.images.SearchCDIndex');
     }
 });

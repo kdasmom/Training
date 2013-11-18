@@ -1,117 +1,129 @@
 Ext.define('NP.view.images.Search', {
-    extend: 'Ext.form.Panel',
+    extend: 'Ext.panel.Panel',
     alias:  'widget.images.search',
 
     title:  'Search Images',
+    autoscroll: true,
 
-    uids: {
-        buttonReturn: 'buttonReturn'
-    },
+    requires: [
+        'NP.view.shared.ContextPickerMulti',
+        'NP.view.images.grid.Search'
+    ],
+
     locale: {
+        buttonSearch: 'Search',
+        buttonCDIndex: 'CD Index',
         buttonReturn: 'Return to Image Management'
     },
 
     initComponent: function() {
-        this.bodyPadding = 10;
+        var tablerefs = [];
+        if (NP.lib.core.Config.getSetting('pn.main.WebDocumentz') == 1 || NP.lib.core.Config.getSetting('pn.main.WebDocumentz') == 2) {
+            if (NP.lib.core.Security.hasPermission(2081)) {
+                tablerefs.push(1);
+            }
+        }
+        if (NP.lib.core.Config.getSetting('pn.main.WebDocumentz') == 2) {
+            if (NP.lib.core.Security.hasPermission(2087)) {
+                tablerefs.push(3);
+            }
+            if (NP.lib.core.Security.hasPermission(2088)) {
+                tablerefs.push(4);
+            }
+            if (NP.lib.core.Security.hasPermission(2089)) {
+                tablerefs.push(2);
+            }
+        }
+        
+        var storeImageDoctypes = Ext.create('NP.store.images.ImageDocTypes', {
+            service    : 'ImageService',
+            action     : 'getImageDoctypes',
+            extraParams: {
+                'tablerefs': tablerefs.join(',')
+            }
+        });
+        storeImageDoctypes.load();
+
+        var storeSearchType = Ext.create('NP.lib.data.Store', {
+            data: [
+                {'image-criteria-index': 1, 'image-criteria': 'Image Name'},
+                {'image-criteria-index': 2, 'image-criteria': 'Scan Date'},
+                {'image-criteria-index': 3, 'image-criteria': 'Vendor'}
+            ],
+            fields: ['image-criteria', 'image-criteria-index']
+        });
 
         this.items = [
             {
-                id: 'field-image-type',
-                xtype: 'combobox',
-                fieldLabel: 'Image Type:',
-
-                displayField: 'image-type',
-                valueField:   'image-type-index',
-
-                store: Ext.create('Ext.data.Store', {
-                    data: [
-                        {'image-type-index': 0, 'image-type': 'Invoice'},
-                        {'image-type-index': 1, 'image-type': 'Purchase Order'}
-                    ],
-                    fields: ['image-type', 'image-type-index']
-                }),
-
-                value: 0
-            },
-            {
-                id: 'field-image-criteria',
-                xtype: 'combobox',
-                fieldLabel: 'Search By:',
-
-                displayField: 'image-criteria',
-                valueField:   'image-criteria-index',
-
-                store: Ext.create('Ext.data.Store', {
-                    data: [
-                        {'image-criteria-index': 0, 'image-criteria': 'Image Name'},
-                        {'image-criteria-index': 1, 'image-criteria': 'Scan Date'},
-                        {'image-criteria-index': 2, 'image-criteria': 'Vendor'}
-                    ],
-                    fields: ['image-criteria', 'image-criteria-index']
-                }),
-
-                value: 0,
-
-                listeners: {
-                    select: this.onSearchCriteriaChange
-                }
-            },
-            {
-                id: 'field-image-name',
-                xtype: 'textfield',
-                fieldLabel: 'Image Name:'
-            },
-            {
-                id: 'field-scan-date',
-                xtype: 'datefield',
-                fieldLabel: 'Scan Date:'
-            },
-            {
-                id: 'field-vendor',
-                xtype: 'textfield',
-                fieldLabel: 'Vendor:'
-            },
-            {
-                id: 'field-property',
-                xtype: 'radiogroup',
-                fieldLabel: 'Property',
-
-                columns: 4,
-                vertical: true,
+                xtype: 'panel',
+                bodyPadding: 10,
 
                 items: [
                     {
-                        name: 1,
-                        boxLabel: 'Current Property',
-                        inputValue: 1,
-                        checked: true,
-                        width: 150
+                        itemId: 'field-image-doctype',
+
+                        xtype: 'customcombo',
+                        fieldLabel: 'Image Type:',
+
+                        valueField:   'image_doctype_id',
+                        displayField: 'image_doctype_name',
+
+                        store: storeImageDoctypes,
+                        value: 1
                     },
                     {
-                        name: 2,
-                        boxLabel: 'Multiple Properties',
-                        inputValue: 2,
-                        width: 150
+                        itemId: 'field-image-searchtype',
+
+                        xtype: 'customcombo',
+                        fieldLabel: 'Search By:',
+
+                        displayField: 'image-criteria',
+                        valueField:   'image-criteria-index',
+
+                        store: storeSearchType,
+                        value: 1,
+
+                        listeners: {
+                            select: this.onSearchCriteriaChange
+                        }
                     },
                     {
-                        name: 3,
-                        boxLabel: 'Region',
-                        inputValue: 3,
-                        width: 150
+                        itemId: 'field-image-name',
+
+                        xtype: 'textfield',
+                        fieldLabel: 'Image Name:'
                     },
                     {
-                        name: 4,
-                        boxLabel: 'All Properties',
-                        inputValue: 4,
-                        width: 150
+                        itemId: 'field-scan-date',
+
+                        xtype: 'datefield',
+                        fieldLabel: 'Scan Date:'
+                    },
+                    {
+                        itemId: 'field-vendor',
+
+                        xtype: 'textfield',
+                        fieldLabel: 'Vendor:'
+                    },
+                    {
+                        xtype: 'shared.contextpickermulti',
+                        fieldLabel: 'Property:'
                     }
                 ]
+            },
+            {
+                xtype: 'images.grid.Search',
+
+                itemId: 'grid-search-results',
+                title: 'Search Results'
             }
         ];
-        this.buttons = [{text: 'Search'}];
 
         this.tbar = [
-            {xtype: 'button', itemId: this.uids.buttonReturn,  text: this.locale.buttonReturn},
+            {xtype: 'button', itemId: 'buttonReturn', text: this.locale.buttonReturn},
+            {xtype: 'tbspacer', width: 20},
+            {xtype: 'button', itemId: 'buttonSearchProcess', text: this.locale.buttonSearch},
+            {xtype: 'button', itemId: 'buttonSearchCDIndex', text: this.locale.buttonCDIndex}
         ];
         this.callParent(arguments);
 
@@ -122,18 +134,18 @@ Ext.define('NP.view.images.Search', {
         var visibility = {
             'Image Name': {
                 'field-image-name': true,
-                'field-scan-date': false,
-                'field-vendor': false
+                'field-scan-date' : false,
+                'field-vendor'    : false
             },
             'Scan Date': {
                 'field-image-name': false,
-                'field-scan-date': true,
-                'field-vendor': false
+                'field-scan-date' : true,
+                'field-vendor'    : false
             },
             'Vendor': {
                 'field-image-name': false,
-                'field-scan-date': false,
-                'field-vendor': true
+                'field-scan-date' : false,
+                'field-vendor'    : true
             }
         };
 
@@ -144,9 +156,8 @@ Ext.define('NP.view.images.Search', {
         }
 
         for (var key in visibility[title]) {
-            var field = Ext.ComponentQuery.query('[id~="' + key + '"]')[0];
+            var field = Ext.ComponentQuery.query('[itemId~="' + key + '"]')[0];
             visibility[title][key] ? field.show() : field.hide();
         }
-
     }
 });

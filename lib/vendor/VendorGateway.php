@@ -104,6 +104,24 @@ class VendorGateway extends AbstractGateway {
 		}
 	}
 
+        public function getVendors() {
+            $select = $this->getSelect();
+            $select
+                ->columns([
+                    'vendor_id',
+                    'vendor_name',
+                    'vendor_id_alt',
+                    'vendor_status'
+                ])
+                ->where(
+                    Where::get()
+                        ->nest('OR')
+                            ->equals('v.vendor_status', '\'active\'')
+                            ->equals('v.vendor_status', '\'inactive\'')
+                        ->unnest()
+                )
+                ->order('v.vendor_name')
+            ;
+            return $this->adapter->query($select);
+        }
 }
-
-?>

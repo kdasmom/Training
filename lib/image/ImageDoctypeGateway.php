@@ -3,6 +3,7 @@ namespace NP\image;
 
 use NP\core\AbstractGateway;
 use NP\core\db\Where;
+use NP\core\db\Select;
 
 class ImageDoctypeGateway extends AbstractGateway {
     protected $table = 'image_doctype';
@@ -43,5 +44,20 @@ class ImageDoctypeGateway extends AbstractGateway {
             return $data;
         }
         return null;
+    }
+
+    public function getImageDoctypes($tablerefs) {
+        if (!empty($tablerefs)) {
+            $select = new Select();
+            $select
+                ->from($this->table)
+                ->where(
+                    Where::get()
+                        ->greaterThan('universal_field_status', 0)
+                        ->in('tableref_id', $tablerefs)
+                )
+            ;
+            return $this->adapter->query($select);
+        }
     }
 }

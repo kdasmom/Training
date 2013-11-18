@@ -7,6 +7,9 @@ use NP\security\SecurityService;
 use NP\core\io\FileUpload;
 use NP\system\ConfigService;
 use NP\system\IntegrationPackageGateway;
+use NP\vendor\UtilityAccountGateway;
+use NP\property\PropertyGateway;
+use NP\vendor\VendorGateway;
 
 /**
  * Service class for operations related to Images
@@ -16,11 +19,13 @@ use NP\system\IntegrationPackageGateway;
 class ImageService extends AbstractService {
 
 	protected $securityService, $imageIndexGateway, $imageTransferGateway, $configService, $imageTablerefGateway, $imageDoctypeGateway, $invoiceImageSourceGateway,
-                $auditactivityGateway, $auditlogGateway, $audittypeGateway, $integrationPackageGateway;
+                $auditactivityGateway, $auditlogGateway, $audittypeGateway, $integrationPackageGateway, $utilityAccountGateway, $propertyGateway, $vendorGateway,
+                $imageToCDGateway;
 
 	public function __construct(ImageIndexGateway $imageIndexGateway, ImageTransferGateway $imageTransferGateway, ConfigService $configService, ImageTablerefGateway $imageTablerefGateway,
                 ImageDoctypeGateway $imageDoctypeGateway, InvoiceImageSourceGateway $invoiceImageSourceGateway, AuditactivityGateway $auditactivityGateway,AuditlogGateway $auditlogGateway, 
-                AudittypeGateway $audittypeGateway, IntegrationPackageGateway $integrationPackageGateway) {
+                AudittypeGateway $audittypeGateway, IntegrationPackageGateway $integrationPackageGateway, UtilityAccountGateway $utilityAccountGateway, PropertyGateway $propertyGateway, VendorGateway $vendorGateway,
+                ImageToCDGateway $imageToCDGateway) {
 		$this->imageIndexGateway    = $imageIndexGateway;
 		$this->imageTransferGateway = $imageTransferGateway;
                 $this->configService        = $configService;
@@ -31,6 +36,10 @@ class ImageService extends AbstractService {
                 $this->audittypeGateway     = $audittypeGateway;
                 $this->invoiceImageSourceGateway = $invoiceImageSourceGateway;
                 $this->integrationPackageGateway = $integrationPackageGateway;
+                $this->utilityAccountGateway = $utilityAccountGateway;
+                $this->propertyGateway = $propertyGateway;
+                $this->vendorGateway = $vendorGateway;
+                $this->imageToCDGateway = $imageToCDGateway;
 	}
 
 	public function setSecurityService(SecurityService $securityService) {
@@ -598,6 +607,14 @@ class ImageService extends AbstractService {
             return $result;
         }
         public function listIntegrationPackages() {
+            /*
+                DECLARE @in_date datetime;
+                SET @in_date = getdate();
+
+                SELECT DISTINCT i.integration_package_id, ip.integration_package_name
+                FROM UDF_USER_PROPERTY_LISTING(#client.asp_client_id#, #client.userprofile_id#, @in_date) i
+                        INNER JOIN INTEGRATIONPACKAGE ip ON i.integration_package_id = ip.integration_package_id
+             */
             return $this->integrationPackageGateway->find();
         }
 
@@ -636,6 +653,12 @@ class ImageService extends AbstractService {
 
         
 
+        
+        
+        
+        
+        
+        
         
         
         
@@ -689,10 +712,7 @@ class ImageService extends AbstractService {
             ;
 
             if ($entity['Image_Doctype_Id'] == $doctypes[strtolower('Utility Invoice')]) {
-                //$entity['Property_Id'] = $entity[] request.property_id = request.utility_property_id не в модели -> требует отдельного разбора
-
-                //<cfset request.property_id = request.utility_property_id />
-                //<cfqueryparam cfsqltype="CF_SQL_INTEGER" value="#request.property_id#" null="No">
+                $entity['Property_Id'] = $params['utility_property_id'];
             } elseif (empty($entity['Property_Id'])) {
                 if (!empty($params['Property_Alt_Id'])) {
                     $entity['Property_Id'] = $params['Property_Alt_Id'];
@@ -773,14 +793,6 @@ class ImageService extends AbstractService {
                 $tableref_id = $tablerefs[strtolower('receipt')];
             } elseif ($entity['Image_Doctype_Id'] == $doctypes[strtolower('Utility Invoice')]) {
                 $tableref_id = $tablerefs[strtolower('Utility Invoice')];
-
-                // Эти поля должны автоматически прийти
-//                        $update->value('utilityaccount_id', $data['utilityaccount_id']);//#listFirst(request.utilityaccount_id)#
-//                        $update->value('utilityaccount_accountnumber', $data['utilityaccount_accountnumber']);//#listFirst(request.utilityaccount_id)#
-//                        $update->value('utilityaccount_metersize', $data['utilityaccount_metersize']);//#listFirst(request.utilityaccount_id)#
-//
-//                        $update->value('cycle_from', !empty($data['cycle_from']) ? $data['cycle_from'] : null);//#listFirst(request.utilityaccount_id)#
-//                        $update->value('cycle_to', !empty($data['cycle_to']) ? $data['cycle_to'] : null);//#listFirst(request.utilityaccount_id)#
             } elseif ($entity['Image_Doctype_Id'] > 3) {
                 $tableref_id = 2;
 
@@ -813,6 +825,280 @@ class ImageService extends AbstractService {
 
             //return $this->imageIndexGateway->updateImage($data['imageindex'], $params, $doctypes, $tablerefs);
         }
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        public function listAccountNumbers($userprofile_id, $delegation_to_userprofile_id) {
+            $userprofile_id =
+                !empty($userprofile_id) ? 
+                    $userprofile_id :
+                    $this->securityService->getUserId()
+            ;
+            $delegation_to_userprofile_id =
+                !empty($delegation_to_userprofile_id) ?
+                    $delegation_to_userprofile_id:
+                    $this->securityService->getUserId()
+            ;
+            return $this->utilityAccountGateway->getAccountNumbers($userprofile_id, $delegation_to_userprofile_id);
+        }
+
+        public function listAccountNumber2($userprofile_id, $delegation_to_userprofile_id) {
+            $userprofile_id =
+                !empty($userprofile_id) ?
+                    $userprofile_id :
+                    $this->securityService->getUserId()
+            ;
+            $delegation_to_userprofile_id =
+                !empty($delegation_to_userprofile_id) ?
+                    $delegation_to_userprofile_id:
+                    $this->securityService->getUserId()
+            ;
+
+            $utilityaccount_accountnumber = 1;
+            return $this->utilityAccountGateway->getUtilityAccountsByCriteria($userprofile_id, $delegation_to_userprofile_id, $utilityaccount_accountnumber);
+        }
+
+        public function listMeterSizes($account) {
+            if (!empty($account)) {
+                return $this->utilityAccountGateway->getMeterByAccount($account);
+            }
+        }
+        
+        
+    public function matchUtilityAccount() {
+        //$userprofile_id, $delegation_to_userprofile_id, $utilityaccount_accountnumber
+        $accounts = $this->getUtilityAccountsByCriteria($userprofile_id, $delegation_to_userprofile_id, $utilityaccount_accountnumber);
+
+        $result = [];
+        if (!empty($result)) {
+            $result['accountNumberValid'] = true;
+
+            if (!empty($params['utilityaccount_metersize'])) {
+                $result['meterValid'] = false;
+                foreach ($result as $account) {
+                    if ($account['utilityaccount_metersize'] == $params['utilityaccount_metersize']) {
+                        $result['meterValid'] = true;
+                        break;
+                    }
+                }
+            } else {
+                $result['meterValid'] = true;
+            }
+        } else {
+            $result['accountNumberValid'] = false;
+            $result['meterValid'] = false;
+        }
+
+        foreach ($result as $account) {
+            $record = [
+                'property_id'         => $account['property_id'],
+                'vendorsite_id'       => $account['vendorsite_id'],
+                'utilityaccount_id'   => $account['utilityaccount_id'],
+                'utilityaccount_name' => $account['utilityaccount_name']
+            ];
+            $result['accounts'][] = $record;
+        }
+        return $result;
+    }
+
+    public function getUtilityAccountVendorPropMeter() {
+
+        $details = $this->utilityAccountGateway->getUtilityAccountDetails(
+            $utilityaccount_accountnumber
+        );
+
+        $meters = $this->utilityAccountGateway->getMeterByAccount(
+            $utilityaccount_accountnumber, 
+            $details['vendorsite_id'],
+            $details['property_id']
+        );
+
+        $result['property_id']     = $details['property_id'];
+        $result['property_id_alt'] = $details['property_id_alt'];
+        $result['property_name']   = $details['property_name'];
+        $result['vendorsite_id']   = $details['vendorsite_id'];
+        $result['vendor_id_alt']   = $details['vendor_id_alt'];
+        $result['vendor_name']     = $details['vendor_name'];
+
+        $result['meters'] = [];
+        foreach ($meters as $meter) {
+            $result['meters'][] = $meter['utilityaccount_metersize']; //<cfset arrayAppend(response["meters"], "#qMeters.utilityaccount_metersize#|@|") />    
+        }
+        return $result;
+    }
+
+    public function getProperties() {
+
+        
+        
+        
+        
+/*
+<cfif client.userprofile_id EQ client.delegation_to_userprofile_id>
+	<cfstoredproc datasource="#request.dsn#" procedure="USER_PROPERTY_LISTING">
+		<cfprocparam type="In" cfsqltype="CF_SQL_INTEGER" dbvarname="in_asp_client_id" value="#client.asp_client_id#" null="No">
+		<cfprocparam type="In" cfsqltype="CF_SQL_INTEGER" dbvarname="userprofile_id" value="#client.userprofile_id#" null="No">
+		<cfprocresult name="get_properties">
+	</cfstoredproc>
+<cfelse>
+	<cfinvoke component="baseline_cfc.property.property" 
+		method="getUserProperties" 
+		asp_client_id="#client.asp_client_id#"
+		userprofile_id="#client.userprofile_id#"
+		returnvariable="get_properties" />
+</cfif>
+
+        
+        
+        
+	<cffunction name="getUserProperties" access="public" output="no" returntype="query">
+		<cfargument name="asp_client_id" type="numeric" required="no" />
+		<cfargument name="userprofile_id" type="numeric" required="no" />
+		<cfargument name="delegation_to_userprofile_id" type="numeric" required="no" />
+		<cfargument name="includeCodingOnly" type="boolean" required="no" default=false />
+		
+		<cfset var q = "" />
+		
+		<cfif NOT StructKeyExists(arguments, "asp_client_id")>
+			<cfset arguments.asp_client_id = client.asp_client_id />
+		</cfif>
+		
+		<cfif NOT StructKeyExists(arguments, "userprofile_id")>
+			<cfset arguments.userprofile_id = client.userprofile_id />
+		</cfif>
+		
+		<cfif NOT StructKeyExists(arguments, "delegation_to_userprofile_id")>
+			<cfif StructKeyExists(client, "delegation_to_userprofile_id")>
+				<cfset arguments.delegation_to_userprofile_id = client.delegation_to_userprofile_id />
+			<cfelse>
+				<cfset arguments.delegation_to_userprofile_id = arguments.userprofile_id />
+			</cfif>
+		</cfif>
+		
+		<cfif arguments.userprofile_id EQ arguments.delegation_to_userprofile_id>
+			<cfstoredproc datasource="#request.dsn#" procedure="USER_PROPERTY_LISTING">
+				<cfprocparam type="In" cfsqltype="CF_SQL_INTEGER" dbvarname="@in_asp_client_id" value="#arguments.asp_client_id#" null="No">
+				<cfprocparam type="In" cfsqltype="CF_SQL_INTEGER" dbvarname="@userprofile_id" value="#arguments.userprofile_id#" null="No">
+				<cfprocresult name="q">
+			</cfstoredproc>
+		<cfelse>
+			<cfquery name="q" datasource="#request.dsn#">
+			Select 
+				DISTINCT 
+				p.property_id, 
+				p.property_no_units, 
+				p.property_name,
+				p.property_id_alt, 
+				p.property_status, 
+				fm.fiscalcalmonth_id,
+				p.integration_package_id,
+				0 AS is_coding_only
+			FROM delegation d
+				INNER JOIN delegationprop dp ON d.delegation_id = dp.delegation_id
+				INNER JOIN PROPERTY p ON dp.property_id = p.property_id
+				INNER JOIN fiscalcal f ON f.property_id = p.property_id
+				INNER JOIN fiscalcalmonth fm ON f.fiscalcal_id = fm.fiscalcal_id
+			WHERE d.userprofile_id = <cfqueryparam value="#arguments.userprofile_id#" />
+				AND d.delegation_to_userprofile_id = <cfqueryparam value="#arguments.delegation_to_userprofile_id#" />
+				AND d.delegation_status = 1
+				AND d.delegation_startdate <= getDate()
+				AND d.delegation_stopdate > getDate()
+				AND fm.fiscalcalmonth_num = <cfqueryparam value="#month(now())#" />
+				AND f.fiscalcal_year = <cfqueryparam value="#year(now())#" />
+			<cfif arguments.includeCodingOnly>
+				UNION
+				Select 
+					DISTINCT 
+					p.property_id, 
+					p.property_no_units, 
+					p.property_name,
+					p.property_id_alt, 
+					p.property_status, 
+					fm.fiscalcalmonth_id,
+					p.integration_package_id,
+					1 AS is_coding_only
+				FROM propertyusercoding pu
+					INNER JOIN PROPERTY p ON pu.property_id = p.property_id
+					INNER JOIN fiscalcal f ON f.property_id = p.property_id
+					INNER JOIN fiscalcalmonth fm ON f.fiscalcal_id = fm.fiscalcal_id
+				WHERE pu.userprofile_id = <cfqueryparam value="#arguments.userprofile_id#" />
+					AND fm.fiscalcalmonth_num = <cfqueryparam value="#month(now())#" />
+					AND f.fiscalcal_year = <cfqueryparam value="#year(now())#" />
+			</cfif>
+			Order By p.property_name
+			</cfquery>
+		</cfif>
+		
+		<cfreturn q />
+	</cffunction>
+
+
+
+
+
+<cfquery name="get_properties" dbtype="query">
+    SELECT * 
+    FROM get_properties 
+    WHERE integration_package_id=<cfqueryparam cfsqltype="CF_SQL_INTEGER" value="#get_integration_package.integration_package_id#">
+	AND property_status = 1
+</cfquery>
+
+                        
+                        
+
+<CFQUERY dbtype="query" NAME="GetPropertyCode">
+SELECT property_id,property_id_alt
+FROM  get_properties	
+ORDER BY property_id_alt		
+</CFQUERY>
+*/
+    }
+        
+    
+    
+    
+    
+
+    public function getImageDoctypes($tablerefs) {
+        return $this->imageDoctypeGateway->getImageDoctypes($tablerefs);
+    }
+    
+    public function getPropertyList($userprofile_id, $delegation_to_userprofile_id) {
+        $delegation_to_userprofile_id = $userprofile_id;
+
+        return $this->propertyGateway->findByUser(
+            $userprofile_id,
+            $delegation_to_userprofile_id,
+            [
+                'property_id',
+                'property_name',
+                'property_status',
+                'region_id'
+            ]
+        );
+    }
+
+    public function getVendorList() {
+        return $this->vendorGateway->getVendors();
+    }
+
+    public function imageSearch($doctype, $searchtype, $searchstring, $contextType, $contextSelection) {
+        return $this->imageIndexGateway->imageSearch($doctype, $searchtype, $searchstring, $contextType, $contextSelection);
+    }
+    public function imageSearchCDIndex() {
+        
+    }
+        
+        
+        
 }
 
 

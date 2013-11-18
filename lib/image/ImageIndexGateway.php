@@ -879,6 +879,82 @@ print_r($update->toString());
         return $scans;
     }
 
+
+
+
+    public function imageSearch($doctype, $searchtype, $searchstring, $property_type, $property_list) {
+        $select01 = new sql\ImageSearchSelect();
+
+        if ($searchtype == 1 || $searchtype == 3) {
+            $searchstring = rtrim(ltrim($searchstring));
+
+            $searchstring = str_replace('%', '|%', $searchstring);
+            $searchstring = str_replace('_', '|_', $searchstring);
+            $searchstring = str_replace('[', '|[', $searchstring);
+            $searchstring = str_replace(']', '|]', $searchstring);
+            $searchstring = str_replace('^', '|^', $searchstring);
+            $searchstring = str_replace('?', '|?', $searchstring);
+        }
+
+        switch ($property_type) {
+            case 'property':
+            case 'multiProperty':
+                $left = 'ii.property_id';
+                break;
+            case 'region':
+                $left = 'p.region_id';
+                break;
+            case 'all':
+                $left = 'p.property_status';
+                break;
+        }
+
+
+        switch ($searchtype) {
+            case 1:
+                $select01
+                    ->where(
+                        Where::get()
+                            ->equals('ii.image_doctype_id', $doctype)
+                            ->like('ii.image_index_name', '\'%'.$searchstring.'%\' ESCAPE \'|\'')
+                            ->nest('OR')
+                                ->equals('ii.property_id', 0)
+                                ->in($left, $property_list)
+                            ->unnest()
+                    )
+                ;
+                break;
+            case 2:
+                $select01
+                    ->where(
+                        Where::get()
+                            ->equals('ii.image_doctype_id', $doctype)
+                            ->equals('dbo.DateNoTime(ii.image_index_date_entered)', 'CONVERT(datetime, \''.$searchstring.'\')')
+                            ->nest('OR')
+                                ->equals('ii.property_id', 0)
+                                ->in($left, $property_list)
+                            ->unnest()
+                    )
+                ;
+                break;
+            case 3:
+                $select01
+                    ->where(
+                        Where::get()
+                            ->equals('ii.image_doctype_id', $doctype)
+                            ->like('ii.vendor_name', '\'%'.$searchstring.'%\' ESCAPE \'|\'')
+                            ->nest('OR')
+                                ->equals('ii.property_id', 0)
+                                ->in($left, $property_list)
+                            ->unnest()
+                    )
+                ;
+                break;
+        }
+        return $this->adapter->query($select01);
+    }
+
+
 /*
 ii   = img
 iis  = imgs

@@ -34,55 +34,8 @@ Ext.define('NP.view.images.Index', {
     initComponent: function() {
         var widthLabel = 130;
         var widthField = "50%";
-
+        /*
         var fields = [
-            //Document type
-            {
-                name: 'Image_Doctype_Id',
-                xtype: 'combobox',
-                fieldLabel: 'Document Type:',
-
-                displayField: 'image_doctype_name',
-                valueField:   'image_doctype_id',
-
-                queryMode: 'local',
-                store: Ext.create('NP.store.images.ImageDocTypes',{
-                    service    : 'ImageService',
-                    action     : 'listDocTypes'
-                }),
-                listeners: {
-                    select: this.onDocumentTypeChange
-                }
-            },
-            //Image name
-            {
-                name: 'Image_Index_Name',
-                xtype: 'textfield',
-                fieldLabel: 'Image Name:'
-            },
-            //Integration Package
-            {
-                id: 'field-integration-package',
-                xtype: 'combobox',
-                labelWidth: widthLabel,
-                fieldLabel: 'Integration Package:',
-
-                displayField: 'integration_package_name',
-                valueField:   'integration_package_id',
-
-                queryMode: 'local',
-                store: Ext.create('NP.store.images.IntegrationPackages', {
-                    service    : 'ImageService',
-                    action     : 'listIntegrationPackages'
-                })
-            },
-            //Account Number
-            {
-                id: 'field-account-number',
-                name: 'utilityaccount_accountnumber',
-                xtype: 'textfield',
-                fieldLabel: 'Account Number:'
-            },
             //Property code
             {
                 id: 'field-property-code',
@@ -101,13 +54,6 @@ Ext.define('NP.view.images.Index', {
                         {"title":"001", "value":"Yardi"},
                     ]                            
                 }
-            },
-            //Meter Number
-            {
-                id: 'field-meter-number',
-                name: 'utilityaccount_metersize',
-                xtype: 'textfield',
-                fieldLabel: 'Meter Number:'
             },
             //Vendor code
             {
@@ -285,6 +231,17 @@ Ext.define('NP.view.images.Index', {
 
         this.id = 'panel-index';
         this.layout = 'border';
+        var fields = [];
+        fields = fields.concat(
+            this.markupBase(), 
+            this.markupUtility(),
+            this.markupPropertyIndex(),
+            this.markupVendorCode(),
+            this.markupPropertyName(),
+            this.markupVendorName()
+        )
+
+
 
         this.items = [
             {
@@ -341,16 +298,623 @@ Ext.define('NP.view.images.Index', {
         ];
         this.callParent(arguments);
 
-        this.onDocumentTypeChange();
+        //this.onDocumentTypeChange();
+        // invoiceimage_name: validation =  alphaNumericFilter(this.value, #variables.AlphaNumericPattern#)
+        // integration_package_id
+    },
+
+
+
+    /***************************************************************************
+     * SECTION: BASE
+     **************************************************************************/
+    markupBase: function() {
+        var storeDoctypes = 
+            Ext.create('NP.store.images.ImageDocTypes',{
+                service    : 'ImageService',
+                action     : 'listDocTypes'
+            }
+        );
+        storeDoctypes.load();
+
+        var storeIntegrationPackages =
+            Ext.create('NP.store.images.IntegrationPackages', {
+                service    : 'ImageService',
+                action     : 'listIntegrationPackages'
+            }
+        );
+        storeIntegrationPackages.load();
+
+        return [
+            // Document type
+            {
+                name: 'Image_Doctype_Id',
+
+                xtype: 'customcombo',
+                fieldLabel: 'Document Type:',
+
+                store: storeDoctypes,
+                valueField:   'image_doctype_id',
+                displayField: 'image_doctype_name',
+
+                listeners: {
+                    select: this.onDocumentTypeChange
+                }
+            },
+            // Image name
+            {
+                name: 'Image_Index_Name',
+
+                xtype: 'textfield',
+                fieldLabel: 'Image Name:'
+                //this.value=alphaNumericFilter(this.value, #variables.AlphaNumericPattern#)
+            },
+            // Integration Package
+            {
+                itemId: 'field-integration-package',
+
+                xtype: 'customcombo',
+                fieldLabel: 'Integration Package:',
+
+                store: storeIntegrationPackages,
+                valueField:   'integration_package_id',
+                displayField: 'integration_package_name',
+
+                listeners: {
+                    select: this.onIntegrationPackageChange
+                }
+            },
+        ] 
     },
 
     onDocumentTypeChange: function(combo, records) {
+        //function changeIndexValues()
+        var form = this.up('boundform');
+
+        var title = 
+            (combo && records) ?
+                records[0]['data'][combo['displayField']]:
+                'Invoice'
+        ;
+        title = title.replace(' ', '');
+
+        form['display' + title] && form['display' + title]();
+    },
+
+    onIntegrationPackageChange: function(combo, records) {
+        /*
+            RELOAD FORM WITH CORRECT DATA
+            var integration_package_id = $(this).val();
+            var $form = $('##intPkgForm');
+            $('<input type="hidden" name="integration_package_id" value="'+integration_package_id+'" />').appendTo($form);
+
+            $form.submit();
+        */
+    },
+
+    display: function(fields) {
+        for (var key in fields) {
+            var field = Ext.ComponentQuery.query(
+                '[itemId~="' + key + '"]'
+            )[0];
+            fields[key] ? field.show() : field.hide();
+        }
+        
+    },
+    displayInvoice: function() {
+        var fields = {
+            'field-integration-package' : true,
+            'panel-utility'             : false
+        };
+
+        this.display(fields);
+    },
+    displayUtilityInvoice: function() {
+        var fields = {
+            'field-integration-package' : false,
+            'panel-utility'             : true
+        };
+        this.display(fields);
+    },
+    displayPurchaseOrder: function() {
+        var fields = {
+            'field-integration-package' : true,
+            'panel-utility'             : false
+        };
+        this.display(fields);
+    },
+    displayReceipt: function() {
+        var fields = {
+            'field-integration-package' : true,
+            'panel-utility'             : false
+        };
+        this.display(fields);
+    },
+
+    //markup - методы для подготовки items
+    //display - методы для отображения/скрывания items
+    /***************************************************************************
+     * SECTION: UTILITY
+     **************************************************************************/
+    markupUtility: function() {
+        if (NP.lib.core.Security.hasPermission(6094)) {
+            if (NP.lib.core.Security.hasPermission(6095)) {
+                var options = {
+                    xtype: 'panel',
+
+                    border: 0,
+                    layout: 'form',
+
+                    items: [
+                        // Account Number
+                        {
+                            name: 'utilityaccount_accountnumber',
+
+                            xtype: 'textfield',
+                            fieldLabel: 'Account Number:',
+
+                            listeners: {
+                                keyup: function() {
+                                    // _tmp05.js
+                                }
+                            }
+                            //value="#htmlEditFormat(get_current_image.utilityaccount_accountnumber)#" 
+                        },
+                        // utilAccountValidPanel
+                        {
+                            name: 'panel-utility-account-valid',
+                            html: 'isvalid' //<cfif isNumeric(get_current_image.utilityaccount_id)> <span style="color:##009900;">Valid account number</span> </cfif>
+                        },
+                        // Meter Number
+                        {
+                            name: 'utilityaccount_metersize',
+
+                            xtype: 'textfield',
+                            fieldLabel: 'Meter Number:',
+
+                            listeners: {
+                                keyup: function() {
+                                    //onKeyUp="changeMeterNumber(event);" 
+                                }
+                            }
+                            //value="#htmlEditFormat(get_current_image.utilityaccount_metersize)#" 
+                        },
+                        // utilMeterValidPanel
+                        {
+                            name: 'panel-utility-metersize-valid',
+                            html: 'isvalid' //<cfif len(get_current_image.utilityaccount_metersize)><span style="color:##009900;">Valid meter number</span></cfif>
+                        },
+                    ]
+                }
+            } else {
+                var storeAccountNumber =
+                    Ext.create('NP.store.images.AccountNumbers', {
+                        service    : 'ImageService',
+                        action     : 'listAccountNumbers',
+                        extraParams : {
+                            'userprofile_id': NP.Security.getUser().get('userprofile_id'),
+                            'delegation_to_userprofile_id': NP.Security.getUser().get('delegation_to_userprofile_id')
+                        }
+                    }
+                );
+                storeAccountNumber.load();
+
+                var storeMeterSize =
+                    Ext.create('NP.store.images.MeterSizes', {
+                        service    : 'ImageService',
+                        action     : 'listMeterSizes',
+                        extraParams :{
+                            account: 1
+                            //account: 1
+                        }
+//                        fields: ['utilityaccount_metersize'],
+//                        data: [{ "utilityaccount_metersize": "4"}]
+                    }
+                );
+                storeMeterSize.load();
+
+                options = {
+                    xtype: 'panel',
+
+                    border: 0,
+                    layout: 'form',
+
+                    items: [
+                        // Account Number
+                        {
+                            name: 'utilityaccount_accountnumber',
+
+                            xtype: 'customcombo',
+                            fieldLabel: 'Account Number:',
+
+                            store: storeAccountNumber,
+                            //valueField:   'integration_package_id',
+                            //displayField: 'integration_package_name',
+                            //query = "qUtilAccounts"  value="#qUtilAccounts.utilityaccount_accountnumber#" 
+                            //text=#qUtilAccounts.utilityAccount_accountNumber# <cfif qUtilAccounts.utilityaccount_accountnumber EQ get_current_image.utilityaccount_accountnumber> 
+                            //selected="true"</cfif>
+
+                            addBlankRecord: true,
+
+                            listeners: {
+                                select: this.onIntegrationPackageChange //checkAccountNumber();
+                            }
+                        },
+                        // Meter Number
+                        {
+                            name: 'utilityaccount_metersize',
+
+                            xtype: 'customcombo',
+                            fieldLabel: 'Meter Number:',
+
+                            store: storeMeterSize,
+                            // LOOK TO THE STORE
+                            //valueField:   'integration_package_id',
+                            //displayField: 'integration_package_name',
+                            //if get_current_image.utilityaccount_id then show select
+                            //query="qMeterNumbers" value="#qMeterNumbers.utilityaccount_metersize#" 
+                            //text=#qMeterNumbers.utilityaccount_metersize# <cfif qMeterNumbers.utilityaccount_metersize EQ get_current_image.utilityaccount_metersize> 
+                            //selected="true"</cfif>
+
+                            addBlankRecord: true,
+
+                            listeners: {
+                                select: this.onIntegrationPackageChange //reloadUtilityAccounts();
+                            }
+                        },
+                    ]
+                };
+            }
+
+            var items = [
+                options,
+
+                // Utility Account
+                {
+                    itemId: 'field-utility-account',
+                    name:'panel-utility-account',  //'utilaccount_show_panel'
+                    xtype: 'textfield',
+                    fieldLabel: 'Utility Account:'
+/*
+STORE FOR IT                var storeMeterSize =
+                    Ext.create('NP.store.images.AccountNumbers', {
+                        service    : 'ImageService',
+                        action     : 'listAccountNumber2',
+                        extraParams :{
+                            'userprofile_id': NP.Security.getUser().get('userprofile_id'),
+                            'delegation_to_userprofile_id': NP.Security.getUser().get('delegation_to_userprofile_id')
+                        }
+                    }
+                );
+                storeMeterSize.load();
+
+/*
+ 
+                    <cfif isNumeric(get_current_image.utilityaccount_id)>
+                        <cfif qUtilityAccounts.recordcount GT 1>
+                            <select id="utilityaccount_id" name="utilityaccount_id" onchange="changeUtilityAccountId(this);">
+                                <cfloop query="qUtilityAccounts">
+                                    <option value="#qUtilityAccounts.utilityaccount_id#,#qUtilityAccounts.property_id#,#qUtilityAccounts.vendorsite_id#"<cfif qUtilityAccounts.utilityaccount_id EQ get_current_image.utilityaccount_id> selected="true"</cfif>>#qUtilityAccounts.utilityaccount_name#</option>
+                                </cfloop>
+                            </select>
+                        <cfelse>
+                            #qUtilityAccounts.utilityaccount_name#
+                            <input type="hidden" id="utilityaccount_id" name="utilityaccount_id" value="#qUtilityAccounts.utilityaccount_id#" />
+                        </cfif>
+                    <cfelse>
+                        <em>#utilityAccountText#</em>
+                    </cfif>
+*/
+                },
+
+                // Utility Property Id
+                {
+                    name: 'utility_property_id',
+                    xtype: 'hiddenfield'
+                    //value="<cfif isNumeric(get_current_image.utilityaccount_id)>#get_current_image.property_id#</cfif>"
+                },
+                // Utility Vendorsite Id
+                {
+                    name: 'utility_vendorsite_id',
+                    xtype: 'hiddenfield'
+                    //<cfif isNumeric(get_current_image.utilityaccount_id)>#get_current_image.image_index_VendorSite_Id#</cfif>
+                }
+            ];
+        }
+
+        return [
+            {
+                itemId: 'panel-utility',
+
+                xtype: 'panel',
+
+                border: 0,
+                layout: 'form',
+
+                items: items
+            }
+        ];
+        //hasUtilityInvoiceRights = 6094
+        //hasManualUtilityAccountReq = 6095
+        //NP.lib.core.Security.hasPermission(module_id)
+        this.checkUtilityAccountNumber();
+    },
+
+    checkAccountNumber: function(callback) {
+        //if ( $('##utilityaccount_metersize option').length ) $('##utilityaccount_metersize').val('');
+        this.reloadUtilityAccounts(function(data, isAccountValid, isMetersizeValid) {
+            var account = Ext.ComponentQuery.query(
+                '[name="utilityaccount_accountnumber"]'
+            )[0];
+            this.selectUtilityAccount(account.getValue(), isAccountValid, isMetersizeValid);
+
+            callback && callback(data);
+        })
+    },
+
+    checkUtilityAccountNumber: function(callback) {
+        var account = Ext.ComponentQuery.query(
+            '[name="utilityaccount_accountnumber"]'
+        )[0];
+        var accountValid = Ext.ComponentQuery.query(
+            '[name="panel-utility-account-valid"]'
+        )[0];
+
+        if (account.getValue() == '') {
+            accountValid.update('');
+
+            callback && callback({
+                accountNumberValid: false
+            });
+        } else if (account.getXType() == 'textfield') {
+            this.checkAccountNumber(callback);
+        } else {
+            callback && callback({
+                accountNumberValid: true
+            });
+        }
+    },
+
+    selectUtilityAccount: function(account, isAccountValid, isMetersizeValid) {
+        var account = Ext.ComponentQuery.query(
+            '[name="utilityaccount_accountnumber"]'
+        )[0];
+        var metersize = Ext.ComponentQuery.query(
+            '[name="utilityaccount_metersize"]'
+        )[0];
+
+        var utilityPropertyId = Ext.ComponentQuery.query(
+            '[name="utility_property_id"]'
+        )[0];
+        var utilityVendorsiteId = Ext.ComponentQuery.query(
+            '[name="utility_vendorsite_id"]'
+        )[0];
+
+        var panelUtilityAccount = Ext.ComponentQuery.query(
+            '[name="panel-utility-account"]'
+        )[0];
+
+        //var utilityaccount_accountnumber = (arguments.length == 1) ? arguments[0] : $('##utilityaccount_accountnumber').val();
+        if (!isAccountValid || !isMetersizeValid && true || false) { // true = $('##utilityaccount_metersize option').length == 0
+            //false = utilityaccount_accountnumber == ''
+            utilityPropertyId.setValue('');
+            utilityVendorsiteId.setValue('');
+            panelUtilityAccount.update('<em>#utilityAccountText#</em>')
+
+            if (isAccountValid && true) {//true = $('##utilityaccount_metersize option').length
+                metersize.update('<option value=""></option>');
+            }
+        } else if (true) {//$('##utilityaccount_metersize option').length
+            NP.lib.core.Net.remoteCall({
+                requests: {
+                    service: 'ImageService',
+                    action : 'getUtilityAccountVendorPropMeter',
+
+                    utilityaccount_accountnumber: metersize.getValue(),
+
+                    success: function(data) {
+                        metersize.update('<option value=""></option>');
+                        for (var i = 0, l = data.meters; i < l; i++) {
+                            // Remove the string we added at the end of the meter to force string conversion
+                            var fixedval = data.meters[i].replace('|@|', '');
+                            //meterSelect.append($('<option></option>').val(fixedval).html(fixedval));
+                        }
+                    }
+                }
+            });
+
+        }
+    },
+
+    changeUtilityAccountId: function(field) {
+        //var val = $(field).val().split(',');
+        //var property_id = val[1];
+        //var vendorsite_id = val[2];
+        //$('##utility_property_id').val(property_id);
+        //$('##utility_vendorsite_id').val(vendorsite_id);
+    },
+
+    reloadUtilityAccounts: function(callback) {
+        var account = Ext.ComponentQuery.query(
+            '[name="utilityaccount_accountnumber"]'
+        )[0];
+        var metersize = Ext.ComponentQuery.query(
+            '[name="utilityaccount_metersize"]'
+        )[0];
+
+        var accountValid = Ext.ComponentQuery.query(
+            '[name="panel-utility-account-valid"]'
+        )[0];
+        var metersizeValid = Ext.ComponentQuery.query(
+            '[name="panel-utility-metersize-valid"]'
+        )[0];
+
+        var utilityPropertyId = Ext.ComponentQuery.query(
+            '[name="utility_property_id"]'
+        )[0];
+        var utilityVendorsiteId = Ext.ComponentQuery.query(
+            '[name="utility_vendorsite_id"]'
+        )[0];
+
+        var panelUtilityAccount = Ext.ComponentQuery.query(
+            '[name="panel-utility-account"]'
+        )[0];
+
+        NP.lib.core.Net.remoteCall({
+            requests: {
+                service: 'ImageService',
+                action : 'matchUtilityAccount',
+
+                userprofile_id: NP.Security.getUser().get('userprofile_id'),
+                delegation_to_userprofile_id: NP.Security.getUser().get('delegation_to_userprofile_id'),
+
+                utilityaccount_metersize: account.getValue(),
+                utilityaccount_accountnumber: metersize.getValue(),
+
+                success: function(data) {
+                    if (data.accountNumberValid) {
+                        accountValid.update('<span style="color:##009900;">Valid account number</span>');
+
+                        if (data.meterValid) {
+                            if (data.accounts.length == 1) {
+                                utilityPropertyId.setValue(
+                                    data.accounts[0].property_id
+                                );
+                                utilityVendorsiteId.setValue(
+                                    data.accounts[0].vendorsite_id
+                                );
+                                panelUtilityAccount.update(
+                                    data.accounts[0].utilityaccount_name + 
+                                    '<input type="hidden" id="utilityaccount_id" name="utilityaccount_id" value="' +
+                                        data.accounts[0].utilityaccount_id + ',' +
+                                        data.accounts[0].property_id + ',' +
+                                        data.accounts[0].vendorsite_id +
+                                    '">'
+                                );
+                            } else {
+                                utilityPropertyId.setValue(
+                                    data.accounts[0].property_id
+                                );
+                                utilityVendorsiteId.setValue(
+                                    data.accounts[0].vendorsite_id
+                                );
+
+                                var html = '<select id="utilityaccount_id" name="utilityaccount_id" onchange="changeUtilityAccountId(this);">';
+                                for (var i = 0; i < data.accounts.length; i++) {
+                                    html +=
+                                        '<option value="' +
+                                            data.accounts[0].utilityaccount_id + ',' +
+                                            data.accounts[0].property_id + ',' +
+                                            data.accounts[0].vendorsite_id +
+                                        '">' + data.accounts[0].utilityaccount_name + '</option>'
+                                    ;
+                                }
+                                html += '</select>';
+                                panelUtilityAccount.update(html);
+                            }
+                        }
+                    } else {
+                        accountValid.update('<span style="color:##CC0000;">Invalid account number</span>');
+                    }
+
+                    if (metersize.getValue() == '') {
+                        metersizeValid.update('');
+                    } else {
+                        data.meterValid ?
+                            metersizeValid.update('<span style="color:##009900;">Valid meter number</span>') :
+                            metersizeValid.update('<span style="color:##CC0000;">Invalid meter number</span>')
+                    }
+
+                    callback && callback(
+                        data, 
+                        data.accountNumberValid, 
+                        data.meterValid
+                    );
+                }
+            }
+        });
+    },
+
+    checkMeterNumber: function(callback) {
+        var metersize = Ext.ComponentQuery.query(
+            '[name="utilityaccount_metersize"]'
+        )[0];
+        var metersizeValid = Ext.ComponentQuery.query(
+            '[name="panel-utility-metersize-valid"]'
+        )[0];
+
+        if (metersize.getValue() == '') {
+            metersizeValid.update('');
+            if (metersize.getXType() == 'textfield') {
+                this.checkAccountNumber(callback);
+            } else {
+                callback && callback({
+                    meterValid: true
+                });
+            }
+        } else if (metersize.getXType() == 'textfield') {
+            this.checkAccountNumber(callback);
+        } else {
+            callback && callback({
+                meterValid: true
+            });
+        }
+    },
+
+    /***************************************************************************
+     * SECTION: PROPERTY INDEX
+     **************************************************************************/
+    markupPropertyIndex: function() {
+        return [
+        ];
+    },
+    
+    /***************************************************************************
+     * SECTION: VENDOR CODE
+     **************************************************************************/
+    markupVendorCode: function() {
+        return [
+        ];
+    },
+    
+    /***************************************************************************
+     * SECTION: PROPERTY NAME
+     **************************************************************************/
+    markupPropertyName: function() {
+        return [
+        ];
+    },
+    
+    /***************************************************************************
+     * SECTION: VENDOR NAME
+     **************************************************************************/
+    markupVendorName: function() {
+        return [
+        ];
+    },
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+/*    onDocumentTypeChange: function(combo, records) {
+        //id = doctype
         var visibility = {
             'Invoice': {
-                'field-integration-package': true,
-                'field-account-number': false,
+
                 'field-property-code': true,
-                'field-meter-number': false,
                 'field-vendor-code': true,
                 'field-property': true,
                 'field-vendor': true,
@@ -365,10 +929,7 @@ Ext.define('NP.view.images.Index', {
                 'field-priority-invoice': true
             },
             'Utility Invoice': {
-                'field-integration-package': false,
-                'field-account-number': true,
                 'field-property-code': false,
-                'field-meter-number': true,
                 'field-vendor-code': false,
                 'field-property': false,
                 'field-vendor': false,
@@ -383,10 +944,7 @@ Ext.define('NP.view.images.Index', {
                 'field-priority-invoice': false
             },
             'Purchase Order': {
-                'field-integration-package': true,
-                'field-account-number': false,
                 'field-property-code': true,
-                'field-meter-number': false,
                 'field-vendor-code': true,
                 'field-property': true,
                 'field-vendor': true,
@@ -401,10 +959,7 @@ Ext.define('NP.view.images.Index', {
                 'field-priority-invoice': false
             },
             'Receipt': {
-                'field-integration-package': true,
-                'field-account-number': false,
                 'field-property-code': true,
-                'field-meter-number': false,
                 'field-vendor-code': true,
                 'field-property': true,
                 'field-vendor': true,
@@ -431,4 +986,105 @@ Ext.define('NP.view.images.Index', {
             visibility[title][key] ? field.show() : field.hide();
         }
     }
+*/    
 });
+
+ 	//change indexing values based on doctype chosen
+/*	function changeIndexValues() {
+		var myform = document.forms.quickform;
+		priority_po.style.display = "none";
+		priority_vef.style.display = "none";	
+		priority_invoice.style.display = "none";
+		neededby.style.display = "none";
+		selectedDisplayText = document.getElementById('doctype').options[document.getElementById('doctype').selectedIndex].text;
+		
+		$('#createInvBtn').hide();
+		if (myform.doctype.selectedIndex == 0)
+			$('#createInvBtn').show();
+		
+		$('.utility_panel').hide();
+		$('#int_pkg_panel').show();
+		$('#vendor_code_panel').show();
+		$('#vendor_name_panel').show();
+		$('#property_index_value').show();
+		$('#property_name_value').show();
+		
+		if (myform.doctype.selectedIndex == -1) {
+		} else {
+			if (myform.doctype.options[myform.doctype.selectedIndex].value == 1 || myform.doctype.options[myform.doctype.selectedIndex].value == 2 || myform.doctype.options[myform.doctype.selectedIndex].value == 3 || selectedDisplayText == 'Utility Invoice') {
+				property_index_value.style.display = "block";
+				property_name_value.style.display = "block";
+				property_address_value.style.display = "block";
+			} else {
+				property_index_value.style.display = "none";
+				property_name_value.style.display = "none";
+				property_address_value.style.display = "none";
+			}
+			if (myform.doctype.options[myform.doctype.selectedIndex].value == 1 || myform.doctype.options[myform.doctype.selectedIndex].value == 2 || selectedDisplayText == 'Utility Invoice') {
+				amount_index_value.style.display = "block";
+			} else {
+				amount_index_value.style.display = "none";
+			}
+			if (myform.doctype.options[myform.doctype.selectedIndex].value == 1) {
+				invoice_ref_index_value.style.display = "block";
+				invoice_date_index_value.style.display = "block";
+				invoice_duedate_index_value.style.display = "block";
+				use_template.style.display = "block";
+				remit_advice_index_value.style.display = "block";
+				custom_field_1.style.display = "block";
+				custom_field_2.style.display = "block";
+				custom_field_3.style.display = "block";		
+				custom_field_4.style.display = "block";		
+				custom_field_5.style.display = "block";		
+				custom_field_6.style.display = "block";		
+				custom_field_7.style.display = "block";		
+				custom_field_8.style.display = "block";		
+				priority_invoice.style.display = "block";
+				neededby.style.display = "block";	
+			} else {
+				invoice_ref_index_value.style.display = "none";
+				invoice_date_index_value.style.display = "none";
+				invoice_duedate_index_value.style.display = "none";
+				use_template.style.display = "none";
+				remit_advice_index_value.style.display = "none";
+				custom_field_1.style.display = "none";
+				custom_field_2.style.display = "none";
+				custom_field_3.style.display = "none";
+				custom_field_4.style.display = "none";
+				custom_field_5.style.display = "none";
+				custom_field_6.style.display = "none";
+				custom_field_7.style.display = "none";
+				custom_field_8.style.display = "none";
+			}
+			
+			if (myform.doctype.options[myform.doctype.selectedIndex].value == 2) {
+				po_ref_index_value.style.display = "block";
+			} else {
+				po_ref_index_value.style.display = "none";
+			}
+			if (myform.doctype.options[myform.doctype.selectedIndex].value == 1 || myform.doctype.options[myform.doctype.selectedIndex].value == 2 || myform.doctype.options[myform.doctype.selectedIndex].value == 3 || myform.doctype.selectedIndex == -1 || selectedDisplayText == 'Utility Invoice') {
+				myform.property_id.className = "required"; 
+			} else {
+				myform.property_id.className = "";
+			}
+			
+			if (selectedDisplayText == 'Receipt'){
+				amount_index_value.style.display = "block";
+				property_index_value.style.display = "block";
+				property_name_value.style.display = "block";
+				property_address_value.style.display = "block";
+			} else if (selectedDisplayText == 'Utility Invoice') {
+				invoice_ref_index_value.style.display = "block";
+				invoice_date_index_value.style.display = "block";
+				invoice_duedate_index_value.style.display = "block";
+				use_template.style.display = "block";
+				remit_advice_index_value.style.display = "block";
+				$('.utility_panel').show();
+				$('#int_pkg_panel').hide();
+				$('#vendor_code_panel').hide();
+				$('#vendor_name_panel').hide();
+				$('#property_index_value').hide();
+				$('#property_name_value').hide();
+			}
+		}
+	}*/
