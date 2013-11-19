@@ -9,6 +9,7 @@ Ext.define('NP.view.user.UsersFormEmail', {
 
     requires: [
 		'NP.lib.core.Security',
+        'NP.lib.core.Translator',
 		'NP.view.mySettings.EmailAlerts',
 		'NP.view.mySettings.EmailFrequency'
 	],
@@ -16,15 +17,13 @@ Ext.define('NP.view.user.UsersFormEmail', {
 	autoScroll: true,
 	padding   : 8,
 
-    // For localization
-    title : 'Email Alerts',
-    emailOverwriteLabel: 'Overwrite User Email Notification Settings',
-
     // Custom settings
     showEmailOverwrite: false,
     
     initComponent: function() {
     	var permissions = NP.Security.getPermissions();
+
+        this.title = NP.Translator.translate('Status Email Alerts');
 
     	this.defaults = { margin: '0 0 5 0' };
     	this.items = [
@@ -35,7 +34,7 @@ Ext.define('NP.view.user.UsersFormEmail', {
         if (this.showEmailOverwrite) {
             this.items.push({
                 xtype: 'checkbox',
-                fieldLabel: this.emailOverwriteLabel,
+                fieldLabel: NP.Translator.translate('Overwrite User Email Notification Settings'),
                 labelWidth: 280,
                 name: 'email_overwrite'
             });

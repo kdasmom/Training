@@ -261,7 +261,7 @@ Ext.define('NP.controller.UserManager', {
 		var tabPanel = that.setView('NP.view.user.UserManager');
 
 		// If no active tab is passed, default to Open
-		if (!activeTab) activeTab = 'Overview';
+		if (!activeTab) activeTab = 'Users';
 		
 		// Check if the tab to be selected is already active, if it isn't make it the active tab
 		var tab = that.getCmp('user.' + activeTab.toLowerCase());
