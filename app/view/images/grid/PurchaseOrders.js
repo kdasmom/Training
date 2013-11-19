@@ -3,7 +3,17 @@ Ext.define('NP.view.images.grid.PurchaseOrders', {
     alias:  'widget.images.grid.PurchaseOrders',
 
     initComponent: function(){
-        this.cols = [];
+        this.cols = [
+            'image.gridcol.ScanDate',
+            'property.gridcol.PropertyName',
+            'vendor.gridcol.VendorName',
+            'image.gridcol.Reference',
+            'image.gridcol.Amount',
+            'image.gridcol.Source',
+            'image.gridcol.DocType',
+            //Marked as Exception By
+            //Exception Date
+        ];
 	this.store = Ext.create('NP.store.image.ImageIndexes', {
             service    : 'ImageService',
             action     : 'getImagesToConvert1',

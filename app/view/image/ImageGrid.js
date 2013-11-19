@@ -19,8 +19,6 @@ Ext.define('NP.view.image.ImageGrid', function() {
 	
 	requires.push('NP.view.shared.gridcol.UniversalField');
 
-        requires.push('NP.view.images.grid.columnView');
-	
 	return {
 	    extend: 'NP.lib.ui.Grid',
 	 	alias : 'widget.image.imagegrid',

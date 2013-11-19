@@ -14,7 +14,7 @@ Ext.define('NP.view.images.Index', {
         buttonSaveAndPrev:     'buttonSaveAndPrev',
         buttonSaveAsException: 'buttonSaveAsException',
 
-        buttonDelete: 'buttonDelete',
+        buttonDelete: 'buttonDeleteFromQueue',
         buttonInvoice: 'buttonInvoice'
     },
     locale: {
@@ -891,7 +891,7 @@ STORE FOR IT                var storeMeterSize =
     markupVendorName: function() {
         return [
         ];
-    },
+    }
     
     
     

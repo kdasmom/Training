@@ -13,11 +13,6 @@ use NP\core\db\Expression;
 use NP\property\PropertyContext;
 use NP\property\sql\PropertyFilterSelect;
 
-/**
- * Gateway for the IMAGE_INDEX table
- *
- * @author Thomas messier
- */
 class ImageIndexGateway extends AbstractGateway {
 	protected $table = 'image_index';
         protected $pk = 'Image_Index_Id';
@@ -162,7 +157,7 @@ class ImageIndexGateway extends AbstractGateway {
 			$select->columns(array(
 								'Image_Index_Id',
 								'Image_Index_VendorSite_Id',
-								'Property_Id',
+								//'Property_Id',
 								'Image_Index_Name',
 								'Image_Index_Ref',
 								'Image_Index_Invoice_Date',
@@ -222,9 +217,15 @@ class ImageIndexGateway extends AbstractGateway {
        	public function findImagesToDelete($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
 		$select = $this->getDashboardSelect($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
 		
-		$select->whereMerge(new sql\criteria\ImageInvoiceDocCriteria())
+		/*$select->whereMerge(new sql\criteria\ImageInvoiceDocCriteria())
 				->whereMerge(new sql\criteria\ImageInvoiceUnassigned())
-				->whereEquals('img.Image_Index_Status', -1);
+				->whereEquals('img.Image_Index_Status', -1);*/
+                $where = new Where();
+                $where->isNotNull('img.image_index_deleted_datetm')
+                        ->isNotNull('img.image_index_deleted_by')
+                        ->greaterThan('img.Image_Index_id', 135000)
+                ;
+                $select->where($where);
 
 		// If paging is needed
 		if ($pageSize !== null && $countOnly == 'false') {
@@ -881,6 +882,21 @@ print_r($update->toString());
 
 
 
+    public function revert($identifiers) {
+        $update = new Update();
+        $update
+            ->table($this->table)
+            ->value('image_index_status', 0)
+                ->value('image_index_draft_invoice_id', 'null')
+                ->value('image_index_deleted_datetm', 'null')
+                ->value('image_index_deleted_by', 'null')
+            ->where(
+                Where::get()
+                    ->in('image_index_id', implode(',', $identifiers))
+            )
+        ;
+        return $this->adapter->query($update);
+    }
 
     public function imageSearch($doctype, $searchtype, $searchstring, $property_type, $property_list) {
         $select01 = new sql\ImageSearchSelect();

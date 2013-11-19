@@ -139,6 +139,62 @@ class ImageService extends AbstractService {
 
         
         
+
+        /**
+         * Delete Images API method.
+         * 
+         * @param type $permanently
+         * @param type $identifiers
+         * @param type $delegation_to_userprofile_id
+         * @return type
+         */
+        public function delete($permanently = false, $identifiers, $delegation_to_userprofile_id = null) {
+            $userprofile_id = $this->securityService->getUserId();
+            if (empty($delegation_to_userprofile_id)) {
+                $delegation_to_userprofile_id = $userprofile_id;
+            }
+            $identifiers = json_decode($identifiers);
+
+            if (!empty($identifiers)) {
+                if ($permanently) {
+                    //Delete real file
+                    $files = $this->imageTransferGateway->getFilesById($identifiers);
+                    foreach($files as $filename) {
+                        if (file_exists($filename))
+                            unlink($filename);
+                    }
+
+                    //Delete records from the database
+                    $this->imageIndexGateway->deletePermanently($identifiers);
+                    $this->imageTransferGateway->deletePermanently($identifiers);
+
+                    return ['success' => true];
+                } else {
+                    $params = $this->imageIndexGateway->getMainParametersForImages($identifiers);
+                    if (!empty($params)) {
+                        $this->imageIndexGateway->deleteTemporary($identifiers, $userprofile_id);
+                        $this->imageIndexGateway->updatePrimary($identifiers, $params);
+
+                        return ['success' => true];
+                    }
+                }
+            }
+            return [
+                'success' => false,
+                'error'   => 'Incorrect identifiers list'
+            ];
+        }
+
+        public function revert($identifiers) {
+            $identifiers = json_decode($identifiers);
+            return $this->imageIndexGateway->revert($identifiers);
+        }
+        
+        
+        
+        
+        
+        
         
 
 
@@ -431,7 +487,7 @@ class ImageService extends AbstractService {
 
             // IMAGE INDEX: prepare data for save
             $imageIndexData = 
-                $this->prepareCreateImage($file, $params,$request)
+                $this->prepareCreateImage($file, $params, $request)
             ;
 
             // Adjust image_tableref_id because it couldn't be done earlier during IMAGE INDEX data 
@@ -465,36 +521,37 @@ class ImageService extends AbstractService {
 
             // IMAGE INDEX: prepare entity for save
             $imageIndexEntity = new ImageIndexEntity([
-                'image_index_name'          => 
+                'Image_Index_Name'          => 
                     isset($imageIndexData['invoiceimage_name']) ? 
                         $imageIndexData['invoiceimage_name'] : 
                         'Invoice Image'
                 ,
-                'image_index_id_alt'        => $request['document_id'],
-                'image_index_vendorsite_id' => $request['vendorsite_id'],
-                'property_id'               => $request['property_id'],
-                'image_index_ref'           => $request['invoiceimage_ref'],
-                'image_index_amount'        => $request['invoiceimage_amount'],
-                'image_index_invoice_date'  =>
+                'Image_Index_Id_Alt'        => $request['document_id'],
+                'Image_Index_VendorSite_Id' => $request['vendorsite_id'],
+                'Property_Id'               => $request['property_id'],
+                'Image_Index_Ref'           => $request['invoiceimage_ref'],
+                'Image_Index_Amount'        => $request['invoiceimage_amount'],
+                'Image_Index_Invoice_Date'  =>
                     isset($imageIndexData['invoiceimage_date']) ? 
                         $imageIndexData['invoiceimage_name'] :
                         $request['invoiceimage_date']
                 ,
                 'asp_client_id'             => $request['asp_client_id'],
-                'tablekey_id'               => $request['invoice_id'],
-                'image_index_status'        =>
+                'Tablekey_Id'               => $request['invoice_id'],
+                'Image_Index_Status'        =>
                     isset($imageIndexData['invoiceimage_status']) ?
                         $imageIndexData['invoiceimage_status'] :
                         $request['invoiceimage_status']
                 ,
-                'image_index_source_id'     => $request['invoiceimage_source_id'],
-                'tableref_id'               =>
+                'Image_Index_Source_Id'     => $request['invoiceimage_source_id'],
+                'Tableref_Id'               =>
                     isset($imageIndexData['image_tableref_id']) ? 
                         $imageIndexData['image_tableref_id'] :
                         $request['image_tableref_id']
                 ,
-                'image_doctype_id'          => $imageIndexData['image_doctype'],
-                'image_index_primary'       => 
+                'Image_Index_Date_Entered'  => date('Y-m-d H:i:s'),
+                'Image_Doctype_Id'          => $imageIndexData['image_doctype'],
+                'Image_Index_Primary'       => 
                     !empty($imageIndexData['image_index_primary']) ?
                         $imageIndexData['image_index_primary'] :
                         1
@@ -618,38 +675,6 @@ class ImageService extends AbstractService {
             return $this->integrationPackageGateway->find();
         }
 
-        public function delete($permanently = false, $identifiers, $delegation_to_userprofile_id = null) {
-            $userprofile_id = $this->securityService->getUserId();
-            if (empty($delegation_to_userprofile_id)) {
-                $delegation_to_userprofile_id = $userprofile_id;
-            }
-            $identifiers = json_decode($identifiers);
-
-            if (!empty($identifiers)) {
-                if ($permanently) {
-                    //Delete real file
-                    $files = $this->imageTransferGateway->getFilesById($identifiers);
-                    foreach($files as $filename) {
-                        unlink($filename);
-                    }
-
-                    //Delete records from the database
-                    $this->imageIndexGateway->deletePermanently($identifiers);
-                    $this->imageTransferGateway->deletePermanently($identifiers);
-
-                    return ['success' => true];
-                } else {
-                    $params = $this->imageIndexGateway->getMainParametersForImages($identifiers);
-                    if (!empty($params)) {
-                        $this->imageIndexGateway->deleteTemporary($identifiers, $userprofile_id);
-                        $this->imageIndexGateway->updatePrimary($identifiers, $params);
-
-                        return ['success' => true];
-                    }
-                }
-                
-            }
-        }
 
         
 
@@ -1093,8 +1118,31 @@ ORDER BY property_id_alt
     public function imageSearch($doctype, $searchtype, $searchstring, $contextType, $contextSelection) {
         return $this->imageIndexGateway->imageSearch($doctype, $searchtype, $searchstring, $contextType, $contextSelection);
     }
-    public function imageSearchCDIndex() {
-        
+    public function imageSearchCDIndex($doctype = null, $refnumber = null, $property_id = null, $vendor_id = null) {
+        if (!empty($doctype) && $doctype > 3) {
+            $result = $this->imageToCDGateway->getVendorDocs($doctype, $vendor_id);
+        } else {
+            $result = [];
+            if ($doctype == 1 || empty($doctype)) {
+                $result = array_merge(
+                    $result, 
+                    $this->imageToCDGateway->getInvoiceDocs($doctype, $refnumber, $property_id, $vendor_id)
+                );
+            }
+            if ($doctype == 2 || empty($doctype)) {
+                $result = array_merge(
+                    $result, 
+                    $this->imageToCDGateway->getPurchaseOrderDocs($doctype, $refnumber, $property_id, $vendor_id)
+                );
+            }
+            if ($doctype == 3 || empty($doctype)) {
+                $result = array_merge(
+                    $result, 
+                    $this->imageToCDGateway->getVendorEstimateDocs($doctype, $refnumber, $property_id, $vendor_id)
+                );
+            }
+        }
+        return $result;
     }
         
         

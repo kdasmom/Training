@@ -3,7 +3,13 @@ Ext.define('NP.view.images.grid.Exceptions', {
     alias:  'widget.images.grid.Exceptions',
 
     initComponent: function(){
-        this.cols = [];
+        this.cols = [
+            'image.gridcol.ScanDate',
+            'property.gridcol.PropertyName',
+            'vendor.gridcol.VendorName',
+            'image.gridcol.Reference',
+            'image.gridcol.Amount',
+        ];
 
 	this.store = Ext.create('NP.store.image.ImageIndexes', {
             service    : 'ImageService',

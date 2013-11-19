@@ -51,6 +51,8 @@ Ext.define('NP.lib.ui.Uploader', {
         this.height = 400;
         this.layout = 'fit';
 
+        var self = this;
+
         this.items = [
             {
                 xtype:  'panel',
@@ -77,7 +79,8 @@ Ext.define('NP.lib.ui.Uploader', {
                                 xtype:  'panel',
                                 border: 0,
                                 region: 'center',
-                                html:   '<button id="file_upload" />'
+                                //html:   '<button id="file_upload" />'
+                                html: '<input id="file_upload" type="file" name="file_upload" />'
                             },
                             {
                                 xtype:  'panel',
@@ -96,7 +99,11 @@ Ext.define('NP.lib.ui.Uploader', {
                                         handler: function(){
                                             // Uploadify will pass all data from params.form
                                             // and all selected files to the server.
-                                            $('#file_upload').uploadify('upload', '*');
+                                            if (self.isUploadifiveSupported()) {
+                                                $('#file_upload').uploadifive('upload');
+                                            } else {
+                                                $('#file_upload').uploadify('upload', '*');
+                                            }
                                         }
                                     }
                                 ]
@@ -109,26 +116,44 @@ Ext.define('NP.lib.ui.Uploader', {
 
         this.listeners = {
             afterrender: function(){
-                // After component is displayed, uploadify should be notified what field it
-                // should use for file selection
-                $("#file_upload").uploadify({
-                    height: 30,
-                    width:  120,
+                if (this.isUploadifiveSupported()) {
+                    $("#file_upload").uploadifive({
+                        auto:       false,
+                        dnd:        true,
+                        multi:      true,
 
-                    auto:       false,
-                    multi:      true,
-                    queueID:    'uploadqueue',
-                    swf:        '/vendor/jquery-uploadify/uploadify.swf',
+                        queueID:    'uploadqueue',
 
-                    uploader:       this.params.service,
-                    fileTypeExts:   this.params.files.extensions,
-                    fileTypeDesc:   this.params.files.description,
-                    formData:       this.params.form,
-                    simUploadLimit: 5
-                });
+                        uploadScript:   this.params.service,
+                        formData:       this.params.form,
+                        simUploadLimit: 25
+                    });
+                } else {
+                    // After component is displayed, uploadify should be notified what field it
+                    // should use for file selection
+                    $("#file_upload").uploadify({
+                        height: 30,
+                        width:  120,
+
+                        auto:       false,
+                        multi:      true,
+                        queueID:    'uploadqueue',
+                        swf:        '/vendor/jquery-uploadify/uploadify.swf',
+
+                        uploader:       this.params.service,
+                        fileTypeExts:   this.params.files.extensions,
+                        fileTypeDesc:   this.params.files.description,
+                        formData:       this.params.form,
+                        simUploadLimit: 25
+                    });
+                }
             }
         };
 
         this.callParent(arguments);
+    },
+
+    isUploadifiveSupported: function() {
+        return window.File && window.FileReader && window.FileList && window.Blob;
     }
 });

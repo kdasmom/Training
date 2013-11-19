@@ -63,7 +63,7 @@ Ext.define('NP.controller.Viewport', {
 					if (itemClicked.itemId != 'imageMenuBtn') {
 						token += ':' + itemClicked.itemId.replace('ImageMenuBtn', '');
 					} else {
-						token += ':indexed';
+						token += ':index';
 					}
 					this.addHistory(token);
 				}

@@ -1,8 +1,14 @@
+/**
+ * This is main view for "Image Management" section.
+ * 
+ * @author Oleg Sososrev
+ */
 Ext.define('NP.view.images.Main', {
-    extend: 'Ext.tab.Panel',
+    extend: 'Ext.panel.Panel',
     alias:  'widget.images.main',
 
     title:  'Image Management',
+    layout: 'fit',
 
     requires: [
         'NP.view.images.grid.Index',
@@ -12,20 +18,6 @@ Ext.define('NP.view.images.Main', {
         'NP.view.images.grid.DeletedImages',
     ],
 
-    id: {
-        buttonUpload: 'buttonUpload',
-        buttonNPISS:  'buttonNPISS',
-        buttonNSISS:  'buttonNSISS',
-
-        buttonIndex:             'buttonIndex',
-        buttonDelete:            'buttonDelete',
-        buttonConvert:           'buttonConvert',
-        buttonRevert:            'buttonRevert',
-        buttonDeletePermanently: 'buttonDeletePermanently',
-
-        buttonReport: 'buttonReport',
-        buttonSearch: 'buttonSearch'
-    },
     locale: {
         tabIndex:           'Images to be Indexed',
         tabInvoices:        'Invoices',
@@ -49,172 +41,248 @@ Ext.define('NP.view.images.Main', {
 
     initComponent: function() {
         this.items = [
-            this.tabIndex(),
-            this.tabInvoices(),
-            this.tabPurchaseOrders(),
-            this.tabExceptions(),
-            this.tabDeletedImages()
+            {
+                xtype: 'tabpanel',
+                listeners: {
+                    'tabchange': this.onTabChanged.bind(this)
+                },
+                items: [
+                    this.tabIndex(),
+                    this.tabInvoices(),
+                    this.tabPurchaseOrders(),
+                    this.tabExceptions(),
+                    this.tabDeletedImages()
+                ]
+            }
         ];
+
+        this.tbar = this.topbarIndex();
 
         this.callParent(arguments);
     },
 
+    /**
+     * When tab and target grid are changed, toolbar buttons also should be adjusted: should
+     * provide correct functionality.
+     * 
+     * @this [NP.view.images.Main] this class
+     * 
+     * @param tabPanel current tab panel.
+     * @param newCard opened tab.
+     * @param oldCard closed tab.
+     */
+    onTabChanged: function (tabPanel, newCard, oldCard) {
+        var section = 
+            newCard.getItemId().replace('images-', '').toLowerCase()
+        ;
+        switch (section) {
+            case 'index':
+                section = 'Index';
+                break;
+            case 'invoices':
+                section = 'Invoices';
+                break;
+            case 'purchase-orders':
+                section = 'PurchaseOrders';
+                break;
+            case 'exceptions':
+                section = 'Exceptions';
+                break;
+            case 'deleted':
+                section = 'DeletedImages';
+                break;
+        }
+
+        var toolbar = 
+            Ext.ComponentQuery.query('[xtype="images.main"]')[0].getDockedItems()[1]
+        ;
+        var buttons = this['topbar' + section]();
+
+        toolbar.removeAll();
+        toolbar.add(buttons);
+    },
+
+    /**
+     * Prepare grid for "Images to be Indexed" tab.
+     * 
+     * @return tab items.
+     */
     tabIndex: function() {
         var tab = {
-            id: 'images-index',
-            title: this.locale.tabIndex,
-            items: [
-                {xtype: 'images.grid.Index'}
-            ]
+            itemId: 'images-index',
+
+            xtype: 'images.grid.Index',
+            title: this.locale.tabIndex
         };
-        tab.tbar = [
-            {xtype: 'button', itemId: this.id.buttonIndex,  text: this.locale.buttonIndex},
-            {xtype: 'button', itemId: this.id.buttonDelete, text: this.locale.buttonDelete},
+        return tab;
+    },
+
+    /**
+     * Prepare top toolbar button list for "Images to be Indexed" tab.
+     * 
+     * @return Array of buttons for this tab.
+     */
+    topbarIndex: function() {
+        var tbar = [
+            {xtype: 'button', itemId: 'buttonIndex',  text: this.locale.buttonIndex},
+            {xtype: 'button', itemId: 'buttonDelete', text: this.locale.buttonDelete},
 
             {xtype: 'tbspacer', width: 20},
 
-            {xtype: 'button', itemId: this.id.buttonUpload, text: this.locale.buttonUpload},
-            {xtype: 'button', itemId: this.id.buttonNPISS,  text: this.locale.buttonNPISS},
-            {xtype: 'button', itemId: this.id.buttonNSISS,  text: this.locale.buttonNSISS},
+            {xtype: 'button', itemId: 'buttonUpload', text: this.locale.buttonUpload},
+            {xtype: 'button', itemId: 'buttonNPISS',  text: this.locale.buttonNPISS},
+            {xtype: 'button', itemId: 'buttonNSISS',  text: this.locale.buttonNSISS},
 
             {xtype: 'tbspacer', width: 20},
-
-            {xtype: 'button', itemId: this.id.buttonReport, text: this.locale.buttonReport}
         ]
 
-/*
-var state = Ext.ComponentQuery.query('[xtype="shared.contextpicker"]');
-
-tab.items = [
-    {
-   //                             tab  : 'Indexed',
-//				title: 'Images To Be Indexed',
-
-defaultWidth: 50,
-        cols: [
-            'images.grid.columnview',
-            'image.gridcol.ScanDate','image.gridcol.Name','image.gridcol.DocType','image.gridcol.Source'
-        ],
-
-        xtype   : 'image.imagegrid',
-        selType: 'checkboxmodel',
-        selModel: {
-            mode: 'MULTI',   // or SINGLE, SIMPLE ... review API for Ext.selection.CheckboxModel
-            checkOnly: true    // or false to allow checkbox selection on click anywhere in row
-        },
-        //itemId  : 'image_grid_index',
-	//stateful: true,
-	//stateId : 'image_management_index',
-	paging  : true,
-	store   : Ext.create('NP.store.image.ImageIndexes', {
-            service    : 'ImageService',
-            action     : 'getImagesToIndex1',
-            paging     : true,
-            extraParams: {
-                //tab                        : 'index', 
-		userprofile_id             : NP.Security.getUser().get('userprofile_id'),
-		delegated_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id'),
-                contextType     : 'all',// state && state[0] ? state[0].getState().type : '',
-		contextSelection: ''//state && state[0] ? state[0].getState().selected : ''
-
-            }
-        })
-        
-    }
-]
-
-*/
-
-        this.buttonsCommon(tab.tbar);
-        return tab;
+        this.buttonsCommon(tbar);
+        return tbar;
     },
 
+    /**
+     * Prepare grid for "Invoices" tab.
+     * 
+     * @return tab items.
+     */
     tabInvoices: function() {
         var tab = {
-            id: 'images-invoices',
-            title: this.locale.tabInvoices,
-            items: [
-                {xtype: 'images.grid.Invoices'}
-            ]
+            itemId: 'images-invoices',
+
+            xtype: 'images.grid.Invoices',
+            title: this.locale.tabInvoices
         };
-        tab.tbar = [
-            {xtype: 'button', itemId: this.id.buttonConvert, text: this.locale.buttonConvert},
-            {xtype: 'button', itemId: this.id.buttonRevert,  text: this.locale.buttonRevert},
-            {xtype: 'button', itemId: this.id.buttonDelete,  text: this.locale.buttonDelete},
-
-            {xtype: 'tbspacer', width: 20},
-
-            {xtype: 'button', itemId: this.id.buttonReport, text: this.locale.buttonReport}
-        ];
-
-        this.buttonsCommon(tab.tbar);
         return tab;
     },
 
+    /**
+     * Prepare top toolbar button list for "Invoices" tab.
+     * 
+     * @return Array of buttons for this tab.
+     */
+    topbarInvoices: function() {
+        var tbar = [
+            {xtype: 'button', itemId: 'buttonConvert', text: this.locale.buttonConvert},
+            {xtype: 'button', itemId: 'buttonRevert',  text: this.locale.buttonRevert},
+            {xtype: 'button', itemId: 'buttonDelete',  text: this.locale.buttonDelete},
+
+            {xtype: 'tbspacer', width: 20},
+
+            {xtype: 'button', itemId: 'buttonReport', text: this.locale.buttonReport}
+        ];
+
+        this.buttonsCommon(tbar);
+        return tbar;
+    },
+
+    /**
+     * Prepare grid for "Purchase Orders" tab.
+     * 
+     * @return tab items.
+     */
     tabPurchaseOrders: function() {
         var tab = {
-            id: 'images-purchase-orders',
-            title: this.locale.tabPurchaseOrders,
-            items: [
-                {xtype: 'images.grid.PurchaseOrders'}
-            ]
+            itemId: 'images-purchase-orders',
+
+            xtype: 'images.grid.PurchaseOrders',
+            title: this.locale.tabPurchaseOrders
         };
-        tab.tbar = [
-            {xtype: 'button', itemId: this.id.buttonRevert,  text: this.locale.buttonRevert},
-            {xtype: 'button', itemId: this.id.buttonDelete,  text: this.locale.buttonDelete},
-
-            {xtype: 'tbspacer', width: 20},
-
-            {xtype: 'button', itemId: this.id.buttonReport, text: this.locale.buttonReport}
-        ];
-
-        this.buttonsCommon(tab.tbar);
         return tab;
     },
 
+    /**
+     * Prepare top toolbar button list for "Purchase Orders" tab.
+     * 
+     * @return Array of buttons for this tab.
+     */
+    topbarPurchaseOrders: function() {
+        var tbar = [
+            {xtype: 'button', itemId: 'buttonRevert',  text: this.locale.buttonRevert},
+            {xtype: 'button', itemId: 'buttonDelete',  text: this.locale.buttonDelete},
+
+            {xtype: 'tbspacer', width: 20},
+
+            {xtype: 'button', itemId: 'buttonReport', text: this.locale.buttonReport}
+        ];
+
+        this.buttonsCommon(tbar);
+        return tbar;
+    },
+
+    /**
+     * Prepare grid for "Exceptions" tab.
+     * 
+     * @return tab items.
+     */
     tabExceptions: function() {
         var tab = {
-            id: 'images-exceptions',
+            itemId: 'images-exceptions',
+
+            xtype: 'images.grid.Exceptions',
             title: this.locale.tabExceptions,
-            items: [
-                {xtype: 'images.grid.Exceptions'}
-            ]
         };
-        tab.tbar = [
-            {xtype: 'button', itemId: this.id.buttonIndex,  text: this.locale.buttonIndex},
-            {xtype: 'button', itemId: this.id.buttonDelete, text: this.locale.buttonDelete},
-
-            {xtype: 'tbspacer', width: 20},
-
-            {xtype: 'button', itemId: this.id.buttonReport, text: this.locale.buttonReport}
-        ];
-
-        this.buttonsCommon(tab.tbar);
         return tab;
     },
 
+    /**
+     * Prepare top toolbar button list for "Exceptions" tab.
+     * 
+     * @return Array of buttons for this tab.
+     */
+    topbarExceptions: function() {
+        var tbar = [
+            {xtype: 'button', itemId: 'buttonIndex',  text: this.locale.buttonIndex},
+            {xtype: 'button', itemId: 'buttonDelete', text: this.locale.buttonDelete},
+
+            {xtype: 'tbspacer', width: 20},
+
+            {xtype: 'button', itemId: 'buttonReport', text: this.locale.buttonReport}
+        ];
+
+        this.buttonsCommon(tbar);
+        return tbar;
+    },
+
+    /**
+     * Prepare grid for "Deleted Images" tab.
+     * 
+     * @return tab items.
+     */
     tabDeletedImages: function() {
         var tab = {
-            id: 'images-deleted',
-            title: this.locale.tabDeletedImages,
-            items: [
-                {xtype: 'images.grid.DeletedImages'}
-            ]
+            itemId: 'images-deleted',
+
+            xtype: 'images.grid.DeletedImages',
+            title: this.locale.tabDeletedImages
         };
-        tab.tbar = [
-            {xtype: 'button', itemId: this.id.buttonRevert,            text: this.locale.buttonRevert},
-            {xtype: 'button', itemId: this.id.buttonDeletePermanently, text: this.locale.buttonDeletePermanently},
+        return tab;
+    },
+
+    /**
+     * Prepare top toolbar button list for "Deleted Images" tab.
+     * 
+     * @return Array of buttons for this tab.
+     */
+    topbarDeletedImages: function() {
+        var tbar = [
+            {xtype: 'button', itemId: 'buttonRevert',            text: this.locale.buttonRevert},
+            {xtype: 'button', itemId: 'buttonDeletePermanently', text: this.locale.buttonDeletePermanently},
 
             {xtype: 'tbspacer', width: 20},
         ];
 
-        this.buttonsCommon(tab.tbar);
-        return tab;
+        this.buttonsCommon(tbar);
+        return tbar;
     },
 
+    /**
+     * Buttons which should be presented at the each tab.
+     * 
+     * @param toolbar List of buttons where common buttons should be added.
+     */
     buttonsCommon: function(toolbar) {
         toolbar.push(
-            {xtype: 'button', itemId: this.id.buttonSearch, text: this.locale.buttonSearch},
+            {xtype: 'button', itemId: 'buttonSearch', text: this.locale.buttonSearch},
             {xtype: 'tbspacer', flex: 1},
             {xtype: 'shared.contextpicker', itemId: 'imageManagementContextPicker'}
         );

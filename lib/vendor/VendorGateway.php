@@ -122,6 +122,7 @@ class VendorGateway extends AbstractGateway {
                 )
                 ->order('v.vendor_name')
             ;
+
             return $this->adapter->query($select);
         }
 }

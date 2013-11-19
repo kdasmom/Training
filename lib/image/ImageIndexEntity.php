@@ -13,7 +13,7 @@ class ImageIndexEntity extends \NP\core\AbstractEntity {
         ],
 
         'Property_Id'               => [
-            'defaultValue'  => null
+            'defaultValue'  => 0
         ],
         'Image_Index_Name'          => [
             'defaultValue'  => 'Invoice Image'

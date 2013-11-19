@@ -88,6 +88,8 @@ Ext.define('NP.view.images.SearchCDIndex', {
                         xtype: 'customcombo',
                         fieldLabel: 'Property:',
 
+                        addBlankRecord: true,
+
                         valueField:   'property_id',
                         displayField: 'property_name',
 
@@ -98,6 +100,8 @@ Ext.define('NP.view.images.SearchCDIndex', {
 
                         xtype: 'customcombo',
                         fieldLabel: 'Vendor:',
+
+                        addBlankRecord: true,
 
                         valueField:   'vendor_id',
                         displayField: 'vendor_name',

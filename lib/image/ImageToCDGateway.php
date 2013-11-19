@@ -34,6 +34,7 @@ class ImageToCDGateway extends AbstractGateway {
         if (!empty($vendor_id)) {
             $where->equals('v.vendor_id', $vendor_id);
         }
+        $select->where($where);
         return $this->adapter->query($select);
     }
 
@@ -79,6 +80,8 @@ class ImageToCDGateway extends AbstractGateway {
             $where
                 ->equals('v.vendor_id', $vendor_id);
         }
+        $select->where($where);
+print_r($select->toString());
         return $this->adapter->query($select);
     }
 
@@ -123,6 +126,7 @@ class ImageToCDGateway extends AbstractGateway {
             $where
                 ->equals('v.vendor_id', $vendor_id);
         }
+        $select->where($where);
         return $this->adapter->query($select);
     }
 
@@ -167,6 +171,7 @@ class ImageToCDGateway extends AbstractGateway {
             $where
                 ->equals('v.vendor_id', $vendor_id);
         }
+        $select->where($where);
         return $this->adapter->query($select);
     }
 }

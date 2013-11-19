@@ -22,8 +22,10 @@ if (!$isAuth) {
 	<link rel="stylesheet" type="text/css" href="resources/css/VerticalTabPanel.css" />
 	<link rel="stylesheet" type="text/css" href="resources/css/uploader.css" />
         <link rel="stylesheet" type="text/css" href="vendor/jquery-uploadify/uploadify.css" />
+        <link rel="stylesheet" type="text/css" href="vendor/jquery-uploadifive/uploadifive.css" />
         <script type="text/javascript" src="vendor/jquery/jquery-2.0.3.min.js"></script>
         <script type="text/javascript" src="vendor/jquery-uploadify/jquery.uploadify.min.js"></script>
+        <script type="text/javascript" src="vendor/jquery-uploadifive/jquery.uploadifive.min.js"></script>
 	<script type="text/javascript" src="vendor/extjs/ext-all<?php echo ($__CONFIG['serverType'] == 'dev') ? '-dev' : ''; ?>.js"></script>
 	<script type="text/javascript" src="vendor/extjs/examples/ux/form/MultiSelect.js"></script>
 	<script type="text/javascript" src="vendor/extjs/examples/ux/form/ItemSelector.js"></script>
