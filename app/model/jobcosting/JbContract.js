@@ -34,7 +34,7 @@ Ext.define('NP.model.jobcosting.JbContract', {
 			}
 
 			var val = rec.get('jbcontract_name') + ' - ';
-			if (rec.get('jbcontract_desc') != '') {
+			if (rec.get('jbcontract_desc') != '' && rec.get('jbcontract_desc') !== null) {
 				val += rec.get('jbcontract_desc');
 			} else {
 				val += 'No Desc.';

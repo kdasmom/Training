@@ -6,6 +6,7 @@
 
 Ext.define('NP.store.vendor.UtilityAccounts', {
     extend: 'NP.lib.data.Store',
+    alias : 'store.vendor.utilityaccounts',
 
     model: 'NP.model.vendor.UtilityAccount'
 });

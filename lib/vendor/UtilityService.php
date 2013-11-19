@@ -62,6 +62,18 @@ class UtilityService extends AbstractService {
     }
 
     /**
+     * Returns all usage types for a certain utility type
+     */
+    public function getUsageTypesByUtilityType($UtilityType_Id) {
+        return $this->utilityColumnUsageTypeGateway->find(
+            ['UtilityType_Id'=>'?'],
+            [$UtilityType_Id],
+            'UtilityColumn_UsageType_Name',
+            ['UtilityColumn_UsageType_Id','UtilityColumn_UsageType_Name']
+        );
+    }
+
+    /**
      * Retrieve utilitytypes list by vendorsite id
      *
      * @param $vendorsite_id

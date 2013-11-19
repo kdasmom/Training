@@ -18,6 +18,7 @@ Ext.define('NP.Application', {
 		'overrides.form.field.Number',
 		'overrides.form.Basic',
 		'overrides.form.Panel',
+		'overrides.grid.plugin.CellEditing',
 		'overrides.util.Format',
 		'overrides.ux.form.ItemSelector',
 		'overrides.Component',

@@ -8,6 +8,7 @@ Ext.define('NP.view.shared.invoicepo.ForwardsGrid', {
     alias: 'widget.shared.invoicepo.forwardsgrid',
     
     requires: [
+        'NP.lib.core.Config',
     	'NP.store.shared.InvoicePoForwards'
     ],
 
@@ -59,11 +60,17 @@ Ext.define('NP.view.shared.invoicepo.ForwardsGrid', {
                     text     : me.sentToColName,
                     dataIndex: 'to_person_firstname',
                     renderer : function(val, meta, rec) {
-                        return val + ' ' + rec.get('to_person_lastname');
+                        if (val !== null || rec.get('to_person_lastname') !== null) {
+                            return val + ' ' + rec.get('to_person_lastname');
+                        } else {
+                            return '';
+                        }
                     }
                 },{
+                    xtype    : 'datecolumn',
                     text     : me.sentDateColName,
-                    dataIndex: 'forward_datetm'
+                    dataIndex: 'forward_datetm',
+                    format   : NP.Config.getDefaultDateFormat()
                 }
             ]
         };

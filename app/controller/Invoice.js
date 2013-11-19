@@ -11,6 +11,8 @@ Ext.define('NP.controller.Invoice', {
 		'NP.lib.core.Security'
 	],
 	
+	models: ['NP.model.invoice.InvoiceItem'],
+
 	stores: ['invoice.Invoices','system.PriorityFlags','invoice.InvoicePaymentTypes',
 			'invoice.InvoiceItems','invoice.InvoicePayments'],
 	
@@ -19,18 +21,27 @@ Ext.define('NP.controller.Invoice', {
 	refs: [
 		{ ref: 'invoiceView', selector: '[xtype="invoice.view"]' },
 		{ ref: 'invoiceViewToolbar', selector: '[xtype="invoice.viewtoolbar"]' },
+		{ ref: 'headerPropertyCombo', selector: '#headerPropertyCombo' },
+		{ ref: 'lineMainView', selector: '[xtype="shared.invoicepo.viewlineitems"]' },
 		{ ref: 'lineView', selector: '[xtype="shared.invoicepo.viewlines"]' },
+		{ ref: 'lineDataView', selector: '[xtype="shared.invoicepo.viewlines"] dataview' },
 		{ ref: 'lineGrid', selector: '[xtype="shared.invoicepo.viewlinegrid"]' },
 		{ ref: 'forwardsGrid', selector: '[xtype="shared.invoicepo.forwardsgrid"]' },
 		{ ref: 'historyLogGrid', selector: '[xtype="shared.invoicepo.historyloggrid"]' },
 		{ ref: 'paymentGrid', selector: '[xtype="invoice.viewpayments"]' },
-		{ ref: 'warningsView', selector: '[xtype="shared.invoicepo.viewwarnings"] dataview' }
+		{ ref: 'warningsView', selector: '[xtype="shared.invoicepo.viewwarnings"] dataview' },
+		{ ref: 'lineGridPropertyCombo',selector: '#lineGridPropertyCombo' },
+		{ ref: 'lineGridGlCombo', selector: '#lineGridGlCombo' },
+		{ ref: 'lineGridUnitCombo', selector: '#lineGridUnitCombo' },
+		{ ref: 'lineEditBtn', selector: '#invoiceLineEditBtn' }
 	],
 
 	showInvoiceImage: true,
 
 	init: function() {
 		Ext.log('Invoice controller initialized');
+
+		var app = this.application;
 
 		// Setup event handlers
 		this.control({
@@ -50,6 +61,13 @@ Ext.define('NP.controller.Invoice', {
 					this.addHistory( 'Invoice:showView:' + record.get('invoice_id') );
 				}
 			},
+
+			// Clicking on the New Invoice button
+			'#newInvoiceBtn': {
+				click: function() {
+					this.addHistory('Invoice:showView');
+				}
+			},
 			
 			// Clicking on cancel button on the invoice view page
 			'[xtype="invoice.viewtoolbar"] [xtype="shared.button.cancel"]': {
@@ -64,7 +82,7 @@ Ext.define('NP.controller.Invoice', {
 					var contentView = app.getCurrentView();
 					// If user picks a different property/region and we're on a register, update the grid
 					if (contentView.getXType() == 'invoice.register') {
-						var activeTab = contentView.query('tabpanel')[0].getActiveTab();
+						var activeTab = contentView.getActiveTab();
 						if (activeTab.getStore) {
 							this.loadRegisterGrid(activeTab);
 						}
@@ -74,6 +92,17 @@ Ext.define('NP.controller.Invoice', {
 
 			'[xtype="invoice.view"]': {
 				destroy: this.onInvoiceViewDestroy
+			},
+
+			'[xtype="invoice.view"] [xtype="shared.invoicepo.viewlinegrid"]': {
+				beforeedit          : Ext.bind(this.onBeforeInvoiceLineGridEdit, this),
+				edit                : Ext.bind(this.onAfterInvoiceLineGridEdit, this),
+				selectjcfield       : Ext.bind(this.onSelectJcField, this),
+				selectutilityaccount: Ext.bind(this.onSelectUtilityAccount, this),
+				selectusagetype     : Ext.bind(this.onSelectUsageType, this),
+				changequantity      : Ext.bind(this.onChangeQuantity, this),
+				changeunitprice     : Ext.bind(this.onChangeUnitPrice, this),
+				changeamount        : Ext.bind(this.onChangeAmount, this)
 			},
 
 			// Vendor combo on the invoice view page
@@ -90,6 +119,26 @@ Ext.define('NP.controller.Invoice', {
 				collapse: function() {
 					this.showInvoiceImage = false;
 				}
+			},
+
+			// Clicking the Edit button on the line item list
+			'#invoiceLineEditBtn': {
+				click: Ext.bind(this.onLineEditClick, this)
+			},
+
+			// Clicking on the Add Line button
+			'#invoiceLineAddBtn': {
+				click: Ext.bind(this.onLineAddClick, this)
+			},
+
+			// Clicking on the Done With Changes button
+			'#invoiceLineSaveBtn': {
+				click: Ext.bind(this.onLineSaveClick, this)
+			},
+
+			// Clicking on the Undo Changes button
+			'#invoiceLineCancelBtn': {
+				click: Ext.bind(this.onLineCancelClick, this)
 			}
 		});
 	},
@@ -157,10 +206,31 @@ Ext.define('NP.controller.Invoice', {
 			Ext.apply(viewCfg, {
 				listeners      : {
 					dataloaded: function(boundForm, data) {
-						me.buildViewToolbar(data);
-
 						// Set the title
 						me.setInvoiceViewTitle();
+
+						// Build the toolbar
+						me.buildViewToolbar(data);
+						
+						var lineView     = me.getLineView(),
+							lineStore    = me.getLineDataView().getStore(),
+							paymentGrid  = me.getPaymentGrid(),
+							paymentStore = paymentGrid.getStore();
+
+						// Add invoice_id to the line and payment stores
+						lineStore.addExtraParams({ invoice_id: invoice_id });
+						paymentStore.addExtraParams({ invoice_id: invoice_id });
+
+						// Load the line store
+						lineStore.load(function() {
+							// Only load the payment store after the line store because we need the total amount
+							paymentGrid.totalAmount = lineView.getTotalAmount();
+							paymentStore.load(function() {
+								if (paymentStore.getCount()) {
+									me.getPaymentGrid().show();
+								}
+							});
+						});
 
 						var vendorField   = boundForm.findField('vendor_id'),
 							propertyField = boundForm.findField('property_id'),
@@ -197,7 +267,7 @@ Ext.define('NP.controller.Invoice', {
 						});
 
 						// Load image if needed
-						/*me.loadImage();*/
+						me.loadImage();
 					}
 				}
 			});
@@ -205,29 +275,11 @@ Ext.define('NP.controller.Invoice', {
 
 		var form = me.setView('NP.view.invoice.View', viewCfg);
 
-		if (invoice_id) {
-			var lineView     = me.getLineView(),
-				lineStore    = me.getLineView().getStore(),
-				paymentGrid  = me.getPaymentGrid(),
-				paymentStore = paymentGrid.getStore();
-
-			// Add invoice_id to the line and payment stores
-			lineStore.addExtraParams({ invoice_id: invoice_id });
-			paymentStore.addExtraParams({ invoice_id: invoice_id });
-
-			// Load the line store
-			lineStore.load(function() {
-				// Only load the payment store after the line store because we need the total amount
-				paymentGrid.totalAmount = lineView.getTotalAmount();
-				paymentStore.load(function() {
-					if (paymentStore.getCount()) {
-						me.getPaymentGrid().show();
-					}
-				});
-			});
-		} else {
+		if (!invoice_id) {
 			// Set the title
 			me.setInvoiceViewTitle();
+
+			me.buildViewToolbar();
 
 			// Enable the vendor and property field when dealing with a new invoice
 			form.findField('vendor_id').enable();
@@ -235,6 +287,639 @@ Ext.define('NP.controller.Invoice', {
 
 			me.setDefaultPayBy();
 		}
+	},
+
+	onLineEditClick: function() {
+		this.getLineMainView().getLayout().setActiveItem(1);
+	},
+
+	onLineAddClick: function() {
+		var me = this;
+		
+		me.getLineGrid().getStore().add(Ext.create('NP.model.invoice.InvoiceItem'));
+	},
+
+	onLineSaveClick: function() {
+		var me = this;
+		
+		if (me.validateLineItems()) {
+			me.getLineMainView().getLayout().setActiveItem(0);
+		}
+	},
+
+	validateLineItems: function() {
+		var me    = this,
+			grid  = me.getLineGrid(),
+			store = grid.getStore(),
+			count = store.getCount(),
+			reqFields = ['glaccount_id','property_id'],
+			valid = true,
+			rec,
+			col,
+			cellNode;
+
+		for (var i=0; i<count; i++) {
+			rec = store.getAt(i);
+			for (var j=0; j<grid.columns.length; j++) {
+				col = grid.columns[j];
+				if (Ext.Array.contains(reqFields, col.dataIndex) && rec.get(col.dataIndex) == null) {
+					cellNode = grid.getView().getCell(rec, col);
+					cellNode.addCls('grid-invalid-cell');
+					cellNode.set({
+						'data-qtip': 'This field is required'
+					});
+					valid = false;
+				}
+			}
+		}
+
+		return valid;
+	},
+
+	onLineCancelClick: function() {
+		var me = this;
+		
+		me.getLineGrid().getStore().rejectChanges();
+	},
+
+	onBeforeInvoiceLineGridEdit: function(editor, e) {
+		var me    = this,
+			field = e.column.getEditor(),
+			grid  = me.getLineGrid();
+
+		grid.selectedRec = e.record;
+		me.originalRecValue = e.record.copy();
+
+		cellNode = grid.getView().getCell(e.record, e.column);
+		cellNode.removeCls('grid-invalid-cell');
+		cellNode.set({
+			'data-qtip': ''
+		});
+
+		if (e.field == 'invoiceitem_quantity' || e.field == 'invoiceitem_unitprice' 
+				|| e.field == 'invoiceitem_amount' || e.field == 'invoiceitem_description') {
+			me.onOpenInvalidSplitField(editor, e.record, field);
+		} else if (e.field == 'property_id') {
+			me.onOpenPropertyEditor(editor, e.record, field);
+		} else if (e.field == 'glaccount_id') {
+			me.onOpenGlAccountEditor(editor, e.record, field);
+		} else if (e.field == 'unit_id') {
+			me.onOpenUnitEditor(editor, e.record);
+		} else if (e.field == 'vcitem_number' || e.field == 'vcitem_uom') {
+			me.onOpenVcItemEditor(editor, e.record, field);
+		} else if (e.field == 'jbcontract_id') {
+			me.onOpenContractEditor(editor, e.record, field);
+		} else if (e.field == 'jbchangeorder_id') {
+			me.onOpenChangeOrderEditor(editor, e.record, field);
+		} else if (e.field == 'jbjobcode_id') {
+			me.onOpenJobCodeEditor(editor, e.record, field);
+		} else if (e.field == 'jbphasecode_id') {
+			me.onOpenPhaseCodeEditor(editor, e.record, field);
+		} else if (e.field == 'jbcostcode_id') {
+			me.onOpenCostCodeEditor(editor, e.record, field);
+		} else if (e.field == 'utilityaccount_id') {
+			me.onOpenUtilityAccountEditor(editor, e.record, field);
+		} else if (e.field == 'utilitycolumn_usagetype_id') {
+			me.onOpenUsageTypeEditor(editor, e.record, field);
+		} else if (e.field.substr(0, 15) == 'universal_field') {
+			me.onOpenCustomFieldEditor(editor, e.record, field);
+		}
+	},
+
+	onOpenInvalidSplitField: function(editor, rec, field) {
+		if (rec.get('invoiceitem_split') === 1) {
+			field.setReadOnly(true);
+		} else {
+			field.setReadOnly(false);
+		}
+	},
+
+	onOpenPropertyEditor: function(editor, rec, field) {
+		this.loadPropertyStore();
+	},
+
+	loadPropertyStore: function(callback) {
+		var me    = this,
+    		store = me.getLineGrid().propertyStore,
+    		propertyField = me.getHeaderPropertyCombo(),
+    		property_id   = propertyField.getValue(),
+			integration_package_id;
+
+		if (property_id !== null) {
+			integration_package_id = propertyField.findRecordByValue(property_id).get('integration_package_id')
+		}
+
+		if (integration_package_id) {
+	    	if (integration_package_id != store.getExtraParam('integration_package_id')) {
+	    		store.addExtraParams({ integration_package_id: integration_package_id });
+	    		store.load(function() {
+	    			if (callback) {
+	    				callback(store);
+	    			}
+	    		});
+			}
+		} else {
+			store.removeAll();
+		}
+	},
+
+	onOpenGlAccountEditor: function(editor, rec, field) {
+		this.loadGlAccountStore(rec);
+	},
+
+	loadGlAccountStore: function(rec, callback) {
+		var me    = this,
+    		store = me.getLineGrid().glStore;
+
+    	// Only run this if property/GL association is on
+		if (NP.Config.getSetting('CP.PROPERTYGLACCOUNT_USE') == '1') {
+            var property_id = rec.get('property_id');
+
+            if (property_id !== null) {
+            	if (property_id != store.getExtraParam('property_id')) {
+            		store.addExtraParams({ property_id: property_id });
+            		store.load(function() {
+            			if (callback) {
+            				callback(store);
+            			}
+            		});
+                }
+            } else {
+                store.removeAll();
+            }
+        // Otherwise run code for associating with integration package
+        } else {
+        	var integration_package_id = me.getInvoiceView().getLoadedData().integration_package_id;
+        	if (integration_package_id != store.getExtraParam('integration_package_id')) {
+        		store.addExtraParams({ integration_package_id: integration_package_id });
+        		store.load(function() {
+        			if (callback) {
+        				callback(store);
+        			}
+        		});
+    		}
+        }
+	},
+
+	onOpenUnitEditor: function(editor, rec, field) {
+		var me    = this,
+    		combo = me.getLineGridUnitCombo();
+
+    	me.loadUnitStore(rec, function(store) {
+    		combo.setValue(rec.get('unit_id'));
+    	});
+	},
+
+	loadUnitStore: function(rec, callback) {
+		var me          = this,
+    		store       = me.getLineGrid().unitStore,
+    		property_id = rec.get('property_id');
+
+    	if (property_id !== null) {
+        	if (property_id != store.getExtraParam('property_id')) {
+        		store.addExtraParams({ property_id: property_id });
+        		store.load(function() {
+        			if (callback) {
+        				callback(store);
+        			}
+        		});
+            }
+        } else {
+            store.removeAll();
+        }
+	},
+
+	onOpenCustomFieldEditor: function(editor, rec, customField) {
+		var field = customField.field,
+			store,
+			fieldNumber,
+			glaccount_id,
+			extraParams;
+
+		// Check if the custom field is a combo box
+		if (field.getStore) {
+			// If the custom field is a combo, get the store and extract the field number
+			store = field.getStore();
+			fieldNumber = field.getName().substr(15, 1);
+
+			// If we're dealing with line custom field 1, need to look into the GL association
+			if (fieldNumber == 1) {
+				// If the GL is not blank, proceed
+				glaccount_id = rec.get('glaccount_id');
+				if (glaccount_id !== null) {
+					// Check if the GL Account has changed or has not yet been set
+					extraParams = store.getExtraParams();
+					if (!('glaccount_id' in extraParams) || extraParams['glaccount_id'] != glaccount_id) {
+						// If GL account is new, add it to the store and load it
+						store.addExtraParams({ glaccount_id: rec.get('glaccount_id') });
+						store.load();
+					}
+				// If the GL is blank, just clear the store
+				} else {
+					store.removeAll();
+				}
+			// If not dealing with line custom field 1, just load the store
+			} else {
+				store.load();
+			}
+		}
+	},
+
+	onOpenVcItemEditor: function(editor, rec, field) {
+		if (rec.get('is_from_catalog') === 1) {
+			field.setReadOnly(false);
+		} else {
+			field.setReadOnly(true);
+		}
+	},
+
+	onOpenContractEditor: function(editor, rec, field) {
+		var me            = this,
+			store         = field.getStore(),
+			vendorField   = me.getInvoiceView().findField('vendor_id'),
+			vendor_id     = vendorField.getValue(),
+			vendorsite_id = vendorField.findRecordByValue(vendor_id).get('vendorsite_id'),
+			extraParams   = store.getExtraParams();
+		
+		if (!('vendorsite_id' in extraParams) || extraParams['vendorsite_id'] != vendorsite_id) {
+			store.addExtraParams({
+				vendorsite_id: vendorsite_id
+			});
+
+			store.load()
+		}
+	},
+
+	onOpenChangeOrderEditor: function(editor, rec, field) {
+		var me                  = this,
+			store               = field.getStore(),
+			jbcontract_id       = rec.get('jbcontract_id'),
+			current_contract_id = null,
+			extraParams         = store.getExtraParams();
+
+		if ('jbcontract_id' in extraParams) {
+			current_contract_id = extraParams['jbcontract_id'];
+		}
+		
+		/* If a contract has been specified and it's not the same as the one currently
+		used by the store, we need to load the change orders that belong to the
+		selected contract */
+		if (jbcontract_id !== current_contract_id && jbcontract_id !== null) {
+			// Add the contract ID to the store
+			store.addExtraParams({
+				jbcontract_id: jbcontract_id
+			});
+
+			// Load the data into the store
+			store.load();
+		// Otherwise if no contract was selected, we need to clear the store
+		} else if (jbcontract_id === null) {
+			store.removeAll();
+		}
+	},
+
+	onOpenJobCodeEditor: function(editor, rec, field) {
+		var me               = this,
+			store            = field.getStore(),
+			jbcontract_id    = rec.get('jbcontract_id'),
+			jbchangeorder_id = rec.get('jbchangeorder_id'),
+			property_id      = rec.get('property_id'),
+			extraParams      = store.getExtraParams(),
+			newExtraParams   = {
+				service: 'JobCostingService',
+                action : 'getJobCodes'
+			};
+
+		if (property_id !== null) {
+			// We want to see if extra params have changed to 
+			Ext.each(['property_id','jbcontract_id','jbchangeorder_id'], function(field) {
+				var val = eval(field);
+				if (val !== null) {
+					newExtraParams[field] = val;
+				}
+			});
+			
+			/* If a contract has been specified and it's not the same as the one currently
+			used by the store, we need to load the change orders that belong to the
+			selected contract */
+			if (Ext.JSON.encode(extraParams) != Ext.JSON.encode(newExtraParams)) {
+				// Add the extra parameters to the store
+				store.setExtraParams(newExtraParams);
+
+				// Load the data into the store
+				store.load();
+			}
+		} else {
+			store.removeAll();
+		}
+	},
+
+	onOpenPhaseCodeEditor: function(editor, rec, field) {
+		var me               = this,
+			store            = field.getStore(),
+			jbcontract_id    = rec.get('jbcontract_id'),
+			jbchangeorder_id = rec.get('jbchangeorder_id'),
+			jbjobcode_id     = rec.get('jbjobcode_id'),
+			extraParams      = store.getExtraParams(),
+			newExtraParams   = {
+				service: 'JobCostingService',
+                action : 'getPhaseCodes'
+			};
+
+		if (jbjobcode_id !== null) {
+			// We want to see if extra params have changed to 
+			Ext.each(['jbcontract_id','jbchangeorder_id','jbjobcode_id'], function(field) {
+				var val = eval(field);
+				if (val !== null) {
+					newExtraParams[field] = val;
+				}
+			});
+			
+			/* If a contract has been specified and it's not the same as the one currently
+			used by the store, we need to load the change orders that belong to the
+			selected contract */
+			if (Ext.JSON.encode(extraParams) != Ext.JSON.encode(newExtraParams)) {
+				// Add the extra parameters to the store
+				store.setExtraParams(newExtraParams);
+
+				// Load the data into the store
+				store.load();
+			}
+		} else {
+			store.removeAll();
+		}
+	},
+
+	onOpenCostCodeEditor: function(editor, rec, field) {
+		var me               = this,
+			store            = field.getStore(),
+			jbcontract_id    = rec.get('jbcontract_id'),
+			jbchangeorder_id = rec.get('jbchangeorder_id'),
+			jbjobcode_id     = rec.get('jbjobcode_id'),
+			jbphasecode_id   = rec.get('jbphasecode_id'),
+			extraParams      = store.getExtraParams(),
+			newExtraParams   = {
+				service: 'JobCostingService',
+                action : 'getCostCodes'
+			};
+
+		if (jbjobcode_id !== null) {
+			// We want to see if extra params have changed to 
+			Ext.each(['jbcontract_id','jbchangeorder_id','jbjobcode_id','jbphasecode_id'], function(field) {
+				var val = eval(field);
+				if (val !== null) {
+					newExtraParams[field] = val;
+				}
+			});
+			
+			/* If a contract has been specified and it's not the same as the one currently
+			used by the store, we need to load the change orders that belong to the
+			selected contract */
+			if (Ext.JSON.encode(extraParams) != Ext.JSON.encode(newExtraParams)) {
+				// Add the extra parameters to the store
+				store.setExtraParams(newExtraParams);
+
+				// Load the data into the store
+				store.load();
+			}
+		} else {
+			store.removeAll();
+		}
+	},
+
+	onOpenUtilityAccountEditor: function(editor, rec, field) {
+		var me = this;
+
+		me.loadUtilityAccountStore(rec, function(store) {
+			if (store.getCount() === 0) {
+				field.setReadOnly(true);
+			} else {
+				field.setReadOnly(false);
+			}
+		});
+	},
+
+	loadUtilityAccountStore: function(rec, callback) {
+		var me            = this,
+			store         = me.getLineGrid().utilityAccountStore,
+			vendorField   = me.getInvoiceView().findField('vendor_id'),
+			vendor_id     = vendorField.getValue(),
+			vendorsite_id = vendorField.findRecordByValue(vendor_id).get('vendorsite_id'),
+			property_id   = rec.get('property_id'),
+			extraParams   = store.getExtraParams(),
+			newExtraParams= {
+				service: 'UtilityService',
+                action : 'getAccountsByVendorsite'
+			};
+		
+		if (vendorsite_id !== null && property_id !== null) {
+			// We want to see if extra params have changed to 
+			Ext.each(['vendorsite_id','property_id'], function(field) {
+				var val = eval(field);
+				if (val !== null) {
+					newExtraParams[field] = val;
+				}
+			});
+			
+			/* If a contract has been specified and it's not the same as the one currently
+			used by the store, we need to load the change orders that belong to the
+			selected contract */
+			if (Ext.JSON.encode(extraParams) != Ext.JSON.encode(newExtraParams)) {
+				// Add the extra parameters to the store
+				store.setExtraParams(newExtraParams);
+
+				// Load the data into the store
+				store.load(function() {
+					if (callback) {
+						callback(store);
+					}
+				});
+			}
+		} else {
+			store.setExtraParams({});
+			store.removeAll();
+		}
+	},
+
+	onOpenUsageTypeEditor: function(editor, rec, field) {
+		var me = this;
+
+		me.loadUsageTypeStore(rec, function(store) {
+			if (store.getCount() === 0) {
+				field.setReadOnly(true);
+			} else {
+				field.setReadOnly(false);
+			}
+		});
+	},
+
+	loadUsageTypeStore: function(rec, callback) {
+		var me             = this,
+			store          = me.getLineGrid().usageTypeStore,
+			UtilityType_Id = rec.get('UtilityType_Id'),
+			extraParams    = store.getExtraParams(),
+			newExtraParams = {
+				service: 'UtilityService',
+                action : 'getUsageTypesByUtilityType'
+			};
+		
+		if (UtilityType_Id !== null) {
+			newExtraParams['UtilityType_Id'] = UtilityType_Id;
+			
+			/* If a utility account has been specified and it's not the same as the one currently
+			used by the store, we need to load the usage type that belong to the
+			type for the utility account */
+			if (Ext.JSON.encode(extraParams) != Ext.JSON.encode(newExtraParams)) {
+				// Add the extra parameters to the store
+				store.setExtraParams(newExtraParams);
+
+				// Load the data into the store
+				store.load(function() {
+					if (callback) {
+						callback(store);
+					}
+				});
+			}
+		} else {
+			store.setExtraParams({});
+			store.removeAll();
+		}
+	},
+
+	onAfterInvoiceLineGridEdit: function(editor, e) {
+		var me        = this,
+			field     = e.column.getEditor(),
+			grid      = me.getLineGrid(),
+			intCombos = ['property_id','glaccount_id','unit_id','jbcontract_id','jbchangeorder_id',
+						'jbjobcode_id','jbphasecode_id','jbcostcode_id','utilityaccount_id',
+						'utilitycolumn_usagetype_id'];
+		
+		if (Ext.Array.contains(intCombos, field.getName()) && (e.value instanceof Array || isNaN(e.value))) {
+			grid.selectedRec.set(me.originalRecValue.getData());
+		}
+
+		// If we edited the property, we need to make sure fields with drop downs that depend
+		// on the property are checked and cleared if their value no longer exists in the store
+		if (e.field == 'property_id') {
+			// Only run this if the property has changed
+			if (e.value != e.originalValue) {
+				var glaccount_id = grid.selectedRec.get('glaccount_id');
+				// If there's a GL Account set in the column, proceed
+				if (glaccount_id !== null) {
+					// Reload the GL Account store
+					me.loadGlAccountStore(e.record, function(store) {
+						// If the current grid value doesn't exist in the store, clear it
+						if (store.getById(glaccount_id) === null) {
+							grid.selectedRec.set('glaccount_id', null);
+							grid.selectedRec.set('glaccount_name', null);
+							grid.selectedRec.set('glaccount_number', null);
+						}
+					});
+				}
+
+				// If the property changed, a unit selected under a different property
+				// would never be available, so we can just clear it
+				grid.selectedRec.set('unit_id', null);
+				grid.selectedRec.set('unit_id_alt', null);
+				grid.selectedRec.set('unit_number', null);
+
+				var utilityaccount_id = grid.selectedRec.get('utilityaccount_id');
+				// If there's a Utlity Account set in the column, proceed
+				if (utilityaccount_id !== null) {
+					// Reload the utility account Account store
+					me.loadUtilityAccountStore(e.record, function(store) {
+						// If the current grid value doesn't exist in the store, clear it
+						if (store.getById(utilityaccount_id) === null) {
+							me.clearUtilityAccount(grid);
+						}
+					});
+				}
+			}
+		}
+	},
+
+	clearUtilityAccount: function(grid) {
+		grid.selectedRec.set('utilityaccount_id', null);
+		grid.selectedRec.set('UtilityAccount_AccountNumber', null);
+		grid.selectedRec.set('UtilityAccount_MeterSize', null);
+		grid.selectedRec.set('UtilityType_Id', null);
+		grid.selectedRec.set('UtilityType', null);
+	},
+
+	clearUsageType: function(grid) {
+		grid.selectedRec.set('utilitycolumn_usagetype_id', null);
+		grid.selectedRec.set('UtilityColumn_UsageType_Name', null);
+	},
+
+	onSelectJcField: function(field, grid, combo, recs) {
+		var me     = this,
+			newRec = {};
+
+        if (recs.length) {
+			newRec[field+'_id']   = recs[0].get(field+'_id');
+			newRec[field+'_name'] = recs[0].get(field+'_name');
+			newRec[field+'_desc'] = recs[0].get(field+'_desc');
+        } else {
+            newRec[field+'_id']   = null;
+			newRec[field+'_name'] = null;
+			newRec[field+'_desc'] = null;
+        }
+
+        grid.selectedRec.set(newRec);
+	},
+
+	onSelectUtilityAccount: function(grid, combo, recs) {
+		var me = this;
+
+        if (recs.length) {
+            var newRec = {
+                utilityaccount_id           : recs[0].get('UtilityAccount_Id'),
+                UtilityAccount_AccountNumber: recs[0].get('UtilityAccount_AccountNumber'),
+                UtilityAccount_MeterSize    : recs[0].get('UtilityAccount_MeterSize'),
+                UtilityType_Id              : recs[0].get('UtilityType_Id'),
+                UtilityType                 : recs[0].get('UtilityType')
+            }
+
+        	grid.selectedRec.set(newRec);
+        } else {
+            me.clearUtilityAccount(grid);
+        }
+	},
+
+	onSelectUsageType: function(grid, combo, recs) {
+		var me = this;
+
+        if (recs.length) {
+            var newRec = {
+                utilitycolumn_usagetype_id  : recs[0].get('UtilityColumn_UsageType_Id'),
+                UtilityColumn_UsageType_Name: recs[0].get('UtilityColumn_UsageType_Name')
+            }
+
+        	grid.selectedRec.set(newRec);
+        } else {
+            me.clearUsageType(grid);
+        }
+	},
+
+	onChangeQuantity: function(grid, field) {
+		var unitPrice = grid.selectedRec.get('invoiceitem_unitprice'),
+			qty       = field.getValue();
+
+		grid.selectedRec.set('invoiceitem_amount', qty * unitPrice);
+	},
+
+	onChangeUnitPrice: function(grid, field) {
+		var qty       = grid.selectedRec.get('invoiceitem_quantity'),
+			unitPrice = field.getValue();
+
+		grid.selectedRec.set('invoiceitem_amount', qty * unitPrice);
+	},
+
+	onChangeAmount: function(grid, field) {
+		var qty   = grid.selectedRec.get('invoiceitem_quantity'),
+			amount = field.getValue();
+
+		grid.selectedRec.set('invoiceitem_unitprice', amount / qty);
 	},
 
 	setInvoiceViewTitle: function() {

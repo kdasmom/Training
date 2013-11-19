@@ -3,7 +3,7 @@
  *
  * @author Thomas Messier
  */
-Ext.define('NP.model.invoice.UtilityColumnUsageType', {
+Ext.define('NP.model.vendor.UtilityColumnUsageType', {
 	extend: 'Ext.data.Model',
 	
 	requires: ['NP.lib.core.Config'],

@@ -13,7 +13,7 @@ Ext.define('NP.view.invoice.View', {
         'NP.view.shared.invoicepo.ViewWarnings',
     	'NP.view.invoice.ViewHeader',
         'NP.view.shared.CustomFieldContainer',
-    	'NP.view.invoice.ViewLineItems',
+    	'NP.view.shared.invoicepo.ViewLineItems',
     	'NP.view.invoice.ViewNotes',
     	'NP.view.invoice.ViewReclass',
     	'NP.view.invoice.ViewPayments',
@@ -41,7 +41,7 @@ Ext.define('NP.view.invoice.View', {
             { xtype: 'shared.invoicepo.viewwarnings', type: 'invoice' },
             { xtype: 'invoice.viewheader' },
             { xtype: 'shared.customfieldcontainer', title: 'Custom Fields', type: 'invoice', isLineItem: 0 },
-            { xtype: 'invoice.viewlineitems', type: 'invoice' },
+            { xtype: 'shared.invoicepo.viewlineitems', type: 'invoice' },
             { xtype: 'invoice.viewnotes' }
         ];
 
@@ -50,9 +50,9 @@ Ext.define('NP.view.invoice.View', {
 		}
 
 		me.items.push(
-            { xtype: 'shared.invoicepo.historyloggrid', type: 'invoice', maxHeight: 400 },
-    		{ xtype: 'invoice.viewpayments', hidden: true, maxHeight: 400 },
-		    { xtype: 'shared.invoicepo.forwardsgrid', title: 'Invoice Forwards', type: 'invoice', maxHeight: 400 }
+            { xtype: 'shared.invoicepo.historyloggrid', type: 'invoice', maxHeight: 200 },
+    		{ xtype: 'invoice.viewpayments', hidden: true, maxHeight: 200 },
+		    { xtype: 'shared.invoicepo.forwardsgrid', title: 'Invoice Forwards', type: 'invoice', maxHeight: 200 }
 		);
 
     	me.callParent(arguments);
