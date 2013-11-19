@@ -366,33 +366,38 @@ Ext.define('NP.controller.VendorManager', {
 				bar.push(
 					{
 						xtype: 'shared.button.save',
+						text: NP.Translator.translate('Save'),
 						handler: function() {
 							that.saveVendor();
 						}
 					}
 				);
-			}
-			if (!appCount && this.vendor_status !== 'forapproval') {
-				bar.push(
-					{
-						xtype: 'button',
-						text: this.submitForApprovalTextBtn
-					},
-					{
-						xtype: 'button',
-						text: this.submitForApprovalAndUploadTextBtn
+			} else {
+				if (!appCount && this.vendor_status !== 'forapproval') {
+					bar.push(
+						{
+							xtype: 'shared.button.approve',
+							text: this.submitForApprovalTextBtn
+						},
+						{
+							xtype: 'shared.button.approve',
+							text: this.submitForApprovalAndUploadTextBtn
+						}
+					);
+				} else {
+					if (this.vendor_status == 'forapproval') {
+						bar.push(
+							{
+								xtype: 'shared.button.approve',
+								text: NP.Translator.translate('Approve')
+							},
+							{
+								xtype: 'shared.button.reject',
+								text: NP.Translator.translate('Reject')
+							}
+						);
 					}
-				);
-			}
-			if (this.vendor_status == 'forapproval') {
-				bar.push(
-					{
-						xtype: 'shared.button.approve'
-					},
-					{
-						xtype: 'shared.button.reject'
-					}
-				);
+				}
 			}
 		} else {
 			if (NP.Security.getRole().get('role_name') == 'Auditor') {
@@ -583,7 +588,10 @@ Ext.define('NP.controller.VendorManager', {
 					bar.push(
 						{
 							xtype: 'shared.button.upload',
-							text: 'Upload insurance'
+							text: 'Upload insurance',
+							handler: function() {
+								that.addHistory('Import:showImport:');
+							}
 						}
 					);
 				}

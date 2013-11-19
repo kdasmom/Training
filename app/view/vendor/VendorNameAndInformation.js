@@ -45,16 +45,30 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
 		var that = this;
 
 		this.defaults = {
-			labelWidth: 150,
-            width: 500
+			labelWidth: 150
+//            width: 500
 		};
 
 		this.items = [
 			{
-				xtype: 'displayfield',
+				xtype: 'customcombo',
 				fieldLabel: this.integrationPackageInputLabel,
-				value: '',
-                name: 'integration_package_name'
+                name: 'integration_package_name',
+				displayField: 'integration_package_name',
+				valueField: 'integration_package_id',
+				store: Ext.create('NP.store.system.IntegrationPackages', {
+					service           : 'ConfigService',
+					action            : 'getIntegrationPackages',
+					autoLoad          : true,
+					extraParams: {
+						pageSize: null,
+						paymentType_id: null
+					}
+				}),
+				queryMode: 'local',
+				editable: false,
+				typeAhead: false
+
 			},
             {
                 xtype: 'hidden',
@@ -93,63 +107,14 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
                 name: 'address',
                 layout: 'vbox',
                 items: [
+					{
+						xtype: 'shared.address',
+						required: true,
+						showCountry: true
+					},
                     {
                         xtype: 'hidden',
                         name: 'address_id'
-                    },
-                    {
-                        xtype: 'textfield',
-                        fieldLabel: this.vendorAddressCommonInputLabel,
-                        width: 345,
-                        name: 'address_line1',
-                        allowBlank: false
-                    },
-                    {
-                        xtype: 'textfield',
-                        fieldLabel: '',
-                        width: 345,
-                        name: 'address_line2'
-                    },
-                    {
-                        xtype: 'textfield',
-                        fieldLabel: this.vendorAddressCityInputLabel,
-                        width: 345,
-                        name: 'address_city',
-                        allowBlank: false
-                    },
-                    {
-                        xtype: 'customcombo',
-                        fieldLabel: this.vendorAddressStateInputLabel,
-                        width: 345,
-                        name: 'address_state',
-                        displayField: 'code',
-                        valueField: 'code',
-                        store: Ext.create('NP.store.system.States'),
-						queryMode: 'local',
-						typeAhead: false,
-                        allowBlank: false,
-						editable: false
-                    },
-                    {
-                        xtype: 'fieldcontainer',
-                        fieldLabel: this.vendorAddressZipInputLabel,
-                        layout: 'hbox',
-                        items: [
-                            {
-                                xtype: 'textfield',
-                                fieldLabel: '',
-                                width: 110,
-                                name: 'address_zip',
-                                allowBlank: false
-                            },
-                            {
-                                xtype: 'textfield',
-                                fieldLabel: '',
-                                width: 120,
-                                name: 'address_zipext',
-                                padding: '0 0 0 10'
-                            }
-                        ]
                     }
                 ]
 			}
