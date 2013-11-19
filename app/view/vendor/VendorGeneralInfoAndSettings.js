@@ -71,10 +71,17 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
 			autoHeight: true
         };
 
+		this.items = [];
 
         this.items = [
+			{
+				xtype: 'textfield',
+				name: 'vendor_customernum',
+				fieldLabel: this.customerNumberInputLabel,
+				hidden: !this.opened
+			},
             {
-                xtype: 'combo',
+                xtype: 'customcombo',
                 fieldLabel: this.vendorTypeInputLabel,
                 name: 'vendortype_id',
                 displayField: 'vendortype_code',
@@ -84,8 +91,11 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
                     action: 'findVendorTypes',
                     autoLoad: true
                 }),
-                allowBlank: false,
-                listeners: {
+				allowBlank: false,
+				queryMode: 'local',
+				editable: false,
+				typeAhead: false,
+				listeners: {
                     change: function(combo, value) {
                         var form = that.up('form');
                         form.findField('vendor_type_code').setValue(combo.getRawValue());
@@ -97,25 +107,99 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
                 name: 'vendor_type_code'
             },
             {
-                xtype: 'combo',
+                xtype: 'customcombo',
                 fieldLabel: this.taxPayorTypeInputLabel,
                 name: 'taxpayor_type',
                 displayField: 'lookupcode_code',
                 valueField: 'lookupcode_id',
                 store: Ext.create('NP.store.system.TaxPayorTypes', {
                     autoLoad: true
-                })
+                }),
+				queryMode: 'local',
+				editable: false,
+				typeAhead: false
             },
             {
-                xtype: 'combo',
+                xtype: 'customcombo',
                 fieldLabel: this.payeeTypeInputLabel,
                 name: 'payee_type',
                 displayField: 'lookupcode_code',
                 valueField: 'lookupcode_id',
                 store: Ext.create('NP.store.system.PayeeTypes', {
                     autoLoad: true
-                })
+                }),
+				queryMode: 'local',
+				editable: false,
+				typeAhead: false
             },
+			{
+				xtype: 'datefield',
+				name: 'vendor_active_startdate',
+				fieldLabel: this.activeStartDateInputLabel,
+				hidden: !this.opened
+			},
+			{
+				xtype: 'datefield',
+				name: 'vendor_active_enddate',
+				fieldLabel: this.activeEndDateInputLabel,
+				hidden: !this.opened
+			},
+			{
+				xtype: 'customcombo',
+				name: 'default_glaccount_id',
+				displayField: 'glaccount_name',
+				valueField: 'glaccount_id',
+				store: Ext.create('NP.store.gl.GlAccounts', {
+					service           : 'GLService',
+					action            : 'getAll',
+					autoLoad          : true,
+					extraParams: {
+						pageSize: null
+					}
+				}),
+				fieldLabel: this.defaultGlAccountInputLabel,
+				hidden: !this.opened,
+				queryMode: 'local',
+				editable: false,
+				typeAhead: false
+			},
+			{
+				xtype: 'customcombo',
+				name: 'default_paymenttype_id',
+				valueField: 'invoicepayment_type_id',
+				displayField: 'invoicepayment_type',
+				fieldLabel: this.defaultPaymentTypeInputLabel,
+				store: Ext.create('NP.store.invoice.InvoicePaymentTypes', {
+					service           : 'InvoiceService',
+					action            : 'getPaymentTypes',
+					autoLoad          : true,
+					extraParams: {
+						pageSize: null,
+						paymentType_id: null
+					}
+				}),
+				hidden: !this.opened,
+				queryMode: 'local',
+				editable: false,
+				typeAhead: false
+			},
+			{
+				xtype: 'customcombo',
+				name: 'default_due_datetm',
+				displayField: 'day',
+				fieldLabel: this.defaultDateSettingsInputLabel,
+				store: daysStore,
+				hidden: !this.opened,
+				queryMode: 'local',
+				editable: false,
+				typeAhead: false
+			},
+			{
+				xtype: 'shared.yesnofield',
+				name: 'Finance_Vendor',
+				fieldLabel: this.financeVendorInputLabel,
+				hidden: !this.opened
+			},
             {
                 xtype: 'textfield',
                 fieldLabel: this.emailAddressInputLabel,
@@ -270,64 +354,6 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
 
 		if (this.opened) {
 			this.items.push({
-				xtype: 'textfield',
-				name: 'vendor_customernum',
-				fieldLabel: this.customerNumberInputLabel
-			});
-			this.items.push({
-				xtype: 'datefield',
-				name: 'vendor_active_startdate',
-				fieldLabel: this.activeStartDateInputLabel
-			});
-			this.items.push({
-				xtype: 'datefield',
-				name: 'vendor_active_enddate',
-				fieldLabel: this.activeEndDateInputLabel
-			});
-			this.items.push({
-				xtype: 'combobox',
-				name: 'default_glaccount_id',
-				displayField: 'glaccount_name',
-				valueField: 'glaccount_id',
-				store: Ext.create('NP.store.gl.GlAccounts', {
-					service           : 'GLService',
-					action            : 'getAll',
-					autoLoad          : true,
-					extraParams: {
-						pageSize: null
-					}
-				}),
-				fieldLabel: this.defaultGlAccountInputLabel
-			});
-			this.items.push({
-				xtype: 'combobox',
-				name: 'default_paymenttype_id',
-				valueField: 'invoicepayment_type_id',
-				displayField: 'invoicepayment_type',
-				fieldLabel: this.defaultPaymentTypeInputLabel,
-				store: Ext.create('NP.store.invoice.InvoicePaymentTypes', {
-					service           : 'InvoiceService',
-					action            : 'getPaymentTypes',
-					autoLoad          : true,
-					extraParams: {
-						pageSize: null,
-						paymentType_id: null
-					}
-				})
-			});
-			this.items.push({
-				xtype: 'combobox',
-				name: 'default_due_datetm',
-				displayField: 'day',
-				fieldLabel: this.defaultDateSettingsInputLabel,
-				store: daysStore
-			});
-			this.items.push({
-				xtype: 'shared.yesnofield',
-				name: 'Finance_Vendor',
-				fieldLabel: this.financeVendorInputLabel
-			});
-			this.items.push({
 				xtype: 'checkbox',
 				name: 'remit_req',
 				fieldLabel: this.remittanceAdviceInputLabel
@@ -337,21 +363,6 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
 				name: 'insurance_req',
 				fieldLabel: this.requiresVendorInputLabel
 			});
-//			this.items.push({
-//				xtype: 'checkbox',
-//				name: '0_1_is_service_vendor',
-//				fieldLabel: this.requiresServiceCustomFieldsInputLabel
-//			});
-//			this.items.push({
-//				xtype: 'checkbox',
-//				name: '0_10_po_electronic_submit',
-//				fieldLabel: this.submitPosToVendorInputLabel
-//			});
-//			this.items.push({
-//				xtype: 'checkbox',
-//				name: '0_15_auto_email_po',
-//				fieldLabel: this.autoEmailInputLabel
-//			});
 		} else {
 			this.items.push(
 				{

@@ -78,6 +78,16 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
                 allowBlank: false
             },
 			{
+				xtype: 'hidden',
+				name: 'vendor_action',
+				value: ''
+			},
+			{
+				xtype: 'hidden',
+				name: 'submit_userprofile_id',
+				value: ''
+			},
+			{
 				xtype: 'fieldcontainer',
 				fieldLabel: this.vendorAddressInputLabel,
                 name: 'address',
@@ -108,18 +118,17 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
                         allowBlank: false
                     },
                     {
-                        xtype: 'combo',
+                        xtype: 'customcombo',
                         fieldLabel: this.vendorAddressStateInputLabel,
                         width: 345,
                         name: 'address_state',
-                        displayField: 'state_code',
-                        valueField: 'state_id',
-                        store: Ext.create('NP.store.contact.States', {
-                            service: 'AddressService',
-                            action: 'getStates',
-                            autoLoad: true
-                        }),
-                        allowBlank: false
+                        displayField: 'code',
+                        valueField: 'code',
+                        store: Ext.create('NP.store.system.States'),
+						queryMode: 'local',
+						typeAhead: false,
+                        allowBlank: false,
+						editable: false
                     },
                     {
                         xtype: 'fieldcontainer',
@@ -141,17 +150,7 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
                                 padding: '0 0 0 10'
                             }
                         ]
-                    },
-					{
-						xtype: 'hidden',
-						name: 'vendor_action',
-						value: ''
-					},
-					{
-						xtype: 'hidden',
-						name: 'submit_userprofile_id',
-						value: ''
-					}
+                    }
                 ]
 			}
 		];

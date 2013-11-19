@@ -13,6 +13,8 @@ Ext.define('NP.controller.VendorManager', {
         'NP.lib.core.Net',
         'NP.lib.core.Util',
 		'NP.view.shared.button.Upload',
+		'NP.view.shared.button.Approve',
+		'NP.view.shared.button.Reject',
 		'NP.view.vendor.VendorImageUploadForm',
 		'NP.view.vendor.InsuranceUploadForm',
 		'NP.view.vendor.VendorRejectWindow',
@@ -49,7 +51,6 @@ Ext.define('NP.controller.VendorManager', {
 //			add new vendor click button handler
 			'[xtype="vendor.vendorsmanager"]  [xtype="shared.button.new"]': {
 				click: function() {
-//					this.showVendorForm();
 					this.addHistory('VendorManager:showVendorForm');
 				}
 			},
@@ -174,7 +175,6 @@ Ext.define('NP.controller.VendorManager', {
 						Ext.apply(viewCfg, {
 							listeners: {
 								dataloaded: function(formPanel, data) {
-									formPanel.findField('address_state').setValue(parseInt(data['address_state']));
 									that.vendor_status = data['vendor_status'];
 								}
 							}
@@ -340,7 +340,6 @@ Ext.define('NP.controller.VendorManager', {
 		];
 		var form = this.getCmp('vendor.vendorform');
 		var tbar = form.getDockedItems()[1];
-		var bbar = form.getDockedItems()[2];
 		var opened = !opened ? form.opened : opened;
 		var appCount = false;
 
@@ -388,12 +387,10 @@ Ext.define('NP.controller.VendorManager', {
 			if (this.vendor_status == 'forapproval') {
 				bar.push(
 					{
-						xtype: 'button',
-						text: this.approveTextBtn
+						xtype: 'shared.button.approve'
 					},
 					{
-						xtype: 'button',
-						text: this.rejectTextBtn
+						xtype: 'shared.button.reject'
 					}
 				);
 			}
@@ -412,9 +409,7 @@ Ext.define('NP.controller.VendorManager', {
 		}
 
 		tbar.removeAll();
-		bbar.removeAll();
 		tbar.add(bar);
-		bbar.add(bar);
 
 		function buttonForTab(app_count, vendor_status, tabName, bar, form, submit_userprofile_id, vendor_id) {
 			if (tabName !== 'altaddresses') {
@@ -435,7 +430,7 @@ Ext.define('NP.controller.VendorManager', {
 						if (tabName == 'insurances') {
 							bar.push(
 								{
-									xtype: 'shared.button.save',
+									xtype: 'shared.button.approve',
 									handler: function() {
 										that.saveVendor('approve');
 									}
@@ -446,7 +441,7 @@ Ext.define('NP.controller.VendorManager', {
 								if (NP.Security.hasPermission(6092) && NP.Security.hasPermission(1025)) {
 									bar.push(
 										{
-											xtype: 'shared.button.save',
+											xtype: 'shared.button.approve',
 											handler: function() {
 												that.saveVendor('approve');
 											}
@@ -456,7 +451,7 @@ Ext.define('NP.controller.VendorManager', {
 									if (NP.Security.hasPermission(6092) && !NP.Security.hasPermission(1025)) {
 										bar.push(
 											{
-												xtype: 'shared.button.save',
+												xtype: 'shared.button.approve',
 												text: 'Submit Changes for Approval',
 												handler: function() {
 													that.saveVendor();
@@ -480,7 +475,7 @@ Ext.define('NP.controller.VendorManager', {
 									if (tabName !== 'baseinformation' && tabName !== 'settings') {
 										bar.push(
 											{
-												xtype: 'shared.button.save',
+												xtype: 'shared.button.approve',
 												text: 'Submit Changes for Approval',
 												handler: function() {
 													that.saveVendor();
@@ -497,7 +492,7 @@ Ext.define('NP.controller.VendorManager', {
 				if (vendor_status == 'rejected' && submit_userprofile_id && submit_userprofile_id == NP.Security.getUser().get('userprofile_id')) {
 					bar.push(
 						{
-							xtype: 'shared.button.save',
+							xtype: 'shared.button.approve',
 							text: 'Submit Changes for Approval',
 							handler: function() {
 								that.saveVendor('forapproval');
@@ -510,7 +505,7 @@ Ext.define('NP.controller.VendorManager', {
 					if (tabName !== 'glaccounts' && tabName !== 'documents' && tabName !== 'baseinformation' && tabName !== 'settings') {
 						bar.push(
 							{
-								xtype: 'shared.button.save',
+								xtype: 'shared.button.approve',
 								handler: function() {
 									that.saveVendor('approve');
 								}
@@ -521,7 +516,7 @@ Ext.define('NP.controller.VendorManager', {
 							if (NP.Security.hasPermission(6092) || NP.Security.hasPermission(1025)) {
 								bar.push(
 									{
-										xtype: 'shared.button.save',
+										xtype: 'shared.button.approve',
 										handler: function() {
 											that.saveVendor('approve');
 										}
@@ -531,7 +526,7 @@ Ext.define('NP.controller.VendorManager', {
 								if (NP.Security.hasPermission(6092) || !NP.Security.hasPermission(1025)) {
 									bar.push(
 										{
-											xtype: 'shared.button.save',
+											xtype: 'shared.button.approve',
 											text: 'Submit Changes for Approval',
 											handler: function() {
 												that.saveVendor();
@@ -611,7 +606,7 @@ Ext.define('NP.controller.VendorManager', {
 				if (NP.Security.hasPermission(2083)) {
 					bar.push(
 						{
-							xtype: 'shared.button.save',
+							xtype: 'shared.button.approve',
 							handler: function() {
 								that.saveVendor('forapproval');
 							}
@@ -621,7 +616,7 @@ Ext.define('NP.controller.VendorManager', {
 					form.findField('vendor_action').setValue('');
 					bar.push(
 						{
-							xtype: 'shared.button.save',
+							xtype: 'shared.button.approve',
 							text: 'Submit Changes for Approval',
 							handler: function() {
 								that.saveVendor();
@@ -634,8 +629,7 @@ Ext.define('NP.controller.VendorManager', {
 			if (vendor_status == 'forapproval' && tabName == 'baseinformation') {
 				bar.push(
 					{
-						xtype: 'shared.button.save',
-						text: NP.Translator.translate('Approve'),
+						xtype: 'shared.button.approve',
 						handler: function() {
 							that.saveVendor('approve');
 						}
@@ -643,8 +637,7 @@ Ext.define('NP.controller.VendorManager', {
 				);
 				bar.push(
 					{
-						xtype: 'shared.button.save',
-						text: NP.Translator.translate('Reject'),
+						xtype: 'shared.button.reject',
 						handler: function() {
 							that.showRejectForm(vendor_id);
 						}

@@ -52,20 +52,14 @@ Ext.define('NP.view.vendor.VendorForm', {
 
 		this.items = [{
 			xtype : 'tabpanel',
+			overflowY: 'scroll',
 			border: false,
 			items : [
-				{ xtype: 'vendor.vendornameandinformation', itemId: 'baseinformation'},
-				{ xtype: 'vendor.vendorgeneralinfoandsettings', opened: this.opened, itemId: 'settings', customFields: this.customFieldData},
-				{ xtype: 'vendor.vendorassignglaccouns', itemId: 'glaccounts'},
-				{ xtype: 'vendor.vendorinsurancesetup', itemId: 'insurances', insurances: this.insurances}
+				{ xtype: 'vendor.vendornameandinformation', itemId: 'baseinformation'}
 			]
 		}];
 
 		if (this.opened) {
-			this.items[0].items.push({
-				xtype: 'vendor.vendordocumentsform',
-				itemId: 'documents'
-			});
 			if ( NP.Config.getSetting('PN.VendorOptions.AllowAltAddresses') == 1) {
 				this.items[0].items.push({
 					xtype: 'vendor.alternativeaddresses',
@@ -75,49 +69,17 @@ Ext.define('NP.view.vendor.VendorForm', {
 			}
 		}
 
+		this.items[0].items.push({ xtype: 'vendor.vendorgeneralinfoandsettings', opened: this.opened, itemId: 'settings', customFields: this.customFieldData});
+		this.items[0].items.push({ xtype: 'vendor.vendorassignglaccouns', itemId: 'glaccounts'});
+		this.items[0].items.push({ xtype: 'vendor.vendorinsurancesetup', itemId: 'insurances', insurances: this.insurances});
+
+		if (this.opened) {
+			this.items[0].items.push({
+				xtype: 'vendor.vendordocumentsform',
+				itemId: 'documents'
+			});
+		}
+
 		this.callParent(arguments);
-	},
-
-	isValid: function() {
-		var isValid = this.callParent(arguments);
-
-        var vendorNameInput = this.findField('vendor_name');
-        var mriInput = this.findField('vendor_id_alt');
-        var addressLine1Input = this.findField('address_line1');
-        var cityInput = this.findField('address_city');
-        var stateInput = this.findField('address_state');
-        var zipInput = this.findField('address_zip');
-        var vendorTypeInput = this.findField('vendor_type_code');
-
-        if (!vendorNameInput.getValue() || vendorNameInput.getValue() == '') {
-            isValid = false;
-            vendorNameInput.markInvalid(this.emptyErrorText);
-        }
-        if (!mriInput.getValue() || mriInput.getValue() == '') {
-            isValid = false;
-            mriInput.markInvalid(this.emptyErrorText);
-        }
-        if (!addressLine1Input.getValue() || addressLine1Input.getValue() == '') {
-            isValid = false;
-            addressLine1Input.markInvalid(this.emptyErrorText);
-        }
-        if (!cityInput.getValue() || cityInput.getValue() == '') {
-            isValid = false;
-            cityInput.markInvalid(this.emptyErrorText);
-        }
-        if (!stateInput.getValue()) {
-            isValid = false;
-            stateInput.markInvalid(this.emptyErrorText);
-        }
-        if (!zipInput.getValue() || zipInput.getValue() == '') {
-            isValid = false;
-            zipInput.markInvalid(this.emptyErrorText);
-        }
-        if (!vendorTypeInput.getValue()) {
-            isValid = false;
-            vendorTypeInput.markInvalid(this.emptyErrorText);
-        }
-
-		return isValid;
 	}
 });

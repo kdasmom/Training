@@ -694,6 +694,8 @@ class VendorService extends AbstractService {
 		$res = $this->vendorGateway->getVendor($vendor_id);
 		$res['glaccounts'] = $this->vendorGateway->findAssignedGlaccounts($vendor_id);
 
+//		print_r($res);
+
 		return $res;
 	}
 
