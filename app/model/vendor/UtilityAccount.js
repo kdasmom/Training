@@ -16,7 +16,7 @@ Ext.define('NP.model.vendor.UtilityAccount', {
 
     idProperty: 'UtilityAccount_Id',
     fields: [
-        { name: 'utilityaccount_id', type: 'int' },
+        { name: 'UtilityAccount_Id', type: 'int' },
         { name: 'Utility_Id', type: 'int' },
         { name: 'UtilityAccount_Building' },
         { name: 'UtilityAccount_Units', type: 'int' },
@@ -26,8 +26,40 @@ Ext.define('NP.model.vendor.UtilityAccount', {
         { name: 'property_id', type: 'int' },
         { name: 'utilityaccount_active', defaultValue: 1 },
         { name: 'glaccount_id', type: 'int' },
-        { name: 'unit_id', type: 'int' }
+        { name: 'unit_id', type: 'int' },
+
+        // These fields are not columns in the database
+        { name: 'UtilityType_Id', type: 'int' },
+        { name: 'UtilityType' },
+        {
+            name   : 'display_name',
+            convert: function(v, rec) {
+                return NP.model.vendor.UtilityAccount.formatName(rec);
+            }
+        }
     ],
+
+    statics: {
+        formatName: function(rec) {
+            var utilityaccount_id = rec.get('UtilityAccount_Id');
+
+            if (!utilityaccount_id) {
+                utilityaccount_id = rec.get('utilityaccount_id');
+                if (!utilityaccount_id) {
+                    return '';
+                }
+            }
+
+            var val         = rec.get('UtilityAccount_AccountNumber') + ' (' + rec.get('UtilityType') + ')',
+                meterNumber = rec.get('UtilityAccount_MeterSize');
+
+            if (meterNumber != '' && meterNumber !== null) {
+                val += ' - ' + meterNumber;
+            }
+
+            return val;
+        }
+    },
 
     belongsTo: [
         {

@@ -40,7 +40,6 @@ Ext.define('NP.view.utilitySetup.AccountForm', {
         that.translateText();
 
         this.tbar = bar;
-        this.bbar = bar;
 
         this.defaults = { labelWidth: 125 };
 

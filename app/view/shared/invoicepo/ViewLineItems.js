@@ -3,9 +3,9 @@
  *
  * @author Thomas Messier
  */
-Ext.define('NP.view.invoice.ViewLineItems', {
+Ext.define('NP.view.shared.invoicepo.ViewLineItems', {
     extend: 'Ext.panel.Panel',
-    alias: 'widget.invoice.viewlineitems',
+    alias: 'widget.shared.invoicepo.viewlineitems',
 
     requires: [
     	'NP.view.shared.invoicepo.ViewLines',
@@ -49,8 +49,8 @@ Ext.define('NP.view.invoice.ViewLineItems', {
     	
         me.defaults = { type: me.type, store: storeCfg };
     	me.items = [
-    		{ xtype: 'shared.invoicepo.viewlines' },
-    		{ xtype: 'shared.invoicepo.viewlinegrid' }
+            { xtype: 'shared.invoicepo.viewlines', type: me.type },
+            { xtype: 'shared.invoicepo.viewlinegrid', type: me.type }
     	];
 
     	this.callParent(arguments);

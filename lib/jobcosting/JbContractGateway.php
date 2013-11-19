@@ -13,6 +13,18 @@ use NP\core\db\Select;
 class JbContractGateway extends AbstractGateway {
 
 	/**
+	 * 
+	 */
+	public function findByVendorsite($vendorsite_id, $sort='jbcontract_name') {
+		$select = $this->getSelect()->from('jbcontract')
+									->whereEquals('vendorsite_id', '?')
+									->whereEquals('jbcontract_status', "'active'")
+									->order($sort);
+
+		return $this->adapter->query($select, [$vendorsite_id]);
+	}
+
+	/**
 	 * Returns contracts associated to an entity (invoice or po) that are inactive
 	 */
 	public function findInactiveContractInEntity($table_name, $tablekey_id) {

@@ -55,8 +55,12 @@ Ext.define('NP.lib.ui.ComboBox', {
 
 		// We set a keyup event to allow us to clear the field when the value is blank and we hit escape,
 		// even if forceSelection is true
-		this.on('keyup', function(combo, e) {
-			if (e.getKey() === Ext.EventObject.ESC) {
+		this.on('specialkey', function(combo, e) {
+			if (
+				e.getKey() === Ext.EventObject.ESC
+				|| e.getKey() === Ext.EventObject.ENTER
+				|| e.getKey() === Ext.EventObject.TAB
+			) {
 				var val = combo.getRawValue();
 				
 				if ((val === '' || val === null) && combo.getFocusValue() !== null) {

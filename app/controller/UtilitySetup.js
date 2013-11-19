@@ -375,7 +375,7 @@ Ext.define('NP.controller.UtilitySetup', {
 
                 NP.lib.core.Net.remoteCall({
                     requests: {
-                        service         : 'UtilityAccountService',
+                        service         : 'UtilityService',
                         action          : 'deleteUtilityAccount',
                         accounts        : accounts_id.join(','),
                         success: function(success) {
