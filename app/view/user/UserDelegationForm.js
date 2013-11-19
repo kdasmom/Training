@@ -13,12 +13,17 @@ Ext.define('NP.view.user.UserDelegationForm', {
         'NP.lib.core.Translator',
         'NP.view.shared.button.Cancel',
         'NP.view.shared.button.Save',
-        'Ext.ux.form.field.BoxSelect'
+        'Ext.ux.form.field.BoxSelect',
+		'NP.view.shared.PropertyAssigner'
     ],
 
     autoScroll : true,
     border     : false,
     bodyPadding: 8,
+	layout: {
+		type : 'vbox',
+		align: 'stretch'
+	},
 
     initComponent: function() {
         var bar = [
@@ -57,26 +62,18 @@ Ext.define('NP.view.user.UserDelegationForm', {
                 listConfig: {
                     itemTpl: '{person_lastname}, {person_lastname} ({userprofile_username})'
                 }
-            },{
-                xtype       : 'boxselect',
-                fieldLabel  : NP.Translator.translate('{properties} to Delegate', { properties: NP.Config.getPropertyLabel(true) }),
-                name        : 'delegation_properties',
-                emptyText   : NP.Translator.translate('Select {properties}...', { properties: NP.Config.getPropertyLabel(true) }),
-                queryMode   : 'local',
-                selectOnTab : false,
-                displayField: 'property_name',
-                valueField  : 'property_id',
-                store       : Ext.create('NP.store.property.Properties', {
-                                service: 'UserService',
-                                action : 'getUserProperties'
-                            }),
-                width       : 600,
-                growMin     : 200,
-                growMax     : 400,
-                allowBlank  : false,
-                validateOnBlur: false,
-                validateOnChange: false
             },
+			{
+				xtype			: 'shared.propertyassigner',
+				height			: 100,
+				fieldLabel		: NP.Translator.translate('{properties} to Delegate', { properties: NP.Config.getPropertyLabel(true) }),
+				name				: 'delegation_properties',
+				allowBlank		: false,
+				store			: Ext.create('NP.store.property.Properties', {
+					service	: 'UserService',
+					action	: 'getUserProperties'
+				})
+			},
             { xtype: 'hiddenfield', name: 'UserProfile_Id'}
         ];
 

@@ -16,7 +16,12 @@ class MessageService extends AbstractService {
 	 * Returns all user messages in the system
 	 */
 	public function getAllMessages($pageSize=null, $page=null, $sort="createdAt") {
-		return $this->userMessageGateway->find(null, array(), $sort,  null, $pageSize, $page);
+		$sortarr = explode(' ', $sort);
+		if ($sortarr[0] == 'recipientType') {
+			$sort = 'userprofile_id ' . $sortarr[1] . ', role_id ' . $sortarr[1];
+		}
+
+		return $this->userMessageGateway->findAll($pageSize, $page, $sort);
 	}
 
 	/**

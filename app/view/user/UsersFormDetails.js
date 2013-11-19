@@ -23,7 +23,7 @@ Ext.define('NP.view.user.UsersFormDetails', {
     initComponent: function() {
     	var that = this;
 
-        that.title = NP.Translator.translate('User Details');
+        that.title = NP.Translator.translate('Password Management');
 
     	this.defaults = { labelWidth: 150 };
 

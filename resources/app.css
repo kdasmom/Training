@@ -22,7 +22,7 @@
 .image-view-btn { background-image: url("images/buttons/image_view.gif"); }
 .inactivate-btn { background-image: url("images/buttons/inactivate.gif"); }
 .link-btn { background-image: url("images/buttons/link.gif"); }
-.message-btn { background-image: url("images/buttons/message.gif"); }
+.message-btn { background-image: url("images/buttons/message.gif"); width: 32px !important;}
 .new-btn { background-image: url("images/buttons/new.gif"); }
 .payment-btn { background-image: url("images/buttons/payment.gif"); }
 .print-btn { background-image: url("images/buttons/print.gif"); }

@@ -44,7 +44,8 @@ Ext.define('NP.view.mySettings.Main', {
 
         if (NP.Security.hasPermission(2095)) {
             this.items.push({
-                xtype: 'mysettings.emailnotification'
+                xtype: 'mysettings.emailnotification',
+				id: 'emailnotification'
             });
         }
 
