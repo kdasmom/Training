@@ -46,7 +46,6 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
 
 		this.defaults = {
 			labelWidth: 150
-//            width: 500
 		};
 
 		this.items = [
@@ -67,8 +66,8 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
 				}),
 				queryMode: 'local',
 				editable: false,
-				typeAhead: false
-
+				typeAhead: false,
+				allowBlank: false
 			},
             {
                 xtype: 'hidden',
@@ -109,8 +108,7 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
                 items: [
 					{
 						xtype: 'shared.address',
-						required: true,
-						showCountry: true
+						required: true
 					},
                     {
                         xtype: 'hidden',

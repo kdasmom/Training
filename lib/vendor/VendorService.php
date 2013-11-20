@@ -705,15 +705,14 @@ class VendorService extends AbstractService {
 	 * @param null $keyword
 	 * @return array|bool
 	 */
-	public function findByKeyword($userprofile_id, $keyword = null, $sort = 'vendor_name', $category_id = 'all', $status = null, $pageSize = null, $page = null, $task_type = null) {
+	public function findByKeyword($userprofile_id, $keyword = null, $integration_package_id = null, $sort = 'vendor_name', $category_id = 'all', $status = null, $pageSize = null, $page = null, $task_type = null) {
 		if (!$keyword) {
 			return [];
 		}
 		$asp_client_id = $this->configService->getClientId();
-		$integration_package_id = $this->integrationPackageGateway->findByAspClientIdAndUserprofileId($asp_client_id, $userprofile_id);
 
 		if (!$task_type) {
-			return $this->vendorGateway->findByKeyword($keyword, $sort, $category_id, $status, $asp_client_id, $integration_package_id['integration_package_id'], $pageSize, $page);
+			return $this->vendorGateway->findByKeyword($keyword, $sort, $category_id, $status, $asp_client_id, $integration_package_id, $pageSize, $page);
 		} else {
 			$allowExpInsurance = $this->configService->findSysValueByName('CP.AllowExpiredInsurance');
 			return $this->vendorGateway->findByKeywordWithTaskType($allowExpInsurance);

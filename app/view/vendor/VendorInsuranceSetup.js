@@ -19,6 +19,7 @@ Ext.define('NP.view.vendor.VendorInsuranceSetup', {
 	title                     : 'Insurance setup',
     addInsuranceBtnText: 'Add',
     daysNoticeLabelText: 'How many days notice prior to expiration for Expired Insurance Certificates Warning?',
+	overflowX: 'scroll',
 
 	// Custom options
 

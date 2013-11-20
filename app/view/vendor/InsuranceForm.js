@@ -36,8 +36,7 @@ Ext.define('NP.view.vendor.InsuranceForm', {
         var that = this;
 
         this.defaults = {
-            labelWidth: 150,
-            width: '100%'
+            labelWidth: 150
         };
 
 		this.border = 0;

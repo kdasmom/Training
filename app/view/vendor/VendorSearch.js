@@ -60,6 +60,29 @@ Ext.define('NP.view.vendor.VendorSearch', {
                                 padding: '5',
                                 margin: '5',
                                 items: [
+									{
+										xtype: 'customcombo',
+										fieldLabel: NP.Translator.translate('Integration Package'),
+										name: 'integration_package_name',
+										displayField: 'integration_package_name',
+										valueField: 'integration_package_id',
+										store: Ext.create('NP.store.system.IntegrationPackages', {
+											service           : 'ConfigService',
+											action            : 'getIntegrationPackages',
+											autoLoad          : true,
+											extraParams: {
+												pageSize: null,
+												paymentType_id: null
+											}
+										}),
+										labelWidth: 150,
+										queryMode: 'local',
+										editable: false,
+										typeAhead: false,
+										padding: '0 10 0 0',
+										selectFirstRecord: true
+
+									},
                                     {
                                         xtype: 'textfield',
                                         name: 'keyword',
@@ -92,6 +115,7 @@ Ext.define('NP.view.vendor.VendorSearch', {
                                     paging: true,
                                     extraParams: {
                                         keyword: null,
+										integration_package_id: null,
                                         property_id: NP.Security.getCurrentContext().property_id,
                                         userprofile_id: NP.Security.getUser().get('userprofile_id')
                                     }
@@ -192,12 +216,19 @@ Ext.define('NP.view.vendor.VendorSearch', {
     vendorSearchByKeyword: function(keyword) {
         if (!keyword) {
             keyword = this.query('[name="keyword"]')[0].getValue();
+			if (keyword == '') {
+				Ext.Msg.alert('Error', 'Please enter at least one character as a keyword.');
+				return;
+			}
         }
+
+		var integration_package_id = this.query('[name="integration_package_name"]')[0].getValue();
 
         var grid = this.query('customgrid')[0];
 
         grid.getStore().addExtraParams({
             keyword : keyword,
+			integration_package_id: integration_package_id,
             property_id: NP.Security.getCurrentContext().property_id,
             userprofile_id: NP.Security.getUser().get('userprofile_id')
         });

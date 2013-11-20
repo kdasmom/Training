@@ -213,21 +213,15 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
                 xtype: 'fieldcontainer',
                 fieldLabel: this.phoneInputLabel,
                 layout: 'hbox',
+//				width: 800,
                 items: [
-                    {
-                        xtype: 'textfield',
-                        fieldLabel: '',
-                        width: 200,
-                        name: 'vendorsite_phone_number'
-                    },
-                    {
-                        labelWidth: 50,
-                        padding: '0 0 0 10',
-                        xtype: 'textfield',
-                        fieldLabel: this.phoneExtInputLabel,
-                        width: 135,
-                        name: 'vendorsite_phone_ext'
-                    },
+					{
+						xtype: 'shared.phone',
+						hideCountry: false,
+						hideExt: false,
+						prefix: 'vendorsite_',
+						hideLabel: true
+					},
                     {
                         xtype: 'hidden',
                         name: 'vendorsite_phone_id'
@@ -268,20 +262,13 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
                 name: 'contact_phone',
                 layout: 'hbox',
                 items: [
-                    {
-                        xtype: 'textfield',
-                        fieldLabel: '',
-                        width: 200,
-                        name: 'attention_phone_number'
-                    },
-                    {
-                        labelWidth: 50,
-                        padding: '0 0 0 10',
-                        xtype: 'textfield',
-                        fieldLabel: this.phoneContactExtInputLabel,
-                        width: 135,
-                        name: 'attention_phone_ext'
-                    },
+					{
+						xtype: 'shared.phone',
+						hideCountry: false,
+						hideExt: false,
+						prefix: 'attention_',
+						hideLabel: true
+					},
                     {
                         xtype: 'hidden',
                         name: 'attention_phone_id'

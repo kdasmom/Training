@@ -530,8 +530,13 @@ class VendorGateway extends AbstractGateway {
 		}
 
 		if ($count == 0) {
-			$sql = "insert into recauthor (userprofile_id, delegation_to_userprofile_id, table_name, tablekey_id, recauthor_datetm) values ({$userprofile_id}, {$delegation_to_userprofile_id}, '{$tablename}', {$tablekey_id}, GetDate())";
-			$this->adapter->query($sql);
+			$insert = new Insert();
+
+			$insert->into('recauthor')
+					->columns(['userprofile_id', 'delegation_to_userprofile_id', 'table_name', 'tablekey_id', 'recauthor_datetm'])
+					->values([new Expression('?'), new Expression('?'), new Expression('?'), new Expression('?'), new Expression('GetDate()')]);
+
+			$this->adapter->query($insert, [$userprofile_id, $delegation_to_userprofile_id, $tablename, $tablekey_id]);
 		}
 	}
 
