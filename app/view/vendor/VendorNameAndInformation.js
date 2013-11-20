@@ -52,7 +52,7 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
 			{
 				xtype: 'customcombo',
 				fieldLabel: this.integrationPackageInputLabel,
-                name: 'integration_package_name',
+                name: 'integration_package_id',
 				displayField: 'integration_package_name',
 				valueField: 'integration_package_id',
 				store: Ext.create('NP.store.system.IntegrationPackages', {

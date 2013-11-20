@@ -208,7 +208,6 @@ Ext.define('NP.controller.VendorManager', {
 		if (!vendor_id) {
 			form.getForm().reset();
 		}
-		this.findIntegrationPackage(form);
 
 		this.showFormTab('baseinformation', vendor_id ? true : false, null, null, vendor_id);
 
@@ -271,6 +270,8 @@ Ext.define('NP.controller.VendorManager', {
 
 			if (action) {
 				extraParams.action = action;
+			} else {
+				extraParams.action = null;
 			}
 
             form.submitWithBindings({
@@ -285,24 +286,6 @@ Ext.define('NP.controller.VendorManager', {
                 }
             });
         }
-    },
-
-    /**
-     * retrieve integration package info
-     * @returns {{name: null, id: null}}
-     */
-    findIntegrationPackage: function(form) {
-        NP.lib.core.Net.remoteCall({
-            requests: {
-                service: 'ConfigService',
-                action : 'findByAspClientIdAndUserprofileId',
-                userprofile_id: NP.lib.core.Security.getUser().get('userprofile_id'),
-                success: function(result, deferred) {
-                    form.findField('integration_package_name').setValue(result.integration_package_name);
-                    form.findField('integration_package_id').setValue(result.integration_package_id);
-                }
-            }
-        });
     },
 
     /**
@@ -368,7 +351,7 @@ Ext.define('NP.controller.VendorManager', {
 						xtype: 'shared.button.save',
 						text: NP.Translator.translate('Save'),
 						handler: function() {
-							that.saveVendor();
+							that.saveVendor('save');
 						}
 					}
 				);
@@ -500,7 +483,7 @@ Ext.define('NP.controller.VendorManager', {
 							xtype: 'shared.button.approve',
 							text: 'Submit Changes for Approval',
 							handler: function() {
-								that.saveVendor('forapproval');
+								that.saveVendor();
 							}
 						}
 					);

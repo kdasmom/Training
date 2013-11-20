@@ -534,7 +534,7 @@ class VendorGateway extends AbstractGateway {
 
 			$insert->into('recauthor')
 					->columns(['userprofile_id', 'delegation_to_userprofile_id', 'table_name', 'tablekey_id', 'recauthor_datetm'])
-					->values([new Expression('?'), new Expression('?'), new Expression('?'), new Expression('?'), new Expression('GetDate()')]);
+					->values(Select::get()->columns([new Expression('?'), new Expression('?'), new Expression('?'), new Expression('?'), new Expression('GetDate()')]));
 
 			$this->adapter->query($insert, [$userprofile_id, $delegation_to_userprofile_id, $tablename, $tablekey_id]);
 		}
