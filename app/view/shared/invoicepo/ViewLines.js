@@ -112,6 +112,8 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
         }];
 
     	this.callParent(arguments);
+
+        this.addLineListeners();
     },
 
     buildTpl: function() {
@@ -132,7 +134,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
             '<tbody>' +
             '<tpl if="this.getStoreCount() &gt; 0">' +
                 '<tpl for=".">' +
-                    '<tr>' +
+                    '<tr id="lineItem_{[values.'+me.fieldPrefix+'_id]}">' +
                         me.buildQuantityCol() +
                         me.buildDescriptionCol() +
                         me.buildGlCol() +
@@ -223,7 +225,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                 '<div>' +
                     '<b>PO:</b> ' +
                     // TODO: fix the link to the PO and add the readonly condition (latter might not be needed)
-                    '<a href="#">{purchaseorde_ref}</a>' +
+                    '<a>{purchaseorde_ref}</a>' +
                     '<tpl if="poitem_amount > 0">' +
                         ' - <i>{[NP.Util.currencyRenderer(values.poitem_amount)]}</i>' +
                     '</tpl>' +
@@ -366,7 +368,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                     '<div>' +
                         '<tpl if="invoiceitem_split != 1">' +
                             '<tpl if="invoiceitem_jobflag != 1">' +
-                                '<a href="#" class="splitLineBtn">Split</a> ' +
+                                '<a class="splitLineBtn">Split</a> ' +
                             '</tpl>' +
                             /*'<a href="#" class="editLineBtn">Edit</a>' +*/ // TODO: cleanup once confirmed we don't need this button
                         '<tpl else>' +
@@ -438,5 +440,33 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
 
     getTotalAmount: function() {
         return this.totalAmount;
+    },
+
+    addLineListeners: function() {
+        var me = this;
+
+        me.addEvents('clicksplitline','clickeditsplit','clickmodifygl',
+                        'clicklinkline','clickdeleteline');
+
+        // Add a generic event handler on the body element to make things more efficient
+        me.mon(Ext.getBody(), 'click', function(e, target) {
+            var clickedEl  = Ext.get(target),
+                btnClasses = ['splitLineBtn','editSplitBtn','modifyGlBtn','linkLineBtn',
+                                'deleteLineBtn'];
+            
+            for (var i=0; i<btnClasses.length; i++) {
+                var btnClass = btnClasses[i];
+
+                if (clickedEl.hasCls(btnClass)) {
+                    var rowEl          = Ext.get(target).up('tr'),
+                        invoiceitem_id = parseInt(rowEl.id.split('_')[1]),
+                        evtName        = 'click' + btnClass.replace('Btn', '').toLowerCase();
+
+                    me.fireEvent(evtName, invoiceitem_id);
+                    e.stopEvent();
+                }
+            }
+            
+        });
     }
 });

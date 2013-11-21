@@ -8,7 +8,8 @@ Ext.define('NP.controller.Invoice', {
 	
 	requires: [
 		'NP.lib.core.Config',
-		'NP.lib.core.Security'
+		'NP.lib.core.Security',
+		'NP.view.shared.invoicepo.SplitWindow'
 	],
 	
 	models: ['NP.model.invoice.InvoiceItem'],
@@ -33,7 +34,8 @@ Ext.define('NP.controller.Invoice', {
 		{ ref: 'lineGridPropertyCombo',selector: '#lineGridPropertyCombo' },
 		{ ref: 'lineGridGlCombo', selector: '#lineGridGlCombo' },
 		{ ref: 'lineGridUnitCombo', selector: '#lineGridUnitCombo' },
-		{ ref: 'lineEditBtn', selector: '#invoiceLineEditBtn' }
+		{ ref: 'lineEditBtn', selector: '#invoiceLineEditBtn' },
+		{ ref: 'splitGrid', selector: '[xtype="shared.invoicepo.splitwindow"] customgrid' }
 	],
 
 	showInvoiceImage: true,
@@ -139,6 +141,16 @@ Ext.define('NP.controller.Invoice', {
 			// Clicking on the Undo Changes button
 			'#invoiceLineCancelBtn': {
 				click: Ext.bind(this.onLineCancelClick, this)
+			},
+
+			// Line item view
+			'[xtype="shared.invoicepo.viewlines"]': {
+				// Clicking the Split link on a line item
+				clicksplitline: Ext.bind(this.onSplitLineClick, this)
+			},
+
+			'[xtype="shared.invoicepo.splitwindow"] customgrid': {
+				beforeedit          : Ext.bind(this.onBeforeInvoiceLineGridEdit, this)
 			}
 		});
 	},
@@ -395,12 +407,11 @@ Ext.define('NP.controller.Invoice', {
 	},
 
 	onOpenPropertyEditor: function(editor, rec, field) {
-		this.loadPropertyStore();
+		this.loadPropertyStore(field.up('customgrid').propertyStore);
 	},
 
-	loadPropertyStore: function(callback) {
+	loadPropertyStore: function(store, callback) {
 		var me    = this,
-    		store = me.getLineGrid().propertyStore,
     		propertyField = me.getHeaderPropertyCombo(),
     		property_id   = propertyField.getValue(),
 			integration_package_id;
@@ -1078,5 +1089,22 @@ Ext.define('NP.controller.Invoice', {
 
 	getInvoiceRecord: function() {
 		return this.getInvoiceView().getModel('invoice.Invoice');
+	},
+
+	onSplitLineClick: function(invoiceitem_id) {
+		var me = this,
+			lineStore = me.getLineDataView().getStore(),
+			lineRec = lineStore.getById(invoiceitem_id),
+			win = Ext.create('NP.view.shared.invoicepo.SplitWindow', {
+				type: 'invoice'
+			});
+
+		win.show(null, function() {
+			win.down('#splitTotalQty').setValue(lineRec.get('invoiceitem_quantity'));
+			win.down('#splitDescription').setValue(lineRec.get('invoiceitem_description'));
+			win.down('#splitUnitPrice').setValue(lineRec.get('invoiceitem_unitprice'));
+
+			me.getSplitGrid().getStore().add(lineRec);
+		});
 	}
 });
