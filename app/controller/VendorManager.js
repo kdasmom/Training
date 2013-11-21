@@ -74,34 +74,24 @@ Ext.define('NP.controller.VendorManager', {
 						var el = Ext.get(e.target);
 						if (el.hasCls('view-vendor')) {
 							this.addHistory('VendorManager:showVendorForm:' + rec.get('vendor_id') + ':' + rec.get('vendor_status'));
-						} else if (el.hasCls('favorite-remove')) {
+						} else{
+							var op = 'add';
+							if (el.hasCls('favorite-remove')) {
+								op = 'remove';
+							}
 							NP.lib.core.Net.remoteCall({
 								requests: {
 									service: 'VendorService',
 									action : 'updateFavorite',
 									vendorsite_id    : rec.get('vendorsite_id'),
 									property_id: NP.Security.getCurrentContext().property_id,
-									op: 'remove',
+									op: op,
 									success: function(result, deferred) {
 										var page = grid.getStore().currentPage;
 										grid.getStore().reload();
 									}
 								}
-							});
-						}else if(el.hasCls('favorite-add')) {
-							NP.lib.core.Net.remoteCall({
-								requests: {
-									service: 'VendorService',
-									action : 'updateFavorite',
-									vendorsite_id    : rec.get('vendorsite_id'),
-									property_id: NP.Security.getCurrentContext().property_id,
-									op: 'add',
-									success: function(result, deferred) {
-										var page = grid.getStore().currentPage;
-										grid.getStore().reload();
-									}
-								}
-							});
+							})
 						}
 					}
 				}
