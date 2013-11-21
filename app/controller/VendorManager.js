@@ -68,7 +68,43 @@ Ext.define('NP.controller.VendorManager', {
             },
 
             '[xtype="vendor.vendorsearch"] customgrid': {
-                viewvendor: this.viewVendor
+                viewvendor: this.viewVendor,
+				itemclick: function (grid, rec, item, index, e, eOpts) {
+					if (e.target.tagName == 'IMG') {
+						var el = Ext.get(e.target);
+						if (el.hasCls('view-vendor')) {
+							this.addHistory('VendorManager:showVendorForm:' + rec.get('vendor_id') + ':' + rec.get('vendor_status'));
+						} else if (el.hasCls('favorite-remove')) {
+							NP.lib.core.Net.remoteCall({
+								requests: {
+									service: 'VendorService',
+									action : 'updateFavorite',
+									vendorsite_id    : rec.get('vendorsite_id'),
+									property_id: NP.Security.getCurrentContext().property_id,
+									op: 'remove',
+									success: function(result, deferred) {
+										var page = grid.getStore().currentPage;
+										grid.getStore().reload();
+									}
+								}
+							});
+						}else if(el.hasCls('favorite-add')) {
+							NP.lib.core.Net.remoteCall({
+								requests: {
+									service: 'VendorService',
+									action : 'updateFavorite',
+									vendorsite_id    : rec.get('vendorsite_id'),
+									property_id: NP.Security.getCurrentContext().property_id,
+									op: 'add',
+									success: function(result, deferred) {
+										var page = grid.getStore().currentPage;
+										grid.getStore().reload();
+									}
+								}
+							});
+						}
+					}
+				}
             },
 
 			'[xtype="vendor.vendorrejectwindow"]  [xtype="shared.button.cancel"]': {

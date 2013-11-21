@@ -9,7 +9,9 @@ Ext.define('NP.view.vendor.VendorSearch', {
         'NP.lib.core.Security',
         'NP.view.shared.button.Search',
         'NP.lib.ui.Grid',
-        'NP.view.shared.SearchByAlphabetButtons'
+        'NP.view.shared.SearchByAlphabetButtons',
+		'NP.view.vendor.gridcol.ViewVendor',
+		'NP.view.vendor.gridcol.AddToFavorite'
     ],
 
     layout: {
@@ -121,59 +123,12 @@ Ext.define('NP.view.vendor.VendorSearch', {
                                     }
                                 }),
                                 columns: [
-                                    {
-                                        xtype: 'actioncolumn',
-                                        renderer: function(val, meta, rec) {
-                                            this.items[0].disable();
-                                            if (rec.raw.vendorfavorite_id !== null && rec.raw.property_id == property_id) {
-                                                this.items[0].icon = 'resources/images/buttons/delete.gif';
-                                                this.items[0].tooltip = 'Remove from favorite';
-                                                this.items[0].enable();
-                                            } else {
-                                                if (!rec.raw.vendorfavorite_id) {
-                                                    this.items[0].icon = 'resources/images/buttons/new.gif';
-                                                    this.items[0].tooltip = 'Add to favorite';
-                                                    this.items[0].enable();
-                                                } else {
-                                                    this.items[0].icon = '';
-                                                }
-                                            }
-                                        },
-                                        handler: function (grid, rowIndex, colIndex) {
-                                            var rec = grid.getStore().getAt(rowIndex);
-                                            var vendorsite_id = rec.get('vendorsite_id');
-                                            var op = !rec.raw['vendorfavorite_id'] ? 'add' : 'remove';
-                                            NP.lib.core.Net.remoteCall({
-                                                        requests: {
-                                                            service: 'VendorService',
-                                                            action : 'updateFavorite',
-                                                            vendorsite_id    : vendorsite_id,
-                                                            property_id: NP.Security.getCurrentContext().property_id,
-                                                            op: op,
-                                                            success: function(result, deferred) {
-                                                                var page = grid.getStore().currentPage;
-                                                                grid.getStore().reload();
-                                                            }
-                                                        }
-                                                    });
-                                        },
-                                        align: 'center'
-                                    },
-                                    {
-                                        xtype: 'actioncolumn',
-                                        items: [
-                                            {
-                                                icon: 'resources/images/buttons/view.gif',
-                                                tooltip: 'View',
-                                                width: 10,
-                                                handler: function(gridView, rowIndex, colIndex) {
-                                                    var grid = gridView.ownerCt;
-                                                    grid.fireEvent('viewvendor', grid, grid.getStore().getAt(rowIndex), rowIndex);
-                                                }
-                                            }
-                                        ],
-                                        align: 'center'
-                                    },
+									{
+										xtype: 'vendor.gridcol.addtofavorite'
+									},
+									{
+										xtype: 'vendor.gridcol.viewvendor'
+									},
                                     {
                                         text: this.vendorIdColumnTitle,
                                         dataIndex: 'vendorsite_id_alt',
