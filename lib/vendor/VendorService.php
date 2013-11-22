@@ -13,6 +13,7 @@ use NP\contact\PersonEntity;
 use NP\contact\PhoneEntity;
 use NP\contact\PhoneGateway;
 use NP\core\AbstractService;
+use NP\core\db\Adapter;
 use NP\core\db\Delete;
 use NP\core\db\Insert;
 use NP\core\db\Select;
@@ -27,6 +28,7 @@ use NP\system\MessageGateway;
 use NP\system\PnCustomFieldDataGateway;
 use NP\user\UserprofileGateway;
 use NP\util\Util;
+use NP\vendor\validation\VendorEntityValidator;
 
 /**
  * Service class for operations related to vendors
@@ -110,6 +112,7 @@ class VendorService extends AbstractService {
 	 * @param $data
 	 */
 	public function saveVendor($data) {
+
 		$data['vendorsite'] = $data['vs_vendorsite'];
 		unset($data['vs_vendorsite']);
 
@@ -300,9 +303,7 @@ class VendorService extends AbstractService {
 //			save recauthor
 			$this->vendorGateway->recauthorSave($data['userprofile_id'], 'vendor', $out_vendor_id);
 
-			if ($data['vendor']['vendor_id']) {
-				$this->saveCustomFields($data['customFields'], $out_vendor_id, $data['userprofile_id']);
-			}
+			$this->saveCustomFields($data['customFields'], $out_vendor_id, $data['userprofile_id']);
 
 			if ($data['action'] && $data['action'] == 'approve') {
 				$compare_date = [
@@ -694,7 +695,10 @@ class VendorService extends AbstractService {
 		$res = $this->vendorGateway->getVendor($vendor_id);
 		$res['glaccounts'] = $this->vendorGateway->findAssignedGlaccounts($vendor_id);
 
-//		print_r($res);
+		$custom = $this->getCustomFields($vendor_id);
+
+		$res['custom_fields'] = $custom['custom_fields'];
+		$res['insurances'] = $custom['insurances'];
 
 		return $res;
 	}
