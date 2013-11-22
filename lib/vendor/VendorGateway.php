@@ -125,4 +125,58 @@ class VendorGateway extends AbstractGateway {
 
             return $this->adapter->query($select);
         }
+
+    public function getVendorAddress($id, $address_type) {
+        $select01 = new Select();
+        $select01
+            ->column('phonetype_id')
+            ->from(['pht' => 'PHONETYPE'])
+            ->where(
+                Where::get()
+                    ->equals('phonetype_name', '\'main\'')
+            )
+            ->limit(1)
+        ;
+
+        $select02 = new Select();
+        $select02
+            ->column('phonetype_id')
+            ->from(['pht2' => 'PHONETYPE'])
+            ->where(
+                Where::get()
+                    ->equals('phonetype_name', '\'fax\'')
+            )
+            ->limit(1)
+        ;
+
+        $select = new Select();
+        $select
+            ->columns([
+                'address_line1',
+                'address_line2',
+                'address_line3',
+                'address_city',
+                'address_state',
+                'address_zip',
+                'address_zipext'
+            ])
+            ->from(['a' => 'address'])
+                ->join(['adt' => 'ADDRESSTYPE'], 'adt.addresstype_id=a.addresstype_id AND adt.addresstype_name=\''.$address_type.'\'', [], Select::JOIN_INNER)
+                ->join(['vs' => 'VENDORSITE'], 'vs.vendorsite_id=a.tablekey_id AND a.table_name=\'vendorsite\'', [], Select::JOIN_INNER)
+                ->join(['v' => 'VENDOR'], 'v.vendor_id=vs.vendor_id', ['entity_name' => 'vendor_name', 'entity_code' => 'vendor_id_alt'], Select::JOIN_INNER)
+                ->join(['ph' => 'PHONE'], 'ph.tablekey_id=vs.vendorsite_id AND ph.table_name=\'vendorsite\' AND ph.phonetype_id=('.$select01->toString().')', ['phone' => 'phone_number', 'phone_ext'], Select::JOIN_INNER)
+                ->join(['ph2' => 'PHONE'], 'ph2.tablekey_id=vs.vendorsite_id AND ph2.table_name=\'vendorsite\' AND ph2.phonetype_id=('.$select02->toString().')', ['fax' => 'phone_number', 'fax_ext2' => 'phone_ext'], Select::JOIN_INNER)
+            ->where(
+                Where::get()
+                    ->equals('vs.vendorsite_id', $id)
+            )
+        ;
+        $result = $this->adapter->query($select);
+        if (!empty($result) && !empty($result[0])) {
+            $result = $result[0];
+            $result['zip'] = $result['address_zip'] + '' + $result['address_zipext'];
+        }
+
+        return $result;
+    }
 }

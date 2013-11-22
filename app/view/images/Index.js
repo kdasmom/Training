@@ -36,49 +36,12 @@ Ext.define('NP.view.images.Index', {
         var widthField = "50%";
         /*
         var fields = [
-            //Property code
-            {
-                id: 'field-property-code',
-                //name: '' $request['property_alt_id'] = $_REQUEST['field-property-code-inputEl'];
-                name: 'Property_Alt_Id',
-                xtype: 'combobox',
-                fieldLabel: 'Property Code:',
-
-                displayField: 'title',
-                valueField:   'value',
-
-                store: {
-                    fields: ['title', 'value'],
-                    data : [
-                        {"title":"000", "value":"Invoice"},
-                        {"title":"001", "value":"Yardi"},
-                    ]                            
-                }
-            },
             //Vendor code
             {
                 id: 'field-vendor-code',
                 //name            $request['invoiceimage_vendorsite_alt_id'] = $_REQUEST['field-vendor-code-inputEl'];
                 xtype: 'combobox',
                 fieldLabel: 'Vendor Code:',
-
-                displayField: 'title',
-                valueField:   'value',
-
-                store: {
-                    fields: ['title', 'value'],
-                    data : [
-                        {"title":"32135", "value":"Invoice"},
-                        {"title":"65456", "value":"Yardi"},
-                    ]                            
-                }
-            },
-            // Property
-            {
-                id: 'field-property',
-                name: 'Property_Id',
-                xtype: 'combobox',
-                fieldLabel: 'Property:',
 
                 displayField: 'title',
                 valueField:   'value',
@@ -109,62 +72,6 @@ Ext.define('NP.view.images.Index', {
                     ]                            
                 }
             },
-            // Invoice number
-            {
-                id: 'field-invoice-number',
-                //name $request['invoiceimage_ref']
-                xtype: 'textfield',
-                value: '97560',
-                fieldLabel: 'Invoice Number:'
-            },
-            // Invoice date
-            {
-                id: 'field-invoice-date',
-                //name: 'Image_Index_Invoice_Date',
-                name: 'image_index_invoice_date',
-                //name             $request['invoiceimage_invoice_date'] = $_REQUEST['field-invoice-date-inputEl'];
-                xtype: 'datefield',
-                fieldLabel: 'Invoice Date:',
-                maxValue: new Date()
-            },
-            // Invoice due date
-            {
-                id: 'field-due-date',
-                name: 'Image_Index_Due_Date',
-                //name $request['invoiceimage_invoice_duedate'] = $_REQUEST['field-due-date-inputEl'];
-                xtype: 'datefield',
-                labelWidth: widthLabel,
-                fieldLabel: 'Invoice Due Date:'
-            },
-            // P0 number
-            {
-                id: 'field-p0-number',
-                xtype: 'textfield',
-                fieldLabel: 'P0 number:'
-            },
-            // Amount
-            {
-                //id: 'field-amount',
-                name: 'Image_Index_Amount',
-                xtype: 'textfield',
-                fieldLabel: 'Amount:'
-            },
-            // Cycle From Date
-            {
-                id: 'field-cycle-from-date',
-                name: 'cycle_from',
-                xtype: 'datefield',
-                labelWidth: widthLabel,
-                fieldLabel: 'Cycle From Date:'
-            },
-            // Cycle To Date
-            {
-                id: 'field-cycle-to-date',
-                name: 'cycle_to',
-                xtype: 'datefield',
-                labelWidth: widthLabel,
-                fieldLabel: 'Cycle To Date:'
-            },
             // Remittance Advice
             {
                 id: 'field-remittance-advice',
@@ -172,38 +79,6 @@ Ext.define('NP.view.images.Index', {
                 xtype: 'checkbox',
                 labelWidth: widthLabel,
                 fieldLabel: 'Remittance Advice:'
-            },
-            // Needed By
-            {
-                id: 'field-needed-by',
-                name: 'image_index_NeededBy_datetm',
-                xtype: 'datefield',
-                fieldLabel: 'Needed By:'
-            },
-            // Priority
-            {
-                id: 'field-priority-invoice',
-                xtype: 'combobox',
-                fieldLabel: 'Priority:',
-
-                displayField: 'title',
-                valueField:   'value',
-
-                store: {
-                    fields: ['title', 'value'],
-                    data : [
-                        {"title":"High", "value":"Invoice"},
-                        {"title":"Low", "value":"Yardi"},
-                    ]                            
-                }
-            },
-            // Exception Reason
-            {
-                id: 'field-exception-reason',
-                name: 'Image_Index_Exception_reason',
-                xtype: 'textarea',
-                labelWidth: widthLabel,
-                fieldLabel: 'Exception Reason:'
             },
         ];
 
@@ -235,10 +110,22 @@ Ext.define('NP.view.images.Index', {
         fields = fields.concat(
             this.markupBase(), 
             this.markupUtility(),
-            this.markupPropertyIndex(),
+            this.markupPropertyCode(),
             this.markupVendorCode(),
             this.markupPropertyName(),
-            this.markupVendorName()
+            this.markupVendorName(),
+            this.markupAddresses(),
+            this.markupInvoiceNumber(),
+            this.markupP0Number(),
+            this.markupInvoiceDates(),
+            this.markupAmount(),
+            this.markupUtility2(),
+            this.markupTemplate(),
+            this.markupRemitAdvice(),
+            this.markupUniversalFields(),
+            this.markupPropertyAndNeededByPanel(),
+            this.markupActionButtonsCommon(),
+            this.markupActionButtonsSpecific()
         )
 
 
@@ -404,7 +291,14 @@ Ext.define('NP.view.images.Index', {
     displayInvoice: function() {
         var fields = {
             'field-integration-package' : true,
-            'panel-utility'             : false
+            'panel-utility'             : false,
+            'field-property-code'       : true,
+            'field-property-name'       : true,
+            'field-invoice-number'      : true,
+            'field-p0-number'           : false,
+            'panel-invoice-dates'       : true,
+            'panel-utility-2'           : false,
+            'panel-property-and-neededby': true,
         };
 
         this.display(fields);
@@ -412,21 +306,42 @@ Ext.define('NP.view.images.Index', {
     displayUtilityInvoice: function() {
         var fields = {
             'field-integration-package' : false,
-            'panel-utility'             : true
+            'panel-utility'             : true,
+            'field-property-code'       : false,
+            'field-property-name'       : false,
+            'field-invoice-number'      : true,
+            'field-p0-number'           : false,
+            'panel-invoice-dates'       : true,
+            'panel-utility-2'           : true,
+            'panel-property-and-neededby': false,
         };
         this.display(fields);
     },
     displayPurchaseOrder: function() {
         var fields = {
             'field-integration-package' : true,
-            'panel-utility'             : false
+            'panel-utility'             : false,
+            'field-property-code'       : true,
+            'field-property-name'       : true,
+            'field-invoice-number'      : false,
+            'field-p0-number'           : true,
+            'panel-invoice-dates'       : false,
+            'panel-utility-2'           : false,
+            'panel-property-and-neededby': false,
         };
         this.display(fields);
     },
     displayReceipt: function() {
         var fields = {
             'field-integration-package' : true,
-            'panel-utility'             : false
+            'panel-utility'             : false,
+            'field-property-code'       : true,
+            'field-property-name'       : true,
+            'field-invoice-number'      : false,
+            'field-p0-number'           : false,
+            'panel-invoice-dates'       : false,
+            'panel-utility-2'           : false,
+            'panel-property-and-neededby': false,
         };
         this.display(fields);
     },
@@ -862,10 +777,52 @@ STORE FOR IT                var storeMeterSize =
     },
 
     /***************************************************************************
-     * SECTION: PROPERTY INDEX
+     * Section: Property Code
      **************************************************************************/
-    markupPropertyIndex: function() {
+    markupPropertyCode: function() {
+        var storePropertyCodes =
+            Ext.create('NP.store.property.Properties', {
+                service    : 'ImageService',
+                action     : 'listPropertyCode',
+                extraParams: {
+                    'userprofile_id': NP.Security.getUser().get('userprofile_id'),
+                    'delegation_to_userprofile_id': NP.Security.getUser().get('delegation_to_userprofile_id')
+                }
+            }
+        );
+        storePropertyCodes.load();
+
         return [
+            // Property code
+            {
+                itemId: 'field-property-code',
+                //name: '' $request['property_alt_id'] = $_REQUEST['field-property-code-inputEl'];
+
+                name: 'Property_Alt_Id',
+                xtype: 'customcombo',
+                fieldLabel: 'Property Code:',
+
+                addBlankRecord: true,
+
+                displayField: 'property_id_alt',
+                valueField:   'property_id',
+
+                store: storePropertyCodes,
+
+                listeners: {
+                    select: function(combo, records) {
+                        var value = combo.getValue();
+                        var element = Ext.ComponentQuery.query('[name="Property_Id"]')[0];
+                        if (value) {
+                            element.disable();
+                            element.setValue(value);
+                        } else {
+                            element.enable();
+                            element.setValue(value);
+                        }
+                    }
+                }
+            }
         ];
     },
     
@@ -881,7 +838,48 @@ STORE FOR IT                var storeMeterSize =
      * SECTION: PROPERTY NAME
      **************************************************************************/
     markupPropertyName: function() {
+        var storePropertyNames =
+            Ext.create('NP.store.property.Properties', {
+                service    : 'ImageService',
+                action     : 'listProperty',
+                extraParams: {
+                    'userprofile_id': NP.Security.getUser().get('userprofile_id'),
+                    'delegation_to_userprofile_id': NP.Security.getUser().get('delegation_to_userprofile_id')
+                }
+            }
+        );
+        storePropertyNames.load();
+
         return [
+            // Property
+            {
+                itemId: 'field-property-name',
+
+                name: 'Property_Id',
+                xtype: 'combobox',
+                fieldLabel: 'Property:',
+
+                addBlankRecord: true,
+
+                displayField: 'property_name',
+                valueField:   'property_id',
+
+                store: storePropertyNames,
+
+                listeners: {
+                    select: function(combo, records) {
+                        var value = combo.getValue();
+                        var element = Ext.ComponentQuery.query('[name="Property_Alt_Id"]')[0];
+                        if (value) {
+                            element.disable();
+                            element.setValue(value);
+                        } else {
+                            element.enable();
+                            element.setValue(value);
+                        }
+                    }
+                }
+            }
         ];
     },
     
@@ -891,12 +889,407 @@ STORE FOR IT                var storeMeterSize =
     markupVendorName: function() {
         return [
         ];
+    },
+    
+    /***************************************************************************
+     * SECTION: VENDOR NAME
+     **************************************************************************/
+    markupAddresses: function() {
+        return [
+            {
+                xtype: 'button',
+                text: 'Property Address',
+                listeners: {
+                    click: this.showAddressWindow.bind(this, 1, 'home', 'property', 'Property Address')
+                }
+            },
+            {
+                xtype: 'button',
+                text: 'Vendor Address',
+                listeners: {
+                    click: this.showAddressWindow.bind(this, 1, 'mailing', 'vendorsite', 'Vendor Address')
+                }
+            }
+        ];
+    },
+    
+    /***************************************************************************
+     * Section: Invoice number
+     **************************************************************************/
+    markupInvoiceNumber: function() {
+        return [
+            // Invoice number
+            {
+                itemId: 'field-invoice-number',
+                //name $request['invoiceimage_ref']
+
+                xtype: 'textfield',
+                value: '97560',//value="#get_current_image.image_index_ref#" 
+                fieldLabel: 'Invoice Number:'
+            }
+        ];
+    },
+
+    /***************************************************************************
+     * Section: P0 number
+     **************************************************************************/
+    markupP0Number: function() {
+        return [
+            // P0 number
+            {
+                itemId: 'field-p0-number',
+
+                xtype: 'textfield',
+                fieldLabel: 'P0 number:'
+                //value="#get_current_image.image_index_ref#" 
+            }
+        ];
+    },
+
+    /***************************************************************************
+     * Section: Invoice dates
+     **************************************************************************/
+    markupInvoiceDates: function() {
+        return [
+            {
+                itemId: 'panel-invoice-dates',
+
+                xtype: 'panel',
+
+                border: 0,
+                layout: 'form',
+
+                items: [
+                    // Invoice date
+                    {
+                        id: 'field-invoice-date',
+                        //name: 'Image_Index_Invoice_Date',
+                        name: 'image_index_invoice_date',
+                        //name             $request['invoiceimage_invoice_date'] = $_REQUEST['field-invoice-date-inputEl'];
+                        xtype: 'datefield',
+                        fieldLabel: 'Invoice Date:'
+                        //maxValue: new Date()
+                        //onchange="changed_vendor($('##vendorname'))"
+                        //field_name="invoiceimage_invoice_date" 
+                        //form_name="quickform" 
+                        //date_select="#get_current_image.image_index_invoice_date#">
+                        //onchange="changed_vendor($('##vendorname'))" required
+                        //id="invoice_date_index_value"
+                    },
+                    // Invoice due date
+                    {
+                        id: 'field-due-date',
+                        name: 'Image_Index_Due_Date',
+                        //name $request['invoiceimage_invoice_duedate'] = $_REQUEST['field-due-date-inputEl'];
+                        xtype: 'datefield',
+                        //labelWidth: widthLabel,
+                        fieldLabel: 'Invoice Due Date:'
+                        //id="invoice_duedate_index_value"
+                        //field_name="invoiceimage_invoice_duedate" 
+                        //form_name="quickform" 
+                        //size="10" 
+                        //date_select="#get_current_image.image_index_due_date#">
+                    }
+                ]
+            }
+        ];
+    },
+
+    /***************************************************************************
+     * Section: Amount
+     **************************************************************************/
+    markupAmount: function() {
+        return [
+            // Amount
+            {
+                name: 'Image_Index_Amount',
+                xtype: 'textfield',
+                //value="#get_current_image.image_index_amount#"
+                fieldLabel: 'Amount:'
+            },
+        ]
+    },
+
+    /***************************************************************************
+     * Section: Utility 2
+     **************************************************************************/
+    markupUtility2: function() {
+        return [
+            {
+                itemId: 'panel-utility-2',
+
+                xtype: 'panel',
+
+                border: 0,
+                layout: 'form',
+
+                items: [
+                    // Cycle From Date
+                    {
+                        name: 'cycle_from',
+                        xtype: 'datefield',
+                        //labelWidth: widthLabel,
+                        fieldLabel: 'Cycle From Date:'
+//						required="false" 
+//						title="" 
+//						field_name="cycle_from" 
+//						form_name="quickform" 
+//						size="10" 
+//						date_select="#get_current_image.cycle_from#">
+                        
+                    },
+                    // Cycle To Date
+                    {
+                        name: 'cycle_to',
+                        xtype: 'datefield',
+                        //labelWidth: widthLabel,
+                        fieldLabel: 'Cycle To Date:'
+//						field_name="cycle_to"
+//						required="false" 
+//						title="" 
+//						form_name="quickform" 
+//						size="10" 
+//						date_select="#get_current_image.cycle_to#">
+                    },
+                ]
+            }
+        ];
+    },
+
+    /***************************************************************************
+     * Section: Template
+     **************************************************************************/
+    markupTemplate: function() {
+        return [
+            
+        ];
+    },
+
+    /***************************************************************************
+     * Section: Remit advice
+     **************************************************************************/
+    markupRemitAdvice: function() {
+        return [
+            
+        ];
+    },
+
+    /***************************************************************************
+     * Section: Universal Fields
+     **************************************************************************/
+    markupUniversalFields: function() {
+        return [
+            
+        ];
+    },
+
+    /***************************************************************************
+     * Section: Property and Needed By Panel
+     **************************************************************************/
+    markupPropertyAndNeededByPanel: function() {
+        return [
+            {
+                itemId: 'panel-property-and-neededby',
+
+                xtype: 'panel',
+
+                border: 0,
+                layout: 'form',
+
+                items: [
+                    // Needed By
+                    {
+                        //id: 'field-needed-by',
+                        name: 'image_index_NeededBy_datetm',
+                        xtype: 'datefield',
+                        fieldLabel: 'Needed By:'
+//				required="no" 
+//				title="" 
+//				field_name="neededby_datetm" 
+//				form_name="quickform" 
+//				size="10" 
+//				date_select="#get_current_image.neededby_datetm#"
+                        
+                    },
+                    // Priority
+                    {
+                        //id: 'field-priority-invoice',
+                        xtype: 'combobox',
+                        fieldLabel: 'Priority:',
+
+                        displayField: 'title',
+                        valueField:   'value'
+/*
+				<cfif not ListFind(client.module_id,6007)><!--- invoice priority flag module rights dictate who can edit  --->
+                                    <input type="Hidden" name="PriorityFlag_ID_Alt_invoice" value="#variables.PriorityFlag_ID_Alt_invoice#">
+                                    <select name="" disabled>
+                                        <option>#variables.PriorityFlag_Display_invoice#
+                                    </select>
+				<cfelse>
+                                    <select name="PriorityFlag_ID_Alt_invoice">
+                                        <cfloop query="GetPriorityFlag">
+                                            <option value="#PriorityFlag_ID_Alt#"<cfif GetPriorityFlag.PriorityFlag_ID_Alt EQ variables.PriorityFlag_ID_Alt_invoice> selected</cfif>>#PriorityFlag_Display#
+					</cfloop>
+                                    </select>
+				</cfif>
+
+ */
+/*
+                        store: {
+                            fields: ['title', 'value'],
+                            data : [
+                                {"title":"High", "value":"Invoice"},
+                                {"title":"Low", "value":"Yardi"},
+                            ]                            
+                        }
+*/
+                    }
+                ]
+            }
+        ];
+    },
+
+    /***************************************************************************
+     * Section: Action Buttons Panel
+     **************************************************************************/
+    markupActionButtonsCommon: function() {
+        return [
+            {
+                xtype: 'button',
+                text: 'Save and Next',
+                //<a href="javascript:submit_form('next')">
+                listeners: {
+                    //click: this.showAddressWindow.bind(this, 1, 'home', 'property', 'Property Address')
+                }
+            },
+        ];
+    },
+
+    /***************************************************************************
+     * Section: Action Buttons Panel
+     **************************************************************************/
+    markupActionButtonsSpecific: function() {
+        // Эта панель появляется только, если top_tab равен Scanned и не равен Exception
+// ВЕРХНЯЯ ПАНЕЛЬ КНОПОК ТОЖЕ ОТЛИЧАЕТСЯ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        return [
+            {
+                itemId: 'panel-action-buttons-specific', 
+//
+                xtype: 'panel',
+
+                border: 0,
+                //layout: 'form',
+
+                items: [
+                    {
+                        xtype: 'button',
+                        text: 'Save as Exception',
+                        //<a href="javascript:submit_form('mark_as_exception')">
+                        listeners: {
+                            //click: this.showAddressWindow.bind(this, 1, 'home', 'property', 'Property Address')
+                        }
+                    },
+                    {
+//Эта кнопка показывается когда <cfif variables.optional_img_convert_on EQ 0 AND StructKeyExists(request, "selected_image_ids")>
+                        xtype: 'button',
+                        text: 'Create Invoice',
+                        //<a href="javascript:submit_form('invoice')">
+                        listeners: {
+                            //click: this.showAddressWindow.bind(this, 1, 'home', 'property', 'Property Address')
+                        }
+                    }
+                ]
+            }
+        ];
+    },
+
+    /***************************************************************************
+     * Section: Exception
+     **************************************************************************/
+    markupExceptionReason: function() {
+        return [
+            // Exception Reason
+            {
+                id: 'field-exception-reason',
+                name: 'Image_Index_Exception_reason',
+                xtype: 'textarea',
+                //labelWidth: widthLabel,
+                fieldLabel: 'Exception Reason:'
+                //value   #get_current_image.Image_Index_Exception_reason#
+            }
+        ];
+    },
+
+    /***************************************************************************
+     * Common methods
+     **************************************************************************/
+    showAddressWindow: function(id, type, table, title) {
+        NP.lib.core.Net.remoteCall({
+            requests: {
+                service: 'ImageService',
+                action : 'getAddress',
+
+                id: id,
+                table_name: table,
+                address_type: type,
+
+                success: function(result) {
+                    if (result.success) {
+                        var html = [
+                            '<span style=\'font-weight: bold\'>',
+                            result.data.entity_name + '<br>',
+                        ];
+                        result.data.entity_code && 
+                            html.push(result.data.entity_code + '<br>')
+                        ;
+                        html.push('</span><br>');
+
+                        result.data.address_line1 && 
+                            html.push(result.data.address_line1 + '<br>')
+                        ;
+                        result.data.address_line2 && 
+                            html.push(result.data.address_line2 + '<br>')
+                        ;
+                        result.data.address_line3 && 
+                            html.push(result.data.address_line3 + '<br>')
+                        ;
+
+                        result.data.address_city && 
+                            html.push(result.data.address_city)
+                        ;
+                        result.data.address_state && 
+                            html.push(result.data.address_state)
+                        ;
+                        result.data.address_zip && 
+                            html.push(result.data.zip)
+                        ;
+                        html.push('<br>');
+
+                        result.data.phone && 
+                            html.push('Phone: ' + result.data.phone)
+                        ;
+                        result.data.fax && 
+                            html.push('Fax: ' + result.data.fax)
+                        ;
+
+                        Ext.create('Ext.window.Window', {
+                            title: title,
+
+                            width: 400,
+                            height: 200,
+                            bodyPadding: 10,
+
+                            modal: true,
+                            layout: 'fit',
+
+                            html: html
+
+                        }).show();
+                    }
+                }
+            }
+        });
     }
-    
-    
-    
-    
-    
     
     
     
@@ -919,12 +1312,16 @@ STORE FOR IT                var storeMeterSize =
                 'field-property': true,
                 'field-vendor': true,
                 'field-invoice-number': true,
+                'field-p0-number': false,
+
                 'field-invoice-date': true,
                 'field-due-date': true,
-                'field-p0-number': false,
+                
                 'field-cycle-from-date': false,
                 'field-cycle-to-date': false,
+    
                 'field-remittance-advice': true,
+    
                 'field-needed-by': true,
                 'field-priority-invoice': true
             },
@@ -934,12 +1331,16 @@ STORE FOR IT                var storeMeterSize =
                 'field-property': false,
                 'field-vendor': false,
                 'field-invoice-number': true,
+                'field-p0-number': false,
+    
                 'field-invoice-date': true,
                 'field-due-date': true,
-                'field-p0-number': false,
+                
                 'field-cycle-from-date': true,
                 'field-cycle-to-date': true,
+    
                 'field-remittance-advice': true,
+    
                 'field-needed-by': false,
                 'field-priority-invoice': false
             },
@@ -949,12 +1350,16 @@ STORE FOR IT                var storeMeterSize =
                 'field-property': true,
                 'field-vendor': true,
                 'field-invoice-number': false,
+                'field-p0-number': true,
+    
                 'field-invoice-date': false,
                 'field-due-date': false,
-                'field-p0-number': true,
+                
                 'field-cycle-from-date': false,
                 'field-cycle-to-date': false,
+    
                 'field-remittance-advice': false,
+    
                 'field-needed-by': false,
                 'field-priority-invoice': false
             },
@@ -964,12 +1369,16 @@ STORE FOR IT                var storeMeterSize =
                 'field-property': true,
                 'field-vendor': true,
                 'field-invoice-number': false,
+                'field-p0-number': false,
+
                 'field-invoice-date': false,
                 'field-due-date': false,
-                'field-p0-number': false,
+                
                 'field-cycle-from-date': false,
                 'field-cycle-to-date': false,
+    
                 'field-remittance-advice': false,
+    
                 'field-needed-by': false,
                 'field-priority-invoice': false
             }

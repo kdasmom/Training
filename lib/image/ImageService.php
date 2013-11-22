@@ -960,131 +960,31 @@ class ImageService extends AbstractService {
         return $result;
     }
 
-    public function getProperties() {
+    public function listProperty($userprofile_id, $delegation_to_userprofile_id, $integration_package = null) {
+        $asp_client_id = $this->configService->getClientId();
 
-        
-        
-        
-        
-/*
-<cfif client.userprofile_id EQ client.delegation_to_userprofile_id>
-	<cfstoredproc datasource="#request.dsn#" procedure="USER_PROPERTY_LISTING">
-		<cfprocparam type="In" cfsqltype="CF_SQL_INTEGER" dbvarname="in_asp_client_id" value="#client.asp_client_id#" null="No">
-		<cfprocparam type="In" cfsqltype="CF_SQL_INTEGER" dbvarname="userprofile_id" value="#client.userprofile_id#" null="No">
-		<cfprocresult name="get_properties">
-	</cfstoredproc>
-<cfelse>
-	<cfinvoke component="baseline_cfc.property.property" 
-		method="getUserProperties" 
-		asp_client_id="#client.asp_client_id#"
-		userprofile_id="#client.userprofile_id#"
-		returnvariable="get_properties" />
-</cfif>
+        if (empty($delegation_to_userprofile_id)) {
+            $delegation_to_userprofile_id = $userprofile_id;
+        }
 
-        
-        
-        
-	<cffunction name="getUserProperties" access="public" output="no" returntype="query">
-		<cfargument name="asp_client_id" type="numeric" required="no" />
-		<cfargument name="userprofile_id" type="numeric" required="no" />
-		<cfargument name="delegation_to_userprofile_id" type="numeric" required="no" />
-		<cfargument name="includeCodingOnly" type="boolean" required="no" default=false />
-		
-		<cfset var q = "" />
-		
-		<cfif NOT StructKeyExists(arguments, "asp_client_id")>
-			<cfset arguments.asp_client_id = client.asp_client_id />
-		</cfif>
-		
-		<cfif NOT StructKeyExists(arguments, "userprofile_id")>
-			<cfset arguments.userprofile_id = client.userprofile_id />
-		</cfif>
-		
-		<cfif NOT StructKeyExists(arguments, "delegation_to_userprofile_id")>
-			<cfif StructKeyExists(client, "delegation_to_userprofile_id")>
-				<cfset arguments.delegation_to_userprofile_id = client.delegation_to_userprofile_id />
-			<cfelse>
-				<cfset arguments.delegation_to_userprofile_id = arguments.userprofile_id />
-			</cfif>
-		</cfif>
-		
-		<cfif arguments.userprofile_id EQ arguments.delegation_to_userprofile_id>
-			<cfstoredproc datasource="#request.dsn#" procedure="USER_PROPERTY_LISTING">
-				<cfprocparam type="In" cfsqltype="CF_SQL_INTEGER" dbvarname="@in_asp_client_id" value="#arguments.asp_client_id#" null="No">
-				<cfprocparam type="In" cfsqltype="CF_SQL_INTEGER" dbvarname="@userprofile_id" value="#arguments.userprofile_id#" null="No">
-				<cfprocresult name="q">
-			</cfstoredproc>
-		<cfelse>
-			<cfquery name="q" datasource="#request.dsn#">
-			Select 
-				DISTINCT 
-				p.property_id, 
-				p.property_no_units, 
-				p.property_name,
-				p.property_id_alt, 
-				p.property_status, 
-				fm.fiscalcalmonth_id,
-				p.integration_package_id,
-				0 AS is_coding_only
-			FROM delegation d
-				INNER JOIN delegationprop dp ON d.delegation_id = dp.delegation_id
-				INNER JOIN PROPERTY p ON dp.property_id = p.property_id
-				INNER JOIN fiscalcal f ON f.property_id = p.property_id
-				INNER JOIN fiscalcalmonth fm ON f.fiscalcal_id = fm.fiscalcal_id
-			WHERE d.userprofile_id = <cfqueryparam value="#arguments.userprofile_id#" />
-				AND d.delegation_to_userprofile_id = <cfqueryparam value="#arguments.delegation_to_userprofile_id#" />
-				AND d.delegation_status = 1
-				AND d.delegation_startdate <= getDate()
-				AND d.delegation_stopdate > getDate()
-				AND fm.fiscalcalmonth_num = <cfqueryparam value="#month(now())#" />
-				AND f.fiscalcal_year = <cfqueryparam value="#year(now())#" />
-			<cfif arguments.includeCodingOnly>
-				UNION
-				Select 
-					DISTINCT 
-					p.property_id, 
-					p.property_no_units, 
-					p.property_name,
-					p.property_id_alt, 
-					p.property_status, 
-					fm.fiscalcalmonth_id,
-					p.integration_package_id,
-					1 AS is_coding_only
-				FROM propertyusercoding pu
-					INNER JOIN PROPERTY p ON pu.property_id = p.property_id
-					INNER JOIN fiscalcal f ON f.property_id = p.property_id
-					INNER JOIN fiscalcalmonth fm ON f.fiscalcal_id = fm.fiscalcal_id
-				WHERE pu.userprofile_id = <cfqueryparam value="#arguments.userprofile_id#" />
-					AND fm.fiscalcalmonth_num = <cfqueryparam value="#month(now())#" />
-					AND f.fiscalcal_year = <cfqueryparam value="#year(now())#" />
-			</cfif>
-			Order By p.property_name
-			</cfquery>
-		</cfif>
-		
-		<cfreturn q />
-	</cffunction>
+        if ($userprofile_id == $delegation_to_userprofile_id) {
+            return $this->propertyGateway->getUserPropertyListingForUser($userprofile_id, $asp_client_id);
+        } else {
+            return $this->propertyGateway->getUserPropertyListingForDelegate($userprofile_id, $delegation_to_userprofile_id, $asp_client_id);
+        }
+    }
 
+    public function listPropertyCode($userprofile_id, $delegation_to_userprofile_id, $integration_package = null) {
+        $asp_client_id = $this->configService->getClientId();
 
-
-
-
-<cfquery name="get_properties" dbtype="query">
-    SELECT * 
-    FROM get_properties 
-    WHERE integration_package_id=<cfqueryparam cfsqltype="CF_SQL_INTEGER" value="#get_integration_package.integration_package_id#">
-	AND property_status = 1
-</cfquery>
-
-                        
-                        
-
-<CFQUERY dbtype="query" NAME="GetPropertyCode">
-SELECT property_id,property_id_alt
-FROM  get_properties	
-ORDER BY property_id_alt		
-</CFQUERY>
-*/
+        if (empty($delegation_to_userprofile_id)) {
+            $delegation_to_userprofile_id = $userprofile_id;
+        }
+        if ($userprofile_id == $delegation_to_userprofile_id) {
+            return $this->propertyGateway->getUserPropertyListingForUser($userprofile_id, $asp_client_id, null, 'property_id_alt');
+        } else {
+            return $this->propertyGateway->getUserPropertyListingForDelegate($userprofile_id, $delegation_to_userprofile_id, $asp_client_id, false, 'property_id_alt');
+        }
     }
         
     
@@ -1143,6 +1043,23 @@ ORDER BY property_id_alt
             }
         }
         return $result;
+    }
+
+    public function getAddress($id, $table_name, $address_type = 'Home') {
+        $table_name = 'vendorsite';
+        $id = 22904;
+        $address_type='mailing';
+        if ($table_name == 'vendorsite') {
+            return [
+                'data' => $this->vendorGateway->getVendorAddress($id, $address_type),
+                'success' => true
+            ];
+        } elseif ($table_name == 'property') {
+            return [
+                'data' => $this->propertyGateway->getPropertyAddress($id, $address_type),
+                'success' => true
+            ];
+        }
     }
         
         
