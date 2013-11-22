@@ -176,49 +176,67 @@ Ext.define('NP.controller.VendorManager', {
 
 		var form = null;
 		var customFieldData = [];
+		var insurances = [];
 
         if (arguments.length > 0) {
+			Ext.apply(viewCfg.bind, {
+				service    : 'VendorService',
+				action     : 'getVendor',
+				extraParams: {
+					vendor_id: vendor_id
+				},
+				extraFields: ['glaccounts', 'insurances', 'custom_fields']
+			});
+			Ext.apply(viewCfg, {
+				listeners: {
+					dataloaded: function(formPanel, data) {
+						that.vendor_status = data['vendor_status'];
+
+						customFieldData = data['custom_fields'];
+						Ext.apply(viewCfg, {
+							customFieldData: data['custom_fields'],
+							insurances: data['insurances']
+						});
+						formPanel.customFieldData = customFieldData;
+						var formCustom = formPanel.down('[xtype="vendor.vendorgeneralinfoandsettings"]');
+						Ext.Array.each(customFieldData, function(fieldData) {
+							formCustom.add(
+								{
+									xtype     : 'shared.customfield',
+									fieldLabel: fieldData['customfield_label'],
+									entityType: fieldData['customfield_pn_type'],
+									type      : fieldData['customfield_type'],
+									name      : fieldData['customfield_name'],
+									number    : fieldData['universal_field_number'],
+									allowBlank: !fieldData['customfield_required'],
+									fieldCfg  : {value: parseInt(fieldData['customfielddata_value'])},
+									value: parseInt(fieldData['customfielddata_value'])
+								});
+						});
+						Ext.Array.each(customFieldData, function(field) {
+							form.findField(field['customfield_name']).setValue(parseInt(field['customfielddata_value']));
+						});
+					}
+				}
+			});
+			var form = that.setVendorView(viewCfg, vendor_id);
+        } else {
 			NP.lib.core.Net.remoteCall({
 				requests: {
 					service                 : 'VendorService',
 					action                  : 'getCustomFields',
 					vendor_id     			: (vendor_id) ? vendor_id : 0,
 					success                 : function(result, deferred) {
-						customFieldData = vendor_id ? result['custom_fields'] : [];
+						customFieldData = result['custom_fields'];
 						Ext.apply(viewCfg, {
-							customFieldData: customFieldData,
-							insurances: result['insurances']
-						});
-
-						Ext.apply(viewCfg.bind, {
-							service    : 'VendorService',
-							action     : 'getVendor',
-							extraParams: {
-								vendor_id: vendor_id
-							},
-							extraFields: ['glaccounts', 'insurances']
-						});
-						Ext.apply(viewCfg, {
-							listeners: {
-								dataloaded: function(formPanel, data) {
-									that.vendor_status = data['vendor_status'];
-								}
-							}
+							customFieldData: customFieldData
 						});
 
 						var form = that.setVendorView(viewCfg, vendor_id);
-						Ext.Array.each(customFieldData, function(field) {
-							form.findField(field['customfield_name']).setValue(field['customfielddata_value']);
-						});
 					},
 					failure: function(response, options, deferred) {}
 				}
 			});
-
-
-        } else {
-
-			this.setVendorView(viewCfg, vendor_id);
 		}
 	},
 
@@ -282,7 +300,6 @@ Ext.define('NP.controller.VendorManager', {
 			customFields[fieldData['customfield_name']] = form.findField(fieldData['customfield_name']).getValue();
 		});
 
-
         if (form.isValid()) {
 			var extraParams = {
 				userprofile_id: NP.Security.getUser().get('userprofile_id'),
@@ -329,7 +346,6 @@ Ext.define('NP.controller.VendorManager', {
      */
     viewVendor: function(grid, rec, rowIndex) {
 		this.addHistory('VendorManager:showVendorForm:' + rec.internalId + ':' + rec.get('vendor_status'));
-//        this.showVendorForm(rec.internalId);
     },
 
 	showFormTab: function(itemId, opened, isReject, insurance, vendor_id) {
