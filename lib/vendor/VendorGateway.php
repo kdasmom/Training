@@ -212,13 +212,15 @@ class VendorGateway extends AbstractGateway {
 	 *
 	 * @return array|bool
 	 */
-	public function findVendorTypes() {
+	public function findVendorTypes($intergration_package_id) {
 		$select = new Select();
 
 		$select->from(['vt' => 'vendortype'])
-					->order('vt.vendortype_name');
+				->where(['integration_package_id' => '?'])
+				->whereGreaterThan('universal_field_status', 0)
+				->order('vt.vendortype_name');
 
-		return $this->adapter->query($select);
+		return $this->adapter->query($select, [$intergration_package_id]);
 	}
 
 	/**

@@ -102,8 +102,9 @@ class VendorService extends AbstractService {
 	 *
 	 * @return array|bool
 	 */
-	public function findVendorTypes() {
-		return $this->vendorGateway->findVendorTypes();
+	public function findVendorTypes($userprofile_id = null) {
+		$integration_package = $this->configService->findByAspClientIdAndUserprofileId($userprofile_id);
+		return $this->vendorGateway->findVendorTypes($integration_package['integration_package_id']);
 	}
 
 	/**

@@ -89,7 +89,10 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
                 store: Ext.create('NP.store.vendor.VendorTypes', {
                     service: 'VendorService',
                     action: 'findVendorTypes',
-                    autoLoad: true
+                    autoLoad: true,
+					extraParams: {
+						userprofile_id:NP.Security.getUser().get('userprofile_id')
+					}
                 }),
 				allowBlank: false,
 				queryMode: 'local',
