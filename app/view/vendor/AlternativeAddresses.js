@@ -33,7 +33,7 @@ Ext.define('NP.view.vendor.AlternativeAddresses', {
 					extraParams: {
 						vendor_id: that.vendor_id
 					},
-					extraParams: ['country_name'],
+					extraFields: ['country_name'],
 					autoLoad: true
 				}),
 				columns: [
