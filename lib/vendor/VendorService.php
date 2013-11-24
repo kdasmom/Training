@@ -113,7 +113,6 @@ class VendorService extends AbstractService {
 	 * @param $data
 	 */
 	public function saveVendor($data) {
-
 		$data['vendorsite'] = $data['vs_vendorsite'];
 		unset($data['vs_vendorsite']);
 
@@ -122,6 +121,7 @@ class VendorService extends AbstractService {
 			$this->vendorGateway->deleteMessages($data['vendor']['vendor_id']);
 		}
 
+		$errors = [];
 		$vendor = new VendorEntity($data['vendor']);
 
 		$aspClientId = $this->configService->getClientId();
@@ -172,169 +172,167 @@ class VendorService extends AbstractService {
 			if ($result['check_status'] == self::VALIDATE_CHECK_STATUS_TAX_ID) {
 				$message = 'The vendor ' . $vendor->vendor_name . ' already uses this taxid. Please update that vendor or select a different tax id';
 			}
-			$result = [
-				'success'	=> false,
-				'errors'	=> array('field'=>'global', 'msg'=> $message, 'extra'=>null)
-			];
+
+			$errors[] = array('field'=>'global', 'msg'=> $message, 'extra'=>null);
 
 		} else {
 //			it's ok, let's go
-			$in_app_user = $this->userprofileGateway->isInAppUser($roleId, $userprofileId);
-			$vendorstatus = $in_app_user ? $this->configService->get('PN.VendorOptions.OnApprovalStatus') : 'forapproval';
 
-//			save vendor
-			$data['vendor']['vendor_status'] = $vendorstatus;
-			$data['vendorsite']['vendor_status'] = $vendorstatus;
-			$result = $this->saveVendorRecord($data);
-			if (!$result['success']) {
-				return $result;
-			}
-			$out_vendor_id = !$vendor->vendor_id ? $result['lastInsertId'] : $vendor->vendor_id;
-			if (is_null($vendor->vendor_id)) {
-				$this->vendorGateway->update(
-					['approval_tracking_id' => !$approval_tracking_id ? $out_vendor_id : $approval_tracking_id],
-					['vendor_id'	=> '?'],
-					[$out_vendor_id]
-				);
-			} else {
-				$current_vendor_status = $this->vendorGateway->find(['v.vendor_id' => '?'], [$vendor->vendor_id], null, ['vendor_status']);
-				if (count($current_vendor_status) > 0 && $current_vendor_status[0]['vendor_status'] == self::VENDOR_STATUS_REJECTED) {
-					$this->vendorGateway->deleteMessages($vendor->vendor_id);
-				}
-			}
-//			find vendorsite code
-			$vendorsitecode = $this->vendorsiteGateway->getVendositeCode($vendor->vendor_id, $data['address']['address_city'], 'active', $aspClientId);
-//			save vendorsite
-			$result = $this->saveVendorsite($data, $vendorstatus, $out_vendor_id, $vendorsitecode);
-			if (!$result['success']) {
-				return $result;
-			}
-			$out_vendorsite_id = $result['lastInsertId'];
-			$approval_vendorsite = $this->vendorsiteGateway->find(['vendor_id' => '?'], [$approval_tracking_id], null, ['vendorsite_id']);
-			if (is_null($vendor->vendor_id)) {
-				$this->vendorsiteGateway->update(
-					['approval_tracking_id' => !$approval_tracking_id ? $out_vendorsite_id : $approval_vendorsite[0]['vendorsite_id']],
-					['vendorsite_id' => '?'],
-					[$out_vendorsite_id]
-				);
-			}
-//			vendosite favorite
-			if ($vendorsite_favorite == self::VENDORSITE_FAVORITE_YES && !is_null($propertyId) && is_null($vendor->vendor_id)) {
-				$this->updateFavorite($out_vendorsite_id, $propertyId);
-			}
+			$this->vendorGateway->beginTransaction();
+			try {
+				$in_app_user = $this->userprofileGateway->isInAppUser($roleId, $userprofileId);
+				$vendorstatus = $in_app_user ? $this->configService->get('PN.VendorOptions.OnApprovalStatus') : 'forapproval';
 
-//			assign glaccounts
-			if ($glaccounts !== '') {
-				if (!$this->vendorsiteGateway->assignGlAccounts($glaccounts, $out_vendor_id)) {
-					return [
-						'success'		=> false,
-						'errors'			=> [array('field'=>'global', 'msg'=>'Cannot assign glaccounts', 'extra'=>null)]
-					];
-				}
-			}
-//					save address
-			$result = $this->saveAddress($data, $out_vendorsite_id);
-			if (!$result['success'] ) {
-				return $result;
-			}
-//				save phone and fax
-			$result = $this->savePhoneAndFax($data, $out_vendorsite_id);
-			if (!$result['success']) {
-				return $result;
-			}
-//				save person and contact and contact phone
-			$result = $this->saveContact($data, $out_vendorsite_id, $aspClientId);
-			if (!$result['success']) {
-				return $result;
-			}
-//				save email
-			$result = $this->saveEmailRecord($data, $out_vendorsite_id);
-			if (!$result['success']) {
-				return result;
-			}
-//				save insurances
-			$insurances = json_decode($data['insurances']);
-			$savedInsurances = [];
-			if (count($insurances) > 0) {
-				if ($data['vendorsite_DaysNotice_InsuranceExpires'] > 0) {
-					$this->vendorsiteGateway->update(
-						['vendorsite_DaysNotice_InsuranceExpires' => $data['vendorsite_DaysNotice_InsuranceExpires']],
-						['vendor_id' => '?'],
+//				save vendor
+				$data['vendor']['vendor_status'] = $vendorstatus;
+				$data['vendorsite']['vendor_status'] = $vendorstatus;
+
+				$result = $this->saveVendorRecord($data);
+				$out_vendor_id = !$vendor->vendor_id ? $result['lastInsertId'] : $vendor->vendor_id;
+				if (is_null($vendor->vendor_id)) {
+					$this->vendorGateway->update(
+						['approval_tracking_id' => !$approval_tracking_id ? $out_vendor_id : $approval_tracking_id],
+						['vendor_id'	=> '?'],
 						[$out_vendor_id]
 					);
+				} else {
+					$current_vendor_status = $this->vendorGateway->find(['v.vendor_id' => '?'], [$vendor->vendor_id], null, ['vendor_status']);
+					if (count($current_vendor_status) > 0 && $current_vendor_status[0]['vendor_status'] == self::VENDOR_STATUS_REJECTED) {
+						$this->vendorGateway->deleteMessages($vendor->vendor_id);
+					}
 				}
-				$insurance = $insurances[0];
+//				find vendorsite code
+				$vendorsitecode = $this->vendorsiteGateway->getVendositeCode($vendor->vendor_id, $data['address']['address_city'], 'active', $aspClientId);
+//				save vendorsite
+				$result = $this->saveVendorsite($data, $vendorstatus, $out_vendor_id, $vendorsitecode);
+				$out_vendorsite_id = $result['lastInsertId'];
+				$approval_vendorsite = $this->vendorsiteGateway->find(['vendor_id' => '?'], [$approval_tracking_id], null, ['vendorsite_id']);
+				if (is_null($vendor->vendor_id)) {
+					$this->vendorsiteGateway->update(
+						['approval_tracking_id' => !$approval_tracking_id ? $out_vendorsite_id : $approval_vendorsite[0]['vendorsite_id']],
+						['vendorsite_id' => '?'],
+						[$out_vendorsite_id]
+					);
+				}
+//				vendosite favorite
+				if ($vendorsite_favorite == self::VENDORSITE_FAVORITE_YES && !is_null($propertyId) && is_null($vendor->vendor_id)) {
+					$this->updateFavorite($out_vendorsite_id, $propertyId);
+				}
+//				assign glaccounts
+				if ($glaccounts !== '') {
+					if (!$this->vendorsiteGateway->assignGlAccounts($glaccounts, $out_vendor_id)) {
+						throw new \NP\core\Exception("Cannot assign glaccounts");
+					}
+				}
+//				save address
+				$result = $this->saveAddress($data, $out_vendorsite_id);
+				if (!$result['success']) {
+					throw new \NP\core\Exception("Cannot save address");
+				}
+//				save phone and fax
+				$result = $this->savePhoneAndFax($data, $out_vendorsite_id);
+				if (!$result['success']) {
+					throw new \NP\core\Exception("Cannot save phone");
+				}
+//				save person and contact and contact phone
+				$result = $this->saveContact($data, $out_vendorsite_id, $aspClientId);
+				if (!$result['success']) {
+					throw new \NP\core\Exception("Cannot save contact");
+				}
+//				save email
+				$result = $this->saveEmailRecord($data, $out_vendorsite_id);
+				if (!$result['success']) {
+					throw new \NP\core\Exception("Cannot save email");
+				}
+//				save insurances
+				$insurances = json_decode($data['insurances']);
+				$savedInsurances = [];
+				if (count($insurances) > 0) {
+					if ($data['vendorsite_DaysNotice_InsuranceExpires'] > 0) {
+						$this->vendorsiteGateway->update(
+							['vendorsite_DaysNotice_InsuranceExpires' => $data['vendorsite_DaysNotice_InsuranceExpires']],
+							['vendor_id' => '?'],
+							[$out_vendor_id]
+						);
+					}
+					$insurance = $insurances[0];
 
-				if (is_array($insurance->insurancetype_id)) {
-					for ($index = 0; $index < count($insurance->insurancetype_id); $index++) {
-						$saveInsurance = [
-							'insurancetype_id'						=> $insurance->insurancetype_id[$index],
-							'insurance_company'						=> $insurance->insurance_company[$index],
-							'insurance_policynum'					=> $insurance->insurance_policynum[$index],
-							'insurance_policy_effective_datetm'		=> $insurance->insurance_policy_effective_datetm[$index],
-							'insurance_expdatetm'					=> $insurance->insurance_expdatetm[$index],
-							'insurance_policy_limit'					=> $insurance->insurance_policy_limit[$index],
-							'insurance_additional_insured_listed'	=> $insurance->insurance_additional_insured_listed[$index],
-							'insurance_id'							=> $insurance->insurance_id[$index],
-							'tablekey_id'							=> $out_vendor_id,
-							'table_name'								=> 'vendor'
-						];
+					if (is_array($insurance->insurancetype_id)) {
+						for ($index = 0; $index < count($insurance->insurancetype_id); $index++) {
+							$saveInsurance = [
+								'insurancetype_id'						=> $insurance->insurancetype_id[$index],
+								'insurance_company'						=> $insurance->insurance_company[$index],
+								'insurance_policynum'					=> $insurance->insurance_policynum[$index],
+								'insurance_policy_effective_datetm'		=> $insurance->insurance_policy_effective_datetm[$index],
+								'insurance_expdatetm'					=> $insurance->insurance_expdatetm[$index],
+								'insurance_policy_limit'					=> $insurance->insurance_policy_limit[$index],
+								'insurance_additional_insured_listed'	=> $insurance->insurance_additional_insured_listed[$index],
+								'insurance_id'							=> $insurance->insurance_id[$index],
+								'tablekey_id'							=> $out_vendor_id,
+								'table_name'								=> 'vendor'
+							];
 
-						$result = $this->saveInsurance(['insurance' => $saveInsurance], $out_vendor_id);
+							$result = $this->saveInsurance(['insurance' => $saveInsurance], $out_vendor_id);
 
+							if (!$result['success']) {
+								throw new \NP\core\Exception("Cannot save insurance");
+							}
+							$savedInsurances[] = $result['lastInsertInsuranceId'];
+
+						}
+					} else {
+						$insurance->tablekey_id = $out_vendor_id;
+						$insurance->table_name = 'vendor';
+						$result = $this->saveInsurance(['insurance' => (array)$insurance], $out_vendor_id);
 						if (!$result['success']) {
-							return $result;
+							throw new \NP\core\Exception("Cannot save insurance");
 						}
 						$savedInsurances[] = $result['lastInsertInsuranceId'];
+					}
 
-					}
-				} else {
-					$insurance->tablekey_id = $out_vendor_id;
-					$insurance->table_name = 'vendor';
-					$result = $this->saveInsurance(['insurance' => (array)$insurance], $out_vendor_id);
-					if (!$result['success']) {
-						return $result;
-					}
-					$savedInsurances[] = $result['lastInsertInsuranceId'];
+					$this->insuranceGateway->deleteInsuranceList($savedInsurances, 'vendor', $out_vendor_id);
+				}
+//				save recauthor
+				$this->vendorGateway->recauthorSave($data['userprofile_id'], 'vendor', $out_vendor_id);
+
+				$this->saveCustomFields($data['customFields'], $out_vendor_id, $data['userprofile_id']);
+
+				if ($data['action'] && $data['action'] == 'approve') {
+					$compare_date = [
+						'phone_number'		=> is_null($data['vendorsite_phone']['phone_number']) ? '' : $data['vendorsite_phone']['phone_number'],
+						'fax'				=> is_null($data['vendorsite_fax_phone']['phone_number']) ? '' : $data['vendorsite_fax_phone']['phone_number'],
+						'address_line1'		=> is_null($data['address']['address_line1']) ? '' : $data['address']['address_line1'],
+						'address_line2'		=> is_null($data['address']['address_line2']) ? '' : $data['address']['address_line2'],
+						'address_city'		=> is_null($data['address']['address_city']) ? '' : $data['address']['address_city'],
+						'address_state'		=> is_null($data['address']['address_state']) ? '' : $data['address']['address_state'],
+						'address_zip'		=> is_null($data['address']['address_zip']) ? '' : $data['address']['address_zip'],
+						'address_zipext'		=> is_null($data['address']['address_zipext']) ? '' : $data['address']['address_zipext'],
+						'address_country'		=> is_null($data['address']['address_country']) ? '' : $data['address']['address_country'],
+						'person_firstname'		=> is_null($data['person']['person_firstname']) ? '' : $data['person']['person_firstname'],
+						'person_lastname'		=> is_null($data['person']['person_lastname']) ? '' : $data['person']['person_lastname'],
+						'phone_number'		=> is_null($data['attention_phone']['phone_number']) ? '' : $data['attention_phone']['phone_number']
+					];
+					$vendorsite_transfer_compare = $this->vendorGateway->transferCompareVendor($data['vendor']['vendor_id'], null, $compare_date);
+					$vendor_transfer_compare = $this->vendorGateway->transferCompareVendor($out_vendor_id, $approval_tracking_id);
+					$status = (!$vendor_transfer_compare && !$vendorsite_transfer_compare) ? 'active' : $this->configService->get('PN.VendorOptions.OnApprovalStatus');
+
+					$this->vendorApprove($aspClientId, $out_vendor_id, $approval_tracking_id, $status, $out_vendorsite_id);
 				}
 
-				$this->insuranceGateway->deleteInsuranceList($savedInsurances, 'vendor', $out_vendor_id);
-			}
+				if ($data['action'] && ($data['action'] == 'inactive' || $data['action'] == 'active')) {
+					$this->vendorActive($out_vendor_id, $out_vendorsite_id, $userprofileId, $data['action']);
+				}
 
-//			save recauthor
-			$this->vendorGateway->recauthorSave($data['userprofile_id'], 'vendor', $out_vendor_id);
-
-			$this->saveCustomFields($data['customFields'], $out_vendor_id, $data['userprofile_id']);
-
-			if ($data['action'] && $data['action'] == 'approve') {
-				$compare_date = [
-					'phone_number'		=> is_null($data['vendorsite_phone']['phone_number']) ? '' : $data['vendorsite_phone']['phone_number'],
-					'fax'				=> is_null($data['vendorsite_fax_phone']['phone_number']) ? '' : $data['vendorsite_fax_phone']['phone_number'],
-					'address_line1'		=> is_null($data['address']['address_line1']) ? '' : $data['address']['address_line1'],
-					'address_line2'		=> is_null($data['address']['address_line2']) ? '' : $data['address']['address_line2'],
-					'address_city'		=> is_null($data['address']['address_city']) ? '' : $data['address']['address_city'],
-					'address_state'		=> is_null($data['address']['address_state']) ? '' : $data['address']['address_state'],
-					'address_zip'		=> is_null($data['address']['address_zip']) ? '' : $data['address']['address_zip'],
-					'address_zipext'		=> is_null($data['address']['address_zipext']) ? '' : $data['address']['address_zipext'],
-					'address_country'		=> is_null($data['address']['address_country']) ? '' : $data['address']['address_country'],
-					'person_firstname'		=> is_null($data['person']['person_firstname']) ? '' : $data['person']['person_firstname'],
-					'person_lastname'		=> is_null($data['person']['person_lastname']) ? '' : $data['person']['person_lastname'],
-					'phone_number'		=> is_null($data['attention_phone']['phone_number']) ? '' : $data['attention_phone']['phone_number']
-				];
-				$vendorsite_transfer_compare = $this->vendorGateway->transferCompareVendor($data['vendor']['vendor_id'], null, $compare_date);
-				$vendor_transfer_compare = $this->vendorGateway->transferCompareVendor($out_vendor_id, $approval_tracking_id);
-				$status = (!$vendor_transfer_compare && !$vendorsite_transfer_compare) ? 'active' : $this->configService->get('PN.VendorOptions.OnApprovalStatus');
-
-				$this->vendorApprove($aspClientId, $out_vendor_id, $approval_tracking_id, $status, $out_vendorsite_id);
-			}
-
-			if ($data['action'] && ($data['action'] == 'inactive' || $data['action'] == 'active')) {
-				$this->vendorActive($out_vendor_id, $out_vendorsite_id, $userprofileId, $data['action']);
+				$this->vendorGateway->commit();
+			} catch (\Exception $e) {
+				$this->vendorGateway->rollback();
+				$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
 			}
 		}
 
 		return [
-			'success'		=> true
+			'success'			=> (count($errors)) ? false : true,
+			'errors'			=> $errors
 		];
 	}
 
@@ -481,8 +479,8 @@ class VendorService extends AbstractService {
 		}
 
 		return [
-			'success'    			=> (count($errors)) ? false : true,
-			'errors'					=> $errors,
+			'success'    		=> (count($errors)) ? false : true,
+			'errors'			=> $errors,
 			'lastInsertId'		=> $address_id
 		];
 
