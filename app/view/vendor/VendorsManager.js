@@ -30,7 +30,8 @@ Ext.define('NP.view.vendor.VendorsManager', {
 		this.title = this.titleText;
 
 		var bar = [
-			{ xtype: 'shared.button.new',
+			{
+				xtype: 'shared.button.new',
 				text: this.createNewVendorBtnLabel
 			}
 		];
