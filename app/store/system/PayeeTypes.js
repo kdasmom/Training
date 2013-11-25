@@ -14,6 +14,6 @@ Ext.define('NP.store.system.PayeeTypes', {
     service: 'ConfigService',
     action: 'getLookupCodes',
     extraParams: {
-        lookupcode_type: 'payeetype'
+        lookupcode_type: 'PAYEETYPE'
     }
 });

@@ -14,6 +14,6 @@ Ext.define('NP.store.system.TaxPayorTypes', {
     service: 'ConfigService',
     action: 'getLookupCodes',
     extraParams: {
-        lookupcode_type: 'taxpayortype'
+        lookupcode_type: 'TAXPAYORTYPE'
     }
 });
