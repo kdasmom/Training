@@ -1012,17 +1012,6 @@ Ext.define('NP.controller.VendorManager', {
 		return bar;
 	},
 
-	/**
-	 * Show upload form widget
-	 */
-	showUploadImageForm: function() {
-		var win = Ext.create('NP.view.vendor.VendorImageUploadForm').show();
-	},
-
-	showInsuranceUploadForm: function() {
-		var win = Ext.create('NP.view.vendor.InsuranceUploadForm').show();
-	},
-
 	showRejectForm: function(vendor_id) {
 		var win = Ext.create('NP.view.vendor.VendorRejectWindow', {vendor_id: vendor_id}).show();
 	},
