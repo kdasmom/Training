@@ -273,7 +273,7 @@ class VendorGateway extends AbstractGateway {
 	 * @param $aspClientId
 	 * @return null
 	 */
-	protected function checkVendorName($useVendorName, $vendorName, $approvalTrackingId, $integrationPackageId, $aspClientId) {
+	public function checkVendorName($useVendorName, $vendorName, $approvalTrackingId, $integrationPackageId, $aspClientId) {
 		$select = new Select();
 
 		if ($useVendorName) {
@@ -301,7 +301,7 @@ class VendorGateway extends AbstractGateway {
 	 * @param $aspClientId
 	 * @return array
 	 */
-	protected function checkByVendorFedId($useVendorFedId, $vendorFedId, $approvalTrackingId, $integrationPackageId, $aspClientId) {
+	public function checkByVendorFedId($useVendorFedId, $vendorFedId, $approvalTrackingId, $integrationPackageId, $aspClientId) {
 		$vendorId = null;
 		$vendorName = '';
 
@@ -339,21 +339,24 @@ class VendorGateway extends AbstractGateway {
 	 * @param $aspClientId
 	 * @return array
 	 */
-	public  function  checkByVendorAlt($useVendorIdAlt, $vendorIdAlt, $approvalTrackingId, $integrationPackageId, $aspClientId) {
+	public function checkByVendorAlt($useVendorIdAlt, $vendorIdAlt, $approvalTrackingId, $integrationPackageId, $aspClientId) {
 		$vendorId = null;
 		$vendorName = '';
 		$checkStatus = 'OK';
-
 		if ($useVendorIdAlt == 1) {
 			$select = new Select();
 
 			$select->from(['v' => 'vendor'])
 				->columns(['vendor_id', 'vendor_name'])
 				->join(['i' => 'integrationpackage'], 'i.integration_package_id = v.integration_package_id', [])
-				->where(new sql\criteria\VendorExistsCriteria())
+				->where(new sql\criteria\VendorExistsCriteria($approvalTrackingId))
 				->whereEquals('rtrim(v.vendor_id_alt)', 'rtrim(?)');
 
-			$result = $this->adapter->query($select, [$approvalTrackingId, 'rejected', $integrationPackageId, $aspClientId, $vendorIdAlt]);
+			if (!$approvalTrackingId) {
+				$result = $this->adapter->query($select, ['rejected', $integrationPackageId, $aspClientId, $vendorIdAlt]);
+			} else {
+				$result = $this->adapter->query($select, [$approvalTrackingId, 'rejected', $integrationPackageId, $aspClientId, $vendorIdAlt]);
+			}
 
 			$vendorId = count($result) > 1 ? $result[0]['vendor_id'] : null;
 			$vendorName = count($result) > 1 ? $result[0]['vendor_name'] : '';

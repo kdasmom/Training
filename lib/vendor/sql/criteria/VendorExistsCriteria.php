@@ -12,12 +12,19 @@ namespace NP\vendor\sql\criteria;
 use NP\core\db\Where;
 
 class VendorExistsCriteria extends Where {
-		public function __construct($fromalias = 'v', $toalias = 'i') {
+		public function __construct($approvalTrackingId = null, $fromalias = 'v', $toalias = 'i') {
 			parent::__construct();
 
-			return $this->notEquals($fromalias . '.approval_tracking_id', '?')
-								->notEquals($fromalias . '.vendor_status', '?')
-								->equals($fromalias . '.Integration_Package_id', "?")
-								->equals($toalias . '.asp_client_id', '?');
+			if ($approvalTrackingId) {
+				return $this->notEquals($fromalias . '.approval_tracking_id', '?')
+							->notEquals($fromalias . '.vendor_status', '?')
+							->equals($fromalias . '.Integration_Package_id', "?")
+							->equals($toalias . '.asp_client_id', '?');
+			} else {
+				return $this->isNotNull($fromalias . '.approval_tracking_id')
+						->notEquals($fromalias . '.vendor_status', '?')
+						->equals($fromalias . '.Integration_Package_id', "?")
+						->equals($toalias . '.asp_client_id', '?');
+			}
 		}
 } 

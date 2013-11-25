@@ -14,10 +14,14 @@ use NP\core\db\Adapter;
 use NP\core\validation\EntityValidator;
 use NP\locale\LocalizationService;
 use NP\system\ConfigService;
+use NP\vendor\VendorGateway;
 
 class VendorEntityValidator extends EntityValidator{
-
-	protected $localizationService, $vendorGateway, $configService;
+	const VALIDATE_CHECK_STATUS_OK = 'OK';
+	const VALIDATE_CHECK_STATUS_NAME = 'name';
+	const VALIDATE_CHECK_STATUS_TAX_ID = 'taxid';
+	const VALIDATE_CHECK_STATUS_ID_ALT = 'idalt';
+	protected $localizationService, $vendorGateway, $configService, $adapter;
 
 	public function __construct(LocalizationService $localizationService, Adapter $adapter, VendorGateway $vendorGateway, ConfigService $configService) {
 		parent::__construct($localizationService, $adapter);
@@ -25,6 +29,7 @@ class VendorEntityValidator extends EntityValidator{
 		$this->localizationService = $localizationService;
 		$this->vendorGateway = $vendorGateway;
 		$this->configService = $configService;
+		$this->adapter = $adapter;
 	}
 
 	public function validate(AbstractEntity $entity) {
@@ -73,22 +78,18 @@ class VendorEntityValidator extends EntityValidator{
 			}
 		}
 
-		if ($check_status !== VendorService::VALIDATE_CHECK_STATUS_OK) {
-			if ($check_status == VendorService::VALIDATE_CHECK_STATUS_ID_ALT) {
+		if ($check_status !== self::VALIDATE_CHECK_STATUS_OK) {
+			if ($check_status == self::VALIDATE_CHECK_STATUS_ID_ALT) {
 				$this->addError($errors, 'vendor_id_alt', 'The vendor ' . $entity->vendor_name . '  already uses this Vendor Id. Please update that vendor or select a different Vendor ID.');
 			}
-			if ($check_status == VendorService::VALIDATE_CHECK_STATUS_NAME) {
+			if ($check_status == self::VALIDATE_CHECK_STATUS_NAME) {
 				$this->addError($errors, 'vendor_name', 'A vendor with this name already exists.');
 			}
-			if ($check_status == VendorService::VALIDATE_CHECK_STATUS_TAX_ID) {
+			if ($check_status == self::VALIDATE_CHECK_STATUS_TAX_ID) {
 				$this->addError($errors, 'vendor_name', 'A vendor with this name already exists.');
 			}
 		}
 
-		return [
-			'vendor_id'			=> $vendor_id,
-			'vendor_name'		=> $vendor_name,
-			'check_status'		=> $check_status
-		];
+		return $errors;
 	}
 } 
