@@ -245,53 +245,7 @@ class VendorService extends AbstractService {
 					throw new \NP\core\Exception("Cannot save email");
 				}
 //				save insurances
-				$insurances = json_decode($data['insurances']);
-				$savedInsurances = [];
-				if (count($insurances) > 0) {
-					if ($data['vendorsite_DaysNotice_InsuranceExpires'] > 0) {
-						$this->vendorsiteGateway->update(
-							['vendorsite_DaysNotice_InsuranceExpires' => $data['vendorsite_DaysNotice_InsuranceExpires']],
-							['vendor_id' => '?'],
-							[$out_vendor_id]
-						);
-					}
-					$insurance = $insurances[0];
-
-					if (is_array($insurance->insurancetype_id)) {
-						for ($index = 0; $index < count($insurance->insurancetype_id); $index++) {
-							$saveInsurance = [
-								'insurancetype_id'						=> $insurance->insurancetype_id[$index],
-								'insurance_company'						=> $insurance->insurance_company[$index],
-								'insurance_policynum'					=> $insurance->insurance_policynum[$index],
-								'insurance_policy_effective_datetm'		=> $insurance->insurance_policy_effective_datetm[$index],
-								'insurance_expdatetm'					=> $insurance->insurance_expdatetm[$index],
-								'insurance_policy_limit'					=> $insurance->insurance_policy_limit[$index],
-								'insurance_additional_insured_listed'	=> $insurance->insurance_additional_insured_listed[$index],
-								'insurance_id'							=> $insurance->insurance_id[$index],
-								'tablekey_id'							=> $out_vendor_id,
-								'table_name'								=> 'vendor'
-							];
-
-							$result = $this->saveInsurance(['insurance' => $saveInsurance], $out_vendor_id);
-
-							if (!$result['success']) {
-								throw new \NP\core\Exception("Cannot save insurance");
-							}
-							$savedInsurances[] = $result['lastInsertInsuranceId'];
-
-						}
-					} else {
-						$insurance->tablekey_id = $out_vendor_id;
-						$insurance->table_name = 'vendor';
-						$result = $this->saveInsurance(['insurance' => (array)$insurance], $out_vendor_id);
-						if (!$result['success']) {
-							throw new \NP\core\Exception("Cannot save insurance");
-						}
-						$savedInsurances[] = $result['lastInsertInsuranceId'];
-					}
-
-					$this->insuranceGateway->deleteInsuranceList($savedInsurances, 'vendor', $out_vendor_id);
-				}
+				$this->saveInsurances($out_vendor_id, $data['insurances'], $data['vendorsite_DaysNotice_InsuranceExpires']);
 //				save recauthor
 				$this->vendorGateway->recauthorSave($data['userprofile_id'], 'vendor', $out_vendor_id);
 
@@ -1677,6 +1631,12 @@ class VendorService extends AbstractService {
 		return true;
 	}
 
+	/**
+	 * Retrieve images list
+	 *
+	 * @param null $vendor_id
+	 * @return array|bool
+	 */
 	public function findImages($vendor_id = null) {
 		if (!$vendor_id) {
 			return [];
@@ -1685,6 +1645,75 @@ class VendorService extends AbstractService {
 		$images = $this->imageIndexGateway->findEntityImages($vendor_id, 'Vendor');
 
 		return $images;
+	}
+
+	/**
+	 * Save insurances
+	 *
+	 * @param null $vendor_id
+	 * @param null $insurances
+	 * @param int $insuranceExpires
+	 * @return array
+	 * @throws \NP\core\Exception
+	 */
+	public function saveInsurances($vendor_id = null, $insurances = null, $insuranceExpires = 0) {
+		if ($vendor_id) {
+			$insurances = json_decode($insurances);
+			$savedInsurances = [];
+			if (count($insurances) > 0) {
+				if ($insuranceExpires > 0) {
+					$this->vendorsiteGateway->update(
+						['vendorsite_DaysNotice_InsuranceExpires' => $insuranceExpires],
+						['vendor_id' => '?'],
+						[$vendor_id]
+					);
+				}
+				$insurance = $insurances[0];
+
+				if (is_array($insurance->insurancetype_id)) {
+					for ($index = 0; $index < count($insurance->insurancetype_id); $index++) {
+						$saveInsurance = [
+							'insurancetype_id'						=> $insurance->insurancetype_id[$index],
+							'insurance_company'						=> $insurance->insurance_company[$index],
+							'insurance_policynum'					=> $insurance->insurance_policynum[$index],
+							'insurance_policy_effective_datetm'		=> $insurance->insurance_policy_effective_datetm[$index],
+							'insurance_expdatetm'					=> $insurance->insurance_expdatetm[$index],
+							'insurance_policy_limit'					=> $insurance->insurance_policy_limit[$index],
+							'insurance_additional_insured_listed'	=> $insurance->insurance_additional_insured_listed[$index],
+							'insurance_id'							=> $insurance->insurance_id[$index],
+							'tablekey_id'							=> $vendor_id,
+							'table_name'								=> 'vendor'
+						];
+
+						$result = $this->saveInsurance(['insurance' => $saveInsurance], $vendor_id);
+
+						if (!$result['success']) {
+							throw new \NP\core\Exception("Cannot save insurance");
+						}
+						$savedInsurances[] = $result['lastInsertInsuranceId'];
+
+					}
+				} else {
+					$insurance->tablekey_id = $vendor_id;
+					$insurance->table_name = 'vendor';
+					$result = $this->saveInsurance(['insurance' => (array)$insurance], $vendor_id);
+					if (!$result['success']) {
+						throw new \NP\core\Exception("Cannot save insurance");
+					}
+					$savedInsurances[] = $result['lastInsertInsuranceId'];
+				}
+			}
+
+			$this->insuranceGateway->deleteInsuranceList($savedInsurances, 'vendor', $vendor_id);
+
+			return [
+				'success'	=> true
+			];
+		}
+
+		return [
+			'success'	=> false
+		];
 	}
 
 }

@@ -199,6 +199,7 @@ Ext.define('NP.controller.VendorManager', {
 						});
 						formPanel.customFieldData = customFieldData;
 						var formCustom = formPanel.down('[xtype="vendor.vendorgeneralinfoandsettings"]');
+						var formInsurances = formPanel.down('[xtype="vendor.vendorinsurancesetup"]');
 						Ext.Array.each(customFieldData, function(fieldData) {
 							formCustom.add(
 								{
@@ -215,6 +216,9 @@ Ext.define('NP.controller.VendorManager', {
 						});
 						Ext.Array.each(customFieldData, function(field) {
 							form.findField(field['customfield_name']).setValue(parseInt(field['customfielddata_value']));
+						});
+						Ext.Array.each(data['insurances'], function(insurance) {
+							formInsurances.addInsurance(insurance, true);
 						});
 					}
 				}
@@ -437,7 +441,7 @@ Ext.define('NP.controller.VendorManager', {
 								{
 									xtype: 'shared.button.approve',
 									handler: function() {
-										that.saveVendor('approve');
+										that.saveInsurances();
 									}
 								}
 							);
@@ -784,9 +788,9 @@ Ext.define('NP.controller.VendorManager', {
 						if (tabName == 'insurances') {
 							bar.push(
 								{
-									xtype: 'shared.button.approve',
+									xtype: 'shared.button.save',
 									handler: function() {
-										that.saveVendor('approve');
+										that.saveInsurances();
 									}
 								}
 							);
@@ -1083,5 +1087,57 @@ Ext.define('NP.controller.VendorManager', {
 
 	showAddImageWindow: function(vendor_id) {
 		var win = Ext.create('NP.view.vendor.AddImagesWindow', {vendor_id: vendor_id}).show();
+	},
+
+	saveInsurances: function() {
+
+		var that = this;
+		var form = this.getCmp('vendor.vendorform');
+		var values = form.getValues();
+		var insurance = [];
+
+		if (values.insurancetype_id && typeof (values.insurancetype_id) !== 'Array') {
+			insurance.push({
+				insurancetype_id: values.insurancetype_id,
+				insurance_company: values.insurance_company,
+				insurance_policynum: values.insurance_policynum,
+				insurance_policy_effective_datetm: values.insurance_policy_effective_datetm,
+				insurance_expdatetm: values.insurance_expdatetm,
+				insurance_policy_limit: values.insurance_policy_limit,
+				insurance_additional_insured_listed: values.insurance_additional_insured_listed,
+				insurance_id: values.insurance_id
+			});
+		} else {
+			if (values.insurancetype_id && values.insurancetype_id.length > 1) {
+				for (var index = 0; index < values.insurancetype_id.length; index++) {
+					insurance.push({
+						insurancetype_id: values.insurancetype_id[index],
+						insurance_company: values.insurance_company[index],
+						insurance_policynum: values.insurance_policynum[index],
+						insurance_policy_effective_datetm: values.insurance_policy_effective_datetm[index],
+						insurance_expdatetm: values.insurance_expdatetm[index],
+						insurance_policy_limit: values.insurance_policy_limit[index],
+						insurance_additional_insured_listed: values.insurance_additional_insured_listed[index],
+						insurance_id: values.insurance_id[index]
+					});
+				}
+			}
+		}
+
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service: 'VendorService',
+				action : 'saveInsurances',
+				vendor_id: that.vendor_id,
+				insurances: JSON.stringify(insurance),
+				insuranceExpires: values['vendorsite_DaysNotice_InsuranceExpires'],
+				success: function(result, deferred) {
+					if (result.success) {
+						NP.Util.showFadingWindow({ html: that.saveSuccessText });
+						that.application.addHistory('VendorManager:showVendorManager');
+					}
+				}
+			}
+		});
 	}
 });

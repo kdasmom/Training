@@ -115,9 +115,14 @@ class InsuranceGateway extends AbstractGateway {
 	 */
 	public function deleteInsuranceList($list, $table_name, $table_key) {
 		$delete = new Delete();
-		$where = Where::get()->notIn('insurance_id', implode(',', $list))
-							->equals('tablekey_id', '?')
-							->equals('table_name', '?');
+		if (count($list) > 0) {
+			$where = Where::get()->notIn('insurance_id', implode(',', $list))
+				->equals('tablekey_id', '?')
+				->equals('table_name', '?');
+		} else {
+			$where = Where::get()->equals('tablekey_id', '?')
+								->equals('table_name', '?');
+		}
 
 		$delete->from('insurance')
 				->where($where);

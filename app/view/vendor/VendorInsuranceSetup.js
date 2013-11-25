@@ -58,7 +58,7 @@ Ext.define('NP.view.vendor.VendorInsuranceSetup', {
 		this.callParent(arguments);
 	},
 
-    addInsurance: function (model) {
+    addInsurance: function (model, isEdit) {
         var that = this;
 
 		var insConf ={
@@ -72,7 +72,11 @@ Ext.define('NP.view.vendor.VendorInsuranceSetup', {
 
 		if (model) {
 			insForm.setModel('vendor.Insurance', Ext.create('NP.model.vendor.Insurance', model));
-			this.items.push(insForm);
+			if (!isEdit) {
+				this.items.push(insForm);
+			} else {
+				this.add(insForm);
+			}
 		} else {
 			this.add(insForm);
 		}
