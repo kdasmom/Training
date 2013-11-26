@@ -54,6 +54,7 @@ Ext.define('NP.view.vendor.InsuranceForm', {
                         padding: '0 0 0 5',
                         labelWidth: 80,
                         displayField: 'insurancetype_name',
+						labelAlign: 'top',
                         valueField: 'insurancetype_id',
                         store: Ext.create('NP.store.vendor.InsuranceTypes', {
                                 service         : 'InsuranceService',
@@ -67,6 +68,7 @@ Ext.define('NP.view.vendor.InsuranceForm', {
                         fieldLabel: this.companyInputLabelText,
                         name: 'insurance_company',
                         padding: '0 0 0 5',
+						labelAlign: 'top',
                         labelWidth: 80,
 						value: this.modelData ? this.modelData['insurance_company'] : ''
                     },
@@ -75,6 +77,7 @@ Ext.define('NP.view.vendor.InsuranceForm', {
                         fieldLabel: this.policyNumberInputLabelText,
                         name: 'insurance_policynum',
                         padding: '0 0 0 5',
+						labelAlign: 'top',
                         labelWidth: 80,
 						value: this.modelData ? this.modelData['insurance_policynum'] : ''
                     },
@@ -84,6 +87,7 @@ Ext.define('NP.view.vendor.InsuranceForm', {
                         name: 'insurance_policy_effective_datetm',
                         padding: '0 0 0 5',
                         labelWidth: 80,
+						labelAlign: 'top',
 						value: this.modelData ? Ext.Date.format(new Date(this.modelData['insurance_policy_effective_datetm']), 'm/d/Y') : ''
                     },
                     {
@@ -92,6 +96,7 @@ Ext.define('NP.view.vendor.InsuranceForm', {
                         name: 'insurance_expdatetm',
                         padding: '0 0 0 5',
                         labelWidth: 80,
+						labelAlign: 'top',
 						value: this.modelData ? Ext.Date.format(new Date(this.modelData['insurance_expdatetm']), 'm/d/Y') : ''
                     },
                     {
@@ -100,6 +105,7 @@ Ext.define('NP.view.vendor.InsuranceForm', {
                         name: 'insurance_policy_limit',
                         padding: '0 0 0 5',
                         labelWidth: 80,
+						labelAlign: 'top',
 						value: this.modelData ? this.modelData['insurance_policy_limit'] : ''
                     },
                     {
@@ -108,6 +114,7 @@ Ext.define('NP.view.vendor.InsuranceForm', {
                         name: 'insurance_additional_insured_listed',
                         padding: '0 0 0 5',
                         labelWidth: 80,
+						labelAlign: 'top',
 						value: this.modelData ? this.modelData['insurance_additional_insured_listed'] : ''
                     },
                     {
@@ -118,7 +125,7 @@ Ext.define('NP.view.vendor.InsuranceForm', {
                     {
                         xtype: 'shared.button.delete',
                         hidden: this.modelData || that.startIndex > 0 ? false : true,
-                        margin: '3 0 0 15',
+                        margin: '17 0 0 15',
                         handler: function() {
                             that.destroy();
                         }
