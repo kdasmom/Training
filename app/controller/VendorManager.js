@@ -157,6 +157,11 @@ Ext.define('NP.controller.VendorManager', {
 
 		var that = this;
 
+		var insurancesForm = that.getCmp('vendor.vendorinsurancesetup');
+		if (insurancesForm) {
+			insurancesForm.down('fieldcontainer').removeAll();
+		}
+
 		var viewCfg = {
             bind: {
                 models: [
@@ -217,6 +222,7 @@ Ext.define('NP.controller.VendorManager', {
 						Ext.Array.each(customFieldData, function(field) {
 							form.findField(field['customfield_name']).setValue(parseInt(field['customfielddata_value']));
 						});
+
 						Ext.Array.each(data['insurances'], function(insurance) {
 							formInsurances.addInsurance(insurance, true);
 						});
@@ -300,6 +306,7 @@ Ext.define('NP.controller.VendorManager', {
                 }
             }
         }
+
 		var customFields = {};
 		Ext.Array.each(form.customFieldData, function(fieldData) {
 			customFields[fieldData['customfield_name']] = form.findField(fieldData['customfield_name']).getValue();

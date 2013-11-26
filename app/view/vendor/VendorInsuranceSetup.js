@@ -20,12 +20,15 @@ Ext.define('NP.view.vendor.VendorInsuranceSetup', {
     addInsuranceBtnText: 'Add',
     daysNoticeLabelText: 'How many days notice prior to expiration for Expired Insurance Certificates Warning?',
 	overflowX: 'scroll',
+	insurances: [],
 
 	// Custom options
 
     startIndex: 0,
 
 	initComponent: function() {
+
+		console.log('init insurances');
 		var that = this;
 
 		this.defaults = {
@@ -47,9 +50,12 @@ Ext.define('NP.view.vendor.VendorInsuranceSetup', {
                 labelWidth: 546,
                 width: 680,
                 value: 0
-            }
+            },
+			{
+				xtype: 'fieldcontainer',
+				name: 'test'
+			}
         ];
-
 
 		Ext.Array.each(this.insurances, function(insurance) {
 			that.addInsurance(insurance);
@@ -60,6 +66,8 @@ Ext.define('NP.view.vendor.VendorInsuranceSetup', {
 
     addInsurance: function (model, isEdit) {
         var that = this;
+
+		var container = this.down('fieldcontainer');
 
 		var insConf ={
 			bind: {
@@ -73,12 +81,12 @@ Ext.define('NP.view.vendor.VendorInsuranceSetup', {
 		if (model) {
 			insForm.setModel('vendor.Insurance', Ext.create('NP.model.vendor.Insurance', model));
 			if (!isEdit) {
-				this.items.push(insForm);
+				container.items.push(insForm);
 			} else {
-				this.add(insForm);
+				container.add(insForm);
 			}
 		} else {
-			this.add(insForm);
+			container.add(insForm);
 		}
 
         this.startIndex++;
