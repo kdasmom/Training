@@ -46,7 +46,7 @@ Ext.define('NP.controller.VendorManager', {
 				tabchange: function(tabPanel, newCard, oldCard, eOpts) {
 					var activeTab = newCard.getItemId();
 					var that = this;
-					this.showFormTab(activeTab, false, false, this.renderTabBar);
+					this.showFormTab(activeTab, false, false, false, this.renderTabBar);
 				}
 			},
 //			add new vendor click button handler
@@ -74,7 +74,7 @@ Ext.define('NP.controller.VendorManager', {
 					if (e.target.tagName == 'IMG') {
 						var el = Ext.get(e.target);
 						if (el.hasCls('view-vendor')) {
-							this.addHistory('VendorManager:showVendorForm:' + rec.get('vendor_id') + ':' + rec.get('vendor_status'));
+							this.addHistory('VendorManager:showVendorForm:' + rec.get('vendor_id') + ':' + rec.get('vendor_status') + ':' + true);
 						} else{
 							var op = 'add';
 							if (el.hasCls('favorite-remove')) {
@@ -150,7 +150,7 @@ Ext.define('NP.controller.VendorManager', {
 	 * Load vendor's form
 	 * @param int vendor_id Vendor id to edit
 	 */
-	showVendorForm: function(vendor_id, status) {
+	showVendorForm: function(vendor_id, status, search) {
 		var insurances = [];
 		this.vendor_id = !vendor_id ? false : vendor_id;
 		this.vendor_status = !status ? false : status;
@@ -223,7 +223,7 @@ Ext.define('NP.controller.VendorManager', {
 					}
 				}
 			});
-			var form = that.setVendorView(viewCfg, vendor_id);
+			var form = that.setVendorView(viewCfg, vendor_id, search);
         } else {
 			NP.lib.core.Net.remoteCall({
 				requests: {
@@ -251,15 +251,14 @@ Ext.define('NP.controller.VendorManager', {
 	 * @param vendor_id
 	 * @returns {*}
 	 */
-	setVendorView: function(config, vendor_id) {
+	setVendorView: function(config, vendor_id, search) {
 		var that = this;
 		var form = this.setView('NP.view.vendor.VendorForm', config);
 		if (!vendor_id) {
 			form.getForm().reset();
 		}
 
-//		this.showFormTab('baseinformation', vendor_id ? true : false, null, null, vendor_id);
-		this.showFormTab('baseinformation', vendor_id ? true : false, false, this.renderTabBar);
+		this.showFormTab('baseinformation', vendor_id ? true : false, false, search, this.renderTabBar);
 
 		return form;
 	},
@@ -661,7 +660,7 @@ Ext.define('NP.controller.VendorManager', {
 		}
 	},
 
-	showFormTab: function(itemId, isReject, insurance, callback) {
+	showFormTab: function(itemId, isReject, insurance, isSearch, callback) {
 		callback = callback || Ext.emptyFn;
 
 		var that = this;
@@ -679,7 +678,7 @@ Ext.define('NP.controller.VendorManager', {
 					var tbar = form.getDockedItems()[1];
 					var submit_userprofile_id = form.findField('submit_userprofile_id').getValue();
 
-					var bar = callback(appCount, itemId, isReject, insurance, that.vendor_status, that.vendor_id, !that.vendor_id ? false : true, submit_userprofile_id, that);
+					var bar = callback(appCount, itemId, isReject, insurance, that.vendor_status, that.vendor_id, !that.vendor_id ? false : true, submit_userprofile_id, isSearch, that);
 
 					tbar.removeAll();
 					tbar.add(bar);
@@ -702,7 +701,7 @@ Ext.define('NP.controller.VendorManager', {
 	 * @param parent
 	 * @returns {Array}
 	 */
-	renderTabBar: function(appCount, tabName, isReject, insurance, vendor_status, vendor_id, opened, submit_userprofile_id, parent) {
+	renderTabBar: function(appCount, tabName, isReject, insurance, vendor_status, vendor_id, opened, submit_userprofile_id, search, parent) {
 		var that = parent;
 
 		var bar = [
@@ -713,6 +712,17 @@ Ext.define('NP.controller.VendorManager', {
 				}
 			}
 		];
+		if (search) {
+			bar.push(
+				{
+					xtype: 'shared.button.back',
+					text: NP.Translator.translate('Search results'),
+					handler: function() {
+						that.addHistory('VendorManager:showVendorSearchForm');
+					}
+				}
+			);
+		}
 
 		if (!opened) {
 			if (isReject){
