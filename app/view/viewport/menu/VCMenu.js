@@ -15,7 +15,10 @@ Ext.define('NP.view.viewport.menu.VCMenu', {
 			showSeparator: false,
 			items: [
 				// Vendor Catalog Listings
-				{ text: NP.Translator.translate('Vendor Catalog Listings') },
+				{
+					text: NP.Translator.translate('Vendor Catalog Listings'),
+					itemId: 'vendorCatalogListing'
+				},
 				// Open Orders
 				{ text: NP.Translator.translate('Open Orders') },
 				// Favorite Items

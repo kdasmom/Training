@@ -199,6 +199,12 @@ Ext.define('NP.controller.Viewport', {
 						openInvoice(rec.get('invoice_id'));
 					}
                 }
+			},
+
+			'#vendorCatalogListing' : {
+				click: function() {
+					this.addHistory('VendorCatalog:showVendorCatalogListing');
+				}
 			}
 		});
 	},
