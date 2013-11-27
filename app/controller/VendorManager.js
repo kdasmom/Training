@@ -262,12 +262,21 @@ Ext.define('NP.controller.VendorManager', {
 		var form = this.setView('NP.view.vendor.VendorForm', config);
 		if (!vendor_id) {
 			form.getForm().reset();
+			form.resetModels();
+			form.getForm().findField('vendor_customernum').hide();
+			form.getForm().findField('vendor_active_startdate').hide();
+			form.getForm().findField('vendor_active_enddate').hide();
+			form.getForm().findField('default_glaccount_id').hide();
+			form.getForm().findField('default_paymenttype_id').hide();
+			form.getForm().findField('default_due_datetm').hide();
 		}
 
 		this.showFormTab('baseinformation', vendor_id ? true : false, false, search, this.renderTabBar);
 
 		return form;
 	},
+
+
 
     /**
      * save vendor

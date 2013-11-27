@@ -419,5 +419,24 @@ Ext.define('NP.lib.ui.BoundForm', {
 
 	getLoadedData: function() {
 		return this.loadedData;
+	},
+
+	/**
+	 * Reset models fields to the null values
+	 *
+	 */
+	resetModels: function() {
+		var that = this;
+
+		Ext.each(that.bind.models, function(model, idx) {
+			// If model is not an object (just a string), make it an object for consistency
+			if ((model instanceof Object) == false) {
+				model = { classPath: model, prefix: '' };
+				that.bind.models[idx] = model;
+			}
+			// Create an empty model
+			that.bind.models[idx].instance = Ext.create('NP.model.' + model.classPath);
+			that.bind.modelPointer[model.classPath] = idx;
+		});
 	}
 });
