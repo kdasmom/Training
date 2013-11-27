@@ -17,10 +17,16 @@ Ext.define('NP.view.catalog.JumpToCatalogForm', {
 		this.items = [
 			{
 				xtype: 'customcombo',
-				name: 'catalog',
+				name: 'vccat_id',
 				labelWidth: 120,
+				displayField: 'vc_catalogname',
+				valueField: 'vc_id',
 				fieldLabel: NP.Translator.translate('Jump to Catalog'),
-				store: [],
+				store: Ext.create('NP.store.catalog.Vc', {
+					service: 'CatalogService',
+					action: 'getCatalogs',
+					autoLoad: true
+				}),
 				queryMode: 'local',
 				editable: false,
 				typeAhead: false,

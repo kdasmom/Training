@@ -3,6 +3,7 @@
 namespace NP\catalog;
 
 use NP\core\AbstractGateway;
+use NP\core\db\Select;
 
 /**
  * Gateway for the VC table
@@ -43,6 +44,28 @@ class VcGateway extends AbstractGateway {
 		}
 	}
 
+	/**
+	 * Retrieve catalog list
+	 *
+	 * @param $catalog_type
+	 * @return array|bool
+	 */
+	public function getCatalogs($catalog_type) {
+		$select = new Select();
+
+		$where = [];
+		$params = [];
+
+		if ($catalog_type) {
+			$where['vc_catalogtype'] = '?';
+			$params[] = $catalog_type;
+		}
+		$select->from('vc')
+				->where($where)
+				->order(['vc_catalogname']);
+
+		return $this->adapter->query($select, $params);
+	}
 }
 
 ?>

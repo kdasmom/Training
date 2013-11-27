@@ -8,19 +8,37 @@ Ext.define('NP.view.catalog.SearchForm', {
 	extend: 'Ext.container.Container',
 	alias: 'widget.catalog.searchform',
 
-	requires: [],
+	requires: [
+		'NP.lib.core.Translator'
+	],
+
 	layout: 'hbox',
 
 	initComponent: function() {
 		var that = this;
 
+		var searchOptions = [
+			{
+
+			}
+		];
+
 		this.items = [
 			{
 				xtype: 'customcombo',
-				name: 'catalog_name',
+				name: 'vccat_id',
 				labelWidth: 60,
+				displayField: 'vc_catalogname',
+				valueField: 'vc_id',
 				fieldLabel: NP.Translator.translate('Search'),
-				store: [],
+				store: Ext.create('NP.store.catalog.Vc', {
+					service: 'CatalogService',
+					action: 'getCatalogs',
+					extraParams: {
+						catalogType: 'excel'
+					},
+					autoLoad: true
+				}),
 				queryMode: 'local',
 				editable: false,
 				typeAhead: false,
@@ -31,20 +49,36 @@ Ext.define('NP.view.catalog.SearchForm', {
 				name: 'item_name',
 				fieldLabel: NP.Translator.translate('by'),
 				labelWidth: 20,
-				store: [],
 				queryMode: 'local',
 				editable: false,
 				typeAhead: false,
-				margin: '0 0 0 5'
+				margin: '0 0 0 5',
+				valueField: 'value',
+				displayField: 'display',
+				store: Ext.create('Ext.data.ArrayStore', {
+					fields: ['value', 'display'],
+					autoLoad : true,
+					data: [
+						["any", NP.Translator.translate('Any')],
+						["category", NP.Translator.translate('Category')],
+						["itemType", NP.Translator.translate('Item Type')],
+						["vcitem_number", NP.Translator.translate('Item Number')],
+						["vcitem_desc", NP.Translator.translate('Item Description')],
+						["brand", NP.Translator.translate('Brand')],
+						["upc", NP.Translator.translate('UPC Code')]
+					]
+				})
 			},
 			{
-				xtype: 'customcombo',
-				name: 'property_name',
-				fieldLabel: NP.Translator.translate('by'),
+				xtype           : 'customcombo',
+				name            : 'property_id',
+				displayField    : 'property_name',
+				valueField      : 'property_id',
+				store           : 'user.Properties',
 				labelWidth: 60,
-				store: [],
 				fieldLabel:NP.Translator.translate('Property'),
 				queryMode: 'local',
+				width: 300,
 				editable: false,
 				typeAhead: false,
 				margin: '0 0 0 5'

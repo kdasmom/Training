@@ -530,6 +530,16 @@ class CatalogService extends AbstractService {
 			'url'     => $url
 		);
 	}
+
+	/**
+	 * Retrieve catalogs
+	 *
+	 * @param null $catalog_type
+	 * @return mixed
+	 */
+	public function getCatalogs($catalogType = null) {
+		return $this->vcGateway->getCatalogs($catalogType);
+	}
 }
 
 ?>
