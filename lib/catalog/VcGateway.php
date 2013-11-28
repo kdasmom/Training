@@ -135,6 +135,10 @@ class VcGateway extends AbstractGateway {
 			$select->whereLike('un.vcitem_manufacturer', "'%" . $keyword . "%'");
 			$select2->whereLike('un.vcitem_manufacturer', "'%" . $keyword . "%'");
 		}
+		if ($filterItem == 'upc') {
+			$select->whereLike('un.vcitem_upc', "'%" . $keyword . "%'");
+			$select2->whereLike('un.vcitem_upc', "'%" . $keyword . "%'");
+		}
 
 		$sql = $select->toString() . ' union all ' . $select2->toString();
 

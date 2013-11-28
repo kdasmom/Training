@@ -142,6 +142,9 @@ class VcItemGateway extends AbstractGateway {
 		if ($filterItem == 'brand') {
 			$select->whereLike('un.vcitem_manufacturer', "'%" . $keyword . "%'");
 		}
+		if ($filterItem == 'upc') {
+			$select->whereLike('un.vcitem_upc', "'%" . $keyword . "%'");
+		}
 
 		return $this->adapter->query($select, [$userprofile_id, 1]);
 	}
