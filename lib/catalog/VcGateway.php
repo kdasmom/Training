@@ -66,6 +66,80 @@ class VcGateway extends AbstractGateway {
 
 		return $this->adapter->query($select, $params);
 	}
+
+	/**
+	 * Retrieve catalog list from the search action
+	 *
+	 * @param $userprofile_id
+	 * @param $filterItem
+	 * @param $propertyId
+	 * @param $keyword
+	 * @param $page
+	 * @param $pagesize
+	 * @return array|bool
+	 */
+	public function findCatalogsByFilter($userprofile_id, $filterItem, $propertyId, $keyword, $page = 1, $pagesize = null) {
+		$select = new Select();
+		$select2 = new Select();
+		$subQuery = new Select();
+
+		$where = [
+			'pup.userprofile_id' => '?'
+		];
+		$params = [$userprofile_id];
+		if ($propertyId) {
+			$where['lvp.property_id'] = '?';
+			$params = [$propertyId, $propertyId];
+		}
+
+		$subQuery->from(['lvp' => 'LINK_VC_PROPERTY'])
+			->join(['pup' => 'PROPERTYUSERPROFILE'], 'pup.property_id = lvp.property_id', [])
+			->where($where)
+			->whereEquals('lvp.vc_id', 'v.vc_id');
+
+		$select->from(['vi' => 'vcitem'])
+			->join(['v' => 'vc'], 'vi.vc_id = v.vc_id', ['vc_id', 'vc_catalogname', 'vc_vendorname'])
+			->join(['un' => 'UNSPSC_Commodity'], 'vi.UNSPSC_Commodity_Commodity = un.UNSPSC_Commodity_Commodity', null)
+			->columns(null)
+			->distinct()
+			->where(['v.vc_status' => '?'])
+			->where(['vi.vcitem_status' => '?'])
+			->whereIsNotNull('vi.UNSPSC_Commodity_Commodity')
+			->whereExists($subQuery);
+		$select2->from(['vi' => 'vcitem'])
+			->join(['v' => 'vc'], 'vi.vc_id = v.vc_id', ['vc_id', 'vc_catalogname', 'vc_vendorname'])
+			->columns(null)
+			->distinct()
+			->where(['v.vc_status' => '?'])
+			->where(['vi.vcitem_status' => '?'])
+			->whereIsNull('vi.UNSPSC_Commodity_Commodity')
+			->whereExists($subQuery);
+
+		if ($filterItem == 'category') {
+			$select->whereLike('un.UNSPSC_Commodity_FamilyTitle', "'%" . $keyword . "%'");
+			$select2->whereLike('un.UNSPSC_Commodity_FamilyTitle', "'%" . $keyword . "%'");
+		}
+		if ($filterItem == 'itemType') {
+			$select->whereLike('un.UNSPSC_Commodity_CommodityTitle', "'%" . $keyword . "%'");
+			$select2->whereLike('un.UNSPSC_Commodity_CommodityTitle', "'%" . $keyword . "%'");
+		}
+		if ($filterItem == 'vcitem_number') {
+			$select->whereLike('un.vcitem_number', "'" . $keyword . "%'");
+			$select2->whereLike('un.vcitem_number', "'" . $keyword . "%'");
+		}
+		if ($filterItem == 'vcitem_desc') {
+			$select->whereLike('un.vcitem_desc', "'%" . $keyword . "%'");
+			$select2->whereLike('un.vcitem_desc', "'%" . $keyword . "%'");
+		}
+		if ($filterItem == 'brand') {
+			$select->whereLike('un.vcitem_manufacturer', "'%" . $keyword . "%'");
+			$select2->whereLike('un.vcitem_manufacturer', "'%" . $keyword . "%'");
+		}
+
+		$sql = $select->toString() . ' union all ' . $select2->toString();
+
+		return $this->adapter->query($sql, $params);
+	}
 }
 
 ?>

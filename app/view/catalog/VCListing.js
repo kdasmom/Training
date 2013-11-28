@@ -14,7 +14,8 @@ Ext.define('NP.view.catalog.VCListing', {
 		'NP.view.shared.button.Favorite',
 		'NP.view.catalog.JumpToCatalogForm',
 		'NP.view.catalog.SearchForm',
-		'NP.view.catalog.UserOrder'
+		'NP.view.catalog.UserOrder',
+		'NP.view.catalog.VCGrid'
 	],
 
 	initComponent: function() {
@@ -62,6 +63,9 @@ Ext.define('NP.view.catalog.VCListing', {
 				],
 				padding: '5',
 				border: false
+			},
+			{
+				xtype: 'catalog.vcgrid'
 			}
 		];
 

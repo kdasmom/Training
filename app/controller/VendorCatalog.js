@@ -19,13 +19,9 @@ Ext.define('NP.controller.VendorCatalog', {
 		Ext.log('Vendor Catalog Controller init');
 
 		this.control({
-			'[xtype="catalog.usermanager"]': {
-				// Run this whenever the user clicks on a tab on the Property Setup page
-				tabchange: function(tabPanel, newCard, oldCard, eOpts) {
-					Ext.log('UserManager onTabChange() running');
-
-					var activeTab = Ext.getClassName(newCard).split('.').pop();
-					this.addHistory('UserManager:showUserManager:' + activeTab);
+			'[xtype="catalog.jumptocatalogform"] button': {
+				click: function() {
+					console.log('jump');
 				}
 			}
 		});
@@ -34,5 +30,12 @@ Ext.define('NP.controller.VendorCatalog', {
 
 	showVendorCatalogListing: function() {
 		this.setView('NP.view.catalog.VCListing');
+	},
+
+	showCatalogView: function(catalog_id) {
+		var grid = this.setView('NP.view.catalog.VCCatalogView');
+
+		// Load the store
+		grid.reloadFirstPage();
 	}
 });

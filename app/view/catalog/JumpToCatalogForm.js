@@ -34,6 +34,7 @@ Ext.define('NP.view.catalog.JumpToCatalogForm', {
 			},
 			{
 				xtype: 'button',
+				name: 'jump_to_catalog',
 				text: NP.Translator.translate('Go'),
 				margin: '0 0 0 10'
 			}
