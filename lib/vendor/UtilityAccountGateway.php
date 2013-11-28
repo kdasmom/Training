@@ -67,21 +67,21 @@ class UtilityAccountGateway extends AbstractGateway {
             $delegation_to_userprofile_id,
             $utilityaccount_accountnumber
         );
-        return $this->adapter->query($select);
-/*
-			ua.utilityaccount_id,
-			ua.utilityaccount_metersize,
-			vs.vendorsite_id,
-			p.property_id,
-			v.vendor_name + ' (' + v.vendor_id_alt + ') - ' + p.property_name + ' (' + p.property_id_alt + ')' 
-					+ ' - Acct: ' + ua.utilityaccount_accountnumber + 
-					CASE
-						WHEN ISNULL(ua.utilityaccount_metersize, '') <> '' THEN ' - Meter: ' + ua.utilityaccount_metersize
-						ELSE ''
-					END AS utilityaccount_name
+        $result = $this->adapter->query($select);
 
- */
-     //   return $this->adapter->query($select02);
+        for ($i = 0; $i < count($result); $i++) {
+            $result[$i]['utilityaccount_name'] = 
+                $result[$i]['vendor_name'].
+                '('.$result[$i]['vendor_id_alt'].') - '.
+                $result[$i]['property_name'].
+                '('.$result[$i]['property_id_alt'].')'.
+                ' - Acct: '.$result[$i]['utilityaccount_accountnumber']
+            ;
+            if (!empty($result[$i]['utilityaccount_metersize'])) {
+                $result[$i]['utilityaccount_name'] .= ' - Meter: '.$result[$i]['utilityaccount_metersize'];
+            } 
+        }
+        return $result;
     }
 
     public function getUtilityAccountDetails($utilityaccount_accountnumber) {

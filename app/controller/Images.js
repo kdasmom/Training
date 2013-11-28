@@ -23,23 +23,27 @@ Ext.define('NP.controller.Images', {
             itemclick: this.processCellClick
         }
 
-/*
-			'#imageManagementContextPicker': {
-				change: function(toolbar, filterType, selected) {
-					var contentView = app.getCurrentView();
-					// If user picks a different property/region and we're on a register, update the grid
-					if (contentView.getXType() == 'image.imagemanagement') {
-						var activeTab = contentView.query('tabpanel')[0].getActiveTab();
-						if (activeTab.getStore) {
-							this.loadManagementGrid(activeTab);
-						}
-					}
-				}
-			}
+        var self = this;
+        control[prefix + '#imageManagementContextPicker'] = {
+            change: function(toolbar, filterType, selected) {
+                var contentView = this.application.getCurrentView();
 
-*/
+                // If user picks a different property/region and we're on a register, update the grid
+                if (contentView.getXType() == 'images.main') {
+                    var grid = self.getCurrentGrid();
+                    var state = Ext.ComponentQuery.query(
+                        '[xtype="shared.contextpicker"]'
+                    )[0].getState();
 
-
+                    grid.getStore().load({
+                        params: {
+                            contextType     : state.type,
+                            contextSelection: state.selected
+                        }
+                    })
+                }
+            }
+        },
 
         control[prefix + 'button[itemId~="buttonUpload"]'] = {
             click: this.processButtonUpload
@@ -94,6 +98,30 @@ Ext.define('NP.controller.Images', {
 
         control[prefix + 'button[itemId~="buttonSaveAndNext"]'] = {
             click: this.processButtonSaveAndNext
+        };
+        control[prefix + 'button[itemId~="buttonSaveAndPrev"]'] = {
+            click: this.processButtonSaveAndPrev
+        };
+        control[prefix + 'button[itemId~="buttonSaveAsException"]'] = {
+            click: this.processButtonSaveAsException
+        };
+
+        control[prefix + 'button[itemId~="buttonSaveAndNextAction"]'] = {
+            click: this.processButtonSaveAndNext
+        };
+        control[prefix + 'button[itemId~="buttonSaveAsExceptionAction"]'] = {
+            click: this.processButtonSaveAsException
+        };
+        control[prefix + 'button[itemId~="buttonIndexingComplete"]'] = {
+            click: this.processButtonIndexingComplete
+        };
+        
+        control[prefix + 'button[itemId~="buttonInvoiceAction"]'] = {
+            click: this.processButtonInvoice
+        };
+
+        control[prefix + 'button[itemId~="buttonInvoice"]'] = {
+            click: this.processButtonInvoice
         };
 
         control[prefix + 'button[itemId~="buttonDeleteFromQueue"]'] = {
@@ -300,15 +328,9 @@ Ext.define('NP.controller.Images', {
         this.application.addHistory('Images:showReport');
     },
 
-
-
-
-
-
-
-
-
-
+    /**
+     *
+     */
     processButtonDeletePermanently: function() {
         var grid = this.getCurrentGrid();
         var selection = this.getCurrentSelection();
@@ -338,10 +360,38 @@ Ext.define('NP.controller.Images', {
     /***************************************************************************
      * View: Index
      **************************************************************************/
+    loadStoresBase: function(callback) {
+        var storeDoctypes = 
+            Ext.create('NP.store.images.ImageDocTypes',{
+                service    : 'ImageService',
+                action     : 'listDocTypes'
+            }
+        );
+        var storeIntegrationPackages =
+            Ext.create('NP.store.images.IntegrationPackages', {
+                service    : 'ImageService',
+                action     : 'listIntegrationPackages'
+            }
+        );
+
+        storeDoctypes.load(function(records, operation, success) {
+            storeIntegrationPackages.load(function(records, operation, success) {
+                callback && callback(storeDoctypes, storeIntegrationPackages);
+            });
+        });
+    },
+    
     showIndex: function() {
         var grid = this.getCurrentGrid();
         var selection = this.getCurrentSelection();
-        
+
+        var section = 'index';
+        if (grid) {
+            if (grid.getXType() == 'images.grid.Exceptions') {
+                section = 'exception';
+            }
+        }
+
             if (selection) {
                 var items = [];
                 for(var i = 0, l=selection.length; i<l; i++) {
@@ -351,6 +401,7 @@ Ext.define('NP.controller.Images', {
 
 
                 var viewCfg = {
+                    section: section,
                     bind: {
                         models: ['image.ImageIndex'],
                         service : 'ImageService',
@@ -366,40 +417,105 @@ Ext.define('NP.controller.Images', {
                         }
                     },
                     listeners: {
-                        dataloaded: function () {
-                            
-                            console.dir('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++');
+                        dataloaded: function (form, data) {
+                            if (data['utilityaccount_id']) {
+                                var uproperty = Ext.ComponentQuery.query('[name="utility_property_id"]')[0];
+                                uproperty && uproperty.setValue(data['Property_id']);
+
+                                var uvendorsite = Ext.ComponentQuery.query('[name="utility_vendorsite_id"]')[0];
+                                uvendorsite && uvendorsite.setValue(data['Image_Index_VendorSite_Id']);
+                            }
+
+                            var doctype = Ext.ComponentQuery.query('[name="Image_Doctype_Id"]')[0];
+                            if (!doctype.getValue()) {
+                                var doctypeValue = 
+                                    this['preload-store'].doctype.totalCount && 
+                                    this['preload-store'].doctype.data.keys[0]
+                                ;
+                                doctype.setValue(doctypeValue);
+                            }
+                            Ext.ComponentQuery.query('[name="Property_id"]')[0].setValue(data['Property_id']);
+                            Ext.ComponentQuery.query('[name="property_id_alt"]')[0].setValue(data['Property_id']);
+
+                            Ext.ComponentQuery.query('[name="invoiceimage_vendorsite_alt_id"]')[0].setValue(data['Image_Index_VendorSite_Id']);
+                            Ext.ComponentQuery.query('[name="invoiceimage_vendorsite_id"]')[0].setValue(data['Image_Index_VendorSite_Id']);
                         }
                     }
                 };
 
-//ImageIndexForm
-                this.application.setView('NP.view.images.Index', viewCfg);
-                Ext.ComponentQuery.query('panel[id="panel-index"]')[0].setTitle('Image Index - ' + this.imageQueue[this.imageQueueCurrent]);
-                this.indexRefreshImage();
+                var self = this;
+                this.loadStoresBase(function(storeDoctypes, storeIntegrationPackages){
+                    viewCfg['preload-store'] = {
+                        doctype: storeDoctypes,
+                        integrationPackage: storeIntegrationPackages
+                    };
 
-          /*      this.application.setView('NP.view.images.Index', viewCfg);
+                    //ImageIndexForm
+                    self.application.setView('NP.view.images.Index', viewCfg);
 
-                Ext.ComponentQuery.query('panel[id="panel-index"]')[0].setTitle('Image Index - ' + this.imageQueue[this.imageQueueCurrent]);
-
-                this.indexRefreshImage();
-        
-        Ext.ComponentQuery.query('[xtype="form"]')[0].getForm().setValues({
-            'field-doctype': 1
-        });
-        */
-                /*var params = [
-                    'service=ImageService',
-                    'action=show',
-                    'image_id='
-                ];
-                Ext.getDom('iframe-panel').src = '/ajax.php?' + params.join('&') + this.imageQueue[this.imageQueueCurrent];
-
-/*                var target = Ext.ComponentQuery.query('[itemId~="tExperiment"]')[0];
-                target.setTitle(this.itemsToIndex.join(" === "));*/
+                    Ext.ComponentQuery.query('panel[id="panel-index"]')[0].setTitle('Image Index - ' + self.imageQueue[self.imageQueueCurrent]);
+                    self.refreshIndex();
+                })
         } else {
             this.processButtonReturn();
         }
+    },
+    updateIndex: function() {
+        var form = 
+            this.getCmp('images.index')
+        ;
+
+        var self = this;
+        var mask = new Ext.LoadMask(form);
+
+        mask.show();
+        NP.lib.core.Net.remoteCall({
+            requests: {
+                service: form.bind.service,
+		action : form.bind.action,
+
+                id: this.imageQueue[this.imageQueueCurrent],
+                filter: {
+                    userprofile_id              : NP.Security.getUser().get('userprofile_id'),
+                    delegated_to_userprofile_id : NP.Security.getDelegatedToUser().get('userprofile_id')//,
+                    //contextType                 : 'all',// state && state[0] ? state[0].getState().type : '',
+                    //contextSelection            : ''//state && state[0] ? state[0].getState().selected : ''
+                },
+
+                success: function(result, deferred) {
+                    form.fireEvent('beforemodelupdate', form, result);
+                    if (result !== null) {
+                        form.updateModels(result);
+                    }
+
+                    form.fireEvent('beforefieldupdate', form, result);
+                    form.updateBoundFields();
+
+                    if (form.bind.extraFields) {
+                        Ext.Array.each(form.bind.extraFields, function(fieldName) {
+                            var field = form.findField(fieldName);
+                            if (field && result[fieldName]) {
+                                field.setValue(result[fieldName]);
+                            }
+                        });
+                    }
+                    form.fireEvent('dataloaded', form, result);
+
+                    Ext.ComponentQuery.query('panel[id="panel-index"]')[0].setTitle('Image Index - ' + self.imageQueue[self.imageQueueCurrent]);
+                    self.refreshIndex();
+
+                    mask.destroy();
+                }
+            }
+        });
+    },
+    refreshIndex: function() {
+        var params = [
+            'service=ImageService',
+            'action=show',
+            'image_id='
+        ];
+        Ext.getDom('iframe-panel').src = '/ajax.php?' + params.join('&') + this.imageQueue[this.imageQueueCurrent];
     },
 
     /**
@@ -409,64 +525,85 @@ Ext.define('NP.controller.Images', {
         this.application.addHistory('Images:showMain');
     },
 
-
-
-
-
-
-
-
-
-
-    indexPrevImage: function() {
-          /*      var viewCfg = {
-                    bind: {
-                        models: ['image.ImageIndex'],
-                        service : 'ImageService',
-                        action  : 'getImageToIndex',
-                        extraParams: {
-                            id: this.imageQueue[this.imageQueueCurrent]
-                        }
-                    },
-                    listeners: {
-                        dataloaded: function () {
-                            
-                            console.dir('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++');
-                        }
-                    }
-                };
-                this.application.setView('NP.view.images.Index', viewCfg);
-        */
-        if (this.imageQueueCurrent > 0)
+    /**
+     *
+     */
+    processButtonPrev: function() {
+        if (this.imageQueueCurrent > 0) {
             this.imageQueueCurrent--;
-        Ext.ComponentQuery.query('panel[id="panel-index"]')[0].setTitle('Image Index - ' + this.imageQueue[this.imageQueueCurrent]);
-        this.indexRefreshImage();
+            this.updateIndex();
+        }
     },
-    indexNextImage: function() {
-                /*var viewCfg = {
-                    bind: {
-                        models: ['image.ImageIndex'],
-                        service : 'ImageService',
-                        action  : 'getImageToIndex',
-                        extraParams: {
-                            id: this.imageQueue[this.imageQueueCurrent]
-                        }
-                    },
-                    listeners: {
-                        dataloaded: function () {
-                            
-                            console.dir('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++');
-                        }
-                    }
-                };
-                this.application.setView('NP.view.images.Index', viewCfg);
-        */
-        if (this.imageQueueCurrent < this.imageQueue.length - 1)
+    /**
+     *
+     */
+    processButtonNext: function() {
+        if (this.imageQueueCurrent < this.imageQueue.length - 1) {
             this.imageQueueCurrent++;
-        Ext.ComponentQuery.query('panel[id="panel-index"]')[0].setTitle('Image Index - ' + this.imageQueue[this.imageQueueCurrent]);
-        this.indexRefreshImage();
+            this.updateIndex();
+        }
     },
 
+    saveImageIndex: function(action, section, callback) {
+        var form = this.getCmp('images.index');
+
+        if (form.isValid()) {
+            form.submitWithBindings({
+                action: 'update',
+                service: 'ImageService',
+                extraParams: {
+                    params: {
+                        action: action,// || exception || index complete
+                        section: section,//|| exception
+                        userprofile_id              : NP.Security.getUser().get('userprofile_id'),
+                        delegated_to_userprofile_id : NP.Security.getDelegatedToUser().get('userprofile_id')
+                    }
+                },
+                success: function(result) {
+                    callback && callback();
+                }
+            });
+        }
+    },
+    /**
+     *
+     */
+    processButtonSaveAndNext: function() {
+        this.saveImageIndex('index', 'index', this.processButtonNext);
+    },
+    /**
+     *
+     */
+    processButtonSaveAndPrev: function() {
+        this.saveImageIndex('index', 'index', this.processButtonPrev);
+    },
+
+    processButtonSaveAsException: function() {
+        this.saveImageIndex('exception', 'index');
+    },
+
+    processButtonIndexingComplete: function() {
+        this.saveImageIndex('complete', 'index');
+    },
+
+    /**
+     *
+     */
+    processButtonInvoice: function() {
+        this.application.addHistory('Invoice:showView');
+    },
+
+    imageQueue: [],
+    imageQueueCurrent: 0,
+    queueImages: function(images) {
+        this.imageQueue = images;
+        this.imageQueueCurrent = 0;
+    },
+    clearImages: function() {
+        this.imageQueue = [];
+        this.imageQueueCurrent = 0;
+    },
+    
     processButtonDeleteFromQueue: function() {
         if (this.imageQueue[this.imageQueueCurrent]) {
             var self = this;
@@ -662,9 +799,10 @@ Ext.define('NP.controller.Images', {
         var panel = 
             Ext.ComponentQuery.query('tabpanel')[0]
         ;
-        var current  = panel.getActiveTab();
-
-        return current;
+        if (panel) {
+            var current  = panel.getActiveTab();
+            return current;
+        }
     },
     getCurrentSelection: function() {
         var grid = this.getCurrentGrid();
@@ -681,101 +819,5 @@ Ext.define('NP.controller.Images', {
                 }
             }
         }
-    },
-
-
-
-
-
-
-
-
-
-
-
-    processButtonPrev: function() {
-        this.indexPrevImage();
-    },
-    processButtonNext: function() {
-        this.indexNextImage();
-    },
-
-    processButtonSaveAndNext: function() {
-        //var form = Ext.ComponentQuery.query('[id~="index-form"]')[0].getForm();
-        var form = this.getCmp('images.index');
-
-        if (form.isValid()) {
-            form.submitWithBindings({
-                action: 'update',
-                service: 'ImageService',
-                extraParams: {
-                    params: {
-                        section: 'index',
-                        userprofile_id              : NP.Security.getUser().get('userprofile_id'),
-                        delegated_to_userprofile_id : NP.Security.getDelegatedToUser().get('userprofile_id')
-                    }
-                },
-                success: function(result) {
-
-                }
-            });
-        }
-
-/*
-
-            extraParams: {
-                params: {
-                    section: 'index',
-                    userprofile_id              : NP.Security.getUser().get('userprofile_id'),
-                    delegated_to_userprofile_id : NP.Security.getDelegatedToUser().get('userprofile_id')
-
-//                    contextType                 : 'all',// state && state[0] ? state[0].getState().type : '',
-//                    contextSelection            : ''//state && state[0] ? state[0].getState().selected : ''
-                }
-            },
-
- */
-        /*var values = form.getValues();
-        values['action'] = 'indexImages';
-        values['service'] = 'ImageService';
-        
-        Ext.Ajax.request({
-            url: '/ajax.php',
-            method: 'POST',
-            params: values,
-            success: function() {
-                console.dir('success');
-            },
-            failure: function() {
-                console.dir('failure');
-            }
-        });*/
-    },
-
-    
-    
-    
-    
-
-
-    imageQueue: [],
-    imageQueueCurrent: 0,
-    queueImages: function(images) {
-        this.imageQueue = images;
-        this.imageQueueCurrent = 0;
-    },
-    clearImages: function() {
-        this.imageQueue = [];
-        this.imageQueueCurrent = 0;
-    },
-    indexRefreshImage: function() {
-        var params = [
-            'service=ImageService',
-            'action=show',
-            'image_id='
-        ];
-        Ext.getDom('iframe-panel').src = '/ajax.php?' + params.join('&') + this.imageQueue[this.imageQueueCurrent];
     }
-
-
 });

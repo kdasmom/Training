@@ -13,7 +13,7 @@ Ext.define('NP.view.images.grid.Exceptions', {
 
 	this.store = Ext.create('NP.store.image.ImageIndexes', {
             service    : 'ImageService',
-            action     : 'getImagesToConvert1',
+            action     : 'getImageExceptions1',
             paging     : true,
             pageSize: 25,
             extraParams: {

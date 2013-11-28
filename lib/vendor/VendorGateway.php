@@ -179,4 +179,95 @@ class VendorGateway extends AbstractGateway {
 
         return $result;
     }
+
+    //public function getVendorListing($property_id) {
+    public function getVendorListing($integration_package, $orderby = 'v.vendor_name') {
+        $select01 = new \NP\core\db\Select();
+        $select01
+            ->column('addresstype_id')
+            ->from('addresstype')
+            ->whereEquals('addresstype_name', '\'Mailing\'')
+        ;
+
+        /*$select02 = new \NP\core\db\Select();
+        $select02
+            ->column('integration_package_id')
+            ->from('PROPERTY')
+            ->whereEquals('property_id', $property_id)
+        ;*/
+                
+        $select = new \NP\core\db\Select();
+        $select
+            ->distinct()
+            ->columns([
+                'vendor_name',
+                'vendor_id_alt'
+            ])
+            ->from(['v' => 'VENDOR'])
+                ->join(['vs' => 'VENDORSITE'], 'v.vendor_id = vs.vendor_id', ['vendorsite_id', 'vendorsite_status'], \NP\core\db\Select::JOIN_INNER)
+                ->join(['a' => 'ADDRESS'], 'a.tablekey_id = vs.vendorsite_id  AND a.addresstype_id = ('.$select01->toString().')', ['address_city', 'address_zip'], \NP\core\db\Select::JOIN_LEFT)
+            ->order('v.vendor_name')
+        ;
+        $where = new Where();
+        $where
+            ->equals('v.vendor_status', '\'active\'')
+            ->equals('vs.vendorsite_status', '\'active\'')
+            //->equals('v.integration_package_id', $select02)
+            ->equals('v.integration_package_id', $integration_package)
+        ;
+        $select->where($where);
+
+        return $this->adapter->query($select);
+    }
+
+	/**
+	 * Get vendors that will show up as available options for an invoice
+	 */
+	public function findVendorsForInvoice($property_id, $vendor_id=null, $keyword=null) {
+		$now = \NP\util\Util::formatDateForDB();
+
+		$select = $this->getSelect()
+						->columns(['vendor_id','vendor_id_alt','vendor_name'])
+						->join(new sql\join\VendorsiteAddressJoin())
+						->join(new sql\join\VendorsitePhoneJoin());
+
+		if ($vendor_id !== null && $keyword === null) {
+			$select->whereEquals('v.vendor_id', '?');
+			$params = [$vendor_id];
+		} else {
+			$select->whereEquals('v.vendor_status', "'active'")
+					->whereNotIn(
+						'v.vendor_id',
+						Select::get()->column('vendor_id')
+									->from('vendor')
+									->whereOr()
+									->whereGreaterThan('v.vendor_active_startdate', "'{$now}'")
+									->whereLessThan('v.vendor_active_enddate', "'{$now}'")
+					)
+					->whereNotExists(
+						Select::get()->from(['ins'=>'insurance'])
+									->join(new sql\join\InsuranceLinkPropertyJoin())
+									->whereIsNotNull('ins.insurancetype_id')
+									->whereLessThanOrEqual('ins.insurance_expdatetm', "'{$now}'")
+									->whereEquals('ins.tablekey_id', 'v.vendor_id')
+									->whereEquals('lip.property_id', '?')
+					)
+					->order('v.vendor_name')
+					->limit(200);
+
+			$params = [$property_id];
+
+			if ($keyword !== null) {
+				$keyword = "%{$keyword}%";
+				$select->whereNest('OR')
+							->whereLike('v.vendor_name', '?')
+							->whereLike('v.vendor_id_alt', '?')
+						->whereUnnest();
+
+				array_push($params, $keyword, $keyword);
+			}
+		}
+
+		return $this->adapter->query($select, $params);
+	}
 }

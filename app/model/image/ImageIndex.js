@@ -22,9 +22,14 @@ Ext.define('NP.model.image.ImageIndex', {
 		{ name: 'Image_Index_Id', type: 'int' },
 		{ name: 'Image_Index_Id_Alt', type: 'int' },
 		{ name: 'Property_Id', type: 'int' },
+                { name: 'Property_Alt_Id', type: 'int'},
 		{ name: 'Image_Index_Name' },
 		{ name: 'Image_Index_Type' },
 		{ name: 'Image_Index_Ref' },
+                { name: 'invoiceimage_ref'},
+                { name: 'po_ref'},
+                { name: 'invoiceimage_vendorsite_id' },
+                { name: 'invoiceimage_vendorsite_alt_id' },
 		{ name: 'Image_Index_VendorSite_Id', type: 'int' },
 		{ name: 'Image_Index_Vendor_Id_Alt' },
 		{ name: 'Image_Index_Invoice_Date', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
@@ -48,6 +53,9 @@ Ext.define('NP.model.image.ImageIndex', {
 		{ name: 'universal_field2' },
 		{ name: 'universal_field3' },
 		{ name: 'PriorityFlag_ID_Alt', type: 'int' },
+		{ name: 'PriorityFlag_ID_Alt_invoice', type: 'int' },
+		{ name: 'PriorityFlag_ID_Alt_po', type: 'int' },
+		{ name: 'PriorityFlag_ID_Alt_vef', type: 'int' },
 		{ name: 'image_index_NeededBy_datetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
 		{ name: 'universal_field4' },
 		{ name: 'universal_field5' },
@@ -127,5 +135,13 @@ Ext.define('NP.model.image.ImageIndex', {
 			primaryKey: 'PriorityFlag_ID_Alt',
 			reader    : 'jsonflat'
         }
-    ]
+    ],
+	validations: [
+            { field: 'Image_Doctype_Id', type: 'presence' },
+            { field: 'invoiceimage_vendorsite_id', type: 'presence' },
+            { field: 'invoiceimage_vendorsite_alt_id', type: 'presence' },
+            { field: 'Property_Id', type: 'presence' },
+            { field: 'Property_Alt_Id', type: 'presence' },
+	]
+    
 });

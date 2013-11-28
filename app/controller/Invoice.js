@@ -91,9 +91,9 @@ Ext.define('NP.controller.Invoice', {
 	 * Shows the invoice add/edit page
 	 * @param {Number} [invoice_id] Id of the invoice to edit; if not provided, will show page for adding invoice
 	 */
-	showView: function(invoice_id) {
-		Ext.log('Invoice.showView('+invoice_id+') running');
-		
-		this.setView('NP.view.invoice.View');
-	}
+    showView: function(invoice_id) {
+        Ext.log('Invoice.showView('+invoice_id+') running');
+
+        this.setView('NP.view.invoice.View', {bind: {models:[]}});
+    }
 });

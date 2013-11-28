@@ -543,7 +543,7 @@ class ImageService extends AbstractService {
                         $imageIndexData['invoiceimage_status'] :
                         $request['invoiceimage_status']
                 ,
-                'Image_Index_Source_Id'     => $request['invoiceimage_source_id'],
+                'Image_Index_Source_Id'     => empty($request['invoiceimage_source_id']) ? 1 :$request['invoiceimage_source_id'],
                 'Tableref_Id'               =>
                     isset($imageIndexData['image_tableref_id']) ? 
                         $imageIndexData['image_tableref_id'] :
@@ -675,23 +675,6 @@ class ImageService extends AbstractService {
             return $this->integrationPackageGateway->find();
         }
 
-
-        
-
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         /**
          * Get Image information by id.
          * 
@@ -725,11 +708,6 @@ class ImageService extends AbstractService {
             $tablerefs = $this->imageTablerefGateway->getIdByNames(['receipt', 'Utility Invoice']);
 
             $params = $data['params'];
-            /*$data['mark_as_exception'] = null;
-            $data['indexing_complete'] = null;
-            $data['image_delete'] = null;
-            $data['image_index_draft_invoice_id'] = null;*/
-
             $entity = $data['imageindex'];
 
             $entity['Image_Index_Name'] =
@@ -745,6 +723,8 @@ class ImageService extends AbstractService {
                     $entity['Property_Id'] = null;
                 }
             }
+//$params['utility_property_id']
+//$params['utility_vendorsite_id']
 
             if ($entity['Image_Doctype_Id'] == $doctypes[strtolower('Utility Invoice')]) {
                 $entity['Image_Index_VendorSite_Id'] = $params['utility_vendorsite_id'];
@@ -757,27 +737,35 @@ class ImageService extends AbstractService {
             }
 
             $refnum = '';
-            if (!empty($params['invoiceimage_ref'])) {
-                $refnum = $params['invoiceimage_ref'];
-            } elseif (!empty($params['po_ref'])) {
-                $refnum = $params['po_ref'];
+            if (!empty($entity['invoiceimage_ref'])) {
+                $refnum = $entity['invoiceimage_ref'];
+            } elseif (!empty($entity['po_ref'])) {
+                $refnum = $entity['po_ref'];
             } else {
                 $refnum = '';
             }
             $entity['Image_Index_Ref'] = str_replace('\'', '', $refnum);
 
-            if (!empty($params['mark_as_exception'])) {
+            if ($params['action'] == 'exception') {
+                // If image should be marked as "Exception"
                 $entity['Image_Index_Exception_by'] = $params['userprofile_id'];
                 $entity['Image_Index_Exception_datetm'] = date('Y-m-d H:i:s');
                 $entity['Image_Index_Status'] = 2;
-            } elseif (!empty($params['indexing_complete'])) {
+            } elseif ($params['action'] == 'complete') {
+                // If image was marked as "Exception" but now it should be indexed.
+                // This action could be processed from "Exception" section(tab).
                 $entity['Image_Index_Exception_End_datetm'] = date('Y-m-d H:i:s');
                 $entity['Image_Index_Status'] = 1;
             } elseif (!empty($params['image_delete'])) {
+                // If image should be deleted. This action is moved to the separate
+                // delete method.
                 $entity['image_index_deleted_by'] = $params['userprofile_id'];
                 $entity['image_index_deleted_datetm'] = date('Y-m-d H:i:s');
                 $entity['image_index_status'] = -1;
             } else {
+                // If parameters were not passed, then default action should be selected.
+                // If current section is "Exceptions" then this is exception image.
+                // If current section is "Index" then this is usual indexed image.
                 if (strtolower($params['section']) == 'exceptions') {
                     $entity['image_index_status'] = 2;
                 } elseif (strtolower($params['section']) == 'index') {
@@ -785,7 +773,8 @@ class ImageService extends AbstractService {
                 }
             }
 
-            if (!empty($params['indexing_complete']) && empty($params['image_delete'])) {
+            // This block is not needed anymore
+            if ($params['action'] == 'complete' && empty($params['image_delete'])) {
                 $entity['image_index_indexed_by'] = $params['userprofile_id'];
                 $entity['image_index_indexed_datetm'] = date('Y-m-d H:i:s');
             }
@@ -793,13 +782,14 @@ class ImageService extends AbstractService {
             $flag = "";
             switch ($entity['Image_Doctype_Id']) {
                 case 1:
-                    $flag = $params['PriorityFlag_ID_Alt_invoice'];
+                    $flag = $entity['PriorityFlag_ID_Alt_invoice'];
+                    $flag = 1;
                     break;
                 case 2:
-                    $flag = $params['PriorityFlag_ID_Alt_po'];
+                    $flag = $entity['PriorityFlag_ID_Alt_po'];
                     break;
                 case 3:
-                    $flag = $params['PriorityFlag_ID_Alt_vef'];
+                    $flag = $entity['PriorityFlag_ID_Alt_vef'];
                     break;
                 default:
                     $flag = '';
@@ -831,6 +821,8 @@ class ImageService extends AbstractService {
 
             $entity['Image_Index_Id'] = intval($entity['Image_Index_Id']);
             $entity['asp_client_id'] =  $this->configService->getClientId();
+
+            $entity['Image_Index_Source_Id'] = 1;
             
             $image = new ImageIndexEntity($entity);
 
@@ -898,40 +890,42 @@ class ImageService extends AbstractService {
         }
         
         
-    public function matchUtilityAccount() {
-        //$userprofile_id, $delegation_to_userprofile_id, $utilityaccount_accountnumber
-        $accounts = $this->getUtilityAccountsByCriteria($userprofile_id, $delegation_to_userprofile_id, $utilityaccount_accountnumber);
+    public function matchUtilityAccount($userprofile_id, $delegation_to_userprofile_id, $utilityaccount_accountnumber, $utilityaccount_metersize) {
+        if (empty($utilityaccount_accountnumber)) {
+            $utilityaccount_accountnumber = '\'\'';
+        }
+            $accounts = $this->utilityAccountGateway->getUtilityAccountsByCriteria($userprofile_id, $delegation_to_userprofile_id, $utilityaccount_accountnumber);
 
-        $result = [];
-        if (!empty($result)) {
-            $result['accountNumberValid'] = true;
+            $result = [];
+            if (!empty($accounts)) {
+                $result['accountNumberValid'] = true;
 
-            if (!empty($params['utilityaccount_metersize'])) {
-                $result['meterValid'] = false;
-                foreach ($result as $account) {
-                    if ($account['utilityaccount_metersize'] == $params['utilityaccount_metersize']) {
-                        $result['meterValid'] = true;
-                        break;
+                if (!empty($utilityaccount_metersize)) {
+                    $result['meterValid'] = false;
+                    foreach ($accounts as $account) {
+                        if ($account['utilityaccount_metersize'] == $utilityaccount_metersize) {
+                            $result['meterValid'] = true;
+                            break;
+                        }
                     }
+                } else {
+                    $result['meterValid'] = true;
                 }
             } else {
-                $result['meterValid'] = true;
+                $result['accountNumberValid'] = false;
+                $result['meterValid'] = false;
             }
-        } else {
-            $result['accountNumberValid'] = false;
-            $result['meterValid'] = false;
-        }
 
-        foreach ($result as $account) {
-            $record = [
-                'property_id'         => $account['property_id'],
-                'vendorsite_id'       => $account['vendorsite_id'],
-                'utilityaccount_id'   => $account['utilityaccount_id'],
-                'utilityaccount_name' => $account['utilityaccount_name']
-            ];
-            $result['accounts'][] = $record;
-        }
-        return $result;
+            foreach ($accounts as $account) {
+                $record = [
+                    'property_id'         => $account['property_id'],
+                    'vendorsite_id'       => $account['vendorsite_id'],
+                    'utilityaccount_id'   => $account['utilityaccount_id'],
+                    'utilityaccount_name' => $account['utilityaccount_name']
+                ];
+                $result['accounts'][] = $record;
+            }
+            return $result;
     }
 
     public function getUtilityAccountVendorPropMeter() {
@@ -986,12 +980,16 @@ class ImageService extends AbstractService {
             return $this->propertyGateway->getUserPropertyListingForDelegate($userprofile_id, $delegation_to_userprofile_id, $asp_client_id, false, 'property_id_alt');
         }
     }
-        
-    
-    
-    
-    
 
+    public function listVendor($integration_package = 1) {
+        return $this->vendorGateway->getVendorListing($integration_package);
+    }
+
+    public function listVendorCode($integration_package = 1) {
+        //configService->findSysValueByName
+        return $this->vendorGateway->getVendorListing($integration_package, 'v.vendor_id_alt');
+    }
+    
     public function getImageDoctypes($tablerefs) {
         return $this->imageDoctypeGateway->getImageDoctypes($tablerefs);
     }
@@ -1046,9 +1044,6 @@ class ImageService extends AbstractService {
     }
 
     public function getAddress($id, $table_name, $address_type = 'Home') {
-        $table_name = 'vendorsite';
-        $id = 22904;
-        $address_type='mailing';
         if ($table_name == 'vendorsite') {
             return [
                 'data' => $this->vendorGateway->getVendorAddress($id, $address_type),
@@ -1065,161 +1060,3 @@ class ImageService extends AbstractService {
         
         
 }
-
-
-
- /*$filter['userprofile_id'] =
-                !empty($filter['userprofile_id']) ?
-                    intval($filter['userprofile_id']) :
-                    $this->securityService->getUserId()
-            ;
-            $filter['delegated_to_userprofile_id'] =
-                !empty($filter['delegated_to_userprofile_id']) ?
-                    intval($filter['delegated_to_userprofile_id']) :
-                    $this->securityService->getUserId()
-            ;
-            $filter['contextType'] =
-                !empty($filter['contextType']) ?
-                    $filter['contextType'] :
-                    'all'
-            ;
-            $filter['contextSelection'] =
-                !empty($filter['contextSelection']) ?
-                    $filter['contextSelection'] :
-                    null
-            ;
-
-/*
-
-
-
-
-        private function indexPrepareRequest() {
-            $request = [];
-$request = $_REQUEST;
-            // Service fields: maybe moved into params
-            $request['mark_as_exception'] = null;
-            $request['indexing_complete'] = null;
-            $request['image_delete'] = null;
-            $request['image_index_draft_invoice_id'] = null;
-
-            // Actual fields
-            //$request['doctype'] = $_REQUEST['field-doctype-inputEl'];
-            $request['doctype'] = $_REQUEST['Image_Doctype_Id'];
-            //$request['invoiceimage_name'] = $_REQUEST['field-imagename-inputEl'];
-//            $request['integration_package_id'] = $_REQUEST['field-integration-package-inputEl'];
-
-  //          $request['property_id'] = $_REQUEST['field-property-inputEl'];
-    //        $request['property_alt_id'] = $_REQUEST['field-property-code-inputEl'];
-/*
-            $request['invoiceimage_vendorsite_id'] = $_REQUEST['field-vendor-inputEl'];
-            $request['invoiceimage_vendorsite_alt_id'] = $_REQUEST['field-vendor-code-inputEl'];
-
-            $request['invoiceimage_ref'] = $_REQUEST['field-invoice-number-inputEl'];
-            
-            $request['invoiceimage_invoice_date'] = $_REQUEST['field-invoice-date-inputEl'];
-            $request['invoiceimage_invoice_duedate'] = $_REQUEST['field-due-date-inputEl'];
-
-            $request['image_index_amount'] = $_REQUEST['field-amount-inputEl'];
-
-            //$request['remit_advice'] = $_REQUEST['field-remittance-advice-inputEl'];
-
-            //$request['NeededBy_datetm'] = $_REQUEST['field-needed-by-inputEl'];
-
-            $request['PriorityFlag_ID_Alt_invoice'] = $_REQUEST['field-priority-invoice-inputEl'];
-            $request['PriorityFlag_ID_Alt_po'] = $request['PriorityFlag_ID_Alt_invoice']; // This field should be used depending on which doctype is used.
-            $request['PriorityFlag_ID_Alt_vef'] = $request['PriorityFlag_ID_Alt_invoice']; // This field should be used depending on which doctype is used.
-
-            $request['exception_reason'] = $_REQUEST['field-exception-reason-inputEl'];
-
-            $request['utilityaccount_accountnumber'] = $_REQUEST['field-account-number-inputEl'];
-            $request['utilityaccount_metersize'] = $_REQUEST['field-meter-number-inputEl'];
-
-            $request['cycle_to'] = $_REQUEST['field-cycle-to-date-inputEl'];
-            $request['cycle_from'] = $_REQUEST['field-cycle-from-date-inputEl'];
-
-            $request['po_ref'] = $_REQUEST['field-p0-number-inputEl'];
-
-            $request['job_number'] = null;//Look like this field is unused now.
-
-            //$request['utility_property_id'] = $_REQUEST['utility_property_id'];
-            //$request['utility_vendorsite_id'] = $_REQUEST['utility_vendorsite_id'];
-            //$request['utilityaccount_id'] = $_REQUEST['utilityaccount_id'];
-* /
-            / *$request['universal_field1'] = $_REQUEST['universal_field1'];
-            $request['universal_field2'] = $_REQUEST['universal_field2'];
-            $request['universal_field3'] = $_REQUEST['universal_field3'];
-            $request['universal_field4'] = $_REQUEST['universal_field4'];
-            $request['universal_field5'] = $_REQUEST['universal_field5'];
-            $request['universal_field6'] = $_REQUEST['universal_field6'];
-            $request['universal_field7'] = $_REQUEST['universal_field7'];
-            $request['universal_field8'] = $_REQUEST['universal_field8'];* /
-            return $request;
-        }
-        
-        
-        public function indexImages($data) {
-            $params = [];
-            $params['doctypes'] = $this->imageDoctypeGateway->getIdByNames(['receipt', 'Utility Invoice']);
-            $params['tablerefs'] = $this->imageTablerefGateway->getIdByNames(['receipt', 'Utility Invoice']);
-
-            $params['userprofile_id'] = $this->securityService->getUserId();
-            //$params['section']//image_index_status = <cfif request.top_tab_type EQ "Exceptions">2<cfelseif request.top_tab_type EQ "Scanned">1</cfif>, вместо Scanned будет index
-
-            $_REQUEST = (array) $_REQUEST[0]->data->imageindex;
-            
-            $request = $this->indexPrepareRequest();
-            //print_r($params);
-            //print_r($request);
-
-            $this->imageIndexGateway->updateImage($request, $params);
-        }
-
-
-
-
-
-
-
-*/
-
-
-
-/*
-@in_invoiceimage_id varchar(8000),
-@in_invoiceimage_status int,
-@in_userprofile_id int = NULL,
-@in_delegation_to_userprofile_id int = NULL
-BEGIN
-			
-			SELECT @audittype_id = audittype_id
-			FROM AUDITTYPE
-			WHERE audittype = (
-				SELECT REPLACE(image_tableref_name, ' ', '')
-				FROM IMAGE_TABLEREF
-				WHERE image_tableref_id = @tableref_id
-			);
-			
-			SELECT @auditactivity_id = auditactivity_id
-			FROM AUDITACTIVITY
-			WHERE auditactivity = 'ImgDel';
-			
-			INSERT INTO auditlog (
-				userprofile_id,
-				delegation_to_userprofile_id,
-				tablekey_id,
-				auditactivity_id,
-				audittype_id,
-				field_old_value,
-				DTS
-			) VALUES (
-				@in_userprofile_id,
-				@in_delegation_to_userprofile_id,
-				@invoice_id,
-				@auditactivity_id,
-				@audittype_id,
-				@image_index_name,
-				getDate()
-			);
-		END
-*/

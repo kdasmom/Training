@@ -130,6 +130,7 @@ class Adapter {
 		$stmt = sqlsrv_query($this->conn, $sql, $params);
 		if (!$stmt) {
 			$errors = sqlsrv_errors();
+print_r($errors);
 			$paramStr = (count($params)) ? implode('|', $params) : '<none>';
 			$message = "Error running query. SQL was the following:\n\n{$sql};\n\nParameters were the following: {$paramStr};\n\nError was the following:";
 			foreach ($errors as $error) {
