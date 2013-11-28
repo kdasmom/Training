@@ -8,7 +8,7 @@ Ext.define('NP.view.catalog.VCGrid', {
 	alias : 'widget.catalog.vcgrid',
 
 	requires: [
-		'NP.view.catalog.gridcol.VcItemCategory'
+		'NP.view.catalog.gridcol.VcCatalogCategory'
 	],
 
 	paging: true,
@@ -17,19 +17,24 @@ Ext.define('NP.view.catalog.VCGrid', {
 
 		this.columns = [
 			{
-				xtype: 'catalog.gridcol.vcitemcategory'
+				xtype: 'catalog.gridcol.vccatalogcategory',
+				flex: 0.5
 			},
 			{
 				dataIndex: "catalogs",
-				text: NP.Translator.translate('Catalog')
+				text: NP.Translator.translate('Catalog'),
+				flex: 2
 			}
 		];
 
-		this.store = Ext.create('NP.store.catalog.Vc', {
-			service    : 'CatalogService',
-			action     : 'getRegister',
-			paging     : true,
-			extraParams: { vc_status: this.vc_status }
+		this.store = Ext.create('NP.store.catalog.VcCats', {
+			service    	: 'CatalogService',
+			action     	: 'getCategoriesList',
+			extraParams: {
+				userprofile_id: NP.Security.getUser().get('userprofile_id')
+			},
+			paging     	: true,
+			autoLoad	: true
 		});
 
 		this.callParent(arguments);

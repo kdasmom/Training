@@ -540,6 +540,18 @@ class CatalogService extends AbstractService {
 	public function getCatalogs($catalogType = null) {
 		return $this->vcGateway->getCatalogs($catalogType);
 	}
+
+	/**
+	 * Retrieve categories list
+	 *
+	 * @param null $userprofile_id
+	 * @return mixed
+	 */
+	public function getCategoriesList($userprofile_id = null) {
+		$result = $this->vcCatGateway->getCatalogCategories($userprofile_id);
+
+		return $result;
+	}
 }
 
 ?>

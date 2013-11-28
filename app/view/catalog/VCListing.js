@@ -65,7 +65,8 @@ Ext.define('NP.view.catalog.VCListing', {
 				border: false
 			},
 			{
-				xtype: 'catalog.vcgrid'
+				xtype: 'catalog.vcgrid',
+				overflowY: 'scroll'
 			}
 		];
 
