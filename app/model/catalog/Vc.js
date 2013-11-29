@@ -6,7 +6,10 @@
 Ext.define('NP.model.catalog.Vc', {
 	extend: 'Ext.data.Model',
 	
-	requires: ['NP.lib.core.Config','NP.lib.core.Security'],
+	requires: [
+		'NP.lib.core.Config',
+		'NP.lib.core.Security'
+	],
 
 	idProperty: 'vc_id',
 	fields: [

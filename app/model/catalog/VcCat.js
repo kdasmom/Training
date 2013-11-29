@@ -6,12 +6,14 @@
 Ext.define('NP.model.catalog.VcCat', {
 	extend: 'Ext.data.Model',
 	
-	requires: ['NP.lib.core.Config'],
+	requires: [
+		'NP.lib.core.Config'
+	],
 
 	idProperty: 'vccat_id',
 	fields: [
 		{ name: 'vccat_id', type: 'int' },
-		{ name: 'vccat_name' }
+		{ name: 'vccat_name'}
 	],
 
 	validations: [
