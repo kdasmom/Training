@@ -23,6 +23,16 @@ Ext.define('NP.controller.VendorCatalog', {
 				click: function() {
 					console.log('jump');
 				}
+			},
+			'[xtype="catalog.vclisting"] [xtype="shared.button.search"]': {
+				click: function() {
+					this.addHistory('VendorCatalog:showAdvancedSearch');
+				}
+			},
+			'[xtype="catalog.advancedsearch"] [xtype="shared.button.back"]': {
+				click: function() {
+					this.addHistory('VendorCatalog:showVendorCatalogListing');
+				}
 			}
 		});
 
@@ -37,5 +47,9 @@ Ext.define('NP.controller.VendorCatalog', {
 
 		// Load the store
 		grid.reloadFirstPage();
+	},
+
+	showAdvancedSearch: function() {
+		this.setView('NP.view.catalog.AdvancedSearch');
 	}
 });

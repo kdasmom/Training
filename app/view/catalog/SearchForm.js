@@ -27,10 +27,10 @@ Ext.define('NP.view.catalog.SearchForm', {
 			{
 				xtype: 'customcombo',
 				name: 'vccat_id',
-				labelWidth: 60,
+				labelWidth: !this.advancedSearch ? 60 : 120,
 				displayField: 'vc_catalogname',
 				valueField: 'vc_id',
-				fieldLabel: NP.Translator.translate('Search'),
+				fieldLabel: !this.advancedSearch ? NP.Translator.translate('Search') : NP.Translator.translate('Advanced Search'),
 				store: Ext.create('NP.store.catalog.Vc', {
 					service: 'CatalogService',
 					action: 'getCatalogs',
@@ -39,10 +39,11 @@ Ext.define('NP.view.catalog.SearchForm', {
 					},
 					autoLoad: true
 				}),
+				multiSelect: !this.advancedSearch ? false : true,
 				queryMode: 'local',
 				editable: false,
 				typeAhead: false,
-				width: 300
+				width: !this.advancedSearch ? 300 : 360
 			},
 			{
 				xtype: 'customcombo',
