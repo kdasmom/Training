@@ -12,7 +12,7 @@
 .edit-btn { background-image: url("../images/buttons/edit.gif"); }
 .new-btn { background-image: url("../images/buttons/new.gif"); }
 .upload-btn { background-image: url("../images/buttons/upload.gif"); }
-.camera-btn { background-image: url("../images/buttons/camera.gif"); }
+.camera-btn { background-image: url("../images/buttons/camera.gif"); width: 18px !important; }
 .activate-btn { background-image: url("../images/buttons/activate.gif"); }
 .inactivate-btn { background-image: url("../images/buttons/inactivate.gif"); }
 .view-btn { background-image: url("../images/buttons/view.gif"); }
@@ -21,6 +21,26 @@
 .message-btn { background-image: url("../images/buttons/message.gif"); }
 .reset-btn { background-image: url("../images/buttons/reset.gif"); }
 .allocate-btn { background-image: url("../images/buttons/allocate.gif"); }
+.npiss-btn { background-image: url("../images/buttons/npiss.gif"); width: 20px !important; }
+.nsiss-btn { background-image: url("../images/buttons/nsiss.gif"); width: 30px !important; }
+.search-btn { background-image: url("../images/buttons/search.gif"); }
+.report-btn { background-image: url("../images/buttons/report.gif"); }
+.return-btn { background-image: url("../images/buttons/return.gif"); }
+.cd-btn { background-image: url("../images/buttons/cd.gif"); }
+.go-btn { background-image: url("../images/buttons/go.gif"); width: 33px !important; }
+.print-btn { background-image: url("../images/buttons/print.gif"); }
+.previous-btn { background-image: url("../images/buttons/previous.gif"); }
+.next-btn { background-image: url("../images/buttons/next.gif"); }
+.saveandnext-btn { background-image: url("../images/buttons/save_and_next.gif"); }
+.saveandprevious-btn { background-image: url("../images/buttons/save_and_previous.gif"); }
+
+.npiss-button .x-btn-inner { padding-left: 24px !important; }
+.nsiss-button .x-btn-inner { padding-left: 34px !important; }
+.camera-button .x-btn-inner { padding-left: 22px !important; }
+
+.go-button {padding: 0 !important; border: 0 !important; }
+.go-button .x-btn-inner { width: 33px !important; }
+.go-button button { width: 33px !important; }
 
 /* STYLE FOR USING AN IMAGE AS A BUTTON IN A GRID BY SPECIFYING THIS AS tdCls CONFIG OPTION */
 .image-button-cell .x-grid-cell-inner { padding-bottom: 0; }

@@ -6,7 +6,12 @@ Ext.define('NP.view.images.SearchCDIndex', {
     autoscroll: true,
 
     requires: [
-        'NP.view.images.grid.SearchCDIndex'
+        'NP.view.images.grid.SearchCDIndex',
+
+        'NP.view.shared.button.Return',
+        'NP.view.shared.button.Search',
+        'NP.view.shared.button.Print',
+        'NP.view.shared.button.Go'
     ],
 
     locale: {
@@ -113,6 +118,10 @@ Ext.define('NP.view.images.SearchCDIndex', {
 
                         xtype: 'textfield',
                         fieldLabel: 'Reference:'
+                    },
+                    {
+                        xtype: 'shared.button.go',
+                        itemId: 'buttonSearchCDIndexProcessAction'
                     }
                 ]
             },
@@ -124,17 +133,22 @@ Ext.define('NP.view.images.SearchCDIndex', {
             }
         ];
 
-
         this.tbar = [
-            {xtype: 'button', itemId: 'buttonReturn', text: this.locale.buttonReturn},
+            {xtype: 'shared.button.return', itemId: 'buttonReturn', text: this.locale.buttonReturn},
             {xtype: 'tbspacer', width: 20},
-            {xtype: 'button', itemId: 'buttonSearchCDIndexProcess', text: this.locale.buttonSearch},
-            {xtype: 'button', itemId: 'buttonSearchCDIndexPrint', text: this.locale.buttonPrint}
+            {xtype: 'shared.button.search', itemId: 'buttonSearchCDIndexProcess', text: this.locale.buttonSearch},
+            {xtype: 'shared.button.print', itemId: 'buttonSearchCDIndexPrint', text: this.locale.buttonPrint, hidden: true}
         ];
 
         this.callParent(arguments);
     },
 
+    /**
+     * Show appropriate fields when search document type is changed.
+     * 
+     * @param combo Document type combo box.
+     * @param records Combobox data.
+     */
     onDocumentTypeChange: function(combo, records) {
         if (combo && records) {
             var value = records[0]['data'][combo['valueField']];

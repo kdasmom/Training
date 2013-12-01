@@ -56,7 +56,7 @@ Ext.define('NP.model.image.ImageIndex', {
 		{ name: 'PriorityFlag_ID_Alt_invoice', type: 'int' },
 		{ name: 'PriorityFlag_ID_Alt_po', type: 'int' },
 		{ name: 'PriorityFlag_ID_Alt_vef', type: 'int' },
-		{ name: 'image_index_NeededBy_datetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+		{ name: 'Image_Index_neededby_datetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
 		{ name: 'universal_field4' },
 		{ name: 'universal_field5' },
 		{ name: 'universal_field6' },
@@ -140,7 +140,7 @@ Ext.define('NP.model.image.ImageIndex', {
             { field: 'Image_Doctype_Id', type: 'presence' },
             { field: 'invoiceimage_vendorsite_id', type: 'presence' },
             { field: 'invoiceimage_vendorsite_alt_id', type: 'presence' },
-            { field: 'Property_Id', type: 'presence' },
+            { field: 'Property_id', type: 'presence' },
             { field: 'Property_Alt_Id', type: 'presence' },
 	]
     

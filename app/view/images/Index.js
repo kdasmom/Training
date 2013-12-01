@@ -3,23 +3,16 @@ Ext.define('NP.view.images.Index', {
     alias:  'widget.images.index',
 
     title:  'Index Images',
-    /*defaults: {
-        labelWidth: 120
-    },*/
+    requires: [
+        'NP.view.shared.button.Return',
+        'NP.view.shared.button.Cancel',
+        'NP.view.shared.button.Delete',
+        'NP.view.shared.button.Previous',
+        'NP.view.shared.button.Next',
+        'NP.view.shared.button.SaveAndNext',
+        'NP.view.shared.button.SaveAndPrevious'
+    ],
 
-    ids: {
-        buttonReturn: 'buttonReturn',
-
-        buttonNext: 'buttonNext',
-        buttonPrev: 'buttonPrev',
-
-        buttonSaveAndNext:     'buttonSaveAndNext',
-        buttonSaveAndPrev:     'buttonSaveAndPrev',
-        buttonSaveAsException: 'buttonSaveAsException',
-
-        buttonDelete: 'buttonDeleteFromQueue',
-        buttonInvoice: 'buttonInvoice'
-    },
     locale: {
         buttonReturn: 'Return to Image Management',
 
@@ -35,19 +28,6 @@ Ext.define('NP.view.images.Index', {
     },
 
     initComponent: function() {
-        /*
-        var fields = [
-            // Remittance Advice
-            {
-                id: 'field-remittance-advice',
-                name: 'remit_advice',
-                xtype: 'checkbox',
-                labelWidth: widthLabel,
-                fieldLabel: 'Remittance Advice:'
-            },
-        ];*/
-
-
         this.id = 'panel-index';
         this.layout = 'border';
 
@@ -57,6 +37,27 @@ Ext.define('NP.view.images.Index', {
                 'Select a utility account'
         ;
 
+        // Prepare stores for comboboxes.
+        this['postload-store'] = {
+            'vendor-codes': Ext.create('NP.store.vendor.Vendors', {
+                service : 'ImageService',
+                action  : 'listVendorCode'
+            }),
+            'vendor-names': Ext.create('NP.store.vendor.Vendors', {
+                service : 'ImageService',
+                action  : 'listVendor'
+            }),
+            'property-codes': Ext.create('NP.store.property.Properties', {
+                service : 'ImageService',
+                action  : 'listPropertyCode'
+            }),
+            'property-names': Ext.create('NP.store.property.Properties', {
+                service : 'ImageService',
+                action  : 'listProperty'
+            })
+        };
+
+        // Prepare markup.
         var fields = [];
         fields = fields.concat(
             this.markupBase(
@@ -90,6 +91,7 @@ Ext.define('NP.view.images.Index', {
                 border: 0,
                 region: 'west',
                 bodyPadding: 10,
+                layout: 'fit',
                 items: [
                     {
                         id: 'iframe-panel',
@@ -107,7 +109,6 @@ Ext.define('NP.view.images.Index', {
             {
                 id: 'index-form',
                 xtype: 'panel', 
-                //itemId: 'tExperiment'
                 border: 0,
                 layout: 'form',
                 region: 'center',
@@ -117,73 +118,60 @@ Ext.define('NP.view.images.Index', {
             }
         ];
 
+        // Prepare top toolbar elements.
         if (this.section == 'exception') {
             this.tbar = [
-                {xtype: 'button', itemId: this.ids.buttonReturn,  text: 'Cancel'},
+                {xtype: 'shared.button.cancel', itemId: 'buttonReturn',  text: 'Cancel'},
 
                 {xtype: 'tbspacer', width: 20},
 
-                {xtype: 'button', itemId: this.ids.buttonPrev,  text: this.locale.buttonPrev},
-                {xtype: 'button', itemId: this.ids.buttonNext,  text: this.locale.buttonNext},
+                {xtype: 'shared.button.previous', itemId: 'buttonPrev',  text: this.locale.buttonPrev},
+                {xtype: 'shared.button.next', itemId: 'buttonNext',  text: this.locale.buttonNext},
 
                 {xtype: 'tbspacer', width: 20},
 
-                {xtype: 'button', itemId: this.ids.buttonSaveAndNext,      text: this.locale.buttonSaveAndNext},
-                {xtype: 'button', itemId: 'buttonIndexingComplete',      text: 'Indexing Complete and Next'}
+                {xtype: 'shared.button.saveandnext', itemId: 'buttonSaveAndNext',      text: this.locale.buttonSaveAndNext},
+                {xtype: 'shared.button.saveandnext', itemId: 'buttonIndexingComplete',      text: 'Indexing Complete and Next'}
             ];
         } else {
             this.tbar = [
-                {xtype: 'button', itemId: this.ids.buttonReturn,  text: this.locale.buttonReturn},
-
-                {xtype: 'tbspacer', width: 20},
-
-                {xtype: 'button', itemId: this.ids.buttonPrev,  text: this.locale.buttonPrev},
-                {xtype: 'button', itemId: this.ids.buttonNext,  text: this.locale.buttonNext},
-
-                {xtype: 'tbspacer', width: 20},
-
-                {xtype: 'button', itemId: this.ids.buttonSaveAndPrev,      text: this.locale.buttonSaveAndPrev},
-                {xtype: 'button', itemId: this.ids.buttonSaveAsException,  text: this.locale.buttonSaveAsException},
-                {xtype: 'button', itemId: this.ids.buttonSaveAndNext,      text: this.locale.buttonSaveAndNext},
-
-                {xtype: 'tbspacer', width: 20},
-
-                {xtype: 'button', itemId: this.ids.buttonDelete,  text: this.locale.buttonDelete},
-                {xtype: 'button', itemId: this.ids.buttonInvoice, text: this.locale.buttonInvoice}
+                {xtype: 'shared.button.previous', itemId: 'buttonPrev',  text: this.locale.buttonPrev},
+                {xtype: 'shared.button.saveandprevious', itemId: 'buttonSaveAndPrev',      text: this.locale.buttonSaveAndPrev},
+                {xtype: 'shared.button.saveandnext', itemId: 'buttonSaveAsException',  text: this.locale.buttonSaveAsException},
+                {xtype: 'shared.button.return', itemId: 'buttonReturn',  text: this.locale.buttonReturn},
+                {xtype: 'shared.button.delete', itemId: 'buttonDeleteFromQueue',  text: this.locale.buttonDelete},
+                {xtype: 'shared.button.saveandnext', itemId: 'buttonSaveAndNext',      text: this.locale.buttonSaveAndNext},
+                {xtype: 'shared.button.next', itemId: 'buttonNext',  text: this.locale.buttonNext},
+                {xtype: 'shared.button.next', itemId: 'buttonInvoice', text: this.locale.buttonInvoice}
             ];
         }
-        
-        
+
         this.callParent(arguments);
         this.onDocumentTypeChange();
-    },
-
-    getCurrentDoctype: function() {
-        return Ext.ComponentQuery.query('[name="Image_Doctype_Id"]')[0].getValue();
-    },
-    getCurrentIntegrationPackage: function() {
-        return Ext.ComponentQuery.query('[itemId="field-integration-package"]')[0].getValue();
     },
 
     /***************************************************************************
      * Seciton: Base
      **************************************************************************/
+    /**
+     * Prepare markup for Basic section.
+     * 
+     * @param {} storeDoctypes Store for "Document Type" combobox.
+     * @param {} storeIntegrationPackages Store for "Integration Package" combobox.
+     */
     markupBase: function(storeDoctypes, storeIntegrationPackages) {
-        var doctype = 
-            storeDoctypes.totalCount && 
-            storeDoctypes.data.keys[0]
-        ;
-        var integrationPackage = 
-            storeIntegrationPackages.totalCount && 
-            storeIntegrationPackages.data.keys[0]
-        ;
         return [
-            // Document type
+            // Field: Document type
             {
                 name: 'Image_Doctype_Id',
 
                 xtype: 'customcombo',
                 fieldLabel: 'Document Type:',
+
+                editable: false,
+                typeAhead: false,
+                forceSelection: true,
+                selectFirstRecord: true,
 
                 store: storeDoctypes,
                 valueField:   'image_doctype_id',
@@ -191,59 +179,44 @@ Ext.define('NP.view.images.Index', {
 
                 listeners: {
                     select: this.onDocumentTypeChange.bind(this)
-                },
-                value: doctype
+                }
             },
-            // Image name
+            // Field: Image name
             {
                 name: 'Image_Index_Name',
 
                 xtype: 'textfield',
                 fieldLabel: 'Image Name:'
             },
-            // Integration Package
+            // Field: Integration Package
             {
                 itemId: 'field-integration-package',
 
                 xtype: 'customcombo',
                 fieldLabel: 'Integration Package:',
 
+                editable: false,
+                typeAhead: false,
+                selectFirstRecord: true,
+
                 store: storeIntegrationPackages,
                 valueField:   'integration_package_id',
                 displayField: 'integration_package_name',
 
                 listeners: {
-                    select: this.onIntegrationPackageChange
-                },
-                value: integrationPackage
+                    select: this.onIntegrationPackageChange.bind(this)
+                }
             },
-        ] 
-    },
-    loadStoresBase: function(callback) {
-        var storeDoctypes = 
-            Ext.create('NP.store.images.ImageDocTypes',{
-                service    : 'ImageService',
-                action     : 'listDocTypes'
-            }
-        );
-        var storeIntegrationPackages =
-            Ext.create('NP.store.images.IntegrationPackages', {
-                service    : 'ImageService',
-                action     : 'listIntegrationPackages'
-            }
-        );
-
-        storeDoctypes.load(function(records, operation, success) {
-            storeIntegrationPackages.load(function(records, operation, success) {
-                callback && callback(storeDoctypes, storeIntegrationPackages);
-            });
-        });
+        ]
     },
 
+    /**
+     * Show appropriate fields if Document Type is changed.
+     * 
+     * @param combo Document type combo box.
+     * @param records Combobox data.
+     */
     onDocumentTypeChange: function(combo, records) {
-        //function changeIndexValues()
-        //var form = this.up('boundform');
-
         var title = 
             (combo && records) ?
                 records[0]['data'][combo['displayField']]:
@@ -254,17 +227,21 @@ Ext.define('NP.view.images.Index', {
         this['display' + title] && this['display' + title]();
     },
 
+    /**
+     * Reload property and vendor comboboxes data if integration package is changed.
+     * 
+     * @param combo Document type combo box.
+     * @param records Combobox data.
+     */
     onIntegrationPackageChange: function(combo, records) {
-        /*
-            RELOAD FORM WITH CORRECT DATA
-            var integration_package_id = $(this).val();
-            var $form = $('##intPkgForm');
-            $('<input type="hidden" name="integration_package_id" value="'+integration_package_id+'" />').appendTo($form);
-
-            $form.submit();
-        */
+        this.reloadStores();
     },
 
+    /**
+     * Show/hide form fields depending on passed configuration.
+     * 
+     * @param fields Key-value pairs where key is fields itemId and value is visibility flag.
+     */
     display: function(fields) {
         for (var key in fields) {
             var field = Ext.ComponentQuery.query(
@@ -274,6 +251,10 @@ Ext.define('NP.view.images.Index', {
         }
         
     },
+
+    /**
+     * Display fields for Invoice document type.
+     */
     displayInvoice: function() {
         var fields = {
             'field-integration-package' : true,
@@ -291,6 +272,10 @@ Ext.define('NP.view.images.Index', {
 
         this.display(fields);
     },
+
+    /**
+     * Display fields for Utility Invoice document type.
+     */
     displayUtilityInvoice: function() {
         var fields = {
             'field-integration-package' : false,
@@ -307,6 +292,10 @@ Ext.define('NP.view.images.Index', {
         };
         this.display(fields);
     },
+
+    /**
+     * Display fields for Purchase Order document type.
+     */
     displayPurchaseOrder: function() {
         var fields = {
             'field-integration-package' : true,
@@ -323,6 +312,10 @@ Ext.define('NP.view.images.Index', {
         };
         this.display(fields);
     },
+
+    /**
+     * Display fields for Receipt document type.
+     */
     displayReceipt: function() {
         var fields = {
             'field-integration-package' : true,
@@ -340,11 +333,12 @@ Ext.define('NP.view.images.Index', {
         this.display(fields);
     },
 
-    //markup - методы для подготовки items
-    //display - методы для отображения/скрывания items
     /***************************************************************************
-     * SECTION: UTILITY
+     * Section: Utility
      **************************************************************************/
+    /**
+     * Prepare markup for Utility section.
+     */
     markupUtility: function() {
         if (NP.lib.core.Security.hasPermission(6094)) {
             if (NP.lib.core.Security.hasPermission(6095)) {
@@ -355,7 +349,7 @@ Ext.define('NP.view.images.Index', {
                     layout: 'form',
 
                     items: [
-                        // Account Number
+                        // Field: Account Number
                         {
                             name: 'utilityaccount_accountnumber',
 
@@ -366,12 +360,12 @@ Ext.define('NP.view.images.Index', {
                                 change: this.checkUtilityAccountNumber.bind(this)
                             }
                         },
-                        // utilAccountValidPanel
+                        // Panel: Is Utility Account Valid
                         {
                             name: 'panel-utility-account-valid',
                             border: 0
                         },
-                        // Meter Number
+                        // Field: Meter Number
                         {
                             name: 'utilityaccount_metersize',
 
@@ -380,23 +374,20 @@ Ext.define('NP.view.images.Index', {
 
                             listeners: {
                                 change: this.checkMeterNumber.bind(this)
-                                /*keyup: function() {
-                                    //onKeyUp="changeMeterNumber(event);" 
-                                }*/
                             }
                         },
-                        // utilMeterValidPanel
+                        // Panel: Is Meter Number Valid
                         {
                             name: 'panel-utility-metersize-valid',
                             border: 0
-                        },
+                        }
                     ]
                 }
             } else {
                 var storeAccountNumber =
                     Ext.create('NP.store.images.AccountNumbers', {
                         service    : 'ImageService',
-                        action     : 'listAccountNumbers',
+                        action     : 'listAccountNumber',
                         extraParams : {
                             'userprofile_id': NP.Security.getUser().get('userprofile_id'),
                             'delegation_to_userprofile_id': NP.Security.getUser().get('delegation_to_userprofile_id')
@@ -408,10 +399,9 @@ Ext.define('NP.view.images.Index', {
                 var storeMeterSize =
                     Ext.create('NP.store.images.MeterSizes', {
                         service    : 'ImageService',
-                        action     : 'listMeterSizes',
-                        extraParams :{
+                        action     : 'listAccountNumber2',
+                        extraParams : {
                             account: 1
-                            //account: 1
                         }
 //                        fields: ['utilityaccount_metersize'],
 //                        data: [{ "utilityaccount_metersize": "4"}]
@@ -426,7 +416,7 @@ Ext.define('NP.view.images.Index', {
                     layout: 'form',
 
                     items: [
-                        // Account Number
+                        // Field: Account Number
                         {
                             name: 'utilityaccount_accountnumber',
 
@@ -434,19 +424,15 @@ Ext.define('NP.view.images.Index', {
                             fieldLabel: 'Account Number:',
 
                             store: storeAccountNumber,
-                            //valueField:   'integration_package_id',
-                            //displayField: 'integration_package_name',
-                            //query = "qUtilAccounts"  value="#qUtilAccounts.utilityaccount_accountnumber#" 
-                            //text=#qUtilAccounts.utilityAccount_accountNumber# <cfif qUtilAccounts.utilityaccount_accountnumber EQ get_current_image.utilityaccount_accountnumber> 
-                            //selected="true"</cfif>
-
-                            addBlankRecord: true,
+                            displayField: 'utilityaccount_accountnumber',
+                            valueField:   'utilityaccount_id',
+                            //value="#qUtilAccounts.utilityaccount_accountnumber#" 
 
                             listeners: {
-                                select: this.onIntegrationPackageChange //checkAccountNumber();
+                                select: this.checkUtilityAccountNumber.bind(this)
                             }
                         },
-                        // Meter Number
+                        // Field: Meter Number
                         {
                             name: 'utilityaccount_metersize',
 
@@ -454,78 +440,37 @@ Ext.define('NP.view.images.Index', {
                             fieldLabel: 'Meter Number:',
 
                             store: storeMeterSize,
-                            // LOOK TO THE STORE
-                            //valueField:   'integration_package_id',
-                            //displayField: 'integration_package_name',
-                            //if get_current_image.utilityaccount_id then show select
-                            //query="qMeterNumbers" value="#qMeterNumbers.utilityaccount_metersize#" 
-                            //text=#qMeterNumbers.utilityaccount_metersize# <cfif qMeterNumbers.utilityaccount_metersize EQ get_current_image.utilityaccount_metersize> 
-                            //selected="true"</cfif>
-
-                            addBlankRecord: true,
+                            //value="#qMeterNumbers.utilityaccount_metersize#"
 
                             listeners: {
-                                select: this.onIntegrationPackageChange //reloadUtilityAccounts();
+                                select: this.checkMeterNumber.bind(this)
                             }
                         },
                     ]
                 };
-            }
+            };
 
             var items = [
                 options,
 
-                // Utility Account
+                // Field: Utility Account
                 {
                     itemId: 'field-utility-account',
                     name:'panel-utility-account',  //'utilaccount_show_panel'
-                    //xtype: 'textfield',
+                    
                     xtype: 'text',
                     html:'<b>Utility Account:</b> <em>' + this.locale.utilityAccountText + '</em>'
-                    
-/*
-STORE FOR IT                var storeMeterSize =
-                    Ext.create('NP.store.images.AccountNumbers', {
-                        service    : 'ImageService',
-                        action     : 'listAccountNumber2',
-                        extraParams :{
-                            'userprofile_id': NP.Security.getUser().get('userprofile_id'),
-                            'delegation_to_userprofile_id': NP.Security.getUser().get('delegation_to_userprofile_id')
-                        }
-                    }
-                );
-                storeMeterSize.load();
-
-/*
- 
-                    <cfif isNumeric(get_current_image.utilityaccount_id)>
-                        <cfif qUtilityAccounts.recordcount GT 1>
-                            <select id="utilityaccount_id" name="utilityaccount_id" onchange="changeUtilityAccountId(this);">
-                                <cfloop query="qUtilityAccounts">
-                                    <option value="#qUtilityAccounts.utilityaccount_id#,#qUtilityAccounts.property_id#,#qUtilityAccounts.vendorsite_id#"<cfif qUtilityAccounts.utilityaccount_id EQ get_current_image.utilityaccount_id> selected="true"</cfif>>#qUtilityAccounts.utilityaccount_name#</option>
-                                </cfloop>
-                            </select>
-                        <cfelse>
-                            #qUtilityAccounts.utilityaccount_name#
-                            <input type="hidden" id="utilityaccount_id" name="utilityaccount_id" value="#qUtilityAccounts.utilityaccount_id#" />
-                        </cfif>
-                    <cfelse>
-                        <em>#utilityAccountText#</em>
-                    </cfif>
-*/
                 },
 
-                // Utility Property Id
+                // Field: Utility Property Id
                 {
                     name: 'utility_property_id',
-                    xtype: 'hiddenfield'
-                    //value="<cfif isNumeric(get_current_image.utilityaccount_id)>#get_current_image.property_id#</cfif>"
+                    xtype: 'hiddenfield' //value="<cfif isNumeric(get_current_image.utilityaccount_id)>#get_current_image.property_id#</cfif>"
                 },
-                // Utility Vendorsite Id
+                // Field: Utility Vendorsite Id
                 {
                     name: 'utility_vendorsite_id',
-                    xtype: 'hiddenfield'
-                    //<cfif isNumeric(get_current_image.utilityaccount_id)>#get_current_image.image_index_VendorSite_Id#</cfif>
+                    xtype: 'hiddenfield' //<cfif isNumeric(get_current_image.utilityaccount_id)>#get_current_image.image_index_VendorSite_Id#</cfif>
                 }
             ];
         }
@@ -542,14 +487,15 @@ STORE FOR IT                var storeMeterSize =
                 items: items
             }
         ];
-        //hasUtilityInvoiceRights = 6094
-        //hasManualUtilityAccountReq = 6095
-        //NP.lib.core.Security.hasPermission(module_id)
-        //this.checkUtilityAccountNumber();
     },
 
+    /**
+     * Load data for utility account check and choose appropriate utility account.
+     * This method is used by Check Utility Account Number and Meter Number functionality.
+     * 
+     * @param callback After utility account data is loaded and selected callback will be called.
+     */
     checkAccountNumber: function(callback) {
-        //if ( $('##utilityaccount_metersize option').length ) $('##utilityaccount_metersize').val('');
         var mask = new Ext.LoadMask(this);
         mask.show();
 
@@ -564,7 +510,9 @@ STORE FOR IT                var storeMeterSize =
         })
     },
 
-//    checkUtilityAccountNumber: function(callback) {
+    /**
+     * Check if Utility Account Number is correct.
+     */
     checkUtilityAccountNumber: function() {
         var callback = function(){};
         var account = Ext.ComponentQuery.query(
@@ -589,6 +537,9 @@ STORE FOR IT                var storeMeterSize =
         }
     },
 
+    /**
+     * Check if Meter Number is correct.
+     */
     checkMeterNumber: function(callback) {
         var metersize = Ext.ComponentQuery.query(
             '[name="utilityaccount_metersize"]'
@@ -615,63 +566,12 @@ STORE FOR IT                var storeMeterSize =
         }
     },
 
-    selectUtilityAccount: function(accountNumber, isAccountValid, isMetersizeValid) {
-        var account = Ext.ComponentQuery.query(
-            '[name="utilityaccount_accountnumber"]'
-        )[0];
-        var metersize = Ext.ComponentQuery.query(
-            '[name="utilityaccount_metersize"]'
-        )[0];
-
-        var utilityPropertyId = Ext.ComponentQuery.query(
-            '[name="utility_property_id"]'
-        )[0];
-        var utilityVendorsiteId = Ext.ComponentQuery.query(
-            '[name="utility_vendorsite_id"]'
-        )[0];
-
-        var panelUtilityAccount = Ext.ComponentQuery.query(
-            '[name="panel-utility-account"]'
-        )[0];
-
-        if (!isAccountValid || !isMetersizeValid && $('#utilityaccount_metersize option').length == 0 || account.getValue() == '') {
-            utilityPropertyId.setValue('');
-            utilityVendorsiteId.setValue('');
-            panelUtilityAccount.update('<b>Utility Account:</b> <em>' + this.locale.utilityAccountText + '</em>')
-
-            if (isAccountValid && $('#utilityaccount_metersize option').length) {
-                metersize.update('<option value=""></option>');
-            }
-        } else if ($('#utilityaccount_metersize option').length) {
-            NP.lib.core.Net.remoteCall({
-                requests: {
-                    service: 'ImageService',
-                    action : 'getUtilityAccountVendorPropMeter',
-
-                    utilityaccount_accountnumber: metersize.getValue(),
-
-                    success: function(data) {
-                        metersize.update('<option value=""></option>');
-                        for (var i = 0, l = data.meters; i < l; i++) {
-                            // Remove the string we added at the end of the meter to force string conversion
-                            //var fixedval = data.meters[i].replace('|@|', '');
-                            //meterSelect.append($('<option></option>').val(fixedval).html(fixedval));
-                        }
-                    }
-                }
-            });
-
-        }
-    },
-
-    changeUtilityAccountId: function(field) {
-        //var val = $(field).val().split(',');
-        //var property_id = val[1];
-        //var vendorsite_id = val[2];
-        //$('##utility_property_id').val(property_id);
-        //$('##utility_vendorsite_id').val(vendorsite_id);
-    },
-
+    /**
+     * Load and check utility account data.
+     * 
+     * @param Function callback Callback will be called after all necessary data is loaded and
+     *      appropriate fields are set.
+     */
     reloadUtilityAccounts: function(callback) {
         var account = Ext.ComponentQuery.query(
             '[name="utilityaccount_accountnumber"]'
@@ -723,6 +623,7 @@ STORE FOR IT                var storeMeterSize =
                                     data.accounts[0].vendorsite_id
                                 );
                                 panelUtilityAccount.update(
+                                    '<b>Utility Account:</b> ' +
                                     data.accounts[0].utilityaccount_name + 
                                     '<input type="hidden" id="utilityaccount_id" name="utilityaccount_id" value="' +
                                         data.accounts[0].utilityaccount_id + ',' +
@@ -777,29 +678,95 @@ STORE FOR IT                var storeMeterSize =
         });
     },
 
+    /**
+     * Set hidden fields values for the utility account after appropriate data is 
+     * reloaded.
+     * 
+     * @param number accountNumber Account number.
+     * @param boolean isAccountValid Was account number passed check or not.
+     * @param boolean isMetersizeValid Was meter number passed check or not.
+     */
+    selectUtilityAccount: function(accountNumber, isAccountValid, isMetersizeValid) {
+        var account = Ext.ComponentQuery.query(
+            '[name="utilityaccount_accountnumber"]'
+        )[0];
+        var metersize = Ext.ComponentQuery.query(
+            '[name="utilityaccount_metersize"]'
+        )[0];
+
+        var utilityPropertyId = Ext.ComponentQuery.query(
+            '[name="utility_property_id"]'
+        )[0];
+        var utilityVendorsiteId = Ext.ComponentQuery.query(
+            '[name="utility_vendorsite_id"]'
+        )[0];
+
+        var panelUtilityAccount = Ext.ComponentQuery.query(
+            '[name="panel-utility-account"]'
+        )[0];
+
+        if (!isAccountValid || !isMetersizeValid && $('#utilityaccount_metersize option').length == 0 || account.getValue() == '') {
+            utilityPropertyId.setValue('');
+            utilityVendorsiteId.setValue('');
+            panelUtilityAccount.update('<b>Utility Account:</b> <em>' + this.locale.utilityAccountText + '</em>')
+
+            if (isAccountValid && $('#utilityaccount_metersize option').length) {
+                metersize.update('<option value=""></option>');
+            }
+        } else if ($('#utilityaccount_metersize option').length) {
+            NP.lib.core.Net.remoteCall({
+                requests: {
+                    service: 'ImageService',
+                    action : 'getUtilityAccountVendorPropMeter',
+
+                    utilityaccount_accountnumber: metersize.getValue(),
+
+                    success: function(data) {
+                        metersize.update('<option value=""></option>');
+                        for (var i = 0, l = data.meters; i < l; i++) {
+                            // Remove the string we added at the end of the meter to force string conversion
+                            //var fixedval = data.meters[i].replace('|@|', '');
+                            //meterSelect.append($('<option></option>').val(fixedval).html(fixedval));
+                        }
+                    }
+                }
+            });
+        }
+    },
+
+    /**
+     * Alternative way to set utility account values.
+     * 
+     * If comboboxes are used for account number selection, different select account
+     * mechanism is used.
+     * 
+     * @param {} field Utility account selector's option.
+     */
+    changeUtilityAccountId: function(field) {
+        var val = $(field).val().split(',');
+        var property_id = val[1];
+        var vendorsite_id = val[2];
+        $('##utility_property_id').val(property_id);
+        $('##utility_vendorsite_id').val(vendorsite_id);
+    },
+
     /***************************************************************************
      * Section: Property Code
      **************************************************************************/
+    /**
+     * Prepare markup for Property Code section.
+     */
     markupPropertyCode: function() {
-        var storePropertyCodes =
-            Ext.create('NP.store.property.Properties', {
-                service    : 'ImageService',
-                action     : 'listPropertyCode',
-                extraParams: {
-                    'userprofile_id': NP.Security.getUser().get('userprofile_id'),
-                    'delegation_to_userprofile_id': NP.Security.getUser().get('delegation_to_userprofile_id')
-                }
-            }
-        );
-        storePropertyCodes.load();
-
+        this['postload-store']['property-codes'].load({
+            params: this.getStoreParams()
+        });
         return [
             // Property code
             {
                 itemId: 'field-property-code',
                 //name: '' $request['property_alt_id'] = $_REQUEST['field-property-code-inputEl'];
 
-                name: 'property_id_alt',
+                name: 'Property_Alt_Id',
                 xtype: 'customcombo',
                 fieldLabel: 'Property Code:',
 
@@ -808,12 +775,13 @@ STORE FOR IT                var storeMeterSize =
                 displayField: 'property_id_alt',
                 valueField:   'property_id',
 
-                store: storePropertyCodes,
+                //store: storePropertyCodes,
+                store: this['postload-store']['property-codes'],
 
                 listeners: {
                     select: function(combo, records) {
                         var value = combo.getValue();
-                        var element = Ext.ComponentQuery.query('[name="Property_Id"]')[0];
+                        var element = Ext.ComponentQuery.query('[name="Property_id"]')[0];
                         if (value) {
                             element.disable();
                             element.setValue(value);
@@ -826,22 +794,17 @@ STORE FOR IT                var storeMeterSize =
             }
         ];
     },
-    
+
     /***************************************************************************
-     * SECTION: VENDOR CODE
+     * Section: Vendor Code
      **************************************************************************/
+    /**
+     * Prepare markup for Vendor Code section.
+     */
     markupVendorCode: function() {
-        var storeVendorCodes =
-            Ext.create('NP.store.vendor.Vendors', {
-                service    : 'ImageService',
-                action     : 'listVendorCode',
-                extraParams: {
-                    'userprofile_id': NP.Security.getUser().get('userprofile_id'),
-                    'delegation_to_userprofile_id': NP.Security.getUser().get('delegation_to_userprofile_id')
-                }
-            }
-        );
-        storeVendorCodes.load();
+        this['postload-store']['vendor-codes'].load({
+            params: this.getStoreParams()
+        });
 
         return [
             //Vendor code
@@ -857,7 +820,8 @@ STORE FOR IT                var storeMeterSize =
                 valueField:   'vendorsite_id',
                 addBlankRecord: true,
 
-                store: storeVendorCodes,
+                //store: storeVendorCodes,
+                store: this['postload-store']['vendor-codes'],
 
                 listeners: {
                     select: function(combo, records) {
@@ -875,22 +839,17 @@ STORE FOR IT                var storeMeterSize =
             }
         ];
     },
-    
+
     /***************************************************************************
-     * SECTION: PROPERTY NAME
+     * Section: Propery Name
      **************************************************************************/
+    /**
+     * Prepare markup for Propery Name section.
+     */
     markupPropertyName: function() {
-        var storePropertyNames =
-            Ext.create('NP.store.property.Properties', {
-                service    : 'ImageService',
-                action     : 'listProperty',
-                extraParams: {
-                    'userprofile_id': NP.Security.getUser().get('userprofile_id'),
-                    'delegation_to_userprofile_id': NP.Security.getUser().get('delegation_to_userprofile_id')
-                }
-            }
-        );
-        storePropertyNames.load();
+        this['postload-store']['property-names'].load({
+            params: this.getStoreParams()
+        });
 
         return [
             // Property
@@ -898,7 +857,7 @@ STORE FOR IT                var storeMeterSize =
                 itemId: 'field-property-name',
 
                 name: 'Property_id',
-                xtype: 'combobox',
+                xtype: 'customcombo',
                 fieldLabel: 'Property:',
 
                 addBlankRecord: true,
@@ -906,7 +865,8 @@ STORE FOR IT                var storeMeterSize =
                 displayField: 'property_name',
                 valueField:   'property_id',
 
-                store: storePropertyNames,
+                //store: storePropertyNames,
+                store: this['postload-store']['property-names'],
 
                 listeners: {
                     select: function(combo, records) {
@@ -924,22 +884,17 @@ STORE FOR IT                var storeMeterSize =
             }
         ];
     },
-    
+
     /***************************************************************************
-     * SECTION: VENDOR NAME
+     * Section: Vendor Name
      **************************************************************************/
+    /**
+     * Prepare markup for Vendor Name section.
+     */
     markupVendorName: function() {
-        var storeVendorNames =
-            Ext.create('NP.store.vendor.Vendors', {
-                service    : 'ImageService',
-                action     : 'listVendor',
-                extraParams: {
-                    'userprofile_id': NP.Security.getUser().get('userprofile_id'),
-                    'delegation_to_userprofile_id': NP.Security.getUser().get('delegation_to_userprofile_id')
-                }
-            }
-        );
-        storeVendorNames.load();
+        this['postload-store']['vendor-names'].load({
+            params: this.getStoreParams()
+        });
 
         return [
             // Vendor
@@ -955,7 +910,8 @@ STORE FOR IT                var storeMeterSize =
                 displayField: 'vendor_name',
                 valueField:   'vendorsite_id',
 
-                store: storeVendorNames,
+                //store: storeVendorNames,
+                store: this['postload-store']['vendor-names'],
 
                 listeners: {
                     select: function(combo, records) {
@@ -973,10 +929,13 @@ STORE FOR IT                var storeMeterSize =
             }
         ];
     },
-    
+
     /***************************************************************************
-     * SECTION: VENDOR NAME
+     * Section: Addresses
      **************************************************************************/
+    /**
+     * Prepare markup for Addresses section.
+     */
     markupAddresses: function() {
         var self = this;
         return [
@@ -1008,20 +967,21 @@ STORE FOR IT                var storeMeterSize =
             }
         ];
     },
-    
+
     /***************************************************************************
-     * Section: Invoice number
+     * Section: Invoice Number
      **************************************************************************/
+    /**
+     * Prepare markup for Invoice Number section.
+     */
     markupInvoiceNumber: function() {
         return [
             // Invoice number
             {
                 itemId: 'field-invoice-number',
-                //name $request['invoiceimage_ref']
-                name: 'invoiceimage_ref',
-
                 xtype: 'textfield',
-                value: '97560',//value="#get_current_image.image_index_ref#" 
+
+                name: 'Image_Index_Ref',//name $request['invoiceimage_ref']//value="#get_current_image.image_index_ref#" 
                 fieldLabel: 'Invoice Number:'
             }
         ];
@@ -1030,23 +990,28 @@ STORE FOR IT                var storeMeterSize =
     /***************************************************************************
      * Section: P0 number
      **************************************************************************/
+    /**
+     * Prepare markup for P0 Number section.
+     */
     markupP0Number: function() {
         return [
             // P0 number
             {
                 itemId: 'field-p0-number',
-                name: 'po_ref',
-
                 xtype: 'textfield',
-                fieldLabel: 'P0 number:'
-                //value="#get_current_image.image_index_ref#" 
+
+                name: 'po_ref',
+                fieldLabel: 'P0 number:'//value="#get_current_image.image_index_ref#" 
             }
         ];
     },
 
     /***************************************************************************
-     * Section: Invoice dates
+     * Section: Invoice Dates
      **************************************************************************/
+    /**
+     * Prepare markup for Invoice Dates section.
+     */
     markupInvoiceDates: function() {
         return [
             {
@@ -1061,32 +1026,22 @@ STORE FOR IT                var storeMeterSize =
                     // Invoice date
                     {
                         id: 'field-invoice-date',
-                        name: 'Image_Index_Invoice_Date',
-                        //name: 'image_index_invoice_date',
-                        //name             $request['invoiceimage_invoice_date'] = $_REQUEST['field-invoice-date-inputEl'];
                         xtype: 'datefield',
+
+                        name: 'Image_Index_Invoice_Date',//name: 'image_index_invoice_date', //name $request['invoiceimage_invoice_date'] = $_REQUEST['field-invoice-date-inputEl'];
                         fieldLabel: 'Invoice Date:'
-                        //maxValue: new Date()
                         //onchange="changed_vendor($('##vendorname'))"
                         //field_name="invoiceimage_invoice_date" 
-                        //form_name="quickform" 
-                        //date_select="#get_current_image.image_index_invoice_date#">
                         //onchange="changed_vendor($('##vendorname'))" required
                         //id="invoice_date_index_value"
                     },
                     // Invoice due date
                     {
                         id: 'field-due-date',
-                        name: 'Image_Index_Due_Date',
-                        //name $request['invoiceimage_invoice_duedate'] = $_REQUEST['field-due-date-inputEl'];
                         xtype: 'datefield',
-                        //labelWidth: widthLabel,
+
+                        name: 'Image_Index_Due_Date',
                         fieldLabel: 'Invoice Due Date:'
-                        //id="invoice_duedate_index_value"
-                        //field_name="invoiceimage_invoice_duedate" 
-                        //form_name="quickform" 
-                        //size="10" 
-                        //date_select="#get_current_image.image_index_due_date#">
                     }
                 ]
             }
@@ -1096,13 +1051,15 @@ STORE FOR IT                var storeMeterSize =
     /***************************************************************************
      * Section: Amount
      **************************************************************************/
+    /**
+     * Prepare markup for Amount section.
+     */
     markupAmount: function() {
         return [
             // Amount
             {
                 name: 'Image_Index_Amount',
                 xtype: 'textfield',
-                //value="#get_current_image.image_index_amount#"
                 fieldLabel: 'Amount:'
             },
         ]
@@ -1111,11 +1068,13 @@ STORE FOR IT                var storeMeterSize =
     /***************************************************************************
      * Section: Utility 2
      **************************************************************************/
+    /**
+     * Prepare markup for Utility 2 section.
+     */
     markupUtility2: function() {
         return [
             {
                 itemId: 'panel-utility-2',
-
                 xtype: 'panel',
 
                 border: 0,
@@ -1126,28 +1085,13 @@ STORE FOR IT                var storeMeterSize =
                     {
                         name: 'cycle_from',
                         xtype: 'datefield',
-                        //labelWidth: widthLabel,
                         fieldLabel: 'Cycle From Date:'
-//						required="false" 
-//						title="" 
-//						field_name="cycle_from" 
-//						form_name="quickform" 
-//						size="10" 
-//						date_select="#get_current_image.cycle_from#">
-                        
                     },
                     // Cycle To Date
                     {
                         name: 'cycle_to',
                         xtype: 'datefield',
-                        //labelWidth: widthLabel,
                         fieldLabel: 'Cycle To Date:'
-//						field_name="cycle_to"
-//						required="false" 
-//						title="" 
-//						form_name="quickform" 
-//						size="10" 
-//						date_select="#get_current_image.cycle_to#">
                     },
                 ]
             }
@@ -1170,6 +1114,19 @@ STORE FOR IT                var storeMeterSize =
         return [
             
         ];
+        /*
+        var fields = [
+            // Remittance Advice
+            {
+                id: 'field-remittance-advice',
+                name: 'remit_advice',
+                xtype: 'checkbox',
+                labelWidth: widthLabel,
+                fieldLabel: 'Remittance Advice:'
+            },
+        ];*/
+
+        
     },
 
     /***************************************************************************
@@ -1182,8 +1139,11 @@ STORE FOR IT                var storeMeterSize =
     },
 
     /***************************************************************************
-     * Section: Priority and Needed By Panel
+     * Section: Priority and Needed By
      **************************************************************************/
+    /**
+     * Prepare markup for Priority and Needed By section.
+     */
     markupPriorityAndNeededByPanel: function() {
         return [
             {
@@ -1197,17 +1157,9 @@ STORE FOR IT                var storeMeterSize =
                 items: [
                     // Needed By
                     {
-                        //id: 'field-needed-by',
-                        name: 'image_index_NeededBy_datetm',
+                        name: 'Image_Index_neededby_datetm',
                         xtype: 'datefield',
                         fieldLabel: 'Needed By:'
-//				required="no" 
-//				title="" 
-//				field_name="neededby_datetm" 
-//				form_name="quickform" 
-//				size="10" 
-//				date_select="#get_current_image.neededby_datetm#"
-                        
                     },
                     // Priority
                     {
@@ -1264,33 +1216,35 @@ STORE FOR IT                var storeMeterSize =
     /***************************************************************************
      * Section: Action Buttons Panel
      **************************************************************************/
+    /**
+     * Prepare markup for Action Buttons Panel section.
+     */
     markupActionButtonsCommon: function() {
         return [
             {
                 xtype: 'button',
-                text: 'Save and Next',
                 itemId: 'buttonSaveAndNextAction',
-                //<a href="javascript:submit_form('next')">
-                listeners: {
-                    //click: this.showAddressWindow.bind(this, 1, 'home', 'property', 'Property Address')
-                }
+
+                text: 'Save and Next'
             },
         ];
     },
 
     /***************************************************************************
-     * Section: Action Buttons Panel
+     * Section: Action Buttons Specific Panel
      **************************************************************************/
+    /**
+     * Prepare markup for Action Buttons Specific Panel section.
+     * These buttons should be displayed depending on current section/tab ('index' or 'exception')
+     */
     markupActionButtonsSpecific: function() {
-        // Эта панель появляется только, если top_tab равен Scanned и не равен Exception
-        // ВЕРХНЯЯ ПАНЕЛЬ КНОПОК ТОЖЕ ОТЛИЧАЕТСЯ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         if (this.section == 'exception') {
             return [];
         }
+
         return [
             {
                 itemId: 'panel-action-buttons-specific', 
-//
                 xtype: 'panel',
 
                 border: 0,
@@ -1299,23 +1253,15 @@ STORE FOR IT                var storeMeterSize =
                 items: [
                     {
                         xtype: 'button',
-                        text: 'Save as Exception',
                         itemId: 'buttonSaveAsExceptionAction',
-                        //<a href="javascript:submit_form('mark_as_exception')">
-                        listeners: {
-                            //click: this.showAddressWindow.bind(this, 1, 'home', 'property', 'Property Address')
-                        }
+
+                        text: 'Save as Exception'
                     },
                     {
-//Эта кнопка показывается когда <cfif variables.optional_img_convert_on EQ 0 AND StructKeyExists(request, "selected_image_ids")>
-                        //itemId: 'buttonCreateInvoice',
                         xtype: 'button',
-                        text: 'Create Invoice',
                         itemId: 'buttonInvoiceAction',
-                        //<a href="javascript:submit_form('invoice')">
-                        listeners: {
-                            //click: this.showAddressWindow.bind(this, 1, 'home', 'property', 'Property Address')
-                        }
+                        
+                        text: 'Create Invoice'
                     }
                 ]
             }
@@ -1325,16 +1271,18 @@ STORE FOR IT                var storeMeterSize =
     /***************************************************************************
      * Section: Exception
      **************************************************************************/
+    /**
+     * Prepare markup for Exception section.
+     */
     markupExceptionReason: function() {
         return [
             // Exception Reason
             {
                 id: 'field-exception-reason',
-                name: 'Image_Index_Exception_reason',
                 xtype: 'textarea',
-                //labelWidth: widthLabel,
+
+                name: 'Image_Index_Exception_reason',
                 fieldLabel: 'Exception Reason:'
-                //value   #get_current_image.Image_Index_Exception_reason#
             }
         ];
     },
@@ -1342,47 +1290,53 @@ STORE FOR IT                var storeMeterSize =
     /***************************************************************************
      * Common methods
      **************************************************************************/
-    setIntegrationPackage: function() {
-        var select = Ext.ComponentQuery.query(
-            '[itemId="field-integration-package"]'
-        )[0];
+    /**
+     * Reload property and vendor stores when integration package is changed.
+     */
+    reloadStores: function() {
+        var params = this.getStoreParams();
+        var fields = [
+            'field-property-code',
+            'field-property-name',
+            'field-vendor-code',
+            'field-vendor-name'
+        ]
 
-        // Reload stores
-        var params = {
-            integration_package: select.getValue(),
+        for (var i = 0, l = fields.length; i < l; i++) {
+            var component = Ext.ComponentQuery.query('[itemId="' + fields[i] + '"]');
+            if (component && component[0]) {
+                var store = component[0].getStore && component[0].getStore();
 
+                store.extraParams = params;
+                store.reload();
+            }
+        }
+    },
+
+    getCurrentDoctype: function() {
+        return Ext.ComponentQuery.query('[name="Image_Doctype_Id"]')[0].getValue();
+    },
+
+    getCurrentIntegrationPackage: function() {
+        var result = Ext.ComponentQuery.query('[itemId="field-integration-package"]');
+        if (result) {
+            result = result[0];
+        }
+        return result && result.getValue && result.getValue() || 1;
+    },
+
+    getStoreParams: function() {
+        return {
+            integration_package: this.getCurrentIntegrationPackage(),
             userprofile_id: NP.Security.getUser().get('userprofile_id'),
             delegation_to_userprofile_id: NP.Security.getUser().get('delegation_to_userprofile_id')
-        };
-
-        Ext.ComponentQuery.query(
-            '[name="Property_Alt_Id"]'
-        )[0]
-            .getStore()
-            .load({params: params})
-        ;
-
-        Ext.ComponentQuery.query(
-            '[name="invoiceimage_vendorsite_alt_id"]'
-        )[0]
-            .getStore()
-            .load({params: params})
-        ;
-
-        Ext.ComponentQuery.query(
-            '[itemId="field-property-name"]'
-        )[0]
-            .getStore()
-            .load({params: params})
-        ;
-
-        Ext.ComponentQuery.query(
-            '[name="invoiceimage_vendorsite_id"]'
-        )[0]
-            .getStore()
-            .load({params: params})
-        ;
+        }
     },
+
+
+
+
+
 
     showAddressWindow: function(id, type, table, title) {
         if (id) {

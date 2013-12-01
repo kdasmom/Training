@@ -7,13 +7,27 @@ use NP\core\db\Select;
 use NP\core\db\Expression;
 
 class ImageScanGetCriteria extends Where {
-    public function __construct($alias='img') {
+    public function __construct($properties, $tablerefs) {
         parent::__construct();
+
+        if (empty($tablerefs)) {
+            $tablerefs = 'null';
+        }
+        if (is_array($tablerefs)) {
+            $tablerefs = implode(',', $tablerefs);
+        }
+
+        if (empty($properties)) {
+            $properties = 'null';
+        }
+        if (is_array($properties)) {
+            $properties = implode(',', $properties);
+        }
 
         $this
             ->nest('OR')
                 ->isNull(new Expression('?'))//$params['tableref_id']
-                ->equals('img.Tableref_id', new Expression('?'))
+                ->in('img.Tableref_id', $tablerefs)
             ->unnest()
             ->nest('OR')
                 ->equals('img.Image_Index_Id', new Expression('?'))
@@ -21,7 +35,7 @@ class ImageScanGetCriteria extends Where {
                     ->isNull(new Expression('?'))// $id
                     ->nest('OR')
                         ->isNull('img.Property_Id')
-                        ->in('img.Property_Id', new Expression('?'))
+                        ->in('img.Property_Id', $properties)
                     ->unnest()
                     ->equals('img.asp_client_id', new Expression('?'))
                     ->nest('OR')

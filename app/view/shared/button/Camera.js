@@ -8,5 +8,6 @@ Ext.define('NP.view.shared.button.Camera', {
     alias: 'widget.shared.button.camera',
 
     text: 'Camera',
-    iconCls: 'camera-btn'
+    iconCls: 'camera-btn',
+    componentCls: 'camera-button'
 });

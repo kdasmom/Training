@@ -1,5 +1,5 @@
 Ext.define('NP.view.images.grid.Search', {
-    extend: 'NP.view.images.grid.Base',
+    extend: 'NP.view.image.ImageGrid',
     alias:  'widget.images.grid.Search',
 
     initComponent: function(){

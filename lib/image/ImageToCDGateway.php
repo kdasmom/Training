@@ -81,7 +81,6 @@ class ImageToCDGateway extends AbstractGateway {
                 ->equals('v.vendor_id', $vendor_id);
         }
         $select->where($where);
-print_r($select->toString());
         return $this->adapter->query($select);
     }
 

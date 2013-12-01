@@ -176,6 +176,8 @@ class ImageIndexGateway extends AbstractGateway {
 								'Image_Index_Exception_End_datetm',
 								'image_index_indexed_datetm',
 								'image_index_indexed_by',
+								'image_index_deleted_datetm',
+								'image_index_deleted_by',
 								'cycle_from',
 								'cycle_to',
 								'utilityaccount_accountnumber',
@@ -207,13 +209,6 @@ class ImageIndexGateway extends AbstractGateway {
 		return $select;
 	}
         
-
-        
-        
-
-        
-        
-        
        	public function findImagesToDelete($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
 		$select = $this->getDashboardSelect($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
 		
@@ -238,13 +233,551 @@ class ImageIndexGateway extends AbstractGateway {
 		}
 	}
  
+
+    /**
+     * Delete images from database.
+     * 
+     * @param [] $identifiers List of image identifiers to delete.
+     * @return [] Execution result.
+     */
+    public function deletePermanently($identifiers) {
+        if (!empty($identifiers)) {
+            $where = Where::get()
+                ->in('image_index_id', implode(',', $identifiers))
+            ;
+            $delete = new Delete($this->table, $where);
+
+            return $this->adapter->query($delete);
+        }
+    }
+
+    /**
+     * Mark images as deleted.
+     * 
+     * @param [] $identifiers List of image identifiers to delete.
+     * @param int $userprofile_id User profile id who requests delete operation.
+     * @return Execution result.
+     */
+    public function deleteTemporary($identifiers, $userprofile_id) {
+        $update = Update::get()
+            ->table($this->table)
+                ->value('image_index_status', -1)
+                ->value('tablekey_id', 0)
+                ->value('image_index_primary', 0)
+                ->value('image_index_deleted_datetm', '\''.date('Y-m-d H:i:s').'\'')
+                ->value('image_index_deleted_by', $userprofile_id)
+            ->where(
+                Where::get()
+                    ->in('image_index_id', implode(',', $identifiers))
+            )
+        ;
+        return $this->adapter->query($update);
+    }
+
+    /**
+     * Revert images: deleted, indexed and so on.
+     * 
+     * @param [] $identifiers List of image identifiers to delete.
+     * @return [] Execution result.
+     */
+    public function revert($identifiers) {
+        $update = new Update();
+        $update
+            ->table($this->table)
+            ->value('image_index_status', 0)
+                ->value('image_index_draft_invoice_id', 'null')
+                ->value('image_index_deleted_datetm', 'null')
+                ->value('image_index_deleted_by', 'null')
+            ->where(
+                Where::get()
+                    ->in('image_index_id', implode(',', $identifiers))
+            )
+        ;
+        return $this->adapter->query($update);
+    }
+
+    /**
+     * Get count of the images by doctype.
+     * 
+     * @param int $invoiceid Invoice id.
+     * @param int $doctype Document type id.
+     * @return int Count of images.
+     */
+    public function countImagesByDoctype($invoiceid, $doctype) {
+        $where = new Where();
+        $where
+            ->equals('tablekey_id', $invoiceid)
+            ->equals('image_doctype_id', $doctype)
+        ;
+
+        $select = new Select();
+        $select
+            ->count(true, 'image_index_id')
+            ->from('IMAGE_INDEX')
+            ->where($where)
+        ;
+
+        $result = $this->adapter->query($select);
+        if (!empty($result) && !empty($result[0])) {
+            return $result[0]['image_index_id'];
+        }
+        return 0;
+    }
+
+    /**
+     * Get count of the images by tableref.
+     * 
+     * @param int $invoiceid Invoice id.
+     * @param int $tableref Tableref id.
+     * @return int Count of images.
+     */
+    public function countImagesByTableref($invoiceid, $tableref) {
+        $where = new Where();
+        $where
+            ->equals('tablekey_id', $invoiceid)
+            ->equals('tableref_id', $tableref)
+        ;
+
+        $select = new Select();
+        $select
+            ->count(true, 'image_index_id')
+            ->from('IMAGE_INDEX')
+            ->where($where)
+        ;
+
+        $result = $this->adapter->query($select);
+        if (!empty($result) && !empty($result[0])) {
+            return $result[0]['image_index_id'];
+        }
+        return 0;
+    }
+
+    /**
+     * Get Images by id depending on table reference.
+     * 
+     * @param int $id Image identifier.
+     * @param [] $params Additional parameters.
+     * @param [] $tablerefs Appropriate table references.
+     * @return [] List of images.
+     */
+    public function getImageScan($id, $params, $tablerefs) {
+        $reflist = null;
+        if (!empty($params['tableref_id'])) {
+            $reflist = [
+                $params['tableref_id']
+            ];
+        }
+
+        switch ($params['tableref_id']) {
+            case 3:
+                $tableref = $tablerefs[strtolower('receipt')];
+                $reflist[] = $tableref;
+                break;
+            case 1:
+                $tableref = $tablerefs[strtolower('Utility Invoice')];
+                $reflist[] = $tableref;
+                break;
+        }
+
+        // Property id could be number or string with comma-separated identifiers
+        if (is_string($params['property_id'])) {
+            $params['property_id'] = explode(',', $params['property_id']);
+        } elseif (!empty($params['property_id'])) {
+            $params['property_id'] = [$params['property_id']];
+        } else {
+            $params['property_id'] = [];
+        }
+
+        $scans =  $this->getImageScanLocal($id, $params, $reflist);
+        $scans = array_merge($scans, $this->getImageScanVendor($id, $params, $reflist));
+        $scans = array_merge($scans, $this->getImageScanLegacy($id, $params, $reflist));
+
+        return $scans;
+    }
+
+    public function getImageScanForGrid($params, $tablerefs, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection) {
+        $propertyFilterSelect = 
+            new PropertyFilterSelect(
+                new PropertyContext(
+                    $userprofile_id,
+                    $delegated_to_userprofile_id,
+                    $contextType,
+                    $contextSelection
+                )
+            )
+        ;
+        $params['property_id'] = $propertyFilterSelect->toString();
+
+        $reflist = null;
+        if (!empty($params['tableref_id'])) {
+            $reflist = [
+                $params['tableref_id']
+            ];
+        }
+
+        switch ($params['tableref_id']) {
+            case 3:
+                $tableref = $tablerefs[strtolower('receipt')];
+                $reflist[] = $tableref;
+                break;
+            case 1:
+                $tableref = $tablerefs[strtolower('Utility Invoice')];
+                $reflist[] = $tableref;
+                break;
+        }
+
+        $scans =  $this->getImageScanLocal(null, $params, $reflist);
+        $scans = array_merge($scans, $this->getImageScanVendor(null, $params, $reflist));
+        $scans = array_merge($scans, $this->getImageScanLegacy(null, $params, $reflist));
+
+        return $scans;
+    }
+
+    /**
+     * Get Local Scan Images.
+     * 
+     * @param int $id Image identifier.
+     * @param [] $params Additional parameters.
+     * @param [] $tablerefs Appropriate table references.
+     * @return [] List of images.
+     */
+    private function getImageScanLocal($id, $params, $tablerefs) {
+        $select = new sql\ImageIndexSelect();
+
+        $select
+            ->join(new sql\join\ImageIndexImageSourceJoin())
+            ->join(new sql\join\ImageIndexImageTransferJoin())
+            ->join(new sql\join\ImageIndexUserprofileJoin(
+                ['userprofile_username', 'userprofile_username AS scan_source']
+            ))
+            ->join(new sql\join\ImageIndexVendorsiteJoin())
+            ->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(
+                ['vendor_name, vendor_id_alt'],
+                Select::JOIN_LEFT
+            ))
+            ->join(new sql\join\ImageIndexPropertyJoin())
+            ->join(new sql\join\ImageIndexDocTypeJoin())
+            ->join(new sql\join\ImageIndexTablerefJoin())
+        ;
+
+        $where = new sql\criteria\ImageScanGetCriteria(
+            $params['property_id'],
+            $tablerefs
+        );
+
+        $where
+            ->equals('itransfer.transfer_srcTableName', '\'userprofile\'')
+        ;
+        $select->where($where);
+
+        $result = $this->adapter->query(
+            $select,
+            [
+                $params['tableref_id'],
+                $id,
+                $id,
+                $params['asp_client_id']
+            ]
+        );
+
+        return $result;
+    }
+
+    /**
+     * Get Vendor Scan Images.
+     * 
+     * @param int $id Image identifier.
+     * @param [] $params Additional parameters.
+     * @return [] List of images.
+     */
+    private function getImageScanVendor($id, $params) {
+        $select = new sql\ImageIndexSelect();
+
+        $select
+            ->join(new sql\join\ImageIndexImageSourceJoin())
+            ->join(new sql\join\ImageIndexImageTransferJoin())
+            ->join(new sql\join\ImageIndexVendorsiteJoin(
+                [],
+                Select::JOIN_LEFT,
+                'vs',
+                'itransfer',
+                'transfer_srcTablekey_id'
+            ))
+            ->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(
+                ['vendor_name', 'vendor_name AS scan_source, vendor_id_alt'],
+                Select::JOIN_LEFT
+            ))
+            ->join(new sql\join\ImageIndexPropertyJoin())
+            ->join(new sql\join\ImageIndexDocTypeJoin())
+            ->join(new sql\join\ImageIndexTablerefJoin())
+        ;
+
+        $tablerefs = [];
+        if (!empty($params['tableref_id'])) {
+            $tablerefs = [$params['tableref_id']];
+        }
+        $where = new sql\criteria\ImageScanGetCriteria(
+            $params['property_id'],
+            $tablerefs
+        );
+
+        $where
+            ->equals('itransfer.transfer_srcTableName', '\'vendorsite\'')
+        ;
+        $select->where($where);
+
+        $result = $this->adapter->query(
+            $select,
+            [
+                $params['tableref_id'],
+                $id,
+                $id,
+                $params['asp_client_id']
+            ]
+        );
+
+        return $result;
+    }
+
+    /**
+     * Get Legacy Scan Images.
+     * 
+     * @param int $id Image identifier.
+     * @param [] $params Additional parameters.
+     * @return [] List of images.
+     */
+    private function getImageScanLegacy($id, $params, $tablerefs) {
+        $select = new sql\ImageIndexSelect();
+
+        $select
+            ->join(new sql\join\ImageIndexImageSourceJoin(
+                ['invoiceimage_source_name', 'invoiceimage_source_name AS scan_source']
+            ))
+            ->join(new sql\join\ImageIndexImageTransferJoin())
+            ->join(new sql\join\ImageIndexVendorsiteJoin())
+            ->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(
+                ['vendor_name, vendor_id_alt'],
+                Select::JOIN_LEFT
+            ))
+            ->join(new sql\join\ImageIndexPropertyJoin())
+            ->join(new sql\join\ImageIndexDocTypeJoin())
+            ->join(new sql\join\ImageIndexTablerefJoin())
+        ;
+
+        $where = new sql\criteria\ImageScanGetCriteria(
+            $params['property_id'],
+            $tablerefs
+        );
+        $where
+            ->nest('OR')
+                ->equals('itransfer.transfer_srcTableName', '\'invoiceimagesource\'')
+                ->isNull('itransfer.transfer_srcTableName')
+            ->unnest()
+        ;
+        $select->where($where);
+
+        $result = $this->adapter->query(
+            $select,
+            [
+                $params['tableref_id'],
+                $id,
+                $id,
+                $params['asp_client_id']
+            ]
+        );
+
+        return $result;
+    }
+
+    /**
+     * Find image by table reference and table identifier.
+     * 
+     * @param int $tablekey Target table identifier.
+     * @param int $tableref Table reference.
+     * @return int Image identifier.
+     */
+    public function lookupImage($tablekey, $tableref) {
+        $where = Where::get()
+            ->equals('tablekey_id', $tablekey)
+            ->equals('image_index_primary', 1)
+            ->equals('tableref_id', $tableref)
+        ;
+        $select = Select::get()
+            ->column('image_index_id')
+            ->from('image_index')
+            ->where($where)
+        ;
+        $result = $this->adapter->query($select);
+
+        if (!empty($result) && !empty($result[0])) {
+            return $result[0]['image_index_id'];
+        }
+        return null;
+    }
+
+    /**
+     * Search image by multiple criterias.
+     * 
+     * @param int $doctype Document type identifier.
+     * @param int $searchtype Search type identifier: 1 - Image name, 2 - Scan date, 3 - Vendor.
+     * @param string $searchstring Search string.
+     * @param type $property_type Context type: Region, Property, Multiple Properties, All Properties.
+     * @param type $property_list Context item: Item identifier(Region id or Property id) or identifiers depending 
+     *      on context type.
+     * @return [] List of images.
+     */
+    public function imageSearch($doctype, $searchtype, $searchstring, $property_type, $property_list) {
+        $select01 = new sql\ImageSearchSelect();
+
+        if ($searchtype == 1 || $searchtype == 3) {
+            $searchstring = rtrim(ltrim($searchstring));
+
+            $searchstring = str_replace('%', '|%', $searchstring);
+            $searchstring = str_replace('_', '|_', $searchstring);
+            $searchstring = str_replace('[', '|[', $searchstring);
+            $searchstring = str_replace(']', '|]', $searchstring);
+            $searchstring = str_replace('^', '|^', $searchstring);
+            $searchstring = str_replace('?', '|?', $searchstring);
+        }
+
+        switch ($property_type) {
+            case 'property':
+            case 'multiProperty':
+                $left = 'ii.property_id';
+                break;
+            case 'region':
+                $left = 'p.region_id';
+                break;
+            case 'all':
+                $left = 'p.property_status';
+                break;
+        }
+
+
+        switch ($searchtype) {
+            case 1:
+                $select01
+                    ->where(
+                        Where::get()
+                            ->equals('ii.image_doctype_id', $doctype)
+                            ->like('ii.image_index_name', '\'%'.$searchstring.'%\' ESCAPE \'|\'')
+                            ->nest('OR')
+                                ->equals('ii.property_id', 0)
+                                ->in($left, $property_list)
+                            ->unnest()
+                    )
+                ;
+                break;
+            case 2:
+                $select01
+                    ->where(
+                        Where::get()
+                            ->equals('ii.image_doctype_id', $doctype)
+                            ->equals('dbo.DateNoTime(ii.image_index_date_entered)', 'CONVERT(datetime, \''.$searchstring.'\')')
+                            ->nest('OR')
+                                ->equals('ii.property_id', 0)
+                                ->in($left, $property_list)
+                            ->unnest()
+                    )
+                ;
+                break;
+            case 3:
+                $select01
+                    ->where(
+                        Where::get()
+                            ->equals('ii.image_doctype_id', $doctype)
+                            ->like('v.vendor_name', '\'%'.$searchstring.'%\' ESCAPE \'|\'')
+                            ->nest('OR')
+                                ->equals('ii.property_id', 0)
+                                ->in($left, $property_list)
+                            ->unnest()
+                    )
+                ;
+                break;
+        }
+        return $this->adapter->query($select01);
+    }
+
+    /**
+     * Search for deleted images.
+     * 
+     * @param int $vendor Vendor id.
+     * @param int $invoice Invoice number.
+     * @param string $deletedby Username of the user who deleted the image.
+     * @return [] List of images.
+     */
+    public function imageSearchDeleted($vendor, $invoice = null, $deletedby = null) {
+        $where = new Where();
+        $where
+            ->equals('v.vendor_id', $vendor)
+            ->equals('ii.image_index_status', -1)
+        ;
+        if (!empty($invoice)) {
+            $where->equals('Tablekey_Id', $invoice);
+        }
+        if (!empty($deletedby)) {
+            $select01 = new Select();
+            $select01
+                ->column('userprofile_id')
+                ->from('userprofile')
+                ->where(
+                    Where::get()->like('userprofile_username', '\'%'.$deletedby.'%\'')
+                )
+            ;
+            $where->in('image_index_deleted_by', $select01);
+        }
+
+        $select = new sql\ImageSearchSelect();
+        $select->where($where);
+
+        return $this->adapter->query($select);
+    }
+
         
         
         
         
         
         
-	public function getImageToIndex($id, $userprofile_id = 1, $delegated_to_userprofile_id = 1, $contextType = 'all', $contextSelection = null, $pageSize=null, $page=null, $sort="vendor_name") {
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+    
+    
+    
+    
+    
+    
+    
+
+
+
+
+
+
+        
+        
+        
+        
+        
+        
+        
+        public function getImageToIndex($id, $userprofile_id = 1, $delegated_to_userprofile_id = 1, $contextType = 'all', $contextSelection = null, $pageSize=null, $page=null, $sort="vendor_name") {
             $select = $this->getDashboardSelect('false', $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
             $propertyFilterSelect = new PropertyFilterSelect(new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection));
 
@@ -267,141 +800,11 @@ class ImageIndexGateway extends AbstractGateway {
         
         
         
-        private function insertINTOAUDITLOG() {
-            $select01 = new Select();
-            $select02 = new Select();
-            $select01
-                ->from('IMAGE_TABLEREF')
-                ->column('REPLACE(image_tableref_name, \' \', \'\')')
-                ->whereEquals('image_tableref_id', 'ISNULL(0, 1)')
-            ;
-            $select02
-                ->from('AUDITTYPE')
-                ->column('audittype_id')
-                //->whereEquals('audittype', $select01)
-                    ->whereEquals('audittype', '(SELECT REPLACE(image_tableref_name, \' \', \'\')
-                    FROM IMAGE_TABLEREF
-                    WHERE image_tableref_id = ISNULL(1, 1))')
-            ;
-            $type = $this->adapter->query($select02);
-            $type = $type[0]['audittype_id'];
-
-            $select03 = new Select();
-            $select03
-                ->from('AUDITACTIVITY')
-                ->column('auditactivity_id')
-                ->whereEquals('auditactivity', '\'ImgUploaded\'')
-            ;
-            $activity = $this->adapter->query($select03);
-            $activity = $activity[0]['auditactivity_id'];
-            
-            //echo "***********************************************************";
-            //print_r($type);
-            //echo "***********************************************************";
-            //print_r($activity);
-            
-            //TODO: REAL INSERT
-        }
-
-        public function getInvoiceRef($invoice_id) {
-            $select = new \NP\core\db\Select();
-            $select->column('invoice_ref')->from('INVOICE')->whereEquals('invoice_id', $invoice_id);
-
-            $result = $this->adapter->query($select);
-            if (!empty($result) && !empty($result[0]) && !empty($result[0]['invoice_ref'])) {
-                return $result[0]['invoice_ref'];
-            }
-            return null;
-        }
 
 
 
-        public function countImagesByDoctype($invoiceid, $doctype) {
-            $where = new Where();
-            $where
-                ->equals('tablekey_id', $invoiceid)
-                ->equals('image_doctype_id', $doctype)
-            ;
 
-            $select = new Select();
-            $select
-                ->count(true, 'image_index_id')
-                ->from('IMAGE_INDEX')
-                ->where($where)
-            ;
 
-            $result = $this->adapter->query($select);
-            if (!empty($result) && !empty($result[0])) {
-                return $result[0]['image_index_id'];
-            }
-            return 0;
-        }
-        public function countImagesByTableref($invoiceid, $tableref) {
-            $where = new Where();
-            $where
-                ->equals('tablekey_id', $invoiceid)
-                ->equals('tableref_id', $tableref)
-            ;
-
-            $select = new Select();
-            $select
-                ->count(true, 'image_index_id')
-                ->from('IMAGE_INDEX')
-                ->where($where)
-            ;
-
-            $result = $this->adapter->query($select);
-            if (!empty($result) && !empty($result[0])) {
-                return $result[0]['image_index_id'];
-            }
-            return 0;
-        }
-
-        public function lookupImage($tablekey, $tableref) {
-            $where = Where::get()
-                ->equals('tablekey_id', $tablekey)
-                ->equals('image_index_primary', 1)
-                ->equals('tableref_id', $tableref)
-            ;
-            $select = Select::get()
-                ->column('image_index_id')
-                ->from('image_index')
-                ->where($where)
-            ;
-            $result = $this->adapter->query($select);
-
-            if (!empty($result) && !empty($result[0])) {
-                return $result[0]['image_index_id'];
-            }
-            return null;
-        }
-
-        public function deletePermanently($identifiers) {
-            if (!empty($identifiers)) {
-                $where = Where::get()
-                    ->in('image_index_id', implode(',', $identifiers))
-                ;
-                $delete = new Delete($this->table, $where);
-
-                return $this->adapter->query($delete);
-            }
-        }
-
-        public function deleteTemporary($identifiers, $userprofile_id) {
-            $update = Update::get()
-                ->table($this->table)
-                    ->value('image_index_status', -1)
-                    ->value('tablekey_id', 0)
-                    ->value('image_index_primary', 0)
-                    ->value('image_index_deleted_datetm', '\''.date('Y-m-d H:i:s').'\'')
-                    ->value('image_index_deleted_by', $userprofile_id)
-                ->where(
-                    Where::get()
-                        ->in('image_index_id', implode(',', $identifiers))
-                )
-            ;
-            return $this->adapter->query($update);
-        }
 
         public function getMainParametersForImages($identifiers) {
             $select = Select::get()
@@ -705,270 +1108,11 @@ print_r($update->toString());
         
         
 
-    private function getImageScanLocal($id, $params, $tablerefs) {
-        $select = new sql\ImageIndexSelect();
-
-        $select
-            ->join(new sql\join\ImageIndexImageSourceJoin())
-            ->join(new sql\join\ImageIndexImageTransferJoin())
-            ->join(new sql\join\ImageIndexUserprofileJoin(
-                ['userprofile_username', 'userprofile_username AS scan_source']
-            ))
-            ->join(new sql\join\ImageIndexVendorsiteJoin())
-            ->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(
-                ['vendor_name, vendor_id_alt'],
-                Select::JOIN_LEFT
-            ))
-            ->join(new sql\join\ImageIndexPropertyJoin())
-            ->join(new sql\join\ImageIndexDocTypeJoin())
-            ->join(new sql\join\ImageIndexTablerefJoin())
-        ;
-
-        $where = new sql\criteria\ImageScanGetCriteria();
-        $where
-            ->equals('itransfer.transfer_srcTableName', '\'userprofile\'')
-        ;
-        $select->where($where);
-
-        $result = $this->adapter->query(
-            $select,
-            [
-                $params['tableref_id'],
-                empty($tablerefs) ? 
-                    null :
-                    implode(',', $tablerefs)
-                ,
-                $id,
-                $id,
-                empty($params['property_id']) ? 
-                    null :
-                    implode(',', $params['property_id'])
-                ,
-                $params['asp_client_id']
-            ]
-        );
-
-        return $result;
-    }
-
-    private function getImageScanVendor($id, $params) {
-        $select = new sql\ImageIndexSelect();
-
-        $select
-            ->join(new sql\join\ImageIndexImageSourceJoin())
-            ->join(new sql\join\ImageIndexImageTransferJoin())
-            ->join(new sql\join\ImageIndexVendorsiteJoin(
-                [],
-                Select::JOIN_LEFT,
-                'vs',
-                'itransfer',
-                'transfer_srcTablekey_id'
-            ))
-            ->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(
-                ['vendor_name', 'vendor_name AS scan_source, vendor_id_alt'],
-                Select::JOIN_LEFT
-            ))
-            ->join(new sql\join\ImageIndexPropertyJoin())
-            ->join(new sql\join\ImageIndexDocTypeJoin())
-            ->join(new sql\join\ImageIndexTablerefJoin())
-        ;
-
-        $where = new sql\criteria\ImageScanGetCriteria();
-        $where
-            ->equals('itransfer.transfer_srcTableName', '\'vendorsite\'')
-        ;
-        $select->where($where);
-
-        $result = $this->adapter->query(
-            $select,
-            [
-                $params['tableref_id'],
-                $params['tableref_id'],
-                $id,
-                $id,
-                empty($params['property_id']) ? 
-                    null :
-                    implode(',', $params['property_id'])
-                ,
-                $params['asp_client_id']
-            ]
-        );
-
-        return $result;
-    }
-
-    private function getImageScanLegacy($id, $params) {
-        $select = new sql\ImageIndexSelect();
-
-        $select
-            ->join(new sql\join\ImageIndexImageSourceJoin(
-                ['invoiceimage_source_name', 'invoiceimage_source_name AS scan_source']
-            ))
-            ->join(new sql\join\ImageIndexImageTransferJoin())
-            ->join(new sql\join\ImageIndexVendorsiteJoin())
-            ->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(
-                ['vendor_name, vendor_id_alt'],
-                Select::JOIN_LEFT
-            ))
-            ->join(new sql\join\ImageIndexPropertyJoin())
-            ->join(new sql\join\ImageIndexDocTypeJoin())
-            ->join(new sql\join\ImageIndexTablerefJoin())
-        ;
-
-        $where = new sql\criteria\ImageScanGetCriteria();
-        $where
-            ->nest('OR')
-                ->equals('itransfer.transfer_srcTableName', '\'invoiceimagesource\'')
-                ->isNull('itransfer.transfer_srcTableName')
-            ->unnest()
-        ;
-        $select->where($where);
-
-        $result = $this->adapter->query(
-            $select,
-            [
-                $params['tableref_id'],
-                empty($tablerefs) ? 
-                    null :
-                    implode(',', $tablerefs)
-                ,
-                $id,
-                $id,
-                empty($params['property_id']) ? 
-                    null :
-                    implode(',', $params['property_id'])
-                ,
-                $params['asp_client_id']
-            ]
-        );
-
-        return $result;
-    }
-
-    public function getImageScan($id, $params, $tablerefs) {
-        $reflist = null;
-        if (!empty($params['tableref_id'])) {
-            $reflist = [
-                $params['tableref_id']
-            ];
-        }
-
-        switch ($params['tableref_id']) {
-            case 3:
-                $tableref = $tablerefs[strtolower(['receipt'])];
-                $reflist[] = $tableref;
-                break;
-            case 1:
-                $tableref = $tablerefs[strtolower(['Utility Invoice'])];
-                $reflist[] = $tableref;
-                break;
-        }
-
-        // Property id could be number or string with comma-separated identifiers
-        if (is_string($params['property_id'])) {
-            $params['property_id'] = explode(',', $params['property_id']);
-        } elseif (!empty($params['property_id'])) {
-            $params['property_id'] = [$params['property_id']];
-        } else {
-            $params['property_id'] = [];
-        }
-
-        $scans =  $this->getImageScanLocal($id, $params, $reflist);
-        $scans = array_merge($scans, $this->getImageScanVendor($id, $params, $reflist));
-        $scans = array_merge($scans, $this->getImageScanLegacy($id, $params, $reflist));
-
-        return $scans;
-    }
 
 
 
-    public function revert($identifiers) {
-        $update = new Update();
-        $update
-            ->table($this->table)
-            ->value('image_index_status', 0)
-                ->value('image_index_draft_invoice_id', 'null')
-                ->value('image_index_deleted_datetm', 'null')
-                ->value('image_index_deleted_by', 'null')
-            ->where(
-                Where::get()
-                    ->in('image_index_id', implode(',', $identifiers))
-            )
-        ;
-        return $this->adapter->query($update);
-    }
-
-    public function imageSearch($doctype, $searchtype, $searchstring, $property_type, $property_list) {
-        $select01 = new sql\ImageSearchSelect();
-
-        if ($searchtype == 1 || $searchtype == 3) {
-            $searchstring = rtrim(ltrim($searchstring));
-
-            $searchstring = str_replace('%', '|%', $searchstring);
-            $searchstring = str_replace('_', '|_', $searchstring);
-            $searchstring = str_replace('[', '|[', $searchstring);
-            $searchstring = str_replace(']', '|]', $searchstring);
-            $searchstring = str_replace('^', '|^', $searchstring);
-            $searchstring = str_replace('?', '|?', $searchstring);
-        }
-
-        switch ($property_type) {
-            case 'property':
-            case 'multiProperty':
-                $left = 'ii.property_id';
-                break;
-            case 'region':
-                $left = 'p.region_id';
-                break;
-            case 'all':
-                $left = 'p.property_status';
-                break;
-        }
 
 
-        switch ($searchtype) {
-            case 1:
-                $select01
-                    ->where(
-                        Where::get()
-                            ->equals('ii.image_doctype_id', $doctype)
-                            ->like('ii.image_index_name', '\'%'.$searchstring.'%\' ESCAPE \'|\'')
-                            ->nest('OR')
-                                ->equals('ii.property_id', 0)
-                                ->in($left, $property_list)
-                            ->unnest()
-                    )
-                ;
-                break;
-            case 2:
-                $select01
-                    ->where(
-                        Where::get()
-                            ->equals('ii.image_doctype_id', $doctype)
-                            ->equals('dbo.DateNoTime(ii.image_index_date_entered)', 'CONVERT(datetime, \''.$searchstring.'\')')
-                            ->nest('OR')
-                                ->equals('ii.property_id', 0)
-                                ->in($left, $property_list)
-                            ->unnest()
-                    )
-                ;
-                break;
-            case 3:
-                $select01
-                    ->where(
-                        Where::get()
-                            ->equals('ii.image_doctype_id', $doctype)
-                            ->like('ii.vendor_name', '\'%'.$searchstring.'%\' ESCAPE \'|\'')
-                            ->nest('OR')
-                                ->equals('ii.property_id', 0)
-                                ->in($left, $property_list)
-                            ->unnest()
-                    )
-                ;
-                break;
-        }
-        return $this->adapter->query($select01);
-    }
 
 
 /*

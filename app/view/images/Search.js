@@ -7,10 +7,16 @@ Ext.define('NP.view.images.Search', {
 
     requires: [
         'NP.view.shared.ContextPickerMulti',
-        'NP.view.images.grid.Search'
+        'NP.view.images.grid.Search',
+
+        'NP.view.shared.button.Return',
+        'NP.view.shared.button.Search',
+        'NP.view.shared.button.Cd',
+        'NP.view.shared.button.Go'
     ],
 
     locale: {
+        buttonGo: 'Go',
         buttonSearch: 'Search',
         buttonCDIndex: 'CD Index',
         buttonReturn: 'Return to Image Management'
@@ -60,6 +66,11 @@ Ext.define('NP.view.images.Search', {
 
                 items: [
                     {
+                        xtype: 'text',
+                        padding: '0 0 10 0',
+                        text: 'Use the following form to search for Images:'
+                    },
+                    {
                         itemId: 'field-image-doctype',
 
                         xtype: 'customcombo',
@@ -106,6 +117,10 @@ Ext.define('NP.view.images.Search', {
                         fieldLabel: 'Vendor:'
                     },
                     {
+                        xtype: 'shared.button.go',
+                        itemId: 'buttonSearchProcessAction'
+                    },
+                    {
                         xtype: 'shared.contextpickermulti',
                         fieldLabel: 'Property:'
                     }
@@ -120,16 +135,22 @@ Ext.define('NP.view.images.Search', {
         ];
 
         this.tbar = [
-            {xtype: 'button', itemId: 'buttonReturn', text: this.locale.buttonReturn},
+            {xtype: 'shared.button.return', itemId: 'buttonReturn', text: this.locale.buttonReturn},
             {xtype: 'tbspacer', width: 20},
-            {xtype: 'button', itemId: 'buttonSearchProcess', text: this.locale.buttonSearch},
-            {xtype: 'button', itemId: 'buttonSearchCDIndex', text: this.locale.buttonCDIndex}
+            {xtype: 'shared.button.search', itemId: 'buttonSearchProcess', text: this.locale.buttonSearch},
+            {xtype: 'shared.button.cd', itemId: 'buttonSearchCDIndex', text: this.locale.buttonCDIndex}
         ];
         this.callParent(arguments);
 
         this.onSearchCriteriaChange();
     },
 
+    /**
+     * Show appropriate fields when search document type is changed.
+     * 
+     * @param combo Document type combo box.
+     * @param records Combobox data.
+     */
     onSearchCriteriaChange: function(combo, records) {
         var visibility = {
             'Image Name': {

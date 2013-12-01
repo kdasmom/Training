@@ -8,165 +8,181 @@ Ext.define('NP.controller.Images', {
         this.controlIndex(control);
         this.controlSearch(control);
         this.controlSearchCDIndex(control);
+        this.controlSearchDeleted(control);
 
         this.control(control);
-        this.enableBubble('tabchange');
     },
 
+    /**
+     * Bind actions for Main Screen.
+     */
     controlMain: function(control) {
         var prefix = '[xtype="images.main"] ';
 
-        control[prefix + '[xtype="tabpanel"]'] = {
-            tabchange: this.processTabChange
+        control[prefix + 'tabpanel'] = {
+            tabchange: this.processTabChange.bind(this)
         };
         control[prefix + 'tabpanel > grid'] = {
-            itemclick: this.processCellClick
-        }
-
-        var self = this;
-        control[prefix + '#imageManagementContextPicker'] = {
-            change: function(toolbar, filterType, selected) {
-                var contentView = this.application.getCurrentView();
-
-                // If user picks a different property/region and we're on a register, update the grid
-                if (contentView.getXType() == 'images.main') {
-                    var grid = self.getCurrentGrid();
-                    var state = Ext.ComponentQuery.query(
-                        '[xtype="shared.contextpicker"]'
-                    )[0].getState();
-
-                    grid.getStore().load({
-                        params: {
-                            contextType     : state.type,
-                            contextSelection: state.selected
-                        }
-                    })
-                }
-            }
-        },
-
-        control[prefix + 'button[itemId~="buttonUpload"]'] = {
-            click: this.processButtonUpload
+            itemclick: this.processCellClick.bind(this)
         };
-        control[prefix + 'button[itemId~="buttonNPISS"]'] = {
-            click: this.processButtonNPISS
-        };
-        control[prefix + 'button[itemId~="buttonNSISS"]'] = {
-            click: this.processButtonNSISS
+        control[prefix + '[itemId~="componentContextPicker"]'] = {
+            change: this.processComponentContextPicker.bind(this)
         };
 
         control[prefix + 'button[itemId~="buttonIndex"]'] = {
-            click: this.processButtonIndex
+            click: this.processButtonIndex.bind(this)
         };
         control[prefix + 'button[itemId~="buttonDelete"]'] = {
-            click: this.processButtonDelete
-        }
+            click: this.processButtonDelete.bind(this)
+        };
         control[prefix + 'button[itemId~="buttonConvert"]'] = {
-            click: function() {alert("THIS IS CORRECT PROCESSING");}
-        }
+            click: this.processButtonConvert.bind(this)
+        };
         control[prefix + 'button[itemId~="buttonRevert"]'] = {
-            click: this.processButtonRevert
-        }
-        control[prefix + 'button[itemId~="buttonDeletePermanently"]'] = {
-            click: this.processButtonDeletePermanently
-        }
+            click: this.processButtonRevert.bind(this)
+        };
+
+        control[prefix + 'button[itemId~="buttonUpload"]'] = {
+            click: this.processButtonUpload.bind(this)
+        };
+        control[prefix + 'button[itemId~="buttonNPISS"]'] = {
+            click: this.processButtonNPISS.bind(this)
+        };
+        control[prefix + 'button[itemId~="buttonNSISS"]'] = {
+            click: this.processButtonNSISS.bind(this)
+        };
 
         control[prefix + 'button[itemId~="buttonReport"]'] = {
-            click: this.processButtonReport
+            click: this.processButtonReport.bind(this)
         };
         control[prefix + 'button[itemId~="buttonSearch"]'] = {
-            click: this.processButtonSearch
+            click: this.processButtonSearch.bind(this)
+        };
+        control[prefix + 'button[itemId~="buttonSearchDeleted"]'] = {
+            click: this.processButtonSearchDeleted.bind(this)
+        };
+
+        control[prefix + 'button[itemId~="buttonDeletePermanently"]'] = {
+            click: this.processButtonDeletePermanently.bind(this)
         };
     },
 
     /**
-     * 
+     * Bind actions for Index Screen.
      */
     controlIndex: function(control) {
         var prefix = '[xtype="images.index"] ';
+
+        // Top bar buttons.
+        control[prefix + 'button[itemId~="buttonPrev"]'] = {
+            click: this.processButtonPrev
+        };
+
+        control[prefix + 'button[itemId~="buttonSaveAndPrev"]'] = {
+            click: this.processButtonSaveAndPrev
+        };
+
+        control[prefix + 'button[itemId~="buttonSaveAsException"]'] = {
+            click: this.processButtonSaveAsException
+        };
 
         control[prefix + 'button[itemId~="buttonReturn"]'] = {
             click: this.processButtonReturn
         };
 
-        control[prefix + 'button[itemId~="buttonPrev"]'] = {
-            click: this.processButtonPrev
-        };
-        control[prefix + 'button[itemId~="buttonNext"]'] = {
-            click: this.processButtonNext
-        };
+        control[prefix + 'button[itemId~="buttonDeleteFromQueue"]'] = {
+            click: this.processButtonDeleteFromQueue
+        }
 
         control[prefix + 'button[itemId~="buttonSaveAndNext"]'] = {
             click: this.processButtonSaveAndNext
         };
-        control[prefix + 'button[itemId~="buttonSaveAndPrev"]'] = {
-            click: this.processButtonSaveAndPrev
-        };
-        control[prefix + 'button[itemId~="buttonSaveAsException"]'] = {
-            click: this.processButtonSaveAsException
-        };
 
-        control[prefix + 'button[itemId~="buttonSaveAndNextAction"]'] = {
-            click: this.processButtonSaveAndNext
-        };
-        control[prefix + 'button[itemId~="buttonSaveAsExceptionAction"]'] = {
-            click: this.processButtonSaveAsException
-        };
-        control[prefix + 'button[itemId~="buttonIndexingComplete"]'] = {
-            click: this.processButtonIndexingComplete
-        };
-        
-        control[prefix + 'button[itemId~="buttonInvoiceAction"]'] = {
-            click: this.processButtonInvoice
+        control[prefix + 'button[itemId~="buttonNext"]'] = {
+            click: this.processButtonNext
         };
 
         control[prefix + 'button[itemId~="buttonInvoice"]'] = {
             click: this.processButtonInvoice
         };
 
-        control[prefix + 'button[itemId~="buttonDeleteFromQueue"]'] = {
-            click: this.processButtonDeleteFromQueue
-        }
+        control[prefix + 'button[itemId~="buttonIndexingComplete"]'] = {
+            click: this.processButtonIndexingComplete
+        };
+
+        // Form buttons.
+        control[prefix + 'button[itemId~="buttonSaveAndNextAction"]'] = {
+            click: this.processButtonSaveAndNext
+        };
+        control[prefix + 'button[itemId~="buttonSaveAsExceptionAction"]'] = {
+            click: this.processButtonSaveAsException
+        };
+        control[prefix + 'button[itemId~="buttonInvoiceAction"]'] = {
+            click: this.processButtonInvoice
+        };
     },
 
     /**
-     * 
+     * Bind actions for Search Screen.
      */
     controlSearch: function(control) {
         var prefix = '[xtype="images.search"] ';
 
         control[prefix + 'button[itemId~="buttonReturn"]'] = {
             click: this.processButtonReturn
-        }
-        
+        };
+
         control[prefix + 'button[itemId~="buttonSearchProcess"]'] = {
             click: this.processButtonSearchProcess
-        }
+        };
         control[prefix + 'button[itemId~="buttonSearchCDIndex"]'] = {
             click: this.processButtonSearchCDIndex
-        }
+        };
+
+        control[prefix + 'button[itemId~="buttonSearchProcessAction"]'] = {
+            click: this.processButtonSearchProcess
+        };
     },
 
     /**
-     * 
+     * Bind actions for Search CD Index Screen.
      */
     controlSearchCDIndex: function(control) {
         var prefix = '[xtype="images.searchcdindex"] ';
 
         control[prefix + 'button[itemId~="buttonReturn"]'] = {
             click: this.processButtonReturn
-        }
+        };
         
         control[prefix + 'button[itemId~="buttonSearchCDIndexProcess"]'] = {
             click: this.processButtonSearchCDIndexProcess
-        }
+        };
         control[prefix + 'button[itemId~="buttonSearchCDIndexPrint"]'] = {
             click: this.processButtonSearchCDIndexPrint
-        }
+        };
+        
+        control[prefix + 'button[itemId~="buttonSearchCDIndexProcessAction"]'] = {
+            click: this.processButtonSearchCDIndexProcess
+        };
     },
 
     /**
-     * 
+     * Bind actions for Search Deleted Screen.
+     */
+    controlSearchDeleted: function(control) {
+        var prefix = '[xtype="images.searchdeleted"] ';
+
+        control[prefix + 'button[itemId~="buttonReturn"]'] = {
+            click: this.processButtonReturn
+        };
+    
+        control[prefix + 'button[itemId~="buttonSearchDeletedProcess"]'] = {
+            click: this.processButtonSearchDeletedProcess
+        };
+    },
+
+    /**
+     * Bind actions for Report Screen.
      */
     controlReport: function(control) {
         var prefix = '[xtype="images.report"] ';
@@ -183,41 +199,64 @@ Ext.define('NP.controller.Images', {
         };
     },
 
-
-
     /***************************************************************************
      * View: Main
      **************************************************************************/
     /**
+     * Show Main Screen.
      * 
+     * @param tab Identifier of the tab which should be displayed.
      */
     showMain: function(tab) {
         this.application.setView('NP.view.images.Main');
 
-        var panel = Ext.ComponentQuery.query('tabpanel')[0];
-        var active = Ext.ComponentQuery.query('[itemId="images-' + (tab || 'index') + '"]')[0];
+        var active = this.getCurrent();
+        var target = Ext.ComponentQuery.query(
+            '[itemId="images-' + (tab || 'index') + '"]'
+        )[0];
 
-        if (active && active.getId() != panel.getActiveTab().getId()) {
-            panel.setActiveTab(active);
+        if (target && active && target.getItemId() != active.getActiveTab().getItemId()) {
+            active.setActiveTab(target);
         }
 
-        var grid = this.getCurrentGrid();
-        grid.store.reload();
+        var current = 
+            this.getCurrentGrid()
+        ;
+        current && 
+            current.store && 
+            current.store.reload()
+        ;
     },
 
     /**
-     *
+     * Appropriate tab(grid) should be displayed when tab is changed.
+     * 
+     * @param panel Main screen tab panel.
+     * @param newTab Tab which should be displayed.
+     * @param oldTab Tab which was active before tab change.
+     * @param options Additional options.
      */
-    processTabChange: function(tabPanel, newCard, oldCard, eOpts) {
+    processTabChange: function(panel, newTab, oldTab, options) {
         var grid = this.getCurrentGrid();
-        var tabid = grid.getItemId().replace('images-', '').toLowerCase();
-
-        this.application.addHistory('Images:showMain:' + tabid);
-
-        grid.store.reload();
+        if (grid) {
+            var tabid = grid.getItemId().
+                replace('images-', '').toLowerCase()
+            ;
+            this.application.addHistory('Images:showMain:' + tabid);
+        }
     },
 
-    processCellClick: function(grid, record, item, index, event, eOpts) {
+    /**
+     * Associated image should be displayed when grid cell is clicked in a new window.
+     * 
+     * @param grid Grid object.
+     * @param record Record model.
+     * @param item Current Grid row.
+     * @param index Record index/row number(position in grid).
+     * @param event Javascript click event.
+     * @param options Additional options.
+     */
+    processCellClick: function(grid, record, item, index, event, options) {
         if (event.getTarget().className != 'x-grid-row-checker') {
             window.open(
                 '/ajax.php?service=ImageService&action=show&image_id=' + record.internalId,
@@ -228,14 +267,40 @@ Ext.define('NP.controller.Images', {
     },
 
     /**
-     *
+     * Grid should be reloaded with correct parameters if context is changed.
+     * 
+     * @param toolbar Context Picker Component.
+     * @param filterType Type of the filter: Current Property | Region | All properties.
+     * @param selected Identifier of the selected item in the combobox (Property or Region).
+     */
+    processComponentContextPicker: function(toolbar, filterType, selected) {
+        var contentView = this.application.getCurrentView();
+
+        // If user picks a different property/region and we're on a register, update the grid.
+        if (contentView.getXType() == 'images.main') {
+            var grid = this.getCurrentGrid();
+            var state = Ext.ComponentQuery.query(
+                '[xtype="shared.contextpicker"]'
+            )[0].getState();
+
+            grid.getStore().load({
+                params: {
+                    contextType     : state.type,
+                    contextSelection: state.selected
+                }
+            })
+        }
+    },
+
+    /**
+     * Open Index Screen.
      */
     processButtonIndex: function() {
         this.application.addHistory('Images:showIndex');
     },
 
     /**
-     *
+     * Delete selected images.
      */
     processButtonDelete: function() {
         var grid = this.getCurrentGrid();
@@ -247,11 +312,18 @@ Ext.define('NP.controller.Images', {
                     service: 'ImageService',
                     action : 'delete',
 
+                    userprofile_id              : NP.Security.getUser().get('userprofile_id'),
+                    delegated_to_userprofile_id : NP.Security.getDelegatedToUser().get('userprofile_id'),
+
                     identifiers: '[' + selection.join(',') + ']',
 
                     success: function(result) {
                         if (result.success) {
-                            NP.Util.showFadingWindow({ html: 'Images Deleted' });
+                            NP.Util.showFadingWindow(
+                                {
+                                    html: 'Images Deleted'
+                                }
+                            );
                             grid.store.reload();
                         }
                     }
@@ -261,7 +333,14 @@ Ext.define('NP.controller.Images', {
     },
 
     /**
-     *
+     * Convert selected images.
+     */
+    processButtonConvert: function() {
+        Ext.MessageBox.alert('Convert image', 'Coming soon');
+    },
+
+    /**
+     * Revert selected images.
      */
     processButtonRevert: function() {
         var grid = this.getCurrentGrid();
@@ -277,7 +356,11 @@ Ext.define('NP.controller.Images', {
 
                     success: function(result) {
                         if (result.success) {
-                            NP.Util.showFadingWindow({ html: 'Images Reverted' });
+                            NP.Util.showFadingWindow(
+                                {
+                                    html: 'Images Reverted'
+                                }
+                            );
                             grid.store.reload();
                         }
                     }
@@ -287,49 +370,64 @@ Ext.define('NP.controller.Images', {
     },
 
     /**
-     *
+     * Show uploader window.
+     * After window is closed, current grid should be reloaded to get latest information.
      */
     processButtonUpload: function() {
+        var self = this;
         Ext.create('NP.lib.ui.Uploader', {
             params: {
                 form: {
-                    action:  'save',
+                    action:  'upload',
                     service: 'ImageService'
+                },
+                listeners: {
+                    close: function(){
+                        var grid = self.getCurrentGrid();
+                        grid.store.reload();
+                    }
                 }
             }
         }).show();
     },
 
     /**
-     *
+     * Open Nexus Payables Invoice Separator Sheet in a new window.
      */
     processButtonNPISS: function() {
         window.open('/resources/files/NexusBarcodeSeparator.pdf', 'BarCode_Window', 'width=740, height=625, resizable=yes, scrollbars=yes');
     },
 
     /**
-     *
+     * Open Nexus Services Invoice Separator Sheet in a new window.
      */
     processButtonNSISS: function() {
         window.open('/resources/files/KofaxBarcode.pdf', 'BarCode_Window', 'width=740, height=625, resizable=yes, scrollbars=yes');
     },
 
     /**
-     *
-     */
-    processButtonSearch: function() {
-        this.application.addHistory('Images:showSearch');
-    },
-
-    /**
-     *
+     * Open Report Screen.
      */
     processButtonReport: function() {
         this.application.addHistory('Images:showReport');
     },
 
     /**
-     *
+     * Open Search Screen.
+     */
+    processButtonSearch: function() {
+        this.application.addHistory('Images:showSearch');
+    },
+
+    /**
+     * Open Search Deleted Screen.
+     */
+    processButtonSearchDeleted: function() {
+        this.application.addHistory('Images:showSearchDeleted');
+    },
+
+    /**
+     * Delete selected images permanently.
      */
     processButtonDeletePermanently: function() {
         var grid = this.getCurrentGrid();
@@ -341,12 +439,19 @@ Ext.define('NP.controller.Images', {
                     service: 'ImageService',
                     action : 'delete',
 
+                    userprofile_id              : NP.Security.getUser().get('userprofile_id'),
+                    delegated_to_userprofile_id : NP.Security.getDelegatedToUser().get('userprofile_id'),
+
                     identifiers: '[' + selection.join(',') + ']',
                     permanently: true,
 
                     success: function(result) {
                         if (result.success) {
-                            NP.Util.showFadingWindow({ html: 'Images Deleted Permanently' });
+                            NP.Util.showFadingWindow(
+                                {
+                                    html: 'Images Deleted Permanently'
+                                }
+                            );
                             grid.store.reload();
                         }
                     }
@@ -355,12 +460,98 @@ Ext.define('NP.controller.Images', {
         }
     },
 
-
-
     /***************************************************************************
      * View: Index
      **************************************************************************/
-    loadStoresBase: function(callback) {
+    /**
+     * Show Index Screen.
+     */
+    showIndex: function() {
+        var grid = this.getCurrentGrid();
+        var selection = this.getCurrentSelection();
+
+        // Find current section.
+        var section = 'index';
+        if (grid) {
+            if (grid.getXType() == 'images.grid.Exceptions') {
+                section = 'exception';
+            }
+        }
+
+        if (selection) {
+            // Put images into queue.
+            var items = [];
+            for(var i = 0, l=selection.length; i<l; i++) {
+                items.push(selection[i]);
+            }
+            this.queueImages(items);
+
+            // Prepare view configuration.
+            var viewCfg = {
+                section: section,
+                bind: {
+                    models: ['image.ImageIndex'],
+                    service : 'ImageService',
+                    action  : 'get',
+                    extraParams: {
+                        id: this.imageQueue[this.imageQueueCurrent]
+                    }
+                },
+                listeners: {
+                    dataloaded: function (form, data) {
+                        if (data['utilityaccount_id']) {
+                            var uproperty = Ext.ComponentQuery.query('[name="utility_property_id"]')[0];
+                            uproperty && uproperty.setValue(data['Property_id']);
+
+                            var uvendorsite = Ext.ComponentQuery.query('[name="utility_vendorsite_id"]')[0];
+                            uvendorsite && uvendorsite.setValue(data['Image_Index_VendorSite_Id']);
+                        }
+
+                        var doctype = Ext.ComponentQuery.query('[name="Image_Doctype_Id"]')[0];
+                        if (!doctype.getValue()) {
+                            var doctypeValue = 
+                                this['preload-store'].doctype.totalCount && 
+                                this['preload-store'].doctype.data.keys[0]
+                            ;
+                            doctype.setValue(doctypeValue);
+                        }
+
+//                        Ext.ComponentQuery.query('[name="Property_id"]')[0].setValue(data['Property_id']);
+//                        Ext.ComponentQuery.query('[name="property_id_alt"]')[0].setValue(data['Property_id']);
+//
+//                        Ext.ComponentQuery.query('[name="invoiceimage_vendorsite_alt_id"]')[0].setValue(data['Image_Index_VendorSite_Id']);
+//                        Ext.ComponentQuery.query('[name="invoiceimage_vendorsite_id"]')[0].setValue(data['Image_Index_VendorSite_Id']);
+                    }
+                }
+            };
+
+            var self = this;
+            // Preload stores.
+            this.loadStores(function(storeDoctypes, storeIntegrationPackages){
+                viewCfg['preload-store'] = {
+                    doctype: storeDoctypes,
+                    integrationPackage: storeIntegrationPackages
+                };
+
+                // Show Index Screen.
+                self.application.setView('NP.view.images.Index', viewCfg);
+                // Set Correct title.
+                Ext.ComponentQuery.query('panel[id="panel-index"]')[0].setTitle('Image Index - ' + self.imageQueue[self.imageQueueCurrent]);
+                // Set correct url for iframe.
+                self.refreshIndex();
+            })
+        } else {
+            this.processButtonReturn();
+        }
+    },
+
+    /**
+     * Preload necessary stores.
+     * Before Index screen will be displayed all necessary stores for comboboxes should be loaded.
+     * 
+     * @param Function callback Method will be called after all necessary stores be loaded.
+     */
+    loadStores: function(callback) {
         var storeDoctypes = 
             Ext.create('NP.store.images.ImageDocTypes',{
                 service    : 'ImageService',
@@ -380,95 +571,23 @@ Ext.define('NP.controller.Images', {
             });
         });
     },
-    
-    showIndex: function() {
-        var grid = this.getCurrentGrid();
-        var selection = this.getCurrentSelection();
 
-        var section = 'index';
-        if (grid) {
-            if (grid.getXType() == 'images.grid.Exceptions') {
-                section = 'exception';
-            }
-        }
-
-            if (selection) {
-                var items = [];
-                for(var i = 0, l=selection.length; i<l; i++) {
-                    items.push(selection[i]);
-                }
-                this.queueImages(items);
-
-
-                var viewCfg = {
-                    section: section,
-                    bind: {
-                        models: ['image.ImageIndex'],
-                        service : 'ImageService',
-                        action  : 'get',
-                        extraParams: {
-                            id: this.imageQueue[this.imageQueueCurrent],
-                            filter: {
-                                userprofile_id              : NP.Security.getUser().get('userprofile_id'),
-                                delegated_to_userprofile_id : NP.Security.getDelegatedToUser().get('userprofile_id'),
-                                contextType                 : 'all',// state && state[0] ? state[0].getState().type : '',
-                                contextSelection            : ''//state && state[0] ? state[0].getState().selected : ''
-                            }
-                        }
-                    },
-                    listeners: {
-                        dataloaded: function (form, data) {
-                            if (data['utilityaccount_id']) {
-                                var uproperty = Ext.ComponentQuery.query('[name="utility_property_id"]')[0];
-                                uproperty && uproperty.setValue(data['Property_id']);
-
-                                var uvendorsite = Ext.ComponentQuery.query('[name="utility_vendorsite_id"]')[0];
-                                uvendorsite && uvendorsite.setValue(data['Image_Index_VendorSite_Id']);
-                            }
-
-                            var doctype = Ext.ComponentQuery.query('[name="Image_Doctype_Id"]')[0];
-                            if (!doctype.getValue()) {
-                                var doctypeValue = 
-                                    this['preload-store'].doctype.totalCount && 
-                                    this['preload-store'].doctype.data.keys[0]
-                                ;
-                                doctype.setValue(doctypeValue);
-                            }
-                            Ext.ComponentQuery.query('[name="Property_id"]')[0].setValue(data['Property_id']);
-                            Ext.ComponentQuery.query('[name="property_id_alt"]')[0].setValue(data['Property_id']);
-
-                            Ext.ComponentQuery.query('[name="invoiceimage_vendorsite_alt_id"]')[0].setValue(data['Image_Index_VendorSite_Id']);
-                            Ext.ComponentQuery.query('[name="invoiceimage_vendorsite_id"]')[0].setValue(data['Image_Index_VendorSite_Id']);
-                        }
-                    }
-                };
-
-                var self = this;
-                this.loadStoresBase(function(storeDoctypes, storeIntegrationPackages){
-                    viewCfg['preload-store'] = {
-                        doctype: storeDoctypes,
-                        integrationPackage: storeIntegrationPackages
-                    };
-
-                    //ImageIndexForm
-                    self.application.setView('NP.view.images.Index', viewCfg);
-
-                    Ext.ComponentQuery.query('panel[id="panel-index"]')[0].setTitle('Image Index - ' + self.imageQueue[self.imageQueueCurrent]);
-                    self.refreshIndex();
-                })
-        } else {
-            this.processButtonReturn();
-        }
-    },
+    /**
+     * Refresh Index Form when "Next", "Previous", "Save and Next" or "Save and Previous" is clicked.
+     * Method will get correct identifier of the image from the image queue (this.imageQueue) array.
+     */
     updateIndex: function() {
-        var form = 
-            this.getCmp('images.index')
-        ;
-
         var self = this;
+
+        var form = this.getCmp(
+            'images.index'
+        );
         var mask = new Ext.LoadMask(form);
 
+        // Show blocking "Loading" screen.
         mask.show();
+
+        // Get image data from the server.
         NP.lib.core.Net.remoteCall({
             requests: {
                 service: form.bind.service,
@@ -478,11 +597,10 @@ Ext.define('NP.controller.Images', {
                 filter: {
                     userprofile_id              : NP.Security.getUser().get('userprofile_id'),
                     delegated_to_userprofile_id : NP.Security.getDelegatedToUser().get('userprofile_id')//,
-                    //contextType                 : 'all',// state && state[0] ? state[0].getState().type : '',
-                    //contextSelection            : ''//state && state[0] ? state[0].getState().selected : ''
                 },
 
                 success: function(result, deferred) {
+                    // Models and fields should be updated when data from server is returned.
                     form.fireEvent('beforemodelupdate', form, result);
                     if (result !== null) {
                         form.updateModels(result);
@@ -501,14 +619,20 @@ Ext.define('NP.controller.Images', {
                     }
                     form.fireEvent('dataloaded', form, result);
 
+                    // Set Correct title.
                     Ext.ComponentQuery.query('panel[id="panel-index"]')[0].setTitle('Image Index - ' + self.imageQueue[self.imageQueueCurrent]);
+                    // Set correct url for iframe.
                     self.refreshIndex();
-
+                    // Remove blocking "Loading" screen.
                     mask.destroy();
                 }
             }
         });
     },
+
+    /**
+     * Load appropriate image to the iframe.
+     */
     refreshIndex: function() {
         var params = [
             'service=ImageService',
@@ -519,31 +643,132 @@ Ext.define('NP.controller.Images', {
     },
 
     /**
-     *
+     * Open Previous Image from Queue in the Index Image Form.
+     * If this method is called after image is saved then such image should be removed from the queue.
+     */
+    processButtonPrev: function(remove) {
+        if (remove === true) {
+            this.imageQueue.splice(this.imageQueueCurrent, 1);
+            if (this.imageQueue.length == 0) {
+                // Return to the main screen
+                this.imageQueueCurrent = 0;
+                this.processButtonReturn();
+            } else {
+                this.updateIndex();
+            }
+        } else {
+            if (this.imageQueueCurrent > 0) {
+                this.imageQueueCurrent--;
+                this.updateIndex();
+            }
+        }
+    },
+
+    /**
+     * Save current image and move to the previous image.
+     */
+    processButtonSaveAndPrev: function() {
+        this.saveImageIndex('index', 'index', this.processButtonPrev.bind(this));
+    },
+
+    /**
+     * Save current image, mark it as Exception.
+     */
+    processButtonSaveAsException: function() {
+        this.saveImageIndex('exception', 'index', this.processButtonNext.bind(this));
+    },
+
+    /**
+     * Show Main Screen.
      */
     processButtonReturn: function() {
         this.application.addHistory('Images:showMain');
     },
 
     /**
-     *
+     * Delete Image from Index Image Screen.
      */
-    processButtonPrev: function() {
-        if (this.imageQueueCurrent > 0) {
-            this.imageQueueCurrent--;
-            this.updateIndex();
-        }
-    },
-    /**
-     *
-     */
-    processButtonNext: function() {
-        if (this.imageQueueCurrent < this.imageQueue.length - 1) {
-            this.imageQueueCurrent++;
-            this.updateIndex();
+    processButtonDeleteFromQueue: function() {
+        if (this.imageQueue[this.imageQueueCurrent]) {
+            var self = this;
+            NP.lib.core.Net.remoteCall({
+                requests: {
+                    service: 'ImageService',
+                    action : 'delete',
+
+                    identifiers: '[' + this.imageQueue[this.imageQueueCurrent] + ']',
+
+                    success: function(result) {
+                        if (result.success) {
+                            NP.Util.showFadingWindow(
+                                {
+                                    html: 'Images Deleted'
+                                }
+                            );
+                            self.application.setView('NP.view.images.Main');
+                        }
+                    }
+                }
+            });
         }
     },
 
+    /**
+     * Save current image and move to the next image.
+     */
+    processButtonSaveAndNext: function() {
+        this.saveImageIndex('index', 'index', this.processButtonNext.bind(this));
+    },
+
+    /**
+     * Open Next Image from Queue in the Index Image Form.
+     * If this method is called after image is saved then such image should be removed from the queue.
+     */
+    processButtonNext: function(remove) {
+        if (remove === true) {
+            this.imageQueue.splice(this.imageQueueCurrent, 1);
+            if (this.imageQueue.length == 0) {
+                // Return to the main screen
+                this.imageQueueCurrent = 0;
+                this.processButtonReturn();
+            } else {
+                this.updateIndex();
+            }
+        } else {
+            if (this.imageQueueCurrent < this.imageQueue.length - 1) {
+                this.imageQueueCurrent++;
+                this.updateIndex();
+            }
+        }
+    },
+
+    /**
+     * Open Create Invoice Screen.
+     */
+    processButtonInvoice: function() {
+        //this.application.addHistory('Invoice:showView');
+        Ext.MessageBox.alert('Create Invoice', 'Coming soon');
+    },
+
+    /**
+     * Save image and go to next image.
+     * Image indexing should be completed when Image was marked as exception.
+     * This method is specific for the "Exception" tab/secion.
+     */
+    processButtonIndexingComplete: function() {
+        this.saveImageIndex('complete', 'index', this.processButtonNext.bind(this));
+    },
+
+    /**
+     * Unified universal method for saving images.
+     * After image will be saved on the server side, callback will be called.
+     * 
+     * @param String action Action which defines is this usual indexing('index'), saving an exception('exception'),
+     *      completing index operation('complete').
+     * @param String section Current section/tab name('index' or 'exception'). This parameter is needed for correct
+     *      declaring default values at the image.
+     * @param Function callback Function which will be called after saving will be processed.
+     */
     saveImageIndex: function(action, section, callback) {
         var form = this.getCmp('images.index');
 
@@ -560,83 +785,56 @@ Ext.define('NP.controller.Images', {
                     }
                 },
                 success: function(result) {
-                    callback && callback();
+                    callback && callback(true);
                 }
             });
         }
     },
-    /**
-     *
-     */
-    processButtonSaveAndNext: function() {
-        this.saveImageIndex('index', 'index', this.processButtonNext);
-    },
-    /**
-     *
-     */
-    processButtonSaveAndPrev: function() {
-        this.saveImageIndex('index', 'index', this.processButtonPrev);
-    },
-
-    processButtonSaveAsException: function() {
-        this.saveImageIndex('exception', 'index');
-    },
-
-    processButtonIndexingComplete: function() {
-        this.saveImageIndex('complete', 'index');
-    },
 
     /**
-     *
+     * Image identifiers which are passed to the Index Screen for indexing are stored in this queue.
+     * This queue allows user to go to next and previous images at the Index Screen.
+     * When "Save and Next", "Save as Exception", "Save and Previous" or "Indexing Complete and Next" 
+     * actions are processed appropriate images are deleted from this queue because images are marked 
+     * as processed and the following work with such images is available in the other parts of the 
+     * system.
      */
-    processButtonInvoice: function() {
-        this.application.addHistory('Invoice:showView');
-    },
-
     imageQueue: [],
+    /**
+     * Image index at the queue which is active in the Index Screen is placed at this variable.
+     */
     imageQueueCurrent: 0,
+    /**
+     * Place image identifiers to the queue.
+     * 
+     * @param [] List of the images which should be placed to the queue.
+     */
     queueImages: function(images) {
         this.imageQueue = images;
         this.imageQueueCurrent = 0;
     },
+    /**
+     * Clear queue.
+     * Reset current image index to the 0.
+     */
     clearImages: function() {
         this.imageQueue = [];
         this.imageQueueCurrent = 0;
-    },
-    
-    processButtonDeleteFromQueue: function() {
-        if (this.imageQueue[this.imageQueueCurrent]) {
-            var self = this;
-            NP.lib.core.Net.remoteCall({
-                requests: {
-                    service: 'ImageService',
-                    action : 'delete',
-
-                    identifiers: '[' + this.imageQueue[this.imageQueueCurrent] + ']',
-
-                    success: function(result) {
-                        if (result.success) {
-                            NP.Util.showFadingWindow({ html: 'Images Deleted' });
-                            self.application.setView('NP.view.images.Main');
-                        }
-                    }
-                }
-            });
-        }
     },
 
     /***************************************************************************
      * View: Search
      **************************************************************************/
     /**
-     *
+     * Show Search Screen
      */
     showSearch: function() {
         this.application.setView('NP.view.images.Search');
     },
 
     /**
-     *
+     * Search images.
+     * Method requests data from the server and places it to the search result grid.
      */
     processButtonSearchProcess: function() {
         var searchtype = Ext.ComponentQuery.query(
@@ -654,13 +852,13 @@ Ext.define('NP.controller.Images', {
         )[0];
 
         if (searchtype.getValue() == 1 && imagename.getValue().length < 4) {
-            alert("Please enter an image name with more than 4 characters.");
+            Ext.MessageBox.alert('Search Images', 'Please enter an image name with more than 4 characters.');
             imagename.focus();
         } else if (searchtype.getValue() == 2 && scandate.getValue() == '') {
-            alert("Please enter a scan date");
+            Ext.MessageBox.alert('Search Images', 'Please enter a scan date.');
             scandate.focus();
         } else if (searchtype.getValue() == 3 && vendor.getValue().length < 4) {
-            alert("Please enter a vendor with more than 4 characters.");
+            Ext.MessageBox.alert('Search Images', 'Please enter an image name with more than 4 characters.');
             vendor.focus();
         } else {
             var searchstring = '';
@@ -702,26 +900,25 @@ Ext.define('NP.controller.Images', {
     },
 
     /**
-     *
+     * Open Search CD Index Screen
      */
     processButtonSearchCDIndex: function() {
         this.application.addHistory('Images:showSearchCDIndex');
     },
 
-
-
     /***************************************************************************
      * View: Search CD Index
      **************************************************************************/
     /**
-     *
+     * Show Search CD Index Screen
      */
     showSearchCDIndex: function() {
         this.application.setView('NP.view.images.SearchCDIndex');
     },
 
     /**
-     *
+     * Search images.
+     * Method requests data from the server and places it to the search result grid.
      */
     processButtonSearchCDIndexProcess: function() {
         var doctype = Ext.ComponentQuery.query(
@@ -739,11 +936,11 @@ Ext.define('NP.controller.Images', {
         )[0].getValue();
 
         if (!doctype) {
-            alert('Please choose a document type.');
+            Ext.MessageBox.alert('Search Images', 'Please choose a document type.');
             return;
         }
         if (!refnum || refnum.length < 2) {
-            alert('Please enter at least 2 characters for reference number search.');
+            Ext.MessageBox.alert('Search Images', 'Please enter at least 2 characters for reference number search.');
             return;
         }
 
@@ -765,45 +962,117 @@ Ext.define('NP.controller.Images', {
             params['vendor_id'] = vendor_id;
         }
         result.store.load({params: params});
+
+        var printButton =
+            Ext.ComponentQuery.query('[itemId="buttonSearchCDIndexPrint"]')[0]
+        ;
+        printButton && printButton.show();
     },
 
     /**
-     *
+     * Print Search CD Index Screen.
      */
     processButtonSearchCDIndexPrint: function() {
         window.print();
     },
 
+    /***************************************************************************
+     * View: Search Deleted
+     **************************************************************************/
+    /**
+     * Show Search Deleted
+     */
+    showSearchDeleted: function() {
+        this.application.setView('NP.view.images.SearchDeleted');
+    },
 
+    /**
+     * Search deleted images.
+     * Method requests data from the server and places it to the search result grid.
+     */
+    processButtonSearchDeletedProcess: function() {
+        var vendor = Ext.ComponentQuery.query(
+            '[itemId~="field-image-vendors"]'
+        )[0].getValue();
+        var invoice = Ext.ComponentQuery.query(
+            '[itemId~="field-invoice-number"]'
+        )[0].getValue();
+        var deletedby = Ext.ComponentQuery.query(
+            '[itemId~="field-deleted-by"]'
+        )[0].getValue();
+
+        if (!vendor) {
+            Ext.MessageBox.alert('Search Deleted Images', 'Please choose a document type.');
+            return;
+        }
+
+        var params = {};
+
+        params['vendor'] = vendor;
+        if (invoice) {
+            params['invoice'] = invoice;
+        }
+        if (deletedby) {
+            params['deletedby'] = deletedby;
+        }
+
+        var result = Ext.ComponentQuery.query(
+            '[itemId="grid-search-deleted-results"]'
+        )[0];
+        result.store.load({params: params});
+    },
 
     /***************************************************************************
      * View: Report
      **************************************************************************/
     /**
-     *
+     * Show Report Screen.
      */
     showReport: function() {
-        this.application.setView('NP.view.images.Report');
+        //this.application.setView('NP.view.images.Report');
+        Ext.MessageBox.alert('Report', 'Coming soon');
     },
 
+    /**
+     * Generate Report.
+     */
     processButtonGenerateReport: function() {
-        alert('test');
+        Ext.MessageBox.alert('Generate Report', 'Coming soon');
     },
-
-
 
     /***************************************************************************
      * Common functions
      **************************************************************************/
-    getCurrentGrid: function() {
+    /**
+     * Get current panel.
+     * 
+     * @return {} Main Screen Panel.
+     */
+    getCurrent: function() {
         var panel = 
             Ext.ComponentQuery.query('tabpanel')[0]
         ;
+        return panel;
+    },
+
+    /**
+     * Get current grid.
+     * 
+     * @return {} Main Screen Grid: "Images to be Indexed", "Invoices", "POs", "Exceptions" or "Deleted Images".
+     */
+    getCurrentGrid: function() {
+        var panel = this.getCurrent();
         if (panel) {
             var current  = panel.getActiveTab();
             return current;
         }
     },
+
+    /**
+     * Get selection of the current grid.
+     * 
+     * @return [] List of selected identifiers.
+     */
     getCurrentSelection: function() {
         var grid = this.getCurrentGrid();
         

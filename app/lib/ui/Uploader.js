@@ -36,6 +36,7 @@ Ext.define('NP.lib.ui.Uploader', {
         this.params.form = this.params.form || {};
         this.params.files = this.params.files || {};
         this.params.service = this.params.service || 'ajax.php';
+        this.params.listeners = this.params.listeners || {};
 
         this.params.files.extensions = this.params.files.extensions || '*.*';
         this.params.files.description = this.params.files.description || 'All files';
@@ -114,39 +115,39 @@ Ext.define('NP.lib.ui.Uploader', {
             }
         ];
 
-        this.listeners = {
-            afterrender: function(){
-                if (this.isUploadifiveSupported()) {
-                    $("#file_upload").uploadifive({
-                        auto:       false,
-                        dnd:        true,
-                        multi:      true,
+        this.listeners = this.params.listeners;
 
-                        queueID:    'uploadqueue',
+        this.listeners.afterrender = function(){
+            if (this.isUploadifiveSupported()) {
+                $("#file_upload").uploadifive({
+                    auto:   false,
+                    dnd:    true,
+                    multi:  true,
 
-                        uploadScript:   this.params.service,
-                        formData:       this.params.form,
-                        simUploadLimit: 25
-                    });
-                } else {
-                    // After component is displayed, uploadify should be notified what field it
-                    // should use for file selection
-                    $("#file_upload").uploadify({
-                        height: 30,
-                        width:  120,
+                    queueID:    'uploadqueue',
 
-                        auto:       false,
-                        multi:      true,
-                        queueID:    'uploadqueue',
-                        swf:        '/vendor/jquery-uploadify/uploadify.swf',
+                    uploadScript:   this.params.service,
+                    formData:       this.params.form,
+                    simUploadLimit: 25
+                });
+            } else {
+                // After component is displayed, uploadify should be notified what field it
+                // should use for file selection
+                $("#file_upload").uploadify({
+                    height: 30,
+                    width:  120,
 
-                        uploader:       this.params.service,
-                        fileTypeExts:   this.params.files.extensions,
-                        fileTypeDesc:   this.params.files.description,
-                        formData:       this.params.form,
-                        simUploadLimit: 25
-                    });
-                }
+                    auto:       false,
+                    multi:      true,
+                    queueID:    'uploadqueue',
+                    swf:        '/vendor/jquery-uploadify/uploadify.swf',
+
+                    uploader:       this.params.service,
+                    fileTypeExts:   this.params.files.extensions,
+                    fileTypeDesc:   this.params.files.description,
+                    formData:       this.params.form,
+                    simUploadLimit: 25
+                });
             }
         };
 

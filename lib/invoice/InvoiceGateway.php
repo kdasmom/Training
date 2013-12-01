@@ -528,6 +528,21 @@ class InvoiceGateway extends AbstractGateway {
 
 		$this->adapter->query($update, $params);
 	}
+
+    public function getInvoiceRef($invoice_id) {
+        $select = new \NP\core\db\Select();
+        $select
+            ->column('invoice_ref')
+            ->from('INVOICE')
+            ->whereEquals('invoice_id', $invoice_id)
+        ;
+
+        $result = $this->adapter->query($select);
+        if (!empty($result) && !empty($result[0]) && !empty($result[0]['invoice_ref'])) {
+            return $result[0]['invoice_ref'];
+        }
+        return null;
+    }
 }
 
 ?>

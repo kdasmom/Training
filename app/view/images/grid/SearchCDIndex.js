@@ -1,5 +1,5 @@
 Ext.define('NP.view.images.grid.SearchCDIndex', {
-    extend: 'NP.view.images.grid.Base',
+    extend: 'NP.view.image.ImageGrid',
     alias:  'widget.images.grid.SearchCDIndex',
 
     fullData: true,
@@ -13,13 +13,12 @@ Ext.define('NP.view.images.grid.SearchCDIndex', {
 
     initComponent: function(){
         this.cols = [
-            'image.gridcol.imagescandatetm',
-            'image.gridcol.imagetocddisknum',
-            'image.gridcol.Amount',
-            'image.gridcol.doctype',
             'image.gridcol.createddt',
-            'image.gridcol.refnumber',
-            'vendor.gridcol.VendorName'
+            'image.gridcol.documenttype',
+            'vendor.gridcol.VendorName',
+            'image.gridcol.Amount',
+            'image.gridcol.reference',
+            'image.gridcol.imagetocddisknum',
         ];
 
 	this.store = Ext.create('NP.lib.data.Store', {

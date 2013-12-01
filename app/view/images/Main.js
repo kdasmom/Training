@@ -16,6 +16,13 @@ Ext.define('NP.view.images.Main', {
         'NP.view.images.grid.PurchaseOrders',
         'NP.view.images.grid.Exceptions',
         'NP.view.images.grid.DeletedImages',
+
+        'NP.view.shared.button.Camera',
+        'NP.view.shared.button.Delete',
+        'NP.view.images.button.npiss',
+        'NP.view.images.button.nsiss',
+        'NP.view.shared.button.Search',
+        'NP.view.shared.button.Report'
     ],
 
     locale: {
@@ -125,15 +132,17 @@ Ext.define('NP.view.images.Main', {
     topbarIndex: function() {
         var tbar = [
             {xtype: 'button', itemId: 'buttonIndex',  text: this.locale.buttonIndex},
-            {xtype: 'button', itemId: 'buttonDelete', text: this.locale.buttonDelete},
+            {xtype: 'shared.button.delete', itemId: 'buttonDelete', text: this.locale.buttonDelete},
 
             {xtype: 'tbspacer', width: 20},
 
-            {xtype: 'button', itemId: 'buttonUpload', text: this.locale.buttonUpload},
-            {xtype: 'button', itemId: 'buttonNPISS',  text: this.locale.buttonNPISS},
-            {xtype: 'button', itemId: 'buttonNSISS',  text: this.locale.buttonNSISS},
+            {xtype: 'shared.button.camera', itemId: 'buttonUpload', text: this.locale.buttonUpload},
+            {xtype: 'images.button.npiss', itemId: 'buttonNPISS',  text: this.locale.buttonNPISS},
+            {xtype: 'images.button.nsiss', itemId: 'buttonNSISS',  text: this.locale.buttonNSISS},
 
             {xtype: 'tbspacer', width: 20},
+
+            {xtype: 'shared.button.search', itemId: 'buttonSearch', text: this.locale.buttonSearch}
         ]
 
         this.buttonsCommon(tbar);
@@ -164,11 +173,12 @@ Ext.define('NP.view.images.Main', {
         var tbar = [
             {xtype: 'button', itemId: 'buttonConvert', text: this.locale.buttonConvert},
             {xtype: 'button', itemId: 'buttonRevert',  text: this.locale.buttonRevert},
-            {xtype: 'button', itemId: 'buttonDelete',  text: this.locale.buttonDelete},
+            {xtype: 'shared.button.delete', itemId: 'buttonDelete',  text: this.locale.buttonDelete},
 
             {xtype: 'tbspacer', width: 20},
 
-            {xtype: 'button', itemId: 'buttonReport', text: this.locale.buttonReport}
+            {xtype: 'shared.button.report', itemId: 'buttonReport', text: this.locale.buttonReport},
+            {xtype: 'shared.button.search', itemId: 'buttonSearch', text: this.locale.buttonSearch}
         ];
 
         this.buttonsCommon(tbar);
@@ -198,11 +208,12 @@ Ext.define('NP.view.images.Main', {
     topbarPurchaseOrders: function() {
         var tbar = [
             {xtype: 'button', itemId: 'buttonRevert',  text: this.locale.buttonRevert},
-            {xtype: 'button', itemId: 'buttonDelete',  text: this.locale.buttonDelete},
+            {xtype: 'shared.button.delete', itemId: 'buttonDelete',  text: this.locale.buttonDelete},
 
             {xtype: 'tbspacer', width: 20},
 
-            {xtype: 'button', itemId: 'buttonReport', text: this.locale.buttonReport}
+            {xtype: 'shared.button.report', itemId: 'buttonReport', text: this.locale.buttonReport},
+            {xtype: 'shared.button.search', itemId: 'buttonSearch', text: this.locale.buttonSearch}
         ];
 
         this.buttonsCommon(tbar);
@@ -219,7 +230,7 @@ Ext.define('NP.view.images.Main', {
             itemId: 'images-exceptions',
 
             xtype: 'images.grid.Exceptions',
-            title: this.locale.tabExceptions,
+            title: this.locale.tabExceptions
         };
         return tab;
     },
@@ -232,11 +243,12 @@ Ext.define('NP.view.images.Main', {
     topbarExceptions: function() {
         var tbar = [
             {xtype: 'button', itemId: 'buttonIndex',  text: this.locale.buttonIndex},
-            {xtype: 'button', itemId: 'buttonDelete', text: this.locale.buttonDelete},
+            {xtype: 'shared.button.delete', itemId: 'buttonDelete', text: this.locale.buttonDelete},
 
             {xtype: 'tbspacer', width: 20},
 
-            {xtype: 'button', itemId: 'buttonReport', text: this.locale.buttonReport}
+            {xtype: 'shared.button.report', itemId: 'buttonReport', text: this.locale.buttonReport},
+            {xtype: 'shared.button.search', itemId: 'buttonSearch', text: this.locale.buttonSearch}
         ];
 
         this.buttonsCommon(tbar);
@@ -265,10 +277,12 @@ Ext.define('NP.view.images.Main', {
      */
     topbarDeletedImages: function() {
         var tbar = [
-            {xtype: 'button', itemId: 'buttonRevert',            text: this.locale.buttonRevert},
-            {xtype: 'button', itemId: 'buttonDeletePermanently', text: this.locale.buttonDeletePermanently},
+            {xtype: 'button', itemId: 'buttonRevert', text: this.locale.buttonRevert},
+            {xtype: 'shared.button.delete', itemId: 'buttonDeletePermanently', text: this.locale.buttonDeletePermanently},
 
             {xtype: 'tbspacer', width: 20},
+
+            {xtype: 'shared.button.search', itemId: 'buttonSearchDeleted', text: this.locale.buttonSearch}
         ];
 
         this.buttonsCommon(tbar);
@@ -282,9 +296,8 @@ Ext.define('NP.view.images.Main', {
      */
     buttonsCommon: function(toolbar) {
         toolbar.push(
-            {xtype: 'button', itemId: 'buttonSearch', text: this.locale.buttonSearch},
             {xtype: 'tbspacer', flex: 1},
-            {xtype: 'shared.contextpicker', itemId: 'imageManagementContextPicker'}
+            {xtype: 'shared.contextpicker', itemId: 'componentContextPicker'}
         );
     }
 });
