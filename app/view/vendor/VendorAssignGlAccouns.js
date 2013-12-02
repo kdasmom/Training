@@ -41,12 +41,12 @@ Ext.define('NP.view.vendor.VendorAssignGlAccouns', {
 			labelWidth: 150
 		};
 
-        this.items = [
-            {
-                xtype: 'shared.glaccountassigner',
-                store: glaccountsStore
-            }
-        ];
+        this.items = [{
+            xtype    : 'shared.glaccountassigner',
+            store    : glaccountsStore,
+            flex     : 1,
+            hideLabel: true
+        }];
 
         this.callParent(arguments);
 	}

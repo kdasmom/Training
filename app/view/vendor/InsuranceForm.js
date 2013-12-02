@@ -124,7 +124,6 @@ Ext.define('NP.view.vendor.InsuranceForm', {
                     },
                     {
                         xtype: 'shared.button.delete',
-                        hidden: this.modelData || that.startIndex > 0 ? false : true,
                         margin: '17 0 0 15',
                         handler: function() {
                             that.destroy();

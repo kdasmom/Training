@@ -14,19 +14,17 @@ Ext.define('NP.view.vendor.AlternativeAddresses', {
 		'NP.lib.core.Translator'
 	],
 
-	padding: 8,
-
-	// For localization
-	title                     : NP.Translator.translate('Alternative addresses'),
 	vendor_id: null,
 
 	initComponent: function() {
 		var that = this;
 
+		// For localization
+		that.title = NP.Translator.translate('Alternate Addresses');
+
 		this.items = [
 			{
 				xtype: 'customgrid',
-				title: NP.Translator.translate('Alternate addresses'),
 				store: Ext.create('NP.store.contact.Addresses', {
 					service : 'VendorService',
 					action  : 'findAlternateAddresses',
@@ -61,7 +59,8 @@ Ext.define('NP.view.vendor.AlternativeAddresses', {
 						}
 					}
 				],
-				border:  false
+				border:  false,
+				emptyText: NP.Translator.translate('There are no alternate addresses for this vendor.')
 			}
 		];
 

@@ -52,8 +52,8 @@ Ext.define('NP.view.vendor.VendorForm', {
 
 		this.items = [{
 			xtype : 'tabpanel',
-			overflowY: 'scroll',
 			border: false,
+			defaults: { autoScroll: true },
 			items : [
 				{ xtype: 'vendor.vendornameandinformation', itemId: 'baseinformation'}
 			]

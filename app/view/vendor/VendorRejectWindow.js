@@ -13,9 +13,7 @@ Ext.define('NP.view.vendor.VendorRejectWindow', {
 	],
 
 	layout          : 'fit',
-	title					: NP.Translator.translate('Reject vendor'),
-	rejectReasonFieldLabel	: NP.Translator.translate('Please provide reason for rejection below'),
-
+	
 	width           : 475,
 	height          : 190,
 
@@ -27,6 +25,9 @@ Ext.define('NP.view.vendor.VendorRejectWindow', {
 
 	initComponent: function() {
 		var that = this;
+
+		that.title                  = NP.Translator.translate('Reject vendor');
+		that.rejectReasonFieldLabel = NP.Translator.translate('Please provide reason for rejection below');
 
 		this.tbar = [
 			{ xtype: 'shared.button.cancel' },

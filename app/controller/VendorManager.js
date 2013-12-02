@@ -15,15 +15,17 @@ Ext.define('NP.controller.VendorManager', {
 		'NP.view.shared.button.Upload',
 		'NP.view.shared.button.Approve',
 		'NP.view.shared.button.Reject',
-		'NP.view.vendor.VendorImageUploadForm',
-		'NP.view.vendor.InsuranceUploadForm',
-		'NP.view.vendor.VendorRejectWindow',
 		'NP.lib.core.Translator'
     ],
-//  for localization
 
-    saveSuccessText		: NP.Translator.translate('Your changes were saved.'),
-//	custom
+    stores: ['vendor.Vendors','contact.Addresses','vendor.VendorTypes','system.TaxPayorTypes',
+    		'system.PayeeTypes','vendor.InsuranceTypes'],
+
+    views: ['vendor.VendorsManager','vendor.VendorForm','vendor.VendorImageUploadForm',
+    		'vendor.InsuranceUploadForm','vendor.VendorRejectWindow','vendor.VendorSearch',
+    		'vendor.AddImagesWindow'],
+
+	//	custom
 	vendor_status		: false,
 	vendor_id			: false,
     /**
@@ -32,6 +34,11 @@ Ext.define('NP.controller.VendorManager', {
     init: function(){
 		var that = this;
         var app = this.application;
+
+        // For localization
+		NP.Translator.on('localeloaded', function() {
+			that.saveSuccessText = NP.Translator.translate('Your changes were saved.');
+		});
 
 		this.control({
 //			change tab
@@ -679,8 +686,8 @@ Ext.define('NP.controller.VendorManager', {
 	showFormTab: function(itemId, isReject, insurance, isSearch, callback) {
 		callback = callback || Ext.emptyFn;
 
-		var that = this;
-		var appCount = false;
+		var that = this,
+			appCount = false;
 
 		NP.lib.core.Net.remoteCall({
 			requests: {
@@ -701,6 +708,10 @@ Ext.define('NP.controller.VendorManager', {
 				}
 			}
 		});
+
+		if (itemId == 'altaddresses') {
+			Ext.ComponentQuery.query('[xtype="vendor.alternativeaddresses"] customgrid')[0].getStore().load();
+		}
 	},
 
 	/**

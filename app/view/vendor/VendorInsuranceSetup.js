@@ -52,7 +52,7 @@ Ext.define('NP.view.vendor.VendorInsuranceSetup', {
                 value: 0
             },
 			{
-				xtype: 'fieldcontainer',
+				xtype: 'container',
 				name: 'test'
 			}
         ];
@@ -67,7 +67,7 @@ Ext.define('NP.view.vendor.VendorInsuranceSetup', {
     addInsurance: function (model, isEdit) {
         var that = this;
 
-		var container = this.down('fieldcontainer');
+		var container = this.down('container');
 
 		var insConf ={
 			bind: {

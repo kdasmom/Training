@@ -16,8 +16,7 @@ Ext.define('NP.view.vendor.AddImagesWindow', {
 	],
 
 	layout          : 'fit',
-	title			: NP.Translator.translate('Add images'),
-
+	
 	width           : 770,
 	height          : 420,
 
@@ -29,6 +28,8 @@ Ext.define('NP.view.vendor.AddImagesWindow', {
 
 	initComponent: function() {
 		var that = this;
+
+		that.title = NP.Translator.translate('Add images');
 
 		this.items = [{
 			xtype: 'image.imagegrid',
