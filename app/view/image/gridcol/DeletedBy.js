@@ -9,9 +9,9 @@ Ext.define('NP.view.image.gridcol.DeletedBy', {
     dataIndex: 'deleted_by_userprofile_username',
         
     renderer: function(val, meta, rec) {
-        /*if (rec.raw['image_index_deleted_by']) {
+        if (rec.raw['deleted_by_userprofile_id']) {
             return rec.getDeletedByUser().get('userprofile_username');
-        }*/
+        }
         return '';
     }
 });

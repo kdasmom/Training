@@ -9,7 +9,7 @@ Ext.define('NP.view.images.grid.Index', {
             'image.gridcol.ImageType',
             'property.gridcol.PropertyName',
             'vendor.gridcol.VendorName',
-            'image.gridcol.Source'
+            'image.gridcol.ScanSource'
         ];
         this.autoscroll = true;
 

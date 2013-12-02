@@ -10,3 +10,7 @@
 .uploadify-queue-item .cancel a{
     background: url("/vendor/jquery-uploadify/uploadify-cancel.png") 0 0 no-repeat !important;
 }
+
+#uploadifive-file_upload {
+    margin-left: 100px !important;
+}

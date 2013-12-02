@@ -24,7 +24,7 @@ Ext.define('NP.view.images.grid.PurchaseOrders', {
 
 	this.store = Ext.create('NP.store.image.ImageIndexes', {
             service    : 'ImageService',
-            action     : 'getPurchaseOrders',
+            action     : 'getImagesToProcess1',
             paging     : true,
             pageSize: 25,
             extraParams: {

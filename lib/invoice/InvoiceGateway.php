@@ -543,6 +543,84 @@ class InvoiceGateway extends AbstractGateway {
         }
         return null;
     }
-}
 
-?>
+    /**
+     * Get Template for image index table.
+     * 
+     * @param int $vendorsite_id Vendorsite id.
+     * @param int $property_id Propery id.
+     * @param int $utilityaccount_accountnumber Utility account number.
+     * @return [] List of templates.
+     */
+    public function getTemplateForImageIndex($vendorsite_id, $property_id, $utilityaccount_accountnumber) {
+        if (empty($vendorsite_id)) 
+            return;
+        if (empty($property_id)) 
+            return;
+        
+        $select01 = new Select();
+        $select01
+            ->column('property_name')
+            ->from('property')
+            ->where(
+                Where::get()
+                    ->equals('property_id', 'i.property_id')
+            )
+        ;
+
+        $select02 = new Select();
+        $select02
+            ->column('property_id')
+            ->from('property')
+            ->where(
+                Where::get()
+                    ->equals('integration_package_id', 'v.integration_package_id')
+            )
+        ;
+
+        $columns = [
+            'invoice_id' => 'invoice_id',
+            'invoice_ref' => 'invoice_ref',
+            'template_name' => 'template_name',
+            'property_name' => $select01
+        ];
+        if (!empty($utilityaccount_accountnumber)) {
+            $select03 = new Select();
+            $select03
+                ->from(['ii' => 'invoiceitem'])
+                    ->join(['ua' => 'utilityaccount'], 'ii.utilityaccount_id = ua.utilityaccount_id', [], Select::JOIN_INNER)
+                ->where(
+                    Where::get()
+                        ->equals('ii.invoice_id', 'i.invoice_id')
+                        ->equals('ua.utilityaccount_accountnumber', $utilityaccount_accountnumber)
+                )
+            ;
+        }
+
+        $select = new Select();
+        $select
+            ->columns($columns)
+            ->from(['i' => 'invoice'])
+                ->join(['vs' => 'vendorsite'], 'vs.vendorsite_id=i.paytablekey_id AND i.paytable_name=\'vendorsite\'', [], Select::JOIN_INNER)
+                ->join(['v' => 'vendor'], 'v.vendor_id=vs.vendor_id ', ['integration_package_id'], Select::JOIN_INNER)
+        ;
+        $where = new Where();
+        $where
+            ->equals('i.invoice_status', '\'draft\'')
+            ->equals('vs.vendorsite_id', $vendorsite_id)
+            ->nest('OR')
+                ->equals('i.property_id', 0)
+                ->nest()
+                    ->in('i.property_id', $select02)
+                    ->equals('i.property_id', $property_id)
+                ->unnest()
+            ->unnest()
+        ;
+        if (!empty($utilityaccount_accountnumber)) {
+            $where->exists($select03);
+        }
+        $select->where($where);
+
+        return $this->adapter->query($select);
+    }
+}

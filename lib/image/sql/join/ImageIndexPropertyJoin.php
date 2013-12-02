@@ -12,7 +12,7 @@ use NP\core\db\Select;
  */
 class ImageIndexPropertyJoin extends Join {
  
-	public function __construct($cols=array('property_id_alt','property_name', 'Property_id', 'integration_package_id'), $type=Select::JOIN_LEFT, $toAlias='pr', $fromAlias='img') {
+	public function __construct($cols=array('property_id_alt','property_name', 'Property_Id', 'integration_package_id'), $type=Select::JOIN_LEFT, $toAlias='pr', $fromAlias='img') {
 		$this->setTable(array($toAlias=>'property'))
 			->setCondition("{$fromAlias}.property_id = {$toAlias}.property_id")
 			->setCols($cols)

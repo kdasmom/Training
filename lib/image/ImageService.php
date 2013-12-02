@@ -67,40 +67,7 @@ class ImageService extends AbstractService {
     public function getImagesToConvert1($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
         $countOnly = 'false';
         return $this->imageIndexGateway->findImagesToConvert($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
-/*
-        $tablerefs =
-            $this->imageTablerefGateway->getIdByNames(
-                ['receipt', 'Utility Invoice']
-            )
-        ;
-
-        return $this->imageIndexGateway->getImageScan(
-            null,
-            [
-                'property_id'   => null,
-                'tableref_id'   => 1,
-                'asp_client_id' => $this->configService->getClientId()
-            ],
-            $tablerefs
-        );*/
     }
-    public function getPurchaseOrders($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-        $tablerefs =
-            $this->imageTablerefGateway->getIdByNames(
-                ['receipt', 'Utility Invoice']
-            )
-        ;
-
-        return $this->imageIndexGateway->getImageScanForGrid(
-           [
-                'property_id'   => null,
-                'tableref_id'   => 1,
-                'asp_client_id' => $this->configService->getClientId()
-            ],
-            $tablerefs,$userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection
-        );
-    }
-
 	/**
 	 * Get list of Receipts to approve
 	 *
@@ -1040,244 +1007,170 @@ class ImageService extends AbstractService {
         }
         return $result;
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-
-    
-    
-    
-    
-    
-    
-        
-        
-        
-        
 
 
+    public function update($data) {
+        $doctypes = $this->imageDoctypeGateway->getIdByNames(['receipt', 'Utility Invoice']);
+        $tablerefs = $this->imageTablerefGateway->getIdByNames(['receipt', 'Utility Invoice']);
 
+        $params = $data['params'];
+        $entity = $data['imageindex'];
 
+        $entity['Image_Index_Name'] =
+            str_replace('\'', '', $entity['Image_Index_Name'])
+        ;
 
-
-
-
-
-
-
-
-        public function update($data) {
-            $doctypes = $this->imageDoctypeGateway->getIdByNames(['receipt', 'Utility Invoice']);
-            $tablerefs = $this->imageTablerefGateway->getIdByNames(['receipt', 'Utility Invoice']);
-
-            $params = $data['params'];
-            $entity = $data['imageindex'];
-
-            $entity['Image_Index_Name'] =
-                str_replace('\'', '', $entity['Image_Index_Name'])
-            ;
-
-            if ($entity['Image_Doctype_Id'] == $doctypes[strtolower('Utility Invoice')]) {
-                $entity['Property_Id'] = $params['utility_property_id'];
-            } elseif (empty($entity['Property_Id'])) {
-                if (!empty($params['Property_Alt_Id'])) {
-                    $entity['Property_Id'] = $params['Property_Alt_Id'];
-                } else {
-                    $entity['Property_Id'] = null;
-                }
+        if ($entity['Image_Doctype_Id'] == $doctypes[strtolower('Utility Invoice')]) {
+            //$entity['Property_Id'] = $params['utility_property_id'];
+        } elseif (empty($entity['Property_Id'])) {
+            if (empty($entity['Property_Alt_Id'])) {
+                $entity['Property_Id'] = null;
             }
+        }
 //$params['utility_property_id']
 //$params['utility_vendorsite_id']
 
-            if ($entity['Image_Doctype_Id'] == $doctypes[strtolower('Utility Invoice')]) {
-                $entity['Image_Index_VendorSite_Id'] = $params['utility_vendorsite_id'];
-            } elseif (!empty($params['invoiceimage_vendorsite_id'])) {
-                $entity['Image_Index_VendorSite_Id'] = $params['invoiceimage_vendorsite_id'];
-            } elseif (!empty($params['invoiceimage_vendorsite_alt_id'])) {
-                $entity['Image_Index_VendorSite_Id'] = $params['invoiceimage_vendorsite_alt_id'];
+        if ($entity['Image_Doctype_Id'] == $doctypes[strtolower('Utility Invoice')]) {
+            //$entity['Image_Index_VendorSite_Id'] = $params['utility_vendorsite_id'];
+        } elseif (empty($entity['Image_Index_VendorSite_Id'])) {
+            if (!empty($entity['invoiceimage_vendorsite_alt_id'])) {
+                $entity['Image_Index_VendorSite_Id'] = $entity['invoiceimage_vendorsite_alt_id'];
             } else {
                 $entity['Image_Index_VendorSite_Id'] = null;
             }
+        }
 
+        $refnum = '';
+        if (!empty($entity['invoiceimage_ref'])) {
+            $refnum = $entity['invoiceimage_ref'];
+        } elseif (!empty($entity['po_ref'])) {
+            $refnum = $entity['po_ref'];
+        } else {
             $refnum = '';
-            if (!empty($entity['invoiceimage_ref'])) {
-                $refnum = $entity['invoiceimage_ref'];
-            } elseif (!empty($entity['po_ref'])) {
-                $refnum = $entity['po_ref'];
-            } else {
-                $refnum = '';
+        }
+        $entity['Image_Index_Ref'] = str_replace('\'', '', $refnum);
+
+        if ($params['action'] == 'exception') {
+            // If image should be marked as "Exception"
+            $entity['Image_Index_Exception_by'] = $params['userprofile_id'];
+            $entity['Image_Index_Exception_datetm'] = date('Y-m-d H:i:s');
+            $entity['Image_Index_Status'] = 2;
+        } elseif ($params['action'] == 'complete') {
+            // If image was marked as "Exception" but now it should be indexed.
+            // This action could be processed from "Exception" section(tab).
+            $entity['Image_Index_Exception_End_datetm'] = date('Y-m-d H:i:s');
+            $entity['Image_Index_Status'] = 1;
+        } elseif (!empty($params['image_delete'])) {
+            // If image should be deleted. This action is moved to the separate
+            // delete method.
+            $entity['image_index_deleted_by'] = $params['userprofile_id'];
+            $entity['image_index_deleted_datetm'] = date('Y-m-d H:i:s');
+            $entity['image_index_status'] = -1;
+        } else {
+            // If parameters were not passed, then default action should be selected.
+            // If current section is "Exceptions" then this is exception image.
+            // If current section is "Index" then this is usual indexed image.
+            if (strtolower($params['section']) == 'exceptions') {
+                $entity['image_index_status'] = 2;
+            } elseif (strtolower($params['section']) == 'index') {
+                $entity['image_index_status'] = 1;
             }
-            $entity['Image_Index_Ref'] = str_replace('\'', '', $refnum);
+        }
 
-            if ($params['action'] == 'exception') {
-                // If image should be marked as "Exception"
-                $entity['Image_Index_Exception_by'] = $params['userprofile_id'];
-                $entity['Image_Index_Exception_datetm'] = date('Y-m-d H:i:s');
-                $entity['Image_Index_Status'] = 2;
-            } elseif ($params['action'] == 'complete') {
-                // If image was marked as "Exception" but now it should be indexed.
-                // This action could be processed from "Exception" section(tab).
-                $entity['Image_Index_Exception_End_datetm'] = date('Y-m-d H:i:s');
-                $entity['Image_Index_Status'] = 1;
-            } elseif (!empty($params['image_delete'])) {
-                // If image should be deleted. This action is moved to the separate
-                // delete method.
-                $entity['image_index_deleted_by'] = $params['userprofile_id'];
-                $entity['image_index_deleted_datetm'] = date('Y-m-d H:i:s');
-                $entity['image_index_status'] = -1;
-            } else {
-                // If parameters were not passed, then default action should be selected.
-                // If current section is "Exceptions" then this is exception image.
-                // If current section is "Index" then this is usual indexed image.
-                if (strtolower($params['section']) == 'exceptions') {
-                    $entity['image_index_status'] = 2;
-                } elseif (strtolower($params['section']) == 'index') {
-                    $entity['image_index_status'] = 1;
-                }
+        // This block is not needed anymore
+        if ($params['action'] == 'complete' && empty($params['image_delete'])) {
+            $entity['image_index_indexed_by'] = $params['userprofile_id'];
+            $entity['image_index_indexed_datetm'] = date('Y-m-d H:i:s');
+        }
+
+        if ($entity['Image_Doctype_Id'] == 1) {
+            $tableref_id = 1;
+        } elseif ($entity['Image_Doctype_Id'] == 2) {
+            $tableref_id = 3;
+        } elseif ($entity['Image_Doctype_Id'] == 3) {
+            $tableref_id = 4;
+        } elseif ($entity['Image_Doctype_Id'] == $doctypes[strtolower('receipt')]) {
+            $tableref_id = $tablerefs[strtolower('receipt')];
+        } elseif ($entity['Image_Doctype_Id'] == $doctypes[strtolower('Utility Invoice')]) {
+            $tableref_id = $tablerefs[strtolower('Utility Invoice')];
+        } elseif ($entity['Image_Doctype_Id'] > 3) {
+            $tableref_id = 2;
+
+            if (!empty($entity['Image_Index_VendorSite_Id'])) {
+                $entity['Tablekey_Id'] = $entity['Image_Index_VendorSite_Id'];//#listFirst(request.utilityaccount_id)#
+            } elseif (!empty($entity['invoiceimage_vendorsite_alt_id'])) {
+                $entity['Tablekey_Id'] = $entity['invoiceimage_vendorsite_alt_id'];//#listFirst(request.utilityaccount_id)#
             }
+        }
+        $entity['Tableref_Id'] = !empty($tableref_id) ? $tableref_id : null;
 
-            // This block is not needed anymore
-            if ($params['action'] == 'complete' && empty($params['image_delete'])) {
-                $entity['image_index_indexed_by'] = $params['userprofile_id'];
-                $entity['image_index_indexed_datetm'] = date('Y-m-d H:i:s');
+        $entity['Image_Index_Id'] = intval($entity['Image_Index_Id']);
+        $entity['asp_client_id'] =  $this->configService->getClientId();
+
+        //$entity['Image_Index_Source_Id'] = 1;
+        //$entity['Image_Index_Primary'] = 1;
+        $image = new ImageIndexEntity($entity);
+
+        $errors = $this->entityValidator->validate($image);
+        if (!count($errors)) {
+            try {
+                $this->imageIndexGateway->save($image);
+            } catch (\Exception $e) {
+                $errors[] = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
             }
+        }
 
-            $flag = "";
-            switch ($entity['Image_Doctype_Id']) {
-                case 1:
-                    $flag = $entity['PriorityFlag_ID_Alt_invoice'];
-                    $flag = 1;
-                    break;
-                case 2:
-                    $flag = $entity['PriorityFlag_ID_Alt_po'];
-                    break;
-                case 3:
-                    $flag = $entity['PriorityFlag_ID_Alt_vef'];
-                    break;
-                default:
-                    $flag = '';
-            }
-            if (!empty($flag)) {
-                $entity['PriorityFlag_ID_Alt'] = $flag;
-            }
-
-            if ($entity['Image_Doctype_Id'] == 1) {
-                $tableref_id = 1;
-            } elseif ($entity['Image_Doctype_Id'] == 2) {
-                $tableref_id = 3;
-            } elseif ($entity['Image_Doctype_Id'] == 3) {
-                $tableref_id = 4;
-            } elseif ($entity['Image_Doctype_Id'] == $doctypes[strtolower('receipt')]) {
-                $tableref_id = $tablerefs[strtolower('receipt')];
-            } elseif ($entity['Image_Doctype_Id'] == $doctypes[strtolower('Utility Invoice')]) {
-                $tableref_id = $tablerefs[strtolower('Utility Invoice')];
-            } elseif ($entity['Image_Doctype_Id'] > 3) {
-                $tableref_id = 2;
-
-                if (!empty($params['invoiceimage_vendorsite_id'])) {
-                    $entity['Tablekey_Id'] = $params['invoiceimage_vendorsite_id'];//#listFirst(request.utilityaccount_id)#
-                } elseif (!empty($params['invoiceimage_vendorsite_alt_id'])) {
-                    $entity['Tablekey_Id'] = $params['invoiceimage_vendorsite_alt_id'];//#listFirst(request.utilityaccount_id)#
-                }
-            }
-            $entity['Tableref_Id'] = !empty($tableref_id) ? $tableref_id : null;
-
-            $entity['Image_Index_Id'] = intval($entity['Image_Index_Id']);
-            $entity['asp_client_id'] =  $this->configService->getClientId();
-
-            $entity['Image_Index_Source_Id'] = 1;
-            $entity['Image_Index_Primary'] = 1;
-            $image = new ImageIndexEntity($entity);
-
-            $errors = $this->entityValidator->validate($image);
-            if (!count($errors)) {
-                try {
-                    $this->imageIndexGateway->save($image);
-                } catch (\Exception $e) {
-                    $errors[] = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
-                }
-            }
-
-            return array(
-                'success' => (count($errors)) ? false : true,
-                'errors'  => $errors
-            );
+        return array(
+            'success' => (count($errors)) ? false : true,
+            'errors'  => $errors
+        );
 
             //return $this->imageIndexGateway->updateImage($data['imageindex'], $params, $doctypes, $tablerefs);
-        }
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        public function listAccountNumbers($userprofile_id, $delegation_to_userprofile_id) {
-            $userprofile_id =
-                !empty($userprofile_id) ? 
-                    $userprofile_id :
-                    $this->securityService->getUserId()
-            ;
-            $delegation_to_userprofile_id =
-                !empty($delegation_to_userprofile_id) ?
-                    $delegation_to_userprofile_id:
-                    $this->securityService->getUserId()
-            ;
-            return $this->utilityAccountGateway->getAccountNumbers($userprofile_id, $delegation_to_userprofile_id);
-        }
+    }
 
-        public function listAccountNumber2($userprofile_id, $delegation_to_userprofile_id) {
-            $userprofile_id =
-                !empty($userprofile_id) ?
-                    $userprofile_id :
-                    $this->securityService->getUserId()
-            ;
-            $delegation_to_userprofile_id =
-                !empty($delegation_to_userprofile_id) ?
-                    $delegation_to_userprofile_id:
-                    $this->securityService->getUserId()
-            ;
+    /**
+     * Get Template for image index table.
+     * 
+     * @param int $vendorsite_id Vendorsite id. Should not be empty.
+     * @param int $property_id Propery id. Should not be empty.
+     * @param int $utilityaccount_accountnumber Utility account number.
+     * @return [] List of templates.
+     */
+    public function getTemplateForImageIndex($vendorsite_id, $property_id, $utilityaccount_accountnumber) {
+        return $this->invoiceGateway->getTemplateForImageIndex($vendorsite_id, $property_id, $utilityaccount_accountnumber);
+    }
 
-            $utilityaccount_accountnumber = 1;
-            return $this->utilityAccountGateway->getUtilityAccountsByCriteria($userprofile_id, $delegation_to_userprofile_id, $utilityaccount_accountnumber);
+    /**
+     * Get address.
+     * 
+     * @param int $id Vendorsite or property id.
+     * @param string $table_name Vendorsite or property table name.
+     * @param string $address_type Address type.
+     * @return [] Address
+     */
+    public function getAddress($id, $table_name, $address_type = 'Home') {
+        if ($table_name == 'vendorsite') {
+            return [
+                'data' => $this->vendorGateway->getVendorAddress($id, $address_type),
+                'success' => true
+            ];
+        } elseif ($table_name == 'property') {
+            return [
+                'data' => $this->propertyGateway->getPropertyAddress($id, $address_type),
+                'success' => true
+            ];
         }
+    }
 
-        public function listMeterSizes($account) {
-            if (!empty($account)) {
-                return $this->utilityAccountGateway->getMeterByAccount($account);
-            }
-        }
-        
-        
+    /**
+     * Find appropriate account number.
+     * 
+     * @param int $userprofile_id User id.
+     * @param int $delegation_to_userprofile_id Delegate id.
+     * @param string $utilityaccount_accountnumber Account number.
+     * @param string $utilityaccount_metersize Meter number.
+     * @return [] Accounts.
+     */
     public function matchUtilityAccount($userprofile_id, $delegation_to_userprofile_id, $utilityaccount_accountnumber, $utilityaccount_metersize) {
         if (empty($utilityaccount_accountnumber)) {
             $utilityaccount_accountnumber = '\'\'';
@@ -1316,6 +1209,39 @@ class ImageService extends AbstractService {
             return $result;
     }
 
+    /**
+     * Get list of account numbers.
+     * 
+     * @param int $userprofile_id User id.
+     * @param int $delegation_to_userprofile_id Delegate id.
+     * @return [] List of the account numbers.
+     */
+    public function listAccountNumbers($userprofile_id, $delegation_to_userprofile_id) {
+        $userprofile_id =
+            !empty($userprofile_id) ? 
+                $userprofile_id :
+                $this->securityService->getUserId()
+        ;
+        $delegation_to_userprofile_id =
+            !empty($delegation_to_userprofile_id) ?
+                $delegation_to_userprofile_id:
+                $this->securityService->getUserId()
+        ;
+        return $this->utilityAccountGateway->getAccountNumbers($userprofile_id, $delegation_to_userprofile_id);
+    }
+
+    /**
+     * Get list of meter numbers.
+     * 
+     * @param int $account User id.
+     * @return [] List of the account numbers.
+     */
+    public function listMeterSizes($account) {
+        if (!empty($account)) {
+            return $this->utilityAccountGateway->getMeterByAccount($account);
+        }
+    }
+        
     public function getUtilityAccountVendorPropMeter() {
 
         $details = $this->utilityAccountGateway->getUtilityAccountDetails(
@@ -1341,26 +1267,4 @@ class ImageService extends AbstractService {
         }
         return $result;
     }
-
-    
-    
-
-
-
-    public function getAddress($id, $table_name, $address_type = 'Home') {
-        if ($table_name == 'vendorsite') {
-            return [
-                'data' => $this->vendorGateway->getVendorAddress($id, $address_type),
-                'success' => true
-            ];
-        } elseif ($table_name == 'property') {
-            return [
-                'data' => $this->propertyGateway->getPropertyAddress($id, $address_type),
-                'success' => true
-            ];
-        }
-    }
-        
-        
-        
 }

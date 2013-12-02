@@ -267,6 +267,8 @@ Ext.define('NP.view.images.Index', {
             'field-p0-number'           : false,
             'panel-invoice-dates'       : true,
             'panel-utility-2'           : false,
+            'field-use-template'        : true,
+            'field-remittance-advice'   : true,
             'panel-property-and-neededby': true
         };
 
@@ -288,6 +290,8 @@ Ext.define('NP.view.images.Index', {
             'field-p0-number'           : false,
             'panel-invoice-dates'       : true,
             'panel-utility-2'           : true,
+            'field-use-template'        : true,
+            'field-remittance-advice'   : true,
             'panel-property-and-neededby': false
         };
         this.display(fields);
@@ -308,6 +312,8 @@ Ext.define('NP.view.images.Index', {
             'field-p0-number'           : true,
             'panel-invoice-dates'       : false,
             'panel-utility-2'           : false,
+            'field-use-template'        : false,
+            'field-remittance-advice'   : false,
             'panel-property-and-neededby': false
         };
         this.display(fields);
@@ -328,6 +334,8 @@ Ext.define('NP.view.images.Index', {
             'field-p0-number'           : false,
             'panel-invoice-dates'       : false,
             'panel-utility-2'           : false,
+            'field-use-template'        : false,
+            'field-remittance-advice'   : false,
             'panel-property-and-neededby': false
         };
         this.display(fields);
@@ -399,12 +407,10 @@ Ext.define('NP.view.images.Index', {
                 var storeMeterSize =
                     Ext.create('NP.store.images.MeterSizes', {
                         service    : 'ImageService',
-                        action     : 'listAccountNumber2',
+                        action     : 'listMeterSizes',
                         extraParams : {
-                            account: 1
+                            account: NP.Security.getUser().get('userprofile_id')
                         }
-//                        fields: ['utilityaccount_metersize'],
-//                        data: [{ "utilityaccount_metersize": "4"}]
                     }
                 );
                 storeMeterSize.load();
@@ -496,8 +502,8 @@ Ext.define('NP.view.images.Index', {
      * @param callback After utility account data is loaded and selected callback will be called.
      */
     checkAccountNumber: function(callback) {
-        var mask = new Ext.LoadMask(this);
-        mask.show();
+        //var mask = new Ext.LoadMask(this);
+        //mask.show();
 
         this.reloadUtilityAccounts(function(data, isAccountValid, isMetersizeValid) {
             var account = Ext.ComponentQuery.query(
@@ -505,7 +511,7 @@ Ext.define('NP.view.images.Index', {
             )[0];
             this.selectUtilityAccount(account.getValue(), isAccountValid, isMetersizeValid);
 
-            mask.destroy();
+            //mask.destroy();
             callback && callback(data);
         })
     },
@@ -781,7 +787,7 @@ Ext.define('NP.view.images.Index', {
                 listeners: {
                     select: function(combo, records) {
                         var value = combo.getValue();
-                        var element = Ext.ComponentQuery.query('[name="Property_id"]')[0];
+                        var element = Ext.ComponentQuery.query('[name="Property_Id"]')[0];
                         if (value) {
                             element.disable();
                             element.setValue(value);
@@ -826,7 +832,7 @@ Ext.define('NP.view.images.Index', {
                 listeners: {
                     select: function(combo, records) {
                         var value = combo.getValue();
-                        var element = Ext.ComponentQuery.query('[name="invoiceimage_vendorsite_id"]')[0];
+                        var element = Ext.ComponentQuery.query('[name="Image_Index_VendorSite_Id"]')[0];
                         if (value) {
                             element.disable();
                             element.setValue(value);
@@ -856,11 +862,9 @@ Ext.define('NP.view.images.Index', {
             {
                 itemId: 'field-property-name',
 
-                name: 'Property_id',
+                name: 'Property_Id',
                 xtype: 'customcombo',
                 fieldLabel: 'Property:',
-
-                addBlankRecord: true,
 
                 displayField: 'property_name',
                 valueField:   'property_id',
@@ -900,17 +904,16 @@ Ext.define('NP.view.images.Index', {
             // Vendor
             {
                 itemId: 'field-vendor-name',
-                //name: $request['invoiceimage_vendorsite_id'] = $_REQUEST['field-vendor-inputEl'];
                 xtype: 'customcombo',
+
                 fieldLabel: 'Vendor:',
                 addBlankRecord: true,
 
-                name: 'invoiceimage_vendorsite_id',
+                name: 'Image_Index_VendorSite_Id',
 
                 displayField: 'vendor_name',
                 valueField:   'vendorsite_id',
 
-                //store: storeVendorNames,
                 store: this['postload-store']['vendor-names'],
 
                 listeners: {
@@ -938,15 +941,26 @@ Ext.define('NP.view.images.Index', {
      */
     markupAddresses: function() {
         var self = this;
+
         return [
             {
                 xtype: 'button',
                 text: 'Property Address',
                 listeners: {
                     click: function() {
-                        var id = Ext.ComponentQuery.query(
-                            '[itemId="field-property-name"]'
-                        )[0].getValue();
+                        var doctype = Ext.ComponentQuery.query(
+                            '[name="Image_Doctype_Id"]'
+                        )[0].getDisplayValue();
+
+                        if (doctype.toUpperCase() == 'Utility Invoice'.toUpperCase()) {
+                            var id = Ext.ComponentQuery.query(
+                                '[name="utility_property_id"]'
+                            )[0].getValue();
+                        } else {
+                            id = Ext.ComponentQuery.query(
+                                '[itemId="field-property-name"]'
+                            )[0].getValue();
+                        }
 
                         self.showAddressWindow.apply(self, [id, 'home', 'property', 'Property Address']);
                     }
@@ -957,9 +971,19 @@ Ext.define('NP.view.images.Index', {
                 text: 'Vendor Address',
                 listeners: {
                     click: function() {
-                        var id = Ext.ComponentQuery.query(
-                            '[itemId="field-vendor-name"]'
-                        )[0].getValue();
+                        var doctype = Ext.ComponentQuery.query(
+                            '[name="Image_Doctype_Id"]'
+                        )[0].getDisplayValue();
+
+                        if (doctype.toUpperCase() == 'Utility Invoice'.toUpperCase()) {
+                            var id = Ext.ComponentQuery.query(
+                                '[name="utility_vendorsite_id"]'
+                            )[0].getValue();
+                        } else {
+                            id = Ext.ComponentQuery.query(
+                                '[itemId="field-vendor-name"]'
+                            )[0].getValue();
+                        }
 
                         self.showAddressWindow.apply(self, [id, 'mailing', 'vendorsite', 'Vendor Address'])
                     }
@@ -1028,12 +1052,8 @@ Ext.define('NP.view.images.Index', {
                         id: 'field-invoice-date',
                         xtype: 'datefield',
 
-                        name: 'Image_Index_Invoice_Date',//name: 'image_index_invoice_date', //name $request['invoiceimage_invoice_date'] = $_REQUEST['field-invoice-date-inputEl'];
+                        name: 'Image_Index_Invoice_Date',
                         fieldLabel: 'Invoice Date:'
-                        //onchange="changed_vendor($('##vendorname'))"
-                        //field_name="invoiceimage_invoice_date" 
-                        //onchange="changed_vendor($('##vendorname'))" required
-                        //id="invoice_date_index_value"
                     },
                     // Invoice due date
                     {
@@ -1102,31 +1122,44 @@ Ext.define('NP.view.images.Index', {
      * Section: Template
      **************************************************************************/
     markupTemplate: function() {
+        var self = this;
         return [
-            
+            {
+                itemId: 'field-use-template',
+                xtype: 'button',
+
+                text: 'Use Template',
+                listeners: {
+                    click: function() {
+                        self.showUseTemplateWindow();
+                        /*var id = Ext.ComponentQuery.query(
+                            '[itemId="field-property-name"]'
+                        )[0].getValue();
+
+                        self.showAddressWindow.apply(self, [id, 'home', 'property', 'Property Address']);*/
+                    }
+                }
+            }
         ];
     },
 
     /***************************************************************************
      * Section: Remit advice
      **************************************************************************/
+    /**
+     * Prepare markup for Remit Advice section.
+     */
     markupRemitAdvice: function() {
         return [
-            
-        ];
-        /*
-        var fields = [
             // Remittance Advice
             {
-                id: 'field-remittance-advice',
-                name: 'remit_advice',
+                itemId: 'field-remittance-advice',
                 xtype: 'checkbox',
-                labelWidth: widthLabel,
+
+                name: 'remit_advice',
                 fieldLabel: 'Remittance Advice:'
             },
-        ];*/
-
-        
+        ];
     },
 
     /***************************************************************************
@@ -1167,47 +1200,20 @@ Ext.define('NP.view.images.Index', {
                         xtype: 'combobox',
                         fieldLabel: 'Priority:',
 
-                        name: 'PriorityFlag_ID_Alt_invoice',
+                        //name: 'PriorityFlag_ID_Alt_invoice',
+                        name: 'PriorityFlag_ID_Alt',
 
                         displayField: 'title',
-                        valueField:   'value'
-/*
-				<cfif not ListFind(client.module_id,6007)><!--- invoice priority flag module rights dictate who can edit  --->
-                                    <input type="Hidden" name="PriorityFlag_ID_Alt_invoice" value="#variables.PriorityFlag_ID_Alt_invoice#">
-                                    <select name="" disabled>
-                                        <option>#variables.PriorityFlag_Display_invoice#
-                                    </select>
-				<cfelse>
-                                    <select name="PriorityFlag_ID_Alt_invoice">
-                                        <cfloop query="GetPriorityFlag">
-                                            <option value="#PriorityFlag_ID_Alt#"<cfif GetPriorityFlag.PriorityFlag_ID_Alt EQ variables.PriorityFlag_ID_Alt_invoice> selected</cfif>>#PriorityFlag_Display#
-					</cfloop>
-                                    </select>
-				</cfif>
-
- */
-/*
+                        valueField:   'value',
                         store: {
                             fields: ['title', 'value'],
                             data : [
-                                {"title":"High", "value":"Invoice"},
-                                {"title":"Low", "value":"Yardi"},
+                                {"title":"Regular", "value": 1},
+                                {"title":"High",    "value": 2},
+                                {"title":"Urgent",  "value": 3}
                             ]                            
                         }
-*/
-                    }/*,
-                    {
-                        xtype: 'customcombo',
-                        fieldLabel: 'Priority:',
-                        
-                        name: 'PriorityFlag_ID_Alt_po'
-                    },
-                    {
-                        xtype: 'customcombo',
-                        fieldLabel: 'Priority:',
-                        
-                        name: 'PriorityFlag_ID_Alt_vef'
-                    }*/
+                    }
                 ]
             }
         ];
@@ -1313,10 +1319,20 @@ Ext.define('NP.view.images.Index', {
         }
     },
 
+    /**
+     * Get Current Document Type.
+     * 
+     * @return int Document type identifier.
+     */
     getCurrentDoctype: function() {
         return Ext.ComponentQuery.query('[name="Image_Doctype_Id"]')[0].getValue();
     },
 
+    /**
+     * Get Current Integration Package.
+     * 
+     * @return int Integration Package identifier.
+     */
     getCurrentIntegrationPackage: function() {
         var result = Ext.ComponentQuery.query('[itemId="field-integration-package"]');
         if (result) {
@@ -1325,6 +1341,11 @@ Ext.define('NP.view.images.Index', {
         return result && result.getValue && result.getValue() || 1;
     },
 
+    /**
+     * Get Default Store parameters.
+     * 
+     * @return {} Set of parameters.
+     */
     getStoreParams: function() {
         return {
             integration_package: this.getCurrentIntegrationPackage(),
@@ -1333,11 +1354,94 @@ Ext.define('NP.view.images.Index', {
         }
     },
 
+    /**
+     * Show Use Template window.
+     */
+    showUseTemplateWindow: function() {
+        var property = Ext.ComponentQuery.query(
+            '[name="Property_Id"]'
+        )[0];
+        var vendor = Ext.ComponentQuery.query(
+            '[name="Image_Index_VendorSite_Id"]'
+        )[0];
+        if (!property || !vendor) {
+            Ext.MessageBox.alert('Use Template', 'You must select a property and vendor.');
+            return;
+        }
 
+        var vendor_id = vendor.getValue();
+        var property_id = property.getValue();
+        if (!vendor_id || !property_id) {
+            Ext.MessageBox.alert('Use Template', 'You must select a property and vendor.');
+            return;
+        }
 
+        var account = Ext.ComponentQuery.query(
+            '[name="utilityaccount_accountnumber"]'
+        )[0];
 
+        var storeTemplates = 
+            Ext.create('NP.lib.data.Store', {
+                service    : 'ImageService',
+                action     : 'getTemplateForImageIndex',
+                extraParams : {
+                    'property_id': property_id,
+                    'vendorsite_id': vendor_id,
+                    'utilityaccount_accountnumber': account.getValue()
+                }
+            });
+        storeTemplates.load();
 
+        var window = Ext.create('Ext.window.Window', {
+            title: 'Add Template',
 
+            width: 400,
+            height: 200,
+            bodyPadding: 10,
+
+            modal: true,
+            layout: 'form',
+
+            tbar: [
+                {
+                    xtype: 'shared.button.cancel',
+                    text: 'Cancel',
+                    listeners: {
+                        click: function() {
+                            window.close();
+                        }
+                    }
+                }
+            ],
+            items: [
+                {
+                    //name: 'Image_Doctype_Id',
+
+                    xtype: 'customcombo',
+                    fieldLabel: 'Choose a template:',
+
+                    editable: false,
+                    typeAhead: false,
+                    forceSelection: true,
+                    selectFirstRecord: true,
+
+                    store: storeTemplates,
+                    valueField:   'invoice_id',
+                    displayField: 'template_name'
+                }
+            ]
+        });
+        window.show();
+    },
+
+    /**
+     * Show address window.
+     * 
+     * @param int id Vendorsite or property id.
+     * @param string type Address type.
+     * @param string table Vendorsite or property table name.
+     * @param string title Window title.
+     */
     showAddressWindow: function(id, type, table, title) {
         if (id) {
             NP.lib.core.Net.remoteCall({

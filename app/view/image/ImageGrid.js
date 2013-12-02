@@ -11,7 +11,7 @@ Ext.define('NP.view.image.ImageGrid', function() {
 					'shared.gridcol.PriorityFlag','image.gridcol.DaysOutstanding','image.gridcol.Source',
 					'image.gridcol.DocType','shared.gridcol.PendingDays','image.gridcol.ExceptionBy', 'image.gridcol.ExceptionDate',
                                         'image.gridcol.DeleteDate', 'image.gridcol.DeletedBy', 'image.gridcol.DeletedBy', 'image.gridcol.RefNumber',
-                                        'image.gridcol.ImageType', 'image.gridcol.documenttype', 'image.gridcol.Type'];
+                                        'image.gridcol.ImageType', 'image.gridcol.documenttype', 'image.gridcol.Type', 'image.gridcol.ScanSource'];
 
 	var requires = ['NP.lib.core.Config'];
 	

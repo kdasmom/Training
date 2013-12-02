@@ -208,6 +208,11 @@ Ext.define('NP.controller.Images', {
      * @param tab Identifier of the tab which should be displayed.
      */
     showMain: function(tab) {
+        if (tab == 'search') {
+            this.application.addHistory('Images:showSearch');
+            return;
+        };
+
         this.application.setView('NP.view.images.Main');
 
         var active = this.getCurrent();
@@ -501,7 +506,7 @@ Ext.define('NP.controller.Images', {
                     dataloaded: function (form, data) {
                         if (data['utilityaccount_id']) {
                             var uproperty = Ext.ComponentQuery.query('[name="utility_property_id"]')[0];
-                            uproperty && uproperty.setValue(data['Property_id']);
+                            uproperty && uproperty.setValue(data['Property_Id']);
 
                             var uvendorsite = Ext.ComponentQuery.query('[name="utility_vendorsite_id"]')[0];
                             uvendorsite && uvendorsite.setValue(data['Image_Index_VendorSite_Id']);
@@ -515,12 +520,6 @@ Ext.define('NP.controller.Images', {
                             ;
                             doctype.setValue(doctypeValue);
                         }
-
-//                        Ext.ComponentQuery.query('[name="Property_id"]')[0].setValue(data['Property_id']);
-//                        Ext.ComponentQuery.query('[name="property_id_alt"]')[0].setValue(data['Property_id']);
-//
-//                        Ext.ComponentQuery.query('[name="invoiceimage_vendorsite_alt_id"]')[0].setValue(data['Image_Index_VendorSite_Id']);
-//                        Ext.ComponentQuery.query('[name="invoiceimage_vendorsite_id"]')[0].setValue(data['Image_Index_VendorSite_Id']);
                     }
                 }
             };
@@ -623,6 +622,25 @@ Ext.define('NP.controller.Images', {
                     Ext.ComponentQuery.query('panel[id="panel-index"]')[0].setTitle('Image Index - ' + self.imageQueue[self.imageQueueCurrent]);
                     // Set correct url for iframe.
                     self.refreshIndex();
+
+                    var element = 
+                        Ext.ComponentQuery.query('[name="Property_Alt_Id"]')[0]
+                    ;
+                    element.setValue(result['Property_Id']);
+                    result['Property_Id'] ?
+                        element.disable():
+                        element.enable()
+                    ;
+
+                    element = 
+                        Ext.ComponentQuery.query('[name="invoiceimage_vendorsite_alt_id"]')[0]
+                    ;
+                    element.setValue(result['Image_Index_VendorSite_Id']);
+                    result['Image_Index_VendorSite_Id'] ?
+                        element.disable():
+                        element.enable()
+                    ;
+
                     // Remove blocking "Loading" screen.
                     mask.destroy();
                 }

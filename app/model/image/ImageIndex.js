@@ -46,7 +46,7 @@ Ext.define('NP.model.image.ImageIndex', {
 		{ name: 'asp_client_id', type: 'int' },
 		{ name: 'Tableref_Id', type: 'int' },
 		{ name: 'Image_Doctype_Id', type: 'int' },
-		{ name: 'remit_advice', type: 'int' },
+		{ name: 'remit_advice'},
 		{ name: 'image_index_draft_invoice_id', type: 'int' },
 		{ name: 'image_index_notes' },
 		{ name: 'universal_field1' },
@@ -128,6 +128,14 @@ Ext.define('NP.model.image.ImageIndex', {
 			prefix    : 'exception_by_',
 			reader    : 'jsonflat'
         },{
+			model     : 'NP.model.user.Userprofile',
+			name      : 'deletedByUser',
+			getterName: 'getDeletedByUser',
+			foreignKey: 'image_index_deleted_by',
+			primaryKey: 'userprofile_id',
+			prefix    : 'deleted_by_',
+			reader    : 'jsonflat'
+        },{
 			model     : 'NP.model.system.PriorityFlag',
 			name      : 'priorityFlag',
 			getterName: 'getPriorityFlag',
@@ -138,9 +146,9 @@ Ext.define('NP.model.image.ImageIndex', {
     ],
 	validations: [
             { field: 'Image_Doctype_Id', type: 'presence' },
-            { field: 'invoiceimage_vendorsite_id', type: 'presence' },
+            { field: 'Image_Index_VendorSite_Id', type: 'presence' },
             { field: 'invoiceimage_vendorsite_alt_id', type: 'presence' },
-            { field: 'Property_id', type: 'presence' },
+            { field: 'Property_Id', type: 'presence' },
             { field: 'Property_Alt_Id', type: 'presence' },
 	]
     
