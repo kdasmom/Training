@@ -205,6 +205,12 @@ Ext.define('NP.controller.Viewport', {
 				click: function() {
 					this.addHistory('VendorCatalog:showVendorCatalogListing');
 				}
+			},
+
+			'#vcOrders': {
+				click: function() {
+					this.addHistory('VendorCatalog:showOpenOrders');
+				}
 			}
 		});
 	},

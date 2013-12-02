@@ -45,6 +45,7 @@ Ext.define('NP.controller.VendorCatalog', {
 
 	showCatalogView: function(catalog_id) {
 		var grid = this.setView('NP.view.catalog.VCCatalogView');
+		this.showUserOrderSummary(this.userSummaryCallback);
 
 		// Load the store
 		grid.reloadFirstPage();
@@ -52,6 +53,7 @@ Ext.define('NP.controller.VendorCatalog', {
 
 	showAdvancedSearch: function() {
 		this.setView('NP.view.catalog.AdvancedSearch');
+		this.showUserOrderSummary(this.userSummaryCallback);
 	},
 
 	showUserOrderSummary: function(callback) {
@@ -76,5 +78,10 @@ Ext.define('NP.controller.VendorCatalog', {
 		var message = items + ' Items in Your Order<br/>' + NP.Util.currencyRenderer(sum) + ' Current Subtotal';
 		var field = form.getChildByElement('order-details');
 		field.setValue(message);
+	},
+
+	showOpenOrders: function() {
+		this.setView('NP.view.catalog.VcOrder');
+		this.showUserOrderSummary(this.userSummaryCallback);
 	}
 });

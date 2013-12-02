@@ -20,7 +20,10 @@ Ext.define('NP.view.viewport.menu.VCMenu', {
 					itemId: 'vendorCatalogListing'
 				},
 				// Open Orders
-				{ text: NP.Translator.translate('Open Orders') },
+				{
+					text: NP.Translator.translate('Open Orders'),
+					itemId: 'vcOrders'
+				},
 				// Favorite Items
 				{ text: NP.Translator.translate('Favorite Items') }
 			]
