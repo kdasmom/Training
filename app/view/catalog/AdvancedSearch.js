@@ -14,7 +14,8 @@ Ext.define('NP.view.catalog.AdvancedSearch', {
 		'NP.view.shared.button.Favorite',
 		'NP.view.catalog.JumpToCatalogForm',
 		'NP.view.catalog.UserOrder',
-		'NP.view.catalog.SearchForm'
+		'NP.view.catalog.SearchForm',
+		'NP.view.catalog.SearchResultsGrid'
 	],
 
 	initComponent: function() {
@@ -64,6 +65,9 @@ Ext.define('NP.view.catalog.AdvancedSearch', {
 				],
 				padding: '5',
 				border: false
+			},
+			{
+				xtype: 'catalog.searchresultsgrid'
 			}
 		];
 
