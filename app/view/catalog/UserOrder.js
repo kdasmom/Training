@@ -18,7 +18,14 @@ Ext.define('NP.view.catalog.UserOrder', {
 		this.items = [
 			{
 				xtype: 'displayfield',
-				value: 'User\'s order. Coming soon..'
+				id: 'order-details',
+				value: 'User\'s order. Coming soon..',
+				padding: '0 15 0 0'
+			},
+			{
+				xtype: 'button',
+				text: NP.Translator.translate('View order'),
+				margin: '5 0 0 0'
 			}
 		];
 

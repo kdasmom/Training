@@ -40,6 +40,7 @@ Ext.define('NP.controller.VendorCatalog', {
 
 	showVendorCatalogListing: function() {
 		this.setView('NP.view.catalog.VCListing');
+		this.showUserOrderSummary(this.userSummaryCallback);
 	},
 
 	showCatalogView: function(catalog_id) {
@@ -51,5 +52,29 @@ Ext.define('NP.controller.VendorCatalog', {
 
 	showAdvancedSearch: function() {
 		this.setView('NP.view.catalog.AdvancedSearch');
+	},
+
+	showUserOrderSummary: function(callback) {
+		callback = callback || Ext.emptyFn;
+
+		var that = this;
+
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service: 'CatalogService',
+				action : 'getUserCartSummary',
+				userprofile_id : NP.Security.getUser().get('userprofile_id'),
+				success: function(success) {
+					callback(success[0].totalItems, success[0].totalPrice, that);
+				}
+			}
+		});
+	},
+
+	userSummaryCallback: function(items, sum, that) {
+		var form = that.getCmp('catalog.userorder');
+		var message = items + ' Items in Your Order<br/>' + NP.Util.currencyRenderer(sum) + ' Current Subtotal';
+		var field = form.getChildByElement('order-details');
+		field.setValue(message);
 	}
 });

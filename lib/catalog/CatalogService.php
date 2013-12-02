@@ -4,6 +4,7 @@ namespace NP\catalog;
 
 use NP\core\AbstractService;
 use NP\util\Util;
+use NP\catalog\VcOrderGateway;
 
 /**
  * Service class for operations related to Vendor Catalog
@@ -17,7 +18,11 @@ class CatalogService extends AbstractService {
 	const CATALOG_PENDING    = -1;
 	const CATALOG_PROCESSING = -2;
 
-	protected $configService;
+	protected $configService, $vcOrderGateway;
+
+	public function __construct(VcOrderGateway $vcOrderGateway) {
+		$this->vcOrderGateway = $vcOrderGateway;
+	}
 	
 	public function setConfigService(\NP\system\ConfigService $configService) {
 		$this->configService = $configService;
@@ -551,6 +556,16 @@ class CatalogService extends AbstractService {
 		$result = $this->vcCatGateway->getCatalogCategories($userprofile_id);
 
 		return $result;
+	}
+
+	/**
+	 * Retrieve user's cart summary
+	 *
+	 * @param bool $userprofile_id
+	 * @return array|bool
+	 */
+	public function getUserCartSummary($userprofile_id = false) {
+		return $this->vcOrderGateway->getOrderSummary($userprofile_id);
 	}
 }
 
