@@ -3,6 +3,7 @@
 namespace NP\property;
 
 use NP\core\AbstractService;
+use NP\core\db\Select;
 use NP\security\SecurityService;
 use NP\invoice\InvoiceService;
 use NP\po\PoService;
@@ -36,6 +37,8 @@ class PropertyService extends AbstractService {
 	 */
 	public function get($property_id) {
 		$res = $this->propertyGateway->findById($property_id);
+		$res['property_name'] = htmlspecialchars_decode($res['property_name']);
+
 
 		if ($this->configService->get('CP.PROPERTYGLACCOUNT_USE', 0) && $this->securityService->hasPermission(12)) {
 			$res['property_gls'] = $this->propertyGlAccountGateway->find(
@@ -120,6 +123,12 @@ class PropertyService extends AbstractService {
 			new sql\join\PropertyIntPkgJoin(),
 			new sql\join\PropertyRegionJoin(),
 			new sql\join\PropertyCreatedByUserJoin(),
+			new sql\join\FiscalDisplayTypeJoin(),
+			new sql\join\PropertyPropertyShipToJoin(),
+			new sql\join\PropertyPropertyBillToJoin(),
+			new sql\join\PropertyAddressJoin(),
+			new sql\join\PropertyPhoneJoin(['phone_id', 'phone_number']),
+			new sql\join\PropertyFaxJoin(),
 			new \NP\user\sql\join\UserUserroleJoin(array(
 				'created_by_userprofilerole_id' =>'userprofilerole_id',
 				'created_by_tablekey_id'        =>'tablekey_id'

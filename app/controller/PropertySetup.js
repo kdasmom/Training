@@ -365,13 +365,13 @@ Ext.define('NP.controller.PropertySetup', {
 					        		defaultBillToField.getStore().addExtraParams({ property_id: property_id });
 					        		defaultBillToField.getStore().add({
 					        			property_id: result['default_billto_property_id'],
-					        			property_name: result['default_billto_property_name']
+					        			property_name: Ext.util.Format.htmlDecode(result['default_billto_property_name'])
 					        		});
 					        		var defaultShipToField = form.findField('default_shipto_property_id');
 					        		defaultShipToField.getStore().addExtraParams({ property_id: property_id });
 					        		defaultShipToField.getStore().add({
 					        			property_id: result['default_shipto_property_id'],
-					        			property_name: result['default_shipto_property_name']
+					        			property_name: Ext.util.Format.htmlDecode(result['default_shipto_property_name'])
 					        		});
 
 					        		// Load the GL Store
@@ -385,8 +385,15 @@ Ext.define('NP.controller.PropertySetup', {
 					        		that.accountingPeriod = result['accounting_period']['date'].split(' ')[0];
 					        		that.accountingPeriod = that.accountingPeriod.split('-');
 					        		that.accountingPeriod = new Date(that.accountingPeriod[0], that.accountingPeriod[1]-1, that.accountingPeriod[2]);
-					        	}
-					        }
+					        	},
+								dataloaded: function(form, data) {
+
+									var intPkgField = form.findField('integration_package_id');
+									var intPkgNameField = form.findField('integration_package_name');
+									intPkgNameField.setValue(intPkgField.getRawValue());
+								}
+					        },
+							property_id: property_id
 						});
 						// Specify the service to use to retrieve the data for the property being edited
 				    	Ext.apply(viewCfg.bind, {
@@ -425,6 +432,7 @@ Ext.define('NP.controller.PropertySetup', {
 					var defaultBillToField = form.findField('default_billto_property_id');
 					var defaultShipToField = form.findField('default_shipto_property_id');
 					var intPkgField = form.findField('integration_package_id');
+					var intPkgNameField = form.findField('integration_package_name');
 					// Do the following only when creating a new property
 					if (!property_id) {
 						// Set the form title
@@ -447,6 +455,7 @@ Ext.define('NP.controller.PropertySetup', {
 			    		fiscalCalField.show();
 
 			    		intPkgField.enable();
+						intPkgNameField.hide();
 			    		defaultBillToField.hide();
 						defaultShipToField.hide();
 					// Do the following only when editing a property
@@ -454,6 +463,8 @@ Ext.define('NP.controller.PropertySetup', {
 						defaultBillToField.show();
 						defaultShipToField.show();
 						intPkgField.disable();
+						intPkgField.hide();
+						intPkgNameField.show();
 						form.findField('fiscalcal_id').allowBlank = true;
 						form.findField('fiscalcal_id').hide();
 

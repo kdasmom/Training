@@ -36,9 +36,12 @@ Ext.define('NP.view.property.PropertiesForm', {
         this.bbar = bar;
 
         var tabs = [
-            { xtype: 'property.propertiesforminfo', customFieldData: this.customFieldData },
-            { xtype: 'property.propertiesformaccounting' }
+            { xtype: 'property.propertiesforminfo', customFieldData: this.customFieldData, property_id: this.property_id }
         ];
+		if (this.property_id) {
+			tabs.push({ xtype: 'property.propertiesformaccounting' });
+		}
+
         if (NP.Config.getSetting('CP.PROPERTYGLACCOUNT_USE', 0) == 1 && NP.Security.hasPermission(12)) {
             tabs.push({ xtype: 'property.propertiesformgl', hidden: true });
         }

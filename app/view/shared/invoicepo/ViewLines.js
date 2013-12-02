@@ -4,96 +4,112 @@
  * @author Thomas Messier
  */
 Ext.define('NP.view.shared.invoicepo.ViewLines', {
-    extend: 'Ext.view.View',
+    extend: 'Ext.panel.Panel',
     alias: 'widget.shared.invoicepo.viewlines',
 
     requires: [
         'NP.lib.core.Config',
         'NP.lib.core.Security',
-    	'NP.lib.core.Util'
+    	'NP.lib.core.Util',
+        'Ext.view.View',
+        'NP.view.shared.button.Edit'
     ],
 
-    type: null,
+    layout     : 'fit',
+    border     : false,
+    bodyPadding: 0,
+    autoScroll : true,
+    
+    type       : null,
 
     // For localization
 
     initComponent: function() {
     	var me = this;
         
+        me.tbar = [
+            { xtype: 'shared.button.edit', itemId: 'invoiceLineEditBtn' }
+        ];
+
         me.fieldPrefix  = me.type + 'item';
-        me.itemSelector = 'tbody tr';
 
-        me.tpl = new Ext.XTemplate(me.buildTpl(), {
-            getSetting: function(name, defaultVal) {
-                defaultVal = defaultVal || '';
-                return NP.Config.getSetting(name, defaultVal);
-            },
-            hasPermission: function(moduleId) {
-                return NP.Security.hasPermission(moduleId);
-            },
-            getStoreCount: function() {
-                return me.getStore().getCount();
-            },
-            showBudgetComparison: function(invoiceitem_jobflag) {
-                return NP.Config.getSetting("PN.InvoiceOptions.showBudgetComparison") == '1' && (
-                        NP.Config.getSetting("PN.InvoiceOptions.showBudgetComparisonJC") == '1'
-                        || invoiceitem_jobflag != 1
-                );
-            },
-            getInvoiceRecord: function() {
-                return me.up('[xtype="'+me.type+'.view"]').getInvoiceRecord();
-            },
-            getFormDataVal: function(key) {
-                return me.up('boundform').getLoadedData()[key];
-            },
-            getSum: function(field) {
-                var total = 0;
-                for (var i=0; i<me.getStore().getCount(); i++) {
-                    total += me.getStore().getAt(i).get(field);
+        me.items = [{
+            xtype       : 'dataview',
+            itemSelector: 'tbody tr',
+            store       : me.store,
+            tpl         : new Ext.XTemplate(me.buildTpl(), {
+                getSetting: function(name, defaultVal) {
+                    defaultVal = defaultVal || '';
+                    return NP.Config.getSetting(name, defaultVal);
+                },
+                hasPermission: function(moduleId) {
+                    return NP.Security.hasPermission(moduleId);
+                },
+                getStoreCount: function() {
+                    return me.store.getCount();
+                },
+                showBudgetComparison: function(invoiceitem_jobflag) {
+                    return NP.Config.getSetting("PN.InvoiceOptions.showBudgetComparison") == '1' && (
+                            NP.Config.getSetting("PN.InvoiceOptions.showBudgetComparisonJC") == '1'
+                            || invoiceitem_jobflag != 1
+                    );
+                },
+                getInvoiceRecord: function() {
+                    return me.up('[xtype="'+me.type+'.view"]').getInvoiceRecord();
+                },
+                getFormDataVal: function(key) {
+                    return me.up('boundform').getLoadedData()[key];
+                },
+                getSum: function(field) {
+                    var total = 0;
+                    
+                    for (var i=0; i<me.store.getCount(); i++) {
+                        total += me.store.getAt(i).get(field);
+                    }
+
+                    return total;
+                },
+                getGrossTotal: function() {
+                    me.totalAmount = this.getSum(me.fieldPrefix + '_amount') +
+                            this.getSum(me.fieldPrefix + '_shipping') +
+                            this.getSum(me.fieldPrefix + '_salestax');
+
+                    return me.totalAmount;
+                },
+                getRetentionTotal: function() {
+                    var total = 0;
+                    for (var i=0; i<me.store.getCount(); i++) {
+                        total += me.store.getAt(i).get('jbassociation_retamt');
+                    }
+
+                    return total;
+                },
+                getNetAmount: function() {
+                    me.totalAmount = this.getGrossTotal() - this.getRetentionTotal();
+
+                    return me.totalAmount;
+                },
+                arrayContains: function() {
+                    var item = arguments[0],
+                        collection = [];
+
+                    for (var i=1; i<arguments.length; i++) {
+                        collection.push(arguments[i]);
+                    }                
+
+                    return Ext.Array.contains(collection, item);
+                },
+                renderCurrency: function(val) {
+                    return NP.Util.currencyRenderer(val);
+                },
+                isLineEditable: function() {
+                    return this.getInvoiceRecord().isLineEditable();
+                },
+                isEditable: function() {
+                    return this.getInvoiceRecord().isEditable();
                 }
-
-                return total;
-            },
-            getGrossTotal: function() {
-                me.totalAmount = this.getSum(me.fieldPrefix + '_amount', 0) +
-                        this.getSum(me.fieldPrefix + '_shipping', 0) +
-                        this.getSum(me.fieldPrefix + '_salestax', 0);
-
-                return me.totalAmount;
-            },
-            getRetentionTotal: function() {
-                var total = 0;
-                for (var i=0; i<me.getStore().getCount(); i++) {
-                    total += me.getStore().getAt(i).getJob().get('jbassociation_retamt');
-                }
-
-                return total;
-            },
-            getNetAmount: function() {
-                me.totalAmount = this.getGrossTotal() - this.getRetentionTotal();
-
-                return me.totalAmount;
-            },
-            arrayContains: function() {
-                var item = arguments[0],
-                    collection = [];
-
-                for (var i=1; i<arguments.length; i++) {
-                    collection.push(arguments[i]);
-                }                
-
-                return Ext.Array.contains(collection, item);
-            },
-            renderCurrency: function(val) {
-                return NP.Util.currencyRenderer(val);
-            },
-            isLineEditable: function() {
-                return this.getInvoiceRecord().isLineEditable();
-            },
-            isEditable: function() {
-                return this.getInvoiceRecord().isEditable();
-            }
-        });
+            })
+        }];
 
     	this.callParent(arguments);
     },
@@ -144,12 +160,12 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
 
         html = 
             '<td>' +
-                '<div>{[values.'+me.fieldPrefix+'_quantity_long*1]}</div>';
+                '<div>{[values.'+me.fieldPrefix+'_quantity*1]}</div>';
 
         if (me.type == 'invoice') {
             html +=
                 '<tpl if="utilitycolumn_usagetype_id !== null">' +
-                    '<div>{usageType.UtilityColumn_UsageType_Name}</div>' +
+                    '<div>{UtilityColumn_UsageType_Name}</div>' +
                 '</tpl>';
         }
 
@@ -165,9 +181,9 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
         if (me.type == 'invoice') {
             html +=
                 '<tpl if="utilityaccount_id !== null">' +
-                    '<div><b>Account Number:</b> {utilityAccount.UtilityAccount_AccountNumber}</div>' +
-                    '<tpl if="utilityAccount.UtilityAccount_MeterSize !== null">' +
-                        '<div><b>Meter Number:</b> {utilityAccount.UtilityAccount_MeterSize}</div>' +
+                    '<div><b>Account Number:</b> {UtilityAccount_AccountNumber}</div>' +
+                    '<tpl if="UtilityAccount_MeterSize !== null">' +
+                        '<div><b>Meter Number:</b> {UtilityAccount_MeterSize}</div>' +
                     '</tpl>' +
                 '</tpl>';
         }
@@ -186,7 +202,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                 '<div>' +
                     '<b>UOM:</b>' +
                     '<tpl if="unittype_material_id !== null">' +
-                        ' {material.unittype_material_name}' +
+                        ' {unittype_material_name}' +
                     '</tpl>' +
                     ' {vcitem_uom}' +
                 '</div>' +
@@ -195,7 +211,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
             // TODO: add calendar alerts here
             '<tpl if="property_id !== this.getInvoiceRecord().get(\'property_id\')">' +
                 '<b>{[this.getSetting(\'PN.Main.PropertyLabel\', \'Property\')]}:</b> ' +
-                '{property.property_name}' +
+                '{property_name}' +
             '</tpl>' +
             '<tpl if="unit_id !== null">' +
                 '<div>' +
@@ -215,7 +231,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
             '</tpl>' +
             '<tpl if="dfsplit_id !== null">' +
                 '<div>' +
-                    '<b>Default Split:</b> {split.dfsplit_name}' +
+                    '<b>Default Split:</b> {dfsplit_name}' +
                 '</div>' +
             '</tpl>' +
             me.buildJobCosting() +
@@ -247,39 +263,39 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
 
     buildJobCosting: function() {
         return '<tpl if="invoiceitem_jobflag == 1">' +
-                '<tpl if="this.getSetting(\'pn.jobcosting.useContracts\', \'0\') == \'1\' && job.jbcontract_id !== null">' +
+                '<tpl if="this.getSetting(\'pn.jobcosting.useContracts\', \'0\') == \'1\' && jbcontract_id !== null">' +
                     '<div>' +
                         '<b>{[this.getSetting("PN.jobcosting.contractTerm")]}:</b>' +
-                        ' {job.contract.display_name}' +
+                        ' {display_name}' +
                     '</div>' +
                 '</tpl>' +
-                '<tpl if="job.jbchangeorder_id !== null">' +
+                '<tpl if="jbchangeorder_id !== null">' +
                     '<div>' +
                         '<b>{[this.getSetting("PN.jobcosting.changeOrderTerm")]}:</b>' +
-                        ' {job.changeOrder.display_name}' +
+                        ' {display_name}' +
                     '</div>' +
                 '</tpl>' +
-                '<tpl if="job.jbjobcode_id !== null">' +
+                '<tpl if="jbjobcode_id !== null">' +
                     '<div>' +
                         '<b>{[this.getSetting("PN.jobcosting.jobCodeTerm")]}:</b>' +
-                        ' {job.jobCode.display_name}' +
+                        ' {display_name}' +
                     '</div>' +
                 '</tpl>' +
-                '<tpl if="job.jbphasecode_id !== null">' +
+                '<tpl if="jbphasecode_id !== null">' +
                     '<div>' +
                         '<b>{[this.getSetting("PN.jobcosting.phaseCodeTerm")]}:</b>' +
-                        ' {job.phaseCode.display_name}' +
+                        ' {display_name}' +
                     '</div>' +
                 '</tpl>' +
-                '<tpl if="this.getSetting(\'pn.jobcosting.useCostCodes\', \'0\') == \'1\' && job.jbcostcode_id !== null">' +
+                '<tpl if="this.getSetting(\'pn.jobcosting.useCostCodes\', \'0\') == \'1\' && jbcostcode_id !== null">' +
                     '<div>' +
                         '<b>{[this.getSetting("PN.jobcosting.costCodeTerm")]}:</b>' +
-                        ' {job.costCode.display_name}' +
+                        ' {display_name}' +
                     '</div>' +
                 '</tpl>' +
-                '<tpl if="job.jbassociation_retamt !== 0">' +
+                '<tpl if="jbassociation_retamt !== 0">' +
                     '<div>' +
-                        '<b>Retention:</b> {[NP.Util.currencyRenderer(values.job.jbassociation_retamt)]}' +
+                        '<b>Retention:</b> {[NP.Util.currencyRenderer(values.jbassociation_retamt)]}' +
                     '</div>' +
                 '</tpl>' +
             '</tpl>';
@@ -288,7 +304,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
     buildGlCol: function() {
         return '<td>' +
                 '<div>' +
-                    '{glaccount.glaccount_number}' +
+                    '{glaccount_number}' +
                     '<tpl if="this.arrayContains(this.getInvoiceRecord().get(\'invoice_status\'), \'saved\',\'paid\',\'submitted\',\'sent\') == false">' +
                         '' + // TODO: add code for budget icon
                     '</tpl>' +
@@ -296,12 +312,12 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                         '' + // TODO: add code to do re-ordering
                     '</tpl>' +
                 '</div>' +
-                '<div>{glaccount.glaccount_name}</div>' +
+                '<div>{glaccount_name}</div>' +
                 '<tpl if="jbcontractbudget_id !== null">' +
-                    '<tpl if="job.jbcontract_id !== null">' +
-                        '<div>{job.contract.jbcontract_name}</div>' +
+                    '<tpl if="jbcontract_id !== null">' +
+                        '<div>{jbcontract_name}</div>' +
                     '<tpl else>' +
-                        '<div>{job.jobCode.jbjobcode_name}</div>' +
+                        '<div>{jbjobcode_name}</div>' +
                     '</tpl>' +
                     // TODO: add icon to show job costing budget here
                 '</tpl>' +
@@ -311,7 +327,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
     buildBudgetCol: function() {
         return '<td align="right">' +
                 '<tpl if="this.showBudgetComparison()">' +
-                    '<tpl if="this.getSetting(\'PN.jobcosting.budgetlineitemcompare\') == \'1\' && job.jbjobcode_id !== null">' +
+                    '<tpl if="this.getSetting(\'PN.jobcosting.budgetlineitemcompare\') == \'1\' && jbjobcode_id !== null">' +
                         '{[this.renderCurrency(values.jbcontractbudget_amt)]}' +
                     '<tpl else>' +
                         '{[this.renderCurrency(values.budget_amount)]}' +
@@ -323,7 +339,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
     buildBudgetRemainingCol: function() {
         return '<td align="right">' +
                 '<tpl if="this.showBudgetComparison()">' +
-                    '<tpl if="this.getSetting(\'PN.jobcosting.budgetlineitemcompare\') == \'1\' && job.jbjobcode_id !== null">' +
+                    '<tpl if="this.getSetting(\'PN.jobcosting.budgetlineitemcompare\') == \'1\' && jbjobcode_id !== null">' +
                         '{[this.renderCurrency(values.jbcontractbudget_amt - (values.jbcontractbudget_amt_actual + values.jbcontractbudget_amt_pnactual))]}' +
                     '<tpl else>' +
                         '{[this.renderCurrency(values.budget_variance)]}' +
@@ -402,7 +418,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
             '<tr>' +
                 '<th colspan="6">' +
                     '<tpl if="this.getSetting(\'pn.jobcosting.jobcostingEnabled\', \'0\') == \'1\'">' +
-                        'Gross' +
+                        'Gross ' +
                     '</tpl>' +
                     'Total:' +
                 '</th>' +

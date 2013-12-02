@@ -30,7 +30,7 @@ Ext.define('NP.model.jobcosting.JbChangeOrder', {
 			}
 
 			var val = rec.get('jbchangeorder_name') + ' - ';
-			if (rec.get('jbchangeorder_desc') != '') {
+			if (rec.get('jbchangeorder_desc') != '' && rec.get('jbchangeorder_desc') !== null) {
 				val += rec.get('jbchangeorder_desc');
 			} else {
 				val += 'No Desc.';

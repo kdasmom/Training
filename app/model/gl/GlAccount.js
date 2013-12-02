@@ -53,7 +53,8 @@ Ext.define('NP.model.gl.GlAccount', {
 	    	}
 		}
 	},
-        belongsTo: [
+    
+    belongsTo: [
         {
             model         : 'NP.model.user.Userprofile',
             name          : 'updatedByUser',

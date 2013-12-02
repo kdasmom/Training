@@ -160,6 +160,24 @@ class UserprofileSelect extends Select {
             Select::JOIN_INNER
         );
     }
+
+	public function getIncomingDelegationsCount() {
+		$select = new Select();
+		$select->from(['d1' => 'delegation'])
+			->count()
+			->where('d1.UserProfile_Id = u.userprofile_id');
+
+		return $this->column($select, 'outgoing_delegation_count');
+	}
+
+	public function getOutgoingDelegationsCount() {
+		$select = new Select();
+		$select->from(['d1' => 'delegation'])
+			->count()
+			->where('d1.Delegation_To_UserProfile_Id = u.userprofile_id');
+
+		return $this->column($select, 'incoming_delegation_count');
+	}
 	
 }
 

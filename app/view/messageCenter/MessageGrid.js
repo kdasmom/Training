@@ -8,8 +8,16 @@ Ext.define('NP.view.messageCenter.MessageGrid', {
     alias : 'widget.messagecenter.messagegrid',
     
     requires: [
-        'NP.view.shared.button.New'
+        'NP.view.shared.button.New',
+		'NP.lib.core.Translator'
     ],
+
+//	localization
+	messageColumnTitle: 'Message',
+	displayUntilDateColumnTitle: 'Display Until Date',
+	displayUntilTimeColumnTitle: 'Display Until Time',
+	messageForColumnTitle: 'MessageFor',
+
 
     paging  : true,
     stateful: true,
@@ -28,14 +36,14 @@ Ext.define('NP.view.messageCenter.MessageGrid', {
             { text: 'Created By', dataIndex: 'person_lastname', flex: 1.5, renderer: function(val, meta, rec) {
                 var returnVal = '';
                 if (rec.get('createdBy') !== null) {
-                    var user = rec.getCreatedByUser();
-                    returnVal = user.get('person_lastname') + ', ' + user.get('person_firstname')
-                                + ' (' + user.get('userprofile_username') + ')';
+                    returnVal = rec.raw['person_lastname'] + ', ' + rec.raw['person_firstname']
+                                + ' (' + rec.raw['userprofile_username'] + ')';
                 }
 
                 return returnVal;
             }},
-            { text: 'Submitted Date', xtype:'datecolumn', dataIndex: 'sentAt', flex: 1 },
+            { text: 'Submitted Date', xtype:'datecolumn', dataIndex: 'sentAt', flex: 1, format: 'm/d/Y' },
+            { text: 'Submitted Time', xtype:'datecolumn', dataIndex: 'sentAt', flex: 1, format: 'H:i:s' },
             { text: 'Status', dataIndex: 'status', flex: 1, renderer: function(val, meta, rec) {
                 var returnVal = Ext.util.Format.capitalize(val);
                 if (val == 'scheduled') {
@@ -43,7 +51,20 @@ Ext.define('NP.view.messageCenter.MessageGrid', {
                 }
 
                 return returnVal;
-            }}
+            }},
+			{ text: NP.Translator.translate(this.messageColumnTitle), dataIndex: 'body', flex: 1},
+			{ text: NP.Translator.translate(this.displayUntilDateColumnTitle), dataIndex: 'displayUntil', flex: 1, xtype: 'datecolumn', format: 'm/d/Y'},
+			{ text: NP.Translator.translate(this.displayUntilTimeColumnTitle), dataIndex: 'displayUntil', flex: 1, xtype: 'datecolumn', format: 'H:i:s'},
+			{ text: NP.Translator.translate(this.messageForColumnTitle), dataIndex: 'recipientType', flex: 1, renderer: function (val, meta, rec) {
+				if (!rec.raw['userprofile_id'] && !rec.raw['role_id']) {
+					return 'All';
+				}
+				if (!rec.raw['userprofile_id']) {
+					return 'User Group';
+				}
+
+				return 'Users';
+			}},
         ];
 
         // Create the store, only thing that changes between stores is the vc_status

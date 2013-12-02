@@ -32,7 +32,8 @@ Ext.define('NP.view.property.PropertiesFormAccounting', {
                 width           : 350,
                 minValue        : 0,
                 maxValue        : 1,
-                step            : 0.01
+                step            : 0.01,
+				allowBlank		: false
     		},
     		{
 				xtype     : 'numberfield',
@@ -40,7 +41,8 @@ Ext.define('NP.view.property.PropertiesFormAccounting', {
 				fieldLabel: NP.Translator.translate('Acceptable PO Matching Threshold (%)'),
 				width     : 350,
                 minValue  : 0,
-                maxValue  : 100
+                maxValue  : 100,
+				allowBlank	: false
     		},
     		{
 				xtype         : 'customcombo',
@@ -49,7 +51,8 @@ Ext.define('NP.view.property.PropertiesFormAccounting', {
 				name          : 'fiscaldisplaytype_value',
 				store         : 'property.FiscalDisplayTypes',
 				displayField  : 'fiscaldisplaytype_name',
-				valueField    : 'fiscaldisplaytype_value'
+				valueField    : 'fiscaldisplaytype_id',
+				allowBlank	  : false
     		}
     	];
 

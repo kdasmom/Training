@@ -16,7 +16,8 @@ Ext.define('NP.view.user.UsersForm', {
     	'NP.view.user.UsersFormPermissions',
     	'NP.view.user.UserDelegation',
         'NP.view.user.UserDelegationMain',
-    	'NP.view.user.UsersFormEmail'
+    	'NP.view.user.UsersFormEmail',
+    	'NP.view.user.UsersFrequentlyBasedEmailAlertsForm'
     ],
 
     layout: 'fit',
@@ -28,20 +29,20 @@ Ext.define('NP.view.user.UsersForm', {
     	var that = this;
 
     	var bar = [
-    		{ xtype: 'shared.button.save' },
-    		{ xtype: 'shared.button.cancel' }
+			{ xtype: 'shared.button.cancel' },
+    		{ xtype: 'shared.button.save' }
 	    ];
 	    this.tbar = bar;
-	    this.bbar = bar;
 
 	    this.items = [{
 			xtype : 'verticaltabpanel',
 			border: false,
             items : [
-	    		{ xtype: 'user.usersformdetails', passwordRequired: this.passwordRequired },
 	    		{ xtype: 'user.usercontactinfo', padding: 8, title: NP.Translator.translate('User Information') },
+				{ xtype: 'user.usersformdetails', passwordRequired: this.passwordRequired },
 	    		{ xtype: 'user.usersformpermissions' },
 	    		{ xtype: 'user.usersformemail', itemId: 'userEmailAlertPanel' },
+				{ xtype: 'user.usersfrequentlybasedemailalertsform', itemId: 'userFrequentlyBasedEmailAlertPanel', title: NP.Translator.translate('Frequency-Based Alerts') },
                 {
                     xtype : 'user.userdelegation',
                     itemId: 'userManagerDelegation',

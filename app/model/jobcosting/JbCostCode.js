@@ -35,7 +35,7 @@ Ext.define('NP.model.jobcosting.JbCostCode', {
 			}
 
 			var val = rec.get('jbcostcode_name') + ' - ';
-			if (rec.get('jbcostcode_desc') != '') {
+			if (rec.get('jbcostcode_desc') != '' && rec.get('jbcostcode_desc') !== null) {
 				val += rec.get('jbcostcode_desc');
 			} else {
 				val += 'No Desc.';

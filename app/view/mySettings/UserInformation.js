@@ -64,8 +64,8 @@ Ext.define('NP.view.mySettings.UserInformation', {
                 padding: 8
             },
             items : [
-                { xtype: 'user.usersformdetails', isMySettings: true },
-                { xtype: 'user.usercontactinfo' }
+				{ xtype: 'user.usercontactinfo' },
+                { xtype: 'user.usersformdetails', isMySettings: true }
             ]
         }];
 

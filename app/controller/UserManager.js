@@ -261,7 +261,7 @@ Ext.define('NP.controller.UserManager', {
 		var tabPanel = that.setView('NP.view.user.UserManager');
 
 		// If no active tab is passed, default to Open
-		if (!activeTab) activeTab = 'Overview';
+		if (!activeTab) activeTab = 'Users';
 		
 		// Check if the tab to be selected is already active, if it isn't make it the active tab
 		var tab = that.getCmp('user.' + activeTab.toLowerCase());
@@ -444,6 +444,8 @@ Ext.define('NP.controller.UserManager', {
 	    	viewCfg.listeners = {
 	    		dataloaded: function(boundForm, data) {
 					boundForm.findField('Delegation_To_UserProfile_Id').setRawValue(data['Delegation_To_UserProfile_Id']);
+					boundForm.findField('Delegation_StartDate').setValue(new Date(data['Delegation_StartDate']));
+					boundForm.findField('Delegation_StopDate').setValue(new Date(data['Delegation_StopDate']));
 				}
 			};
 	    }
@@ -631,7 +633,7 @@ Ext.define('NP.controller.UserManager', {
 		    	listeners       : {
 			    	dataloaded: function(formPanel, data) {
 			    		// Set the form title
-			    		formPanel.setTitle(that.editGroupFormTitle + ' "' + data['role_name'] + '"');
+			    		formPanel.setTitle(that.editGroupFormTitle + ' - ' + data['role_name']);
 
 			    		// Set the active user for easy access later
 			    		that.activeRole = formPanel.getModel('user.Role');
@@ -714,13 +716,17 @@ Ext.define('NP.controller.UserManager', {
 				}
 			});
 
+			emailalerts = this.getSelectedEmailAlerts('groupEmailAlertPanel');
+			Ext.each(this.getSelectedEmailAlerts('groupFrequentlyBasedEmailAlertPanel'), function (emailalert){
+				emailalerts.push(emailalert);
+			});
 			form.submitWithBindings({
 				service: 'UserService',
 				action : 'saveRole',
 				extraParams: {
 					permissions     : permissions,
-					emailalerts     : this.getSelectedEmailAlerts('groupEmailAlertPanel'),
-					emailalerthours : this.getSelectedEmailHours('groupEmailAlertPanel'),
+					emailalerts     : emailalerts,
+					emailalerthours : this.getSelectedEmailHours('groupFrequentlyBasedEmailAlertPanel'),
 					dashboard_layout: this.getPortalCanvas().serialize()
 				},
 				extraFields: {

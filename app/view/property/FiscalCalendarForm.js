@@ -32,7 +32,7 @@ Ext.define('NP.view.property.FiscalCalendarForm', {
 
         var now = new Date();
         var fiscalYears = [];
-        for (var year=2001; year<=now.getFullYear()+2; year++) {
+        for (var year = now.getFullYear()+2; year >=2001; year--) {
             fiscalYears.push({ year: year });
         }
 
