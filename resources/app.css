@@ -145,6 +145,8 @@
 
 	#lineItemTable td a {
 		color     : #18659C;
+		cursor: pointer;
+		text-decoration: underline;
 	}
 
 	#lineItemTable tfoot th, #lineItemTable tfoot td {

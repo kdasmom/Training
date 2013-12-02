@@ -177,6 +177,13 @@ Ext.define('NP.model.invoice.InvoiceItem', {
 		},
 		{ name: 'jbcostcode_name' },
 		{ name: 'jbcostcode_desc' },
-		{ name: 'split_percentage', type: 'float', persist: false }
+		
+		{
+			name        : 'split_percentage',
+			type        : 'float',
+			persist     : false,
+			useNull     : false,
+			defaultValue: 0
+		}
 	]
 });

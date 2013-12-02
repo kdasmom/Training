@@ -107,6 +107,14 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                 },
                 isEditable: function() {
                     return this.getInvoiceRecord().isEditable();
+                },
+                getValueFromStore: function(storeName, idField, id, field) {
+                    var rec = Ext.getStore(storeName).findRecord(idField, id, 0, false, false, true);
+                    if (rec) {
+                        return rec.get(field);
+                    } else {
+                        return '';
+                    }
                 }
             })
         }];
@@ -213,12 +221,12 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
             // TODO: add calendar alerts here
             '<tpl if="property_id !== this.getInvoiceRecord().get(\'property_id\')">' +
                 '<b>{[this.getSetting(\'PN.Main.PropertyLabel\', \'Property\')]}:</b> ' +
-                '{property_name}' +
+                '{[this.getValueFromStore(\'property.AllProperties\', \'property_id\', values.property_id, \'property_name\')]}' +
             '</tpl>' +
             '<tpl if="unit_id !== null">' +
                 '<div>' +
                     '<b>{[this.getSetting("PN.InvoiceOptions.UnitAttachDisplay")]}:</b>' +
-                    ' {unit_number}' +
+                    ' {[this.getValueFromStore(\'property.AllUnits\', \'unit_id\', values.unit_id, \'unit_number\')]}' +
                 '</div>' +
             '</tpl>' +
             '<tpl if="purchaseorder_id !== null">' +
@@ -306,7 +314,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
     buildGlCol: function() {
         return '<td>' +
                 '<div>' +
-                    '{glaccount_number}' +
+                    '{[this.getValueFromStore(\'gl.AllGlAccounts\', \'glaccount_id\', values.glaccount_id, \'glaccount_number\')]}' +
                     '<tpl if="this.arrayContains(this.getInvoiceRecord().get(\'invoice_status\'), \'saved\',\'paid\',\'submitted\',\'sent\') == false">' +
                         '' + // TODO: add code for budget icon
                     '</tpl>' +
@@ -314,7 +322,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                         '' + // TODO: add code to do re-ordering
                     '</tpl>' +
                 '</div>' +
-                '<div>{glaccount_name}</div>' +
+                '<div>{[this.getValueFromStore(\'gl.AllGlAccounts\', \'glaccount_id\', values.glaccount_id, \'glaccount_name\')]}</div>' +
                 '<tpl if="jbcontractbudget_id !== null">' +
                     '<tpl if="jbcontract_id !== null">' +
                         '<div>{jbcontract_name}</div>' +
@@ -373,7 +381,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                             /*'<a href="#" class="editLineBtn">Edit</a>' +*/ // TODO: cleanup once confirmed we don't need this button
                         '<tpl else>' +
                             '<tpl if="invoiceitem_jobflag != 1">' +
-                                '<a href="#" class="editSplitBtn">Edit Split</a>' +
+                                '<a class="editSplitBtn">Edit Split</a>' +
                             /*'<tpl else>' +
                                 '<a href="#" class="editLineBtn">Edit</a>' +*/  // TODO: cleanup once confirmed we don't need this button
                             '</tpl>' +

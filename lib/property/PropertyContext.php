@@ -14,14 +14,16 @@ class PropertyContext {
 	protected $delegation_to_userprofile_id;
 	protected $type;
 	protected $selection;
+	protected $includeCodingOnly;
 
 	/**
-	 * @param  int    $userprofile_id              The active user ID, can be a delegated account
-	 * @param  int    $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
-	 * @param  string $type                        The context filter type; valid values are 'property','region', and 'all'
-	 * @param  int    $selection                   The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
+	 * @param  int     $userprofile_id              The active user ID, can be a delegated account
+	 * @param  int     $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
+	 * @param  string  $type                        The context filter type; valid values are 'property','region', and 'all'
+	 * @param  int     $selection                   The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
+	 * @param  boolean $includeCodingOnly           Whether or not to include coding access only properties; defaults to false
 	 */
-	public function __construct($userprofile_id, $delegation_to_userprofile_id, $type, $selection) {
+	public function __construct($userprofile_id, $delegation_to_userprofile_id, $type, $selection, $includeCodingOnly=false) {
 		if (!is_numeric($userprofile_id)) {
 			throw new \NP\core\Exception('Invalid \$userprofile_id; it should be a number');
 		}
@@ -42,6 +44,7 @@ class PropertyContext {
 		$this->delegation_to_userprofile_id = $delegation_to_userprofile_id;
 		$this->type                         = $type;
 		$this->selection                    = $selection;
+		$this->includeCodingOnly            = $includeCodingOnly;
 	}
 
 	/**
@@ -70,6 +73,13 @@ class PropertyContext {
 	 */
 	public function getSelection() {
 		return $this->selection;
+	}
+
+	/**
+	 * Getter for coding only
+	 */
+	public function includeCoding() {
+		return $this->includeCodingOnly;
 	}
 	
 }

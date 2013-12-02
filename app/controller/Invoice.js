@@ -9,6 +9,7 @@ Ext.define('NP.controller.Invoice', {
 	requires: [
 		'NP.lib.core.Config',
 		'NP.lib.core.Security',
+		'NP.lib.core.Net',
 		'NP.view.shared.invoicepo.SplitWindow'
 	],
 	
@@ -35,7 +36,9 @@ Ext.define('NP.controller.Invoice', {
 		{ ref: 'lineGridGlCombo', selector: '#lineGridGlCombo' },
 		{ ref: 'lineGridUnitCombo', selector: '#lineGridUnitCombo' },
 		{ ref: 'lineEditBtn', selector: '#invoiceLineEditBtn' },
-		{ ref: 'splitGrid', selector: '[xtype="shared.invoicepo.splitwindow"] customgrid' }
+		{ ref: 'splitWindow', selector: '[xtype="shared.invoicepo.splitwindow"]' },
+		{ ref: 'splitGrid', selector: '[xtype="shared.invoicepo.splitwindow"] customgrid' },
+		{ ref: 'splitCombo', selector: '#splitCombo'}
 	],
 
 	showInvoiceImage: true,
@@ -146,11 +149,31 @@ Ext.define('NP.controller.Invoice', {
 			// Line item view
 			'[xtype="shared.invoicepo.viewlines"]': {
 				// Clicking the Split link on a line item
-				clicksplitline: Ext.bind(this.onSplitLineClick, this)
+				clicksplitline: Ext.bind(this.onSplitLineClick, this),
+				clickeditsplit: Ext.bind(this.onSplitLineClick, this)
 			},
 
+			// Split grid
 			'[xtype="shared.invoicepo.splitwindow"] customgrid': {
-				beforeedit          : Ext.bind(this.onBeforeInvoiceLineGridEdit, this)
+				beforeedit      : Ext.bind(this.onBeforeInvoiceLineGridEdit, this),
+				changepercentage: Ext.bind(this.onChangeSplitPercentage, this),
+				changeamount    : Ext.bind(this.onChangeSplitAmount, this)
+			},
+
+			'#splitCombo': {
+				select: Ext.bind(this.onSelectSplit, this)
+			},
+
+			'#splitLineAddBtn': {
+				click: Ext.bind(this.onAddSplitLine, this)
+			},
+
+			'#recalculateBtn': {
+				click: Ext.bind(this.onRecalculateSplit, this)
+			},
+
+			'#saveSplitBtn': {
+				click: Ext.bind(this.onSaveSplit, this)
 			}
 		});
 	},
@@ -246,8 +269,7 @@ Ext.define('NP.controller.Invoice', {
 
 						var vendorField   = boundForm.findField('vendor_id'),
 							propertyField = boundForm.findField('property_id'),
-							periodField   = boundForm.findField('invoice_period'),
-							payByField    = boundForm.findField('invoicepayment_type_id');
+							periodField   = boundForm.findField('invoice_period');
 
 						// Set the vendor
 						vendorField.setDefaultRec(Ext.create('NP.model.vendor.Vendor', data));
@@ -267,8 +289,11 @@ Ext.define('NP.controller.Invoice', {
 						periodField.setValue(data['invoice_period']);
 
 						// Set the invoice payment to the default if needed
-						if (payByField.getValue() === null || payByField.getValue() === 0) {
-							me.setDefaultPayBy();
+						if (NP.Config.getSetting('CP.INVOICE_PAY_BY_FIELD', '0') == '1') {
+							var payByField = boundForm.findField('invoicepayment_type_id');
+							if (payByField.getValue() === null || payByField.getValue() === 0) {
+								me.setDefaultPayBy();
+							}
 						}
 
 						// Initiate some stores that depend on an invoice_id
@@ -299,6 +324,13 @@ Ext.define('NP.controller.Invoice', {
 
 			me.setDefaultPayBy();
 		}
+	},
+
+	getVendorRecord: function() {
+		var me          = this,
+			vendorField = me.getInvoiceView().findField('vendor_id');
+
+		return vendorField.findRecordByValue(vendorField.getValue());
 	},
 
 	onLineEditClick: function() {
@@ -357,7 +389,7 @@ Ext.define('NP.controller.Invoice', {
 	onBeforeInvoiceLineGridEdit: function(editor, e) {
 		var me    = this,
 			field = e.column.getEditor(),
-			grid  = me.getLineGrid();
+			grid  = e.grid;
 
 		grid.selectedRec = e.record;
 		me.originalRecValue = e.record.copy();
@@ -372,11 +404,11 @@ Ext.define('NP.controller.Invoice', {
 				|| e.field == 'invoiceitem_amount' || e.field == 'invoiceitem_description') {
 			me.onOpenInvalidSplitField(editor, e.record, field);
 		} else if (e.field == 'property_id') {
-			me.onOpenPropertyEditor(editor, e.record, field);
+			me.onOpenPropertyEditor(editor, e.grid, e.record, field);
 		} else if (e.field == 'glaccount_id') {
-			me.onOpenGlAccountEditor(editor, e.record, field);
+			me.onOpenGlAccountEditor(editor, e.grid, e.record, field);
 		} else if (e.field == 'unit_id') {
-			me.onOpenUnitEditor(editor, e.record);
+			me.onOpenUnitEditor(editor, e.grid, e.record);
 		} else if (e.field == 'vcitem_number' || e.field == 'vcitem_uom') {
 			me.onOpenVcItemEditor(editor, e.record, field);
 		} else if (e.field == 'jbcontract_id') {
@@ -406,13 +438,13 @@ Ext.define('NP.controller.Invoice', {
 		}
 	},
 
-	onOpenPropertyEditor: function(editor, rec, field) {
-		this.loadPropertyStore(field.up('customgrid').propertyStore);
+	onOpenPropertyEditor: function(editor, grid, rec, field) {
+		this.loadPropertyStore(grid.propertyStore);
 	},
 
 	loadPropertyStore: function(store, callback) {
 		var me    = this,
-    		propertyField = me.getHeaderPropertyCombo(),
+			propertyField = me.getHeaderPropertyCombo(),
     		property_id   = propertyField.getValue(),
 			integration_package_id;
 
@@ -434,13 +466,12 @@ Ext.define('NP.controller.Invoice', {
 		}
 	},
 
-	onOpenGlAccountEditor: function(editor, rec, field) {
-		this.loadGlAccountStore(rec);
+	onOpenGlAccountEditor: function(editor, grid, rec, field) {
+		this.loadGlAccountStore(grid.glStore, rec);
 	},
 
-	loadGlAccountStore: function(rec, callback) {
-		var me    = this,
-    		store = me.getLineGrid().glStore;
+	loadGlAccountStore: function(store, rec, callback) {
+		var me    = this;
 
     	// Only run this if property/GL association is on
 		if (NP.Config.getSetting('CP.PROPERTYGLACCOUNT_USE') == '1') {
@@ -472,18 +503,17 @@ Ext.define('NP.controller.Invoice', {
         }
 	},
 
-	onOpenUnitEditor: function(editor, rec, field) {
+	onOpenUnitEditor: function(editor, grid, rec, field) {
 		var me    = this,
     		combo = me.getLineGridUnitCombo();
 
-    	me.loadUnitStore(rec, function(store) {
+    	me.loadUnitStore(grid.unitStore, rec, function(store) {
     		combo.setValue(rec.get('unit_id'));
     	});
 	},
 
-	loadUnitStore: function(rec, callback) {
+	loadUnitStore: function(store, rec, callback) {
 		var me          = this,
-    		store       = me.getLineGrid().unitStore,
     		property_id = rec.get('property_id');
 
     	if (property_id !== null) {
@@ -547,9 +577,7 @@ Ext.define('NP.controller.Invoice', {
 	onOpenContractEditor: function(editor, rec, field) {
 		var me            = this,
 			store         = field.getStore(),
-			vendorField   = me.getInvoiceView().findField('vendor_id'),
-			vendor_id     = vendorField.getValue(),
-			vendorsite_id = vendorField.findRecordByValue(vendor_id).get('vendorsite_id'),
+			vendorsite_id = me.getVendorRecord().get('vendorsite_id'),
 			extraParams   = store.getExtraParams();
 		
 		if (!('vendorsite_id' in extraParams) || extraParams['vendorsite_id'] != vendorsite_id) {
@@ -713,9 +741,7 @@ Ext.define('NP.controller.Invoice', {
 	loadUtilityAccountStore: function(rec, callback) {
 		var me            = this,
 			store         = me.getLineGrid().utilityAccountStore,
-			vendorField   = me.getInvoiceView().findField('vendor_id'),
-			vendor_id     = vendorField.getValue(),
-			vendorsite_id = vendorField.findRecordByValue(vendor_id).get('vendorsite_id'),
+			vendorsite_id = me.getVendorRecord().get('vendorsite_id'),
 			property_id   = rec.get('property_id'),
 			extraParams   = store.getExtraParams(),
 			newExtraParams= {
@@ -1092,19 +1118,271 @@ Ext.define('NP.controller.Invoice', {
 	},
 
 	onSplitLineClick: function(invoiceitem_id) {
-		var me = this,
-			lineStore = me.getLineDataView().getStore(),
-			lineRec = lineStore.getById(invoiceitem_id),
-			win = Ext.create('NP.view.shared.invoicepo.SplitWindow', {
-				type: 'invoice'
-			});
+		var me              = this,
+			lineStore       = me.getLineDataView().getStore(),
+			lineRec         = lineStore.getById(invoiceitem_id),
+			vendorsite_id   = me.getVendorRecord().get('vendorsite_id'),
+			win             = Ext.create('NP.view.shared.invoicepo.SplitWindow', {
+								type: 'invoice'
+							});
 
 		win.show(null, function() {
-			win.down('#splitTotalQty').setValue(lineRec.get('invoiceitem_quantity'));
+			var splitComboStore = me.getSplitCombo().getStore(),
+				splitStore      = me.getSplitGrid().getStore();
+
+			splitComboStore.addExtraParams({
+				userprofile_id             : NP.Security.getUser().get('userprofile_id'),
+				delegated_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id'),
+				vendorsite_id              : vendorsite_id
+			});
+			splitComboStore.load();
+
+			splitStore.on('add', me.calculateAllocation, me);
+			splitStore.on('remove', me.calculateAllocation, me);
+			splitStore.on('update', function(store, rec, operation) {
+				if (operation != Ext.data.Model.COMMIT) {
+					me.calculateAllocation();
+				}
+			}, me);
+
+			me.openSplitLineRec = lineRec;
+			me.isNewSplit       = (lineRec.get('invoiceitem_split') !== 1);
+
 			win.down('#splitDescription').setValue(lineRec.get('invoiceitem_description'));
 			win.down('#splitUnitPrice').setValue(lineRec.get('invoiceitem_unitprice'));
 
-			me.getSplitGrid().getStore().add(lineRec);
+			if (me.isNewSplit) {
+				win.down('#splitTotalQty').setValue(lineRec.get('invoiceitem_quantity'));
+
+				var newRec = lineRec.copy();
+				newRec.set('split_percentage', 100);
+				splitStore.add(newRec);
+			} else {
+				var splitRecs = me.getSplitLines(me.openSplitLineRec),
+					totalQty  = 0;
+
+				splitRecs.each(function(splitRec) {
+					totalQty += splitRec.get('invoiceitem_quantity');
+				});
+
+				win.down('#splitTotalQty').setValue(totalQty);
+
+				splitRecs.each(function(splitRec) {
+					splitStore.add(splitRec.copy());
+				});
+			}
 		});
+	},
+
+	getSplitLines: function(rec) {
+		var me         = this,
+			lineStore  = me.getLineGrid().getStore(),
+			desc       = rec.get('invoiceitem_description'),
+			unitPrice  = rec.get('invoiceitem_unitprice'),
+			recs;
+
+		recs = lineStore.queryBy(function(lineRec, id) {
+			if (
+				lineRec.get('invoiceitem_description') == desc
+				&& lineRec.get('invoiceitem_unitprice') == unitPrice
+				&& lineRec.get('invoiceitem_split') == 1
+			) {
+				return true;
+			}
+		}, me);
+
+		return recs;
+	},
+
+	onSelectSplit: function(combo, recs) {
+		var me        = this,
+			grid      = me.getSplitGrid(),
+			store     = grid.getStore(),
+			totalRecs = store.getCount(),
+			maxIndex  = totalRecs - 1,
+			newRec,
+			i;
+
+		// Retrieve the items for the selected split
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service   : 'SplitService',
+				action    : 'getSplitItems',
+				dfsplit_id: recs[0].get('dfsplit_id'),
+				success   : function(items) {
+					Ext.suspendLayouts();
+
+					// Look through the items for the selected split
+					for (i=0; i<items.length; i++) {
+						// If we're on a row that has a record already, just reuse it
+						if (maxIndex >= i) {
+							newRec = store.getAt(i);
+						// Otherwise, create a new record based on the original line
+						} else {
+							newRec = me.openSplitLineRec.copy();
+						}
+						
+						// Update the line record with the split line values
+						newRec.set(items[i]);
+						newRec.set('dfsplit_name', recs[0].get('dfsplit_name'));
+						newRec.set('split_percentage', items[i]['dfsplititem_percent']);
+						me.calculateAmountFromPercentage(items[i]['dfsplititem_percent'], newRec);
+
+						// If the record is for a new line, add it to the store
+						if (maxIndex < i) {
+							store.add(newRec);
+						}
+					}
+
+					// If the old split configuration had more lines the new one, remove the extra lines
+					if (items.length < totalRecs) {
+						for (i=items.length; i<totalRecs; i++) {
+							store.removeAt(i);
+						}
+					}
+
+					Ext.resumeLayouts(true);
+				}
+			}
+		});
+	},
+
+	getTotalSplitQty: function() {
+		return Ext.ComponentQuery.query('#splitTotalQty')[0].getValue();
+	},
+
+	getSplitUnitPrice: function() {
+		return Ext.ComponentQuery.query('#splitUnitPrice')[0].getValue();
+	},
+
+	getTotalSplitAmount: function() {
+		return this.getTotalSplitQty() * this.getSplitUnitPrice();
+	},
+
+	onChangeSplitPercentage: function(grid, field) {
+		this.calculateAmountFromPercentage(field.getValue(), grid.selectedRec);
+	},
+
+	calculateAmountFromPercentage: function(pct, rec) {
+		var me        = this,
+			qty       = me.getTotalSplitQty(),
+			unitPrice = me.getSplitUnitPrice(),
+			splitQty  = qty * (pct / 100),
+			newAmount = splitQty * unitPrice,
+			store     = me.getSplitGrid().getStore();
+
+		rec.set({
+			invoiceitem_unitprice: unitPrice,
+			invoiceitem_quantity : splitQty,
+			invoiceitem_amount   : newAmount
+		});
+
+		store.each(function(rec) {
+			if (rec.get('split_balance') === 0) {
+				rec.set('split_balance', 1);
+			} else {
+				rec.set('split_balance', 0);
+			}
+		});
+	},
+
+	onChangeSplitAmount: function(grid, field) {
+		var me        = this,
+			qty       = me.getTotalSplitQty(),
+			unitPrice = me.getSplitUnitPrice(),
+			amount    = field.getValue(),
+			splitPct  = (amount / (unitPrice * qty)),
+			splitQty  = splitPct * qty;
+
+		splitPct *= 100;
+		
+		grid.selectedRec.set({
+			split_percentage    : splitPct,
+			invoiceitem_quantity: splitQty
+		});
+
+		grid.getStore().each(function(rec) {
+			rec.set('split_balance', 0);
+		});
+	},
+
+	onAddSplitLine: function() {
+		var me = this,
+			rec = me.openSplitLineRec.copy();
+
+		rec.set('invoiceitem_id', null);
+
+		me.getSplitGrid().getStore().add(rec);
+	},
+
+	calculateAllocation: function() {
+		var me              = this,
+			store           = me.getSplitGrid().getStore(),
+			totalRecs       = store.getCount(),
+			totalAmount     = me.getTotalSplitAmount(),
+			amountAllocated = 0,
+			pctAllocated    = 0,
+			rec;
+
+		for (var i=0; i<totalRecs; i++) {
+			rec = store.getAt(i);
+			amountAllocated += rec.get('invoiceitem_amount');
+			pctAllocated += rec.get('split_percentage');
+		}
+
+		Ext.ComponentQuery.query('#allocation_amount_left')[0].setValue(totalAmount - amountAllocated);
+		Ext.ComponentQuery.query('#allocation_pct_left')[0].setValue(100 - pctAllocated);
+	},
+
+	onRecalculateSplit: function() {
+		var me        = this,
+			store     = me.getSplitGrid().getStore(),
+			totalRecs = store.getCount(),
+			rec,
+			i;
+
+		for (i=0; i<totalRecs; i++) {
+			rec = store.getAt(i);
+			me.calculateAmountFromPercentage(rec.get('split_percentage'), rec);
+		}
+	},
+
+	onSaveSplit: function() {
+		var me           = this,
+			splitStore   = me.getSplitGrid().getStore(),
+			totalRecs    = splitStore.getCount(),
+			lineDataView = me.getLineDataView(),
+			lineStore    = me.getLineGrid().getStore(),
+			desc         = Ext.ComponentQuery.query('#splitDescription')[0].getValue(),
+			rec,
+			i;
+
+		Ext.suspendLayouts();
+
+		if (me.isNewSplit) {
+			lineStore.remove(me.openSplitLineRec);
+		} else {
+			var oldRecs = me.getSplitLines(me.openSplitLineRec);
+
+			oldRecs.each(function(lineRec) {
+				lineStore.remove(lineRec);
+			});
+		}
+
+		
+		me.openSplitLineRec = null;
+
+		for (i=0; i<totalRecs; i++) {
+			rec = splitStore.getAt(i);
+			rec.set('invoiceitem_description', desc);
+			rec.set('invoiceitem_split', 1);
+			lineStore.add(rec);
+		}
+
+		lineDataView.refresh();
+
+		Ext.resumeLayouts(true);
+
+		me.getSplitWindow().close();
 	}
 });

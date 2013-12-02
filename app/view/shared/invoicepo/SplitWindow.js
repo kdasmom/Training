@@ -16,7 +16,8 @@ Ext.define('NP.view.shared.invoicepo.SplitWindow', {
         'NP.view.shared.button.Save',
         'NP.store.system.DfSplits',
         'NP.view.shared.gridcol.UniversalField',
-        'NP.view.shared.CustomField'
+        'NP.view.shared.CustomField',
+        'NP.store.invoice.InvoiceItems'
     ],
 
     layout     : {
@@ -29,17 +30,17 @@ Ext.define('NP.view.shared.invoicepo.SplitWindow', {
     bodyPadding: 0,
     modal      : true,
     minimizable: false,
+    closeable  : false,
     autoScroll : true,
 
     // Additional options
     type: null,             // Needs to be set to 'invoice' or 'po'
 
-    // For localization
-    title: 'Line Item Allocation',
-    
     initComponent: function() {
     	var me           = this,
             customFields = NP.Config.getCustomFields().line.fields;
+
+        me.title = NP.Translator.translate('Line Item Split');
 
         me.tbar = me.getButtonBar();
 
@@ -54,16 +55,16 @@ Ext.define('NP.view.shared.invoicepo.SplitWindow', {
                 defaults: { labelAlign:'top', margin: '0 8 0 0' },
                 items: [
                     {
+                        xtype     : 'textfield',
+                        fieldLabel: NP.Translator.translate('Description'),
+                        itemId    : 'splitDescription',
+                        flex      : 3
+                    },{
                         xtype           : 'numberfield',
                         fieldLabel      : NP.Translator.translate('Original Quantity'),
                         itemId          : 'splitTotalQty',
                         decimalPrecision: 6,
                         flex            : 1
-                    },{
-                        xtype     : 'textfield',
-                        fieldLabel: NP.Translator.translate('Description'),
-                        itemId     : 'splitDescription',
-                        flex      : 3
                     },{
                         xtype           : 'numberfield',
                         fieldLabel      : NP.Translator.translate('Unit Price'),
@@ -72,6 +73,7 @@ Ext.define('NP.view.shared.invoicepo.SplitWindow', {
                         flex            : 1
                     },{
                         xtype : 'button',
+                        itemId: 'recalculateBtn',
                         text  : NP.Translator.translate('Recalculate'),
                         width : 65,
                         margin: 0
@@ -81,44 +83,80 @@ Ext.define('NP.view.shared.invoicepo.SplitWindow', {
             me.getGrid()
         ];
 
+        me.bbar = [
+            '->',
+            '<b>Left to Allocate:</b>',
+            {
+                xtype    : 'displayfield',
+                hideLabel: true,
+                itemId   : 'allocation_pct_left',
+                renderer : function(val) {
+                    if (val === '') {
+                        val = 0;
+                    }
+
+                    return val + '%';
+                }
+            },
+            {
+                xtype    : 'displayfield',
+                hideLabel: true,
+                itemId   : 'allocation_amount_left',
+                renderer : function(val) {
+                    if (val === '') {
+                        val = 0;
+                    }
+
+                    return Ext.util.Format.currency(val, NP.Config.getSetting('PN.Intl.currencySymbol', '$'));
+                }
+            }
+        ];
+
     	me.callParent(arguments);
 
-        me.addEvents('changequantity','changeunitprice','changeamount','changepercentage');
+        me.grid = me.down('customgrid');
+
+        me.grid.addEvents('changeamount','changepercentage');
     },
 
     getButtonBar: function() {
         return [
             { xtype: 'shared.button.cancel' },
-            { xtype: 'shared.button.save' },
-            { xtype: 'shared.button.save', text: NP.Translator.translate('Save and Create Default Split') },
-            '-',
-            'Select a Split',
+            { xtype: 'shared.button.save', itemId: 'saveSplitBtn' },
             {
-                xtype       : 'customcombo',
-                name        : 'dfsplit_id',
-                displayField: 'dfsplit_name',
-                valueField  : 'dfsplit_id',
-                store       : {
+                xtype : 'shared.button.save',
+                itemId: 'saveDefaultSplitBtn',
+                text  : NP.Translator.translate('Save and Create Default Split')
+            },
+            '->',
+            '<b>' + NP.Translator.translate('Select a Split') + ':</b>',
+            {
+                xtype                : 'customcombo',
+                itemId               : 'splitCombo',
+                hideLabel            : true,
+                name                 : 'dfsplit_id',
+                displayField         : 'dfsplit_name',
+                valueField           : 'dfsplit_id',
+                width                : 250,
+                store                : {
                     type   : 'system.dfsplits',
-                    service: '',
-                    action : ''
+                    service: 'SplitService',
+                    action : 'getByFilter'
                 }
             }
         ];
     },
 
     getGrid: function() {
-        var me = this;
-
-        me.propertyStore = Ext.create('NP.store.property.Properties', {
-            service : 'PropertyService',
-            action  : 'getByIntegrationPackage'
-        });
-
-        me.glStore = Ext.create('NP.store.gl.GlAccounts', {
-            service : 'GLService',
-            action  : (NP.Config.getSetting('CP.PROPERTYGLACCOUNT_USE') == '1') ? 'getByProperty' : 'getByIntegrationPackage'
-        });
+        var me = this,
+            propertyStore = Ext.create('NP.store.property.Properties', {
+                service : 'PropertyService',
+                action  : 'getByIntegrationPackage'
+            }),
+            glStore = Ext.create('NP.store.gl.GlAccounts', {
+                service : 'GLService',
+                action  : (NP.Config.getSetting('CP.PROPERTYGLACCOUNT_USE') == '1') ? 'getByProperty' : 'getByIntegrationPackage'
+            });
 
         var gridCfg = {
             xtype          : 'customgrid',
@@ -133,6 +171,7 @@ Ext.define('NP.view.shared.invoicepo.SplitWindow', {
             }],
             sortableColumns: false,
             flex           : 1,
+            store          : { type: 'invoice.invoiceitems' }, 
             columns: [
                 {
                     xtype   : 'actioncolumn',
@@ -142,30 +181,22 @@ Ext.define('NP.view.shared.invoicepo.SplitWindow', {
                         return 'delete-btn';
                     },
                     handler: function(view, rowIndex, colIndex, item, e, rec, row) {
-                        me.getStore().removeAt(rowIndex);
+                        me.grid.getStore().removeAt(rowIndex);
                     }
                 },
                 // Percentage column
                 {
                     xtype    : 'numbercolumn',
-                    text     : NP.Translator.translate('Percentage'),
+                    text     : NP.Translator.translate('Allocation %'),
                     dataIndex: 'split_percentage',
                     format   : '0,000.0000',
                     width    : 100,
-                    renderer : function(val, meta, rec) {
-                        var totalQty = Ext.ComponentQuery.query('#splitTotalQty')[0].getValue(),
-                            percent  = ((rec.get('invoiceitem_quantity') / totalQty) * 100).toFixed(4);
-
-                        rec.set('split_percentage', percent);
-
-                        return percent;
-                    },
                     editor   : {
                         xtype           : 'numberfield',
                         decimalPrecision: 4,
                         listeners       : {
                             blur : function(field, e) {
-                                me.fireEvent('changepercentage', me, field, e);
+                                me.grid.fireEvent('changepercentage', me.grid, field, e);
                             }
                         }
                     }
@@ -182,9 +213,28 @@ Ext.define('NP.view.shared.invoicepo.SplitWindow', {
                         decimalPrecision: 6,
                         listeners       : {
                             blur: function(field, e) {
-                                me.fireEvent('changeamount', me, field, e);
+                                me.grid.fireEvent('changeamount', me.grid, field, e);
                             }
                         }
+                    }
+                },
+                // Balance column
+                {
+                    xtype    : 'numbercolumn',
+                    text     : NP.Translator.translate('Balance'),
+                    dataIndex: 'split_balance',
+                    width    : 100,
+                    renderer : function(val, meta, rec, rowIndex, colIndex, store) {
+                        var unitPrice = me.down('#splitUnitPrice').getValue(),
+                            qty       = me.down('#splitTotalQty').getValue(),
+                            total     = qty * unitPrice;
+                        
+                        var balance = total;
+                        for (var i=0; i<=rowIndex; i++) {
+                            balance -= store.getAt(i).get('invoiceitem_amount');
+                        }
+
+                        return Ext.util.Format.number(balance, '0,000.000000');
                     }
                 },
                 // Property column
@@ -205,7 +255,7 @@ Ext.define('NP.view.shared.invoicepo.SplitWindow', {
                         itemId      : 'lineGridPropertyCombo',
                         displayField: 'property_name',
                         valueField  : 'property_id',
-                        store       : me.propertyStore
+                        store       : propertyStore
                     }
                 },
                 // GL Account column
@@ -226,14 +276,14 @@ Ext.define('NP.view.shared.invoicepo.SplitWindow', {
                         itemId      : 'lineGridGlCombo',
                         displayField: 'display_name',
                         valueField  : 'glaccount_id',
-                        store       : me.glStore
+                        store       : glStore
                     }
                 }
             ]
         };
 
         if (NP.Config.getSetting('PN.InvoiceOptions.AllowUnitAttach') == '1') {
-            me.unitStore = Ext.create('NP.store.property.Units', {
+            var unitStore = Ext.create('NP.store.property.Units', {
                 service    : 'PropertyService',
                 action     : 'getUnits',
                 extraParams: {
@@ -251,14 +301,18 @@ Ext.define('NP.view.shared.invoicepo.SplitWindow', {
                     }
                     var rec = Ext.getStore('property.AllUnits').findRecord('unit_id', val, 0, false, false, true);
                     
-                    return rec.get('unit_number');
+                    if (rec) {
+                        return rec.get('unit_number');
+                    } else {
+                        return '';
+                    }
                 },
                 editor: {
                     xtype       : 'customcombo',
                     itemId      : 'lineGridUnitCombo',
                     displayField: 'unit_number',
                     valueField  : 'unit_id',
-                    store       : me.unitStore,
+                    store       : unitStore,
                     hideLabel   : true
                 }
             });
@@ -287,6 +341,10 @@ Ext.define('NP.view.shared.invoicepo.SplitWindow', {
                 });
             }
         }
+
+        gridCfg.propertyStore = propertyStore;
+        gridCfg.glStore       = glStore;
+        gridCfg.unitStore     = unitStore;
 
         return gridCfg;
     }

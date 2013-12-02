@@ -74,8 +74,12 @@ class SplitService extends AbstractService {
 	 * @param  string $sort         Field(s) by which to sort the result; defaults to dfsplit_name
 	 * @return array
 	 */
-	public function getByFilter($property_id=null, $glaccount_id=null, $pageSize=null, $page=1, $sort='dfsplit_name') {
-		return $this->dfSplitGateway->findByFilter($property_id, $glaccount_id, $pageSize, $page, $sort);
+	public function getByFilter($userprofile_id=null, $delegated_to_userprofile_id=null,
+								$vendorsite_id, $property_id=null, $glaccount_id=null,
+								$pageSize=null, $page=1, $sort='dfsplit_name') {
+		return $this->dfSplitGateway->findByFilter($userprofile_id, $delegated_to_userprofile_id,
+													$vendorsite_id, $property_id, $glaccount_id,
+													$pageSize, $page, $sort);
 	}
 
 	/**
