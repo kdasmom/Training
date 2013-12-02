@@ -17,42 +17,6 @@ class ImageIndexGateway extends AbstractGateway {
 	protected $table = 'image_index';
         protected $pk = 'Image_Index_Id';
 
-        private $columns1 = [
-            'Image_Index_Id',
-            'Image_Index_VendorSite_Id',
-            'Property_Id',
-            'Image_Index_Name',
-            'Image_Index_Ref',
-            'Image_Index_Invoice_Date',
-            'Image_Index_Due_Date',
-            'Image_Index_Amount',
-            'Image_Index_Date_Entered',
-            'Tablekey_Id',
-            'Image_Index_Source_Id',
-            'Tableref_Id',
-            'Image_Doctype_Id',
-            'remit_advice',
-            'PriorityFlag_ID_Alt',
-            'image_index_NeededBy_datetm',
-            'Image_Index_Exception_by',
-            'Image_Index_Exception_datetm',
-            'Image_Index_Exception_End_datetm',
-            'image_index_indexed_datetm',
-            'image_index_indexed_by',
-            'cycle_from',
-            'cycle_to',
-            'utilityaccount_accountnumber',
-            'utilityaccount_metersize',
-            'universal_field1',
-            'universal_field2',
-            'universal_field3',
-            'universal_field4',
-            'universal_field5',
-            'universal_field6',
-            'universal_field7',
-            'universal_field8'            
-        ];
-
 	public function findImagesToConvert($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
 		$select = $this->getDashboardSelect($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
 		
@@ -732,25 +696,14 @@ class ImageIndexGateway extends AbstractGateway {
 
         return $this->adapter->query($select);
     }
-        
-    public function getImageToIndex($id, $userprofile_id = 1, $delegated_to_userprofile_id = 1, $contextType = 'all', $contextSelection = null, $pageSize=null, $page=null, $sort="vendor_name") {
-        $select = $this->getDashboardSelect('false', $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
-        $propertyFilterSelect = new PropertyFilterSelect(new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection));
 
-        $where = Where::get()
-            ->nest('OR')
-                ->equals('img.property_id', 0)
-                ->isNull('img.property_id')
-                ->in('img.property_id', $propertyFilterSelect)
-            ->unnest()
-            ->merge(new sql\criteria\ImageNotIndexedCriteria())
-            ->equals("Image_Index_Id", $id)
-        ;
-        $select->where($where);
-
-        return $this->adapter->query($select)[0];
-    }
-
+    /**
+     * Get image parameters.
+     * Used in "delete image" mechanism to mark primary image correctly.
+     * 
+     * @param [] $identifiers List of image identifiers.
+     * @return [] parameters.
+     */
     public function getMainParametersForImages($identifiers) {
         $select = Select::get()
             ->from($this->table)
@@ -775,6 +728,12 @@ class ImageIndexGateway extends AbstractGateway {
         return $result;
     }
 
+    /**
+     * Set primary flag of the image correctly.
+     * 
+     * @param [] $identifiers List of images identifiers.
+     * @param [] $params Images parameters.
+     */
     public function updatePrimary($identifiers, $params) {
         foreach ($params as $key => $values) {
             $where = Where::get()
