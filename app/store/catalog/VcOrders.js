@@ -7,5 +7,5 @@
 Ext.define('NP.store.catalog.VcOrders', {
 	extend: 'NP.lib.data.Store',
 
-	model: 'NP.model.catalog..VcOrder'
+	model: 'NP.model.catalog.VcOrder'
 });

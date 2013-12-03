@@ -22,7 +22,11 @@ Ext.define('NP.model.catalog.VcOrder', {
 		{ name: 'vcitem_mft_partnumber' },
 		{ name: 'UNSPSC_Commodity_Commodity', type: 'int' },
 		{ name: 'vc_id', type: 'int' },
-		{ name: 'vcorder_aux_part_id' }
+		{ name: 'vcorder_aux_part_id' },
+//		not model's fields
+		{
+			name: 'vc_catalogname'
+		}
 	],
 
 	validations: [
@@ -34,5 +38,15 @@ Ext.define('NP.model.catalog.VcOrder', {
 		{ field: 'vcitem_manufacturer', type: 'length', max: 50 },
 		{ field: 'vcitem_mft_partnumber', type: 'length', max: 50 },
 		{ field: 'vcorder_aux_part_id', type: 'length', max: 255 }
+	],
+
+	belongsTo: [
+		{
+			model         : 'NP.model.catalog.Vc',
+			name          : 'vc_catalogname',
+			getterName    : 'getVc',
+			foreignKey    : 'vc_id',
+			primaryKey    : 'vc_id'
+		}
 	]
 });

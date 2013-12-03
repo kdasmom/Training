@@ -567,6 +567,16 @@ class CatalogService extends AbstractService {
 	public function getUserCartSummary($userprofile_id = false) {
 		return $this->vcOrderGateway->getOrderSummary($userprofile_id);
 	}
+
+	/**
+	 * Retrieve user's orders
+	 *
+	 * @param bool $userprofile_id
+	 * @return array|bool
+	 */
+	public function getOrders($userprofile_id = false) {
+		return $this->vcOrderGateway->getOrders($userprofile_id);
+	}
 }
 
 ?>

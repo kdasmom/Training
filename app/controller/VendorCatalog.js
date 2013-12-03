@@ -33,6 +33,13 @@ Ext.define('NP.controller.VendorCatalog', {
 				click: function() {
 					this.addHistory('VendorCatalog:showVendorCatalogListing');
 				}
+			},
+			'[xtype="catalog.vcorder"] [xtype="catalog.vcordersgrid"]': {
+				cellclick: function(grid, td, cellIndex, record, tr, rowIndex, e, eOpts){
+					if (Ext.get(e.target).hasCls('remove')) {
+						console.log(record.get('vcorder_id'));
+					}
+				}
 			}
 		});
 
