@@ -169,6 +169,7 @@ Ext.define('NP.view.shared.invoicepo.SplitWindow', {
                 itemId: 'splitLineAddBtn',
                 text  : NP.Translator.translate('Add Line')
             }],
+            border         : false,
             sortableColumns: false,
             flex           : 1,
             store          : { type: 'invoice.invoiceitems' }, 

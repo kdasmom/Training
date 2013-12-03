@@ -389,19 +389,19 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                     '</div>' +
                     '<div>' +
                         '<tpl if="this.getInvoiceRecord().get(\'invoice_status\') != \'paid\'">' +
-                            '<a href="#" class="deleteLineBtn">Delete</a> ' +
+                            '<a class="deleteLineBtn">Delete</a> ' +
                         '</tpl>' +
                         // TODO: still need to see if we need to add the reclass condition
                         '<tpl if="(this.getInvoiceRecord().get(\'invoice_status\') != \'paid\') ' +
                                     '&& purchaseorder_id === null && this.getFormDataVal(\'has_linkable_pos\') ' +
                                     '&& this.hasPermission(2038)">' +
-                            '<a href="#" class="linkLineBtn">Link</a>' +
+                            '<a class="linkLineBtn">Link</a>' +
                         '</tpl>' +
                     '</div>' +
                 '<tpl elseif="this.getInvoiceRecord().get(\'invoice_status\') == \'forapproval\' ' +
                                 '&& this.getFormDataVal(\'is_approver\') && this.hasPermission(3001)">' +
                     '<div>' +
-                        '<a href="#" class="modifyGlBtn">Modify&nbsp;GL</a>' +
+                        '<a class="modifyGlBtn">Modify&nbsp;GL</a>' +
                     '</div>' +
                 '</tpl>' +
             '</td>';
