@@ -22,7 +22,7 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 			{
 				xtype: 'shared.gridcol.buttonimg',
 				renderer: function(val, meta, rec) {
-					return '<div class="remove"><img src="resources/images/buttons/delete.gif" title="Remove" alt="Remove"/>&nbsp; Remove</div>';
+					return '<div class="remove"><img src="resources/images/buttons/delete.gif" title="Remove" alt="Remove" class="remove"/>&nbsp; Remove</div>';
 				},
 				flex: 0.2
 			},
@@ -139,20 +139,8 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 			}
 		};
 		var groupingSummary = Ext.create('Ext.grid.feature.GroupingSummary', {
-			groupHeaderTpl: '{name}<div style="float: right; padding-right: 10px;"><a id="selectAll" data-vc="{vc_id}" href="javascript:void(0)">Select all</a>/<a href="javascript:void(0)">Unselect all</a></div>',
+			groupHeaderTpl: '{name}<div style="float: right; margin-right: 20px;"><a id="selectAll" data-vc="{vc_id}" href="javascript:void(0)">Select all</a>/<a href="javascript:void(0)">Unselect all</a></div>',
 			ftype: 'groupingsummary',
-			listeners: {
-				afterrender: function() {
-					that.mon(Ext.get('selectAll'), 'click', function() {
-						console.log('select all');
-						/**
-						 * @event nplogoclicked
-						 * Fires whenever the NP logo is clicked
-						 */
-						that.fireEvent('selectall');
-					});
-				}
-			},
 			collapsible: false
 		});
 
@@ -168,6 +156,14 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 		});
 
 		this.features = [groupingSummary];
+
+//		this.listeners = {
+//			afterrender: function() {
+//				that.mon(Ext.get('selectAll'), 'click', function() {
+//					that.fireEvent('selectall');
+//				});
+//			}
+//		};
 
 		this.callParent(arguments);
 	}

@@ -19,11 +19,6 @@ Ext.define('NP.controller.VendorCatalog', {
 		Ext.log('Vendor Catalog Controller init');
 
 		this.control({
-			'[xtype="catalog.jumptocatalogform"] button': {
-				click: function() {
-					console.log('jump');
-				}
-			},
 			'[xtype="catalog.vclisting"] [xtype="shared.button.search"]': {
 				click: function() {
 					this.addHistory('VendorCatalog:showAdvancedSearch');
@@ -37,7 +32,7 @@ Ext.define('NP.controller.VendorCatalog', {
 			'[xtype="catalog.vcorder"] [xtype="catalog.vcordersgrid"]': {
 				cellclick: function(grid, td, cellIndex, record, tr, rowIndex, e, eOpts){
 					if (Ext.get(e.target).hasCls('remove')) {
-						console.log(record.get('vcorder_id'));
+						this.removeOrder(record.get('vcorder_id'));
 					}
 				}
 			}
@@ -90,5 +85,24 @@ Ext.define('NP.controller.VendorCatalog', {
 	showOpenOrders: function() {
 		this.setView('NP.view.catalog.VcOrder');
 		this.showUserOrderSummary(this.userSummaryCallback);
+	},
+
+	removeOrder: function (order_id) {
+		var that = this;
+
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service: 'CatalogService',
+				action : 'removeOrder',
+				order_id : order_id,
+				userprofile_id: NP.Security.getUser().get('userprofile_id'),
+				success: function(success) {
+					if (success) {
+						var grid = that.getCmp('catalog.vcordersgrid');
+						grid.getStore().reload();
+					}
+				}
+			}
+		});
 	}
 });

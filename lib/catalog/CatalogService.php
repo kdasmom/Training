@@ -577,6 +577,16 @@ class CatalogService extends AbstractService {
 	public function getOrders($userprofile_id = false) {
 		return $this->vcOrderGateway->getOrders($userprofile_id);
 	}
+
+	/**
+	 * Remove order
+	 *
+	 * @param null $order_id
+	 * @return bool
+	 */
+	public function removeOrder($order_id = null, $userprofile_id = null) {
+		return $this->vcOrderGateway->delete(['vcorder_id' => '?', 'userprofile_id' => '?'], [$order_id, $userprofile_id]);
+	}
 }
 
 ?>
