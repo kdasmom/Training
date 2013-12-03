@@ -24,7 +24,7 @@ Ext.define('NP.model.property.Property', {
         { name: 'property_name' },
         { name: 'property_salestax', type: 'float', defaultValue: 0 },
         { name: 'property_no_units' },
-        { name: 'property_fiscal_year', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+        { name: 'property_fiscal_year', type: 'date' },
         { name: 'property_account_month', type: 'int' },
         { name: 'property_closing_day', type: 'int' },
         { name: 'property_account_method' },
@@ -41,13 +41,13 @@ Ext.define('NP.model.property.Property', {
         { name: 'fiscaldisplaytype_value', type: 'int', defaultValue: 1 },
         { name: 'cash_accural', defaultValue: 'accural' },
         { name: 'UserProfile_ID', type: 'int' },
-        { name: 'createdatetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+        { name: 'createdatetm', type: 'date' },
         { name: 'property_optionBillAddress', type: 'int', defaultValue: 1 },
         { name: 'property_optionShipAddress', type: 'int', defaultValue: 1 },
         { name: 'default_billto_property_id', type: 'int' },
         { name: 'default_shipto_property_id', type: 'int' },
         { name: 'property_volume', defaultValue: 'normal' },
-        { name: 'last_updated_datetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+        { name: 'last_updated_datetm', type: 'date' },
         { name: 'last_updated_by', type: 'int' },
         { name: 'property_NexusServices', type: 'int', defaultValue: 1 },
         { name: 'property_VendorCatalog', type: 'int', defaultValue: 1 }
@@ -83,31 +83,8 @@ Ext.define('NP.model.property.Property', {
             getterName    : 'getUpdatedByUser',
             foreignKey    : 'UserProfile_ID',
             primaryKey    : 'userprofile_id',
-            prefix        : 'last_updated_by_',
+            prefix        : 'updated_by_',
             reader        : 'jsonflat'
         }
-    ],
-
-    validations: [
-        { field: 'property_id_alt', type: 'presence' },
-        { field: 'property_id_alt', type: 'length', max: 50 },
-        { field: 'property_id_alt_ap', type: 'length', max: 50 },
-        { field: 'property_department_code', type: 'length', max: 10 },
-        { field: 'property_name', type: 'presence' },
-        { field: 'property_name', type: 'length', max: 255 },
-        { field: 'property_salestax', type: 'presence' },
-        { field: 'property_no_units', type: 'presence' },
-        { field: 'property_no_units', type: 'length', max: 50 },
-        { field: 'property_account_method', type: 'length', max: 50 },
-        { field: 'second_property_code', type: 'length', max: 10 },
-        { field: 'second_company_code', type: 'length', max: 10 },
-        { field: 'company_id_alt', type: 'length', max: 10 },
-        { field: 'fixedasset_account', type: 'length', max: 50 },
-        { field: 'matching_threshold', type: 'presence' },
-        { field: 'region_id', type: 'presence' },
-        { field: 'integration_package_id', type: 'presence' },
-        { field: 'fiscaldisplaytype_value', type: 'presence' },
-        { field: 'cash_accural', type: 'length', max: 10 },
-        { field: 'property_volume', type: 'length', max: 15 }
     ]
 });

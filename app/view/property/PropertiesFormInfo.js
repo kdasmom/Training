@@ -9,6 +9,7 @@ Ext.define('NP.view.property.PropertiesFormInfo', {
     
     requires: [
     	'NP.lib.core.Config',
+        'NP.lib.core.Translator',
     	'NP.view.shared.Address',
     	'NP.view.shared.Phone',
     	'NP.view.shared.YesNoField',
@@ -17,33 +18,13 @@ Ext.define('NP.view.property.PropertiesFormInfo', {
 
     autoScroll: true,
 
-    title                  : NP.Config.getPropertyLabel() + ' Info',
-    codeFieldText          : NP.Config.getPropertyLabel() + ' Code',
-    apCodeFieldText        : NP.Config.getPropertyLabel() + ' AP Code',
-    deptCodeFieldText      : 'Department Code',
-    propertyNameFieldText  : NP.Config.getPropertyLabel() + ' Name',
-    totalUnitsFieldText    : 'Total No. of ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + 's',
-    attnFieldText          : 'Attention',
-    addressFieldText       : 'Address',
-    phoneFieldText         : 'Phone Number',
-    faxFieldText           : 'Fax Number',
-    billToFieldText        : 'Bill To Address Option',
-    billToPropertyFieldText: 'Default Bill To Property',
-    shipToFieldText        : 'Ship To Address Option',
-    shipToPropertyFieldText: 'Default Ship To Property',
-    syncFieldText          : 'Sync ' + NP.Config.getPropertyLabel(),
-    accrualCashFieldText   : 'Accrual or Cash',
-    nexusServicesFieldText : 'Nexus Services',
-    vendorCatalogFieldText : 'Vendor Catalog',
-    intPackageFieldText    : 'Integration Package',
-    calendarFieldText      : 'Closing Calendar',
-    volumeTypeFieldText    : 'Volume Type',
-
     initComponent: function() {
-        var that = this;
-        var defaultWidth = 578;
+        var me = this,
+            defaultWidth = 578;
 
-    	this.defaults = { labelWidth: 175 };
+        me.translateText();
+
+    	me.defaults = { labelWidth: 175 };
 
     	var intPkgStore = Ext.getStore('system.IntegrationPackages').getCopy();
     	intPkgStore.filterBy(function(rec) {
@@ -55,31 +36,31 @@ Ext.define('NP.view.property.PropertiesFormInfo', {
     		return (rec.get('universal_field_status') != 0) ? true : false;
     	});
     	
-    	this.items = [
+    	me.items = [
             // Property Code
-    		{ xtype: 'textfield', fieldLabel: this.codeFieldText, name: 'property_id_alt', width: defaultWidth, allowBlank: false },
+    		{ xtype: 'textfield', fieldLabel: me.codeFieldText, name: 'property_id_alt', width: defaultWidth, allowBlank: false },
     		// Property AP Code
-            { xtype: 'textfield', fieldLabel: this.apCodeFieldText, name: 'property_id_alt_ap', width: defaultWidth },
+            { xtype: 'textfield', fieldLabel: me.apCodeFieldText, name: 'property_id_alt_ap', width: defaultWidth},
             // Property Department Code
-    		{ xtype: 'textfield', fieldLabel: this.deptCodeFieldText, name: 'property_department_code', width: defaultWidth },
+    		{ xtype: 'textfield', fieldLabel: me.deptCodeFieldText, name: 'property_department_code', width: defaultWidth },
             // Property Name
-    		{ xtype: 'textfield', fieldLabel: this.propertyNameFieldText, name: 'property_name', width: defaultWidth, allowBlank: false },
+    		{ xtype: 'textfield', fieldLabel: me.propertyNameFieldText, name: 'property_name', width: defaultWidth, allowBlank: false},
             // Number of Units
-    		{ xtype: 'textfield', fieldLabel: this.totalUnitsFieldText, name: 'property_no_units', allowBlank: false },
+    		{ xtype: 'textfield', fieldLabel: me.totalUnitsFieldText, name: 'property_no_units', allowBlank: false },
             // Attention
-    		{ xtype: 'textfield', fieldLabel: this.attnFieldText, name: 'address_attn', allowBlank: false, width: defaultWidth },
+    		{ xtype: 'textfield', fieldLabel: me.attnFieldText, name: 'address_attn', allowBlank: false, width: defaultWidth },
             // Address
-    		{ xtype: 'fieldcontainer', fieldLabel: this.addressFieldText, items: [{ xtype: 'shared.address', showCountry: true, required: true }] },
+    		{ xtype: 'fieldcontainer', fieldLabel: me.addressFieldText, items: [{ xtype: 'shared.address', showCountry: true, required: true }] },
             // Phone
     		{
     			xtype: 'fieldcontainer',
-    			fieldLabel: this.phoneFieldText, 
+    			fieldLabel: me.phoneFieldText, 
     			items: [{ xtype: 'shared.phone', showFieldDescriptions: true, hideLabel: true }]
     		},
             // Fax
     		{
     			xtype: 'fieldcontainer',
-    			fieldLabel: this.faxFieldText, 
+    			fieldLabel: me.faxFieldText, 
     			items: [{ xtype: 'shared.phone', prefix: 'fax_', showFieldDescriptions: true, hideLabel: true }]
     		},
             // Region
@@ -94,11 +75,11 @@ Ext.define('NP.view.property.PropertiesFormInfo', {
                 allowBlank  : false
     		},
             // Bill To Address Option
-    		{ xtype: 'shared.yesnofield', fieldLabel: this.billToFieldText, name: 'property_optionBillAddress' },
+    		{ xtype: 'shared.yesnofield', fieldLabel: me.billToFieldText, name: 'property_optionBillAddress' },
             // Default Bill To Property
     		{
                 xtype                : 'customcombo',
-                fieldLabel           : this.billToPropertyFieldText,
+                fieldLabel           : me.billToPropertyFieldText,
                 name                 : 'default_billto_property_id',
                 hidden               : true,
                 width                : defaultWidth,
@@ -114,11 +95,11 @@ Ext.define('NP.view.property.PropertiesFormInfo', {
 				})
     		},
             // Ship To Address Option
-    		{ xtype: 'shared.yesnofield', fieldLabel: this.shipToFieldText, name: 'property_optionShipAddress' },
+    		{ xtype: 'shared.yesnofield', fieldLabel: me.shipToFieldText, name: 'property_optionShipAddress' },
             // Default Ship To Property
     		{
                 xtype                : 'customcombo',
-                fieldLabel           : this.shipToPropertyFieldText,
+                fieldLabel           : me.shipToPropertyFieldText,
                 name                 : 'default_shipto_property_id',
                 hidden               : true,
                 width                : defaultWidth,
@@ -134,11 +115,11 @@ Ext.define('NP.view.property.PropertiesFormInfo', {
 				})
     		},
             // Sync
-    		{ xtype: 'shared.yesnofield', fieldLabel: this.syncFieldText, name: 'sync' },
+    		{ xtype: 'shared.yesnofield', fieldLabel: me.syncFieldText, name: 'sync' },
             // Accrual Cash
     		{
     			xtype: 'radiogroup',
-    			fieldLabel: this.accrualCashFieldText,
+    			fieldLabel: me.accrualCashFieldText,
     			defaults: {
     				name: 'cash_accural',
     				style: 'white-space: nowrap;margin-right:12px;'
@@ -149,13 +130,13 @@ Ext.define('NP.view.property.PropertiesFormInfo', {
 		    	]
     		},
             // Nexus Services
-    		{ xtype: 'shared.yesnofield', fieldLabel: this.nexusServicesFieldText, name: 'property_NexusServices' },
+    		{ xtype: 'shared.yesnofield', fieldLabel: me.nexusServicesFieldText, name: 'property_NexusServices' },
             // Vendor Catalog
-    		{ xtype: 'shared.yesnofield', fieldLabel: this.vendorCatalogFieldText, name: 'property_VendorCatalog' },
+    		{ xtype: 'shared.yesnofield', fieldLabel: me.vendorCatalogFieldText, name: 'property_VendorCatalog' },
             // Integration Package
     		{
                 xtype       : 'customcombo',
-                fieldLabel  : this.intPackageFieldText,
+                fieldLabel  : me.intPackageFieldText,
                 name        : 'integration_package_id',
                 width       : defaultWidth,
                 store       : intPkgStore,
@@ -163,10 +144,18 @@ Ext.define('NP.view.property.PropertiesFormInfo', {
                 displayField: 'integration_package_name',
                 allowBlank  : false
     		},
+			{
+				xtype: 'displayfield',
+				fieldLabel  : me.intPackageFieldText,
+				name        : 'integration_package_name',
+				value: '',
+				hidden: true
+
+			},
             // Closing Calendar
     		{
 				xtype         : 'customcombo',
-				fieldLabel    : this.calendarFieldText,
+				fieldLabel    : me.calendarFieldText,
 				name          : 'fiscalcal_id',
 				store         : Ext.create('NP.store.property.FiscalCals', {
 					service: 'PropertyService',
@@ -181,7 +170,7 @@ Ext.define('NP.view.property.PropertiesFormInfo', {
             // Volume Type
     		{
                 xtype              : 'customcombo',
-                fieldLabel         : this.volumeTypeFieldText,
+                fieldLabel         : me.volumeTypeFieldText,
                 width              : defaultWidth,
                 name               : 'property_volume',
                 store              : Ext.create('NP.store.property.VolumeTypes'),
@@ -191,8 +180,8 @@ Ext.define('NP.view.property.PropertiesFormInfo', {
     	];
 
         // Add custom fields at the end of the form
-        Ext.Array.each(this.customFieldData, function(fieldData) {
-            that.items.push({
+        Ext.Array.each(me.customFieldData, function(fieldData) {
+            me.items.push({
                 xtype     : 'shared.customfield',
                 fieldLabel: fieldData['customfield_label'],
                 entityType: fieldData['customfield_pn_type'],
@@ -204,6 +193,39 @@ Ext.define('NP.view.property.PropertiesFormInfo', {
             });
         });
 
-    	this.callParent(arguments);
+		if (!me.property_id) {
+			me.items.push({ xtype: 'displayfield', value: NP.Translator.translate('Accounting Info'), padding: '10 0 0 0'});
+			me.items.push({ xtype: 'property.propertiesformaccounting' });
+		}
+
+    	me.callParent(arguments);
+    },
+
+    translateText: function() {
+        var me = this,
+            propertyText = NP.Config.getPropertyLabel(),
+            unitText     = NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit');
+
+        me.title                   = NP.Translator.translate('{property} Info', { property: propertyText });
+        me.codeFieldText           = NP.Translator.translate('{property} Code', { property: propertyText });
+        me.apCodeFieldText         = NP.Translator.translate('{property} AP Code', { property: propertyText });
+        me.deptCodeFieldText       = NP.Translator.translate('Department Code');
+        me.propertyNameFieldText   = NP.Translator.translate('{property} Name', { property: propertyText });
+        me.totalUnitsFieldText     = NP.Translator.translate('Total No. of {unit}s', { unit: unitText });
+        me.attnFieldText           = NP.Translator.translate('Attention');
+        me.addressFieldText        = NP.Translator.translate('Address');
+        me.phoneFieldText          = NP.Translator.translate('Phone Number');
+        me.faxFieldText            = NP.Translator.translate('Fax Number');
+        me.billToFieldText         = NP.Translator.translate('Bill To Address Option');
+        me.billToPropertyFieldText = NP.Translator.translate('Default Bill To {property}', { property: propertyText });
+        me.shipToFieldText         = NP.Translator.translate('Ship To Address Option');
+        me.shipToPropertyFieldText = NP.Translator.translate('Default Ship To {property}', { property: propertyText });
+        me.syncFieldText           = NP.Translator.translate('Sync {property}', { property: propertyText });
+        me.accrualCashFieldText    = NP.Translator.translate('Accrual or Cash');
+        me.nexusServicesFieldText  = NP.Translator.translate('Nexus Services');
+        me.vendorCatalogFieldText  = NP.Translator.translate('Vendor Catalog');
+        me.intPackageFieldText     = NP.Translator.translate('Integration Package');
+        me.calendarFieldText       = NP.Translator.translate('Closing Calendar');
+        me.volumeTypeFieldText     = NP.Translator.translate('Volume Type');
     }
 });

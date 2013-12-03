@@ -10,11 +10,11 @@ use NP\core\db\Where;
  * @author Thomas Messier
  */
 class PropertyKeywordCriteria extends Where {
-	
+
 	/**
 	 * @param  string $keyword
 	 */
-	public function __construct($alias='p') {
+	public function __construct($alias='pr') {
 		parent::__construct();
 
 		return $this->nest('or')

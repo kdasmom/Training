@@ -14,7 +14,7 @@ use NP\core\db\Adapter;
 use NP\system\IntegrationPackageGateway;
 use NP\vendor\VendorGateway;
 use NP\vendor\VendorGlAccountsGateway;
-use NP\gl\GLAccountGateway;
+use NP\gl\GlAccountGateway;
 
 class VendorGLImportEntityValidator extends AbstractImportEntityValidator {
     
@@ -22,7 +22,7 @@ class VendorGLImportEntityValidator extends AbstractImportEntityValidator {
 
     public function __construct(LocalizationService $localizationService, Adapter $adapter,
                                 IntegrationPackageGateway $integrationPackageGateway,
-                                VendorGateway $vendorGateway, GLAccountGateway $glAccountGateway,
+                                VendorGateway $vendorGateway, GlAccountGateway $glAccountGateway,
                                 VendorGlAccountsGateway $vendorGlAccountsGateway) {
         parent::__construct($localizationService, $adapter);
 

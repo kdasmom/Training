@@ -137,7 +137,7 @@ Ext.define('NP.view.shared.PickList', {
         // Set some variables for easy references
         this.grid = this.items.getAt(0);
         this.form = this.items.getAt(1);
-        this.modelClass = this.form.getModels()[0].class;
+        this.modelClass = this.form.getModels()[0].classPath;
 
         // Add some event handlers to the grid
         this.grid.on('selectionchange', Ext.bind(that.changeSelectionHandler, this));
@@ -198,8 +198,10 @@ Ext.define('NP.view.shared.PickList', {
         this.form.getForm().getFields().getAt(0).focus();
     },
 
-    saveHandler: function(addAnother) {
+    saveHandler: function(addAnother, callback) {
         var that = this;
+
+        callback = callback || Ext.emptyFn;
 
         // Manually update universal_field_status in record because form field uses different name
         var rec = this.form.getModel(this.modelClass);
@@ -212,7 +214,7 @@ Ext.define('NP.view.shared.PickList', {
                 extraParams: {
                     entityType: this.entityType
                 },
-                success: function(result, deferred) {
+                success: function(result) {
                     var idProperty = NP.Util.getIdProperty(that.modelClass);
                     if (rec.get(idProperty) === null) {
                         that.grid.getStore().add(rec);
@@ -243,11 +245,10 @@ Ext.define('NP.view.shared.PickList', {
 
                     // Show info message
                     NP.Util.showFadingWindow({ html: 'Change saved' });
-                    deferred.resolve(rec);
+                    callback(rec);
                 },
-                failure: function(result, deferred) {
+                failure: function(result) {
                     that.grid.getStore().rejectChanges();
-                    deferred.reject(result);
                 }
             });
         }
@@ -283,7 +284,7 @@ Ext.define('NP.view.shared.PickList', {
                 entityType            : that.entityType,
                 itemIds               : itemIds,
                 universal_field_status: universal_field_status,
-                success               : function(result, deferred) {
+                success               : function(result) {
                     if (result.success) {
                         that.grid.getSelectionModel().deselectAll();
                         that.grid.getStore().commitChanges();

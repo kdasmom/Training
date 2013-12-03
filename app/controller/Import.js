@@ -10,20 +10,39 @@ Ext.define('NP.controller.Import', {
         'NP.lib.core.Util',
         'NP.lib.core.Security',
         'NP.view.shared.button.Inactivate',
-        'NP.view.shared.button.Activate',
+        'NP.view.shared.button.Activate'
     ],
     
+    models: [
+        'importing.GLBudget','importing.GLActual','importing.GLCategory',
+        'importing.GLCode','importing.Property','importing.PropertyGL',
+        'importing.Unit','importing.UnitType','importing.Vendor','importing.VendorGL',
+        'importing.VendorFavorite','importing.VendorInsurance','importing.VendorUtility',
+        'importing.InvoicePayment','importing.User','importing.UserProperty','importing.Split'
+    ],
+
+    views: [
+        'importing.CSVGrid','importing.ImportSection','importing.Main','importing.Overview',
+        'importing.UploadForm','importing.types.CustomFieldHeader','importing.types.CustomFieldLine',
+        'importing.types.GLActual','importing.types.GLBudget','importing.types.GLCategory',
+        'importing.types.GLCode','importing.types.InvoiceExport','importing.types.InvoicePayment',
+        'importing.types.Property','importing.types.PropertyGL','importing.types.Split',
+        'importing.types.Unit','importing.types.UnitType','importing.types.User',
+        'importing.types.UserProperty','importing.types.Vendor','importing.types.VendorFavorite',
+        'importing.types.VendorGL','importing.types.VendorInsurance','importing.types.VendorUtility'
+    ],
+
     refs: [
         { ref: 'horizontalTab', selector: 'tabpanel' },
-        { ref: 'overviewTab', selector: '[xtype="import.overview"]' },
-        { ref: 'glTab', selector: '[xtype="import.gl"]' },
-        { ref: 'propertyTab', selector: '[xtype="import.property"]' },
-        { ref: 'vendorTab', selector: '[xtype="import.vendor"]' },
-        { ref: 'invoiceTab', selector: '[xtype="import.invoice"]' },
-        { ref: 'userTab', selector: '[xtype="import.user"]' },
-        { ref: 'customFieldTab', selector: '[xtype="import.customField"]' },
-        { ref: 'splitsTab', selector: '[xtype="import.splits"]' },
-        { ref: 'previewGrid', selector: '[xtype="import.csvgrid"] customgrid' }
+        { ref: 'overviewTab', selector: '[xtype="importing.overview"]' },
+        { ref: 'glTab', selector: '[xtype="importing.gl"]' },
+        { ref: 'propertyTab', selector: '[xtype="importing.property"]' },
+        { ref: 'vendorTab', selector: '[xtype="importing.vendor"]' },
+        { ref: 'invoiceTab', selector: '[xtype="importing.invoice"]' },
+        { ref: 'userTab', selector: '[xtype="importing.user"]' },
+        { ref: 'customFieldTab', selector: '[xtype="importing.customField"]' },
+        { ref: 'splitsTab', selector: '[xtype="importing.splits"]' },
+        { ref: 'previewGrid', selector: '[xtype="importing.csvgrid"] customgrid' }
     ],
     
     // For localization
@@ -41,30 +60,30 @@ Ext.define('NP.controller.Import', {
         // Setup event handlers
         this.control({
             // Clicking on an import in an Overview tab
-            '[xtype="import.main"]': {
+            '[xtype="importing.main"]': {
                 tabchange: function(tabPanel, newCard, oldCard, eOpts) {
                     this.addHistory('Import:showImport:' + this.getHorizontalTabToken(newCard));
                 }
             },
             // The Import tab GL
-            '[xtype="import.main"] [xtype="verticaltabpanel"]': {
+            '[xtype="importing.main"] [xtype="verticaltabpanel"]': {
                 tabchange: function(verticalTabPanel, newCard, oldCard, eOpts) {
                     var activeTab = this.getActiveHorizontalTab().getItemId().replace('ImportTab', '');
                     this.addHistory('Import:showImport:' + activeTab + ':' + this.getVerticalTabToken(newCard));
                 }
             },
             // The Upload button on the GL Category tab
-            '[xtype="import.main"] [xtype="shared.button.upload"]': {
+            '[xtype="importing.main"] [xtype="shared.button.upload"]': {
                 // Run this whenever the upload button is clicked
                 click: this.uploadFile
             },
             // The Decline button on the GL Category tab
-            '[xtype="import.main"] [xtype="shared.button.inactivate"]': {
+            '[xtype="importing.main"] [xtype="shared.button.inactivate"]': {
                 // Run this whenever the upload button is clicked
                 click: this.decline
             },
             // The Upload csv file
-            '[xtype="import.main"] [xtype="shared.button.activate"]': {
+            '[xtype="importing.main"] [xtype="shared.button.activate"]': {
                 click: this.accept
             }
         });
@@ -100,7 +119,7 @@ Ext.define('NP.controller.Import', {
     showImport: function(activeTab, subSection, page) {
         var that = this;
         // Set the overview view
-        var tabPanel = this.setView('NP.view.import.Main');
+        var tabPanel = this.setView('NP.view.importing.Main');
 
         // If no active tab is passed, default to Open
         if (!activeTab)
@@ -134,13 +153,13 @@ Ext.define('NP.controller.Import', {
 
     showFormUpload: function() {
         var type = this.getVerticalTabToken(this.getActiveVerticalTab());
-        var importItem = Ext.create('NP.view.import.types.' + type);
+        var importItem = Ext.create('NP.view.importing.types.' + type);
         this.setView(importItem.getImportForm(), {}, '#' + this.getActiveVerticalTab().getItemId());
     },
 
     showGrid: function() {
         var type = this.getActiveVerticalTab().getItemId();
-        var view = this.setView('NP.view.import.CSVGrid', {
+        var view = this.setView('NP.view.importing.CSVGrid', {
                     file: this.file,
                     type: type.replace('Panel', '')
                 }, '#' + type);
@@ -169,7 +188,7 @@ Ext.define('NP.controller.Import', {
                     file         : file,
                     type         : this.getVerticalTabToken(this.getActiveVerticalTab()),
                     fileFieldName: fileField.getName(),
-                    success      : function(result, deferred) {
+                    success      : function(result) {
                         if (result.success) {
                             // Save file name
                             that.file = result.upload_filename;
@@ -206,7 +225,7 @@ Ext.define('NP.controller.Import', {
     accept: function() {
         that = this;
         
-        var grid = Ext.ComponentQuery.query('[xtype="import.csvgrid"] [xtype="customgrid"]')[0];
+        var grid = Ext.ComponentQuery.query('[xtype="importing.csvgrid"] [xtype="customgrid"]')[0];
         var items = grid.getStore().getRange();
         var hasValid = false;
         Ext.each(items, function(item) {
@@ -218,7 +237,7 @@ Ext.define('NP.controller.Import', {
         if (hasValid > 0) {
             that.saveGrid();
         } else {
-            NP.Util.showFadingWindow({html: 'No valid records to import.'});
+            NP.Util.showFadingWindow({html: 'No valid records to importing.'});
         }
     },
 
@@ -235,7 +254,7 @@ Ext.define('NP.controller.Import', {
                 action : 'accept',
                 file   : this.file,
                 type   : type,
-                success: function(result, deferred) {
+                success: function(result) {
                     if (result.success) {
                         // Show friendly message
                         NP.Util.showFadingWindow({ html: that.uploadSuccessText });

@@ -11,9 +11,18 @@ Ext.define('NP.controller.MySettings', {
 		'NP.lib.core.Net',
 		'NP.lib.core.Util',
 		'NP.lib.core.Config',
+    	'NP.lib.core.Translator',
 		'NP.view.shared.PortalCanvas'
 	],
 	
+	models: ['user.Userprofile','user.Userprofilerole','user.Staff','contact.Person',
+			'contact.Address','contact.Email'],
+
+    stores: ['notification.EmailAlertTypes','system.SecurityQuestions',
+    		'system.SummaryStatCategories'],
+
+    views: ['mySettings.Main','user.UserDelegationMain'],
+
 	refs: [
 		{ ref: 'overviewTab', selector: '[xtype="mysettings.overview"]' },
 		{ ref: 'userInformationTab', selector: '[xtype="mysettings.userinformation"]' },
@@ -26,27 +35,28 @@ Ext.define('NP.controller.MySettings', {
 		{ ref: 'portalCanvas', selector: '[xtype="shared.portalcanvas"]' }
 	],
 
-	// For localization	
-	changesSavedText                : 'Changes saved successfully',
-	errorDialogTitleText            : 'Error',
-	registerNewDeviceDialogTitleText: 'Register New Device?',
-	registerNewDeviceDialogText     : 'Registering a new device will disable the active one. Do you still want to proceed anyway?',
-	disableMobileDialogTitleText    : 'Disable Mobile Number?',
-	disableMobileDialogText         : 'Are you sure you want to disable this mobile number?',
-	cancelDelegDialogTitleText      : 'Cancel Delegation?',
-	cancelDelegDialogText           : 'Are you sure you want to cancel this delegation?',
-	activeDelegErrorTitleText       : 'Active Delegation',
-	activeDelegErrorText            : 'You have an active delegation. You cannot delegate to another user until that delegation expires or is cancelled.',
-	blankColumnErrorText            : 'You have left one or more columns empty. Please fill those columns or remove them.',
-
 	init: function() {
 		Ext.log('MySettings controller initialized');
 
-		// Make sure the UserManager controller is loaded because we're re-using functionality
-		this.application.initController('UserManager');
+		var me = this;
+
+		// For localization
+		NP.Translator.on('localeloaded', function() {
+			me.changesSavedText                 = NP.Translator.translate('Changes saved successfully');
+			me.errorDialogTitleText             = NP.Translator.translate('Error');
+			me.registerNewDeviceDialogTitleText = NP.Translator.translate('Register New Device?');
+			me.registerNewDeviceDialogText      = NP.Translator.translate('Registering a new device will disable the active one. Do you still want to proceed anyway?');
+			me.disableMobileDialogTitleText     = NP.Translator.translate('Disable Mobile Number?');
+			me.disableMobileDialogText          = NP.Translator.translate('Are you sure you want to disable this mobile number?');
+			me.cancelDelegDialogTitleText       = NP.Translator.translate('Cancel Delegation?');
+			me.cancelDelegDialogText            = NP.Translator.translate('Are you sure you want to cancel this delegation?');
+			me.activeDelegErrorTitleText        = NP.Translator.translate('Active Delegation');
+			me.activeDelegErrorText             = NP.Translator.translate('You have an active delegation. You cannot delegate to another user until that delegation expires or is cancelled.');
+			me.blankColumnErrorText             = NP.Translator.translate('You have left one or more columns empty. Please fill those columns or remove them.');
+		});
 
 		// Setup event handlers
-		this.control({
+		me.control({
 			// The main My Settings panel
 			'[xtype="mysettings.main"]': {
 				// Run this whenever the user clicks on a tab on the My Settings page
@@ -118,7 +128,7 @@ Ext.define('NP.controller.MySettings', {
 		});
 
 		// Load the Security Questions store
-		this.application.loadStore('system.SecurityQuestions', 'NP.store.system.SecurityQuestions');
+		me.application.loadStore('system.SecurityQuestions', 'NP.store.system.SecurityQuestions');
 	},
 	
 	/**
@@ -130,31 +140,28 @@ Ext.define('NP.controller.MySettings', {
 	showMySettings: function(activeTab, subSection, id) {
 		var that = this;
 
-		// Load the Email Alert Types store
-		this.application.loadStore('notification.EmailAlertTypes', 'NP.store.notification.EmailAlertTypes', {}, function() {
-			// Set the MySettings view
-			var tabPanel = that.setView('NP.view.mySettings.Main');
+		// Set the MySettings view
+		var tabPanel = that.setView('NP.view.mySettings.Main');
 
-			// If no active tab is passed, default to Open
-			if (!activeTab) activeTab = 'Overview';
-			
-			// Check if the tab to be selected is already active, if it isn't make it the active tab
-			var tab = that['get' + activeTab + 'Tab']();
-			
-			// Set the active tab if it hasn't been set yet
-			if (tab.getXType() != tabPanel.getActiveTab().getXType()) {
-				tabPanel.suspendEvents(false);
-				tabPanel.setActiveTab(tab);
-				tabPanel.resumeEvents();
-			}
+		// If no active tab is passed, default to Open
+		if (!activeTab) activeTab = 'Overview';
+		
+		// Check if the tab to be selected is already active, if it isn't make it the active tab
+		var tab = that['get' + activeTab + 'Tab']();
+		
+		// Set the active tab if it hasn't been set yet
+		if (tab.getXType() != tabPanel.getActiveTab().getXType()) {
+			tabPanel.suspendEvents(false);
+			tabPanel.setActiveTab(tab);
+			tabPanel.resumeEvents();
+		}
 
-			// Check if there's a show method for this tab
-			var showMethod = 'show' + activeTab;
-			if (that[showMethod]) {
-				// If the show method exists, run it
-				that[showMethod](subSection, id);
-			}
-		});
+		// Check if there's a show method for this tab
+		var showMethod = 'show' + activeTab;
+		if (that[showMethod]) {
+			// If the show method exists, run it
+			that[showMethod](subSection, id);
+		}
 	},
 
 	showUserInformation: function() {
@@ -178,7 +185,7 @@ Ext.define('NP.controller.MySettings', {
 					userprofile_password_confirm: 'userprofile_password_confirm',
 					properties                  : 'properties'
 				},
-				success: function(result, deferred) {
+				success: function(result) {
 					// Clear password fields after save
 					if (NP.Security.getRole().get('is_admin_role') != 1) {
 						form.findField('userprofile_password_current').setValue('');
@@ -229,7 +236,7 @@ Ext.define('NP.controller.MySettings', {
 					userprofile_preferred_property: values['userprofile_preferred_property'],
 					userprofile_preferred_region  : values['userprofile_preferred_region'],
 					userprofile_default_dashboard : values['userprofile_default_dashboard'],
-					success: function(result, deferred) {
+					success: function(result) {
 						if (result.success) {
 							// Show info message
 							NP.Util.showFadingWindow({ html: that.changesSavedText });
@@ -276,7 +283,7 @@ Ext.define('NP.controller.MySettings', {
 			form.submitWithBindings({
 				service: 'UserService',
 				action : 'saveDisplaySettings',
-				success: function(result, deferred) {
+				success: function(result) {
 					// Show info message
 					NP.Util.showFadingWindow({ html: that.changesSavedText });
 
@@ -309,22 +316,22 @@ Ext.define('NP.controller.MySettings', {
 					service: 'NotificationService',
 					action : 'getUserNotifications',
 					userprofile_id: NP.Security.getUser().get('userprofile_id'),
-					success: function(result, deferred) {
+					success: function(result) {
 						// Check the appropriate boxes
 						that.application.getController('UserManager').selectEmailAlerts(result);
 					},
-					failure: function(response, options, deferred) {
+					failure: function(response, options) {
 						Ext.log('Failed to load user email notification')
 					}
 				},{
 					service: 'NotificationService',
 					action : 'getUserEmailFrequency',
 					userprofile_id: NP.Security.getUser().get('userprofile_id'),
-					success: function(result, deferred) {
+					success: function(result) {
 						// Check the appropriate boxes
 						that.application.getController('UserManager').selectEmailAlertHours(result);
 					},
-					failure: function(response, options, deferred) {
+					failure: function(response, options) {
 						Ext.log('Failed to load user email frequencies')
 					}
 				}
@@ -350,9 +357,9 @@ Ext.define('NP.controller.MySettings', {
 				action         : 'saveNotifications',
 				type           : 'userprofile',
 				tablekey_id    : userprofile_id,
-				emailalerts    : that.application.getController('UserManager').getSelectedEmailAlerts(),
-				emailalerthours: that.application.getController('UserManager').getSelectedEmailHours(),
-				success: function(result, deferred) {
+				emailalerts    : that.application.getController('UserManager').getSelectedEmailAlerts('emailnotification'),
+				emailalerthours: that.application.getController('UserManager').getSelectedEmailHours('emailnotification'),
+				success: function(result) {
 					if (result.success) {
 						// Show info message
 						NP.Util.showFadingWindow({ html: that.changesSavedText });
@@ -360,7 +367,7 @@ Ext.define('NP.controller.MySettings', {
 						Ext.MessageBox.alert(that.errorDialogTitleText, result.error);
 					}
 				},
-				failure: function(response, options, deferred) {
+				failure: function(response, options) {
 					Ext.log('Failed to save notifications');
 				}
 			}
@@ -401,7 +408,7 @@ Ext.define('NP.controller.MySettings', {
 					extraParams: {
 						isNewDevice: isNewDevice
 					},
-					success: function(result, deferred) {
+					success: function(result) {
 						// Show info message
 						NP.Util.showFadingWindow({ html: that.changesSavedText });
 
@@ -442,13 +449,13 @@ Ext.define('NP.controller.MySettings', {
 						service        : 'UserService',
 						action         : 'disableMobileDevices',
 						mobinfo_id_list: form.getModel('user.MobInfo').get('mobinfo_id'),
-						success: function(result, deferred) {
+						success: function(result) {
 							form.setModel('user.MobInfo', Ext.create('NP.model.user.MobInfo'));
 
 							// Update the button bar
 							that.updateUI();
 						},
-						failure: function(response, options, deferred) {
+						failure: function(response, options) {
 							Ext.log('Failed to disable mobile number');
 						}
 					}
@@ -518,7 +525,7 @@ Ext.define('NP.controller.MySettings', {
 				service: 'UserService',
 				action : 'hasActiveDelegation',
 				userprofile_id: userprofile_id,
-				success: function(result, deferred) {
+				success: function(result) {
 					// If user has an active delegation, then they can't add a delegation
 					if (result) {
 						Ext.MessageBox.alert(that.activeDelegErrorTitleText, that.activeDelegErrorText);
@@ -527,7 +534,7 @@ Ext.define('NP.controller.MySettings', {
 						that.showUserDelegationForm(userprofile_id);
 					}
 				},
-				failure: function(response, options, deferred) {
+				failure: function(response, options) {
 					Ext.log('Error checking if user has active delegation');
 				}
 			}
@@ -560,7 +567,7 @@ Ext.define('NP.controller.MySettings', {
 					action : 'saveDashboardLayout',
 					userprofile_id              : user.get('userprofile_id'),
 					userprofile_dashboard_layout: userprofile_dashboard_layout,
-					success: function(result, deferred) {
+					success: function(result) {
 						if (result.success) {
 							// Show info message
 							NP.Util.showFadingWindow({ html: that.changesSavedText });

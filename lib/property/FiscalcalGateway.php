@@ -71,7 +71,8 @@ class FiscalcalGateway extends AbstractGateway {
 		$select->from(array('f'=>'fiscalcal'))
 				->whereIsNull('f.property_id')
 				->whereEquals('f.fiscalcal_type', '?')
-				->order('f.fiscalcal_year, f.fiscalcal_name');
+				->whereGreaterThanOrEqual('fiscalcal_year', date('Y', strtotime('now')))
+				->order('f.fiscalcal_year desc, f.fiscalcal_name');
 		
 		$params = array('template');
 

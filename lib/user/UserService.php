@@ -5,17 +5,7 @@ namespace NP\user;
 use NP\core\AbstractService;
 use NP\core\validation\EntityValidator;
 use NP\security\SecurityService;
-use NP\contact\PersonGateway;
-use NP\contact\AddressTypeGateway;
-use NP\contact\AddressGateway;
-use NP\contact\EmailTypeGateway;
-use NP\contact\EmailGateway;
-use NP\contact\PhoneTypeGateway;
-use NP\contact\PhoneGateway;
-use NP\property\PropertyGateway;
-use NP\property\RegionGateway;
 use NP\notification\NotificationService;
-use NP\system\TreeGateway;
 use NP\system\TreeEntity;
 
 /**
@@ -24,42 +14,11 @@ use NP\system\TreeEntity;
  * @author Thomas Messier
  */
 class UserService extends AbstractService {
-	protected $securityService, $delegationGateway, $userSettingGateway, $userprofileGateway, $roleGateway,
-			  $personGateway, $addressGateway, $emailGateway, $phoneGateway, $propertyUserprofileGateway,
-			  $mobInfoGateway, $delegationPropGateway, $propertyGateway, $regionGateway, $notificationService,
-			  $propertyUserCodingGateway, $userprofileroleGateway, $staffGateway, $addressTypeGateway,
-			  $emailTypeGateway, $phoneTypeGateway, $treeGateway, $configService;
+	protected $securityService, $notificationService, $configService;
 
-	public function __construct(SecurityService $securityService, DelegationGateway $delegationGateway, UserSettingGateway $userSettingGateway, 
-								UserprofileGateway $userprofileGateway, RoleGateway $roleGateway, PersonGateway $personGateway,
-								AddressGateway $addressGateway, EmailGateway $emailGateway, PhoneGateway $phoneGateway,
-								PropertyUserprofileGateway $propertyUserprofileGateway, MobInfoGateway $mobInfoGateway,
-								DelegationPropGateway $delegationPropGateway, PropertyGateway $propertyGateway, RegionGateway $regionGateway,
-								NotificationService $notificationService, PropertyUserCodingGateway $propertyUserCodingGateway,
-								UserprofileroleGateway $userprofileroleGateway, StaffGateway $staffGateway, AddressTypeGateway $addressTypeGateway,
-								EmailTypeGateway $emailTypeGateway, PhoneTypeGateway $phoneTypeGateway, TreeGateway $treeGateway) {
+	public function __construct(SecurityService $securityService, NotificationService $notificationService) {
 		$this->securityService            = $securityService;
-		$this->delegationGateway          = $delegationGateway;
-		$this->userSettingGateway         = $userSettingGateway;
-		$this->userprofileGateway         = $userprofileGateway;
-		$this->roleGateway                = $roleGateway;
-		$this->personGateway              = $personGateway;
-		$this->addressGateway             = $addressGateway;
-		$this->emailGateway               = $emailGateway;
-		$this->phoneGateway               = $phoneGateway;
-		$this->propertyUserprofileGateway = $propertyUserprofileGateway;
-		$this->mobInfoGateway             = $mobInfoGateway;
-		$this->delegationPropGateway      = $delegationPropGateway;
-		$this->propertyGateway            = $propertyGateway;
-		$this->regionGateway              = $regionGateway;
 		$this->notificationService        = $notificationService;
-		$this->propertyUserCodingGateway  = $propertyUserCodingGateway;
-		$this->userprofileroleGateway     = $userprofileroleGateway;
-		$this->staffGateway               = $staffGateway;
-		$this->addressTypeGateway         = $addressTypeGateway;
-		$this->emailTypeGateway           = $emailTypeGateway;
-		$this->phoneTypeGateway           = $phoneTypeGateway;
-		$this->treeGateway                = $treeGateway;
 	}
 	
 	/**
@@ -79,7 +38,7 @@ class UserService extends AbstractService {
 	public function get($userprofile_id) {
 		$res = $this->userprofileGateway->findProfileById($userprofile_id);
 		// Get property assignments for user
-		$res['properties'] = $this->getUserProperties($userprofile_id, $userprofile_id, array('property_id'));
+		$res['properties'] = $this->getUserProperties($userprofile_id, $userprofile_id, null, false, array('property_id'));
 		$res['properties'] = \NP\util\Util::valueList($res['properties'], 'property_id');
 		// Get coding property assignments for user
 		$res['coding_properties'] = $this->getUserCodingProperties($userprofile_id, array('property_id'));
@@ -100,6 +59,13 @@ class UserService extends AbstractService {
 	 */
 	public function getAll($userprofile_status=null, $property_id=null, $role_id=null, $module_id=null, $pageSize=null, $page=1, $sort='person_lastname') {
 		return $this->userprofileGateway->findByFilter($userprofile_status, $property_id, $role_id, $module_id, $pageSize, $page, $sort);
+	}
+
+	/**
+	 * 
+	 */
+	public function getUsersByPermission($module_id_list) {
+		return $this->userprofileGateway->findUsersByPermission($module_id_list);
 	}
 
 	/**
@@ -159,8 +125,8 @@ class UserService extends AbstractService {
 	 * @param  int   $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
 	 * @return array                              Array of property records
 	 */
-	public function getUserProperties($userprofile_id, $delegated_to_userprofile_id, $cols=array('property_id','property_id_alt','property_name','property_status','integration_package_id')) {
-		return $this->propertyGateway->findByUser($userprofile_id, $delegated_to_userprofile_id, $cols);
+	public function getUserProperties($userprofile_id, $delegated_to_userprofile_id, $keyword=null, $includeCodingOnly=false, $cols=array('property_id','property_id_alt','property_name','property_status','integration_package_id')) {
+		return $this->propertyGateway->findByUser($userprofile_id, $delegated_to_userprofile_id, $keyword, $includeCodingOnly, $cols);
 	}
 
 	/**
@@ -753,16 +719,26 @@ class UserService extends AbstractService {
 		if (!is_array($mobinfo_id_list)) {
 			$mobinfo_id_list = array($mobinfo_id_list);
 		}
-		foreach ($mobinfo_id_list as $mobinfo_id) {
-			$this->mobInfoGateway->update(
-				array(
-					'mobinfo_deactivated_datetm' => \NP\util\Util::formatDateForDB(),
-					'mobinfo_status'             => 'inactive'
-				),
-				array('mobinfo_id' => '?'),
-				array($mobinfo_id)
-			);
+		$errors = array();
+		try {
+			foreach ($mobinfo_id_list as $mobinfo_id) {
+				$this->mobInfoGateway->update(
+					array(
+						'mobinfo_deactivated_datetm' => \NP\util\Util::formatDateForDB(),
+						'mobinfo_status'             => 'inactive'
+					),
+					array('mobinfo_id' => '?'),
+					array($mobinfo_id)
+				);
+			}
+		} catch(\Exception $e) {
+			$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e));
 		}
+
+		return [
+			'success' => (count($errors)) ? false : true,
+			'errors'  => $errors
+		];
 	}
 
 	/**
@@ -1179,6 +1155,68 @@ class UserService extends AbstractService {
 			'role_id'   => $role->role_id
 		);
 	}
+
+    public function findAllMobileInfo($pageSize = null, $page = null, $sort = 'person_lastname') {
+        $mobiles = $this->userprofileGateway->findAllMobileInfo($pageSize, $page, $sort);
+
+        return $mobiles;
+    }
+
+    public function activateDevice($device_list) {
+
+        $this->mobInfoGateway->beginTransaction();
+
+        $device_list = explode(',', $device_list);
+        $success = true;
+        try {
+
+            foreach ($device_list as $mobinfo_id) {
+                $this->mobInfoGateway->update(
+                    array(
+                        'mobinfo_activated_datetm' => \NP\util\Util::formatDateForDB(),
+                        'mobinfo_status'             => 'active'
+                    ),
+                    array('mobinfo_id' => '?'),
+                    array($mobinfo_id)
+                );
+            }
+
+            $this->mobInfoGateway->commit();
+        } catch(\Exception $e) {
+            $this->mobInfoGateway->rollback();
+            $success = false;
+        }
+
+        return ['success' => $success];
+    }
+
+    public function deactivateDevice($device_list) {
+        $device_list = explode(',', $device_list);
+        $res = $this->disableMobileDevices($device_list);
+        return ['success' => $res['success']];
+    }
+
+    public function deleteDevice($device_list) {
+        $device_list = explode(',', $device_list);
+        $this->mobInfoGateway->beginTransaction();
+
+        $success = true;
+        try {
+            foreach ($device_list as $item) {
+
+                $this->mobInfoGateway->delete('mobinfo_id = ?', [$item]);
+            }
+
+            $this->mobInfoGateway->commit();
+        } catch(\Exception $e) {
+            // If there was an error, rollback the transaction
+            $this->mobInfoGateway->rollback();
+            // Add a global error to the error array
+            $success = false;
+        }
+
+        return ['success' => $success];
+    }
 
 	/**
 	 * Save user imported with the import tool

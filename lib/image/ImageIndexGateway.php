@@ -172,8 +172,61 @@ class ImageIndexGateway extends AbstractGateway {
 
 		return $select;
 	}
+
+	/**
+	 * Get all images for a certain entity, or only the primary one
+	 *
+	 * @param int    $tablekey_id         The ID of the entity to get images for
+	 * @param string $image_tableref_name The entity type to get the image for; valid values are 'Invoice', 'Purchase Order', 'Receipt', and 'Vendor'
+	 */
+	public function findEntityImages($tablekey_id, $image_tableref_name, $primaryOnly=false) {
+		$select = Select::get()->allColumns('img')
+								->from(array('img'=>'image_index'))
+								->join(new sql\join\ImageIndexImageSourceJoin())
+								->join(new sql\join\ImageIndexPropertyJoin(array('property_id_alt','property_name'), Select::JOIN_INNER))
+								->join(new sql\join\ImageIndexVendorsiteJoin(array(), Select::JOIN_INNER))
+								->join(new \NP\vendor\sql\join\VendorsiteVendorJoin())
+								->join(new sql\join\ImageIndexImageTransferJoin())
+								->join(new sql\join\ImageTransferUserprofileJoin())
+								->join(new sql\join\ImageTransferVendorsiteJoin())
+								->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(
+									array('transfer_vendor_name'=>'vendor_name'),
+									Select::JOIN_LEFT,
+									'vimgt',
+									'vsimgt'
+								))
+								->whereEquals('img.Tablekey_Id', '?')
+								->whereEquals('img.Image_Index_Status', 1)
+								->whereEquals(
+									'img.Tableref_Id',
+									Select::get()->column('image_tableref_id')
+												->from('image_tableref')
+												->whereEquals('image_tableref_name', '?')
+								);
+		if ($primaryOnly) {
+			$select->whereEquals('img.Image_Index_Primary', 1);
+		} else {
+			$select->order('img.Image_Index_Primary DESC, img.image_index_name ASC');
+		}
+
+		return $this->adapter->query($select, array($tablekey_id, $image_tableref_name));
+	}
+
+	public function findImagePath($image_index_id) {
+		$select = Select::get()->columns([])
+								->from(array('img'=>'image_index'))
+								->join(new sql\join\ImageIndexImageTransferJoin(['transfer_filename']))
+								->whereEquals('img.image_index_id', '?');
+
+		$res = $this->adapter->query($select, [$image_index_id]);
+		if (count($res)) {
+			return $res[0]['transfer_filename'];
+		} else {
+			return null;
+		}
+	}
         
-       	public function findImagesToDelete($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
+    public function findImagesToDelete($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
 		$select = $this->getDashboardSelect($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
 		
 		/*$select->whereMerge(new sql\criteria\ImageInvoiceDocCriteria())
@@ -411,7 +464,7 @@ class ImageIndexGateway extends AbstractGateway {
         $select
             ->join(new sql\join\ImageIndexImageSourceJoin())
             ->join(new sql\join\ImageIndexImageTransferJoin())
-            ->join(new sql\join\ImageIndexUserprofileJoin(
+            ->join(new sql\join\ImageTransferUserprofileJoin(
                 ['userprofile_username', 'userprofile_username AS scan_source']
             ))
             ->join(new sql\join\ImageIndexVendorsiteJoin())
@@ -430,7 +483,7 @@ class ImageIndexGateway extends AbstractGateway {
         );
 
         $where
-            ->equals('itransfer.transfer_srcTableName', '\'userprofile\'')
+            ->equals('imgt.transfer_srcTableName', '\'userprofile\'')
         ;
         $select->where($where);
 
@@ -464,7 +517,7 @@ class ImageIndexGateway extends AbstractGateway {
                 [],
                 Select::JOIN_LEFT,
                 'vs',
-                'itransfer',
+                'imgt',
                 'transfer_srcTablekey_id'
             ))
             ->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(
@@ -486,7 +539,7 @@ class ImageIndexGateway extends AbstractGateway {
         );
 
         $where
-            ->equals('itransfer.transfer_srcTableName', '\'vendorsite\'')
+            ->equals('imgt.transfer_srcTableName', '\'vendorsite\'')
         ;
         $select->where($where);
 
@@ -534,8 +587,8 @@ class ImageIndexGateway extends AbstractGateway {
         );
         $where
             ->nest('OR')
-                ->equals('itransfer.transfer_srcTableName', '\'invoiceimagesource\'')
-                ->isNull('itransfer.transfer_srcTableName')
+                ->equals('imgt.transfer_srcTableName', '\'invoiceimagesource\'')
+                ->isNull('imgt.transfer_srcTableName')
             ->unnest()
         ;
         $select->where($where);

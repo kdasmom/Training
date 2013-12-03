@@ -34,9 +34,9 @@ class UserprofileSelect extends Select {
 			'userprofile_preferred_property',
 			'userprofile_default_dashboard',
 			'userprofile_splitscreen_size',
-			'userprofile_splitscreen_ishorizontal',
-			'userprofile_splitscreen_imageorder',
-			'userprofile_splitscreen_loadwithoutimage',
+			'userprofile_splitscreen_isHorizontal',
+			'userprofile_splitscreen_ImageOrder',
+			'userprofile_splitscreen_LoadWithoutImage',
 			'userprofile_preferred_region',
 			'userprofile_updated_by',
 			'userprofile_updated_datetm',
@@ -131,14 +131,11 @@ class UserprofileSelect extends Select {
 	 */
 	public function joinPhone($phonetype_name, $cols=array()) {
 		$alias = $phonetype_name.'p';
-		$typeAlias = $phonetype_name.'pt';
+		
 		return $this->join(array($alias => 'phone'),
-						"s.staff_id = {$alias}.tablekey_id AND {$alias}.table_name = 'staff'",
+						"s.staff_id = {$alias}.tablekey_id AND {$alias}.table_name = 'staff'
+						AND {$alias}.phonetype_id = (SELECT phonetype_id FROM phonetype WHERE phonetype_name = '{$phonetype_name}')",
 						$cols,
-						Select::JOIN_LEFT)
-					->join(array($typeAlias => 'phonetype'),
-						"{$alias}.phonetype_id = {$typeAlias}.phonetype_id AND {$typeAlias}.phonetype_name = '{$phonetype_name}'",
-						array(),
 						Select::JOIN_LEFT);
 	}
 	
@@ -153,6 +150,33 @@ class UserprofileSelect extends Select {
 						'u.userprofile_updated_by = updtu.userprofile_id',
 						$cols,
 						Select::JOIN_LEFT);
+	}
+
+    public function joinMobinfo($cols = []) {
+        return $this->join(
+            ['m' => 'mobinfo'],
+            'u.userprofile_id = m.userprofile_id',
+            $cols,
+            Select::JOIN_INNER
+        );
+    }
+
+	public function getIncomingDelegationsCount() {
+		$select = new Select();
+		$select->from(['d1' => 'delegation'])
+			->count()
+			->where('d1.UserProfile_Id = u.userprofile_id');
+
+		return $this->column($select, 'outgoing_delegation_count');
+	}
+
+	public function getOutgoingDelegationsCount() {
+		$select = new Select();
+		$select->from(['d1' => 'delegation'])
+			->count()
+			->where('d1.Delegation_To_UserProfile_Id = u.userprofile_id');
+
+		return $this->column($select, 'incoming_delegation_count');
 	}
 	
 }

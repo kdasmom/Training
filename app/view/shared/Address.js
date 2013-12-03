@@ -7,7 +7,12 @@ Ext.define('NP.view.shared.Address', {
     extend: 'Ext.container.Container',
     alias: 'widget.shared.address',
     
-    requires: ['NP.lib.core.Config','NP.lib.core.Security','NP.lib.ui.ComboBox'],
+    requires: [
+        'NP.lib.core.Config',
+        'NP.lib.core.Security',
+        'NP.lib.ui.ComboBox',
+        'NP.lib.core.Translator'
+    ],
 
     defaults: {
         labelAlign: 'top'
@@ -96,18 +101,12 @@ Ext.define('NP.view.shared.Address', {
         FIELDS : ['LINE1','LINE2','CITY','STATE','ZIP','ZIPEXT','COUNTRY']
     },
 
-    streetFieldText : 'Street',
-    cityFieldText   : 'City',
-    stateFieldText  : 'State',
-    zipFieldText    : 'Zip',
-    countryFieldText: 'Country',
-
     initComponent: function() {
         this.items = [];
 
         this.items.push({
             xtype     : 'textfield',
-            fieldLabel: this.streetFieldText,
+            fieldLabel: NP.Translator.translate('Street'),
             name      : this.prefix + NP.view.shared.Address.LINE1,
             allowBlank: !this.required,
             width     : this.address_line1_width,
@@ -131,7 +130,7 @@ Ext.define('NP.view.shared.Address', {
             items: [
                 {
                     xtype     : 'textfield',
-                    fieldLabel: this.cityFieldText,
+                    fieldLabel: NP.Translator.translate('City'),
                     name      : this.prefix + NP.view.shared.Address.CITY,
                     allowBlank: !this.required,
                     width     : this.address_city_width,
@@ -142,14 +141,16 @@ Ext.define('NP.view.shared.Address', {
                     store         : 'system.States',
                     displayField  : 'code',
                     valueField    : 'code',
-                    fieldLabel    : this.stateFieldText,
+                    fieldLabel    : NP.Translator.translate('State'),
                     name          : this.prefix + NP.view.shared.Address.STATE,
                     allowBlank    : !this.required,
                     width         : this.address_state_width,
-                    value         : this.address_state
+                    value         : this.address_state,
+					editable	  : false,
+					typeAhead	  : false
                 },{
                     xtype      : 'textfield',
-                    fieldLabel : this.zipFieldText,
+                    fieldLabel : NP.Translator.translate('Zip'),
                     name       : this.prefix + NP.view.shared.Address.ZIP,
                     width      : this.address_zip_width,
                     allowBlank : !this.required,
@@ -171,7 +172,7 @@ Ext.define('NP.view.shared.Address', {
                 selectFirstRecord: true,
                 displayField     : 'name',
                 valueField       : 'id',
-                fieldLabel       : this.countryFieldText,
+                fieldLabel       : NP.Translator.translate('Country'),
                 name             : this.prefix + NP.view.shared.Address.COUNTRY,
                 width            : this.address_country_width,
                 value            : this.address_country

@@ -1,4 +1,4 @@
 {
     "description": "Vendor Utility Setup",
-    "service": "VendorService"
+    "service": "UtilityService"
 }

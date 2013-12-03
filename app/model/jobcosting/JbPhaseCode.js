@@ -32,7 +32,7 @@ Ext.define('NP.model.jobcosting.JbPhaseCode', {
 			}
 
 			var val = rec.get('jbphasecode_name') + ' - ';
-			if (rec.get('jbphasecode_desc') != '') {
+			if (rec.get('jbphasecode_desc') != '' && rec.get('jbphasecode_desc') !== null) {
 				val += rec.get('jbphasecode_desc');
 			} else {
 				val += 'No Desc.';

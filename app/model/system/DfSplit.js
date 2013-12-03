@@ -18,9 +18,9 @@ Ext.define('NP.model.system.DfSplit', {
 		{ name: 'dfsplit_name' },
 		{ name: 'dfsplit_status', defaultValue: 'active' },
 		{ name: 'vendorsite_id', type: 'int' },
-		{ name: 'dfsplit_datetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+		{ name: 'dfsplit_datetm', type: 'date' },
 		{ name: 'integration_package_id', type: 'int' },
-		{ name: 'dfsplit_update_datetm', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+		{ name: 'dfsplit_update_datetm', type: 'date' },
 		{ name: 'dfsplit_update_userprofile', type: 'int' },
 		// This is a computed fields that doesn't exist in the table
 		{ name: 'alert' }

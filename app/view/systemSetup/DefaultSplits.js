@@ -6,9 +6,16 @@
 Ext.define('NP.view.systemSetup.DefaultSplits', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.systemsetup.defaultsplits',
+
+    requires: ['NP.lib.core.Translator'],
     
-    // For localization
     title: 'Default Splits',
 
-    layout: 'fit'
+    layout: 'fit',
+
+    initComponent: function() {
+    	this.title = NP.Translator.translate(this.title);
+
+    	this.callParent(arguments);
+    }
 });

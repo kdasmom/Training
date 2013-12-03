@@ -13,11 +13,11 @@ Ext.define('NP.model.user.Delegation', {
         { name: 'Delegation_Id', type: 'int' },
         { name: 'UserProfile_Id', type: 'int' },
         { name: 'Delegation_To_UserProfile_Id', type: 'int' },
-        { name: 'Delegation_StartDate', type: 'date', dateFormat: NP.lib.core.Config.getServerSmallDateFormat() },
-        { name: 'Delegation_StopDate', type: 'date', dateFormat: NP.lib.core.Config.getServerSmallDateFormat() },
+        { name: 'Delegation_StartDate', type: 'date', dateFormat: 'Y-m-d H:i:s' },
+        { name: 'Delegation_StopDate', type: 'date', dateFormat: 'Y-m-d H:i:s' },
         { name: 'Delegation_Status', type: 'int', defaultValue: 1 },
-        { name: 'Delegation_CreatedDate', type: 'date', dateFormat: NP.lib.core.Config.getServerSmallDateFormat() },
-        { name: 'delegation_createdby', type: 'int', defaultValue: NP.Security.getUser().get('userprofile_id') }
+        { name: 'Delegation_CreatedDate', type: 'date', dateFormat: 'Y-m-d H:i:s' },
+        { name: 'delegation_createdby', type: 'int' }
     ],
 
     validations: [

@@ -7,7 +7,7 @@ Ext.define('NP.view.shared.VendorAutoComplete', {
     extend: 'NP.lib.ui.AutoComplete',
     alias: 'widget.shared.vendorautocomplete',
     
-    requires: ['NP.model.vendor.Vendor'],
+    requires: ['NP.store.vendor.Vendors'],
 
     fieldLabel   : 'Vendor',
 

@@ -7,6 +7,15 @@ Ext.define('NP.view.shared.button.Message', {
     extend: 'Ext.button.Button',
     alias: 'widget.shared.button.message',
 
-    text: 'Send',
-    iconCls: 'message-btn'
+    requires: ['NP.lib.core.Translator'],
+
+    text   : 'Send',
+    iconCls: 'message-btn',
+	width: 75,
+
+    initComponent: function() {
+    	this.text = NP.Translator.translate(this.text);
+    	
+    	this.callParent(arguments);
+    }
 });

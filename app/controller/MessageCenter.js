@@ -8,26 +8,35 @@ Ext.define('NP.controller.MessageCenter', {
 	
 	requires: [
 		'NP.lib.core.Config',
+        'NP.lib.core.Translator',
 		'NP.lib.core.Security',
 		'NP.lib.core.Net',
 		'NP.lib.core.Util'
 	],
 	
-	// For localization
-	saveSuccessText      : 'Your changes were saved.',
-	deleteDialogTitleText: 'Delete Message?',
-	deleteDialogText     : 'Are you sure you want to delete this message?',
-	deleteSuccessText    : 'Message succesfully deleted',
-	deleteFailureText    : 'There was an error deleting the message. Please try again.',
-	errorDialogTitleText : 'Error',
+	models: ['system.UserMessage'],
+
+	stores: ['system.UserMessages'],
+
+	views: ['messageCenter.MessageGrid','messageCenter.MessageForm'],
 
 	init: function() {
 		Ext.log('MessageCenter controller initialized');
 
-		var app = this.application;
+		var me = this;
 
+		// For localization
+		NP.Translator.on('localeloaded', function() {
+			me.saveSuccessText       = NP.Translator.translate('Your changes were saved.');
+			me.deleteDialogTitleText = NP.Translator.translate('Delete Message?');
+			me.deleteDialogText      = NP.Translator.translate('Are you sure you want to delete this message?');
+			me.deleteSuccessText     = NP.Translator.translate('Message succesfully deleted');
+			me.deleteFailureText     = NP.Translator.translate('There was an error deleting the message. Please try again.');
+			me.errorDialogTitleText  = NP.Translator.translate('Error');
+		});
+		
 		// Setup event handlers
-		this.control({
+		me.control({
 			// The main Property Setup panel
 			'[xtype="messagecenter.messagegrid"]': {
 				itemclick: function(grid, rec) {
@@ -105,6 +114,8 @@ Ext.define('NP.controller.MessageCenter', {
 					form.getForm().getFields().each(function(field) {
 						field.disable();
 					});
+
+					form.findField('displayUntil').clearInvalid();
 				}
 			});
 		} else {
@@ -120,12 +131,15 @@ Ext.define('NP.controller.MessageCenter', {
 
 	changeMessageType: function(group, newVal, oldVal) {
 		var displayField = this.getCmp('messagecenter.messageform').findField('displayUntil');
+		var timeInfoField = this.getCmp('messagecenter.messageform').findField('time_info');
 		if (newVal.type == 'email') {
 			displayField.allowBlank = true;
 			displayField.hide();
+			timeInfoField.hide();
 		} else {
 			displayField.allowBlank = false;
 			displayField.show();
+			timeInfoField.show();
 		}
 	},
 
@@ -177,7 +191,7 @@ Ext.define('NP.controller.MessageCenter', {
 				action : 'saveMessage',
 				extraFields: { recipientType: 'recipientType', users: 'users', roles: 'roles' },
 				extraParams: { userprofile_id: NP.Security.getUser().get('userprofile_id') },
-				success: function(result, deferred) {
+				success: function(result) {
 					NP.Util.showFadingWindow({ html: that.saveSuccessText });
 					that.application.addHistory('MessageCenter:showRegister');
 				}
@@ -199,7 +213,7 @@ Ext.define('NP.controller.MessageCenter', {
 						service: 'MessageService',
 						action : 'deleteMessage',
 						id     : message.get('id'),
-						success: function(success, deferred) {
+						success: function(success) {
 							if (success) {
 								NP.Util.showFadingWindow({ html: that.deleteSuccessText });
 								that.application.addHistory('MessageCenter:showRegister');

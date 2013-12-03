@@ -6,8 +6,6 @@
 Ext.define('NP.model.system.PriorityFlag', {
 	extend: 'Ext.data.Model',
 	
-	requires: ['NP.lib.core.Config'],
-
 	idProperty: 'PriorityFlag_ID',
 	fields: [
 		{ name: 'PriorityFlag_ID', type: 'int' },

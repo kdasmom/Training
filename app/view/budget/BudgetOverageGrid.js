@@ -16,7 +16,7 @@ Ext.define('NP.view.budget.BudgetOverageGrid', {
 
     // For localization
     propertyColText: 'Property',
-    categoryColText: 'Category',
+    categoryColText: 'GL Code',
     periodColText  : 'Period',
     amountColText: 'Amount',
     createNewBudgetOverageBtnLabel: 'New Budget Overage',
@@ -96,7 +96,7 @@ Ext.define('NP.view.budget.BudgetOverageGrid', {
             }
         ];
 
-        this.store = Ext.create('NP.store.budget.BudgetOverage', {
+        this.store = Ext.create('NP.store.budget.BudgetOverages', {
             service    : 'BudgetService',
             action     : 'getBudgetOveragesByProperty',
             paging     : true,

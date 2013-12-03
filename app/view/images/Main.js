@@ -9,8 +9,10 @@ Ext.define('NP.view.images.Main', {
 
     title:  'Image Management',
     layout: 'fit',
+    border: false,
 
     requires: [
+        'NP.lib.core.Security',
         'NP.view.images.grid.Index',
         'NP.view.images.grid.Invoices',
         'NP.view.images.grid.PurchaseOrders',
@@ -47,25 +49,32 @@ Ext.define('NP.view.images.Main', {
     },
 
     initComponent: function() {
-        this.items = [
+        var me   = this,
+            tabs = [me.tabIndex()];
+
+        if (NP.Security.hasPermission(2081)) {
+            tabs.push(me.tabInvoices());
+        }
+
+        if (NP.Security.hasPermission(2087)) {
+            tabs.push(me.tabPurchaseOrders());
+        }
+
+        tabs.push(me.tabExceptions(), me.tabDeletedImages());
+
+        me.items = [
             {
                 xtype: 'tabpanel',
                 listeners: {
-                    'tabchange': this.onTabChanged.bind(this)
+                    'tabchange': me.onTabChanged.bind(me)
                 },
-                items: [
-                    this.tabIndex(),
-                    this.tabInvoices(),
-                    this.tabPurchaseOrders(),
-                    this.tabExceptions(),
-                    this.tabDeletedImages()
-                ]
+                items: tabs
             }
         ];
 
-        this.tbar = this.topbarIndex();
+        me.tbar = me.topbarIndex();
 
-        this.callParent(arguments);
+        me.callParent(arguments);
     },
 
     /**
@@ -119,7 +128,11 @@ Ext.define('NP.view.images.Main', {
             itemId: 'images-index',
 
             xtype: 'images.grid.Index',
-            title: this.locale.tabIndex
+            title: this.locale.tabIndex,
+            pagingToolbarButtons: [
+                {xtype: 'button', itemId: 'buttonIndex',  text: this.locale.buttonIndex},
+                {xtype: 'shared.button.delete', itemId: 'buttonDelete', text: this.locale.buttonDelete}
+            ]
         };
         return tab;
     },
@@ -131,17 +144,9 @@ Ext.define('NP.view.images.Main', {
      */
     topbarIndex: function() {
         var tbar = [
-            {xtype: 'button', itemId: 'buttonIndex',  text: this.locale.buttonIndex},
-            {xtype: 'shared.button.delete', itemId: 'buttonDelete', text: this.locale.buttonDelete},
-
-            {xtype: 'tbspacer', width: 20},
-
             {xtype: 'shared.button.camera', itemId: 'buttonUpload', text: this.locale.buttonUpload},
             {xtype: 'images.button.npiss', itemId: 'buttonNPISS',  text: this.locale.buttonNPISS},
             {xtype: 'images.button.nsiss', itemId: 'buttonNSISS',  text: this.locale.buttonNSISS},
-
-            {xtype: 'tbspacer', width: 20},
-
             {xtype: 'shared.button.search', itemId: 'buttonSearch', text: this.locale.buttonSearch}
         ]
 
@@ -159,7 +164,12 @@ Ext.define('NP.view.images.Main', {
             itemId: 'images-invoices',
 
             xtype: 'images.grid.Invoices',
-            title: this.locale.tabInvoices
+            title: this.locale.tabInvoices,
+            pagingToolbarButtons: [
+                {xtype: 'button', itemId: 'buttonConvert', text: this.locale.buttonConvert},
+                {xtype: 'button', itemId: 'buttonRevert',  text: this.locale.buttonRevert},
+                {xtype: 'shared.button.delete', itemId: 'buttonDelete',  text: this.locale.buttonDelete}
+            ]
         };
         return tab;
     },
@@ -171,12 +181,6 @@ Ext.define('NP.view.images.Main', {
      */
     topbarInvoices: function() {
         var tbar = [
-            {xtype: 'button', itemId: 'buttonConvert', text: this.locale.buttonConvert},
-            {xtype: 'button', itemId: 'buttonRevert',  text: this.locale.buttonRevert},
-            {xtype: 'shared.button.delete', itemId: 'buttonDelete',  text: this.locale.buttonDelete},
-
-            {xtype: 'tbspacer', width: 20},
-
             {xtype: 'shared.button.report', itemId: 'buttonReport', text: this.locale.buttonReport},
             {xtype: 'shared.button.search', itemId: 'buttonSearch', text: this.locale.buttonSearch}
         ];
@@ -195,7 +199,11 @@ Ext.define('NP.view.images.Main', {
             itemId: 'images-purchase-orders',
 
             xtype: 'images.grid.PurchaseOrders',
-            title: this.locale.tabPurchaseOrders
+            title: this.locale.tabPurchaseOrders,
+            pagingToolbarButtons: [
+                {xtype: 'button', itemId: 'buttonRevert',  text: this.locale.buttonRevert},
+                {xtype: 'shared.button.delete', itemId: 'buttonDelete',  text: this.locale.buttonDelete}
+            ]
         };
         return tab;
     },
@@ -207,11 +215,6 @@ Ext.define('NP.view.images.Main', {
      */
     topbarPurchaseOrders: function() {
         var tbar = [
-            {xtype: 'button', itemId: 'buttonRevert',  text: this.locale.buttonRevert},
-            {xtype: 'shared.button.delete', itemId: 'buttonDelete',  text: this.locale.buttonDelete},
-
-            {xtype: 'tbspacer', width: 20},
-
             {xtype: 'shared.button.report', itemId: 'buttonReport', text: this.locale.buttonReport},
             {xtype: 'shared.button.search', itemId: 'buttonSearch', text: this.locale.buttonSearch}
         ];
@@ -230,7 +233,11 @@ Ext.define('NP.view.images.Main', {
             itemId: 'images-exceptions',
 
             xtype: 'images.grid.Exceptions',
-            title: this.locale.tabExceptions
+            title: this.locale.tabExceptions,
+            pagingToolbarButtons: [
+                {xtype: 'button', itemId: 'buttonIndex',  text: this.locale.buttonIndex},
+                {xtype: 'shared.button.delete', itemId: 'buttonDelete', text: this.locale.buttonDelete},
+            ]
         };
         return tab;
     },
@@ -242,11 +249,6 @@ Ext.define('NP.view.images.Main', {
      */
     topbarExceptions: function() {
         var tbar = [
-            {xtype: 'button', itemId: 'buttonIndex',  text: this.locale.buttonIndex},
-            {xtype: 'shared.button.delete', itemId: 'buttonDelete', text: this.locale.buttonDelete},
-
-            {xtype: 'tbspacer', width: 20},
-
             {xtype: 'shared.button.report', itemId: 'buttonReport', text: this.locale.buttonReport},
             {xtype: 'shared.button.search', itemId: 'buttonSearch', text: this.locale.buttonSearch}
         ];
@@ -265,7 +267,11 @@ Ext.define('NP.view.images.Main', {
             itemId: 'images-deleted',
 
             xtype: 'images.grid.DeletedImages',
-            title: this.locale.tabDeletedImages
+            title: this.locale.tabDeletedImages,
+            pagingToolbarButtons: [
+                {xtype: 'button', itemId: 'buttonRevert', text: this.locale.buttonRevert},
+                {xtype: 'shared.button.delete', itemId: 'buttonDeletePermanently', text: this.locale.buttonDeletePermanently}
+            ]
         };
         return tab;
     },
@@ -277,11 +283,6 @@ Ext.define('NP.view.images.Main', {
      */
     topbarDeletedImages: function() {
         var tbar = [
-            {xtype: 'button', itemId: 'buttonRevert', text: this.locale.buttonRevert},
-            {xtype: 'shared.button.delete', itemId: 'buttonDeletePermanently', text: this.locale.buttonDeletePermanently},
-
-            {xtype: 'tbspacer', width: 20},
-
             {xtype: 'shared.button.search', itemId: 'buttonSearchDeleted', text: this.locale.buttonSearch}
         ];
 

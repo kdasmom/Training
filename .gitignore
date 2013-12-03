@@ -1,6 +1,3 @@
-#Ignore idea ide settings
-.idea/*
-
 # Ignore test file in root
 test.php
 
@@ -31,56 +28,5 @@ docs/*
 # Ignore all log files
 *.log
 
-# Ignore several Ext JS files we don't need
-vendor/extjs/*
-vendor/extjs/examples/*
-vendor/extjs/examples/ux/*
-vendor/extjs/examples/ux/css/*
-vendor/extjs/examples/ux/css/images/*
-vendor/extjs/examples/ux/form/*
-vendor/extjs/locale/*
-vendor/extjs/resources/*
-vendor/extjs/resources/css/*
-vendor/extjs/resources/themes/*
-vendor/extjs/resources/themes/images/*
-# Ext JS files to include (for locale, only include locale files for languages we support)
-!vendor/extjs/locale/
-!vendor/extjs/locale/ext-lang-en.js
-!vendor/extjs/resources/
-!vendor/extjs/resources/css/
-!vendor/extjs/resources/css/ext-all.css
-!vendor/extjs/resources/css/ext-all-debug.css
-!vendor/extjs/resources/themes/
-!vendor/extjs/resources/themes/images/
-!vendor/extjs/resources/themes/images/default/
-!vendor/extjs/ext-all.js
-!vendor/extjs/ext-all-dev.js
-!vendor/extjs/examples/
-!vendor/extjs/examples/ux/
-!vendor/extjs/examples/ux/css/
-!vendor/extjs/examples/ux/css/ItemSelector.css
-!vendor/extjs/examples/ux/css/images/
-!vendor/extjs/examples/ux/css/images/bottom2.gif
-!vendor/extjs/examples/ux/css/images/down2.gif
-!vendor/extjs/examples/ux/css/images/left2.gif
-!vendor/extjs/examples/ux/css/images/right2.gif
-!vendor/extjs/examples/ux/css/images/top2.gif
-!vendor/extjs/examples/ux/css/images/up2.gif
-!vendor/extjs/examples/ux/form/
-!vendor/extjs/examples/ux/form/ItemSelector.js
-!vendor/extjs/examples/ux/form/MultiSelect.js
-
-# Ignore Zend framework files we don't need (exceptions specified below)
-vendor/zendframework/zendframework/bin/*
-vendor/zendframework/zendframework/library/Zend/*
-# Exceptions to ignore rules for the Zend framework to include only the modules we need 
-!vendor/zendframework/zendframework/library/Zend/Cache/
-!vendor/zendframework/zendframework/library/Zend/EventManager/
-!vendor/zendframework/zendframework/library/Zend/Filter/
-!vendor/zendframework/zendframework/library/Zend/I18n/
-!vendor/zendframework/zendframework/library/Zend/Json/
-!vendor/zendframework/zendframework/library/Zend/Loader/
-!vendor/zendframework/zendframework/library/Zend/Log/
-!vendor/zendframework/zendframework/library/Zend/ServiceManager/
-!vendor/zendframework/zendframework/library/Zend/Stdlib/
-!vendor/zendframework/zendframework/library/Zend/Validator/
+#idea ignore
+.idea/*

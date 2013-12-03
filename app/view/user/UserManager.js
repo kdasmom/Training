@@ -10,6 +10,7 @@ Ext.define('NP.view.user.UserManager', {
     requires: [
         'NP.lib.core.Config',
         'NP.lib.core.Security',
+        'NP.lib.core.Translator',
     	'NP.view.user.Overview',
     	'NP.view.user.Users',
     	'NP.view.user.Groups',
@@ -19,14 +20,21 @@ Ext.define('NP.view.user.UserManager', {
     title: 'User Manager',
     
     items: [
-        {
-            xtype: 'user.overview'
-        },{
+		{
             xtype: 'user.users'
         },{
             xtype: 'user.groups'
         },{
             xtype: 'user.reports'
-        }
-    ]
+        },
+		{
+			xtype: 'user.overview'
+		}
+    ],
+
+    initComponent: function() {
+        this.title = NP.Translator.translate(this.title);
+        
+        this.callParent(arguments);
+    }
 });

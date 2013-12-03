@@ -9,6 +9,7 @@ Ext.define('NP.view.user.UsersGrid', {
 
     requires: [
     	'NP.lib.core.Config',
+        'NP.lib.core.Translator',
     	'NP.view.shared.button.New',
     	'NP.view.shared.button.Inactivate',
     	'NP.view.shared.button.Activate',
@@ -17,14 +18,6 @@ Ext.define('NP.view.user.UsersGrid', {
         'NP.view.shared.PropertyCombo'
     ],
     
-    // For localization
-    createNewUserBtnLabel: 'Create New User',
-    nameColText          : 'Name',
-    groupColText         : 'Group',
-    usernameColText      : 'Username',
-    lastUpdatedColText   : 'Last Updated',
-    statusColText        : 'Status',
-
     layout: {
         type : 'vbox',
         align: 'stretch'
@@ -35,10 +28,9 @@ Ext.define('NP.view.user.UsersGrid', {
     	var that = this;
 
     	var bar = [
-    		{ xtype: 'shared.button.new', text: this.createNewUserBtnLabel }
+    		{ xtype: 'shared.button.new', text: NP.Translator.translate('Create New User') }
 	    ];
 	    this.tbar = bar;
-	    this.bbar = bar;
 
         var filterLabelWidth = 80;
         var filterButtonWidth = 120;
@@ -80,7 +72,7 @@ Ext.define('NP.view.user.UsersGrid', {
                             {
                                 xtype     : 'customcombo',
                                 name      : 'userprofile_status',
-                                fieldLabel: 'Status',
+                                fieldLabel: NP.Translator.translate('Status'),
                                 labelWidth: filterLabelWidth,
                                 store     : Ext.create('Ext.data.Store', {
                                             fields: ['name','value'],
@@ -107,7 +99,7 @@ Ext.define('NP.view.user.UsersGrid', {
                             {
                                 xtype       : 'customcombo',
                                 name        : 'role_id',
-                                fieldLabel  : 'Group',
+                                fieldLabel  : NP.Translator.translate('Group'),
                                 labelWidth  : filterLabelWidth,
                                 store       : 'user.RoleTree',
                                 valueField  : 'role_id',
@@ -122,7 +114,7 @@ Ext.define('NP.view.user.UsersGrid', {
                             },{
                                 xtype       : 'customcombo',
                                 name        : 'module_id',
-                                fieldLabel  : 'Function',
+                                fieldLabel  : NP.Translator.translate('Function'),
                                 labelWidth  : filterLabelWidth,
                                 store       : 'security.ModuleTree',
                                 valueField  : 'module_id',
@@ -151,7 +143,7 @@ Ext.define('NP.view.user.UsersGrid', {
                             action            : 'getAll',
                             paging            : true,
                             extraParams: {
-                                userprofile_status: null,
+                                userprofile_status: 'active',
                                 property_id       : null,
                                 role_id           : null,
                                 module_id         : null
@@ -159,42 +151,140 @@ Ext.define('NP.view.user.UsersGrid', {
                         }),
                 columns : [
                     {
-                        text: this.nameColText,
+                        text: NP.Translator.translate('Name'),
                         dataIndex: 'person_lastname',
                         flex: 1,
                         renderer: function(val, meta, rec) {
-                            var person = rec.getUserprofilerole().getStaff().getPerson();
-                            return person.get('person_lastname') + ', ' + person.get('person_firstname');
-                        }
+                            return rec.get('person_lastname') + ', ' + rec.get('person_firstname');
+                        },
+						hideable: false
                     },{
-                        text: this.groupColText,
+                        text: NP.Translator.translate('Group'),
                         dataIndex: 'role_name',
                         flex: 1,
-                        tdCls: 'grid-clickable-col',
-                        renderer: function(val, meta, rec) {
-                            return rec.getUserprofilerole().getRole().get('role_name');
-                        }
+                        tdCls: 'grid-clickable-col'
                     },{
-                        text: this.usernameColText,
+                        text: NP.Translator.translate('Username'),
                         dataIndex: 'userprofile_username',
                         flex: 0.5
                     },{
-                        text: this.lastUpdatedColText,
+                        text: NP.Translator.translate('Last Updated'),
                         dataIndex: 'userprofile_updated_datetm',
                         flex: 1,
                         renderer: function(val, meta, rec) {
                             val = Ext.Date.format(val, NP.Config.getDefaultDateFormat() + ' h:iA');
                             if (rec.get('userprofile_updated_by') !== null) {
-                                val += ' (' + rec.getUpdater().get('userprofile_username') + ')'
+                                val += ' (' + rec.get('updated_by_userprofile_username') + ')'
                             }
+							
                             return val;
                         }
                     },{
-                        text: this.statusColText,
+                        text: NP.Translator.translate('Status'),
                         dataIndex: 'userprofile_status',
-                        flex: 0.5,
+                        flex: 1,
                         renderer: Ext.util.Format.capitalize
-                    }
+                    },
+					{
+						text: NP.Translator.translate('User Email Address'),
+						dataIndex: 'email_address',
+						flex: 1,
+						hidden: true,
+						renderer: function (val, meta, rec) {
+							return rec.raw['email_address'];
+						}
+					},
+					{
+						text: NP.Translator.translate('Address'),
+						dataIndex: 'address_line1',
+						flex: 1,
+						hidden: true,
+						renderer: function (val, meta, rec) {
+							return rec.raw['address_line1'] + (rec.record.raw['address_line1'] ? ', ' + rec.record.raw['address_line1'] : '');
+						}
+					},
+					{
+						text: NP.Translator.translate('City'),
+						dataIndex: 'address_city',
+						flex: 1,
+						hidden: true,
+						renderer: function (val, meta, rec) {
+							return rec.raw['address_city'];
+						}
+					},
+					{
+						text: NP.Translator.translate('State'),
+						dataIndex: 'address_state',
+						flex: 0.2,
+						hidden: true,
+						renderer: function (val, meta, rec) {
+							return rec.raw['address_state'];
+						}
+					},
+					{
+						text: NP.Translator.translate('Zip'),
+						dataIndex: 'address_zip',
+						flex: 0.2,
+						hidden: true,
+						renderer: function (val, meta, rec) {
+							return rec.raw['address_zip'];
+						}
+					},
+					{
+						text: NP.Translator.translate('Work Number'),
+						dataIndex: 'work_number',
+						flex: 0.5,
+						hidden: true,
+						renderer: function (val, meta, rec) {
+							return rec.raw['work_number'];
+						}
+					},
+					{
+						text: NP.Translator.translate('Home Number'),
+						dataIndex: 'home_number',
+						flex: 0.5,
+						hidden: true,
+						renderer: function (val, meta, rec) {
+							return rec.raw['home_number'];
+						}
+					},
+					{
+						text: NP.Translator.translate('Start Date'),
+						dataIndex: 'userprofile_startdate',
+						flex: 0.5,
+						hidden: true,
+						renderer: function (val, meta, rec) {
+							return Ext.Date.format(rec.get('userprofile_startdate'), 'm/d/Y');
+						}
+					},
+					{
+						text: NP.Translator.translate('End Date'),
+						dataIndex: 'userprofile_enddate',
+						flex: 0.5,
+						hidden: true,
+						renderer: function (val, meta, rec) {
+							return Ext.Date.format(rec.get('userprofile_enddate'), 'm/d/Y');
+						}
+					},
+					{
+						text: NP.Translator.translate('Incoming Delegation'),
+						dataIndex: 'incoming_delegation_count',
+						flex: 0.4,
+						hidden: true,
+						renderer: function (val, meta, rec) {
+							return rec.raw['incoming_delegation_count'] > 0 ? NP.Translator.translate('Yes') : NP.Translator.translate('No');
+						}
+					},
+					{
+						text: NP.Translator.translate('Outgoing Delegation'),
+						dataIndex: 'outgoing_delegation_count',
+						flex: 0.4,
+						hidden: true,
+						renderer: function (val, meta, rec) {
+
+							return rec.raw['outgoing_delegation_count'] > 0 ? NP.Translator.translate('Yes') : NP.Translator.translate('No');
+						}
+					}
                 ],
                 pagingToolbarButtons: [
                     { xtype: 'shared.button.activate', disabled: true },

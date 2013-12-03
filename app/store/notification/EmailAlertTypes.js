@@ -9,5 +9,9 @@ Ext.define('NP.store.notification.EmailAlertTypes', {
     model: 'NP.model.notification.EmailAlertType',
 
     service: 'NotificationService',
-    action : 'getAlertTypes'
+    action : 'getAlertTypes',
+
+    autoLoad: true,
+
+    storeId: 'notification.EmailAlertTypes'
 });

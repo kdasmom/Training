@@ -16,13 +16,15 @@ Ext.define('NP.view.budget.BudgetOverageForm', {
         'NP.model.gl.GlAccount'
     ],
 
+    layout: 'vbox',
+
     bodyPadding: 8,
     autoScroll : true,
 
     title                          : 'New Budget Overage',
     propertyInputLabel             : 'Property',
     periodInputLabel               : 'Period',
-    categoryInputLabel             : 'Category',
+    categoryInputLabel             : 'GL Code',
     approvalBudgetOverageInputLabel: 'Approval Budget Overage',
     reasonInputLabel               : 'Budget Overage Reason',
 

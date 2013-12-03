@@ -19,7 +19,7 @@ Ext.define('NP.model.property.Unit', {
 		{ name: 'unittype_id', type: 'int' },
 		{ name: 'unit_number' },
 		{ name: 'unit_status' },
-		{ name: 'unit_dateavail', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+		{ name: 'unit_dateavail', type: 'date' },
 		{ name: 'unit_squarefeet' },
 		{ name: 'property_id', type: 'int' }
 	],

@@ -10,27 +10,24 @@ Ext.define('NP.view.shared.ContextPickerMulti', {
     extend: 'Ext.container.Container',
     alias: 'widget.shared.contextpickermulti',
     
-    requires: ['NP.lib.core.Config','NP.lib.core.Security'],
+    requires: [
+        'NP.lib.core.Config',
+        'NP.lib.core.Security',
+        'NP.lib.core.Translator'
+    ],
 
     // We need a static variable to be able to give the radio buttons a different name per instance
     statics: {
         pickerInstanceId: 0
     },
 
-    currentPropertyRadioText: 'Current ' + NP.lib.core.Config.getSetting('PN.main.PropertyLabel'),
-    multiPropertyRadioText  : 'Multiple ' + NP.lib.core.Config.getSetting('PN.main.PropertiesLabel'),
-    regionRadioText         : NP.lib.core.Config.getSetting('PN.Main.RegionLabel'),
-    allPropertiesRadioText  : 'All ' + NP.lib.core.Config.getSetting('PN.Main.PropertiesLabel'),
-    activePropText          : 'Active',
-    inactivePropText        : 'Inactive',
-    onholdPropText          : 'On Hold',
-
     initComponent: function() {
-        var that = this;
+        var that = this,
+            propertyLabel = NP.lib.core.Config.getSetting('PN.main.PropertyLabel'),
+            propertiesLabel = NP.lib.core.Config.getSetting('PN.main.PropertiesLabel'),
+            regionLabel = NP.lib.core.Config.getSetting('PN.Main.RegionLabel');
 
-        var propertyLabel = NP.lib.core.Config.getSetting('PN.main.PropertyLabel');
-        var propertiesLabel = NP.lib.core.Config.getSetting('PN.main.PropertiesLabel');
-        var regionLabel = NP.lib.core.Config.getSetting('PN.Main.RegionLabel');
+        that.translateText();
 
         // Increment the static variable for instance ID
         NP.view.shared.ContextPickerMulti.pickerInstanceId++;
@@ -84,7 +81,7 @@ Ext.define('NP.view.shared.ContextPickerMulti', {
                 ]
             }),
             this.multiPropertyPanel = Ext.create('Ext.ux.form.field.BoxSelect', {
-                emptyText   : 'Select ' + propertiesLabel + '...',
+                emptyText   : NP.Translator.translate('Select {properties}...', { properties: propertiesLabel }),
                 queryMode   : 'local',
                 selectOnTab : false,
                 displayField: 'property_name',
@@ -96,7 +93,7 @@ Ext.define('NP.view.shared.ContextPickerMulti', {
                 growMax     : 300
             }),
             this.regionPanel = Ext.create('Ext.ux.form.field.BoxSelect', {
-                emptyText   : 'Select ' + regionLabel + 's...',
+                emptyText   : NP.Translator.translate('Select {regions}...', { regions: regionLabel + 's' }),
                 queryMode   : 'local',
                 selectOnTab : false,
                 displayField: 'region_name',
@@ -155,6 +152,21 @@ Ext.define('NP.view.shared.ContextPickerMulti', {
         this.addStateEvents('change');
 
         this.callParent(arguments);
+    },
+
+    translateText: function() {
+        var me = this,
+            propertyText = NP.lib.core.Config.getSetting('PN.main.PropertyLabel'),
+            propertiesText = NP.lib.core.Config.getSetting('PN.main.PropertiesLabel'),
+            regionText = NP.lib.core.Config.getSetting('PN.Main.RegionLabel');
+
+        me.currentPropertyRadioText = NP.Translator.translate('Current {property}', { property: propertyText });
+        me.multiPropertyRadioText   = NP.Translator.translate('Multiple {properties}', {properties: propertiesText });
+        me.regionRadioText          = regionText;
+        me.allPropertiesRadioText   = NP.Translator.translate('All {properties}', {properties: propertiesText });
+        me.activePropText           = NP.Translator.translate('Active');
+        me.inactivePropText         = NP.Translator.translate('Inactive');
+        me.onholdPropText           = NP.Translator.translate('On Hold');
     },
 
     getState: function() {

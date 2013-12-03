@@ -2,6 +2,10 @@ Ext.define('NP.view.images.grid.Invoices', {
     extend: 'NP.view.images.grid.Base',
     alias:  'widget.images.grid.Invoices',
 
+    requires: [
+        'NP.lib.core.Security'
+    ],
+
     initComponent: function(){
         this.cols = [
             'image.gridcol.ScanDate',
@@ -15,12 +19,7 @@ Ext.define('NP.view.images.grid.Invoices', {
         ]
         this.autoscroll = true;
 
-        var picker = Ext.ComponentQuery.query(
-            '[itemId~="componentContextPicker"]'
-        );
-        if (picker && picker[0] && picker[0].getState) {
-            var state = picker[0].getState();
-        }
+        var context = NP.Security.getCurrentContext();
 
 	this.store = Ext.create('NP.store.image.ImageIndexes', {
             service    : 'ImageService',
@@ -29,10 +28,10 @@ Ext.define('NP.view.images.grid.Invoices', {
             pageSize: 25,
             extraParams: {
                 paging     : true,
-		userprofile_id             : NP.Security.getUser().get('userprofile_id'),
-		delegated_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id'),
-                contextType     : state && state[0] ? state[0].getState().type : 'all',
-		contextSelection: state && state[0] ? state[0].getState().selected : ''
+                userprofile_id             : NP.Security.getUser().get('userprofile_id'),
+                delegated_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id'),
+                contextType     : context.type,
+                contextSelection: (context.type == 'region') ? context.region_id : context.property_id
             }
         });
 

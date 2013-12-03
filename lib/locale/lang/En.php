@@ -100,6 +100,9 @@ The following properties have been delegated: $property_name_list.',
 		'importRecordSaveError'                  => 'There was an error saving a record for row',
 		'uploadFileCSVEmptyError'                => 'The CSV file contains no records',
 		'uploadFileCSVFormatError'               => 'The format of the CSV file is incorrect',
+
+		// Utility Setup section
+		'utilityExists' => 'This vendor is already setup for utilities. Please update that record instead.'
     );
 }
 

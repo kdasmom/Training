@@ -9,11 +9,13 @@ Ext.define('NP.view.shared.gridcol.UniversalField', {
 
 	requires: ['NP.lib.core.Config'],
 
+	type: 'header',
+
 	initComponent: function() {
 		var cf = NP.Config.getCustomFields();
 
 		this.dataIndex = 'universal_field' + this.fieldNumber;
-		this.text = cf.header.fields[this.fieldNumber].label;
+		this.text = cf[this.type].fields[this.fieldNumber].label;
 
 		this.callParent(arguments);
 	}

@@ -16,11 +16,20 @@ abstract class AbstractEntity {
 	 * - displayName (string): a friendly display value that the validator can use to generate error messages (optional); default will be field name if not provided
 	 * - validation (array): an associative array where the key is a valid validation rule name (rules in NP\core\validation) and the value is an array with the options for that validation rule
 	 * - timestamp (string): marks the field as a date that tracks either creation date or updated date; valid values are "created" and "updated"
+	 * - auditable (boolean): marks the field as being auditable
 	 * 
 	 * @abstract
 	 * @var array
 	 */
 	protected $fields;
+
+	/**
+	 * Set this field to true if some of this entity's fields are auditable (changes to fields are saved)
+	 * in the auditlog table
+	 * 
+	 * @var boolean
+	 */
+	protected $auditable = false;
 
 	/**
 	 * @var array Associative array holding the values for each field of this entity
@@ -116,6 +125,28 @@ abstract class AbstractEntity {
             return false;
         }
         return true;
+    }
+
+    public function isAuditable() {
+    	return $this->auditable;
+    }
+
+    public static function getAuditableFields() {
+    	$auditableFields = [];
+
+    	$ref = new \ReflectionClass(get_called_class());
+		$fields = $ref->getDefaultProperties();
+		$fields = $fields['fields'];
+
+    	foreach ($fields as $key=>$field) {
+			if (is_array($field) && array_key_exists('auditable', $field)
+				&& (is_array($field['auditable']))
+			) {
+				$auditableFields[$key] = $field['auditable'];
+			}
+		}
+
+		return $auditableFields;
     }
 
 }

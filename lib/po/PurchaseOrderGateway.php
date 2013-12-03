@@ -20,7 +20,7 @@ use NP\core\db\Expression;
  */
 class PurchaseOrderGateway extends AbstractGateway {
 
-	protected $roleGateway, $configService;
+	protected $roleGateway, $configService, $securityService;
 
 	public function __construct(Adapter $adapter, RoleGateway $roleGateway) {
 		$this->roleGateway = $roleGateway;
@@ -30,6 +30,10 @@ class PurchaseOrderGateway extends AbstractGateway {
 
 	public function setConfigService(\NP\system\ConfigService $configService) {
 		$this->configService = $configService;
+	}
+
+	public function setSecurityService(\NP\security\SecurityService $securityService) {
+		$this->securityService = $securityService;
 	}
 
 	public function findPosToApprove($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
@@ -173,7 +177,7 @@ class PurchaseOrderGateway extends AbstractGateway {
 			$select->count(true, 'totalRecs')
 					->column('purchaseorder_id');
 		} else {
-			$select->allColumns()
+			$select->allColumns('p')
 					->columnAmount()
 					->columnPendingDays()
 					->columnPendingApprovalDays()
@@ -193,6 +197,68 @@ class PurchaseOrderGateway extends AbstractGateway {
 			->whereIn('p.property_id', $propertyFilterSelect);
 
 		return $select;
+	}
+
+	/**
+	 * 
+	 */
+	public function findPosLinkableToInvoice($invoice_id) {
+		// Get the vendor info for the invoice because we'll need to use different logic
+		// if invoice vendor is has finance_vendor field set to one
+		$invoiceVendor = $this->adapter->query(
+				Select::get()->columns(array())
+							->from(array('i'=>'invoice'))
+							->join(new \NP\invoice\sql\join\InvoiceVendorsiteJoin(array('vendorsite_id')))
+							->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(array('finance_vendor')))
+							->whereEquals('i.invoice_id', '?')
+			, array($invoice_id));
+
+		// Build the query for getting linkable POs
+		$propertyContext = new PropertyContext(
+			$this->securityService->getUserId(),
+			$this->securityService->getUserId(),
+			'all',
+			null
+		);
+		$propertyFilterSelect = new PropertyFilterSelect($propertyContext);
+
+		$select = new sql\PoSelect();
+		$select->columns(array(
+						'purchaseorder_id',
+						'purchaseorder_ref'
+					))
+				->columnAmount()
+				->join(new sql\join\PoPropertyJoin())
+				->join(new sql\join\PoVendorsiteJoin())
+				->join(new \NP\vendor\sql\join\VendorsiteVendorJoin())
+				->whereEquals('p.purchaseorder_status', "'saved'")
+				->whereIn(
+					'p.property_id',
+					$propertyFilterSelect
+				);
+		
+		// Only do this if receiving is on
+		if ($this->configService->get('CP.RECEIVING_DEFAULT', '0') == '1') {
+			$select->whereIsNotNull(
+				Select::get()->column('rctitem_id')
+							->from(array('rcti'=>'rctitem'))
+							->whereEquals('rcti.rctitem_status', "'approved'")
+							->whereIn(
+								'rcti.poitem_id',
+								Select::get()->column('poitem_id')
+											->from(array('pi'=>'poitem'))
+											->whereEquals('pi.purchaseorder_id', 'p.purchaseorder_id')
+							)
+							->limit(1)
+			);
+		}
+
+		// Only do this finance_vendor is not set to 1 or the user doesn't have finance vendor permissions
+		if ($invoiceVendor[0]['finance_vendor'] != 1 || !$this->securityService->hasPermission($securityService)) {
+			$select->whereEquals('p.vendorsite_id', $invoiceVendor[0]['vendorsite_id']);
+		}
+
+		return $this->adapter->query($select);
 	}
 
 	public function rollPeriod($property_id, $newAccountingPeriod, $oldAccountingPeriod) {

@@ -10,12 +10,6 @@ use NP\core\AbstractService;
  * @author Thomas Messier
  */
 class VendorConnectService extends AbstractService {
-	protected $vendorAccessUsersGateway;
-
-	public function __construct(VendorAccessUsersGateway $vendorAccessUsersGateway) {
-		$this->vendorAccessUsersGateway = $vendorAccessUsersGateway;
-	}
-
 	/**
 	 * Get list of vendors to approve
 	 *

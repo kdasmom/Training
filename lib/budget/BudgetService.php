@@ -3,9 +3,6 @@
 namespace NP\budget;
 
 use NP\core\AbstractService;
-use NP\system\IntegrationPackageGateway;
-use NP\gl\GLAccountGateway;
-use NP\property\PropertyGateway;
 use NP\util\SoapService;
 
 /**
@@ -15,20 +12,10 @@ use NP\util\SoapService;
  */
 class BudgetService extends AbstractService {
 
-    protected $budgetGateway, $integrationPackageGateway, $glaccountGateway, $propertyGateway, $glAccountYearGateway,
-            $budgetOverageGateway;
+    protected $soapService;
 
-    public function __construct(BudgetGateway $budgetGateway, IntegrationPackageGateway $integrationPackageGateway,
-                                GLAccountGateway $glaccountGateway, PropertyGateway $propertyGateway,
-                                GlAccountYearGateway $glAccountYearGateway, SoapService $soapService,
-                                BudgetOverageGateway $budgetOverageGateway) {
-                $this->budgetGateway             = $budgetGateway;
-                $this->integrationPackageGateway = $integrationPackageGateway;
-                $this->glaccountGateway          = $glaccountGateway;
-                $this->propertyGateway           = $propertyGateway;
-                $this->glAccountYearGateway      = $glAccountYearGateway;
-                $this->soapService               = $soapService;
-                $this->budgetOverageGateway      = $budgetOverageGateway;
+    public function __construct(SoapService $soapService) {
+        $this->soapService = $soapService;
     }
 
     public function createMissingBudgets($entityType) {

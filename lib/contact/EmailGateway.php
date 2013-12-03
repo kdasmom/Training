@@ -9,6 +9,8 @@ use NP\core\AbstractGateway;
  *
  * @author Thomas Messier
  */
-class EmailGateway extends AbstractGateway {}
+class EmailGateway extends AbstractGateway {
+	const EMAIL_TYPE_PRIMARY = 3;
+}
 
 ?>

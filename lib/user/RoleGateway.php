@@ -106,6 +106,9 @@ class RoleGateway extends AbstractGateway {
 						'r.role_updated_by = u.userprofile_id',
 						array('userprofile_id','userprofile_username'),
 						Select::JOIN_LEFT)
+				->join(array('rt' => 'tree'), "rt.table_name = 'role' and rt.tablekey_id = r.role_id", [])
+				->join(array('rt2' => 'tree'), 'rt2.tree_id = rt.tree_parent', [])
+				->join(array('r2' => 'role'), 'r2.role_id = rt2.tablekey_id', ['parent_role_name' => 'role_name'])
 				->order($sort);
 
 		$params = array();

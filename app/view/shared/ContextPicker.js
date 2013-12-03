@@ -10,7 +10,12 @@ Ext.define('NP.view.shared.ContextPicker', {
     extend: 'Ext.container.Container',
     alias: 'widget.shared.contextpicker',
     
-    requires: ['NP.lib.core.Config','NP.lib.core.Security','NP.lib.ui.ComboBox'],
+    requires: [
+        'NP.lib.core.Config',
+        'NP.lib.core.Security',
+        'NP.lib.ui.ComboBox',
+        'NP.lib.core.Translator'
+    ],
 
     // We need a static variable to be able to give the radio buttons a different name per instance
     statics: {
@@ -35,12 +40,6 @@ Ext.define('NP.view.shared.ContextPicker', {
         bodyStyle: 'background-color: transparent'
     },
     
-    propertyComboText       : NP.lib.core.Config.getSetting('PN.main.PropertyLabel'),
-    regionComboText         : NP.lib.core.Config.getSetting('PN.Main.RegionLabel'),
-    currentPropertyRadioText: 'Current ' + NP.lib.core.Config.getSetting('PN.main.PropertyLabel'),
-    regionRadioText         : NP.lib.core.Config.getSetting('PN.Main.RegionLabel'),
-    allPropertiesRadioText  : 'All ' + NP.lib.core.Config.getSetting('PN.Main.PropertiesLabel'),
-
     initComponent: function() {
         var that = this;
 
@@ -56,6 +55,7 @@ Ext.define('NP.view.shared.ContextPicker', {
         var hide_prop = true;
         var hide_region = true;
         var select_all = false;
+        var comboWidth = 400;
 
         if (state.type == 'region') {
             hide_region = false;
@@ -76,8 +76,8 @@ Ext.define('NP.view.shared.ContextPicker', {
                 items: [
                     this.propertyCombo = Ext.create('NP.lib.ui.ComboBox', {
                         store            : 'user.Properties',
-                        fieldLabel       : this.propertyComboText,
-                        width            : 325,
+                        fieldLabel       : NP.Config.getPropertyLabel(),
+                        width            : comboWidth,
                         labelAlign       : 'right',
                         displayField     : 'property_name',
                         valueField       : 'property_id',
@@ -97,8 +97,8 @@ Ext.define('NP.view.shared.ContextPicker', {
                     }),
                     this.regionCombo = Ext.create('NP.lib.ui.ComboBox', {
                         store            : 'user.Regions',
-                        fieldLabel       : this.regionComboText,
-                        width            : 325,
+                        fieldLabel       : NP.Config.getSetting('PN.Main.RegionLabel'),
+                        width            : comboWidth,
                         labelAlign       : 'right',
                         displayField     : 'region_name',
                         valueField       : 'region_id',
@@ -139,19 +139,19 @@ Ext.define('NP.view.shared.ContextPicker', {
                 },
                 items      : [
                     this.propertyRadioBtn = Ext.create('Ext.form.field.Radio', {
-                        boxLabel  : this.currentPropertyRadioText,
+                        boxLabel  : NP.Translator.translate('Current {0}', [NP.Config.getPropertyLabel()]),
                         name      : 'contextPickerType' + this.pickerId, // Dynamic name to avoid errors when using multiple pickers
                         inputValue: 'property',
                         checked   : !hide_prop && !select_all
                     }),
                     this.regionRadioBtn = Ext.create('Ext.form.field.Radio', {
-                        boxLabel  : this.regionRadioText,
+                        boxLabel  : NP.Config.getSetting('PN.Main.RegionLabel'),
                         name      : 'contextPickerType' + this.pickerId, // Dynamic name to avoid errors when using multiple pickers
                         inputValue: 'region',
                         checked   : !hide_region
                     }),
                     this.allRadioBtn = Ext.create('Ext.form.field.Radio', {
-                        boxLabel  : this.allPropertiesRadioText, 
+                        boxLabel  : NP.Translator.translate('All {0}', [NP.Config.getPropertyLabel(true)]), 
                         name      : 'contextPickerType' + this.pickerId, // Dynamic name to avoid errors when using multiple pickers
                         inputValue: 'all',
                         checked   : select_all

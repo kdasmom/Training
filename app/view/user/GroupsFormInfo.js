@@ -8,27 +8,25 @@ Ext.define('NP.view.user.GroupsFormInfo', {
     alias: 'widget.user.groupsforminfo',
     
     requires: [
-    	'NP.lib.ui.ComboBox'
+    	'NP.lib.ui.ComboBox',
+        'NP.lib.core.Translator'
     ],
-
-    // For locatization
-	title              : 'Group Information',
-	roleNameFieldLabel : 'Group Name',
-	nextLevelFieldLabel: 'Next Level',
 
     padding: 8,
 
     initComponent: function() {
+        this.title = NP.Translator.translate('Group Information');
+
     	this.items = [
     		{
 				xtype     : 'textfield',
 				name      : 'role_name',
-				fieldLabel: this.roleNameFieldLabel,
+				fieldLabel: NP.Translator.translate('Group Name'),
 				allowBlank: false
     		},{
 				xtype     : 'customcombo',
 				name      : 'parent_role_id',
-				fieldLabel: this.nextLevelFieldLabel,
+				fieldLabel: NP.Translator.translate('Next Level'),
 				allowBlank: false,
 				store     : 'user.RoleTree',
 				width     : 500,

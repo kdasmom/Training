@@ -11,9 +11,16 @@ Ext.define('NP.controller.UserManager', {
 		'NP.lib.core.Security',
 		'NP.lib.core.Net',
 		'NP.lib.core.Util',
-		'Ext.ux.form.field.BoxSelect',
-		'NP.view.shared.PortalCanvas'
+		'Ext.ux.form.field.BoxSelect'
 	],
+
+	models: ['user.Userprofile','user.Userprofilerole','user.Staff',
+			'contact.Person','contact.Address','contact.Email','contact.Phone'],
+
+	stores: ['user.Userprofiles','user.Roles','notification.EmailAlertTypes'],
+
+	views: ['shared.PortalCanvas','user.UserManager','user.UsersGrid','user.UsersForm',
+			'user.GroupsForm','user.GroupsGrid','user.UserDelegationForm'],
 	
 	refs: [
 		{ ref: 'userGrid', selector: '[xtype="user.usersgrid"] customgrid' },
@@ -31,30 +38,32 @@ Ext.define('NP.controller.UserManager', {
 		{ ref: 'groupTree', selector: '[xtype="user.groupsformpermissions"]' }
 	],
 
-	// For localization
-	activateSuccessText       : 'Users were activated',
-	activateFailureText       : 'There was an error activating users',
-	inactivateSuccessText     : 'Users were inactivated',
-	inactivateFailureText     : 'There was an error inactivating users',
-	activeDelegErrorTitleText : 'Active Delegation',
-	activeDelegErrorText      : 'You have an active delegation. You cannot delegate to another user until that delegation expires or is cancelled.',
-	cancelDelegDialogTitleText: 'Cancel Delegation?',
-	cancelDelegDialogText     : 'Are you sure you want to cancel this delegation?',
-	addDelegationDlgTitle     : 'Add a Delegation',
-	updateDelegationDlgTitle  : 'Update Delegation',
-	newUserFormTitle          : 'New User',
-	editUserFormTitle         : 'Editing',
-	newGroupFormTitle         : 'New Group',
-	editGroupFormTitle        : 'Editing Group',
-	changesSavedText          : 'Changes saved successfully',
-	errorDialogTitleText      : 'Error',
-	blankColumnErrorText      : 'You have left one or more dashboard columns empty. Please fill those columns or remove them.',
-
 	init: function() {
 		Ext.log('UserManager controller initialized');
 
 		var that = this;
 
+		// For localization
+		NP.Translator.on('localeloaded', function() {
+			that.activateSuccessText        = NP.Translator.translate('Users were activated');
+			that.activateFailureText        = NP.Translator.translate('There was an error activating users');
+			that.inactivateSuccessText      = NP.Translator.translate('Users were inactivated');
+			that.inactivateFailureText      = NP.Translator.translate('There was an error inactivating users');
+			that.activeDelegErrorTitleText  = NP.Translator.translate('Active Delegation');
+			that.activeDelegErrorText       = NP.Translator.translate('You have an active delegation. You cannot delegate to another user until that delegation expires or is cancelled.');
+			that.cancelDelegDialogTitleText = NP.Translator.translate('Cancel Delegation?');
+			that.cancelDelegDialogText      = NP.Translator.translate('Are you sure you want to cancel this delegation?');
+			that.addDelegationDlgTitle      = NP.Translator.translate('Add a Delegation');
+			that.updateDelegationDlgTitle   = NP.Translator.translate('Update Delegation');
+			that.newUserFormTitle           = NP.Translator.translate('New User');
+			that.editUserFormTitle          = NP.Translator.translate('Editing');
+			that.newGroupFormTitle          = NP.Translator.translate('New Group');
+			that.editGroupFormTitle         = NP.Translator.translate('Editing Group');
+			that.changesSavedText           = NP.Translator.translate('Changes saved successfully');
+			that.errorDialogTitleText       = NP.Translator.translate('Error');
+			that.blankColumnErrorText       = NP.Translator.translate('You have left one or more dashboard columns empty. Please fill those columns or remove them.');
+		});
+		
 		// Setup event handlers
 		this.control({
 			// The main Property Setup panel
@@ -82,7 +91,7 @@ Ext.define('NP.controller.UserManager', {
 				cellclick: function(view, td, cellIndex, rec, tr, rowIndex, e) {
 					if (view.getHeaderAtIndex(cellIndex).text == 'Group') {
 						var grid = that.getUserGrid();
-						that.addHistory('UserManager:showUserManager:Groups:Form:' + rec.getUserprofilerole().get('role_id'));
+						that.addHistory('UserManager:showUserManager:Groups:Form:' + rec.get('role_id'));
 					} else if (cellIndex != 0) {
 						this.addHistory('UserManager:showUserManager:Users:Form:' + rec.get('userprofile_id'));
 					}
@@ -225,13 +234,13 @@ Ext.define('NP.controller.UserManager', {
 				action                : action+'Users',
 				userprofile_updated_by: NP.Security.getUser().get('userprofile_id'),
 				userprofile_id_list   : userprofile_id_list,
-				success: function(result, deferred) {
+				success: function(result) {
 					// Unmark items in the grid
 					grid.getStore().commitChanges();
 					// Show a friendly message saying action was successful
 					NP.Util.showFadingWindow({ html: that[action + 'SuccessText'] });
 				},
-				failure: function(response, options, deferred) {
+				failure: function(response, options) {
 					grid.getStore().rejectChanges();
 					Ext.MessageBox.alert(that.errorDialogTitleText, that[action + 'FailureText']);
 				}
@@ -252,7 +261,7 @@ Ext.define('NP.controller.UserManager', {
 		var tabPanel = that.setView('NP.view.user.UserManager');
 
 		// If no active tab is passed, default to Open
-		if (!activeTab) activeTab = 'Overview';
+		if (!activeTab) activeTab = 'Users';
 		
 		// Check if the tab to be selected is already active, if it isn't make it the active tab
 		var tab = that.getCmp('user.' + activeTab.toLowerCase());
@@ -287,93 +296,90 @@ Ext.define('NP.controller.UserManager', {
 	showUsersForm: function(userprofile_id) {
 		var that = this;
 
-		// Load a store if it hasn't already been loaded before proceeding
-		this.application.loadStore('notification.EmailAlertTypes', 'NP.store.notification.EmailAlertTypes', {}, function() {
-			// Setup the view configuration
-			var viewCfg = {
-				bind: {
-			        models: [
-			            'user.Userprofile',
-			            'user.Userprofilerole',
-			            'user.Staff',
-			            'contact.Person',
-			            'contact.Address',
-			            'contact.Email',
-			            {
-			                class: 'contact.Phone',
-			                prefix: 'home_'
-			            },
-			            {
-			                class: 'contact.Phone',
-			                prefix: 'work_'
-			            }
-			        ]
-			    },
-			    passwordRequired: true
-			};
+		// Setup the view configuration
+		var viewCfg = {
+			bind: {
+		        models: [
+		            'user.Userprofile',
+		            'user.Userprofilerole',
+		            'user.Staff',
+		            'contact.Person',
+		            'contact.Address',
+		            'contact.Email',
+		            {
+		                classPath: 'contact.Phone',
+		                prefix: 'home_'
+		            },
+		            {
+		                classPath: 'contact.Phone',
+		                prefix: 'work_'
+		            }
+		        ]
+		    },
+		    passwordRequired: true
+		};
 
-			// Only do this if viewing an existing user
-			if (userprofile_id) {
-				Ext.apply(viewCfg, {
-			    	passwordRequired: false,
-					listeners       : {
-				    	dataloaded: function(formPanel, data) {
-				    		// Set the form title
-				    		formPanel.setTitle(that.editUserFormTitle + ' ' + data['person_lastname'] + ', ' + data['person_firstname'] + ' (' + data['userprofile_username'] + ')');
+		// Only do this if viewing an existing user
+		if (userprofile_id) {
+			Ext.apply(viewCfg, {
+		    	passwordRequired: false,
+				listeners       : {
+			    	dataloaded: function(formPanel, data) {
+			    		// Set the form title
+			    		formPanel.setTitle(that.editUserFormTitle + ' ' + data['person_lastname'] + ', ' + data['person_firstname'] + ' (' + data['userprofile_username'] + ')');
 
-				    		// Set the active user for easy access later
-				    		that.activeUser = formPanel.getModel('user.Userprofile');
+			    		// Set the active user for easy access later
+			    		that.activeUser = formPanel.getModel('user.Userprofile');
 
-							// Check the appropriate email alert boxes
-							that.selectEmailAlerts(data['email_alerts']);
+						// Check the appropriate email alert boxes
+						that.selectEmailAlerts(data['email_alerts']);
 
-							// Check the appropriate email alert hour boxes
-							that.selectEmailAlertHours(data['email_hours']);
-						}
-				    }
-				});
+						// Check the appropriate email alert hour boxes
+						that.selectEmailAlertHours(data['email_hours']);
+					}
+			    }
+			});
 
-				Ext.apply(viewCfg.bind, {
-					service: 'UserService',
-			        action : 'get',
-			        extraParams: {
-			            userprofile_id: userprofile_id
-			        },
-			        extraFields: ['role_id','properties','coding_properties']
-				});
-			}
+			Ext.apply(viewCfg.bind, {
+				service: 'UserService',
+		        action : 'get',
+		        extraParams: {
+		            userprofile_id: userprofile_id
+		        },
+		        extraFields: ['role_id','properties','coding_properties']
+			});
+		}
 
-			// Create the view with the configuration defined above
-			var form = that.setView('NP.view.user.UsersForm', viewCfg, '[xtype="user.users"]');
+		// Create the view with the configuration defined above
+		var form = that.setView('NP.view.user.UsersForm', viewCfg, '[xtype="user.users"]');
 
-			// Only do this if we're editing a user
-			if (userprofile_id) {
-				Ext.suspendLayouts();
-				
-				form.findField('userprofile_username').disable();
-				form.findField('userprofile_password_current').show();
-				var delegTab = that.getDelegationTab();
-				delegTab.show();
-				delegTab.tab.show();
+		// Only do this if we're editing a user
+		if (userprofile_id) {
+			Ext.suspendLayouts();
+			
+			form.findField('userprofile_username').disable();
+			form.findField('userprofile_password_current').show();
+			var delegTab = that.getDelegationTab();
+			delegTab.show();
+			delegTab.tab.show();
 
-				Ext.resumeLayouts(true);
-				
-				// Load the delegation grids
-			    var grids = Ext.ComponentQuery.query('[xtype="user.userdelegationgrid"]');
-				Ext.Array.each(grids, function(grid) {
-					grid.addExtraParams({ userprofile_id: userprofile_id });
-					grid.getStore().load();
-				});
-			}
-			// Only do this if we're creating a new user
-			else {
-				// Set the form title
-				form.setTitle(that.newUserFormTitle);
+			Ext.resumeLayouts(true);
+			
+			// Load the delegation grids
+		    var grids = Ext.ComponentQuery.query('[xtype="user.userdelegationgrid"]');
+			Ext.Array.each(grids, function(grid) {
+				grid.addExtraParams({ userprofile_id: userprofile_id });
+				grid.getStore().load();
+			});
+		}
+		// Only do this if we're creating a new user
+		else {
+			// Set the form title
+			form.setTitle(that.newUserFormTitle);
 
-				form.findField('userprofile_username').enable();
-				form.findField('userprofile_password_current').hide();
-			}
-		});
+			form.findField('userprofile_username').enable();
+			form.findField('userprofile_password_current').hide();
+		}
 	},
 
 	selectEmailAlerts: function(emailAlertTypes) {
@@ -403,7 +409,7 @@ Ext.define('NP.controller.UserManager', {
 				service: 'UserService',
 				action : 'hasActiveDelegation',
 				userprofile_id: userprofile_id,
-				success: function(result, deferred) {
+				success: function(result) {
 					// If user has an active delegation, then they can't add a delegation
 					if (result) {
 						Ext.MessageBox.alert(that.activeDelegErrorTitleText, that.activeDelegErrorText);
@@ -412,7 +418,7 @@ Ext.define('NP.controller.UserManager', {
 						that.showUserDelegationForm(userprofile_id, delegation_id);
 					}
 				},
-				failure: function(response, options, deferred) {
+				failure: function(response, options) {
 					Ext.log('Error checking if user has active delegation');
 				}
 			}
@@ -438,6 +444,8 @@ Ext.define('NP.controller.UserManager', {
 	    	viewCfg.listeners = {
 	    		dataloaded: function(boundForm, data) {
 					boundForm.findField('Delegation_To_UserProfile_Id').setRawValue(data['Delegation_To_UserProfile_Id']);
+					boundForm.findField('Delegation_StartDate').setValue(new Date(data['Delegation_StartDate']));
+					boundForm.findField('Delegation_StopDate').setValue(new Date(data['Delegation_StopDate']));
 				}
 			};
 	    }
@@ -463,7 +471,7 @@ Ext.define('NP.controller.UserManager', {
 			delegated_to_userprofile_id: userprofile_id
 		});
 
-		var mask = new Ext.LoadMask(form);
+		var mask = new Ext.LoadMask({ target: form });
 		propertyField.getStore().load(function() {
 			mask.destroy();
 		});
@@ -490,7 +498,7 @@ Ext.define('NP.controller.UserManager', {
 				extraFields: {
 					delegation_properties: 'delegation_properties'
 				},
-				success: function(result, deferred) {
+				success: function(result) {
 					// Close the form window
 					that.getDelegationWindow().close();
 
@@ -515,12 +523,12 @@ Ext.define('NP.controller.UserManager', {
 						service      : 'UserService',
 						action       : 'cancelDelegation',
 						delegation_id: delegation_id,
-						success      : function(result, deferred) {
+						success      : function(result) {
 							var rec = grid.getStore().query('Delegation_Id', delegation_id).getAt(0);
 							rec.set('Delegation_Status', 0);
 							rec.set('delegation_status_name', 'Inactive');
 						},
-						failure      : function(response, options, deferred) {
+						failure      : function(response, options) {
 							Ext.log('Failed to cancel delegation')
 						}
 					}
@@ -547,7 +555,7 @@ Ext.define('NP.controller.UserManager', {
 					properties                  : 'properties',
 					coding_properties           : 'coding_properties'
 				},
-				success: function(result, deferred) {
+				success: function(result) {
 					// Show info message
 					NP.Util.showFadingWindow({ html: that.changesSavedText });
 
@@ -610,68 +618,65 @@ Ext.define('NP.controller.UserManager', {
 			forceViewCreate = true;
 		}
 
-		// Load a store if it hasn't already been loaded before proceeding
-		this.application.loadStore('notification.EmailAlertTypes', 'NP.store.notification.EmailAlertTypes', {}, function() {
-			// Setup the view configuration
-			var viewCfg = {
-				bind: {
-			        models: ['user.Role']
-			    },
-			    // Set the form title
-				title: that.newGroupFormTitle
-			};
+		// Setup the view configuration
+		var viewCfg = {
+			bind: {
+		        models: ['user.Role']
+		    },
+		    // Set the form title
+			title: that.newGroupFormTitle
+		};
 
-			// Only do this if viewing an existing user
-			if (role_id) {
-				Ext.apply(viewCfg, {
-			    	listeners       : {
-				    	dataloaded: function(formPanel, data) {
-				    		// Set the form title
-				    		formPanel.setTitle(that.editGroupFormTitle + ' "' + data['role_name'] + '"');
+		// Only do this if viewing an existing user
+		if (role_id) {
+			Ext.apply(viewCfg, {
+		    	listeners       : {
+			    	dataloaded: function(formPanel, data) {
+			    		// Set the form title
+			    		formPanel.setTitle(that.editGroupFormTitle + ' - ' + data['role_name']);
 
-				    		// Set the active user for easy access later
-				    		that.activeRole = formPanel.getModel('user.Role');
+			    		// Set the active user for easy access later
+			    		that.activeRole = formPanel.getModel('user.Role');
 
-							// Check the appropriate email alert boxes
-							that.selectEmailAlerts(data['email_alerts']);
+						// Check the appropriate email alert boxes
+						that.selectEmailAlerts(data['email_alerts']);
 
-							// Check the appropriate email alert hour boxes
-							that.selectEmailAlertHours(data['email_hours']);
+						// Check the appropriate email alert hour boxes
+						that.selectEmailAlertHours(data['email_hours']);
 
-							// Check nodes that are on for the role
-							var tree = that.getGroupTree();
-							tree.getRootNode().cascadeBy(function(n) {
-								if (n.get('module_id') in data['permissions']) {
-									n.set('checked', true);
-								}
-							});
-
-							// Setup the Dashboard canvas
-							var canvas = that.getPortalCanvas();
-							var canvasConfig = data['role_dashboard_layout'];
-							if (canvasConfig !== null) {
-								canvas.setPermissions(data['permissions']);
-								canvas.buildFromConfig(Ext.JSON.decode(canvasConfig));
+						// Check nodes that are on for the role
+						var tree = that.getGroupTree();
+						tree.getRootNode().cascadeBy(function(n) {
+							if (n.get('module_id') in data['permissions']) {
+								n.set('checked', true);
 							}
+						});
 
-							that.getPortalTilePicker().setPermissions(data['permissions']);
+						// Setup the Dashboard canvas
+						var canvas = that.getPortalCanvas();
+						var canvasConfig = data['role_dashboard_layout'];
+						if (canvasConfig !== null) {
+							canvas.setPermissions(data['permissions']);
+							canvas.buildFromConfig(Ext.JSON.decode(canvasConfig));
 						}
-				    }
-				});
 
-				Ext.apply(viewCfg.bind, {
-					service    : 'UserService',
-					action     : 'getRole',
-					extraFields: ['parent_role_id'],
-					extraParams: {
-			            role_id: role_id
-			        }
-				});
-			}
+						that.getPortalTilePicker().setPermissions(data['permissions']);
+					}
+			    }
+			});
 
-			// Create the view with the configuration defined above
-			var form = that.setView('NP.view.user.GroupsForm', viewCfg, '[xtype="user.groups"]', forceViewCreate);
-		});
+			Ext.apply(viewCfg.bind, {
+				service    : 'UserService',
+				action     : 'getRole',
+				extraFields: ['parent_role_id'],
+				extraParams: {
+		            role_id: role_id
+		        }
+			});
+		}
+
+		// Create the view with the configuration defined above
+		var form = that.setView('NP.view.user.GroupsForm', viewCfg, '[xtype="user.groups"]', forceViewCreate);
 	},
 
 	checkPermissionBox: function() {
@@ -711,13 +716,17 @@ Ext.define('NP.controller.UserManager', {
 				}
 			});
 
+			emailalerts = this.getSelectedEmailAlerts('groupEmailAlertPanel');
+			Ext.each(this.getSelectedEmailAlerts('groupFrequentlyBasedEmailAlertPanel'), function (emailalert){
+				emailalerts.push(emailalert);
+			});
 			form.submitWithBindings({
 				service: 'UserService',
 				action : 'saveRole',
 				extraParams: {
 					permissions     : permissions,
-					emailalerts     : this.getSelectedEmailAlerts('groupEmailAlertPanel'),
-					emailalerthours : this.getSelectedEmailHours('groupEmailAlertPanel'),
+					emailalerts     : emailalerts,
+					emailalerthours : this.getSelectedEmailHours('groupFrequentlyBasedEmailAlertPanel'),
 					dashboard_layout: this.getPortalCanvas().serialize()
 				},
 				extraFields: {
@@ -725,7 +734,7 @@ Ext.define('NP.controller.UserManager', {
 					email_overwrite   : 'email_overwrite',
 					dashboard_to_users: 'dashboard_to_users'
 				},
-				success: function(result, deferred) {
+				success: function(result) {
 					// Show info message
 					NP.Util.showFadingWindow({ html: that.changesSavedText });
 
@@ -744,7 +753,7 @@ Ext.define('NP.controller.UserManager', {
 				service: 'UserService',
 				action : 'copyRole',
 				role_id: this.activeRole.get('role_id'),
-				success: function(result, deferred) {
+				success: function(result) {
 					if (result.success) {
 						that.addHistory('UserManager:showUserManager:Groups:Form:' + result['role_id']);
 

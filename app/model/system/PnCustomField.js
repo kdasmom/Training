@@ -20,9 +20,9 @@ Ext.define('NP.model.system.PnCustomField', {
 		{ name: 'customfield_table' },
 		{ name: 'customfield_pn_type' },
 		{ name: 'customfield_status' },
-		{ name: 'customfield_createdt', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+		{ name: 'customfield_createdt', type: 'date' },
 		{ name: 'customfield_createdby', type: 'int' },
-		{ name: 'customfield_lastupdatedt', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
+		{ name: 'customfield_lastupdatedt', type: 'date' },
 		{ name: 'customfield_lastupdateby', type: 'int' }
 	],
 

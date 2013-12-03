@@ -80,7 +80,6 @@ Ext.define('NP.lib.ui.Uploader', {
                                 xtype:  'panel',
                                 border: 0,
                                 region: 'center',
-                                //html:   '<button id="file_upload" />'
                                 html: '<input id="file_upload" type="file" name="file_upload" />'
                             },
                             {

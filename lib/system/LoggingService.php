@@ -7,12 +7,13 @@ use NP\core\AbstractService;
 use Zend\Log\Logger;
 use Zend\Log\Writer;
 use FirePHP as FirePHPClass;
+use ChromePhp as ChromePhpClass;
 
 /**
  * Service class for operations related to logging
  *
  * The logging service provides a flexible way to log info based on several configuration parameters found in
- * the constructor. It allows you to enable logging to files or to a debug stream (FirePHP) and also allows
+ * the constructor. It allows you to enable logging to files or to a debug stream (FirePHP or ChromePhp) and also allows
  * you to debug to different namespaces (basically categories), which allows you to easily turn logging on and
  * off for specific parts of your app. So for example, if you initialize the Logging service with only the
  * "mail" namespace enabled, a call like $loggingService->log('mail', 'This is my message') will write to a log,
@@ -65,9 +66,11 @@ class LoggingService {
 					$writer = new Writer\Stream($this->logPath.'\\'.$namespace.'.log');
 					$logger->addWriter($writer);
 				}
-				// If debug logging is enabled, create a FirePHP writer
+				// If debug logging is enabled, create FirePHP and ChromePhp writers
 				if ($this->debugEnabled) {
 					$writer = new Writer\FirePhp(new Writer\FirePhp\FirePhpBridge(FirePHPClass::getInstance(true)));
+					$logger->addWriter($writer);
+					$writer = new Writer\ChromePhp(new Writer\ChromePhp\ChromePhpBridge(ChromePhpClass::getInstance()));
 					$logger->addWriter($writer);
 				}
 				$this->loggers[$namespace] = $logger;

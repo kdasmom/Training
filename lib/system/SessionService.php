@@ -25,7 +25,7 @@ class SessionService {
 		if (count($loginUrl) > 1) {
 //			session_set_cookie_params(0, '/'.$loginUrl[1].'/', $loginUrl[0]);
 		} else {
-			session_set_cookie_params(0, '/', $loginUrl[0]);
+//			session_set_cookie_params(0, '/', $loginUrl[0]);
 		}
 		session_start();
 

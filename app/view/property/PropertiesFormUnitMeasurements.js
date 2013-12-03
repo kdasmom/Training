@@ -9,18 +9,18 @@ Ext.define('NP.view.property.PropertiesFormUnitMeasurements', {
     
     requires: [
     	'NP.lib.core.Config',
+        'NP.lib.core.Translator',
     	'NP.view.property.UnitTypeGrid',
     	'NP.view.property.UnitTypeForm'
     ],
 
     border: false,
 
-    measurementTitleText: 'Measurements',
-
     initComponent: function() {
-    	var that = this;
+    	var that = this,
+            unitText = NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit');
 
-    	this.title = NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + ' ' + this.measurementTitleText;
+    	this.title = NP.Translator.translate('{unit} Measurements', { unit: unitText });
 
     	this.layout = {
 			type: 'hbox',

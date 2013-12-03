@@ -10,20 +10,20 @@ Ext.define('NP.view.user.UserDelegationForm', {
     requires: [
         'NP.lib.core.Config',
         'NP.lib.core.Security',
+        'NP.lib.core.Translator',
         'NP.view.shared.button.Cancel',
         'NP.view.shared.button.Save',
-        'Ext.ux.form.field.BoxSelect'
+        'Ext.ux.form.field.BoxSelect',
+		'NP.view.shared.PropertyAssigner'
     ],
 
     autoScroll : true,
     border     : false,
     bodyPadding: 8,
-
-    startDateLabelText      : 'Start Date',
-    stopDateLabelText       : 'Stop Date',
-    delegateToLabelText     : 'Delegate to Whom',
-    delegPropertiesLabelText: NP.Config.getSetting('PN.Main.PropertiesLabel') + ' to Delegate',
-    delegPropertiesEmptyText: 'Select ' + NP.Config.getSetting('PN.Main.PropertiesLabel') + '...',
+	layout: {
+		type : 'vbox',
+		align: 'stretch'
+	},
 
     initComponent: function() {
         var bar = [
@@ -31,7 +31,6 @@ Ext.define('NP.view.user.UserDelegationForm', {
             { xtype: 'shared.button.save' }
         ];
         this.tbar = bar;
-        this.bbar = bar;
 
         this.defaults = {
             labelWidth: 180
@@ -40,15 +39,15 @@ Ext.define('NP.view.user.UserDelegationForm', {
         this.items = [
             {
                 xtype     : 'datefield',
-                fieldLabel: this.startDateLabelText,
+                fieldLabel: NP.Translator.translate('Start Date'),
                 name      : 'Delegation_StartDate'
             },{
                 xtype     : 'datefield',
-                fieldLabel: this.stopDateLabelText,
+                fieldLabel: NP.Translator.translate('Stop Date'),
                 name      : 'Delegation_StopDate'
             },{
                 xtype       : 'combo',
-                fieldLabel  : this.delegateToLabelText,
+                fieldLabel  : NP.Translator.translate('Delegate to Whom'),
                 forceSelection: true,
                 queryMode   : 'local',
                 width       : 600,
@@ -60,28 +59,20 @@ Ext.define('NP.view.user.UserDelegationForm', {
                     action     : 'getAllowedDelegationUsers'
                 }),
                 listConfig: {
-                    itemTpl: '{userprofilerole.staff.person.person_lastname}, {userprofilerole.staff.person.person_lastname} ({userprofile_username})'
+                    itemTpl: '{person_lastname}, {person_lastname} ({userprofile_username})'
                 }
-            },{
-                xtype       : 'boxselect',
-                fieldLabel  : this.delegPropertiesLabelText,
-                name        : 'delegation_properties',
-                emptyText   : this.delegPropertiesEmptyText,
-                queryMode   : 'local',
-                selectOnTab : false,
-                displayField: 'property_name',
-                valueField  : 'property_id',
-                store       : Ext.create('NP.store.property.Properties', {
-                                service: 'UserService',
-                                action : 'getUserProperties'
-                            }),
-                width       : 600,
-                growMin     : 200,
-                growMax     : 400,
-                allowBlank  : false,
-                validateOnBlur: false,
-                validateOnChange: false
             },
+			{
+				xtype			: 'shared.propertyassigner',
+				height			: 100,
+				fieldLabel		: NP.Translator.translate('{properties} to Delegate', { properties: NP.Config.getPropertyLabel(true) }),
+				name				: 'delegation_properties',
+				allowBlank		: false,
+				store			: Ext.create('NP.store.property.Properties', {
+					service	: 'UserService',
+					action	: 'getUserProperties'
+				})
+			},
             { xtype: 'hiddenfield', name: 'UserProfile_Id'}
         ];
 

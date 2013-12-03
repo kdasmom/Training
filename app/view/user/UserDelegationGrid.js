@@ -8,6 +8,7 @@ Ext.define('NP.view.user.UserDelegationGrid', {
     alias : 'widget.user.userdelegationgrid',
     
     requires: [
+        'NP.lib.core.Translator',
         'NP.view.user.gridcol.DelegationToName',
         'NP.view.user.gridcol.DelegationFromName',
         'NP.view.user.gridcol.DelegationStartDate',
@@ -22,9 +23,11 @@ Ext.define('NP.view.user.UserDelegationGrid', {
 	border    : false,
 	viewConfig: { markDirty: false },
 
-    emptyText: 'No delegations found.',
-
     initComponent: function() {
+        var me = this;
+
+        me.emptyText = NP.Translator.translate('No delegations found.');
+
     	if (this.toOrFrom != 'to' && this.toOrFrom != 'from') {
     		throw 'Invalid "toOrFrom" attribute. Valid values for "toOrFrom" attribute are "to" and "from"';
     	}

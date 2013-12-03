@@ -9,6 +9,7 @@ Ext.define('NP.view.property.UnitTypeGrid', {
     
     requires: [
     	'NP.lib.core.Config',
+    	'NP.lib.core.Translator',
     	'NP.view.shared.button.New',
     	'NP.view.shared.button.View'
     ],
@@ -16,19 +17,10 @@ Ext.define('NP.view.property.UnitTypeGrid', {
     stateful: true,
     stateId : 'property_unittype_grid',
 
-    // For localization
-	typeLabelText         : 'Type',
-	unassignedUnitsBtnText: 'View ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + 's Not Assigned to a ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + ' Type',
-	addBtnText            : 'Add ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + ' Type',
-	gridUniTypeColText    : NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + ' Type',
-	gridBedroomsColText   : 'Bedrooms',
-	gridBathroomsColText  : 'Bathrooms',
-	gridLastUpdatedColText: 'Last Updated',
-
     initComponent: function() {
     	var that = this;
 
-    	var unitTypeText = NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + ' Type';
+    	that.translateText();
 
     	this.store = Ext.create('NP.store.property.UnitTypes', {
 						service    : 'PropertyService',
@@ -81,5 +73,18 @@ Ext.define('NP.view.property.UnitTypeGrid', {
 	    ];
 
     	this.callParent(arguments);
+    },
+
+    translateText: function() {
+    	var me = this,
+            unitText = NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit');
+
+    	me.typeLabelText          = NP.Translator.translate('Type');
+		me.unassignedUnitsBtnText = NP.Translator.translate('View {unit}s Not Assigned to a {unit} Type', { unit: unitText});
+		me.addBtnText             = NP.Translator.translate('Add {unit} Type', { unit: unitText});
+		me.gridUniTypeColText     = NP.Translator.translate('{unit} Type', { unit: unitText});
+		me.gridBedroomsColText    = NP.Translator.translate('Bedrooms');
+		me.gridBathroomsColText   = NP.Translator.translate('Bathrooms');
+		me.gridLastUpdatedColText = NP.Translator.translate('Last Updated');
     }
 });

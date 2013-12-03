@@ -84,6 +84,18 @@ Ext.define('NP.lib.ui.DateTimeField', {
     	return this.name;
     },
 
+    disable: function() {
+        this.callParent();
+        this.dateField.disable();
+        this.timeField.disable();
+    },
+
+    enable: function() {
+        this.callParent();
+        this.dateField.enable();
+        this.timeField.enable();
+    },
+
     markInvalid: function(errors) {
     	this.dateField.markInvalid(errors);
     },

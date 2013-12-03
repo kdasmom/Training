@@ -21,33 +21,6 @@ Ext.define('NP.view.mySettings.UserInformation', {
     layout: 'fit',
     autoScroll: true,
 
-    // Bindind this form to some models
-    bind: {
-        service: 'UserService',
-        action : 'get',
-        extraParams: {
-            userprofile_id: NP.lib.core.Security.getUser().get('userprofile_id')
-        },
-        extraFields: ['role_id'],
-        models: [
-            'user.Userprofile',
-            'user.Userprofilerole',
-            'user.Staff',
-            'contact.Person',
-            'contact.Address',
-            'contact.Email',
-            {
-                class: 'contact.Phone',
-                prefix: 'home_'
-            },
-            {
-                class: 'contact.Phone',
-                prefix: 'work_'
-            }
-        ],
-        evt: 'show'
-    },
-
     initComponent: function() {
     	var labelWidth = 150;
     	var bar = [
@@ -57,6 +30,33 @@ Ext.define('NP.view.mySettings.UserInformation', {
 	    this.tbar = bar;
 	    this.bbar = bar;
 
+        // Binding this form to some models
+        this.bind = {
+            service: 'UserService',
+            action : 'get',
+            extraParams: {
+                userprofile_id: NP.lib.core.Security.getUser().get('userprofile_id')
+            },
+            extraFields: ['role_id'],
+            models: [
+                'user.Userprofile',
+                'user.Userprofilerole',
+                'user.Staff',
+                'contact.Person',
+                'contact.Address',
+                'contact.Email',
+                {
+                    classPath: 'contact.Phone',
+                    prefix: 'home_'
+                },
+                {
+                    classPath: 'contact.Phone',
+                    prefix: 'work_'
+                }
+            ],
+            evt: 'show'
+        };
+
         this.items = [{
             xtype : 'verticaltabpanel',
             border: false,
@@ -64,8 +64,8 @@ Ext.define('NP.view.mySettings.UserInformation', {
                 padding: 8
             },
             items : [
-                { xtype: 'user.usersformdetails', isMySettings: true },
-                { xtype: 'user.usercontactinfo' }
+				{ xtype: 'user.usercontactinfo' },
+                { xtype: 'user.usersformdetails', isMySettings: true }
             ]
         }];
 

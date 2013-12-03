@@ -73,6 +73,11 @@ class TreeGateway extends AbstractGateway {
 
                 $this->save($tree);
             }
+            if ($currentTree[0]['tree_parent'] != $tree_parent) {
+                $tree = new TreeEntity($currentTree[0]);
+                $tree->tree_parent = $tree_parent;
+                $this->update($tree);
+            }
         }
 
         return $tree_id;

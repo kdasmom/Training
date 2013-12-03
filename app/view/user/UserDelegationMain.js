@@ -8,6 +8,7 @@ Ext.define('NP.view.user.UserDelegationMain', {
     alias: 'widget.user.userdelegationmain',
     
     requires: [
+        'NP.lib.core.Translator',
     	'NP.view.shared.button.New',
     	'NP.view.user.UserDelegationGrid'
     ],
@@ -19,20 +20,24 @@ Ext.define('NP.view.user.UserDelegationMain', {
 
     border: false,
 
-    addDelegationText : 'Add a Delegation',
-	delegationFromText: 'Users you delegated to',
-	delegationToText  : 'Users who delegated to you',
-
-	initComponent: function() {
+    initComponent: function() {
     	var bar = [
-	    	 { xtype: 'shared.button.new', text: this.addDelegationText }
+	    	 { xtype: 'shared.button.new', text: NP.Translator.translate('Add a Delegation') }
 	    ];
 	    this.tbar = bar;
-	    this.bbar = bar;
 
 	    this.items = [
-            { xtype: 'user.userdelegationgrid', toOrFrom: 'from', flex: 1, title: this.delegationFromText },
-            { xtype: 'user.userdelegationgrid', toOrFrom: 'to', flex: 1, title: this.delegationToText }
+            {
+                xtype   : 'user.userdelegationgrid',
+                toOrFrom: 'from',
+                flex    : 1,
+                title   : NP.Translator.translate('Users you delegated to')
+            },{
+                xtype   : 'user.userdelegationgrid',
+                toOrFrom: 'to',
+                flex    : 1,
+                title   : NP.Translator.translate('Users who delegated to you')
+            }
         ];
 
     	this.callParent(arguments);

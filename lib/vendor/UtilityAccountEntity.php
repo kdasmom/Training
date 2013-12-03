@@ -59,7 +59,10 @@ class UtilityAccountEntity extends \NP\core\AbstractEntity {
 		),
 		'utilityaccount_active'	 => array(
 			'required'     => true,
-			'defaultValue' => 1
+			'defaultValue' => 1,
+			'validation' => array(
+				'digits' => array()
+			)
 		),
 		'glaccount_id'	 => array(
 			'validation' => array(

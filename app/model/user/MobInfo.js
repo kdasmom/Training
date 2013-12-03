@@ -6,7 +6,10 @@
 Ext.define('NP.model.user.MobInfo', {
 	extend: 'Ext.data.Model',
 	
-	requires: ['NP.lib.core.Config'],
+	requires: [
+        'NP.lib.core.Config',
+        'NP.model.user.Userprofile'
+    ],
 
 	idProperty: 'mobinfo_id',
 	fields: [
@@ -14,8 +17,8 @@ Ext.define('NP.model.user.MobInfo', {
 		{ name: 'mobinfo_phone' },
 		{ name: 'mobinfo_pin' },
 		{ name: 'userprofile_id', type: 'int' },
-		{ name: 'mobinfo_activated_datetm', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
-		{ name: 'mobinfo_deactivated_datetm', type: 'date', dateFormat: NP.lib.core.Config.getServerDateFormat() },
+		{ name: 'mobinfo_activated_datetm', type: 'date' },
+		{ name: 'mobinfo_deactivated_datetm', type: 'date' },
 		{ name: 'mobinfo_status', defaultValue: 'active' }
 	],
 
@@ -27,5 +30,16 @@ Ext.define('NP.model.user.MobInfo', {
 		{ field: 'mobinfo_pin', type: 'digits' },
 		{ field: 'mobinfo_pin', type: 'length', min: 4, max: 4 },
 		{ field: 'mobinfo_status', type: 'length', max: 50 }
-	]
+	],
+
+    belongsTo: [
+        {
+            model         : 'NP.model.user.Userprofile',
+            name          : 'userprofile',
+            getterName    : 'getUserProfile',
+            foreignKey    : 'userprofile_id',
+            primaryKey    : 'userprofile_id',
+            reader        : 'jsonflat'
+        }
+    ]
 });

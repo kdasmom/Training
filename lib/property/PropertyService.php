@@ -3,69 +3,23 @@
 namespace NP\property;
 
 use NP\core\AbstractService;
+use NP\core\db\Select;
 use NP\security\SecurityService;
-use NP\user\UserprofileGateway;
-use NP\user\PropertyUserprofileGateway;
-use NP\user\RecAuthorGateway;
 use NP\invoice\InvoiceService;
 use NP\po\PoService;
-use NP\workflow\WfRuleTargetGateway;
-use NP\contact\AddressGateway;
-use NP\contact\PhoneGateway;
-use NP\contact\PhoneTypeGateway;
-use NP\contact\StateGateway;
-use NP\system\PnCustomFieldsGateway;
-use NP\system\PnCustomFieldDataGateway;
 use NP\system\ConfigService;
-use NP\system\IntegrationPackageGateway;
-use NP\gl\GLAccountGateway;
 
 class PropertyService extends AbstractService {
 	
-	protected $securityService, $propertyGateway, $regionGateway, $fiscalcalGateway, $propertyUserprofileGateway, 
-				$unitGateway, $userprofileGateway, $invoiceService, $poService, $wfRuleTargetGateway,
-				$fiscalDisplayTypeGateway, $fiscalcalMonthGateway, $addressGateway, $phoneGateway, $pnCustomFieldsGateway,
-				$pnCustomFieldDataGateway, $propertyGlAccountGateway, $configService, $unitTypeGateway, $unitTypeValGateway,
-				$unitTypeMeasGateway, $fiscalCalService, $stateGateway, $integrationPackageGateway, $glAccountGateway;
+	protected $securityService, $invoiceService, $poService, $configService,
+			$fiscalCalService;
 	
-	public function __construct(SecurityService $securityService, PropertyGateway $propertyGateway, RegionGateway $regionGateway,
-								FiscalcalGateway $fiscalcalGateway, PropertyUserprofileGateway $propertyUserprofileGateway,
-								UnitGateway $unitGateway, UserprofileGateway $userprofileGateway, InvoiceService $invoiceService,
-								PoService $poService, WfRuleTargetGateway $wfRuleTargetGateway,
-								FiscalDisplayTypeGateway $fiscalDisplayTypeGateway, FiscalcalMonthGateway $fiscalcalMonthGateway,
-								AddressGateway $addressGateway, PhoneGateway $phoneGateway, PhoneTypeGateway $phoneTypeGateway,
-								RecAuthorGateway $recAuthorGateway, PnCustomFieldsGateway $pnCustomFieldsGateway,
-								PnCustomFieldDataGateway $pnCustomFieldDataGateway, PropertyGlAccountGateway $propertyGlAccountGateway,
-								UnitTypeGateway $unitTypeGateway, UnitTypeValGateway $unitTypeValGateway,
-								UnitTypeMeasGateway $unitTypeMeasGateway, FiscalCalService $fiscalCalService,
-								StateGateway $stateGateway, IntegrationPackageGateway $integrationPackageGateway,
-								GLAccountGateway $glAccountGateway) {
+	public function __construct(SecurityService $securityService, InvoiceService $invoiceService,
+								PoService $poService, FiscalCalService $fiscalCalService) {
 		$this->securityService            = $securityService;
-		$this->propertyGateway            = $propertyGateway;
-		$this->regionGateway              = $regionGateway;
-		$this->fiscalcalGateway           = $fiscalcalGateway;
-		$this->propertyUserprofileGateway = $propertyUserprofileGateway;
-		$this->unitGateway                = $unitGateway;
-		$this->userprofileGateway         = $userprofileGateway;
 		$this->invoiceService             = $invoiceService;
 		$this->poService                  = $poService;
-		$this->wfRuleTargetGateway        = $wfRuleTargetGateway;
-		$this->fiscalDisplayTypeGateway   = $fiscalDisplayTypeGateway;
-		$this->fiscalcalMonthGateway      = $fiscalcalMonthGateway;
-		$this->addressGateway             = $addressGateway;
-		$this->phoneGateway               = $phoneGateway;
-		$this->phoneTypeGateway           = $phoneTypeGateway;
-		$this->recAuthorGateway           = $recAuthorGateway;
-		$this->pnCustomFieldsGateway      = $pnCustomFieldsGateway;
-		$this->pnCustomFieldDataGateway   = $pnCustomFieldDataGateway;
-		$this->propertyGlAccountGateway   = $propertyGlAccountGateway;
-		$this->unitTypeGateway            = $unitTypeGateway;
-		$this->unitTypeValGateway         = $unitTypeValGateway;
-		$this->unitTypeMeasGateway        = $unitTypeMeasGateway;
 		$this->fiscalCalService           = $fiscalCalService;
-		$this->stateGateway               = $stateGateway;
-		$this->integrationPackageGateway  = $integrationPackageGateway;
-		$this->glAccountGateway           = $glAccountGateway;
 	}
 
 	/**
@@ -83,6 +37,8 @@ class PropertyService extends AbstractService {
 	 */
 	public function get($property_id) {
 		$res = $this->propertyGateway->findById($property_id);
+		$res['property_name'] = htmlspecialchars_decode($res['property_name']);
+
 
 		if ($this->configService->get('CP.PROPERTYGLACCOUNT_USE', 0) && $this->securityService->hasPermission(12)) {
 			$res['property_gls'] = $this->propertyGlAccountGateway->find(
@@ -115,8 +71,8 @@ class PropertyService extends AbstractService {
 	 *
 	 * @return array
 	 */
-	public function getAll() {
-		return $this->propertyGateway->find(null, array(), "property_name",  array('property_id','property_id_alt','property_name','property_status','integration_package_id','property_no_units'));
+	public function getAll($property_id=null, $integration_package_id=null, $keyword=null, $property_status=null) {
+		return $this->propertyGateway->findAll($property_id, $integration_package_id, $keyword, $property_status);
 	}
 
 	/**
@@ -167,6 +123,12 @@ class PropertyService extends AbstractService {
 			new sql\join\PropertyIntPkgJoin(),
 			new sql\join\PropertyRegionJoin(),
 			new sql\join\PropertyCreatedByUserJoin(),
+			new sql\join\FiscalDisplayTypeJoin(),
+			new sql\join\PropertyPropertyShipToJoin(),
+			new sql\join\PropertyPropertyBillToJoin(),
+			new sql\join\PropertyAddressJoin(),
+			new sql\join\PropertyPhoneJoin(['phone_id', 'phone_number']),
+			new sql\join\PropertyFaxJoin(),
 			new \NP\user\sql\join\UserUserroleJoin(array(
 				'created_by_userprofilerole_id' =>'userprofilerole_id',
 				'created_by_tablekey_id'        =>'tablekey_id'
@@ -552,7 +514,7 @@ class PropertyService extends AbstractService {
 	 * @return array               Array of fiscalcalmonth records
 	 */
 	public function getFiscalCalMonths($fiscalcal_id) {
-		return $this->fiscalcalMonthGateway->find(
+		return $this->fiscalCalMonthGateway->find(
 			array('fiscalcal_id'=>'?'),
 			array($fiscalcal_id)
 		);
@@ -634,7 +596,7 @@ class PropertyService extends AbstractService {
 					$data['fiscalcals'][0]['fiscalcal_id'] = null;
 					$data['fiscalcals'][0]['property_id'] = $property->property_id;
 					$data['fiscalcals'][0]['fiscalcal_type'] = 'assigned';
-					$data['fiscalcals'][0]['months'] = $this->fiscalcalMonthGateway->find('fiscalcal_id = ?', array($data['fiscalcal_id']));
+					$data['fiscalcals'][0]['months'] = $this->fiscalCalMonthGateway->find('fiscalcal_id = ?', array($data['fiscalcal_id']));
 					foreach ($data['fiscalcals'][0]['months'] as $idx=>$fiscalcalMonthData) {
 						$data['fiscalcals'][0]['months'][$idx]['fiscalcalmonth_id'] = null;
 					}
@@ -977,7 +939,7 @@ class PropertyService extends AbstractService {
 					foreach ($data['months'] as $fiscalcalMonthData) {
 						$fiscalcalMonth = new FiscalCalMonthEntity($fiscalcalMonthData);
 						$fiscalcalMonth->fiscalcal_id = $fiscalcal->fiscalcal_id;
-						$this->fiscalcalMonthGateway->save($fiscalcalMonth);
+						$this->fiscalCalMonthGateway->save($fiscalcalMonth);
 					}
 				}
 

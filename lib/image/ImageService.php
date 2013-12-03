@@ -19,123 +19,121 @@ use NP\invoice\InvoiceGateway;
  */
 class ImageService extends AbstractService {
 
-	protected $securityService, $imageIndexGateway, $imageTransferGateway, $configService, $imageTablerefGateway, $imageDoctypeGateway, $invoiceImageSourceGateway,
-                $auditactivityGateway, $auditlogGateway, $audittypeGateway, $integrationPackageGateway, $utilityAccountGateway, $propertyGateway, $vendorGateway,
-                $imageToCDGateway, $invoiceGateway;
+    protected $configService, $securityService;
 
-	public function __construct(ImageIndexGateway $imageIndexGateway, ImageTransferGateway $imageTransferGateway, ConfigService $configService, ImageTablerefGateway $imageTablerefGateway,
-                ImageDoctypeGateway $imageDoctypeGateway, InvoiceImageSourceGateway $invoiceImageSourceGateway, AuditactivityGateway $auditactivityGateway,AuditlogGateway $auditlogGateway, 
-                AudittypeGateway $audittypeGateway, IntegrationPackageGateway $integrationPackageGateway, UtilityAccountGateway $utilityAccountGateway, PropertyGateway $propertyGateway, VendorGateway $vendorGateway,
-                ImageToCDGateway $imageToCDGateway, InvoiceGateway $invoiceGateway) {
-		$this->imageIndexGateway    = $imageIndexGateway;
-		$this->imageTransferGateway = $imageTransferGateway;
-                $this->configService        = $configService;
-                $this->imageTablerefGateway = $imageTablerefGateway;
-                $this->imageDoctypeGateway  = $imageDoctypeGateway;
-                $this->auditactivityGateway  = $auditactivityGateway;
-                $this->auditlogGateway      = $auditlogGateway;
-                $this->audittypeGateway     = $audittypeGateway;
-                $this->invoiceImageSourceGateway = $invoiceImageSourceGateway;
-                $this->integrationPackageGateway = $integrationPackageGateway;
-                $this->utilityAccountGateway = $utilityAccountGateway;
-                $this->propertyGateway = $propertyGateway;
-                $this->vendorGateway = $vendorGateway;
-                $this->imageToCDGateway = $imageToCDGateway;
-                $this->invoiceGateway = $invoiceGateway;
-	}
+    public function setConfigService($configService) {
+        $this->configService = $configService;
+    }
 
-	public function setSecurityService(SecurityService $securityService) {
-		$this->securityService = $securityService;
-	}
+    public function setSecurityService(SecurityService $securityService) {
+        $this->securityService = $securityService;
+    }
 
-	/**
-	 * Get list of Receipts to approve
-	 *
-	 * @param  boolean $countOnly                   Whether we want to retrieve only the number of records or all the data
-	 * @param  int     $userprofile_id              The active user ID, can be a delegated account
-	 * @param  int     $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
-	 * @param  string  $contextType                 The context filter type; valid values are 'property','region', and 'all'
-	 * @param  int     $contextSelection            The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
-	 * @param  int     $pageSize                    The number of records per page; if null, all records are returned
-	 * @param  int     $page                        The page for which to return records
-	 * @param  string  $sort                        Field(s) by which to sort the result; defaults to vendor_name
-	 * @return array                                Array of invoice records
-	 */
-	public function getImagesToConvert($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-		return $this->imageIndexGateway->findImagesToConvert($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
-	}
+    /**
+     * Get list of Receipts to approve
+     *
+     * @param  boolean $countOnly                   Whether we want to retrieve only the number of records or all the data
+     * @param  int     $userprofile_id              The active user ID, can be a delegated account
+     * @param  int     $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
+     * @param  string  $contextType                 The context filter type; valid values are 'property','region', and 'all'
+     * @param  int     $contextSelection            The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
+     * @param  int     $pageSize                    The number of records per page; if null, all records are returned
+     * @param  int     $page                        The page for which to return records
+     * @param  string  $sort                        Field(s) by which to sort the result; defaults to vendor_name
+     * @return array                                Array of invoice records
+     */
+    public function getImagesToConvert($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
+        return $this->imageIndexGateway->findImagesToConvert($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
+    }
     public function getImagesToConvert1($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
         $countOnly = 'false';
         return $this->imageIndexGateway->findImagesToConvert($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
     }
-	/**
-	 * Get list of Receipts to approve
-	 *
-	 * @param  boolean $countOnly                   Whether we want to retrieve only the number of records or all the data
-	 * @param  int     $userprofile_id              The active user ID, can be a delegated account
-	 * @param  int     $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
-	 * @param  string  $contextType                 The context filter type; valid values are 'property','region', and 'all'
-	 * @param  int     $contextSelection            The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
-	 * @param  int     $pageSize                    The number of records per page; if null, all records are returned
-	 * @param  int     $page                        The page for which to return records
-	 * @param  string  $sort                        Field(s) by which to sort the result; defaults to vendor_name
-	 * @return array                                Array of invoice records
-	 */
-	public function getImagesToProcess($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-		return $this->imageIndexGateway->findImagesToProcess($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
-	}
-	public function getImagesToProcess1($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-                   $countOnly = 'false';
-		return $this->imageIndexGateway->findImagesToProcess($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
-        }
+    /**
+     * Get list of Receipts to approve
+     *
+     * @param  boolean $countOnly                   Whether we want to retrieve only the number of records or all the data
+     * @param  int     $userprofile_id              The active user ID, can be a delegated account
+     * @param  int     $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
+     * @param  string  $contextType                 The context filter type; valid values are 'property','region', and 'all'
+     * @param  int     $contextSelection            The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
+     * @param  int     $pageSize                    The number of records per page; if null, all records are returned
+     * @param  int     $page                        The page for which to return records
+     * @param  string  $sort                        Field(s) by which to sort the result; defaults to vendor_name
+     * @return array                                Array of invoice records
+     */
+    public function getImagesToProcess($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
+        return $this->imageIndexGateway->findImagesToProcess($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
+    }
+    public function getImagesToProcess1($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
+        $countOnly = 'false';
+        return $this->imageIndexGateway->findImagesToProcess($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
+    }
         
-	/**
-	 * Get list of Receipts to approve
-	 *
-	 * @param  boolean $countOnly                   Whether we want to retrieve only the number of records or all the data
-	 * @param  int     $userprofile_id              The active user ID, can be a delegated account
-	 * @param  int     $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
-	 * @param  string  $contextType                 The context filter type; valid values are 'property','region', and 'all'
-	 * @param  int     $contextSelection            The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
-	 * @param  int     $pageSize                    The number of records per page; if null, all records are returned
-	 * @param  int     $page                        The page for which to return records
-	 * @param  string  $sort                        Field(s) by which to sort the result; defaults to vendor_name
-	 * @return array                                Array of invoice records
-	 */
-	public function getImageExceptions($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-		return $this->imageIndexGateway->findImageExceptions($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
-	}
+    /**
+     * Get list of Receipts to approve
+     *
+     * @param  boolean $countOnly                   Whether we want to retrieve only the number of records or all the data
+     * @param  int     $userprofile_id              The active user ID, can be a delegated account
+     * @param  int     $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
+     * @param  string  $contextType                 The context filter type; valid values are 'property','region', and 'all'
+     * @param  int     $contextSelection            The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
+     * @param  int     $pageSize                    The number of records per page; if null, all records are returned
+     * @param  int     $page                        The page for which to return records
+     * @param  string  $sort                        Field(s) by which to sort the result; defaults to vendor_name
+     * @return array                                Array of invoice records
+     */
+    public function getImageExceptions($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
+        return $this->imageIndexGateway->findImageExceptions($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
+    }
 
-	public function getImageExceptions1($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-            $countOnly = 'false';
-            return $this->imageIndexGateway->findImageExceptions($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
-        }
+    public function getImageExceptions1($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
+        $countOnly = 'false';
+        return $this->imageIndexGateway->findImageExceptions($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
+    }
 
-	/**
-	 * Get list of Receipts to approve
-	 *
-	 * @param  boolean $countOnly                   Whether we want to retrieve only the number of records or all the data
-	 * @param  int     $userprofile_id              The active user ID, can be a delegated account
-	 * @param  int     $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
-	 * @param  string  $contextType                 The context filter type; valid values are 'property','region', and 'all'
-	 * @param  int     $contextSelection            The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
-	 * @param  int     $pageSize                    The number of records per page; if null, all records are returned
-	 * @param  int     $page                        The page for which to return records
-	 * @param  string  $sort                        Field(s) by which to sort the result; defaults to vendor_name
-	 * @return array                                Array of invoice records
-	 */
-	public function getImagesToIndex($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-		return $this->imageIndexGateway->findImagesToIndex($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
-	}
+    /**
+     * Get list of Receipts to approve
+     *
+     * @param  boolean $countOnly                   Whether we want to retrieve only the number of records or all the data
+     * @param  int     $userprofile_id              The active user ID, can be a delegated account
+     * @param  int     $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
+     * @param  string  $contextType                 The context filter type; valid values are 'property','region', and 'all'
+     * @param  int     $contextSelection            The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
+     * @param  int     $pageSize                    The number of records per page; if null, all records are returned
+     * @param  int     $page                        The page for which to return records
+     * @param  string  $sort                        Field(s) by which to sort the result; defaults to vendor_name
+     * @return array                                Array of invoice records
+     */
+    public function getImagesToIndex($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
+        return $this->imageIndexGateway->findImagesToIndex($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
+    }
 
-	public function getImagesToIndex1($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-            $countOnly = false;
-		return $this->imageIndexGateway->findImagesToIndex($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
-	}
+    public function getImagesToIndex1($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
+        $countOnly = false;
+        return $this->imageIndexGateway->findImagesToIndex($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
+    }
 
-        public function getImagesToDelete($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-            $countOnly = false;
-		return $this->imageIndexGateway->findImagesToDelete($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
+    /**
+     * Get images for an invoice (all or primary only)
+     */
+    public function getInvoiceImages($invoice_id, $mainOnly=false) {
+        return $this->imageIndexGateway->findEntityImages($invoice_id, 'Invoice', $mainOnly);
+    }
+
+    /**
+     * Get the absolute path to a specific image file
+     *
+     * @param  int    $image_index_id
+     * @return string
+     */
+    public function getImagePath($image_index_id) {
+        return $this->imageIndexGateway->findImagePath($image_index_id);
+    }
+
+    public function getImagesToDelete($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
+        $countOnly = false;
+        return $this->imageIndexGateway->findImagesToDelete($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
     }
 
 

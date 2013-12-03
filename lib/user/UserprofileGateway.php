@@ -5,6 +5,7 @@ namespace NP\user;
 use NP\core\AbstractGateway;
 use NP\core\db\Update;
 use NP\core\db\Select;
+use NP\user\sql\criteria\IsUserInAppWhere;
 
 /**
  * Gateway for the USERPROFILE table
@@ -32,6 +33,10 @@ class UserprofileGateway extends AbstractGateway {
 				->joinUserprofilerole(array('userprofilerole_id','tablekey_id'))
 				->joinRole(array('role_id','role_name'))
 				->joinStaff(array('staff_id'))
+				->joinAddress(['address_line1', 'address_line2', 'address_city', 'address_state', 'address_zip'])
+				->joinEmail(['email_address'])
+				->joinPhone('Work', ['work_number' =>'phone_number'])
+				->joinPhone('Home', ['home_number' =>'phone_number'])
 				->joinPerson(array('person_id','person_firstname','person_lastname'))
 				->joinUpdatedBy(array(
 					'updated_by_userprofile_id' => 'userprofile_id',
@@ -39,6 +44,23 @@ class UserprofileGateway extends AbstractGateway {
 				));
 
 		return $select;
+	}
+
+	/**
+	 * @param int|array $module_id_list
+	 */
+	public function findUsersByPermission($module_id_list) {
+		$module_id_list = (is_array($module_id_list)) ? $module_id_list : array($module_id_list);
+		$select = Select::get()->columns(['userprofile_id','userprofile_username'])
+								->from(['u'=>'userprofile'])
+								->join(new sql\join\UserUserroleJoin())
+								->join(new sql\join\UserroleStaffJoin())
+								->join(new sql\join\StaffPersonJoin())
+								->whereEquals('u.userprofile_status', "'active'")
+								->whereMerge(new sql\criteria\UserHasPermissionCriteria($module_id_list))
+								->order('pe.person_lastname, pe.person_firstname');
+
+		return $this->adapter->query($select, $module_id_list);
 	}
 
 	/**
@@ -70,7 +92,7 @@ class UserprofileGateway extends AbstractGateway {
 	 * @param  int   $userprofile_id The ID of the user you want details for
 	 * @return array                 An array with data for the specified user, including userprofile, role, person, address, and email
 	 */
-	public function findProfileById($userprofile_id) {
+	public function findProfileById($userprofile_id = null) {
 		$select = new sql\UserprofileSelect();
 		$select->columnsAll()
 				->joinUserprofilerole(null)
@@ -236,7 +258,10 @@ class UserprofileGateway extends AbstractGateway {
 			$sort = 'p.person_lastname DESC, p.person_firstname DESC';
 		}
 
-		$select = $this->getSelect()->order($sort);
+		$select = $this->getSelect()
+					->getIncomingDelegationsCount()
+					->getOutgoingDelegationsCount()
+					->order($sort);
 		$params = array();
 
 		if ($userprofile_status !== null && $userprofile_status != '') {
@@ -276,6 +301,43 @@ class UserprofileGateway extends AbstractGateway {
 			return $this->adapter->query($select, $params);
 		}
 	}
+
+	/**
+	 * Check is user in app
+	 *
+	 * @param $role_id
+	 * @param $userprofile_id
+	 * @return bool
+	 */
+	public function isInAppUser($role_id, $userprofile_id) {
+		$select = new Select();
+
+		$select->count(true, 'privcount')
+					->from(['mp' => 'modulepriv'])
+					->join(['m' => 'module'], 'mp.module_id = m.module_id', [])
+					->where(new sql\criteria\IsUserInAppWhere('Vendor Approval'));
+
+		$count = $this->adapter->query($select, [$role_id, $userprofile_id]);
+
+		return $count[0]['privcount'] > 0 ? true : false;
+
+	}
+	
+    public function findAllMobileInfo($pageSize = null, $page = null, $order = 'person_lastname') {
+
+        $select = new sql\UserprofileSelect();
+        $select->columns(['userprofile_username', 'userprofile_id', 'userprofile_status'])
+            ->joinUserprofilerole([])
+            ->joinRole([])
+            ->joinStaff([])
+            ->joinPerson(array('person_firstname','person_lastname'))
+            ->joinMobinfo(['mobinfo_id', 'mobinfo_phone', 'mobinfo_activated_datetm', 'mobinfo_deactivated_datetm', 'mobinfo_status'])
+            ->order($order)
+            ->limit($pageSize)
+            ->offset($pageSize * ($page - 1));
+
+        return $this->adapter->query($select);
+    }
 }
 
 ?>

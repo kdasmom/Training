@@ -7,7 +7,7 @@ use NP\core\db\Adapter;
 use NP\system\IntegrationPackageGateway;
 use NP\contact\StateGateway;
 use NP\vendor\VendorTypeGateway;
-use NP\gl\GLAccountGateway;
+use NP\gl\GlAccountGateway;
 use NP\util\SoapService;
 
 /**
@@ -23,7 +23,7 @@ class VendorImportEntityValidator extends AbstractContactImportEntityValidator {
                                 Adapter $adapter, Config $config,
                                 IntegrationPackageGateway $integrationPackageGateway,
                                 StateGateway $stateGateway, VendorTypeGateway $vendorTypeGateway,
-                                GLAccountGateway $glAccountGateway, SoapService $soapService) {
+                                GlAccountGateway $glAccountGateway, SoapService $soapService) {
         // Initialize the class
         parent::__construct($localizationService, $adapter, $config, $stateGateway);
 

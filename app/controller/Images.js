@@ -1,6 +1,10 @@
 Ext.define('NP.controller.Images', {
     extend: 'NP.lib.core.AbstractController',
 
+    stores: ['images.ImageDocTypes'],
+
+    views : ['images.Main'],
+
     init: function() {
         var control = {};
 
@@ -553,14 +557,15 @@ Ext.define('NP.controller.Images', {
     loadStores: function(callback) {
         var storeDoctypes = 
             Ext.create('NP.store.images.ImageDocTypes',{
-                service    : 'ImageService',
-                action     : 'listDocTypes'
+                service: 'ImageService',
+                action : 'listDocTypes'
             }
         );
         var storeIntegrationPackages =
-            Ext.create('NP.store.images.IntegrationPackages', {
-                service    : 'ImageService',
-                action     : 'listIntegrationPackages'
+            Ext.create('NP.store.system.IntegrationPackages', {
+                service : 'ImageService',
+                action  : 'listIntegrationPackages',
+                autoLoad: true
             }
         );
 
@@ -581,7 +586,7 @@ Ext.define('NP.controller.Images', {
         var form = this.getCmp(
             'images.index'
         );
-        var mask = new Ext.LoadMask(form);
+        var mask = new Ext.LoadMask({ target: form });
 
         // Show blocking "Loading" screen.
         mask.show();

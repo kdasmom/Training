@@ -15,25 +15,21 @@ Ext.define('NP.view.user.GroupsForm', {
     	'NP.view.user.GroupsFormInfo',
     	'NP.view.user.GroupsFormPermissions',
     	'NP.view.user.UsersFormEmail',
-        'NP.view.user.GroupsFormDashboard',
+        'NP.view.user.GroupsFormDashboard'
     ],
 
     layout: 'fit',
     border: false,
 
-    // For localization
-    createCopyBtnText: 'Create Copy',
-    
     initComponent: function() {
     	var that = this;
 
     	var bar = [
+			{ xtype: 'shared.button.cancel' },
     		{ xtype: 'shared.button.save' },
-    		{ xtype: 'shared.button.cancel' },
-            { xtype: 'shared.button.new', itemId: 'createGroupCopyBtn', text: this.createCopyBtnText }
+            { xtype: 'shared.button.new', itemId: 'createGroupCopyBtn', text: NP.Translator.translate('Create Copy') }
 	    ];
 	    this.tbar = bar;
-	    this.bbar = bar;
 
 	    this.items = [{
 			xtype : 'verticaltabpanel',
@@ -42,6 +38,12 @@ Ext.define('NP.view.user.GroupsForm', {
 	    		{ xtype: 'user.groupsforminfo' },
 	    		{ xtype: 'user.groupsformpermissions' },
 	    		{ xtype: 'user.usersformemail', showEmailOverwrite: true, itemId: 'groupEmailAlertPanel' },
+				{
+					xtype: 'user.usersfrequentlybasedemailalertsform',
+					itemId: 'groupFrequentlyBasedEmailAlertPanel',
+					title: NP.Translator.translate('Frequency-Based Alerts'),
+					isGroup: true
+				},
                 { xtype: 'user.groupsformdashboard', border: false }
 	    	]
 	    }];

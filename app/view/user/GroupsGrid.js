@@ -9,20 +9,13 @@ Ext.define('NP.view.user.GroupsGrid', {
 
     requires: [
     	'NP.lib.core.Config',
+        'NP.lib.core.Translator',
     	'NP.view.shared.button.New',
     	'NP.view.shared.button.Delete',
         'NP.lib.ui.Grid',
         'NP.store.user.Roles'
     ],
     
-    // For localization
-    createNewGroupBtnLabel: 'Create New Group',
-    createCopyBtnLabel    : 'Create Copy',
-    nameColText           : 'Name',
-    usersColText          : 'Users',
-    lastUpdatedColText    : 'Last Updated',
-    moduleFilterLabel     : 'Function',
-
     layout: 'fit',
     border: false,
     
@@ -30,10 +23,9 @@ Ext.define('NP.view.user.GroupsGrid', {
     	var that = this;
 
     	var bar = [
-    		{ xtype: 'shared.button.new', text: this.createNewGroupBtnLabel }
+    		{ xtype: 'shared.button.new', text: NP.Translator.translate('Create New Group') }
 	    ];
 	    this.tbar = bar;
-	    this.bbar = bar;
 
         this.items = [{
             xtype   : 'customgrid',
@@ -48,15 +40,16 @@ Ext.define('NP.view.user.GroupsGrid', {
                     }),
             columns : [
                 {
-                    text: this.nameColText,
+                    text: NP.Translator.translate('Name'),
                     dataIndex: 'role_name',
-                    flex: 1
+                    flex: 1,
+					hideable: false
                 },{
-                    text: this.usersColText,
+                    text: NP.Translator.translate('Users'),
                     dataIndex: 'role_user_count',
                     flex: 1
                 },{
-                    text: this.lastUpdatedColText,
+                    text: NP.Translator.translate('Last Updated'),
                     dataIndex: 'role_updated_datetm',
                     flex: 1,
                     renderer: function(val, meta, rec) {
@@ -66,10 +59,19 @@ Ext.define('NP.view.user.GroupsGrid', {
                         }
                         return val;
                     }
-                }
+                },
+				{
+					text: NP.Translator.translate('Group Parent'),
+					dataIndex: 'parent_role_name',
+					flex: 1,
+					renderer: function (val, meta, rec) {
+						return rec.raw['parent_role_name'];
+					},
+					hidden: true
+				}
             ],
             pagingToolbarButtons: [
-                this.moduleFilterLabel + ':',
+                NP.Translator.translate('Function') + ':',
                 {
                     xtype       : 'customcombo',
                     name        : 'module_id',

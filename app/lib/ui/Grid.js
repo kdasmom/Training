@@ -6,6 +6,8 @@
 Ext.define('NP.lib.ui.Grid', {
 	extend : 'Ext.grid.Panel',
 	alias : 'widget.customgrid',
+
+	requires: ['Ext.toolbar.Spacer'],
 	
 	/**
 	 * @cfg {Boolean} paging               Whether or not paging will be used for this grid
@@ -47,7 +49,7 @@ Ext.define('NP.lib.ui.Grid', {
 			});
 
 			if (this.pagingToolbarButtons) {
-				this.pagingToolbarButtons.unshift('-');
+				this.pagingToolbarButtons.unshift({ xtype: 'tbspacer', width: 8 }, '-');
 			} else {
 				this.pagingToolbarButtons = [];
 			}

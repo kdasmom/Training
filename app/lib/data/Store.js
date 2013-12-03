@@ -28,43 +28,47 @@ Ext.define('NP.lib.data.Store', {
 	 */
 	reader: 'jsonflat',
 
+	isLoaded: false,
+
 	constructor: function(cfg) {
-		Ext.apply(this, cfg);
+		var me = this;
+
+		Ext.apply(me, cfg);
 		
-		if (this.service) {
-			Ext.apply(this, {
+		if (me.service) {
+			Ext.apply(me, {
 	    		proxy: {
 					type: 'ajax',
 					url : 'ajax.php',
 					extraParams: {
-						service: this.service,
-						action : this.action
+						service: me.service,
+						action : me.action
 					},
 					reader: {
-						type: this.reader
+						type: me.reader
 					}
 				}
 	    	});
 
-	    	Ext.apply(this.proxy.extraParams, this.extraParams);
+	    	Ext.apply(me.proxy.extraParams, me.extraParams);
 
-		    if (this.paging === true) {
-		    	Ext.apply(this, {
+		    if (me.paging === true) {
+		    	Ext.apply(me, {
 		    		remoteSort: true
 		    	});
 
-		    	Ext.apply(this.proxy, {
+		    	Ext.apply(me.proxy, {
 					limitParam: 'pageSize',
 					pageParam : 'page',
 					reader    : {
-						type         : this.reader,
+						type         : me.reader,
 						root         : 'data',
 						totalProperty: 'total'
 					}
 		    	});
 		    }
 
-		    Ext.apply(this.proxy, {
+		    Ext.apply(me.proxy, {
 				sortParam : 'sort',
 				encodeSorters: function(sorters) {
 					var length   = sorters.length,
@@ -79,9 +83,28 @@ Ext.define('NP.lib.data.Store', {
 					return sortStrs.join(",");
 				}
 	    	});
+		} else {
+			Ext.applyIf(me, {
+	    		proxy: {
+					type: 'memory',
+					reader: {
+						type: me.reader
+					}
+				}
+	    	});
 		}
 		
-    	this.callParent(arguments);
+    	me.callParent(arguments);
+
+    	// Subscribe to before load to reset the isLoaded property to false when new data gets loaded
+    	me.on('beforeload', function() {
+    		me.isLoaded = false;
+    	});
+
+    	// Subscribe to load event to set the isLoaded property to true
+    	me.on('load', function() {
+    		me.isLoaded = true;
+    	});
     },
 
     /**
@@ -125,6 +148,15 @@ Ext.define('NP.lib.data.Store', {
 	 */
 	getExtraParam: function(name) {
     	return this.getProxy().extraParams[name];
+    },
+
+    /**
+	 * Sets extraparams set on the store's proxy
+	 * @return {Object}
+	 */
+	setExtraParams: function(val) {
+    	this.getProxy().extraParams = val;
+    	return this;
     },
 
     /**

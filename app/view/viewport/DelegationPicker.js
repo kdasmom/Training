@@ -12,9 +12,12 @@ Ext.define('NP.view.viewport.DelegationPicker', {
     extend: 'Ext.container.Container',
     alias: 'widget.viewport.delegationpicker',
     
-    requires: ['NP.lib.ui.ComboBox','NP.lib.core.Config','NP.lib.core.Security'],
-
-    signedOnText: 'You are signed on as',
+    requires: [
+        'NP.lib.ui.ComboBox',
+        'NP.lib.core.Config',
+        'NP.lib.core.Security',
+        'NP.lib.core.Translator'
+    ],
 
     style    : 'background-color: transparent; float:right;',
     bodyStyle: 'background-color: transparent; color: #9FCCFA; font-style: italic',
@@ -36,10 +39,12 @@ Ext.define('NP.view.viewport.DelegationPicker', {
         });
         
         // Left column indicates the user logged in
-        var delegationStore = Ext.StoreManager.lookup('user.Delegations');
+        var delegationStore = Ext.StoreManager.lookup('user.Delegations'),
+            signedOnText    = 'You are signed on as';
+
         this.items.push({
             flex  : 1,
-            html  : this.signedOnText + ': ' + NP.lib.core.Security.getUser().get('userprofile_username'),
+            html  : NP.Translator.translate(signedOnText) + ': ' + NP.lib.core.Security.getUser().get('userprofile_username'),
             hidden: (delegationStore.getTotalCount() == 0) ? false : true,
             margin: '4 0 4 0'
         },{
@@ -50,7 +55,7 @@ Ext.define('NP.view.viewport.DelegationPicker', {
             },
             items : {
                 xtype            : 'customcombo',
-                fieldLabel       : this.signedOnText,
+                fieldLabel       : NP.Translator.translate(signedOnText),
                 labelWidth       : 120,
                 store            : delegationStore,
                 selectFirstRecord: true,

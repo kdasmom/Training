@@ -7,12 +7,7 @@ Ext.define('NP.view.user.GroupsFormPermissions', {
     extend: 'Ext.tree.Panel',
     alias: 'widget.user.groupsformpermissions',
     
-    // For locatization
-	title             : 'Responsibilities',
-	expandAllBtnText  : 'Expand All',
-	collapseAllBtnText: 'Collapse All',
-
-	rootVisible: false,
+    rootVisible: false,
 	useArrows  : true,
 	bodyPadding: 4,
 	frame      : false,
@@ -22,12 +17,13 @@ Ext.define('NP.view.user.GroupsFormPermissions', {
     initComponent: function() {
     	var that = this;
 
+    	that.title = NP.Translator.translate('Responsibilities');
+
     	var bar = [
-    		{ text: this.expandAllBtnText, handler: function() { that.expandAll(); } },
-    		{ text: this.collapseAllBtnText, handler: function() { that.collapseAll(); } }
+    		{ text: NP.Translator.translate('Expand All'), handler: function() { that.expandAll(); } },
+    		{ text: NP.Translator.translate('Collapse All'), handler: function() { that.collapseAll(); } }
     	];
 	    this.tbar = bar;
-	    this.bbar = bar;
 
     	this.store = Ext.create('Ext.data.TreeStore', {
     		fields: [
