@@ -28,16 +28,16 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 						vc_id:  e.record.get('vc_id'),
 						value:  e.value
 					};
-//					that.updateOrder(e.record.get('vcorder_id'), e.value);
 				}
 			}
 		});
 
 		var groupingSummary = Ext.create('Ext.grid.feature.GroupingSummary', {
-			groupHeaderTpl: '{name}<div style="float: right; margin-right: 20px;"><a id="selectAll" data-vc="{vc_id}" href="javascript:void(0)">Select all</a>/<a href="javascript:void(0)">Unselect all</a></div>',
+			groupHeaderTpl: '{name}<div style="float: right; margin-right: 20px;"><a class="select-all" data-vc="{[values.rows[0].data.vc_id]}" href="javascript:void(0)">Select all</a>/<a href="javascript:void(0)" data-vc="{[values.rows[0].data.vc_id]}" href="javascript:void(0)" class="unselect-all">Unselect all</a></div>',
 			ftype: 'groupingsummary',
 			collapsible: false
 		});
+
 //		columns
 		this.columns = [
 			{
@@ -148,6 +148,7 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 			click: {
 				element: 'body',
 				delegate: '.x-grid-cell',
+//				delegate: '.x-group-hd-container',
 				fn: function(e, target) {
 					var btnpo = Ext.fly(target).down('.createpo');
 					var btnupdate = Ext.fly(target).down('.updatepo');
@@ -177,6 +178,24 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 						that.changedRecords = {};
 					}
 				}
+			},
+			groupclick: function (view, node, group, e, eOpts) {
+				var link = Ext.fly(e.target);
+				var vcid;
+				var setChecked = false;
+
+				if (link.hasCls('select-all') || link.hasCls('unselect-all')) {
+					if (link.hasCls('select-all')) {
+						setChecked = true;
+					}
+
+					vcid = Ext.fly(link).getAttribute('data-vc');
+					var check = document.getElementsByName('po_'+ vcid +'[]');
+					var checkLength = check.length;
+					for(var i=0; i < checkLength; i++){
+						check[i].checked = setChecked;
+					}
+				}
 			}
 		};
 
@@ -194,32 +213,7 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 		this.features = [groupingSummary];
 		this.plugins = [cellEditing];
 
-//		this.listeners = {
-//			afterrender: function() {
-//				that.mon(Ext.get('selectAll'), 'click', function() {
-//					that.fireEvent('selectall');
-//				});
-//			}
-//		};
-
 		this.callParent(arguments);
-	},
-
-	updateOrder: function() {
-		var that = this;
-		NP.lib.core.Net.remoteCall({
-			requests: {
-				service: 'CatalogService',
-				action : 'updateOrders',
-				userprofile_id : NP.Security.getUser().get('userprofile_id'),
-				vcorders : JSON.stringify(that.changedRecords),
-				success: function(success) {
-					if (success) {
-						that.getStore().reload();
-					}
-				}
-			}
-		});
 	}
 
 });
