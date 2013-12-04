@@ -14,10 +14,31 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 
 	paging: true,
 	overflowY: 'scroll',
+	changedRecords: {},
 
 	initComponent: function() {
 		var that = this;
 
+//		plugins and features
+		var cellEditing = Ext.create('Ext.grid.plugin.CellEditing', {
+			clicksToEdit: 1,
+			listeners: {
+				edit: function(editor, e, eOpts) {
+					that.changedRecords[e.record.get('vcorder_id')] = {
+						vc_id:  e.record.get('vc_id'),
+						value:  e.value
+					};
+//					that.updateOrder(e.record.get('vcorder_id'), e.value);
+				}
+			}
+		});
+
+		var groupingSummary = Ext.create('Ext.grid.feature.GroupingSummary', {
+			groupHeaderTpl: '{name}<div style="float: right; margin-right: 20px;"><a id="selectAll" data-vc="{vc_id}" href="javascript:void(0)">Select all</a>/<a href="javascript:void(0)">Unselect all</a></div>',
+			ftype: 'groupingsummary',
+			collapsible: false
+		});
+//		columns
 		this.columns = [
 			{
 				xtype: 'shared.gridcol.buttonimg',
@@ -68,9 +89,22 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 			},
 			{
 				dataIndex: 'vcorder_qty',
+				xtype: 'numbercolumn',
 				text: NP.Translator.translate('Quantity'),
 				align: 'center',
-				flex: 0.1
+				flex: 0.1,
+				editor: {
+					xtype: 'numberfield',
+					allowBlank: false,
+					minValue: 0,
+					maxValue: 100000
+				},
+				summaryType: function(records) {
+					return records[0].get('vc_id');
+				},
+				summaryRenderer: function(val) {
+					return '<input type="button" class="updatepo" data-vc="' + val + '" value="' + NP.Translator.translate('UPDATE') + '"/>';
+				}
 			},
 			{
 				text: NP.Translator.translate('Item to total'),
@@ -114,13 +148,14 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 			click: {
 				element: 'body',
 				delegate: '.x-grid-cell',
-				fn: function(e, target, rec, rec2) {
-//					create po action
-					var btn = Ext.fly(target).down('.createpo');
+				fn: function(e, target) {
+					var btnpo = Ext.fly(target).down('.createpo');
+					var btnupdate = Ext.fly(target).down('.updatepo');
 					var vcid;
 
-					if (btn) {
-						vcid = Ext.fly(btn).getAttribute('data-vc');
+//					create po action
+					if (btnpo) {
+						vcid = Ext.fly(btnpo).getAttribute('data-vc');
 						var aunarray = "";
 						var check = document.getElementsByName('po_'+ vcid +'[]');
 						var checkLength = check.length;
@@ -135,14 +170,15 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 
 						}
 					}
+//					update action
+					if (btnupdate) {
+						vcid = Ext.fly(btnupdate).getAttribute('data-vc');
+						that.fireEvent('updateorder', that.changedRecords, vcid);
+						that.changedRecords = {};
+					}
 				}
 			}
 		};
-		var groupingSummary = Ext.create('Ext.grid.feature.GroupingSummary', {
-			groupHeaderTpl: '{name}<div style="float: right; margin-right: 20px;"><a id="selectAll" data-vc="{vc_id}" href="javascript:void(0)">Select all</a>/<a href="javascript:void(0)">Unselect all</a></div>',
-			ftype: 'groupingsummary',
-			collapsible: false
-		});
 
 		this.store = Ext.create('NP.store.catalog.VcOrders', {
 			service    	: 'CatalogService',
@@ -156,6 +192,7 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 		});
 
 		this.features = [groupingSummary];
+		this.plugins = [cellEditing];
 
 //		this.listeners = {
 //			afterrender: function() {
@@ -166,6 +203,23 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 //		};
 
 		this.callParent(arguments);
+	},
+
+	updateOrder: function() {
+		var that = this;
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service: 'CatalogService',
+				action : 'updateOrders',
+				userprofile_id : NP.Security.getUser().get('userprofile_id'),
+				vcorders : JSON.stringify(that.changedRecords),
+				success: function(success) {
+					if (success) {
+						that.getStore().reload();
+					}
+				}
+			}
+		});
 	}
 
 });

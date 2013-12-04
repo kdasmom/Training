@@ -3,6 +3,7 @@
 namespace NP\catalog;
 
 use NP\core\AbstractService;
+use NP\core\Exception;
 use NP\util\Util;
 use NP\catalog\VcOrderGateway;
 
@@ -586,6 +587,34 @@ class CatalogService extends AbstractService {
 	 */
 	public function removeOrder($order_id = null, $userprofile_id = null) {
 		return $this->vcOrderGateway->delete(['vcorder_id' => '?', 'userprofile_id' => '?'], [$order_id, $userprofile_id]);
+	}
+
+	/**
+	 * Update vcorder params (quantity)
+	 *
+	 * @param null $vcorder
+	 * @param null $quantity
+	 * @param null $userprofile_id
+	 * @return bool
+	 */
+	public function updateOrders($vcorders = null, $userprofile_id = null) {
+		$vcorders = (array)json_decode($vcorders);
+
+		foreach ($vcorders as $vcorder_id => $item) {
+			if ($item->value == 0) {
+				$result = $this->vcOrderGateway->delete(['vcorder_id' => '?', 'userprofile_id' => '?'], [$vcorder_id, $userprofile_id]);
+				if (!$result) {
+					throw new \Exception('Can not delete order');
+				}
+			} else {
+				$result = $this->vcOrderGateway->updateQuantity($vcorder_id, $userprofile_id, $item->value);
+				if (!$result) {
+					throw new \Exception('Can not update order');
+				}
+			}
+		}
+
+		return true;
 	}
 }
 

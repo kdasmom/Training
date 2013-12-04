@@ -19,7 +19,17 @@ Ext.define('NP.controller.VendorCatalog', {
 		Ext.log('Vendor Catalog Controller init');
 
 		this.control({
+			'[xtype="catalog.userorder"] [xtype="button"]': {
+				click: function() {
+					this.addHistory('VendorCatalog:showOpenOrders');
+				}
+			},
 			'[xtype="catalog.vclisting"] [xtype="shared.button.search"]': {
+				click: function() {
+					this.addHistory('VendorCatalog:showAdvancedSearch');
+				}
+			},
+			'[xtype="catalog.vcorder"] [xtype="shared.button.search"]': {
 				click: function() {
 					this.addHistory('VendorCatalog:showAdvancedSearch');
 				}
@@ -29,12 +39,18 @@ Ext.define('NP.controller.VendorCatalog', {
 					this.addHistory('VendorCatalog:showVendorCatalogListing');
 				}
 			},
+			'[xtype="catalog.vcorder"] [xtype="shared.button.back"]': {
+				click: function() {
+					this.addHistory('VendorCatalog:showVendorCatalogListing');
+				}
+			},
 			'[xtype="catalog.vcorder"] [xtype="catalog.vcordersgrid"]': {
 				cellclick: function(grid, td, cellIndex, record, tr, rowIndex, e, eOpts){
 					if (Ext.get(e.target).hasCls('remove')) {
 						this.removeOrder(record.get('vcorder_id'));
 					}
-				}
+				},
+				updateorder: this.updateOrders
 			}
 		});
 
@@ -100,9 +116,40 @@ Ext.define('NP.controller.VendorCatalog', {
 					if (success) {
 						var grid = that.getCmp('catalog.vcordersgrid');
 						grid.getStore().reload();
+						that.showUserOrderSummary(that.userSummaryCallback);
 					}
 				}
 			}
 		});
+	},
+
+	updateOrders: function(records) {
+		var count = 0;
+
+		for (var index in records) {
+			count++;
+			if (count > 0) {
+				break;
+			}
+		}
+		var that = this;
+
+		if (count > 0) {
+			NP.lib.core.Net.remoteCall({
+				requests: {
+					service: 'CatalogService',
+					action : 'updateOrders',
+					userprofile_id : NP.Security.getUser().get('userprofile_id'),
+					vcorders : JSON.stringify(records),
+					success: function(success) {
+						if (success) {
+							var grid = that.getCmp('catalog.vcordersgrid');
+							grid.getStore().reload();
+							that.showUserOrderSummary(that.userSummaryCallback);
+						}
+					}
+				}
+			});
+		}
 	}
 });

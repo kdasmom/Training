@@ -12,6 +12,7 @@ namespace NP\catalog;
 use NP\core\AbstractGateway;
 use NP\core\db\Expression;
 use NP\core\db\Select;
+use NP\core\db\Update;
 
 class VcOrderGateway extends AbstractGateway {
 	public function getOrderSummary($userprofile_id) {
@@ -69,5 +70,14 @@ class VcOrderGateway extends AbstractGateway {
 		$sql = $select1->toString() . ' union all ' . $select2->toString() . ' order by v.vc_vendorname asc, vcitem_number asc';
 
 		return $this->adapter->query($sql, [$userprofile_id, 0, 1, $userprofile_id]);
+	}
+
+	public function updateQuantity($vcorder_id, $userprofile_id, $quantity) {
+		$update = new Update();
+		$update->table('vcorder')
+			->values(['vcorder_qty' => '?'])
+			->where(['vcorder_id' => '?', 'userprofile_id' => '?']);
+
+		return $this->adapter->query($update, [$quantity, $vcorder_id, $userprofile_id]);
 	}
 } 
