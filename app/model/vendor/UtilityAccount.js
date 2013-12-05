@@ -7,11 +7,7 @@ Ext.define('NP.model.vendor.UtilityAccount', {
     extend: 'Ext.data.Model',
 
     requires: [
-        'NP.lib.core.Config',
-        'NP.model.vendor.Utility',
-        'NP.model.property.Property',
-        'NP.model.gl.GlAccount',
-        'NP.model.property.Unit'
+        'NP.lib.core.Config'
     ],
 
     idProperty: 'UtilityAccount_Id',
@@ -29,8 +25,20 @@ Ext.define('NP.model.vendor.UtilityAccount', {
         { name: 'unit_id', type: 'int' },
 
         // These fields are not columns in the database
+        { name: 'Vendorsite_Id', type: 'int' },
+
         { name: 'UtilityType_Id', type: 'int' },
         { name: 'UtilityType' },
+
+        { name: 'property_id_alt' },
+        { name: 'property_name' },
+
+        { name: 'glaccount_number' },
+        { name: 'glaccount_name' },
+
+        { name: 'unit_id_alt' },
+        { name: 'unit_number' },
+        
         {
             name   : 'display_name',
             convert: function(v, rec) {
@@ -59,37 +67,5 @@ Ext.define('NP.model.vendor.UtilityAccount', {
 
             return val;
         }
-    },
-
-    belongsTo: [
-        {
-            model     : 'NP.model.vendor.Utility',
-            name      : 'utility',
-            getterName: 'getUtility',
-            foreignKey: 'Utility_Id',
-            primaryKey: 'Utility_Id',
-            reader    : 'jsonflat'
-        },{
-            model     : 'NP.model.property.Property',
-            name      : 'property',
-            getterName: 'getProperty',
-            foreignKey: 'property_id',
-            primaryKey: 'property_id',
-            reader    : 'jsonflat'
-        },{
-            model     : 'NP.model.gl.GlAccount',
-            name      : 'gl',
-            getterName: 'getGl',
-            foreignKey: 'glaccount_id',
-            primaryKey: 'glaccount_id',
-            reader    : 'jsonflat'
-        },{
-            model     : 'NP.model.property.Unit',
-            name      : 'unit',
-            getterName: 'getUnit',
-            foreignKey: 'unit_id',
-            primaryKey: 'unit_id',
-            reader    : 'jsonflat'
-        }
-    ]
+    }
 });

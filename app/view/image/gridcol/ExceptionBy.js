@@ -11,10 +11,10 @@ Ext.define('NP.view.image.gridcol.ExceptionBy', {
 	dataIndex: 'exception_by_userprofile_username',
 
 	renderer: function(val, meta, rec) {
-		if (rec.raw['exception_by_userprofile_id']) {
-			return rec.getExceptionUser().get('userprofile_username');
+		if (val === null) {
+			return '';
 		}
 
-		return '';
+		return val;
 	}
 });

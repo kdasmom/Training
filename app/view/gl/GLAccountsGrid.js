@@ -208,10 +208,7 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
                     {
                         text: this.typeColText,
                         dataIndex: 'glaccounttype_name',
-                        flex: 1,
-                        renderer: function(val, meta, rec) {
-                            return rec.getType().get('glaccounttype_name')
-                        }
+                        flex: 1
                     },
                     {
                         text: this.intPkgText,
@@ -235,8 +232,8 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
                         dataIndex: 'glaccount_updatetm',
                         renderer: function(val, meta, rec) {
                               var returnVal = Ext.Date.format(val, NP.Config.getDefaultDateFormat() + ' h:iA');
-                              if (rec.get('glaccount_updateby') != null) {
-                                  returnVal += ' (' + rec.getUpdatedByUser().get('userprofile_username') + ')'
+                              if (rec.get('userprofile_username') != null) {
+                                  returnVal += ' (' + rec.get('userprofile_username') + ')'
                               }
 
                               return returnVal;

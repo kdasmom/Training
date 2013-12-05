@@ -42,42 +42,15 @@ class VendorService extends AbstractService {
 	const VENDOR_STATUS_APPROVED = 'approved';
 	const VENDOR_STATUS_REJECTED = 'rejected';
 
-	protected $vendorGateway, $insuranceGateway, $configService, $userprofileGateway, $vendorsiteGateway, $phoneGateway,
-		$addressGateway, $personGateway, $contactGateway, $emailGateway, $integrationPackageGateway, $pnCustomFieldDataGateway,
-		$messageGateway, $imageIndexGateway, $vendorEntityValidator;
+	protected $configService, $vendorEntityValidator;
 	
-	public function __construct(VendorGateway $vendorGateway,
-														InsuranceGateway $insuranceGateway,
-														ConfigService $configService,
-														UserprofileGateway $userprofileGateway,
-														VendorsiteGateway $vendorsiteGateway,
-														PhoneGateway $phoneGateway,
-														AddressGateway $addressGateway,
-														PersonGateway $personGateway,
-														ContactGateway $contactGateway,
-														EmailGateway $emailGateway,
-														IntegrationPackageGateway $integrationPackageGateway,
-														PnCustomFieldDataGateway $pnCustomFieldDataGateway,
-														MessageGateway $messageGateway,
-														ImageIndexGateway $imageIndexGateway,
-														VendorEntityValidator $vendorEntityValidator) {
-		$this->vendorGateway    = $vendorGateway;
-		$this->insuranceGateway = $insuranceGateway;
-		$this->configService = $configService;
-		$this->userprofileGateway = $userprofileGateway;
-		$this->vendorsiteGateway = $vendorsiteGateway;
-		$this->phoneGateway = $phoneGateway;
-		$this->addressGateway = $addressGateway;
-		$this->personGateway = $personGateway;
-		$this->contactGateway = $contactGateway;
-		$this->emailGateway = $emailGateway;
-		$this->integrationPackageGateway = $integrationPackageGateway;
-		$this->pnCustomFieldDataGateway = $pnCustomFieldDataGateway;
-		$this->messageGateway = $messageGateway;
-		$this->imageIndexGateway = $imageIndexGateway;
+	public function __construct(VendorEntityValidator $vendorEntityValidator) {
 		$this->vendorEntityValidator = $vendorEntityValidator;
 	}
 
+	public function setConfigService(ConfigService $configService) {
+		$this->configService = $configService;
+	}
 
 	/**
 	 * find vendors by status

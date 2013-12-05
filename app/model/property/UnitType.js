@@ -22,18 +22,12 @@ Ext.define('NP.model.property.UnitType', {
 		{ name: 'unittype_bathrooms', type: 'float' },
 		{ name: 'property_id', type: 'int' },
 		{ name: 'unittype_updated_by', type: 'int' },
-		{ name: 'unittype_updated_date', type: 'date' }
-	],
+		{ name: 'unittype_updated_date', type: 'date' },
 
-	belongsTo: {
-		model         : 'NP.model.user.Userprofile',
-		//associationKey: 'lastUpdatedUser',
-		name          : 'userprofile',
-		getterName    : 'getLastUpdatedUser',
-		foreignKey    : 'unittype_updated_by',
-		primaryKey    : 'userprofile_id',
-        reader        : 'jsonflat'
-	},
+		// These fields are not DB columns in the UNITTYPE table
+		{ name: 'userprofile_username' } // for unittype_updated_by
+	],
+	
 	hasMany  : [
 		{
 			model     : 'NP.model.property.UnitTypeVal',

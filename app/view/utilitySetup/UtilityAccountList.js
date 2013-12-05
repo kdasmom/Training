@@ -134,10 +134,7 @@ Ext.define('NP.view.utilitySetup.UtilityAccountList', {
                 {
                     text: this.utilityTypeColText,
                     dataIndex: 'UtilityType',
-                    flex: 1,
-                    renderer: function(val, meta, rec) {
-                        return rec.getUtility().getUtilityType().get('UtilityType');
-                    }
+                    flex: 1
                 },
                 {
                     text: this.accountColText,

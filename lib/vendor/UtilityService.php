@@ -16,8 +16,8 @@ use NP\util\Util;
 class UtilityService extends AbstractService {
     protected $configService;
 
-    public function __construct(ConfigService $configService) {
-        $this->configService         = $configService;
+    public function setConfigService(ConfigService $configService) {
+        $this->configService = $configService;
     }
 
     /**

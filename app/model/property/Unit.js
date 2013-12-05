@@ -7,8 +7,7 @@ Ext.define('NP.model.property.Unit', {
 	extend: 'Ext.data.Model',
 	
 	requires: [
-		'NP.lib.core.Config',
-		'NP.model.property.UnitType'
+		'NP.lib.core.Config'
 	],
 
 	idProperty: 'unit_id',
@@ -21,17 +20,11 @@ Ext.define('NP.model.property.Unit', {
 		{ name: 'unit_status' },
 		{ name: 'unit_dateavail', type: 'date' },
 		{ name: 'unit_squarefeet' },
-		{ name: 'property_id', type: 'int' }
-	],
+		{ name: 'property_id', type: 'int' },
 
-	belongsTo: {
-		model     : 'NP.model.property.UnitType',
-		name      : 'unitType',
-		getterName: 'getUnitType',
-		foreignKey: 'unittype_id',
-		primaryKey: 'unittype_id',
-		reader    : 'jsonflat'
-	},
+		// These fields are not DB columns in the UNIT table
+		{ name: 'unittype_name' }
+	],
 
 	validations: [
 		{ field: 'unit_id_alt', type: 'length', max: 10 },

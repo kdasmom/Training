@@ -30,16 +30,5 @@ Ext.define('NP.model.user.MobInfo', {
 		{ field: 'mobinfo_pin', type: 'digits' },
 		{ field: 'mobinfo_pin', type: 'length', min: 4, max: 4 },
 		{ field: 'mobinfo_status', type: 'length', max: 50 }
-	],
-
-    belongsTo: [
-        {
-            model         : 'NP.model.user.Userprofile',
-            name          : 'userprofile',
-            getterName    : 'getUserProfile',
-            foreignKey    : 'userprofile_id',
-            primaryKey    : 'userprofile_id',
-            reader        : 'jsonflat'
-        }
-    ]
+	]
 });

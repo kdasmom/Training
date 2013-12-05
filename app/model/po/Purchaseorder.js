@@ -7,10 +7,7 @@ Ext.define('NP.model.po.Purchaseorder', {
 	extend: 'Ext.data.Model',
 	
 	requires: [
-		'NP.lib.core.Config',
-		'NP.model.vendor.Vendorsite',
-		'NP.model.property.Property',
-		'NP.model.system.PriorityFlag'
+		'NP.lib.core.Config'
 	],
 
 	idProperty: 'purchaseorder_id',
@@ -58,6 +55,17 @@ Ext.define('NP.model.po.Purchaseorder', {
 		{ name: 'universal_field8' },
 
 		// These fields are not database columns
+		{ name: 'vendor_id', type: 'int' },
+		{ name: 'vendor_id_alt' },
+		{ name: 'vendor_name' },
+		{ name: 'vendorsite_id', type: 'int' },
+
+		{ name: 'property_id', type: 'int' },
+		{ name: 'property_id_alt' },
+		{ name: 'property_name' },
+
+		{ name: 'PriorityFlag_Display' },
+
 		{ name: 'entity_amount', type: 'float' },
 		{ name: 'created_by' },
 		{ name: 'pending_days', type: 'int' },
@@ -68,31 +76,6 @@ Ext.define('NP.model.po.Purchaseorder', {
 		{ name: 'rejected_by' },
 		{ name: 'rejected_reason' }
 	],
-
-    belongsTo: [
-        {
-			model     : 'NP.model.vendor.Vendorsite',
-			name      : 'vendorsite',
-			getterName: 'getVendorsite',
-			foreignKey: 'vendorsite_id',
-			primaryKey: 'vendorsite_id',
-			reader    : 'jsonflat'
-        },{
-			model     : 'NP.model.property.Property',
-			name      : 'property',
-			getterName: 'getProperty',
-			foreignKey: 'property_id',
-			primaryKey: 'property_id',
-			reader    : 'jsonflat'
-        },{
-			model     : 'NP.model.system.PriorityFlag',
-			name      : 'priorityFlag',
-			getterName: 'getPriorityFlag',
-			foreignKey: 'PriorityFlag_ID_Alt',
-			primaryKey: 'PriorityFlag_ID_Alt',
-			reader    : 'jsonflat'
-        }
-    ],
 
     getDisplayNumber: function() {
     	var showSetting = NP.Config.getSetting('CP.DISPLAY_PO_NUMBER_WHEN', 'Created=1; PendingApproval=1; Approved=1');
