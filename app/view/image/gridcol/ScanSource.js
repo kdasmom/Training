@@ -6,8 +6,5 @@ Ext.define('NP.view.image.gridcol.ScanSource', {
     alias: 'widget.image.gridcol.scansource',
 
     text     : 'Source',
-    dataIndex: 'invoiceimage_source_name',
-    renderer : function(val, meta, rec) {
-        return 'admin';
-    }
+    dataIndex: 'userprofile_username'
 });

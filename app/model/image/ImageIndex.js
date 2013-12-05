@@ -80,7 +80,9 @@ Ext.define('NP.model.image.ImageIndex', {
 
 		// This field is not a database column
 		{ name: 'days_outstanding', type: 'int' },
-		{ name: 'pending_days', type: 'int' }
+		{ name: 'pending_days', type: 'int' },
+                { name: 'userprofile_username'},
+                { name: 'deletedby_username'}
 	],
 
     belongsTo: [
@@ -145,11 +147,7 @@ Ext.define('NP.model.image.ImageIndex', {
         }
     ],
 	validations: [
-            { field: 'Image_Doctype_Id', type: 'presence' },
-            { field: 'Image_Index_VendorSite_Id', type: 'presence' },
-            { field: 'invoiceimage_vendorsite_alt_id', type: 'presence' },
-            { field: 'Property_Id', type: 'presence' },
-            { field: 'Property_Alt_Id', type: 'presence' },
+            { field: 'Image_Doctype_Id', type: 'presence' }
 	]
     
 });

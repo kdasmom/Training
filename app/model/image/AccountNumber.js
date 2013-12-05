@@ -3,8 +3,8 @@ Ext.define('NP.model.image.AccountNumber', {
 	
 	requires: ['NP.lib.core.Config'],
 
-	idProperty: 'utilityAccount_accountNumber',
+	idProperty: 'utilityaccount_accountnumber',
 	fields: [
-		{ name: 'utilityAccount_accountNumber', type: 'int' },
+		{ name: 'utilityaccount_accountnumber', type: 'int' },
 	]
 });

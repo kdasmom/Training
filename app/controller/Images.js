@@ -789,6 +789,24 @@ Ext.define('NP.controller.Images', {
      */
     saveImageIndex: function(action, section, callback) {
         var form = this.getCmp('images.index');
+        form.updateBoundModels();
+
+        var model = form.bind.models[0].instance;
+        if (model.data['Image_Doctype_Id'] != 6) {
+            if (model.validations.length == 1) {
+                model.validations.push(
+                    { field: 'Image_Index_VendorSite_Id', type: 'presence' },
+                    { field: 'invoiceimage_vendorsite_alt_id', type: 'presence' },
+                    { field: 'Property_Id', type: 'presence' },
+                    { field: 'Property_Alt_Id', type: 'presence' }
+                );
+            }
+        }
+        if (action == 'exception') {
+            model.validations.push(
+                { field: 'Image_Index_Exception_reason', type: 'presence' }
+            );
+        }
 
         if (form.isValid()) {
             form.submitWithBindings({
@@ -807,6 +825,9 @@ Ext.define('NP.controller.Images', {
                 }
             });
         }
+        model.validations = [
+            { field: 'Image_Doctype_Id', type: 'presence' }
+        ];
     },
 
     /**

@@ -59,8 +59,8 @@ class ImageIndexSelect extends ImageSelect {
             'utilityaccount_id',
             'cycle_from',
             'cycle_to',
-            'utilityAccount_accountNumber',
-            'utilityAccount_meterSize'
+            'utilityaccount_accountnumber',
+            'utilityaccount_metersize'
         ]);
     }
 }

@@ -88,7 +88,12 @@ class ImageIndexGateway extends AbstractGateway {
 	public function findImagesToIndex($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
 		$select = $this->getDashboardSelect($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
 		$propertyFilterSelect = new PropertyFilterSelect(new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection));
-		
+
+                $select
+                    ->join(new sql\join\ImageIndexImageTransferJoin())
+                    ->join(new sql\join\ImageIndexUserprofileJoin())
+                ;
+
 		// We're going to create a where object to overwrite the entire where clause because
 		// we need the property filter to be within a nested block
 		$where = Where::get()->nest('OR')
@@ -168,6 +173,7 @@ class ImageIndexGateway extends AbstractGateway {
 			->join(new sql\join\ImageIndexVendorsiteJoin())
 			->join(new sql\join\ImageIndexPriorityFlagJoin())
 			->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(array('vendor_name,vendor_id_alt,vendor_status'), Select::JOIN_LEFT))
+                        ->join(['delby' => 'userprofile'], 'img.image_index_deleted_by = delby.userprofile_id', ['deletedby_username' => 'userprofile_username'], Select::JOIN_LEFT)
 			->whereIn('img.property_id', $propertyFilterSelect);
 
 		return $select;
@@ -182,7 +188,7 @@ class ImageIndexGateway extends AbstractGateway {
                 $where = new Where();
                 $where->isNotNull('img.image_index_deleted_datetm')
                         ->isNotNull('img.image_index_deleted_by')
-                        ->greaterThan('img.Image_Index_id', 135000)
+                        ->equals('img.Image_Index_Status', -1);
                 ;
                 $select->where($where);
 

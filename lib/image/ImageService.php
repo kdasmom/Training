@@ -129,12 +129,12 @@ class ImageService extends AbstractService {
 	}
 
 	public function getImagesToIndex1($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-            $countOnly = false;
+            $countOnly = 'false';
 		return $this->imageIndexGateway->findImagesToIndex($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
 	}
 
         public function getImagesToDelete($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-            $countOnly = false;
+            $countOnly = 'false';
 		return $this->imageIndexGateway->findImagesToDelete($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
     }
 

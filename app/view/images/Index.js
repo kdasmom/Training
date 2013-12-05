@@ -395,7 +395,7 @@ Ext.define('NP.view.images.Index', {
                 var storeAccountNumber =
                     Ext.create('NP.store.images.AccountNumbers', {
                         service    : 'ImageService',
-                        action     : 'listAccountNumber',
+                        action     : 'listAccountNumbers',
                         extraParams : {
                             'userprofile_id': NP.Security.getUser().get('userprofile_id'),
                             'delegation_to_userprofile_id': NP.Security.getUser().get('delegation_to_userprofile_id')
