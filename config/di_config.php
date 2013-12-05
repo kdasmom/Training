@@ -82,7 +82,7 @@ $diDefinition = array(
 	'NP\vendor\UtilityService'                       => array('ConfigService'),
 	'NP\workflow\WfRuleGateway'                      => array('Adapter','UserprofileroleGateway'),
 	'NP\catalog\VcOrderGateway'                      => array('Adapter'),
-	'NP\catalog\CatalogService'                      => array('VcOrderGateway'),
+	'NP\catalog\CatalogService'                      => array('VcOrderGateway', 'PropertyGateway'),
 );
 
 // Now we're gonna figure out some automatic definitions for gateways and services

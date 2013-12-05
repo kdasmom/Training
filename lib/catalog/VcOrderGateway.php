@@ -72,6 +72,14 @@ class VcOrderGateway extends AbstractGateway {
 		return $this->adapter->query($sql, [$userprofile_id, 0, 1, $userprofile_id]);
 	}
 
+	/**
+	 * Update order items quantity
+	 *
+	 * @param $vcorder_id
+	 * @param $userprofile_id
+	 * @param $quantity
+	 * @return array|bool
+	 */
 	public function updateQuantity($vcorder_id, $userprofile_id, $quantity) {
 		$update = new Update();
 		$update->table('vcorder')

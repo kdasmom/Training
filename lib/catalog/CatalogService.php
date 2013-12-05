@@ -4,6 +4,7 @@ namespace NP\catalog;
 
 use NP\core\AbstractService;
 use NP\core\Exception;
+use NP\property\PropertyGateway;
 use NP\util\Util;
 use NP\catalog\VcOrderGateway;
 
@@ -19,10 +20,11 @@ class CatalogService extends AbstractService {
 	const CATALOG_PENDING    = -1;
 	const CATALOG_PROCESSING = -2;
 
-	protected $configService, $vcOrderGateway;
+	protected $configService, $vcOrderGateway, $propertyGateway;
 
-	public function __construct(VcOrderGateway $vcOrderGateway) {
+	public function __construct(VcOrderGateway $vcOrderGateway, PropertyGateway $propertyGateway) {
 		$this->vcOrderGateway = $vcOrderGateway;
+		$this->propertyGateway = $propertyGateway;
 	}
 	
 	public function setConfigService(\NP\system\ConfigService $configService) {
@@ -615,6 +617,28 @@ class CatalogService extends AbstractService {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Retieve order's properties list
+	 *
+	 * @param null $vc_id
+	 * @param null $userprofile_id
+	 * @param null $delegation_to_userprofile_id
+	 * @return array|bool
+	 */
+	public function getOrderProperties($vc_id = null, $userprofile_id = null, $delegation_to_userprofile_id = null) {
+		return $this->propertyGateway->getOrderProperties($vc_id, $userprofile_id, $delegation_to_userprofile_id);
+	}
+
+	public function getOrderVendors($vc_id = null, $userprofile_id = null, $property_id = null) {
+
+	}
+
+	public function getUserPOs($vc_id, $property_id) {
+		$vendor = $this->linkVcVendorGateway->find(['vc_id' => '?'], [$vc_id]);
+
+		print_r($vendor);
 	}
 }
 

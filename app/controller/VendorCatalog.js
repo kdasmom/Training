@@ -34,6 +34,11 @@ Ext.define('NP.controller.VendorCatalog', {
 					this.addHistory('VendorCatalog:showAdvancedSearch');
 				}
 			},
+			'[xtype="catalog.ordercreate"] [xtype="shared.button.search"]': {
+				click: function() {
+					this.addHistory('VendorCatalog:showAdvancedSearch');
+				}
+			},
 			'[xtype="catalog.advancedsearch"] [xtype="shared.button.back"]': {
 				click: function() {
 					this.addHistory('VendorCatalog:showVendorCatalogListing');
@@ -44,13 +49,22 @@ Ext.define('NP.controller.VendorCatalog', {
 					this.addHistory('VendorCatalog:showVendorCatalogListing');
 				}
 			},
+			'[xtype="catalog.ordercreate"] [xtype="shared.button.back"]': {
+				click: function() {
+					this.addHistory('VendorCatalog:showVendorCatalogListing');
+				}
+			},
 			'[xtype="catalog.vcorder"] [xtype="catalog.vcordersgrid"]': {
 				cellclick: function(grid, td, cellIndex, record, tr, rowIndex, e, eOpts){
 					if (Ext.get(e.target).hasCls('remove')) {
 						this.removeOrder(record.get('vcorder_id'));
 					}
 				},
-				updateorder: this.updateOrders
+				updateorder: this.updateOrders,
+				createorder: function (vc_id) {
+					this.addHistory('VendorCatalog:createOrder:' + vc_id);
+				}
+
 			}
 		});
 
@@ -74,6 +88,11 @@ Ext.define('NP.controller.VendorCatalog', {
 		this.showUserOrderSummary(this.userSummaryCallback);
 	},
 
+	/**
+	 * Show user's shopping cart
+	 *
+	 * @param callback
+	 */
 	showUserOrderSummary: function(callback) {
 		callback = callback || Ext.emptyFn;
 
@@ -98,11 +117,20 @@ Ext.define('NP.controller.VendorCatalog', {
 		field.setValue(message);
 	},
 
+	/**
+	 * Show user's order
+	 *
+	 */
 	showOpenOrders: function() {
 		this.setView('NP.view.catalog.VcOrder');
 		this.showUserOrderSummary(this.userSummaryCallback);
 	},
 
+	/**
+	 * remove item from order
+	 *
+	 * @param order_id
+	 */
 	removeOrder: function (order_id) {
 		var that = this;
 
@@ -123,6 +151,12 @@ Ext.define('NP.controller.VendorCatalog', {
 		});
 	},
 
+	/**
+	 *
+	 * Update order
+	 *
+	 * @param records
+	 */
 	updateOrders: function(records) {
 		var count = 0;
 
@@ -151,5 +185,30 @@ Ext.define('NP.controller.VendorCatalog', {
 				}
 			});
 		}
+	},
+
+	/**
+	 * create order page
+	 */
+	createOrder: function(vc_id) {
+		var that = this;
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service: 'CatalogService',
+				action : 'get',
+				vc_id : vc_id,
+				success: function(success) {
+					if (success.vc_id) {
+						that.setView('NP.view.catalog.OrderCreate', {vc_id: vc_id});
+						that.showUserOrderSummary(that.userSummaryCallback);
+						form = that.getCmp('catalog.orderpropertiesform')
+						var field = form.getChildByElement('vendor_name');
+						console.log(field);
+						field.setValue(success.vc_vendorname);
+					}
+				}
+			}
+		});
+
 	}
 });

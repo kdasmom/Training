@@ -148,7 +148,6 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 			click: {
 				element: 'body',
 				delegate: '.x-grid-cell',
-//				delegate: '.x-group-hd-container',
 				fn: function(e, target) {
 					var btnpo = Ext.fly(target).down('.createpo');
 					var btnupdate = Ext.fly(target).down('.updatepo');
@@ -168,7 +167,7 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 						if (aunarray == "") {
 							Ext.Msg.alert(NP.Translator.translate('Error'), NP.Translator.translate('You must select at least one item.'));
 						} else {
-
+							that.fireEvent('createorder', vcid);
 						}
 					}
 //					update action
