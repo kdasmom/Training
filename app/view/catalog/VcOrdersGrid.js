@@ -156,18 +156,18 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 //					create po action
 					if (btnpo) {
 						vcid = Ext.fly(btnpo).getAttribute('data-vc');
-						var aunarray = "";
+						var aunarray = [];
 						var check = document.getElementsByName('po_'+ vcid +'[]');
 						var checkLength = check.length;
 						for(var i=0; i < checkLength; i++){
 							if(check[i].checked){
-								aunarray = aunarray+","+check[i].value;
+								aunarray.push(check[i].value);
 							}
 						}
-						if (aunarray == "") {
+						if (aunarray.length == 0) {
 							Ext.Msg.alert(NP.Translator.translate('Error'), NP.Translator.translate('You must select at least one item.'));
 						} else {
-							that.fireEvent('createorder', vcid);
+							that.fireEvent('createorder', vcid, aunarray.join());
 						}
 					}
 //					update action

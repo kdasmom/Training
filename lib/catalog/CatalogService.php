@@ -3,6 +3,8 @@
 namespace NP\catalog;
 
 use NP\core\AbstractService;
+use NP\core\db\Expression;
+use NP\core\db\Select;
 use NP\core\Exception;
 use NP\property\PropertyGateway;
 use NP\util\Util;
@@ -620,7 +622,7 @@ class CatalogService extends AbstractService {
 	}
 
 	/**
-	 * Retieve order's properties list
+	 * Retrieve order's properties list
 	 *
 	 * @param null $vc_id
 	 * @param null $userprofile_id
@@ -631,14 +633,38 @@ class CatalogService extends AbstractService {
 		return $this->propertyGateway->getOrderProperties($vc_id, $userprofile_id, $delegation_to_userprofile_id);
 	}
 
-	public function getOrderVendors($vc_id = null, $userprofile_id = null, $property_id = null) {
-
+	/**
+	 * Retrieve order vendors
+	 *
+	 * @param null $vc_id
+	 * @param null $property_id
+	 * @return mixed
+	 */
+	public function getOrderVendors($vc_id = null, $property_id = null) {
+		$result = $this->vcGateway->getOrderVendors($vc_id, $property_id);
+		return $result;
 	}
 
-	public function getUserPOs($vc_id, $property_id) {
-		$vendor = $this->linkVcVendorGateway->find(['vc_id' => '?'], [$vc_id]);
+	/**
+	 * Retrieve order items
+	 *
+	 * @param null $userprofile_id
+	 * @param null $vc_id
+	 * @param null $property_id
+	 * @param null $vcorder_id
+	 * @return array
+	 */
+	public function getOrderItems($userprofile_id = null, $vc_id = null, $property_id = null, $vcorder_id = null) {
+		$usePropGL = $this->configService->getConfig('CP.PROPERTYGLACCOUNT_USE');
 
-		print_r($vendor);
+		if (!$userprofile_id || !$vc_id || !$property_id) {
+			return [];
+		}
+		$catalog = $this->get($vc_id);
+
+		$items = $this->vcItemGateway->getOrderItems($userprofile_id, $vc_id, $property_id, $vcorder_id, $usePropGL, $catalog['vc_catalogtype']);
+
+		return $items;
 	}
 }
 

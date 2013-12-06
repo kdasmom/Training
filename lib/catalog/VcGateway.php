@@ -144,6 +144,39 @@ class VcGateway extends AbstractGateway {
 
 		return $this->adapter->query($sql, $params);
 	}
+
+	/**
+	 * Retrieve order vendors
+	 *
+	 * @param $vc_id
+	 * @param $property_id
+	 * @return array|bool
+	 */
+	public function getOrderVendors($vc_id, $property_id) {
+		$select = new Select();
+
+		$subSelect = new Select();
+
+		$subSelect->from(['l' => 'link_vc_vendor'])
+			->whereEquals('l.vendor_id', 'v.vendor_id')
+			->whereEquals('l.vc_id', '?');
+
+		$select->from(['v' => 'vendor'])
+			->distinct()
+			->columns(['vendor_id_alt', 'vendor_name', 'vendor_id'])
+			->join(['vs' => 'vendorsite'], 'v.vendor_id = vs.vendor_id', ['vendorsite_id'])
+			->join(['a' => 'address'], 'a.tablekey_id = vs.vendorsite_id', ['address_city', 'address_zip'], Select::JOIN_LEFT)
+			->whereEquals('v.vendor_status', "'active'")
+			->whereEquals('vs.vendorsite_status', "'active'")
+			->whereEquals('a.table_name', "'vendorsite'")
+			->whereEquals('v.integration_package_id', Select::get()->column('integration_package_id')
+				->from(['p' => 'property'])
+				->where(['property_id' => '?']))
+			->whereExists($subSelect)
+			->order('vendor_name asc');
+
+		return $this->adapter->query($select, [$property_id, $vc_id]);
+	}
 }
 
 ?>

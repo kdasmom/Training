@@ -3,6 +3,7 @@
 namespace NP\catalog;
 
 use NP\core\AbstractGateway;
+use NP\core\db\Expression;
 use NP\core\db\Select;
 
 /**
@@ -147,6 +148,73 @@ class VcItemGateway extends AbstractGateway {
 		}
 
 		return $this->adapter->query($select, [$userprofile_id, 1]);
+	}
+
+	/**
+	 * Retrieve order items
+	 *
+	 * @param $userprofile_id
+	 * @param $vc_id
+	 * @param $property_id
+	 * @param $vcorder_id
+	 * @param $usePropGL
+	 * @param $catalogType
+	 * @return array|bool
+	 */
+	public function getOrderItems($userprofile_id, $vc_id, $property_id, $vcorder_id, $usePropGL, $catalogType) {
+		$select = new Select();
+
+		$subselect = new Select();
+		$params = [];
+
+		$subselect->from(['l' => 'link_vcitemcat_gl'])
+				->limit(1)
+				->column('glaccount_id');
+		if ($usePropGL) {
+			$subselect->join(['pg' => 'propertyglaccount'], 'l.glaccount_id = pg.glaccount_id', [])
+						->whereEquals('property_id', '?');
+
+			$params[] = $property_id;
+		}
+		if ($catalogType == 'excel') {
+			$subselect->whereEquals('vi.vc_id', 'l.vc_id');
+		} else {
+			$subselect->whereEquals('vo.vc_id', 'l.vc_id');
+		}
+
+
+		if ($catalogType == 'excel') {
+			$select->from(['vo' => 'vcorder'])
+					->columns([
+						'vcorder_id',
+						'vcorder_qty',
+						'vcorder_aux_part_id',
+						Select::get()->column($subselect, 'glaccount_id')
+					])
+					->join(['vi' => 'vcitem'], 'vo.vcitem_id = vi.vcitem_id', null)
+					->where(
+						[
+							'userprofile_id'	=> '?',
+							'vi.vc_id'			=> '?',
+							'vi.vcitem_status'	=> '?',
+							'vi.vcitem_status'	=> '?'
+						]
+					)
+					->whereIn('vo.vcorder_id', $vcorder_id);
+			$params = array_merge($params, [$userprofile_id, $vc_id, 1, 1]);
+		} else {
+			$select->from(['vo' => 'vcorder'])
+					->allColumns('vo')
+					->column(Select::get()->column($subselect, 'glaccount_id'))
+					->where([
+						'userprofile_id'	=> '?',
+						'vo.vc_id'			=> '?'
+					])
+					->whereIn('vo.vcorder_id', $vcorder_id);
+			$params = array_merge($params, [$userprofile_id, $vc_id]);
+		}
+
+		return $this->adapter->query($select, $params);
 	}
 }
 

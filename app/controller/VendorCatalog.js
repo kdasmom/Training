@@ -61,10 +61,13 @@ Ext.define('NP.controller.VendorCatalog', {
 					}
 				},
 				updateorder: this.updateOrders,
-				createorder: function (vc_id) {
-					this.addHistory('VendorCatalog:createOrder:' + vc_id);
+				createorder: function (vc_id, vcorders) {
+					this.addHistory('VendorCatalog:createOrder:' + vc_id + ':' + vcorders);
 				}
-
+			},
+			'[xtype="catalog.ordercreate"] [xtype="catalog.orderview"] [xtype="catalog.orderpropertiesform"]': {
+				selectProperty: this.getOrderVendors,
+				selectVendor: this.getOrderPOs
 			}
 		});
 
@@ -190,25 +193,47 @@ Ext.define('NP.controller.VendorCatalog', {
 	/**
 	 * create order page
 	 */
-	createOrder: function(vc_id) {
-		var that = this;
-		NP.lib.core.Net.remoteCall({
-			requests: {
-				service: 'CatalogService',
-				action : 'get',
-				vc_id : vc_id,
-				success: function(success) {
-					if (success.vc_id) {
-						that.setView('NP.view.catalog.OrderCreate', {vc_id: vc_id});
-						that.showUserOrderSummary(that.userSummaryCallback);
-						form = that.getCmp('catalog.orderpropertiesform')
-						var field = form.getChildByElement('vendor_name');
-						console.log(field);
-						field.setValue(success.vc_vendorname);
-					}
-				}
-			}
-		});
+	createOrder: function(vc_id, vcorders) {
+		this.setView('NP.view.catalog.OrderCreate', {vc_id: vc_id, vcorders: vcorders});
+		this.showUserOrderSummary(this.userSummaryCallback);
 
+	},
+
+	getOrderVendors: function(combo, value, vc_id, vcorders) {
+		console.log('vcorders: ', vcorders);
+		var that = this;
+		var form = this.getCmp('catalog.orderpropertiesform');
+		form.getChildByElement('vendor_id').store = Ext.create('NP.store.vendor.Vendors', {
+			service: 'CatalogService',
+			action: 'getOrderVendors',
+			extraParams: {
+				vc_id: vc_id,
+				property_id: value[0].get('property_id')
+			},
+			autoLoad: true
+		});
+		var grid = this.getCmp('catalog.createordergrid');
+		grid.addExtraParams({
+			userprofile_id: NP.Security.getUser().get('userprofile_id'),
+			vc_id: vc_id,
+			property_id: combo.getValue(),
+			vcorder_id: vcorders
+		});
+		grid.getStore().load();
+	},
+
+	getOrderPOs: function(combo, value, property_id) {
+		var that = this;
+		var form = this.getCmp('catalog.orderpropertiesform');
+
+		form.getChildByElement('purchaseorder_id').store = Ext.create('NP.store.po.Purchaseorders', {
+			service: 'PoService',
+			action: 'getOrderPOs',
+			extraParams: {
+				vendorsite_id: combo.getValue(),
+				property_id: property_id
+			},
+			autoLoad: true
+		});
 	}
 });

@@ -8,7 +8,8 @@ Ext.define('NP.view.catalog.OrderView', {
 	alias: 'widget.catalog.orderview',
 
 	requires: [
-		'NP.view.catalog.OrderPropertiesForm'
+		'NP.view.catalog.OrderPropertiesForm',
+		'NP.view.catalog.CreateOrderGrid'
 	],
 	layout: 'fit',
 
@@ -18,17 +19,17 @@ Ext.define('NP.view.catalog.OrderView', {
 
 		this.items = [
 			{
-				xtype: 'fieldcontainer',
-				layout: 'vbox',
-				items: [
-					{
-						xtype: 'catalog.orderpropertiesform',
-						flex: 1,
-						vc_id: this.vc_id
-					}
-				],
-				padding: '5',
-				border: false
+				xtype: 'catalog.orderpropertiesform',
+				flex: 1,
+				vc_id: this.vc_id,
+				padding: '10 0 0 10',
+				vcorders: this.vcorders
+			},
+			{
+				xtype: 'catalog.createordergrid',
+				flex: 1,
+				padding: '20 0 0 0',
+				vcorders: this.vcorders
 			}
 		];
 

@@ -123,7 +123,9 @@ class PoService extends AbstractService {
 	 * @return mixed
 	 */
 	public function getOrderPOs($vendorsite_id = null, $property_id = null) {
-		return $this->purchaseOrderGateway->getOrderPOs($vendorsite_id, $property_id);
+		$result = $this->purchaseOrderGateway->getOrderPOs($vendorsite_id, $property_id);
+
+		return $result;
 	}
 
 }

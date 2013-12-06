@@ -12,6 +12,7 @@ Ext.define('NP.view.catalog.OrderPropertiesForm', {
 	],
 
 	layout: 'vbox',
+	property_id: null,
 
 	initComponent: function() {
 		var that = this;
@@ -44,26 +45,27 @@ Ext.define('NP.view.catalog.OrderPropertiesForm', {
 				typeAhead: false,
 				listeners: {
 					select: function(combo, rec) {
-						console.log('value: ', rec);
-						console.log(rec[0].get('property_id'));
-
-						that.getChildByElement('purchaseorder_id').store = Ext.create('NP.store.property.Properties', {
-							service: 'CatalogService',
-							action: 'getUserPOs',
-							extraParams: {
-								vc_id: that.vc_id,
-								property_id: rec[0].get('property_id')
-							},
-							autoLoad: true
-						});
+						that.property_id = combo.getValue();
+						that.fireEvent('selectProperty', combo, rec, that.vc_id, that.vcorders);
 					}
 				}
 			},
 			{
-				xtype: 'displayfield',
-				id: 'vendor_name',
+				xtype: 'customcombo',
+				id: 'vendor_id',
+				name: 'vendor_id',
+				displayField: 'vendor_name',
+				valueField: 'vendorsite_id',
 				fieldLabel: NP.Translator.translate('Vendor'),
-				value: ''
+				queryMode: 'local',
+				editable: false,
+				typeAhead: false,
+				listeners: {
+					select: function(combo, value) {
+						that.fireEvent('selectVendor', combo, value, that.property_id)
+					}
+				},
+				selectFirstRecord: true
 			},
 			{
 				xtype: 'customcombo',
@@ -71,8 +73,7 @@ Ext.define('NP.view.catalog.OrderPropertiesForm', {
 				fieldLabel: NP.Translator.translate('PO'),
 				queryMode: 'local',
 				editable: false,
-				typeAhead: false,
-				store: []
+				typeAhead: false
 			}
 		];
 

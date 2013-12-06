@@ -74,6 +74,7 @@ Ext.define('NP.view.catalog.OrderCreate', {
 			{
 				xtype: 'catalog.orderview',
 				vc_id: this.vc_id,
+				vcorders: this.vcorders,
 				padding: '20 0 0 0',
 				flex: 1
 			}
