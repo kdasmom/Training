@@ -511,22 +511,19 @@ Ext.define('NP.view.images.Index', {
                             loadStoreOnFirstQuery: true,
 
                             listeners: {
+                                change: this.checkUtilityAccountNumber.bind(this),
                                 select: function(combo, records) {
                                     self.checkAccountNumber.apply(self);
 
                                     var metersizes = Ext.ComponentQuery.query(
                                         '[name="utilityaccount_metersize"]'
                                     )[0];
-                                    var accountnumber = Ext.ComponentQuery.query(
-                                        '[name="utilityaccount_accountnumber"]'
-                                    )[0];
-                                    var store = metersizes.getStore();
 
-                                    store.reload({
-                                        params: {
-                                            account: records[0].data['utilityaccount_accountnumber']
-                                        }
+                                    var proxy = metersizes.getStore().getProxy();
+                                    Ext.apply(proxy.extraParams, {
+                                        account: records[0].data['utilityaccount_accountnumber']
                                     });
+                                    metersizes.getStore().load();
                                 }
                             }
                         },
@@ -540,9 +537,10 @@ Ext.define('NP.view.images.Index', {
                             store: storeMeterSize,
                             displayField: 'utilityaccount_metersize',
                             valueField:   'utilityaccount_metersize',
-                            loadStoreOnFirstQuery: true,
+                            loadStoreOnFirstQuery: false,
 
                             listeners: {
+                                change: this.checkMeterNumber.bind(this),
                                 select: this.reloadUtilityAccounts.bind(this)
                             }
                         },
@@ -562,6 +560,11 @@ Ext.define('NP.view.images.Index', {
                     html:'<b>Utility Account:</b> <em>' + this.locale.utilityAccountText + '</em>'
                 },
 
+                // Field: Utility Account Id
+                {
+                    name: 'utilityaccount_id',
+                    xtype: 'hiddenfield'
+                },
                 // Field: Utility Property Id
                 {
                     name: 'utility_property_id',
@@ -624,25 +627,23 @@ Ext.define('NP.view.images.Index', {
             callback && callback({
                 accountNumberValid: false
             });
-        } else if (account.getXType() == 'textfield') {
-            this.checkAccountNumber(callback);
         } else {
-            callback && callback({
-                accountNumberValid: true
-            });
+            this.checkAccountNumber(callback);
         }
     },
 
     /**
      * Check if Meter Number is correct.
      */
-    checkMeterNumber: function(callback) {
+    checkMeterNumber: function() {
         var metersize = Ext.ComponentQuery.query(
             '[name="utilityaccount_metersize"]'
         )[0];
         var metersizeValid = Ext.ComponentQuery.query(
             '[name="panel-utility-metersize-valid"]'
         )[0];
+
+        var callback = callback || function() {};
 
         if (metersize.getValue() == '') {
             metersizeValid.update('');
@@ -653,12 +654,8 @@ Ext.define('NP.view.images.Index', {
                     meterValid: true
                 });
             }
-        } else if (metersize.getXType() == 'textfield') {
-            this.checkAccountNumber(callback);
         } else {
-            callback && callback({
-                meterValid: true
-            });
+            this.checkAccountNumber(callback);
         }
     },
 
@@ -683,6 +680,9 @@ Ext.define('NP.view.images.Index', {
             '[name="panel-utility-metersize-valid"]'
         )[0];
 
+        var utilityAccountId = Ext.ComponentQuery.query(
+            '[name="utilityaccount_id"]'
+        )[0];
         var utilityPropertyId = Ext.ComponentQuery.query(
             '[name="utility_property_id"]'
         )[0];
@@ -715,6 +715,11 @@ Ext.define('NP.view.images.Index', {
 
                         if (data.meterValid) {
                             if (data.accounts.length == 1) {
+                                utilityAccountId.setValue(
+                                    data.accounts[0].utilityaccount_id + ',' +
+                                    data.accounts[0].property_id + ',' +
+                                    data.accounts[0].vendorsite_id                                
+                                )
                                 utilityPropertyId.setValue(
                                     data.accounts[0].property_id
                                 );
@@ -723,12 +728,7 @@ Ext.define('NP.view.images.Index', {
                                 );
                                 panelUtilityAccount && panelUtilityAccount.update(
                                     '<b>Utility Account:</b> ' +
-                                    data.accounts[0].utilityaccount_name + 
-                                    '<input type="hidden" id="utilityaccount_id" name="utilityaccount_id" value="' +
-                                        data.accounts[0].utilityaccount_id + ',' +
-                                        data.accounts[0].property_id + ',' +
-                                        data.accounts[0].vendorsite_id +
-                                    '">'
+                                    data.accounts[0].utilityaccount_name
                                 );
                             } else {
                                 utilityPropertyId.setValue(
@@ -753,8 +753,11 @@ Ext.define('NP.view.images.Index', {
                                     panelUtilityAccount.update('<b>Utility Account:</b> ' + html)
                                 ;
                             }
+                        } else {
+                            utilityAccountId.setValue('');
                         }
                     } else {
+                        utilityAccountId.setValue('');
                         accountValid && 
                             accountValid.update('<span style="color:#CC0000;">Invalid account number</span>')
                         ;
@@ -772,7 +775,7 @@ Ext.define('NP.view.images.Index', {
                         );
                     }
 
-                    callback && callback.apply(
+                    callback && callback.apply && callback.apply(
                         self,
                         [
                             data, 

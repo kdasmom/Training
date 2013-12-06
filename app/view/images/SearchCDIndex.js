@@ -51,18 +51,20 @@ Ext.define('NP.view.images.SearchCDIndex', {
         var storeProperties = Ext.create('NP.store.property.Properties', {
             service    : 'ImageService',
             action     : 'getPropertyList',
+            autoLoad   : false,
             extraParams: {
                 userprofile_id: NP.Security.getUser().get('userprofile_id'),
                 delegation_to_userprofile_id: NP.Security.getUser().get('delegation_to_userprofile_id')
             }
         });
-        storeProperties.load();
+        //storeProperties.load();
 
         var storeVendors = Ext.create('NP.store.vendor.Vendors', {
             service    : 'ImageService',
-            action     : 'getVendorList'
+            action     : 'getVendorList',
+            autoLoad   : false
         });
-        storeVendors.load();
+        //storeVendors.load();
 
         this.items = [
             {
@@ -94,6 +96,7 @@ Ext.define('NP.view.images.SearchCDIndex', {
                         fieldLabel: 'Property:',
 
                         addBlankRecord: true,
+                        loadStoreOnFirstQuery: true,
 
                         valueField:   'property_id',
                         displayField: 'property_name',
@@ -107,6 +110,7 @@ Ext.define('NP.view.images.SearchCDIndex', {
                         fieldLabel: 'Vendor:',
 
                         addBlankRecord: true,
+                        loadStoreOnFirstQuery: true,
 
                         valueField:   'vendor_id',
                         displayField: 'vendor_name',

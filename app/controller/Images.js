@@ -491,6 +491,8 @@ Ext.define('NP.controller.Images', {
             }
             this.queueImages(items);
 
+            var self = this;
+
             // Prepare view configuration.
             var viewCfg = {
                 section: section,
@@ -504,12 +506,37 @@ Ext.define('NP.controller.Images', {
                 },
                 listeners: {
                     dataloaded: function (form, data) {
+                        var form = self.getCmp('images.index');
                         if (data['utilityaccount_id']) {
                             var uproperty = Ext.ComponentQuery.query('[name="utility_property_id"]')[0];
                             uproperty && uproperty.setValue(data['Property_Id']);
 
                             var uvendorsite = Ext.ComponentQuery.query('[name="utility_vendorsite_id"]')[0];
                             uvendorsite && uvendorsite.setValue(data['Image_Index_VendorSite_Id']);
+
+                            var uaccountnumber = Ext.ComponentQuery.query('[name="utilityaccount_accountnumber"]')[0];
+                            var umetersizes = Ext.ComponentQuery.query('[name="utilityaccount_metersize"]')[0];
+
+                            if (uaccountnumber.getXType() == 'customcombo') {
+                                var mask = new Ext.LoadMask(form);
+                                mask.show();
+
+                                var proxy = uaccountnumber.getStore().getProxy();
+                                Ext.apply(proxy.extraParams, {
+                                    account: data['utilityaccount_accountnumber']
+                                });
+                                uaccountnumber.getStore().load(function() {
+                                    uaccountnumber.setValue(data['utilityaccount_accountnumber']);
+                                    var proxy = umetersizes.getStore().getProxy();
+                                    Ext.apply(proxy.extraParams, {
+                                        account: data['utilityaccount_accountnumber']
+                                    });
+                                    umetersizes.getStore().load(function() {
+                                        umetersizes.setValue(data['utilityaccount_metersize']);
+                                        mask.destroy();
+                                    });
+                                });
+                            }
                         }
 
                         var doctype = Ext.ComponentQuery.query('[name="Image_Doctype_Id"]')[0];
@@ -520,6 +547,13 @@ Ext.define('NP.controller.Images', {
                             ;
                             doctype.setValue(doctypeValue);
                         }
+
+                        form.onDocumentTypeChange(
+                            doctype, 
+                            [{data: {
+                                image_doctype_name: doctype.getDisplayValue()
+                            }}]
+                        );
                     }
                 }
             };
@@ -801,6 +835,10 @@ Ext.define('NP.controller.Images', {
                     { field: 'Property_Alt_Id', type: 'presence' }
                 );
             }
+        } else {
+            model.validations.push(
+                { field: 'utilityaccount_id', type: 'presence' }
+            );
         }
         if (action == 'exception') {
             model.validations.push(
@@ -824,6 +862,10 @@ Ext.define('NP.controller.Images', {
                     callback && callback(true);
                 }
             });
+        } else {
+            if (model.data['Image_Doctype_Id'] == 6) {
+                Ext.MessageBox.alert('Image Indexing', 'Please choose correct Account Number');
+            }
         }
         model.validations = [
             { field: 'Image_Doctype_Id', type: 'presence' }

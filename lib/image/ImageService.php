@@ -1061,15 +1061,15 @@ class ImageService extends AbstractService {
             // delete method.
             $entity['image_index_deleted_by'] = $params['userprofile_id'];
             $entity['image_index_deleted_datetm'] = date('Y-m-d H:i:s');
-            $entity['image_index_status'] = -1;
+            $entity['Image_Index_Status'] = -1;
         } else {
             // If parameters were not passed, then default action should be selected.
             // If current section is "Exceptions" then this is exception image.
             // If current section is "Index" then this is usual indexed image.
             if (strtolower($params['section']) == 'exceptions') {
-                $entity['image_index_status'] = 2;
+                $entity['Image_Index_Status'] = 2;
             } elseif (strtolower($params['section']) == 'index') {
-                $entity['image_index_status'] = 1;
+                $entity['Image_Index_Status'] = 1;
             }
         }
 
@@ -1077,6 +1077,14 @@ class ImageService extends AbstractService {
         if ($params['action'] == 'complete' && empty($params['image_delete'])) {
             $entity['image_index_indexed_by'] = $params['userprofile_id'];
             $entity['image_index_indexed_datetm'] = date('Y-m-d H:i:s');
+        }
+
+        if (!empty($entity['utilityaccount_id'])) {
+            $entity['utilityaccount_id'] = explode(',', $entity['utilityaccount_id']);
+
+            $entity['Property_Id'] = $entity['utilityaccount_id'][1];
+            $entity['Image_Index_VendorSite_Id'] = $entity['utilityaccount_id'][2];
+            $entity['utilityaccount_id'] = $entity['utilityaccount_id'][0];
         }
 
         if ($entity['Image_Doctype_Id'] == 1) {

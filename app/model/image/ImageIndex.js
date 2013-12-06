@@ -72,7 +72,7 @@ Ext.define('NP.model.image.ImageIndex', {
 		{ name: 'idimageindex' },
 		{ name: 'image_index_GUID' },
 		{ name: 'image_index_deleted_by', type: 'int' },
-		{ name: 'utilityaccount_id', type: 'int' },
+		{ name: 'utilityaccount_id'},
 		{ name: 'cycle_from', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
 		{ name: 'cycle_to', type: 'date', dateFormat: NP.Config.getServerDateFormat() },
 		{ name: 'utilityaccount_accountnumber' },

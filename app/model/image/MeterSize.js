@@ -5,6 +5,6 @@ Ext.define('NP.model.image.MeterSize', {
 
 	idProperty: 'utilityaccount_metersize',
 	fields: [
-		{ name: 'utilityaccount_metersize', type: 'int' },
+		{ name: 'utilityaccount_metersize' },
 	]
 });
