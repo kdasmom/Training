@@ -991,8 +991,6 @@ class ImageService extends AbstractService {
     }
 
     public function listVendorCode($integration_package = 1) {
-        //configService->findSysValueByName
-        
         //vendor_id_alt,vendorsite_id
         $listing = $this->vendorGateway->getVendorListing($integration_package, 'v.vendor_id_alt');
 
@@ -1027,8 +1025,6 @@ class ImageService extends AbstractService {
                 $entity['Property_Id'] = null;
             }
         }
-//$params['utility_property_id']
-//$params['utility_vendorsite_id']
 
         if ($entity['Image_Doctype_Id'] == $doctypes[strtolower('Utility Invoice')]) {
             //$entity['Image_Index_VendorSite_Id'] = $params['utility_vendorsite_id'];
@@ -1107,8 +1103,6 @@ class ImageService extends AbstractService {
         $entity['Image_Index_Id'] = intval($entity['Image_Index_Id']);
         $entity['asp_client_id'] =  $this->configService->getClientId();
 
-        //$entity['Image_Index_Source_Id'] = 1;
-        //$entity['Image_Index_Primary'] = 1;
         $image = new ImageIndexEntity($entity);
 
         $errors = $this->entityValidator->validate($image);
@@ -1124,8 +1118,6 @@ class ImageService extends AbstractService {
             'success' => (count($errors)) ? false : true,
             'errors'  => $errors
         );
-
-            //return $this->imageIndexGateway->updateImage($data['imageindex'], $params, $doctypes, $tablerefs);
     }
 
     /**

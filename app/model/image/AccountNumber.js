@@ -5,6 +5,6 @@ Ext.define('NP.model.image.AccountNumber', {
 
 	idProperty: 'utilityaccount_accountnumber',
 	fields: [
-		{ name: 'utilityaccount_accountnumber', type: 'int' },
+		{ name: 'utilityaccount_accountnumber'},
 	]
 });

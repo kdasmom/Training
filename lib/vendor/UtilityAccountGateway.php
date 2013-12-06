@@ -32,9 +32,9 @@ class UtilityAccountGateway extends AbstractGateway {
         $select03 = new \NP\core\db\Select();
         $select03
             ->distinct()
-                ->column('utilityAccount_accountNumber')
+                ->column('utilityaccount_accountnumber')
             ->from('utilityaccount')
-            ->order('utilityAccount_accountNumber')
+            ->order('utilityaccount_accountnumber')
         ;
 
         $select04 = new \NP\core\db\Select();
