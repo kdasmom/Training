@@ -741,7 +741,7 @@ Ext.define('NP.view.images.Index', {
                                     data.accounts[0].utilityaccount_id + ',' +
                                     data.accounts[0].property_id + ',' +
                                     data.accounts[0].vendorsite_id + ',' +
-                                    data.accounts[i].utilityaccount_metersize                             
+                                    data.accounts[0].utilityaccount_metersize                             
                                 )
                                 utilityPropertyId.setValue(
                                     data.accounts[0].property_id
