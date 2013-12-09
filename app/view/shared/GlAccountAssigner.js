@@ -3,7 +3,7 @@
  */
 
 Ext.define('NP.view.shared.GlAccountAssigner', {
-    extend: 'Ext.ux.form.ItemSelector',
+    extend: 'NP.lib.ui.Assigner',
     alias: 'widget.shared.glaccountassigner',
 
     requires: ['NP.lib.core.Config'],
@@ -14,9 +14,8 @@ Ext.define('NP.view.shared.GlAccountAssigner', {
     valueField  : 'glaccount_id',
     fromTitle   : 'Unassigned',
     toTitle     : 'Assigned',
-    buttons     : ['add','remove'],
     msgTarget   : 'under',
-    tbl: '<tpl for="."><div class="x-boundlist-item">{glaccount_name}</div></tpl>',
+    tpl: '<tpl for="."><div class="x-boundlist-item">{[NP.model.gl.GlAccount.formatName(values.glaccount_number, values.glaccount_name)]}</div></tpl>',
     height: 200,
 
     initComponent: function() {

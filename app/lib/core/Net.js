@@ -78,6 +78,8 @@ Ext.define('NP.lib.core.Net', {
 	alternateClassName: 'NP.Net',
 	singleton: true,
 	
+	abortableRequests: {},
+
 	/**
 	 * Executes an Ajax call. Aside from the documented parameters, each request can take an arbitrary number of
 	 * parameter that will be passed as arguments to the service function called
@@ -95,6 +97,7 @@ Ext.define('NP.lib.core.Net', {
 	 * @param  {String}                         [cfg.maskText="Loading"] Text for the loading mask
 	 * @param  {Ext.Element/HTMLElement/String} [cfg.form]               The <form> Element or the id of the <form> to pull parameters from.
 	 * @param  {Boolean}                        [cfg.isUpload]           Set to true if the form object is a file upload.
+	 * @param  {Boolean}                        [cfg.abortable]          Set to true if you want the request to be aborted if the user goes to another page
 	 * @param  {Function}                       [cfg.success]            Function to call after all ajax requests have run if ajax request is successful
 	 * @param  {Function}                       [cfg.failure]            Function to call after all ajax requests have run if ajax request fails
 	 */
@@ -110,6 +113,7 @@ Ext.define('NP.lib.core.Net', {
 			isUpload: false,
 			maskText: 'Loading',
 			form    : '',
+			abortable: true,
 			success : function() {}, // default global success callback to empty function
 			failure : function() {}  // default global failure callback to empty function
 		});
@@ -120,7 +124,7 @@ Ext.define('NP.lib.core.Net', {
 		}
 
 		// Run the ajax request
-		Ext.Ajax.request({
+		var ajaxRequest = Ext.Ajax.request({
 			url     : 'ajax.php',
 			method  : cfg.method,
 			isUpload: cfg.isUpload,
@@ -129,6 +133,8 @@ Ext.define('NP.lib.core.Net', {
 				config: Ext.JSON.encode(cfg.requests)
 			},
 			callback: function(options, success, response) {
+				delete NP.Net.abortableRequests[ajaxRequest.id];
+
 				var res, returnStruct = false;
 				// If HTTP request was successful, decode the JSON response
 				if (success) {
@@ -185,5 +191,24 @@ Ext.define('NP.lib.core.Net', {
 				}
 			}
 		});
+
+		if (cfg.abortable) {
+			NP.Net.abortableRequests[ajaxRequest.id] = {
+				req : ajaxRequest,
+				mask: (cfg.mask) ? mask : null
+			};
+		}
+	},
+
+	abortAllRequests: function() {
+		for (var id in NP.Net.abortableRequests) {
+			if (NP.Net.abortableRequests[id].mask !== null) {
+				NP.Net.abortableRequests[id].mask.destroy();
+			}
+			console.log('Aborting request');
+			console.log(NP.Net.abortableRequests[id].req);
+			Ext.Ajax.abort(NP.Net.abortableRequests[id].req);
+			delete NP.Net.abortableRequests[id];
+		}
 	}
 });
