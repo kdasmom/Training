@@ -629,6 +629,11 @@ Ext.define('NP.controller.Images', {
             pname.disable();
         }
 
+        var poref = Ext.ComponentQuery.query('[name="po_ref"]')[0];
+        if (poref && data['Image_Index_Ref']) {
+            poref.setValue(data['Image_Index_Ref']);
+        }
+
         // Set Correct title.
         form.setTitle('Image Index - ' + data['Image_Index_Name']);
 
