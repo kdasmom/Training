@@ -1037,8 +1037,8 @@ class ImageService extends AbstractService {
         }
 
         $refnum = '';
-        if (!empty($entity['invoiceimage_ref'])) {
-            $refnum = $entity['invoiceimage_ref'];
+        if (!empty($entity['Image_Index_Ref'])) {
+            $refnum = $entity['Image_Index_Ref'];
         } elseif (!empty($entity['po_ref'])) {
             $refnum = $entity['po_ref'];
         } else {
@@ -1175,38 +1175,41 @@ class ImageService extends AbstractService {
         if (empty($utilityaccount_accountnumber)) {
             $utilityaccount_accountnumber = '\'\'';
         }
-            $accounts = $this->utilityAccountGateway->getUtilityAccountsByCriteria($userprofile_id, $delegation_to_userprofile_id, $utilityaccount_accountnumber);
+        $accounts = $this->utilityAccountGateway->getUtilityAccountsByCriteria($userprofile_id, $delegation_to_userprofile_id, $utilityaccount_accountnumber);
 
-            $result = [];
-            if (!empty($accounts)) {
-                $result['accountNumberValid'] = true;
+        $result = [];
+        if (!empty($accounts)) {
+            $result['accountNumberValid'] = true;
 
-                if (!empty($utilityaccount_metersize)) {
-                    $result['meterValid'] = false;
-                    foreach ($accounts as $account) {
-                        if ($account['utilityaccount_metersize'] == $utilityaccount_metersize) {
-                            $result['meterValid'] = true;
-                            break;
-                        }
+            if (!empty($utilityaccount_metersize)) {
+                $result['meterValid'] = false;
+                foreach ($accounts as $account) {
+                    if ($account['utilityaccount_metersize'] == $utilityaccount_metersize) {
+                        $result['meterValid'] = true;
+                        break;
                     }
-                } else {
-                    $result['meterValid'] = true;
                 }
             } else {
-                $result['accountNumberValid'] = false;
-                $result['meterValid'] = false;
+                $result['meterValid'] = true;
             }
+        } else {
+            $result['accountNumberValid'] = false;
+            $result['meterValid'] = false;
+        }
 
-            foreach ($accounts as $account) {
+        foreach ($accounts as $account) {
+            if (empty($utilityaccount_metersize) || $account['utilityaccount_metersize'] == $utilityaccount_metersize) {
                 $record = [
                     'property_id'         => $account['property_id'],
                     'vendorsite_id'       => $account['vendorsite_id'],
                     'utilityaccount_id'   => $account['utilityaccount_id'],
-                    'utilityaccount_name' => $account['utilityaccount_name']
+                    'utilityaccount_name' => $account['utilityaccount_name'],
+                    'utilityaccount_metersize' => $account['utilityaccount_metersize']
                 ];
                 $result['accounts'][] = $record;
             }
-            return $result;
+        }
+        return $result;
     }
 
     /**

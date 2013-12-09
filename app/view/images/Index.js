@@ -565,6 +565,26 @@ Ext.define('NP.view.images.Index', {
                     name: 'utilityaccount_id',
                     xtype: 'hiddenfield'
                 },
+
+                // Field: Utility Account Id Alt. This is also Utility Account Id. It should be displayed for multiple
+                // accounts.
+                {
+                    name: 'utilityaccount_id_alt',
+
+                    xtype: 'customcombo',
+                    fieldLabel: 'Utility Account:',
+
+                    store: Ext.create('NP.store.images.UtilityAccounts'),
+
+                    displayField: 'UtilityAccount_Title',
+                    valueField:   'UtilityAccount_Id',
+                    hidden: true,
+
+                    listeners: {
+                        change: this.changeUtilityAccountId.bind(this)
+                    }
+                },
+
                 // Field: Utility Property Id
                 {
                     name: 'utility_property_id',
@@ -603,7 +623,6 @@ Ext.define('NP.view.images.Index', {
             var account = Ext.ComponentQuery.query(
                 '[name="utilityaccount_accountnumber"]'
             )[0];
-            this.selectUtilityAccount(account.getValue(), isAccountValid, isMetersizeValid);
 
             callback && callback(data);
         })
@@ -690,6 +709,9 @@ Ext.define('NP.view.images.Index', {
             '[name="utility_vendorsite_id"]'
         )[0];
 
+        var utilityAccountIdAlt = Ext.ComponentQuery.query(
+            '[name="utilityaccount_id_alt"]'
+        )[0];
         var panelUtilityAccount = Ext.ComponentQuery.query(
             '[name="panel-utility-account"]'
         )[0];
@@ -718,7 +740,8 @@ Ext.define('NP.view.images.Index', {
                                 utilityAccountId.setValue(
                                     data.accounts[0].utilityaccount_id + ',' +
                                     data.accounts[0].property_id + ',' +
-                                    data.accounts[0].vendorsite_id                                
+                                    data.accounts[0].vendorsite_id + ',' +
+                                    data.accounts[i].utilityaccount_metersize                             
                                 )
                                 utilityPropertyId.setValue(
                                     data.accounts[0].property_id
@@ -730,28 +753,28 @@ Ext.define('NP.view.images.Index', {
                                     '<b>Utility Account:</b> ' +
                                     data.accounts[0].utilityaccount_name
                                 );
+                                panelUtilityAccount && panelUtilityAccount.show();
+                                utilityAccountIdAlt && utilityAccountIdAlt.hide();
                             } else {
-                                utilityPropertyId.setValue(
-                                    data.accounts[0].property_id
-                                );
-                                utilityVendorsiteId.setValue(
-                                    data.accounts[0].vendorsite_id
-                                );
+                                var utilityaccountIdAlt = Ext.ComponentQuery.query(
+                                    '[name="utilityaccount_id_alt"]'
+                                )[0];
 
-                                var html = '<select id="utilityaccount_id" name="utilityaccount_id" onchange="changeUtilityAccountId(this);">';
+                                utilityaccountIdAlt.getStore().removeAll();
                                 for (var i = 0; i < data.accounts.length; i++) {
-                                    html +=
-                                        '<option value="' +
-                                            data.accounts[0].utilityaccount_id + ',' +
-                                            data.accounts[0].property_id + ',' +
-                                            data.accounts[0].vendorsite_id +
-                                        '">' + data.accounts[0].utilityaccount_name + '</option>'
-                                    ;
+                                    var record = Ext.create('NP.model.image.UtilityAccount', {
+                                        UtilityAccount_Id:
+                                            data.accounts[i].utilityaccount_id + ',' +
+                                            data.accounts[i].property_id + ',' +
+                                            data.accounts[i].vendorsite_id + ',' +
+                                            data.accounts[i].utilityaccount_metersize
+                                        ,
+                                        UtilityAccount_Title: data.accounts[i].utilityaccount_name
+                                    });
+                                    utilityaccountIdAlt.getStore().add(record)
                                 }
-                                html += '</select>';
-                                panelUtilityAccount && 
-                                    panelUtilityAccount.update('<b>Utility Account:</b> ' + html)
-                                ;
+                                panelUtilityAccount && panelUtilityAccount.hide();
+                                utilityAccountIdAlt && utilityAccountIdAlt.show();
                             }
                         } else {
                             utilityAccountId.setValue('');
@@ -789,62 +812,6 @@ Ext.define('NP.view.images.Index', {
     },
 
     /**
-     * Set hidden fields values for the utility account after appropriate data is 
-     * reloaded.
-     * 
-     * @param number accountNumber Account number.
-     * @param boolean isAccountValid Was account number passed check or not.
-     * @param boolean isMetersizeValid Was meter number passed check or not.
-     */
-    selectUtilityAccount: function(accountNumber, isAccountValid, isMetersizeValid) {
-        var account = Ext.ComponentQuery.query(
-            '[name="utilityaccount_accountnumber"]'
-        )[0];
-        var metersize = Ext.ComponentQuery.query(
-            '[name="utilityaccount_metersize"]'
-        )[0];
-
-        var utilityPropertyId = Ext.ComponentQuery.query(
-            '[name="utility_property_id"]'
-        )[0];
-        var utilityVendorsiteId = Ext.ComponentQuery.query(
-            '[name="utility_vendorsite_id"]'
-        )[0];
-
-        var panelUtilityAccount = Ext.ComponentQuery.query(
-            '[name="panel-utility-account"]'
-        )[0];
-
-        if (!isAccountValid || !isMetersizeValid && $('#utilityaccount_metersize option').length == 0 || account.getValue() == '') {
-            utilityPropertyId.setValue('');
-            utilityVendorsiteId.setValue('');
-            panelUtilityAccount.update('<b>Utility Account:</b> <em>' + this.locale.utilityAccountText + '</em>')
-
-            if (isAccountValid && $('#utilityaccount_metersize option').length) {
-                metersize.update('<option value=""></option>');
-            }
-        } else if ($('#utilityaccount_metersize option').length) {
-            NP.lib.core.Net.remoteCall({
-                requests: {
-                    service: 'ImageService',
-                    action : 'getUtilityAccountVendorPropMeter',
-
-                    utilityaccount_accountnumber: metersize.getValue(),
-
-                    success: function(data) {
-                        metersize.update('<option value=""></option>');
-                        for (var i = 0, l = data.meters; i < l; i++) {
-                            // Remove the string we added at the end of the meter to force string conversion
-                            //var fixedval = data.meters[i].replace('|@|', '');
-                            //meterSelect.append($('<option></option>').val(fixedval).html(fixedval));
-                        }
-                    }
-                }
-            });
-        }
-    },
-
-    /**
      * Alternative way to set utility account values.
      * 
      * If comboboxes are used for account number selection, different select account
@@ -853,11 +820,30 @@ Ext.define('NP.view.images.Index', {
      * @param {} field Utility account selector's option.
      */
     changeUtilityAccountId: function(field) {
-        var val = $(field).val().split(',');
-        var property_id = val[1];
-        var vendorsite_id = val[2];
-        $('##utility_property_id').val(property_id);
-        $('##utility_vendorsite_id').val(vendorsite_id);
+        var value = field.getValue();
+        if (value) {
+            var utilityAccountId = Ext.ComponentQuery.query(
+                '[name="utilityaccount_id"]'
+            )[0];
+            var utilityPropertyId = Ext.ComponentQuery.query(
+                '[name="utility_property_id"]'
+            )[0];
+            var utilityVendorsiteId = Ext.ComponentQuery.query(
+                '[name="utility_vendorsite_id"]'
+            )[0];
+
+            var metersize = Ext.ComponentQuery.query(
+                '[name="utilityaccount_metersize"]'
+            )[0];
+
+            utilityAccountId.setValue(value);
+
+            value = value.split(',');
+
+            metersize.setValue(value[3]);
+            utilityPropertyId.setValue(value[1]);
+            utilityVendorsiteId.setValue(value[2]);
+        }
     },
 
     /***************************************************************************

@@ -81,8 +81,12 @@ Ext.define('NP.model.image.ImageIndex', {
 		// This field is not a database column
 		{ name: 'days_outstanding', type: 'int' },
 		{ name: 'pending_days', type: 'int' },
-                { name: 'userprofile_username'},
-                { name: 'deletedby_username'}
+                { name: 'userprofile_username' },
+                { name: 'deletedby_username' },
+                { name: 'property_name' },
+                { name: 'property_id_alt' },
+                { name: 'vendor_name' },
+                { name: 'vendor_id_alt'}
 	],
 
     belongsTo: [

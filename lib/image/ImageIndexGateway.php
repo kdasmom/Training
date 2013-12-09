@@ -422,7 +422,7 @@ class ImageIndexGateway extends AbstractGateway {
             ))
             ->join(new sql\join\ImageIndexVendorsiteJoin())
             ->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(
-                ['vendor_name, vendor_id_alt'],
+                ['vendor_name', 'vendor_id_alt'],
                 Select::JOIN_LEFT
             ))
             ->join(new sql\join\ImageIndexPropertyJoin())
@@ -474,7 +474,7 @@ class ImageIndexGateway extends AbstractGateway {
                 'transfer_srcTablekey_id'
             ))
             ->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(
-                ['vendor_name', 'vendor_name AS scan_source, vendor_id_alt'],
+                ['vendor_name', 'vendor_name AS scan_source', 'vendor_id_alt'],
                 Select::JOIN_LEFT
             ))
             ->join(new sql\join\ImageIndexPropertyJoin())
@@ -526,7 +526,7 @@ class ImageIndexGateway extends AbstractGateway {
             ->join(new sql\join\ImageIndexImageTransferJoin())
             ->join(new sql\join\ImageIndexVendorsiteJoin())
             ->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(
-                ['vendor_name, vendor_id_alt'],
+                ['vendor_name', 'vendor_id_alt'],
                 Select::JOIN_LEFT
             ))
             ->join(new sql\join\ImageIndexPropertyJoin())

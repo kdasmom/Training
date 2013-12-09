@@ -506,59 +506,11 @@ Ext.define('NP.controller.Images', {
                 },
                 listeners: {
                     dataloaded: function (form, data) {
-                        var form = self.getCmp('images.index');
-                        if (data['utilityaccount_id']) {
-                            var uproperty = Ext.ComponentQuery.query('[name="utility_property_id"]')[0];
-                            uproperty && uproperty.setValue(data['Property_Id']);
-
-                            var uvendorsite = Ext.ComponentQuery.query('[name="utility_vendorsite_id"]')[0];
-                            uvendorsite && uvendorsite.setValue(data['Image_Index_VendorSite_Id']);
-
-                            var uaccountnumber = Ext.ComponentQuery.query('[name="utilityaccount_accountnumber"]')[0];
-                            var umetersizes = Ext.ComponentQuery.query('[name="utilityaccount_metersize"]')[0];
-
-                            if (uaccountnumber.getXType() == 'customcombo') {
-                                var mask = new Ext.LoadMask(form);
-                                mask.show();
-
-                                var proxy = uaccountnumber.getStore().getProxy();
-                                Ext.apply(proxy.extraParams, {
-                                    account: data['utilityaccount_accountnumber']
-                                });
-                                uaccountnumber.getStore().load(function() {
-                                    uaccountnumber.setValue(data['utilityaccount_accountnumber']);
-                                    var proxy = umetersizes.getStore().getProxy();
-                                    Ext.apply(proxy.extraParams, {
-                                        account: data['utilityaccount_accountnumber']
-                                    });
-                                    umetersizes.getStore().load(function() {
-                                        umetersizes.setValue(data['utilityaccount_metersize']);
-                                        mask.destroy();
-                                    });
-                                });
-                            }
-                        }
-
-                        var doctype = Ext.ComponentQuery.query('[name="Image_Doctype_Id"]')[0];
-                        if (!doctype.getValue()) {
-                            var doctypeValue = 
-                                this['preload-store'].doctype.totalCount && 
-                                this['preload-store'].doctype.data.keys[0]
-                            ;
-                            doctype.setValue(doctypeValue);
-                        }
-
-                        form.onDocumentTypeChange(
-                            doctype, 
-                            [{data: {
-                                image_doctype_name: doctype.getDisplayValue()
-                            }}]
-                        );
+                        self.setFieldsAfterLoad.apply(self, [data]);
                     }
                 }
             };
 
-            var self = this;
             // Preload stores.
             this.loadStores(function(storeDoctypes, storeIntegrationPackages){
                 viewCfg['preload-store'] = {
@@ -568,14 +520,117 @@ Ext.define('NP.controller.Images', {
 
                 // Show Index Screen.
                 self.application.setView('NP.view.images.Index', viewCfg);
-                // Set Correct title.
-                Ext.ComponentQuery.query('panel[id="panel-index"]')[0].setTitle('Image Index - ' + self.imageQueue[self.imageQueueCurrent]);
                 // Set correct url for iframe.
                 self.refreshIndex();
             })
         } else {
             this.processButtonReturn();
         }
+    },
+
+    /**
+     * After data for image index form is loaded, set correct values for some custom fields.
+     * 
+     * @param {} data Image index form data.
+     */
+    setFieldsAfterLoad: function(data) {
+        var form = this.getCmp('images.index');
+        if (data['utilityaccount_id']) {
+            var uproperty = Ext.ComponentQuery.query('[name="utility_property_id"]')[0];
+            uproperty && uproperty.setValue(data['Property_Id']);
+
+            var uvendorsite = Ext.ComponentQuery.query('[name="utility_vendorsite_id"]')[0];
+            uvendorsite && uvendorsite.setValue(data['Image_Index_VendorSite_Id']);
+
+            var uaccountnumber = Ext.ComponentQuery.query('[name="utilityaccount_accountnumber"]')[0];
+            var umetersizes = Ext.ComponentQuery.query('[name="utilityaccount_metersize"]')[0];
+
+            if (uaccountnumber.getXType() == 'customcombo') {
+                var mask = new Ext.LoadMask(form);
+                mask.show();
+
+                var proxy = uaccountnumber.getStore().getProxy();
+                Ext.apply(proxy.extraParams, {
+                    account: data['utilityaccount_accountnumber']
+                });
+                uaccountnumber.getStore().load(function() {
+                    uaccountnumber.setValue(data['utilityaccount_accountnumber']);
+
+                    var proxy = umetersizes.getStore().getProxy();
+                    Ext.apply(proxy.extraParams, {
+                        account: data['utilityaccount_accountnumber']
+                    });
+
+                    umetersizes.getStore().load(function() {
+                        umetersizes.setValue(data['utilityaccount_metersize']);
+                        mask.destroy();
+                    });
+                });
+            }
+        }
+
+        var doctype = Ext.ComponentQuery.query('[name="Image_Doctype_Id"]')[0];
+        if (!doctype.getValue()) {
+            var doctypeValue = 
+                form['preload-store'].doctype.totalCount && 
+                form['preload-store'].doctype.data.keys[0]
+            ;
+            doctype.setValue(doctypeValue);
+        }
+
+        if (data['vendor_name'] && data['vendor_id_alt']) {
+            var record = Ext.create('NP.model.vendor.Vendor', {
+                vendorsite_id: data['Image_Index_VendorSite_Id'],
+                vendor_name: data['vendor_name'],
+                vendor_id_alt: data['vendor_id_alt']
+            });
+
+            var vcode = Ext.ComponentQuery.query(
+                '[name="invoiceimage_vendorsite_alt_id"]'
+            )[0];
+            vcode.getStore().add(record);
+            vcode.setValue(record.get(vcode.valueField));
+
+            var vname = Ext.ComponentQuery.query(
+                '[name="Image_Index_VendorSite_Id"]'
+            )[0];
+            vname.getStore().add(record);
+            vname.setValue(record.get(vname.valueField));
+
+            vname.disable();
+        }
+
+        if (data['property_name'] && data['property_id_alt']) {
+            record = Ext.create('NP.model.property.Property', {
+                property_id: data['Property_Id'],
+                property_name: data['property_name'],
+                property_id_alt: data['property_id_alt']
+            });
+
+            var pcode = Ext.ComponentQuery.query(
+                '[name="Property_Alt_Id"]'
+            )[0];
+            pcode.getStore().add(record);
+            pcode.setValue(record.get(pcode.valueField));
+
+            var pname = Ext.ComponentQuery.query(
+                '[name="Property_Id"]'
+            )[0];
+            pname.getStore().add(record);
+            pname.setValue(record.get(pname.valueField));
+
+            pname.disable();
+        }
+
+        // Set Correct title.
+        form.setTitle('Image Index - ' + data['Image_Index_Name']);
+
+        form.onDocumentTypeChange(
+            doctype, 
+            [{data: {
+                image_doctype_name: doctype.getDisplayValue()
+            }}]
+        );
     },
 
     /**
@@ -652,28 +707,9 @@ Ext.define('NP.controller.Images', {
                     }
                     form.fireEvent('dataloaded', form, result);
 
-                    // Set Correct title.
-                    Ext.ComponentQuery.query('panel[id="panel-index"]')[0].setTitle('Image Index - ' + self.imageQueue[self.imageQueueCurrent]);
                     // Set correct url for iframe.
                     self.refreshIndex();
-
-                    var element = 
-                        Ext.ComponentQuery.query('[name="Property_Alt_Id"]')[0]
-                    ;
-                    element.setValue(result['Property_Id']);
-                    result['Property_Id'] ?
-                        element.disable():
-                        element.enable()
-                    ;
-
-                    element = 
-                        Ext.ComponentQuery.query('[name="invoiceimage_vendorsite_alt_id"]')[0]
-                    ;
-                    element.setValue(result['Image_Index_VendorSite_Id']);
-                    result['Image_Index_VendorSite_Id'] ?
-                        element.disable():
-                        element.enable()
-                    ;
+                    self.setFieldsAfterLoad.apply(self, [result]);
 
                     // Remove blocking "Loading" screen.
                     mask.destroy();
