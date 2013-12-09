@@ -63,8 +63,11 @@ Ext.define('NP.view.images.Main', {
             }
         ];
 
-        this.tbar = this.topbarIndex();
-
+        this.tbar = Ext.create('Ext.toolbar.Toolbar', {
+            enableOverflow: true
+        });
+        this.tbar.add(this.topbarIndex());
+        
         this.callParent(arguments);
     },
 
