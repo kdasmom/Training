@@ -380,20 +380,27 @@ Ext.define('NP.controller.Images', {
      */
     processButtonUpload: function() {
         var self = this;
-        Ext.create('NP.lib.ui.Uploader', {
+        var uploader = Ext.create('NP.lib.ui.Uploader', {
             params: {
                 form: {
                     action:  'upload',
                     service: 'ImageService'
                 },
                 listeners: {
-                    close: function(){
+                    close: function() {
                         var grid = self.getCurrentGrid();
                         grid.store.reload();
+                    },
+                    onUploadComplete: function() {
+                        NP.Util.showFadingWindow(
+                            { html: 'Files uploaded successfully' }
+                        );
+                        uploader.close();
                     }
                 }
             }
-        }).show();
+        });
+        uploader.show();
     },
 
     /**
@@ -862,6 +869,11 @@ Ext.define('NP.controller.Images', {
         form.updateBoundModels();
 
         var model = form.bind.models[0].instance;
+
+        model.validations = [
+            { field: 'Image_Doctype_Id', type: 'presence' }
+        ];
+
         if (model.data['Image_Doctype_Id'] != 6) {
             if (model.validations.length == 1) {
                 model.validations.push(
@@ -903,9 +915,6 @@ Ext.define('NP.controller.Images', {
                 Ext.MessageBox.alert('Image Indexing', 'Please choose correct Account Number');
             }
         }
-        model.validations = [
-            { field: 'Image_Doctype_Id', type: 'presence' }
-        ];
     },
 
     /**

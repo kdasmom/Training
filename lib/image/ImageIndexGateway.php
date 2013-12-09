@@ -744,9 +744,15 @@ class ImageIndexGateway extends AbstractGateway {
         foreach ($params as $key => $values) {
             $where = Where::get()
                 ->notIn('image_index_id', implode(',', $identifiers))
-                ->equals('tablekey_id', $values['tablekey_id'])
-                ->equals('tableref_id', $values['tableref_id'])
             ;
+            if (empty($values['tablekey_id'])) {
+                $where->isNull('tablekey_id');
+            } else {
+                $where->equals('tablekey_id', $values['tablekey_id']);
+            }
+            $where->equals('tableref_id', $values['tableref_id']);
+
+
             $select = Select::get()
                 ->from($this->table)
                 ->column('image_index_id')
@@ -761,7 +767,6 @@ class ImageIndexGateway extends AbstractGateway {
                     Where::get()->in('image_index_id', $select)
                 )
             ;
-
             $this->adapter->query($update);
         }
     }

@@ -1253,7 +1253,7 @@ Ext.define('NP.view.images.Index', {
                 items: [
                     // Needed By
                     {
-                        name: 'Image_Index_neededby_datetm',
+                        name: 'image_index_NeededBy_datetm',
                         xtype: 'datefield',
                         fieldLabel: 'Needed By:'
                     },
@@ -1444,16 +1444,16 @@ Ext.define('NP.view.images.Index', {
         )[0];
 
         var storeTemplates = 
-            Ext.create('NP.lib.data.Store', {
+            Ext.create('NP.store.images.Templates', {
                 service    : 'ImageService',
                 action     : 'getTemplateForImageIndex',
                 extraParams : {
                     'property_id': property_id,
                     'vendorsite_id': vendor_id,
                     'utilityaccount_accountnumber': account.getValue()
-                }
+                },
+                autoLoad: true
             });
-        storeTemplates.load();
 
         var window = Ext.create('Ext.window.Window', {
             title: 'Add Template',
