@@ -41,19 +41,27 @@ Ext.define('NP.view.images.Index', {
         this['postload-store'] = {
             'vendor-codes': Ext.create('NP.store.vendor.Vendors', {
                 service : 'ImageService',
-                action  : 'listVendorCode'
+                action  : 'listVendorCode',
+                autoLoad: false,
+                extraParams: this.getStoreParams()
             }),
             'vendor-names': Ext.create('NP.store.vendor.Vendors', {
                 service : 'ImageService',
-                action  : 'listVendor'
+                action  : 'listVendor',
+                autoLoad: false,
+                extraParams: this.getStoreParams()
             }),
             'property-codes': Ext.create('NP.store.property.Properties', {
                 service : 'ImageService',
-                action  : 'listPropertyCode'
+                action  : 'listPropertyCode',
+                autoLoad: false,
+                extraParams: this.getStoreParams()
             }),
             'property-names': Ext.create('NP.store.property.Properties', {
                 service : 'ImageService',
-                action  : 'listProperty'
+                action  : 'listProperty',
+                autoLoad: false,
+                extraParams: this.getStoreParams()
             })
         };
 
@@ -148,6 +156,73 @@ Ext.define('NP.view.images.Index', {
 
         this.callParent(arguments);
         this.onDocumentTypeChange();
+
+        this.bindEvents();
+    },
+
+    /**
+     * Bind events.
+     */
+    bindEvents: function() {
+        // These comboboxes have similar data but also have different sort orders.
+        // In this case it will be better to make sorts on server-side and get prepared results 
+        // on the client-side without any manipulations.
+
+        // Property code and property name comboboxes should be prepared at one time.
+        var propertyCode = 
+            Ext.ComponentQuery.query('[name="Property_Alt_Id"]')[0]
+        ;
+        var propertyName = 
+            Ext.ComponentQuery.query('[name="Property_Id"]')[0]
+        ;
+        propertyCode.on(
+            'beforequery', 
+            this.loadProperties.bind(this, propertyCode, propertyName), 
+            propertyCode, 
+            {single: true}
+        );
+        propertyName.on(
+            'beforequery', 
+            this.loadProperties.bind(this, propertyCode, propertyName), 
+            propertyName, 
+            {single: true}
+        );
+
+        // Vendor code and vendor name comboboxes should be prepared at one time.
+        var vendorCode = 
+            Ext.ComponentQuery.query('[name="invoiceimage_vendorsite_alt_id"]')[0]
+        ;
+        var vendorName = 
+            Ext.ComponentQuery.query('[name="Image_Index_VendorSite_Id"]')[0]
+        ;
+        vendorCode.on(
+            'beforequery', 
+            this.loadProperties.bind(this, vendorCode, vendorName), 
+            vendorCode, 
+            {single: true}
+        );
+        vendorName.on(
+            'beforequery', 
+            this.loadProperties.bind(this, vendorCode, vendorName), 
+            vendorName, 
+            {single: true}
+        );
+    },
+
+    /**
+     * Load Vendors stores for comboboxes.
+     */
+    loadVendors: function(vendorCode, vendorName) {
+        vendorCode.getStore().load();
+        vendorName.getStore().load();
+    },
+
+    /**
+     * Load Vendors stores for comboboxes.
+     */
+    loadProperties: function(propertyCode, propertyName) {
+        propertyCode.getStore().load();
+        propertyName.getStore().load();
     },
 
     /***************************************************************************
@@ -396,25 +471,26 @@ Ext.define('NP.view.images.Index', {
                     Ext.create('NP.store.images.AccountNumbers', {
                         service    : 'ImageService',
                         action     : 'listAccountNumbers',
+                        autoLoad   : false,
                         extraParams : {
                             'userprofile_id': NP.Security.getUser().get('userprofile_id'),
                             'delegation_to_userprofile_id': NP.Security.getUser().get('delegation_to_userprofile_id')
                         }
                     }
                 );
-                storeAccountNumber.load();
 
                 var storeMeterSize =
                     Ext.create('NP.store.images.MeterSizes', {
                         service    : 'ImageService',
                         action     : 'listMeterSizes',
-                        extraParams : {
-                            account: NP.Security.getUser().get('userprofile_id')
+                        autoLoad   : false,
+                        extraParams: {
+                            account: 0
                         }
                     }
                 );
-                storeMeterSize.load();
 
+                var self = this;
                 options = {
                     xtype: 'panel',
 
@@ -431,11 +507,24 @@ Ext.define('NP.view.images.Index', {
 
                             store: storeAccountNumber,
                             displayField: 'utilityaccount_accountnumber',
-                            valueField:   'utilityaccount_id',
-                            //value="#qUtilAccounts.utilityaccount_accountnumber#" 
+                            valueField:   'utilityaccount_accountnumber',
+                            loadStoreOnFirstQuery: true,
 
                             listeners: {
-                                select: this.checkUtilityAccountNumber.bind(this)
+                                change: this.checkUtilityAccountNumber.bind(this),
+                                select: function(combo, records) {
+                                    self.checkAccountNumber.apply(self);
+
+                                    var metersizes = Ext.ComponentQuery.query(
+                                        '[name="utilityaccount_metersize"]'
+                                    )[0];
+
+                                    var proxy = metersizes.getStore().getProxy();
+                                    Ext.apply(proxy.extraParams, {
+                                        account: records[0].data['utilityaccount_accountnumber']
+                                    });
+                                    metersizes.getStore().load();
+                                }
                             }
                         },
                         // Field: Meter Number
@@ -446,10 +535,13 @@ Ext.define('NP.view.images.Index', {
                             fieldLabel: 'Meter Number:',
 
                             store: storeMeterSize,
-                            //value="#qMeterNumbers.utilityaccount_metersize#"
+                            displayField: 'utilityaccount_metersize',
+                            valueField:   'utilityaccount_metersize',
+                            loadStoreOnFirstQuery: false,
 
                             listeners: {
-                                select: this.checkMeterNumber.bind(this)
+                                change: this.checkMeterNumber.bind(this),
+                                select: this.reloadUtilityAccounts.bind(this)
                             }
                         },
                     ]
@@ -462,21 +554,46 @@ Ext.define('NP.view.images.Index', {
                 // Field: Utility Account
                 {
                     itemId: 'field-utility-account',
-                    name:'panel-utility-account',  //'utilaccount_show_panel'
+                    name:'panel-utility-account',
                     
                     xtype: 'text',
                     html:'<b>Utility Account:</b> <em>' + this.locale.utilityAccountText + '</em>'
                 },
 
+                // Field: Utility Account Id
+                {
+                    name: 'utilityaccount_id',
+                    xtype: 'hiddenfield'
+                },
+
+                // Field: Utility Account Id Alt. This is also Utility Account Id. It should be displayed for multiple
+                // accounts.
+                {
+                    name: 'utilityaccount_id_alt',
+
+                    xtype: 'customcombo',
+                    fieldLabel: 'Utility Account:',
+
+                    store: Ext.create('NP.store.images.UtilityAccounts'),
+
+                    displayField: 'UtilityAccount_Title',
+                    valueField:   'UtilityAccount_Id',
+                    hidden: true,
+
+                    listeners: {
+                        change: this.changeUtilityAccountId.bind(this)
+                    }
+                },
+
                 // Field: Utility Property Id
                 {
                     name: 'utility_property_id',
-                    xtype: 'hiddenfield' //value="<cfif isNumeric(get_current_image.utilityaccount_id)>#get_current_image.property_id#</cfif>"
+                    xtype: 'hiddenfield'
                 },
                 // Field: Utility Vendorsite Id
                 {
                     name: 'utility_vendorsite_id',
-                    xtype: 'hiddenfield' //<cfif isNumeric(get_current_image.utilityaccount_id)>#get_current_image.image_index_VendorSite_Id#</cfif>
+                    xtype: 'hiddenfield'
                 }
             ];
         }
@@ -502,16 +619,11 @@ Ext.define('NP.view.images.Index', {
      * @param callback After utility account data is loaded and selected callback will be called.
      */
     checkAccountNumber: function(callback) {
-        //var mask = new Ext.LoadMask(this);
-        //mask.show();
-
         this.reloadUtilityAccounts(function(data, isAccountValid, isMetersizeValid) {
             var account = Ext.ComponentQuery.query(
                 '[name="utilityaccount_accountnumber"]'
             )[0];
-            this.selectUtilityAccount(account.getValue(), isAccountValid, isMetersizeValid);
 
-            //mask.destroy();
             callback && callback(data);
         })
     },
@@ -534,25 +646,23 @@ Ext.define('NP.view.images.Index', {
             callback && callback({
                 accountNumberValid: false
             });
-        } else if (account.getXType() == 'textfield') {
-            this.checkAccountNumber(callback);
         } else {
-            callback && callback({
-                accountNumberValid: true
-            });
+            this.checkAccountNumber(callback);
         }
     },
 
     /**
      * Check if Meter Number is correct.
      */
-    checkMeterNumber: function(callback) {
+    checkMeterNumber: function() {
         var metersize = Ext.ComponentQuery.query(
             '[name="utilityaccount_metersize"]'
         )[0];
         var metersizeValid = Ext.ComponentQuery.query(
             '[name="panel-utility-metersize-valid"]'
         )[0];
+
+        var callback = callback || function() {};
 
         if (metersize.getValue() == '') {
             metersizeValid.update('');
@@ -563,12 +673,8 @@ Ext.define('NP.view.images.Index', {
                     meterValid: true
                 });
             }
-        } else if (metersize.getXType() == 'textfield') {
-            this.checkAccountNumber(callback);
         } else {
-            callback && callback({
-                meterValid: true
-            });
+            this.checkAccountNumber(callback);
         }
     },
 
@@ -593,6 +699,9 @@ Ext.define('NP.view.images.Index', {
             '[name="panel-utility-metersize-valid"]'
         )[0];
 
+        var utilityAccountId = Ext.ComponentQuery.query(
+            '[name="utilityaccount_id"]'
+        )[0];
         var utilityPropertyId = Ext.ComponentQuery.query(
             '[name="utility_property_id"]'
         )[0];
@@ -600,9 +709,13 @@ Ext.define('NP.view.images.Index', {
             '[name="utility_vendorsite_id"]'
         )[0];
 
+        var utilityAccountIdAlt = Ext.ComponentQuery.query(
+            '[name="utilityaccount_id_alt"]'
+        )[0];
         var panelUtilityAccount = Ext.ComponentQuery.query(
             '[name="panel-utility-account"]'
         )[0];
+        callback = callback || function() {};
 
         var self = this;
         NP.lib.core.Net.remoteCall({
@@ -618,60 +731,74 @@ Ext.define('NP.view.images.Index', {
 
                 success: function(data) {
                     if (data.accountNumberValid) {
-                        accountValid.update('<span style="color:#009900;">Valid account number</span>');
+                        accountValid && 
+                            accountValid.update('<span style="color:#009900;">Valid account number</span>')
+                        ;
 
                         if (data.meterValid) {
                             if (data.accounts.length == 1) {
+                                utilityAccountId.setValue(
+                                    data.accounts[0].utilityaccount_id + ',' +
+                                    data.accounts[0].property_id + ',' +
+                                    data.accounts[0].vendorsite_id + ',' +
+                                    data.accounts[0].utilityaccount_metersize                             
+                                )
                                 utilityPropertyId.setValue(
                                     data.accounts[0].property_id
                                 );
                                 utilityVendorsiteId.setValue(
                                     data.accounts[0].vendorsite_id
                                 );
-                                panelUtilityAccount.update(
+                                panelUtilityAccount && panelUtilityAccount.update(
                                     '<b>Utility Account:</b> ' +
-                                    data.accounts[0].utilityaccount_name + 
-                                    '<input type="hidden" id="utilityaccount_id" name="utilityaccount_id" value="' +
-                                        data.accounts[0].utilityaccount_id + ',' +
-                                        data.accounts[0].property_id + ',' +
-                                        data.accounts[0].vendorsite_id +
-                                    '">'
+                                    data.accounts[0].utilityaccount_name
                                 );
+                                panelUtilityAccount && panelUtilityAccount.show();
+                                utilityAccountIdAlt && utilityAccountIdAlt.hide();
                             } else {
-                                utilityPropertyId.setValue(
-                                    data.accounts[0].property_id
-                                );
-                                utilityVendorsiteId.setValue(
-                                    data.accounts[0].vendorsite_id
-                                );
+                                var utilityaccountIdAlt = Ext.ComponentQuery.query(
+                                    '[name="utilityaccount_id_alt"]'
+                                )[0];
 
-                                var html = '<select id="utilityaccount_id" name="utilityaccount_id" onchange="changeUtilityAccountId(this);">';
+                                utilityaccountIdAlt.getStore().removeAll();
                                 for (var i = 0; i < data.accounts.length; i++) {
-                                    html +=
-                                        '<option value="' +
-                                            data.accounts[0].utilityaccount_id + ',' +
-                                            data.accounts[0].property_id + ',' +
-                                            data.accounts[0].vendorsite_id +
-                                        '">' + data.accounts[0].utilityaccount_name + '</option>'
-                                    ;
+                                    var record = Ext.create('NP.model.image.UtilityAccount', {
+                                        UtilityAccount_Id:
+                                            data.accounts[i].utilityaccount_id + ',' +
+                                            data.accounts[i].property_id + ',' +
+                                            data.accounts[i].vendorsite_id + ',' +
+                                            data.accounts[i].utilityaccount_metersize
+                                        ,
+                                        UtilityAccount_Title: data.accounts[i].utilityaccount_name
+                                    });
+                                    utilityaccountIdAlt.getStore().add(record)
                                 }
-                                html += '</select>';
-                                panelUtilityAccount.update('<b>Utility Account:</b> ' + html);
+                                panelUtilityAccount && panelUtilityAccount.hide();
+                                utilityAccountIdAlt && utilityAccountIdAlt.show();
                             }
+                        } else {
+                            utilityAccountId.setValue('');
                         }
                     } else {
-                        accountValid.update('<span style="color:#CC0000;">Invalid account number</span>');
+                        utilityAccountId.setValue('');
+                        accountValid && 
+                            accountValid.update('<span style="color:#CC0000;">Invalid account number</span>')
+                        ;
                     }
 
                     if (metersize.getValue() == '') {
-                        metersizeValid.update('');
+                        metersizeValid && 
+                            metersizeValid.update('')
+                        ;
                     } else {
-                        data.meterValid ?
-                            metersizeValid.update('<span style="color:#009900;">Valid meter number</span>') :
-                            metersizeValid.update('<span style="color:#CC0000;">Invalid meter number</span>')
+                        metersizeValid && (
+                            data.meterValid ?
+                                metersizeValid.update('<span style="color:#009900;">Valid meter number</span>') :
+                                metersizeValid.update('<span style="color:#CC0000;">Invalid meter number</span>')
+                        );
                     }
 
-                    callback && callback.apply(
+                    callback && callback.apply && callback.apply(
                         self,
                         [
                             data, 
@@ -685,62 +812,6 @@ Ext.define('NP.view.images.Index', {
     },
 
     /**
-     * Set hidden fields values for the utility account after appropriate data is 
-     * reloaded.
-     * 
-     * @param number accountNumber Account number.
-     * @param boolean isAccountValid Was account number passed check or not.
-     * @param boolean isMetersizeValid Was meter number passed check or not.
-     */
-    selectUtilityAccount: function(accountNumber, isAccountValid, isMetersizeValid) {
-        var account = Ext.ComponentQuery.query(
-            '[name="utilityaccount_accountnumber"]'
-        )[0];
-        var metersize = Ext.ComponentQuery.query(
-            '[name="utilityaccount_metersize"]'
-        )[0];
-
-        var utilityPropertyId = Ext.ComponentQuery.query(
-            '[name="utility_property_id"]'
-        )[0];
-        var utilityVendorsiteId = Ext.ComponentQuery.query(
-            '[name="utility_vendorsite_id"]'
-        )[0];
-
-        var panelUtilityAccount = Ext.ComponentQuery.query(
-            '[name="panel-utility-account"]'
-        )[0];
-
-        if (!isAccountValid || !isMetersizeValid && $('#utilityaccount_metersize option').length == 0 || account.getValue() == '') {
-            utilityPropertyId.setValue('');
-            utilityVendorsiteId.setValue('');
-            panelUtilityAccount.update('<b>Utility Account:</b> <em>' + this.locale.utilityAccountText + '</em>')
-
-            if (isAccountValid && $('#utilityaccount_metersize option').length) {
-                metersize.update('<option value=""></option>');
-            }
-        } else if ($('#utilityaccount_metersize option').length) {
-            NP.lib.core.Net.remoteCall({
-                requests: {
-                    service: 'ImageService',
-                    action : 'getUtilityAccountVendorPropMeter',
-
-                    utilityaccount_accountnumber: metersize.getValue(),
-
-                    success: function(data) {
-                        metersize.update('<option value=""></option>');
-                        for (var i = 0, l = data.meters; i < l; i++) {
-                            // Remove the string we added at the end of the meter to force string conversion
-                            //var fixedval = data.meters[i].replace('|@|', '');
-                            //meterSelect.append($('<option></option>').val(fixedval).html(fixedval));
-                        }
-                    }
-                }
-            });
-        }
-    },
-
-    /**
      * Alternative way to set utility account values.
      * 
      * If comboboxes are used for account number selection, different select account
@@ -749,11 +820,30 @@ Ext.define('NP.view.images.Index', {
      * @param {} field Utility account selector's option.
      */
     changeUtilityAccountId: function(field) {
-        var val = $(field).val().split(',');
-        var property_id = val[1];
-        var vendorsite_id = val[2];
-        $('##utility_property_id').val(property_id);
-        $('##utility_vendorsite_id').val(vendorsite_id);
+        var value = field.getValue();
+        if (value) {
+            var utilityAccountId = Ext.ComponentQuery.query(
+                '[name="utilityaccount_id"]'
+            )[0];
+            var utilityPropertyId = Ext.ComponentQuery.query(
+                '[name="utility_property_id"]'
+            )[0];
+            var utilityVendorsiteId = Ext.ComponentQuery.query(
+                '[name="utility_vendorsite_id"]'
+            )[0];
+
+            var metersize = Ext.ComponentQuery.query(
+                '[name="utilityaccount_metersize"]'
+            )[0];
+
+            utilityAccountId.setValue(value);
+
+            value = value.split(',');
+
+            metersize.setValue(value[3]);
+            utilityPropertyId.setValue(value[1]);
+            utilityVendorsiteId.setValue(value[2]);
+        }
     },
 
     /***************************************************************************
@@ -763,25 +853,18 @@ Ext.define('NP.view.images.Index', {
      * Prepare markup for Property Code section.
      */
     markupPropertyCode: function() {
-        this['postload-store']['property-codes'].load({
-            params: this.getStoreParams()
-        });
         return [
             // Property code
             {
                 itemId: 'field-property-code',
-                //name: '' $request['property_alt_id'] = $_REQUEST['field-property-code-inputEl'];
 
                 name: 'Property_Alt_Id',
                 xtype: 'customcombo',
                 fieldLabel: 'Property Code:',
 
-                addBlankRecord: true,
-
                 displayField: 'property_id_alt',
                 valueField:   'property_id',
 
-                //store: storePropertyCodes,
                 store: this['postload-store']['property-codes'],
 
                 listeners: {
@@ -808,15 +891,10 @@ Ext.define('NP.view.images.Index', {
      * Prepare markup for Vendor Code section.
      */
     markupVendorCode: function() {
-        this['postload-store']['vendor-codes'].load({
-            params: this.getStoreParams()
-        });
-
         return [
             //Vendor code
             {
                 itemId: 'field-vendor-code',
-                //name            $request['invoiceimage_vendorsite_alt_id'] = $_REQUEST['field-vendor-code-inputEl'];
                 xtype: 'customcombo',
                 fieldLabel: 'Vendor Code:',
 
@@ -826,7 +904,6 @@ Ext.define('NP.view.images.Index', {
                 valueField:   'vendorsite_id',
                 addBlankRecord: true,
 
-                //store: storeVendorCodes,
                 store: this['postload-store']['vendor-codes'],
 
                 listeners: {
@@ -853,10 +930,6 @@ Ext.define('NP.view.images.Index', {
      * Prepare markup for Propery Name section.
      */
     markupPropertyName: function() {
-        this['postload-store']['property-names'].load({
-            params: this.getStoreParams()
-        });
-
         return [
             // Property
             {
@@ -869,7 +942,6 @@ Ext.define('NP.view.images.Index', {
                 displayField: 'property_name',
                 valueField:   'property_id',
 
-                //store: storePropertyNames,
                 store: this['postload-store']['property-names'],
 
                 listeners: {
@@ -896,10 +968,6 @@ Ext.define('NP.view.images.Index', {
      * Prepare markup for Vendor Name section.
      */
     markupVendorName: function() {
-        this['postload-store']['vendor-names'].load({
-            params: this.getStoreParams()
-        });
-
         return [
             // Vendor
             {
@@ -1025,7 +1093,7 @@ Ext.define('NP.view.images.Index', {
                 xtype: 'textfield',
 
                 name: 'po_ref',
-                fieldLabel: 'P0 number:'//value="#get_current_image.image_index_ref#" 
+                fieldLabel: 'P0 number:'
             }
         ];
     },
@@ -1132,11 +1200,6 @@ Ext.define('NP.view.images.Index', {
                 listeners: {
                     click: function() {
                         self.showUseTemplateWindow();
-                        /*var id = Ext.ComponentQuery.query(
-                            '[itemId="field-property-name"]'
-                        )[0].getValue();
-
-                        self.showAddressWindow.apply(self, [id, 'home', 'property', 'Property Address']);*/
                     }
                 }
             }
@@ -1190,7 +1253,7 @@ Ext.define('NP.view.images.Index', {
                 items: [
                     // Needed By
                     {
-                        name: 'Image_Index_neededby_datetm',
+                        name: 'image_index_NeededBy_datetm',
                         xtype: 'datefield',
                         fieldLabel: 'Needed By:'
                     },
@@ -1381,16 +1444,16 @@ Ext.define('NP.view.images.Index', {
         )[0];
 
         var storeTemplates = 
-            Ext.create('NP.lib.data.Store', {
+            Ext.create('NP.store.images.Templates', {
                 service    : 'ImageService',
                 action     : 'getTemplateForImageIndex',
                 extraParams : {
                     'property_id': property_id,
                     'vendorsite_id': vendor_id,
                     'utilityaccount_accountnumber': account.getValue()
-                }
+                },
+                autoLoad: true
             });
-        storeTemplates.load();
 
         var window = Ext.create('Ext.window.Window', {
             title: 'Add Template',

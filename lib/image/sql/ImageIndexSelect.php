@@ -40,8 +40,8 @@ class ImageIndexSelect extends ImageSelect {
             'universal_field2',
             'universal_field3',
             'PriorityFlag_ID_Alt',
-            'Image_Index_neededby_datetm AS neededby_datetm',
-            'Image_Index_neededby_datetm',
+            'image_index_NeededBy_datetm AS neededby_datetm',
+            'image_index_NeededBy_datetm',
             'universal_field4',
             'universal_field5',
             'universal_field6',
@@ -59,8 +59,8 @@ class ImageIndexSelect extends ImageSelect {
             'utilityaccount_id',
             'cycle_from',
             'cycle_to',
-            'utilityAccount_accountNumber',
-            'utilityAccount_meterSize'
+            'utilityaccount_accountnumber',
+            'utilityaccount_metersize'
         ]);
     }
 }

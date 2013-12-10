@@ -25,7 +25,7 @@ Ext.define('NP.model.image.ImageIndex', {
 		{ name: 'Image_Index_Name' },
 		{ name: 'Image_Index_Type' },
 		{ name: 'Image_Index_Ref' },
-		{ name: 'Image_Index_VendorSite_Id', type: 'int' },
+        { name: 'Image_Index_VendorSite_Id', type: 'int' },
 		{ name: 'Image_Index_Vendor_Id_Alt' },
 		{ name: 'Image_Index_Invoice_Date', type: 'date' },
 		{ name: 'Image_Index_Due_Date', type: 'date' },
@@ -73,13 +73,20 @@ Ext.define('NP.model.image.ImageIndex', {
 		// This field is not a database column
 		{ name: 'days_outstanding', type: 'int' },
 		{ name: 'pending_days', type: 'int' },
-        
+
+        { name: 'userprofile_username' },
+
+        { name: 'deletedby_username' },
+
+        { name: 'property_name' },
+        { name: 'property_id_alt' },
         { name: 'Property_Alt_Id', type: 'int'},
-        
+
+        { name: 'vendor_name' },
+        { name: 'vendor_id_alt'},
+
         { name: 'invoiceimage_ref'},
-        
         { name: 'po_ref'},
-        
         { name: 'invoiceimage_vendorsite_id' },
         { name: 'invoiceimage_vendorsite_alt_id' },
 
@@ -150,11 +157,7 @@ Ext.define('NP.model.image.ImageIndex', {
         }
     ],
 	validations: [
-            { field: 'Image_Doctype_Id', type: 'presence' },
-            { field: 'Image_Index_VendorSite_Id', type: 'presence' },
-            { field: 'invoiceimage_vendorsite_alt_id', type: 'presence' },
-            { field: 'Property_Id', type: 'presence' },
-            { field: 'Property_Alt_Id', type: 'presence' },
+            { field: 'Image_Doctype_Id', type: 'presence' }
 	]
     
 });

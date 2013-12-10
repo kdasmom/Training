@@ -88,7 +88,12 @@ class ImageIndexGateway extends AbstractGateway {
 	public function findImagesToIndex($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
 		$select = $this->getDashboardSelect($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
 		$propertyFilterSelect = new PropertyFilterSelect(new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection));
-		
+
+                $select
+                    ->join(new sql\join\ImageIndexImageTransferJoin())
+                    ->join(new sql\join\ImageTransferUserprofileJoin())
+                ;
+
 		// We're going to create a where object to overwrite the entire where clause because
 		// we need the property filter to be within a nested block
 		$where = Where::get()->nest('OR')
@@ -168,6 +173,7 @@ class ImageIndexGateway extends AbstractGateway {
 			->join(new sql\join\ImageIndexVendorsiteJoin())
 			->join(new sql\join\ImageIndexPriorityFlagJoin())
 			->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(array('vendor_name,vendor_id_alt,vendor_status'), Select::JOIN_LEFT))
+                        ->join(['delby' => 'userprofile'], 'img.image_index_deleted_by = delby.userprofile_id', ['deletedby_username' => 'userprofile_username'], Select::JOIN_LEFT)
 			->whereIn('img.property_id', $propertyFilterSelect);
 
 		return $select;
@@ -235,7 +241,7 @@ class ImageIndexGateway extends AbstractGateway {
                 $where = new Where();
                 $where->isNotNull('img.image_index_deleted_datetm')
                         ->isNotNull('img.image_index_deleted_by')
-                        ->greaterThan('img.Image_Index_id', 135000)
+                        ->equals('img.Image_Index_Status', -1);
                 ;
                 $select->where($where);
 
@@ -469,7 +475,7 @@ class ImageIndexGateway extends AbstractGateway {
             ))
             ->join(new sql\join\ImageIndexVendorsiteJoin())
             ->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(
-                ['vendor_name, vendor_id_alt'],
+                ['vendor_name', 'vendor_id_alt'],
                 Select::JOIN_LEFT
             ))
             ->join(new sql\join\ImageIndexPropertyJoin())
@@ -521,7 +527,7 @@ class ImageIndexGateway extends AbstractGateway {
                 'transfer_srcTablekey_id'
             ))
             ->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(
-                ['vendor_name', 'vendor_name AS scan_source, vendor_id_alt'],
+                ['vendor_name', 'vendor_name AS scan_source', 'vendor_id_alt'],
                 Select::JOIN_LEFT
             ))
             ->join(new sql\join\ImageIndexPropertyJoin())
@@ -573,7 +579,7 @@ class ImageIndexGateway extends AbstractGateway {
             ->join(new sql\join\ImageIndexImageTransferJoin())
             ->join(new sql\join\ImageIndexVendorsiteJoin())
             ->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(
-                ['vendor_name, vendor_id_alt'],
+                ['vendor_name', 'vendor_id_alt'],
                 Select::JOIN_LEFT
             ))
             ->join(new sql\join\ImageIndexPropertyJoin())
@@ -791,9 +797,15 @@ class ImageIndexGateway extends AbstractGateway {
         foreach ($params as $key => $values) {
             $where = Where::get()
                 ->notIn('image_index_id', implode(',', $identifiers))
-                ->equals('tablekey_id', $values['tablekey_id'])
-                ->equals('tableref_id', $values['tableref_id'])
             ;
+            if (empty($values['tablekey_id'])) {
+                $where->isNull('tablekey_id');
+            } else {
+                $where->equals('tablekey_id', $values['tablekey_id']);
+            }
+            $where->equals('tableref_id', $values['tableref_id']);
+
+
             $select = Select::get()
                 ->from($this->table)
                 ->column('image_index_id')
@@ -808,7 +820,6 @@ class ImageIndexGateway extends AbstractGateway {
                     Where::get()->in('image_index_id', $select)
                 )
             ;
-
             $this->adapter->query($update);
         }
     }

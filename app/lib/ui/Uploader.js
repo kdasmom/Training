@@ -116,6 +116,7 @@ Ext.define('NP.lib.ui.Uploader', {
 
         this.listeners = this.params.listeners;
 
+        var self = this;
         this.listeners.afterrender = function(){
             if (this.isUploadifiveSupported()) {
                 $("#file_upload").uploadifive({
@@ -124,6 +125,10 @@ Ext.define('NP.lib.ui.Uploader', {
                     multi:  true,
 
                     queueID:    'uploadqueue',
+
+                    onQueueComplete: function(uploads) {
+                        self.params.listeners.onUploadComplete(uploads);
+                    },
 
                     uploadScript:   this.params.service,
                     formData:       this.params.form,
@@ -140,6 +145,10 @@ Ext.define('NP.lib.ui.Uploader', {
                     multi:      true,
                     queueID:    'uploadqueue',
                     swf:        '/vendor/jquery-uploadify/uploadify.swf',
+
+                    onQueueComplete: function(uploads) {
+                        self.params.listeners.onUploadComplete(uploads);
+                    },
 
                     uploader:       this.params.service,
                     fileTypeExts:   this.params.files.extensions,

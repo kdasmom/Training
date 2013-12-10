@@ -989,8 +989,6 @@ class ImageService extends AbstractService {
     }
 
     public function listVendorCode($integration_package = 1) {
-        //configService->findSysValueByName
-        
         //vendor_id_alt,vendorsite_id
         $listing = $this->vendorGateway->getVendorListing($integration_package, 'v.vendor_id_alt');
 
@@ -1025,8 +1023,6 @@ class ImageService extends AbstractService {
                 $entity['Property_Id'] = null;
             }
         }
-//$params['utility_property_id']
-//$params['utility_vendorsite_id']
 
         if ($entity['Image_Doctype_Id'] == $doctypes[strtolower('Utility Invoice')]) {
             //$entity['Image_Index_VendorSite_Id'] = $params['utility_vendorsite_id'];
@@ -1039,8 +1035,8 @@ class ImageService extends AbstractService {
         }
 
         $refnum = '';
-        if (!empty($entity['invoiceimage_ref'])) {
-            $refnum = $entity['invoiceimage_ref'];
+        if (!empty($entity['Image_Index_Ref'])) {
+            $refnum = $entity['Image_Index_Ref'];
         } elseif (!empty($entity['po_ref'])) {
             $refnum = $entity['po_ref'];
         } else {
@@ -1063,15 +1059,15 @@ class ImageService extends AbstractService {
             // delete method.
             $entity['image_index_deleted_by'] = $params['userprofile_id'];
             $entity['image_index_deleted_datetm'] = date('Y-m-d H:i:s');
-            $entity['image_index_status'] = -1;
+            $entity['Image_Index_Status'] = -1;
         } else {
             // If parameters were not passed, then default action should be selected.
             // If current section is "Exceptions" then this is exception image.
             // If current section is "Index" then this is usual indexed image.
             if (strtolower($params['section']) == 'exceptions') {
-                $entity['image_index_status'] = 2;
+                $entity['Image_Index_Status'] = 2;
             } elseif (strtolower($params['section']) == 'index') {
-                $entity['image_index_status'] = 1;
+                $entity['Image_Index_Status'] = 1;
             }
         }
 
@@ -1079,6 +1075,14 @@ class ImageService extends AbstractService {
         if ($params['action'] == 'complete' && empty($params['image_delete'])) {
             $entity['image_index_indexed_by'] = $params['userprofile_id'];
             $entity['image_index_indexed_datetm'] = date('Y-m-d H:i:s');
+        }
+
+        if (!empty($entity['utilityaccount_id'])) {
+            $entity['utilityaccount_id'] = explode(',', $entity['utilityaccount_id']);
+
+            $entity['Property_Id'] = $entity['utilityaccount_id'][1];
+            $entity['Image_Index_VendorSite_Id'] = $entity['utilityaccount_id'][2];
+            $entity['utilityaccount_id'] = $entity['utilityaccount_id'][0];
         }
 
         if ($entity['Image_Doctype_Id'] == 1) {
@@ -1105,8 +1109,6 @@ class ImageService extends AbstractService {
         $entity['Image_Index_Id'] = intval($entity['Image_Index_Id']);
         $entity['asp_client_id'] =  $this->configService->getClientId();
 
-        //$entity['Image_Index_Source_Id'] = 1;
-        //$entity['Image_Index_Primary'] = 1;
         $image = new ImageIndexEntity($entity);
 
         $errors = $this->entityValidator->validate($image);
@@ -1122,8 +1124,6 @@ class ImageService extends AbstractService {
             'success' => (count($errors)) ? false : true,
             'errors'  => $errors
         );
-
-            //return $this->imageIndexGateway->updateImage($data['imageindex'], $params, $doctypes, $tablerefs);
     }
 
     /**
@@ -1173,38 +1173,41 @@ class ImageService extends AbstractService {
         if (empty($utilityaccount_accountnumber)) {
             $utilityaccount_accountnumber = '\'\'';
         }
-            $accounts = $this->utilityAccountGateway->getUtilityAccountsByCriteria($userprofile_id, $delegation_to_userprofile_id, $utilityaccount_accountnumber);
+        $accounts = $this->utilityAccountGateway->getUtilityAccountsByCriteria($userprofile_id, $delegation_to_userprofile_id, $utilityaccount_accountnumber);
 
-            $result = [];
-            if (!empty($accounts)) {
-                $result['accountNumberValid'] = true;
+        $result = [];
+        if (!empty($accounts)) {
+            $result['accountNumberValid'] = true;
 
-                if (!empty($utilityaccount_metersize)) {
-                    $result['meterValid'] = false;
-                    foreach ($accounts as $account) {
-                        if ($account['utilityaccount_metersize'] == $utilityaccount_metersize) {
-                            $result['meterValid'] = true;
-                            break;
-                        }
+            if (!empty($utilityaccount_metersize)) {
+                $result['meterValid'] = false;
+                foreach ($accounts as $account) {
+                    if ($account['utilityaccount_metersize'] == $utilityaccount_metersize) {
+                        $result['meterValid'] = true;
+                        break;
                     }
-                } else {
-                    $result['meterValid'] = true;
                 }
             } else {
-                $result['accountNumberValid'] = false;
-                $result['meterValid'] = false;
+                $result['meterValid'] = true;
             }
+        } else {
+            $result['accountNumberValid'] = false;
+            $result['meterValid'] = false;
+        }
 
-            foreach ($accounts as $account) {
+        foreach ($accounts as $account) {
+            if (empty($utilityaccount_metersize) || $account['utilityaccount_metersize'] == $utilityaccount_metersize) {
                 $record = [
                     'property_id'         => $account['property_id'],
                     'vendorsite_id'       => $account['vendorsite_id'],
                     'utilityaccount_id'   => $account['utilityaccount_id'],
-                    'utilityaccount_name' => $account['utilityaccount_name']
+                    'utilityaccount_name' => $account['utilityaccount_name'],
+                    'utilityaccount_metersize' => $account['utilityaccount_metersize']
                 ];
                 $result['accounts'][] = $record;
             }
-            return $result;
+        }
+        return $result;
     }
 
     /**
