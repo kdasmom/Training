@@ -21,8 +21,6 @@ Ext.define('NP.view.catalog.OrderPropertiesForm', {
 			width: 600
 		};
 
-		console.log('vc_id22: ', this.vc_id);
-
 		this.items = [
 			{
 				xtype: 'customcombo',

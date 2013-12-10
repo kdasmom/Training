@@ -3,6 +3,7 @@
 namespace NP\system;
 
 use NP\core\AbstractGateway;
+use NP\core\db\Expression;
 use NP\core\db\Update;
 use NP\core\db\Select;
 use NP\core\db\Where;
@@ -106,7 +107,52 @@ class ConfigsysGateway extends AbstractGateway {
 	
 		return $errors;
 	}
-	
+
+	/**
+	 * Retrieve settings list
+	 *
+	 * @param $settingList
+	 * @param null $defaultlist
+	 * @return array|bool
+	 */
+	public function getCPSettings($settingList, $defaultlist = null) {
+		$select = new Select();
+
+		$select->from(['c' => 'configsys'])
+				->columns(['controlpanelitem_name' => new Expression("REPLACE(c.configsys_name, 'CP.', '')")])
+				->join(['cv' => 'configsysval'], 'c.configsys_id = cv.configsys_id', ['controlpanelitem_value' => 'configsysval_val'])
+				->whereIn('c.configsys_name', "'" . str_replace(',', "','", $settingList) . "'");
+
+		$result = $this->adapter->query($select);
+
+		$settingList = explode(',', $settingList);
+		$settingList = array_flip($settingList);
+
+		$items = [];
+		foreach ($result as $item) {
+			$items[$item['controlpanelitem_name']] = $item['controlpanelitem_value'];
+		}
+
+		foreach ($settingList as $key => $value) {
+			$settingList[str_replace('CP.', '', $key)] = $value;
+			unset($settingList[$key]);
+		}
+
+		$index = 0;
+		foreach ($settingList as $key => &$value) {
+			if (!array_key_exists($key, $items)) {
+				if ($defaultlist) {
+					$value = $defaultlist[$index];
+				} {
+					$value = '';
+				}
+			} else {
+				$value = $items[$key];
+			}
+		}
+
+		return $settingList;
+	}
 }
 
 ?>

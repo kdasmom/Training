@@ -546,4 +546,21 @@ class GLService extends AbstractService {
             'error'  => $error
         );
     }
+
+	/**
+	 *
+	 *
+	 * @param null $asp_client_id
+	 * @param null $property_id
+	 * @param null $vendorsite_id
+	 * @param null $table_name
+	 * @param null $glaccount_id
+	 * @return mixed
+	 */
+	public function getGLUI($property_id = null, $vendorsite_id = null, $table_name = null, $glaccount_id = null) {
+
+		$propertyAccountUse = $this->configService->getCPSettings('CP.PROPERTYGLACCOUNT_USE,CP.PHRASE_PREDICT_GL_LINE,CP.PO_ITEM_DESCRIPTION_REQ,CP.INVOICE_ITEM_DESCRIPTION_REQ', '0,0,0,0');
+
+		return $this->glAccountGateway->getGLUI($property_id, $vendorsite_id, $propertyAccountUse['PROPERTYGLACCOUNT_USE'], $GLCodeSort = false);
+	}
 }

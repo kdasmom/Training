@@ -200,7 +200,6 @@ Ext.define('NP.controller.VendorCatalog', {
 	},
 
 	getOrderVendors: function(combo, value, vc_id, vcorders) {
-		console.log('vcorders: ', vcorders);
 		var that = this;
 		var form = this.getCmp('catalog.orderpropertiesform');
 		form.getChildByElement('vendor_id').store = Ext.create('NP.store.vendor.Vendors', {
@@ -235,5 +234,8 @@ Ext.define('NP.controller.VendorCatalog', {
 			},
 			autoLoad: true
 		});
+
+		var grid = this.getCmp('catalog.createordergrid');
+		grid.setVendorsiteId(combo.getValue());
 	}
 });

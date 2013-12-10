@@ -3,6 +3,7 @@
 namespace NP\gl;
 
 use NP\core\AbstractGateway;
+use NP\core\db\Expression;
 use NP\core\db\Select;
 use NP\system\ConfigService;
 
@@ -310,6 +311,64 @@ class GlAccountGateway extends AbstractGateway {
 
         return $this->adapter->query($select, $params);
     }
+
+	/**
+	 * retrieve glcodes list
+	 *
+	 * @param $property_id
+	 * @param $vendorsite_id
+	 * @param bool $propertyAccountUse
+	 * @param bool $GLCodeSort
+	 * @return array|bool
+	 */
+	public function getGLUI($property_id, $vendorsite_id, $propertyAccountUse = false, $GLCodeSort = false) {
+		$select = new Select();
+		$params = [];
+		$where = [];
+
+		$select->from(['g' => 'glaccount'])
+				->columns([
+						'glaccount_id',
+						'glaccount_name',
+						'glaccount_number',
+						'glaccounttype_id',
+						'default_id'	=> new Expression("CASE v.default_glaccount_id WHEN g.glaccount_id THEN 'Y' ELSE 'N' END"),
+						'glaccounttype_name'	=> new Expression("CASE glat.glaccounttype_name
+														WHEN 'Expenditure' THEN ' Expenditure'
+														ELSE glat.glaccounttype_name
+													END")
+					])
+				->join(['glat' => 'glaccounttype'], 'glat.glaccounttype_id = g.glaccounttype_id', [])
+				->join(['vg' => 'vendorglaccounts'], 'vg.glaccount_id = g.glaccount_id', [])
+				->join(['vs' => 'vendorsite'], 'vg.vendor_id = vs.vendor_id', [])
+				->join(['v' => 'vendor'], 'vs.vendor_id = v.vendor_id', []);
+
+		if ($propertyAccountUse) {
+			$select->join(['p' => 'propertyglaccount'], 'g.glaccount_id = p.glaccount_id');
+
+			$where['p.property_id'] = '?';
+			$params[] = $property_id;
+		}
+		$where = array_merge($where, [
+			'g.glaccount_status'		=> '?',
+			'vs.vendorsite_id'			=> '?'
+		]);
+
+		$select->where($where)
+				->whereEquals('g.integration_package_id', 'v.integration_package_id')
+				->whereNotEquals('g.glaccounttype_id', '?');
+
+		$params = array_merge($params, ['active', $vendorsite_id, 10]);
+
+		if ($GLCodeSort == 'glaccount_number') {
+			$select->order('glat.glaccounttype_name', 'g.glaccount_number');
+		}
+		if ($GLCodeSort == 'glaccount_name') {
+			$select->order('glat.glaccounttype_name', 'g.glaccount_name');
+		}
+
+		return $this->adapter->query($select, $params);
+	}
 }
 
 ?>

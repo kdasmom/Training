@@ -55,21 +55,29 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 			{
 				dataIndex:'vcitem_desc',
 				text: NP.Translator.translate('Item description'),
-				flex: 0.5
+				flex: 0.5,
+				renderer: function(val, meta, rec) {
+					if (!rec.raw.vcitem_status) {
+						val += '<br/><b style="color: red;">This item is no longer available for order</b>';
+					}
+
+					return val;
+				}
 			},
 			{
 				text: NP.Translator.translate('Item details'),
 				xtype: 'actioncolumn',
-				items: [
-					{
-						icon   : 'resources/images/buttons/search.gif',
-						tooltip: 'Details',
-						handler: function(gridView, rowIndex, colIndex) {
-							var grid = gridView.ownerCt;
-							grid.fireEvent('showdetails', grid, grid.getStore().getAt(rowIndex), rowIndex);
-						}
+				getClass: function (v, meta, rec, rowIndex) {
+					if (rec.raw.vc_catalogtype !== 'excel') {
+						return '';
+					} else {
+						return 'search-btn';
 					}
-				],
+				},
+				handler: function(gridView, rowIndex, colIndex) {
+					var grid = gridView.ownerCt;
+					grid.fireEvent('showdetails', grid, grid.getStore().getAt(rowIndex), rowIndex);
+				},
 				align: 'center',
 				flex: 0.2
 			},
@@ -133,7 +141,10 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 				flex: 0.2,
 				align: 'center',
 				renderer: function(val, meta, rec) {
-					return Ext.String.format('<input name="po_' + rec.get('vc_id') + '[]" type="checkbox" value="{0}">',rec.get('vcorder_id'));
+					if (rec.raw.vcitem_status) {
+						return Ext.String.format('<input name="po_' + rec.get('vc_id') + '[]" type="checkbox" value="{0}">',rec.get('vcorder_id'));
+					}
+					return '';
 				},
 				summaryType: function(records) {
 					return records[0].get('vc_id');

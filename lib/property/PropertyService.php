@@ -1255,6 +1255,10 @@ class PropertyService extends AbstractService {
             'error'  => $error
         );
 	}
+
+	public function getUnitsForTheOrders($property_id = null) {
+
+	}
 }
 
 ?>

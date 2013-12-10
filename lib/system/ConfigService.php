@@ -325,6 +325,22 @@ class ConfigService extends AbstractService {
 			'errors'     => $errors
 		);
 	}
+
+
+	/**
+	 * Retrieve settings list
+	 *
+	 * @param null $settingList
+	 * @param null $defaultlist
+	 * @return array
+	 */
+	public function getCPSettings($settingList = null, $defaultlist = null) {
+		if (!$settingList) {
+			return [];
+		}
+
+		return $this->configsysGateway->getCPSettings($settingList , $defaultlist);
+	}
 	
 }
 

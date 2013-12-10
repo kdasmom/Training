@@ -9,7 +9,8 @@ Ext.define('NP.view.shared.button.PurchaseOrder', {
 
 	requires: ['NP.lib.core.Translator'],
 
-	text: 'Print',
+	text: 'Create PO',
+	iconCls: 'payment-btn',
 
 	initComponent: function() {
 		this.text = NP.Translator.translate(this.text);

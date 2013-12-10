@@ -29,6 +29,7 @@ Ext.define('NP.view.catalog.OrderView', {
 				xtype: 'catalog.createordergrid',
 				flex: 1,
 				padding: '20 0 0 0',
+				vc_id: this.vc_id,
 				vcorders: this.vcorders
 			}
 		];
