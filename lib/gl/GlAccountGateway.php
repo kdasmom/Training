@@ -315,6 +315,7 @@ class GlAccountGateway extends AbstractGateway {
 	/**
 	 * retrieve glcodes list
 	 *
+	 *
 	 * @param $property_id
 	 * @param $vendorsite_id
 	 * @param bool $propertyAccountUse
