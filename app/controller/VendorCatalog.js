@@ -12,6 +12,10 @@ Ext.define('NP.controller.VendorCatalog', {
 		'NP.lib.core.Security'
 	],
 
+	views: [
+		'catalog.OrderItemWindow'
+	],
+
 	/**
 	 * Init
 	 */
@@ -63,11 +67,18 @@ Ext.define('NP.controller.VendorCatalog', {
 				updateorder: this.updateOrders,
 				createorder: function (vc_id, vcorders) {
 					this.addHistory('VendorCatalog:createOrder:' + vc_id + ':' + vcorders);
-				}
+				},
+				showdetails: this.showOrderItemDetailsWindow
 			},
 			'[xtype="catalog.ordercreate"] [xtype="catalog.orderview"] [xtype="catalog.orderpropertiesform"]': {
 				selectProperty: this.getOrderVendors,
 				selectVendor: this.getOrderPOs
+			},
+
+			'[xtype="catalog.orderitemwindow"] [xtype="shared.button.close"]': {
+				click: function() {
+					this.getCmp('catalog.orderitemwindow').hide();
+				}
 			}
 		});
 
@@ -237,5 +248,24 @@ Ext.define('NP.controller.VendorCatalog', {
 
 		var grid = this.getCmp('catalog.createordergrid');
 		grid.setVendorsiteId(combo.getValue());
+	},
+
+	showOrderItemDetailsWindow: function (grid, record, rowIndex, fromOrder) {
+		console.log(record);
+
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service: 'CatalogService',
+				action : 'getOrderItemInformation',
+				userprofile_id : NP.Security.getUser().get('userprofile_id'),
+				vcitem_id : record.get('vcitem_id'),
+				success: function(data) {
+					if (data) {
+						Ext.create('NP.view.catalog.OrderItemWindow', { fromOrder: fromOrder, data: data[0] }).show();
+					}
+					console.log('suces: ', data);
+				}
+			}
+		});
 	}
 });

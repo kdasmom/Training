@@ -76,7 +76,7 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 				},
 				handler: function(gridView, rowIndex, colIndex) {
 					var grid = gridView.ownerCt;
-					grid.fireEvent('showdetails', grid, grid.getStore().getAt(rowIndex), rowIndex);
+					grid.fireEvent('showdetails', grid, grid.getStore().getAt(rowIndex), rowIndex, true);
 				},
 				align: 'center',
 				flex: 0.2

@@ -666,6 +666,21 @@ class CatalogService extends AbstractService {
 
 		return $items;
 	}
+
+	/**
+	 * Retrieve vctitem details
+	 *
+	 * @param null $userprofile_id
+	 * @param null $vcitem_id
+	 * @return array
+	 */
+	public function getOrderItemInformation($userprofile_id = null, $vcitem_id = null) {
+		if (!$userprofile_id || !$vcitem_id) {
+			return [];
+		}
+
+		return $this->vcItemGateway->getItemDetails($vcitem_id, $userprofile_id);
+	}
 }
 
 ?>

@@ -19,7 +19,6 @@ Ext.define('NP.view.catalog.CreateOrderGrid', {
 
 	initComponent: function() {
 		var that = this;
-		console.log('vendorsite_id": ', that.vendorsite_id);
 
 		this.allowUnitAttach =  NP.Config.getSetting('PN.VendorOptions.ValidateName');
 		var unitsStore = Ext.create('NP.store.property.Units', {

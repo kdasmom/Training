@@ -216,6 +216,34 @@ class VcItemGateway extends AbstractGateway {
 
 		return $this->adapter->query($select, $params);
 	}
+
+	/**
+	 * Retrieve vcitem details
+	 *
+	 * @param $item_id
+	 * @param $userprofile_id
+	 * @return array|bool
+	 */
+	public function getItemDetails($item_id, $userprofile_id) {
+		$select = new Select();
+		$subSelect = new Select();
+
+		$subSelect->from(['vf' => 'vcfav'])
+					->count()
+					->whereEquals('vi.vcitem_id', 'vf.vcitem_id')
+					->whereEquals('vf.userprofile_id', '?');
+
+		$select->from(['vi' => 'vcitem'])
+				->columns([
+					'vcitem_id', 'vc_id', 'vcitem_status', 'UNSPSC_Commodity_Commodity', 'vcitem_category_name', 'vcitem_type', 'vcitem_number', 'vcitem_price', 'vcitem_desc',
+					'vcitem_uom', 'vcitem_pkg_qty', 'vcitem_case_qty', 'vcitem_desc_ext', 'vcitem_min_qty', 'vcitem_manufacturer', 'vcitem_color', 'vcitem_upc',
+					'vcitem_mft_partnumber', 'vcitem_imageurl', 'vcitem_infourl', 'universal_field1', 'universal_field2', 'universal_field3', 'universal_field4', 'universal_field5',
+					'universal_field6', 'vcitem_weight',
+					'favCount' => $subSelect])
+				->where(['vi.vcitem_id' => '?']);
+
+		return $this->adapter->query($select, [$userprofile_id, $item_id]);
+	}
 }
 
 ?>
