@@ -32,7 +32,7 @@ Ext.define('NP.view.catalog.CreateOrderGrid', {
 
 		var unitTypesStore = Ext.create('NP.store.property.UnitTypes', {
 			service: 'PropertyService',
-			action: 'getUnitTypesByProperty',
+			action: 'getUnitTypeMeasByPropertyId',
 			extraParams: {
 				property_id: that.property_id
 			}
@@ -147,7 +147,17 @@ Ext.define('NP.view.catalog.CreateOrderGrid', {
 					typeAhead: false,
 					displayField: 'unittype_name',
 					valueField: 'unittype_name',
-					selectFirstRecord: true
+					selectFirstRecord: true,
+					listeners: {
+						select: function(combo, rec) {
+//							console.log(rec);
+						}
+					},
+					tpl: [
+						'<tpl for=".">',
+						'<div class="x-boundlist-item">{unittype_name}</div>',
+						'</tpl>'
+					]
 				}
 			},
 			{
@@ -171,6 +181,7 @@ Ext.define('NP.view.catalog.CreateOrderGrid', {
 				}
 			},
 			{
+				dataIndex: 'vcitem_uom',
 				text: NP.Translator.translate('UOM'),
 				flex: 0.2
 			},
@@ -184,7 +195,7 @@ Ext.define('NP.view.catalog.CreateOrderGrid', {
 			},
 			{
 				text: NP.Translator.translate('Gl Code'),
-				flex: 1,
+				flex: 2,
 				dataIndex: 'glaccount_name',
 				editor:
 				{
@@ -216,6 +227,5 @@ Ext.define('NP.view.catalog.CreateOrderGrid', {
 
 	setVendorsiteId: function(vendorsite_id) {
 		this.vendorsite_id = vendorsite_id;
-		console.log(this.vendorsite_id);
 	}
 });
