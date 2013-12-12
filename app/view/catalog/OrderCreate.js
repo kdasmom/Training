@@ -20,7 +20,6 @@ Ext.define('NP.view.catalog.OrderCreate', {
 
 
 	initComponent: function() {
-		console.log('vc_id: ', this.vc_id);
 		var that = this;
 		var bar = [
 			{

@@ -25,15 +25,16 @@ Ext.define('NP.view.catalog.FavoritesView', {
 		var that = this;
 		var bar = [
 			{
+				xtype: 'shared.button.back',
+				text: NP.Translator.translate('Catalog home')
+			},
+			{
 				xtype: 'shared.button.shop',
 				text: NP.Translator.translate('Shop by Brand')
 			},
 			{
 				xtype: 'shared.button.search',
 				text: NP.Translator.translate('Advanced search')
-			},
-			{
-				xtype: 'shared.button.favorite'
 			}
 		];
 
