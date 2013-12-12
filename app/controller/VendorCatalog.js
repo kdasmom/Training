@@ -266,5 +266,12 @@ Ext.define('NP.controller.VendorCatalog', {
 				}
 			}
 		});
+	},
+
+	/**
+	 *  show favorites
+	 */
+	showFavorites: function() {
+		this.setView('NP.view.catalog.FavoritesView');
 	}
 });

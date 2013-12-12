@@ -25,7 +25,10 @@ Ext.define('NP.view.viewport.menu.VCMenu', {
 					itemId: 'vcOrders'
 				},
 				// Favorite Items
-				{ text: NP.Translator.translate('Favorite Items') }
+				{
+					text: NP.Translator.translate('Favorite Items'),
+					itemId: 'vcFavorites'
+				}
 			]
 		};
 
