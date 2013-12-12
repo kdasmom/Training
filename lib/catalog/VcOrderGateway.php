@@ -10,7 +10,9 @@ namespace NP\catalog;
 
 
 use NP\core\AbstractGateway;
+use NP\core\db\Delete;
 use NP\core\db\Expression;
+use NP\core\db\Insert;
 use NP\core\db\Select;
 use NP\core\db\Update;
 
@@ -48,6 +50,7 @@ class VcOrderGateway extends AbstractGateway {
 				->join(['vi' => 'vcitem'], 'vo.vcitem_id = vi.vcitem_id', ['vcitem_id', 'vcitem_number' => 'vcitem_number', 'vcitem_price', 'vcitem_desc', 'vcitem_uom', 'vcitem_manufacturer', 'vcitem_mft_partnumber', 'vcitem_status'], Select::JOIN_INNER)
 				->join(['v' => 'vc'], 'vi.vc_id = v.vc_id', ['vc_id', 'vc_catalogname', 'vc_catalogtype', 'vc_vendorname'], Select::JOIN_INNER)
 				->join(['un' => 'UNSPSC_Commodity'], 'vi.UNSPSC_Commodity_Commodity = un.UNSPSC_Commodity_Commodity', [], Select::JOIN_LEFT)
+				->join(['vf' => 'vcfav'], 'vf.vcitem_id = vi.vcitem_id and vf.userprofile_id = vo.userprofile_id', ['vcfav_id'], Select::JOIN_LEFT)
 				->where(['vo.userprofile_id' => '?']);
 
 		$select2->from(['vo' => 'vcorder'])
@@ -65,6 +68,7 @@ class VcOrderGateway extends AbstractGateway {
 			])
 			->join(['v' => 'vc'], 'vo.vc_id = v.vc_id', ['vc_id', 'vc_catalogname', 'vc_catalogtype', 'vc_vendorname'], Select::JOIN_INNER)
 			->join(['un' => 'UNSPSC_Commodity'], 'vo.UNSPSC_Commodity_Commodity = un.UNSPSC_Commodity_Commodity', [], Select::JOIN_LEFT)
+			->join(['vf' => 'vcfav'], 'vf.vcitem_id = vo.vcitem_id and vf.userprofile_id = vo.userprofile_id', ['vcfav_id'], Select::JOIN_LEFT)
 			->where(['vo.userprofile_id' => '?']);
 
 		$sql = $select1->toString() . ' union all ' . $select2->toString() . ' order by v.vc_vendorname asc, vcitem_number asc';
@@ -87,5 +91,40 @@ class VcOrderGateway extends AbstractGateway {
 			->where(['vcorder_id' => '?', 'userprofile_id' => '?']);
 
 		return $this->adapter->query($update, [$quantity, $vcorder_id, $userprofile_id]);
+	}
+
+	/**
+	 * Delete from favorites
+	 *
+	 * @param $vcitem_id
+	 * @param $userprofile_id
+	 * @return array|bool
+	 */
+	public function deleteFromFavorites($vcitem_id, $userprofile_id) {
+		$delete = new Delete();
+
+		$delete->from('vcfav')
+				->where([
+					'vcitem_id' => '?',
+					'userprofile_id' => '?'
+			]);
+
+		return $this->adapter->query($delete, [$vcitem_id, $userprofile_id]);
+	}
+
+	/**
+	 * insert into favorites
+	 *
+	 * @param $vcitem_id
+	 * @param $userprofile_id
+	 */
+	public function addToFavorites($vcitem_id, $userprofile_id) {
+		$insert = new Insert();
+
+		$insert->into('vcfav')
+			->columns(['vcitem_id', 'userprofile_id'])
+			->values(Select::get()->columns([new Expression('?'), new Expression('?')]));
+
+		return $this->adapter->query($insert, [$vcitem_id, $userprofile_id]);
 	}
 } 

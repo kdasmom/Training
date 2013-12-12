@@ -681,6 +681,14 @@ class CatalogService extends AbstractService {
 
 		return $this->vcItemGateway->getItemDetails($vcitem_id, $userprofile_id);
 	}
+
+	public function toggleFavorites($vcitem_id = null, $userprofile_id = null, $add = true) {
+		if ($add) {
+			return $this->vcOrderGateway->addToFavorites($vcitem_id, $userprofile_id);
+		} else {
+			return $this->vcOrderGateway->deleteFromFavorites($vcitem_id, $userprofile_id);
+		}
+	}
 }
 
 ?>

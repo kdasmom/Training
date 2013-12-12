@@ -12,6 +12,7 @@ Ext.define('NP.view.catalog.OrderItemWindow', {
 		'NP.lib.core.Config',
 		'NP.view.shared.button.Close',
 		'NP.view.shared.button.AddToFavorites',
+		'NP.view.shared.button.RemoveFromFavorites',
 		'NP.view.shared.button.AddToOrder'
 	],
 
@@ -20,7 +21,7 @@ Ext.define('NP.view.catalog.OrderItemWindow', {
 	title           : NP.Translator.translate('Item details'),
 
 	width           : 800,
-	height          : 300,
+	height          : 500,
 
 	modal           : true,
 	draggable       : true,
@@ -35,10 +36,48 @@ Ext.define('NP.view.catalog.OrderItemWindow', {
 				xtype: 'shared.button.addtoorder',
 				hidden: this.fromOrder
 			},
-			{ xtype: 'shared.button.addtofavorites' }
-		];
+			{
+				xtype: 'shared.button.addtofavorites',
+				hidden: this.data.favCount > 0,
+				handler: function () {
+					NP.lib.core.Net.remoteCall({
+						requests: {
+							service: 'CatalogService',
+							action : 'toggleFavorites',
+							userprofile_id : NP.Security.getUser().get('userprofile_id'),
+							vcitem_id : that.data.vcitem_id,
+							add: true,
+							success: function(data) {
+								if (data) {
+									that.hide();
+								}
+							}
+						}
+					});
+				}
+			},
+			{
+				xtype: 'shared.button.removefromfavorites',
+				hidden: this.data.favCount == 0,
+				handler: function () {
 
-		this.layout = 'fit';
+					NP.lib.core.Net.remoteCall({
+						requests: {
+							service: 'CatalogService',
+							action : 'toggleFavorites',
+							userprofile_id : NP.Security.getUser().get('userprofile_id'),
+							vcitem_id : that.data.vcitem_id,
+							add: false,
+							success: function(data) {
+								if (data) {
+									that.hide();
+								}
+							}
+						}
+					});
+				}
+			}
+		];
 
 		this.items = [
 			{
@@ -49,7 +88,8 @@ Ext.define('NP.view.catalog.OrderItemWindow', {
 						xtype: 'image',
 						src: this.data.vcitem_imageurl,
 						layout: 'fit',
-						height: this.height
+						height: this.height,
+						flex: 0.5
 					},
 					{
 						xtype: 'fieldcontainer',

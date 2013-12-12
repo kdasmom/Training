@@ -263,7 +263,6 @@ Ext.define('NP.controller.VendorCatalog', {
 					if (data) {
 						Ext.create('NP.view.catalog.OrderItemWindow', { fromOrder: fromOrder, data: data[0] }).show();
 					}
-					console.log('suces: ', data);
 				}
 			}
 		});
