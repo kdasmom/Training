@@ -43,6 +43,11 @@ Ext.define('NP.controller.VendorCatalog', {
 					this.addHistory('VendorCatalog:showAdvancedSearch');
 				}
 			},
+			'[xtype="catalog.favoritesview"] [xtype="shared.button.search"]': {
+				click: function() {
+					this.addHistory('VendorCatalog:showAdvancedSearch');
+				}
+			},
 			'[xtype="catalog.advancedsearch"] [xtype="shared.button.back"]': {
 				click: function() {
 					this.addHistory('VendorCatalog:showVendorCatalogListing');
@@ -54,6 +59,11 @@ Ext.define('NP.controller.VendorCatalog', {
 				}
 			},
 			'[xtype="catalog.ordercreate"] [xtype="shared.button.back"]': {
+				click: function() {
+					this.addHistory('VendorCatalog:showVendorCatalogListing');
+				}
+			},
+			'[xtype="catalog.favoritesview"] [xtype="shared.button.back"]': {
 				click: function() {
 					this.addHistory('VendorCatalog:showVendorCatalogListing');
 				}
@@ -79,6 +89,9 @@ Ext.define('NP.controller.VendorCatalog', {
 				click: function() {
 					this.getCmp('catalog.orderitemwindow').hide();
 				}
+			},
+			'[xtype="catalog.favoritesview"] [xtype="catalog.favoriteitemsgrid"]': {
+				showdetails: this.showOrderItemDetailsWindow
 			}
 		});
 
@@ -251,8 +264,6 @@ Ext.define('NP.controller.VendorCatalog', {
 	},
 
 	showOrderItemDetailsWindow: function (grid, record, rowIndex, fromOrder) {
-		console.log(record);
-
 		NP.lib.core.Net.remoteCall({
 			requests: {
 				service: 'CatalogService',
@@ -261,7 +272,7 @@ Ext.define('NP.controller.VendorCatalog', {
 				vcitem_id : record.get('vcitem_id'),
 				success: function(data) {
 					if (data) {
-						Ext.create('NP.view.catalog.OrderItemWindow', { fromOrder: fromOrder, data: data[0] }).show();
+						Ext.create('NP.view.catalog.OrderItemWindow', { fromOrder: fromOrder, data: data[0], grid: grid }).show();
 					}
 				}
 			}
@@ -273,5 +284,6 @@ Ext.define('NP.controller.VendorCatalog', {
 	 */
 	showFavorites: function() {
 		this.setView('NP.view.catalog.FavoritesView');
+		this.showUserOrderSummary(this.userSummaryCallback);
 	}
 });

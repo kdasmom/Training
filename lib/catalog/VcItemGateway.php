@@ -244,6 +244,21 @@ class VcItemGateway extends AbstractGateway {
 
 		return $this->adapter->query($select, [$userprofile_id, $item_id]);
 	}
+
+	public function getFavorites($userprofile_id, $order, $pageSize, $page) {
+		$select = new Select();
+
+		$select->from(['vf' => 'vcfav'])
+			->columns(['vcfav_id'])
+			->join(['vi' => 'vcitem'], 'vf.vcitem_id = vi.vcitem_id', null)
+			->where(['vf.userprofile_id' => '?'])
+			->order($order)
+			->offset($pageSize * ($page - 1))
+			->limit($pageSize);
+
+		return $this->adapter->query($select, [$userprofile_id]);
+	}
+
 }
 
 ?>

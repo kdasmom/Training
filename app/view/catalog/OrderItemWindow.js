@@ -50,6 +50,7 @@ Ext.define('NP.view.catalog.OrderItemWindow', {
 							success: function(data) {
 								if (data) {
 									that.hide();
+									that.grid.getStore().reload();
 								}
 							}
 						}
@@ -71,6 +72,7 @@ Ext.define('NP.view.catalog.OrderItemWindow', {
 							success: function(data) {
 								if (data) {
 									that.hide();
+									that.grid.getStore().reload();
 								}
 							}
 						}

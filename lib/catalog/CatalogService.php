@@ -689,6 +689,19 @@ class CatalogService extends AbstractService {
 			return $this->vcOrderGateway->deleteFromFavorites($vcitem_id, $userprofile_id);
 		}
 	}
+
+	/**
+	 * Retrieve user's favorite items
+	 *
+	 * @param null $userprofile_id
+	 * @param string $order
+	 * @param int $pageSize
+	 * @param null $page
+	 * @return mixed
+	 */
+	public function getFavorites($userprofile_id = null, $order = 'vcitem_number', $pageSize = 25, $page = null) {
+		return $this->vcItemGateway->getFavorites($userprofile_id, $order, $pageSize, $page);
+	}
 }
 
 ?>
