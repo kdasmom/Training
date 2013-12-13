@@ -91,7 +91,8 @@ Ext.define('NP.controller.VendorCatalog', {
 				}
 			},
 			'[xtype="catalog.favoritesview"] [xtype="catalog.favoriteitemsgrid"]': {
-				showdetails: this.showOrderItemDetailsWindow
+				showdetails: this.showOrderItemDetailsWindow,
+				removefromfavorites: this.removeFromFavorites
 			}
 		});
 
@@ -285,5 +286,30 @@ Ext.define('NP.controller.VendorCatalog', {
 	showFavorites: function() {
 		this.setView('NP.view.catalog.FavoritesView');
 		this.showUserOrderSummary(this.userSummaryCallback);
+	},
+
+	/**
+	 *
+	 * remove from favorites
+	 *
+	 * @param grid
+	 * @param record
+	 * @param index
+	 */
+	removeFromFavorites: function (grid, record, index) {
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service: 'CatalogService',
+				action : 'toggleFavorites',
+				userprofile_id : NP.Security.getUser().get('userprofile_id'),
+				vcitem_id : record.get('vcitem_id'),
+				add: false,
+				success: function(data) {
+					if (data) {
+						grid.getStore().reload();
+					}
+				}
+			}
+		});
 	}
 });

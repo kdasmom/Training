@@ -25,10 +25,27 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 			collapsible: false
 		});
 
+		var cellEditing = Ext.create('Ext.grid.plugin.CellEditing', {
+			clicksToEdit: 1
+		});
+
+
+		this.plugins = [cellEditing];
+		this.features = [grouping];
+
 		this.columns = [
 			{
+				xtype: 'shared.gridcol.buttonimg',
 				text: NP.Translator.translate('Favorites'),
-				flex: 0.2
+				flex: 0.2,
+				renderer: function (val, meta, rec) {
+					return '<div class="remove"><img src="resources/images/buttons/delete.gif" title="Remove" alt="Remove" class="remove"/>&nbsp; Remove from favorites</div>';
+				},
+				listeners: {
+					click: function (grid, rec, item, index, e) {
+						that.fireEvent('removefromfavorites', grid, grid.getStore().getAt(index), index);
+					}
+				}
 			},
 			{
 				dataIndex: 'vcitem_number',
@@ -38,7 +55,14 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 			{
 				dataIndex: 'vcitem_desc',
 				text: NP.Translator.translate('Item description'),
-				flex: 0.5
+				flex: 0.5,
+				renderer: function(val, meta, rec) {
+					if (!rec.raw.vcitem_status) {
+						val += '<br/><b style="color: red;">This item is no longer available for order</b>';
+					}
+
+					return val;
+				}
 			},
 			{
 				xtype: 'actioncolumn',
@@ -59,20 +83,38 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 				renderer: function(val, meta, rec) {
 					return NP.Util.currencyRenderer(rec.get('vcitem_price'));
 				},
-				flex: 0.2
+				align: 'center',
+				flex: 0.1
 			},
 			{
 				dataIndex: 'vcitem_uom',
 				text: NP.Translator.translate('Unit of Measurement'),
+				align: 'center',
 				flex: 0.2
 			},
 			{
+				xtype: 'numbercolumn',
+				align: 'center',
 				text: NP.Translator.translate('Qty'),
-				flex: 0.2
+				flex: 0.1,
+				editor: {
+					xtype: 'numberfield',
+					allowBlank: false,
+					minValue: 0,
+					maxValue: 100000
+				}
 			},
 			{
+				xtype: 'shared.gridcol.buttonimg',
 				text: NP.Translator.translate('Append to order'),
-				flex: 0.2
+				flex: 0.2,
+				renderer: function(val, meta, rec) {
+					if (rec.get('vcitem_status')) {
+						return '<div class="addtoorder"><img src="resources/images/buttons/new.gif" title="Add to order" alt="Add to order" class="addtoorder"/>&nbsp; Add to order</div>';
+					}
+
+					return '';
+				}
 			}
 		];
 
@@ -87,7 +129,6 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 			autoLoad	: true
 		});
 
-		this.features = [grouping];
 
 		this.callParent(arguments);
 	}
