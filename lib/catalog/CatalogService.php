@@ -682,6 +682,14 @@ class CatalogService extends AbstractService {
 		return $this->vcItemGateway->getItemDetails($vcitem_id, $userprofile_id);
 	}
 
+	/**
+	 * toggle favorites
+	 *
+	 * @param null $vcitem_id
+	 * @param null $userprofile_id
+	 * @param bool $add
+	 * @return array|bool
+	 */
 	public function toggleFavorites($vcitem_id = null, $userprofile_id = null, $add = true) {
 		if ($add) {
 			return $this->vcOrderGateway->addToFavorites($vcitem_id, $userprofile_id);
@@ -701,6 +709,25 @@ class CatalogService extends AbstractService {
 	 */
 	public function getFavorites($userprofile_id = null, $order = 'vcitem_number', $pageSize = 25, $page = null) {
 		return $this->vcItemGateway->getFavorites($userprofile_id, $order, $pageSize, $page);
+	}
+
+	/**
+	 * Add to order
+	 *
+	 * @param null $userprofile_id
+	 * @param null $vcitem_id
+	 * @param int $quantity
+	 * @return array|bool
+	 */
+	public function addToOrder($userprofile_id = null, $vcitem_id = null, $quantity = 1) {
+		if (!$userprofile_id ||!$vcitem_id) {
+			return [
+				'success'	=> false,
+				'error'		=> ['field'=>'global', 'msg'=>'Can not add to order', 'extra'=>null]
+			];
+		}
+
+		return $this->vcOrderGateway->addToOrder($userprofile_id, $vcitem_id, $quantity);
 	}
 }
 

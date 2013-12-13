@@ -127,4 +127,46 @@ class VcOrderGateway extends AbstractGateway {
 
 		return $this->adapter->query($insert, [$vcitem_id, $userprofile_id]);
 	}
+
+	/**
+	 * Add item into the order
+	 *
+	 * @param $userprofile_id
+	 * @param $vcitem_id
+	 * @param $quantity
+	 * @return array|bool
+	 */
+	public function addToOrder($userprofile_id, $vcitem_id, $quantity) {
+		$select = new Select();
+
+		$select->from(['vo' => 'vcorder'])
+				->column('vcorder_id')
+				->where([
+					'userprofile_id'	=> '?',
+					'vcitem_id'			=> '?'
+			]);
+		$result = $this->adapter->query($select, [$userprofile_id, $vcitem_id]);
+
+		if (isset($result['vcorder_id'])) {
+			$update = new Update();
+
+			$update->table('vcorder')
+					->values(['vcorder_qty' => '?'])
+					->where(['vcorder_id' => '?']);
+
+			return $this->adapter->query($update, [$quantity, $result['vcoreder_id']]);
+		}
+
+		$insert = new Insert();
+
+		$insert->into('vcorder')
+				->columns(['vcitem_id', 'vcorder_qty', 'userprofile_id'])
+				->values(Select::get()->columns([
+					new Expression('?'),
+					new Expression('?'),
+					new Expression('?')
+			]));
+
+		return $this->adapter->query($insert, [$vcitem_id, $quantity, $userprofile_id]);
+	}
 } 

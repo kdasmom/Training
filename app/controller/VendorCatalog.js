@@ -92,7 +92,8 @@ Ext.define('NP.controller.VendorCatalog', {
 			},
 			'[xtype="catalog.favoritesview"] [xtype="catalog.favoriteitemsgrid"]': {
 				showdetails: this.showOrderItemDetailsWindow,
-				removefromfavorites: this.removeFromFavorites
+				removefromfavorites: this.removeFromFavorites,
+				addtoorder: this.addItemToOrder
 			}
 		});
 
@@ -224,6 +225,14 @@ Ext.define('NP.controller.VendorCatalog', {
 
 	},
 
+	/**
+	 * Retrieve order vendors
+	 *
+	 * @param combo
+	 * @param value
+	 * @param vc_id
+	 * @param vcorders
+	 */
 	getOrderVendors: function(combo, value, vc_id, vcorders) {
 		var that = this;
 		var form = this.getCmp('catalog.orderpropertiesform');
@@ -246,6 +255,13 @@ Ext.define('NP.controller.VendorCatalog', {
 		grid.getStore().load();
 	},
 
+	/**
+	 * Retrieve orders
+	 *
+	 * @param combo
+	 * @param value
+	 * @param property_id
+	 */
 	getOrderPOs: function(combo, value, property_id) {
 		var that = this;
 		var form = this.getCmp('catalog.orderpropertiesform');
@@ -264,6 +280,14 @@ Ext.define('NP.controller.VendorCatalog', {
 		grid.setVendorsiteId(combo.getValue());
 	},
 
+	/**
+	 * Show item info popup window
+	 *
+	 * @param grid
+	 * @param record
+	 * @param rowIndex
+	 * @param fromOrder
+	 */
 	showOrderItemDetailsWindow: function (grid, record, rowIndex, fromOrder) {
 		NP.lib.core.Net.remoteCall({
 			requests: {
@@ -311,5 +335,35 @@ Ext.define('NP.controller.VendorCatalog', {
 				}
 			}
 		});
+	},
+
+	/**
+	 * add to order
+	 *
+	 *
+	 * @param grid
+	 * @param record
+	 * @param changedRecords
+	 */
+	addItemToOrder: function(grid, record, changedRecords) {
+		var that = this;
+
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service: 'CatalogService',
+				action : 'addToOrder',
+				userprofile_id : NP.Security.getUser().get('userprofile_id'),
+				vcitem_id : record.get('vcitem_id'),
+				quantity: !changedRecords[record.get('vcitem_id')] ? 1 : changedRecords[record.get('vcitem_id')],
+				success: function(data) {
+					if (data) {
+						grid.getStore().reload();
+						that.showUserOrderSummary(that.userSummaryCallback);
+					}
+				}
+			}
+		});
+
 	}
+
 });

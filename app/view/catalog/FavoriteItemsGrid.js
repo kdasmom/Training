@@ -14,11 +14,10 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 
 	paging: true,
 	overflowY: 'scroll',
+	changedRecords: {},
 
 	initComponent: function() {
 		var that = this;
-
-
 
 		var grouping = Ext.create('Ext.grid.feature.GroupingSummary', {
 			groupHeaderTpl: '{name}',
@@ -26,7 +25,12 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 		});
 
 		var cellEditing = Ext.create('Ext.grid.plugin.CellEditing', {
-			clicksToEdit: 1
+			clicksToEdit: 1,
+			listeners: {
+				edit: function(editor, e, eOpts) {
+					that.changedRecords[e.record.get('vcitem_id')] = e.value;
+				}
+			}
 		});
 
 
@@ -106,6 +110,7 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 			},
 			{
 				xtype: 'shared.gridcol.buttonimg',
+				dataIndex: 'vcitem_id',
 				text: NP.Translator.translate('Append to order'),
 				flex: 0.2,
 				renderer: function(val, meta, rec) {
@@ -114,6 +119,12 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 					}
 
 					return '';
+				},
+				listeners: {
+					click: function (grid, rec, item, index, e) {
+						that.fireEvent('addtoorder', grid, grid.getStore().getAt(item), that.changedRecords);
+						that.changedRecords = {};
+					}
 				}
 			}
 		];
