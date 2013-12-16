@@ -34,7 +34,25 @@ Ext.define('NP.view.catalog.OrderItemWindow', {
 			{ xtype: 'shared.button.close' },
 			{
 				xtype: 'shared.button.addtoorder',
-				hidden: this.fromOrder
+				hidden: this.fromOrder,
+				handler: function() {
+					NP.lib.core.Net.remoteCall({
+						requests: {
+							service: 'CatalogService',
+							action : 'addToOrder',
+							userprofile_id : NP.Security.getUser().get('userprofile_id'),
+							vcitem_id : that.data.vcitem_id,
+							quantity: 1,
+							success: function(data) {
+								if (data) {
+									that.hide();
+									that.grid.getStore().reload();
+									that.fireEvent('restoreshoppingcart');
+								}
+							}
+						}
+					});
+				}
 			},
 			{
 				xtype: 'shared.button.addtofavorites',

@@ -90,6 +90,9 @@ Ext.define('NP.controller.VendorCatalog', {
 					this.getCmp('catalog.orderitemwindow').hide();
 				}
 			},
+			'[xtype="catalog.orderitemwindow"]': {
+				restoreshoppingcart: this.restoreShoppingCart
+			},
 			'[xtype="catalog.favoritesview"] [xtype="catalog.favoriteitemsgrid"]': {
 				showdetails: this.showOrderItemDetailsWindow,
 				removefromfavorites: this.removeFromFavorites,
@@ -363,7 +366,10 @@ Ext.define('NP.controller.VendorCatalog', {
 				}
 			}
 		});
+	},
 
+	restoreShoppingCart: function () {
+		this.showUserOrderSummary(this.userSummaryCallback);
 	}
 
 });
