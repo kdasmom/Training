@@ -64,7 +64,7 @@ Ext.define('NP.view.catalog.AdvancedSearch', {
 				items: [
 					{
 						xtype: 'catalog.searchform',
-						advancedSearch: true
+						advancedSearch: that.advancedSearch
 					}
 				],
 				padding: '5',

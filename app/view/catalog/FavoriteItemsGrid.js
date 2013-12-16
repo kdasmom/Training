@@ -15,27 +15,31 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 	paging: true,
 	overflowY: 'scroll',
 	changedRecords: {},
+	isSearch: false,
+	userprofile_id: NP.Security.getUser().get('userprofile_id'),
 
 	initComponent: function() {
 		var that = this;
 
-		var grouping = Ext.create('Ext.grid.feature.GroupingSummary', {
-			groupHeaderTpl: '{name}',
-			collapsible: false
-		});
+		if (!this.isSearch) {
+			var grouping = Ext.create('Ext.grid.feature.GroupingSummary', {
+				groupHeaderTpl: '{name}',
+				collapsible: false
+			});
+			this.features = [grouping];
+		}
 
 		var cellEditing = Ext.create('Ext.grid.plugin.CellEditing', {
 			clicksToEdit: 1,
 			listeners: {
 				edit: function(editor, e, eOpts) {
 					that.changedRecords[e.record.get('vcitem_id')] = e.value;
+					console.log('e: ', e);
 				}
 			}
 		});
 
-
 		this.plugins = [cellEditing];
-		this.features = [grouping];
 
 		this.columns = [
 			{
@@ -43,11 +47,21 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 				text: NP.Translator.translate('Favorites'),
 				flex: 0.2,
 				renderer: function (val, meta, rec) {
-					return '<div class="remove"><img src="resources/images/buttons/delete.gif" title="Remove" alt="Remove" class="remove"/>&nbsp; Remove from favorites</div>';
+					if (rec.raw.vcfav_id) {
+						return '<div class="remove"><img src="resources/images/buttons/delete.gif" title="Remove" alt="Remove" class="remove"/>&nbsp; Remove from favorites</div>';
+					} else {
+						return '<div class="add"><img src="resources/images/buttons/new.gif" title="Add" alt="Add" class="add"/>&nbsp; Add to favorites</div>';
+					}
 				},
 				listeners: {
 					click: function (grid, rec, item, index, e) {
-						that.fireEvent('removefromfavorites', grid, grid.getStore().getAt(index), index);
+						var record = grid.getStore().getAt(item);
+						if (record.raw.vcfav_id) {
+							that.fireEvent('removefromfavorites', grid, record, index);
+						} else {
+							console.log(record);
+							that.fireEvent('addtofavorites', grid, record, index);
+						}
 					}
 				}
 			},
@@ -129,16 +143,32 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 			}
 		];
 
-		this.store = Ext.create('NP.store.catalog.VcItems', {
-			service    	: 'CatalogService',
-			action     	: 'getFavorites',
-			groupField	: 'vcitem_category_name',
-			extraParams: {
-				userprofile_id: NP.Security.getUser().get('userprofile_id')
-			},
-			paging     	: true,
-			autoLoad	: true
-		});
+		if (!this.isSearch) {
+			this.store = Ext.create('NP.store.catalog.VcItems', {
+				service    	: 'CatalogService',
+				action     	: 'getFavorites',
+				groupField	: 'vcitem_category_name',
+				extraParams: {
+					userprofile_id: NP.Security.getUser().get('userprofile_id')
+				},
+				paging     	: true,
+				autoLoad	: true
+			});
+		} else {
+			this.store = Ext.create('NP.store.catalog.VcItems', {
+				service    	: 'CatalogService',
+				action     	: 'searchItems',
+				extraParams: {
+					catalogs: null,
+					field: null,
+					property: null,
+					keyword: null,
+					userprofile_id: NP.Security.getUser().get('userprofile_id')
+				},
+				paging     	: true,
+				autoLoad	: true
+			});
+		}
 
 
 		this.callParent(arguments);

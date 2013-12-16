@@ -113,14 +113,21 @@ class VcItemGateway extends AbstractGateway {
 	 * @param $order
 	 * @return array|bool
 	 */
-	public function searchItems($userprofile_id, $vc_id, $filterItem, $keyword, $pageSize = null, $page = 1, $order) {
+	public function searchItems($userprofile_id, $vc_id, $filterItem, $keyword, $property, $pageSize = null, $page = 1, $order = 'vcitem_number') {
 		$select = new Select();
 
 		$select->from(['vi' => 'vcitem'])
-				->join(['vf' => 'vcfav'], 'vi.vcitem_id = vf.vcitem_id', ['vcfav_id'], Select::JOIN_LEFT)
-				->join(['un' => 'UNSPSC_Commodity'], 'vi.UNSPSC_Commodity_Commodity = un.UNSPSC_Commodity_Commodity', null, Select::JOIN_LEFT)
-				->where(['vi.vc_id' => '?'])
-				->where(['vi.vcitem_status' => '?']);
+				->join(['vf' => 'vcfav'], 'vi.vcitem_id = vf.vcitem_id and vf.userprofile_id = ?', ['vcfav_id'], Select::JOIN_LEFT)
+				->join(['un' => 'UNSPSC_Commodity'], 'vi.UNSPSC_Commodity_Commodity = un.UNSPSC_Commodity_Commodity', [], Select::JOIN_LEFT)
+				->join(['lp' => 'link_vc_property'], 'lp.vc_id = vi.vc_id', [])
+				->where(['vi.vcitem_status' => '?', 'lp.property_id' => '?']);
+
+		$params = [$userprofile_id, 1, $property];
+
+		if (!empty($vc_id) && $vc_id !== 'null') {
+			$select->whereIn('vi.vc_id', '?');
+			$params[] = !is_array($vc_id) ? $vc_id : implode(',', $vc_id);
+		}
 
 		if ($filterItem == 'category') {
 			$select->whereNest('OR')
@@ -135,19 +142,37 @@ class VcItemGateway extends AbstractGateway {
 				->whereUnNest();
 		}
 		if ($filterItem == 'vcitem_number') {
-			$select->whereLike('un.vcitem_number', "'" . $keyword . "%'");
+			$select->whereLike('vi.vcitem_number', "'" . $keyword . "%'");
 		}
 		if ($filterItem == 'vcitem_desc') {
-			$select->whereLike('un.vcitem_desc', "'%" . $keyword . "%'");
+			$select->whereLike('vi.vcitem_desc', "'%" . $keyword . "%'");
 		}
 		if ($filterItem == 'brand') {
-			$select->whereLike('un.vcitem_manufacturer', "'%" . $keyword . "%'");
+			$select->whereLike('vi.vcitem_manufacturer', "'%" . $keyword . "%'");
 		}
 		if ($filterItem == 'upc') {
-			$select->whereLike('un.vcitem_upc', "'%" . $keyword . "%'");
+			$select->whereLike('vi.vcitem_upc', "'%" . $keyword . "%'");
 		}
 
-		return $this->adapter->query($select, [$userprofile_id, 1]);
+		if ($filterItem == 'any') {
+			$select->whereNest('OR')
+				->whereLike('un.UNSPSC_Commodity_FamilyTitle', "'%" . $keyword . "%'")
+				->whereLike('vi.vcitem_category_name', "'%" . $keyword . "%'")
+				->whereLike('un.UNSPSC_Commodity_CommodityTitle', "'%" . $keyword . "%'")
+				->whereLike('vi.vcitem_type', "'%" . $keyword . "%'")
+				->whereLike('vi.vcitem_number', "'" . $keyword . "%'")
+				->whereLike('vi.vcitem_desc', "'%" . $keyword . "%'")
+				->whereLike('vi.vcitem_manufacturer', "'%" . $keyword . "%'")
+				->whereLike('vi.vcitem_upc', "'%" . $keyword . "%'")
+				->whereUnNest();
+		}
+		$select->order($order);/*
+		$select->order($order)
+			->offset($pageSize * ($page - 1))
+			->limit($pageSize);*/
+
+		return $this->getPagingArray($select, $params, $pageSize, $page);
+//		return $this->adapter->query($select, $params);
 	}
 
 	/**

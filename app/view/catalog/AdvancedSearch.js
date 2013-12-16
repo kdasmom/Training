@@ -9,13 +9,15 @@ Ext.define('NP.view.catalog.AdvancedSearch', {
 
 	requires: [
 		'NP.lib.core.Config',
+		'NP.lib.core.Translator',
 		'NP.view.shared.button.Shop',
 		'NP.view.shared.button.Back',
 		'NP.view.shared.button.Favorite',
 		'NP.view.catalog.JumpToCatalogForm',
 		'NP.view.catalog.UserOrder',
 		'NP.view.catalog.SearchForm',
-		'NP.view.catalog.SearchResultsGrid'
+//		'NP.view.catalog.SearchResultsGrid'
+		'NP.view.catalog.FavoriteItemsGrid'
 	],
 
 	initComponent: function() {
@@ -60,14 +62,16 @@ Ext.define('NP.view.catalog.AdvancedSearch', {
 				items: [
 					{
 						xtype: 'catalog.searchform',
-						advancedSearch: true
+						advancedSearch: that.advancedSearch
 					}
 				],
 				padding: '5',
 				border: false
 			},
 			{
-				xtype: 'catalog.searchresultsgrid'
+//				xtype: 'catalog.searchresultsgrid'
+				xtype: 'catalog.favoriteitemsgrid',
+				isSearch: true
 			}
 		];
 

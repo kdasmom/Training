@@ -13,8 +13,14 @@ Ext.define('NP.controller.VendorCatalog', {
 	],
 
 	views: [
-		'catalog.OrderItemWindow'
+		'catalog.OrderItemWindow',
+		'catalog.AdvancedSearch'
 	],
+
+	stores: [
+		'catalog.VcItems'
+	],
+	models: [],
 
 	/**
 	 * Init
@@ -93,10 +99,22 @@ Ext.define('NP.controller.VendorCatalog', {
 			'[xtype="catalog.orderitemwindow"]': {
 				restoreshoppingcart: this.restoreShoppingCart
 			},
+			'[xtype="catalog.favoriteitemsgrid"]': {
+				showdetails: this.showOrderItemDetailsWindow,
+				removefromfavorites: this.removeFromFavorites,
+				addtoorder: this.addItemToOrder,
+				addtofavorites: this.addToFavorites
+			},/*
 			'[xtype="catalog.favoritesview"] [xtype="catalog.favoriteitemsgrid"]': {
 				showdetails: this.showOrderItemDetailsWindow,
 				removefromfavorites: this.removeFromFavorites,
 				addtoorder: this.addItemToOrder
+			},*/
+			'[xtype="catalog.searchform"]': {
+				searchitems: function (catalogs, type, property, keyword, isAdvanced) {
+					this.addHistory('VendorCatalog:showAdvancedSearch:' + isAdvanced + ':' + catalogs + ':' + type + ':' + property + ':' + keyword);
+				},
+				advancedsearch: this.showAdvancedSearchResults
 			}
 		});
 
@@ -115,9 +133,21 @@ Ext.define('NP.controller.VendorCatalog', {
 		grid.reloadFirstPage();
 	},
 
-	showAdvancedSearch: function() {
-		this.setView('NP.view.catalog.AdvancedSearch');
+	showAdvancedSearch: function(isAdvanced, catalogs, type, property, keyword) {
+		this.setView('NP.view.catalog.AdvancedSearch', {advancedSearch: isAdvanced});
 		this.showUserOrderSummary(this.userSummaryCallback);
+
+		var grid = this.getCmp('catalog.favoriteitemsgrid');
+
+		grid.addExtraParams({
+			catalogs: catalogs,
+			field: type,
+			property: property,
+			keyword: keyword,
+			userprofile_id: NP.Security.getUser().get('userprofile_id')
+		});
+
+		grid.getStore().load();
 	},
 
 	/**
@@ -324,13 +354,22 @@ Ext.define('NP.controller.VendorCatalog', {
 	 * @param index
 	 */
 	removeFromFavorites: function (grid, record, index) {
+		console.log('rec2: ', record.get('vcitem_id'));
+		this.toggleFavorites(grid, record.get('vcitem_id'), false);
+	},
+
+	addToFavorites: function(grid, record, index) {
+		this.toggleFavorites(grid, record.get('vcitem_id'), true);
+	},
+
+	toggleFavorites: function (grid, vcitem_id, add) {
 		NP.lib.core.Net.remoteCall({
 			requests: {
 				service: 'CatalogService',
 				action : 'toggleFavorites',
 				userprofile_id : NP.Security.getUser().get('userprofile_id'),
-				vcitem_id : record.get('vcitem_id'),
-				add: false,
+				vcitem_id : vcitem_id,
+				add: add,
 				success: function(data) {
 					if (data) {
 						grid.getStore().reload();
@@ -370,6 +409,10 @@ Ext.define('NP.controller.VendorCatalog', {
 
 	restoreShoppingCart: function () {
 		this.showUserOrderSummary(this.userSummaryCallback);
+	},
+
+	showAdvancedSearchResults: function (catalogs, type, property, keyword) {
+
 	}
 
 });

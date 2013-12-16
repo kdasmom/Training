@@ -27,10 +27,11 @@ Ext.define('NP.view.catalog.SearchForm', {
 			{
 				xtype: 'customcombo',
 				name: 'vccat_id',
+				id: 'vccat_id',
 				labelWidth: !this.advancedSearch ? 60 : 120,
 				displayField: 'vc_catalogname',
 				valueField: 'vc_id',
-				fieldLabel: !this.advancedSearch ? NP.Translator.translate('Search') : NP.Translator.translate('Advanced Search'),
+				fieldLabel: !that.advancedSearch ? NP.Translator.translate('Search') : NP.Translator.translate('Advanced Search'),
 				store: Ext.create('NP.store.catalog.Vc', {
 					service: 'CatalogService',
 					action: 'getCatalogs',
@@ -39,20 +40,23 @@ Ext.define('NP.view.catalog.SearchForm', {
 					},
 					autoLoad: true
 				}),
-				multiSelect: !this.advancedSearch ? false : true,
+				addBlankRecord: !that.advancedSearch ? true : false,
+				multiSelect: !that.advancedSearch ? false : true,
 				queryMode: 'local',
 				editable: false,
 				typeAhead: false,
-				width: !this.advancedSearch ? 300 : 360
+				width: !that.advancedSearch ? 300 : 360
 			},
 			{
 				xtype: 'customcombo',
 				name: 'item_name',
+				id: 'item_name',
 				fieldLabel: NP.Translator.translate('by'),
 				labelWidth: 20,
 				queryMode: 'local',
 				editable: false,
 				typeAhead: false,
+				selectFirstRecord: true,
 				margin: '0 0 0 5',
 				valueField: 'value',
 				displayField: 'display',
@@ -73,6 +77,7 @@ Ext.define('NP.view.catalog.SearchForm', {
 			{
 				xtype           : 'customcombo',
 				name            : 'property_id',
+				id            	: 'property_id',
 				displayField    : 'property_name',
 				valueField      : 'property_id',
 				store           : 'user.Properties',
@@ -82,17 +87,30 @@ Ext.define('NP.view.catalog.SearchForm', {
 				width: 300,
 				editable: false,
 				typeAhead: false,
-				margin: '0 0 0 5'
+				margin: '0 0 0 5',
+				selectFirstRecord: true
 			},
 			{
 				xtype: 'textfield',
 				name: 'keyword',
+				id: 'keyword',
 				margin: '0 0 0 5'
 			},
 			{
 				xtype: 'button',
 				text: NP.Translator.translate('Search'),
-				margin: '0 0 0 10'
+				margin: '0 0 0 10',
+				handler: function() {
+					if (that.getChildByElement('keyword').getValue().length == 0) {
+						Ext.Msg.alert('Error', 'You must enter a search term.');
+					} else {
+						if (that.advancedSearch) {
+							that.fireEvent('advancedsearch', that.getChildByElement('vccat_id').getValue(), that.getChildByElement('item_name').getValue(),that.getChildByElement('property_id').getValue(),that.getChildByElement('keyword').getValue());
+						} else {
+							that.fireEvent('searchitems', that.getChildByElement('vccat_id').getValue(), that.getChildByElement('item_name').getValue(),that.getChildByElement('property_id').getValue(),that.getChildByElement('keyword').getValue(), that.advancedSearch ? that.advancedSearch : false);
+						}
+					}
+				}
 			}
 		];
 
