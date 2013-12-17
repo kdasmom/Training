@@ -36,140 +36,181 @@ Ext.define('NP.controller.SystemSetup', {
 		{ ref: 'addSplitAllocBtn',      selector: '#addSplitAllocBtn' }
 	],
 	
-	init: function() {
-		Ext.log('SystemSetup controller initialized');
+    init: function() {
+        Ext.log('SystemSetup controller initialized');
 
-		var me = this;
+	var me = this;
 
-		// For localization
-		NP.Translator.on('localeloaded', function() {
-			me.changesSavedText       = NP.Translator.translate('Changes saved successfully');
-			me.errorDialogTitleText   = NP.Translator.translate('Error');
-			me.deleteSplitDialogTitle = NP.Translator.translate('Delete Split?');
-			me.deleteSplitsDialogText = NP.Translator.translate('Are you sure you want to delete the selected split(s)?');
-			me.deleteSplitDialogText  = NP.Translator.translate('Are you sure you want to delete this split?');
-			me.editSplitFormTitle     = NP.Translator.translate('Editing');
-			me.newSplitFormTitle      = NP.Translator.translate('New Split');
-			me.intPkgChangeDialogTitle= NP.Translator.translate('Change integration package?');
-			me.intPkgChangeDialogText = NP.Translator.translate('Are you sure you want to change integration package? Doing so will clear the entire form, removing all splits you have entered.');
-		});
+	// For localization
+	NP.Translator.on('localeloaded', function() {
+            me.changesSavedText       = NP.Translator.translate('Changes saved successfully');
+            me.errorDialogTitleText   = NP.Translator.translate('Error');
+            me.deleteSplitDialogTitle = NP.Translator.translate('Delete Split?');
+            me.deleteSplitsDialogText = NP.Translator.translate('Are you sure you want to delete the selected split(s)?');
+            me.deleteSplitDialogText  = NP.Translator.translate('Are you sure you want to delete this split?');
+            me.editSplitFormTitle     = NP.Translator.translate('Editing');
+            me.newSplitFormTitle      = NP.Translator.translate('New Split');
+            me.intPkgChangeDialogTitle= NP.Translator.translate('Change integration package?');
+            me.intPkgChangeDialogText = NP.Translator.translate('Are you sure you want to change integration package? Doing so will clear the entire form, removing all splits you have entered.');
+	});
 
-		// Setup event handlers
-		me.control({
-			// The main System Setup panel
-			'[xtype="systemsetup.main"]': {
-				// Run this whenever the user clicks on a tab on the System Setup page
-				tabchange: function(tabPanel, newCard, oldCard, eOpts) {
-					Ext.log('SystemSetup onTabChange() running');
-					
-					var activeTab = Ext.getClassName(newCard).split('.').pop();
-					me.addHistory('SystemSetup:showSystemSetup:' + activeTab);
-				}
-			},
-			
-			// The Save button on the Password Configuration page
-			'[xtype="systemsetup.passwordconfiguration"] [xtype="shared.button.save"]': {
-				// Run this whenever the save button is clicked
-				click: me.savePasswordConfiguration
-			},
-			// The Split grid
-			'[xtype="systemsetup.defaultsplitgrid"] customgrid': {
-				// Making a selection on the grid
-				selectionchange: me.selectSplit,
-				cellclick: function(view, td, cellIndex, rec, tr, rowIndex, e) {
-					if (cellIndex != 0) {
-						me.addHistory('SystemSetup:showSystemSetup:DefaultSplits:Form:' + rec.get('dfsplit_id'));
-					}
-				}
-			},
-			// The Create New Split button
-			'[xtype="systemsetup.defaultsplitgrid"] [xtype="shared.button.new"]': {
-				click: function() {
-					me.addHistory('SystemSetup:showSystemSetup:DefaultSplits:Form');
-				}
-			},
-			// The Delete button on the split grid
-			'[xtype="systemsetup.defaultsplitgrid"] [xtype="shared.button.delete"]': {
-				click: me.deleteSplits
-			},
-			// The default split form integration package field
-			'[xtype="systemsetup.defaultsplitform"] [name="integration_package_id"]': {
-				select: function(combo) { me.selectIntegrationPackage(combo, true) }
-			},
-			// The default split form allocation grid
-			'[xtype="systemsetup.defaultsplitform"] customgrid': {
-				beforeedit: function(editor, e) {
-					if (e.field == 'property_id') {
-						me.openPropertyEditor(e.record);
-					} else if (e.field == 'glaccount_id') {
-						me.openGlAccountEditor(e.record);
-					} else if (e.field == 'unit_id') {
-						me.openUnitEditor(e.record);
-					}
-				},
-				deleterow: me.deleteSplitItem,
-				updateproperty: me.updateProperty
-			},
-			'#saveSplitFormBtn': {
-				click: me.saveSplitForm
-			},
-			'#copySplitFormBtn': {
-				click: me.copySplit
-			},
-			'#deleteSplitFormBtn': {
-				click: me.deleteSplit
-			},
-			'#resetSplitFormBtn': {
-				click: me.resetSplitForm
-			},
-			'#cancelSplitFormBtn': {
-				click: function() {
-					me.addHistory('SystemSetup:showSystemSetup:DefaultSplits');
-				}
-			},
-			'#addSplitAllocBtn': {
-				click: me.addSplitLine
-			},
-			'#autoAllocBtn': {
-				click: me.autoAllocSplit
-			}
-		});
+	// Setup event handlers
+	me.control({
+            // The main System Setup panel
+            '[xtype="systemsetup.main"]': {
+                // Run this whenever the user clicks on a tab on the System Setup page
+                tabchange: function(tabPanel, newCard, oldCard, eOpts) {
+                    Ext.log('SystemSetup onTabChange() running');
 
-	},
+                    var activeTab = Ext.getClassName(newCard).split('.').pop();
+                    me.addHistory('SystemSetup:showSystemSetup:' + activeTab);
+                }
+            },
+            // The Save button on the Password Configuration page
+            '[xtype="systemsetup.passwordconfiguration"] [xtype="shared.button.save"]': {
+                // Run this whenever the save button is clicked
+		click: me.savePasswordConfiguration
+            },
+            // The Split grid
+            '[xtype="systemsetup.defaultsplitgrid"] customgrid': {
+                // Making a selection on the grid
+		selectionchange: me.selectSplit,
+		cellclick: function(view, td, cellIndex, rec, tr, rowIndex, e) {
+                    if (cellIndex != 0) {
+                        me.addHistory('SystemSetup:showSystemSetup:DefaultSplits:Form:' + rec.get('dfsplit_id'));
+                    }
+		}
+            },
+            // The Create New Split button
+            '[xtype="systemsetup.defaultsplitgrid"] [xtype="shared.button.new"]': {
+                click: function() {
+                    me.addHistory('SystemSetup:showSystemSetup:DefaultSplits:Form');
+		}
+            },
+            // The Delete button on the split grid
+            '[xtype="systemsetup.defaultsplitgrid"] [xtype="shared.button.delete"]': {
+                click: me.deleteSplits
+            },
+            // The default split form integration package field
+            '[xtype="systemsetup.defaultsplitform"] [name="integration_package_id"]': {
+                select: function(combo) { me.selectIntegrationPackage(combo, true) }
+            },
+            // The default split form allocation grid
+            '[xtype="systemsetup.defaultsplitform"] customgrid': {
+                beforeedit: function(editor, e) {
+                    if (e.field == 'property_id') {
+                        me.openPropertyEditor(e.record);
+                    } else if (e.field == 'glaccount_id') {
+                        me.openGlAccountEditor(e.record);
+                    } else if (e.field == 'unit_id') {
+                        me.openUnitEditor(e.record);
+                    }
+		},
+		deleterow: me.deleteSplitItem,
+		updateproperty: me.updateProperty
+            },
+            '#saveSplitFormBtn': {
+                click: me.saveSplitForm
+            },
+            '#copySplitFormBtn': {
+                click: me.copySplit
+            },
+            '#deleteSplitFormBtn': {
+                click: me.deleteSplit
+            },
+            '#resetSplitFormBtn': {
+                click: me.resetSplitForm
+            },
+            '#cancelSplitFormBtn': {
+                click: function() {
+                    me.addHistory('SystemSetup:showSystemSetup:DefaultSplits');
+		}
+            },
+            '#addSplitAllocBtn': {
+                click: me.addSplitLine
+            },
+            '#autoAllocBtn': {
+                click: me.autoAllocSplit
+            },
+                        
+                        
+                        
+                        
+                        
+                        
+            '[xtype="systemsetup.WorkflowRulesGrid"]': {
+                // Making a selection on the grid
+                cellclick: function(view, td, cellIndex, rec, tr, rowIndex, e) {
+                    if (cellIndex != 0) {
+                        me.addHistory('SystemSetup:showSystemSetup:WorkflowRules:View:' + rec.get('wfrule_id'));
+                    }
+                }
+            }
+        });
+    },
 	
-	/**
-	 * Shows the system setup page
-	 * @param {String} [activeTab="open"] The tab currently active
-	 * @param {String} [subSection]       The seubsection of the tab to open
-	 * @param {String} [id]               Id for an item being viewed
-	 */
-	showSystemSetup: function(activeTab, subSection, id) {
-		var that = this;
+    /**
+     * Shows the system setup page
+     * @param {String} [activeTab="open"] The tab currently active
+     * @param {String} [subSection]       The seubsection of the tab to open
+     * @param {String} [id]               Id for an item being viewed
+     */
+    showSystemSetup: function(activeTab, subSection, id) {
+        var that = this;
 
-		// Set the SystemSetup view
-		var tabPanel = that.setView('NP.view.systemSetup.Main');
+	// Set the SystemSetup view
+	var tabPanel = that.setView('NP.view.systemSetup.Main');
 
-		// If no active tab is passed, default to Open
-		if (!activeTab) activeTab = 'Overview';
+	// If no active tab is passed, default to Open
+	if (!activeTab) activeTab = 'Overview';
 		
-		// Check if the tab to be selected is already active, if it isn't make it the active tab
-		var tab = that.getCmp('systemsetup.' + activeTab.toLowerCase());
+	// Check if the tab to be selected is already active, if it isn't make it the active tab
+	var tab = that.getCmp('systemsetup.' + activeTab.toLowerCase());
 		
-		// Set the active tab if it hasn't been set yet
-		if (tab.getXType() != tabPanel.getActiveTab().getXType()) {
-			tabPanel.suspendEvents(false);
-			tabPanel.setActiveTab(tab);
-			tabPanel.resumeEvents();
-		}
+	// Set the active tab if it hasn't been set yet
+	if (tab.getXType() != tabPanel.getActiveTab().getXType()) {
+            tabPanel.suspendEvents(false);
+            tabPanel.setActiveTab(tab);
+            tabPanel.resumeEvents();
+	}
 
-		// Check if there's a show method for this tab
-		var showMethod = 'show' + activeTab;
-		if (that[showMethod]) {
-			// If the show method exists, run it
-			that[showMethod](subSection, id);
-		}
-	},
+	// Check if there's a show method for this tab
+	var showMethod = 'show' + activeTab;
+	if (that[showMethod]) {
+            // If the show method exists, run it
+            that[showMethod](subSection, id);
+	}
+    },
 
+    showWorkflowRules: function(section, id) {
+        var self = this;
+        switch (section) {
+            case 'View':
+                NP.lib.core.Net.remoteCall({
+                    requests: {
+                        service: 'WFRuleService',
+                        action : 'get',
+
+                        id: id,
+
+                        success: function(data) {
+                            if (data) {
+                                self.setView('NP.view.systemSetup.' + view, {data: data}, '[xtype="systemsetup.workflowrules"]');
+                            }
+                        }
+                    }
+		});
+
+                view = 'WorkflowRulesView';
+                break;
+            default:
+                var data = {};
+                var view = 'WorkflowRulesMain';
+                this.setView('NP.view.systemSetup.' + view, {}, '[xtype="systemsetup.workflowrules"]');
+        }
+    },
+
+    
 	/**
 	 * Displays the page for the Password Configuration tab
 	 */

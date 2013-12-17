@@ -12,7 +12,7 @@ Ext.define('NP.view.systemSetup.Main', {
         'NP.lib.core.Security',
     	'NP.view.systemSetup.Overview',
     	'NP.view.systemSetup.Settings',
-    	'NP.view.systemSetup.WorkflowManager',
+    	'NP.view.systemSetup.WorkflowRules',
     	'NP.view.systemSetup.GLAccounts',
     	'NP.view.systemSetup.PasswordConfiguration',
     	'NP.view.systemSetup.CustomFields',
@@ -33,7 +33,7 @@ Ext.define('NP.view.systemSetup.Main', {
     	
     	if (NP.Security.hasPermission(1041)) {
             this.items.push({
-                xtype: 'systemsetup.workflowmanager'
+                xtype: 'systemsetup.workflowrules'
             });
         }
     	
