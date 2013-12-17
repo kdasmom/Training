@@ -4,6 +4,9 @@ namespace NP\vendor;
 
 use NP\core\AbstractGateway;
 use NP\core\db\Select;
+use NP\core\db\Where;
+use NP\property\PropertyContext;
+use NP\property\sql\PropertyFilterSelect;
 
 /**
  * Gateway for the UTILITYACCOUNT table
@@ -67,76 +70,105 @@ class UtilityAccountGateway extends AbstractGateway {
         return $this->adapter->query($select, $params);
     }
 
-    public function getMeterByAccount($account, $property_id = null, $vendorsite_id = null) {
-        $select = new sql\MeterByAccountSelect(
-            $account,
-            $property_id,
-            $vendorsite_id
-        );
-        return $this->adapter->query($select);
-    }
+    public function getMeterSizesByAccount($userprofile_id, $delegation_to_userprofile_id,
+                                        $UtilityAccount_AccountNumber) {
+        $params = [$UtilityAccount_AccountNumber];
 
-    public function getAccountNumbers($userprofile_id, $delegation_to_userprofile_id) {
-        $select01 = new \NP\core\db\Select();
+        $select = Select::get()
+                        ->distinct()
+                        ->column('UtilityAccount_MeterSize')
+                        ->from(['ua'=>'utilityaccount'])
+                        ->whereEquals('ua.utilityaccount_active', 1)
+                        ->whereEquals('ua.UtilityAccount_AccountNumber', '?')
+                        ->whereNotEquals('ua.UtilityAccount_MeterSize', "''")
+                        ->whereIsNotNull('ua.UtilityAccount_MeterSize')
+                        ->order('ua.UtilityAccount_MeterSize');
+
+        $this->addPropertyFilterToSelect($select, $userprofile_id, $delegation_to_userprofile_id);
+
         if ($userprofile_id == $delegation_to_userprofile_id) {
-            $select01 = new sql\PropertyIdForUserSelect('null, 1', $userprofile_id);
-        } else {
-            $select01 = new sql\PropertyIdForDelegationSelect($userprofile_id, $delegation_to_userprofile_id);
+            $params[] = $userprofile_id;
         }
 
-        $select03 = new \NP\core\db\Select();
-        $select03
-            ->distinct()
-                ->column('utilityaccount_accountnumber')
-            ->from('utilityaccount')
-            ->order('utilityaccount_accountnumber')
-        ;
-
-        $select04 = new \NP\core\db\Select();
-        $select04
-            ->column('property_id')
-            ->from('propertyusercoding')
-            ->where(
-                \NP\core\db\Where::get()
-                    ->equals('userprofile_id', $userprofile_id)
-            )
-        ;
-
-        $where03 = new \NP\core\db\Where();
-        $where03
-            ->equals('utilityaccount_active', 1)
-            ->nest('OR')
-                ->in('property_id', $select01)
-                ->in('property_id', $select04)
-            ->unnest()
-        ;
-
-        $select03->where($where03);
-
-        return $this->adapter->query($select03);
+        return $this->adapter->query($select, $params);
     }
 
-    public function getUtilityAccountsByCriteria($userprofile_id, $delegation_to_userprofile_id, $utilityaccount_accountnumber) {
-        $select = new sql\UtilityAccountsByCriteriaSelect(
-            $userprofile_id,
-            $delegation_to_userprofile_id,
-            $utilityaccount_accountnumber
-        );
-        $result = $this->adapter->query($select);
+    public function getAccountNumbersByUser($userprofile_id, $delegation_to_userprofile_id) {
+        $params = [];
+        $select = Select::get()
+                        ->distinct()
+                        ->column('UtilityAccount_AccountNumber')
+                        ->from(['ua'=>'utilityaccount'])
+                        ->whereEquals('ua.utilityaccount_active', 1)
+                        ->order('ua.utilityaccount_accountnumber');
 
-        for ($i = 0; $i < count($result); $i++) {
-            $result[$i]['utilityaccount_name'] = 
-                $result[$i]['vendor_name'].
-                '('.$result[$i]['vendor_id_alt'].') - '.
-                $result[$i]['property_name'].
-                '('.$result[$i]['property_id_alt'].')'.
-                ' - Acct: '.$result[$i]['utilityaccount_accountnumber']
-            ;
-            if (!empty($result[$i]['utilityaccount_metersize'])) {
-                $result[$i]['utilityaccount_name'] .= ' - Meter: '.$result[$i]['utilityaccount_metersize'];
-            } 
+        $this->addPropertyFilterToSelect($select, $userprofile_id, $delegation_to_userprofile_id);
+
+        if ($userprofile_id == $delegation_to_userprofile_id) {
+            $params[] = $userprofile_id;
         }
-        return $result;
+
+        return $this->adapter->query($select, $params);
+    }
+
+    public function getAccountsByUser($userprofile_id, $delegation_to_userprofile_id,
+                                    $UtilityAccount_AccountNumber=null, $UtilityAccount_MeterSize=null) {
+        $params = [];
+        $select = Select::get()
+                        ->from(['ua'=>'utilityaccount'])
+                        ->join(new sql\join\UtilityAccountPropertyJoin())
+                        ->join(new sql\join\UtilityAccountUtilityJoin([]))
+                        ->join(new sql\join\UtilityVendorsiteJoin())
+                        ->join(new sql\join\VendorsiteVendorJoin())
+                        ->join(new sql\join\UtilityUtilityTypeJoin())
+                        ->whereEquals('ua.utilityaccount_active', 1)
+                        ->order('ua.utilityaccount_accountnumber');
+
+        $this->addPropertyFilterToSelect($select, $userprofile_id, $delegation_to_userprofile_id);
+
+        if ($userprofile_id == $delegation_to_userprofile_id) {
+            $params[] = $userprofile_id;
+        }
+
+        if ($UtilityAccount_AccountNumber !== null) {
+            $select->whereEquals('ua.UtilityAccount_AccountNumber', '?');
+            $params[] = $UtilityAccount_AccountNumber;
+        }
+
+        if ($UtilityAccount_MeterSize !== null) {
+            $select->whereEquals('ua.UtilityAccount_MeterSize', '?');
+            $params[] = $UtilityAccount_MeterSize;
+        }
+
+        return $this->adapter->query($select, $params);
+    }
+
+    private function addPropertyFilterToSelect($select, $userprofile_id, $delegation_to_userprofile_id) {
+        $select->whereNest('OR')
+                ->whereIn(
+                    'ua.property_id',
+                    new PropertyFilterSelect(
+                        new PropertyContext(
+                            $userprofile_id,
+                            $delegation_to_userprofile_id,
+                            'all',
+                            null
+                        )
+                    )
+                );
+        if ($userprofile_id == $delegation_to_userprofile_id) {
+            $select->whereIn(
+                'ua.property_id',
+                Select::get()
+                        ->column('property_id')
+                        ->from('propertyusercoding')
+                        ->whereEquals('userprofile_id', '?')
+            );
+        }
+
+        $select->whereUnnest();
+
+        return $select;
     }
 
     public function getUtilityAccountDetails($utilityaccount_accountnumber) {

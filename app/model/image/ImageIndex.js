@@ -92,8 +92,21 @@ Ext.define('NP.model.image.ImageIndex', {
 
 		{ name: 'PriorityFlag_ID_Alt_invoice', type: 'int' },
 		{ name: 'PriorityFlag_ID_Alt_po', type: 'int' },
-		{ name: 'PriorityFlag_ID_Alt_vef', type: 'int' }
+		{ name: 'PriorityFlag_ID_Alt_vef', type: 'int' },
+
+		{ name: 'UtilityAccount_AccountNumber' },
+		{ name: 'UtilityAccount_MeterSize' }
 	],
+
+	getImageLink: function() {
+		return NP.model.image.ImageIndex.getImageLink(this.get('Image_Index_Id'));
+	},
+
+	statics: {
+		getImageLink: function(Image_Index_Id) {
+			return 'showImage.php?image_index_id=' + Image_Index_Id;
+		}
+	},
 
     belongsTo: [
         {
@@ -155,9 +168,5 @@ Ext.define('NP.model.image.ImageIndex', {
 			primaryKey: 'PriorityFlag_ID_Alt',
 			reader    : 'jsonflat'
         }
-    ],
-	validations: [
-            { field: 'Image_Doctype_Id', type: 'presence' }
-	]
-    
+    ]
 });

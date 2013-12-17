@@ -118,6 +118,7 @@
 
 /* GENERIC STYLES */
 .error-text { color: #c0272b; font: normal 11px tahoma, arial, verdana, sans-serif; }
+.valid-text { color: #00cc00; font: normal 11px tahoma, arial, verdana, sans-serif; }
 
 /* IMPORT SECTION */
 .importTemplates a { color: #000; margin-left: 16px; }

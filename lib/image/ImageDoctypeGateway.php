@@ -4,9 +4,20 @@ namespace NP\image;
 use NP\core\AbstractGateway;
 use NP\core\db\Where;
 use NP\core\db\Select;
+use NP\core\db\Expression;
 
 class ImageDoctypeGateway extends AbstractGateway {
     protected $table = 'image_doctype';
+
+    protected $configService, $securityService;
+    
+    public function setConfigService(\NP\system\ConfigService $configService) {
+        $this->configService = $configService;
+    }
+
+    public function setSecurityService(\NP\security\SecurityService $securityService) {
+        $this->securityService = $securityService;
+    }
 
     public function getIdByName($name) {
         $result = $this->find(
@@ -44,6 +55,45 @@ class ImageDoctypeGateway extends AbstractGateway {
             return $data;
         }
         return null;
+    }
+
+    public function listDoctypes() {
+        $webDocumentz = $this->configService->get('pn.main.WebDocumentz');
+        
+        $select = Select::get()
+                        ->allColumns()
+                        ->column(
+                            new Expression("
+                                CASE
+                                    WHEN image_doctype_name = 'Utility Invoice' THEN 1
+                                    ELSE image_doctype_id
+                                END
+                            "),
+                            'image_doctype_sort'
+                        )
+                        ->from('image_doctype')
+                        ->whereOr()
+                        ->order('image_doctype_sort,image_doctype_name');
+
+        if (($webDocumentz == '1' || $webDocumentz == '2') && $this->securityService->hasPermission(2081)) {
+            $select->whereEquals('tableref_id', 1);
+        }
+        if ($webDocumentz == '2') {
+            if ($this->securityService->hasPermission(2087)) {
+                $select->whereIn('tableref_id', '3,7');
+            }
+            if ($this->securityService->hasPermission(2088)) {
+                $select->whereEquals('tableref_id', 4);
+            }
+            if ($this->securityService->hasPermission(2089)) {
+                $select->whereEquals('tableref_id', 2);
+            }
+            if ($this->securityService->hasPermission(6094)) {
+                $select->whereEquals('tableref_id', 8);
+            }
+        }
+
+        return $this->adapter->query($select);
     }
 
     public function getImageDoctypes($tablerefs) {

@@ -12,6 +12,7 @@ Ext.define('NP.lib.ui.AutoComplete', {
 	queryParam    : 'keyword',
 	typeAhead     : false,
 	triggerAction : 'query',
+	triggerCls    : 'x-form-search-trigger',
     multiSelect   : false,
     minChars      : 0,
     cls           : 'auto-complete',

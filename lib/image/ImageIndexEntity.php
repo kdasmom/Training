@@ -71,7 +71,9 @@ class ImageIndexEntity extends \NP\core\AbstractEntity {
         'universal_field1'          => [],
         'universal_field2'          => [],
         'universal_field3'          => [],
-        'PriorityFlag_ID_Alt'       => [],
+        'PriorityFlag_ID_Alt'       => [
+            'defaultValue'  => 1
+        ],
         'image_index_NeededBy_datetm'   => [],
         'universal_field4'          => [],
         'universal_field5'          => [],

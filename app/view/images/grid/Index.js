@@ -13,23 +13,18 @@ Ext.define('NP.view.images.grid.Index', {
         ];
         this.autoscroll = true;
 
-        var picker = Ext.ComponentQuery.query(
-            '[itemId~="componentContextPicker"]'
-        );
-        if (picker && picker[0] && picker[0].getState) {
-            var state = picker[0].getState();
-        }
+        var context = NP.Security.getCurrentContext();
 
         this.store = Ext.create('NP.store.image.ImageIndexes', {
             service    : 'ImageService',
-            action     : 'getImagesToIndex1',
+            action     : 'getImagesToIndex',
             paging     : true,
             extraParams: {
-		userprofile_id             : NP.Security.getUser().get('userprofile_id'),
-		delegated_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id'),
-                contextType     : state && state[0] ? state[0].getState().type : 'all',
-		contextSelection: state && state[0] ? state[0].getState().selected : ''
-
+                userprofile_id             : NP.Security.getUser().get('userprofile_id'),
+                delegated_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id'),
+                contextType                : context.type,
+                contextSelection           : (context.type == 'region') ? context.region_id : context.property_id,
+                countOnly                  : 'false'
             }
         });
 

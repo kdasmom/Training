@@ -766,79 +766,64 @@ class InvoiceGateway extends AbstractGateway {
      * 
      * @param int $vendorsite_id Vendorsite id.
      * @param int $property_id Propery id.
-     * @param int $utilityaccount_accountnumber Utility account number.
+     * @param int $utilityaccount_id Utility account ID.
      * @return [] List of templates.
      */
-    public function getTemplateForImageIndex($vendorsite_id, $property_id, $utilityaccount_accountnumber) {
+    public function getTemplatesByCriteria($userprofile_id, $delegation_to_userprofile_id,
+    										$vendorsite_id, $property_id,
+    										$utilityaccount_id=null) {
         if (empty($vendorsite_id)) 
             return;
         if (empty($property_id)) 
             return;
         
-        $select01 = new Select();
-        $select01
-            ->column('property_name')
-            ->from('property')
-            ->where(
-                Where::get()
-                    ->equals('property_id', 'i.property_id')
-            )
-        ;
-
-        $select02 = new Select();
-        $select02
-            ->column('property_id')
-            ->from('property')
-            ->where(
-                Where::get()
-                    ->equals('integration_package_id', 'v.integration_package_id')
-            )
-        ;
-
-        $columns = [
-            'invoice_id' => 'invoice_id',
-            'invoice_ref' => 'invoice_ref',
-            'template_name' => 'template_name',
-            'property_name' => $select01
-        ];
-        if (!empty($utilityaccount_accountnumber)) {
-            $select03 = new Select();
-            $select03
-                ->from(['ii' => 'invoiceitem'])
-                    ->join(['ua' => 'utilityaccount'], 'ii.utilityaccount_id = ua.utilityaccount_id', [], Select::JOIN_INNER)
-                ->where(
-                    Where::get()
-                        ->equals('ii.invoice_id', 'i.invoice_id')
-                        ->equals('ua.utilityaccount_accountnumber', $utilityaccount_accountnumber)
-                )
-            ;
-        }
+        $params = [$vendorsite_id];
 
         $select = new Select();
-        $select
-            ->columns($columns)
-            ->from(['i' => 'invoice'])
-                ->join(['vs' => 'vendorsite'], 'vs.vendorsite_id=i.paytablekey_id AND i.paytable_name=\'vendorsite\'', [], Select::JOIN_INNER)
-                ->join(['v' => 'vendor'], 'v.vendor_id=vs.vendor_id ', ['integration_package_id'], Select::JOIN_INNER)
+        $select = Select::get()
+		            ->columns([
+						'invoice_id'    => 'invoice_id',
+						'invoice_ref'   => 'invoice_ref',
+						'template_name' => 'template_name'
+			        ])
+		            ->from(['i' => 'invoice'])
+		            	->join(new sql\join\InvoicePropertyJoin(['property_name']))
+		            	->join(new sql\join\InvoiceVendorsiteJoin([]))
+		            	->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(['integration_package_id']))
+		            ->whereEquals('i.invoice_status', '\'draft\'')
+            		->whereEquals('vs.vendorsite_id', '?')
+            		->whereNest('OR')
+		                ->whereEquals('i.property_id', 0)
         ;
-        $where = new Where();
-        $where
-            ->equals('i.invoice_status', '\'draft\'')
-            ->equals('vs.vendorsite_id', $vendorsite_id)
-            ->nest('OR')
-                ->equals('i.property_id', 0)
-                ->nest()
-                    ->in('i.property_id', $select02)
-                    ->equals('i.property_id', $property_id)
-                ->unnest()
-            ->unnest()
-        ;
-        if (!empty($utilityaccount_accountnumber)) {
-            $where->exists($select03);
+        
+        if ($this->configService->get('PN.Main.templateByProp', '0') == '1') {
+        	$select->whereEquals('i.property_id', '?');
+        	$params[] = $property_id;
+        } else {
+        	$select->whereIn(
+						'i.property_id',
+						new PropertyFilterSelect(
+	                        new PropertyContext(
+	                            $userprofile_id,
+	                            $delegation_to_userprofile_id,
+	                            'all',
+	                            null
+	                        )
+	                    )
+					);
         }
-        $select->where($where);
+        $select->whereUnnest();
 
-        return $this->adapter->query($select);
+        if (!empty($utilityaccount_id)) {
+            $select->whereExists(
+            	Select::get()->from(['ii' => 'invoiceitem'])
+		                    ->whereEquals('ii.invoice_id', 'i.invoice_id')
+		                    ->whereEquals('ii.utilityaccount_id', '?')
+            );
+            $params[] = $utilityaccount_id;
+        }
+
+        return $this->adapter->query($select, $params);
     }
 }
 

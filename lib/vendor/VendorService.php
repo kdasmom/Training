@@ -747,9 +747,12 @@ class VendorService extends AbstractService {
                 if (!is_array($vendor_status)) {
                     $vendor_status = array($vendor_status);
                 }
-                foreach ($vendor_status as $vendor_status_val) {
-                    $params[] = $vendor_status_val;
-                }
+                // We need to do this twice because the vendorsite status also needs the params
+                for ($i=0; $i<=1; $i++) {
+	                foreach ($vendor_status as $vendor_status_val) {
+	                    $params[] = $vendor_status_val;
+	                }
+	            }
             }       
 
             if ($keyword !== null) {

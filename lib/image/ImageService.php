@@ -42,13 +42,10 @@ class ImageService extends AbstractService {
      * @param  string  $sort                        Field(s) by which to sort the result; defaults to vendor_name
      * @return array                                Array of invoice records
      */
-    public function getImagesToConvert($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-        return $this->imageIndexGateway->findImagesToConvert($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
+    public function getImagesToConvert($countOnly, $docTypes=null, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
+        return $this->imageIndexGateway->findImagesToConvert($countOnly, $docTypes, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
     }
-    public function getImagesToConvert1($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-        $countOnly = 'false';
-        return $this->imageIndexGateway->findImagesToConvert($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
-    }
+
     /**
      * Get list of Receipts to approve
      *
@@ -63,10 +60,6 @@ class ImageService extends AbstractService {
      * @return array                                Array of invoice records
      */
     public function getImagesToProcess($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-        return $this->imageIndexGateway->findImagesToProcess($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
-    }
-    public function getImagesToProcess1($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-        $countOnly = 'false';
         return $this->imageIndexGateway->findImagesToProcess($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
     }
         
@@ -87,11 +80,6 @@ class ImageService extends AbstractService {
         return $this->imageIndexGateway->findImageExceptions($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
     }
 
-    public function getImageExceptions1($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-        $countOnly = 'false';
-        return $this->imageIndexGateway->findImageExceptions($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
-    }
-
     /**
      * Get list of Receipts to approve
      *
@@ -106,11 +94,6 @@ class ImageService extends AbstractService {
      * @return array                                Array of invoice records
      */
     public function getImagesToIndex($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-        return $this->imageIndexGateway->findImagesToIndex($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
-    }
-
-    public function getImagesToIndex1($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-        $countOnly = false;
         return $this->imageIndexGateway->findImagesToIndex($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
     }
 
@@ -131,8 +114,7 @@ class ImageService extends AbstractService {
         return $this->imageIndexGateway->findImagePath($image_index_id);
     }
 
-    public function getImagesToDelete($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
-        $countOnly = false;
+    public function getImagesToDelete($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
         return $this->imageIndexGateway->findImagesToDelete($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
     }
 
@@ -149,41 +131,26 @@ class ImageService extends AbstractService {
      * @param int $invoiceimage_id Invoice id.
      * @return file content.
      */
-    public function show($image_id = null, $doc_id = null, $summarystat_id = null, $tablekey_id = null, $table_name = null, $invoiceimage_id = null) {
-        if (!empty($image_id)) {
-            $imageindex_id = $image_id;
-        } elseif (!empty($doc_id) && !empty($summarystat_id)) {
-            $tableref = 'invoice';
-            if (in_array($summarystat_id, [3, 9, 14, 17, 26, 29])) {
-                $tableref = 'purchase order';
-            } elseif (in_array($summarystat_id, [4, 6, 8, 10, 15, 16, 18, 19, 20, 21, 23, 25])) {
-                $tableref = 'invoice';
-            } elseif (in_array($summarystat_id, [5, 13])) {
-                $tableref = 'vendor';
-            } elseif (in_array($tableref, [27, 28])) {
-                $tableref = 'receipt';
-            }
+    public function show($image_index_id) {
+        try {
+            $file = $this->getImagePath($image_index_id);
+            if ($file === null || !file_exists($file)) {
+                die('Invalid file');
+            } else {
+                $filename = explode('\\', $file);
+                $filename = array_pop($filename);
 
-            $tableref = $this->imageTablerefGateway->getIdByName($tableref);
-            $imageindex_id = $this->imageIndexGateway->lookupImage($doc_id, $tableref);
-        } elseif (!empty($tablekey_id) && !empty($table_name)) {
-            $tableref = 'invoice';
-            if ($table_name = 'purchaseorder' || $table_name = 'purchase order') {
-                $tableref = 'purchase order';
-            } elseif ($table_name == 'receipt') {
-                $tableref = 'receipt';
-            }
+                header('Content-type: application/pdf');
+                header('Content-Disposition: inline; filename="' . $filename . '"');
+                header('Content-Transfer-Encoding: binary');
+                header('Content-Length: ' . filesize($file));
+                header('Accept-Ranges: bytes');
 
-            $tableref = $this->imageTablerefGateway->getIdByName($tableref);
-            $imageindex_id = $this->imageIndexGateway->lookupImage($tablekey_id, $tableref);
-        } elseif (empty($invoiceimage_id) || (!empty($invoiceimage_id) && $invoiceimage_id == "")) {
-            $imageindex_id = 0;
+                die(file_get_contents($file));
+            }
+        } catch (Exception $e) {
+            die('Invalid file');
         }
-
-        $transfer = $this->imageTransferGateway->getByInvoiceImageId($imageindex_id);
-
-        header('Content-Type: ' . $transfer['type']);
-        die(file_get_contents($transfer['filename']));
     }
 
     /**
@@ -289,7 +256,10 @@ class ImageService extends AbstractService {
      */
     private function uploadProcess() {
         $field = 'Filedata';
-        $target = $_SERVER['DOCUMENT_ROOT'] . '/files/';
+        $target = $this->configService->get('PN.Main.FileUploadLocation');
+        if (!is_dir($target)) {
+            mkdir($target, 0777, true);
+        }
 
         $mimetypes = [
             'xls'   => 'application/vnd.ms-excel',
@@ -531,27 +501,30 @@ class ImageService extends AbstractService {
         $this->imageIndexGateway->commit();
         $this->imageTransferGateway->commit();
 
-        // Log this operation
-        $activities = $this->auditactivityGateway->getIdByNames(['ImgUploaded', 'ImgAdded']);
-        $type       = $this->audittypeGateway->getIdByTableref($request['image_tableref_id']);
+        if (is_numeric($request['invoice_id']) && $request['invoice_id'] > 0) {
+            // Log this operation
+            $activities = $this->auditactivityGateway->getIdByNames(['ImgUploaded', 'ImgAdded']);
+            $type       = $this->audittypeGateway->getIdByTableref($request['image_tableref_id']);
 
-        $this->auditlogGateway->logImageUploaded(
-            $type, 
-            $activities['ImgUploaded'],
-            $request['invoice_id'],
-            $invoiceimage_id,
-            $this->invoiceImageSourceGateway->getById($request['invoiceimage_source_id']), //$invoiceimage_source_name,
-            $this->securityService->getUserId(),
-            $request['delegation_to_userprofile_id']
-        );
-        $this->auditlogGateway->logImageAdded(
-            $type, 
-            $activities['ImgUploaded'],
-            $request['invoice_id'],
-            $invoiceimage_id,
-            $this->securityService->getUserId(),
-            $request['delegation_to_userprofile_id']
-        );
+            $this->auditlogGateway->logImageUploaded(
+                $type, 
+                $activities['ImgUploaded'],
+                $request['invoice_id'],
+                $invoiceimage_id,
+                $this->invoiceImageSourceGateway->getById($request['invoiceimage_source_id']), //$invoiceimage_source_name,
+                $this->securityService->getUserId(),
+                $request['delegation_to_userprofile_id']
+            );
+            $this->auditlogGateway->logImageAdded(
+                $type, 
+                $activities['ImgUploaded'],
+                $request['invoice_id'],
+                $invoiceimage_id,
+                $this->securityService->getUserId(),
+                $request['delegation_to_userprofile_id']
+            );
+        }
+
         return $invoiceimage_id;
     }
 
@@ -739,8 +712,8 @@ class ImageService extends AbstractService {
             $data['image_doctype'] = $params['doctypes'][strtolower('Vendor Access')];
         }
 
-        $data['image_index_indexed_datetm'] = date('Y-m-d H:i:s');
-        $data['image_index_indexed_by']     = $this->securityService->getUserId();
+        $data['image_index_indexed_datetm'] = null;
+        $data['image_index_indexed_by']     = null;
 
         return $data;
     }
@@ -748,29 +721,11 @@ class ImageService extends AbstractService {
     /**
      * Get Image information by id.
      * 
-     * @param int $id Image index id
-     * @param String $filter Property filter
-     * @return ImageIndexEntity Image index entity
+     * @param  int   $image_index_id Image index id
+     * @return array
      */
-    public function get($id, $filter = []) {
-        $tablerefs =
-            $this->imageTablerefGateway->getIdByNames(
-                ['receipt', 'Utility Invoice']
-            )
-        ;
-        $scans = $this->imageIndexGateway->getImageScan(
-            $id,
-            [
-                'property_id'   => null,
-                'tableref_id'   => null,
-                'asp_client_id' => $this->configService->getClientId()
-            ],
-            $tablerefs
-        );
-
-        if (!empty($scans) && !empty($scans[0])) {
-            return $scans[0];
-        }
+    public function get($image_index_id) {
+        return $this->imageIndexGateway->getImageDetails($image_index_id);
     }
 
     /**
@@ -883,127 +838,9 @@ class ImageService extends AbstractService {
      * 
      * @return [] List of the document types.
      */
-    public function listDocTypes() {
-        $list = [
-            'Invoice',
-            'Purchase Order',
-            'Receipt',
-            'Utility Invoice'
-        ];
-        $types = $this->imageDoctypeGateway->find(
-            null, 
-            [], 
-            null, 
-            ['image_doctype_id', 'image_doctype_name']
-        );
-
-        $result = [];
-        foreach ($types as $type) {
-            if (in_array($type['image_doctype_name'], $list)) {
-                $result[] = $type;
-            }
-        }
-        return $result;
+    public function getDocTypes() {
+        return $this->imageDoctypeGateway->listDocTypes();
     }
-
-    /**
-     * Get integration packages list.
-     * Result is used for the comboboxes.
-     * 
-     * @return [] List of the integration packages
-     */
-    public function listIntegrationPackages() {
-        return $this->integrationPackageGateway->find(
-            null, 
-            [], 
-            null, 
-            ['integration_package_id', 'integration_package_name']
-        );
-    }
-
-    public function listProperty($userprofile_id, $delegation_to_userprofile_id, $integration_package = null) {
-        //property_name, property_id
-        $asp_client_id = $this->configService->getClientId();
-
-        if (empty($delegation_to_userprofile_id)) {
-            $delegation_to_userprofile_id = $userprofile_id;
-        }
-
-        if ($userprofile_id == $delegation_to_userprofile_id) {
-            $listing = $this->propertyGateway->getUserPropertyListingForUser($userprofile_id, $asp_client_id);
-        } else {
-            $listing = $this->propertyGateway->getUserPropertyListingForDelegate($userprofile_id, $delegation_to_userprofile_id, $asp_client_id);
-        }
-
-        $result = [];
-        if (!empty($listing)) {
-            foreach ($listing as $item) {
-                $result[] = [
-                    'property_id' => $item['property_id'],
-                    'property_name' => $item['property_name']
-                ];
-            }
-        }
-        return $result;
-    }
-
-    public function listPropertyCode($userprofile_id, $delegation_to_userprofile_id, $integration_package = null) {
-        //property_id_alt, property_id
-        $asp_client_id = $this->configService->getClientId();
-
-        if (empty($delegation_to_userprofile_id)) {
-            $delegation_to_userprofile_id = $userprofile_id;
-        }
-        if ($userprofile_id == $delegation_to_userprofile_id) {
-            $listing = $this->propertyGateway->getUserPropertyListingForUser($userprofile_id, $asp_client_id, null, 'property_id_alt');
-        } else {
-            $listing = $this->propertyGateway->getUserPropertyListingForDelegate($userprofile_id, $delegation_to_userprofile_id, $asp_client_id, false, 'property_id_alt');
-        }
-
-        $result = [];
-        if (!empty($listing)) {
-            foreach ($listing as $item) {
-                $result[] = [
-                    'property_id' => $item['property_id'],
-                    'property_id_alt' => $item['property_id_alt']
-                ];
-            }
-        }
-        return $result;
-    }
-
-    public function listVendor($integration_package = 1) {
-        //vendorsite_id,vendor_name
-        $listing = $this->vendorGateway->getVendorListing($integration_package);
-
-        $result = [];
-        if (!empty($listing)) {
-            foreach ($listing as $item) {
-                $result[] = [
-                    'vendorsite_id' => $item['vendorsite_id'],
-                    'vendor_name' => $item['vendor_name']
-                ];
-            }
-        }
-        return $result;
-    }
-
-    public function listVendorCode($integration_package = 1) {
-        //vendor_id_alt,vendorsite_id
-        $listing = $this->vendorGateway->getVendorListing($integration_package, 'v.vendor_id_alt');
-
-        $result = [];
-        if (!empty($listing)) {
-            foreach ($listing as $item) {
-                $result[] = [
-                    'vendorsite_id' => $item['vendorsite_id'],
-                    'vendor_id_alt' => $item['vendor_id_alt']
-                ];
-            }
-        }
-        return $result;
-    }
-
 
     public function update($data) {
         $doctypes = $this->imageDoctypeGateway->getIdByNames(['receipt', 'Utility Invoice']);
@@ -1078,11 +915,10 @@ class ImageService extends AbstractService {
         }
 
         if (!empty($entity['utilityaccount_id'])) {
-            $entity['utilityaccount_id'] = explode(',', $entity['utilityaccount_id']);
-
-            $entity['Property_Id'] = $entity['utilityaccount_id'][1];
-            $entity['Image_Index_VendorSite_Id'] = $entity['utilityaccount_id'][2];
-            $entity['utilityaccount_id'] = $entity['utilityaccount_id'][0];
+            $utilAccount = $this->utilityAccountGateway->findById($entity['utilityaccount_id']);
+            
+            $entity['Property_Id'] = $utilAccount['property_id'];
+            $entity['Image_Index_VendorSite_Id'] = $utilAccount['Vendorsite_Id'];
         }
 
         if ($entity['Image_Doctype_Id'] == 1) {
@@ -1124,148 +960,5 @@ class ImageService extends AbstractService {
             'success' => (count($errors)) ? false : true,
             'errors'  => $errors
         );
-    }
-
-    /**
-     * Get Template for image index table.
-     * 
-     * @param int $vendorsite_id Vendorsite id. Should not be empty.
-     * @param int $property_id Propery id. Should not be empty.
-     * @param int $utilityaccount_accountnumber Utility account number.
-     * @return [] List of templates.
-     */
-    public function getTemplateForImageIndex($vendorsite_id, $property_id, $utilityaccount_accountnumber) {
-        return $this->invoiceGateway->getTemplateForImageIndex($vendorsite_id, $property_id, $utilityaccount_accountnumber);
-    }
-
-    /**
-     * Get address.
-     * 
-     * @param int $id Vendorsite or property id.
-     * @param string $table_name Vendorsite or property table name.
-     * @param string $address_type Address type.
-     * @return [] Address
-     */
-    public function getAddress($id, $table_name, $address_type = 'Home') {
-        if ($table_name == 'vendorsite') {
-            return [
-                'data' => $this->vendorGateway->getVendorAddress($id, $address_type),
-                'success' => true
-            ];
-        } elseif ($table_name == 'property') {
-            return [
-                'data' => $this->propertyGateway->getPropertyAddress($id, $address_type),
-                'success' => true
-            ];
-        }
-    }
-
-    /**
-     * Find appropriate account number.
-     * 
-     * @param int $userprofile_id User id.
-     * @param int $delegation_to_userprofile_id Delegate id.
-     * @param string $utilityaccount_accountnumber Account number.
-     * @param string $utilityaccount_metersize Meter number.
-     * @return [] Accounts.
-     */
-    public function matchUtilityAccount($userprofile_id, $delegation_to_userprofile_id, $utilityaccount_accountnumber, $utilityaccount_metersize) {
-        if (empty($utilityaccount_accountnumber)) {
-            $utilityaccount_accountnumber = '\'\'';
-        }
-        $accounts = $this->utilityAccountGateway->getUtilityAccountsByCriteria($userprofile_id, $delegation_to_userprofile_id, $utilityaccount_accountnumber);
-
-        $result = [];
-        if (!empty($accounts)) {
-            $result['accountNumberValid'] = true;
-
-            if (!empty($utilityaccount_metersize)) {
-                $result['meterValid'] = false;
-                foreach ($accounts as $account) {
-                    if ($account['utilityaccount_metersize'] == $utilityaccount_metersize) {
-                        $result['meterValid'] = true;
-                        break;
-                    }
-                }
-            } else {
-                $result['meterValid'] = true;
-            }
-        } else {
-            $result['accountNumberValid'] = false;
-            $result['meterValid'] = false;
-        }
-
-        foreach ($accounts as $account) {
-            if (empty($utilityaccount_metersize) || $account['utilityaccount_metersize'] == $utilityaccount_metersize) {
-                $record = [
-                    'property_id'         => $account['property_id'],
-                    'vendorsite_id'       => $account['vendorsite_id'],
-                    'utilityaccount_id'   => $account['utilityaccount_id'],
-                    'utilityaccount_name' => $account['utilityaccount_name'],
-                    'utilityaccount_metersize' => $account['utilityaccount_metersize']
-                ];
-                $result['accounts'][] = $record;
-            }
-        }
-        return $result;
-    }
-
-    /**
-     * Get list of account numbers.
-     * 
-     * @param int $userprofile_id User id.
-     * @param int $delegation_to_userprofile_id Delegate id.
-     * @return [] List of the account numbers.
-     */
-    public function listAccountNumbers($userprofile_id, $delegation_to_userprofile_id) {
-        $userprofile_id =
-            !empty($userprofile_id) ? 
-                $userprofile_id :
-                $this->securityService->getUserId()
-        ;
-        $delegation_to_userprofile_id =
-            !empty($delegation_to_userprofile_id) ?
-                $delegation_to_userprofile_id:
-                $this->securityService->getUserId()
-        ;
-        return $this->utilityAccountGateway->getAccountNumbers($userprofile_id, $delegation_to_userprofile_id);
-    }
-
-    /**
-     * Get list of meter numbers.
-     * 
-     * @param int $account User id.
-     * @return [] List of the account numbers.
-     */
-    public function listMeterSizes($account) {
-        if (!empty($account)) {
-            return $this->utilityAccountGateway->getMeterByAccount($account);
-        }
-    }
-        
-    public function getUtilityAccountVendorPropMeter() {
-
-        $details = $this->utilityAccountGateway->getUtilityAccountDetails(
-            $utilityaccount_accountnumber
-        );
-
-        $meters = $this->utilityAccountGateway->getMeterByAccount(
-            $utilityaccount_accountnumber, 
-            $details['vendorsite_id'],
-            $details['property_id']
-        );
-
-        $result['property_id']     = $details['property_id'];
-        $result['property_id_alt'] = $details['property_id_alt'];
-        $result['property_name']   = $details['property_name'];
-        $result['vendorsite_id']   = $details['vendorsite_id'];
-        $result['vendor_id_alt']   = $details['vendor_id_alt'];
-        $result['vendor_name']     = $details['vendor_name'];
-
-        $result['meters'] = [];
-        foreach ($meters as $meter) {
-            $result['meters'][] = $meter['utilityaccount_metersize']; //<cfset arrayAppend(response["meters"], "#qMeters.utilityaccount_metersize#|@|") />    
-        }
-        return $result;
     }
 }

@@ -17,23 +17,30 @@ Ext.Loader.addClassPathMappings({
 });
 Ext.ClassManager.addNameAlternateMappings({
   "NP.model.catalog.UnspscCommodity": [],
-  "NP.model.vendor.UtilityType": [],
   "NP.model.importing.GLActual": [],
+  "NP.model.vendor.UtilityType": [],
   "NP.view.shared.Address": [],
+  "NP.view.vendor.gridcol.VendorStatus": [],
   "NP.view.property.gridcol.TotalUnits": [],
+  "NP.view.property.gridcol.PropertyApCode": [],
   "NP.view.mySettings.EmailAlerts": [],
   "NP.model.gl.GlAccount": [],
   "NP.view.shared.gridcol.ButtonImg": [],
   "NP.view.invoice.gridcol.DueDate": [],
   "NP.view.shared.invoicepo.HistoryLogGrid": [],
+  "NP.view.shared.SearchByAlphabetButtons": [],
   "NP.store.vendor.Insurances": [],
+  "NP.store.vendor.InsuranceTypes": [],
   "NP.view.mySettings.Settings": [],
   "NP.view.shared.gridcol.LastApprovedBy": [],
   "NP.model.importing.Unit": [],
   "NP.store.catalog.Vc": [],
+  "NP.lib.ui.Uploader": [],
   "Ext.ux.layout.component.field.BoxSelectField": [],
+  "NP.view.vendor.gridcol.ViewVendor": [],
   "NP.view.catalog.gridcol.VcItemNumber": [],
   "NP.view.shared.button.Print": [],
+  "NP.view.gl.GLAccountsGrid": [],
   "NP.lib.ui.Grid": [],
   "NP.view.invoice.gridcol.Notes": [],
   "NP.model.importing.UserProperty": [],
@@ -60,6 +67,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.model.importing.VendorInsurance": [],
   "NP.view.mobileSetup.MobileForm": [],
   "NP.model.jobcosting.JbCostCode": [],
+  "NP.view.shared.button.Search": [],
   "NP.view.property.UnitGrid": [],
   "NP.store.system.Countries": [],
   "NP.view.systemSetup.Overview": [],
@@ -69,6 +77,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.view.shared.button.Camera": [],
   "NP.view.catalog.gridcol.VcNumberOfItems": [],
   "NP.view.user.gridcol.DelegationCreatedBy": [],
+  "NP.view.vendor.grid.VendorApproved": [],
   "NP.lib.ui.HoverButton": [],
   "NP.view.receipt.gridcol.ReceiveDate": [],
   "NP.view.systemSetup.PasswordConfiguration": [],
@@ -83,9 +92,11 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.model.importing.Vendor": [],
   "NP.view.importing.UploadForm": [],
   "overrides.form.field.Base": [],
+  "NP.store.vendor.UtilityColumnUsageTypes": [],
   "NP.model.shared.Warning": [],
   "NP.view.image.gridcol.InvoiceDate": [],
   "NP.view.shared.button.Inactivate": [],
+  "NP.view.vendor.VendorNameAndInformation": [],
   "NP.view.invoice.ViewNotes": [],
   "NP.view.systemSetup.Main": [],
   "NP.view.viewport.SummaryStatList": [],
@@ -98,6 +109,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.view.viewport.menu.VendorMenu": [],
   "NP.view.catalogMaintenance.types.Url": [],
   "NP.model.user.Role": [],
+  "NP.model.vendor.VendorType": [],
   "NP.view.importing.types.GLCode": [],
   "NP.view.po.gridcol.BudgetNotes": [],
   "NP.view.importing.CSVGrid": [],
@@ -105,6 +117,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.model.property.UnitTypeVal": [],
   "NP.store.system.SummaryStats": [],
   "NP.view.shared.CustomFieldContainer": [],
+  "NP.view.gl.Overview": [],
   "Ext.ux.dd.PanelFieldDragZone": [],
   "NP.model.jobcosting.JbChangeOrder": [],
   "NP.model.invoice.Invoice": [],
@@ -113,14 +126,17 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.view.invoice.gridcol.VoidDate": [],
   "overrides.data.Validations": [],
   "NP.lib.data.JsonFlat": [],
+  "overrides.grid.plugin.CellEditing": [],
   "NP.Application": [],
   "Ext.ux.GroupTabPanel": [],
   "NP.store.invoice.Invoices": [],
   "NP.view.mySettings.Dashboard": [],
   "Ext.ux.statusbar.ValidationStatus": [],
+  "NP.view.vendor.AddImagesWindow": [],
   "Ext.ux.layout.Center": [],
   "NP.view.mobileSetup.MobileGrid": [],
   "NP.model.vendor.Insurance": [],
+  "NP.store.jobcosting.JbChangeOrders": [],
   "NP.view.receipt.gridcol.TransferDate": [],
   "NP.store.system.HistoryLogs": [],
   "NP.view.shared.button.Report": [],
@@ -132,6 +148,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.view.shared.button.Cancel": [],
   "NP.view.shared.ContextPickerMulti": [],
   "NP.view.receipt.ReceiptGrid": [],
+  "NP.view.shared.invoicepo.ViewLineItems": [],
   "NP.view.shared.button.Back": [],
   "NP.view.vendor.gridcol.VendorCode": [],
   "NP.view.po.gridcol.Number": [],
@@ -139,6 +156,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.store.property.FiscalDisplayTypes": [],
   "NP.view.importing.types.CustomFieldLine": [],
   "NP.view.shared.button.Allocate": [],
+  "NP.store.jobcosting.JbCostCodes": [],
   "NP.view.shared.tile.ImagesToConvert": [],
   "NP.view.image.gridcol.Reference": [],
   "Ext.ux.event.Player": [],
@@ -175,6 +193,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.view.image.gridcol.ScanDate": [],
   "NP.view.utilitySetup.UtilitySetupForm": [],
   "NP.view.importing.types.InvoiceExport": [],
+  "NP.store.system.TaxPayorTypes": [],
   "NP.view.importing.types.Property": [],
   "NP.view.viewport.menu.VCMenu": [],
   "NP.view.po.gridcol.Date": [],
@@ -191,6 +210,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.store.catalog.CatalogTypes": [],
   "NP.view.catalog.gridcol.VcStatus": [],
   "NP.store.po.Purchaseorders": [],
+  "NP.view.vendor.VendorsManager": [],
   "NP.model.user.Staff": [],
   "NP.model.property.Unit": [],
   "NP.store.system.DfSplitItems": [],
@@ -199,6 +219,7 @@ Ext.ClassManager.addNameAlternateMappings({
     "Ext.ux.Multiselect"
   ],
   "NP.store.property.Regions": [],
+  "NP.view.vendor.grid.VendorPending": [],
   "NP.view.shared.ContextPicker": [],
   "NP.view.shared.button.Upload": [],
   "NP.view.importing.types.PropertyGL": [],
@@ -209,13 +230,17 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.view.shared.PortalColumn": [],
   "NP.view.invoice.gridcol.PaymentAmountRemaining": [],
   "NP.model.property.FiscalCalMonth": [],
+  "NP.view.gl.CategoryGrid": [],
   "NP.store.user.VendorAccessUsers": [],
   "NP.view.shared.tile.ReceiptsToApprove": [],
   "NP.view.property.gridcol.UnitNumber": [],
   "NP.model.invoice.InvoicePaymentType": [],
+  "NP.view.vendor.gridcol.SubmittedBy": [],
+  "NP.view.vendor.gridcol.DateSubmitted": [],
   "overrides.Component": [],
   "overrides.ux.form.ItemSelector": [],
   "NP.model.importing.PropertyGL": [],
+  "NP.view.shared.GlCategoryOrder": [],
   "NP.store.system.SummaryStatCategories": [],
   "NP.view.invoice.gridcol.BudgetNotes": [],
   "NP.view.property.PropertiesFormUserReport": [],
@@ -229,9 +254,10 @@ Ext.ClassManager.addNameAlternateMappings({
   "overrides.form.field.ComboBox": [],
   "Ext.ux.LiveSearchGridPanel": [],
   "NP.view.importing.types.GLCategory": [],
+  "NP.store.jobcosting.JbPhaseCodes": [],
+  "NP.view.property.gridcol.CreatedDate": [],
   "Ext.ux.grid.filter.DateFilter": [],
   "NP.view.importing.types.VendorInsurance": [],
-  "NP.view.property.gridcol.CreatedDate": [],
   "NP.view.user.UsersFormDetails": [],
   "NP.lib.data.Store": [],
   "NP.view.property.PropertiesFormGl": [],
@@ -242,8 +268,10 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.view.shared.Person": [],
   "NP.view.shared.button.Delete": [],
   "Ext.ux.BoxReorderer": [],
+  "NP.view.property.gridcol.PropertyStatus": [],
   "NP.view.image.gridcol.ExceptionBy": [],
   "NP.view.shared.PickList": [],
+  "NP.view.vendor.VendorImageUploadForm": [],
   "NP.lib.core.SummaryStatManager": [],
   "NP.controller.UtilitySetup": [],
   "NP.view.property.PropertiesFormUnits": [],
@@ -252,23 +280,30 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.view.receipt.gridcol.Period": [],
   "NP.view.invoice.gridcol.Number": [],
   "NP.view.catalogMaintenance.ItemGrid": [],
+  "NP.view.vendor.gridcol.AddToFavorite": [],
+  "NP.model.gl.GlAccountType": [],
   "NP.view.property.PropertiesFormAccounting": [],
   "NP.view.mySettings.UserInformation": [],
   "NP.view.shared.gridcol.PriorityFlag": [],
+  "NP.view.shared.button.Reject": [],
   "NP.view.catalog.gridcol.VcItemDesc": [],
   "NP.view.messageCenter.MessageForm": [],
+  "NP.view.vendor.VendorRejectWindow": [],
   "NP.view.user.Users": [],
   "NP.view.shared.tile.ImagesToIndex": [],
+  "NP.view.vendor.InsuranceForm": [],
   "NP.view.catalog.gridcol.VcItemUom": [],
   "Ext.ux.grid.filter.StringFilter": [],
   "NP.model.user.Userprofile": [],
   "NP.store.invoice.InvoiceItems": [],
+  "NP.view.vendor.VendorDocumentsForm": [],
   "NP.view.image.ImageGrid": [],
   "NP.model.property.FiscalDisplayType": [],
-  "NP.model.invoice.UtilityAccount": [],
   "NP.view.shared.tile.VcAuthRequests": [],
+  "NP.view.vendor.grid.VendorRejected": [],
   "NP.model.property.FiscalCal": [],
   "NP.view.catalogMaintenance.CatalogFormUploadLogo": [],
+  "NP.view.shared.VendorAssigner": [],
   "NP.view.shared.UtilityTypeAssigner": [],
   "NP.view.user.GroupsFormPermissions": [],
   "NP.store.system.States": [],
@@ -277,7 +312,9 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.view.shared.tile.ExpiredInsuranceCerts": [],
   "NP.model.shared.InvoicePoForward": [],
   "NP.view.shared.tile.AbstractBudgetTile": [],
+  "NP.store.jobcosting.JbContracts": [],
   "NP.view.shared.tile.InvoicesByUser": [],
+  "NP.view.vendor.InsuranceUploadForm": [],
   "NP.store.image.ImageIndexes": [],
   "NP.view.viewport.menu.POMenu": [],
   "Ext.ux.grid.menu.RangeMenu": [],
@@ -289,6 +326,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.view.mySettings.MobileSettings": [],
   "NP.view.systemSetup.DefaultSplitGrid": [],
   "NP.view.invoice.gridcol.CreatedDate": [],
+  "NP.view.image.gridcol.InvoiceNumber": [],
   "NP.lib.ui.AutoComplete": [],
   "NP.view.shared.gridcol.RejectedDate": [],
   "NP.store.notification.EmailAlertTypes": [],
@@ -305,6 +343,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.store.system.UserMessages": [],
   "NP.view.catalogMaintenance.types.Excel": [],
   "Ext.ux.DataTip": [],
+  "NP.view.vendor.VendorAssignGlAccouns": [],
   "Ext.ux.ajax.JsonSimlet": [],
   "NP.view.invoice.ViewHeader": [],
   "NP.view.user.UsersFormPermissions": [],
@@ -316,13 +355,16 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.store.invoice.InvoicePayments": [],
   "NP.view.budget.BudgetOverageForm": [],
   "NP.view.invoice.gridcol.NeededByDate": [],
+  "NP.store.contact.States": [],
+  "NP.store.system.PayeeTypes": [],
   "NP.view.receipt.gridcol.Notes": [],
   "NP.view.shared.invoicepo.ForwardsGrid": [],
+  "NP.view.gl.Category": [],
   "NP.view.vendor.gridcol.SentForApprovalDate": [],
   "NP.model.importing.UnitType": [],
   "NP.view.importing.types.VendorUtility": [],
-  "NP.view.vendor.gridcol.ApprovalType": [],
   "NP.view.receipt.gridcol.CreatedDate": [],
+  "NP.view.vendor.gridcol.ApprovalType": [],
   "NP.view.viewport.menu.ImageMenu": [],
   "Ext.ux.DataView.DragSelector": [],
   "NP.view.property.FiscalCalendarForm": [],
@@ -334,13 +376,14 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.view.shared.tile.PosToApprove": [],
   "NP.model.image.InvoiceImageSource": [],
   "NP.view.user.gridcol.DelegationToName": [],
+  "NP.store.vendor.VendorTypes": [],
   "NP.view.importing.types.GLBudget": [],
   "NP.lib.core.DataLoader": [],
   "NP.view.invoice.gridcol.TemplateName": [],
+  "NP.view.vendor.PurchaseOrder": [],
   "NP.controller.UserManager": [],
   "NP.view.user.UsersFormDelegation": [],
   "NP.model.system.DfSplit": [],
-  "NP.view.invoice.ViewLineItems": [],
   "NP.store.property.Units": [],
   "NP.model.system.PnCustomField": [],
   "Ext.ux.PreviewPlugin": [],
@@ -355,6 +398,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "Ext.ux.SlidingPager": [],
   "Ext.ux.TabReorderer": [],
   "NP.view.shared.UserAssigner": [],
+  "NP.view.vendor.VendorInsuranceSetup": [],
   "Ext.ux.grid.filter.NumericFilter": [],
   "NP.view.user.gridcol.DelegationFromName": [],
   "Ext.ux.event.Recorder": [],
@@ -402,6 +446,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.view.catalog.gridcol.VcCreatedOn": [],
   "NP.model.importing.Property": [],
   "NP.model.po.Purchaseorder": [],
+  "NP.view.vendor.InvoiceDocuments": [],
   "NP.store.catalog.VcCats": [],
   "NP.view.importing.types.Vendor": [],
   "NP.view.shared.CustomField": [],
@@ -409,6 +454,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.view.shared.invoicepo.ViewWarnings": [],
   "Ext.ux.DataView.Animated": [],
   "NP.view.property.Overview": [],
+  "NP.store.gl.GlAccountTypes": [],
   "NP.model.vendor.InsuranceType": [],
   "NP.view.property.gridcol.PropertyName": [],
   "NP.view.shared.button.Reset": [],
@@ -416,6 +462,8 @@ Ext.ClassManager.addNameAlternateMappings({
     "Ext.ux.StatusBar"
   ],
   "NP.view.invoice.gridcol.Date": [],
+  "NP.model.contact.State": [],
+  "NP.view.gl.Reports": [],
   "NP.view.catalogMaintenance.CatalogFormPoSubmission": [],
   "overrides.form.Basic": [],
   "NP.view.shared.PropertyAssigner": [],
@@ -432,6 +480,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.view.shared.gridcol.RejectedBy": [],
   "NP.lib.ui.DateTimeField": [],
   "NP.store.user.Roles": [],
+  "NP.view.vendor.VendorSearch": [],
   "Ext.ux.DataView.Draggable": [],
   "overrides.form.Panel": [],
   "NP.view.property.UnitTypeForm": [],
@@ -440,6 +489,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "Ext.ux.form.ItemSelector": [
     "Ext.ux.ItemSelector"
   ],
+  "NP.store.jobcosting.JbJobCodes": [],
   "NP.view.shared.gridcol.CreatedBy": [],
   "NP.model.system.UserMessage": [],
   "Ext.ux.Spotlight": [],
@@ -459,12 +509,12 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.model.jobcosting.JbPhaseCode": [],
   "NP.model.importing.VendorGL": [],
   "NP.controller.BudgetOverage": [],
+  "NP.store.contact.Addresses": [],
   "NP.store.property.UnitTypeVals": [],
   "NP.model.importing.Split": [],
   "NP.view.po.gridcol.Period": [],
-  "NP.model.invoice.UtilityColumnUsageType": [],
-  "NP.view.viewport.TopMenu": [],
   "NP.view.property.gridcol.RegionName": [],
+  "NP.view.viewport.TopMenu": [],
   "NP.view.user.UsersForm": [],
   "NP.view.shared.gridcol.PendingApprovalFor": [],
   "NP.model.importing.GLBudget": [],
@@ -474,6 +524,8 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.view.catalog.gridcol.VcItemCategory": [],
   "NP.view.importing.Main": [],
   "NP.view.shared.VendorAutoComplete": [],
+  "NP.view.shared.GlAccountAssigner": [],
+  "NP.controller.VendorManager": [],
   "NP.view.invoice.Register": [],
   "NP.model.importing.CustomFieldHeader": [],
   "NP.lib.ui.ComboBox": [],
@@ -487,6 +539,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.model.importing.User": [],
   "NP.model.po.Receipt": [],
   "NP.model.system.HistoryLog": [],
+  "NP.view.vendor.VendorGeneralInfoAndSettings": [],
   "NP.view.shared.PermissionToolbar": [],
   "NP.controller.Invoice": [],
   "NP.store.budget.BudgetOverage": [],
@@ -501,13 +554,15 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.controller.MobileSetup": [],
   "NP.model.user.RecAuthor": [],
   "NP.view.po.PoGrid": [],
-  "NP.model.vendor.UtilityAccount": [],
   "NP.store.vendor.UtilityTypes": [],
   "NP.store.user.RoleTree": [],
+  "NP.model.vendor.UtilityAccount": [],
   "NP.view.shared.invoicepo.ViewHeaderPickers": [],
   "NP.model.image.ImageIndex": [],
+  "NP.view.vendor.VendorForm": [],
   "NP.view.invoice.InvoiceGrid": [],
   "NP.view.mySettings.EmailNotification": [],
+  "NP.view.image.gridcol.ImageStatus": [],
   "NP.model.system.PriorityFlag": [],
   "NP.store.system.PnUniversalFields": [],
   "NP.view.po.gridcol.Status": [],
@@ -527,6 +582,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.view.importing.types.VendorGL": [],
   "NP.store.vendor.Utilities": [],
   "NP.view.shared.button.Save": [],
+  "NP.view.gl.GLAccountsForm": [],
   "NP.controller.SystemSetup": [],
   "Ext.ux.grid.filter.Filter": [],
   "Ext.ux.GroupTabRenderer": [],
@@ -540,6 +596,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.view.viewport.Home": [],
   "NP.model.catalog.Vc": [],
   "NP.model.vendor.Utility": [],
+  "NP.controller.GLAccountSetup": [],
   "NP.view.Viewport": [],
   "NP.view.invoice.ViewPayments": [],
   "NP.view.property.IntegrationPackage": [],
@@ -548,6 +605,8 @@ Ext.ClassManager.addNameAlternateMappings({
     "NP.Net"
   ],
   "NP.view.importing.types.User": [],
+  "NP.view.gl.Main": [],
+  "NP.view.gl.CategoryForm": [],
   "NP.view.shared.button.SaveAndAdd": [],
   "NP.view.vendor.gridcol.InsuranceTypeName": [],
   "Ext.ux.DataView.LabelEditor": [],
@@ -566,6 +625,8 @@ Ext.ClassManager.addNameAlternateMappings({
   "overrides.data.Field": [],
   "Ext.locale.en.data.validations": [],
   "NP.view.shared.PortalRow": [],
+  "NP.model.vendor.UtilityColumnUsageType": [],
+  "NP.view.vendor.AlternativeAddresses": [],
   "Ext.ux.RowExpander": [],
   "NP.view.property.gridcol.PropertyCode": [],
   "NP.model.vendor.Vendorsite": [],
@@ -580,14 +641,16 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.model.property.Region": [],
   "NP.view.shared.gridcol.LastApprovedDate": [],
   "NP.model.importing.InvoiceExport": [],
+  "NP.view.user.UsersFrequentlyBasedEmailAlertsForm": [],
   "NP.view.property.UnitForm": [],
   "NP.view.catalogMaintenance.CatalogView": [],
+  "NP.view.gl.GLAccounts": [],
   "NP.view.catalogMaintenance.CatalogGrid": [],
   "NP.view.user.Reports": [],
   "NP.view.importing.types.UserProperty": [],
   "NP.store.property.UnitTypes": [],
-  "NP.model.invoice.UnitTypeMaterial": [],
   "NP.view.invoice.gridcol.DaysOnHold": [],
+  "NP.view.shared.button.Approve": [],
   "NP.lib.core.Config": [
     "NP.Config"
   ],
@@ -595,13 +658,19 @@ Ext.ClassManager.addNameAlternateMappings({
 });
 Ext.ClassManager.addNameAliasMappings({
   "NP.model.catalog.UnspscCommodity": [],
-  "NP.model.vendor.UtilityType": [],
   "NP.model.importing.GLActual": [],
+  "NP.model.vendor.UtilityType": [],
   "NP.view.shared.Address": [
     "widget.shared.address"
   ],
+  "NP.view.vendor.gridcol.VendorStatus": [
+    "widget.vendor.gridcol.vendorstatus"
+  ],
   "NP.view.property.gridcol.TotalUnits": [
     "widget.property.gridcol.totalunits"
+  ],
+  "NP.view.property.gridcol.PropertyApCode": [
+    "widget.property.gridcol.propertyapcode"
   ],
   "NP.view.mySettings.EmailAlerts": [
     "widget.mysettings.emailalerts"
@@ -616,7 +685,11 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.view.shared.invoicepo.HistoryLogGrid": [
     "widget.shared.invoicepo.historyloggrid"
   ],
+  "NP.view.shared.SearchByAlphabetButtons": [
+    "widget.shared.searchbyalphabetbuttons"
+  ],
   "NP.store.vendor.Insurances": [],
+  "NP.store.vendor.InsuranceTypes": [],
   "NP.view.mySettings.Settings": [
     "widget.mysettings.settings"
   ],
@@ -625,14 +698,23 @@ Ext.ClassManager.addNameAliasMappings({
   ],
   "NP.model.importing.Unit": [],
   "NP.store.catalog.Vc": [],
+  "NP.lib.ui.Uploader": [
+    "widget.uploader"
+  ],
   "Ext.ux.layout.component.field.BoxSelectField": [
     "layout.boxselectfield"
+  ],
+  "NP.view.vendor.gridcol.ViewVendor": [
+    "widget.vendor.gridcol.viewvendor"
   ],
   "NP.view.catalog.gridcol.VcItemNumber": [
     "widget.catalog.gridcol.vcitemnumber"
   ],
   "NP.view.shared.button.Print": [
     "widget.shared.button.print"
+  ],
+  "NP.view.gl.GLAccountsGrid": [
+    "widget.gl.glaccountsgrid"
   ],
   "NP.lib.ui.Grid": [
     "widget.customgrid"
@@ -688,6 +770,9 @@ Ext.ClassManager.addNameAliasMappings({
     "widget.mobilesetup.mobileform"
   ],
   "NP.model.jobcosting.JbCostCode": [],
+  "NP.view.shared.button.Search": [
+    "widget.shared.button.search"
+  ],
   "NP.view.property.UnitGrid": [
     "widget.property.unitgrid"
   ],
@@ -712,6 +797,9 @@ Ext.ClassManager.addNameAliasMappings({
   ],
   "NP.view.user.gridcol.DelegationCreatedBy": [
     "widget.user.gridcol.delegationcreatedby"
+  ],
+  "NP.view.vendor.grid.VendorApproved": [
+    "widget.vendor.grid.vendorapproved"
   ],
   "NP.lib.ui.HoverButton": [
     "widget.hoverButton"
@@ -745,12 +833,18 @@ Ext.ClassManager.addNameAliasMappings({
     "widget.importing.uploadform"
   ],
   "overrides.form.field.Base": [],
+  "NP.store.vendor.UtilityColumnUsageTypes": [
+    "store.vendor.utilitycolumnusagetypes"
+  ],
   "NP.model.shared.Warning": [],
   "NP.view.image.gridcol.InvoiceDate": [
     "widget.image.gridcol.invoicedate"
   ],
   "NP.view.shared.button.Inactivate": [
     "widget.shared.button.inactivate"
+  ],
+  "NP.view.vendor.VendorNameAndInformation": [
+    "widget.vendor.vendornameandinformation"
   ],
   "NP.view.invoice.ViewNotes": [
     "widget.invoice.viewnotes"
@@ -776,6 +870,7 @@ Ext.ClassManager.addNameAliasMappings({
   ],
   "NP.view.catalogMaintenance.types.Url": [],
   "NP.model.user.Role": [],
+  "NP.model.vendor.VendorType": [],
   "NP.view.importing.types.GLCode": [],
   "NP.view.po.gridcol.BudgetNotes": [
     "widget.po.gridcol.budgetnotes"
@@ -791,6 +886,9 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.view.shared.CustomFieldContainer": [
     "widget.shared.customfieldcontainer"
   ],
+  "NP.view.gl.Overview": [
+    "widget.gl.overview"
+  ],
   "Ext.ux.dd.PanelFieldDragZone": [],
   "NP.model.jobcosting.JbChangeOrder": [],
   "NP.model.invoice.Invoice": [],
@@ -803,6 +901,7 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.lib.data.JsonFlat": [
     "reader.jsonflat"
   ],
+  "overrides.grid.plugin.CellEditing": [],
   "NP.Application": [],
   "Ext.ux.GroupTabPanel": [
     "widget.grouptabpanel"
@@ -814,6 +913,9 @@ Ext.ClassManager.addNameAliasMappings({
     "widget.mysettings.dashboard"
   ],
   "Ext.ux.statusbar.ValidationStatus": [],
+  "NP.view.vendor.AddImagesWindow": [
+    "widget.vendor.addimageswindow"
+  ],
   "Ext.ux.layout.Center": [
     "layout.ux.center"
   ],
@@ -821,6 +923,9 @@ Ext.ClassManager.addNameAliasMappings({
     "widget.mobilesetup.mobilegrid"
   ],
   "NP.model.vendor.Insurance": [],
+  "NP.store.jobcosting.JbChangeOrders": [
+    "store.jobcosting.jbchangeorders"
+  ],
   "NP.view.receipt.gridcol.TransferDate": [
     "widget.receipt.gridcol.transferdate"
   ],
@@ -855,6 +960,9 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.view.receipt.ReceiptGrid": [
     "widget.receipt.receiptgrid"
   ],
+  "NP.view.shared.invoicepo.ViewLineItems": [
+    "widget.shared.invoicepo.viewlineitems"
+  ],
   "NP.view.shared.button.Back": [
     "widget.shared.button.back"
   ],
@@ -871,6 +979,9 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.view.importing.types.CustomFieldLine": [],
   "NP.view.shared.button.Allocate": [
     "widget.shared.button.allocate"
+  ],
+  "NP.store.jobcosting.JbCostCodes": [
+    "store.jobcosting.jbcostcodes"
   ],
   "NP.view.shared.tile.ImagesToConvert": [],
   "NP.view.image.gridcol.Reference": [
@@ -954,6 +1065,7 @@ Ext.ClassManager.addNameAliasMappings({
     "widget.utilitysetup.utilitysetupform"
   ],
   "NP.view.importing.types.InvoiceExport": [],
+  "NP.store.system.TaxPayorTypes": [],
   "NP.view.importing.types.Property": [],
   "NP.view.viewport.menu.VCMenu": [
     "widget.viewport.menu.vcmenu"
@@ -992,6 +1104,9 @@ Ext.ClassManager.addNameAliasMappings({
     "widget.catalog.gridcol.vcstatus"
   ],
   "NP.store.po.Purchaseorders": [],
+  "NP.view.vendor.VendorsManager": [
+    "widget.vendor.vendorsmanager"
+  ],
   "NP.model.user.Staff": [],
   "NP.model.property.Unit": [],
   "NP.store.system.DfSplitItems": [],
@@ -1003,6 +1118,9 @@ Ext.ClassManager.addNameAliasMappings({
     "widget.multiselectfield"
   ],
   "NP.store.property.Regions": [],
+  "NP.view.vendor.grid.VendorPending": [
+    "widget.vendor.grid.vendorpending"
+  ],
   "NP.view.shared.ContextPicker": [
     "widget.shared.contextpicker"
   ],
@@ -1023,15 +1141,28 @@ Ext.ClassManager.addNameAliasMappings({
     "widget.invoice.gridcol.paymentamountremaining"
   ],
   "NP.model.property.FiscalCalMonth": [],
+  "NP.view.gl.CategoryGrid": [
+    "widget.gl.categorygrid"
+  ],
   "NP.store.user.VendorAccessUsers": [],
   "NP.view.shared.tile.ReceiptsToApprove": [],
   "NP.view.property.gridcol.UnitNumber": [
     "widget.property.gridcol.unitnumber"
   ],
   "NP.model.invoice.InvoicePaymentType": [],
+  "NP.view.vendor.gridcol.SubmittedBy": [
+    "widget.vendor.gridcol.submittedby"
+  ],
+  "NP.view.vendor.gridcol.DateSubmitted": [
+    "widget.date",
+    "widget.vendor.gridcol.datesubmitted"
+  ],
   "overrides.Component": [],
   "overrides.ux.form.ItemSelector": [],
   "NP.model.importing.PropertyGL": [],
+  "NP.view.shared.GlCategoryOrder": [
+    "widget.shared.glcategoryorder"
+  ],
   "NP.store.system.SummaryStatCategories": [],
   "NP.view.invoice.gridcol.BudgetNotes": [
     "widget.invoice.gridcol.budgetnotes"
@@ -1057,13 +1188,16 @@ Ext.ClassManager.addNameAliasMappings({
   "overrides.form.field.ComboBox": [],
   "Ext.ux.LiveSearchGridPanel": [],
   "NP.view.importing.types.GLCategory": [],
+  "NP.store.jobcosting.JbPhaseCodes": [
+    "store.jobcosting.jbphasecodes"
+  ],
+  "NP.view.property.gridcol.CreatedDate": [
+    "widget.property.gridcol.createddate"
+  ],
   "Ext.ux.grid.filter.DateFilter": [
     "gridfilter.date"
   ],
   "NP.view.importing.types.VendorInsurance": [],
-  "NP.view.property.gridcol.CreatedDate": [
-    "widget.property.gridcol.createddate"
-  ],
   "NP.view.user.UsersFormDetails": [
     "widget.user.usersformdetails"
   ],
@@ -1086,11 +1220,17 @@ Ext.ClassManager.addNameAliasMappings({
     "widget.shared.button.delete"
   ],
   "Ext.ux.BoxReorderer": [],
+  "NP.view.property.gridcol.PropertyStatus": [
+    "widget.property.gridcol.propertystatus"
+  ],
   "NP.view.image.gridcol.ExceptionBy": [
     "widget.image.gridcol.exceptionby"
   ],
   "NP.view.shared.PickList": [
     "widget.shared.picklist"
+  ],
+  "NP.view.vendor.VendorImageUploadForm": [
+    "widget.vendor.vendorimageuploadform"
   ],
   "NP.lib.core.SummaryStatManager": [],
   "NP.controller.UtilitySetup": [],
@@ -1110,6 +1250,10 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.view.catalogMaintenance.ItemGrid": [
     "widget.catalogmaintenance.itemgrid"
   ],
+  "NP.view.vendor.gridcol.AddToFavorite": [
+    "widget.vendor.gridcol.addtofavorite"
+  ],
+  "NP.model.gl.GlAccountType": [],
   "NP.view.property.PropertiesFormAccounting": [
     "widget.property.propertiesformaccounting"
   ],
@@ -1119,16 +1263,25 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.view.shared.gridcol.PriorityFlag": [
     "widget.shared.gridcol.priorityflag"
   ],
+  "NP.view.shared.button.Reject": [
+    "widget.shared.button.reject"
+  ],
   "NP.view.catalog.gridcol.VcItemDesc": [
     "widget.catalog.gridcol.vcitemdesc"
   ],
   "NP.view.messageCenter.MessageForm": [
     "widget.messagecenter.messageform"
   ],
+  "NP.view.vendor.VendorRejectWindow": [
+    "widget.vendor.vendorrejectwindow"
+  ],
   "NP.view.user.Users": [
     "widget.user.users"
   ],
   "NP.view.shared.tile.ImagesToIndex": [],
+  "NP.view.vendor.InsuranceForm": [
+    "widget.vendor.insuranceform"
+  ],
   "NP.view.catalog.gridcol.VcItemUom": [
     "widget.catalog.gridcol.vcitemuom"
   ],
@@ -1137,15 +1290,23 @@ Ext.ClassManager.addNameAliasMappings({
   ],
   "NP.model.user.Userprofile": [],
   "NP.store.invoice.InvoiceItems": [],
+  "NP.view.vendor.VendorDocumentsForm": [
+    "widget.vendor.vendordocumentsform"
+  ],
   "NP.view.image.ImageGrid": [
     "widget.image.imagegrid"
   ],
   "NP.model.property.FiscalDisplayType": [],
-  "NP.model.invoice.UtilityAccount": [],
   "NP.view.shared.tile.VcAuthRequests": [],
+  "NP.view.vendor.grid.VendorRejected": [
+    "widget.vendor.grid.vendorrejected"
+  ],
   "NP.model.property.FiscalCal": [],
   "NP.view.catalogMaintenance.CatalogFormUploadLogo": [
     "widget.catalogmaintenance.catalogformuploadlogo"
+  ],
+  "NP.view.shared.VendorAssigner": [
+    "widget.shared.vendorassigner"
   ],
   "NP.view.shared.UtilityTypeAssigner": [
     "widget.shared.utilitytypeassigner"
@@ -1163,7 +1324,13 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.view.shared.tile.ExpiredInsuranceCerts": [],
   "NP.model.shared.InvoicePoForward": [],
   "NP.view.shared.tile.AbstractBudgetTile": [],
+  "NP.store.jobcosting.JbContracts": [
+    "store.jobcosting.jbcontracts"
+  ],
   "NP.view.shared.tile.InvoicesByUser": [],
+  "NP.view.vendor.InsuranceUploadForm": [
+    "widget.vendor.insuranceuploadform"
+  ],
   "NP.store.image.ImageIndexes": [],
   "NP.view.viewport.menu.POMenu": [
     "widget.viewport.menu.pomenu"
@@ -1186,6 +1353,9 @@ Ext.ClassManager.addNameAliasMappings({
   ],
   "NP.view.invoice.gridcol.CreatedDate": [
     "widget.invoice.gridcol.createddate"
+  ],
+  "NP.view.image.gridcol.InvoiceNumber": [
+    "widget.image.gridcol.invoicenumber"
   ],
   "NP.lib.ui.AutoComplete": [
     "widget.autocomplete"
@@ -1223,6 +1393,9 @@ Ext.ClassManager.addNameAliasMappings({
   "Ext.ux.DataTip": [
     "plugin.datatip"
   ],
+  "NP.view.vendor.VendorAssignGlAccouns": [
+    "widget.vendor.vendorassignglaccouns"
+  ],
   "Ext.ux.ajax.JsonSimlet": [
     "simlet.json"
   ],
@@ -1252,22 +1425,27 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.view.invoice.gridcol.NeededByDate": [
     "widget.invoice.gridcol.neededbydate"
   ],
+  "NP.store.contact.States": [],
+  "NP.store.system.PayeeTypes": [],
   "NP.view.receipt.gridcol.Notes": [
     "widget.receipt.gridcol.notes"
   ],
   "NP.view.shared.invoicepo.ForwardsGrid": [
     "widget.shared.invoicepo.forwardsgrid"
   ],
+  "NP.view.gl.Category": [
+    "widget.gl.category"
+  ],
   "NP.view.vendor.gridcol.SentForApprovalDate": [
     "widget.vendor.gridcol.sentforapprovaldate"
   ],
   "NP.model.importing.UnitType": [],
   "NP.view.importing.types.VendorUtility": [],
-  "NP.view.vendor.gridcol.ApprovalType": [
-    "widget.vendor.gridcol.approvaltype"
-  ],
   "NP.view.receipt.gridcol.CreatedDate": [
     "widget.receipt.gridcol.createddate"
+  ],
+  "NP.view.vendor.gridcol.ApprovalType": [
+    "widget.vendor.gridcol.approvaltype"
   ],
   "NP.view.viewport.menu.ImageMenu": [
     "widget.viewport.menu.imagemenu"
@@ -1290,20 +1468,23 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.view.user.gridcol.DelegationToName": [
     "widget.user.gridcol.delegationtoname"
   ],
+  "NP.store.vendor.VendorTypes": [],
   "NP.view.importing.types.GLBudget": [],
   "NP.lib.core.DataLoader": [],
   "NP.view.invoice.gridcol.TemplateName": [
     "widget.invoice.gridcol.templatename"
+  ],
+  "NP.view.vendor.PurchaseOrder": [
+    "widget.vendor.purchaseorder"
   ],
   "NP.controller.UserManager": [],
   "NP.view.user.UsersFormDelegation": [
     "widget.user.usersformdelegation"
   ],
   "NP.model.system.DfSplit": [],
-  "NP.view.invoice.ViewLineItems": [
-    "widget.invoice.viewlineitems"
+  "NP.store.property.Units": [
+    "store.property.units"
   ],
-  "NP.store.property.Units": [],
   "NP.model.system.PnCustomField": [],
   "Ext.ux.PreviewPlugin": [
     "plugin.preview"
@@ -1328,6 +1509,9 @@ Ext.ClassManager.addNameAliasMappings({
   "Ext.ux.TabReorderer": [],
   "NP.view.shared.UserAssigner": [
     "widget.shared.userassigner"
+  ],
+  "NP.view.vendor.VendorInsuranceSetup": [
+    "widget.vendor.vendorinsurancesetup"
   ],
   "Ext.ux.grid.filter.NumericFilter": [
     "gridfilter.numeric"
@@ -1416,7 +1600,9 @@ Ext.ClassManager.addNameAliasMappings({
   "Ext.ux.GMapPanel": [
     "widget.gmappanel"
   ],
-  "NP.store.gl.GlAccounts": [],
+  "NP.store.gl.GlAccounts": [
+    "store.gl.glaccounts"
+  ],
   "NP.view.invoice.gridcol.HoldDate": [
     "widget.invoice.gridcol.holddate"
   ],
@@ -1428,6 +1614,9 @@ Ext.ClassManager.addNameAliasMappings({
   ],
   "NP.model.importing.Property": [],
   "NP.model.po.Purchaseorder": [],
+  "NP.view.vendor.InvoiceDocuments": [
+    "widget.vendor.invoicedocuments"
+  ],
   "NP.store.catalog.VcCats": [],
   "NP.view.importing.types.Vendor": [],
   "NP.view.shared.CustomField": [
@@ -1443,6 +1632,9 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.view.property.Overview": [
     "widget.property.overview"
   ],
+  "NP.store.gl.GlAccountTypes": [
+    "store.gl.glaccounttypes"
+  ],
   "NP.model.vendor.InsuranceType": [],
   "NP.view.property.gridcol.PropertyName": [
     "widget.property.gridcol.propertyname"
@@ -1455,6 +1647,10 @@ Ext.ClassManager.addNameAliasMappings({
   ],
   "NP.view.invoice.gridcol.Date": [
     "widget.invoice.gridcol.date"
+  ],
+  "NP.model.contact.State": [],
+  "NP.view.gl.Reports": [
+    "widget.gl.reports"
   ],
   "NP.view.catalogMaintenance.CatalogFormPoSubmission": [
     "widget.catalogmaintenance.catalogformposubmission"
@@ -1490,6 +1686,9 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.store.user.Roles": [
     "store.user.roles"
   ],
+  "NP.view.vendor.VendorSearch": [
+    "widget.vendor.vendorsearch"
+  ],
   "Ext.ux.DataView.Draggable": [],
   "overrides.form.Panel": [],
   "NP.view.property.UnitTypeForm": [
@@ -1502,6 +1701,9 @@ Ext.ClassManager.addNameAliasMappings({
   "Ext.ux.form.ItemSelector": [
     "widget.itemselector",
     "widget.itemselectorfield"
+  ],
+  "NP.store.jobcosting.JbJobCodes": [
+    "store.jobcosting.jbjobcodes"
   ],
   "NP.view.shared.gridcol.CreatedBy": [
     "widget.shared.gridcol.createdby"
@@ -1536,17 +1738,17 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.model.jobcosting.JbPhaseCode": [],
   "NP.model.importing.VendorGL": [],
   "NP.controller.BudgetOverage": [],
+  "NP.store.contact.Addresses": [],
   "NP.store.property.UnitTypeVals": [],
   "NP.model.importing.Split": [],
   "NP.view.po.gridcol.Period": [
     "widget.po.gridcol.period"
   ],
-  "NP.model.invoice.UtilityColumnUsageType": [],
-  "NP.view.viewport.TopMenu": [
-    "widget.viewport.topmenu"
-  ],
   "NP.view.property.gridcol.RegionName": [
     "widget.property.gridcol.regionname"
+  ],
+  "NP.view.viewport.TopMenu": [
+    "widget.viewport.topmenu"
   ],
   "NP.view.user.UsersForm": [
     "widget.user.usersform"
@@ -1569,6 +1771,10 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.view.shared.VendorAutoComplete": [
     "widget.shared.vendorautocomplete"
   ],
+  "NP.view.shared.GlAccountAssigner": [
+    "widget.shared.glaccountassigner"
+  ],
+  "NP.controller.VendorManager": [],
   "NP.view.invoice.Register": [
     "widget.invoice.register"
   ],
@@ -1588,6 +1794,9 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.model.importing.User": [],
   "NP.model.po.Receipt": [],
   "NP.model.system.HistoryLog": [],
+  "NP.view.vendor.VendorGeneralInfoAndSettings": [
+    "widget.vendor.vendorgeneralinfoandsettings"
+  ],
   "NP.view.shared.PermissionToolbar": [
     "widget.shared.permissiontoolbar"
   ],
@@ -1612,20 +1821,26 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.view.po.PoGrid": [
     "widget.po.pogrid"
   ],
-  "NP.model.vendor.UtilityAccount": [],
   "NP.store.vendor.UtilityTypes": [
     "store.vendor.utilitytypes"
   ],
   "NP.store.user.RoleTree": [],
+  "NP.model.vendor.UtilityAccount": [],
   "NP.view.shared.invoicepo.ViewHeaderPickers": [
     "widget.shared.invoicepo.viewheaderpickers"
   ],
   "NP.model.image.ImageIndex": [],
+  "NP.view.vendor.VendorForm": [
+    "widget.vendor.vendorform"
+  ],
   "NP.view.invoice.InvoiceGrid": [
     "widget.invoice.invoicegrid"
   ],
   "NP.view.mySettings.EmailNotification": [
     "widget.mysettings.emailnotification"
+  ],
+  "NP.view.image.gridcol.ImageStatus": [
+    "widget.image.gridcol.imagestatus"
   ],
   "NP.model.system.PriorityFlag": [],
   "NP.store.system.PnUniversalFields": [],
@@ -1662,6 +1877,9 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.view.shared.button.Save": [
     "widget.shared.button.save"
   ],
+  "NP.view.gl.GLAccountsForm": [
+    "widget.gl.glaccountsform"
+  ],
   "NP.controller.SystemSetup": [],
   "Ext.ux.grid.filter.Filter": [],
   "Ext.ux.GroupTabRenderer": [
@@ -1689,6 +1907,7 @@ Ext.ClassManager.addNameAliasMappings({
   ],
   "NP.model.catalog.Vc": [],
   "NP.model.vendor.Utility": [],
+  "NP.controller.GLAccountSetup": [],
   "NP.view.Viewport": [],
   "NP.view.invoice.ViewPayments": [
     "widget.invoice.viewpayments"
@@ -1701,6 +1920,12 @@ Ext.ClassManager.addNameAliasMappings({
   ],
   "NP.lib.core.Net": [],
   "NP.view.importing.types.User": [],
+  "NP.view.gl.Main": [
+    "widget.gl.main"
+  ],
+  "NP.view.gl.CategoryForm": [
+    "widget.gl.categoryform"
+  ],
   "NP.view.shared.button.SaveAndAdd": [
     "widget.shared.button.saveandadd"
   ],
@@ -1731,6 +1956,10 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.view.shared.PortalRow": [
     "widget.shared.portalrow"
   ],
+  "NP.model.vendor.UtilityColumnUsageType": [],
+  "NP.view.vendor.AlternativeAddresses": [
+    "widget.vendor.alternativeaddresses"
+  ],
   "Ext.ux.RowExpander": [],
   "NP.view.property.gridcol.PropertyCode": [
     "widget.property.gridcol.propertycode"
@@ -1739,7 +1968,9 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.view.catalog.gridcol.VcLastUpdated": [
     "widget.catalog.gridcol.vclastupdated"
   ],
-  "NP.store.vendor.UtilityAccounts": [],
+  "NP.store.vendor.UtilityAccounts": [
+    "store.vendor.utilityaccounts"
+  ],
   "NP.view.shared.gridcol.RejectedReason": [
     "widget.shared.gridcol.rejectedreason"
   ],
@@ -1757,11 +1988,17 @@ Ext.ClassManager.addNameAliasMappings({
     "widget.shared.gridcol.lastapproveddate"
   ],
   "NP.model.importing.InvoiceExport": [],
+  "NP.view.user.UsersFrequentlyBasedEmailAlertsForm": [
+    "widget.user.usersfrequentlybasedemailalertsform"
+  ],
   "NP.view.property.UnitForm": [
     "widget.property.unitform"
   ],
   "NP.view.catalogMaintenance.CatalogView": [
     "widget.catalogmaintenance.catalogview"
+  ],
+  "NP.view.gl.GLAccounts": [
+    "widget.gl.glaccounts"
   ],
   "NP.view.catalogMaintenance.CatalogGrid": [
     "widget.catalogmaintenance.cataloggrid"
@@ -1771,9 +2008,11 @@ Ext.ClassManager.addNameAliasMappings({
   ],
   "NP.view.importing.types.UserProperty": [],
   "NP.store.property.UnitTypes": [],
-  "NP.model.invoice.UnitTypeMaterial": [],
   "NP.view.invoice.gridcol.DaysOnHold": [
     "widget.invoice.gridcol.daysonhold"
+  ],
+  "NP.view.shared.button.Approve": [
+    "widget.shared.button.approve"
   ],
   "NP.lib.core.Config": [],
   "NP.view.po.gridcol.CreatedDate": [

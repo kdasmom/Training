@@ -468,39 +468,4 @@ class PropertyGateway  extends AbstractGateway {
         }
         return $result;
     }
-
-    /**
-     * Get property address.
-     * 
-     * @param int $id Property identifier.
-     * @param string $address_type Address type.
-     */
-    public function getPropertyAddress($id, $address_type) {
-        $select = new Select();
-        $select
-            ->columns([
-                'address_line1',
-                'address_line2',
-                'address_line3',
-                'address_city',
-                'address_state',
-                'address_zip',
-                'address_zipext'
-            ])
-            ->from(['a' => 'address'])
-                ->join(['adt' => 'ADDRESSTYPE'], 'adt.addresstype_id=a.addresstype_id AND adt.addresstype_name=\''.$address_type.'\'', [], Select::JOIN_INNER)
-                ->join(['p' => 'PROPERTY'], 'p.property_id = a.tablekey_id AND a.table_name=\'property\'', ['entity_name' => 'property_name', 'entity_code' => 'property_id_alt'], Select::JOIN_INNER)
-            ->where(
-                Where::get()
-                    ->equals('p.property_id', $id)
-            )
-        ;
-        $result = $this->adapter->query($select);
-        if (!empty($result) && !empty($result[0])) {
-            $result = $result[0];
-            $result['zip'] = $result['address_zip'] + '' + $result['address_zipext'];
-        }
-
-        return $result;
-    }
 }

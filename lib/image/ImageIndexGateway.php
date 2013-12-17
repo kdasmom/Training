@@ -17,10 +17,14 @@ class ImageIndexGateway extends AbstractGateway {
 	protected $table = 'image_index';
         protected $pk = 'Image_Index_Id';
 
-	public function findImagesToConvert($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
+	public function findImagesToConvert($countOnly, $docTypes=null, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
 		$select = $this->getDashboardSelect($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
 		
-		$select->whereMerge(new sql\criteria\ImageInvoiceDocCriteria())
+		if ($docTypes === null) {
+			$docTypes = 'Invoice,Utility Invoice';
+		}
+
+		$select->whereMerge(new sql\criteria\ImageInvoiceDocCriteria($docTypes))
 				->whereMerge(new sql\criteria\ImageInvoiceUnassigned())
 				->whereEquals('img.Image_Index_Status', 1);
 
@@ -234,16 +238,18 @@ class ImageIndexGateway extends AbstractGateway {
         
     public function findImagesToDelete($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
 		$select = $this->getDashboardSelect($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
-		
-		/*$select->whereMerge(new sql\criteria\ImageInvoiceDocCriteria())
-				->whereMerge(new sql\criteria\ImageInvoiceUnassigned())
-				->whereEquals('img.Image_Index_Status', -1);*/
-                $where = new Where();
-                $where->isNotNull('img.image_index_deleted_datetm')
-                        ->isNotNull('img.image_index_deleted_by')
-                        ->equals('img.Image_Index_Status', -1);
-                ;
-                $select->where($where);
+		$propertyFilterSelect = new PropertyFilterSelect(new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection));
+
+		// We're going to create a where object to overwrite the entire where clause because
+		// we need the property filter to be within a nested block
+		$where = Where::get()->nest('OR')
+								->equals('img.property_id', 0)
+								->isNull('img.property_id')
+								->in('img.property_id', $propertyFilterSelect)
+							->unnest()
+							->equals('img.Image_Index_Status', -1);
+
+        $select->where($where);
 
 		// If paging is needed
 		if ($pageSize !== null && $countOnly == 'false') {
@@ -376,240 +382,31 @@ class ImageIndexGateway extends AbstractGateway {
     }
 
     /**
-     * Get Images by id depending on table reference.
+     * Get Images by id
      * 
-     * @param int $id Image identifier.
-     * @param [] $params Additional parameters.
-     * @param [] $tablerefs Appropriate table references.
+     * @param int $image_index_id
      * @return [] List of images.
      */
-    public function getImageScan($id, $params, $tablerefs) {
-        $reflist = null;
-        if (!empty($params['tableref_id'])) {
-            $reflist = [
-                $params['tableref_id']
-            ];
-        }
+    public function getImageDetails($image_index_id) {
+        $select = 
+        	Select::get()
+	        	->from(['img'=>'image_index'])
+		            ->join(new sql\join\ImageIndexImageSourceJoin())
+		            ->join(new sql\join\ImageIndexImageTransferJoin())
+		            ->join(new sql\join\ImageIndexVendorsiteJoin(['vendorsite_id']))
+		            ->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(
+		            	['vendor_id','vendor_name','vendor_id_alt','vendor_status'],
+		            	Select::JOIN_LEFT
+		           	))
+		            ->join(new sql\join\ImageIndexPropertyJoin())
+		            ->join(new sql\join\ImageIndexDocTypeJoin())
+		            ->join(new sql\join\ImageIndexTablerefJoin())
+		            ->join(new sql\join\ImageIndexUtilityAccountJoin())
+		        ->whereEquals('img.image_index_id', '?');
 
-        switch ($params['tableref_id']) {
-            case 3:
-                $tableref = $tablerefs[strtolower('receipt')];
-                $reflist[] = $tableref;
-                break;
-            case 1:
-                $tableref = $tablerefs[strtolower('Utility Invoice')];
-                $reflist[] = $tableref;
-                break;
-        }
+        $result = $this->adapter->query($select, [$image_index_id]);
 
-        // Property id could be number or string with comma-separated identifiers
-        if (is_string($params['property_id'])) {
-            $params['property_id'] = explode(',', $params['property_id']);
-        } elseif (!empty($params['property_id'])) {
-            $params['property_id'] = [$params['property_id']];
-        } else {
-            $params['property_id'] = [];
-        }
-
-        $scans =  $this->getImageScanLocal($id, $params, $reflist);
-        $scans = array_merge($scans, $this->getImageScanVendor($id, $params, $reflist));
-        $scans = array_merge($scans, $this->getImageScanLegacy($id, $params, $reflist));
-
-        return $scans;
-    }
-
-    public function getImageScanForGrid($params, $tablerefs, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection) {
-        $propertyFilterSelect = 
-            new PropertyFilterSelect(
-                new PropertyContext(
-                    $userprofile_id,
-                    $delegated_to_userprofile_id,
-                    $contextType,
-                    $contextSelection
-                )
-            )
-        ;
-        $params['property_id'] = $propertyFilterSelect->toString();
-
-        $reflist = null;
-        if (!empty($params['tableref_id'])) {
-            $reflist = [
-                $params['tableref_id']
-            ];
-        }
-
-        switch ($params['tableref_id']) {
-            case 3:
-                $tableref = $tablerefs[strtolower('receipt')];
-                $reflist[] = $tableref;
-                break;
-            case 1:
-                $tableref = $tablerefs[strtolower('Utility Invoice')];
-                $reflist[] = $tableref;
-                break;
-        }
-
-        $scans =  $this->getImageScanLocal(null, $params, $reflist);
-        $scans = array_merge($scans, $this->getImageScanVendor(null, $params, $reflist));
-        $scans = array_merge($scans, $this->getImageScanLegacy(null, $params, $reflist));
-
-        return $scans;
-    }
-
-    /**
-     * Get Local Scan Images.
-     * 
-     * @param int $id Image identifier.
-     * @param [] $params Additional parameters.
-     * @param [] $tablerefs Appropriate table references.
-     * @return [] List of images.
-     */
-    private function getImageScanLocal($id, $params, $tablerefs) {
-        $select = new sql\ImageIndexSelect();
-
-        $select
-            ->join(new sql\join\ImageIndexImageSourceJoin())
-            ->join(new sql\join\ImageIndexImageTransferJoin())
-            ->join(new sql\join\ImageTransferUserprofileJoin(
-                ['userprofile_username', 'userprofile_username AS scan_source']
-            ))
-            ->join(new sql\join\ImageIndexVendorsiteJoin())
-            ->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(
-                ['vendor_name', 'vendor_id_alt'],
-                Select::JOIN_LEFT
-            ))
-            ->join(new sql\join\ImageIndexPropertyJoin())
-            ->join(new sql\join\ImageIndexDocTypeJoin())
-            ->join(new sql\join\ImageIndexTablerefJoin())
-        ;
-
-        $where = new sql\criteria\ImageScanGetCriteria(
-            $params['property_id'],
-            $tablerefs
-        );
-
-        $where
-            ->equals('imgt.transfer_srcTableName', '\'userprofile\'')
-        ;
-        $select->where($where);
-
-        $result = $this->adapter->query(
-            $select,
-            [
-                $params['tableref_id'],
-                $id,
-                $id,
-                $params['asp_client_id']
-            ]
-        );
-
-        return $result;
-    }
-
-    /**
-     * Get Vendor Scan Images.
-     * 
-     * @param int $id Image identifier.
-     * @param [] $params Additional parameters.
-     * @return [] List of images.
-     */
-    private function getImageScanVendor($id, $params) {
-        $select = new sql\ImageIndexSelect();
-
-        $select
-            ->join(new sql\join\ImageIndexImageSourceJoin())
-            ->join(new sql\join\ImageIndexImageTransferJoin())
-            ->join(new sql\join\ImageIndexVendorsiteJoin(
-                [],
-                Select::JOIN_LEFT,
-                'vs',
-                'imgt',
-                'transfer_srcTablekey_id'
-            ))
-            ->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(
-                ['vendor_name', 'vendor_name AS scan_source', 'vendor_id_alt'],
-                Select::JOIN_LEFT
-            ))
-            ->join(new sql\join\ImageIndexPropertyJoin())
-            ->join(new sql\join\ImageIndexDocTypeJoin())
-            ->join(new sql\join\ImageIndexTablerefJoin())
-        ;
-
-        $tablerefs = [];
-        if (!empty($params['tableref_id'])) {
-            $tablerefs = [$params['tableref_id']];
-        }
-        $where = new sql\criteria\ImageScanGetCriteria(
-            $params['property_id'],
-            $tablerefs
-        );
-
-        $where
-            ->equals('imgt.transfer_srcTableName', '\'vendorsite\'')
-        ;
-        $select->where($where);
-
-        $result = $this->adapter->query(
-            $select,
-            [
-                $params['tableref_id'],
-                $id,
-                $id,
-                $params['asp_client_id']
-            ]
-        );
-
-        return $result;
-    }
-
-    /**
-     * Get Legacy Scan Images.
-     * 
-     * @param int $id Image identifier.
-     * @param [] $params Additional parameters.
-     * @return [] List of images.
-     */
-    private function getImageScanLegacy($id, $params, $tablerefs) {
-        $select = new sql\ImageIndexSelect();
-
-        $select
-            ->join(new sql\join\ImageIndexImageSourceJoin(
-                ['invoiceimage_source_name', 'invoiceimage_source_name AS scan_source']
-            ))
-            ->join(new sql\join\ImageIndexImageTransferJoin())
-            ->join(new sql\join\ImageIndexVendorsiteJoin())
-            ->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(
-                ['vendor_name', 'vendor_id_alt'],
-                Select::JOIN_LEFT
-            ))
-            ->join(new sql\join\ImageIndexPropertyJoin())
-            ->join(new sql\join\ImageIndexDocTypeJoin())
-            ->join(new sql\join\ImageIndexTablerefJoin())
-        ;
-
-        $where = new sql\criteria\ImageScanGetCriteria(
-            $params['property_id'],
-            $tablerefs
-        );
-        $where
-            ->nest('OR')
-                ->equals('imgt.transfer_srcTableName', '\'invoiceimagesource\'')
-                ->isNull('imgt.transfer_srcTableName')
-            ->unnest()
-        ;
-        $select->where($where);
-
-        $result = $this->adapter->query(
-            $select,
-            [
-                $params['tableref_id'],
-                $id,
-                $id,
-                $params['asp_client_id']
-            ]
-        );
-
-        return $result;
+        return $result[0];
     }
 
     /**

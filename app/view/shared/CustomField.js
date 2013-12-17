@@ -147,6 +147,9 @@ Ext.define('NP.view.shared.CustomField', {
                                         universal_field_data: val
                                     }));
         } else {
+            if (this.type == 'date' && typeof val == 'string') {
+                val = Ext.Date.parse(val, NP.Config.getServerDateFormat());
+            }
             this.field.setValue(val);
         }
     },

@@ -23,7 +23,15 @@ Ext.define('NP.model.vendor.UtilityAccount', {
         { name: 'UtilityAccount_Bedrooms', type: 'int' },
         { name: 'UtilityAccount_MeterSize' },
         { name: 'UtilityAccount_AccountNumber' },
-        { name: 'property_id', type: 'int' },
+        { name: 'property_id', type: 'int', convert: function(v, rec) {
+            if (v === null || v === '') {
+                if ('Property_Id' in rec.raw) {
+                    return rec.raw.Property_Id;
+                }
+            }
+
+            return v;
+        }},
         { name: 'utilityaccount_active', defaultValue: 1 },
         { name: 'glaccount_id', type: 'int' },
         { name: 'unit_id', type: 'int' },
@@ -31,10 +39,26 @@ Ext.define('NP.model.vendor.UtilityAccount', {
         // These fields are not columns in the database
         { name: 'UtilityType_Id', type: 'int' },
         { name: 'UtilityType' },
+
+        { name: 'property_id_alt' },
+        { name: 'property_name' },
+
+        { name: 'vendor_id', type: 'int' },
+        { name: 'vendorsite_id', type: 'int' },
+        { name: 'vendor_id_alt' },
+        { name: 'vendor_name' },
+
         {
             name   : 'display_name',
             convert: function(v, rec) {
                 return NP.model.vendor.UtilityAccount.formatName(rec);
+            }
+        },
+
+        {
+            name   : 'long_display_name',
+            convert: function(v, rec) {
+                return NP.model.vendor.UtilityAccount.formatLongName(rec);
             }
         }
     ],
@@ -55,6 +79,23 @@ Ext.define('NP.model.vendor.UtilityAccount', {
 
             if (meterNumber != '' && meterNumber !== null) {
                 val += ' - ' + meterNumber;
+            }
+
+            return val;
+        },
+
+        formatLongName: function(rec) {
+            if (rec.get('vendor_id_alt') === null || rec.get('property_id_alt') === null) {
+                return '';
+            }
+
+            var val = rec.get('vendor_name') + ' (' + rec.get('vendor_id_alt') + ') - ' +
+                    rec.get('property_name') + ' (' + rec.get('property_id_alt') + ') - ' +
+                    'Acct: ' + rec.get('UtilityAccount_AccountNumber');
+
+            var meter = rec.get('UtilityAccount_MeterSize');
+            if (meter != '' && meter !== null) {
+                val += ' - Meter: ' + meter;
             }
 
             return val;

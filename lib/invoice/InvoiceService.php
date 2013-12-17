@@ -441,6 +441,24 @@ class InvoiceService extends AbstractInvoicePoService {
 		return $this->invoiceGateway->getPaymentTypes($paymentType_id);
 	}
 
+    /**
+     * Get Template for image index table.
+     * 
+     * @param int $vendorsite_id Vendorsite id. Should not be empty.
+     * @param int $property_id Propery id. Should not be empty.
+     * @param int $utilityaccount_id Utility account ID.
+     * @return [] List of templates.
+     */
+    public function getTemplatesByCriteria($vendorsite_id, $property_id, $utilityaccount_id=null) {
+    	return $this->invoiceGateway->getTemplatesByCriteria(
+    		$this->securityService->getUserId(),
+    		$this->securityService->getDelegatedUserId(),
+        	$vendorsite_id,
+        	$property_id,
+        	$utilityaccount_id
+        );
+    }
+
 	/**
 	 * Save an invoice payment from the import tool
 	 */

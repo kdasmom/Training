@@ -91,9 +91,11 @@ Ext.define('NP.lib.core.Util', {
 	 * @return {Array}
 	 */
 	valueList: function(records, field) {
-		var list = [];
+		var list = [],
+			val;
 		for (var i=0; i<records.length; i++) {
-			list.push(records[i][field]);
+			val = (records[i].get) ? records[i].get(field) : records[i][field];
+			list.push(val);
 		}
 
 		return list;

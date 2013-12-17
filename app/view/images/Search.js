@@ -3,12 +3,17 @@ Ext.define('NP.view.images.Search', {
     alias:  'widget.images.search',
 
     title:  'Search Images',
+    
+    layout: {
+        type : 'vbox',
+        align: 'stretch'
+    },
     autoscroll: true,
 
     requires: [
         'NP.view.shared.ContextPickerMulti',
         'NP.view.images.grid.Search',
-
+        'NP.view.shared.button.Search',
         'NP.view.shared.button.Return',
         'NP.view.shared.button.Search',
         'NP.view.shared.button.Cd',
@@ -59,85 +64,95 @@ Ext.define('NP.view.images.Search', {
             fields: ['image-criteria', 'image-criteria-index']
         });
 
+        var labelWidth = 80;
         this.items = [
             {
-                xtype: 'panel',
-                bodyPadding: 10,
-
+                xtype: 'container',
+                padding: 8,
                 items: [
                     {
-                        xtype: 'text',
-                        padding: '0 0 10 0',
-                        text: 'Use the following form to search for Images:'
+                        xtype : 'component',
+                        margin: '0 0 8 0',
+                        html  : 'Use the following form to search for Images:'
                     },
                     {
-                        itemId: 'field-image-doctype',
+                        xtype      : 'panel',
+                        border     : false,
+                        margin     : '0 0 8 0',
+                        layout     : 'hbox',
+                        defaults   : { margin: '0 16 0 0', labelWidth: labelWidth },
+                        items      : [
+                            {
+                                itemId: 'field-image-doctype',
 
-                        xtype: 'customcombo',
-                        fieldLabel: 'Image Type:',
+                                xtype: 'customcombo',
+                                fieldLabel: 'Image Type:',
 
-                        valueField:   'image_doctype_id',
-                        displayField: 'image_doctype_name',
+                                valueField:   'image_doctype_id',
+                                displayField: 'image_doctype_name',
 
-                        store: storeImageDoctypes,
-                        value: 1
+                                store: storeImageDoctypes,
+                                value: 1
+                            },
+                            {
+                                itemId: 'field-image-searchtype',
+
+                                xtype: 'customcombo',
+                                fieldLabel: 'Search By:',
+
+                                displayField: 'image-criteria',
+                                valueField:   'image-criteria-index',
+
+                                store: storeSearchType,
+                                value: 1,
+
+                                listeners: {
+                                    select: this.onSearchCriteriaChange
+                                }
+                            },
+                            {
+                                itemId: 'field-image-name',
+
+                                xtype: 'textfield',
+                                fieldLabel: 'Image Name:'
+                            },
+                            {
+                                itemId: 'field-scan-date',
+
+                                xtype: 'datefield',
+                                fieldLabel: 'Scan Date:'
+                            },
+                            {
+                                itemId: 'field-vendor',
+
+                                xtype: 'textfield',
+                                fieldLabel: 'Vendor:'
+                            },
+                            {
+                                xtype: 'shared.button.search',
+                                itemId: 'buttonSearchProcessAction'
+                            }
+                        ]
                     },
                     {
-                        itemId: 'field-image-searchtype',
-
-                        xtype: 'customcombo',
-                        fieldLabel: 'Search By:',
-
-                        displayField: 'image-criteria',
-                        valueField:   'image-criteria-index',
-
-                        store: storeSearchType,
-                        value: 1,
-
-                        listeners: {
-                            select: this.onSearchCriteriaChange
-                        }
-                    },
-                    {
-                        itemId: 'field-image-name',
-
-                        xtype: 'textfield',
-                        fieldLabel: 'Image Name:'
-                    },
-                    {
-                        itemId: 'field-scan-date',
-
-                        xtype: 'datefield',
-                        fieldLabel: 'Scan Date:'
-                    },
-                    {
-                        itemId: 'field-vendor',
-
-                        xtype: 'textfield',
-                        fieldLabel: 'Vendor:'
-                    },
-                    {
-                        xtype: 'shared.button.go',
-                        itemId: 'buttonSearchProcessAction'
-                    },
-                    {
-                        xtype: 'shared.contextpickermulti',
-                        fieldLabel: 'Property:'
+                        xtype     : 'fieldcontainer',
+                        fieldLabel: NP.Config.getPropertyLabel(),
+                        labelWidth: labelWidth,
+                        items     : [{ xtype: 'shared.contextpickermulti' }]
                     }
                 ]
             },
             {
-                xtype: 'images.grid.Search',
-
+                xtype : 'images.grid.Search',
                 itemId: 'grid-search-results',
-                title: 'Search Results'
+                title : 'Search Results',
+                flex  : 1,
+                hidden: true
             }
         ];
 
         this.tbar = [
             {xtype: 'shared.button.return', itemId: 'buttonReturn', text: this.locale.buttonReturn},
-            {xtype: 'tbspacer', width: 20},
-            {xtype: 'shared.button.search', itemId: 'buttonSearchProcess', text: this.locale.buttonSearch},
             {xtype: 'shared.button.cd', itemId: 'buttonSearchCDIndex', text: this.locale.buttonCDIndex}
         ];
         this.callParent(arguments);

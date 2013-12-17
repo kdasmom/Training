@@ -21,17 +21,17 @@ Ext.define('NP.view.images.grid.Invoices', {
 
         var context = NP.Security.getCurrentContext();
 
-	this.store = Ext.create('NP.store.image.ImageIndexes', {
+        this.store = Ext.create('NP.store.image.ImageIndexes', {
             service    : 'ImageService',
-            action     : 'getImagesToConvert1',
+            action     : 'getImagesToConvert',
             paging     : true,
             pageSize: 25,
             extraParams: {
-                paging     : true,
                 userprofile_id             : NP.Security.getUser().get('userprofile_id'),
                 delegated_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id'),
-                contextType     : context.type,
-                contextSelection: (context.type == 'region') ? context.region_id : context.property_id
+                contextType                : context.type,
+                contextSelection           : (context.type == 'region') ? context.region_id : context.property_id,
+                countOnly                  : 'false'
             }
         });
 
