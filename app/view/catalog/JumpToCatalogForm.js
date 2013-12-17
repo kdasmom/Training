@@ -18,6 +18,7 @@ Ext.define('NP.view.catalog.JumpToCatalogForm', {
 			{
 				xtype: 'customcombo',
 				name: 'vccat_id',
+				id: 'vc_id',
 				labelWidth: 120,
 				displayField: 'vc_catalogname',
 				valueField: 'vc_id',
@@ -27,6 +28,7 @@ Ext.define('NP.view.catalog.JumpToCatalogForm', {
 					action: 'getCatalogs',
 					autoLoad: true
 				}),
+				selectFirstRecord: true,
 				queryMode: 'local',
 				editable: false,
 				typeAhead: false,

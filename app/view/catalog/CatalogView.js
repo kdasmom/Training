@@ -3,9 +3,9 @@
  * date: 11/29/13 5:14 PM
  */
 
-Ext.define('NP.view.catalog.AdvancedSearch', {
+Ext.define('NP.view.catalog.CatalogView', {
 	extend: 'Ext.panel.Panel',
-	alias: 'widget.catalog.advancedsearch',
+	alias: 'widget.catalog.catalogview',
 
 	requires: [
 		'NP.lib.core.Config',

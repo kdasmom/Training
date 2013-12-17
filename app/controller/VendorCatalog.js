@@ -30,6 +30,11 @@ Ext.define('NP.controller.VendorCatalog', {
 		Ext.log('Vendor Catalog Controller init');
 
 		this.control({
+			'[xtype="catalog.jumptocatalogform"] [xtype="button"]': {
+				click: function() {
+					this.addHistory('VendorCatalog:showCatalogView');
+				}
+			},
 			'[xtype="catalog.userorder"] [xtype="button"]': {
 				click: function() {
 					this.addHistory('VendorCatalog:showOpenOrders');
@@ -182,12 +187,10 @@ Ext.define('NP.controller.VendorCatalog', {
 		this.showUserOrderSummary(this.userSummaryCallback);
 	},
 
-	showCatalogView: function(catalog_id) {
-		var grid = this.setView('NP.view.catalog.VCCatalogView');
+	showCatalogView: function() {
+		var container = this.getCmp('catalog.jumptocatalogform');
+		var view = this.setView('NP.view.catalog.CatalogView');
 		this.showUserOrderSummary(this.userSummaryCallback);
-
-		// Load the store
-		grid.reloadFirstPage();
 	},
 
 	showAdvancedSearch: function(catalogs, type, property, keyword) {
@@ -503,5 +506,4 @@ Ext.define('NP.controller.VendorCatalog', {
 		this.setView('NP.view.catalog.BrandsView');
 		this.showUserOrderSummary(this.userSummaryCallback);
 	}
-
 });
