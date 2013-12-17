@@ -112,7 +112,7 @@ Ext.define('NP.controller.VendorCatalog', {
 			},*/
 			'[xtype="catalog.searchform"]': {
 				searchitems: function (catalogs, type, property, keyword, isAdvanced) {
-					this.addHistory('VendorCatalog:showAdvancedSearch:' + isAdvanced + ':' + catalogs + ':' + type + ':' + property + ':' + keyword);
+					this.addHistory('VendorCatalog:showSimpleSearchResults:' + catalogs + ':' + type + ':' + property + ':' + keyword);
 				},
 				advancedsearch: this.showAdvancedSearchResults
 			}
@@ -412,7 +412,34 @@ Ext.define('NP.controller.VendorCatalog', {
 	},
 
 	showAdvancedSearchResults: function (catalogs, type, property, keyword) {
+		var grid = this.getCmp('catalog.favoriteitemsgrid');
 
+		grid.addExtraParams({
+			catalogs: catalogs,
+			field: type,
+			property: property,
+			keyword: keyword,
+			userprofile_id: NP.Security.getUser().get('userprofile_id')
+		});
+
+		grid.getStore().load();
+	},
+
+	showSimpleSearchResults: function(catalogs, type, property, keyword) {
+		this.setView('NP.view.catalog.SimpleSearchView');
+		this.showUserOrderSummary(this.userSummaryCallback);
+
+		var grid = this.getCmp('catalog.favoriteitemsgrid');
+
+		grid.addExtraParams({
+			catalogs: catalogs,
+			field: type,
+			property: property,
+			keyword: keyword,
+			userprofile_id: NP.Security.getUser().get('userprofile_id')
+		});
+
+		grid.getStore().load();
 	}
 
 });

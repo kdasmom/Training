@@ -21,20 +21,17 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 	initComponent: function() {
 		var that = this;
 
-		if (!this.isSearch) {
 			var grouping = Ext.create('Ext.grid.feature.GroupingSummary', {
 				groupHeaderTpl: '{name}',
 				collapsible: false
 			});
 			this.features = [grouping];
-		}
 
 		var cellEditing = Ext.create('Ext.grid.plugin.CellEditing', {
 			clicksToEdit: 1,
 			listeners: {
 				edit: function(editor, e, eOpts) {
 					that.changedRecords[e.record.get('vcitem_id')] = e.value;
-					console.log('e: ', e);
 				}
 			}
 		});
@@ -158,6 +155,7 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 			this.store = Ext.create('NP.store.catalog.VcItems', {
 				service    	: 'CatalogService',
 				action     	: 'searchItems',
+				groupField	: 'vcitem_category_name',
 				extraParams: {
 					catalogs: null,
 					field: null,
