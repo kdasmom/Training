@@ -15,7 +15,8 @@ Ext.define('NP.controller.VendorCatalog', {
 	views: [
 		'catalog.OrderItemWindow',
 		'catalog.AdvancedSearch',
-		'catalog.BrandsView'
+		'catalog.BrandsView',
+		'catalog.SimpleSearchView'
 	],
 
 	stores: [

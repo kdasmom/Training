@@ -114,6 +114,12 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 				flex: 0.2
 			},
 			{
+				dataIndex: 'vcitem_upc',
+				text: NP.Translator.translate('UPC'),
+				align: 'center',
+				flex: 0.2
+			},
+			{
 				xtype: 'numbercolumn',
 				align: 'center',
 				text: NP.Translator.translate('Qty'),
