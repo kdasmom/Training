@@ -14,6 +14,7 @@ Ext.define('NP.view.catalog.SimpleSearchView', {
 		'NP.view.shared.button.Shop',
 		'NP.view.shared.button.Back',
 		'NP.view.shared.button.Favorite',
+		'NP.view.shared.button.Search',
 		'NP.view.catalog.JumpToCatalogForm',
 		'NP.view.catalog.UserOrder',
 		'NP.view.catalog.SearchForm',
@@ -30,6 +31,10 @@ Ext.define('NP.view.catalog.SimpleSearchView', {
 			{
 				xtype: 'shared.button.shop',
 				text: NP.Translator.translate('Shop by Brand')
+			},
+			{
+				xtype: 'shared.button.search',
+				text: NP.Translator.translate('Advanced search')
 			},
 			{
 				xtype: 'shared.button.favorite'
@@ -69,7 +74,6 @@ Ext.define('NP.view.catalog.SimpleSearchView', {
 				border: false
 			},
 			{
-//				xtype: 'catalog.searchresultsgrid'
 				xtype: 'catalog.favoriteitemsgrid',
 				isSearch: true
 			}

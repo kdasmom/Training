@@ -62,14 +62,13 @@ Ext.define('NP.view.catalog.AdvancedSearch', {
 				items: [
 					{
 						xtype: 'catalog.searchform',
-						advancedSearch: that.advancedSearch
+						advancedSearch: true
 					}
 				],
 				padding: '5',
 				border: false
 			},
 			{
-//				xtype: 'catalog.searchresultsgrid'
 				xtype: 'catalog.favoriteitemsgrid',
 				isSearch: true
 			}

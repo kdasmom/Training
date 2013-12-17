@@ -65,7 +65,13 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 			{
 				dataIndex: 'vcitem_number',
 				text: NP.Translator.translate('Item number'),
-				flex: 0.2
+				flex: 0.2,
+				renderer: function (val, meta, record) {
+					if (record.raw.vcorder_id) {
+						return val + '<div style="font-style: italic;">Ordered</div>'
+					}
+					return val;
+				}
 			},
 			{
 				dataIndex: 'vcitem_desc',

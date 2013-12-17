@@ -120,9 +120,10 @@ class VcItemGateway extends AbstractGateway {
 				->join(['vf' => 'vcfav'], 'vi.vcitem_id = vf.vcitem_id and vf.userprofile_id = ?', ['vcfav_id'], Select::JOIN_LEFT)
 				->join(['un' => 'UNSPSC_Commodity'], 'vi.UNSPSC_Commodity_Commodity = un.UNSPSC_Commodity_Commodity', [], Select::JOIN_LEFT)
 				->join(['lp' => 'link_vc_property'], 'lp.vc_id = vi.vc_id', [])
+				->join(['vo' => 'vcorder'], 'vo.vcitem_id = vi.vcitem_id and vo.userprofile_id = ?', ['vcorder_id'], Select::JOIN_LEFT)
 				->where(['vi.vcitem_status' => '?', 'lp.property_id' => '?']);
 
-		$params = [$userprofile_id, 1, $property];
+		$params = [$userprofile_id, $userprofile_id, 1, $property];
 
 		if (!empty($vc_id) && $vc_id !== 'null') {
 			$select->whereIn('vi.vc_id', '?');
@@ -166,13 +167,9 @@ class VcItemGateway extends AbstractGateway {
 				->whereLike('vi.vcitem_upc', "'%" . $keyword . "%'")
 				->whereUnNest();
 		}
-		$select->order($order);/*
-		$select->order($order)
-			->offset($pageSize * ($page - 1))
-			->limit($pageSize);*/
+		$select->order($order);
 
 		return $this->getPagingArray($select, $params, $pageSize, $page);
-//		return $this->adapter->query($select, $params);
 	}
 
 	/**
@@ -276,6 +273,7 @@ class VcItemGateway extends AbstractGateway {
 		$select->from(['vf' => 'vcfav'])
 			->columns(['vcfav_id'])
 			->join(['vi' => 'vcitem'], 'vf.vcitem_id = vi.vcitem_id', null)
+			->join(['vo' => 'vcorder'], 'vo.vcitem_id = vi.vcitem_id and vo.userprofile_id = vf.userprofile_id', ['vcorder_id'], Select::JOIN_LEFT)
 			->where(['vf.userprofile_id' => '?'])
 			->order($order)
 			->offset($pageSize * ($page - 1))

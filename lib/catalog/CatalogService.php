@@ -731,7 +731,9 @@ class CatalogService extends AbstractService {
 	}
 
 	public function searchItems($userprofile_id = null, $catalogs = null, $field = null, $property = null, $keyword = null, $pageSize = null, $page = 1, $sort = 'vcitem_number') {
-		return $this->vcItemGateway->searchItems($userprofile_id, $catalogs, $field, $keyword, $property, $pageSize, $page, $sort);
+		$result = $this->vcItemGateway->searchItems($userprofile_id, $catalogs, $field, $keyword, $property, $pageSize, $page, $sort);
+
+		return $result;
 	}
 }
 

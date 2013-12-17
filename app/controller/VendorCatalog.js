@@ -54,7 +54,17 @@ Ext.define('NP.controller.VendorCatalog', {
 					this.addHistory('VendorCatalog:showAdvancedSearch');
 				}
 			},
+			'[xtype="catalog.simplesearchview"] [xtype="shared.button.search"]': {
+				click: function() {
+					this.addHistory('VendorCatalog:showAdvancedSearch');
+				}
+			},
 			'[xtype="catalog.advancedsearch"] [xtype="shared.button.back"]': {
+				click: function() {
+					this.addHistory('VendorCatalog:showVendorCatalogListing');
+				}
+			},
+			'[xtype="catalog.simplesearchview"] [xtype="shared.button.back"]': {
 				click: function() {
 					this.addHistory('VendorCatalog:showVendorCatalogListing');
 				}
@@ -104,17 +114,27 @@ Ext.define('NP.controller.VendorCatalog', {
 				removefromfavorites: this.removeFromFavorites,
 				addtoorder: this.addItemToOrder,
 				addtofavorites: this.addToFavorites
-			},/*
-			'[xtype="catalog.favoritesview"] [xtype="catalog.favoriteitemsgrid"]': {
-				showdetails: this.showOrderItemDetailsWindow,
-				removefromfavorites: this.removeFromFavorites,
-				addtoorder: this.addItemToOrder
-			},*/
+			},
 			'[xtype="catalog.searchform"]': {
 				searchitems: function (catalogs, type, property, keyword, isAdvanced) {
 					this.addHistory('VendorCatalog:showSimpleSearchResults:' + catalogs + ':' + type + ':' + property + ':' + keyword);
 				},
 				advancedsearch: this.showAdvancedSearchResults
+			},
+			'[xtype="catalog.simplesearchview"] [xtype="shared.button.favorite"]': {
+				click: function() {
+					this.addHistory('VendorCatalog:showFavorites');
+				}
+			},
+			'[xtype="catalog.advancedsearch"] [xtype="shared.button.favorite"]': {
+				click: function() {
+					this.addHistory('VendorCatalog:showFavorites');
+				}
+			},
+			'[xtype="catalog.vclisting"] [xtype="shared.button.favorite"]': {
+				click: function() {
+					this.addHistory('VendorCatalog:showFavorites');
+				}
 			}
 		});
 
@@ -133,8 +153,8 @@ Ext.define('NP.controller.VendorCatalog', {
 		grid.reloadFirstPage();
 	},
 
-	showAdvancedSearch: function(isAdvanced, catalogs, type, property, keyword) {
-		this.setView('NP.view.catalog.AdvancedSearch', {advancedSearch: isAdvanced});
+	showAdvancedSearch: function(catalogs, type, property, keyword) {
+		this.setView('NP.view.catalog.AdvancedSearch');
 		this.showUserOrderSummary(this.userSummaryCallback);
 
 		var grid = this.getCmp('catalog.favoriteitemsgrid');
