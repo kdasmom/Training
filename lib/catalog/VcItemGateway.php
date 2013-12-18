@@ -267,6 +267,15 @@ class VcItemGateway extends AbstractGateway {
 		return $this->adapter->query($select, [$userprofile_id, $item_id]);
 	}
 
+	/**
+	 * Return favorite items
+	 *
+	 * @param $userprofile_id
+	 * @param $order
+	 * @param $pageSize
+	 * @param $page
+	 * @return array|bool
+	 */
 	public function getFavorites($userprofile_id, $order, $pageSize, $page) {
 		$select = new Select();
 
@@ -280,6 +289,48 @@ class VcItemGateway extends AbstractGateway {
 			->limit($pageSize);
 
 		return $this->adapter->query($select, [$userprofile_id]);
+	}
+
+
+	/**
+	 * Return categories with items count
+	 *
+	 * @param $vc_id
+	 * @return array|bool
+	 */
+	public function getCategoriesWithItemsCount($vc_id) {
+		$select1 = new Select();
+		$select2 = new Select();
+
+		$select1->from(['vi' => 'vcitem'])
+				->columns(['total_items' => new Expression('count(*)')])
+				->join(['un' => 'unspsc_commodity'], 'vi.unspsc_commodity_commodity = un.unspsc_commodity_commodity', ['category' => 'UNSPSC_Commodity_FamilyTitle', 'commodityid' => 'UNSPSC_Commodity_Commodity'], Select::JOIN_LEFT)
+				->where(
+					[
+						'vi.vc_id' => '?',
+						'vi.vcitem_status' => '?'
+					]
+				)
+				->whereIsNotNull('vi.UNSPSC_Commodity_Commodity')
+				->group('un.UNSPSC_Commodity_FamilyTitle, un.UNSPSC_Commodity_Commodity');
+
+		$select2->from(['vi' => 'vcitem'])
+			->columns(['total_items' => new Expression('count(*)')])
+				->join(['un' => 'unspsc_commodity'], 'vi.unspsc_commodity_commodity = un.unspsc_commodity_commodity', ['category' => 'UNSPSC_Commodity_FamilyTitle', 'commodityid' => 'UNSPSC_Commodity_Commodity'], Select::JOIN_LEFT)
+				->where(
+					[
+						'vi.vc_id' => '?',
+						'vi.vcitem_status' => '?'
+					]
+				)
+				->whereIsNull('vi.UNSPSC_Commodity_Commodity')
+				->whereIsNotNull('vi.vcitem_category_name')
+				->whereNotEquals('vi.vcitem_category_name', '?')
+				->group('un.UNSPSC_Commodity_FamilyTitle, un.UNSPSC_Commodity_Commodity');
+
+		$sql = $select1->toString() . ' union all ' . $select2->toString() . ' order by category asc';
+
+		return $this->adapter->query($sql, [$vc_id, 1, $vc_id, 1, '']);
 	}
 
 }

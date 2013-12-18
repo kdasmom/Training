@@ -735,6 +735,20 @@ class CatalogService extends AbstractService {
 
 		return $result;
 	}
+
+	/**
+	 * Return categories list with items count
+	 *
+	 * @param null $vc_id
+	 * @return array
+	 */
+	public function getCategoriesWithItemsCount($vc_id = null) {
+		if (!$vc_id) {
+			return [];
+		}
+
+		return $this->vcItemGateway->getCategoriesWithItemsCount($vc_id);
+	}
 }
 
 ?>

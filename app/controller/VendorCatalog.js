@@ -16,7 +16,8 @@ Ext.define('NP.controller.VendorCatalog', {
 		'catalog.OrderItemWindow',
 		'catalog.AdvancedSearch',
 		'catalog.BrandsView',
-		'catalog.SimpleSearchView'
+		'catalog.SimpleSearchView',
+		'catalog.CatalogView'
 	],
 
 	stores: [
@@ -33,7 +34,9 @@ Ext.define('NP.controller.VendorCatalog', {
 		this.control({
 			'[xtype="catalog.jumptocatalogform"] [xtype="button"]': {
 				click: function() {
-					this.addHistory('VendorCatalog:showCatalogView');
+					var catalog = this.getCmp('catalog.jumptocatalogform').getChildByElement('vc_id').getValue();
+
+					this.addHistory('VendorCatalog:showCatalogView:' + catalog);
 				}
 			},
 			'[xtype="catalog.userorder"] [xtype="button"]': {
@@ -188,9 +191,8 @@ Ext.define('NP.controller.VendorCatalog', {
 		this.showUserOrderSummary(this.userSummaryCallback);
 	},
 
-	showCatalogView: function() {
-		var container = this.getCmp('catalog.jumptocatalogform');
-		var view = this.setView('NP.view.catalog.CatalogView');
+	showCatalogView: function(vc_id) {
+		var view = this.setView('NP.view.catalog.CatalogView', {vc_id: vc_id});
 		this.showUserOrderSummary(this.userSummaryCallback);
 	},
 
