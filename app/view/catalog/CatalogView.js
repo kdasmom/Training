@@ -16,7 +16,8 @@ Ext.define('NP.view.catalog.CatalogView', {
 		'NP.view.catalog.JumpToCatalogForm',
 		'NP.view.catalog.UserOrder',
 		'NP.view.catalog.SearchForm',
-		'NP.view.catalog.CategoriesDataView'
+		'NP.view.catalog.CategoriesDataView',
+		'NP.view.catalog.BrandsDataView'
 	],
 
 	initComponent: function() {
@@ -74,6 +75,11 @@ Ext.define('NP.view.catalog.CatalogView', {
 			{
 				xtype: 'catalog.categoriesdataview',
 				vc_id: that.vc_id
+			},
+			{
+				xtype: 'catalog.brandsdataview',
+				vc_id: that.vc_id,
+				padding: '20 0 0 0'
 			}
 		];
 

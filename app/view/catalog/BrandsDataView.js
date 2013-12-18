@@ -1,17 +1,17 @@
 /**
  * Created by Andrey Baranov
- * date: 12/18/13 2:57 AM
+ * date: 12/18/13 3:26 PM
  */
 
-Ext.define('NP.view.catalog.CategoriesDataView', {
+Ext.define('NP.view.catalog.BrandsDataView', {
 	extend: 'Ext.panel.Panel',
-	alias: 'widget.catalog.categoriesdataview',
+	alias: 'widget.catalog.brandsdataview',
 
 	requires: [
 		'NP.lib.core.Config'
 	],
 
-	title: NP.Translator.translate('Shop by category'),
+	title: NP.Translator.translate('Shop by brand'),
 
 	initComponent: function() {
 		var that = this;
@@ -22,24 +22,23 @@ Ext.define('NP.view.catalog.CategoriesDataView', {
 				xtype: 'dataview',
 				tpl: new Ext.XTemplate(
 					'<tpl for=".">',
-					'<div style="margin-bottom: 10px; float: left; width: 50%; padding: 10px; cursor: pointer;" class="category">',
-					'<span>{category} ({total_items})</span>',
+					'<div style="margin-bottom: 10px; float: left; width: 50%; padding: 10px; cursor: pointer;" class="brand">',
+					'<span>{vcitem_manufacturer} ({total_items})</span>',
 					'</div>',
 					'</tpl>'
 				),
 				store: Ext.create('NP.lib.data.Store', {
 					service: 'CatalogService',
-					action: 'getCategoriesWithItemsCount',
+					action: 'getBrandsWithItemsCount',
 					extraParams: {
 						vc_id: that.vc_id
 					},
-					fields: ['category', 'total_items', 'commodityid']/*,
-					autoLoad: true*/
+					fields: ['vcitem_manufacturer', 'total_items']
 				}),
-				itemSelector: 'div.category',
+				itemSelector: 'div.brand',
 				listeners: {
 					itemclick: function( dataview, record, item, index, e, eOpts) {
-						that.fireEvent('showbycategory', record);
+						that.fireEvent('showbybrand', record);
 					}
 				}
 			}

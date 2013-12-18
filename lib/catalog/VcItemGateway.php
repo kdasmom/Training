@@ -333,6 +333,27 @@ class VcItemGateway extends AbstractGateway {
 		return $this->adapter->query($sql, [$vc_id, 1, $vc_id, 1, '']);
 	}
 
+	/**
+	 * return barnds with items count
+	 *
+	 * @param $vc_id
+	 * @return array|bool
+	 */
+	public function getBrandsWithItemsCount($vc_id) {
+		$select = new Select();
+
+		$select->from(['vi' => 'vcitem'])
+				->columns(['total_items' => new Expression('count(*)'), 'vcitem_manufacturer'])
+				->where([
+					'vc_id' => '?',
+					'vcitem_status' => '?'
+				])
+				->group('vcitem_manufacturer')
+				->order('vcitem_manufacturer');
+
+		return $this->adapter->query($select, [$vc_id, 1]);
+	}
+
 }
 
 ?>

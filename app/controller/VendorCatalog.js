@@ -17,7 +17,8 @@ Ext.define('NP.controller.VendorCatalog', {
 		'catalog.AdvancedSearch',
 		'catalog.BrandsView',
 		'catalog.SimpleSearchView',
-		'catalog.CatalogView'
+		'catalog.CatalogView',
+		'catalog.BrandsDataView'
 	],
 
 	stores: [
@@ -194,6 +195,20 @@ Ext.define('NP.controller.VendorCatalog', {
 	showCatalogView: function(vc_id) {
 		var view = this.setView('NP.view.catalog.CatalogView', {vc_id: vc_id});
 		this.showUserOrderSummary(this.userSummaryCallback);
+
+		var catalogs = this.getCmp('catalog.catalogview').down('dataview');
+		var brands = this.getCmp('catalog.brandsdataview').down('dataview');
+
+		Ext.apply(catalogs.getStore().getProxy().extraParams, {
+			vc_id: vc_id
+		});
+		Ext.apply(brands.getStore().getProxy().extraParams, {
+			vc_id: vc_id
+		});
+
+		catalogs.getStore().reload();
+		brands.getStore().reload();
+
 	},
 
 	showAdvancedSearch: function(catalogs, type, property, keyword) {
