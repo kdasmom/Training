@@ -22,6 +22,7 @@ Ext.define('NP.view.catalog.CatalogView', {
 
 	initComponent: function() {
 		var that = this;
+
 		var bar = [
 			{
 				xtype: 'shared.button.back',

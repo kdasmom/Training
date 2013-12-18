@@ -33,8 +33,7 @@ Ext.define('NP.view.catalog.CategoriesDataView', {
 					extraParams: {
 						vc_id: that.vc_id
 					},
-					fields: ['category', 'total_items', 'commodityid']/*,
-					autoLoad: true*/
+					fields: ['category', 'total_items', 'commodityid']
 				}),
 				itemSelector: 'div.category',
 				listeners: {
