@@ -15,7 +15,8 @@ Ext.define('NP.view.catalog.BrandsView', {
 		'NP.view.shared.button.Favorite',
 		'NP.view.catalog.JumpToCatalogForm',
 		'NP.view.catalog.SearchForm',
-		'NP.view.catalog.UserOrder'
+		'NP.view.catalog.UserOrder',
+		'NP.view.catalog.AlphabeticalBrandsGrid'
 	],
 
 	title: NP.Translator.translate('Shop By Brand'),
@@ -66,6 +67,9 @@ Ext.define('NP.view.catalog.BrandsView', {
 				],
 				padding: '5',
 				border: false
+			},
+			{
+				xtype: 'catalog.alphabeticalbrandsgrid'
 			}
 		];
 

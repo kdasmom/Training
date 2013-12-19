@@ -21,11 +21,11 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 	initComponent: function() {
 		var that = this;
 
-			var grouping = Ext.create('Ext.grid.feature.GroupingSummary', {
-				groupHeaderTpl: '{name}',
-				collapsible: false
-			});
-			this.features = [grouping];
+		var grouping = Ext.create('Ext.grid.feature.GroupingSummary', {
+			groupHeaderTpl: '{name}',
+			collapsible: false
+		});
+		this.features = [grouping];
 
 		var cellEditing = Ext.create('Ext.grid.plugin.CellEditing', {
 			clicksToEdit: 1,

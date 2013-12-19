@@ -763,6 +763,15 @@ class CatalogService extends AbstractService {
 
 		return $this->vcItemGateway->getBrandsWithItemsCount($vc_id);
 	}
+
+	/**
+	 * Return brands
+	 *
+	 * @return mixed
+	 */
+	public function getBrands() {
+		return $this->vcItemGateway->getBrands();
+	}
 }
 
 ?>

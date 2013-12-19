@@ -291,7 +291,6 @@ class VcItemGateway extends AbstractGateway {
 		return $this->adapter->query($select, [$userprofile_id]);
 	}
 
-
 	/**
 	 * Return categories with items count
 	 *
@@ -352,6 +351,34 @@ class VcItemGateway extends AbstractGateway {
 				->order('vcitem_manufacturer');
 
 		return $this->adapter->query($select, [$vc_id, 1]);
+	}
+
+	/**
+	 * Return brands with start letter
+	 *
+	 * @return array|bool
+	 */
+	public function getBrands() {
+		$select = new Select();
+
+		$select->from(['vi' => 'vcitem'])
+				->columns([
+					'letter' => new Expression("case
+							when upper(left(vi.vcitem_manufacturer, 1)) in ('0','1','2','3','4','5','6','7','8','9') then '[0-9]'
+							else upper(left(vi.vcitem_manufacturer, 1))
+						end"),
+					'vcitem_manufacturer'
+				])
+				->where(['vcitem_status' => '?'])
+				->whereExists('SELECT *
+					FROM vc
+						INNER JOIN link_vc_vccat l ON l.vc_id = vc.vc_id
+					WHERE vc.vc_id = vi.vc_id')
+				->whereNotEquals('vcitem_manufacturer', '?')
+				->group('vcitem_manufacturer')
+				->order('vcitem_manufacturer');
+
+		return $this->adapter->query($select, [1, '']);
 	}
 
 }
