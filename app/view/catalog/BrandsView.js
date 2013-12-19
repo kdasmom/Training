@@ -37,6 +37,26 @@ Ext.define('NP.view.catalog.BrandsView', {
 			}
 		];
 
+		var alphabet = ['0-9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+		var objs = [];
+		for (var i = 0; i < alphabet.length; i++) {
+
+			(function(index, text) {
+				objs[index] = {
+					text: text,
+					listeners:
+					{
+						click:
+						{
+							fn: function()
+							{
+								that.fireEvent('focusonletter',text);
+							}
+						}
+					}
+			};
+			})(i, alphabet[i]);
+		}
 		this.tbar = bar;
 		this.overflowY = 'scroll';
 
@@ -67,6 +87,11 @@ Ext.define('NP.view.catalog.BrandsView', {
 				],
 				padding: '5',
 				border: false
+			},
+			{
+				xtype: 'buttongroup',
+				width: '100%',
+				items: objs
 			},
 			{
 				xtype: 'catalog.alphabeticalbrandsgrid'

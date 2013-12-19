@@ -770,7 +770,9 @@ class CatalogService extends AbstractService {
 	 * @return mixed
 	 */
 	public function getBrands() {
-		return $this->vcItemGateway->getBrands();
+		$result = $this->vcItemGateway->getBrands();
+
+		return $result;
 	}
 }
 

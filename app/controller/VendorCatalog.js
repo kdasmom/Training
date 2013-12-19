@@ -181,6 +181,9 @@ Ext.define('NP.controller.VendorCatalog', {
 				click: function() {
 					this.addHistory('VendorCatalog:showBrands');
 				}
+			},
+			'[xtype="catalog.brandsview"]': {
+				focusonletter: this.focusBrandsGroup
 			}
 
 		});
@@ -523,5 +526,16 @@ Ext.define('NP.controller.VendorCatalog', {
 	showBrands: function() {
 		this.setView('NP.view.catalog.BrandsView');
 		this.showUserOrderSummary(this.userSummaryCallback);
+	},
+
+	focusBrandsGroup: function (text) {
+		var grid = this.getCmp('catalog.alphabeticalbrandsgrid');
+		var groups = grid.getStore().getGroups();
+		for (var index in groups) {
+			if (groups[index]['name'] == text) {
+				grid.getView().focusRow(groups[index].children[0]['index']);
+				break;
+			}
+		}
 	}
 });

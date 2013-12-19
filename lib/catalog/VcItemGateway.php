@@ -364,11 +364,10 @@ class VcItemGateway extends AbstractGateway {
 		$select->from(['vi' => 'vcitem'])
 				->columns([
 					'letter' => new Expression("case
-							when upper(left(vi.vcitem_manufacturer, 1)) in ('0','1','2','3','4','5','6','7','8','9') then '[0-9]'
+							when upper(left(vi.vcitem_manufacturer, 1)) in ('0','1','2','3','4','5','6','7','8','9') then '0-9'
 							else upper(left(vi.vcitem_manufacturer, 1))
 						end"),
-					'vcitem_manufacturer'
-				])
+					'vcitem_manufacturer'])
 				->where(['vcitem_status' => '?'])
 				->whereExists('SELECT *
 					FROM vc
