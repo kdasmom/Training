@@ -16,9 +16,8 @@ Ext.define('NP.view.catalog.AlphabeticalBrandsGrid', {
 	initComponent: function() {
 		var that = this;
 		var grouping = Ext.create('Ext.grid.feature.Grouping', {
-			groupHeaderTpl: '{name}',
-			collapsible: true,
-			startCollapsed: true
+			groupHeaderTpl:  '{name}<div style="float: right; margin-right: 20px;"><a href="javascript:void(0)" class="top">Return to top</a></div>',
+			collapsible: false
 		});
 		this.features = [grouping];
 
@@ -38,6 +37,17 @@ Ext.define('NP.view.catalog.AlphabeticalBrandsGrid', {
 			autoLoad	: true,
 			fields: ['vcitem_manufacturer', 'letter']
 		});
+
+
+		this.listeners = {
+			groupclick: function (view, node, group, e, eOpts) {
+				var link = Ext.fly(e.target);
+
+				if (link.hasCls('top')) {
+					that.getView().focusRow(0);
+				}
+			}
+		};
 		this.callParent(arguments);
 	}
 });

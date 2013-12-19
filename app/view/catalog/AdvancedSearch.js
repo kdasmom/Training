@@ -16,9 +16,10 @@ Ext.define('NP.view.catalog.AdvancedSearch', {
 		'NP.view.catalog.JumpToCatalogForm',
 		'NP.view.catalog.UserOrder',
 		'NP.view.catalog.SearchForm',
-//		'NP.view.catalog.SearchResultsGrid'
 		'NP.view.catalog.FavoriteItemsGrid'
 	],
+
+	title: NP.Translator.translate('Advanced search'),
 
 	initComponent: function() {
 		var that = this;

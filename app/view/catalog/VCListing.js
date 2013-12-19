@@ -18,6 +18,7 @@ Ext.define('NP.view.catalog.VCListing', {
 		'NP.view.catalog.VCGrid'
 	],
 
+	title: NP.Translator.translate('Vendor catalog listing'),
 	initComponent: function() {
 		var that = this;
 		var bar = [

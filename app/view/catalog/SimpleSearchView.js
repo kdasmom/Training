@@ -21,6 +21,7 @@ Ext.define('NP.view.catalog.SimpleSearchView', {
 		'NP.view.catalog.FavoriteItemsGrid'
 	],
 
+	title: NP.Translator.translate('Search'),
 	initComponent: function() {
 		var that = this;
 		var bar = [
