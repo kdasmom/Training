@@ -58,7 +58,6 @@ Ext.define('NP.view.catalog.BrandsView', {
 			})(i, alphabet[i]);
 		}
 		this.tbar = bar;
-		this.overflowY = 'scroll';
 
 		this.items = [
 			{
@@ -94,7 +93,8 @@ Ext.define('NP.view.catalog.BrandsView', {
 				items: objs
 			},
 			{
-				xtype: 'catalog.alphabeticalbrandsgrid'
+				xtype: 'catalog.alphabeticalbrandsgrid',
+				overflowY: 'scroll'
 			}
 		];
 
