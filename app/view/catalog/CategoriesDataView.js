@@ -38,7 +38,8 @@ Ext.define('NP.view.catalog.CategoriesDataView', {
 				itemSelector: 'div.category',
 				listeners: {
 					itemclick: function( dataview, record, item, index, e, eOpts) {
-						that.fireEvent('showbycategory', record);
+						console.log(record);
+						that.fireEvent('showbycategory', 'category', record.get('category'), that.vc_id);
 					}
 				}
 			}

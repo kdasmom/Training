@@ -38,7 +38,7 @@ Ext.define('NP.view.catalog.BrandsDataView', {
 				itemSelector: 'div.brand',
 				listeners: {
 					itemclick: function( dataview, record, item, index, e, eOpts) {
-						that.fireEvent('showbybrand', record);
+						that.fireEvent('showbybrand', 'brand', record.get('vcitem_manufacturer'), that.vc_id);
 					}
 				}
 			}

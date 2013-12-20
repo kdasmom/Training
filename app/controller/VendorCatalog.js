@@ -121,7 +121,6 @@ Ext.define('NP.controller.VendorCatalog', {
 				selectProperty: this.getOrderVendors,
 				selectVendor: this.getOrderPOs
 			},
-
 			'[xtype="catalog.orderitemwindow"] [xtype="shared.button.close"]': {
 				click: function() {
 					this.getCmp('catalog.orderitemwindow').hide();
@@ -184,6 +183,16 @@ Ext.define('NP.controller.VendorCatalog', {
 			},
 			'[xtype="catalog.brandsview"]': {
 				focusonletter: this.focusBrandsGroup
+			},
+			'[xtype="catalog.brandsdataview"]': {
+				showbybrand: function(field, value, vc_id) {
+					this.addHistory('VendorCatalog:showItems:' + field + ':' + value + ':' + vc_id);
+				}
+			},
+			'[xtype="catalog.categoriesdataview"]': {
+				showbycategory: function(field, value, vc_id) {
+					this.addHistory('VendorCatalog:showItems:' + field + ':' + value + ':' + vc_id);
+				}
 			}
 
 		});
@@ -537,5 +546,10 @@ Ext.define('NP.controller.VendorCatalog', {
 				break;
 			}
 		}
+	},
+
+	showItems: function(field, value, vc_id) {
+		this.setView('NP.view.catalog.ItemsView', {field: field, value: value, vc_id: vc_id});
+		this.showUserOrderSummary(this.userSummaryCallback);
 	}
 });

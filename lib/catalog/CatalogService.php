@@ -774,6 +774,14 @@ class CatalogService extends AbstractService {
 
 		return $result;
 	}
+
+	public function getItemsByCategoryOrBrand($field = false, $value = false) {
+		if (!$field || !$value) {
+			return [];
+		}
+
+
+	}
 }
 
 ?>

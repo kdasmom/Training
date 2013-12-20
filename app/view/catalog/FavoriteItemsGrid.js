@@ -153,16 +153,32 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 		];
 
 		if (!this.isSearch) {
-			this.store = Ext.create('NP.store.catalog.VcItems', {
-				service    	: 'CatalogService',
-				action     	: 'getFavorites',
-				groupField	: 'vcitem_category_name',
-				extraParams: {
-					userprofile_id: NP.Security.getUser().get('userprofile_id')
-				},
-				paging     	: true,
-				autoLoad	: true
-			});
+			if (!this.filterField) {
+				this.store = Ext.create('NP.store.catalog.VcItems', {
+					service    	: 'CatalogService',
+					action     	: 'getFavorites',
+					groupField	: 'vcitem_category_name',
+					extraParams: {
+						userprofile_id: NP.Security.getUser().get('userprofile_id')
+					},
+					paging     	: true,
+					autoLoad	: true
+				});
+			} else {
+				this.store = Ext.create('NP.store.catalog.VcItems', {
+					service    	: 'CatalogService',
+					action     	: 'searchItems',
+					groupField	: 'vcitem_category_name',
+					extraParams: {
+						userprofile_id: NP.Security.getUser().get('userprofile_id'),
+						catalogs: that.vc_id,
+						field: that.filterField,
+						keyword: that.filterValue
+					},
+					paging     	: true,
+					autoLoad	: true
+				});
+			}
 		} else {
 			this.store = Ext.create('NP.store.catalog.VcItems', {
 				service    	: 'CatalogService',
