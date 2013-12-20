@@ -4,7 +4,7 @@
  * @author Thomas Messier
  */
 Ext.define('NP.view.catalogMaintenance.CatalogFormCategories', {
-    extend: 'Ext.ux.form.ItemSelector',
+    extend: 'NP.lib.ui.Assigner',
     alias: 'widget.catalogmaintenance.catalogformcategories',
 
     requires: ['NP.store.catalog.VcCats'],

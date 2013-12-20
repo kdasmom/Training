@@ -7,17 +7,20 @@ Ext.define('NP.view.images.Index', {
         'NP.lib.core.Config',
         'NP.lib.core.Security',
         'NP.lib.core.Translator',
+        'NP.store.invoice.Invoices',
         'NP.view.shared.PropertyCombo',
         'NP.view.shared.VendorAutoComplete',
         'NP.view.shared.CustomFieldContainer',
-        'NP.view.shared.button.Return',
+        'NP.view.shared.button.Reset',
         'NP.view.shared.button.Cancel',
+        'NP.view.shared.button.Save',
         'NP.view.shared.button.Delete',
         'NP.view.shared.button.Previous',
         'NP.view.shared.button.Next',
         'NP.view.shared.button.SaveAndNext',
         'NP.view.shared.button.SaveAndPrevious',
-        'NP.store.system.PriorityFlags'
+        'NP.store.system.PriorityFlags',
+        'NP.view.invoice.UseTemplateWindow'
     ],
 
     locale: {
@@ -72,7 +75,6 @@ Ext.define('NP.view.images.Index', {
             this.markupUtility(),
             this.markupPropertyName(),
             this.markupVendorName(),
-            this.markupAddresses(),
             this.markupInvoiceNumber(),
             this.markupP0Number(),
             this.markupInvoiceDates(),
@@ -120,28 +122,20 @@ Ext.define('NP.view.images.Index', {
         ];
 
         // Prepare top toolbar elements.
-        if (this.section == 'exception') {
-            this.tbar = [
-                {xtype: 'shared.button.cancel', itemId: 'buttonReturn',  text: NP.Translator.translate('Cancel')},
-
-                {xtype: 'shared.button.previous', itemId: 'buttonPrev',  text: NP.Translator.translate(this.locale.buttonPrev)},
-                {xtype: 'shared.button.next', itemId: 'buttonNext',  text: NP.Translator.translate(this.locale.buttonNext)},
-
-                {xtype: 'shared.button.saveandnext', itemId: 'buttonSaveAsException',      text: NP.Translator.translate(this.locale.buttonSaveAndNext)},
-                {xtype: 'shared.button.saveandnext', itemId: 'buttonIndexingComplete',      text: NP.Translator.translate('Indexing Complete and Next')}
-            ];
-        } else {
-            this.tbar = [
-                {xtype: 'shared.button.previous', itemId: 'buttonPrev',  text: NP.Translator.translate(this.locale.buttonPrev)},
-                {xtype: 'shared.button.saveandprevious', itemId: 'buttonSaveAndPrev',      text: NP.Translator.translate(this.locale.buttonSaveAndPrev)},
-                {xtype: 'shared.button.saveandnext', itemId: 'buttonSaveAsException',  text: NP.Translator.translate(this.locale.buttonSaveAsException)},
-                {xtype: 'shared.button.return', itemId: 'buttonReturn',  text: NP.Translator.translate(this.locale.buttonReturn)},
-                {xtype: 'shared.button.delete', itemId: 'buttonDeleteFromQueue',  text: NP.Translator.translate(this.locale.buttonDelete)},
-                {xtype: 'shared.button.saveandnext', itemId: 'buttonSaveAndNext',      text: NP.Translator.translate(this.locale.buttonSaveAndNext)},
-                {xtype: 'shared.button.next', itemId: 'buttonNext',  text: NP.Translator.translate(this.locale.buttonNext)},
-                {xtype: 'shared.button.next', itemId: 'buttonInvoice', text: NP.Translator.translate(this.locale.buttonInvoice)}
-            ];
-        }
+        this.tbar = [
+            {xtype: 'shared.button.reset', itemId: 'buttonReturn',  text: NP.Translator.translate(this.locale.buttonReturn)},
+            {xtype: 'tbseparator'},
+            {xtype: 'shared.button.previous', itemId: 'buttonPrev',  text: NP.Translator.translate(this.locale.buttonPrev)},
+            {xtype: 'shared.button.next', itemId: 'buttonNext',  text: NP.Translator.translate(this.locale.buttonNext)},
+            {xtype: 'tbseparator'},
+            {xtype: 'shared.button.saveandprevious', itemId: 'buttonSaveAndPrev', text: NP.Translator.translate(this.locale.buttonSaveAndPrev), hidden: true},
+            {xtype: 'shared.button.saveandnext', itemId: 'buttonSaveAndNext', text: NP.Translator.translate(this.locale.buttonSaveAndNext)},
+            {xtype: 'shared.button.saveandnext', itemId: 'buttonIndexingComplete', text: NP.Translator.translate('Indexing Complete and Next'), hidden: true},
+            {xtype: 'tbseparator', itemId: 'tbSep'},
+            {xtype: 'shared.button.saveandnext', itemId: 'buttonSaveAsException',  text: NP.Translator.translate(this.locale.buttonSaveAsException), hidden: true},
+            {xtype: 'shared.button.save', itemId: 'buttonInvoice', text: NP.Translator.translate(this.locale.buttonInvoice), hidden: true},
+            {xtype: 'shared.button.delete', itemId: 'buttonDeleteFromQueue',  text: NP.Translator.translate(this.locale.buttonDelete), hidden: true}
+        ];
 
         this.callParent(arguments);
         this.onDocumentTypeChange();
@@ -552,7 +546,6 @@ Ext.define('NP.view.images.Index', {
                     displayField         : 'long_display_name',
                     valueField           : 'UtilityAccount_Id',
                     allowBlank           : false,
-                    loadStoreOnFirstQuery: true,
                     store                : Ext.create('NP.store.vendor.UtilityAccounts', {
                         service    : 'UtilityService',
                         action     : 'getAccountsByUser',
@@ -706,6 +699,8 @@ Ext.define('NP.view.images.Index', {
      * Prepare markup for Propery Name section.
      */
     markupPropertyName: function() {
+        var me = this;
+
         return [
             // Property
             {
@@ -714,7 +709,32 @@ Ext.define('NP.view.images.Index', {
                 name      : 'Property_Id',
                 allowBlank: false,
                 minChars  : 1,
-                store     : this['postload-store']['property-names']
+                store     : me['postload-store']['property-names']
+            },{
+                xtype    : 'button',
+                text     : NP.Translator.translate('Property Address'),
+                width    : me.buttonWidth,
+                margin   : '0 0 0 ' + (me.labelWidth + 5),
+                listeners: {
+                    click: function() {
+                        var doctype = me.findField('Image_Doctype_Id').getDisplayValue();
+
+                        if (doctype.toUpperCase() == 'Utility Invoice'.toUpperCase()) {
+                            var utilAcctField = me.findField('utilityaccount_id');
+                            
+                            if (utilAcctField.getValue() === null) {
+                                return;
+                            }
+
+                            var utilRec = utilAcctField.findRecordByValue(utilAcctField.getValue()),
+                                id      = utilRec.get('property_id');
+                        } else {
+                            id = me.findField('Property_Id').getValue();
+                        }
+
+                        me.showAddressWindow.apply(me, [id, 'property', 'Property Address']);
+                    }
+                }
             }
         ];
     },
@@ -726,6 +746,8 @@ Ext.define('NP.view.images.Index', {
      * Prepare markup for Vendor Name section.
      */
     markupVendorName: function() {
+        var me = this;
+
         return [
             // Vendor
             {
@@ -733,56 +755,12 @@ Ext.define('NP.view.images.Index', {
                 xtype     : 'shared.vendorautocomplete',
                 name      : 'Image_Index_VendorSite_Id',
                 valueField: 'vendorsite_id',
-                store     : this['postload-store']['vendor-names']
-            }
-        ];
-    },
-
-    /***************************************************************************
-     * Section: Addresses
-     **************************************************************************/
-    /**
-     * Prepare markup for Addresses section.
-     */
-    markupAddresses: function() {
-        var self = this;
-
-        return [
-            {
-                xtype    : 'button',
-                text     : NP.Translator.translate('Property Address'),
-                width    : self.buttonWidth,
-                margin   : '0 0 0 ' + (self.labelWidth + 5),
-                listeners: {
-                    click: function() {
-                        var doctype = Ext.ComponentQuery.query(
-                            '[name="Image_Doctype_Id"]'
-                        )[0].getDisplayValue();
-
-                        if (doctype.toUpperCase() == 'Utility Invoice'.toUpperCase()) {
-                            var utilAcctField = self.findField('utilityaccount_id');
-                            
-                            if (utilAcctField.getValue() === null) {
-                                return;
-                            }
-
-                            var utilRec = utilAcctField.findRecordByValue(utilAcctField.getValue()),
-                                id      = utilRec.get('property_id');
-                        } else {
-                            id = Ext.ComponentQuery.query(
-                                '[itemId="field-property-name"]'
-                            )[0].getValue();
-                        }
-
-                        self.showAddressWindow.apply(self, [id, 'property', 'Property Address']);
-                    }
-                }
-            },
-            {
+                store     : me['postload-store']['vendor-names']
+            },{
                 xtype    : 'button',
                 text     : NP.Translator.translate('Vendor Address'),
-                width    : self.buttonWidth,
-                margin   : '0 0 0 ' + (self.labelWidth + 6),
+                width    : me.buttonWidth,
+                margin   : '0 0 0 ' + (me.labelWidth + 6),
                 listeners: {
                     click: function() {
                         var doctype = Ext.ComponentQuery.query(
@@ -790,7 +768,7 @@ Ext.define('NP.view.images.Index', {
                         )[0].getDisplayValue();
 
                         if (doctype.toUpperCase() == 'Utility Invoice'.toUpperCase()) {
-                            var utilAcctField = self.findField('utilityaccount_id');
+                            var utilAcctField = me.findField('utilityaccount_id');
                             
                             if (utilAcctField.getValue() === null) {
                                 return;
@@ -799,17 +777,17 @@ Ext.define('NP.view.images.Index', {
                             var utilRec = utilAcctField.findRecordByValue(utilAcctField.getValue()),
                                 id      = utilRec.get('vendor_id');
                         } else {
-                            var vendorField = self.findField('Image_Index_VendorSite_Id');
+                            var vendorField = me.findField('Image_Index_VendorSite_Id');
 
                             if (vendorField.getValue() === null) {
                                 return;
                             }
                             
-                            var vendorRec   = vendorField.findRecordByValue(vendorField.getValue()),
-                                id          = vendorRec.get('vendor_id');
+                            var vendorRec = vendorField.findRecordByValue(vendorField.getValue()),
+                                id        = (vendorRec !== false) ? vendorRec.get('vendor_id') : null;
                         }
 
-                        self.showAddressWindow.apply(self, [id, 'vendorsite', 'Vendor Address'])
+                        me.showAddressWindow.apply(me, [id, 'vendorsite', 'Vendor Address'])
                     }
                 }
             }
@@ -952,6 +930,9 @@ Ext.define('NP.view.images.Index', {
                         self.showUseTemplateWindow();
                     }
                 }
+            },{
+                xtype: 'hiddenfield',
+                name : 'image_index_draft_invoice_id'
             }
         ];
     },
@@ -1114,12 +1095,11 @@ Ext.define('NP.view.images.Index', {
      * Show Use Template window.
      */
     showUseTemplateWindow: function() {
-        var property = Ext.ComponentQuery.query(
-            '[name="Property_Id"]'
-        )[0];
-        var vendor = Ext.ComponentQuery.query(
-            '[name="Image_Index_VendorSite_Id"]'
-        )[0];
+        var me         = this,
+            property   = me.findField('Property_Id'),
+            vendor     = me.findField('Image_Index_VendorSite_Id'),
+            image_index_draft_invoice_id = me.findField('image_index_draft_invoice_id').getValue();
+        
         if (!property || !vendor) {
             Ext.MessageBox.alert('Use Template', 'You must select a property and vendor.');
             return;
@@ -1134,55 +1114,15 @@ Ext.define('NP.view.images.Index', {
 
         var utilityaccount_id = this.findField('utilityaccount_id').getValue();
 
-        var templateStore = 
-            Ext.create('NP.store.images.Templates', {
-                service    : 'InvoiceService',
-                action     : 'getTemplatesByCriteria',
-                extraParams : {
-                    'property_id'      : property_id,
-                    'vendorsite_id'    : vendorsite_id,
-                    'utilityaccount_id': utilityaccount_id
-                },
-                autoLoad: true
-            });
-
-        var window = Ext.create('Ext.window.Window', {
-            title: 'Add Template',
-
-            width: 400,
-            height: 200,
-            bodyPadding: 10,
-
-            modal: true,
-            layout: 'form',
-
-            tbar: [
-                {
-                    xtype: 'shared.button.cancel',
-                    text: NP.Translator.translate('Cancel'),
-                    listeners: {
-                        click: function() {
-                            window.close();
-                        }
-                    }
-                }
-            ],
-            items: [
-                {
-                    xtype            : 'customcombo',
-                    fieldLabel       : NP.Translator.translate('Choose a template'),
-                    store            : templateStore,
-                    valueField       : 'invoice_id',
-                    displayField     : 'template_name',
-                    listeners        : {
-                        select: function(combo, recs) {
-                            
-                        }
-                    }
-                }
-            ]
+        var win = Ext.create('NP.view.invoice.UseTemplateWindow', {
+            itemId               : 'imageUseTemplateWin',
+            hideTemplateRemoveBtn: false,
+            property_id          : property_id,
+            vendorsite_id        : vendorsite_id,
+            utilityaccount_id    : utilityaccount_id,
+            invoice_id           : image_index_draft_invoice_id
         });
-        window.show();
+        win.show();
     },
 
     /**

@@ -93,11 +93,6 @@ class ImageIndexGateway extends AbstractGateway {
 		$select = $this->getDashboardSelect($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
 		$propertyFilterSelect = new PropertyFilterSelect(new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection));
 
-                $select
-                    ->join(new sql\join\ImageIndexImageTransferJoin())
-                    ->join(new sql\join\ImageTransferUserprofileJoin())
-                ;
-
 		// We're going to create a where object to overwrite the entire where clause because
 		// we need the property filter to be within a nested block
 		$where = Where::get()->nest('OR')
@@ -162,7 +157,14 @@ class ImageIndexGateway extends AbstractGateway {
 								'universal_field5',
 								'universal_field6',
 								'universal_field7',
-								'universal_field8'
+								'universal_field8',
+								new Expression("
+									CASE
+										WHEN imgt.transfer_srcTableName = 'userprofile' THEN uimgt.userprofile_username
+										WHEN imgt.transfer_srcTableName = 'vendorsite' THEN vimgt.vendor_name
+										ELSE imgs.invoiceimage_source_name
+									END AS scan_source
+								")
 							))
 					->columnDaysOustanding()
 					->order($sort);
@@ -175,9 +177,18 @@ class ImageIndexGateway extends AbstractGateway {
 			->join(new sql\join\ImageIndexIndexedByJoin())
 			->join(new sql\join\ImageIndexPropertyJoin())
 			->join(new sql\join\ImageIndexVendorsiteJoin())
+            ->join(new sql\join\ImageIndexImageTransferJoin())
+            ->join(new sql\join\ImageTransferUserprofileJoin())
+            ->join(new sql\join\ImageTransferVendorsiteJoin())
+			->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(
+				[],
+				Select::JOIN_LEFT,
+				'vimgt',
+				'vsimgt'
+			))
 			->join(new sql\join\ImageIndexPriorityFlagJoin())
-			->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(array('vendor_name,vendor_id_alt,vendor_status'), Select::JOIN_LEFT))
-                        ->join(['delby' => 'userprofile'], 'img.image_index_deleted_by = delby.userprofile_id', ['deletedby_username' => 'userprofile_username'], Select::JOIN_LEFT)
+			->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(['vendor_name','vendor_id_alt','vendor_status'], Select::JOIN_LEFT))
+            ->join(['delby' => 'userprofile'], 'img.image_index_deleted_by = delby.userprofile_id', ['deletedby_username' => 'userprofile_username'], Select::JOIN_LEFT)
 			->whereIn('img.property_id', $propertyFilterSelect);
 
 		return $select;
@@ -314,15 +325,10 @@ class ImageIndexGateway extends AbstractGateway {
         $update
             ->table($this->table)
             ->value('image_index_status', 0)
-                ->value('image_index_draft_invoice_id', 'null')
-                ->value('image_index_deleted_datetm', 'null')
-                ->value('image_index_deleted_by', 'null')
-            ->where(
-                Where::get()
-                    ->in('image_index_id', implode(',', $identifiers))
-            )
+            ->value('image_index_draft_invoice_id', 'null')
+            ->whereIn('image_index_id', $this->createPlaceholders($identifiers))
         ;
-        return $this->adapter->query($update);
+        return $this->adapter->query($update, $identifiers);
     }
 
     /**

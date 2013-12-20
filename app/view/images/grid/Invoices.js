@@ -11,7 +11,7 @@ Ext.define('NP.view.images.grid.Invoices', {
             'image.gridcol.ScanDate',
             'property.gridcol.PropertyName',
             'vendor.gridcol.VendorName',
-            'image.gridcol.RefNumber',
+            'image.gridcol.Reference',
             'image.gridcol.Amount',
             'image.gridcol.InvoiceDate',
             'shared.gridcol.PriorityFlag',

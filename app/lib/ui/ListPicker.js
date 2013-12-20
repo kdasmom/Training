@@ -12,6 +12,8 @@ Ext.define('NP.lib.ui.ListPicker', {
     valueField  : 'id',
     disabled    : false,
     
+    allowBlank  : true,
+
     layout: 'anchor',
     
     tbar: null,
@@ -42,14 +44,15 @@ Ext.define('NP.lib.ui.ListPicker', {
         var me = this;
 
         me.boundList = Ext.create('Ext.view.BoundList', Ext.apply({
-            anchor: 'none 100%',
+            anchor             : 'none 100%',
             deferInitialRefresh: false,
-            border: 1,
-            multiSelect: true,
-            store: me.store,
-            displayField: me.displayField,
-            valueField: me.valueField,
-            disabled: me.disabled
+            border             : 1,
+            multiSelect        : true,
+            store              : me.store,
+            displayField       : me.displayField,
+            valueField         : me.valueField,
+            disabled           : me.disabled,
+            componentCls       : (me.allowBlank) ? '' : 'x-form-required-field'
         }, me.listConfig));
         
         // Wrap to add a title
@@ -59,9 +62,9 @@ Ext.define('NP.lib.ui.ListPicker', {
             border: true,
             anchor: 'none 100%',
             layout: 'anchor',
-            title: me.title,
-            tbar: me.tbar,
-            items: me.boundList
+            title : me.title,
+            tbar  : me.tbar,
+            items : me.boundList
         };
     },
     

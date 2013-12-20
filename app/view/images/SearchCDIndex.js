@@ -7,11 +7,11 @@ Ext.define('NP.view.images.SearchCDIndex', {
 
     requires: [
         'NP.view.images.grid.SearchCDIndex',
-
-        'NP.view.shared.button.Return',
+        'NP.view.shared.VendorAutoComplete',
+        'NP.lib.core.Translator',
+        'NP.view.shared.button.Reset',
         'NP.view.shared.button.Search',
-        'NP.view.shared.button.Print',
-        'NP.view.shared.button.Go'
+        'NP.view.shared.button.Print'
     ],
 
     locale: {
@@ -20,8 +20,15 @@ Ext.define('NP.view.images.SearchCDIndex', {
         buttonReturn: 'Return to Image Management'
     },
 
+    layout: {
+        type : 'vbox',
+        align: 'stretch'
+    },
+
     initComponent: function() {
-        var tablerefs = [];
+        var tablerefs  = [],
+            labelWidth = 75;
+
         if (NP.lib.core.Config.getSetting('pn.main.WebDocumentz') == 1 || NP.lib.core.Config.getSetting('pn.main.WebDocumentz') == 2) {
             if (NP.lib.core.Security.hasPermission(2081)) {
                 tablerefs.push(1);
@@ -39,7 +46,12 @@ Ext.define('NP.view.images.SearchCDIndex', {
             }
         }
         
-        var storeImageDoctypes = Ext.create('NP.store.images.ImageDocTypes', {
+        this.tbar = [
+            {xtype: 'shared.button.reset', itemId: 'buttonReturn', text: this.locale.buttonReturn},
+            {xtype: 'shared.button.print', itemId: 'buttonSearchCDIndexPrint', text: this.locale.buttonPrint, hidden: true}
+        ];
+
+        var storeImageDoctypes = Ext.create('NP.store.image.ImageDocTypes', {
             service    : 'ImageService',
             action     : 'getImageDoctypes',
             extraParams: {
@@ -49,29 +61,34 @@ Ext.define('NP.view.images.SearchCDIndex', {
         storeImageDoctypes.load();
 
         var storeProperties = Ext.create('NP.store.property.Properties', {
-            service    : 'ImageService',
-            action     : 'getPropertyList',
+            service    : 'UserService',
+            action     : 'getUserProperties',
             autoLoad   : false,
             extraParams: {
-                userprofile_id: NP.Security.getUser().get('userprofile_id'),
-                delegation_to_userprofile_id: NP.Security.getUser().get('delegation_to_userprofile_id')
+                userprofile_id             : NP.Security.getUser().get('userprofile_id'),
+                delegated_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id')
             }
         });
         //storeProperties.load();
 
         var storeVendors = Ext.create('NP.store.vendor.Vendors', {
-            service    : 'ImageService',
-            action     : 'getVendorList',
-            autoLoad   : false
+            service    : 'VendorService',
+            action     : 'findByStatus',
+            paging     : true,
+            extraParams: {
+                status: 'active,inactive',
+                order : 'vendor_name'
+            }
         });
         //storeVendors.load();
 
         this.items = [
             {
-                xtype: 'panel',
-                bodyPadding: 10,
-                layout: 'form',
-
+                xtype      : 'panel',
+                border     : false,
+                bodyPadding: 8,
+                layout     : 'form',
+                defaults   : { labelWidth: labelWidth },
                 items: [
                     {
                         itemId: 'field-image-doctype',
@@ -93,10 +110,10 @@ Ext.define('NP.view.images.SearchCDIndex', {
                         itemId: 'field-image-properties',
 
                         xtype: 'customcombo',
-                        fieldLabel: 'Property:',
+                        fieldLabel: 'Property',
 
-                        addBlankRecord: true,
                         loadStoreOnFirstQuery: true,
+                        emptyText: NP.Translator.translate('All Properties...'),
 
                         valueField:   'property_id',
                         displayField: 'property_name',
@@ -106,42 +123,32 @@ Ext.define('NP.view.images.SearchCDIndex', {
                     {
                         itemId: 'field-image-vendors',
 
-                        xtype: 'customcombo',
-                        fieldLabel: 'Vendor:',
-
-                        addBlankRecord: true,
-                        loadStoreOnFirstQuery: true,
-
-                        valueField:   'vendor_id',
-                        displayField: 'vendor_name',
-
-                        store: storeVendors
+                        xtype     : 'shared.vendorautocomplete',
+                        fieldLabel: 'Vendor',
+                        store     : storeVendors,
+                        emptyText : NP.Translator.translate('All Vendors...'),
+                        allowBlank: true
                     },
                     {
                         itemId: 'field-refnumber',
 
                         xtype: 'textfield',
-                        fieldLabel: 'Reference:'
+                        fieldLabel: 'Reference'
                     },
                     {
-                        xtype: 'shared.button.go',
-                        itemId: 'buttonSearchCDIndexProcessAction'
+                        xtype : 'shared.button.search',
+                        itemId: 'buttonSearchCDIndexProcessAction',
+                        margin: '2 0 0 ' + (labelWidth + 5)
                     }
                 ]
             },
             {
-                xtype: 'images.grid.SearchCDIndex',
+                xtype : 'images.grid.searchcdindex',
 
                 itemId: 'grid-search-cdindex-results',
-                title: 'Search Results'
+                title : 'Search Results',
+                flex  : 1
             }
-        ];
-
-        this.tbar = [
-            {xtype: 'shared.button.return', itemId: 'buttonReturn', text: this.locale.buttonReturn},
-            {xtype: 'tbspacer', width: 20},
-            {xtype: 'shared.button.search', itemId: 'buttonSearchCDIndexProcess', text: this.locale.buttonSearch},
-            {xtype: 'shared.button.print', itemId: 'buttonSearchCDIndexPrint', text: this.locale.buttonPrint, hidden: true}
         ];
 
         this.callParent(arguments);

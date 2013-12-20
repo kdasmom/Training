@@ -32,9 +32,7 @@ Ext.define('NP.view.image.ImageGrid', {
 		'NP.view.image.gridcol.ExceptionDate',
 		'NP.view.image.gridcol.DeleteDate',
 		'NP.view.image.gridcol.DeletedBy',
-		'NP.view.image.gridcol.RefNumber',
 		'NP.view.image.gridcol.ImageType',
-		'NP.view.image.gridcol.DocumentType',
 		'NP.view.image.gridcol.Type',
 		'NP.view.image.gridcol.ScanSource'
     ],
@@ -45,8 +43,8 @@ Ext.define('NP.view.image.ImageGrid', {
 				'image.gridcol.NeededByDate','vendor.gridcol.VendorCode','image.gridcol.Reference','image.gridcol.Amount',
 				'shared.gridcol.PriorityFlag','image.gridcol.DaysOutstanding','image.gridcol.Source','image.gridcol.DocType',
 				'shared.gridcol.PendingDays','image.gridcol.ExceptionBy', 'image.gridcol.ExceptionDate',
-                'image.gridcol.DeleteDate', 'image.gridcol.DeletedBy', 'image.gridcol.RefNumber',
-                'image.gridcol.ImageType', 'image.gridcol.DocumentType', 'image.gridcol.Type', 'image.gridcol.ScanSource'],
+                'image.gridcol.DeleteDate', 'image.gridcol.DeletedBy',
+                'image.gridcol.ImageType', 'image.gridcol.Type', 'image.gridcol.ScanSource'],
 
     /**
      * @cfg {Array} cols         Columns that you want to display on the grid by default

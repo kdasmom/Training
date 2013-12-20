@@ -769,12 +769,6 @@ class ImageService extends AbstractService {
                     $this->imageToCDGateway->getPurchaseOrderDocs($doctype, $refnumber, $property_id, $vendor_id)
                 );
             }
-            if ($doctype == 3 || empty($doctype)) {
-                $result = array_merge(
-                    $result, 
-                    $this->imageToCDGateway->getVendorEstimateDocs($doctype, $refnumber, $property_id, $vendor_id)
-                );
-            }
         }
         return $result;
     }
@@ -799,37 +793,6 @@ class ImageService extends AbstractService {
      */
     public function getImageDoctypes($tablerefs) {
         return $this->imageDoctypeGateway->getImageDoctypes($tablerefs);
-    }
-
-    /**
-     * Get availabe Property.
-     * 
-     * @param int $userprofile_id Current user profile id.
-     * @param int $delegation_to_userprofile_id Current delegate profile id.
-     * @return [] List of the property.
-     */
-    public function getPropertyList($userprofile_id, $delegation_to_userprofile_id) {
-        $delegation_to_userprofile_id = $userprofile_id;
-
-        return $this->propertyGateway->findByUser(
-            $userprofile_id,
-            $delegation_to_userprofile_id,
-            [
-                'property_id',
-                'property_name',
-                'property_status',
-                'region_id'
-            ]
-        );
-    }
-
-    /**
-     * Get available vendors.
-     * 
-     * @return [] List of the available vendors.
-     */
-    public function getVendorList() {
-        return $this->vendorGateway->getVendors();
     }
 
     /**

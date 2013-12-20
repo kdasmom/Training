@@ -8,7 +8,7 @@ Ext.define('NP.view.images.grid.Exceptions', {
             'image.gridcol.ImageType',
             'property.gridcol.PropertyName',
             'vendor.gridcol.VendorName',
-            'image.gridcol.RefNumber',
+            'image.gridcol.Reference',
             'image.gridcol.Amount',
             'image.gridcol.ExceptionBy',
             'image.gridcol.ExceptionDate'

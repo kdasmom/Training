@@ -62,12 +62,28 @@ class InvoiceGateway extends AbstractGateway {
 				->columnAmount()
 				->columnShippingAmount()
 				->columnTaxAmount()
+				->columnCreatedBy()
 				->join(new sql\join\InvoiceVendorsiteJoin())
 				->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(['vendor_name','vendor_id_alt','vendor_status','integration_package_id']))
 				->join(new \NP\vendor\sql\join\VendorsiteAddressJoin())
 				->join(new \NP\vendor\sql\join\VendorsitePhoneJoin())
 				->join(new \NP\contact\sql\join\PhonePhoneTypeJoin('Main'))
 				->join(new sql\join\InvoicePropertyJoin())
+				->join(new \NP\property\sql\join\PropertyAddressJoin([
+					'property_address_id'      => 'address_id',
+					'property_address_line1'   => 'address_line1',
+					'property_address_line2'   => 'address_line2',
+					'property_address_city'    => 'address_city',
+					'property_address_state'   => 'address_state',
+					'property_address_country' => 'address_country',
+					'property_address_zip'     => 'address_zip',
+					'property_address_zipext'  => 'address_zipext'
+				], Select::JOIN_LEFT, 'adrp'))
+				->join(new \NP\property\sql\join\PropertyPhoneJoin([
+					'property_phone_number'      => 'phone_number',
+					'property_phone_ext'         => 'phone_ext',
+					'property_phone_countrycode' => 'phone_countrycode'
+				], Select::JOIN_LEFT, 'php'))
 				->join(new sql\join\InvoiceRecauthorJoin())
 				->join(new \NP\user\sql\join\RecauthorUserprofileJoin(array('userprofile_username')))
 				->where('i.invoice_id = ?');

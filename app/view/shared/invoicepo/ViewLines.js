@@ -427,12 +427,14 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                 '</td>' +
             '</tr>' +
             '<tpl if="this.getSetting(\'pn.jobcosting.jobcostingEnabled\', \'0\') == \'1\'">' +
-                '<th colspan="6">' +
-                    'Net Amount:' +
-                '</th>' +
-                '<td>' +
-                    '{[this.renderCurrency(this.getNetAmount())]}' +
-                '</td>' +
+                '<tr>' +
+                    '<th colspan="6">' +
+                        'Net Amount:' +
+                    '</th>' +
+                    '<td>' +
+                        '{[this.renderCurrency(this.getNetAmount())]}' +
+                    '</td>' +
+                '</tr>' +
             '</tpl>';
     },
 

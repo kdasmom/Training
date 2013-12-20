@@ -4,7 +4,7 @@
  * @author Thomas Messier
  */
 Ext.define('NP.view.shared.RoleAssigner', {
-    extend: 'Ext.ux.form.ItemSelector',
+    extend: 'NP.lib.ui.Assigner',
     alias: 'widget.shared.roleassigner',
     
     requires: ['NP.store.user.Roles'],
@@ -22,6 +22,5 @@ Ext.define('NP.view.shared.RoleAssigner', {
     valueField  : 'role_id',
     fromTitle   : 'Unassigned',
     toTitle     : 'Assigned',
-    buttons     : ['add','remove'],
     msgTarget   : 'under'
 });

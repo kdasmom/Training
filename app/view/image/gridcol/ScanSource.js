@@ -6,5 +6,5 @@ Ext.define('NP.view.image.gridcol.ScanSource', {
     alias: 'widget.image.gridcol.scansource',
 
     text     : 'Source',
-    dataIndex: 'userprofile_username'
+    dataIndex: 'scan_source'
 });

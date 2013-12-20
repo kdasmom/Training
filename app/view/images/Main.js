@@ -61,16 +61,19 @@ Ext.define('NP.view.images.Main', {
             }
         ];
 
-        this.tbar = [
-            {xtype: 'shared.button.camera', itemId: 'buttonUpload', text: this.locale.buttonUpload},
-            {xtype: 'images.button.npiss', itemId: 'buttonNPISS',  text: this.locale.buttonNPISS},
-            {xtype: 'images.button.nsiss', itemId: 'buttonNSISS',  text: this.locale.buttonNSISS},
+        this.tbar = {
+            enableOverflow: true,
+            items         : [
+                {xtype: 'shared.button.camera', itemId: 'buttonUpload', text: this.locale.buttonUpload},
+                {xtype: 'images.button.npiss', itemId: 'buttonNPISS',  text: this.locale.buttonNPISS},
+                {xtype: 'images.button.nsiss', itemId: 'buttonNSISS',  text: this.locale.buttonNSISS},
 
-            {xtype: 'shared.button.search', itemId: 'buttonSearch', text: this.locale.buttonSearch},
+                {xtype: 'shared.button.search', itemId: 'buttonSearch', text: this.locale.buttonSearch},
 
-            {xtype: 'tbspacer', flex: 1},
-            {xtype: 'shared.contextpicker', itemId: 'componentContextPicker'}
-        ];
+                {xtype: 'tbspacer', flex: 1},
+                {xtype: 'shared.contextpicker', itemId: 'componentContextPicker'}
+            ]
+        };
         
         this.callParent(arguments);
     },

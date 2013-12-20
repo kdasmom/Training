@@ -14,7 +14,6 @@ Ext.define('NP.view.shared.VendorAssigner', {
     valueField  : 'vendor_id',
     fromTitle   : 'Unassigned',
     toTitle     : 'Assigned',
-    buttons     : ['add','remove'],
     msgTarget   : 'under',
     
     initComponent: function() {

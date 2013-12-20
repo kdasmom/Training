@@ -18,8 +18,6 @@ if (!$isAuth) {
     <!-- <x-compile> -->
         <!-- <x-bootstrap> -->
             <link rel="stylesheet" href="ext/packages/ext-theme-classic/build/resources/ext-theme-classic-all-debug.css" />
-            <link rel="stylesheet" href="vendor/BoxSelect/src/BoxSelect.css" />
-            <link rel="stylesheet" href="ext/src/ux/css/ItemSelector.css" />
             <link rel="stylesheet" href="resources/VerticalTabPanel.css" />
             <link rel="stylesheet" href="resources/app.css" />
             <link rel="stylesheet" href="resources/uploader.css" />
@@ -29,10 +27,9 @@ if (!$isAuth) {
             <script src="bootstrap.js"></script>
         <!-- </x-bootstrap> -->
 
-        <script type="text/javascript" src="vendor/jquery/jquery-2.0.3.min.js"></script>
-        <script type="text/javascript" src="vendor/jquery-uploadify/jquery.uploadify.min.js"></script>
-        <script type="text/javascript" src="vendor/jquery-uploadifive/jquery.uploadifive.min.js"></script>
-        <script src="vendor/BoxSelect/src/BoxSelect.js"></script>
+        <script src="vendor/jquery/jquery-2.0.3.min.js"></script>
+        <script src="vendor/jquery-uploadify/jquery.uploadify.min.js"></script>
+        <script src="vendor/jquery-uploadifive/jquery.uploadifive.min.js"></script>
         <script src="vendor/CryptoJS/sha1.js"></script>
         <script src="app.js"></script>
     <!-- </x-compile> -->

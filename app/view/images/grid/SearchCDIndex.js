@@ -1,27 +1,31 @@
 Ext.define('NP.view.images.grid.SearchCDIndex', {
-    extend: 'NP.view.image.ImageGrid',
-    alias:  'widget.images.grid.SearchCDIndex',
-
-    fullData: true,
+    extend: 'NP.lib.ui.Grid',
+    alias:  'widget.images.grid.searchcdindex',
 
     requires:[
-        'NP.view.image.gridcol.ImageScanDateTM',
-        'NP.view.image.gridcol.ImageToCDDiskNum',
+        'NP.lib.core.Translator',
+        'NP.view.image.gridcol.Amount',
         'NP.view.image.gridcol.CreatedDT',
-        'NP.view.image.gridcol.RefNumber'
+        'NP.view.image.gridcol.DocType',
+        'NP.view.image.gridcol.ImageToCDDiskNum',
+        'NP.view.image.gridcol.Reference',
+        'NP.view.vendor.gridcol.VendorName'
     ],
 
-    initComponent: function(){
-        this.cols = [
-            'image.gridcol.createddt',
-            'image.gridcol.documenttype',
-            'vendor.gridcol.VendorName',
-            'image.gridcol.Amount',
-            'image.gridcol.reference',
-            'image.gridcol.imagetocddisknum',
-        ];
+    initComponent: function() {
+        this.columns = {
+            defaults: { flex: 1 },
+            items   : [
+                { xtype: 'datecolumn', dataIndex: 'image_scan_datetm', text: NP.Translator.translate('Date') },
+                { xtype: 'image.gridcol.doctype' },
+                { xtype: 'vendor.gridcol.vendorname' },
+                { xtype: 'image.gridcol.amount' },
+                { dataIndex: 'ref_number', text: NP.Translator.translate('Reference') },
+                { xtype: 'image.gridcol.imagetocddisknum' }
+            ]
+        };
 
-	this.store = Ext.create('NP.lib.data.Store', {
+    	this.store = Ext.create('NP.store.image.ImageToCDs', {
             service    : 'ImageService',
             action     : 'imageSearchCDIndex',
             paging     : true

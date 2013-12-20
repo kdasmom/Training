@@ -27,6 +27,9 @@ Ext.define('NP.model.jobcosting.JbPhaseCode', {
 
 	statics: {
 		formatName: function(rec) {
+			if (!rec.get) {
+				rec = Ext.create('NP.model.jobcosting.JbPhaseCode', rec);
+			}
 			if (rec.get('jbphasecode_id') === null) {
 				return '';
 			}

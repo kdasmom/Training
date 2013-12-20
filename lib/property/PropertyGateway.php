@@ -82,7 +82,7 @@ class PropertyGateway  extends AbstractGateway {
 	 * @param  int    $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
 	 * @return array                               Array of property records
 	 */
-	public function findByUser($userprofile_id, $delegation_to_userprofile_id, $keyword=null, $includeCodingOnly=false, $cols=null) {
+	public function findByUser($userprofile_id, $delegation_to_userprofile_id, $property_statuses=null, $keyword=null, $includeCodingOnly=false, $cols=null) {
 		$select = Select::get()->columns($cols)
 								->from(array('pr'=>'property'))
 								->order("pr.property_name");
@@ -93,6 +93,20 @@ class PropertyGateway  extends AbstractGateway {
 					->whereNotEquals('pr.property_status', '0');
 
 			$params = array($userprofile_id);
+
+			if ($property_statuses !== null) {
+				$op = 'whereEquals';
+				if (!is_array($property_statuses)) {
+					$property_statuses = explode(',', $property_statuses);
+				}
+				if (count($property_statuses) > 1) {
+					$op = 'whereNotEquals';
+					$property_statuses = array_diff([0,-1,1], $property_statuses);
+				}
+				if (count($property_statuses)) {
+					$select->$op('pr.property_status', array_pop($property_statuses));
+				}
+			}
 		} else {
 			$now = \NP\util\Util::formatDateForDB();
 

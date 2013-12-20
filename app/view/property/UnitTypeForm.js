@@ -9,11 +9,15 @@ Ext.define('NP.view.property.UnitTypeForm', {
     
     requires: [
     	'NP.lib.core.Config',
-    	'Ext.ux.form.ItemSelector'
+    	'NP.lib.ui.Assigner'
     ],
 
     bodyPadding: 8,
 	margin     : '0 0 0 8',
+	layout     : {
+		type : 'vbox',
+		align: 'stretch'
+	},
 
 	// For localization
 	nameLabelText: 'Name',
@@ -92,7 +96,7 @@ Ext.define('NP.view.property.UnitTypeForm', {
     	});
 
 		this.items.push({
-			xtype        : 'itemselector',
+			xtype        : 'assigner',
 			name         : 'units',
 			fieldLabel   : NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + 's',
 			fromTitle    : 'Unassigned',
@@ -105,8 +109,7 @@ Ext.define('NP.view.property.UnitTypeForm', {
 								action : 'getUnitsWithoutType'
 							}),
 			msgTarget    : 'under',
-			maxHeight    : 80,
-			buttons      : ['add','remove']
+			flex         : 1
 		});
 
     	this.buttons = [

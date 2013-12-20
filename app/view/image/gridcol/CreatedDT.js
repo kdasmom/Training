@@ -3,8 +3,5 @@ Ext.define('NP.view.image.gridcol.CreatedDT', {
 	alias: 'widget.image.gridcol.createddt',
 
 	text     : 'Date',
-	dataIndex: 'create_dt',
-	renderer : function(val, meta, rec) {
-		return rec.getDocType().get('create_dt');
-	}
+	dataIndex: 'create_dt'
 });

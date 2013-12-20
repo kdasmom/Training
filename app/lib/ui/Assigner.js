@@ -12,6 +12,9 @@ Ext.define('NP.lib.ui.Assigner', {
     
     layout: 'fit',
 
+    allowBlank: true,
+    blankText: 'This field is required',
+
     initComponent: function() {
         var me = this;
         
@@ -20,6 +23,8 @@ Ext.define('NP.lib.ui.Assigner', {
         } else if (Ext.isObject(me.store)) {
             me.store = Ext.data.AbstractStore.create(me.store);
         }
+
+        me.minHeight = 120;
 
         me.fromField = me.createListPicker(true);
         me.toField = me.createListPicker(false);
@@ -69,6 +74,7 @@ Ext.define('NP.lib.ui.Assigner', {
             title       : title,
             displayField: me.displayField,
             valueField  : me.valueField,
+            allowBlank  : me.allowBlank,
             store : store,
             listConfig: listConfig,
             flex  : 1,
@@ -198,7 +204,16 @@ Ext.define('NP.lib.ui.Assigner', {
     },
     
     getValue: function() {
-        return this.toField.getStore().getRange();
+        var me   = this,
+            recs = this.toField.getStore().getRange(),
+            vals = [],
+            i;
+
+        for (i=0; i<recs.length; i++) {
+            vals.push(recs[i].get(me.valueField));
+        }
+
+        return vals;
     },
 
     setValue: function(vals) {
@@ -208,7 +223,7 @@ Ext.define('NP.lib.ui.Assigner', {
             rec,
             recs = [];
         
-        if (me.store.isLoading()) {
+        if (!me.store.isLoaded) {
             me.store.on({
                 load: Ext.bind(me.setValue, me, [vals]),
                 single: true
@@ -231,6 +246,9 @@ Ext.define('NP.lib.ui.Assigner', {
             rec = vals[i];
             if (Ext.getClassName(rec) == '') {
                 rec = me.store.findRecord(me.valueField, rec);
+                if (found === -1) {
+                    rec = null;
+                }
             } else {
                 var found = me.store.findRecord(me.valueField, rec.get(me.valueField));
                 if (found === -1) {
@@ -256,5 +274,73 @@ Ext.define('NP.lib.ui.Assigner', {
 
 	getSubmitValue: function() {
 		return this.getValue();
-	}
+	},
+    
+    getErrors : function(value) {
+        var me = this,
+            format = Ext.String.format,
+            errors = [],
+            numSelected;
+
+        value = Ext.Array.from(value || me.getValue());
+        numSelected = value.length;
+
+        if (!me.allowBlank && numSelected < 1) {
+            errors.push(me.blankText);
+        }
+
+        return errors;
+    },
+
+    isValid : function() {
+        var me = this,
+            disabled = me.disabled,
+            validate = me.forceValidation || !disabled;
+            
+        
+        return validate ? me.validateValue(me.value) : disabled;
+    },
+    
+    validateValue: function(value) {
+        var me = this,
+            errors = me.getErrors(value),
+            isValid = Ext.isEmpty(errors);
+            
+        if (!me.preventMark) {
+            if (isValid) {
+                me.clearInvalid();
+            } else {
+                me.markInvalid(errors);
+            }
+        }
+
+        return isValid;
+    },
+    
+    markInvalid : function(errors) {
+        // Save the message and fire the 'invalid' event
+        var me = this,
+            oldMsg = me.getActiveError();
+        me.setActiveErrors(Ext.Array.from(errors));
+        if (oldMsg !== me.getActiveError()) {
+            me.updateLayout();
+        }
+    },
+
+    /**
+     * Clear any invalid styles/messages for this field.
+     *
+     * __Note:__ this method does not cause the Field's {@link #validate} or {@link #isValid} methods to return `true`
+     * if the value does not _pass_ validation. So simply clearing a field's errors will not necessarily allow
+     * submission of forms submitted with the {@link Ext.form.action.Submit#clientValidation} option set.
+     */
+    clearInvalid : function() {
+        // Clear the message and fire the 'valid' event
+        var me = this,
+            hadError = me.hasActiveError();
+        me.unsetActiveError();
+        if (hadError) {
+            me.updateLayout();
+        }
+    }
 });

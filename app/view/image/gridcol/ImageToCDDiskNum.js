@@ -3,8 +3,5 @@ Ext.define('NP.view.image.gridcol.ImageToCDDiskNum', {
 	alias: 'widget.image.gridcol.imagetocddisknum',
 
 	text     : 'CD',
-	dataIndex: 'ImageToCD_diskNum',
-	renderer : function(val, meta, rec) {
-		return rec.getDocType().get('ImageToCD_diskNum');
-	}
+	dataIndex: 'ImageToCD_diskNum'
 });

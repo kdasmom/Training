@@ -30,6 +30,9 @@ Ext.define('NP.model.jobcosting.JbJobCode', {
 
 	statics: {
 		formatName: function(rec) {
+			if (!rec.get) {
+				rec = Ext.create('NP.model.jobcosting.JbJobCode', rec);
+			}
 			if (rec.get('jbjobcode_id') === null) {
 				return '';
 			}

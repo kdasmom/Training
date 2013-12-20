@@ -14,7 +14,7 @@ Ext.define('NP.view.images.Search', {
         'NP.view.shared.ContextPickerMulti',
         'NP.view.images.grid.Search',
         'NP.view.shared.button.Search',
-        'NP.view.shared.button.Return',
+        'NP.view.shared.button.Reset',
         'NP.view.shared.button.Search',
         'NP.view.shared.button.Cd',
         'NP.view.shared.button.Go'
@@ -46,7 +46,7 @@ Ext.define('NP.view.images.Search', {
             }
         }
         
-        var storeImageDoctypes = Ext.create('NP.store.images.ImageDocTypes', {
+        var storeImageDoctypes = Ext.create('NP.store.image.ImageDocTypes', {
             service    : 'ImageService',
             action     : 'getImageDoctypes',
             extraParams: {
@@ -152,7 +152,7 @@ Ext.define('NP.view.images.Search', {
         ];
 
         this.tbar = [
-            {xtype: 'shared.button.return', itemId: 'buttonReturn', text: this.locale.buttonReturn},
+            {xtype: 'shared.button.reset', itemId: 'buttonReturn', text: this.locale.buttonReturn},
             {xtype: 'shared.button.cd', itemId: 'buttonSearchCDIndex', text: this.locale.buttonCDIndex}
         ];
         this.callParent(arguments);

@@ -11,7 +11,7 @@ Ext.define('NP.view.images.grid.DeletedImages', {
             'image.gridcol.ImageType',
             'property.gridcol.PropertyName',
             'vendor.gridcol.VendorName',
-            'image.gridcol.RefNumber',
+            'image.gridcol.Reference',
             'image.gridcol.Amount'
         ];
         this.autoscroll = true;

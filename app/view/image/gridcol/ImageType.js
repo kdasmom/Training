@@ -8,8 +8,5 @@ Ext.define('NP.view.image.gridcol.ImageType', {
 	alias: 'widget.image.gridcol.imagetype',
 
 	text     : 'Image Type',
-	dataIndex: 'image_doctype_name',
-	renderer : function(val, meta, rec) {
-		return rec.getDocType().get('image_doctype_name');
-	}
+	dataIndex: 'image_doctype_name'
 });

@@ -22,7 +22,7 @@ Ext.define('NP.view.messageCenter.MessageForm', {
     autoScroll : true,
 
     layout: {
-        type: 'vbox',
+        type : 'vbox',
         align: 'stretch'
     },
 
@@ -153,24 +153,38 @@ Ext.define('NP.view.messageCenter.MessageForm', {
     },
 
     isValid: function() {
-    	var isValid = this.callParent(arguments);
+    	var me            = this,
+    		sentAt        = me.findField('sentAt'),
+    		displayUntil  = me.findField('displayUntil'),
+    		recipientType = me.findField('recipientType').getGroupValue(),
+    		roleField     = me.findField('roles'),
+    		userField     = me.findField('users'),
+    		now           = new Date(),
+    		isValid;
 
-    	var sentAt = this.findField('sentAt');
-    	var displayUntil = this.findField('displayUntil');
-    	var now = new Date();
+	    roleField.allowBlank = true;
+	    userField.allowBlank = true;
+	    
+	    if (recipientType == 'roles') {
+	    	roleField.allowBlank = false;
+	    } else if (recipientType == 'users') {
+	    	userField.allowBlank = false;
+	    }
+
+    	isValid = me.callParent(arguments);
 
     	if (sentAt.getValue() !== null && sentAt.getValue() < now) {
     		isValid = false;
-    		sentAt.markInvalid(this.sentFieldLabel + ' ' + this.pastErrorText);
+    		sentAt.markInvalid(me.sentFieldLabel + ' ' + me.pastErrorText);
     	}
 
-    	if (this.findField('type').getGroupValue() == 'system' && displayUntil.getValue() !== null) {
+    	if (me.findField('type').getGroupValue() == 'system' && displayUntil.getValue() !== null) {
     		if (displayUntil.getValue() < now) {
 		    	isValid = false;
-		    	displayUntil.markInvalid(this.displayUntilFieldLabel + ' ' + this.pastErrorText);
+		    	displayUntil.markInvalid(me.displayUntilFieldLabel + ' ' + me.pastErrorText);
 		    } else if (sentAt.getValue() !== null && displayUntil.getValue() <= sentAt.getValue() ) {
 		    	isValid = false;
-		    	displayUntil.markInvalid(this.displayUntilFieldLabel + ' ' + this.laterThanErrorText + ' ' + this.sentFieldLabel);
+		    	displayUntil.markInvalid(me.displayUntilFieldLabel + ' ' + me.laterThanErrorText + ' ' + me.sentFieldLabel);
 		    }
 	    }
 

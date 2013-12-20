@@ -7,7 +7,7 @@ Ext.define('NP.view.images.grid.PurchaseOrders', {
             'image.gridcol.ScanDate',
             'property.gridcol.PropertyName',
             'vendor.gridcol.VendorName',
-            'image.gridcol.RefNumber',
+            'image.gridcol.Reference',
             'image.gridcol.Amount',
             'image.gridcol.Source',
             //'image.gridcol.ImageType'

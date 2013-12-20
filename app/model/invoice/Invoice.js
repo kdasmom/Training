@@ -101,7 +101,35 @@ Ext.define('NP.model.invoice.Invoice', {
 		{ name: 'void_datetm', type: 'date' },
 		{ name: 'void_by' },
 		{ name: 'payment_details' },
-		{ name: 'payment_amount_remaining', type: 'float' }
+		{ name: 'payment_amount_remaining', type: 'float' },
+
+		// Vendor address
+		{ name: 'address_line1', useNull: false },
+		{ name: 'address_line2', useNull: false },
+		{ name: 'address_city', useNull: false },
+		{ name: 'address_state', useNull: false },
+		{ name: 'address_zip', useNull: false },
+		{ name: 'address_zipext', useNull: false },
+		{ name: 'address_country', type: 'int' },
+
+		// Vendor phone
+		{ name: 'phone_number' },
+		{ name: 'phone_ext' },
+		{ name: 'phone_countrycode' },
+
+		// Property address
+		{ name: 'property_address_line1', useNull: false },
+		{ name: 'property_address_line2', useNull: false },
+		{ name: 'property_address_city', useNull: false },
+		{ name: 'property_address_state', useNull: false },
+		{ name: 'property_address_zip', useNull: false },
+		{ name: 'property_address_zipext', useNull: false },
+		{ name: 'property_address_country', type: 'int' },
+
+		// Property phone
+		{ name: 'property_phone_number' },
+		{ name: 'property_phone_ext' },
+		{ name: 'property_phone_countrycode' }
     ],
 
     isModifiable: function() {
@@ -171,20 +199,26 @@ Ext.define('NP.model.invoice.Invoice', {
 	},
 
 	getDisplayStatus: function() {
-		var status = this.get('invoice_status');
+		return NP.model.invoice.Invoice.getDisplayStatus(
+			this.get('invoice_status')
+		);
+	},
 
-		if (status == 'forapproval') {
-			return 'Pending Approval';
-		} else if (status == 'open') {
-			return 'In Progress';
-		} else if (status == 'saved') {
-			return 'Completed';
-		} else if (status == 'draft') {
-			return 'Template';
-		} else if (status == 'closed') {
-			return 'Invoiced';
-		} else {
-			return Ext.util.Format.capitalize(status);
+	statics: {
+		getDisplayStatus: function(status) {
+			if (status == 'forapproval') {
+				return 'Pending Approval';
+			} else if (status == 'open') {
+				return 'In Progress';
+			} else if (status == 'saved') {
+				return 'Completed';
+			} else if (status == 'draft') {
+				return 'Template';
+			} else if (status == 'closed') {
+				return 'Invoiced';
+			} else {
+				return Ext.util.Format.capitalize(status);
+			}
 		}
 	}
 });

@@ -61,10 +61,8 @@ class VendorService extends AbstractService {
 	 * @param string $sort
 	 * @return array|bool
 	 */
-	public function findByStatus($pageSize = null, $page = null, $status = 'pending', $sort = 'PersonName') {
-		$aspClientId = $this->configService->getClientId();
-
-		return $this->vendorGateway->findByStatus($pageSize, $page, $status, $sort, $aspClientId);
+	public function findByStatus($pageSize = null, $page = null, $status = 'pending', $sort = 'PersonName', $keyword=null) {
+		return $this->vendorGateway->findByStatus($pageSize, $page, $status, $sort, $keyword);
 	}
 
 	/**

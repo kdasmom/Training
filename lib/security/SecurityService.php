@@ -101,7 +101,7 @@ class SecurityService extends AbstractService {
 		$preferredProp = $user['userprofile_preferred_property'];
 		$preferredRegion = $user['userprofile_preferred_region'];
 		$regions = $this->regionGateway->findByUser($this->getUserId(), $this->getDelegatedUserId());
-		$props = $this->propertyGateway->findByUser($this->getUserId(), $this->getDelegatedUserId(), null, false, array('property_id'));
+		$props = $this->propertyGateway->findByUser($this->getUserId(), $this->getDelegatedUserId(), [1,-1], null, false, array('property_id'));
 		if (is_numeric($preferredRegion) && $preferredRegion) {
 			$this->setContext('region', $props[0]['property_id'], $preferredRegion);
 		} else if (is_numeric($preferredProp) && $preferredProp) {

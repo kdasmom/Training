@@ -1,7 +1,8 @@
 Ext.define('NP.controller.Images', {
     extend: 'NP.lib.core.AbstractController',
 
-    stores: ['images.ImageDocTypes','vendor.UtilityAccounts','images.Templates'],
+    stores: ['image.ImageDocTypes','vendor.UtilityAccounts','invoice.Invoices',
+            'image.ImageToCDs'],
     models: ['vendor.UtilityAccount','image.ImageIndex'],
     views : ['images.Main','images.Index','images.Search'],
 
@@ -18,7 +19,6 @@ Ext.define('NP.controller.Images', {
         this.controlIndex(control);
         this.controlSearch(control);
         this.controlSearchCDIndex(control);
-        this.controlSearchDeleted(control);
 
         this.control(control);
     },
@@ -116,6 +116,11 @@ Ext.define('NP.controller.Images', {
         control[prefix + 'button[itemId~="buttonIndexingComplete"]'] = {
             click: this.processButtonIndexingComplete
         };
+
+        control['#imageUseTemplateWin'] = {
+            usetemplate   : this.onUseTemplate.bind(this),
+            removetemplate: this.onUpdateTemplate.bind(this)
+        }
     },
 
     /**
@@ -150,26 +155,12 @@ Ext.define('NP.controller.Images', {
             click: this.processButtonReturn
         };
         
-        control[prefix + 'button[itemId~="buttonSearchCDIndexProcess"]'] = {
-            click: this.processButtonSearchCDIndexProcess
-        };
         control[prefix + 'button[itemId~="buttonSearchCDIndexPrint"]'] = {
             click: this.processButtonSearchCDIndexPrint
         };
         
         control[prefix + 'button[itemId~="buttonSearchCDIndexProcessAction"]'] = {
             click: this.processButtonSearchCDIndexProcess
-        };
-    },
-
-    /**
-     * Bind actions for Search Deleted Screen.
-     */
-    controlSearchDeleted: function(control) {
-        var prefix = '[xtype="images.searchdeleted"] ';
-
-        control[prefix + 'button[itemId~="buttonReturn"]'] = {
-            click: this.processButtonReturn
         };
     },
 
@@ -219,10 +210,15 @@ Ext.define('NP.controller.Images', {
         var current = 
             this.getCurrentGrid()
         ;
-        current && 
-            current.store && 
-            current.store.reload()
-        ;
+
+        var state = this.getCmp('shared.contextpicker').getState();
+
+        current.store.addExtraParams({
+            contextType     : state.type,
+            contextSelection: state.selected
+        });
+
+        current.store.load();
     },
 
     /**
@@ -536,7 +532,20 @@ Ext.define('NP.controller.Images', {
      * @param {} data Image index form data.
      */
     setFieldsAfterLoad: function(data) {
-        var form = this.getCmp('images.index');
+        var form     = this.getCmp('images.index'),
+            buttons = ['buttonIndexingComplete','tbSep','buttonSaveAndPrev','buttonSaveAsException',
+                        'buttonInvoice','buttonDeleteFromQueue'],
+            btn, fn, i;
+
+        for (i=0; i<buttons.length; i++) {
+            btn = form.down('#' + buttons[i]);
+            if (data['Image_Index_Status'] == 2) {
+                fn = (buttons[i] == 'buttonIndexingComplete') ? 'show' : 'hide';
+            } else {
+                fn = (buttons[i] == 'buttonIndexingComplete') ? 'hide' : 'show';
+            }
+            btn[fn]();
+        }
 
         // Initalize values in utility account fields if a utility account has been selected
         if (data['utilityaccount_id']) {
@@ -602,6 +611,9 @@ Ext.define('NP.controller.Images', {
             poref.setValue(data['Image_Index_Ref']);
         }
 
+        // Update the Use Template button to reflect correct state
+        this.setTemplateButtonText(data['image_index_draft_invoice_id']);
+
         // Set Correct title.
         form.setTitle('Image Index - ' + data['Image_Index_Name']);
     },
@@ -614,7 +626,7 @@ Ext.define('NP.controller.Images', {
      */
     loadStores: function(callback) {
         var storeDoctypes = 
-            Ext.create('NP.store.images.ImageDocTypes',{
+            Ext.create('NP.store.image.ImageDocTypes',{
                 service: 'ImageService',
                 action : 'getDocTypes'
             }
@@ -638,6 +650,39 @@ Ext.define('NP.controller.Images', {
      */
     refreshIndex: function() {
         Ext.getDom('iframe-panel').src = NP.model.image.ImageIndex.getImageLink(this.current_image_index_id);
+    },
+
+    onUseTemplate: function(win, invoice_id) {
+        var me         = this,
+            invoice_id = win.down('[name="invoice_id"]').getValue();
+
+        me.onUpdateTemplate(win, invoice_id);
+    },
+
+    onUpdateTemplate: function(win, invoice_id) {
+        var me         = this,
+            form       = me.getCmp('images.index');
+
+        invoice_id = invoice_id || '';
+
+        form.findField('image_index_draft_invoice_id').setValue(invoice_id);
+        me.setTemplateButtonText(invoice_id);
+        win.close();
+    },
+
+    setTemplateButtonText: function(invoice_id) {
+        var me         = this,
+            form       = me.getCmp('images.index'),
+            button     = form.down('#field-use-template'),
+            buttonText;
+
+        if (invoice_id == '' || invoice_id === null) {
+            buttonText = NP.Translator.translate('Use Template');
+        } else {
+            buttonText = NP.Translator.translate('View Selected Template');
+        }
+
+        button.setText(buttonText);
     },
 
     /**
@@ -869,19 +914,13 @@ Ext.define('NP.controller.Images', {
      * Method requests data from the server and places it to the search result grid.
      */
     processButtonSearchCDIndexProcess: function() {
-        var doctype = Ext.ComponentQuery.query(
-            '[itemId~="field-image-doctype"]'
-        )[0].getValue();
-        var refnum  = Ext.ComponentQuery.query(
-            '[itemId~="field-refnumber"]'
-        )[0].getValue();
-
-        var property_id  = Ext.ComponentQuery.query(
-            '[itemId~="field-image-properties"]'
-        )[0].getValue();
-        var vendor_id  = Ext.ComponentQuery.query(
-            '[itemId~="field-image-vendors"]'
-        )[0].getValue();
+        var me          = this,
+            form        = me.getCmp('images.searchcdindex'),
+            doctype     = form.down('#field-image-doctype').getValue(),
+            refnum      = form.down('#field-refnumber').getValue(),
+            property_id = form.down('#field-image-properties').getValue(),
+            vendor_id   = form.down('#field-image-vendors').getValue(),
+            resultStore = form.down('#grid-search-cdindex-results').getStore();
 
         if (!doctype) {
             Ext.MessageBox.alert('Search Images', 'Please choose a document type.');
@@ -891,10 +930,6 @@ Ext.define('NP.controller.Images', {
             Ext.MessageBox.alert('Search Images', 'Please enter at least 2 characters for reference number search.');
             return;
         }
-
-        var result = Ext.ComponentQuery.query(
-            '[itemId="grid-search-cdindex-results"]'
-        )[0];
 
         var params = {};
         if (doctype) {
@@ -909,65 +944,17 @@ Ext.define('NP.controller.Images', {
         if (vendor_id) {
             params['vendor_id'] = vendor_id;
         }
-        result.store.load({params: params});
 
-        var printButton =
-            Ext.ComponentQuery.query('[itemId="buttonSearchCDIndexPrint"]')[0]
-        ;
-        printButton && printButton.show();
+        resultStore.addExtraParams(params).load();
+
+        form.down('#buttonSearchCDIndexPrint').show();
     },
 
     /**
      * Print Search CD Index Screen.
      */
     processButtonSearchCDIndexPrint: function() {
-        window.print();
-    },
-
-    /***************************************************************************
-     * View: Search Deleted
-     **************************************************************************/
-    /**
-     * Show Search Deleted
-     */
-    showSearchDeleted: function() {
-        this.application.setView('NP.view.images.SearchDeleted');
-    },
-
-    /**
-     * Search deleted images.
-     * Method requests data from the server and places it to the search result grid.
-     */
-    processButtonSearchDeletedProcess: function() {
-        var vendor = Ext.ComponentQuery.query(
-            '[itemId~="field-image-vendors"]'
-        )[0].getValue();
-        var invoice = Ext.ComponentQuery.query(
-            '[itemId~="field-invoice-number"]'
-        )[0].getValue();
-        var deletedby = Ext.ComponentQuery.query(
-            '[itemId~="field-deleted-by"]'
-        )[0].getValue();
-
-        if (!vendor) {
-            Ext.MessageBox.alert('Search Deleted Images', 'Please choose a document type.');
-            return;
-        }
-
-        var params = {};
-
-        params['vendor'] = vendor;
-        if (invoice) {
-            params['invoice'] = invoice;
-        }
-        if (deletedby) {
-            params['deletedby'] = deletedby;
-        }
-
-        var result = Ext.ComponentQuery.query(
-            '[itemId="grid-search-deleted-results"]'
-        )[0];
-        result.store.load({params: params});
+        Ext.MessageBox.alert('Print', 'Coming soon...');
     },
 
     /***************************************************************************

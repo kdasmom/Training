@@ -175,10 +175,9 @@ class VendorGateway extends AbstractGateway {
 	 * @param null $page
 	 * @param string $status
 	 * @param string $order
-	 * @param $aspClientId
 	 * @return array|bool
 	 */
-	public function findByStatus($pageSize = null, $page = null, $status = 'forapproval', $order = 'PersonName',  $aspClientId) {
+	public function findByStatus($pageSize = null, $page = null, $status = 'forapproval', $order = 'PersonName', $keyword=null) {
 		$selectvendor = new sql\VendorSelect();
 
 
@@ -187,23 +186,56 @@ class VendorGateway extends AbstractGateway {
 		}
 
 		$status = strtolower($status);
-		$params = [$status, $aspClientId];
-		$selectvendor->columns(['vendor_id', 'vendor_name', 'vendor_status'])
+		$params = [];
+		$selectvendor->columns(['vendor_id', 'vendor_id_alt', 'vendor_name', 'vendor_status'])
 		  			->columnsPersonName()
 					->columnSentForApprovalDate()
 					->columnApprovalType()
+					->join(new sql\join\VendorVendorsiteJoin([]))
 					->join(['i' => 'integrationpackage'], 'v.integration_package_id = i.integration_package_id', ['integration_package_name'])
-					->where(['v.vendor_status' => '?', 'i.asp_client_id' => '?'])
-					->order($order)
-					->limit($pageSize)
-					->offset($pageSize * ($page - 1));
+					->order($order);
+
+		if ($pageSize !== null) {
+			$selectvendor->limit($pageSize);
+			if ($page !== null) {
+				$selectvendor->offset($pageSize * ($page - 1));
+			}
+		}
+
+		if ($keyword !== null) {
+			$keyword .= '%';
+			$selectvendor->whereNest('OR')
+							->whereLike('v.vendor_name', '?')
+							->whereLike('v.vendor_id_alt', '?')
+						->whereUnnest();
+
+			array_push($params, $keyword, $keyword);
+		}
+
+		if ($status !== null) {
+			if (!is_array($status)) {
+				$status = explode(',', $status);
+			}
+
+			$selectvendor->whereNest('OR');
+			foreach ($status as $val) {
+				$selectvendor->whereNest('AND')
+								->whereEquals('v.vendor_status', '?')
+								->whereEquals('vs.vendorsite_status', '?')
+							->whereUnnest();
+
+				array_push($params, $val, $val);
+			}
+			$selectvendor->whereUnnest();
+		}
+
 		if ($status == 'rejected') {
 			$selectvendor->join(new sql\join\VendorRejectedJoin())
 									->whereGreaterThan('v.vendor_reject_dt', '?');
 			$date = date('Y-m-d', strtotime('-30 day'));
 			$params[] = Util::formatDateForDB(new \DateTime($date));
 		}
-
+		
 		return $this->adapter->query($selectvendor, $params);
 	}
 

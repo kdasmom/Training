@@ -77,10 +77,12 @@ Ext.define('NP.model.image.ImageIndex', {
 
 		{ name: 'invoiceimage_source_name' },
 
+		{ name: 'userprofile_username' },
+		
+		{ name: 'scan_source' },
+
 		{ name: 'days_outstanding', type: 'int' },
 		{ name: 'pending_days', type: 'int' },
-
-		{ name: 'userprofile_username' },
 
         { name: 'deletedby_username' },
 

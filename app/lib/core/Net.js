@@ -205,8 +205,7 @@ Ext.define('NP.lib.core.Net', {
 			if (NP.Net.abortableRequests[id].mask !== null) {
 				NP.Net.abortableRequests[id].mask.destroy();
 			}
-			console.log('Aborting request');
-			console.log(NP.Net.abortableRequests[id].req);
+			
 			Ext.Ajax.abort(NP.Net.abortableRequests[id].req);
 			delete NP.Net.abortableRequests[id];
 		}

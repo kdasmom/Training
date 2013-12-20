@@ -18,10 +18,10 @@ Ext.define('NP.Application', {
 		'overrides.form.field.Number',
 		'overrides.form.Basic',
 		'overrides.form.Panel',
+		'overrides.grid.column.Column',
 		'overrides.grid.plugin.CellEditing',
 		'overrides.util.Format',
 		'overrides.util.Sorter',
-		'overrides.ux.form.ItemSelector',
 		'overrides.Component',
 		'overrides.JSON',
 		'Ext.util.History',
@@ -231,12 +231,6 @@ Ext.define('NP.Application', {
 		if (!panel) var panel = '#contentPanel';
 		if (!forceCreate) var forceCreate = false;
 		
-		// If updating main content panel, abort all requests that have been made so that
-		// we don't get UI errors when they complete
-		if (panel === '#contentPanel') {
-			NP.Net.abortAllRequests();
-		}
-
 		var pnl = Ext.ComponentQuery.query(panel)[0];
 		var isNewView = true;
 
@@ -259,6 +253,13 @@ Ext.define('NP.Application', {
 		
 		// If we have a new view, let's add it to the parent panel
 		if (isNewView) {
+			// If updating main content panel, abort all requests that have been made so that
+			// we don't get UI errors when they complete
+			if (panel === '#contentPanel') {
+				Ext.log('Aborting all Ajax requests because of call to set view ' + view);
+				NP.Net.abortAllRequests();
+			}
+			
 			// Remove all child elements from the parent panel
 			pnl.removeAll();
 			

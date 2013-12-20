@@ -1011,14 +1011,18 @@ Ext.define('NP.controller.Invoice', {
 			vendorField   = Ext.ComponentQuery.query('#invoiceVendorCombo')[0],
 			vendor        = vendorField.findRecordByValue(vendorField.getValue());
 
-		vendorDisplay.update(
-			'<b>' + vendor.get('vendor_name') + 
-			' (' + vendor.get('vendor_id_alt') + ')</b>' +
-			vendor.getAddressHtml() +
-			'<div>' + vendor.getFullPhone() + '</div>'
-		);
+		if (vendor !== null) {
+			vendorDisplay.update(
+				'<b>' + vendor.get('vendor_name') + 
+				' (' + vendor.get('vendor_id_alt') + ')</b>' +
+				vendor.getAddressHtml() +
+				'<div>' + vendor.getFullPhone() + '</div>'
+			);
 
-		vendorDisplay.show();
+			vendorDisplay.show();
+		} else {
+			vendorDisplay.hide();
+		}
 	},
 
 	populatePeriods: function(accounting_period, invoice_period) {
