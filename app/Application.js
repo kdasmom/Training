@@ -20,6 +20,7 @@ Ext.define('NP.Application', {
 		'overrides.form.Panel',
 		'overrides.grid.plugin.CellEditing',
 		'overrides.util.Format',
+		'overrides.util.Sorter',
 		'overrides.ux.form.ItemSelector',
 		'overrides.Component',
 		'overrides.JSON',
@@ -28,6 +29,7 @@ Ext.define('NP.Application', {
 		'NP.lib.core.DataLoader',
 		'NP.lib.core.DBProvider',
 		'NP.lib.core.Security',
+		'NP.lib.core.Net',
 		'NP.lib.core.Translator',
 		'NP.view.Viewport'
 	],
@@ -229,6 +231,12 @@ Ext.define('NP.Application', {
 		if (!panel) var panel = '#contentPanel';
 		if (!forceCreate) var forceCreate = false;
 		
+		// If updating main content panel, abort all requests that have been made so that
+		// we don't get UI errors when they complete
+		if (panel === '#contentPanel') {
+			NP.Net.abortAllRequests();
+		}
+
 		var pnl = Ext.ComponentQuery.query(panel)[0];
 		var isNewView = true;
 

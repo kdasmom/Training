@@ -24,18 +24,10 @@ Ext.define('NP.model.user.Role', {
 		{ name: 'role_dashboard_layout' },
 
 		// These fields are not database columns
-		{ name: 'role_user_count', type: 'int' } 
+		{ name: 'role_user_count', type: 'int' },
+
+		{ name: 'userprofile_username' } // for role_updated_by
 	],
-    
-    belongsTo: [
-        {
-            model     : 'NP.model.user.Userprofile',
-            name      : 'updater',
-            getterName: 'getUpdater',
-            foreignKey: 'role_updated_by',
-            primaryKey: 'userprofile_id'
-        }
-    ],
 
 	validations: [
 		{ field: 'role_name', type: 'length', max: 255 },

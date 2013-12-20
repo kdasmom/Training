@@ -11,8 +11,8 @@ Ext.define('NP.view.image.gridcol.DueDate', {
 	dataIndex: 'Image_Index_Due_Date',
 
 	renderer: function(val, meta, rec) {
-		if (rec.raw['invoice_id']) {
-			val = rec.getInvoice().get('invoice_duedate');
+		if (rec.get('invoice_id') !== null) {
+			val = rec.get('invoice_duedate');
 		}
 
 		return Ext.Date.format(val, Ext.Date.defaultFormat);

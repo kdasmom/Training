@@ -6,12 +6,17 @@
 Ext.define('NP.view.catalogMaintenance.CatalogFormCategories', {
     extend: 'Ext.ux.form.ItemSelector',
     alias: 'widget.catalogmaintenance.catalogformcategories',
+
+    requires: ['NP.store.catalog.VcCats'],
     
     title: 'Categories',
 
     name        : 'vc_categories',
     hideLabel   : true, 
-    store       : 'catalog.VcCats',
+    store       : {
+        type    : 'catalog.vccats',
+        autoLoad: true
+    },
     displayField: 'vccat_name',
     valueField  : 'vccat_id',
     fromTitle   : 'Unassigned',

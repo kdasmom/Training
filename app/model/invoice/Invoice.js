@@ -8,9 +8,7 @@ Ext.define('NP.model.invoice.Invoice', {
     
     requires: [
 		'NP.lib.core.Security',
-		'NP.lib.core.Config',
-		'NP.model.vendor.Vendorsite',
-		'NP.model.property.Property'
+		'NP.lib.core.Config'
 	],
     
     idProperty: 'invoice_id',
@@ -71,6 +69,17 @@ Ext.define('NP.model.invoice.Invoice', {
 		{ name: 'template_name' },
 
 		// These fields are not in the INVOICE table
+		{ name: 'vendor_id', type: 'int' },
+		{ name: 'vendor_id_alt' },
+		{ name: 'vendor_name' },
+		{ name: 'vendorsite_id', type: 'int' },
+
+		{ name: 'property_id', type: 'int' },
+		{ name: 'property_id_alt' },
+		{ name: 'property_name' },
+
+		{ name: 'PriorityFlag_Display' },
+
 		{ name: 'entity_amount', type: 'float', default_value: 0 },
 		{ name: 'shipping_amount', type: 'float', default_value: 0, useNull: false },
 		{ name: 'tax_amount', type: 'float', default_value: 0, useNull: false },
@@ -93,24 +102,6 @@ Ext.define('NP.model.invoice.Invoice', {
 		{ name: 'void_by' },
 		{ name: 'payment_details' },
 		{ name: 'payment_amount_remaining', type: 'float' }
-    ],
-
-    belongsTo: [
-        {
-			model     : 'NP.model.vendor.Vendorsite',
-			name      : 'vendorsite',
-			getterName: 'getVendorsite',
-			foreignKey: 'paytablekey_id',
-			primaryKey: 'vendorsite_id',
-			reader    : 'jsonflat'
-        },{
-			model     : 'NP.model.property.Property',
-			name      : 'property',
-			getterName: 'getProperty',
-			foreignKey: 'property_id',
-			primaryKey: 'property_id',
-			reader    : 'jsonflat'
-        }
     ],
 
     isModifiable: function() {

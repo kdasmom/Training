@@ -11,8 +11,8 @@ Ext.define('NP.view.image.gridcol.Reference', {
 	dataIndex: 'Image_Index_Ref',
 
 	renderer: function(val, meta, rec) {
-		if (rec.raw['invoice_id']) {
-			return rec.getInvoice().get('invoice_ref');
+		if (rec.get('invoice_id') !== null) {
+			return rec.get('invoice_ref');
 		}
 
 		return val;

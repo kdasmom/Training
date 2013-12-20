@@ -1191,6 +1191,9 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.store.jobcosting.JbPhaseCodes": [
     "store.jobcosting.jbphasecodes"
   ],
+  "Ext.ux.grid.filter.DateFilter": [
+    "gridfilter.date"
+  ],
   "NP.view.property.gridcol.CreatedDate": [
     "widget.property.gridcol.createddate"
   ],

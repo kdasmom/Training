@@ -47,7 +47,7 @@ class VendorService extends AbstractService {
 	public function __construct(VendorEntityValidator $vendorEntityValidator) {
 		$this->vendorEntityValidator = $vendorEntityValidator;
 	}
-	
+
 	public function setConfigService(ConfigService $configService) {
 		$this->configService = $configService;
 	}
@@ -717,7 +717,7 @@ class VendorService extends AbstractService {
      */
     public function getAll($vendor_status='active', $integration_package_id=null, $pageSize=null, $page=1, $sort='vendor_name') {
         $filter = ['vendor_status'=>'?'];
-        if ($integration_package_id === null) {
+        if ($integration_package_id !== null) {
             $filter['integration_package_id'] = $integration_package_id;
         }
 

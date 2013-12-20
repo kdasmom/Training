@@ -29,6 +29,10 @@ Ext.define('NP.model.gl.GlAccount', {
 		
 		{ name: 'integration_package_name' },
 
+		{ name: 'glaccounttype_name' },
+
+		{ name: 'userprofile_username' }, // For glaccount_updateby
+
 		{
 			name: 'display_name',
 			convert: function(v, rec) {
@@ -52,24 +56,5 @@ Ext.define('NP.model.gl.GlAccount', {
 	    		return glaccount_name + ' (' + glaccount_number + ')';
 	    	}
 		}
-	},
-    
-    belongsTo: [
-        {
-            model         : 'NP.model.user.Userprofile',
-            name          : 'updatedByUser',
-            getterName    : 'getUpdatedByUser',
-            foreignKey    : 'UserProfile_ID',
-            primaryKey    : 'userprofile_id',
-            reader        : 'jsonflat'
-        },
-        {
-            model         : 'NP.model.gl.GlAccountType',
-            name          : 'type',
-            getterName    : 'getType',
-            foreignKey    : 'glaccounttype_id',
-            primaryKey    : 'glaccounttype_id',
-            reader        : 'jsonflat'
-        }
-    ],
+	}
 });

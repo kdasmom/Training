@@ -7,5 +7,7 @@ Ext.define('NP.store.vendor.Vendors', {
     extend: 'NP.lib.data.Store',
     alias : 'store.vendor.vendors',
 	
-    model: 'NP.model.vendor.Vendor'
+    model: 'NP.model.vendor.Vendor',
+
+    sorters: ['vendor_name']
 });
