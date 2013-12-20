@@ -1,6 +1,6 @@
-Ext.define('NP.view.images.Report', {
+Ext.define('NP.view.image.Report', {
     extend: 'Ext.panel.Panel',
-    alias:  'widget.images.report',
+    alias:  'widget.image.report',
 
     title:  'Report',
     autoscroll: true,

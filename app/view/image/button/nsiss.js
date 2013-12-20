@@ -1,9 +1,9 @@
 /**
  * NSISS button
  */
-Ext.define('NP.view.images.button.nsiss', {
+Ext.define('NP.view.image.button.nsiss', {
     extend: 'Ext.button.Button',
-    alias: 'widget.images.button.nsiss',
+    alias: 'widget.image.button.nsiss',
 
     text: 'Nexus Services Invoice Separator Sheet',
     iconCls: 'nsiss-btn',

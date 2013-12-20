@@ -1,18 +1,17 @@
-Ext.define('NP.view.images.grid.DeletedImages', {
-    extend: 'NP.view.images.grid.Base',
-    alias:  'widget.images.grid.DeletedImages',
+Ext.define('NP.view.image.grid.PurchaseOrders', {
+    extend: 'NP.view.image.grid.Base',
+    alias:  'widget.image.grid.PurchaseOrders',
 
     initComponent: function(){
         this.cols = [
-            'image.gridcol.Name',
-            'image.gridcol.DeleteDate',
-            'image.gridcol.DeletedBy',
             'image.gridcol.ScanDate',
-            'image.gridcol.ImageType',
             'property.gridcol.PropertyName',
             'vendor.gridcol.VendorName',
             'image.gridcol.Reference',
-            'image.gridcol.Amount'
+            'image.gridcol.Amount',
+            'image.gridcol.Source',
+            //'image.gridcol.ImageType'
+            'image.gridcol.Type'
         ];
         this.autoscroll = true;
 
@@ -20,7 +19,7 @@ Ext.define('NP.view.images.grid.DeletedImages', {
 
         this.store = Ext.create('NP.store.image.ImageIndexes', {
             service    : 'ImageService',
-            action     : 'getImagesToDelete',
+            action     : 'getImagesToConvert',
             paging     : true,
             pageSize: 25,
             extraParams: {
@@ -28,6 +27,7 @@ Ext.define('NP.view.images.grid.DeletedImages', {
                 delegated_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id'),
                 contextType                : context.type,
                 contextSelection           : (context.type == 'region') ? context.region_id : context.property_id,
+                docTypes                   : 'Purchase Order,Receipt',
                 countOnly                  : 'false'
             }
         });

@@ -1,6 +1,6 @@
-Ext.define('NP.view.images.Index', {
+Ext.define('NP.view.image.Index', {
     extend: 'NP.lib.ui.BoundForm',
-    alias:  'widget.images.index',
+    alias:  'widget.image.index',
 
     title:  'Index Images',
     requires: [

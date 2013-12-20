@@ -1,6 +1,6 @@
-Ext.define('NP.view.images.grid.SearchCDIndex', {
+Ext.define('NP.view.image.grid.SearchCDIndex', {
     extend: 'NP.lib.ui.Grid',
-    alias:  'widget.images.grid.searchcdindex',
+    alias:  'widget.image.grid.searchcdindex',
 
     requires:[
         'NP.lib.core.Translator',

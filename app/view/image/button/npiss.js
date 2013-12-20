@@ -1,9 +1,9 @@
 /**
  * NPISS button
  */
-Ext.define('NP.view.images.button.npiss', {
+Ext.define('NP.view.image.button.npiss', {
     extend: 'Ext.button.Button',
-    alias: 'widget.images.button.npiss',
+    alias: 'widget.image.button.npiss',
 
     text: 'NexusPayables Invoice Separator Sheet',
     iconCls: 'npiss-btn',

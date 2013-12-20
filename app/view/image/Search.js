@@ -1,6 +1,6 @@
-Ext.define('NP.view.images.Search', {
+Ext.define('NP.view.image.Search', {
     extend: 'Ext.panel.Panel',
-    alias:  'widget.images.search',
+    alias:  'widget.image.search',
 
     title:  'Search Images',
     
@@ -12,7 +12,7 @@ Ext.define('NP.view.images.Search', {
 
     requires: [
         'NP.view.shared.ContextPickerMulti',
-        'NP.view.images.grid.Search',
+        'NP.view.image.grid.Search',
         'NP.view.shared.button.Search',
         'NP.view.shared.button.Reset',
         'NP.view.shared.button.Search',
@@ -143,7 +143,7 @@ Ext.define('NP.view.images.Search', {
                 ]
             },
             {
-                xtype : 'images.grid.Search',
+                xtype : 'image.grid.Search',
                 itemId: 'grid-search-results',
                 title : 'Search Results',
                 flex  : 1,

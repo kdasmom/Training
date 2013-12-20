@@ -1,24 +1,31 @@
-Ext.define('NP.view.images.grid.Index', {
-    extend: 'NP.view.images.grid.Base',
-    alias:  'widget.images.grid.Index',
+Ext.define('NP.view.image.grid.Invoices', {
+    extend: 'NP.view.image.grid.Base',
+    alias:  'widget.image.grid.Invoices',
+
+    requires: [
+        'NP.lib.core.Security'
+    ],
 
     initComponent: function(){
         this.cols = [
-            'image.gridcol.Name',
             'image.gridcol.ScanDate',
-            'image.gridcol.ImageType',
             'property.gridcol.PropertyName',
             'vendor.gridcol.VendorName',
-            'image.gridcol.ScanSource'
-        ];
+            'image.gridcol.Reference',
+            'image.gridcol.Amount',
+            'image.gridcol.InvoiceDate',
+            'shared.gridcol.PriorityFlag',
+            'image.gridcol.Source'
+        ]
         this.autoscroll = true;
 
         var context = NP.Security.getCurrentContext();
 
         this.store = Ext.create('NP.store.image.ImageIndexes', {
             service    : 'ImageService',
-            action     : 'getImagesToIndex',
+            action     : 'getImagesToConvert',
             paging     : true,
+            pageSize: 25,
             extraParams: {
                 userprofile_id             : NP.Security.getUser().get('userprofile_id'),
                 delegated_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id'),

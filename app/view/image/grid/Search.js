@@ -1,6 +1,6 @@
-Ext.define('NP.view.images.grid.Search', {
+Ext.define('NP.view.image.grid.Search', {
     extend: 'NP.view.image.ImageGrid',
-    alias:  'widget.images.grid.Search',
+    alias:  'widget.image.grid.Search',
 
     initComponent: function(){
         this.cols = [

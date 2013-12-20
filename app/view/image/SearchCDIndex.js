@@ -1,12 +1,12 @@
-Ext.define('NP.view.images.SearchCDIndex', {
+Ext.define('NP.view.image.SearchCDIndex', {
     extend: 'Ext.panel.Panel',
-    alias:  'widget.images.searchcdindex',
+    alias:  'widget.image.searchcdindex',
 
     title:  'Document Search',
     autoscroll: true,
 
     requires: [
-        'NP.view.images.grid.SearchCDIndex',
+        'NP.view.image.grid.SearchCDIndex',
         'NP.view.shared.VendorAutoComplete',
         'NP.lib.core.Translator',
         'NP.view.shared.button.Reset',
@@ -143,7 +143,7 @@ Ext.define('NP.view.images.SearchCDIndex', {
                 ]
             },
             {
-                xtype : 'images.grid.searchcdindex',
+                xtype : 'image.grid.searchcdindex',
 
                 itemId: 'grid-search-cdindex-results',
                 title : 'Search Results',

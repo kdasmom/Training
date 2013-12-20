@@ -4,7 +4,7 @@ Ext.define('NP.controller.Images', {
     stores: ['image.ImageDocTypes','vendor.UtilityAccounts','invoice.Invoices',
             'image.ImageToCDs'],
     models: ['vendor.UtilityAccount','image.ImageIndex'],
-    views : ['images.Main','images.Index','images.Search'],
+    views : ['image.Main','image.Index','image.Search'],
 
     requires: [
         'NP.lib.core.Util',
@@ -27,7 +27,7 @@ Ext.define('NP.controller.Images', {
      * Bind actions for Main Screen.
      */
     controlMain: function(control) {
-        var prefix = '[xtype="images.main"] ';
+        var prefix = '[xtype="image.main"] ';
 
         control[prefix + 'tabpanel'] = {
             tabchange: this.processTabChange.bind(this)
@@ -78,7 +78,7 @@ Ext.define('NP.controller.Images', {
      * Bind actions for Index Screen.
      */
     controlIndex: function(control) {
-        var prefix = '[xtype="images.index"] ';
+        var prefix = '[xtype="image.index"] ';
 
         // Top bar buttons.
         control[prefix + 'button[itemId~="buttonPrev"]'] = {
@@ -127,7 +127,7 @@ Ext.define('NP.controller.Images', {
      * Bind actions for Search Screen.
      */
     controlSearch: function(control) {
-        var prefix = '[xtype="images.search"] ';
+        var prefix = '[xtype="image.search"] ';
 
         control[prefix + 'button[itemId~="buttonReturn"]'] = {
             click: this.processButtonReturn
@@ -149,7 +149,7 @@ Ext.define('NP.controller.Images', {
      * Bind actions for Search CD Index Screen.
      */
     controlSearchCDIndex: function(control) {
-        var prefix = '[xtype="images.searchcdindex"] ';
+        var prefix = '[xtype="image.searchcdindex"] ';
 
         control[prefix + 'button[itemId~="buttonReturn"]'] = {
             click: this.processButtonReturn
@@ -168,7 +168,7 @@ Ext.define('NP.controller.Images', {
      * Bind actions for Report Screen.
      */
     controlReport: function(control) {
-        var prefix = '[xtype="images.report"] ';
+        var prefix = '[xtype="image.report"] ';
 
         control[prefix + 'button[itemId~="buttonReturn"]'] = {
             click: this.processButtonReturn
@@ -196,7 +196,7 @@ Ext.define('NP.controller.Images', {
             return;
         };
 
-        this.application.setView('NP.view.images.Main');
+        this.application.setView('NP.view.image.Main');
 
         var active = this.getCurrent();
         var target = Ext.ComponentQuery.query(
@@ -270,7 +270,7 @@ Ext.define('NP.controller.Images', {
         var contentView = this.application.getCurrentView();
 
         // If user picks a different property/region and we're on a register, update the grid.
-        if (contentView.getXType() == 'images.main') {
+        if (contentView.getXType() == 'image.main') {
             var grid = this.getCurrentGrid();
             var state = Ext.ComponentQuery.query(
                 '[xtype="shared.contextpicker"]'
@@ -489,7 +489,7 @@ Ext.define('NP.controller.Images', {
         me.current_image_index_id = me.imageTracker.getCurrentItem();
 
         if (grid) {
-            if (grid.getXType() == 'images.grid.Exceptions') {
+            if (grid.getXType() == 'image.grid.Exceptions') {
                 section = 'exception';
             }
         }
@@ -520,7 +520,7 @@ Ext.define('NP.controller.Images', {
             };
 
             // Show Index Screen.
-            me.setView('NP.view.images.Index', viewCfg, '#contentPanel', true);
+            me.setView('NP.view.image.Index', viewCfg, '#contentPanel', true);
             // Set correct url for iframe.
             me.refreshIndex();
         });
@@ -532,7 +532,7 @@ Ext.define('NP.controller.Images', {
      * @param {} data Image index form data.
      */
     setFieldsAfterLoad: function(data) {
-        var form     = this.getCmp('images.index'),
+        var form     = this.getCmp('image.index'),
             buttons = ['buttonIndexingComplete','tbSep','buttonSaveAndPrev','buttonSaveAsException',
                         'buttonInvoice','buttonDeleteFromQueue'],
             btn, fn, i;
@@ -661,7 +661,7 @@ Ext.define('NP.controller.Images', {
 
     onUpdateTemplate: function(win, invoice_id) {
         var me         = this,
-            form       = me.getCmp('images.index');
+            form       = me.getCmp('image.index');
 
         invoice_id = invoice_id || '';
 
@@ -672,7 +672,7 @@ Ext.define('NP.controller.Images', {
 
     setTemplateButtonText: function(invoice_id) {
         var me         = this,
-            form       = me.getCmp('images.index'),
+            form       = me.getCmp('image.index'),
             button     = form.down('#field-use-template'),
             buttonText;
 
@@ -810,7 +810,7 @@ Ext.define('NP.controller.Images', {
      * @param Function callback Function which will be called after saving will be processed.
      */
     saveImageIndex: function(action, section, callback) {
-        var form = this.getCmp('images.index');
+        var form = this.getCmp('image.index');
         
         if (form.isValid(action)) {
             form.submitWithBindings({
@@ -838,7 +838,7 @@ Ext.define('NP.controller.Images', {
      * Show Search Screen
      */
     showSearch: function() {
-        this.application.setView('NP.view.images.Search');
+        this.application.setView('NP.view.image.Search');
     },
 
     /**
@@ -906,7 +906,7 @@ Ext.define('NP.controller.Images', {
      * Show Search CD Index Screen
      */
     showSearchCDIndex: function() {
-        this.application.setView('NP.view.images.SearchCDIndex');
+        this.application.setView('NP.view.image.SearchCDIndex');
     },
 
     /**
@@ -915,7 +915,7 @@ Ext.define('NP.controller.Images', {
      */
     processButtonSearchCDIndexProcess: function() {
         var me          = this,
-            form        = me.getCmp('images.searchcdindex'),
+            form        = me.getCmp('image.searchcdindex'),
             doctype     = form.down('#field-image-doctype').getValue(),
             refnum      = form.down('#field-refnumber').getValue(),
             property_id = form.down('#field-image-properties').getValue(),
@@ -964,7 +964,7 @@ Ext.define('NP.controller.Images', {
      * Show Report Screen.
      */
     showReport: function() {
-        //this.application.setView('NP.view.images.Report');
+        //this.application.setView('NP.view.image.Report');
         Ext.MessageBox.alert('Report', 'Coming soon');
     },
 

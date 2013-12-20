@@ -1,9 +1,9 @@
 /**
  * This is base class for all grids in "Image Management".
  */
-Ext.define('NP.view.images.grid.Base', {
+Ext.define('NP.view.image.grid.Base', {
     extend: 'NP.view.image.ImageGrid',
-    alias:  'widget.images.grid.Base',
+    alias:  'widget.image.grid.Base',
 
     initComponent: function(){
         this.selType = 'checkboxmodel';
