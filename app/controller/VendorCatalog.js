@@ -197,7 +197,8 @@ Ext.define('NP.controller.VendorCatalog', {
 			},
 			'[xtype="catalog.itemsfilter"]': {
 				removetype: this.removeTypeFilter,
-				removeprice: this.removePriceFilter
+				removeprice: this.removePriceFilter,
+				removefilter: this.removeTopFilter
 			}
 		});
 
@@ -560,7 +561,9 @@ Ext.define('NP.controller.VendorCatalog', {
 	removeTypeFilter: function (type) {
 		var grid = this.getCmp('catalog.itemsview').down('[name="itemsgrid"]');
 		grid.addExtraParams({
-			types: type
+			types: type,
+			field: null,
+			value: null
 		});
 		grid.reloadFirstPage();
 	},
@@ -571,5 +574,32 @@ Ext.define('NP.controller.VendorCatalog', {
 			prices: price
 		});
 		grid.reloadFirstPage();
+	},
+
+	removeTopFilter: function(type, count, vc_id) {
+		console.log('type: ', type);
+		console.log('count: ', count);
+		if (count == 0) {
+			this.addHistory('VendorCatalog:showCatalogView:' + vc_id);
+		} else {
+			var grid = this.getCmp('catalog.itemsview').down('[name="itemsgrid"]');
+			if (type == 'category') {
+				grid.addExtraParams({
+					field: null,
+					value: null
+				});
+			}
+			if (type == 'price') {
+				grid.addExtraParams({
+					prices: null
+				});
+			}
+			if (type == 'type') {
+				grid.addExtraParams({
+					types: null
+				});
+			}
+			grid.reloadFirstPage();
+		}
 	}
 });

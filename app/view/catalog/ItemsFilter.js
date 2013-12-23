@@ -27,8 +27,8 @@ Ext.define('NP.view.catalog.ItemsFilter', {
 				name: 'selectedItems',
 				tpl: new Ext.XTemplate(
 					'<tpl for=".">',
-					'<div style="margin-bottom: 10px; cursor: pointer;" class="item">',
-					'<span>{title} <a href="javascript: void(0)">x</a> </span>',
+					'<div style="margin-bottom: 10px; float: left; clear: both; width: 100%; cursor: pointer;" class="item">',
+					'<span>{title} <a href="javascript: void(0)" style="float: right;">x</a> </span>',
 					'</div>',
 					'</tpl>'
 				),
@@ -39,7 +39,33 @@ Ext.define('NP.view.catalog.ItemsFilter', {
 						['category', me.category]
 					]
 				}),
-				itemSelector: 'div.item'
+				width: 350,
+				itemSelector: 'div.item',
+				listeners: {
+					itemclick: function (dataview, record, item, index, e, eOpts) {
+						this.getStore().remove(record);
+
+						var count = this.getStore().getCount();
+						var type = record.get('type');
+						me.fireEvent('removefilter', type, count, me.vc_id);
+						if (count > 0) {
+							if (type == 'type') {
+								me.down('[name="typeslabel"]').show();
+								var store = me.down('[name="itemstypesview"]').getStore();
+								Ext.apply(store.getProxy().extraParams, {
+									field: vc_id,
+									value: vc_id
+								});
+								store.reload();
+								me.down('[name="itemstypesview"]').show();
+							}
+							if (type == 'price') {
+								me.down('[name="priceslabel"]').show();
+								me.down('[name="itemspricesview"]').show();
+							}
+						}
+					}
+				}
 			},
 			{
 				xtype: 'fieldcontainer',
@@ -56,15 +82,16 @@ Ext.define('NP.view.catalog.ItemsFilter', {
 					},
 					{
 						xtype: 'dataview',
+						name: 'itemstypesview',
 						tpl: new Ext.XTemplate(
 							'<tpl for=".">',
-							'<div style="margin-bottom: 10px; float: left; width: 50%; padding: 10px; cursor: pointer;" class="type">',
-							'<span>{vcitem_type} <a href="javascript: void(0)" class="remove">x</a></span>',
+							'<div style="padding-left: 20px; margin-bottom: 10px; float: left; clear: both; width: 100%; cursor: pointer;" class="type">',
+							'<span>{vcitem_type}</span>',
 							'</div>',
 							'</tpl>'
 						),
 						itemSelector: 'div.type',
-						width: 400,
+						width: 350,
 						store: Ext.create('NP.lib.data.Store', {
 							fields: ['vcitem_type'],
 							autoLoad : true,
@@ -106,6 +133,7 @@ Ext.define('NP.view.catalog.ItemsFilter', {
 					},
 					{
 						xtype: 'dataview',
+						name: 'itemspricesview',
 						padding: '0 0 0 15',
 						tpl: new Ext.XTemplate(
 							'<tpl for=".">',
