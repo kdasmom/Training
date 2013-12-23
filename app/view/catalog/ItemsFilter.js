@@ -18,10 +18,28 @@ Ext.define('NP.view.catalog.ItemsFilter', {
 		this.items = [
 			{
 				xtype: 'displayfield',
-				name: 'selectedItems',
 				fieldLabel: NP.Translator.translate('YOU HAVE SELECTED'),
-				labelAlign: 'top',
-				value: '<div style="padding: 0px 0px 0px 15px;">' + me.category + ' <a href="javascript: void(0)">x</a></div>'
+				labelAlign: 'top'/*,
+				value: '<div style="padding: 0px 0px 0px 15px;">' + me.category + ' <a href="javascript: void(0)">x</a></div>'*/
+			},
+			{
+				xtype: 'dataview',
+				name: 'selectedItems',
+				tpl: new Ext.XTemplate(
+					'<tpl for=".">',
+					'<div style="margin-bottom: 10px; cursor: pointer;" class="item">',
+					'<span>{title} <a href="javascript: void(0)">x</a> </span>',
+					'</div>',
+					'</tpl>'
+				),
+				store: Ext.create('Ext.data.ArrayStore', {
+					fields: ['type', 'title'],
+					autoLoad : true,
+					data: [
+						['category', me.category]
+					]
+				}),
+				itemSelector: 'div.item'
 			},
 			{
 				xtype: 'fieldcontainer',
@@ -61,15 +79,27 @@ Ext.define('NP.view.catalog.ItemsFilter', {
 						}),
 						listeners: {
 							itemclick: function (dataview, record, item, index, e, eOpts) {
+								var recorddel = null;
+								var store = me.down('[name="selectedItems"]').getStore();
+
 								this.hide();
 								me.down('[name="typeslabel"]').hide();
 								me.fireEvent('removetype', record.get('vcitem_type'));
-								me.down('[name="selectedItems"]').setValue('<div style="padding: 0px 0px 0px 15px;">' + record.get('vcitem_type') + ' <a href="javascript: void(0)">x</a></div>');
+								store.add({type: 'type', title: record.get('vcitem_type')});
+								store.each(function(record){
+									if (record.get('type') == 'category') {
+										recorddel = record;
+									}
+								});
+								if (recorddel) {
+									store.remove(recorddel);
+								}
 							}
 						}
 					},
 					{
 						xtype: 'displayfield',
+						name: 'priceslabel',
 						fieldLabel: NP.Translator.translate('Price'),
 						value: '',
 						labelAlign: 'top'
@@ -80,22 +110,41 @@ Ext.define('NP.view.catalog.ItemsFilter', {
 						tpl: new Ext.XTemplate(
 							'<tpl for=".">',
 							'<div style="margin-bottom: 10px; cursor: pointer;" class="price">',
-							'<span>{price}</span>',
+							'<span><a href="javascript: void(0)">{price}</a></span>',
 							'</div>',
 							'</tpl>'
 						),
 						store: Ext.create('Ext.data.ArrayStore', {
-							fields: ['price'],
+							fields: ['price', 'value'],
 							autoLoad : true,
 							data: [
-								[NP.Translator.translate('Under $25')],
-								[NP.Translator.translate('$25 - $50')],
-								[NP.Translator.translate('$50 - $75')],
-								[NP.Translator.translate('$75 - $100')],
-								[NP.Translator.translate('Over $100')]
+								[NP.Translator.translate('Under $25'), 0],
+								[NP.Translator.translate('$25 - $50'), 25],
+								[NP.Translator.translate('$50 - $75'), 50],
+								[NP.Translator.translate('$75 - $100'), 75],
+								[NP.Translator.translate('Over $100'), 100]
 							]
 						}),
-						itemSelector: 'div.price'
+						itemSelector: 'div.price',
+						listeners: {
+							itemclick: function (dataview, record, item, index, e, eOpts) {
+								var recorddel = null;
+								var store = me.down('[name="selectedItems"]').getStore();
+
+								this.hide();
+								me.down('[name="priceslabel"]').hide();
+								me.fireEvent('removeprice', record.get('value'));
+								store.add({type: 'price', title: record.get('price')});
+								store.each(function(record){
+									if (record.get('type') == 'category') {
+										recorddel = record;
+									}
+								});
+								if (recorddel) {
+									store.remove(recorddel);
+								}
+							}
+						}
 					}
 				]
 			}

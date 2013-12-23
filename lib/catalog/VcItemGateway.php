@@ -411,8 +411,14 @@ class VcItemGateway extends AbstractGateway {
 		}
 
 		if ($prices) {
-			$select->whereIn('vi.vcitem_price', '?');
-			$params[] = !is_array($prices) ? $prices : implode(',', $prices);
+
+			if ($prices !== 100) {
+				$select->whereBetween('vi.vcitem_price', '?', '?');
+				$params = array_merge($params, [$prices, $prices + 25]);
+			} else {
+				$select->whereGreaterThen('vi.vcitem_price', '?');
+				$params[] = $prices;
+			}
 		}
 
 		if ($types) {

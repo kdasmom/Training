@@ -196,7 +196,8 @@ Ext.define('NP.controller.VendorCatalog', {
 				}
 			},
 			'[xtype="catalog.itemsfilter"]': {
-				removetype: this.removeTypeFilter
+				removetype: this.removeTypeFilter,
+				removeprice: this.removePriceFilter
 			}
 		});
 
@@ -560,6 +561,14 @@ Ext.define('NP.controller.VendorCatalog', {
 		var grid = this.getCmp('catalog.itemsview').down('[name="itemsgrid"]');
 		grid.addExtraParams({
 			types: type
+		});
+		grid.reloadFirstPage();
+	},
+
+	removePriceFilter: function(price) {
+		var grid = this.getCmp('catalog.itemsview').down('[name="itemsgrid"]');
+		grid.addExtraParams({
+			prices: price
 		});
 		grid.reloadFirstPage();
 	}
