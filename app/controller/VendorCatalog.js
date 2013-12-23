@@ -577,8 +577,6 @@ Ext.define('NP.controller.VendorCatalog', {
 	},
 
 	removeTopFilter: function(type, count, vc_id) {
-		console.log('type: ', type);
-		console.log('count: ', count);
 		if (count == 0) {
 			this.addHistory('VendorCatalog:showCatalogView:' + vc_id);
 		} else {

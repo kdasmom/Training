@@ -319,8 +319,9 @@ class VcItemGateway extends AbstractGateway {
 				->group('un.UNSPSC_Commodity_FamilyTitle, un.UNSPSC_Commodity_Commodity');
 
 		$select2->from(['vi' => 'vcitem'])
-			->columns(['total_items' => new Expression('count(*)')])
-				->join(['un' => 'unspsc_commodity'], 'vi.unspsc_commodity_commodity = un.unspsc_commodity_commodity', ['category' => 'UNSPSC_Commodity_FamilyTitle', 'commodityid' => 'UNSPSC_Commodity_Commodity'], Select::JOIN_LEFT)
+				->distinct()
+				->columns(['total_items' => new Expression('count(*)'), 'category' => 'vcitem_category_name'])
+				->join(['un' => 'unspsc_commodity'], 'vi.unspsc_commodity_commodity = un.unspsc_commodity_commodity', ['commodityid' => 'UNSPSC_Commodity_Commodity'], Select::JOIN_LEFT)
 				->where(
 					[
 						'vi.vc_id' => '?',
@@ -330,7 +331,7 @@ class VcItemGateway extends AbstractGateway {
 				->whereIsNull('vi.UNSPSC_Commodity_Commodity')
 				->whereIsNotNull('vi.vcitem_category_name')
 				->whereNotEquals('vi.vcitem_category_name', '?')
-				->group('un.UNSPSC_Commodity_FamilyTitle, un.UNSPSC_Commodity_Commodity');
+				->group('vi.vcitem_category_name, un.UNSPSC_Commodity_Commodity');
 
 		$sql = $select1->toString() . ' union all ' . $select2->toString() . ' order by category asc';
 

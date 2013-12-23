@@ -163,14 +163,6 @@ Ext.define('NP.view.catalog.ItemsFilter', {
 								me.down('[name="priceslabel"]').hide();
 								me.fireEvent('removeprice', record.get('value'));
 								store.add({type: 'price', title: record.get('price')});
-								store.each(function(record){
-									if (record.get('type') == 'category') {
-										recorddel = record;
-									}
-								});
-								if (recorddel) {
-									store.remove(recorddel);
-								}
 							}
 						}
 					}
