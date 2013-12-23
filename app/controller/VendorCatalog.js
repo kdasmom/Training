@@ -18,7 +18,8 @@ Ext.define('NP.controller.VendorCatalog', {
 		'catalog.BrandsView',
 		'catalog.SimpleSearchView',
 		'catalog.CatalogView',
-		'catalog.BrandsDataView'
+		'catalog.BrandsDataView',
+		'catalog.ItemsView'
 	],
 
 	stores: [
@@ -193,8 +194,10 @@ Ext.define('NP.controller.VendorCatalog', {
 				showbycategory: function(field, value, vc_id) {
 					this.addHistory('VendorCatalog:showItems:' + field + ':' + value + ':' + vc_id);
 				}
+			},
+			'[xtype="catalog.itemsfilter"]': {
+				removetype: this.removeTypeFilter
 			}
-
 		});
 
 	},
@@ -551,5 +554,13 @@ Ext.define('NP.controller.VendorCatalog', {
 	showItems: function(field, value, vc_id) {
 		this.setView('NP.view.catalog.ItemsView', {field: field, value: value, vc_id: vc_id});
 		this.showUserOrderSummary(this.userSummaryCallback);
+	},
+
+	removeTypeFilter: function (type) {
+		var grid = this.getCmp('catalog.itemsview').down('[name="itemsgrid"]');
+		grid.addExtraParams({
+			types: type
+		});
+		grid.reloadFirstPage();
 	}
 });

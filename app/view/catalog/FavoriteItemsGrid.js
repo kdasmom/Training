@@ -167,13 +167,13 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 			} else {
 				this.store = Ext.create('NP.store.catalog.VcItems', {
 					service    	: 'CatalogService',
-					action     	: 'searchItems',
+					action     	: 'getItemsByCategoryOrBrand',
 					groupField	: 'vcitem_category_name',
 					extraParams: {
 						userprofile_id: NP.Security.getUser().get('userprofile_id'),
-						catalogs: that.vc_id,
+						vc_id: that.vc_id,
 						field: that.filterField,
-						keyword: that.filterValue
+						value: that.filterValue
 					},
 					paging     	: true,
 					autoLoad	: true

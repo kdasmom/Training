@@ -385,6 +385,75 @@ class VcItemGateway extends AbstractGateway {
 		return $this->adapter->query($select, [1, '']);
 	}
 
+	public function getItemsByTypesAndPrices($userprofile_id, $vc_id, $filterItem, $keyword, $types, $prices, $order) {
+		$select = new Select();
+
+		$select->from(['vi' => 'vcitem'])
+			->join(['vf' => 'vcfav'], 'vi.vcitem_id = vf.vcitem_id and vf.userprofile_id = ?', ['vcfav_id'], Select::JOIN_LEFT)
+			->join(['un' => 'UNSPSC_Commodity'], 'vi.UNSPSC_Commodity_Commodity = un.UNSPSC_Commodity_Commodity', [], Select::JOIN_LEFT)
+			->join(['vo' => 'vcorder'], 'vo.vcitem_id = vi.vcitem_id and vo.userprofile_id = ?', ['vcorder_id'], Select::JOIN_LEFT)
+			->where(['vi.vcitem_status' => '?']);
+
+		$params = [$userprofile_id, $userprofile_id, 1];
+
+		$select->whereIn('vi.vc_id', '?');
+		$params[] = !is_array($vc_id) ? $vc_id : implode(',', $vc_id);
+
+		if ($filterItem == 'category' && !$types) {
+			$select->whereNest('OR')
+				->whereLike('un.UNSPSC_Commodity_FamilyTitle', "'%" . $keyword . "%'")
+				->whereLike('vi.vcitem_category_name', "'%" . $keyword . "%'")
+				->whereUnNest();
+		}
+
+		if ($filterItem == 'brand' && !$types) {
+			$select->whereLike('vi.vcitem_manufacturer', "'%" . $keyword . "%'");
+		}
+
+		if ($prices) {
+			$select->whereIn('vi.vcitem_price', '?');
+			$params[] = !is_array($prices) ? $prices : implode(',', $prices);
+		}
+
+		if ($types) {
+			$select->whereIn('vi.vcitem_type', '?');
+			$params[] = !is_array($types) ? $types : implode(',', $types);
+		}
+
+		$select->order($order);
+
+		return $this->adapter->query($select, $params);
+	}
+
+	public function getTypesForItemsFromCategoryOrBrands($userprofile_id, $vc_id, $field, $value) {
+		$select = new Select();
+
+		$select->from(['vi' => 'vcitem'])
+			->columns(['vcitem_type'])
+			->join(['un' => 'UNSPSC_Commodity'], 'vi.UNSPSC_Commodity_Commodity = un.UNSPSC_Commodity_Commodity', [], Select::JOIN_LEFT)
+			->where(['vi.vcitem_status' => '?'])
+			->group('vcitem_type')
+			->order('vcitem_type');
+
+		$params = [1];
+
+		$select->whereIn('vi.vc_id', '?');
+		$params[] = !is_array($vc_id) ? $vc_id : implode(',', $vc_id);
+
+		if ($field == 'category') {
+			$select->whereNest('OR')
+				->whereLike('un.UNSPSC_Commodity_FamilyTitle', "'%" . $value . "%'")
+				->whereLike('vi.vcitem_category_name', "'%" . $value . "%'")
+				->whereUnNest();
+		}
+
+		if ($field == 'brand') {
+			$select->whereLike('vi.vcitem_manufacturer', "'%" . $value . "%'");
+		}
+
+		return $this->adapter->query($select, $params);
+	}
+
 }
 
 ?>

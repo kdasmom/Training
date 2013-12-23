@@ -13,9 +13,12 @@ Ext.define('NP.view.catalog.ItemsFilter', {
 	initComponent: function() {
 		var me = this;
 
+		console.log(me.vc_id, me.filterField, me.filterValue);
+
 		this.items = [
 			{
 				xtype: 'displayfield',
+				name: 'selectedItems',
 				fieldLabel: NP.Translator.translate('YOU HAVE SELECTED'),
 				labelAlign: 'top',
 				value: '<div style="padding: 0px 0px 0px 15px;">' + me.category + ' <a href="javascript: void(0)">x</a></div>'
@@ -28,6 +31,7 @@ Ext.define('NP.view.catalog.ItemsFilter', {
 				items: [
 					{
 						xtype: 'displayfield',
+						name: 'typeslabel',
 						fieldLabel: NP.Translator.translate('Type'),
 						value: '',
 						labelAlign: 'top'
@@ -37,11 +41,32 @@ Ext.define('NP.view.catalog.ItemsFilter', {
 						tpl: new Ext.XTemplate(
 							'<tpl for=".">',
 							'<div style="margin-bottom: 10px; float: left; width: 50%; padding: 10px; cursor: pointer;" class="type">',
-							'<span>{category} ({total_items})</span>',
+							'<span>{vcitem_type} <a href="javascript: void(0)" class="remove">x</a></span>',
 							'</div>',
 							'</tpl>'
 						),
-						itemSelector: 'div.type'
+						itemSelector: 'div.type',
+						width: 400,
+						store: Ext.create('NP.lib.data.Store', {
+							fields: ['vcitem_type'],
+							autoLoad : true,
+							service: 'CatalogService',
+							action: 'getItemsTypesByCategoryOrBrands',
+							extraParams: {
+								userprofile_id: NP.Security.getUser().get('userprofile_id'),
+								catalogs: me.vc_id,
+								field: me.filterField,
+								value: me.filterValue
+							}
+						}),
+						listeners: {
+							itemclick: function (dataview, record, item, index, e, eOpts) {
+								this.hide();
+								me.down('[name="typeslabel"]').hide();
+								me.fireEvent('removetype', record.get('vcitem_type'));
+								me.down('[name="selectedItems"]').setValue('<div style="padding: 0px 0px 0px 15px;">' + record.get('vcitem_type') + ' <a href="javascript: void(0)">x</a></div>');
+							}
+						}
 					},
 					{
 						xtype: 'displayfield',

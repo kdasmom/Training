@@ -775,12 +775,20 @@ class CatalogService extends AbstractService {
 		return $result;
 	}
 
-	public function getItemsByCategoryOrBrand($field = false, $value = false) {
+	public function getItemsByCategoryOrBrand($userprofile_id = null, $vc_id = null, $field = false, $value = false, $types = null, $prices = null, $sort = 'vcitem_number') {
 		if (!$field || !$value) {
 			return [];
 		}
 
+		return $this->vcItemGateway->getItemsByTypesAndPrices($userprofile_id, $vc_id, $field, $value, $types, $prices, $sort);
+	}
 
+	public function getItemsTypesByCategoryOrBrands($userprofile_id = null, $catalogs = null, $field = null, $value = null) {
+		if (!$userprofile_id || !$catalogs || !$field || !$value) {
+			return [];
+		}
+
+		return $this->vcItemGateway->getTypesForItemsFromCategoryOrBrands($userprofile_id, $catalogs, $field, $value);
 	}
 }
 

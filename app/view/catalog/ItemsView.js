@@ -80,10 +80,14 @@ Ext.define('NP.view.catalog.ItemsView', {
 					{
 						xtype: 'catalog.itemsfilter',
 						category: me.value,
+						filterField: me.field,
+						filterValue: me.value,
+						vc_id: me.vc_id,
 						flex: 0.2
 					},
 					{
 						xtype: 'catalog.favoriteitemsgrid',
+						name: 'itemsgrid',
 						filterField: me.field,
 						filterValue: me.value,
 						vc_id: me.vc_id,
