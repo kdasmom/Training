@@ -19,6 +19,7 @@ Ext.define('NP.view.image.Main', {
         'NP.view.image.grid.DeletedImages',
 
         'NP.view.shared.button.Camera',
+        'NP.view.shared.button.Process',
         'NP.view.shared.button.Delete',
         'NP.view.image.button.npiss',
         'NP.view.image.button.nsiss',
@@ -90,8 +91,16 @@ Ext.define('NP.view.image.Main', {
             xtype: 'image.grid.Index',
             title: this.locale.tabIndex,
             pagingToolbarButtons: [
-                {xtype: 'button', itemId: 'buttonIndex',  text: this.locale.buttonIndex},
-                {xtype: 'shared.button.delete', itemId: 'buttonDelete', text: this.locale.buttonDelete}
+                {
+                    xtype  : 'shared.button.process',
+                    itemId : 'buttonIndex',
+                    text   : this.locale.buttonIndex
+                },
+                {
+                    xtype: 'shared.button.delete',
+                    itemId: 'buttonDelete',
+                    text: this.locale.buttonDelete
+                }
             ]
         };
         return tab;
@@ -109,8 +118,8 @@ Ext.define('NP.view.image.Main', {
             xtype: 'image.grid.Invoices',
             title: this.locale.tabInvoices,
             pagingToolbarButtons: [
-                {xtype: 'button', itemId: 'buttonConvert', text: this.locale.buttonConvert},
-                {xtype: 'button', itemId: 'buttonRevert',  text: this.locale.buttonRevert},
+                {xtype: 'button', itemId: 'buttonConvert', iconCls: 'submit-btn', text: this.locale.buttonConvert},
+                {xtype: 'button', itemId: 'buttonRevert', iconCls: 'revert-btn',  text: this.locale.buttonRevert},
                 {xtype: 'shared.button.delete', itemId: 'buttonDelete',  text: this.locale.buttonDelete},
                 {xtype:'tbseparator'},
                 {xtype: 'shared.button.report', itemId: 'buttonReport', text: this.locale.buttonReport}
@@ -131,7 +140,7 @@ Ext.define('NP.view.image.Main', {
             xtype: 'image.grid.PurchaseOrders',
             title: this.locale.tabPurchaseOrders,
             pagingToolbarButtons: [
-                {xtype: 'button', itemId: 'buttonRevert',  text: this.locale.buttonRevert},
+                {xtype: 'button', itemId: 'buttonRevert', iconCls: 'revert-btn',  text: this.locale.buttonRevert},
                 {xtype: 'shared.button.delete', itemId: 'buttonDelete',  text: this.locale.buttonDelete},
                 {xtype:'tbseparator'},
                 {xtype: 'shared.button.report', itemId: 'buttonReport', text: this.locale.buttonReport}
@@ -152,7 +161,7 @@ Ext.define('NP.view.image.Main', {
             xtype: 'image.grid.Exceptions',
             title: this.locale.tabExceptions,
             pagingToolbarButtons: [
-                {xtype: 'button', itemId: 'buttonIndex',  text: this.locale.buttonIndex},
+                {xtype  : 'shared.button.process', itemId: 'buttonIndex',  text: this.locale.buttonIndex},
                 {xtype: 'shared.button.delete', itemId: 'buttonDelete', text: this.locale.buttonDelete},
                 {xtype:'tbseparator'},
                 {xtype: 'shared.button.report', itemId: 'buttonReport', text: this.locale.buttonReport}
@@ -173,7 +182,7 @@ Ext.define('NP.view.image.Main', {
             xtype: 'image.grid.DeletedImages',
             title: this.locale.tabDeletedImages,
             pagingToolbarButtons: [
-                {xtype: 'button', itemId: 'buttonRevert', text: this.locale.buttonRevert},
+                {xtype: 'button', itemId: 'buttonRevert', iconCls: 'revert-btn', text: this.locale.buttonRevert},
                 {xtype: 'shared.button.delete', itemId: 'buttonDeletePermanently', text: this.locale.buttonDeletePermanently}
             ]
         };

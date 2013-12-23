@@ -32,7 +32,8 @@
 .payment-btn { background-image: url("images/buttons/payment.gif"); }
 .previous-btn { background-image: url("images/buttons/previous.gif"); }
 .print-btn { background-image: url("images/buttons/print.gif"); }
-.process-btn { background-image: url("images/buttons/process.gif"); }
+.process-btn { background-image: url("images/buttons/process.gif"); width: 20px !important; }
+	.process-comp-btn .x-btn-inner { padding-left: 24px !important; }
 .reclass-btn { background-image: url("images/buttons/reclass.gif"); }
 .reject-btn { background-image: url("images/buttons/reject.gif"); }
 .report-btn { background-image: url("images/buttons/report.gif"); }
@@ -46,6 +47,7 @@
 .save-and-previous-btn { background-image: url("images/buttons/save_and_previous.gif"); width: 24px !important; }
 .schedule-btn { background-image: url("images/buttons/schedule.gif"); }
 .search-btn { background-image: url("images/buttons/search.gif"); width: 15px !important; }
+.submit-btn { background-image: url("images/buttons/submit.gif"); }
 .template-apply-btn { background-image: url("images/buttons/template_apply.gif"); }
 .template-save-btn { background-image: url("images/buttons/template_save.gif"); }
 .template-save-user-btn { background-image: url("images/buttons/template_save_user.gif"); }
