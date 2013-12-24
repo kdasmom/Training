@@ -19,7 +19,7 @@ Ext.define('NP.view.catalog.AlphabeticalBrandsGrid', {
 	initComponent: function() {
 		var that = this;
 		var grouping = Ext.create('Ext.grid.feature.Grouping', {
-			groupHeaderTpl:  '{name}<div style="float: right; margin-right: 20px;"><a href="javascript:void(0)" class="top">Return to top</a></div>',
+			groupHeaderTpl:  '<div style="height: 15px;"><div style="float: left;">{name}</div><div style="float: right; margin-right: 20px;"><a href="javascript:void(0)" class="top">Return to top</a></div></div>',
 			collapsible: false
 		});
 		this.features = [grouping];

@@ -32,7 +32,7 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 		});
 
 		var groupingSummary = Ext.create('Ext.grid.feature.GroupingSummary', {
-			groupHeaderTpl: '{name}<div style="float: right; margin-right: 20px;"><a class="select-all" data-vc="{[values.rows[0].data.vc_id]}" href="javascript:void(0)">Select all</a>/<a href="javascript:void(0)" data-vc="{[values.rows[0].data.vc_id]}" href="javascript:void(0)" class="unselect-all">Unselect all</a></div>',
+			groupHeaderTpl: '<div style="height: 15px;"><div style="float: left;">{name}</div><div style="float: right; margin-right: 20px;"><a class="select-all" data-vc="{[values.rows[0].data.vc_id]}" href="javascript:void(0)">Select all</a>/<a href="javascript:void(0)" data-vc="{[values.rows[0].data.vc_id]}" href="javascript:void(0)" class="unselect-all">Unselect all</a></div></div>',
 			ftype: 'groupingsummary',
 			collapsible: false
 		});
