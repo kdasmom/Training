@@ -12,16 +12,13 @@ Ext.define('NP.view.catalog.SearchForm', {
 		'NP.lib.core.Translator'
 	],
 
-	layout: 'hbox',
+//	layout: 'hbox',
+	layout: 'column',
+//	width: '100%',
+//	shrinkWrap: true,
 
 	initComponent: function() {
 		var that = this;
-
-		var searchOptions = [
-			{
-
-			}
-		];
 
 		this.items = [
 			{
@@ -45,7 +42,9 @@ Ext.define('NP.view.catalog.SearchForm', {
 				queryMode: 'local',
 				editable: false,
 				typeAhead: false,
+				margin: '0 0 5 0',
 				width: !that.advancedSearch ? 300 : 360
+//				flex: 0.2
 			},
 			{
 				xtype: 'customcombo',
@@ -57,7 +56,7 @@ Ext.define('NP.view.catalog.SearchForm', {
 				editable: false,
 				typeAhead: false,
 				selectFirstRecord: true,
-				margin: '0 0 0 5',
+				margin: '0 0 5 5',
 				valueField: 'value',
 				displayField: 'display',
 				store: Ext.create('Ext.data.ArrayStore', {
@@ -73,6 +72,7 @@ Ext.define('NP.view.catalog.SearchForm', {
 						["upc", NP.Translator.translate('UPC Code')]
 					]
 				})
+//				flex: 0.2
 			},
 			{
 				xtype           : 'customcombo',
@@ -87,19 +87,21 @@ Ext.define('NP.view.catalog.SearchForm', {
 				width: 300,
 				editable: false,
 				typeAhead: false,
-				margin: '0 0 0 5',
+				margin: '0 0 5 5',
 				selectFirstRecord: true
+//				flex: 0.2
 			},
 			{
 				xtype: 'textfield',
 				name: 'keyword',
 				id: 'keyword',
-				margin: '0 0 0 5'
+				margin: '0 0 5 5'
+//				flex: 0.2
 			},
 			{
 				xtype: 'button',
 				text: NP.Translator.translate('Search'),
-				margin: '0 0 0 10',
+				margin: '0 0 5 10',
 				handler: function() {
 					if (that.getChildByElement('keyword').getValue().length == 0) {
 						Ext.Msg.alert('Error', 'You must enter a search term.');
@@ -111,6 +113,7 @@ Ext.define('NP.view.catalog.SearchForm', {
 						}
 					}
 				}
+//				flex: 0.2
 			}
 		];
 
