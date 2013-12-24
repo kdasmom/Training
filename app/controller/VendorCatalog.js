@@ -76,6 +76,11 @@ Ext.define('NP.controller.VendorCatalog', {
 					this.addHistory('VendorCatalog:showAdvancedSearch');
 				}
 			},
+			'[xtype="catalog.itemsview"] [xtype="shared.button.search"]': {
+				click: function() {
+					this.addHistory('VendorCatalog:showAdvancedSearch');
+				}
+			},
 			'[xtype="catalog.advancedsearch"] [xtype="shared.button.back"]': {
 				click: function() {
 					this.addHistory('VendorCatalog:showVendorCatalogListing');
@@ -102,6 +107,16 @@ Ext.define('NP.controller.VendorCatalog', {
 				}
 			},
 			'[xtype="catalog.brandsview"] [xtype="shared.button.back"]': {
+				click: function() {
+					this.addHistory('VendorCatalog:showVendorCatalogListing');
+				}
+			},
+			'[xtype="catalog.vclisting"] [xtype="shared.button.back"]': {
+				click: function() {
+					this.addHistory('VendorCatalog:showVendorCatalogListing');
+				}
+			},
+			'[xtype="catalog.itemsview"] [xtype="shared.button.back"]': {
 				click: function() {
 					this.addHistory('VendorCatalog:showVendorCatalogListing');
 				}
@@ -147,12 +162,17 @@ Ext.define('NP.controller.VendorCatalog', {
 					this.addHistory('VendorCatalog:showFavorites');
 				}
 			},
+			'[xtype="catalog.vclisting"] [xtype="shared.button.favorite"]': {
+				click: function() {
+					this.addHistory('VendorCatalog:showFavorites');
+				}
+			},
 			'[xtype="catalog.advancedsearch"] [xtype="shared.button.favorite"]': {
 				click: function() {
 					this.addHistory('VendorCatalog:showFavorites');
 				}
 			},
-			'[xtype="catalog.vclisting"] [xtype="shared.button.favorite"]': {
+			'[xtype="catalog.itemsview"] [xtype="shared.button.favorite"]': {
 				click: function() {
 					this.addHistory('VendorCatalog:showFavorites');
 				}
@@ -162,7 +182,7 @@ Ext.define('NP.controller.VendorCatalog', {
 					this.addHistory('VendorCatalog:showFavorites');
 				}
 			},
-			'[xtype="catalog.vclisting"] [xtype="shared.button.shop"]': {
+			'[xtype="catalog.itemsview"] [xtype="shared.button.shop"]': {
 				click: function() {
 					this.addHistory('VendorCatalog:showBrands');
 				}
@@ -178,6 +198,11 @@ Ext.define('NP.controller.VendorCatalog', {
 				}
 			},
 			'[xtype="catalog.favoritesview"] [xtype="shared.button.shop"]': {
+				click: function() {
+					this.addHistory('VendorCatalog:showBrands');
+				}
+			},
+			'[xtype="catalog.vclisting"] [xtype="shared.button.shop"]': {
 				click: function() {
 					this.addHistory('VendorCatalog:showBrands');
 				}
