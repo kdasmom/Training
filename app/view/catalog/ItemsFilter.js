@@ -4,24 +4,25 @@
  */
 
 Ext.define('NP.view.catalog.ItemsFilter', {
-	extend: 'Ext.container.Container',
+//	extend: 'Ext.container.Container',
+	extend: 'Ext.panel.Panel',
 	alias: 'widget.catalog.itemsfilter',
 
 	requires: [],
 	layout: 'vbox',
+	border: false,
+	title: NP.Translator.translate('YOU HAVE SELECTED'),
 
 	initComponent: function() {
 		var me = this;
 
-		console.log(me.vc_id, me.filterField, me.filterValue);
-
 		this.items = [
-			{
+			/*{
 				xtype: 'displayfield',
 				fieldLabel: NP.Translator.translate('YOU HAVE SELECTED'),
-				labelAlign: 'top'/*,
-				value: '<div style="padding: 0px 0px 0px 15px;">' + me.category + ' <a href="javascript: void(0)">x</a></div>'*/
-			},
+				labelAlign: 'top'*//*,
+				value: '<div style="padding: 0px 0px 0px 15px;">' + me.category + ' <a href="javascript: void(0)">x</a></div>'*//*
+			},*/
 			{
 				xtype: 'dataview',
 				name: 'selectedItems',
@@ -39,7 +40,8 @@ Ext.define('NP.view.catalog.ItemsFilter', {
 						['category', me.category]
 					]
 				}),
-				width: 350,
+				width: '100%',
+				padding: '0 10 0 0',
 				itemSelector: 'div.item',
 				listeners: {
 					itemclick: function (dataview, record, item, index, e, eOpts) {
@@ -91,7 +93,7 @@ Ext.define('NP.view.catalog.ItemsFilter', {
 							'</tpl>'
 						),
 						itemSelector: 'div.type',
-						width: 350,
+						flex: 1,
 						store: Ext.create('NP.lib.data.Store', {
 							fields: ['vcitem_type'],
 							autoLoad : true,

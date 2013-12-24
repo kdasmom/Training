@@ -12,10 +12,7 @@ Ext.define('NP.view.catalog.SearchForm', {
 		'NP.lib.core.Translator'
 	],
 
-//	layout: 'hbox',
 	layout: 'column',
-//	width: '100%',
-//	shrinkWrap: true,
 
 	initComponent: function() {
 		var that = this;
@@ -44,7 +41,6 @@ Ext.define('NP.view.catalog.SearchForm', {
 				typeAhead: false,
 				margin: '0 0 5 0',
 				width: !that.advancedSearch ? 300 : 360
-//				flex: 0.2
 			},
 			{
 				xtype: 'customcombo',
@@ -72,7 +68,6 @@ Ext.define('NP.view.catalog.SearchForm', {
 						["upc", NP.Translator.translate('UPC Code')]
 					]
 				})
-//				flex: 0.2
 			},
 			{
 				xtype           : 'customcombo',
@@ -89,14 +84,12 @@ Ext.define('NP.view.catalog.SearchForm', {
 				typeAhead: false,
 				margin: '0 0 5 5',
 				selectFirstRecord: true
-//				flex: 0.2
 			},
 			{
 				xtype: 'textfield',
 				name: 'keyword',
 				id: 'keyword',
 				margin: '0 0 5 5'
-//				flex: 0.2
 			},
 			{
 				xtype: 'button',
@@ -113,7 +106,6 @@ Ext.define('NP.view.catalog.SearchForm', {
 						}
 					}
 				}
-//				flex: 0.2
 			}
 		];
 
