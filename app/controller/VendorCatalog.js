@@ -182,6 +182,11 @@ Ext.define('NP.controller.VendorCatalog', {
 					this.addHistory('VendorCatalog:showFavorites');
 				}
 			},
+			'[xtype="catalog.vcorder"] [xtype="shared.button.favorite"]': {
+				click: function() {
+					this.addHistory('VendorCatalog:showFavorites');
+				}
+			},
 			'[xtype="catalog.itemsview"] [xtype="shared.button.shop"]': {
 				click: function() {
 					this.addHistory('VendorCatalog:showBrands');
@@ -193,6 +198,11 @@ Ext.define('NP.controller.VendorCatalog', {
 				}
 			},
 			'[xtype="catalog.simplesearchview"] [xtype="shared.button.shop"]': {
+				click: function() {
+					this.addHistory('VendorCatalog:showBrands');
+				}
+			},
+			'[xtype="catalog.vcorder"] [xtype="shared.button.shop"]': {
 				click: function() {
 					this.addHistory('VendorCatalog:showBrands');
 				}

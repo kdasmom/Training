@@ -46,9 +46,9 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 				shrinkWrap: true,
 				renderer: function (val, meta, rec) {
 					if (rec.raw.vcfav_id) {
-						return '<div class="remove" style="cursor: pointer; word-wrap: break-word;"><img src="resources/images/buttons/delete.gif" title="Remove" alt="Remove" class="remove"/>&nbsp; Remove from favorites</div>';
+						return '<div class="remove" style="cursor: pointer; word-wrap: break-word;"><img src="resources/images/buttons/delete.gif" title="Remove" alt="Remove" class="remove"/>&nbsp; Remove</div>';
 					} else {
-						return '<div class="add" style="cursor: pointer;"><img src="resources/images/buttons/new.gif" title="Add" alt="Add" class="add"/>&nbsp; Add to favorites</div>';
+						return '<div class="add" style="cursor: pointer;"><img src="resources/images/buttons/new.gif" title="Add" alt="Add" class="add"/>&nbsp; Add to</div>';
 					}
 				},
 				listeners: {
