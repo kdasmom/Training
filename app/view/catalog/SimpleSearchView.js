@@ -25,7 +25,7 @@ Ext.define('NP.view.catalog.SimpleSearchView', {
 	autoScroll: true,
 
 	initComponent: function() {
-		var that = this;
+		var me = this;
 		var bar = [
 			{
 				xtype: 'shared.button.back',
@@ -69,7 +69,11 @@ Ext.define('NP.view.catalog.SimpleSearchView', {
 				items: [
 					{
 						xtype: 'catalog.searchform',
-						advancedSearch: false
+						advancedSearch: false,
+						vc_id: me.vc_id,
+						type: me.type,
+						property: me.property,
+						keywork: me
 					}
 				],
 				padding: '5',

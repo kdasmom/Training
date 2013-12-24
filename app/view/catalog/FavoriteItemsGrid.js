@@ -43,11 +43,12 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 				xtype: 'shared.gridcol.buttonimg',
 				text: NP.Translator.translate('Favorites'),
 				flex: 0.2,
+				shrinkWrap: true,
 				renderer: function (val, meta, rec) {
 					if (rec.raw.vcfav_id) {
-						return '<div class="remove"><img src="resources/images/buttons/delete.gif" title="Remove" alt="Remove" class="remove"/>&nbsp; Remove from favorites</div>';
+						return '<div class="remove" style="cursor: pointer; word-wrap: break-word;"><img src="resources/images/buttons/delete.gif" title="Remove" alt="Remove" class="remove"/>&nbsp; Remove from favorites</div>';
 					} else {
-						return '<div class="add"><img src="resources/images/buttons/new.gif" title="Add" alt="Add" class="add"/>&nbsp; Add to favorites</div>';
+						return '<div class="add" style="cursor: pointer;"><img src="resources/images/buttons/new.gif" title="Add" alt="Add" class="add"/>&nbsp; Add to favorites</div>';
 					}
 				},
 				listeners: {
@@ -56,11 +57,12 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 						if (record.raw.vcfav_id) {
 							that.fireEvent('removefromfavorites', grid, record, index);
 						} else {
-							console.log(record);
 							that.fireEvent('addtofavorites', grid, record, index);
 						}
 					}
-				}
+				},
+				tdCls: '',
+				align: 'left'
 			},
 			{
 				dataIndex: 'vcitem_number',
@@ -138,7 +140,7 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 				flex: 0.2,
 				renderer: function(val, meta, rec) {
 					if (rec.get('vcitem_status')) {
-						return '<div class="addtoorder"><img src="resources/images/buttons/new.gif" title="Add to order" alt="Add to order" class="addtoorder"/>&nbsp; Add to order</div>';
+						return '<div class="addtoorder" style="cursor: pointer;"><img src="resources/images/buttons/new.gif" title="Add to order" alt="Add to order" class="addtoorder"/>&nbsp; Add to order</div>';
 					}
 
 					return '';

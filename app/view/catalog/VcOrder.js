@@ -19,6 +19,9 @@ Ext.define('NP.view.catalog.VcOrder', {
 		'NP.view.catalog.VcOrdersGrid'
 	],
 
+	title: NP.Translator.translate('Open orders'),
+	autoScroll: true,
+
 	initComponent: function() {
 		var that = this;
 		var bar = [

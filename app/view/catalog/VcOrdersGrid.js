@@ -42,7 +42,7 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 			{
 				xtype: 'shared.gridcol.buttonimg',
 				renderer: function(val, meta, rec) {
-					return '<div class="remove"><img src="resources/images/buttons/delete.gif" title="Remove" alt="Remove" class="remove"/>&nbsp; Remove</div>';
+					return '<div class="remove" style="cursor: pointer;"><img src="resources/images/buttons/delete.gif" title="Remove" alt="Remove" class="remove"/>&nbsp; Remove</div>';
 				},
 				flex: 0.2
 			},
@@ -100,6 +100,7 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 				text: NP.Translator.translate('Quantity'),
 				align: 'center',
 				flex: 0.1,
+				border: 1,
 				editor: {
 					xtype: 'numberfield',
 					allowBlank: false,
@@ -110,7 +111,7 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 					return records[0].get('vc_id');
 				},
 				summaryRenderer: function(val) {
-					return '<input type="button" class="updatepo" data-vc="' + val + '" value="' + NP.Translator.translate('UPDATE') + '"/>';
+					return '<input type="button" class="updatepo" data-vc="' + val + '" value="' + NP.Translator.translate('Update') + '"/>';
 				}
 			},
 			{
@@ -149,7 +150,7 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 					return records[0].get('vc_id');
 				},
 				summaryRenderer: function(val) {
-					return '<input type="button" class="createpo" data-vc="' + val + '" value="' + NP.Translator.translate('CREATE PO') + '"/>';
+					return '<input type="button" class="createpo" data-vc="' + val + '" value="' + NP.Translator.translate('Create PO') + '"/>';
 				}
 			}
 		];

@@ -20,6 +20,7 @@ Ext.define('NP.view.catalog.BrandsView', {
 	],
 
 	title: NP.Translator.translate('Shop By Brand'),
+	autoScroll: true,
 
 	initComponent: function() {
 		var that = this;

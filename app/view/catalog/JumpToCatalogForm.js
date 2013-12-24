@@ -9,7 +9,7 @@ Ext.define('NP.view.catalog.JumpToCatalogForm', {
 	alias: 'widget.catalog.jumptocatalogform',
 
 	requires: [],
-	layout: 'hbox',
+	layout: 'column',
 
 	initComponent: function() {
 		var that = this;

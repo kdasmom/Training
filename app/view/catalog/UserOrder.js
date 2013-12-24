@@ -9,7 +9,7 @@ Ext.define('NP.view.catalog.UserOrder', {
 	alias: 'widget.catalog.userorder',
 
 	requires: [],
-	layout: 'hbox',
+	layout: 'column',
 
 
 	initComponent: function() {

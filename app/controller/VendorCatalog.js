@@ -551,8 +551,16 @@ Ext.define('NP.controller.VendorCatalog', {
 	},
 
 	showSimpleSearchResults: function(catalogs, type, property, keyword) {
-		this.setView('NP.view.catalog.SimpleSearchView');
+		var view = this.setView('NP.view.catalog.SimpleSearchView', {vc_id: catalogs, type: type, property: property, keyword: keyword});
 		this.showUserOrderSummary(this.userSummaryCallback);
+
+		if (arguments.length > 0) {
+
+		}
+		view.down('#vccat_id').setFocusValue(catalogs);
+		view.down('#item_name').setValue(type);
+		view.down('#property_id').setFocusValue(property);
+		view.down('#keyword').setValue(keyword);
 
 		var grid = this.getCmp('catalog.favoriteitemsgrid');
 

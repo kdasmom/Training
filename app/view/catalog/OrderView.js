@@ -12,7 +12,7 @@ Ext.define('NP.view.catalog.OrderView', {
 		'NP.view.catalog.CreateOrderGrid'
 	],
 	layout: 'fit',
-
+	title: NP.Translator.translate('Order view'),
 
 	initComponent: function() {
 		var that = this;
@@ -30,7 +30,8 @@ Ext.define('NP.view.catalog.OrderView', {
 				flex: 1,
 				padding: '20 0 0 0',
 				vc_id: this.vc_id,
-				vcorders: this.vcorders
+				vcorders: this.vcorders,
+				autoScroll: true
 			}
 		];
 
