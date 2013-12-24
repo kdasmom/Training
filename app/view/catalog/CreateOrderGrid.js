@@ -15,7 +15,7 @@ Ext.define('NP.view.catalog.CreateOrderGrid', {
 	],
 
 	paging: true,
-	overflowY: 'scroll',
+	autoScroll: true,
 
 	initComponent: function() {
 		var that = this;

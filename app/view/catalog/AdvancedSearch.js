@@ -38,7 +38,7 @@ Ext.define('NP.view.catalog.AdvancedSearch', {
 		];
 
 		this.tbar = bar;
-		this.overflowY = 'scroll';
+		this.autoScroll = true;
 
 		this.items = [
 			{

@@ -39,7 +39,6 @@ Ext.define('NP.view.catalog.FavoritesView', {
 		];
 
 		this.tbar = bar;
-		this.overflowY = 'scroll';
 
 		this.items = [
 			{
@@ -71,7 +70,7 @@ Ext.define('NP.view.catalog.FavoritesView', {
 			},
 			{
 				xtype: 'catalog.favoriteitemsgrid',
-				overflowY: 'scroll'
+				autoScroll: true
 			}
 		];
 

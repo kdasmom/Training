@@ -92,7 +92,7 @@ Ext.define('NP.view.catalog.ItemsView', {
 						filterValue: me.value,
 						vc_id: me.vc_id,
 						flex: 0.8,
-						overflowY: 'scroll',
+						autoScroll: true,
 						height: 500
 					}
 				]

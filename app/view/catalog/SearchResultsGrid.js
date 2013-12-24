@@ -13,7 +13,7 @@ Ext.define('NP.view.catalog.SearchResultsGrid', {
 	],
 
 	paging: true,
-	overflowY: 'scroll',
+	autoScroll: true,
 	changedRecords: {},
 
 	initComponent: function() {

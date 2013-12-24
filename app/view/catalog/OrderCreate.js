@@ -40,7 +40,6 @@ Ext.define('NP.view.catalog.OrderCreate', {
 		];
 
 		this.tbar = bar;
-		this.overflowY = 'scroll';
 
 		this.items = [
 			{

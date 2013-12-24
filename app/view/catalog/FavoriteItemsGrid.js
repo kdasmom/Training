@@ -13,7 +13,7 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 	],
 
 	paging: true,
-	overflowY: 'scroll',
+	autoScroll: true,
 	changedRecords: {},
 	isSearch: false,
 	userprofile_id: NP.Security.getUser().get('userprofile_id'),

@@ -13,7 +13,6 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 	],
 
 	paging: true,
-	overflowY: 'scroll',
 	changedRecords: {},
 
 	initComponent: function() {

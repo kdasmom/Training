@@ -42,7 +42,7 @@ Ext.define('NP.view.catalog.CatalogView', {
 		];
 
 		this.tbar = bar;
-		this.overflowY = 'scroll';
+		this.autoScroll = true;
 
 		this.items = [
 			{
@@ -75,12 +75,14 @@ Ext.define('NP.view.catalog.CatalogView', {
 			},
 			{
 				xtype: 'catalog.categoriesdataview',
-				vc_id: that.vc_id
+				vc_id: that.vc_id,
+				overflowY: 'scroll'
 			},
 			{
 				xtype: 'catalog.brandsdataview',
 				vc_id: that.vc_id,
-				padding: '20 0 0 0'
+				padding: '20 0 0 0',
+				overflowY: 'scroll'
 			}
 		];
 

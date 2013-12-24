@@ -36,7 +36,6 @@ Ext.define('NP.view.catalog.VCListing', {
 		];
 
 		this.tbar = bar;
-		this.overflowY = 'scroll';
 
 		this.items = [
 			{
@@ -67,8 +66,7 @@ Ext.define('NP.view.catalog.VCListing', {
 				border: false
 			},
 			{
-				xtype: 'catalog.vcgrid',
-				overflowY: 'scroll'
+				xtype: 'catalog.vcgrid'
 			}
 		];
 

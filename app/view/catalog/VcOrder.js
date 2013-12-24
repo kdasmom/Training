@@ -40,7 +40,6 @@ Ext.define('NP.view.catalog.VcOrder', {
 		];
 
 		this.tbar = bar;
-		this.overflowY = 'scroll';
 
 		this.items = [
 			{
@@ -71,8 +70,7 @@ Ext.define('NP.view.catalog.VcOrder', {
 				border: false
 			},
 			{
-				xtype: 'catalog.vcordersgrid',
-				overflowY: 'scroll'
+				xtype: 'catalog.vcordersgrid'
 			}
 		];
 

@@ -22,6 +22,8 @@ Ext.define('NP.view.catalog.SimpleSearchView', {
 	],
 
 	title: NP.Translator.translate('Search'),
+	autoScroll: true,
+
 	initComponent: function() {
 		var that = this;
 		var bar = [
@@ -43,7 +45,6 @@ Ext.define('NP.view.catalog.SimpleSearchView', {
 		];
 
 		this.tbar = bar;
-		this.overflowY = 'scroll';
 
 		this.items = [
 			{

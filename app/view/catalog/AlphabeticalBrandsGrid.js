@@ -13,7 +13,7 @@ Ext.define('NP.view.catalog.AlphabeticalBrandsGrid', {
 
 	padding: false,
 	stateful: true,
-	overflowY: 'scroll',
+	autoScroll: true,
 	stateId : 'brands_grid',
 
 	initComponent: function() {

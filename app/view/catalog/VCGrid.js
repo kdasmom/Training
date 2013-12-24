@@ -12,7 +12,7 @@ Ext.define('NP.view.catalog.VCGrid', {
 	],
 
 	paging: true,
-	overflowY: 'scroll',
+	autoScroll: true,
 
 	initComponent: function() {
 

@@ -94,7 +94,7 @@ Ext.define('NP.view.catalog.BrandsView', {
 			},
 			{
 				xtype: 'catalog.alphabeticalbrandsgrid',
-				overflowY: 'scroll'
+				autoScroll: true
 			}
 		];
 
