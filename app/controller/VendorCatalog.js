@@ -559,8 +559,21 @@ Ext.define('NP.controller.VendorCatalog', {
 	},
 
 	showItems: function(field, value, vc_id) {
-		this.setView('NP.view.catalog.ItemsView', {field: field, value: value, vc_id: vc_id});
-		this.showUserOrderSummary(this.userSummaryCallback);
+		var me = this;
+		var catalog;
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service: 'CatalogService',
+				action : 'get',
+				vc_id: vc_id,
+				success: function(success) {
+					catalog = success;
+
+					me.setView('NP.view.catalog.ItemsView', {field: field, value: value, vc_id: vc_id, catalog: catalog});
+					me.showUserOrderSummary(me.userSummaryCallback);
+				}
+			}
+		});
 	},
 
 	removeTypeFilter: function (type) {

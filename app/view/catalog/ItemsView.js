@@ -70,8 +70,11 @@ Ext.define('NP.view.catalog.ItemsView', {
 				],
 				padding: '5',
 				border: false
-			},
-			{
+			}
+		];
+
+		if (me.catalog.vc_catalogtype == 'excel') {
+			me.items.push({
 				xtype: 'panel',
 				border: false,
 				layout: 'hbox',
@@ -96,8 +99,27 @@ Ext.define('NP.view.catalog.ItemsView', {
 						height: 500
 					}
 				]
-			}
-		];
+			});
+		}
+
+		if (me.catalog.vc_catalogtype == 'url') {
+			me.items.push({
+				xtype: 'component',
+				autoEl: {
+					tag : "iframe",
+					src: me.catalog.vc_url
+				}
+			});
+		}
+		if (me.catalog.vc_catalogtype == 'punchout') {
+			me.items.push({
+				xtype: 'component',
+				autoEl: {
+					tag : "iframe",
+					src: me.catalog.vc_url
+				}
+			});
+		}
 
 		this.callParent(arguments);
 	}
