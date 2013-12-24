@@ -19,6 +19,8 @@ Ext.define('NP.view.catalog.VCListing', {
 	],
 
 	title: NP.Translator.translate('Vendor catalog listing'),
+	autoScroll: true,
+
 	initComponent: function() {
 		var that = this;
 		var bar = [
@@ -34,6 +36,56 @@ Ext.define('NP.view.catalog.VCListing', {
 				xtype: 'shared.button.favorite'
 			}
 		];
+		var categoriesStore1 = Ext.create('NP.store.catalog.LinkVcVcCats', {
+			service    	: 'CatalogService',
+			action     	: 'getCategoriesList',
+			groupField	: 'vccat_name',
+			extraParams: {
+				userprofile_id: NP.Security.getUser().get('userprofile_id')
+			},
+			filters: [
+				function(item) {
+					if (item.index % 2 !== 0) {
+						return item;
+					}
+				}
+			],
+			autoLoad	: true
+		});
+		var oddstore = Ext.create('NP.store.catalog.LinkVcVcCats', {
+			service    	: 'CatalogService',
+			action     	: 'getCategoriesList',
+			groupField	: 'vccat_name',
+			extraParams: {
+				userprofile_id: NP.Security.getUser().get('userprofile_id')
+			},
+			filters: [
+				function(record) {
+					if (record.index % 2 == 0) {
+						return true;
+					}
+				}
+			],
+			autoLoad	: true
+		});
+
+		var evenstore = Ext.create('NP.store.catalog.LinkVcVcCats', {
+			service    	: 'CatalogService',
+			action     	: 'getCategoriesList',
+			groupField	: 'vccat_name',
+			extraParams: {
+				userprofile_id: NP.Security.getUser().get('userprofile_id')
+			},
+			filters: [
+				function(record) {
+					if (record.index % 2 !== 0) {
+						return true;
+					}
+				}
+			],
+			autoLoad	: true
+		});
+
 
 		this.tbar = bar;
 
@@ -66,7 +118,22 @@ Ext.define('NP.view.catalog.VCListing', {
 				border: false
 			},
 			{
-				xtype: 'catalog.vcgrid'
+				xtype: 'container',
+				layout: 'hbox',
+				items: [
+					{
+						xtype: 'catalog.vcgrid',
+						name: 'evenitems',
+						flex: 0.5,
+						store: evenstore
+					},
+					{
+						xtype: 'catalog.vcgrid',
+						name: 'odditems',
+						flex: 0.5,
+						store: oddstore
+					}
+				]
 			}
 		];
 

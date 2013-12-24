@@ -11,15 +11,15 @@ Ext.define('NP.view.catalog.VCGrid', {
 		'NP.view.catalog.gridcol.VcCatalogCategory'
 	],
 
-	paging: true,
-	autoScroll: true,
+	paging: false,
+	border: false,
 
 	initComponent: function() {
+		var me = this;
 
 		this.columns = [
 			{
 				dataIndex: "vc_catalogname",
-				text: NP.Translator.translate('Vendor Catalog Categories'),
 				flex: 1,
 				renderer: function (val, meta, rec) {
 					if (rec.getVc) {
@@ -31,17 +31,6 @@ Ext.define('NP.view.catalog.VCGrid', {
 			}
 		];
 
-		this.store = Ext.create('NP.store.catalog.LinkVcVcCats', {
-			service    	: 'CatalogService',
-			action     	: 'getCategoriesList',
-			groupField	: 'vccat_name',
-			extraParams: {
-				userprofile_id: NP.Security.getUser().get('userprofile_id')
-			},
-			paging     	: true,
-			autoLoad	: true
-		});
-
 		this.features = [{
 			ftype: 'grouping',
 			groupHeaderTpl: Ext.create('Ext.XTemplate',
@@ -51,7 +40,8 @@ Ext.define('NP.view.catalog.VCGrid', {
 						return name.replace(/ /gi,'_');
 					}
 				}
-			)
+			),
+			startCollapsed: true
 		}];
 
 		this.callParent(arguments);

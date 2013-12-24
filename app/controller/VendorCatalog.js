@@ -199,13 +199,18 @@ Ext.define('NP.controller.VendorCatalog', {
 				removetype: this.removeTypeFilter,
 				removeprice: this.removePriceFilter,
 				removefilter: this.removeTopFilter
+			},
+			'[xtype="catalog.vclisting"] [xtype="catalog.vcgrid"]': {
+				itemclick: function ( grid, record, item, index, e, eOpts) {
+					this.addHistory('VendorCatalog:showItems:category:' + record.get('vccat_name') + ':' + record.get('vc_id'));
+				}
 			}
 		});
 
 	},
 
 	showVendorCatalogListing: function() {
-		this.setView('NP.view.catalog.VCListing');
+		var panel = this.setView('NP.view.catalog.VCListing');
 		this.showUserOrderSummary(this.userSummaryCallback);
 	},
 
