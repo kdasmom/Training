@@ -111,7 +111,7 @@ Ext.define('NP.view.catalog.ItemsView', {
 				}
 			});
 		}
-		if (me.catalog.vc_catalogtype == 'punchout') {
+		if (me.catalog.vc_catalogtype == 'pdf') {
 			me.items.push({
 				xtype: 'component',
 				autoEl: {
