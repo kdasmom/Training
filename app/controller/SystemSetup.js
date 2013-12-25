@@ -11,7 +11,7 @@ Ext.define('NP.controller.SystemSetup', {
 	    'NP.lib.core.Net',
 	    'NP.lib.core.Util',
 	    'NP.lib.core.Config',
-    	'NP.lib.core.Translator'
+            'NP.lib.core.Translator'
 	],
 
 	models: ['system.DfSplit'],
@@ -33,7 +33,9 @@ Ext.define('NP.controller.SystemSetup', {
 		{ ref: 'splitGridPropertyCombo',selector: '#splitGridPropertyCombo' },
 		{ ref: 'splitGridGlCombo',      selector: '#splitGridGlCombo' },
 		{ ref: 'splitGridUnitCombo',    selector: '#splitGridUnitCombo' },
-		{ ref: 'addSplitAllocBtn',      selector: '#addSplitAllocBtn' }
+		{ ref: 'addSplitAllocBtn',      selector: '#addSplitAllocBtn' },
+                { ref: 'workflowScreen',        selector: '[xtype="systemsetup.WorkflowRulesMain"]'},
+                { ref: 'workflowScreenGrid',    selector: '[xtype="systemsetup.WorkflowRulesGrid"]'}
 	],
 	
     init: function() {
@@ -132,21 +134,197 @@ Ext.define('NP.controller.SystemSetup', {
             '#autoAllocBtn': {
                 click: me.autoAllocSplit
             },
-                        
-                        
-                        
-                        
-                        
-                        
-            '[xtype="systemsetup.WorkflowRulesGrid"]': {
-                // Making a selection on the grid
-                cellclick: function(view, td, cellIndex, rec, tr, rowIndex, e) {
-                    if (cellIndex != 0) {
-                        me.addHistory('SystemSetup:showSystemSetup:WorkflowRules:View:' + rec.get('wfrule_id'));
-                    }
+
+
+
+
+
+
+            '#buttonWorkflowCancel': {
+                click: function() {
+                    me.addHistory('SystemSetup:showSystemSetup');
                 }
+            },
+            '#buttonWorkflowCreateRule': {
+                click: function() {
+                    me.addHistory('SystemSetup:showSystemSetup:WorkflowRules:modify');
+                }
+            },
+            '#buttonWorkflowPrint': {
+                click: function() {
+                    Ext.MessageBox.alert('Print', 'Coming soon')
+                }
+            },
+            '#buttonWorkflowReport': {
+                click: function() {
+                    Ext.MessageBox.alert('Print', 'Coming soon')
+                }
+            },
+            '#buttonWorkflowActivateRule': {
+                click: this.workflowRuleChangeStatus.bind(this, 1)
+            },
+            '#buttonWorkflowDeactivateRule': {
+                click: this.workflowRuleChangeStatus.bind(this, 2)
+            },
+
+            '[xtype="systemsetup.WorkflowRulesGrid"]': {
+                cellclick: this.workflowCellClickProcess.bind(this)
             }
         });
+    },
+
+    showWorkflowRules: function(section, id) {
+        switch (section) {
+            case 'modify':
+                var view = 'WorkflowRulesModify';
+                this.setView('NP.view.systemSetup.' + view, {}, '[xtype="systemsetup.workflowrules"]');
+                break;
+            default:
+                var view = 'WorkflowRulesMain';
+                this.setView('NP.view.systemSetup.' + view, {}, '[xtype="systemsetup.workflowrules"]');
+        }
+    },
+
+    workflowCellClickProcess: function(view, td, cellIndex, rec, tr, rowIndex, e) {
+        var me = this,
+            grid = this.getWorkflowScreenGrid();
+        switch (cellIndex) {
+            case 0:
+                // Selection. Nothing to do.
+                break;
+            case 5:
+                // Copy rule
+                var mask = new Ext.LoadMask({
+                    target: me.getWorkflowScreen()
+                });
+                mask.show();
+                NP.lib.core.Net.remoteCall({
+                    requests: {
+                        service: 'WFRuleService',
+                        action : 'copy',
+
+                        id: rec.get('wfrule_id'),
+
+                        success: function(data) {
+                            if (data) {
+                                mask.destroy();
+                                grid.store.reload();
+                            }
+                        }
+                    }
+                });
+                break;
+            case 6:
+                // Delete Rule
+                Ext.MessageBox.confirm(
+                    'Delete Rule',
+                    'Are you sure you want to delete this rule?',
+                    function(button) {
+                        if (button == 'yes') {
+                            var mask = new Ext.LoadMask({
+                                target: me.getWorkflowScreen()
+                            });
+                            mask.show();
+                            NP.lib.core.Net.remoteCall({
+                                requests: {
+                                    service: 'WFRuleService',
+                                    action : 'delete',
+
+                                    id: rec.get('wfrule_id'),
+
+                                    success: function(data) {
+                                        if (data) {
+                                            mask.destroy();
+                                            grid.store.reload();
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
+                );
+                break;
+            case 7:
+                // View Rule
+                mask = new Ext.LoadMask({
+                    target: me.getWorkflowScreen()
+                });
+                mask.show();
+                NP.lib.core.Net.remoteCall({
+                    requests: {
+                        service: 'WFRuleService',
+                        action : 'get',
+
+                        id: rec.get('wfrule_id'),
+
+                        success: function(data) {
+                            if (data) {
+                                mask.destroy();
+                                Ext.create('NP.view.systemSetup.' + 'WorkflowRulesView', {data: data}).show();
+                            }
+                        }
+                    }
+                });
+                break;
+            default:
+                // Edit Rule
+                mask = new Ext.LoadMask({
+                    target: me.getWorkflowScreen()
+                });
+                mask.show();
+                NP.lib.core.Net.remoteCall({
+                    requests: {
+                        service: 'WFRuleService',
+                        action : 'get',
+
+                        id: rec.get('wfrule_id'),
+
+                        success: function(data) {
+                            if (data) {
+                                mask.destroy();
+                                //Ext.create('NP.view.systemSetup.' + 'WorkflowRulesModify', {data: data}).show();
+                                me.addHistory('SystemSetup:showSystemSetup:WorkflowRules:modify', {data: data});
+                            }
+                        }
+                    }
+                });
+                break;
+        }
+    },
+    workflowRuleChangeStatus: function(action) {
+        var grid = this.getWorkflowScreenGrid();
+        if (grid) {
+            var selection = grid.getSelectionModel().getSelection();
+            if (selection) {
+                var identifiers = [];
+                for (var i = 0, l = selection.length; i < l; i++) {
+                    identifiers.push(selection[i].internalId);
+                }
+                if (identifiers.length > 0) {
+                    // Identifiers are ready to be passed to the server.
+                        var mask = new Ext.LoadMask({
+                            target: this.getWorkflowScreen()
+                        });
+                        mask.show();
+                        NP.lib.core.Net.remoteCall({
+                            requests: {
+                                service: 'WFRuleService',
+                                action : 'status',
+
+                                id: identifiers,
+                                status: action,
+
+                                success: function(data) {
+                                    if (data) {
+                                        mask.destroy();
+                                        grid.store.reload();
+                                    }
+                                }
+                            }
+                        });
+                }
+            }
+        }
     },
 	
     /**
@@ -181,35 +359,6 @@ Ext.define('NP.controller.SystemSetup', {
             that[showMethod](subSection, id);
 	}
     },
-
-    showWorkflowRules: function(section, id) {
-        var self = this;
-        switch (section) {
-            case 'View':
-                NP.lib.core.Net.remoteCall({
-                    requests: {
-                        service: 'WFRuleService',
-                        action : 'get',
-
-                        id: id,
-
-                        success: function(data) {
-                            if (data) {
-                                self.setView('NP.view.systemSetup.' + view, {data: data}, '[xtype="systemsetup.workflowrules"]');
-                            }
-                        }
-                    }
-		});
-
-                view = 'WorkflowRulesView';
-                break;
-            default:
-                var data = {};
-                var view = 'WorkflowRulesMain';
-                this.setView('NP.view.systemSetup.' + view, {}, '[xtype="systemsetup.workflowrules"]');
-        }
-    },
-
     
 	/**
 	 * Displays the page for the Password Configuration tab

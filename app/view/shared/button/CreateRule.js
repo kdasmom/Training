@@ -1,15 +1,11 @@
-/**
- * @author Baranov A.V.
- * @date 9/27/13
- */
-Ext.define('NP.view.shared.button.Print', {
+Ext.define('NP.view.shared.button.CreateRule', {
     extend: 'Ext.button.Button',
-    alias: 'widget.shared.button.print',
+    alias: 'widget.shared.button.createrule',
 
     requires: ['NP.lib.core.Translator'],
 
-    text: 'Print',
-    iconCls: 'print-btn',
+    text: 'Create Rule',
+    iconCls: 'create-rule-btn',
 
     initComponent: function() {
     	this.text = NP.Translator.translate(this.text);

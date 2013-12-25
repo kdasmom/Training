@@ -9,6 +9,7 @@ Ext.define('NP.view.shared.button.Report', {
     requires: ['NP.lib.core.Translator'],
 
     text: 'Report',
+    iconCls: 'report-btn',
 
     initComponent: function() {
     	this.text = NP.Translator.translate(this.text);

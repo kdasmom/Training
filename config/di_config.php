@@ -155,8 +155,13 @@ $diDefinition = array(
 	'NP\vendor\InsuranceService'               => array('InsuranceGateway'),
 	'NP\vendor\validation\VendorEntityValidator'          => array('LocalizationService','Adapter', 'VendorGateway', 'ConfigService'),
 	'NP\vendor\VendorService'                  => array('VendorGateway','InsuranceGateway', 'ConfigService', 'UserprofileGateway', 'VendorsiteGateway', 'PhoneGateway', 'AddressGateway', 'PersonGateway', 'ContactGateway', 'EmailGateway', 'IntegrationPackageGateway', 'PnCustomFieldDataGateway', 'MessageGateway', 'ImageIndexGateway', 'VendorEntityValidator'),
-	'NP\workflow\WfRuleGateway'                      => array('Adapter','UserprofileroleGateway'),
-	'NP\workflow\WFRuleService'                  => array('WfRuleGateway'),
+        'NP\workflow\WFActionGateway'              => array('Adapter'),
+        'NP\workflow\WFRuleHourGateway'              => array('Adapter'),
+        'NP\workflow\WFRuleRelationGateway'              => array('Adapter'),
+        'NP\workflow\WFRuleScopeGateway'              => array('Adapter'),
+        'NP\workflow\WfRuleTargetGateway'              => array('Adapter'),
+	'NP\workflow\WfRuleGateway'                => array('Adapter','UserprofileroleGateway', 'VendorGateway', 'WFActionGateway'),
+	'NP\workflow\WFRuleService'                => array('WfRuleGateway', 'WFActionGateway', 'WFRuleHourGateway', 'WFRuleRelationGateway', 'WFRuleScopeGateway', 'WfRuleTargetGateway'),
 );
 
 // Now we're gonna figure out some automatic definitions for gateways and services

@@ -5,7 +5,10 @@ namespace NP\workflow;
 use NP\core\AbstractGateway;
 use NP\core\db\Adapter;
 use NP\core\db\Select;
+use NP\core\db\Where;
+use NP\core\db\Update;
 use NP\user\UserprofileRoleGateway;
+use NP\vendor\VendorGateway;
 
 /**
  * Gateway for the WFRULE table
@@ -13,10 +16,15 @@ use NP\user\UserprofileRoleGateway;
  * @author 
  */
 class WfRuleGateway extends AbstractGateway {
-	protected $userprofileRoleGateway;
+        protected $pk = 'wfrule_id';
+	protected $table = 'wfrule';
 
-	public function __construct(Adapter $adapter, UserprofileRoleGateway $userprofileRoleGateway) {
+	protected $userprofileRoleGateway, $vendorGateway, $wfActionGateway;
+
+	public function __construct(Adapter $adapter, UserprofileRoleGateway $userprofileRoleGateway, VendorGateway $vendorGateway, WFActionGateway $wfActionGateway) {
 		$this->userprofileRoleGateway = $userprofileRoleGateway;
+                $this->vendorGateway = $vendorGateway;
+                $this->wfActionGateway = $wfActionGateway;
 		
 		parent::__construct($adapter);
 	}
@@ -139,7 +147,7 @@ class WfRuleGateway extends AbstractGateway {
         return $result;
     }
 
-    public function getRule($ruleid, $asp_client_id) {
+    public function getRule($ruleid, $asp_client_id, $params = []) {
         $result = [
             'rule' => $this->adapter->query(
                 new sql\GetRuleSelect($ruleid, $asp_client_id)
@@ -152,70 +160,158 @@ class WfRuleGateway extends AbstractGateway {
             ),
             'actions' => $this->adapter->query(
                 new sql\GetRuleActionsSelect($ruleid, $asp_client_id)
-            )
+            ),
+
+            'properties' => $this->adapter->query(
+                new sql\GetRulePropertiesSelect($ruleid)
+            ),
+
+            'codes' => [],
+            'units' => [],
+            'vendors' => [],
+            'contracts' => [],
+            'categories' => []
         ];
 
-        for ($i = 0; $i < count($result['routes']); $i++) {
-            switch ($result['routes'][$i]['wfaction_receipient_tablename']) {
-                case 'role':
-                    $result['routes'][$i]['forwards'] = 'Role';
-                    $result['routes'][$i]['names'] = $result['routes'][$i]['role_name'];
-                    break;
-                case 'userprofilerole':
-                    $result['routes'][$i]['forwards'] = 'User';
-                    $result['routes'][$i]['names'] = 
-                        $result['routes'][$i]['person_lastname'].', '.
-                        $result['routes'][$i]['person_firstname'].' '.
-                        $result['routes'][$i]['person_middlename']
-                    ;
-                    if ($result['routes'][$i]['userprofile_status'] == 'inactive') {
-                        $result['routes'][$i]['names'] .= ' (Inactive)';
+        if (!empty($result['rule']) && !empty($result['rule'][0])) {
+            $result['rule'] = $result['rule'][0];
+
+            $count = $this->adapter->query(
+                new \NP\property\sql\GetPropertiesCountSelect($asp_client_id)
+            );
+
+            $selected = 0;
+            $properties = [];
+            foreach ($result['properties'] as $property) {
+                $selected++;
+                $properties[$property['property_id']] = [
+                    'property_id' => $property['property_id'],
+                    'property_name' => $property['property_name'],
+                    'region_name' => 
+                        empty($property['region_name']) ?
+                            'None' :
+                            $property['region_name']
+                ];
+            }
+
+            $result['properties'] = [
+                'all' => 
+                    $count == $selected
+                ,
+                'properties' => $properties
+            ];
+
+            $keys = [];
+            foreach ($result['scope'] as $scope) {
+                $keys[] = $scope['tablekey_id'];
+            }
+            if (empty($keys)) { $keys = [0]; }
+
+            $type = $result['rule']['wfruletype_id'];
+            if (in_array($type, [3, 7, 8, 13, 29, 31, 33, 37])) {
+                $result['codes'] = $this->adapter->query(
+                    new sql\GLAccountByWFRuleSelect($ruleid, $asp_client_id)
+                );
+            }
+            if (in_array($type, [35, 36])) {
+                $result['units'] = $this->adapter->query(
+                    new \NP\property\sql\GetUnitsSelect($keys)
+                );
+
+                if (!empty($result['units'])) {
+                    for ($i = 0; $i < count($result['units']); $i++) {
+                        $result['units'][$i]['unitcode'] =
+                            !empty($params) && 
+                                !empty($params['UnitAttachDisplay']) && 
+                                $params['UnitAttachDisplay'] == 'unitcode'
+                        ;
+
+                        if ($result['units'][$i]['building_id_alt'] != '') {
+                            $result['units'][$i]['unit_display'] = strtoupper(
+                                $result['units'][$i]['building_id_alt']
+                                .' - '.
+                                $result['units'][$i]['unit_number']
+                            );
+                        } else {
+                            $result['units'][$i]['unit_display'] = strtoupper(
+                                $result['units'][$i]['unit_number']
+                            );
+                        }
                     }
-                    break;
-                default:
-                    $result['routes'][$i]['forwards'] = 'Next Level';
-                    $result['routes'][$i]['names'] = '- -';
+                }
+            }
+            if (in_array($type, [9, 10, 11, 12, 14, 30, 32, 34, 38])) {
+                $result['categories'] = $this->adapter->query(
+                    new sql\GLAccountByWFRuleSelect($ruleid, $asp_client_id)
+                );
+            }
+            if (in_array($type, [24, 25, 26, 27])) {
+                $result['contracts'] = $this->adapter->query(
+                    new sql\JobContractByWFRuleScope($ruleid)
+                );
+            }
+            if (in_array($type, [6, 16])) {
+                $vendors = $this->vendorGateway->find(
+                    Where::get()
+                        ->in('v.vendor_id', implode(',', $keys))
+                    ,
+                    [],
+                    null,
+                    ['vendor_id', 'vendor_name']
+                );
+                
+                foreach ($vendors as $vendor) {
+                    $result['vendors'][$vendor['vendor_id']] = $vendor['vendor_name'];
+                }
             }
 
-            switch ($result['routes'][$i]['wfaction_originator_tablename']) {
-                case 'role':
-                    $result['routes'][$i]['originator'] = 'Role';
-                    break;
-                case 'userprofilerole':
-                    $result['routes'][$i]['originator'] = 'User';
-                    break;
-                default:
-                    $result['routes'][$i]['originator'] = '---';
+            if ($type == 4) {
+                $result['routes'] = [];
             }
-            $result['routes'][$i]['onames'] = '===ONAMES===';
+
+            for ($i = 0; $i < count($result['routes']); $i++) {
+                switch ($result['routes'][$i]['wfaction_receipient_tablename']) {
+                    case 'role':
+                        $result['routes'][$i]['forwards'] = 'Role';
+                        $result['routes'][$i]['names'] = $result['routes'][$i]['role_name'];
+                        break;
+                    case 'userprofilerole':
+                        $result['routes'][$i]['forwards'] = 'User';
+                        $result['routes'][$i]['names'] = 
+                            $result['routes'][$i]['person_lastname'].', '.
+                            $result['routes'][$i]['person_firstname'].' '.
+                            $result['routes'][$i]['person_middlename']
+                        ;
+                        if ($result['routes'][$i]['userprofile_status'] == 'inactive') {
+                            $result['routes'][$i]['names'] .= ' (Inactive)';
+                        }
+                        break;
+                    default:
+                        $result['routes'][$i]['forwards'] = 'Next Level';
+                        $result['routes'][$i]['names'] = '- -';
+                }
+
+                switch ($result['routes'][$i]['wfaction_originator_tablename']) {
+                    case 'role':
+                        $result['routes'][$i]['originator'] = 'Role';
+                        $result['routes'][$i]['onames'] = $result['routes'][$i]['role_name_originator'];
+                        break;
+                    case 'userprofilerole':
+                        $result['routes'][$i]['originator'] = 'User';
+                        $result['routes'][$i]['onames'] = 
+                            $result['routes'][$i]['person_lastname_originator'].', '.
+                            $result['routes'][$i]['person_firstname_originator'].' '.
+                            $result['routes'][$i]['person_middlename_originator']
+                        ;
+                        if ($result['routes'][$i]['userprofile_status_originator'] == 'inactive') {
+                            $result['routes'][$i]['onames'] .= ' (Inactive)';
+                        }
+                        break;
+                    default:
+                        $result['routes'][$i]['originator'] = '---';
+                }
+            }
         }
-/*
-SELECT 
-    w.wfaction_receipient_tablename,w.wfaction_receipient_tablekey_id,w.wfaction_originator_tablename, w.wfaction_originator_tablekey_id,
-    w.wfaction_id,w.wfrule_id,
-    r.role_name,ur.userprofilerole_id,
-
-    u.userprofile_status,ps.person_lastname,ps.person_firstname,ps.person_middlename 
-        SELECT 
-            CASE 
-                WHEN w.wfaction_originator_tablename='role' THEN (
-                    Select role_name FROM ROLE where role_id = w.wfaction_originator_tablekey_id
-                )
-		WHEN w.wfaction_originator_tablename='userprofilerole' THEN (
-                    Select ISNULL(PERSON.person_lastname, '')+', '+ISNULL(PERSON.person_firstname, '')+' '+ISNULL(PERSON.person_middlename, '')  +
-                        CASE USERPROFILE.userprofile_status
-                            WHEN 'inactive' THEN ' (Inactive)'
-                            ELSE ''
-                        END 	
-                    FROM USERPROFILEROLE
-                        INNER JOIN STAFF ON USERPROFILEROLE.tablekey_id = STAFF.staff_id 
-                        INNER JOIN PERSON ON STAFF.person_id = PERSON.person_id
-                        INNER JOIN USERPROFILE ON USERPROFILE.userprofile_id = USERPROFILEROLE.userprofile_id
-                    WHERE USERPROFILEROLE.userprofilerole_id = w.wfaction_originator_tablekey_id 			 
-                )
-                ELSE '---'
-            END AS onames
-*/
         return $result;
     }
 
@@ -229,6 +325,30 @@ SELECT
         return $this->adapter->query($select);
     }
 
+    public function setRuleStatus($id, $status) {
+        if ($status == 1) {
+            $routes = $this->wfActionGateway->find(
+                Where::get()
+                    ->equals('wfrule_id', $id)
+            );
+            $status = 
+                count($routes) > 0 ?
+                    'active':
+                    'new'
+            ;
+        } elseif ($status == 3) {
+            $status = 'inactive';
+        } else {
+            $status = 'deactive';
+        }
+        $update = new Update();
+        $update
+            ->table($this->table)
+            ->value('wfrule_status', '\''.$status.'\'')
+            ->whereEquals('wfrule_id', new \NP\core\db\Expression($id))
+        ;
+        return $this->adapter->query($update);
+    }
 }
 /*
 USER_PROPERTY_LISTING

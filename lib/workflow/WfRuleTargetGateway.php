@@ -5,6 +5,7 @@ namespace NP\workflow;
 use NP\core\AbstractGateway;
 use NP\core\db\Insert;
 use NP\core\db\Select;
+use NP\core\db\Where;
 use NP\core\db\Expression;
 
 /**
@@ -54,6 +55,29 @@ class WfRuleTargetGateway extends AbstractGateway {
 
 		return $this->adapter->query($insert, $property_id_list);
 	}
-}
 
-?>
+    public function copy($ruleid, $targetid) {
+        $select = Select::get()
+            ->columns([
+                new \NP\core\db\Expression($ruleid),
+                'table_name',
+                'tablekey_id'
+            ])
+            ->from('wfruletarget')
+            ->where(
+                Where::get()
+                    ->equals('wfrule_id', $targetid)
+            )
+        ;
+        $insert = \NP\core\db\Insert::get()
+            ->into('wfruletarget')
+            ->columns([
+                'wfrule_id',
+		'table_name',
+                'tablekey_id'
+            ])
+            ->values($select)
+        ;
+        $this->adapter->query($insert);
+    }
+}

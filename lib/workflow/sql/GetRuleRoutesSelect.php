@@ -25,6 +25,12 @@ class GetRuleRoutesSelect extends Select {
                     Select::JOIN_LEFT
                 )
                 ->join(
+                    ['r2' => 'role'],
+                    'r2.role_id=w.wfaction_originator_tablekey_id and w.wfaction_originator_tablename=\'role\'',
+                    ['role_name_originator' => 'role_name'],
+                    Select::JOIN_LEFT
+                )
+                ->join(
                     ['ur' => 'userprofilerole'],
                     'ur.userprofilerole_id =w.wfaction_receipient_tablekey_id and w.wfaction_receipient_tablename=\'userprofilerole\'', 
                     ['userprofilerole_id'], 
@@ -48,8 +54,34 @@ class GetRuleRoutesSelect extends Select {
                     ['person_lastname', 'person_firstname', 'person_middlename'],
                     Select::JOIN_LEFT
                 )
-        ;
 
+
+                ->join(
+                    ['ur2' => 'userprofilerole'],
+                    'ur2.userprofilerole_id =w.wfaction_originator_tablekey_id and w.wfaction_receipient_tablename=\'userprofilerole\'', 
+                    [], 
+                    Select::JOIN_LEFT
+                )
+                ->join(
+                    ['s2' => 'STAFF'],
+                    'ur2.tablekey_id = s2.staff_id',
+                    [],
+                    Select::JOIN_LEFT
+                )
+                ->join(
+                    ['ps2' => 'PERSON'],
+                    's2.person_id = ps2.person_id',
+                    ['person_lastname_originator' => 'person_lastname', 'person_firstname_originator' => 'person_firstname', 'person_middlename_originator' => 'person_middlename'],
+                    Select::JOIN_LEFT
+                )
+                ->join(
+                    ['u2' => 'userprofile'],
+                    'u2.userprofile_id=ur2.userprofile_id',
+                    ['userprofile_status_originator' => 'userprofile_status'],
+                    Select::JOIN_LEFT
+                )
+
+        ;
         $where = Where::get()
             ->equals('w.wfrule_id', $ruleid)
         ;

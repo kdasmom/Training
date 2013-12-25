@@ -14,6 +14,7 @@ class GetRulePropertiesSelect extends Select {
             ])
             ->from(['WFT' => 'wfruletarget'])
                 ->join(new join\WFRuleTargetProperty())
+                ->join(new \NP\property\sql\join\PropertyRegionJoin(['region_name'], Select::JOIN_LEFT, 'r', 'p'))
         ;
 
         $where = Where::get()
@@ -23,14 +24,3 @@ class GetRulePropertiesSelect extends Select {
         $this->where($where);
     }
 }
-/*
---RECORDSET-2
-
-	BEGIN
-		SELECT wt.*
-		FROM  wfruletarget wt
-			INNER JOIN property p ON wt.tablekey_id = p.property_id
-		WHERE wfrule_id=@in_wfrule_id
-			AND p.property_status <> 0;
-	END;
-*/
