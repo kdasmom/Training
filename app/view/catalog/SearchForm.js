@@ -34,6 +34,7 @@ Ext.define('NP.view.catalog.SearchForm', {
 					},
 					autoLoad: true
 				}),
+				selectFirstRecord: !that.advancedSearch ? false : true,
 				addBlankRecord: !that.advancedSearch ? true : false,
 				multiSelect: !that.advancedSearch ? false : true,
 				queryMode: 'local',
