@@ -34,6 +34,10 @@ Ext.define('NP.lib.ui.ComboBox', {
 	/**
 	 * @cfg {Object}                  extraParams       Default parameters to add to the store proxy; only applies to type "autocomplete"
 	 */
+	/**
+	 * @cfg {String}					blankRecordDisplayValue Set blank record display value
+	 */
+	blankRecordDisplayValue: '',
 
 	constructor: function(cfg) {
 		if (cfg.displayField) {
@@ -48,6 +52,7 @@ Ext.define('NP.lib.ui.ComboBox', {
 	},
 
 	initComponent: function() {
+		var me = this;
 		// Key events must be on
 		this.enableKeyEvents = true;
 
@@ -109,7 +114,7 @@ Ext.define('NP.lib.ui.ComboBox', {
 				// Add a blank record to the store
 				combo.getStore().on('load', function(store) {
 					var rec = {};
-					rec[combo.displayField] = '';
+					rec[combo.displayField] = me.blankRecordDisplayValue;
 					rec[combo.valueField] = '';
 					store.insert(0, rec);
 				});

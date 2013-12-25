@@ -124,7 +124,7 @@ class VcItemGateway extends AbstractGateway {
 
 		$params = [$userprofile_id, $userprofile_id, 1];
 
-		if ($property) {
+		if (!empty($property) && $property !== 'null') {
 			$select->join(['lp' => 'link_vc_property'], 'lp.vc_id = vi.vc_id', [])
 					->whereEquals('lp.property_id', '?');
 			$params[] = $property;

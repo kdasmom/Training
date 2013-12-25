@@ -34,6 +34,7 @@ Ext.define('NP.view.catalog.SearchForm', {
 					},
 					autoLoad: true
 				}),
+				blankRecordDisplayValue: !that.advancedSearch ? 'All' : '',
 				selectFirstRecord: !that.advancedSearch ? false : true,
 				addBlankRecord: !that.advancedSearch ? true : false,
 				multiSelect: !that.advancedSearch ? false : true,
@@ -84,7 +85,7 @@ Ext.define('NP.view.catalog.SearchForm', {
 				editable: false,
 				typeAhead: false,
 				margin: '0 0 5 5',
-				selectFirstRecord: true
+				emptyText: 'Any'
 			},
 			{
 				xtype: 'textfield',
@@ -101,9 +102,9 @@ Ext.define('NP.view.catalog.SearchForm', {
 						Ext.Msg.alert('Error', 'You must enter a search term.');
 					} else {
 						if (that.advancedSearch) {
-							that.fireEvent('advancedsearch', that.getChildByElement('vccat_id').getValue(), that.getChildByElement('item_name').getValue(),that.getChildByElement('property_id').getValue(),that.getChildByElement('keyword').getValue());
+							that.fireEvent('advancedsearch', !that.getChildByElement('vccat_id').getValue() ? '' : that.getChildByElement('vccat_id').getValue(), that.getChildByElement('item_name').getValue(),!that.getChildByElement('property_id').getValue() ? '' : that.getChildByElement('property_id').getValue(), that.getChildByElement('keyword').getValue());
 						} else {
-							that.fireEvent('searchitems', that.getChildByElement('vccat_id').getValue(), that.getChildByElement('item_name').getValue(),that.getChildByElement('property_id').getValue(),that.getChildByElement('keyword').getValue(), that.advancedSearch ? that.advancedSearch : false);
+							that.fireEvent('searchitems', !that.getChildByElement('vccat_id').getValue() ? '' : that.getChildByElement('vccat_id').getValue(), that.getChildByElement('item_name').getValue(),!that.getChildByElement('property_id').getValue() ? '' : that.getChildByElement('property_id').getValue(), that.getChildByElement('keyword').getValue(), that.advancedSearch ? that.advancedSearch : false);
 						}
 					}
 				}
