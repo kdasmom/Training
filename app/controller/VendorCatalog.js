@@ -409,16 +409,16 @@ Ext.define('NP.controller.VendorCatalog', {
 	getOrderVendors: function(combo, value, vc_id, vcorders) {
 		var that = this;
 		var form = this.getCmp('catalog.orderpropertiesform');
-		form.getChildByElement('vendor_id').store = Ext.create('NP.store.vendor.Vendors', {
-			service: 'CatalogService',
-			action: 'getOrderVendors',
-			extraParams: {
-				vc_id: vc_id,
-				property_id: value[0].get('property_id')
-			},
-			autoLoad: true
+		var combo, store, grid;
+
+		combo = form.getChildByElement('vendor_id');
+		store = combo.getStore();
+		Ext.apply(store.getProxy().extraParams, {
+			property_id: value[0].get('property_id')
 		});
-		var grid = this.getCmp('catalog.createordergrid');
+		store.reload();
+		
+		grid = this.getCmp('catalog.createordergrid');
 		grid.addExtraParams({
 			userprofile_id: NP.Security.getUser().get('userprofile_id'),
 			vc_id: vc_id,

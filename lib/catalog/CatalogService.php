@@ -641,6 +641,9 @@ class CatalogService extends AbstractService {
 	 * @return mixed
 	 */
 	public function getOrderVendors($vc_id = null, $property_id = null) {
+		if (!$property_id || !$vc_id) {
+			return [];
+		}
 		$result = $this->vcGateway->getOrderVendors($vc_id, $property_id);
 		return $result;
 	}

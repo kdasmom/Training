@@ -63,6 +63,14 @@ Ext.define('NP.view.catalog.OrderPropertiesForm', {
 						that.fireEvent('selectVendor', combo, value, that.property_id)
 					}
 				},
+				store: Ext.create('NP.store.vendor.Vendors', {
+					service: 'CatalogService',
+					action: 'getOrderVendors',
+					extraParams: {
+						vc_id: that.vc_id,
+						property_id: false
+					}
+				}),
 				selectFirstRecord: true
 			},
 			{
