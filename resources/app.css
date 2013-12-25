@@ -58,7 +58,10 @@
 /* GRIDS */
 .grid-clickable-col:hover { text-decoration:underline; cursor: pointer; }
 .grid-invalid-cell { background-color: #F2C2C2 !important; }
-
+.customedit {
+    background-color: #f4f4f4 !important;
+    border: 1px inset #cccccc;
+}
 /* this makes a summary grid cell bold */
 .x-grid-row-summary .x-grid-cell-inner {
     font-weight: bold;
