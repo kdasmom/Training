@@ -373,14 +373,15 @@ class VcItemGateway extends AbstractGateway {
 							when upper(left(vi.vcitem_manufacturer, 1)) in ('0','1','2','3','4','5','6','7','8','9') then '0-9'
 							else upper(left(vi.vcitem_manufacturer, 1))
 						end"),
-					'vcitem_manufacturer'])
+					'vcitem_manufacturer',
+					'vc_id'])
 				->where(['vcitem_status' => '?'])
 				->whereExists('SELECT *
 					FROM vc
 						INNER JOIN link_vc_vccat l ON l.vc_id = vc.vc_id
 					WHERE vc.vc_id = vi.vc_id')
 				->whereNotEquals('vcitem_manufacturer', '?')
-				->group('vcitem_manufacturer')
+				->group('vcitem_manufacturer, vc_id')
 				->order('vcitem_manufacturer');
 
 		return $this->adapter->query($select, [1, '']);

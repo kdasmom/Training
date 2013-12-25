@@ -225,6 +225,11 @@ Ext.define('NP.controller.VendorCatalog', {
 					this.addHistory('VendorCatalog:showItems:' + field + ':' + value + ':' + vc_id);
 				}
 			},
+			'[xtype="catalog.alphabeticalbrandsgrid"]': {
+				showbybrand: function(field, value, vc_id) {
+					this.addHistory('VendorCatalog:showItems:' + field + ':' + value + ':' + vc_id);
+				}
+			},
 			'[xtype="catalog.categoriesdataview"]': {
 				showbycategory: function(field, value, vc_id) {
 					this.addHistory('VendorCatalog:showItems:' + field + ':' + value + ':' + vc_id);
