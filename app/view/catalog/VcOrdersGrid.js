@@ -101,11 +101,13 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 				align: 'center',
 				flex: 0.1,
 				border: 1,
+				format: '0',
 				editor: {
 					xtype: 'numberfield',
 					allowBlank: false,
 					minValue: 0,
-					maxValue: 100000
+					maxValue: 100000,
+					decimalPrecision: 0
 				},
 				summaryType: function(records) {
 					return records[0].get('vc_id');

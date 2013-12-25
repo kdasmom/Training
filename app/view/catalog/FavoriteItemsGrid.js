@@ -126,11 +126,13 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 				align: 'center',
 				text: NP.Translator.translate('Qty'),
 				flex: 0.1,
+				format: '0',
 				editor: {
 					xtype: 'numberfield',
 					allowBlank: false,
 					minValue: 0,
-					maxValue: 100000
+					maxValue: 100000,
+					decimalPrecision: 0
 				}
 			},
 			{
