@@ -44,6 +44,8 @@
 .upload-sheet-btn { background-image: url("images/buttons/upload_sheet.gif"); }
 .view-btn { background-image: url("images/buttons/view.gif"); }
 .void-btn { background-image: url("images/buttons/void.gif"); }
+.shop-btn { background-image: url("images/buttons/vc_shopping_bag.gif"); }
+.star-btn { background-image: url("images/buttons/icon_star.gif"); }
 
 /* STYLE FOR USING AN IMAGE AS A BUTTON IN A GRID BY SPECIFYING THIS AS tdCls CONFIG OPTION */
 .image-button-cell .x-grid-cell-inner { padding-bottom: 0; }

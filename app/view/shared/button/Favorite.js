@@ -11,7 +11,7 @@ Ext.define('NP.view.shared.button.Favorite', {
 	requires: ['NP.lib.core.Translator'],
 
 	text   : 'Favorites',
-	iconCls: 'favorite-btn',
+	iconCls: 'star-btn',
 
 	initComponent: function() {
 		this.text = NP.Translator.translate(this.text);
