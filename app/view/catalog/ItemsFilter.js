@@ -148,7 +148,7 @@ Ext.define('NP.view.catalog.ItemsFilter', {
 							fields: ['price', 'value'],
 							autoLoad : true,
 							data: [
-								[NP.Translator.translate('Under $25'), 0],
+								[NP.Translator.translate('Under $25'), 1],
 								[NP.Translator.translate('$25 - $50'), 25],
 								[NP.Translator.translate('$50 - $75'), 50],
 								[NP.Translator.translate('$75 - $100'), 75],
