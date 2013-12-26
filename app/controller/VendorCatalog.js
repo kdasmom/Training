@@ -605,16 +605,24 @@ Ext.define('NP.controller.VendorCatalog', {
 	},
 
 	showSimpleSearchResults: function(catalogs, type, property, keyword) {
-		var view = this.setView('NP.view.catalog.SimpleSearchView', {vc_id: catalogs, type: type, property: property, keyword: keyword});
+		var view, vccatcombo, propertycombo;
+
+		this.setView('NP.view.catalog.SimpleSearchView', {vc_id: catalogs, type: type, property: property, keyword: keyword});
 		this.showUserOrderSummary(this.userSummaryCallback);
 
 		if (arguments.length > 0) {
+			view = this.getCmp('catalog.searchform');
+			vccatcombo = view.down('[name="vccat_id"]');
+			propertycombo = view.down('#property_id');
 
+			vccatcombo.getStore().reload();
+			propertycombo.getStore().reload();
+
+			vccatcombo.setValue(parseInt(catalogs));
+			view.down('#item_name').setValue(type);
+			propertycombo.setValue(parseInt(property));
+			view.down('#keyword').setValue(keyword);
 		}
-		view.down('#vccat_id').setFocusValue(catalogs);
-		view.down('#item_name').setValue(type);
-		view.down('#property_id').setFocusValue(property);
-		view.down('#keyword').setValue(keyword);
 
 		var grid = this.getCmp('catalog.favoriteitemsgrid');
 

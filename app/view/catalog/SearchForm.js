@@ -84,7 +84,6 @@ Ext.define('NP.view.catalog.SearchForm', {
 				}),
 				addBlankRecord: true,
 				blankRecordDisplayValue: NP.Translator.translate('Any'),
-//				store           : 'user.Properties',
 				labelWidth: 60,
 				fieldLabel:NP.Translator.translate('Property'),
 				queryMode: 'local',
