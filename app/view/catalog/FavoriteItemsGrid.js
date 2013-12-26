@@ -134,11 +134,6 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 					minValue: 0,
 					maxValue: 100000,
 					decimalPrecision: 0
-				},
-				renderer: function(value, metaData, record, rowIndex,
-								   colIndex, store, view) {
-					metaData.css = 'customedit';
-					return value;
 				}
 			},
 			{

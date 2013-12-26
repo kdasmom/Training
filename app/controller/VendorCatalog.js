@@ -417,7 +417,7 @@ Ext.define('NP.controller.VendorCatalog', {
 			property_id: value[0].get('property_id')
 		});
 		store.reload();
-		
+
 		grid = this.getCmp('catalog.createordergrid');
 		grid.addExtraParams({
 			userprofile_id: NP.Security.getUser().get('userprofile_id'),

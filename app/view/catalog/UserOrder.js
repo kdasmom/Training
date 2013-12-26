@@ -19,7 +19,7 @@ Ext.define('NP.view.catalog.UserOrder', {
 			{
 				xtype: 'displayfield',
 				id: 'order-details',
-				value: 'User\'s order. Coming soon..',
+				value: '',
 				padding: '0 15 0 0'
 			},
 			{
