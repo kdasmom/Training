@@ -37,23 +37,7 @@ Ext.define('NP.view.catalog.VCListing', {
 				xtype: 'shared.button.favorite'
 			}
 		];
-		var categoriesStore1 = Ext.create('NP.store.catalog.LinkVcVcCats', {
-			service    	: 'CatalogService',
-			action     	: 'getCategoriesList',
-			groupField	: 'vccat_name',
-			extraParams: {
-				userprofile_id: NP.Security.getUser().get('userprofile_id')
-			},
-			filters: [
-				function(item) {
-					if (item.index % 2 !== 0) {
-						return item;
-					}
-				}
-			],
-			autoLoad	: true
-		});
-		var oddstore = Ext.create('NP.store.catalog.LinkVcVcCats', {
+		/*var oddstore = Ext.create('NP.store.catalog.LinkVcVcCats', {
 			service    	: 'CatalogService',
 			action     	: 'getCategoriesList',
 			groupField	: 'vccat_name',
@@ -85,10 +69,18 @@ Ext.define('NP.view.catalog.VCListing', {
 				}
 			],
 			autoLoad	: true
-		});
+		});*/
 
 
 		this.tbar = bar;
+
+		var store = Ext.create('Ext.data.ArrayStore', {
+			fields: ['type', 'titles'],
+			autoLoad : true,
+			data: [
+				['category', ['title1', 'title2']]
+			]
+		});
 
 		this.items = [
 			{
@@ -119,22 +111,46 @@ Ext.define('NP.view.catalog.VCListing', {
 				border: false
 			},
 			{
-				xtype: 'container',
-				layout: 'hbox',
-				items: [
+				xtype: 'dataview',
+				rtl: false,
+				tpl: new Ext.XTemplate(
+					'<tpl for=".">',
+						'<div style="display: table-cell; float: right; width: 50%; padding: 10px; cursor: pointer;" class="category">',
+							'<div style="float: left; position: relative; padding-right: 10px; height: 100%;"><img src="/files/categories/vc_cat_{category:this.formatName}.jpg"/></div>',
+							'<div style="color: #72afd8; font-weight: bold; float:left; position: relative;">{category}',
+								'<ul>',
+									'<tpl for="catalogs">',
+									'<li data-vcid="{vc_id}" style="color: black; font-weight: normal; text-decoration: underline;" class="vc">{vc_catalogname}</li>',
+									'</tpl>',
+								'</ul>',
+							'</div>',
+						'</div>',
+					'</tpl>',
 					{
-						xtype: 'catalog.vcgrid',
-						name: 'evenitems',
-						flex: 0.5,
-						store: evenstore
-					},
-					{
-						xtype: 'catalog.vcgrid',
-						name: 'odditems',
-						flex: 0.5,
-						store: oddstore
+						formatName: function(name) {
+							return name.replace(/ /gi,'_');
+						}
 					}
-				]
+				),
+				store: Ext.create('NP.lib.data.Store', {
+					service: 'CatalogService',
+					action: 'getCategoriesList',
+					extraParams: {
+						userprofile_id: NP.Security.getUser().get('userprofile_id')
+					},
+					fields: ['category', 'catalogs'],
+					autoLoad: true
+				}),
+				itemSelector: 'div.category',
+				listeners: {
+					itemclick: function( dataview, record, item, index, e, eOpts) {
+						var target = Ext.fly(e.target);
+						if (target.hasCls('vc')) {
+							that.fireEvent('showcatalog', target.getAttribute('data-vcid'));
+						}
+					}
+				}
+
 			}
 		];
 

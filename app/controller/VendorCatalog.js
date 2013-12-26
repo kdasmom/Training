@@ -260,9 +260,9 @@ Ext.define('NP.controller.VendorCatalog', {
 				removeprice: this.removePriceFilter,
 				removefilter: this.removeTopFilter
 			},
-			'[xtype="catalog.vclisting"] [xtype="catalog.vcgrid"]': {
-				itemclick: function ( grid, record, item, index, e, eOpts) {
-					this.addHistory('VendorCatalog:showCatalogView:' + record.get('vc_id'));
+			'[xtype="catalog.vclisting"]': {
+				showcatalog: function(vc_id) {
+					this.addHistory('VendorCatalog:showCatalogView:' + vc_id);
 				}
 			}
 		});
@@ -270,7 +270,7 @@ Ext.define('NP.controller.VendorCatalog', {
 	},
 
 	showVendorCatalogListing: function() {
-		var panel = this.setView('NP.view.catalog.VCListing');
+		this.setView('NP.view.catalog.VCListing');
 		this.showUserOrderSummary(this.userSummaryCallback);
 	},
 

@@ -559,8 +559,23 @@ class CatalogService extends AbstractService {
 	 */
 	public function getCategoriesList($userprofile_id = null) {
 		$result = $this->vcCatGateway->getCatalogCategories($userprofile_id);
+		$catalogs = [];
 
-		return $result;
+		foreach ($result as $item) {
+			if (empty($catalogs[$item['vccat_id']])) {
+				$catalogs[$item['vccat_id']] = [
+					'category'		=> $item['vccat_name'],
+					'catalogs'		=> []
+				];
+			}
+			$catalogs[$item['vccat_id']]['catalogs'][] = [
+				'vc_id' 			=> $item['vc_id'],
+				'vc_catalogname'	=> $item['vc_catalogname']
+			];
+		}
+
+
+		return array_values($catalogs);
 	}
 
 	/**
