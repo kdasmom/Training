@@ -21,6 +21,7 @@ Ext.define('NP.view.catalog.VcOrder', {
 
 	title: NP.Translator.translate('Open orders'),
 	autoScroll: true,
+	minWidth: 800,
 
 	initComponent: function() {
 		var that = this;
