@@ -32,6 +32,9 @@ Ext.define('NP.controller.VendorCatalog', {
 	 */
 	init: function(){
 		Ext.log('Vendor Catalog Controller init');
+		Ext.String.addCharacterEntities({
+			'%20':' '
+		});
 
 		this.control({
 			'[xtype="catalog.jumptocatalogform"] [xtype="button"]': {
@@ -242,17 +245,17 @@ Ext.define('NP.controller.VendorCatalog', {
 			},
 			'[xtype="catalog.brandsdataview"]': {
 				showbybrand: function(field, value, vc_id) {
-					this.addHistory('VendorCatalog:showItems:' + field + ':' + value + ':' + vc_id);
+					this.addHistory('VendorCatalog:showItemsListing:' + field + ':' + Ext.util.Format.htmlEncode(value) + ':' + vc_id);
 				}
 			},
 			'[xtype="catalog.alphabeticalbrandsgrid"]': {
-				showbybrand: function(field, value, vc_id) {
-					this.addHistory('VendorCatalog:showItems:' + field + ':' + value + ':' + vc_id);
+				itemclick: function(grid, record, item, index, e, eOpts) {
+					this.addHistory('VendorCatalog:showItemsListing:brand:' + Ext.util.Format.htmlEncode(record.get('vcitem_manufacturer')) + ':' + record.get('vc_id'));
 				}
 			},
 			'[xtype="catalog.categoriesdataview"]': {
 				showbycategory: function(field, value, vc_id) {
-					this.addHistory('VendorCatalog:showItems:' + field + ':' + value + ':' + vc_id);
+					this.addHistory('VendorCatalog:showItemsListing:' + field + ':' + Ext.util.Format.htmlEncode(value) + ':' + vc_id);
 				}
 			},
 			'[xtype="catalog.itemsfilter"]': {
@@ -642,7 +645,7 @@ Ext.define('NP.controller.VendorCatalog', {
 		}
 	},
 
-	showItems: function(field, value, vc_id) {
+	showItemsListing: function(field, value, vc_id) {
 		var me = this;
 		var catalog;
 		NP.lib.core.Net.remoteCall({
@@ -653,7 +656,7 @@ Ext.define('NP.controller.VendorCatalog', {
 				success: function(success) {
 					catalog = success;
 
-					var view = me.setView('NP.view.catalog.ItemsView', {field: field, value: value, vc_id: vc_id, catalog: catalog});
+					var view = me.setView('NP.view.catalog.ItemsView', {field: field, value: Ext.util.Format.htmlDecode(value), vc_id: vc_id, catalog: catalog});
 					view.title = catalog.vc_catalogname;
 					me.showUserOrderSummary(me.userSummaryCallback);
 				}

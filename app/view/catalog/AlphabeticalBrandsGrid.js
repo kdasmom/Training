@@ -49,9 +49,6 @@ Ext.define('NP.view.catalog.AlphabeticalBrandsGrid', {
 				if (link.hasCls('top')) {
 					that.getView().focusRow(0);
 				}
-			},
-			itemclick: function (grid, record, item, index, e, eOpts ) {
-				that.fireEvent('showbybrand', 'brand', record.get('vcitem_manufacturer'), record.get('vc_id'));
 			}
 		};
 		this.callParent(arguments);
