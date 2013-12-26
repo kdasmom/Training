@@ -20,8 +20,8 @@ Ext.define('NP.view.catalog.OrderItemWindow', {
 
 	title           : NP.Translator.translate('Item details'),
 
-	width           : 800,
-	height          : 500,
+	width           : '45%',
+	height          : '40%',
 
 	modal           : true,
 	draggable       : true,
@@ -108,7 +108,7 @@ Ext.define('NP.view.catalog.OrderItemWindow', {
 						xtype: 'image',
 						src: this.data.vcitem_imageurl,
 						layout: 'fit',
-						height: this.height,
+						height: '100%',
 						flex: 0.5
 					},
 					{
