@@ -20,6 +20,7 @@ Ext.define('NP.view.catalog.FavoritesView', {
 	],
 
 	title: NP.Translator.translate('Favorites'),
+	autoScroll: true,
 
 	initComponent: function() {
 		var that = this;
