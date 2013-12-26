@@ -20,6 +20,7 @@ Ext.define('NP.view.catalog.VCListing', {
 
 	title: NP.Translator.translate('Vendor catalog listing'),
 	autoScroll: true,
+	minWidth: 800,
 
 	initComponent: function() {
 		var that = this;
