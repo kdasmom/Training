@@ -77,7 +77,14 @@ Ext.define('NP.view.catalog.SearchForm', {
 				id            	: 'property_id',
 				displayField    : 'property_name',
 				valueField      : 'property_id',
-				store           : 'user.Properties',
+				store           : Ext.create('NP.store.property.Properties', {
+					service: 'PropertyService',
+					action: 'getAll',
+					autoLoad: true
+				}),
+				addBlankRecord: true,
+				blankRecordDisplayValue: NP.Translator.translate('Any'),
+//				store           : 'user.Properties',
 				labelWidth: 60,
 				fieldLabel:NP.Translator.translate('Property'),
 				queryMode: 'local',
