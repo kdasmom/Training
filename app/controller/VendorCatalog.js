@@ -81,6 +81,11 @@ Ext.define('NP.controller.VendorCatalog', {
 					this.addHistory('VendorCatalog:showAdvancedSearch');
 				}
 			},
+			'[xtype="catalog.catalogview"] [xtype="shared.button.search"]': {
+				click: function() {
+					this.addHistory('VendorCatalog:showAdvancedSearch');
+				}
+			},
 			'[xtype="catalog.advancedsearch"] [xtype="shared.button.back"]': {
 				click: function() {
 					this.addHistory('VendorCatalog:showVendorCatalogListing');
@@ -117,6 +122,11 @@ Ext.define('NP.controller.VendorCatalog', {
 				}
 			},
 			'[xtype="catalog.itemsview"] [xtype="shared.button.back"]': {
+				click: function() {
+					this.addHistory('VendorCatalog:showVendorCatalogListing');
+				}
+			},
+			'[xtype="catalog.catalogview"] [xtype="shared.button.back"]': {
 				click: function() {
 					this.addHistory('VendorCatalog:showVendorCatalogListing');
 				}
@@ -187,6 +197,11 @@ Ext.define('NP.controller.VendorCatalog', {
 					this.addHistory('VendorCatalog:showFavorites');
 				}
 			},
+			'[xtype="catalog.catalogview"] [xtype="shared.button.favorite"]': {
+				click: function() {
+					this.addHistory('VendorCatalog:showFavorites');
+				}
+			},
 			'[xtype="catalog.itemsview"] [xtype="shared.button.shop"]': {
 				click: function() {
 					this.addHistory('VendorCatalog:showBrands');
@@ -217,6 +232,11 @@ Ext.define('NP.controller.VendorCatalog', {
 					this.addHistory('VendorCatalog:showBrands');
 				}
 			},
+			'[xtype="catalog.catalogview"] [xtype="shared.button.shop"]': {
+				click: function() {
+					this.addHistory('VendorCatalog:showBrands');
+				}
+			},
 			'[xtype="catalog.brandsview"]': {
 				focusonletter: this.focusBrandsGroup
 			},
@@ -242,7 +262,7 @@ Ext.define('NP.controller.VendorCatalog', {
 			},
 			'[xtype="catalog.vclisting"] [xtype="catalog.vcgrid"]': {
 				itemclick: function ( grid, record, item, index, e, eOpts) {
-					this.addHistory('VendorCatalog:showItems:category:' + record.get('vccat_name') + ':' + record.get('vc_id'));
+					this.addHistory('VendorCatalog:showCatalogView:' + record.get('vc_id'));
 				}
 			}
 		});
@@ -255,21 +275,37 @@ Ext.define('NP.controller.VendorCatalog', {
 	},
 
 	showCatalogView: function(vc_id) {
-		var view = this.setView('NP.view.catalog.CatalogView', {vc_id: vc_id});
-		this.showUserOrderSummary(this.userSummaryCallback);
+		var me = this;
 
-		var catalogs = this.getCmp('catalog.catalogview').down('dataview');
-		var brands = this.getCmp('catalog.brandsdataview').down('dataview');
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service: 'CatalogService',
+				action : 'get',
+				vc_id: vc_id,
+				success: function(success) {
 
-		Ext.apply(catalogs.getStore().getProxy().extraParams, {
-			vc_id: vc_id
+					catalog = success;
+					var view = me.setView('NP.view.catalog.CatalogView', {vc_id: vc_id});
+					me.showUserOrderSummary(me.userSummaryCallback);
+
+					var catalogs = me.getCmp('catalog.catalogview').down('dataview');
+					var brands = me.getCmp('catalog.brandsdataview').down('dataview');
+
+					Ext.apply(catalogs.getStore().getProxy().extraParams, {
+						vc_id: vc_id
+					});
+					Ext.apply(brands.getStore().getProxy().extraParams, {
+						vc_id: vc_id
+					});
+
+					catalogs.getStore().reload();
+					brands.getStore().reload();
+
+					view.setTitle(catalog.vc_catalogname);
+				}
+			}
 		});
-		Ext.apply(brands.getStore().getProxy().extraParams, {
-			vc_id: vc_id
-		});
 
-		catalogs.getStore().reload();
-		brands.getStore().reload();
 
 	},
 
@@ -409,10 +445,10 @@ Ext.define('NP.controller.VendorCatalog', {
 	getOrderVendors: function(combo, value, vc_id, vcorders) {
 		var that = this;
 		var form = this.getCmp('catalog.orderpropertiesform');
-		var combo, store, grid;
+		var vendorscombo, store, grid;
 
-		combo = form.getChildByElement('vendor_id');
-		store = combo.getStore();
+		vendorscombo = form.getChildByElement('vendor_id');
+		store = vendorcombo.getStore();
 		Ext.apply(store.getProxy().extraParams, {
 			property_id: value[0].get('property_id')
 		});
@@ -617,7 +653,8 @@ Ext.define('NP.controller.VendorCatalog', {
 				success: function(success) {
 					catalog = success;
 
-					me.setView('NP.view.catalog.ItemsView', {field: field, value: value, vc_id: vc_id, catalog: catalog});
+					var view = me.setView('NP.view.catalog.ItemsView', {field: field, value: value, vc_id: vc_id, catalog: catalog});
+					view.title = catalog.vc_catalogname;
 					me.showUserOrderSummary(me.userSummaryCallback);
 				}
 			}
