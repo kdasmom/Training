@@ -18,7 +18,7 @@ Ext.define('NP.controller.Invoice', {
 	stores: ['invoice.Invoices','system.PriorityFlags','invoice.InvoicePaymentTypes',
 			'invoice.InvoiceItems','invoice.InvoicePayments'],
 	
-	views: ['invoice.Register','invoice.View'],
+	views: ['invoice.Register','invoice.View','invoice.VoidWindow'],
 
 	refs: [
 		{ ref: 'invoiceView', selector: '[xtype="invoice.view"]' },
@@ -46,31 +46,32 @@ Ext.define('NP.controller.Invoice', {
 	init: function() {
 		Ext.log('Invoice controller initialized');
 
-		var app = this.application;
+		var me  = this,
+			app = me.application;
 
 		// Setup event handlers
-		this.control({
+		me.control({
 			// Clicking on an Invoice Register tab
 			'[xtype="invoice.register"]': {
 				tabchange: function(tabPanel, newCard, oldCard, eOpts) {
 					Ext.log('Invoice.onTabChange() running');
 					
 					var activeTab = newCard.getItemId().replace('invoice_grid_', '').toLowerCase();
-					this.addHistory('Invoice:showRegister:' + activeTab);
+					me.addHistory('Invoice:showRegister:' + activeTab);
 				}
 			},
 			
 			// Clicking on an invoice in an Invoice Register grid
 			'[xtype="invoice.register"] > grid': {
 				itemclick: function(gridView, record, item, index, e, eOpts) {
-					this.addHistory( 'Invoice:showView:' + record.get('invoice_id') );
+					me.addHistory( 'Invoice:showView:' + record.get('invoice_id') );
 				}
 			},
 
 			// Clicking on the New Invoice button
 			'#newInvoiceBtn': {
 				click: function() {
-					this.addHistory('Invoice:showView');
+					me.addHistory('Invoice:showView');
 				}
 			},
 			
@@ -89,91 +90,108 @@ Ext.define('NP.controller.Invoice', {
 					if (contentView.getXType() == 'invoice.register') {
 						var activeTab = contentView.getActiveTab();
 						if (activeTab.getStore) {
-							this.loadRegisterGrid(activeTab);
+							me.loadRegisterGrid(activeTab);
 						}
 					}
 				}
 			},
 
 			'[xtype="invoice.view"]': {
-				destroy: this.onInvoiceViewDestroy
+				destroy: me.onInvoiceViewDestroy
 			},
 
 			'[xtype="invoice.view"] [xtype="shared.invoicepo.viewlinegrid"]': {
-				beforeedit          : Ext.bind(this.onBeforeInvoiceLineGridEdit, this),
-				edit                : Ext.bind(this.onAfterInvoiceLineGridEdit, this),
-				selectjcfield       : Ext.bind(this.onSelectJcField, this),
-				selectutilityaccount: Ext.bind(this.onSelectUtilityAccount, this),
-				selectusagetype     : Ext.bind(this.onSelectUsageType, this),
-				changequantity      : Ext.bind(this.onChangeQuantity, this),
-				changeunitprice     : Ext.bind(this.onChangeUnitPrice, this),
-				changeamount        : Ext.bind(this.onChangeAmount, this)
+				beforeedit          : me.onBeforeInvoiceLineGridEdit.bind(me),
+				edit                : me.onAfterInvoiceLineGridEdit.bind(me),
+				selectjcfield       : me.onSelectJcField.bind(me),
+				selectutilityaccount: me.onSelectUtilityAccount.bind(me),
+				selectusagetype     : me.onSelectUsageType.bind(me),
+				changequantity      : me.onChangeQuantity.bind(me),
+				changeunitprice     : me.onChangeUnitPrice.bind(me),
+				changeamount        : me.onChangeAmount.bind(me)
 			},
 
 			// Vendor combo on the invoice view page
 			'#invoiceVendorCombo': {
-				select: this.onVendorComboSelect
+				select: me.onVendorComboSelect
 			},
 
 			// Invoice image panel
 			'[xtype="viewport.imagepanel"]': {
 				expand: function() {
-					this.showInvoiceImage = true;
-					this.loadImage(true);
+					me.showInvoiceImage = true;
+					me.loadImage(true);
 				},
 				collapse: function() {
-					this.showInvoiceImage = false;
+					me.showInvoiceImage = false;
 				}
 			},
 
 			// Clicking the Edit button on the line item list
 			'#invoiceLineEditBtn': {
-				click: Ext.bind(this.onLineEditClick, this)
+				click: me.onLineEditClick.bind(me)
 			},
 
 			// Clicking on the Add Line button
 			'#invoiceLineAddBtn': {
-				click: Ext.bind(this.onLineAddClick, this)
+				click: me.onLineAddClick.bind(me)
 			},
 
 			// Clicking on the Done With Changes button
 			'#invoiceLineSaveBtn': {
-				click: Ext.bind(this.onLineSaveClick, this)
+				click: me.onLineSaveClick.bind(me)
 			},
 
 			// Clicking on the Undo Changes button
 			'#invoiceLineCancelBtn': {
-				click: Ext.bind(this.onLineCancelClick, this)
+				click: me.onLineCancelClick.bind(me)
 			},
 
 			// Line item view
 			'[xtype="shared.invoicepo.viewlines"]': {
 				// Clicking the Split link on a line item
-				clicksplitline: Ext.bind(this.onSplitLineClick, this),
-				clickeditsplit: Ext.bind(this.onSplitLineClick, this)
+				clicksplitline: me.onSplitLineClick.bind(me),
+				clickeditsplit: me.onSplitLineClick.bind(me)
 			},
 
 			// Split grid
 			'[xtype="shared.invoicepo.splitwindow"] customgrid': {
-				beforeedit      : Ext.bind(this.onBeforeInvoiceLineGridEdit, this),
-				changepercentage: Ext.bind(this.onChangeSplitPercentage, this),
-				changeamount    : Ext.bind(this.onChangeSplitAmount, this)
+				beforeedit      : me.onBeforeInvoiceLineGridEdit.bind(me),
+				changepercentage: me.onChangeSplitPercentage.bind(me),
+				changeamount    : me.onChangeSplitAmount.bind(me)
 			},
 
+			// Split combo box in the split window
 			'#splitCombo': {
-				select: Ext.bind(this.onSelectSplit, this)
+				select: me.onSelectSplit.bind(me)
 			},
 
+			// Button to add a split line
 			'#splitLineAddBtn': {
-				click: Ext.bind(this.onAddSplitLine, this)
+				click: me.onAddSplitLine.bind(me)
 			},
 
+			// Button to recalculate split amounts
 			'#recalculateBtn': {
-				click: Ext.bind(this.onRecalculateSplit, this)
+				click: me.onRecalculateSplit.bind(me)
 			},
 
+			// Button to save split
 			'#saveSplitBtn': {
-				click: Ext.bind(this.onSaveSplit, this)
+				click: me.onSaveSplit.bind(me)
+			},
+
+			// Button to show the void popup
+			'#invoiceVoidBtn': {
+				click: me.onShowVoidInvoice.bind(me)
+			},
+
+			'#invoiceVoidCancelBtn': {
+				click: me.onCancelVoidInvoice.bind(me)
+			},
+
+			'#invoiceVoidSaveBtn': {
+				click: me.onSaveVoidInvoice.bind(me)
 			}
 		});
 	},
@@ -1392,5 +1410,37 @@ Ext.define('NP.controller.Invoice', {
 		Ext.resumeLayouts(true);
 
 		me.getSplitWindow().close();
+	},
+
+	onShowVoidInvoice: function() {
+		var win = Ext.widget('invoice.voidwindow');
+		win.show();
+	},
+
+	onCancelVoidInvoice: function() {
+		var me  = this,
+			win = me.getCmp('invoice.voidwindow');
+
+		win.close();
+	},
+
+	onSaveVoidInvoice: function() {
+		var me        = this,
+			win       = me.getCmp('invoice.voidwindow'),
+			noteField = win.down('[name="note"]');
+
+		if (noteField.isValid()) {
+			NP.lib.core.Net.remoteCall({
+				requests: {
+					service   : 'InvoiceService',
+					action    : 'void',
+					invoice_id: me.getInvoiceRecord().get('invoice_id'),
+					note      : noteField.getValue(),
+					success   : function(result) {
+						
+					}
+				}
+			});
+		}
 	}
 });

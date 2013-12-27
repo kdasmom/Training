@@ -88,6 +88,7 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                 iconCls         : 'reclass-btn',
                 displayCondition: me.isReclassBtnVisible
             },{
+                itemId          : 'invoiceVoidBtn',
                 text            : 'Void',
                 iconCls         : 'void-btn',
                 moduleId        : 6069,

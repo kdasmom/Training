@@ -537,6 +537,29 @@ class InvoiceService extends AbstractInvoicePoService {
         );
 	}
 	
+	/**
+	 * Voids an invoice
+	 */
+	public function void($invoice_id, $note) {
+		$this->invoiceGateway->beginTransaction();
+
+		$success = true;
+		$error   = null;
+		try {
+			$this->invoiceGateway->update([
+				'invoice_id'     => $invoice_id,
+				'invoice_status' => 'void'
+			]);
+		} catch(\Exception $e) {
+			$success = false;
+            $error   = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+
+        return array(
+            'success' => $success,
+            'error'   => $error
+        );
+	}	
 }
 
 ?>
