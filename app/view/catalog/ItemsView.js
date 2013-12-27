@@ -23,6 +23,7 @@ Ext.define('NP.view.catalog.ItemsView', {
 
 	initComponent: function() {
 		var me = this;
+
 		var bar = [
 			{
 				xtype: 'shared.button.back',
@@ -70,11 +71,8 @@ Ext.define('NP.view.catalog.ItemsView', {
 				],
 				padding: '5',
 				border: false
-			}
-		];
-
-		if (me.catalog.vc_catalogtype == 'excel') {
-			me.items.push({
+			},
+			{
 				xtype: 'panel',
 				border: false,
 				layout: 'hbox',
@@ -99,15 +97,16 @@ Ext.define('NP.view.catalog.ItemsView', {
 						height: 500
 					}
 				]
-			});
-		}
+			}
+		];
 
-		if (me.catalog.vc_catalogtype == 'url') {
+
+		/*if (me.catalog.vc_catalogtype == 'url') {
 			me.items.push({
 				xtype: 'component',
 				autoEl: {
 					tag : "iframe",
-					src: me.catalog.vc_url
+					src: me.catalog_url
 				}
 			});
 		}
@@ -120,6 +119,7 @@ Ext.define('NP.view.catalog.ItemsView', {
 				}
 			});
 		}
+		if (me.catalog.vc_catalogtype == 'punchout')*/
 
 		this.callParent(arguments);
 	}

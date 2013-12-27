@@ -267,6 +267,9 @@ Ext.define('NP.controller.VendorCatalog', {
 				showcatalog: function(vc_id) {
 					this.addHistory('VendorCatalog:showCatalogView:' + vc_id);
 				}
+			},
+			'[xtype="catalog.catalogview"]': {
+				punchoutshow: this.showPunchoutCatalog
 			}
 		});
 
@@ -288,21 +291,23 @@ Ext.define('NP.controller.VendorCatalog', {
 				success: function(success) {
 
 					catalog = success;
-					var view = me.setView('NP.view.catalog.CatalogView', {vc_id: vc_id});
+					var view = me.setView('NP.view.catalog.CatalogView', {vc_id: vc_id, catalog: catalog});
 					me.showUserOrderSummary(me.userSummaryCallback);
 
-					var catalogs = me.getCmp('catalog.catalogview').down('dataview');
-					var brands = me.getCmp('catalog.brandsdataview').down('dataview');
+					if (catalog.vc_catalogtype == 'excel') {
+						var catalogs = me.getCmp('catalog.catalogview').down('dataview');
+						var brands = me.getCmp('catalog.brandsdataview').down('dataview');
 
-					Ext.apply(catalogs.getStore().getProxy().extraParams, {
-						vc_id: vc_id
-					});
-					Ext.apply(brands.getStore().getProxy().extraParams, {
-						vc_id: vc_id
-					});
+						Ext.apply(catalogs.getStore().getProxy().extraParams, {
+							vc_id: vc_id
+						});
+						Ext.apply(brands.getStore().getProxy().extraParams, {
+							vc_id: vc_id
+						});
 
-					catalogs.getStore().reload();
-					brands.getStore().reload();
+						catalogs.getStore().reload();
+						brands.getStore().reload();
+					}
 
 					view.setTitle(catalog.vc_catalogname);
 				}
@@ -713,5 +718,27 @@ Ext.define('NP.controller.VendorCatalog', {
 			}
 			grid.reloadFirstPage();
 		}
+	},
+
+	showPunchoutCatalog: function (property_id, vc_id) {
+		var me = this;
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service: 'CatalogService',
+				action : 'getPunchoutUrl',
+				vc_id: parseInt(vc_id),
+				property_id: property_id,
+				userprofile_id: NP.Security.getUser().get('userprofile_id'),
+				success: function(success) {
+					var iframe = me.getCmp('catalog.catalogview').down('[name="punchoutiframe"]');
+					if (!success.success) {
+						Ext.MessageBox.alert('Error', 'NexusPayables is unable to connect to this vendor at this time. Please try again. If the problem persists, report it to your system administrator for resolution.');
+					} else {
+						var iframe = me.getCmp('catalog.catalogview').down('[name="punchoutiframe"]');
+						iframe.autoEl.src = success.url;
+					}
+				}
+			}
+		});
 	}
 });

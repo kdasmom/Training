@@ -72,19 +72,84 @@ Ext.define('NP.view.catalog.CatalogView', {
 				],
 				padding: '5',
 				border: false
-			},
-			{
+			}
+		];
+
+		if (that.catalog.vc_catalogtype == 'excel') {
+			this.items.push({
 				xtype: 'catalog.categoriesdataview',
 				vc_id: that.vc_id,
 				overflowY: 'scroll'
-			},
-			{
+			});
+			this.items.push({
 				xtype: 'catalog.brandsdataview',
 				vc_id: that.vc_id,
 				padding: '20 0 0 0',
 				overflowY: 'scroll'
-			}
-		];
+			});
+		}
+
+		if (that.catalog.vc_catalogtype == 'url') {
+			that.items.push({
+				xtype: 'component',
+				autoEl: {
+					tag : "iframe",
+					src: that.catalog.vc_url
+				}
+			});
+		}
+		if (that.catalog.vc_catalogtype == 'pdf') {
+			that.items.push({
+				xtype: 'component',
+				autoEl: {
+					tag : "iframe",
+					src: that.catalog.vc_url
+				}
+			});
+		}
+
+		if (that.catalog.vc_catalogtype == 'punchout') {
+			that.items.push(
+				{
+					xtype: 'panel',
+					layout: 'fit',
+					align: 'center',
+					tbar: [
+						{
+							xtype: 'customcombo',
+							name: 'userProperty',
+							store: 'user.Properties',
+							displayField: 'property_name',
+							valueField: 'vc_id',
+							queryMode: 'local',
+							editable: false,
+							typeAhead: false,
+							fieldLabel: NP.Translator.translate('Property'),
+							listeners: {
+								select: function (combo, records, eOpts) {
+									that.fireEvent('punchoutshow', records[0].get('property_id'), that.vc_id);
+								}
+							},
+							width: 300
+						}
+					],
+					items: [
+						{
+							xtype: 'component',
+							name: 'punchoutiframe',
+							padding: '10',
+							width: '100%',
+							flex: 1,
+							autoEl: {
+								tag: 'iframe',
+								src: '',
+								width: '100%'
+							}
+						}
+					]
+				}
+			);
+		}
 
 		this.callParent(arguments);
 	}
