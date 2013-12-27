@@ -133,7 +133,9 @@ Ext.define('NP.lib.core.Net', {
 				config: Ext.JSON.encode(cfg.requests)
 			},
 			callback: function(options, success, response) {
-				delete NP.Net.abortableRequests[ajaxRequest.id];
+				if (cfg.abortable && !cfg.isUpload) {
+					delete NP.Net.abortableRequests[ajaxRequest.id];
+				}
 
 				var res, returnStruct = false;
 				// If HTTP request was successful, decode the JSON response
@@ -192,7 +194,7 @@ Ext.define('NP.lib.core.Net', {
 			}
 		});
 
-		if (cfg.abortable) {
+		if (cfg.abortable && !cfg.isUpload) {
 			NP.Net.abortableRequests[ajaxRequest.id] = {
 				req : ajaxRequest,
 				mask: (cfg.mask) ? mask : null

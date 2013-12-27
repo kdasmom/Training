@@ -36,38 +36,67 @@ if (!$authenticator->showLogin()) {
 	}
 }
 
-$siteService = $di['SiteService'];
+$customLogo = $di['ConfigService']->getCustomLogoName();
 ?>
 
 <html>
 <head>
-	<title>NexusPayables Sign-on</title>
+    <meta charset="UTF-8">
+    <title>NexusPayables Sign-on</title>
+    <link rel="stylesheet" href="resources/login.css" />
 </head>
 <body>
-
-<?php
-
-$customLoginPath = 'clients/'.$siteService->getAppName().'/login.php';
-if (file_exists($__CONFIG['appRoot'] . $customLoginPath)) {
-	include $customLoginPath;
-} else {
-	foreach ($errors as $error) { ?>
-		<div style="color:red"><?= $error ?></div>
-	<?php } ?>
-	<form action="login.php" method="post">
-		<div>
-			<label>Username:</label>
-			<input type="text" name="username" value="" />
-		</div>
-		<div>
-			<label>Password:</label>
-			<input type="password" name="pwd" />
-		</div>
-		<div>
-			<input type="submit" value="Login" />
-		</div>
-	</form>
-<?php } ?>
-
+	<table width="100%" height="100%" cellpadding="0" cellspacing="0">
+	<tr id="header">
+		<td width="99%"><img src="resources/images/payables-top.jpg" /></td>
+		<td id="header-name">NexusSystems.com</td>
+	</tr>
+	<tr>
+		<td id="toolbar" colspan="2"></td>
+	</tr>
+	<tr>
+		<td colspan="2" align="center">
+			<?php if (!empty($customLogo)) { ?>
+				<div id="custom-logo-wrap">
+					<img src="showClientLogo.php" />
+				</div>
+			<?php } ?>
+			<div id="content-wrap">
+				<div id="welcome-text" class="blue-text">Welcome to NexusPayables</div>
+				<div id="login-field-container">
+					<form action="login.php" method="post">
+						<div id="login-text" class="blue-text">Please Log In:</div>
+						<div>
+							<input class="text-field" type="text" name="username" placeholder="Username" />
+						</div>
+						<div>
+							<input class="text-field" type="password" name="pwd" placeholder="Password" />
+						</div>
+						<div>
+							<input type="submit" value="Log In" />
+						</div>
+						<?php foreach ($errors as $error) { ?>
+							<div style="color:red"><?= $error ?></div>
+						<?php } ?>
+					</form>
+				</div>
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<td id="footer" colspan="2"	>
+			<table width="100%" cellpadding="0" cellspacing="0">
+			<tr>
+				<td width="99%" id="footer-text">
+					&copy; Nexus Systems &nbsp;&nbsp;&nbsp; Terms of Service
+				</td>
+				<td id="powered-by">
+					<img src="resources/images/payables-powered-by.jpg" />
+				</td>
+			</tr>
+			</table>
+		</td>
+	</tr>
+	</table>
 </body>
 </html>

@@ -88,6 +88,8 @@ Ext.define('NP.Application', {
 
 		// Only start the app if all our data has been properly loaded
 		if (me.statcategoriesloaded && me.statsloaded) {
+			Ext.get('loading-app').remove();
+
 			// Create the ViewPort
 	        Ext.create('NP.view.Viewport');
 	        

@@ -34,7 +34,9 @@ if (!$isAuth) {
         <script src="app.js"></script>
     <!-- </x-compile> -->
 </head>
-<body></body>
+<body>
+    <div id="loading-app">Loading...</div>
+</body>
 </html>
 
 <?php } ?>
