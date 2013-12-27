@@ -96,6 +96,10 @@ Ext.define('NP.lib.data.Store', {
 		
     	me.callParent(arguments);
 
+    	if (me.getCount()) {
+    		me.isLoaded = true;
+    	}
+
     	// Subscribe to before load to reset the isLoaded property to false when new data gets loaded
     	me.on('beforeload', function() {
     		me.isLoaded = false;

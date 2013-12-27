@@ -73,13 +73,14 @@ $diDefinition = array(
 	'NP\po\ReceiptGateway'                           => array('Adapter','RoleGateway'),
 	'NP\property\PropertyService'                    => array('SecurityService','InvoiceService','PoService','FiscalCalService'),
 	'NP\security\SecurityService'                    => array('config','SiteService','SessionService'),
-	'NP\system\ConfigService'                        => array('Config','SecurityService','SiteService'),
+	'NP\system\ConfigService'                        => array('Config','SecurityService','SiteService','IntegrationPackageGateway', 'ConfigsysGateway'),
 	'NP\system\LoggingService'                       => array('logPath','enabledNamespaces','fileEnabled','debugEnabled'),
 	'NP\system\SessionService'                       => array('Config','SiteService'),
 	'NP\system\SiteService'                          => array('WinCache','configPath','reloadCache'),
 	'NP\user\DelegationGateway'                      => array('Adapter','RoleGateway'),
 	'NP\user\UserService'                            => array('SecurityService','NotificationService'),
-	'NP\vendor\UtilityService'                       => array('ConfigService'),
+	'NP\vendor\validation\VendorEntityValidator'     => array('LocalizationService','Adapter', 'VendorGateway', 'ConfigService'),
+	'NP\vendor\VendorService'                        => array('VendorEntityValidator'),
 	'NP\workflow\WfRuleGateway'                      => array('Adapter','UserprofileroleGateway'),
 );
 

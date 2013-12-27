@@ -17,7 +17,8 @@ Ext.define('NP.view.systemSetup.Main', {
     	'NP.view.systemSetup.PasswordConfiguration',
     	'NP.view.systemSetup.CustomFields',
     	'NP.view.systemSetup.Picklists',
-    	'NP.view.systemSetup.DefaultSplits'
+    	'NP.view.systemSetup.DefaultSplits',
+        'NP.view.systemSetup.LoginPage'
     ],
 
     title: 'System Setup',
@@ -65,6 +66,9 @@ Ext.define('NP.view.systemSetup.Main', {
             });
         }
     	
+        this.items.push({
+            xtype: 'systemsetup.loginpage'
+        });
 
     	this.callParent(arguments);
     }

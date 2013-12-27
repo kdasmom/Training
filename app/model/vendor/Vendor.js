@@ -8,8 +8,6 @@ Ext.define('NP.model.vendor.Vendor', {
 	
 	requires: [
 		'NP.lib.core.Config',
-		'NP.model.user.RecAuthor',
-		'NP.model.system.IntegrationPackage',
 		'NP.model.contact.Address',
 		'NP.model.contact.Phone'
 	],
@@ -126,7 +124,11 @@ Ext.define('NP.model.vendor.Vendor', {
 		{ name: 'insurance_req' },
 
 		// This field does not exist in the DB, we are retrieving it to simplify
+		{ name: 'integration_package_name' },
+
 		{ name: 'vendorsite_id', type: 'int' },
+		{ name: 'vendorsite_status' },
+
 		{ name: 'sent_for_approval_date', type: 'date' },
 		{ name: 'sent_for_approval_by' },
 
@@ -143,27 +145,6 @@ Ext.define('NP.model.vendor.Vendor', {
 		{ name: 'phone_ext', useNull: false },
 		{ name: 'phone_countrycode', useNull: false }
 	],
-
-	belongsTo: [
-		{
-			model     : 'NP.model.system.IntegrationPackage',
-			name      : 'integrationPackage',
-			getterName: 'getIntegrationPackage',
-			foreignKey: 'integration_package_id',
-			primaryKey: 'integration_package_id',
-			reader    : 'jsonflat'
-        }
-	],
-
-    hasOne: [
-        {
-            model       : 'NP.model.vendor.Vendorsite',
-            name        : 'vendorsite',
-            getterName  : 'getVendorsite',
-            foreignKey  : 'vendorsite_id',
-            primaryKey  : 'vendorsite_id'
-        }
-    ],
 
     getAddressHtml: function() {
     	var address = Ext.create('NP.model.contact.Address', this.getData());

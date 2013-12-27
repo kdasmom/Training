@@ -145,7 +145,9 @@ Ext.define('NP.view.shared.Address', {
                     name          : this.prefix + NP.view.shared.Address.STATE,
                     allowBlank    : !this.required,
                     width         : this.address_state_width,
-                    value         : this.address_state
+                    value         : this.address_state,
+					editable	  : false,
+					typeAhead	  : false
                 },{
                     xtype      : 'textfield',
                     fieldLabel : NP.Translator.translate('Zip'),

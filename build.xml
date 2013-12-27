@@ -141,9 +141,9 @@
         </macrodef>
 
         <concat destfile="${build.dir}/resources/all.css">
-            <filelist dir="${build.dir}/resources" files="app.css,VerticalTabPanel.css"/>
-            <filelist dir="${app.dir}/ext/src/ux/css" files="ItemSelector.css"/>
-            <filelist dir="${app.dir}/vendor/BoxSelect/src" files="BoxSelect.css"/>
+            <filelist dir="${build.dir}/resources" files="app.css,VerticalTabPanel.css,uploader.css"/>
+            <filelist dir="${app.dir}/vendor/jquery-uploadify" files="uploadify.css"/>
+            <filelist dir="${app.dir}/vendor/jquery-uploadifive" files="uploadifive.css"/>
         </concat>
 
         <x-compress-files

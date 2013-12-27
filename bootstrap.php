@@ -14,6 +14,7 @@ if ($__CONFIG['debugLogEnabled']) {
     require_once("vendor\dBug\dBug.php");
 }
 require_once("vendor\SwiftMailer\lib\swift_required.php");
+require_once("vendor\ChromePhp\ChromePhp.php");
 
 // Setup the Zend Autoloader
 require_once('library\Zend\Loader\StandardAutoloader.php');

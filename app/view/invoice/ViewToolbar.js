@@ -10,6 +10,7 @@ Ext.define('NP.view.invoice.ViewToolbar', {
     requires: [
         'NP.lib.core.Security',
         'NP.view.shared.button.Cancel',
+        'NP.view.shared.button.Process',
         'NP.view.shared.button.Save',
         'NP.view.shared.button.Delete',
         'NP.view.shared.button.Hourglass',
@@ -45,9 +46,9 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                 moduleId        : 1031,
                 displayCondition: me.isRejectBtnVisible
             },{
+                xtype           : 'shared.button.process',
                 text            : 'Ready For Processing',
                 itemId          : 'readyForProcessingBtn',
-                iconCls         : 'process-btn',
                 moduleId        : 2041,
                 displayCondition: me.isReadyBtnVisible
             },{

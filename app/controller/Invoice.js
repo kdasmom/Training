@@ -1048,14 +1048,18 @@ Ext.define('NP.controller.Invoice', {
 			vendorField   = Ext.ComponentQuery.query('#invoiceVendorCombo')[0],
 			vendor        = vendorField.findRecordByValue(vendorField.getValue());
 
-		vendorDisplay.update(
-			'<b>' + vendor.get('vendor_name') + 
-			' (' + vendor.get('vendor_id_alt') + ')</b>' +
-			vendor.getAddressHtml() +
-			'<div>' + vendor.getFullPhone() + '</div>'
-		);
+		if (vendor !== null) {
+			vendorDisplay.update(
+				'<b>' + vendor.get('vendor_name') + 
+				' (' + vendor.get('vendor_id_alt') + ')</b>' +
+				vendor.getAddressHtml() +
+				'<div>' + vendor.getFullPhone() + '</div>'
+			);
 
-		vendorDisplay.show();
+			vendorDisplay.show();
+		} else {
+			vendorDisplay.hide();
+		}
 	},
 
 	populatePeriods: function(accounting_period, invoice_period) {
@@ -1316,22 +1320,26 @@ Ext.define('NP.controller.Invoice', {
 	},
 
 	calculateAllocation: function() {
-		var me              = this,
-			store           = me.getSplitGrid().getStore(),
-			totalRecs       = store.getCount(),
-			totalAmount     = me.getTotalSplitAmount(),
-			amountAllocated = 0,
-			pctAllocated    = 0,
-			rec;
+		var me   = this,
+			grid = me.getSplitGrid();
 
-		for (var i=0; i<totalRecs; i++) {
-			rec = store.getAt(i);
-			amountAllocated += rec.get('invoiceitem_amount');
-			pctAllocated += rec.get('split_percentage');
+		if (grid) {
+			var store           = grid.getStore(),
+				totalRecs       = store.getCount(),
+				totalAmount     = me.getTotalSplitAmount(),
+				amountAllocated = 0,
+				pctAllocated    = 0,
+				rec;
+
+			for (var i=0; i<totalRecs; i++) {
+				rec = store.getAt(i);
+				amountAllocated += rec.get('invoiceitem_amount');
+				pctAllocated += rec.get('split_percentage');
+			}
+
+			Ext.ComponentQuery.query('#allocation_amount_left')[0].setValue(totalAmount - amountAllocated);
+			Ext.ComponentQuery.query('#allocation_pct_left')[0].setValue(100 - pctAllocated);
 		}
-
-		Ext.ComponentQuery.query('#allocation_amount_left')[0].setValue(totalAmount - amountAllocated);
-		Ext.ComponentQuery.query('#allocation_pct_left')[0].setValue(100 - pctAllocated);
 	},
 
 	onRecalculateSplit: function() {

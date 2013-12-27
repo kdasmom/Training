@@ -54,8 +54,8 @@ Ext.define('NP.view.user.GroupsGrid', {
                     flex: 1,
                     renderer: function(val, meta, rec) {
                         val = Ext.Date.format(val, NP.Config.getDefaultDateFormat() + ' h:iA');
-                        if (rec.get('role_updated_by') !== null) {
-                            val += ' (' + rec.getUpdater().get('userprofile_username') + ')'
+                        if (rec.get('userprofile_username') !== null) {
+                            val += ' (' + rec.get('userprofile_username') + ')'
                         }
                         return val;
                     }

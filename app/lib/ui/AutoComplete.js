@@ -4,7 +4,7 @@
  * @author Thomas Messier
  */
 Ext.define('NP.lib.ui.AutoComplete', {
-	extend : 'Ext.ux.form.field.BoxSelect',
+	extend : 'Ext.form.field.ComboBox',
 	alias : 'widget.autocomplete',
 	
 	forceSelection: true,
@@ -12,6 +12,7 @@ Ext.define('NP.lib.ui.AutoComplete', {
 	queryParam    : 'keyword',
 	typeAhead     : false,
 	triggerAction : 'query',
+	triggerCls    : 'x-form-search-trigger',
     multiSelect   : false,
     minChars      : 0,
     cls           : 'auto-complete',

@@ -166,7 +166,7 @@ Ext.define('NP.controller.UtilitySetup', {
 
     onUtilityAccountClick: function(gridView, rec, item, index, e) {
         if (e.getTarget().className != 'x-grid-row-checker') {
-            this.addHistory('UtilitySetup:showAccountForm:' + rec.getUtility().get('Vendorsite_Id') + ':' + rec.get('UtilityAccount_Id'));
+            this.addHistory('UtilitySetup:showAccountForm:' + rec.get('Vendorsite_Id') + ':' + rec.get('UtilityAccount_Id'));
         }
     },
 

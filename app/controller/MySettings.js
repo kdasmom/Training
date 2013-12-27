@@ -76,6 +76,10 @@ Ext.define('NP.controller.MySettings', {
 					formPanel.getForm().findField('properties').setValue(userProps);
 				}
 			},
+			// 
+			'[xtype="mysettings.userinformation"] verticaltabpanel': {
+				tabchange: this.onUserInfoTabChange
+			},
 			// The Save button on the User Information page
 			'[xtype="mysettings.userinformation"] [xtype="shared.button.save"]': {
 				// Run this whenever the save button is clicked
@@ -126,9 +130,6 @@ Ext.define('NP.controller.MySettings', {
 				click: this.saveDashboard
 			}
 		});
-
-		// Load the Security Questions store
-		me.application.loadStore('system.SecurityQuestions', 'NP.store.system.SecurityQuestions');
 	},
 	
 	/**
@@ -166,6 +167,18 @@ Ext.define('NP.controller.MySettings', {
 
 	showUserInformation: function() {
 		Ext.getStore('property.AllProperties').filter('property_status', 1);
+	},
+
+	onUserInfoTabChange: function(tabPanel, newCard, oldCard, eOpts) {
+		var me = this;
+		
+		// Only load the security questions if the user gets to that form
+		if (newCard.getXType() == 'user.usersformdetails') {
+			var qStore = me.getCmp('user.usersformdetails').questionStore;
+			if (!qStore.isLoaded) {
+				qStore.load();
+			}
+		}
 	},
 
 	/**

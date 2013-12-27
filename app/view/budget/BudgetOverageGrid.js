@@ -11,7 +11,8 @@ Ext.define('NP.view.budget.BudgetOverageGrid', {
         'NP.lib.core.Config',
         'NP.view.shared.button.New',
         'NP.lib.ui.ComboBox',
-        'NP.model.gl.GlAccount'
+        'NP.model.gl.GlAccount',
+        'NP.view.property.gridcol.PropertyName'
     ],
 
     // For localization
@@ -52,20 +53,14 @@ Ext.define('NP.view.budget.BudgetOverageGrid', {
         // Add the base columns for the grid
         this.columns = [
             {
-                text     : this.propertyColText,
-                dataIndex: 'property_name',
-                flex     : 1,
-                renderer : function(val, meta, rec) {
-                    return rec.getProperty().get('property_name');
-                }
+                xtype    : 'property.gridcol.propertyname',
+                flex     : 1
             },{
                 text     : this.categoryColText,
                 dataIndex: 'glaccount_name',
                 flex     : 1,
                 renderer : function(val, meta, rec) {
-                    var glRec = rec.getGlAccount();
-                    
-                    return NP.model.gl.GlAccount.formatName(glRec.get('glaccount_number'), glRec.get('glaccount_name'));
+                    return NP.model.gl.GlAccount.formatName(rec.get('glaccount_number'), rec.get('glaccount_name'));
                 }
             },{
                 xtype: 'datecolumn',

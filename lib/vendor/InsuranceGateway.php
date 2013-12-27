@@ -3,8 +3,11 @@
 namespace NP\vendor;
 
 use NP\core\AbstractGateway;
+use NP\core\db\Delete;
+use NP\core\db\Insert;
 use NP\core\db\Select;
 use NP\core\db\Expression;
+use NP\core\db\Where;
 
 /**
  * Gateway for the INSURANCE table
@@ -60,6 +63,73 @@ class InsuranceGateway extends AbstractGateway {
 		}
 	}
 
+	/**
+	 * Retrieve insurance types list
+	 *
+	 * @return array|bool
+	 */
+	public function findTypes() {
+		$select = new Select();
+
+		$select->from(['it' => 'insurancetype'])
+					->order('insurancetype_name');
+
+		return $this->adapter->query($select);
+	}
+
+	/**
+	 * Save link insurance property
+	 *
+	 * @param $oldInsuranceId
+	 * @param $newInsuranceId
+	 */
+	public function saveLinkInsuranceProperty($oldInsuranceId, $newInsuranceId) {
+		$select = new Select();
+		$select->from(['lip' => 'link_insurance_property'])
+					->where(['insurance_id' => '?'])
+					->columns(['property_id']);
+
+		$properties = $this->adapter->query($select, [$oldInsuranceId]);
+		if (count($properties) > 0) {
+			$insert = new Insert();
+
+			foreach ($properties as $property) {
+				$insert->into('link_insurance_property')
+							->columns(['insurance_id', 'property_id'])
+							->values(Select::get()->columns([new Expression('?'), new Expression('?')]));
+
+				$this->adapter->query($insert, [$newInsuranceId, $property['property_id']]);
+			}
+
+			$this->delete(['insurance_id' => '?'], [$oldInsuranceId]);
+		}
+	}
+
+
+	/**
+	 * Delete insurances list
+	 *
+	 * @param $list
+	 * @param $table_name
+	 * @param $table_key
+	 */
+	public function deleteInsuranceList($list, $table_name, $table_key) {
+		$delete = new Delete();
+		if (count($list) > 0) {
+			$where = Where::get()->notIn('insurance_id', implode(',', $list))
+				->equals('tablekey_id', '?')
+				->equals('table_name', '?');
+		} else {
+			$where = Where::get()->equals('tablekey_id', '?')
+								->equals('table_name', '?');
+		}
+
+		$delete->from('insurance')
+				->where($where);
+
+		$this->adapter->query($delete, [$table_key, $table_name]);
+	}
+	
 	public function findExpiredInsuranceInfoForEntity($table_name, $tablekey_id) {
 		$expired            = false;
 		$days_to_expiration = null;
@@ -115,6 +185,24 @@ class InsuranceGateway extends AbstractGateway {
 		}
 
 		return ['expired'=>$expired, 'days_to_expiration'=>$days_to_expiration];
+	}
+
+	/**
+	 * Delete insurance link property for insurances depending by table_name and tablekey_id
+	 *
+	 * @param $tablekey_id
+	 * @param $table_name
+	 * @return array|bool
+	 */
+	public function deleteInsuranceLinkProperty($tablekey_id, $table_name) {
+		$delete = new Delete();
+		$delete->from('link_insurance_property')
+			->whereIn('insurance_id', Select::get()->column('insurance_id')
+					->from('insurance')
+					->where(['table_name' => '?', 'tablekey_id' => '?'])
+			);
+
+		return $this->adapter->query($delete, [$table_name, $tablekey_id]);
 	}
 }
 

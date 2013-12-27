@@ -60,6 +60,15 @@ Ext.define('NP.lib.core.DataLoader', {
 						NP.Config.setAppName(result);
 					}
 				},
+				// This request gets the app name
+				{
+					service: 'ConfigService', 
+					action: 'getClientId',
+					success: function(result) {
+						// Save app name in application
+						NP.Config.setClientId(result);
+					}
+				},
 				// This request gets config settings for the app
 				{
 					service: 'ConfigService', 
@@ -250,7 +259,8 @@ Ext.define('NP.lib.core.DataLoader', {
 							store                      : 'NP.store.property.Properties',
 							storeId                    : 'user.Properties',
 							userprofile_id             : NP.Security.getUser().get('userprofile_id'),
-							delegated_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id')
+							delegated_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id'),
+							property_statuses          : '1,-1'
 						},
 						// This request gets delegations for the user
 						{ 

@@ -62,12 +62,28 @@ class InvoiceGateway extends AbstractGateway {
 				->columnAmount()
 				->columnShippingAmount()
 				->columnTaxAmount()
+				->columnCreatedBy()
 				->join(new sql\join\InvoiceVendorsiteJoin())
 				->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(['vendor_name','vendor_id_alt','vendor_status','integration_package_id']))
 				->join(new \NP\vendor\sql\join\VendorsiteAddressJoin())
 				->join(new \NP\vendor\sql\join\VendorsitePhoneJoin())
 				->join(new \NP\contact\sql\join\PhonePhoneTypeJoin('Main'))
 				->join(new sql\join\InvoicePropertyJoin())
+				->join(new \NP\property\sql\join\PropertyAddressJoin([
+					'property_address_id'      => 'address_id',
+					'property_address_line1'   => 'address_line1',
+					'property_address_line2'   => 'address_line2',
+					'property_address_city'    => 'address_city',
+					'property_address_state'   => 'address_state',
+					'property_address_country' => 'address_country',
+					'property_address_zip'     => 'address_zip',
+					'property_address_zipext'  => 'address_zipext'
+				], Select::JOIN_LEFT, 'adrp'))
+				->join(new \NP\property\sql\join\PropertyPhoneJoin([
+					'property_phone_number'      => 'phone_number',
+					'property_phone_ext'         => 'phone_ext',
+					'property_phone_countrycode' => 'phone_countrycode'
+				], Select::JOIN_LEFT, 'php'))
 				->join(new sql\join\InvoiceRecauthorJoin())
 				->join(new \NP\user\sql\join\RecauthorUserprofileJoin(array('userprofile_username')))
 				->where('i.invoice_id = ?');
@@ -725,6 +741,106 @@ class InvoiceGateway extends AbstractGateway {
 
 		$this->adapter->query($update, $params);
 	}
+
+	/**
+	 *
+	 * Retrieve payments types
+	 *
+	 * @param $paymentType
+	 * @return array|bool
+	 */
+	public function getPaymentTypes($paymentType) {
+		$select = new Select();
+
+		$select->from(['pt' => 'invoicepaymenttype'])
+				->whereNest('OR')
+				->whereEquals('pt.invoicepayment_type_id', $paymentType)
+				->whereIsNull('pt.invoicepayment_type_id')
+				->whereUnNest()
+				->where(['pt.universal_field_status' => '?']);
+
+		return $this->adapter->query($select, [1]);
+	}
+
+    public function getInvoiceRef($invoice_id) {
+        $select = new \NP\core\db\Select();
+        $select
+            ->column('invoice_ref')
+            ->from('INVOICE')
+            ->whereEquals('invoice_id', $invoice_id)
+        ;
+
+        $result = $this->adapter->query($select);
+        if (!empty($result) && !empty($result[0]) && !empty($result[0]['invoice_ref'])) {
+            return $result[0]['invoice_ref'];
+        }
+        return null;
+    }
+
+    /**
+     * Get Template for image index table.
+     * 
+     * @param int $vendorsite_id Vendorsite id.
+     * @param int $property_id Propery id.
+     * @param int $utilityaccount_id Utility account ID.
+     * @return [] List of templates.
+     */
+    public function getTemplatesByCriteria($userprofile_id, $delegation_to_userprofile_id,
+    										$vendorsite_id, $property_id,
+    										$utilityaccount_id=null) {
+        if (empty($vendorsite_id)) 
+            return;
+        if (empty($property_id)) 
+            return;
+        
+        $params = [$vendorsite_id];
+
+        $select = new Select();
+        $select = Select::get()
+		            ->columns([
+						'invoice_id'    => 'invoice_id',
+						'invoice_ref'   => 'invoice_ref',
+						'template_name' => 'template_name'
+			        ])
+		            ->from(['i' => 'invoice'])
+		            	->join(new sql\join\InvoicePropertyJoin(['property_name']))
+		            	->join(new sql\join\InvoiceVendorsiteJoin([]))
+		            	->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(['integration_package_id']))
+		            ->whereEquals('i.invoice_status', '\'draft\'')
+            		->whereEquals('vs.vendorsite_id', '?')
+            		->whereNest('OR')
+		                ->whereEquals('i.property_id', 0)
+        ;
+        
+        if ($this->configService->get('PN.Main.templateByProp', '0') == '1') {
+        	$select->whereEquals('i.property_id', '?');
+        	$params[] = $property_id;
+        } else {
+        	$select->whereIn(
+						'i.property_id',
+						new PropertyFilterSelect(
+	                        new PropertyContext(
+	                            $userprofile_id,
+	                            $delegation_to_userprofile_id,
+	                            'all',
+	                            null
+	                        )
+	                    )
+					);
+        }
+        $select->whereUnnest();
+
+        if (!empty($utilityaccount_id)) {
+            $select->whereExists(
+            	Select::get()->from(['ii' => 'invoiceitem'])
+		                    ->whereEquals('ii.invoice_id', 'i.invoice_id')
+		                    ->whereEquals('ii.utilityaccount_id', '?')
+            );
+            $params[] = $utilityaccount_id;
+        }
+
+        return $this->adapter->query($select, $params);
+    }
 }
 
 ?>

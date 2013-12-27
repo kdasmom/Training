@@ -14,15 +14,19 @@ class ImageInvoiceDocCriteria extends Where {
 	
 	/**
 	 * @param  string $alias
+	 * @param  string $docTypes
 	 */
-	public function __construct($alias='img') {
+	public function __construct($docTypes, $alias='img') {
 		parent::__construct();
+
+		$docTypes = explode(',', $docTypes);
+		$docTypes = implode(',', array_map(function($docType) { return "'" . $docType . "'"; }, $docTypes));
 
 		return $this->in(
 			"{$alias}.tableref_id",
 			Select::get()->column('image_tableref_id')
 						->from('image_tableref')
-						->whereIn('image_tableref_name', "'Invoice','Utility Invoice'")
+						->whereIn('image_tableref_name', $docTypes)
 		);
 	}
 	

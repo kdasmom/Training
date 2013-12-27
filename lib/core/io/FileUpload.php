@@ -132,7 +132,7 @@ class FileUpload {
 				    $filePath = "{$this->destination}/{$fileName}.{$fileExt}";
 				    $i++;
 				}
-				$this->file['uploaded_name'] = $fileName;
+				$this->file['uploaded_name'] = "{$fileName}.{$fileExt}";
 				$this->isRenamed = true;
 			}
 			

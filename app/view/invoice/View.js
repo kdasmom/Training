@@ -8,16 +8,16 @@ Ext.define('NP.view.invoice.View', {
     alias: 'widget.invoice.view',
     
     requires: [
-    	'NP.lib.core.Security',
-    	'NP.view.invoice.ViewToolbar',
+        'NP.lib.core.Security',
+        'NP.view.invoice.ViewToolbar',
         'NP.view.shared.invoicepo.ViewWarnings',
-    	'NP.view.invoice.ViewHeader',
+        'NP.view.invoice.ViewHeader',
         'NP.view.shared.CustomFieldContainer',
-    	'NP.view.shared.invoicepo.ViewLineItems',
-    	'NP.view.invoice.ViewNotes',
-    	'NP.view.invoice.ViewReclass',
-    	'NP.view.invoice.ViewPayments',
-    	'NP.view.shared.invoicepo.ForwardsGrid',
+        'NP.view.shared.invoicepo.ViewLineItems',
+        'NP.view.invoice.ViewNotes',
+        'NP.view.invoice.ViewReclass',
+        'NP.view.invoice.ViewPayments',
+        'NP.view.shared.invoicepo.ForwardsGrid',
         'NP.view.shared.invoicepo.HistoryLogGrid'
     ],
 
@@ -33,11 +33,11 @@ Ext.define('NP.view.invoice.View', {
     title: 'Invoice',
 
     initComponent: function() {
-    	var me    = this;
+        var me    = this;
 
         me.tbar = { xtype: 'invoice.viewtoolbar' };
 
-		me.items = [
+        me.items = [
             { xtype: 'shared.invoicepo.viewwarnings', type: 'invoice' },
             { xtype: 'invoice.viewheader' },
             { xtype: 'shared.customfieldcontainer', title: 'Custom Fields', type: 'invoice', isLineItem: 0 },
@@ -45,22 +45,22 @@ Ext.define('NP.view.invoice.View', {
             { xtype: 'invoice.viewnotes' }
         ];
 
-		if (NP.Security.hasPermission(2094) || NP.Security.hasPermission(6093)) {
-			me.items.push({ xtype: 'invoice.viewreclass', hidden: true });
-		}
+        if (NP.Security.hasPermission(2094) || NP.Security.hasPermission(6093)) {
+            me.items.push({ xtype: 'invoice.viewreclass', hidden: true });
+        }
 
-		me.items.push(
+        me.items.push(
             { xtype: 'shared.invoicepo.historyloggrid', type: 'invoice', maxHeight: 200 },
-    		{ xtype: 'invoice.viewpayments', hidden: true, maxHeight: 200 },
-		    { xtype: 'shared.invoicepo.forwardsgrid', title: 'Invoice Forwards', type: 'invoice', maxHeight: 200 }
-		);
+            { xtype: 'invoice.viewpayments', hidden: true, maxHeight: 200 },
+            { xtype: 'shared.invoicepo.forwardsgrid', title: 'Invoice Forwards', type: 'invoice', maxHeight: 200 }
+        );
 
-    	me.callParent(arguments);
+        me.callParent(arguments);
     },
 
     getInvoiceRecord: function() {
         var me      = this,
-        	invoice = me.getModel('invoice.Invoice');
+            invoice = me.getModel('invoice.Invoice');
 
         return invoice;
     },

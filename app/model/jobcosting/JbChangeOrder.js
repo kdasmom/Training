@@ -25,6 +25,9 @@ Ext.define('NP.model.jobcosting.JbChangeOrder', {
 
 	statics: {
 		formatName: function(rec) {
+			if (!rec.get) {
+				rec = Ext.create('NP.model.jobcosting.JbChangeOrder', rec);
+			}
 			if (rec.get('jbchangeorder_id') === null) {
 				return '';
 			}

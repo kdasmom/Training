@@ -18,5 +18,4 @@ class ImageIndexImageTransferJoin extends Join {
 			->setCols($cols)
 			->setType($type);
 	}
-	
 }

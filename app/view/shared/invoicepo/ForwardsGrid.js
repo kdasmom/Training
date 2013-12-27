@@ -9,7 +9,7 @@ Ext.define('NP.view.shared.invoicepo.ForwardsGrid', {
     
     requires: [
         'NP.lib.core.Config',
-    	'NP.store.shared.InvoicePoForwards'
+        'NP.store.shared.InvoicePoForwards'
     ],
 
     frame      : true,

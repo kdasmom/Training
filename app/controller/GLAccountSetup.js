@@ -360,12 +360,6 @@ Ext.define('NP.controller.GLAccountSetup', {
         Ext.each(['tree_parent','vendors','properties'], function(fieldName) {
             var field = form.findField(fieldName);
 
-            // If dealing with an ItemSelector, we need to clear the two MultiSelect fields
-            if (fieldName != 'tree_parent') {
-                field.fromField.getStore().removeAll();
-                field.toField.getStore().removeAll();
-            }
-
             if (integration_package_id !== null) {
                 field.getStore().addExtraParams({
                     integration_package_id: integration_package_id

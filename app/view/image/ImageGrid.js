@@ -26,15 +26,25 @@ Ext.define('NP.view.image.ImageGrid', {
 		'NP.view.image.gridcol.DocType',
 		'NP.view.shared.gridcol.PendingDays',
 		'NP.view.image.gridcol.ExceptionBy',
-		'NP.view.shared.gridcol.UniversalField'
+		'NP.view.shared.gridcol.UniversalField',
+		'NP.view.image.gridcol.ImageStatus',
+		'NP.view.image.gridcol.InvoiceNumber',
+		'NP.view.image.gridcol.ExceptionDate',
+		'NP.view.image.gridcol.DeleteDate',
+		'NP.view.image.gridcol.DeletedBy',
+		'NP.view.image.gridcol.ImageType',
+		'NP.view.image.gridcol.Type',
+		'NP.view.image.gridcol.ScanSource'
     ],
     
     // This is the default list of columns available for Invoice grids
 	colOptions: ['image.gridcol.ScanDate','image.gridcol.InvoiceDate','image.gridcol.DueDate','image.gridcol.Name',
-					'property.gridcol.PropertyName','property.gridcol.PropertyCode','vendor.gridcol.VendorName',
-					'image.gridcol.NeededByDate','vendor.gridcol.VendorCode','image.gridcol.Reference','image.gridcol.Amount',
-					'shared.gridcol.PriorityFlag','image.gridcol.DaysOutstanding','image.gridcol.Source',
-					'image.gridcol.DocType','shared.gridcol.PendingDays','image.gridcol.ExceptionBy'],
+				'property.gridcol.PropertyName','property.gridcol.PropertyCode','vendor.gridcol.VendorName',
+				'image.gridcol.NeededByDate','vendor.gridcol.VendorCode','image.gridcol.Reference','image.gridcol.Amount',
+				'shared.gridcol.PriorityFlag','image.gridcol.DaysOutstanding','image.gridcol.Source','image.gridcol.DocType',
+				'shared.gridcol.PendingDays','image.gridcol.ExceptionBy', 'image.gridcol.ExceptionDate',
+                'image.gridcol.DeleteDate', 'image.gridcol.DeletedBy',
+                'image.gridcol.ImageType', 'image.gridcol.Type', 'image.gridcol.ScanSource'],
 
     /**
      * @cfg {Array} cols         Columns that you want to display on the grid by default

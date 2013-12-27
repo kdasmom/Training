@@ -14,5 +14,10 @@ Ext.define('NP.model.invoice.InvoicePaymentType', {
 		{ name: 'invoicepayment_type' },
 		{ name: 'active', type: 'int' },
 		{ name: 'universal_field_status', type: 'int' }
+	],
+
+	validations: [
+		{ field: 'invoicepayment_type', type: 'length', max: 50 },
+		{ field: 'invoicepayment_type_code', type: 'length', max: 50 }
 	]
 });

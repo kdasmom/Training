@@ -20,24 +20,6 @@ Ext.define('NP.model.user.Userprofilerole', {
 		{ name: 'userprofilerole_status', defaultValue: 'active' }
 	],
 
-    belongsTo: [
-        {
-            model         : 'NP.model.user.Staff',
-            name          : 'staff',
-            getterName    : 'getStaff',
-            foreignKey    : 'tablekey_id',
-            primaryKey    : 'staff_id',
-            reader        : 'jsonflat'
-        },{
-            model         : 'NP.model.user.Role',
-            name          : 'role',
-            getterName    : 'getRole',
-            foreignKey    : 'role_id',
-            primaryKey    : 'role_id',
-            reader        : 'jsonflat'
-        }
-    ],
-
 	validations: [
 		{ field: 'role_id', type: 'presence' },
 		{ field: 'userprofilerole_status', type: 'presence' },
