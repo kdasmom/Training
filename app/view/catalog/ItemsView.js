@@ -21,6 +21,7 @@ Ext.define('NP.view.catalog.ItemsView', {
 
 	title: NP.Translator.translate('Catalog listing'),
 	autoScroll: true,
+	minWidth: 1000,
 
 	initComponent: function() {
 		var me = this;
