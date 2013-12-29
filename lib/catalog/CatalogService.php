@@ -46,7 +46,7 @@ class CatalogService extends AbstractService {
 		$data['vc_categories'] = Util::valueList($this->getAssignedCategories($vc_id), 'vccat_id');
 		$assignedVendors       = $this->getAssignedVendors($vc_id);
 		$data['vc_vendors']    = Util::valueList($assignedVendors, 'vendor_id');
-		$data['vendor']        = $assignedVendors[0];
+		$data['vendor']        = count($assignedVendors) > 0 ? $assignedVendors[0] : [];
 		$data['vc_properties'] = Util::valueList($this->getAssignedProperties($vc_id), 'property_id');
 
 		$pdfPath = $this->getPdfPath() . $vc_id . '.pdf';
