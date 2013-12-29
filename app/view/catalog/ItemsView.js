@@ -20,6 +20,7 @@ Ext.define('NP.view.catalog.ItemsView', {
 	],
 
 	title: NP.Translator.translate('Catalog listing'),
+	autoScroll: true,
 
 	initComponent: function() {
 		var me = this;
@@ -76,6 +77,7 @@ Ext.define('NP.view.catalog.ItemsView', {
 				xtype: 'panel',
 				border: false,
 				layout: 'hbox',
+				autoscroll: true,
 				padding: '15 5 0 5',
 				items: [
 					{
@@ -84,17 +86,25 @@ Ext.define('NP.view.catalog.ItemsView', {
 						filterField: me.field,
 						filterValue: me.value,
 						vc_id: me.vc_id,
-						flex: 0.2
+						minWidth: 300,
+						padding: '0 0 20 0'
 					},
 					{
-						xtype: 'catalog.favoriteitemsgrid',
-						name: 'itemsgrid',
-						filterField: me.field,
-						filterValue: me.value,
-						vc_id: me.vc_id,
+						xtype: 'panel',
+						border: false,
+						items: [
+							{
+								xtype: 'catalog.favoriteitemsgrid',
+								name: 'itemsgrid',
+								filterField: me.field,
+								filterValue: me.value,
+								vc_id: me.vc_id,
+								height: 500,
+								border: false
+							}
+						],
 						flex: 0.8,
-						autoScroll: true,
-						height: 500
+						autoScroll: true
 					}
 				]
 			}

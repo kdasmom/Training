@@ -4,7 +4,6 @@
  */
 
 Ext.define('NP.view.catalog.ItemsFilter', {
-//	extend: 'Ext.container.Container',
 	extend: 'Ext.panel.Panel',
 	alias: 'widget.catalog.itemsfilter',
 
@@ -17,12 +16,6 @@ Ext.define('NP.view.catalog.ItemsFilter', {
 		var me = this;
 
 		this.items = [
-			/*{
-				xtype: 'displayfield',
-				fieldLabel: NP.Translator.translate('YOU HAVE SELECTED'),
-				labelAlign: 'top'*//*,
-				value: '<div style="padding: 0px 0px 0px 15px;">' + me.category + ' <a href="javascript: void(0)">x</a></div>'*//*
-			},*/
 			{
 				xtype: 'dataview',
 				name: 'selectedItems',
@@ -70,7 +63,7 @@ Ext.define('NP.view.catalog.ItemsFilter', {
 				}
 			},
 			{
-				xtype: 'fieldcontainer',
+				xtype: 'container',
 				fieldLabel: NP.Translator.translate('CONTINUE NARROWING BY'),
 				labelAlign: 'top',
 				layout: 'vbox',
@@ -140,7 +133,7 @@ Ext.define('NP.view.catalog.ItemsFilter', {
 						tpl: new Ext.XTemplate(
 							'<tpl for=".">',
 							'<div style="margin-bottom: 10px; cursor: pointer;" class="price">',
-							'<span><a href="javascript: void(0)">{price}</a></span>',
+							'<a href="javascript: void(0)">{price}</a>',
 							'</div>',
 							'</tpl>'
 						),
