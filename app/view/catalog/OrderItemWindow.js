@@ -99,6 +99,8 @@ Ext.define('NP.view.catalog.OrderItemWindow', {
 			}
 		];
 
+		console.log('this.data.vcitem_case_qty: ',this.data.vcitem_case_qty);
+
 		this.items = [
 			{
 				xtype: 'fieldcontainer',
@@ -113,23 +115,23 @@ Ext.define('NP.view.catalog.OrderItemWindow', {
 					},
 					{
 						xtype: 'fieldcontainer',
-						layout: 'vbox',
+						layout: 'form',
+						width: '100%',
 						flex: 0.5,
 						items: [
 							{
 								xtype: 'displayfield',
 								fieldLabel: NP.Translator.translate('Description'),
 								value: this.data.vcitem_desc,
-								layout: 'fit',
-								width: 400,
-								padding: '0 10'
+//								width: 400,
+								padding: '0 10',
+								bodyEl: new Ext.dom.Element('div class="testetst">')
 							},
 							{
 								xtype: 'displayfield',
 								fieldLabel: NP.Translator.translate('Package Qty'),
-								value: this.data.vcitem_pkg_qty,
+								value: parseInt(this.data.vcitem_pkg_qty),
 								layout: 'fit',
-								width: 400,
 								padding: '0 10'
 							},
 							{
@@ -138,7 +140,8 @@ Ext.define('NP.view.catalog.OrderItemWindow', {
 								value: this.data.vcitem_case_qty,
 								layout: 'fit',
 								width: 400,
-								padding: '0 10'
+								padding: '0 10',
+								hidden: !this.data.vcitem_case_qty
 							},
 							{
 								xtype: 'displayfield',
