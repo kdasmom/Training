@@ -94,6 +94,9 @@ Ext.define('NP.view.catalog.CatalogView', {
 		if (that.catalog.vc_catalogtype == 'url') {
 			that.items.push({
 				xtype: 'component',
+				height: '100%',
+				layout: 'fit',
+				align: 'center',
 				autoEl: {
 					tag : "iframe",
 					src: that.catalog.vc_url
@@ -103,9 +106,12 @@ Ext.define('NP.view.catalog.CatalogView', {
 		if (that.catalog.vc_catalogtype == 'pdf') {
 			that.items.push({
 				xtype: 'component',
+				height: '100%',
+				layout: 'fit',
+				align: 'center',
 				autoEl: {
 					tag : "iframe",
-					src: that.catalog.vc_url
+					src: 'clients/' + NP.lib.core.Config.getAppName() + '/web/exim_uploads/catalog/pdf/' + that.vc_id + '.pdf'
 				}
 			});
 		}
