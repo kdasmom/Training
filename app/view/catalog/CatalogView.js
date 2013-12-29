@@ -20,6 +20,8 @@ Ext.define('NP.view.catalog.CatalogView', {
 		'NP.view.catalog.BrandsDataView'
 	],
 
+	property_id: null,
+
 	initComponent: function() {
 		var that = this;
 
@@ -114,10 +116,11 @@ Ext.define('NP.view.catalog.CatalogView', {
 					xtype: 'panel',
 					layout: 'fit',
 					align: 'center',
+					height: '100%',
 					tbar: [
 						{
 							xtype: 'customcombo',
-							name: 'userProperty',
+							name: 'userPropertyCombo',
 							store: 'user.Properties',
 							displayField: 'property_name',
 							valueField: 'vc_id',
@@ -127,7 +130,17 @@ Ext.define('NP.view.catalog.CatalogView', {
 							fieldLabel: NP.Translator.translate('Property'),
 							listeners: {
 								select: function (combo, records, eOpts) {
-									that.fireEvent('punchoutshow', records[0].get('property_id'), that.vc_id);
+									var value;
+									if ( records.length > 0) {
+										value = records[0].get('property_id');
+									} else {
+										value = records.get('property_id');
+									}
+									combo.getStore().reload();
+									if (that.property_id !== value) {
+										that.reloadIframe(value, that.vc_id);
+										that.property_id = value;
+									}
 								}
 							},
 							width: 300
@@ -152,5 +165,27 @@ Ext.define('NP.view.catalog.CatalogView', {
 		}
 
 		this.callParent(arguments);
+	},
+
+	reloadIframe: function (property_id, vc_id) {
+		var me = this;
+
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service: 'CatalogService',
+				action : 'getPunchoutUrl',
+				vc_id: parseInt(vc_id),
+				property_id: property_id,
+				userprofile_id: NP.Security.getUser().get('userprofile_id'),
+				success: function(success) {
+					var iframe = me.down('[name="punchoutiframe"]');
+					if (!success.success) {
+						Ext.MessageBox.alert('Error', 'NexusPayables is unable to connect to this vendor at this time. Please try again. If the problem persists, report it to your system administrator for resolution.');
+					} else {
+						iframe.autoEl.src = success.url;
+					}
+				}
+			}
+		});
 	}
 });

@@ -530,7 +530,7 @@ class CatalogService extends AbstractService {
 			}
 		// If HTTP Request failed, log the error
 		} else {
-			$errorMsg .= "Connection failed. This is the connection error: {$reponse['error']}";
+			$errorMsg .= "Connection failed. This is the connection error: {$response['error']}";
 			$this->loggingService->log('catalog', $errorMsg);
 		}
 
