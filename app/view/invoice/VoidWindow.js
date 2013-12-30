@@ -14,14 +14,10 @@ Ext.define('NP.view.invoice.VoidWindow', {
         'NP.view.shared.button.Save'
     ],
 
-    layout     : {
-        type : 'vbox',
-        align: 'stretch'
-    },
+    layout     : 'fit',
     width      : 640,
     height     : 480,
     border     : false,
-    bodyPadding: 8,
     modal      : true,
     minimizable: false,
     autoScroll : true,
@@ -37,21 +33,29 @@ Ext.define('NP.view.invoice.VoidWindow', {
             { itemId: 'invoiceVoidSaveBtn', xtype: 'shared.button.save' }
         ];
 
-        me.items = [
-            {
-                xtype: 'component',
-                html : '<b>' + NP.Translator.translate(instructions) + '</b>',
-                margin: '0 0 8 0',
-            },{
-                xtype     : 'textarea',
-                name      : 'note',
-                fieldLabel: NP.Translator.translate('Void Note'),
-                labelAlign: 'top',
-                flex      : 1,
-                allowBlank: false,
-                maxLength : 2000
-            }
-        ];
+        me.items = [{
+            xtype      : 'panel',
+            bodyPadding: 8,
+            layout     : {
+                type : 'vbox',
+                align: 'stretch'
+            },
+            items      : [
+                {
+                    xtype: 'component',
+                    html : '<b>' + NP.Translator.translate(instructions) + '</b>',
+                    margin: '0 0 8 0',
+                },{
+                    xtype     : 'textarea',
+                    name      : 'note',
+                    fieldLabel: NP.Translator.translate('Void Note'),
+                    labelAlign: 'top',
+                    flex      : 1,
+                    allowBlank: false,
+                    maxLength : 2000
+                }
+            ]
+        }];
 
     	me.callParent(arguments);
     }
