@@ -498,21 +498,21 @@ Ext.define('NP.controller.VendorCatalog', {
 		var form = this.getCmp('catalog.orderpropertiesform');
 		var vendorscombo, store, grid;
 
-		vendorscombo = form.getChildByElement('vendor_id');
+		vendorscombo = form.down('[name="vendor_id"]');
 		store = vendorscombo.getStore();
 		Ext.apply(store.getProxy().extraParams, {
 			property_id: value[0].get('property_id')
 		});
-		store.reload();
+		store.load();
 
 		grid = this.getCmp('catalog.createordergrid');
 		grid.addExtraParams({
 			userprofile_id: NP.Security.getUser().get('userprofile_id'),
 			vc_id: vc_id,
-			property_id: combo.getValue(),
+			property_id: value[0].get('property_id'),
 			vcorder_id: vcorders
 		});
-		grid.getStore().load();
+		grid.getStore().reload();
 	},
 
 	/**

@@ -113,8 +113,7 @@ Ext.define('NP.view.catalog.CreateOrderGrid', {
 							});
 							glAccountsStore.load();
 						}
-					},
-					selectFirstRecord: true
+					}
 				}
 			},
 			{
@@ -129,8 +128,7 @@ Ext.define('NP.view.catalog.CreateOrderGrid', {
 					editable: false,
 					typeAhead: false,
 					displayField: 'unit_number',
-					valueField: 'unit_number',
-					selectFirstRecord: true
+					valueField: 'unit_number'
 				}
 			},
 			{
@@ -146,17 +144,11 @@ Ext.define('NP.view.catalog.CreateOrderGrid', {
 					typeAhead: false,
 					displayField: 'unittype_name',
 					valueField: 'unittype_name',
-					selectFirstRecord: true,
-					listeners: {
-						select: function(combo, rec) {
-//							console.log(rec);
-						}
-					},
-					tpl: [
+					tpl: new Ext.XTemplate(
 						'<tpl for=".">',
 						'<div class="x-boundlist-item">{unittype_name}</div>',
 						'</tpl>'
-					]
+					)
 				}
 			},
 			{
@@ -209,16 +201,16 @@ Ext.define('NP.view.catalog.CreateOrderGrid', {
 			}
 		];
 
-		this.store = Ext.create('NP.store.catalog.VcOrders', {
+		this.store = Ext.create('NP.lib.data.Store', {
 			service: 'CatalogService',
 			action: 'getOrderItems',
+			fields: ['vcitem_number', 'vcitem_desc', 'property_name', 'unit_number', 'unittype_name', 'vcitem_price', 'vcorder_qty', 'vcitem_uom', 'glaccount_name'],
 			extraParams: {
 				userprofile_id: null,
 				vc_id: null,
 				property_id: null,
 				vcorder_id: null
-			},
-			autoLoad: true
+			}
 		});
 
 		this.callParent(arguments);
