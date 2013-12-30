@@ -174,10 +174,35 @@ Ext.define('NP.controller.SystemSetup', {
     },
 
     showWorkflowRules: function(section, id) {
+        var me = this;
         switch (section) {
             case 'modify':
-                var view = 'WorkflowRulesModify';
-                this.setView('NP.view.systemSetup.' + view, {}, '[xtype="systemsetup.workflowrules"]');
+                var view = me.getWorkflowScreen();
+                if (view) {
+                    var mask = new Ext.LoadMask({
+                        target: view
+                    });
+                    mask.show();
+                }
+                NP.lib.core.Net.remoteCall({
+                    requests: {
+                        service: 'WFRuleService',
+                        action : 'get',
+
+                        id: id,
+
+                        success: function(data) {
+                            if (data) {
+                                view && mask.destroy();
+
+                                me.setView('NP.view.systemSetup.WorkflowRulesModify', {data: data}, '[xtype="systemsetup.workflowrules"]');
+                                
+                                //Ext.create('NP.view.systemSetup.' + 'WorkflowRulesModify', {data: data}).show();
+                                //me.addHistory('SystemSetup:showSystemSetup:WorkflowRules:modify:' + rec.get('wfrule_id'), {data: data});
+                            }
+                        }
+                    }
+                });
                 break;
             default:
                 var view = 'WorkflowRulesMain';
@@ -268,26 +293,7 @@ Ext.define('NP.controller.SystemSetup', {
                 break;
             default:
                 // Edit Rule
-                mask = new Ext.LoadMask({
-                    target: me.getWorkflowScreen()
-                });
-                mask.show();
-                NP.lib.core.Net.remoteCall({
-                    requests: {
-                        service: 'WFRuleService',
-                        action : 'get',
-
-                        id: rec.get('wfrule_id'),
-
-                        success: function(data) {
-                            if (data) {
-                                mask.destroy();
-                                //Ext.create('NP.view.systemSetup.' + 'WorkflowRulesModify', {data: data}).show();
-                                me.addHistory('SystemSetup:showSystemSetup:WorkflowRules:modify', {data: data});
-                            }
-                        }
-                    }
-                });
+                me.addHistory('SystemSetup:showSystemSetup:WorkflowRules:modify:' + rec.get('wfrule_id'));
                 break;
         }
     },

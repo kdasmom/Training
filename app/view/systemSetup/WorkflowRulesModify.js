@@ -4,70 +4,100 @@ Ext.define('NP.view.systemSetup.WorkflowRulesModify', {
 
     requires: [
         'NP.view.shared.button.Cancel',
-        'NP.view.systemSetup.WorkflowRulesSummary'
+        'NP.view.shared.button.Copy',
+        'NP.view.shared.button.Next',
+        'NP.view.shared.button.Back',
+        'NP.view.shared.button.SaveAndActivate',
+
+        'NP.view.systemSetup.WorkflowRulesSummary',
+        'NP.view.systemSetup.WorkflowRulesBuilderRules',
+        'NP.view.systemSetup.WorkflowRulesBuilderRoutes'
     ],
+
+    border: 0,
+    autoScroll: true,
+    bodyPadding: 10,
+
+    defaults: {
+        border: 0
+    },
 
     initComponent: function() {
         var me = this;
-        
-        this.id = 'card-wizard-panel';
-        this.layout = 'card';
 
-        this.activeItem = 0;
-
-        this.items = [
+        me.items = [
             {
-    id: 'card-0',
-    items: [
-        {
-            xtype: 'systemsetup.WorkflowRulesSummary',
-            data: this.data
-        }
-    ]
-},{
-    id: 'card-1',
-    html: 'Step 2'
-},{
-    id: 'card-2',
-    html: 'Step 3'
-}
+                xtype: 'systemsetup.WorkflowRulesSummary',
+                data: me.data,
+
+                margin: '0 0 20 0'
+            },
+            {
+                xtype: 'panel',
+                html: 'Rule Builder',
+                baseCls: 'header-highlight'
+            },
+            {
+                xtype: 'systemsetup.WorkflowRulesBuilderRules'
+            },
+            {
+                xtype: 'systemsetup.WorkflowRulesBuilderRoutes',
+                hidden: true
+            }
         ];
 
-        this.tbar = [
-            '->', 
-            {
-                id: 'card-prev',
-                text: '&laquo; Previous',
-                handler: Ext.Function.bind(me.cardNav, this, [-1]),
-                disabled: true
-            },
-            {
-                id: 'card-next',
-                text: 'Next &raquo;',
-                handler: Ext.Function.bind(me.cardNav, this, [1])
-            },
-            
-            
-            { xtype: 'shared.button.cancel', itemId: 'buttonWorkflowCancel' },
-            // Copy
-            // Next Step
-            // Save & Activate
-        ]
-        // Cancel
-        // Back
-        // Save & Activate
-        // Add Forward
+        me.tbar = me.stepRulesToolbar();
 
-        this.callParent(arguments);
+        me.callParent(arguments);
+    },
+
+    stepRules: function() {
+        var me = this;
+
+        me.down('[xtype="systemsetup.WorkflowRulesBuilderRules"]').show();
+        me.down('[xtype="systemsetup.WorkflowRulesBuilderRoutes"]').hide();
+
+        var toolbar = 
+            me.getDockedItems()[0]
+        ;
+        toolbar.removeAll();
+        toolbar.add(me.stepRulesToolbar());
+    },
+
+    stepRoutes: function() {
+        var me = this;
+
+        me.down('[xtype="systemsetup.WorkflowRulesBuilderRules"]').hide();
+        me.down('[xtype="systemsetup.WorkflowRulesBuilderRoutes"]').show();
+
+        var toolbar = 
+            me.getDockedItems()[0]
+        ;
+        toolbar.removeAll();
+        toolbar.add(me.stepRoutesToolbar());
+    },
+
+    stepRulesToolbar: function() {
+        var me = this;
+        return [
+            { xtype: 'shared.button.cancel', itemId: 'buttonWorkflowCancel' },
+            { xtype: 'shared.button.copy', itemId: 'buttonWorkflowCopy' },
+            { xtype: 'shared.button.next', itemId: 'buttonWorkflowNext',
+                handler: me.stepRoutes.bind(me)
+            },
+            { xtype: 'shared.button.saveandactivate', itemId: 'buttonSaveAndActivate'}
+        ]
     },
     
-    
-cardNav: function(incr){
-        var l = Ext.getCmp('card-wizard-panel').getLayout();
-        var i = l.activeItem.id.split('card-')[1];
-        var next = parseInt(i, 10) + incr;
-        l.setActiveItem(next);
-        Ext.getCmp('card-prev').setDisabled(next===0);
-        Ext.getCmp('card-next').setDisabled(next===2);
+    stepRoutesToolbar: function() {
+        var me = this;
+        return [
+            { xtype: 'shared.button.cancel', itemId: 'buttonWorkflowCancel' },
+            { xtype: 'shared.button.back', itemId: 'buttonWorkflowNext',
+                handler: me.stepRules.bind(me)
+            },
+            { xtype: 'shared.button.saveandactivate', itemId: 'buttonSaveAndActivate'},
+            { xtype: 'shared.button.copy', itemId: 'buttonWorkflowCopy', text: 'Add Forward' }
+        ]
     }
 });

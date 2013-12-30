@@ -2,62 +2,41 @@ Ext.define('NP.view.systemSetup.WorkflowRulesSummary', {
     extend: 'Ext.panel.Panel',
     alias:  'widget.systemsetup.WorkflowRulesSummary',
 
-    //title:  'Workflow Management',
-    layout: 'fit',
-
-    requires: [
-        'NP.view.shared.ExpandableSection'
-    ],
-
     initComponent: function() {
-        var me = this;
+        this.border = 0;
 
-// ПРОВЕРКА, ЕСЛИ ДАННЫХ НЕТ(ПРИ СОЗДАНИИ) ТО ДОЛЖНО ПОКАЗЫВАТЬСЯ :   No Rules Applied
-/*
-<div class="titlebar">Rule Summary</div>
-<div class="rule_descript">
-	<cfif get_wfrule_user.recordcount EQ 0>
-		No Rules Applied
-	<cfelse>
-		<strong>Rule Name:</strong> #get_wfrule_user.wfrule_name#<br />
-		<cfif request.wfrule_id neq -1 AND request.wfrule_status NEQ "new">
-			<strong>Applied to #propertieslabel#:</strong> <cfif get_wfrule_properties.recordcount EQ get_properties.recordcount>ALL<cfelse>SPECIFIC</cfif><br />  
-			<strong>Rule Type:</strong> #convertRuleTypeName(get_wfrule_user.wfruletype_name)#<br />
-			<cfif get_wfrule_user.wfruletype_name does not contain "delegation">
-				<strong>If Amount: </strong> 
-				<cfif get_wfrule_user.wfrule_operand NEQ ''>#get_wfrule_user.wfrule_operand# 
-					<cfif get_wfrule_user.wfrule_string EQ 'actual'>#request.udf.currencyFormat(get_wfrule_user.wfrule_number)#
-					<cfelseif get_wfrule_user.wfrule_string EQ 'percentage'>#NumberFormat(get_wfrule_user.wfrule_number,'____')#%
-					<cfelse>#get_wfrule_user.wfrule_string#</cfif>
-				</cfif>
-				<cfif get_wfrule_user.wfrule_operand eq "in range"> to #request.udf.currencyFormat(get_wfrule_user.wfrule_number_end)#</cfif>
-				<br /> 
-			</cfif>
-			<strong>Originates From:</strong> #get_wfrule_originator.originator#
-			<cfif len(get_wfrule_originator.originator) AND len(get_wfrule_originator.onames)>:</cfif> #get_wfrule_originator.onames#
-		</cfif>
-	</cfif>
-</div>
- */
-        /*this.layout = {
-            type: 'vbox',
-            pack: 'start',
-            align: 'stretch'
-        };
-        this.defaults = {
-            border: 0
-        };
-
-        this.autoScroll = true;*/
         this.items = [
             {
                 xtype: 'panel',
                 html: 'Rule Summary',
                 baseCls: 'header-highlight'
-            },
+            }
+        ];
+
+        if (!this.data) {
+            this.items.push({
+                xtype: 'panel',
+                html: 'No Rules Applied'
+            });
+        } else {
+            this.items.push(this.markup());
+        }
+
+        this.callParent(arguments);
+    },
+
+    markup: function() {
+        var markup =
             {
                 xtype: 'panel',
                 layout: 'vbox',
+                border: 1,
+                bodyPadding: 10,
+
+                defaults: {
+                    border: 0
+                },
+
                 items: [
                     // Rule Name
                     {
@@ -70,31 +49,41 @@ Ext.define('NP.view.systemSetup.WorkflowRulesSummary', {
                             border: 0
                         },
                         items: this.sectionName(this.data)
+                    }
+                ]
+            }
+        ;
+
+        if (this.data.rule.wfrule_id != -1 && this.data.rule.wfrule_status != 'new') {
+            markup.items.push(
+                // Applied to Properties
+                {
+                    xtype: 'panel',
+                    layout: {
+                        type: 'hbox',
+                        pack: 'start'
                     },
-                    // Applied to Properties
-                    {
-                        xtype: 'panel',
-                        layout: {
-                            type: 'hbox',
-                            pack: 'start'
-                        },
-                        defaults: {
-                            border: 0
-                        },
-                        items: this.sectionProperties(this.data)
+                    defaults: {
+                        border: 0
                     },
-                    // Rule Type
-                    {
-                        xtype: 'panel',
-                        layout: {
-                            type: 'hbox',
-                            pack: 'start'
-                        },
-                        defaults: {
-                            border: 0
-                        },
-                        items: this.sectionType(this.data)
+                    items: this.sectionProperties(this.data)
+                },
+                // Rule Type
+                {
+                    xtype: 'panel',
+                    layout: {
+                        type: 'hbox',
+                        pack: 'start'
                     },
+                    defaults: {
+                        border: 0
+                    },
+                    items: this.sectionType(this.data)
+                }
+            );
+
+            if (this.data.rule.wfruletype_name.indexOf('delegation') == -1) {
+                markup.items.push(
                     // Amount
                     {
                         xtype: 'panel',
@@ -106,30 +95,33 @@ Ext.define('NP.view.systemSetup.WorkflowRulesSummary', {
                             border: 0
                         },
                         items: this.sectionAmount(this.data)
-                    },
-                    // Originates From
-                    {
-                        xtype: 'panel',
-                        layout: {
-                            type: 'hbox',
-                            pack: 'start'
-                        },
-                        defaults: {
-                            border: 0
-                        },
-                        items: this.sectionOriginates(this.data)
                     }
-                ]
+                );
             }
-        ]
 
-        this.callParent(arguments);
+            markup.items.push(
+                // Originates From
+                {
+                    xtype: 'panel',
+                    layout: {
+                        type: 'hbox',
+                        pack: 'start'
+                    },
+                    defaults: {
+                        border: 0
+                    },
+                    items: this.sectionOriginates(this.data)
+                }
+            );
+        }
+
+        return markup;
     },
 
     sectionName: function(data) {
         return [
             {
-                width: 200,
+                width: 150,
                 cls: 'header-text',
                 html: NP.Translator.translate('Rule Name') + ':'
             },
@@ -142,7 +134,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesSummary', {
     sectionProperties: function(data) {
         return [
             {
-                width: 200,
+                width: 150,
                 cls: 'header-text',
                 html: NP.Translator.translate('Applied to Properties') + ':'
             },
@@ -158,7 +150,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesSummary', {
     sectionType: function(data) {
         return [
             {
-                width: 200,
+                width: 150,
                 cls: 'header-text',
                 html: NP.Translator.translate('Rule Type') + ':'
             },
@@ -186,7 +178,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesSummary', {
 
         return [
             {
-                width: 200,
+                width: 150,
                 cls: 'header-text',
                 html: NP.Translator.translate('If Amount') + ':'
             },
@@ -204,7 +196,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesSummary', {
 
         return [
             {
-                width: 200,
+                width: 150,
                 cls: 'header-text',
                 html: NP.Translator.translate('Originates From') + ':'
             },

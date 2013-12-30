@@ -10,10 +10,11 @@ use NP\workflow\WfRuleGateway;
 use NP\core\db\Where;
 
 class WFRuleService extends AbstractService {
-    protected $configService, $securityService, $wfRuleGateway, $wfActionGateway, $wfRuleHourGateway, $wfRuleRelationGateway, $wfRuleScopeGateway, $wfRuleTargetGateway;
+    protected $configService, $securityService, $wfRuleGateway, $wfActionGateway, $wfRuleHourGateway, $wfRuleRelationGateway, $wfRuleScopeGateway, $wfRuleTargetGateway, $wfRuleTypeGateway;
 
     public function __construct(WfRuleGateway $wfRuleGateway, WFActionGateway $wfActionGateway, WFRuleHourGateway $wfRuleHourGateway,
-                WFRuleRelationGateway $wfRuleRelationGateway, WFRuleScopeGateway $wfRuleScopeGateway, WfRuleTargetGateway $wfRuleTargetGateway
+                WFRuleRelationGateway $wfRuleRelationGateway, WFRuleScopeGateway $wfRuleScopeGateway, WfRuleTargetGateway $wfRuleTargetGateway,
+                WFRuleTypeGateway $wfRuleTypeGateway
     ) {
         $this->wfRuleGateway = $wfRuleGateway;
         $this->wfActionGateway = $wfActionGateway;
@@ -21,6 +22,7 @@ class WFRuleService extends AbstractService {
         $this->wfRuleRelationGateway = $wfRuleRelationGateway;
         $this->wfRuleScopeGateway = $wfRuleScopeGateway;
         $this->wfRuleTargetGateway = $wfRuleTargetGateway;
+        $this->wfRuleTypeGateway = $wfRuleTypeGateway;
     }
 
     public function setConfigService(ConfigService $configService) {
@@ -135,6 +137,10 @@ class WFRuleService extends AbstractService {
         ];
     }
 
+    public function save($data) {
+        
+    }
+
     public function delete($id) {
         if (!empty($id)) {
             $this->wfRuleGateway->setRuleStatus($id, 3);
@@ -166,5 +172,9 @@ class WFRuleService extends AbstractService {
     public function search($type = 0, $criteria = null, $page = null, $pageSize = null, $order = "wfrule_name") {
         $asp_client_id = $this->configService->getClientId();
         return $this->wfRuleGateway->findRule($asp_client_id, $type, $criteria, $page, $pageSize, $order);
+    }
+
+    public function listRulesType() {
+        return $this->wfRuleTypeGateway->find(null, [], 'ordinal', ['wfruletype_id', 'wfruletype_name', 'type_id_alt', 'ordinal']);
     }
 }

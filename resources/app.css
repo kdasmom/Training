@@ -45,9 +45,13 @@
 .view-btn { background-image: url("images/buttons/view.gif"); }
 .void-btn { background-image: url("images/buttons/void.gif"); }
 
+.copy-btn { background-image: url("images/buttons/copy.gif"); }
+.next-btn { background-image: url("images/buttons/next.gif"); }
+.save-and-activate-btn { background-image: url("images/buttons/save_and_activate.gif"); }
 .create-rule-btn { background-image: url("images/buttons/create_rule.gif"); width: 24px !important; }
 .plus-btn { background-image: url("images/buttons/plus.gif"); width: 7px; height: 7px; cursor: pointer; margin-top: 4px; margin-left: 5px }
 .minus-btn { background-image: url("images/buttons/minus.gif"); width: 7px; height: 7px; cursor: pointer; margin-top: 5px; margin-left: 5px }
+
 .header-text { font-weight: bold; }
 .header-highlight { background-color: #ECECD5; width: 100%; }
 .action-cell { cursor: pointer; }

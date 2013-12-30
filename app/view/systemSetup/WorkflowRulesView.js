@@ -188,7 +188,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesView', {
                     }
                 ]
             });
-//Цикл по rule hours и трехколоночная таблица с часами
+//TODO: Цикл по rule hours и трехколоночная таблица с часами
 
             details.push({
                 xtype: 'panel',
