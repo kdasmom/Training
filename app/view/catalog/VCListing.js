@@ -75,7 +75,7 @@ Ext.define('NP.view.catalog.VCListing', {
 				tpl: new Ext.XTemplate(
 					'<tpl for=".">',
 						'<div style="display: table-cell; float: left; width: 50%; padding: 10px; cursor: pointer; {[xindex + 2 == xcount ? "clear: left;" : xindex % 3 == 0 ? "clear: right;" : ""]}" class="category">',
-							'<div style="float: left; position: relative; padding-right: 10px; height: 100%;"><img src="/files/categories/vc_cat_{category:this.formatName}.jpg"/></div>',
+							'<div style="float: left; position: relative; padding-right: 10px; height: 100%;"><img src="resources/images/catalog/vc_cat_{category:this.formatName}.jpg"/></div>',
 							'<div style="color: #72afd8; font-weight: bold; float:left; position: relative;">{category}',
 								'<ul>',
 									'<tpl for="catalogs">',
