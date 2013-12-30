@@ -37,50 +37,9 @@ Ext.define('NP.view.catalog.VCListing', {
 				xtype: 'shared.button.favorite'
 			}
 		];
-		/*var oddstore = Ext.create('NP.store.catalog.LinkVcVcCats', {
-			service    	: 'CatalogService',
-			action     	: 'getCategoriesList',
-			groupField	: 'vccat_name',
-			extraParams: {
-				userprofile_id: NP.Security.getUser().get('userprofile_id')
-			},
-			filters: [
-				function(record) {
-					if (record.index % 2 == 0) {
-						return true;
-					}
-				}
-			],
-			autoLoad	: true
-		});
-
-		var evenstore = Ext.create('NP.store.catalog.LinkVcVcCats', {
-			service    	: 'CatalogService',
-			action     	: 'getCategoriesList',
-			groupField	: 'vccat_name',
-			extraParams: {
-				userprofile_id: NP.Security.getUser().get('userprofile_id')
-			},
-			filters: [
-				function(record) {
-					if (record.index % 2 !== 0) {
-						return true;
-					}
-				}
-			],
-			autoLoad	: true
-		});*/
-
 
 		this.tbar = bar;
 
-		var store = Ext.create('Ext.data.ArrayStore', {
-			fields: ['type', 'titles'],
-			autoLoad : true,
-			data: [
-				['category', ['title1', 'title2']]
-			]
-		});
 
 		this.items = [
 			{

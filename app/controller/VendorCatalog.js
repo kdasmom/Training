@@ -39,8 +39,7 @@ Ext.define('NP.controller.VendorCatalog', {
 		this.control({
 			'[xtype="catalog.jumptocatalogform"] [xtype="button"]': {
 				click: function() {
-					var catalog = this.getCmp('catalog.jumptocatalogform').getChildByElement('vc_id').getValue();
-
+					var catalog = this.getCmp('catalog.jumptocatalogform').down('[name="vccat_id"]').getValue();
 					this.addHistory('VendorCatalog:showCatalogView:' + catalog);
 				}
 			},
@@ -279,6 +278,7 @@ Ext.define('NP.controller.VendorCatalog', {
 
 	showCatalogView: function(vc_id) {
 		var me = this;
+		var catalog, view, brands, iframeUrl, iframePdf, panelPunchout;
 
 		NP.lib.core.Net.remoteCall({
 			requests: {
@@ -288,30 +288,58 @@ Ext.define('NP.controller.VendorCatalog', {
 				success: function(success) {
 
 					catalog = success;
-					var view = me.setView('NP.view.catalog.CatalogView', {vc_id: vc_id, catalog: catalog});
+					view = me.setView('NP.view.catalog.CatalogView', {vc_id: vc_id, catalog: catalog});
 					me.showUserOrderSummary(me.userSummaryCallback);
+					catalogs = view.down('[name="categoriesview"]');
+					brands = view.down('[name="brandsview"]');
+					iframeUrl = view.down('[name="iframeUrl"]');
+					iframePdf = view.down('[name="iframePdf"]');
+					panelPunchout = view.down('[name="panelPunchout"]');
 
 					if (catalog.vc_catalogtype == 'excel') {
-						var catalogs = me.getCmp('catalog.catalogview').down('dataview');
-						var brands = me.getCmp('catalog.brandsdataview').down('dataview');
 
-						Ext.apply(catalogs.getStore().getProxy().extraParams, {
+						brands.show();
+						catalogs.show();
+						iframePdf.hide();
+						iframeUrl.hide();
+						panelPunchout.hide();
+
+						Ext.apply(catalogs.down('dataview').getStore().getProxy().extraParams, {
 							vc_id: vc_id
 						});
-						Ext.apply(brands.getStore().getProxy().extraParams, {
+						Ext.apply(brands.down('dataview').getStore().getProxy().extraParams, {
 							vc_id: vc_id
 						});
 
-						catalogs.getStore().reload();
-						brands.getStore().reload();
+						catalogs.down('dataview').getStore().reload();
+						brands.down('dataview').getStore().reload();
+					}
+					if ( catalog.vc_catalogtype == 'url') {
+						brands.hide();
+						catalogs.hide();
+						iframePdf.hide();
+						iframeUrl.show();
+						panelPunchout.hide();
+					}
+					if ( catalog.vc_catalogtype == 'pdf') {
+						brands.hide();
+						catalogs.hide();
+						iframePdf.show();
+						iframeUrl.hide();
+						panelPunchout.hide();
+					}
+					if ( catalog.vc_catalogtype == 'punchout') {
+						brands.hide();
+						catalogs.hide();
+						iframePdf.hide();
+						iframeUrl.hide();
+						panelPunchout.show();
 					}
 
 					view.setTitle(catalog.vc_catalogname);
 				}
 			}
 		});
-
-
 	},
 
 	/**
@@ -551,7 +579,6 @@ Ext.define('NP.controller.VendorCatalog', {
 	 * @param index
 	 */
 	removeFromFavorites: function (grid, record, index) {
-		console.log('rec2: ', record.get('vcitem_id'));
 		this.toggleFavorites(grid, record.get('vcitem_id'), false);
 	},
 

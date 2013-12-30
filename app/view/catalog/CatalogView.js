@@ -45,6 +45,7 @@ Ext.define('NP.view.catalog.CatalogView', {
 
 		this.tbar = bar;
 		this.autoScroll = true;
+		console.log(that.catalog.vc_catalogtype);
 
 		this.items = [
 			{
@@ -74,10 +75,102 @@ Ext.define('NP.view.catalog.CatalogView', {
 				],
 				padding: '5',
 				border: false
+			},
+			{
+				xtype: 'catalog.categoriesdataview',
+				name: 'categoriesview',
+				vc_id: that.vc_id,
+				overflowY: 'scroll',
+				hidden: that.catalog.vc_catalogtype !== 'excel'
+			},
+			{
+				xtype: 'catalog.brandsdataview',
+				name: 'brandsview',
+				vc_id: that.vc_id,
+				padding: '20 0 0 0',
+				overflowY: 'scroll',
+				hidden: that.catalog.vc_catalogtype !== 'excel'
+			},
+			{
+				xtype: 'component',
+				name: 'iframeUrl',
+				height: '100%',
+				layout: 'fit',
+				align: 'center',
+				autoEl: {
+					tag : "iframe",
+					src: that.catalog.vc_url,
+					width: '100%'
+				},
+				hidden: that.catalog.vc_catalogtype !== 'url'
+			},
+			{
+				xtype: 'component',
+				height: '100%',
+				name: 'iframePdf',
+				layout: 'fit',
+				align: 'center',
+				autoEl: {
+					tag : "iframe",
+					src: 'clients/' + NP.lib.core.Config.getAppName() + '/web/exim_uploads/catalog/pdf/' + that.vc_id + '.pdf',
+					width: '100%'
+				},
+				hidden: that.catalog.vc_catalogtype !== 'pdf'
+			},
+			{
+				xtype: 'panel',
+				layout: 'fit',
+				align: 'center',
+				name: 'panelPunchout',
+				height: '100%',
+				hidden: that.catalog.vc_catalogtype !== 'punchout',
+				tbar: [
+					{
+						xtype: 'customcombo',
+						name: 'userPropertyCombo',
+						store: 'user.Properties',
+						displayField: 'property_name',
+						valueField: 'vc_id',
+						queryMode: 'local',
+						editable: false,
+						typeAhead: false,
+						fieldLabel: NP.Translator.translate('Property'),
+						listeners: {
+							select: function (combo, records, eOpts) {
+								var value;
+								if ( records.length > 0) {
+									value = records[0].get('property_id');
+								} else {
+									value = records.get('property_id');
+								}
+								combo.getStore().reload();
+								if (that.property_id !== value) {
+									that.reloadIframe(value, that.vc_id);
+									that.property_id = value;
+								}
+							}
+						},
+						width: 300
+					}
+				],
+				items: [
+					{
+						xtype: 'component',
+						name: 'punchoutiframe',
+						padding: '10',
+						width: '100%',
+						flex: 1,
+						autoEl: {
+							tag: 'iframe',
+							src: '',
+							width: '100%'
+						}
+					}
+				]
 			}
 		];
 
-		if (that.catalog.vc_catalogtype == 'excel') {
+		/*if (that.catalog.vc_catalogtype == 'excel') {
 			this.items.push({
 				xtype: 'catalog.categoriesdataview',
 				vc_id: that.vc_id,
@@ -99,7 +192,8 @@ Ext.define('NP.view.catalog.CatalogView', {
 				align: 'center',
 				autoEl: {
 					tag : "iframe",
-					src: that.catalog.vc_url
+					src: that.catalog.vc_url,
+					width: '100%'
 				}
 			});
 		}
@@ -111,7 +205,8 @@ Ext.define('NP.view.catalog.CatalogView', {
 				align: 'center',
 				autoEl: {
 					tag : "iframe",
-					src: 'clients/' + NP.lib.core.Config.getAppName() + '/web/exim_uploads/catalog/pdf/' + that.vc_id + '.pdf'
+					src: 'clients/' + NP.lib.core.Config.getAppName() + '/web/exim_uploads/catalog/pdf/' + that.vc_id + '.pdf',
+					width: '100%'
 				}
 			});
 		}
@@ -168,7 +263,7 @@ Ext.define('NP.view.catalog.CatalogView', {
 					]
 				}
 			);
-		}
+		}*/
 
 		this.callParent(arguments);
 	},
