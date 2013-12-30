@@ -13,11 +13,9 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 	],
 
 	paging: true,
-	autoScroll: true,
 	changedRecords: {},
 	isSearch: false,
 	userprofile_id: NP.Security.getUser().get('userprofile_id'),
-	minWidth: 800,
 
 	initComponent: function() {
 		var that = this;

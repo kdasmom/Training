@@ -314,6 +314,15 @@ Ext.define('NP.controller.VendorCatalog', {
 
 	},
 
+	/**
+	 * Show advanced search
+	 *
+	 *
+	 * @param catalogs
+	 * @param type
+	 * @param property
+	 * @param keyword
+	 */
 	showAdvancedSearch: function(catalogs, type, property, keyword) {
 		this.setView('NP.view.catalog.AdvancedSearch');
 		this.showUserOrderSummary(this.userSummaryCallback);
@@ -353,6 +362,13 @@ Ext.define('NP.controller.VendorCatalog', {
 		});
 	},
 
+	/**
+	 * Return users summary
+	 *
+	 * @param items
+	 * @param sum
+	 * @param that
+	 */
 	userSummaryCallback: function(items, sum, that) {
 		var form = that.getCmp('catalog.userorder');
 		var message = items + ' Items in Your Order<br/>' + NP.Util.currencyRenderer(sum) + ' Current Subtotal';
@@ -539,10 +555,23 @@ Ext.define('NP.controller.VendorCatalog', {
 		this.toggleFavorites(grid, record.get('vcitem_id'), false);
 	},
 
+	/**
+	 * Add to favorites
+	 * @param grid
+	 * @param record
+	 * @param index
+	 */
 	addToFavorites: function(grid, record, index) {
 		this.toggleFavorites(grid, record.get('vcitem_id'), true);
 	},
 
+	/**
+	 * Toggle Favorites
+	 *
+	 * @param grid
+	 * @param vcitem_id
+	 * @param add
+	 */
 	toggleFavorites: function (grid, vcitem_id, add) {
 		NP.lib.core.Net.remoteCall({
 			requests: {
@@ -588,10 +617,22 @@ Ext.define('NP.controller.VendorCatalog', {
 		});
 	},
 
+	/**
+	 * Restore user's shopping cart
+	 *
+	 */
 	restoreShoppingCart: function () {
 		this.showUserOrderSummary(this.userSummaryCallback);
 	},
 
+	/**
+	 * Advanced grid
+	 *
+	 * @param catalogs
+	 * @param type
+	 * @param property
+	 * @param keyword
+	 */
 	showAdvancedSearchResults: function (catalogs, type, property, keyword) {
 		var grid = this.getCmp('catalog.favoriteitemsgrid');
 
@@ -606,6 +647,14 @@ Ext.define('NP.controller.VendorCatalog', {
 		grid.getStore().load();
 	},
 
+	/**
+	 * Simple search
+	 *
+	 * @param catalogs
+	 * @param type
+	 * @param property
+	 * @param keyword
+	 */
 	showSimpleSearchResults: function(catalogs, type, property, keyword) {
 		var view, vccatcombo, propertycombo;
 
@@ -639,11 +688,20 @@ Ext.define('NP.controller.VendorCatalog', {
 		grid.getStore().load();
 	},
 
+	/**
+	 * Show brands
+	 *
+	 */
 	showBrands: function() {
 		this.setView('NP.view.catalog.BrandsView');
 		this.showUserOrderSummary(this.userSummaryCallback);
 	},
 
+	/**
+	 * Focus on brands
+	 *
+	 * @param text
+	 */
 	focusBrandsGroup: function (text) {
 		var grid = this.getCmp('catalog.alphabeticalbrandsgrid');
 		var groups = grid.getStore().getGroups();
@@ -655,6 +713,13 @@ Ext.define('NP.controller.VendorCatalog', {
 		}
 	},
 
+	/**
+	 * Show items
+	 *
+	 * @param field
+	 * @param value
+	 * @param vc_id
+	 */
 	showItemsListing: function(field, value, vc_id) {
 		var me = this;
 		var catalog;
@@ -674,6 +739,11 @@ Ext.define('NP.controller.VendorCatalog', {
 		});
 	},
 
+	/**
+	 * Remove type filter
+	 *
+	 * @param type
+	 */
 	removeTypeFilter: function (type) {
 		var grid = this.getCmp('catalog.itemsview').down('[name="itemsgrid"]');
 		grid.addExtraParams({
@@ -684,6 +754,11 @@ Ext.define('NP.controller.VendorCatalog', {
 		grid.reloadFirstPage();
 	},
 
+	/**
+	 * Remove price filter
+	 *
+	 * @param price
+	 */
 	removePriceFilter: function(price) {
 		var grid = this.getCmp('catalog.itemsview').down('[name="itemsgrid"]');
 		grid.addExtraParams({
@@ -692,6 +767,13 @@ Ext.define('NP.controller.VendorCatalog', {
 		grid.reloadFirstPage();
 	},
 
+	/**
+	 * Remove all filters
+	 *
+	 * @param type
+	 * @param count
+	 * @param vc_id
+	 */
 	removeTopFilter: function(type, count, vc_id) {
 		if (count == 0) {
 			this.addHistory('VendorCatalog:showCatalogView:' + vc_id);

@@ -809,12 +809,12 @@ class CatalogService extends AbstractService {
 		return $result;
 	}
 
-	public function getItemsByCategoryOrBrand($userprofile_id = null, $vc_id = null, $field = false, $value = false, $types = null, $prices = null, $sort = 'vcitem_number') {
+	public function getItemsByCategoryOrBrand($userprofile_id = null, $vc_id = null, $field = false, $value = false, $types = null, $prices = null, $sort = 'vcitem_number', $page = 1, $pageSize = 25) {
 		if (!$userprofile_id || !$vc_id) {
 			return [];
 		}
 
-		return $this->vcItemGateway->getItemsByTypesAndPrices($userprofile_id, $vc_id, $field, $value, $types, $prices, $sort);
+		return $this->vcItemGateway->getItemsByTypesAndPrices($userprofile_id, $vc_id, $field, $value, $types, $prices, $sort, $page, $pageSize);
 	}
 
 	public function getItemsTypesByCategoryOrBrands($userprofile_id = null, $catalogs = null, $field = null, $value = null) {

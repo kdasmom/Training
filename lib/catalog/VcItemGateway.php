@@ -387,7 +387,7 @@ class VcItemGateway extends AbstractGateway {
 		return $this->adapter->query($select, [1, '']);
 	}
 
-	public function getItemsByTypesAndPrices($userprofile_id, $vc_id, $filterItem, $keyword, $types, $prices, $order) {
+	public function getItemsByTypesAndPrices($userprofile_id, $vc_id, $filterItem, $keyword, $types, $prices, $order, $page, $pageSize) {
 		$select = new Select();
 
 		$select->from(['vi' => 'vcitem'])
@@ -433,7 +433,7 @@ class VcItemGateway extends AbstractGateway {
 
 		$select->order($order);
 
-		return $this->adapter->query($select, $params);
+		return $this->getPagingArray($select, $params, $pageSize, $page);
 	}
 
 	public function getTypesForItemsFromCategoryOrBrands($userprofile_id, $vc_id, $field, $value) {

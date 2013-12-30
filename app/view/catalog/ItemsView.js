@@ -100,37 +100,14 @@ Ext.define('NP.view.catalog.ItemsView', {
 								filterField: me.field,
 								filterValue: me.value,
 								vc_id: me.vc_id,
-								height: 500,
 								border: false
 							}
 						],
-						flex: 0.8,
-						autoScroll: true
+						flex: 0.8
 					}
 				]
 			}
 		];
-
-
-		/*if (me.catalog.vc_catalogtype == 'url') {
-			me.items.push({
-				xtype: 'component',
-				autoEl: {
-					tag : "iframe",
-					src: me.catalog_url
-				}
-			});
-		}
-		if (me.catalog.vc_catalogtype == 'pdf') {
-			me.items.push({
-				xtype: 'component',
-				autoEl: {
-					tag : "iframe",
-					src: me.catalog.vc_url
-				}
-			});
-		}
-		if (me.catalog.vc_catalogtype == 'punchout')*/
 
 		this.callParent(arguments);
 	}
