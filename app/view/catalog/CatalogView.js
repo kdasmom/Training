@@ -45,7 +45,6 @@ Ext.define('NP.view.catalog.CatalogView', {
 
 		this.tbar = bar;
 		this.autoScroll = true;
-		console.log(that.catalog.vc_catalogtype);
 
 		this.items = [
 			{
@@ -170,106 +169,13 @@ Ext.define('NP.view.catalog.CatalogView', {
 			}
 		];
 
-		/*if (that.catalog.vc_catalogtype == 'excel') {
-			this.items.push({
-				xtype: 'catalog.categoriesdataview',
-				vc_id: that.vc_id,
-				overflowY: 'scroll'
-			});
-			this.items.push({
-				xtype: 'catalog.brandsdataview',
-				vc_id: that.vc_id,
-				padding: '20 0 0 0',
-				overflowY: 'scroll'
-			});
-		}
-
-		if (that.catalog.vc_catalogtype == 'url') {
-			that.items.push({
-				xtype: 'component',
-				height: '100%',
-				layout: 'fit',
-				align: 'center',
-				autoEl: {
-					tag : "iframe",
-					src: that.catalog.vc_url,
-					width: '100%'
-				}
-			});
-		}
-		if (that.catalog.vc_catalogtype == 'pdf') {
-			that.items.push({
-				xtype: 'component',
-				height: '100%',
-				layout: 'fit',
-				align: 'center',
-				autoEl: {
-					tag : "iframe",
-					src: 'clients/' + NP.lib.core.Config.getAppName() + '/web/exim_uploads/catalog/pdf/' + that.vc_id + '.pdf',
-					width: '100%'
-				}
-			});
-		}
-
-		if (that.catalog.vc_catalogtype == 'punchout') {
-			that.items.push(
-				{
-					xtype: 'panel',
-					layout: 'fit',
-					align: 'center',
-					height: '100%',
-					tbar: [
-						{
-							xtype: 'customcombo',
-							name: 'userPropertyCombo',
-							store: 'user.Properties',
-							displayField: 'property_name',
-							valueField: 'vc_id',
-							queryMode: 'local',
-							editable: false,
-							typeAhead: false,
-							fieldLabel: NP.Translator.translate('Property'),
-							listeners: {
-								select: function (combo, records, eOpts) {
-									var value;
-									if ( records.length > 0) {
-										value = records[0].get('property_id');
-									} else {
-										value = records.get('property_id');
-									}
-									combo.getStore().reload();
-									if (that.property_id !== value) {
-										that.reloadIframe(value, that.vc_id);
-										that.property_id = value;
-									}
-								}
-							},
-							width: 300
-						}
-					],
-					items: [
-						{
-							xtype: 'component',
-							name: 'punchoutiframe',
-							padding: '10',
-							width: '100%',
-							flex: 1,
-							autoEl: {
-								tag: 'iframe',
-								src: '',
-								width: '100%'
-							}
-						}
-					]
-				}
-			);
-		}*/
-
 		this.callParent(arguments);
 	},
 
 	reloadIframe: function (property_id, vc_id) {
 		var me = this;
+		var mask = new Ext.LoadMask({target: me});
+		mask.show();
 
 		NP.lib.core.Net.remoteCall({
 			requests: {
@@ -280,6 +186,7 @@ Ext.define('NP.view.catalog.CatalogView', {
 				userprofile_id: NP.Security.getUser().get('userprofile_id'),
 				success: function(success) {
 					var iframe = me.down('[name="punchoutiframe"]');
+					mask.destroy();
 					if (!success.success) {
 						Ext.MessageBox.alert('Error', 'NexusPayables is unable to connect to this vendor at this time. Please try again. If the problem persists, report it to your system administrator for resolution.');
 					} else {
