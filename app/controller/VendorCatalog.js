@@ -19,11 +19,13 @@ Ext.define('NP.controller.VendorCatalog', {
 		'catalog.SimpleSearchView',
 		'catalog.CatalogView',
 		'catalog.BrandsDataView',
-		'catalog.ItemsView'
+		'catalog.ItemsView',
+		'catalog.OrderCreate'
 	],
 
 	stores: [
-		'catalog.VcItems'
+		'catalog.VcItems',
+		'catalog.VcOrders'
 	],
 	models: [],
 
@@ -497,7 +499,7 @@ Ext.define('NP.controller.VendorCatalog', {
 		var vendorscombo, store, grid;
 
 		vendorscombo = form.getChildByElement('vendor_id');
-		store = vendorcombo.getStore();
+		store = vendorscombo.getStore();
 		Ext.apply(store.getProxy().extraParams, {
 			property_id: value[0].get('property_id')
 		});
