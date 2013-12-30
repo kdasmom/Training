@@ -99,7 +99,7 @@ Ext.define('NP.view.catalog.CatalogView', {
 				align: 'center',
 				autoEl: {
 					tag : "iframe",
-					src: that.catalog.vc_url,
+					src: that.catalog.vc_catalogtype !== 'url' ? '' : that.catalog.vc_url,
 					width: '100%'
 				},
 				hidden: that.catalog.vc_catalogtype !== 'url'
@@ -112,7 +112,7 @@ Ext.define('NP.view.catalog.CatalogView', {
 				align: 'center',
 				autoEl: {
 					tag : "iframe",
-					src: 'clients/' + NP.lib.core.Config.getAppName() + '/web/exim_uploads/catalog/pdf/' + that.vc_id + '.pdf',
+					src: that.catalog.vc_catalogtype !== 'pdf' ? '' : 'clients/' + NP.lib.core.Config.getAppName() + '/web/exim_uploads/catalog/pdf/' + that.vc_id + '.pdf',
 					width: '100%'
 				},
 				hidden: that.catalog.vc_catalogtype !== 'pdf'

@@ -353,10 +353,11 @@ class VcItemGateway extends AbstractGateway {
 					'vc_id' => '?',
 					'vcitem_status' => '?'
 				])
+				->whereNotEquals('vcitem_manufacturer', '?')
 				->group('vcitem_manufacturer')
 				->order('vcitem_manufacturer');
 
-		return $this->adapter->query($select, [$vc_id, 1]);
+		return $this->adapter->query($select, [$vc_id, 1, '']);
 	}
 
 	/**
