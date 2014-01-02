@@ -28,7 +28,8 @@ class VcCatGateway extends AbstractGateway {
 				->where(['v.vc_status' => '?'])
 				->whereNest('OR')
 				->whereIn('v.vc_catalogtype', "'" . implode("','", ['pdf','url']) . "'")
-				->whereExists($subQuery);
+				->whereExists($subQuery)
+				->order('c.vccat_name,v.vc_catalogname');
 
 		return $this->adapter->query($select, [1, $userprofile_id]);
 	}

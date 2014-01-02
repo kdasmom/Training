@@ -11,7 +11,7 @@ Ext.define('NP.view.shared.button.AddToFavorites', {
 	requires: ['NP.lib.core.Translator'],
 
 	text   : 'Add to favorites',
-	iconCls: 'add-to-favorite-btn',
+	iconCls: 'new-btn',
 
 	initComponent: function() {
 		this.text = NP.Translator.translate(this.text);

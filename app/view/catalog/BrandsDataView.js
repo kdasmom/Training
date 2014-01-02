@@ -8,21 +8,25 @@ Ext.define('NP.view.catalog.BrandsDataView', {
 	alias: 'widget.catalog.brandsdataview',
 
 	requires: [
-		'NP.lib.core.Config'
+		'NP.lib.core.Config',
+		'NP.lib.core.Translator'
 	],
 
-	title: NP.Translator.translate('Shop by brand'),
+	title: 'Shop by brand',
+
+	bodyPadding: 8,
 
 	initComponent: function() {
 		var that = this;
 
+		that.title = NP.Translator.translate(that.title);
 
 		this.items = [
 			{
 				xtype: 'dataview',
 				tpl: new Ext.XTemplate(
 					'<tpl for=".">',
-					'<div style="margin-bottom: 10px; float: left; width: 50%; padding: 10px; cursor: pointer;" class="brand">',
+					'<div class="vc-shop-by">',
 					'<span>{vcitem_manufacturer} ({total_items})</span>',
 					'</div>',
 					'</tpl>'
@@ -35,7 +39,7 @@ Ext.define('NP.view.catalog.BrandsDataView', {
 					},
 					fields: ['vcitem_manufacturer', 'total_items']
 				}),
-				itemSelector: 'div.brand',
+				itemSelector: 'div.vc-shop-by',
 				listeners: {
 					itemclick: function( dataview, record, item, index, e, eOpts) {
 						that.fireEvent('showbybrand', 'brand', record.get('vcitem_manufacturer'), that.vc_id);

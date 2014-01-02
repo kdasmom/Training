@@ -8,30 +8,37 @@ Ext.define('NP.view.catalog.OrderView', {
 	alias: 'widget.catalog.orderview',
 
 	requires: [
+		'NP.lib.core.Translator',
 		'NP.view.catalog.OrderPropertiesForm',
 		'NP.view.catalog.CreateOrderGrid'
 	],
-	layout: 'fit',
-	title: NP.Translator.translate('Order view'),
+
+	title: 'Order view',
+	
+	layout: {
+		type : 'vbox',
+		align: 'stretch'
+	},
 
 	initComponent: function() {
 		var that = this;
 
+		that.title = NP.Translator.translate(that.title);
+		
 		this.items = [
 			{
-				xtype: 'catalog.orderpropertiesform',
-				flex: 1,
-				vc_id: this.vc_id,
-				padding: '10 0 0 10',
+				xtype   : 'catalog.orderpropertiesform',
+				vc_id   : this.vc_id,
+				padding : '0 0 0 10',
 				vcorders: this.vcorders
 			},
 			{
-				xtype: 'catalog.createordergrid',
-				flex: 1,
-				padding: '20 0 0 0',
-				vc_id: this.vc_id,
-				vcorders: this.vcorders,
-				autoScroll: true
+				xtype     : 'catalog.createordergrid',
+				padding   : '20 0 0 0',
+				vc_id     : this.vc_id,
+				vcorders  : this.vcorders,
+				flex      : 1,
+				hidden    : true
 			}
 		];
 

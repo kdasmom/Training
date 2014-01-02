@@ -9,7 +9,8 @@ Ext.define('NP.view.catalog.SearchForm', {
 	alias: 'widget.catalog.searchform',
 
 	requires: [
-		'NP.lib.core.Translator'
+		'NP.lib.core.Translator',
+		'Ext.layout.container.Column'
 	],
 
 	layout: 'column',

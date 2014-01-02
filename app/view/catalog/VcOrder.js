@@ -13,18 +13,25 @@ Ext.define('NP.view.catalog.VcOrder', {
 		'NP.view.shared.button.Shop',
 		'NP.view.shared.button.Search',
 		'NP.view.shared.button.Favorite',
-		'NP.view.catalog.JumpToCatalogForm',
-		'NP.view.catalog.SearchForm',
-		'NP.view.catalog.UserOrder',
+		'NP.view.catalog.TopBar',
 		'NP.view.catalog.VcOrdersGrid'
 	],
 
-	title: NP.Translator.translate('Open orders'),
+	title     : 'Open orders',
+	
 	autoScroll: true,
-	minWidth: 800,
+	minWidth  : 800,
+
+	layout: {
+		type : 'vbox',
+		align: 'stretch'
+	},
 
 	initComponent: function() {
 		var that = this;
+
+		that.title = NP.Translator.translate(that.title);
+
 		var bar = [
 			{
 				xtype: 'shared.button.back',
@@ -47,34 +54,11 @@ Ext.define('NP.view.catalog.VcOrder', {
 
 		this.items = [
 			{
-				xtype: 'panel',
-				layout: 'hbox',
-				items: [
-					{
-						xtype: 'catalog.jumptocatalogform',
-						flex: 0.8
-					},
-					{
-						xtype: 'catalog.userorder',
-						align: 'right',
-						flex: 0.2
-					}
-				],
-				padding: '5',
-				border: false
+				xtype: 'catalog.topbar'
 			},
 			{
-				xtype: 'panel',
-				items: [
-					{
-						xtype: 'catalog.searchform'
-					}
-				],
-				padding: '5',
-				border: false
-			},
-			{
-				xtype: 'catalog.vcordersgrid'
+				xtype: 'catalog.vcordersgrid',
+				flex : 1
 			}
 		];
 

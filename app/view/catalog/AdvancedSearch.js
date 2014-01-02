@@ -13,17 +13,20 @@ Ext.define('NP.view.catalog.AdvancedSearch', {
 		'NP.view.shared.button.Shop',
 		'NP.view.shared.button.Back',
 		'NP.view.shared.button.Favorite',
-		'NP.view.catalog.JumpToCatalogForm',
-		'NP.view.catalog.UserOrder',
-		'NP.view.catalog.SearchForm',
+		'NP.view.catalog.TopBar',
 		'NP.view.catalog.FavoriteItemsGrid'
 	],
 
-	title: NP.Translator.translate('Advanced search'),
+	title: 'Advanced search',
+
+	layout: {
+		type : 'vbox',
+		align: 'stretch'
+	},
 
 	initComponent: function() {
-		var that = this;
-		var bar = [
+		var me = this,
+			bar = [
 			{
 				xtype: 'shared.button.back',
 				text: NP.Translator.translate('Catalog home')
@@ -37,44 +40,23 @@ Ext.define('NP.view.catalog.AdvancedSearch', {
 			}
 		];
 
-		this.tbar = bar;
-		this.autoScroll = true;
+		me.title = NP.Translator.translate(me.title);
 
-		this.items = [
+		me.tbar = bar;
+		me.autoScroll = true;
+
+		me.items = [
 			{
-				xtype: 'panel',
-				layout: 'hbox',
-				items: [
-					{
-						xtype: 'catalog.jumptocatalogform',
-						flex: 0.8
-					},
-					{
-						xtype: 'catalog.userorder',
-						align: 'right',
-						flex: 0.2
-					}
-				],
-				padding: '5',
-				border: false
+				xtype: 'catalog.topbar',
+				advancedSearch: true
 			},
 			{
-				xtype: 'panel',
-				items: [
-					{
-						xtype: 'catalog.searchform',
-						advancedSearch: true
-					}
-				],
-				padding: '5',
-				border: false
-			},
-			{
-				xtype: 'catalog.favoriteitemsgrid',
-				isSearch: true
+				xtype   : 'catalog.favoriteitemsgrid',
+				isSearch: true,
+				flex    : 1
 			}
 		];
 
-		this.callParent(arguments);
+		me.callParent(arguments);
 	}
 });

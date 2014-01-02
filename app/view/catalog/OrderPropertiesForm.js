@@ -36,9 +36,13 @@ Ext.define('NP.view.catalog.OrderPropertiesForm', {
 						userprofile_id: NP.Security.getUser().get('userprofile_id'),
 						delegation_to_userprofile_id: NP.Security.getUser().get('userprofile_id')
 					},
-					autoLoad: true
+					autoLoad: true,
+					listeners: {
+						load: function(store, recs) {
+							that.fireEvent('loadproperties', store, recs, that.vc_id, that.vcorders);
+						}
+					}
 				}),
-				queryMode: 'local',
 				editable: false,
 				typeAhead: false,
 				listeners: {
@@ -55,7 +59,6 @@ Ext.define('NP.view.catalog.OrderPropertiesForm', {
 				displayField: 'vendor_name',
 				valueField: 'vendorsite_id',
 				fieldLabel: NP.Translator.translate('Vendor'),
-				queryMode: 'local',
 				editable: false,
 				typeAhead: false,
 				listeners: {
@@ -74,12 +77,12 @@ Ext.define('NP.view.catalog.OrderPropertiesForm', {
 				selectFirstRecord: true
 			},
 			{
-				xtype: 'customcombo',
-				id: 'purchaseorder_id',
+				xtype     : 'customcombo',
+				id        : 'purchaseorder_id',
 				fieldLabel: NP.Translator.translate('PO'),
-				queryMode: 'local',
-				editable: false,
-				typeAhead: false
+				editable  : false,
+				typeAhead : false,
+				emptyText : NP.Translator.translate('Create New PO')
 			}
 		];
 

@@ -7,13 +7,31 @@ Ext.define('NP.view.catalog.ItemsFilter', {
 	extend: 'Ext.panel.Panel',
 	alias: 'widget.catalog.itemsfilter',
 
-	requires: [],
+	requires: [
+		'NP.lib.core.Translator'
+	],
 	layout: 'vbox',
 	border: false,
-	title: NP.Translator.translate('YOU HAVE SELECTED'),
+	bodyPadding: 8,
+	title: 'YOU HAVE SELECTED',
 
 	initComponent: function() {
 		var me = this;
+
+		me.title = NP.Translator.translate(me.title);
+
+		me.itemTypeStore = Ext.create('NP.lib.data.Store', {
+			fields: ['vcitem_type'],
+			autoLoad : true,
+			service: 'CatalogService',
+			action: 'getItemsTypesByCategoryOrBrands',
+			extraParams: {
+				userprofile_id: NP.Security.getUser().get('userprofile_id'),
+				catalogs: me.vc_id,
+				field: me.filterField,
+				value: me.filterValue
+			}
+		});
 
 		this.items = [
 			{
@@ -64,41 +82,34 @@ Ext.define('NP.view.catalog.ItemsFilter', {
 			},
 			{
 				xtype: 'container',
-				fieldLabel: NP.Translator.translate('CONTINUE NARROWING BY'),
-				labelAlign: 'top',
 				layout: 'vbox',
 				items: [
 					{
-						xtype: 'displayfield',
-						name: 'typeslabel',
-						fieldLabel: NP.Translator.translate('Type'),
-						value: '',
-						labelAlign: 'top'
+						xtype : 'component',
+						html  : '<b>' + NP.Translator.translate('CONTINUE NARROWING BY') + ':</b>',
+						margin: '0 0 8px 0'
 					},
 					{
 						xtype: 'dataview',
 						name: 'itemstypesview',
 						tpl: new Ext.XTemplate(
-							'<tpl for=".">',
-							'<div style="padding-left: 20px; margin-bottom: 10px; float: left; clear: both; width: 100%; cursor: pointer;" class="type">',
-							'<span>{vcitem_type}</span>',
-							'</div>',
-							'</tpl>'
+							'<tpl if="this.getTypeCount() &gt; 0">' +
+								'<div><b>{[NP.Translator.translate("Type")]}:</b></div>' +
+								'<tpl for=".">' +
+								'<div style="padding-left: 20px; margin-bottom: 10px; float: left; clear: both; width: 100%; cursor: pointer;" class="type">' +
+								'<span>{vcitem_type}</span>' +
+								'</div>' +
+								'</tpl>' +
+							'</tpl>',
+							{
+								getTypeCount: function() {
+									return me.itemTypeStore.getCount();
+				                }
+							}
 						),
 						itemSelector: 'div.type',
 						flex: 1,
-						store: Ext.create('NP.lib.data.Store', {
-							fields: ['vcitem_type'],
-							autoLoad : true,
-							service: 'CatalogService',
-							action: 'getItemsTypesByCategoryOrBrands',
-							extraParams: {
-								userprofile_id: NP.Security.getUser().get('userprofile_id'),
-								catalogs: me.vc_id,
-								field: me.filterField,
-								value: me.filterValue
-							}
-						}),
+						store: me.itemTypeStore,
 						listeners: {
 							itemclick: function (dataview, record, item, index, e, eOpts) {
 								var recorddel = null;

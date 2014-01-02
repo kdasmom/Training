@@ -18,7 +18,7 @@ Ext.define('NP.view.catalog.OrderItemWindow', {
 
 	layout          : 'fit',
 
-	title           : NP.Translator.translate('Item details'),
+	title           : 'Item details',
 
 	width           : '45%',
 	height          : '40%',
@@ -29,6 +29,8 @@ Ext.define('NP.view.catalog.OrderItemWindow', {
 
 	initComponent: function() {
 		var that = this;
+
+		that.title = NP.Translator.translate(that.title);
 
 		this.bbar = [
 			{ xtype: 'shared.button.close' },
@@ -98,8 +100,6 @@ Ext.define('NP.view.catalog.OrderItemWindow', {
 				}
 			}
 		];
-
-		console.log('this.data.vcitem_case_qty: ',this.data.vcitem_case_qty);
 
 		this.items = [
 			{

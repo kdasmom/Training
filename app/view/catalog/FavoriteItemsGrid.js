@@ -9,16 +9,23 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 	alias : 'widget.catalog.favoriteitemsgrid',
 
 	requires: [
-		'NP.lib.core.Util'
+		'NP.lib.core.Security',
+		'NP.lib.core.Util',
+		'Ext.grid.feature.GroupingSummary'
 	],
+	
+	border        : false,
 
-	paging: true,
+	paging        : true,
 	changedRecords: {},
-	isSearch: false,
-	userprofile_id: NP.Security.getUser().get('userprofile_id'),
+	isSearch      : false,
 
 	initComponent: function() {
 		var that = this;
+
+		Ext.applyIf(that, {
+			userprofile_id: NP.Security.getUser().get('userprofile_id')
+		});
 
 		var grouping = Ext.create('Ext.grid.feature.GroupingSummary', {
 			groupHeaderTpl: '{name}',
@@ -37,6 +44,8 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 
 
 		this.plugins = [cellEditing];
+
+		this.emptyText = NP.Translator.translate('No items found.');
 
 		this.columns = [
 			{
@@ -161,7 +170,7 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 				this.store = Ext.create('NP.store.catalog.VcItems', {
 					service    	: 'CatalogService',
 					action     	: 'getFavorites',
-					groupField	: 'vcitem_category_name',
+					groupField	: 'vc_vendorname',
 					extraParams: {
 						userprofile_id: NP.Security.getUser().get('userprofile_id')
 					},
@@ -172,7 +181,7 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 				this.store = Ext.create('NP.store.catalog.VcItems', {
 					service    	: 'CatalogService',
 					action     	: 'getItemsByCategoryOrBrand',
-					groupField	: 'vcitem_category_name',
+					groupField	: 'vc_vendorname',
 					extraParams: {
 						userprofile_id: NP.Security.getUser().get('userprofile_id'),
 						vc_id: that.vc_id,
@@ -187,7 +196,7 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 			this.store = Ext.create('NP.store.catalog.VcItems', {
 				service    	: 'CatalogService',
 				action     	: 'searchItems',
-				groupField	: 'vcitem_category_name',
+				groupField	: 'vc_vendorname',
 				extraParams: {
 					catalogs: null,
 					field: null,

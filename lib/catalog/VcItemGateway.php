@@ -120,6 +120,7 @@ class VcItemGateway extends AbstractGateway {
 				->join(['vf' => 'vcfav'], 'vi.vcitem_id = vf.vcitem_id and vf.userprofile_id = ?', ['vcfav_id'], Select::JOIN_LEFT)
 				->join(['un' => 'UNSPSC_Commodity'], 'vi.UNSPSC_Commodity_Commodity = un.UNSPSC_Commodity_Commodity', [], Select::JOIN_LEFT)
 				->join(['vo' => 'vcorder'], 'vo.vcitem_id = vi.vcitem_id and vo.userprofile_id = ?', ['vcorder_id'], Select::JOIN_LEFT)
+				->join(['vc' => 'vc'], 'vi.vc_id = vc.vc_id', ['vc_vendorname'])
 				->where(['vi.vcitem_status' => '?']);
 
 		$params = [$userprofile_id, $userprofile_id, 1];
@@ -288,6 +289,7 @@ class VcItemGateway extends AbstractGateway {
 			->columns(['vcfav_id'])
 			->join(['vi' => 'vcitem'], 'vf.vcitem_id = vi.vcitem_id', null)
 			->join(['vo' => 'vcorder'], 'vo.vcitem_id = vi.vcitem_id and vo.userprofile_id = vf.userprofile_id', ['vcorder_id'], Select::JOIN_LEFT)
+			->join(['vc' => 'vc'], 'vi.vc_id = vc.vc_id', ['vc_vendorname'])
 			->where(['vf.userprofile_id' => '?'])
 			->order($order)
 			->offset($pageSize * ($page - 1))
@@ -395,6 +397,7 @@ class VcItemGateway extends AbstractGateway {
 			->join(['vf' => 'vcfav'], 'vi.vcitem_id = vf.vcitem_id and vf.userprofile_id = ?', ['vcfav_id'], Select::JOIN_LEFT)
 			->join(['un' => 'UNSPSC_Commodity'], 'vi.UNSPSC_Commodity_Commodity = un.UNSPSC_Commodity_Commodity', [], Select::JOIN_LEFT)
 			->join(['vo' => 'vcorder'], 'vo.vcitem_id = vi.vcitem_id and vo.userprofile_id = ?', ['vcorder_id'], Select::JOIN_LEFT)
+			->join(['vc' => 'vc'], 'vi.vc_id = vc.vc_id', ['vc_vendorname'])
 			->where(['vi.vcitem_status' => '?']);
 
 		$params = [$userprofile_id, $userprofile_id, 1];
@@ -440,11 +443,12 @@ class VcItemGateway extends AbstractGateway {
 	public function getTypesForItemsFromCategoryOrBrands($userprofile_id, $vc_id, $field, $value) {
 		$select = new Select();
 
-		$select->from(['vi' => 'vcitem'])
-			->columns(['vcitem_type'])
+		$select->distinct()
+			->from(['vi' => 'vcitem'])
 			->join(['un' => 'UNSPSC_Commodity'], 'vi.UNSPSC_Commodity_Commodity = un.UNSPSC_Commodity_Commodity', [], Select::JOIN_LEFT)
-			->where(['vi.vcitem_status' => '?'])
-			->group('vcitem_type')
+			->whereEquals('vi.vcitem_status', '?')
+			->whereIsNotNull('vi.vcitem_type')
+			->whereNotEquals('vi.vcitem_type', "''")
 			->order('vcitem_type');
 
 		$params = [1];

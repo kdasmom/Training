@@ -39,7 +39,10 @@ Ext.define('NP.model.catalog.VcItem', {
 		{ name: 'universal_field4' },
 		{ name: 'universal_field5' },
 		{ name: 'universal_field6' },
-		{ name: 'vcitem_weight' }
+		{ name: 'vcitem_weight' },
+
+		// These fields are not columns in the VCITEM table
+		{ name: 'vc_vendorname' }
 	],
 
 	belongsTo: {

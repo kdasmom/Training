@@ -10,7 +10,7 @@ Ext.define('NP.view.shared.button.AddToOrder', {
 	requires: ['NP.lib.core.Translator'],
 
 	text   : 'Add to order',
-	iconCls: 'add-to-order-btn',
+	iconCls: 'new-btn',
 
 	initComponent: function() {
 		this.text = NP.Translator.translate(this.text);

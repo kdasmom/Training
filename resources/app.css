@@ -180,3 +180,46 @@
 	#warningTable .warning_title {
 		font-weight: bold;	
 	}
+
+/* VENDOR CATALOG SECTION */
+.vccat-div {
+	display: table-cell;
+	float  : left;
+	width  : 50%;
+	padding: 4px;
+}
+
+.vccat-icon {
+	float        : left;
+	position     : relative;
+	padding-right: 10px;
+	height       : 100%;
+}
+
+.vccat-list {
+	color      : #72afd8;
+	font-weight: bold;
+	float      :left;
+	position   : relative;
+}
+
+.vccat-list ul {
+	padding   : 0;
+	margin    : 6px 0 6px 12px;
+	list-style: square;
+}
+
+.vccat-item {
+	color          : black;
+	font-weight    : normal;
+	text-decoration: underline;
+	cursor         : pointer;
+}
+
+.vc-shop-by {
+	text-decoration: underline;
+	float          : left;
+	width          : 50%;
+	cursor         : pointer;
+	margin         : 2px 0 2px 0;
+}

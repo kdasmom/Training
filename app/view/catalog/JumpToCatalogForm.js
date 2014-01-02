@@ -8,7 +8,9 @@ Ext.define('NP.view.catalog.JumpToCatalogForm', {
 	extend: 'Ext.container.Container',
 	alias: 'widget.catalog.jumptocatalogform',
 
-	requires: [],
+	requires: [
+		'Ext.layout.container.Column'
+	],
 	layout: 'column',
 
 	initComponent: function() {

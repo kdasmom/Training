@@ -12,6 +12,8 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 		'NP.lib.core.Util'
 	],
 
+	border: false,
+
 	paging: true,
 	changedRecords: {},
 

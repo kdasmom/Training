@@ -201,7 +201,7 @@ Ext.define('NP.controller.Viewport', {
                 }
 			},
 
-			'#vendorCatalogListing' : {
+			'#vcMenuBtn,#vendorCatalogListing' : {
 				click: function() {
 					this.addHistory('VendorCatalog:showVendorCatalogListing');
 				}

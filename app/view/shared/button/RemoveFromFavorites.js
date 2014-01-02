@@ -11,7 +11,7 @@ Ext.define('NP.view.shared.button.RemoveFromFavorites', {
 	requires: ['NP.lib.core.Translator'],
 
 	text   : 'Remove from favorites',
-	iconCls: 'remove-from-favorite-btn',
+	iconCls: 'delete-btn',
 
 	initComponent: function() {
 		this.text = NP.Translator.translate(this.text);

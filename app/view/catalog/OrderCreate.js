@@ -13,11 +13,13 @@ Ext.define('NP.view.catalog.OrderCreate', {
 		'NP.view.shared.button.Search',
 		'NP.view.shared.button.Favorite',
 		'NP.view.catalog.OrderView',
-		'NP.view.catalog.JumpToCatalogForm',
-		'NP.view.catalog.UserOrder',
-		'NP.view.catalog.SearchForm'
+		'NP.view.catalog.TopBar'
 	],
 
+	layout: {
+		type : 'vbox',
+		align: 'stretch'
+	},
 
 	initComponent: function() {
 		var that = this;
@@ -43,38 +45,14 @@ Ext.define('NP.view.catalog.OrderCreate', {
 
 		this.items = [
 			{
-				xtype: 'panel',
-				layout: 'hbox',
-				items: [
-					{
-						xtype: 'catalog.jumptocatalogform',
-						flex: 0.8
-					},
-					{
-						xtype: 'catalog.userorder',
-						align: 'right',
-						flex: 0.2
-					}
-				],
-				padding: '5',
-				border: false
+				xtype: 'catalog.topbar'
 			},
 			{
-				xtype: 'panel',
-				items: [
-					{
-						xtype: 'catalog.searchform'
-					}
-				],
-				padding: '5',
-				border: false
-			},
-			{
-				xtype: 'catalog.orderview',
-				vc_id: this.vc_id,
+				xtype   : 'catalog.orderview',
+				vc_id   : this.vc_id,
 				vcorders: this.vcorders,
-				padding: '20 0 0 0',
-				flex: 1
+				padding : '20 0 0 0',
+				flex    : 1
 			}
 		];
 

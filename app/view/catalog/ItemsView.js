@@ -9,22 +9,28 @@ Ext.define('NP.view.catalog.ItemsView', {
 
 	requires: [
 		'NP.lib.core.Config',
+		'NP.lib.core.Translator',
 		'NP.view.shared.button.Shop',
 		'NP.view.shared.button.Search',
 		'NP.view.shared.button.Favorite',
-		'NP.view.catalog.JumpToCatalogForm',
-		'NP.view.catalog.SearchForm',
-		'NP.view.catalog.UserOrder',
+		'NP.view.catalog.TopBar',
 		'NP.view.catalog.ItemsFilter',
 		'NP.view.catalog.FavoriteItemsGrid'
 	],
 
-	title: NP.Translator.translate('Catalog listing'),
+	title: 'Catalog listing',
 	autoScroll: true,
 	minWidth: 1000,
 
+	layout: {
+		type : 'vbox',
+		align: 'stretch'
+	},
+
 	initComponent: function() {
 		var me = this;
+
+		me.title = NP.Translator.translate(me.title);
 
 		var bar = [
 			{
@@ -48,62 +54,38 @@ Ext.define('NP.view.catalog.ItemsView', {
 
 		this.items = [
 			{
-				xtype: 'panel',
-				layout: 'hbox',
-				items: [
-					{
-						xtype: 'catalog.jumptocatalogform',
-						flex: 0.8
-					},
-					{
-						xtype: 'catalog.userorder',
-						align: 'right',
-						flex: 0.2
-					}
-				],
-				padding: '5',
-				border: false
+				xtype: 'catalog.topbar'
 			},
 			{
-				xtype: 'panel',
-				items: [
-					{
-						xtype: 'catalog.searchform'
-					}
-				],
-				padding: '5',
-				border: false
-			},
-			{
-				xtype: 'panel',
-				border: false,
-				layout: 'hbox',
+				xtype     : 'panel',
+				layout    : {
+					type : 'hbox',
+					align: 'stretch'
+				},
 				autoscroll: true,
-				padding: '15 5 0 5',
-				items: [
+				border    : false,
+				padding   : '15 5 0 5',
+				flex      : 1,
+				items     : [
 					{
 						xtype: 'catalog.itemsfilter',
+						region: 'west',
 						category: me.value,
 						filterField: me.field,
 						filterValue: me.value,
 						vc_id: me.vc_id,
-						minWidth: 300,
-						padding: '0 0 20 0'
+						width: 300,
+						border: true,
+						margin: '0 8px 0 0'
 					},
 					{
-						xtype: 'panel',
-						border: false,
-						items: [
-							{
-								xtype: 'catalog.favoriteitemsgrid',
-								name: 'itemsgrid',
-								filterField: me.field,
-								filterValue: me.value,
-								vc_id: me.vc_id,
-								border: false
-							}
-						],
-						flex: 0.8
+						xtype: 'catalog.favoriteitemsgrid',
+						region: 'center',
+						filterField: me.field,
+						filterValue: me.value,
+						vc_id: me.vc_id,
+						border: true,
+						flex  : 1
 					}
 				]
 			}

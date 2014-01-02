@@ -15,17 +15,23 @@ Ext.define('NP.view.catalog.SimpleSearchView', {
 		'NP.view.shared.button.Back',
 		'NP.view.shared.button.Favorite',
 		'NP.view.shared.button.Search',
-		'NP.view.catalog.JumpToCatalogForm',
-		'NP.view.catalog.UserOrder',
-		'NP.view.catalog.SearchForm',
+		'NP.view.catalog.TopBar',
 		'NP.view.catalog.FavoriteItemsGrid'
 	],
 
-	title: NP.Translator.translate('Search'),
+	title: 'Search',
 	autoScroll: true,
+
+	layout: {
+		type : 'vbox',
+		align: 'stretch'
+	},
 
 	initComponent: function() {
 		var me = this;
+
+		me.title = NP.Translator.translate(me.title);
+
 		var bar = [
 			{
 				xtype: 'shared.button.back',
@@ -48,40 +54,12 @@ Ext.define('NP.view.catalog.SimpleSearchView', {
 
 		this.items = [
 			{
-				xtype: 'panel',
-				layout: 'hbox',
-				items: [
-					{
-						xtype: 'catalog.jumptocatalogform',
-						flex: 0.8
-					},
-					{
-						xtype: 'catalog.userorder',
-						align: 'right',
-						flex: 0.2
-					}
-				],
-				padding: '5',
-				border: false
+				xtype: 'catalog.topbar'
 			},
 			{
-				xtype: 'panel',
-				items: [
-					{
-						xtype: 'catalog.searchform',
-						advancedSearch: false,
-						vc_id: me.vc_id,
-						type: me.type,
-						property: me.property,
-						keywork: me
-					}
-				],
-				padding: '5',
-				border: false
-			},
-			{
-				xtype: 'catalog.favoriteitemsgrid',
-				isSearch: true
+				xtype   : 'catalog.favoriteitemsgrid',
+				isSearch: true,
+				flex    : 1
 			}
 		];
 

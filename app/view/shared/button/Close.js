@@ -10,7 +10,7 @@ Ext.define('NP.view.shared.button.Close', {
 	requires: ['NP.lib.core.Translator'],
 
 	text: 'Close',
-	iconCls: 'delete-btn',
+	iconCls: 'cancel-btn',
 
 	initComponent: function() {
 		this.text = NP.Translator.translate(this.text);
