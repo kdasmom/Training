@@ -82,6 +82,35 @@ Ext.define('NP.controller.Viewport', {
 					this.addHistory(token);
 				}
 			},
+			// Clicking on the Administration > Image Management menu or sub menu
+			'#imageMenuBtn,#imageMenuBtn menuitem': {
+				click: function(itemClicked) {
+					var token = 'Images:showMain';
+					if (itemClicked.itemId != 'imageMenuBtn') {
+						token += ':' + itemClicked.itemId.replace('ImageMenuBtn', '');
+					} else {
+						token += ':index';
+					}
+					this.addHistory(token);
+				}
+			},
+            '#vendorMenuBtn': {
+                click: function() {
+					this.addHistory('VendorManager:showVendorManager');
+                }
+            },
+			// clicking on "Add Vendor" menu button
+			'#vendorsAddMenuBtn': {
+				click: function() {
+					this.addHistory('VendorManager:showVendorForm');
+				}
+			},
+
+            '#vendorsSearchMenuBtn': {
+                click: function() {
+                    this.addHistory('VendorManager:showVendorSearchForm');
+                }
+            },
 
 			// Clicking on the Administration > My Settings menu
 			'#mySettingsMenuBtn': {

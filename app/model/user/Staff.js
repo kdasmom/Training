@@ -17,16 +17,5 @@ Ext.define('NP.model.user.Staff', {
 		{ name: 'staff_id_alt' },
 		{ name: 'person_id', type: 'int' },
 		{ name: 'staff_status', defaultValue: 'active' }
-	],
-
-    belongsTo: [
-        {
-            model         : 'NP.model.contact.Person',
-            name          : 'person',
-            getterName    : 'getPerson',
-            foreignKey    : 'person_id',
-            primaryKey    : 'person_id',
-            reader        : 'jsonflat'
-        }
-    ]
+	]
 });

@@ -10,8 +10,7 @@ Ext.define('NP.controller.UserManager', {
 		'NP.lib.core.Config',
 		'NP.lib.core.Security',
 		'NP.lib.core.Net',
-		'NP.lib.core.Util',
-		'Ext.ux.form.field.BoxSelect'
+		'NP.lib.core.Util'
 	],
 
 	models: ['user.Userprofile','user.Userprofilerole','user.Staff',

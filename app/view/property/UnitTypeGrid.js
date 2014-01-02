@@ -64,7 +64,7 @@ Ext.define('NP.view.property.UnitTypeGrid', {
 					var ret = Ext.Date.format(val, Ext.Date.defaultFormat);
 					
 					if (rec.get('unittype_updated_by') !== null) {
-						ret += ' by ' + rec.getLastUpdatedUser().get('userprofile_username');
+						ret += ' by ' + rec.get('userprofile_username');
 					}
 					
 					return ret;

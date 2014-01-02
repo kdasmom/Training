@@ -42,7 +42,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
     sortableColumns: false,
 
     initComponent: function() {
-    	var me               = this
+        var me               = this
             customFields     = NP.Config.getCustomFields().line.fields,
             typeShort        = (me.type == 'invoice') ? 'inv' : 'po',
             invoice          = null,
@@ -208,7 +208,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     store       : me.glStore
                 }
             }
-    	];
+        ];
 
         // Unit column
         if (NP.Config.getSetting('PN.InvoiceOptions.AllowUnitAttach') == '1') {
@@ -518,7 +518,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
             }
         );
 
-    	me.callParent(arguments);
+        me.callParent(arguments);
 
         me.addEvents('selectjcfield','selectutilityaccount','selectusagetype',
                     'changequantity','changeunitprice','changeamount');

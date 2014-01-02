@@ -36,8 +36,8 @@ Ext.define('NP.view.messageCenter.MessageGrid', {
             { text: 'Created By', dataIndex: 'person_lastname', flex: 1.5, renderer: function(val, meta, rec) {
                 var returnVal = '';
                 if (rec.get('createdBy') !== null) {
-                    returnVal = rec.raw['person_lastname'] + ', ' + rec.raw['person_firstname']
-                                + ' (' + rec.raw['userprofile_username'] + ')';
+                    returnVal = rec.get('person_lastname') + ', ' + rec.get('person_firstname')
+                                + ' (' + rec.get('userprofile_username') + ')';
                 }
 
                 return returnVal;

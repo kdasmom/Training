@@ -38,6 +38,7 @@ Ext.define('NP.view.shared.invoicepo.ViewHeaderPickers', {
                     extraParams: {
                         userprofile_id             : NP.Security.getUser().get('userprofile_id'),
                         delegated_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id'),
+                        property_statuses          : '1,-1',
                         includeCodingOnly          : true
                     }
                 }

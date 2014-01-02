@@ -25,9 +25,9 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 				}
 			]
 		};
-
+                			
 		// User Manager
-	    if ( NP.lib.core.Security.hasPermission(4) ) {
+                if ( NP.lib.core.Security.hasPermission(4) ) {
 			this.menu.items.push({
 				itemId: 'userManagerMenuBtn',
 				text: NP.Translator.translate('User Manager')
@@ -148,7 +148,7 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 				itemId: 'splitsImportMenuBtn',
 				text: NP.Translator.translate('Splits')
 			});
-			
+                        
 			this.menu.items.push(subsection);
 		}
 		

@@ -12,9 +12,9 @@ use NP\core\db\Select;
  */
 class ImageIndexVendorsiteJoin extends Join {
 	
-	public function __construct($cols=array(), $type=Select::JOIN_LEFT, $toAlias='vs', $fromAlias='img') {
+	public function __construct($cols=array(), $type=Select::JOIN_LEFT, $toAlias='vs', $fromAlias='img', $fromField = 'Image_Index_VendorSite_Id') {
 		$this->setTable(array($toAlias=>'vendorsite'))
-			->setCondition("{$fromAlias}.Image_Index_VendorSite_Id = {$toAlias}.vendorsite_id")
+			->setCondition("{$fromAlias}.{$fromField} = {$toAlias}.vendorsite_id")
 			->setCols($cols)
 			->setType($type);
 	}

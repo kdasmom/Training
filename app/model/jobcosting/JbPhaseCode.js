@@ -27,12 +27,15 @@ Ext.define('NP.model.jobcosting.JbPhaseCode', {
 
 	statics: {
 		formatName: function(rec) {
+			if (!rec.get) {
+				rec = Ext.create('NP.model.jobcosting.JbPhaseCode', rec);
+			}
 			if (rec.get('jbphasecode_id') === null) {
 				return '';
 			}
 
 			var val = rec.get('jbphasecode_name') + ' - ';
-			if (rec.get('jbphasecode_desc') != '') {
+			if (rec.get('jbphasecode_desc') != '' && rec.get('jbphasecode_desc') !== null) {
 				val += rec.get('jbphasecode_desc');
 			} else {
 				val += 'No Desc.';

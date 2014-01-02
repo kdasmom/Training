@@ -49,7 +49,7 @@ Ext.define('NP.lib.ui.Grid', {
 			});
 
 			if (this.pagingToolbarButtons) {
-				this.pagingToolbarButtons.unshift('-');
+				this.pagingToolbarButtons.unshift({ xtype: 'tbspacer', width: 8 }, '-');
 			} else {
 				this.pagingToolbarButtons = [];
 			}

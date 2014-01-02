@@ -19,7 +19,12 @@ Ext.define('NP.lib.core.Config', function() {
 	 * Stores the application settings
 	 */
 	var settings = null;
-	
+	/**
+	 * @private
+	 * @property {Int}
+	 * Stores the client ID
+	 */
+	var clientId = null;
 	/**
 	 * @private
 	 * @property {Array}
@@ -102,6 +107,13 @@ Ext.define('NP.lib.core.Config', function() {
 			settings = val;
 		},
 		
+		setClientId: function(id) {
+			clientId = id;
+		},
+
+		getClientId: function() {
+			return clientId;
+		},
 		
 		/**
 		 * Returns all custom field configuration settings

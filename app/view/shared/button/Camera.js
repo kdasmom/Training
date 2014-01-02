@@ -9,8 +9,9 @@ Ext.define('NP.view.shared.button.Camera', {
 
     requires: ['NP.lib.core.Translator'],
 
-    text: 'Camera',
-    iconCls: 'camera-btn',
+    text        : 'Camera',
+    iconCls     : 'camera-btn',
+    componentCls: 'camera-button',
 
     initComponent: function() {
     	this.text = NP.Translator.translate(this.text);

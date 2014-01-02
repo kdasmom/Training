@@ -14,14 +14,16 @@ use NP\security\SecurityService;
  */
 class ConfigService extends AbstractService {
 	
-	protected $config, $securityService, $siteService, $appName;
+	protected $config, $securityService, $siteService, $appName, $intPkgGateway, $configsysGateway;
 	
-	public function __construct(Config $config, SecurityService $securityService, SiteService $siteService) {
-		$this->config          = $config;
-		$this->securityService = $securityService;
-		$this->siteService     = $siteService;
+	public function __construct(Config $config, SecurityService $securityService, SiteService $siteService, IntegrationPackageGateway $intPkgGateway, ConfigsysGateway $configsysGateway) {
+		$this->config           = $config;
+		$this->securityService  = $securityService;
+		$this->siteService      = $siteService;
+		$this->intPkgGateway    = $intPkgGateway;
+		$this->configsysGateway = $configsysGateway;
 
-		$this->appName         = $siteService->getAppName();
+		$this->appName          = $siteService->getAppName();
 		
 		// Defaulting locale to "en" for now until we implement this, will then probably come from session
 		$this->setLocale('en');
@@ -65,6 +67,7 @@ class ConfigService extends AbstractService {
 	 * @return array                            An associative array with the custom field data
 	 */
 	public function getCustomFieldData($customfield_pn_type, $customfielddata_table_id) {
+
 		return $this->pnCustomFieldsGateway->findCustomFieldData($customfield_pn_type, $customfielddata_table_id);
 	}
 
@@ -183,7 +186,7 @@ class ConfigService extends AbstractService {
 			array('lookupcode_type'=>"'{$lookupcode_type}'"), 
 			array(), 
 			'lookupcode_description ASC',
-			array('lookupcode_id','lookupcode_description')
+			array('lookupcode_id','lookupcode_description', 'lookupcode_code')
 		);
 	}
 
@@ -326,7 +329,6 @@ class ConfigService extends AbstractService {
 		);
 	}
 
-
 	/**
 	 * Retrieve settings list
 	 *
@@ -342,6 +344,164 @@ class ConfigService extends AbstractService {
 		return $this->configsysGateway->getCPSettings($settingList , $defaultlist);
 	}
 	
+	/**
+	 * Retrieve integrationpackage info
+	 *
+	 * @param int|null $asp_client_id
+	 * @param int|null $userprofile_id
+	 * @return array|mixed
+	 */
+	public function findByAspClientIdAndUserprofileId($userprofile_id = null) {
+		if (!$userprofile_id) {
+			return [];
+		}
+		return $this->intPkgGateway->findByAspClientIdAndUserprofileId($this->getClientId(), $userprofile_id);
+	}
+
+	/**
+	 * Retrieve sys value by name
+	 *
+	 * @param $name
+	 * @return mixed
+	 */
+	public function findSysValueByName($name) {
+		return $this->configsysGateway->findConfigSysValByName($name);
+	}
+
+	/**
+	 * Save audit log
+	 *
+	 * @param $userprofile_id
+	 * @param $tablekey_id
+	 * @param $audittype_id
+	 * @param $field_name
+	 * @param $field_new_value
+	 * @param $control_value
+	 */
+	public function saveAuditLog($userprofile_id, $tablekey_id, $audittype_id, $field_name, $field_new_value, $control_value = null) {
+
+		$this->configsysGateway->saveAuditLog($userprofile_id, $tablekey_id, $audittype_id, $field_name, $field_new_value, $control_value);
+	}
+
+	/**
+	 * Gets the file name of the custom logo set for this client
+	 *
+	 * @return string
+	 */
+	public function getCustomLogoName() {
+		$client = $this->clientGateway->find(null, null, null, ['logo_file']);
+
+		return $client[0]['logo_file'];
+	}
+
+	/**
+	 * 
+	 */
+	public function getCustomLogoPath() {
+		return "{$this->getAppRoot()}/clients/{$this->getAppName()}/web/images/logos";
+	}
+
+	/**
+	 * Saves a client logo
+	 *
+	 * @return array     Array with status info on the operation
+	 */
+	public function saveClientLogo() {
+		$fileName = null;
+
+		$this->clientGateway->beginTransaction();
+
+		try {
+			$this->removeClientLogo();
+
+			$destPath = $this->getCustomLogoPath();
+			
+			// If destination directory doesn't exist, create it
+			if (!is_dir($destPath)) {
+				mkdir($destPath, 0777, true);
+			}
+
+			// Create the upload object
+			$fileUpload = new \NP\core\io\FileUpload(
+				'logo_file', 
+				$destPath, 
+				[
+					'allowedTypes' => [
+						'image/gif',
+						'image/jpeg',
+						'image/png',
+						'image/pjpeg'
+					],
+					'overwrite'    => false
+				]
+			);
+
+			// Do the file upload
+			$fileUpload->upload();
+			$errors = $fileUpload->getErrors();
+
+			// If there are no errors, run the resize operations and DB updates
+			if (!count($errors)) {
+				// Resize the image if necessary
+				$fileName = $fileUpload->getFile();
+				$fileName = $fileName['uploaded_name'];
+				\NP\util\Util::resizeImage("{$destPath}/{$fileName}", 500, 170);
+
+				$this->clientGateway->update(['logo_file'=>$fileName]);
+			}
+		} catch(\Exception $e) {
+			$errors[] = $this->handleUnexpectedError($e);
+		}
+
+		if (count($errors)) {
+			foreach ($errors as $i=>$error) {
+				$errors[$i] = $this->localizationService->getMessage($error);
+			}
+			$this->clientGateway->rollback();
+		} else {
+			$this->clientGateway->commit();
+		}
+
+		return array(
+			'success'   => (count($errors)) ? false : true,
+			'logo_file' => $fileName,
+			'errors'    => $errors
+		);
+	}
+
+	/**
+	 * Removes a catalog logo
+	 *
+	 */
+	public function removeClientLogo() {
+		$fileName = $this->getCustomLogoName();
+		$filePath = "{$this->getCustomLogoPath()}/{$this->getCustomLogoName()}";
+
+		if (!empty($fileName) && file_exists($filePath)) {
+			unlink($filePath);
+		}
+
+		$this->clientGateway->update(['logo_file'=>null]);
+	}
+
+    public function showClientLogo() {
+    	$filename = $this->getCustomLogoName();
+    	$file = "{$this->getCustomLogoPath()}/{$filename}";
+    	try {
+            if ($file === null || !file_exists($file)) {
+                die('Invalid file');
+            } else {
+                $ext = explode('.', $filename);
+                $ext = strtolower(array_pop($ext));
+
+                header("Content-type: image/{$ext}");
+
+                die(file_get_contents($file));
+            }
+        } catch (Exception $e) {
+            die('Invalid file');
+        }
+    }
 }
 
 ?>

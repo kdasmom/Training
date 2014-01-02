@@ -71,18 +71,17 @@ $diDefinition = array(
 	'NP\po\PurchaseOrderGateway'                     => array('Adapter','RoleGateway'),
 	'NP\po\PoService'                                => array('BudgetService'),
 	'NP\po\ReceiptGateway'                           => array('Adapter','RoleGateway'),
-	'NP\property\PropertyService'                    => array('SecurityService','InvoiceService','PoService','FiscalCalService', 'UnitTypeMeasGateway'),
+	'NP\property\PropertyService'                    => array('SecurityService','InvoiceService','PoService','FiscalCalService','UnitTypeMeasGateway'),
 	'NP\security\SecurityService'                    => array('config','SiteService','SessionService'),
-	'NP\system\ConfigService'                        => array('Config','SecurityService','SiteService'),
+	'NP\system\ConfigService'                        => array('Config','SecurityService','SiteService','IntegrationPackageGateway', 'ConfigsysGateway'),
 	'NP\system\LoggingService'                       => array('logPath','enabledNamespaces','fileEnabled','debugEnabled'),
 	'NP\system\SessionService'                       => array('Config','SiteService'),
 	'NP\system\SiteService'                          => array('WinCache','configPath','reloadCache'),
 	'NP\user\DelegationGateway'                      => array('Adapter','RoleGateway'),
 	'NP\user\UserService'                            => array('SecurityService','NotificationService'),
-	'NP\vendor\UtilityService'                       => array('ConfigService'),
+	'NP\vendor\validation\VendorEntityValidator'     => array('LocalizationService','Adapter', 'VendorGateway', 'ConfigService'),
+	'NP\vendor\VendorService'                        => array('VendorEntityValidator'),
 	'NP\workflow\WfRuleGateway'                      => array('Adapter','UserprofileroleGateway'),
-	'NP\catalog\VcOrderGateway'                      => array('Adapter'),
-	'NP\catalog\CatalogService'                      => array('VcOrderGateway', 'PropertyGateway'),
 );
 
 // Now we're gonna figure out some automatic definitions for gateways and services

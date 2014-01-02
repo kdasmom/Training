@@ -13,7 +13,6 @@ Ext.define('NP.view.user.UserDelegationForm', {
         'NP.lib.core.Translator',
         'NP.view.shared.button.Cancel',
         'NP.view.shared.button.Save',
-        'Ext.ux.form.field.BoxSelect',
 		'NP.view.shared.PropertyAssigner'
     ],
 
@@ -66,11 +65,14 @@ Ext.define('NP.view.user.UserDelegationForm', {
 				xtype			: 'shared.propertyassigner',
 				height			: 100,
 				fieldLabel		: NP.Translator.translate('{properties} to Delegate', { properties: NP.Config.getPropertyLabel(true) }),
-				name				: 'delegation_properties',
+				name			: 'delegation_properties',
 				allowBlank		: false,
 				store			: Ext.create('NP.store.property.Properties', {
 					service	: 'UserService',
-					action	: 'getUserProperties'
+					action	: 'getUserProperties',
+                    extraParams: {
+                        property_statuses: '1,-1',
+                    }
 				})
 			},
             { xtype: 'hiddenfield', name: 'UserProfile_Id'}

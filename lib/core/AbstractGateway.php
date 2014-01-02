@@ -339,6 +339,10 @@ abstract class AbstractGateway {
 			return $this->update($data);
 		} else {
 			$this->insert($data);
+			if (!$this->lastInsertId()) {
+				$lastInsertId = $this->adapter->query("select ident_current('" . $this->table . "') as last_id");
+				return $lastInsertId[0]['last_id'];
+			}
 			return $this->lastInsertId();
 		}
 	}

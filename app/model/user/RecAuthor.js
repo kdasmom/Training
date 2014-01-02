@@ -19,16 +19,5 @@ Ext.define('NP.model.user.RecAuthor', {
 		{ name: 'tablekey_id', type: 'int' },
 		{ name: 'recauthor_datetm', type: 'date' },
 		{ name: 'delegation_to_userprofile_id', type: 'int' }
-	],
-
-    belongsTo: [
-        {
-            model     : 'NP.model.user.Userprofile',
-            name      : 'user',
-            getterName: 'getUser',
-            foreignKey: 'userprofile_id',
-            primaryKey: 'userprofile_id',
-            reader    : 'jsonflat'
-        }
-    ]
+	]
 });

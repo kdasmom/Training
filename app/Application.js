@@ -18,9 +18,10 @@ Ext.define('NP.Application', {
 		'overrides.form.field.Number',
 		'overrides.form.Basic',
 		'overrides.form.Panel',
+		'overrides.grid.column.Column',
 		'overrides.grid.plugin.CellEditing',
 		'overrides.util.Format',
-		'overrides.ux.form.ItemSelector',
+		'overrides.util.Sorter',
 		'overrides.Component',
 		'overrides.JSON',
 		'Ext.util.History',
@@ -28,6 +29,7 @@ Ext.define('NP.Application', {
 		'NP.lib.core.DataLoader',
 		'NP.lib.core.DBProvider',
 		'NP.lib.core.Security',
+		'NP.lib.core.Net',
 		'NP.lib.core.Translator',
 		'NP.view.Viewport'
 	],
@@ -36,6 +38,7 @@ Ext.define('NP.Application', {
 		'Viewport',
 		'BudgetOverage',
 		'CatalogMaintenance',
+		'Images',
 		'Import',
 		'Invoice',
 		'MessageCenter',
@@ -85,6 +88,8 @@ Ext.define('NP.Application', {
 
 		// Only start the app if all our data has been properly loaded
 		if (me.statcategoriesloaded && me.statsloaded) {
+			Ext.get('loading-app').remove();
+
 			// Create the ViewPort
 	        Ext.create('NP.view.Viewport');
 	        
@@ -250,6 +255,13 @@ Ext.define('NP.Application', {
 		
 		// If we have a new view, let's add it to the parent panel
 		if (isNewView) {
+			// If updating main content panel, abort all requests that have been made so that
+			// we don't get UI errors when they complete
+			if (panel === '#contentPanel') {
+				Ext.log('Aborting all Ajax requests because of call to set view ' + view);
+				NP.Net.abortAllRequests();
+			}
+			
 			// Remove all child elements from the parent panel
 			pnl.removeAll();
 			

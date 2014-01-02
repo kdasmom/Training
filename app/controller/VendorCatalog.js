@@ -281,7 +281,7 @@ Ext.define('NP.controller.VendorCatalog', {
 
 	showCatalogView: function(vc_id) {
 		var me = this;
-		var catalog, view, brands, iframeUrl, iframePdf, panelPunchout;
+		var catalog, view, catalogs, brands;
 
 		NP.lib.core.Net.remoteCall({
 			requests: {
@@ -295,18 +295,8 @@ Ext.define('NP.controller.VendorCatalog', {
 					me.showUserOrderSummary(me.userSummaryCallback);
 					catalogs = view.down('[name="categoriesview"]');
 					brands = view.down('[name="brandsview"]');
-					iframeUrl = view.down('[name="iframeUrl"]');
-					iframePdf = view.down('[name="iframePdf"]');
-					panelPunchout = view.down('[name="panelPunchout"]');
-
+					
 					if (catalog.vc_catalogtype == 'excel') {
-
-						brands.show();
-						catalogs.show();
-						iframePdf.hide();
-						iframeUrl.hide();
-						panelPunchout.hide();
-
 						Ext.apply(catalogs.down('dataview').getStore().getProxy().extraParams, {
 							vc_id: vc_id
 						});
@@ -316,27 +306,6 @@ Ext.define('NP.controller.VendorCatalog', {
 
 						catalogs.down('dataview').getStore().reload();
 						brands.down('dataview').getStore().reload();
-					}
-					if ( catalog.vc_catalogtype == 'url') {
-						brands.hide();
-						catalogs.hide();
-						iframePdf.hide();
-						iframeUrl.show();
-						panelPunchout.hide();
-					}
-					if ( catalog.vc_catalogtype == 'pdf') {
-						brands.hide();
-						catalogs.hide();
-						iframePdf.show();
-						iframeUrl.hide();
-						panelPunchout.hide();
-					}
-					if ( catalog.vc_catalogtype == 'punchout') {
-						brands.hide();
-						catalogs.hide();
-						iframePdf.hide();
-						iframeUrl.hide();
-						panelPunchout.show();
 					}
 
 					view.setTitle(catalog.vc_catalogname);

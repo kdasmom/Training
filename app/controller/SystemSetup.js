@@ -132,6 +132,12 @@ Ext.define('NP.controller.SystemSetup', {
 			},
 			'#autoAllocBtn': {
 				click: me.autoAllocSplit
+			},
+			'#saveClientLogoBtn': {
+				click: me.saveClientLogo
+			},
+			'#removeClientLogoBtn': {
+				click: me.removeClientLogo
 			}
 		});
 
@@ -656,5 +662,86 @@ Ext.define('NP.controller.SystemSetup', {
 				}
 			});
 		}
+	},
+
+	showLoginPage: function() {
+		var me   = this,
+			form = me.getCmp('systemsetup.loginpage');
+
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service: 'ConfigService',
+				action : 'getCustomLogoName',
+				success: function(result) {
+					form.setLogoFile(result);
+				}
+			}
+		});
+	},
+
+	saveClientLogo: function() {
+		var me   = this,
+			form = me.getCmp('systemsetup.loginpage');
+		
+		// If form is valid, submit it
+		if (form.getForm().isValid()) {
+			var formEl = NP.Util.createFormForUpload('[xtype="systemsetup.loginpage"]');
+
+			NP.Net.remoteCall({
+				method  : 'POST',
+				isUpload: true,
+				form    : formEl.id,
+				requests: {
+					service  : 'ConfigService',
+					action   : 'saveClientLogo',
+					success : function(result) {
+						if (result.success) {
+							// Update the image
+							form.setLogoFile(result['logo_file']);
+							
+							// Show friendly message
+							NP.Util.showFadingWindow({
+								html: NP.Translator.translate('Logo was successfully saved')
+							});
+						} else {
+							if (result.errors.length) {
+								form.getForm().findField('logo_file').markInvalid(result.errors[0]);
+							}
+						}
+						Ext.removeNode(formEl);
+					},
+					failure: function() {
+						Ext.log('Error saving client logo');
+					}
+				}
+			});
+		}
+	},
+
+	removeClientLogo: function() {
+		var me        = this,
+			form      = me.getCmp('systemsetup.loginpage'),
+			container = form.down('container');
+
+		Ext.MessageBox.confirm('Delete Logo?', 'Are you sure you want to delete this logo?', function(btn) {
+			// If user clicks Yes, proceed with deleting
+			if (btn == 'yes') {
+				NP.lib.core.Net.remoteCall({
+					method  : 'POST',
+					mask    : form,
+					requests: {
+						service: 'ConfigService',
+						action : 'removeClientLogo',
+						success: function(result) {
+							form.setLogoFile('');
+							NP.Util.showFadingWindow({ html: 'Logo was successfully removed' });
+						},
+						failure: function() {
+							Ext.log('Error removing client logo');
+						}
+					}
+				});
+			}
+		});
 	}
 });

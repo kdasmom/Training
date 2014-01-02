@@ -22,12 +22,7 @@ class CatalogService extends AbstractService {
 	const CATALOG_PENDING    = -1;
 	const CATALOG_PROCESSING = -2;
 
-	protected $configService, $vcOrderGateway, $propertyGateway;
-
-	public function __construct(VcOrderGateway $vcOrderGateway, PropertyGateway $propertyGateway) {
-		$this->vcOrderGateway = $vcOrderGateway;
-		$this->propertyGateway = $propertyGateway;
-	}
+	protected $configService;
 	
 	public function setConfigService(\NP\system\ConfigService $configService) {
 		$this->configService = $configService;

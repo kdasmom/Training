@@ -7,8 +7,7 @@ Ext.define('NP.model.catalog.VcItem', {
 	extend: 'Ext.data.Model',
 	
 	requires: [
-		'NP.lib.core.Config',
-		'NP.model.catalog.UnspscCommodity'
+		'NP.lib.core.Config'
 	],
 
 	idProperty: 'vcitem_id',
@@ -41,18 +40,11 @@ Ext.define('NP.model.catalog.VcItem', {
 		{ name: 'universal_field6' },
 		{ name: 'vcitem_weight' },
 
-		// These fields are not columns in the VCITEM table
-		{ name: 'vc_vendorname' }
-	],
+		// These fields are not DB columns in the VCITEM table
+		{ name: 'vc_vendorname' },
 
-	belongsTo: {
-		model     : 'NP.model.catalog.UnspscCommodity',
-		name      : 'unspscCommodity',
-		getterName: 'getUnspscCommodity',
-		foreignKey: 'UNSPSC_Commodity_Commodity',
-		primaryKey: 'UNSPSC_Commodity_Commodity',
-		reader    : 'jsonflat'
-	},
+		{ name: 'UNSPSC_Commodity_FamilyTitle' }
+	],
 
 	validations: [
 		{ field: 'vcitem_id', type: 'presence' },

@@ -4,13 +4,11 @@
  * @author Thomas Messier
  */
 Ext.define('NP.view.catalogMaintenance.CatalogFormCategories', {
-    extend: 'Ext.ux.form.ItemSelector',
+    extend: 'NP.lib.ui.Assigner',
     alias: 'widget.catalogmaintenance.catalogformcategories',
-    
-    requires: [
-        'NP.store.catalog.VcCats'
-    ],
 
+    requires: ['NP.store.catalog.VcCats'],
+    
     title: 'Categories',
 
     name        : 'vc_categories',
@@ -23,6 +21,5 @@ Ext.define('NP.view.catalogMaintenance.CatalogFormCategories', {
     valueField  : 'vccat_id',
     fromTitle   : 'Unassigned',
     toTitle     : 'Assigned',
-    buttons     : ['add','remove'],
     msgTarget   : 'under'
 });

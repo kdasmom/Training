@@ -4,7 +4,7 @@
  * @author Thomas Messier
  */
 Ext.define('NP.view.catalogMaintenance.CatalogFormVendors', {
-    extend: 'Ext.ux.form.ItemSelector',
+    extend: 'NP.lib.ui.Assigner',
     alias: 'widget.catalogmaintenance.catalogformvendors',
     
     requires: ['NP.store.vendor.Vendors'],
@@ -23,6 +23,5 @@ Ext.define('NP.view.catalogMaintenance.CatalogFormVendors', {
     valueField  : 'vendor_id',
     fromTitle   : 'Unassigned',
     toTitle     : 'Assigned',
-    buttons     : ['add','remove'],
     msgTarget   : 'under'
 });

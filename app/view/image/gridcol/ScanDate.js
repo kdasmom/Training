@@ -7,6 +7,6 @@ Ext.define('NP.view.image.gridcol.ScanDate', {
 	extend: 'Ext.grid.column.Date',
 	alias: 'widget.image.gridcol.scandate',
 
-	text     : 'Scan Date',
+	text     : 'Scanned Date',
 	dataIndex: 'Image_Index_Date_Entered'
 });

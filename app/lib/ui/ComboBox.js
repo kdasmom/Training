@@ -53,6 +53,7 @@ Ext.define('NP.lib.ui.ComboBox', {
 
 	initComponent: function() {
 		var me = this;
+
 		// Key events must be on
 		this.enableKeyEvents = true;
 
@@ -103,7 +104,9 @@ Ext.define('NP.lib.ui.ComboBox', {
 		// user tries to expand the field or types text for autocomplete
 		if (this.loadStoreOnFirstQuery) {
 			this.on('beforequery', function() {
-				this.getStore().load();
+				this.getStore().load(function() {
+					me.expand();
+				});
 			}, this, { single: true });
 		}
 
@@ -171,5 +174,19 @@ Ext.define('NP.lib.ui.ComboBox', {
 
 	setFocusValue: function(value) {
 		this.focusValue = value;
+	},
+
+	setDefaultRec: function(rec) {
+		// Add the current value to the store, otherwise you have an empty store
+		this.getStore().add(rec);
+		
+		// Suspend events briefly to prevent change events from firing
+		this.suspendEvents(false);
+		// Set the current value
+		this.setValue( rec.get(this.valueField) );
+		// Re-enable events
+		this.resumeEvents();
+
+		return this;
 	}
 });

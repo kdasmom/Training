@@ -70,30 +70,86 @@ Ext.define('NP.view.catalogMaintenance.types.Punchout', {
 	},
 
 	getView: function(vc) {
-		var deferred = {};
+		var me = this;
+
+		var view = Ext.create('Ext.panel.Panel', {
+			layout: 'fit',
+			height: '100%',
+			tbar: [
+				{
+					xtype       : 'customcombo',
+					itemId      : 'punchoutPropertyCombo',
+					store       : 'user.Properties',
+					displayField: 'property_name',
+					valueField  : 'property_id',
+					fieldLabel  : NP.Config.getPropertyLabel(),
+					value       : NP.Security.getCurrentContext().property_id,
+					listeners   : {
+						select: function(combo) {
+							me.onSelectProperty(combo, vc)
+						}
+					},
+					width: 300
+				}
+			],
+			items: [{
+				xtype : 'component',
+				itemId: 'punchoutCatalogIFrame',
+				width : '100%',
+				autoEl: {
+					tag: 'iframe',
+					src: '',
+					width: '100%'
+				}
+			}],
+			listeners: {
+				render: function() {
+					me.reloadIframe(vc);
+				}
+			}
+		});
+
+		return { view: view };
+	},
+
+	onSelectProperty: function(propertyCombo, vc) {
+		var me            = this,
+			property_id   = propertyCombo.getValue(),
+			context       = NP.Security.getCurrentContext();
+
+		if (me.property_id !== property_id) {
+			me.reloadIframe(vc);
+			me.property_id = property_id;
+			NP.Security.setCurrentContext(Ext.apply(context, {
+				property_id: property_id
+			}));
+		}
+	},
+
+	reloadIframe: function (vc) {
+		var me          = this,
+			iFrame      = Ext.ComponentQuery.query('#punchoutCatalogIFrame')[0],
+			property_id = Ext.ComponentQuery.query('#punchoutPropertyCombo')[0].getValue()/*,
+			mask        = new Ext.LoadMask({target: iFrame})*/;
+		
+		//mask.show();
 
 		NP.lib.core.Net.remoteCall({
 			requests: {
 				service       : 'CatalogService',
 				action        : 'getPunchoutUrl',
 				vc_id         : vc.get('vc_id'),
+				property_id   : property_id,
 				userprofile_id: NP.Security.getUser().get('userprofile_id'),
-				// TODO: need to make the property_id be pulled from a property drop-down
-				//property_id   : 158,
-				success       : function(result) {
-					var view = Ext.create('Ext.container.Container', {
-						layout: 'fit',
-						autoEl: {
-							tag: 'iframe',
-							src: result.url
-						}
-					});
-					deferred.view = view;
+				success       : function(success) {
+					//mask.destroy();
+					if (!success.success) {
+						Ext.MessageBox.alert('Error', 'NexusPayables is unable to connect to this vendor at this time. Please try again. If the problem persists, report it to your system administrator for resolution.');
+					} else {
+						iFrame.el.dom.src = success.url;
+					}
 				}
 			}
 		});
-
-		return deferred;
 	}
-
 });

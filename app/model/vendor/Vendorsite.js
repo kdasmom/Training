@@ -7,8 +7,7 @@ Ext.define('NP.model.vendor.Vendorsite', {
 	extend: 'Ext.data.Model',
 	
 	requires: [
-		'NP.lib.core.Config',
-		'NP.model.vendor.Vendor'
+		'NP.lib.core.Config'
 	],
 
 	idProperty: 'vendorsite_id',
@@ -90,16 +89,5 @@ Ext.define('NP.model.vendor.Vendorsite', {
 		{ name: 'vendor_universalfield1', type: 'int' },
 		{ name: 'vendorsite_account_number' },
 		{ name: 'vendorsite_display_account_number_po' }
-	],
-    
-    belongsTo: [
-        {
-        	model     : 'NP.model.vendor.Vendor',
-            name      : 'vendor',
-            getterName: 'getVendor',
-            foreignKey: 'vendor_id',
-            primaryKey: 'vendor_id',
-			reader    : 'jsonflat'
-        }
-    ]
+	]
 });

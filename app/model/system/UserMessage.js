@@ -7,8 +7,7 @@ Ext.define('NP.model.system.UserMessage', {
 	extend: 'Ext.data.Model',
 	
 	requires: [
-		'NP.lib.core.Config',
-		'NP.model.user.Userprofile'
+		'NP.lib.core.Config'
 	],
 
 	idProperty: 'id',
@@ -21,18 +20,13 @@ Ext.define('NP.model.system.UserMessage', {
 		{ name: 'createdBy', type: 'int' },
 		{ name: 'createdAt', type: 'date' },
 		{ name: 'sentAt', type: 'date' },
-		{ name: 'displayUntil', type: 'date' }
-	],
+		{ name: 'displayUntil', type: 'date' },
 
-	belongsTo: [
-		{
-            model         : 'NP.model.user.Userprofile',
-            name          : 'createdByUser',
-            getterName    : 'getCreatedByUser',
-            foreignKey    : 'createdBy',
-            primaryKey    : 'userprofile_id',
-            reader        : 'jsonflat'
-        }
+		// These fields are not DB columns
+		{ name: 'person_firstname'},
+		{ name: 'person_lastname' },
+
+		{ name: 'userprofile_username' }
 	],
 
 	validations: [

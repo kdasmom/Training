@@ -1,3 +1,14 @@
+#loading-app {
+	position   : absolute;
+	top        : 50%;
+	height     : 20px;
+	margin-top : -10px;
+	left       : 50%;
+	width      : 100px;
+	margin-left: -50px;
+	font       : 24px tahoma, arial, sans-serif;
+}
+
 /* STYLES FOR PAGE HEADER */
 #npHeaderLogo { cursor: pointer; }
 #learningNexusImg { margin-right: 8px; cursor: pointer; }
@@ -10,11 +21,13 @@
 .approve-btn { background-image: url("images/buttons/approve.gif"); }
 .approve-next-btn { background-image: url("images/buttons/approve_next.gif"); }
 .back-btn { background-image: url("images/buttons/back.gif"); }
-.camera-btn { background-image: url("images/buttons/camera.gif"); }
+.camera-btn { background-image: url("images/buttons/camera.gif"); width: 18px !important; }
 .cancel-btn { background-image: url("images/buttons/cancel.gif"); }
+.cd-btn { background-image: url("images/buttons/cd.gif"); }
 .copy-btn { background-image: url("images/buttons/copy.gif"); }
 .delete-btn { background-image: url("images/buttons/delete.gif"); width: 15px; height: 15px; }
 .edit-btn { background-image: url("images/buttons/edit.gif"); }
+.go-btn { background-image: url("images/buttons/go.gif"); width: 33px !important; }
 .hold-activate-btn { background-image: url("images/buttons/hold_activate.gif"); }
 .hourglass-btn { background-image: url("images/buttons/hourglass.gif"); }
 .image-add-btn { background-image: url("images/buttons/image_add.gif"); }
@@ -24,19 +37,29 @@
 .link-btn { background-image: url("images/buttons/link.gif"); }
 .message-btn { background-image: url("images/buttons/message.gif"); width: 32px !important;}
 .new-btn { background-image: url("images/buttons/new.gif"); }
+.next-btn { background-image: url("images/buttons/next.gif"); }
+.npiss-btn { background-image: url("images/buttons/npiss.gif"); width: 20px !important; }
+.nsiss-btn { background-image: url("images/buttons/nsiss.gif"); width: 30px !important; }
 .payment-btn { background-image: url("images/buttons/payment.gif"); }
+.previous-btn { background-image: url("images/buttons/previous.gif"); }
 .print-btn { background-image: url("images/buttons/print.gif"); }
-.process-btn { background-image: url("images/buttons/process.gif"); }
+.process-btn { background-image: url("images/buttons/process.gif"); width: 20px !important; }
+	.process-comp-btn .x-btn-inner { padding-left: 24px !important; }
 .reclass-btn { background-image: url("images/buttons/reclass.gif"); }
 .reject-btn { background-image: url("images/buttons/reject.gif"); }
 .report-btn { background-image: url("images/buttons/report.gif"); }
-.reset-btn { background-image: url("images/buttons/reset.gif"); }
+.reset-btn { background-image: url("images/buttons/reset.gif"); width: 17px !important; }
 .revert-btn { background-image: url("images/buttons/revert.gif"); }
 .route-btn { background-image: url("images/buttons/route.gif"); }
 .search-btn { background-image: url("images/buttons/search.gif"); background-repeat: no-repeat;}
 .save-btn { background-image: url("images/buttons/save.gif"); }
 .save-and-add-btn { background-image: url("images/buttons/save_and_add.gif"); }
+.save-and-next-btn { background-image: url("images/buttons/save_and_next.gif"); width: 24px !important; }
+	.save-and-btn .x-btn-inner { padding-left: 24px !important; }
+.save-and-previous-btn { background-image: url("images/buttons/save_and_previous.gif"); width: 24px !important; }
 .schedule-btn { background-image: url("images/buttons/schedule.gif"); }
+.search-btn { background-image: url("images/buttons/search.gif"); width: 15px !important; }
+.submit-btn { background-image: url("images/buttons/submit.gif"); }
 .template-apply-btn { background-image: url("images/buttons/template_apply.gif"); }
 .template-save-btn { background-image: url("images/buttons/template_save.gif"); }
 .template-save-user-btn { background-image: url("images/buttons/template_save_user.gif"); }
@@ -47,13 +70,27 @@
 .shop-btn { background-image: url("images/buttons/vc_shopping_bag.gif"); }
 .star-btn { background-image: url("images/buttons/icon_star.gif"); }
 
+.npiss-button .x-btn-inner { padding-left: 24px !important; }
+.nsiss-button .x-btn-inner { padding-left: 34px !important; }
+.camera-button .x-btn-inner { padding-left: 22px !important; }
+
+.go-button {padding: 0 !important; border: 0 !important; }
+.go-button .x-btn-inner { width: 33px !important; }
+.go-button button { width: 33px !important; }
+
 /* STYLE FOR USING AN IMAGE AS A BUTTON IN A GRID BY SPECIFYING THIS AS tdCls CONFIG OPTION */
 .image-button-cell .x-grid-cell-inner { padding-bottom: 0; }
-	.image-button-cell .x-grid-cell-inner img { cursor: pointer; }
+.image-button-cell .x-grid-cell-inner img { cursor: pointer; }
 
 /* FORM ITEMS */
 .x-form-item-label, .x-form-item-label-top { font-weight: bold; }
 .x-form-required-field { background: repeat-x scroll 0 0 #DFE8F6; }
+	.x-form-required-field .x-boundlist-item { border-color: #DFE8F6; }
+	.x-form-required-field .x-boundlist-item-over {
+		border-width: 1px; 
+		background: none repeat scroll 0 0 #FFF; 
+		border-color: #98C0F4; 
+	}
 
 /* GRIDS */
 .grid-clickable-col:hover { text-decoration:underline; cursor: pointer; }
@@ -102,6 +139,8 @@
 
 /* GENERIC STYLES */
 .error-text { color: #c0272b; font: normal 11px tahoma, arial, verdana, sans-serif; }
+.valid-text { color: #00cc00; font: normal 11px tahoma, arial, verdana, sans-serif; }
+.align-right { text-align: right; }
 
 /* IMPORT SECTION */
 .importTemplates a { color: #000; margin-left: 16px; }
@@ -147,6 +186,8 @@
 
 	#lineItemTable td a {
 		color     : #18659C;
+		cursor: pointer;
+		text-decoration: underline;
 	}
 
 	#lineItemTable tfoot th, #lineItemTable tfoot td {
@@ -223,3 +264,22 @@
 	cursor         : pointer;
 	margin         : 2px 0 2px 0;
 }
+
+/* Invoice/PO Print Template */
+#entityPrintTable td, #entityPrintLines th, #entityPrintLines td { font-size: 10pt; padding:0; }
+#entityPrintTable td { vertical-align: top; }
+#entityPrintTable #vendorInfo { font-size: 14px; }
+#entityPrintTable #clientShortName { font-size: 20pt; }
+#entityPrintTable #propertyName { font-size: 12pt; }
+#entityPrintTable td.blackLine { height: 1px; background-color: black; }
+#entityPrintTable td.spacer { height:4px; }
+#entityPrintLines {
+	border-collapse: collapse;
+	border-color: black;
+	border-width: 0px 0px 1px 1px;
+	border-style: solid;
+}
+	#entityPrintLines th, #entityPrintLines td { padding: 2px; border-color: black; border-style: solid; }
+	#entityPrintLines th { text-align: left; border-width: 1px 1px 1px 0px; }
+	#entityPrintLines td { border-width: 0px 1px 0px 0px; }
+	#entityPrintLines tfoot td, #entityPrintLines tfoot th { text-align: right; border-width: 1px 1px 1px 0px; }

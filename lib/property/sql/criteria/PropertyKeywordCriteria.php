@@ -10,7 +10,7 @@ use NP\core\db\Where;
  * @author Thomas Messier
  */
 class PropertyKeywordCriteria extends Where {
-	
+
 	/**
 	 * @param  string $keyword
 	 */

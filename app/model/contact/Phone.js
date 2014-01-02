@@ -27,28 +27,37 @@ Ext.define('NP.model.contact.Phone', {
 	],
 
 	getFullPhone: function() {
-		var fullPhone   = '',
-			phoneNumber = (this.get('phone_number') === null) ? '' : this.get('phone_number');
+		return NP.model.contact.Phone.getFullPhone(this);
+	},
 
-		if (this.get('phone_countrycode') != '' && this.get('phone_countrycode') !== null) {
-			fullPhone += '+' + this.get('phone_countrycode');
+	statics: {
+		getFullPhone: function(rec) {
+			if (!rec.get) {
+				rec = Ext.create('NP.model.contact.Phone', rec);
+			}
+			var fullPhone   = '',
+				phoneNumber = (rec.get('phone_number') === null) ? '' : rec.get('phone_number');
+
+			if (rec.get('phone_countrycode') != '' && rec.get('phone_countrycode') !== null) {
+				fullPhone += '+' + rec.get('phone_countrycode');
+			}
+
+			if (phoneNumber != '') {
+				var phoneStripped = phoneNumber.replace(/[^\d]/g, '')
+				if (phoneStripped.length == 10) {
+					phoneNumber = '(' + phoneStripped.substr(0, 3) + ') ' + phoneStripped.substr(3, 3) + '-' + phoneStripped.substr(6, 4);
+				}
+				if (fullPhone != '') {
+					fullPhone += ' ';
+				}
+				fullPhone += phoneNumber;
+
+				if (rec.get('phone_ext') != '' && rec.get('phone_ext') !== null) {
+					fullPhone += ' x' + rec.get('phone_ext');
+				}
+			}
+
+			return fullPhone;
 		}
-
-		if (phoneNumber != '') {
-			var phoneStripped = phoneNumber.replace(/[^\d]/g, '')
-			if (phoneStripped.length == 10) {
-				phoneNumber = '(' + phoneStripped.substr(0, 3) + ') ' + phoneStripped.substr(3, 3) + '-' + phoneStripped.substr(6, 4);
-			}
-			if (fullPhone != '') {
-				fullPhone += ' ';
-			}
-			fullPhone += phoneNumber;
-
-			if (this.get('phone_ext') != '' && this.get('phone_ext') !== null) {
-				fullPhone += ' x' + this.get('phone_ext');
-			}
-		}
-
-		return fullPhone;
 	}
 });

@@ -7,9 +7,7 @@ Ext.define('NP.model.system.DfSplitItem', {
 	extend: 'Ext.data.Model',
 	
 	requires: [
-		'NP.lib.core.Config',
-		'NP.model.gl.GlAccount',
-		'NP.model.property.Property'
+		'NP.lib.core.Config'
 	],
 
 	idProperty: 'dfsplititem_id',
@@ -28,23 +26,5 @@ Ext.define('NP.model.system.DfSplitItem', {
 		{ name: 'unit_id', type: 'int' },
 		{ name: 'universal_field7' },
 		{ name: 'universal_field8' }
-	],
-
-	belongsTo: [
-		{
-			model         : 'NP.model.gl.GlAccount',
-			name          : 'glaccount',
-			getterName    : 'getGlAccount',
-			foreignKey    : 'glaccount_id',
-			primaryKey    : 'glaccount_id',
-	        reader        : 'jsonflat'
-		},{
-			model         : 'NP.model.property.Property',
-			name          : 'property',
-			getterName    : 'getProperty',
-			foreignKey    : 'property_id',
-			primaryKey    : 'property_id',
-	        reader        : 'jsonflat'
-		}
 	]
 });

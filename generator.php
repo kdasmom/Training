@@ -79,7 +79,6 @@ Ext.define('{$extNameSpace}.{$extClassName}', {
 	fields: [";
 
 	$totalCols = count($cols);
-	$extValidation = array();
 	for ($i=0; $i<$totalCols; $i++) {
 		$col = $cols[$i];
 
@@ -94,7 +93,6 @@ Ext.define('{$extNameSpace}.{$extClassName}', {
 		if ($col['IS_NULLABLE'] == 'NO' && $i > 0) {
 			$php .= "
 			'required' => true";
-			$extValidation[] = "{ field: '{$col['COLUMN_NAME']}', type: 'presence' }";
 			$isRequired = true;
 		}
 
@@ -106,14 +104,15 @@ Ext.define('{$extNameSpace}.{$extClassName}', {
 				'digits' => array()";
 			$ext .= ", type: 'int'";
 			$hasValidation = true;
-		} else if ($dataType == 'float' || $dataType == 'money') {
+		} else if ($dataType == 'float' || $dataType == 'money' || $dataType == 'decimal') {
 			$validation .= "
 				'numeric' => array()";
+			$ext .= ", type: 'float'";
 			$hasValidation = true;
 		} else if ($dataType == 'datetime') {
 			$validation .= "
 				'date' => array('format'=>'Y-m-d H:i:s.u')";
-				$ext .= ", type: 'date', dateFormat: NP.Config.getServerDateFormat()";
+				$ext .= ", type: 'date'";
 			$hasValidation = true;
 		} else if ($dataType == 'smalldatetime') {
 			$validation .= "
@@ -125,7 +124,6 @@ Ext.define('{$extNameSpace}.{$extClassName}', {
 		if ($col['CHARACTER_MAXIMUM_LENGTH'] !== null) {
 			$validation .= "
 				'stringLength' => array('max'=>{$col['CHARACTER_MAXIMUM_LENGTH']})";
-			$extValidation[] = "{ field: '{$col['COLUMN_NAME']}', type: 'length', max: {$col['CHARACTER_MAXIMUM_LENGTH']} }";
 			$hasValidation = true;
 		}
 
@@ -149,22 +147,6 @@ Ext.define('{$extNameSpace}.{$extClassName}', {
 
 	$ext .= "
 	]";
-
-	$totalValidations = count($extValidation);
-	if ($totalValidations) {
-		$ext .= ",
-
-	validations: [";
-		for ($i=0; $i<$totalValidations; $i++) {
-			$ext .= "
-		{$extValidation[$i]}";
-			if ($i < ($totalValidations - 1)) {
-				$ext .= ",";
-			}
-		}
-		$ext .= "
-	]";
-	}
 
 	$php .= "
 	);

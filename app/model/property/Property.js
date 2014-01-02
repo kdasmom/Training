@@ -8,9 +8,6 @@ Ext.define('NP.model.property.Property', {
     
     requires: [
         'NP.lib.core.Config',
-        'NP.model.system.IntegrationPackage',
-        'NP.model.property.Region',
-        'NP.model.user.Userprofile',
         'NP.lib.data.JsonFlat'
     ],
 
@@ -50,41 +47,18 @@ Ext.define('NP.model.property.Property', {
         { name: 'last_updated_datetm', type: 'date' },
         { name: 'last_updated_by', type: 'int' },
         { name: 'property_NexusServices', type: 'int', defaultValue: 1 },
-        { name: 'property_VendorCatalog', type: 'int', defaultValue: 1 }
-    ],
+        { name: 'property_VendorCatalog', type: 'int', defaultValue: 1 },
 
-    belongsTo: [
-        {
-            model         : 'NP.model.system.IntegrationPackage',
-            name          : 'integrationPackage',
-            getterName    : 'getIntegrationPackage',
-            foreignKey    : 'integration_package_id',
-            primaryKey    : 'integration_package_id',
-            reader        : 'jsonflat'
-        },
-        {
-            model         : 'NP.model.property.Region',
-            name          : 'region',
-            getterName    : 'getRegion',
-            foreignKey    : 'region_id',
-            primaryKey    : 'region_id',
-            reader        : 'jsonflat'
-        },{
-            model         : 'NP.model.user.Userprofile',
-            name          : 'createdByUser',
-            getterName    : 'getCreatedByUser',
-            foreignKey    : 'UserProfile_ID',
-            primaryKey    : 'userprofile_id',
-            prefix        : 'created_by_',
-            reader        : 'jsonflat'
-        },{
-            model         : 'NP.model.user.Userprofile',
-            name          : 'updatedByUser',
-            getterName    : 'getUpdatedByUser',
-            foreignKey    : 'UserProfile_ID',
-            primaryKey    : 'userprofile_id',
-            prefix        : 'updated_by_',
-            reader        : 'jsonflat'
-        }
+        // These fields are not DB columns in the PROPERTY table
+        { name: 'region_name' },
+
+        { name: 'created_by_userprofile_username' },    // for UserProfile_ID
+        { name: 'created_by_person_id', type: 'int' },  // for UserProfile_ID
+        { name: 'created_by_person_firstname' },        // for UserProfile_ID
+        { name: 'created_by_person_lastname' },         // for UserProfile_ID
+
+        { name: 'updated_by_userprofile_username' },     // for last_updated_by,
+
+        { name: 'integration_package_name' }
     ]
 });

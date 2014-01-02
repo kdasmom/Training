@@ -33,14 +33,24 @@ class PropertyFilterSelect extends Select {
 			// If the user ID and delegationToUserId are the same, it means there's no delegation happening
 			if ($propertyContext->getUserId() == $propertyContext->getDelegationToUserId()) {
 				// Build the subselect, which is the same for Region and All
-				$subSelect->from(array('__propuser'=>'propertyuserprofile'))
+				$subSelect->from(['__propuser'=>'propertyuserprofile'])
 						->column('property_id')
-						->where(array(
-							'__propuser.property_id'    => '__prop.property_id',
-							'__propuser.userprofile_id' => $propertyContext->getUserId()
-						));
-				// Add the subselect to the WHERE clause
-				$where->exists($subSelect);
+						->where(['__propuser.userprofile_id' => $propertyContext->getUserId()]);
+
+				if ($propertyContext->includeCoding()) {
+					$where->nest('OR')
+							->in('__prop.property_id', $subSelect)
+							->in(
+								'__prop.property_id',
+								Select::get()->from(['__propusercoding'=>'propertyusercoding'])
+											->column('property_id')
+											->where(['__propusercoding.userprofile_id' => $propertyContext->getUserId()])
+							)
+						->unnest();
+				} else {
+					// Add the subselect to the WHERE clause
+					$where->in('__prop.property_id', $subSelect);
+				}
 
 				// Create the basic SELECT statement, omitting the WHERE because it will be modified if dealing with region
 				$this->from(array('__prop'=>'property'))
