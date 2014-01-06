@@ -649,10 +649,10 @@ Ext.define('NP.controller.VendorCatalog', {
 		var grid = this.getCmp('catalog.favoriteitemsgrid');
 
 		grid.addExtraParams({
-			catalogs: catalogs,
-			field: type,
-			property: property,
-			keyword: keyword,
+			catalogs      : catalogs,
+			field         : type,
+			property      : property,
+			keyword       : keyword,
 			userprofile_id: NP.Security.getUser().get('userprofile_id')
 		});
 

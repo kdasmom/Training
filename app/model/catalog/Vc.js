@@ -35,7 +35,12 @@ Ext.define('NP.model.catalog.Vc', {
 		{ name: 'vc_posubmit_username' },
 		{ name: 'vc_posubmit_pwd' },
 		{ name: 'vc_posubmit_from_duns' },
-		{ name: 'vc_posubmit_to_duns' }
+		{ name: 'vc_posubmit_to_duns' },
+
+		// These fields are not DB columns in the VC table
+		{ name: 'vc_total_items', type: 'int' },
+        { name: 'creator_userprofile_username' },
+        { name: 'updater_userprofile_username' }
 	],
 
 	validations: [

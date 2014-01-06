@@ -132,8 +132,13 @@ class VcItemGateway extends AbstractGateway {
 		}
 
 		if (!empty($vc_id) && $vc_id !== 'null') {
-			$select->whereIn('vi.vc_id', '?');
-			$params[] = !is_array($vc_id) ? $vc_id : implode(',', $vc_id);
+			if (is_array($vc_id)) {
+				$select->whereIn('vi.vc_id', $this->createPlaceholders($vc_id));
+				$params = array_merge($params, $vc_id);
+			} else {
+				$select->whereEquals('vi.vc_id', '?');
+				$params[] = $vc_id;
+			}
 		}
 
 		if ($filterItem == 'category') {
@@ -174,7 +179,7 @@ class VcItemGateway extends AbstractGateway {
 				->whereUnNest();
 		}
 		$select->order($order);
-
+		
 		return $this->getPagingArray($select, $params, $pageSize, $page);
 	}
 

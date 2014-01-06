@@ -10,41 +10,63 @@ Ext.define('NP.view.catalog.SearchForm', {
 
 	requires: [
 		'NP.lib.core.Translator',
+		'NP.lib.ui.ListPicker',
 		'Ext.layout.container.Column'
 	],
 
 	layout: 'column',
 
 	initComponent: function() {
-		var that = this;
+		var that     = this,
+			catStore = {
+				type: 'catalog.vc',
+				service: 'CatalogService',
+				action: 'getCatalogs',
+				extraParams: {
+					catalogType: 'excel'
+				},
+				autoLoad: true
+			},
+			catPicker;
+
+		if (that.advancedSearch) {
+			catPicker = {
+				xtype       : 'listpicker',
+				title       : '',
+				name        : 'vccat_id',
+				id          : 'vccat_id',
+				labelWidth  : !this.advancedSearch ? 60 : 120,
+				displayField: 'vc_catalogname',
+				valueField  : 'vc_id',
+				fieldLabel  : !that.advancedSearch ? NP.Translator.translate('Search') : NP.Translator.translate('Advanced Search'),
+				store       : catStore,
+				margin      : '0 0 5 0',
+				width       : !that.advancedSearch ? 300 : 360
+			};
+		} else {
+			catPicker = {
+				xtype                  : 'customcombo',
+				name                   : 'vccat_id',
+				id                     : 'vccat_id',
+				labelWidth             : !this.advancedSearch ? 60 : 120,
+				displayField           : 'vc_catalogname',
+				valueField             : 'vc_id',
+				fieldLabel             : !that.advancedSearch ? NP.Translator.translate('Search') : NP.Translator.translate('Advanced Search'),
+				store                  : catStore,
+				blankRecordDisplayValue: !that.advancedSearch ? 'All' : '',
+				selectFirstRecord      : !that.advancedSearch ? false : true,
+				addBlankRecord         : !that.advancedSearch ? true : false,
+				multiSelect            : !that.advancedSearch ? false : true,
+				queryMode              : 'local',
+				editable               : false,
+				typeAhead              : false,
+				margin                 : '0 0 5 0',
+				width                  : !that.advancedSearch ? 300 : 360
+			};
+		}
 
 		this.items = [
-			{
-				xtype: 'customcombo',
-				name: 'vccat_id',
-				id: 'vccat_id',
-				labelWidth: !this.advancedSearch ? 60 : 120,
-				displayField: 'vc_catalogname',
-				valueField: 'vc_id',
-				fieldLabel: !that.advancedSearch ? NP.Translator.translate('Search') : NP.Translator.translate('Advanced Search'),
-				store: Ext.create('NP.store.catalog.Vc', {
-					service: 'CatalogService',
-					action: 'getCatalogs',
-					extraParams: {
-						catalogType: 'excel'
-					},
-					autoLoad: true
-				}),
-				blankRecordDisplayValue: !that.advancedSearch ? 'All' : '',
-				selectFirstRecord: !that.advancedSearch ? false : true,
-				addBlankRecord: !that.advancedSearch ? true : false,
-				multiSelect: !that.advancedSearch ? false : true,
-				queryMode: 'local',
-				editable: false,
-				typeAhead: false,
-				margin: '0 0 5 0',
-				width: !that.advancedSearch ? 300 : 360
-			},
+			catPicker,
 			{
 				xtype: 'customcombo',
 				name: 'item_name',
@@ -109,9 +131,22 @@ Ext.define('NP.view.catalog.SearchForm', {
 						Ext.Msg.alert('Error', 'You must enter a search term.');
 					} else {
 						if (that.advancedSearch) {
-							that.fireEvent('advancedsearch', !that.getChildByElement('vccat_id').getValue() ? '' : that.getChildByElement('vccat_id').getValue(), that.getChildByElement('item_name').getValue(),!that.getChildByElement('property_id').getValue() ? '' : that.getChildByElement('property_id').getValue(), that.getChildByElement('keyword').getValue());
+							that.fireEvent(
+								'advancedsearch', 
+								!that.getChildByElement('vccat_id').getValue() ? '' : that.getChildByElement('vccat_id').getValue(),
+								that.getChildByElement('item_name').getValue(),
+								!that.getChildByElement('property_id').getValue() ? '' : that.getChildByElement('property_id').getValue(),
+								that.getChildByElement('keyword').getValue()
+							);
 						} else {
-							that.fireEvent('searchitems', !that.getChildByElement('vccat_id').getValue() ? '' : that.getChildByElement('vccat_id').getValue(), that.getChildByElement('item_name').getValue(),!that.getChildByElement('property_id').getValue() ? '' : that.getChildByElement('property_id').getValue(), that.getChildByElement('keyword').getValue(), that.advancedSearch ? that.advancedSearch : false);
+							that.fireEvent(
+								'searchitems',
+								!that.getChildByElement('vccat_id').getValue() ? '' : that.getChildByElement('vccat_id').getValue(),
+								that.getChildByElement('item_name').getValue(),
+								!that.getChildByElement('property_id').getValue() ? '' : that.getChildByElement('property_id').getValue(),
+								that.getChildByElement('keyword').getValue(),
+								that.advancedSearch ? that.advancedSearch : false
+							);
 						}
 					}
 				}
