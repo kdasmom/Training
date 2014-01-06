@@ -41,6 +41,8 @@ Ext.define('NP.model.catalog.VcItem', {
 		{ name: 'vcitem_weight' },
 
 		// These fields are not DB columns in the VCITEM table
+		{ name: 'vc_vendorname' },
+
 		{ name: 'UNSPSC_Commodity_FamilyTitle' }
 	],
 

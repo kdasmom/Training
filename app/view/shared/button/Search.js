@@ -1,17 +1,20 @@
 /**
- * Search button
- * Created by rnixx on 10/15/13.
+ * Created by Andrey Baranov
+ * date: 11/26/13 4:44 PM
  */
+
 Ext.define('NP.view.shared.button.Search', {
-    extend: 'Ext.button.Button',
-    alias: 'widget.shared.button.search',
+	extend: 'Ext.button.Button',
+	alias: 'widget.shared.button.search',
 
-    text   : 'Search',
-    iconCls: 'search-btn',
+	requires: ['NP.lib.core.Translator'],
 
-    initComponent: function() {
-    	this.text = NP.Translator.translate(this.text);
-    	
-    	this.callParent(arguments);
-    }
+	text   : 'Search',
+	iconCls: 'search-btn',
+
+	initComponent: function() {
+		this.text = NP.Translator.translate(this.text);
+
+		this.callParent(arguments);
+	}
 });

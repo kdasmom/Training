@@ -228,6 +228,24 @@ Ext.define('NP.controller.Viewport', {
 						openInvoice(rec.get('invoice_id'));
 					}
                 }
+			},
+
+			'#vcMenuBtn,#vendorCatalogListing' : {
+				click: function() {
+					this.addHistory('VendorCatalog:showVendorCatalogListing');
+				}
+			},
+
+			'#vcOrders': {
+				click: function() {
+					this.addHistory('VendorCatalog:showOpenOrders');
+				}
+			},
+
+			'#vcFavorites': {
+				click: function() {
+					this.addHistory('VendorCatalog:showFavorites');
+				}
 			}
 		});
 	},

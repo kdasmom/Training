@@ -3,6 +3,7 @@
 namespace NP\property;
 
 use NP\core\AbstractGateway;
+use NP\core\db\Expression;
 use NP\core\db\Select;
 use NP\core\db\Update;
 use NP\core\db\Delete;
@@ -261,7 +262,54 @@ class PropertyGateway  extends AbstractGateway {
 		return $this->adapter->query($update, $property_id_list);
 	}
 
-    /**
+	/**
+	 * Retrieve order's properties
+	 *
+	 * @param $vc_id
+	 * @param $userprofile_id
+	 * @param $delegation_to_userprofile_id
+	 * @return array|bool
+	 */
+	public function getOrderProperties($vc_id, $userprofile_id, $delegation_to_userprofile_id) {
+		$select = new Select();
+		$subSelect = new Select();
+
+		$subSelect->from(['l' => 'link_vc_property'])
+				->whereEquals('l.property_id', 'p.property_id')
+				->whereEquals('l.vc_id', '?');
+		$params = [];
+
+		if ($delegation_to_userprofile_id == $userprofile_id) {
+			$select->from(['pu' => 'propertyuserprofile'])
+				->columns([])
+				->join(['p' => 'property'], 'pu.property_id = p.property_id', ['property_id', 'property_name'])
+				->whereEquals('pu.userprofile_id', '?');
+			$params[] = $userprofile_id;
+		} else {
+			$select->from(['d' => 'delegation'])
+					->columns([])
+					->join(['dp' => 'delegationprop'], 'd.delegation_id = dp.delegation_id', [])
+					->join(['p' => 'property'], 'dp.property_id = p.property_id', ['property_id', 'property_name'])
+					->whereLessThanOrEqual('d.delegation_startdate', new Expression('getDate()'))
+					->whereGreaterThan('d.delegation_stopdate', new Expression('getDate()'))
+					->whereEquals('d.userprofile_id', '?')
+					->whereEquals('d.delegation_to_userprofile_id', '?')
+					->whereEquals('d.delegation_status', '?');
+
+			$params[] = $userprofile_id;
+			$params[] = $delegation_to_userprofile_id;
+			$params[] = 1;
+		}
+
+		$select->whereEquals('p.property_status', '?')
+				->whereExists($subSelect);
+		$params[] = 1;
+		$params[] = $vc_id;
+
+		return $this->adapter->query($select, $params);
+	}
+
+	/**
      * Get user property list if userprofile_id = delegation_to_userprofile_id.
      * 
      * Analog: USER_PROPERTY_LISTING combined with UDF_USER_PROPERTY_LISTING

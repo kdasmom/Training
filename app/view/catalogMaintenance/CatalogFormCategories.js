@@ -21,6 +21,5 @@ Ext.define('NP.view.catalogMaintenance.CatalogFormCategories', {
     valueField  : 'vccat_id',
     fromTitle   : 'Unassigned',
     toTitle     : 'Assigned',
-    buttons     : ['add','remove'],
     msgTarget   : 'under'
 });

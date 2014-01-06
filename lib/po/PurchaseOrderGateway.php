@@ -277,6 +277,27 @@ class PurchaseOrderGateway extends AbstractGateway {
 
 		$this->adapter->query($update, $params);
 	}
+
+	/**
+	 * Retrieve order's POs
+	 *
+	 * @param $vendorsite_id
+	 * @param $property_id
+	 * @return array|bool
+	 */
+	public function getOrderPOs($vendorsite_id, $property_id) {
+		$select = new Select();
+
+		$select->from(['p' => 'purchaseorder'])
+				->where([
+						'vendorsite_id' 		=> '?',
+						'property_id'			=> '?',
+						'purchaseorder_status'	=> '?'
+				])
+				->order('purchaseorder_ref asc');
+
+		return $this->adapter->query($select, [$vendorsite_id, $property_id, 'open']);
+	}
 }
 
 ?>

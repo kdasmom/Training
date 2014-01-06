@@ -3,6 +3,7 @@
 namespace NP\catalog;
 
 use NP\core\AbstractGateway;
+use NP\core\db\Select;
 
 /**
  * Gateway for the VC table
@@ -43,6 +44,139 @@ class VcGateway extends AbstractGateway {
 		}
 	}
 
+	/**
+	 * Retrieve catalog list
+	 *
+	 * @param $catalog_type
+	 * @return array|bool
+	 */
+	public function getCatalogs($catalog_type) {
+		$select = new Select();
+
+		$where = [];
+		$params = [];
+
+		if ($catalog_type) {
+			$where['vc_catalogtype'] = '?';
+			$params[] = $catalog_type;
+		}
+		$select->from('vc')
+				->where($where)
+				->order(['vc_catalogname']);
+
+		return $this->adapter->query($select, $params);
+	}
+
+	/**
+	 * Retrieve catalog list from the search action
+	 *
+	 * @param $userprofile_id
+	 * @param $filterItem
+	 * @param $propertyId
+	 * @param $keyword
+	 * @param $page
+	 * @param $pagesize
+	 * @return array|bool
+	 */
+	public function findCatalogsByFilter($userprofile_id, $filterItem, $propertyId, $keyword, $page = 1, $pagesize = null) {
+		$select = new Select();
+		$select2 = new Select();
+		$subQuery = new Select();
+
+		$where = [
+			'pup.userprofile_id' => '?'
+		];
+		$params = [$userprofile_id];
+		if ($propertyId) {
+			$where['lvp.property_id'] = '?';
+			$params = [$propertyId, $propertyId];
+		}
+
+		$subQuery->from(['lvp' => 'LINK_VC_PROPERTY'])
+			->join(['pup' => 'PROPERTYUSERPROFILE'], 'pup.property_id = lvp.property_id', [])
+			->where($where)
+			->whereEquals('lvp.vc_id', 'v.vc_id');
+
+		$select->from(['vi' => 'vcitem'])
+			->join(['v' => 'vc'], 'vi.vc_id = v.vc_id', ['vc_id', 'vc_catalogname', 'vc_vendorname'])
+			->join(['un' => 'UNSPSC_Commodity'], 'vi.UNSPSC_Commodity_Commodity = un.UNSPSC_Commodity_Commodity', null)
+			->columns(null)
+			->distinct()
+			->where(['v.vc_status' => '?'])
+			->where(['vi.vcitem_status' => '?'])
+			->whereIsNotNull('vi.UNSPSC_Commodity_Commodity')
+			->whereExists($subQuery);
+		$select2->from(['vi' => 'vcitem'])
+			->join(['v' => 'vc'], 'vi.vc_id = v.vc_id', ['vc_id', 'vc_catalogname', 'vc_vendorname'])
+			->columns(null)
+			->distinct()
+			->where(['v.vc_status' => '?'])
+			->where(['vi.vcitem_status' => '?'])
+			->whereIsNull('vi.UNSPSC_Commodity_Commodity')
+			->whereExists($subQuery);
+
+		if ($filterItem == 'category') {
+			$select->whereLike('un.UNSPSC_Commodity_FamilyTitle', "'%" . $keyword . "%'");
+			$select2->whereLike('un.UNSPSC_Commodity_FamilyTitle', "'%" . $keyword . "%'");
+		}
+		if ($filterItem == 'itemType') {
+			$select->whereLike('un.UNSPSC_Commodity_CommodityTitle', "'%" . $keyword . "%'");
+			$select2->whereLike('un.UNSPSC_Commodity_CommodityTitle', "'%" . $keyword . "%'");
+		}
+		if ($filterItem == 'vcitem_number') {
+			$select->whereLike('un.vcitem_number', "'" . $keyword . "%'");
+			$select2->whereLike('un.vcitem_number', "'" . $keyword . "%'");
+		}
+		if ($filterItem == 'vcitem_desc') {
+			$select->whereLike('un.vcitem_desc', "'%" . $keyword . "%'");
+			$select2->whereLike('un.vcitem_desc', "'%" . $keyword . "%'");
+		}
+		if ($filterItem == 'brand') {
+			$select->whereLike('un.vcitem_manufacturer', "'%" . $keyword . "%'");
+			$select2->whereLike('un.vcitem_manufacturer', "'%" . $keyword . "%'");
+		}
+		if ($filterItem == 'upc') {
+			$select->whereLike('un.vcitem_upc', "'%" . $keyword . "%'");
+			$select2->whereLike('un.vcitem_upc', "'%" . $keyword . "%'");
+		}
+
+		$sql = $select->toString() . ' union all ' . $select2->toString();
+
+		return $this->adapter->query($sql, $params);
+	}
+
+	/**
+	 * Retrieve order vendors
+	 *
+	 * @param $vc_id
+	 * @param $property_id
+	 * @return array|bool
+	 */
+	public function getOrderVendors($vc_id, $property_id) {
+		$select = new Select();
+
+		$subSelect = new Select();
+
+		$subSelect->from(['l' => 'link_vc_vendor'])
+			->whereEquals('l.vendor_id', 'v.vendor_id')
+			->whereEquals('l.vc_id', '?');
+
+		$select->from(['v' => 'vendor'])
+			->distinct()
+			->columns(['vendor_id_alt', 'vendor_name', 'vendor_id'])
+			->join(['vs' => 'vendorsite'], 'v.vendor_id = vs.vendor_id', ['vendorsite_id'])
+			->join(['a' => 'address'], 'a.tablekey_id = vs.vendorsite_id', ['address_city', 'address_zip'], Select::JOIN_LEFT)
+			->whereEquals('v.vendor_status', "'active'")
+			->whereEquals('vs.vendorsite_status', "'active'")
+			->whereEquals('a.table_name', "'vendorsite'")
+			->whereEquals('v.integration_package_id', Select::get()->column('integration_package_id')
+				->from(['p' => 'property'])
+				->where(['property_id' => '?']))
+			->whereExists($subSelect)
+			->order('vendor_name asc');
+
+		return $this->adapter->query($select, [$property_id, $vc_id]);
+	}
 }
 
 ?>

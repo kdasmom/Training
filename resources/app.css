@@ -51,6 +51,7 @@
 .reset-btn { background-image: url("images/buttons/reset.gif"); width: 17px !important; }
 .revert-btn { background-image: url("images/buttons/revert.gif"); }
 .route-btn { background-image: url("images/buttons/route.gif"); }
+.search-btn { background-image: url("images/buttons/search.gif"); background-repeat: no-repeat;}
 .save-btn { background-image: url("images/buttons/save.gif"); }
 .save-and-add-btn { background-image: url("images/buttons/save_and_add.gif"); }
 .save-and-next-btn { background-image: url("images/buttons/save_and_next.gif"); width: 24px !important; }
@@ -66,6 +67,8 @@
 .upload-sheet-btn { background-image: url("images/buttons/upload_sheet.gif"); }
 .view-btn { background-image: url("images/buttons/view.gif"); }
 .void-btn { background-image: url("images/buttons/void.gif"); }
+.shop-btn { background-image: url("images/buttons/vc_shopping_bag.gif"); }
+.star-btn { background-image: url("images/buttons/icon_star.gif"); }
 
 .npiss-button .x-btn-inner { padding-left: 24px !important; }
 .nsiss-button .x-btn-inner { padding-left: 34px !important; }
@@ -92,7 +95,6 @@
 /* GRIDS */
 .grid-clickable-col:hover { text-decoration:underline; cursor: pointer; }
 .grid-invalid-cell { background-color: #F2C2C2 !important; }
-
 /* this makes a summary grid cell bold */
 .x-grid-row-summary .x-grid-cell-inner {
     font-weight: bold;
@@ -219,6 +221,49 @@
 	#warningTable .warning_title {
 		font-weight: bold;	
 	}
+
+/* VENDOR CATALOG SECTION */
+.vccat-div {
+	display: table-cell;
+	float  : left;
+	width  : 50%;
+	padding: 4px;
+}
+
+.vccat-icon {
+	float        : left;
+	position     : relative;
+	padding-right: 10px;
+	height       : 100%;
+}
+
+.vccat-list {
+	color      : #72afd8;
+	font-weight: bold;
+	float      :left;
+	position   : relative;
+}
+
+.vccat-list ul {
+	padding   : 0;
+	margin    : 6px 0 6px 12px;
+	list-style: square;
+}
+
+.vccat-item {
+	color          : black;
+	font-weight    : normal;
+	text-decoration: underline;
+	cursor         : pointer;
+}
+
+.vc-shop-by {
+	text-decoration: underline;
+	float          : left;
+	width          : 50%;
+	cursor         : pointer;
+	margin         : 2px 0 2px 0;
+}
 
 /* Invoice/PO Print Template */
 #entityPrintTable td, #entityPrintLines th, #entityPrintLines td { font-size: 10pt; padding:0; }

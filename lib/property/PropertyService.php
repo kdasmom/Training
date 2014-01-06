@@ -12,14 +12,15 @@ use NP\system\ConfigService;
 class PropertyService extends AbstractService {
 	
 	protected $securityService, $invoiceService, $poService, $configService,
-			$fiscalCalService;
+			$fiscalCalService, $unitTypeMeasGateway;
 	
 	public function __construct(SecurityService $securityService, InvoiceService $invoiceService,
-								PoService $poService, FiscalCalService $fiscalCalService) {
+								PoService $poService, FiscalCalService $fiscalCalService, UnitTypeMeasGateway $unitTypeMeasGateway) {
 		$this->securityService            = $securityService;
 		$this->invoiceService             = $invoiceService;
 		$this->poService                  = $poService;
 		$this->fiscalCalService           = $fiscalCalService;
+		$this->unitTypeMeasGateway			= $unitTypeMeasGateway;
 	}
 
 	/**
@@ -1254,6 +1255,10 @@ class PropertyService extends AbstractService {
             'success' => (count($errors)) ? false : true,
             'error'  => $error
         );
+	}
+
+	public function getUnitTypeMeasByPropertyId($property_id) {
+		return $this->unitTypeMeasGateway->findMeasByPropertyId($property_id);
 	}
 }
 

@@ -16,8 +16,9 @@ Ext.define('NP.lib.ui.ListPicker', {
 
     layout: 'anchor',
     
-    tbar: null,
-    listConfig: {},
+    tbar       : null,
+    listConfig : {},
+    multiSelect: true,
     
     initComponent: function() {
         var me = this;
@@ -47,7 +48,7 @@ Ext.define('NP.lib.ui.ListPicker', {
             anchor             : 'none 100%',
             deferInitialRefresh: false,
             border             : 1,
-            multiSelect        : true,
+            multiSelect        : me.multiSelect,
             store              : me.store,
             displayField       : me.displayField,
             valueField         : me.valueField,
@@ -107,6 +108,143 @@ Ext.define('NP.lib.ui.ListPicker', {
                     me.typedText = '';
                 }
             }, 500);
+        }
+    },
+
+    getValue: function() {
+        var me   = this,
+            recs = me.getSelectionModel().getSelection(),
+            vals = [],
+            i;
+
+        for (i=0; i<recs.length; i++) {
+            vals.push(recs[i].get(me.valueField));
+        }
+
+        return vals;
+    },
+
+    setValue: function(vals) {
+        var me = this,
+            store = me.getStore(),
+            selModel = me.getSelectionModel(),
+            rec,
+            recs = [];
+        
+        if (!me.store.isLoaded) {
+            me.store.on({
+                load: Ext.bind(me.setValue, me, [vals]),
+                single: true
+            });
+            
+            return;
+        }
+        
+        if (!Ext.isArray(vals)) {
+            vals = [vals];
+        }
+        
+        Ext.suspendLayouts();
+        
+        for (var i=0; i<vals.length; i++) {
+            rec = vals[i];
+            if (Ext.getClassName(rec) == '') {
+                rec = me.store.findRecord(me.valueField, rec);
+                if (found === -1) {
+                    rec = null;
+                }
+            } else {
+                var found = me.store.findRecord(me.valueField, rec.get(me.valueField));
+                if (found === -1) {
+                    rec = null;
+                }
+            }
+            
+            if (rec !== null) {
+                recs.push(rec);
+            }
+        }
+        
+        selModel.select(recs);
+
+        Ext.resumeLayouts(true);
+    },
+
+    getSubmitData: function() {
+        var data = {};
+        data[this.getName()] = this.getSubmitValue()
+        return data;
+    },
+
+    getSubmitValue: function() {
+        return this.getValue();
+    },
+    
+    getErrors : function(value) {
+        var me = this,
+            format = Ext.String.format,
+            errors = [],
+            numSelected;
+
+        value = Ext.Array.from(value || me.getValue());
+        numSelected = value.length;
+
+        if (!me.allowBlank && numSelected < 1) {
+            errors.push(me.blankText);
+        }
+
+        return errors;
+    },
+
+    isValid : function() {
+        var me = this,
+            disabled = me.disabled,
+            validate = me.forceValidation || !disabled;
+            
+        
+        return validate ? me.validateValue(me.value) : disabled;
+    },
+    
+    validateValue: function(value) {
+        var me = this,
+            errors = me.getErrors(value),
+            isValid = Ext.isEmpty(errors);
+            
+        if (!me.preventMark) {
+            if (isValid) {
+                me.clearInvalid();
+            } else {
+                me.markInvalid(errors);
+            }
+        }
+
+        return isValid;
+    },
+    
+    markInvalid : function(errors) {
+        // Save the message and fire the 'invalid' event
+        var me = this,
+            oldMsg = me.getActiveError();
+        me.setActiveErrors(Ext.Array.from(errors));
+        if (oldMsg !== me.getActiveError()) {
+            me.updateLayout();
+        }
+    },
+
+    /**
+     * Clear any invalid styles/messages for this field.
+     *
+     * __Note:__ this method does not cause the Field's {@link #validate} or {@link #isValid} methods to return `true`
+     * if the value does not _pass_ validation. So simply clearing a field's errors will not necessarily allow
+     * submission of forms submitted with the {@link Ext.form.action.Submit#clientValidation} option set.
+     */
+    clearInvalid : function() {
+        // Clear the message and fire the 'valid' event
+        var me = this,
+            hadError = me.hasActiveError();
+        me.unsetActiveError();
+        if (hadError) {
+            me.updateLayout();
         }
     }
 });

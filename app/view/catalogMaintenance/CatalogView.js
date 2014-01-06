@@ -24,7 +24,7 @@ Ext.define('NP.view.catalogMaintenance.CatalogView', {
     initComponent: function() {
         var that = this;
 
-        var bar = [
+        this.tbar = [
             { xtype: 'shared.button.back' },
             { xtype: 'shared.button.edit' },
             { xtype: 'shared.button.camera', text: 'Upload Vendor Logo' },
@@ -32,9 +32,6 @@ Ext.define('NP.view.catalogMaintenance.CatalogView', {
             { xtype: 'shared.button.activate', hidden: true },
             { xtype: 'shared.button.inactivate', hidden: true }
         ];
-
-        this.tbar = bar;
-        this.bbar = bar;
 
         this.callParent(arguments);
     }
