@@ -27,42 +27,32 @@ Ext.define('NP.view.catalog.SearchForm', {
 				},
 				autoLoad: true
 			},
-			catPicker;
-
-		if (that.advancedSearch) {
 			catPicker = {
-				xtype       : 'listpicker',
-				title       : '',
 				name        : 'vccat_id',
 				id          : 'vccat_id',
-				labelWidth  : !this.advancedSearch ? 60 : 120,
+				labelWidth  : 120,
 				displayField: 'vc_catalogname',
 				valueField  : 'vc_id',
-				fieldLabel  : !that.advancedSearch ? NP.Translator.translate('Search') : NP.Translator.translate('Advanced Search'),
 				store       : catStore,
-				margin      : '0 0 5 0',
-				width       : !that.advancedSearch ? 300 : 360
+				margin      : '0 0 5 0'
 			};
+
+		if (that.advancedSearch) {
+			Ext.apply(catPicker, {
+				xtype       : 'listpicker',
+				title       : '',
+				labelWidth  : 120,
+				fieldLabel  : NP.Translator.translate('Advanced Search'),
+				width       : 360
+			});
 		} else {
-			catPicker = {
-				xtype                  : 'customcombo',
-				name                   : 'vccat_id',
-				id                     : 'vccat_id',
-				labelWidth             : !this.advancedSearch ? 60 : 120,
-				displayField           : 'vc_catalogname',
-				valueField             : 'vc_id',
-				fieldLabel             : !that.advancedSearch ? NP.Translator.translate('Search') : NP.Translator.translate('Advanced Search'),
-				store                  : catStore,
-				blankRecordDisplayValue: !that.advancedSearch ? 'All' : '',
-				selectFirstRecord      : !that.advancedSearch ? false : true,
-				addBlankRecord         : !that.advancedSearch ? true : false,
-				multiSelect            : !that.advancedSearch ? false : true,
-				queryMode              : 'local',
-				editable               : false,
-				typeAhead              : false,
-				margin                 : '0 0 5 0',
-				width                  : !that.advancedSearch ? 300 : 360
-			};
+			Ext.apply(catPicker, {
+				xtype       : 'customcombo',
+				labelWidth  : 60,
+				fieldLabel  : NP.Translator.translate('Search'),
+				emptyText   : NP.Translator.translate('All Catalogs'),
+				width       : 300
+			});
 		}
 
 		this.items = [

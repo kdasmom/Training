@@ -73,6 +73,7 @@ Ext.define('NP.view.catalogMaintenance.types.Punchout', {
 		var me = this;
 
 		var view = Ext.create('Ext.panel.Panel', {
+			border: false,
 			layout: 'fit',
 			height: '100%',
 			tbar: [
