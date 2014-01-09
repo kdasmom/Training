@@ -501,7 +501,7 @@ Ext.define('NP.controller.GLAccountSetup', {
                 success: function(result, deferred) {
                     grid.getStore().commitChanges();
                     // Show a friendly message saying action was successful
-                    NP.Util.showFadingWindow({ html: that['orderSuccessText'] });
+                    NP.Util.showFadingWindow({ html: me['orderSuccessText'] });
                 },
                 failure: function(response, options, deferred) {
                     grid.getStore().rejectChanges();
