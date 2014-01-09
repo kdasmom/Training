@@ -24,10 +24,6 @@ Ext.define('NP.view.gl.GLAccountsForm', {
     autoScroll: true,
       
     bodyPadding: 8,
-    layout: {
-        type : 'vbox',
-        align: 'stretch'
-    },
     
     intPkgText       : 'Integration Package',
     glNumberFieldText: 'GL Number',
@@ -95,7 +91,10 @@ Ext.define('NP.view.gl.GLAccountsForm', {
                 store       : {
                                 type   : 'gl.glaccounts',
                                 service: 'GLService',
-                                action : 'getCategories'
+                                action : 'getCategories',
+								extraParams: {
+									activeOnly: true
+								}
                             },
                 displayField: 'glaccount_name',
                 valueField  : 'tree_id',

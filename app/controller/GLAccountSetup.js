@@ -360,14 +360,16 @@ Ext.define('NP.controller.GLAccountSetup', {
         Ext.each(['tree_parent','vendors','properties'], function(fieldName) {
             var field = form.findField(fieldName);
 
-            if (integration_package_id !== null) {
-                field.getStore().addExtraParams({
-                    integration_package_id: integration_package_id
-                });
-                field.getStore().load();
-            } else if (fieldName == 'tree_parent') {
-                field.getStore().removeAll();
-            }
+			if (field !== null) {
+				if (integration_package_id !== null) {
+					field.getStore().addExtraParams({
+						integration_package_id: integration_package_id
+					});
+					field.getStore().load();
+				} else if (fieldName == 'tree_parent') {
+					field.getStore().removeAll();
+				}
+			}
         });
     },
 

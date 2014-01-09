@@ -39,8 +39,8 @@ class GLService extends AbstractService {
     /**
      * Returns all Category in the system
      */
-    public function getCategories($integration_package_id=null) {
-        return $this->glAccountGateway->getCategories($integration_package_id);
+    public function getCategories($integration_package_id=null, $activeOnly = false) {
+        return $this->glAccountGateway->getCategories($integration_package_id, $activeOnly);
     }
         
     /**

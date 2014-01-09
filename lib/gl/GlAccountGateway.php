@@ -300,7 +300,7 @@ class GlAccountGateway extends AbstractGateway {
     /**
      * 
      */
-    public function getCategories($integration_package_id=null) {
+    public function getCategories($integration_package_id=null, $activeOnly = false) {
         $select = new Select();
         $select->columns(array('glaccount_id','integration_package_id','glaccount_name','glaccount_status','glaccount_category' =>'glaccount_name', 'glaccount_order'))
                 ->from(array('g'=>'glaccount'))
@@ -314,6 +314,11 @@ class GlAccountGateway extends AbstractGateway {
             $select->whereEquals('g.integration_package_id', '?');
             $params[] = $integration_package_id;
         }
+
+		if ($activeOnly) {
+			$select->whereEquals('g.glaccount_status', '?');
+			$params[] = 'active';
+		}
 
         return $this->adapter->query($select, $params);
     }
