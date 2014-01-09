@@ -306,7 +306,7 @@ class GlAccountGateway extends AbstractGateway {
                 ->from(array('g'=>'glaccount'))
                 ->join(new sql\join\GlAccountTreeJoin(array('tree_id')))
                 ->whereIsNull('glaccounttype_id')
-                ->order('g.glaccount_order');
+                ->order('g.glaccount_name, g.glaccount_order');
 
         $params = [];
         if ($integration_package_id !== null) {

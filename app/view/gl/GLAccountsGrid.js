@@ -178,7 +178,16 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
                                 },
                                 displayField: 'glaccount_name',
                                 valueField  : 'tree_id',
-                                emptyText   : 'All'
+                                emptyText   : 'All',
+								tpl: new Ext.XTemplate(
+									'<tpl for="." >',
+										'<div class="x-boundlist-item">',
+											'{glaccount_name} ',
+											'<tpl if="glaccount_status == \'inactive\'">',
+												'(Inactive)',
+											'</tpl>',
+										'</div>',
+									'</tpl>')
                             }
                         ]
                     }
