@@ -3,6 +3,7 @@
 namespace NP\budget;
 
 use NP\core\AbstractService;
+use NP\property\FiscalCalService;
 use NP\util\SoapService;
 
 /**
