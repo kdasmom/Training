@@ -48,8 +48,8 @@ class GLService extends AbstractService {
      *
      * @return array
      */
-    public function getAllGLAccounts($integration_package_id=null, $glaccount_from=null,$glaccount_to=null,$glaccount_status=null, $property_id=null, $glaccounttype_id=null, $glaccount_category=null, $pageSize=null, $page=1, $sort='glaccount_name') {
-        return $this->glAccountGateway->findByFilter($integration_package_id, $glaccount_from, $glaccount_to, $glaccount_status, $property_id, $glaccounttype_id, $glaccount_category, $pageSize, $page, $sort);
+    public function getAllGLAccounts($integration_package_id=null, $glaccount_from=null,$glaccount_to=null,$glaccount_status=null, $property_id=null, $glaccounttype_id=null, $glaccount_category=null, $glaccount_name = null, $pageSize=null, $page=1, $sort='glaccount_name') {
+        return $this->glAccountGateway->findByFilter($integration_package_id, $glaccount_from, $glaccount_to, $glaccount_status, $property_id, $glaccounttype_id, $glaccount_category, $glaccount_name, $pageSize, $page, $sort);
     }
         
     /**

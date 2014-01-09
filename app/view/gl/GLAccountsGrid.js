@@ -52,28 +52,18 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
             action     : 'getAllGLAccounts',
             paging     : true,
             extraParams: {
-                glaccount_from    : null,
-                glaccount_to      : null,
-                glaccount_status  : null,
-                property_id       : null,
-                glaccounttype_id  : null,
-                glaccount_category: null
+                glaccount_from    	: null,
+                glaccount_to      	: null,
+                glaccount_status  	: null,
+                property_id       	: null,
+                glaccounttype_id  	: null,
+                glaccount_category	: null,
+				glaccount_name		: null
             }
         });
 
         this.items = [
             {
-                xtype       : 'customcombo',
-                fieldLabel  : this.intPkgText,
-                labelWidth  : filterLabelWidth,
-                store       : 'system.IntegrationPackages',
-                name        : 'integration_package_id',
-                displayField: 'integration_package_name',
-                valueField  : 'integration_package_id',
-                emptyText   : 'All',
-                margin      : '8 8 0 8',
-                labelAlign  : 'left'
-            },{
                 xtype: 'panel',
                 layout: 'column',
                 border: false,
@@ -108,6 +98,18 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
                             labelWidth: filterLabelWidth
                         },
                         items: [
+							{
+								xtype       : 'customcombo',
+								fieldLabel  : this.intPkgText,
+								labelWidth  : filterLabelWidth,
+								store       : 'system.IntegrationPackages',
+								name        : 'integration_package_id',
+								displayField: 'integration_package_name',
+								valueField  : 'integration_package_id',
+								emptyText   : 'All',
+								margin      : '8 8 0 8',
+								labelAlign  : 'left'
+							},
                             {
                                 xtype     : 'textfield',
                                 name      : 'glaccount_from',
@@ -149,6 +151,11 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
                         margin     : '0 0 0 16',
                         layout     : 'form',
                         items      : [
+                            {
+                                xtype     : 'textfield',
+                                name      : 'glaccount_name',
+                                fieldLabel: 'Name'
+                            },
                             {
                                 xtype     : 'textfield',
                                 name      : 'glaccount_to',
@@ -270,8 +277,9 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
         this.propertyFilter = this.query('[name="property_id"]')[0];
         this.typeFilter     = this.query('[name="glaccounttype_id"]')[0];
         this.categoryFilter = this.query('[name="glaccount_category"]')[0];
+        this.nameFilter = this.query('[name="glaccount_name"]')[0];
 
-        this.filterFields = ['intPkgFilter','fromFilter','toFilter','statusFilter', 'propertyFilter', 'typeFilter', 'categoryFilter'];
+        this.filterFields = ['intPkgFilter','fromFilter','toFilter','statusFilter', 'propertyFilter', 'typeFilter', 'categoryFilter', 'nameFilter'];
     },
 
     applyFilter: function() {

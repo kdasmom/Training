@@ -18,7 +18,7 @@ Ext.define('NP.view.gl.GLAccountsForm', {
         'NP.view.shared.PropertyAssigner',
         'NP.view.shared.button.Cancel',
         'NP.view.shared.button.Save',
-        'NP.view.shared.button.SaveAndAdd',
+        'NP.view.shared.button.SaveAndAdd'
     ],
 
     autoScroll: true,
@@ -47,7 +47,7 @@ Ext.define('NP.view.gl.GLAccountsForm', {
             { xtype: 'button', text: 'Previous', itemId: 'prevGlacoountBtn', hidden: true, iconCls: 'back-btn' },
             { xtype: 'button', text: 'Save and Previous', itemId: 'prevSaveGlacoountBtn', hidden: true, iconCls: 'save-back-btn' },
             { xtype: 'button', text: 'Save and Next', itemId: 'nextSaveGlacoountBtn', hidden: true, iconCls: 'save-next-btn' },
-            { xtype: 'button', text: 'Next', itemId: 'nextGlacoountBtn', hidden: true, iconCls: 'next-btn' },
+            { xtype: 'button', text: 'Next', itemId: 'nextGlacoountBtn', hidden: true, iconCls: 'next-btn' }
         ];
         this.tbar = bar;
         this.bbar = bar;
@@ -56,7 +56,7 @@ Ext.define('NP.view.gl.GLAccountsForm', {
             // Ids
             {
                 xtype       : 'hidden',
-                name        : 'glaccount_id_list',
+                name        : 'glaccount_id_list'
             },
             // Integration Packages
             {

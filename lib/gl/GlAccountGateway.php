@@ -238,7 +238,7 @@ class GlAccountGateway extends AbstractGateway {
     /**
      * 
      */
-    public function findByFilter($integration_package_id=null, $glaccount_from=null,$glaccount_to=null,$glaccount_status=null, $property_id=null, $glaccounttype_id=null, $glaccount_category=null, $pageSize=null, $page=1, $sort='glaccount_name') {
+    public function findByFilter($integration_package_id=null, $glaccount_from=null,$glaccount_to=null,$glaccount_status=null, $property_id=null, $glaccounttype_id=null, $glaccount_category=null, $glaccount_name = null, $pageSize=null, $page=1, $sort='glaccount_name') {
         $select = $this->getSelect()
                         ->join(new sql\join\GlAccountIntegrationPackageJoin())
                         ->order($sort);
@@ -283,6 +283,11 @@ class GlAccountGateway extends AbstractGateway {
             $select->whereEquals('t2.tree_id', '?');
             $params[] = $glaccount_category;
         }
+
+		if ($glaccount_name !== null && $glaccount_name !== '') {
+			$select->whereLike('g.glaccount_name', '?');
+			$params[] = '%' . $glaccount_name . '%';
+		}
 
         // If paging is needed
         if ($pageSize !== null) {
