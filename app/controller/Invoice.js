@@ -10,20 +10,23 @@ Ext.define('NP.controller.Invoice', {
 		'NP.lib.core.Config',
 		'NP.lib.core.Security',
 		'NP.lib.core.Net',
+		'NP.lib.core.Translator',
+		'NP.lib.core.Net',
 		'NP.view.shared.invoicepo.SplitWindow'
 	],
 	
 	models: ['NP.model.invoice.InvoiceItem'],
 
 	stores: ['invoice.Invoices','system.PriorityFlags','invoice.InvoicePaymentTypes',
-			'invoice.InvoiceItems','invoice.InvoicePayments'],
+			'invoice.InvoiceItems','invoice.InvoicePayments','shared.Reasons'],
 	
-	views: ['invoice.Register','invoice.View','invoice.VoidWindow'],
+	views: ['invoice.Register','invoice.View','invoice.VoidWindow','invoice.HoldWindow'],
 
 	refs: [
 		{ ref: 'invoiceView', selector: '[xtype="invoice.view"]' },
 		{ ref: 'invoiceViewToolbar', selector: '[xtype="invoice.viewtoolbar"]' },
-		{ ref: 'headerPropertyCombo', selector: '#headerPropertyCombo' },
+		{ ref: 'invoicePropertyCombo', selector: '#invoicePropertyCombo' },
+		{ ref: 'invoiceVendorCombo', selector: '#invoiceVendorCombo' },
 		{ ref: 'lineMainView', selector: '[xtype="shared.invoicepo.viewlineitems"]' },
 		{ ref: 'lineView', selector: '[xtype="shared.invoicepo.viewlines"]' },
 		{ ref: 'lineDataView', selector: '[xtype="shared.invoicepo.viewlines"] dataview' },
@@ -69,7 +72,7 @@ Ext.define('NP.controller.Invoice', {
 			},
 
 			// Clicking on the New Invoice button
-			'#newInvoiceBtn': {
+			'#newInvoiceBtn,#newInvoiceMenuBtn': {
 				click: function() {
 					me.addHistory('Invoice:showView');
 				}
@@ -111,9 +114,14 @@ Ext.define('NP.controller.Invoice', {
 				changeamount        : me.onChangeAmount.bind(me)
 			},
 
+			// Property combo on the invoice view page
+			'#invoicePropertyCombo': {
+				select: me.onPropertyComboSelect
+			},
+
 			// Vendor combo on the invoice view page
 			'#invoiceVendorCombo': {
-				select: me.onVendorComboSelect
+				select      : me.onVendorComboSelect
 			},
 
 			// Invoice image panel
@@ -150,8 +158,9 @@ Ext.define('NP.controller.Invoice', {
 			// Line item view
 			'[xtype="shared.invoicepo.viewlines"]': {
 				// Clicking the Split link on a line item
-				clicksplitline: me.onSplitLineClick.bind(me),
-				clickeditsplit: me.onSplitLineClick.bind(me)
+				clicksplitline : me.onSplitLineClick.bind(me),
+				clickeditsplit : me.onSplitLineClick.bind(me),
+				clickdeleteline: me.onDeleteLineClick.bind(me)
 			},
 
 			// Split grid
@@ -192,6 +201,27 @@ Ext.define('NP.controller.Invoice', {
 
 			'#invoiceVoidSaveBtn': {
 				click: me.onSaveVoidInvoice.bind(me)
+			},
+
+			// Button to show the void popup
+			'#invoiceOnHoldBtn': {
+				click: me.onShowOnHoldInvoice.bind(me)
+			},
+
+			'#invoiceOnHoldCancelBtn': {
+				click: me.onCancelOnHoldInvoice.bind(me)
+			},
+
+			'#invoiceOnHoldSaveBtn': {
+				click: me.onSaveOnHoldInvoice.bind(me)
+			},
+
+			'#activateBtn': {
+				click: me.onActivateInvoice.bind(me)
+			},
+
+			'#invoiceSaveBtn': {
+				click: me.onSaveInvoice
 			}
 		});
 	},
@@ -259,6 +289,13 @@ Ext.define('NP.controller.Invoice', {
 			Ext.apply(viewCfg, {
 				listeners      : {
 					dataloaded: function(boundForm, data) {
+						// Check if the invoice needs to be made readonly
+						if (me.isInvoiceReadOnly()) {
+							me.makeInvoiceReadOnly();
+						} else {
+							me.getLineEditBtn().enable();
+						}
+						
 						// Set the title
 						me.setInvoiceViewTitle();
 
@@ -294,12 +331,13 @@ Ext.define('NP.controller.Invoice', {
 						vendorField.addExtraParams({
 							property_id: data['property_id']
 						});
-						me.onVendorComboSelect();
+						me.setVendorDisplay();
 
 						// Set the property
 						propertyField.setDefaultRec(Ext.create('NP.model.property.Property', data));
 						// Add valid periods to the invoice period store
 						me.populatePeriods(data['accounting_period'], data['invoice_period']);
+						me.setPropertyFieldState(data['invoice_status']);
 
 						// Set the value for the period field; we need to do it manually because the BoundForm
 						// tries to set a date object (from the model) on the field, but since we're not dealing
@@ -328,7 +366,7 @@ Ext.define('NP.controller.Invoice', {
 			});
 		}
 
-		var form = me.setView('NP.view.invoice.View', viewCfg);
+		var form = me.setView('NP.view.invoice.View', viewCfg, '#contentPanel', true);
 
 		if (!invoice_id) {
 			// Set the title
@@ -336,12 +374,40 @@ Ext.define('NP.controller.Invoice', {
 
 			me.buildViewToolbar();
 
-			// Enable the vendor and property field when dealing with a new invoice
-			form.findField('vendor_id').enable();
+			// Enable the property field when dealing with a new invoice
 			form.findField('property_id').enable();
 
 			me.setDefaultPayBy();
 		}
+	},
+
+	setPropertyFieldState: function(invoice_status) {
+		var me    = this,
+			field = me.getInvoicePropertyCombo();
+
+		// Only allow changing the property field if the invoice is open and user has one of
+		// the following permissions: 'New Invoice', 'Modify Any', 'Modify Only Created';
+		// OR if the invoice is completed, user has 'Invoice Post Approval Modify' permission,
+		// and post approval modify is turned on
+		if (
+			(
+				invoice_status == 'open'
+				&& (
+					NP.Security.hasPermission(1032) 
+					|| NP.Security.hasPermission(6076) 
+					|| NP.Security.hasPermission(6077)
+				)
+			)
+			|| (
+				invoice_status == 'saved' 
+				&& NP.Security.hasPermission(1068) 
+				&& NP.Config.getSetting('PN.InvoiceOptions.SkipSave') == '0'
+			)
+		) {
+			field.enable();
+		} else {
+			field.disable();
+		}		
 	},
 
 	getVendorRecord: function() {
@@ -462,7 +528,7 @@ Ext.define('NP.controller.Invoice', {
 
 	loadPropertyStore: function(store, callback) {
 		var me    = this,
-			propertyField = me.getHeaderPropertyCombo(),
+			propertyField = me.getInvoicePropertyCombo(),
     		property_id   = propertyField.getValue(),
 			integration_package_id;
 
@@ -1060,13 +1126,132 @@ Ext.define('NP.controller.Invoice', {
 		Ext.resumeLayouts(true);
 	},
 
-	onVendorComboSelect: function() {
+	onPropertyComboSelect: function(propertyCombo, recs) {
+		var me          = this,
+			vendorCombo = me.getInvoiceVendorCombo();
+
+		if (recs.length) {
+			vendorCombo.enable();
+		} else {
+			vendorCombo.disable();
+		}
+	},
+
+	onVendorComboSelect: function(combo, recs) {
+		var me          = this,
+			invoice_id  = me.getInvoiceRecord().get('invoice_id'),
+			vendorField = me.getInvoiceVendorCombo(),
+			dialogTitle = NP.Translator.translate('Change Vendor?'),
+			dialogText  = NP.Translator.translate('Please note, when changing the vendor, all line items and previous approvals will be deleted from this invoice. Are you sure you want to proceed?');
+
+		function restoreVendor() {
+			var vendorStore = vendorField.getStore(),
+				idx         = vendorStore.indexOf(me.selectedVendor),
+				fn          = (idx === -1) ? 'setDefaultRec' : 'setValue';
+			
+			vendorField.suspendEvents(false);
+			
+			vendorField[fn](me.selectedVendor);
+
+			vendorField.resumeEvents();
+		}
+
+		if (me.selectedVendor) {
+			Ext.MessageBox.confirm(dialogTitle, dialogText, function(btn) {
+				// If user clicks Yes, proceed with deleting
+				if (btn == 'yes') {
+					// If dealing with a new invoice, we don't need to do an Ajax request
+					if (invoice_id === null) {
+						me.changeVendor();
+					// Ajax request to change vendor
+					} else {
+						me.checkLock(function() {
+							NP.Net.remoteCall({
+								mask    : me.getInvoiceView(),
+								requests: {
+									service   : 'InvoiceService',
+									action    : 'changeVendor',
+									invoice_id: invoice_id,
+									vendor_id : vendorField.getValue(),
+									success   : function(result) {
+										if (!result.success) {
+											Ext.MessageBox.alert(
+												NP.Translator.translate('Error'),
+												NP.Translator.translate('An unexpected error occurred. Please try again.')
+											);
+
+											restoreVendor();
+										} else {
+											NP.Util.showFadingWindow({
+												html: NP.Translator.translate('The vendor has been changed')
+											});
+
+											me.changeVendor();
+										}
+									}
+								}
+							});
+						});
+					}
+				} else {
+					restoreVendor();
+				}
+			});
+		} else {
+			me.changeVendor();
+		}
+	},
+
+	changeVendor: function() {
+		var me         = this,
+			invoice_id = me.getInvoiceRecord().get('invoice_id'),
+			form       = me.getInvoiceView(),
+			formData   = form.getLoadedData(),
+			vendor     = me.getVendorRecord();
+
+		Ext.suspendLayouts();
+
+		// Show the vendor info
+		me.setVendorDisplay();
+
+		// Remove all line items
+		me.getLineGrid().getStore().removeAll();
+
+		// Enable the edit line item button
+		me.getLineEditBtn().enable();
+
+		// Set the default remit advice for the vendor
+		form.findField('remit_advice').setValue(vendor.get('remit_req'));
+		
+		if (invoice_id !== null) {
+			me.buildViewToolbar(formData);
+		}
+
+		Ext.resumeLayouts(true);
+	},
+
+	getVendorRecord: function() {
+		var me          = this,
+			vendorField = me.getInvoiceVendorCombo();
+
+		if (vendorField.getValue() !== null) {
+			return vendorField.findRecordByValue(vendorField.getValue());
+		}
+
+		return null;
+	},
+
+	setVendorDisplay: function() {
 		var me            = this,
 			vendorDisplay = Ext.ComponentQuery.query('#vendorDisplay')[0],
-			vendorField   = Ext.ComponentQuery.query('#invoiceVendorCombo')[0],
-			vendor        = vendorField.findRecordByValue(vendorField.getValue());
+			vendorField   = me.getInvoiceVendorCombo();
 
-		if (vendor !== null) {
+		me.selectedVendor = vendorField.getValue();
+
+		if (vendorField.getValue() !== null) {
+			var vendor = me.getVendorRecord();
+			me.selectedVendor = vendor;
+
 			vendorDisplay.update(
 				'<b>' + vendor.get('vendor_name') + 
 				' (' + vendor.get('vendor_id_alt') + ')</b>' +
@@ -1077,6 +1262,35 @@ Ext.define('NP.controller.Invoice', {
 			vendorDisplay.show();
 		} else {
 			vendorDisplay.hide();
+		}
+	},
+
+	checkLock: function(callback) {
+		var me         = this,
+			invoice    = me.getInvoiceRecord(),
+			invoice_id = invoice.get('invoice_id');
+
+		// If dealing with a new invoice, there's no lock needed, just proceed
+		if (invoice_id === null) {
+			callback();
+		// Otherwise, check the lock and only proceed if it matches
+		} else {
+			NP.lib.core.Net.remoteCall({
+				requests: {
+					service   : 'InvoiceService',
+					action    : 'getLock',
+					invoice_id: invoice_id,
+					success   : function(lock_id) {
+						// The lock_id matches, proceed
+						if (lock_id === invoice.get('lock_id')) {
+							callback();
+						// The lock_id doesn't match, give the user some options
+						} else {
+							// TODO:
+						}
+					}
+				}
+			});
 		}
 	},
 
@@ -1137,6 +1351,14 @@ Ext.define('NP.controller.Invoice', {
 
 	getInvoiceRecord: function() {
 		return this.getInvoiceView().getModel('invoice.Invoice');
+	},
+
+	onDeleteLineClick: function(invoiceitem_id) {
+		var me        = this,
+			lineStore = me.getLineView().getStore()
+			lineRec   = lineStore.getById(invoiceitem_id);
+
+		lineStore.remove(lineRec);
 	},
 
 	onSplitLineClick: function(invoiceitem_id) {
@@ -1427,17 +1649,195 @@ Ext.define('NP.controller.Invoice', {
 	onSaveVoidInvoice: function() {
 		var me        = this,
 			win       = me.getCmp('invoice.voidwindow'),
-			noteField = win.down('[name="note"]');
+			noteField = win.down('[name="note"]'),
+			invoice_id;
 
 		if (noteField.isValid()) {
+			invoice_id = me.getInvoiceRecord().get('invoice_id');
+
 			NP.lib.core.Net.remoteCall({
+				method  : 'POST',
 				requests: {
 					service   : 'InvoiceService',
 					action    : 'void',
-					invoice_id: me.getInvoiceRecord().get('invoice_id'),
+					invoice_id: invoice_id,
 					note      : noteField.getValue(),
 					success   : function(result) {
-						
+						if (!result.success) {
+							Ext.MessageBox.alert(
+								NP.Translator.translate('Error'),
+								NP.Translator.translate('An unexpected error occurred. Please try again.')
+							);
+						} else {
+							NP.Util.showFadingWindow({
+								html: NP.Translator.translate('The invoice has been voided')
+							});
+
+							Ext.suspendLayouts();
+
+							me.showView(invoice_id);
+
+							Ext.resumeLayouts(true);
+
+							win.close();
+						}
+					}
+				}
+			});
+		}
+	},
+
+	isInvoiceReadOnly: function() {
+		var me      = this,
+			invoice = me.getInvoiceRecord();
+
+		if ( Ext.Array.contains(['hold','void'], invoice.get('invoice_status')) ) {
+			return true;
+		}
+
+		return false;
+	},
+
+	makeInvoiceReadOnly: function() {
+		var me     = this,
+			form   = me.getInvoiceView(),
+			fields = form.getForm().getFields(),
+			field,
+			i;
+
+		Ext.suspendLayouts();
+
+		// Loop through all the form fields and make them read-only
+		for (i=0; i<fields.getCount(); i++) {
+			field = fields.getAt(i);
+			if (field.setReadOnly) {
+				field.setReadOnly(true);
+			}
+		}
+
+		// Disable the edit line button
+		me.getLineEditBtn().disable();
+
+		Ext.resumeLayouts(true);
+	},
+
+	onShowOnHoldInvoice: function() {
+		var win = Ext.widget('invoice.holdwindow');
+		win.show();
+	},
+
+	onCancelOnHoldInvoice: function() {
+		var me  = this,
+			win = me.getCmp('invoice.holdwindow');
+
+		win.close();
+	},
+
+	onSaveOnHoldInvoice: function() {
+		var me          = this,
+			win         = me.getCmp('invoice.holdwindow'),
+			form        = win.down('form'),
+			reasonField = win.down('[name="reason_id"]'),
+			noteField   = win.down('[name="note"]'),
+			invoice_id;
+
+		if (form.isValid()) {
+			invoice_id = me.getInvoiceRecord().get('invoice_id');
+
+			NP.lib.core.Net.remoteCall({
+				method  : 'POST',
+				requests: {
+					service   : 'InvoiceService',
+					action    : 'placeOnHold',
+					invoice_id: invoice_id,
+					reason_id : reasonField.getValue(),
+					note      : noteField.getValue(),
+					success   : function(result) {
+						if (!result.success) {
+							Ext.MessageBox.alert(
+								NP.Translator.translate('Error'),
+								NP.Translator.translate('An unexpected error occurred. Please try again.')
+							);
+						} else {
+							NP.Util.showFadingWindow({
+								html: NP.Translator.translate('The invoice has been placed on hold')
+							});
+
+							Ext.suspendLayouts();
+
+							me.showView(invoice_id);
+
+							Ext.resumeLayouts(true);
+
+							win.close();
+						}
+					}
+				}
+			});
+		}
+	},
+
+	onActivateInvoice: function() {
+		var me          = this,
+			dialogTitle = NP.Translator.translate('Activate Invoice?'),
+			dialogText  = NP.Translator.translate('Are you sure you want to activate the Invoice?');
+
+		Ext.MessageBox.confirm(dialogTitle, dialogText, function(btn) {
+			// If user clicks Yes, proceed with deleting
+			if (btn == 'yes') {
+				var invoice_id = me.getInvoiceRecord().get('invoice_id');
+
+				// Ajax request to delete catalog
+				NP.Net.remoteCall({
+					requests: {
+						service   : 'InvoiceService',
+						action    : 'activate',
+						invoice_id: invoice_id,
+						success   : function(result) {
+							if (!result.success) {
+								Ext.MessageBox.alert(
+									NP.Translator.translate('Error'),
+									NP.Translator.translate('An unexpected error occurred. Please try again.')
+								);
+							} else {
+								NP.Util.showFadingWindow({
+									html: NP.Translator.translate('The invoice has been activated')
+								});
+
+								me.showView(invoice_id);
+							}
+						}
+					}
+				});
+			}
+		});
+	},
+
+	onSaveInvoice: function() {
+		var me      = this,
+			form    = me.getInvoiceView(),
+			invoice = me.getInvoiceRecord();
+
+		// Check if form is valid
+		if (form.isValid()) {
+			// Form is valid so submit it using the bound model
+			form.submitWithBindings({
+				service: 'InvoiceService',
+				action : 'saveInvoice',
+				extraParams: {
+					
+				},
+				extraFields: {
+					vendor_id: 'vendor_id'
+				},
+				success: function(result) {
+					// Show info message
+					NP.Util.showFadingWindow({ html: 'Invoice saved successfully' });
+
+					if (invoice.get('invoice_id') === null) {
+						me.addHistory('Invoice:showView:' + result['invoice_id']);
+					} else {
+						me.showView(invoice_id);
 					}
 				}
 			});

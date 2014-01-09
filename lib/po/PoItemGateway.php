@@ -5,6 +5,7 @@ namespace NP\po;
 use NP\core\AbstractGateway;
 use NP\core\db\Update;
 use NP\core\db\Select;
+use NP\core\db\Where;
 
 /**
  * Gateway for the POITEM table
@@ -33,6 +34,21 @@ class PoItemGateway extends AbstractGateway {
 		$params = array($newAccountingPeriod, $oldAccountingPeriod, $property_id, 'closed');
 
 		$this->adapter->query($update, $params);
+	}
+
+	public function unlinkInvoice($invoice_id) {
+		$this->update(
+			['reftable_name' => null, 'reftablekey_id' => null],
+			Where::get()
+				->equals('reftable_name', '?')
+				->in(
+					'reftablekey_id',
+					Select::get()->column('invoiceitem_id')
+								->from('invoiceitem')
+								->whereEquals('invoice_id', '?')
+				),
+			['invoiceitem', $invoice_id]
+		);
 	}
 }
 

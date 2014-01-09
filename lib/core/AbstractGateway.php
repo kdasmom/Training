@@ -190,6 +190,55 @@ abstract class AbstractGateway {
 	}
 	
 	/**
+	 * Utility function to retrieve a single record based on criteria
+	 * 
+	 * @param  NP\core\db\Where|string|array $where    The criteria by which to filter records
+	 * @param  array                         $params   Parameters to bind to the query (optional)
+	 * @param  array                         $columns  Columns to retrieve (optional)
+	 * @param  string|array                  $order    Ordering of the records (optional)
+	 * @param  NP\core\db\Join|array         $joins    A join object or array of joins to use in this select statement
+	 * @return array                                   A positional array filled with associative arrays of each record found
+	 */
+	public function findSingle($where=null, $params=array(), $cols=null, $order=null, $joins=null) {
+		$recs = $this->find($where, $params, $order, $cols, 1, null, $joins);
+
+		$recs = $recs['data'];
+		if (count($recs)) {
+			return $recs[0];
+		} else {
+			return null;
+		}
+	}
+	
+	/**
+	 * Utility function to retrieve a single record based on criteria
+	 * 
+	 * @param  NP\core\db\Where|string|array $where    The criteria by which to filter records
+	 * @param  array                         $params   Parameters to bind to the query (optional)
+	 * @param  string                        $col      Column to retrieve
+	 * @param  string|array                  $order    Ordering of the records (optional)
+	 * @param  NP\core\db\Join|array         $joins    A join object or array of joins to use in this select statement
+	 * @return mixed                                   The value requested
+	 */
+	public function findValue($where=null, $params=array(), $col, $order=null, $joins=null) {
+		$cols = $col;
+		if (!is_array($cols)) {
+			$cols = [$cols];
+		} else {
+			$keys = array_keys($cols);
+			$col = array_pop($keys);
+		}
+		$recs = $this->find($where, $params, $order, $cols, 1, null, $joins);
+
+		$recs = $recs['data'];
+		if (count($recs)) {
+			return $recs[0][$col];
+		} else {
+			return null;
+		}
+	}
+	
+	/**
 	 * Inserts a record in the database
 	 *
 	 * @param  array|\NP\core\AbstractEntity $data An associative array with key/value pairs for fields, or an Entity object
@@ -349,6 +398,10 @@ abstract class AbstractGateway {
 
 	public function lastInsertId() {
 		return $this->adapter->lastInsertId();
+	}
+
+	public function currentId() {
+		return $this->adapter->currentId($this->table);
 	}
 
 	/**

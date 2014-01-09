@@ -298,6 +298,30 @@ class PurchaseOrderGateway extends AbstractGateway {
 
 		return $this->adapter->query($select, [$vendorsite_id, $property_id, 'open']);
 	}
+
+	/**
+	 * 
+	 */
+	public function unlinkInvoice($invoice_id) {
+		$this->update(
+			['purchaseorder_status' => 'saved'],
+			Where::get()
+				->equals('purchaseorder_status', '?')
+				->in(
+					'purchaseorder_id',
+					Select::get()->column('purchaseorder_id')
+								->from('poitem')
+								->whereEquals('reftable_name', '?')
+								->whereIn(
+									'reftablekey_id',
+									Select::get()->column('invoiceitem_id')
+												->from('invoiceitem')
+												->whereEquals('invoice_id', '?')
+								)
+				),
+			['closed', 'invoiceitem', $invoice_id]
+		);
+	}
 }
 
 ?>

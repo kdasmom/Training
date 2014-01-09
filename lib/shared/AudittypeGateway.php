@@ -1,5 +1,5 @@
 <?php
-namespace NP\image;
+namespace NP\shared;
 
 use NP\core\AbstractGateway;
 

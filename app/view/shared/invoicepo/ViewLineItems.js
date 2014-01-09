@@ -29,7 +29,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineItems', {
 
     	var storeCfg = Ext.create('NP.store.' + me.type + '.' + capType + 'Items', {
             service  : capType + 'Service',
-            action   : 'get' + capType + 'Lines',
+            action   : 'get' + capType + 'Lines'/*,
             listeners: {
                 datachanged: function(store) {
                     var form = me.up('boundform');
@@ -44,7 +44,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineItems', {
                         form.findField('property_id').disable();
                     }
                 }
-            }
+            }*/
     	});
     	
         me.defaults = { type: me.type, store: storeCfg };

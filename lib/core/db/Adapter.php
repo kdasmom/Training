@@ -168,6 +168,17 @@ class Adapter {
 	}
 
 	/**
+	 * Return the current ID for a table (the next insert ID)
+	 *
+	 * @return int
+	 */
+	public function currentId($table) {
+		$rec = $this->query("SELECT IDENT_CURRENT('{$table}') as current_id");
+		
+		return $rec[0]['current_id'];
+	}
+
+	/**
 	 * Initiate a transaction
 	 */
 	public function beginTransaction() {

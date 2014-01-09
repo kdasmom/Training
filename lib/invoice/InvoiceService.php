@@ -543,23 +543,539 @@ class InvoiceService extends AbstractInvoicePoService {
 	public function void($invoice_id, $note) {
 		$this->invoiceGateway->beginTransaction();
 
-		$success = true;
-		$error   = null;
+		$errors  = [];
+		$userprofile_id = $this->securityService->getUserId();
 		try {
 			$this->invoiceGateway->update([
 				'invoice_id'     => $invoice_id,
 				'invoice_status' => 'void'
 			]);
+
+			$approvetype_id = $this->approveTypeGateway->getIdByName('void');
+
+			$approve = new \NP\workflow\ApproveEntity([
+				'table_name'                   => 'invoice',
+				'tablekey_id'                  => $invoice_id,
+				'userprofile_id'               => $userprofile_id,
+				'delegation_to_userprofile_id' => $this->securityService->getDelegatedUserId(),
+				'approve_message'              => 'This invoice has been voided.',
+				'approvetype_id'               => $approvetype_id,
+				'transaction_id'               => $this->approveGateway->currentId()
+			]);
+
+			$errors = $this->entityValidator->validate($approve);
+			if (!count($errors)) {
+				$this->approveGateway->save($approve);
+			}
+
+			$note = new \NP\shared\NoteEntity([
+				'table_name'     => 'invoice',
+				'tablekey_id'    => $invoice_id,
+				'note'           => $note,
+				'objecttype_id'  => 0,
+				'objtype_id_alt' => 2,
+				'userprofile_id' => $userprofile_id
+			]);
+
+			$errors = array_merge($errors, $this->entityValidator->validate($note));
+			if (!count($errors)) {
+				$this->noteGateway->save($note);
+			}
+
+			// TODO: still need to replicate the call to UPDATE_PN_ACTUALS here
 		} catch(\Exception $e) {
-			$success = false;
-            $error   = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+
+		if (count($errors)) {
+			$this->invoiceGateway->rollback();
+		} else {
+			$this->invoiceGateway->commit();
 		}
 
         return array(
-            'success' => $success,
-            'error'   => $error
+            'success' => (count($errors)) ? false : true,
+            'errors'  => $errors
         );
-	}	
+	}
+	
+	/**
+	 * Places an invoice on hold
+	 */
+	public function placeOnHold($invoice_id, $reason_id, $note) {
+		$this->invoiceGateway->beginTransaction();
+
+		$errors  = [];
+		$userprofile_id = $this->securityService->getUserId();
+		$delegation_to_userprofile_id = $this->securityService->getDelegatedUserId();
+		try {
+			// Retrieve the current status of the invoice for later use
+			$oldStatus = $this->invoiceGateway->findValue(
+				['invoice_id'=>'?'],
+				[$invoice_id],
+				'invoice_status'
+			);
+
+			// Retrieve the appropriate approval type for this
+			$approvetype_id = $this->approveTypeGateway->getIdByName('hold');
+
+			// Build the approve message
+			$reason = $this->reasonGateway->findSingle(
+				['reason_id'=>'?'],
+				[$reason_id],
+				['reason_text','objtype_id']
+			);
+
+			$approve_message = $reason['reason_text'];
+
+			if ($userprofile_id != $delegation_to_userprofile_id) {
+				$user   = $this->userprofileGateway->findById(
+					$userprofile_id,
+					['userprofile_username']
+				);
+				$userTo = $this->userprofileGateway->findById(
+					$delegation_to_userprofile_id,
+					['userprofile_username']
+				);
+
+				$approve_message .= " ({$userTo['userprofile_username']} put on hold on behalf of {$user['userprofile_username']})";
+			}
+			$approve_message = "Invoice was placed on hold by user<br />Reason: {$approve_message}";
+			if (!empty($note)) {
+				$approve_message .= "<br />Notes: {$note}";
+			}
+
+			// Save the Approve record
+			$approve = new \NP\workflow\ApproveEntity([
+				'table_name'                   => 'invoice',
+				'tablekey_id'                  => $invoice_id,
+				'userprofile_id'               => $userprofile_id,
+				'delegation_to_userprofile_id' => $this->securityService->getDelegatedUserId(),
+				'approve_status'               => 'inactive',
+				'approve_message'              => $approve_message,
+				'approvetype_id'               => $approvetype_id
+			]);
+
+			$errors = $this->entityValidator->validate($approve);
+			if (!count($errors)) {
+				$this->approveGateway->save($approve);
+			}
+
+			// Save the InvoiceHold record
+			$hold = new \NP\invoice\InvoiceHoldEntity([
+				'invoice_id'             => $invoice_id,
+				'approve_id'             => $approve->approve_id,
+				'invoicehold_inv_status' => $oldStatus
+			]);
+
+			$errors = $this->entityValidator->validate($hold);
+			if (!count($errors)) {
+				$this->invoiceHoldGateway->save($hold);
+			}
+
+			// Get the old note to compare for auditing purposes
+			$oldNote = $this->noteGateway->findValue(
+				[
+					'table_name'    => '?',
+					'tablekey_id'   => '?',
+					'objecttype_id' => '?'
+				],
+				['invoice', $invoice_id, $reason['objtype_id']],
+				'note',
+				'note_createddatetm DESC'
+			);
+
+			// Save the Note
+			$note = new \NP\shared\NoteEntity([
+				'table_name'     => 'invoice',
+				'tablekey_id'    => $invoice_id,
+				'note'           => $note,
+				'reason_id'      => (is_numeric($reason_id)) ? $reason_id : null,
+				'objecttype_id'  => 0,
+				'userprofile_id' => $userprofile_id
+			]);
+
+			$errors = array_merge($errors, $this->entityValidator->validate($note));
+			if (!count($errors)) {
+				$this->noteGateway->save($note);
+			}
+
+			// If note has changed, add an audit record
+			if (!empty($oldNote) && $oldNote != $note) {
+				$auditactivity_id = $this->auditactivityGateway->findValue(
+					['auditactivity'=>'?'],
+					['Modified'],
+					'auditactivity_id'
+				);
+
+				$audittype_id = $this->audittypeGateway->findValue(
+					['audittype'=>'?'],
+					['Invoice'],
+					'audittype_id'
+				);
+
+				$audit = new \NP\shared\AuditlogEntity([
+					'field_name'                   => 'hold_note',
+					'field_new_value'              => $note,
+					'field_old_value'              => $oldNote,
+					'tablekey_id'                  => $invoice_id,
+					'auditactivity_id'             => $auditactivity_id,
+					'audittype_id'                 => $audittype_id,
+					'userprofile_id'               => $userprofile_id,
+					'delegation_to_userprofile_id' => $delegation_to_userprofile_id
+				]);
+
+				$errors = array_merge($errors, $this->entityValidator->validate($audit));
+				if (!count($errors)) {
+					$this->auditlogGateway->save($audit);
+				}
+			}
+
+			// Update the invoice records
+			if (!count($errors)) {
+				$this->invoiceGateway->update([
+					'invoice_id'            => $invoice_id,
+					'invoice_status'        => 'hold',
+					'invoice_submitteddate' => null
+				]);
+			}
+		} catch(\Exception $e) {
+			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+
+		if (count($errors)) {
+			$this->invoiceGateway->rollback();
+		} else {
+			$this->invoiceGateway->commit();
+		}
+
+        return array(
+            'success' => (count($errors)) ? false : true,
+            'errors'  => $errors
+        );
+	}
+
+	/**
+	 * Activate an invoice that's on hold
+	 *
+	 * @param  int $invoice_id
+	 * @return array
+	 */
+	public function activate($invoice_id) {
+		$this->invoiceGateway->beginTransaction();
+
+		$errors  = [];
+		$userprofile_id = $this->securityService->getUserId();
+		$delegation_to_userprofile_id = $this->securityService->getDelegatedUserId();
+		try {
+			// Get the hold details
+			$hold = $this->invoiceHoldGateway->findSingle(
+				['invoice_id'=>'?', 'invoicehold_active'=>'?'],
+				[$invoice_id, 1]
+			);
+
+			if (!empty($hold)) {
+				// Update the invoice hold record
+				$hold = new \NP\invoice\InvoiceHoldEntity($hold);
+				$now = \NP\util\Util::formatDateForDB();
+				$hold->setFields([
+					'invoicehold_active'                    => 0,
+					'invoicehold_activate_datetm'           => $now,
+					'activate_userprofile_id'               => $userprofile_id,
+					'activate_delegation_to_userprofile_id' => $delegation_to_userprofile_id
+				]);
+
+				$errors = $this->entityValidator->validate($hold);
+				if (!count($errors)) {
+					$this->invoiceHoldGateway->save($hold);
+				}
+
+				// Update the invoice record to return it to the previous status
+				if (!count($errors)) {
+					$this->invoiceGateway->update([
+						'invoice_id'     => $invoice_id,
+						'invoice_status' => $hold->invoicehold_inv_status
+					]);
+				}
+			}
+		} catch(\Exception $e) {
+			$errors[] = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+
+		if (count($errors)) {
+			$this->invoiceGateway->rollback();
+		} else {
+			$this->invoiceGateway->commit();
+		}
+
+        return array(
+            'success' => (count($errors)) ? false : true,
+            'errors'  => $errors
+        );
+	}
+
+	/**
+	 * Change the vendor for an invoice
+	 *
+	 * @param  int $invoice_id
+	 * @param  int $vendor_id
+	 * @return array
+	 */
+	public function changeVendor($invoice_id, $vendor_id) {
+		$this->invoiceGateway->beginTransaction();
+
+		$errors  = [];
+		$userprofile_id = $this->securityService->getUserId();
+		$delegation_to_userprofile_id = $this->securityService->getDelegatedUserId();
+		try {
+			// Retrieve the vendorsite_id based on the vendor_id selected
+			$vendor = $this->vendorGateway->findById($vendor_id);
+			$remit_advice = $vendor['remit_req'];
+			if (!is_numeric($remit_advice)) {
+				$remit_advice = 0;
+			}
+
+			// Unlink POs and PO lines from this invoice
+			$this->purchaseOrderGateway->unlinkInvoice($invoice_id);
+			$this->poItemGateway->unlinkInvoice($invoice_id);
+
+			// Delete all lines
+			$this->clearLines($invoice_id);
+
+			// Delete all hold records
+			$this->invoiceHoldGateway->delete(['invoice_id'=>'?'], [$invoice_id]);
+
+			// Delete all approval records
+			$this->approveGateway->delete(
+				['table_name'=>'?', 'tablekey_id'=>'?'],
+				['invoice', $invoice_id]
+			);
+
+			// Log the vendor change
+			$approvetype_id = $this->approveTypeGateway->getIdByName('Change Vendor');
+
+			$approve = new \NP\workflow\ApproveEntity([
+				'table_name'                   => 'invoice',
+				'tablekey_id'                  => $invoice_id,
+				'userprofile_id'               => $userprofile_id,
+				'delegation_to_userprofile_id' => $this->securityService->getDelegatedUserId(),
+				'approve_message'              => 'Vendor Change',
+				'approvetype_id'               => $approvetype_id,
+				'transaction_id'               => $this->approveGateway->currentId()
+			]);
+
+			$errors = $this->entityValidator->validate($approve);
+			if (!count($errors)) {
+				$this->approveGateway->save($approve);
+			}
+
+			// Update the vendor
+			if (!count($errors)) {
+				$this->invoiceGateway->update([
+					'invoice_id'     => $invoice_id,
+					'paytablekey_id' => $vendor['vendorsite_id'],
+					'remit_advice'   => $remit_advice
+				]);
+			}
+		} catch(\Exception $e) {
+			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+
+		if (count($errors)) {
+			$this->invoiceGateway->rollback();
+		} else {
+			$this->invoiceGateway->commit();
+		}
+
+        return array(
+            'success' => (count($errors)) ? false : true,
+            'errors'  => $errors
+        );
+	}
+
+	/**
+	 * Removes all line items from an invoice
+	 */
+	public function clearLines($invoice_id) {
+		$this->invoiceItemGateway->delete(['invoice_id'=>'?'], [$invoice_id]);
+	}
+
+	/**
+	 * Returns the lock for an invoice
+	 *
+	 * @param  int $invoice_id
+	 * @return int
+	 */
+	public function getLock($invoice_id) {
+		return $this->invoiceGateway->findValue(
+			['invoice_id'=>'?'],
+			[$invoice_id],
+			'lock_id'
+		);
+	}
+
+	/**
+	 * Saves an invoice and invoice line items (if included)
+	 */
+	public function saveInvoice($data) {
+		$errors = [];
+		$this->invoiceGateway->beginTransaction();
+		
+		try {
+			$now = \NP\util\Util::formatDateForDB();
+
+			// Create the invoice entity with initial data
+			$invoice = new InvoiceEntity($data['invoice']);
+
+			// Retrieve the vendorsite_id for this vendor
+			$vendorsite_id = $this->vendorGateway->findVendorsite($vendor_id);
+
+			// Add vendor site to the invoice
+			$invoice->paytablekey_id = $vendorsite_id;
+
+			// Validate invoice record
+			$errors = $this->entityValidator->validate($invoice);
+
+			// Save invoice if valid
+			if (!count($errors)) {
+				$this->invoiceGateway->save($invoice);
+			}
+
+			// Save the creator of the invoice if new
+			if (!count($errors) && $data['invoice']['invoice_id'] === null) {
+				// Validate author record
+				$author = new \NP\user\RecAuthorEntity([
+					'userprofile_id'               => $data['userprofile_id'],
+					'delegation_to_userprofile_id' => $data['delegation_to_userprofile_id'],
+					'table_name'                   => 'invoice',
+					'tablekey_id'                  => $invoice->invoice_id
+				]);
+				$authorErrors = $this->entityValidator->validate($author);
+				if (count($authorErrors)) {
+					throw new \NP\core\Exception('Unexpected error saving invoice author');
+				} else {
+					$this->recAuthorGateway->save($author);
+				}
+			}
+
+			// Save invoice line items
+			if (!count($errors)) {
+				// Loop through line items to add/modify
+				foreach ($data['lines'] as $invoiceitem) {
+					// Assign the invoice_id to the line (needed for new invoices)
+					$invoiceitem['invoice_id'] = $invoice->invoice_id;
+
+					// Save the line item
+					$result = $this->saveLine($invoiceitem);
+
+					// Error handling
+					if (!$result['success']) {
+						$errors = array_merge($errors, $result['errors']);
+					}	
+				}
+			}
+
+			// Delete invoice line items
+			if (!count($errors)) {
+				// Loop through line items to delete
+				foreach ($data['deletedLines'] as $invoiceitem_id) {
+					// Delete the line item
+					$result = $this->deleteLine($invoiceitem_id);
+
+					// Error handling
+					if (!$result['success']) {
+						$errors = array_merge($errors, $result['errors']);
+					}
+				}
+			}
+
+			// As a precaution, update the period on all line items to match the header
+			if (!count($errors)) {
+				$this->invoiceItemGateway->update(
+					['invoiceitem_period' => $invoice->invoice_period],
+					'invoice_id = ?',
+					[$invoice->invoice_id]
+				);
+			}
+
+			// Create budgets for all line items (if needed)
+			if (!count($errors)) {
+				$this->createInvoiceBudgets($invoice_id);
+			}
+		} catch(\Exception $e) {
+			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+		
+		if (count($errors)) {
+			$this->invoiceGateway->rollback();
+		} else {
+			$this->invoiceGateway->commit();
+		}
+		
+		return array(
+			'success'    => (count($errors)) ? false : true,
+			'errors'     => $errors,
+			'invoice_id' => $invoice->invoice_id
+		);
+	}
+
+	/**
+	 * Deletes a single line item
+	 *
+	 * @param  int $invoiceitem_id
+	 * @return array
+	 */
+	public function deleteLine($invoiceitem_id) {
+		
+	}
+
+	/**
+	 * Creates any budget that may be missing for an invoice
+	 *
+	 * @param  int $invoice_id
+	 * @return array
+	 */
+	public function createInvoiceBudgets($invoice_id) {
+		$lines = $this->invoiceItemGateway->find(
+			['invoice_id' => '?'],
+			[$invoice_id],
+			null,
+			['property_id','glaccount_id']
+		);
+
+		$this->budgetGateway->beginTransaction();
+		
+		try {
+			foreach ($lines as $line) {
+				$period = $this->fiscalCalService->getAccountingPeriod($line['property_id']);
+
+				$result = $this->budgetService->createBudget(
+					$line['property_id'],
+					$line['glaccount_id'],
+					$period,
+					0,
+					0
+				);
+
+				if (!$result['success']) {
+					throw new \NP\core\Exception("Unexpected error creating invoice budgets");
+				}
+			}	
+		} catch(\Exception $e) {
+			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+		
+		if (count($errors)) {
+			$this->budgetGateway->rollback();
+		} else {
+			$this->budgetGateway->commit();
+		}
+		
+		return array(
+		    'success' => (count($errors)) ? false : true,
+		    'errors'  => $errors
+		);
+	}
 }
 
 ?>

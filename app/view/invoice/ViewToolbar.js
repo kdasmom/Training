@@ -28,6 +28,7 @@ Ext.define('NP.view.invoice.ViewToolbar', {
             {
                 xtype: 'shared.button.cancel'
             },{
+                itemId          : 'invoiceSaveBtn',
                 xtype           : 'shared.button.save',
                 displayCondition: me.isSaveBtnVisible
             },{
@@ -68,6 +69,7 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                 moduleId        : 6002,
                 displayCondition: me.isPostApproveRejectBtnVisible
             },{
+                itemId          : 'invoiceOnHoldBtn',
                 xtype           : 'shared.button.hourglass',
                 text            : 'Place on Hold',
                 moduleId        : 6001,

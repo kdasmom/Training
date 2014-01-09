@@ -61,6 +61,14 @@ class VendorGateway extends AbstractGateway {
 		return $res[0];
 	}
 
+	public function findVendorsite($vendor_id) {
+		return $this->findValue(
+			['vendor_id' => '?'],
+			[$vendor_id],
+			['vendorsite_id' => new \NP\core\db\Expression('vs.vendorsite_id')]
+		);
+	}
+
 	/**
 	 * Get vendors that will show up as available options for an invoice
 	 */
@@ -68,9 +76,9 @@ class VendorGateway extends AbstractGateway {
 		$now = \NP\util\Util::formatDateForDB();
 
 		$select = $this->getSelect()
-						->columns(['vendor_id','vendor_id_alt','vendor_name'])
+						->columns(['vendor_id','vendor_id_alt','vendor_name','remit_req'])
 						->join(new sql\join\VendorsiteAddressJoin())
-						->join(new sql\join\VendorsitePhoneJoin());
+						->join(new sql\join\VendorsitePhoneJoin('Main'));
 
 		if ($vendor_id !== null && $keyword === null) {
 			$select->whereEquals('v.vendor_id', '?');

@@ -4,6 +4,7 @@ namespace NP\system;
 
 use NP\core\AbstractService;
 use NP\core\validation\EntityValidator;
+use NP\core\db\Select;
 use NP\core\db\Update;
 use NP\property\RegionEntity;
 
@@ -29,6 +30,16 @@ class PicklistService extends AbstractService {
 		$gatewayName = $this->getGatewayName($entityType);
 
 		return $this->$gatewayName->find();
+	}
+	
+	/**
+	 * Generic function to load items in a picklist filtered using the standard definition in the DB
+	 *
+	 * @param  string $entityType The name of the class for the entity
+	 * @return array
+	 */
+	public function getConfiguredList($picklist_table_display) {
+		return $this->picklistTableGateway->getConfiguredList($picklist_table_display);
 	}
 
 	/**
@@ -138,6 +149,13 @@ class PicklistService extends AbstractService {
 		$entityType = array_pop($entityType);
 
 		return $entityType;
+	}
+
+	/**
+	 * Custom picklist function that returns reasons for putting an invoice on hold
+	 */
+	public function getHoldReasons() {
+		return $this->reasonGateway->getHoldReasons();
 	}
 }
 

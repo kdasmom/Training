@@ -28,7 +28,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
         var me = this;
         
         me.tbar = [
-            { xtype: 'shared.button.edit', itemId: 'invoiceLineEditBtn' }
+            { xtype: 'shared.button.edit', itemId: 'invoiceLineEditBtn', disabled: true }
         ];
 
         me.fieldPrefix  = me.type + 'item';
