@@ -324,8 +324,7 @@ Ext.define('NP.controller.GLAccountSetup', {
                 extraFields: ['vendors', 'properties', 'glaccount_id_list']
             });
         }
-
-        var form = this.setView('NP.view.gl.GLAccountsForm', viewCfg, '[xtype="gl.glaccounts"]', forceView); 
+        var form = this.setView('NP.view.gl.GLAccountsForm', viewCfg, '[xtype="gl.glaccounts"]', forceView);
 
         if (this.glaccount_id_list.length > 1) {
             form.findField('glaccount_id_list').setValue(this.glaccount_id_list);

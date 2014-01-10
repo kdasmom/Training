@@ -22,6 +22,10 @@ Ext.define('NP.view.gl.GLAccountsForm', {
     ],
 
     autoScroll: true,
+	layout: {
+		type : 'vbox',
+		align: 'left'
+	},
       
     bodyPadding: 8,
     
@@ -144,7 +148,8 @@ Ext.define('NP.view.gl.GLAccountsForm', {
                                 action  : 'getAll'
                             }, 
                 autoScroll: true,
-                height    : 200
+                height    : 200,
+			   	width: '100%'
             }
         ];
         // Property Assignment
