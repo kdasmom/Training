@@ -194,9 +194,10 @@ Ext.define('NP.controller.MySettings', {
 				service: 'UserService',
 				action : 'saveUserInfo',
 				extraFields: {
-					userprofile_password_current: 'userprofile_password_current',
-					userprofile_password_confirm: 'userprofile_password_confirm',
-					properties                  : 'properties'
+					userprofile_password_current	: 'userprofile_password_current',
+					userprofile_password_confirm		: 'userprofile_password_confirm',
+					properties                  	: 'properties',
+					coding_properties				: 'coding_properties'
 				},
 				success: function(result) {
 					// Clear password fields after save

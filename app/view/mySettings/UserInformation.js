@@ -22,7 +22,11 @@ Ext.define('NP.view.mySettings.UserInformation', {
     autoScroll: true,
 
     initComponent: function() {
-    	var labelWidth = 150;
+    	var labelWidth = 150,
+			codingPropertyLabel = NP.Translator.translate(
+				'{properties} for Coding Access Only',
+				{ properties: NP.Config.getPropertyLabel(true) }
+			);
     	var bar = [
 	    	 { xtype: 'shared.button.save' }
 	    ];
@@ -37,7 +41,7 @@ Ext.define('NP.view.mySettings.UserInformation', {
             extraParams: {
                 userprofile_id: NP.lib.core.Security.getUser().get('userprofile_id')
             },
-            extraFields: ['role_id'],
+            extraFields: ['role_id', 'coding_properties'],
             models: [
                 'user.Userprofile',
                 'user.Userprofilerole',
@@ -71,6 +75,7 @@ Ext.define('NP.view.mySettings.UserInformation', {
 
         if (NP.lib.core.Security.hasPermission(4)) {
             this.items[0].items.push({ xtype: 'mysettings.userpermissions' });
+            this.items[0].items.push({ xtype: 'mysettings.userpermissions', name: 'coding_properties', id: 'coding_properties', title: codingPropertyLabel });
         }
 
     	this.callParent(arguments);
