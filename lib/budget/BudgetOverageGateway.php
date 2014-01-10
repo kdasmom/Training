@@ -32,7 +32,10 @@ class BudgetOverageGateway extends AbstractGateway {
                 new sql\join\BudgetOverageUserJoin(),
                 new sql\join\BudgetOverageRoleJoin(),
                 new sql\join\BudgetOveragePropertyJoin(),
-                new sql\join\BudgetOverageGlAccountJoin()
+                new sql\join\BudgetOverageGlAccountJoin(),
+                new sql\join\BudgetOverageUserprofileRoleJoin(),
+				new sql\join\BudgetOverageStaffJoin(),
+				new sql\join\BudgetOveragePersonJoin()
             )
         );
     }
