@@ -151,6 +151,11 @@ Ext.define('NP.controller.GLAccountSetup', {
 			'[xtype="gl.categoryform"] [xtype="shared.button.save"]': {
 				click: this.saveCategory
 			},
+			'[xtype="gl.categoryform"] [xtype="shared.button.saveandadd"]': {
+				click: function(button, e) {
+					this.saveCategory(button, e, true);
+				}
+			},
                         // The save button on the glcategory form
 			'#glcategoryOrderSaveBtn': {
 				click: this.saveOrderCategory
@@ -447,7 +452,7 @@ Ext.define('NP.controller.GLAccountSetup', {
 		this.selectedCategory = null;
 	},
 
-	saveCategory: function(button, e) {
+	saveCategory: function(button, e, addNew) {
 		var me = this,
             form = me.getCategoryForm(),
             grid = me.getCategoryGrid(),
@@ -464,7 +469,11 @@ Ext.define('NP.controller.GLAccountSetup', {
                         data      : { glaccount: data, tree_parent: 0 },
                         success   : function(result, deferred) {
                             grid.getStore().reload();
-                            form.hide();
+							if (!addNew) {
+                            	form.hide();
+							} else {
+								form.getForm().reset();
+							}
 
                             // Show a friendly message saying action was successful
                             NP.Util.showFadingWindow({ html: me.categorySuccessText });
