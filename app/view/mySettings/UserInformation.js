@@ -74,8 +74,23 @@ Ext.define('NP.view.mySettings.UserInformation', {
         }];
 
         if (NP.lib.core.Security.hasPermission(4)) {
-            this.items[0].items.push({ xtype: 'mysettings.userpermissions' });
-            this.items[0].items.push({ xtype: 'mysettings.userpermissions', name: 'coding_properties', id: 'coding_properties', title: codingPropertyLabel });
+			this.items[0].items.push(
+				{
+					xtype: 'container',
+					layout: {
+						type: 'vbox',
+						align: 'stretch'
+					},
+					autoScroll: true,
+					title: 'User permissions',
+					items: [
+						{ xtype: 'mysettings.userpermissions', height: 200, fieldLabel: 'Properties' },
+						{ xtype: 'mysettings.userpermissions', name: 'coding_properties', fieldLabel: codingPropertyLabel, height: 200 }
+					]
+				}
+			);
+//            this.items[0].items.push({ xtype: 'mysettings.userpermissions' });
+//            this.items[0].items.push({ xtype: 'mysettings.userpermissions', name: 'coding_properties', id: 'coding_properties', title: codingPropertyLabel });
         }
 
     	this.callParent(arguments);
