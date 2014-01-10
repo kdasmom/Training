@@ -165,9 +165,10 @@ Ext.define('NP.view.gl.GLAccountsForm', {
                                         action : 'getAll'
                                     },  
                         autoScroll: true,
-                        height    : 200
+                        height    : 200,
+						 width: '100%'
                     });       
-         }       
+         }
         this.callParent(arguments);
     }
 });
