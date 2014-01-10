@@ -84,7 +84,7 @@ Ext.define('NP.view.budget.BudgetOverageGrid', {
 				dataIndex: 'userprofile_username',
 				text: NP.Translator.translate('Added by'),
 				renderer: function (val, meta, record) {
-					return Ext.Date.format(record.get('budgetoverage_created'), 'm/d/Y') + (record.raw['person_firstname'] ? (' (' + record.raw['person_firstname'] + (record.raw['person_lastname'] ? (', ' + record.raw['person_lastname']) : '') + ')') : '') ;
+					return Ext.Date.format(record.get('budgetoverage_created'), 'm/d/Y H:i:s') + (record.raw['person_firstname'] ? (' (' + record.raw['person_firstname'] + (record.raw['person_lastname'] ? (', ' + record.raw['person_lastname']) : '') + ')') : '') ;
 				}
 			},
 			{
