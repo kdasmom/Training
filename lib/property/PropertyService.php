@@ -119,7 +119,7 @@ class PropertyService extends AbstractService {
 	 * @param  string $sort            Field(s) by which to sort the result; defaults to property_name
 	 * @return array                   Array of property records
 	 */
-	public function getByStatus($property_status, $pageSize=null, $page=null, $sort="property_name") {
+	public function getByStatus($property_status = null, $pageSize=null, $page=null, $sort="property_name") {
 		$joins = array(
 			new sql\join\PropertyIntPkgJoin(),
 			new sql\join\PropertyRegionJoin(),
@@ -160,8 +160,8 @@ class PropertyService extends AbstractService {
         $pageSize = !$pageSize ? null : $pageSize;
 
 		return $this->propertyGateway->find(
-			new sql\criteria\PropertyStatusCriteria(),	// filter
-			array($property_status),			// params
+			$property_status == 2 ? null : new sql\criteria\PropertyStatusCriteria(),	// filter
+			$property_status == 2 ? [] : array($property_status),			// params
 			$sort,								// order by
 			null,								// columns
 			$pageSize,
