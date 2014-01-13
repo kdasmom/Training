@@ -76,7 +76,8 @@ Ext.define('NP.view.property.FiscalCalendarForm', {
 				maxLength  : 2,
 				disabled   : true,
 				allowBlank : false,
-				hideTrigger: true
+				hideTrigger: true,
+				decimalPrecision: 0
     		});
     	}
 
