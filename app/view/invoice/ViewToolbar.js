@@ -58,6 +58,7 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                 displayCondition: Ext.bind(me.isModifyBtnVisible, me)
             },{
                 xtype           : 'shared.button.delete',
+                itemId          : 'invoiceDeleteBtn',
                 displayCondition: me.isDeleteBtnVisible
             },{
                 text            : 'Submit For Payment',

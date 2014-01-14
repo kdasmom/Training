@@ -150,9 +150,9 @@ Ext.define('NP.model.invoice.Invoice', {
     isEditable: function() {
 		var me      = this,
 			status  = me.get('invoice_status');
-console.log(me.isInvoiceModifiable());
+
 		if (
-			(status == 'open' && me.isInvoiceModifiable())
+			(status == 'open' && me.isModifiable())
 			|| (status == 'saved' && NP.Security.hasPermission(1068))
 			|| (status == 'paid' && NP.Security.hasPermission(2094))
 		) {
@@ -168,7 +168,7 @@ console.log(me.isInvoiceModifiable());
 
         if (
             (status == 'open' && (NP.Security.hasPermission(1032) || NP.Security.hasPermission(6076) || NP.Security.hasPermission(6077)))
-            || (status == 'saved' && NP.Security.hasPermission(1068) && me.isInvoiceModifiable())
+            || (status == 'saved' && NP.Security.hasPermission(1068) && me.isModifiable())
             || (status == 'paid' && NP.Security.hasPermission(2094))
         ) {
             return true;

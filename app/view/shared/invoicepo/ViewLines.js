@@ -361,7 +361,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
     buildItemPriceCol: function() {
         var me = this;
         return '<td align="right">' +
-                '{[this.renderCurrency(values.'+me.fieldPrefix+'_unitprice_long)]}' +
+                '{[this.renderCurrency(values.'+me.fieldPrefix+'_unitprice)]}' +
                 '<tpl if="invoiceitem_taxflag == \'Y\'">' +
                     '<div class="taxableFlag">Taxable</div>' +
                 '</tpl>' +

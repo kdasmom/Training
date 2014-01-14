@@ -12,6 +12,7 @@ Ext.define('NP.controller.Invoice', {
 		'NP.lib.core.Net',
 		'NP.lib.core.Translator',
 		'NP.lib.core.Net',
+		'NP.lib.core.Util',
 		'NP.view.shared.invoicepo.SplitWindow'
 	],
 	
@@ -222,6 +223,10 @@ Ext.define('NP.controller.Invoice', {
 
 			'#invoiceSaveBtn': {
 				click: me.onSaveInvoice
+			},
+
+			'#invoiceDeleteBtn': {
+				click: me.onDeleteInvoice
 			}
 		});
 	},
@@ -1127,11 +1132,28 @@ Ext.define('NP.controller.Invoice', {
 	},
 
 	onPropertyComboSelect: function(propertyCombo, recs) {
-		var me          = this,
-			vendorCombo = me.getInvoiceVendorCombo();
+		var me            = this,
+			form          = me.getInvoiceView(),
+			vendorCombo   = me.getInvoiceVendorCombo(),
+			periodField   = form.findField('invoice_period'),
+			currentPeriod = me.getInvoiceRecord().get('invoice_period');
+		
+		// Remove all periods from the period store
+		periodField.getStore().removeAll();
 
 		if (recs.length) {
 			vendorCombo.enable();
+			NP.Net.remoteCall({
+				requests: {
+					service    : 'PropertyService',
+					action     : 'getAccountingPeriod',
+					property_id: recs[0].get('property_id'),
+					success    : function(result) {
+						var period = Ext.Date.parse(result['date'], NP.Config.getServerSmallDateFormat());
+						me.populatePeriods(period, currentPeriod);
+					}
+				}
+			});
 		} else {
 			vendorCombo.disable();
 		}
@@ -1295,15 +1317,25 @@ Ext.define('NP.controller.Invoice', {
 	},
 
 	populatePeriods: function(accounting_period, invoice_period) {
-		var accountingPeriod = Ext.Date.parse(accounting_period, 'Y-m-d'),
-			startPeriod      = accountingPeriod,
-			endPeriod        = accountingPeriod,
-			periodBack       = parseInt(NP.Config.getSetting('CP.INVOICE_POST_DATE_BACK', '0')) * -1,
+		var periodBack       = parseInt(NP.Config.getSetting('CP.INVOICE_POST_DATE_BACK', '0')) * -1,
 			periodForward    = parseInt(NP.Config.getSetting('CP.INVOICE_POST_DATE_FORWARD', '0')),
-			currentPeriod,
-			invoicePeriod    = Ext.Date.parse(invoice_period, NP.Config.getServerDateFormat()),
 			periods          = [],
-			periodField      = this.getCmp('invoice.view').findField('invoice_period');
+			periodField      = this.getCmp('invoice.view').findField('invoice_period'),
+			accountingPeriod = accounting_period,
+			startPeriod,
+			endPeriod,
+			currentPeriod,
+			invoicePeriod;
+
+		if (Ext.isString(accountingPeriod)) {
+			accountingPeriod = Ext.Date.parse(accountingPeriod, 'Y-m-d');
+		}
+		startPeriod = accountingPeriod,
+		endPeriod   = accountingPeriod
+
+		if (arguments.length === 1) {
+			invoicePeriod = null;
+		}
 
 		if (periodBack > 0) {
 			startPeriod = Ext.Date.add(startPeriod, Ext.Date.MONTH, periodBack);
@@ -1319,10 +1351,13 @@ Ext.define('NP.controller.Invoice', {
 			currentPeriod = Ext.Date.add(currentPeriod, Ext.Date.MONTH, 1);
 		}
 
-		if (invoicePeriod < startPeriod) {
-			periods.unshift(invoicePeriod);
-		} else if (invoicePeriod > endPeriod) {
-			periods.push(invoicePeriod);
+		if (invoicePeriod !== null) {
+			invoicePeriod = Ext.Date.parse(invoice_period, NP.Config.getServerDateFormat());
+			if (invoicePeriod < startPeriod) {
+				periods.unshift(invoicePeriod);
+			} else if (invoicePeriod > endPeriod) {
+				periods.push(invoicePeriod);
+			}
 		}
 
 		// Add all the periods to the store
@@ -1820,12 +1855,24 @@ Ext.define('NP.controller.Invoice', {
 
 		// Check if form is valid
 		if (form.isValid()) {
+			// Get the line items that need to be saved
+			var lineStore    = me.getLineGrid().getStore(),
+				modifiedRecs = lineStore.getModifiedRecords(),
+				deletedRecs  = lineStore.getRemovedRecords(),
+				lines        = NP.Util.convertModelArrayToDataArray(modifiedRecs),
+				deletedLines = NP.Util.convertModelArrayToDataArray(deletedRecs);
+
 			// Form is valid so submit it using the bound model
 			form.submitWithBindings({
 				service: 'InvoiceService',
 				action : 'saveInvoice',
 				extraParams: {
-					
+					userprofile_id              : NP.Security.getUser().get('userprofile_id'),
+					delegation_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id'),
+					lines                       : lines,
+					deletedLines                : deletedLines,
+					tax                         : 30,
+					shipping                    : 50
 				},
 				extraFields: {
 					vendor_id: 'vendor_id'
@@ -1837,10 +1884,54 @@ Ext.define('NP.controller.Invoice', {
 					if (invoice.get('invoice_id') === null) {
 						me.addHistory('Invoice:showView:' + result['invoice_id']);
 					} else {
-						me.showView(invoice_id);
+						me.showView(invoice.get('invoice_id'));
 					}
 				}
 			});
 		}
+	},
+
+	onDeleteInvoice: function() {
+		var me          = this,
+			invoice_id  = me.getInvoiceRecord().get('invoice_id'),
+			form        = me.getInvoiceView(),
+			data        = form.getLoadedData(),
+			dialogTitle = NP.Translator.translate('Delete Invoice?'),
+			dialogText  = NP.Translator.translate('Are you sure you want to delete this Invoice?');
+
+		if (data['images'].length) {
+			dialogText += "<br /> You will only be able to view the attached image(s) in the Deleted Images section of Image Management.";
+		}
+
+		Ext.MessageBox.confirm(dialogTitle, dialogText, function(btn) {
+			// If user clicks Yes, proceed with deleting
+			if (btn == 'yes') {
+				NP.Net.remoteCall({
+					mask    : form,
+					method  : 'POST',
+					requests: {
+						service                     : 'InvoiceService',
+						action                      : 'deleteInvoice',
+						// Params
+						invoice_id                  : invoice_id,
+						// Callback
+						success: function(result) {
+							if (result.success) {
+								NP.Util.showFadingWindow({
+									html: NP.Translator.translate('The invoice has been deleted')
+								});
+
+								me.addHistory('Invoice:showRegister');
+							} else {
+								Ext.MessageBox.alert(
+									NP.Translator.translate('Error'),
+									NP.Translator.translate('An unexpected error occurred. Please try again.')
+								);
+							}
+						}
+					}
+				});
+			}
+		});
 	}
 });

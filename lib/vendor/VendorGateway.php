@@ -63,7 +63,7 @@ class VendorGateway extends AbstractGateway {
 
 	public function findVendorsite($vendor_id) {
 		return $this->findValue(
-			['vendor_id' => '?'],
+			['v.vendor_id' => '?'],
 			[$vendor_id],
 			['vendorsite_id' => new \NP\core\db\Expression('vs.vendorsite_id')]
 		);

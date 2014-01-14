@@ -24,6 +24,7 @@ class BudgetService extends AbstractService {
      * 
      */
     public function createBudget($property_id, $glaccount_id, $period, $budget, $actual) {
+        $errors = [];
         $this->budgetGateway->beginTransaction();
         
         try {

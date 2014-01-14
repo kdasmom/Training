@@ -30,16 +30,19 @@ Abstract class AbstractInvoicePoService extends AbstractService {
 
 		if ($this->type === 'invoice') {
 			$this->table       = 'invoice';
+			$this->title       = 'Invoice';
 			$this->itemTable   = 'invoiceitem';
 			$this->gateway     = $this->table;
 			$this->itemGateway = 'invoiceItem';
 		} else if ($this->type === 'po') {
 			$this->table       = 'purchaseorder';
+			$this->title       = 'Purchase Order';
 			$this->itemTable   = 'poitem';
 			$this->gateway     = 'purchaseOrder';
 			$this->itemGateway = 'poItem';
 		} else if ($this->type === 'receipt') {
 			$this->table       = 'receipt';
+			$this->title       = 'Receipt';
 			$this->itemTable   = 'rctitem';
 			$this->gateway     = $this->table;
 			$this->itemGateway = 'rctItem';
@@ -215,23 +218,14 @@ Abstract class AbstractInvoicePoService extends AbstractService {
 				[$poitem_id]
 			);
 
-			// Determine whether to unlink all invoice items or only one
-			if ($invoiceitem_id === null) {
-				$where = ['reftablekey_id' => '?'];
-				$params = [$poitem_id];
-			} else {
-				$where = ['invoiceitem_id' => '?'];
-				$params = [$invoiceitem_id];
-			}
-
-			// Unlink invoice item(s)
+			// Unlink invoice item
 			$this->invoiceItemGateway->update(
 				[
 					'reftable_name'  => null,
 					'reftablekey_id' => null
 				],
-				$where,
-				$params
+				['invoiceitem_id' => '?'],
+				[$invoiceitem_id]
 			);
 
 			// Make sure PO is back in released state and set VendorConnect sent flag
@@ -385,7 +379,7 @@ Abstract class AbstractInvoicePoService extends AbstractService {
 	}
 
 	/**
-	 * 
+	 * Unassigns a line item from job costing
 	 */
 	public function unassignJob($item_id) {
 		$this->jbJobAssociationGateway->delete(
@@ -398,7 +392,7 @@ Abstract class AbstractInvoicePoService extends AbstractService {
 	}
 
 	/**
-	 * 
+	 * Utility function to add audit records
 	 */
 	public function audit($audit, $audittype=null, $auditactivity=null) {
 		if (is_array($audit)) {
@@ -423,5 +417,65 @@ Abstract class AbstractInvoicePoService extends AbstractService {
 		}
 
 		return $audit;
+	}
+
+	/**
+	 * 
+	 */
+	public function unassignImage($entity_id) {
+		$errors = [];
+		$this->imageIndexGateway->beginTransaction();
+		
+		try {
+			$gateway = "{$this->gateway}Gateway";
+			$entity = $this->$gateway->findSingle("{$this->tableAlias}.{$this->pkField} = ?", [$entity_id]);
+
+			if ($this->type == 'invoice') {
+				$vendorsite_id = $entity['paytablekey_id'];
+				$duedate       = $entity['invoice_duedate'];
+				$ref           = $entity['invoice_ref'];
+				$amount        = $entity['control_amount'];
+				$date          = $entity['invoice_datetm'];
+			} else {
+				$vendorsite_id = $entity['vendorsite_id'];
+				$duedate       = null;
+				$ref           = $entity['purchaseorder_ref'];
+				$amount        = null;
+				$date          = null;
+			}
+
+			$tableref_id = $this->imageTablerefGateway->getIdByName($this->title);
+
+			$this->imageIndexGateway->update(
+				[
+					'tablekey_id'                => NULL,
+					'Image_Index_Status'         => -1,
+					'Image_Index_VendorSite_Id'  => $vendorsite_id,
+					'property_id'                => $entity['property_id'],
+					'Image_Index_Due_Date'       => $duedate,
+					'Image_Index_Ref'            => $ref,
+					'Image_Index_Amount'         => $amount,
+					'Image_Index_Invoice_Date'   => $date,
+					'image_index_deleted_datetm' => \NP\util\Util::formatDateForDB(),
+					'tableref_id'                => NULL,
+					'image_index_deleted_by'     => $this->securityService->getUserId()
+				],
+				['tablekey_id'=>'?', 'tableref_id'=>'?'],
+				[$entity_id, $tableref_id]
+			);
+		} catch(\Exception $e) {
+			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+		
+		if (count($errors)) {
+			$this->imageIndexGateway->rollback();
+		} else {
+			$this->imageIndexGateway->commit();
+		}
+		
+		return array(
+		    'success' => (count($errors)) ? false : true,
+		    'errors'  => $errors
+		);
 	}
 }
