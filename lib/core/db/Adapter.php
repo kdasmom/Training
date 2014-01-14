@@ -139,22 +139,44 @@ class Adapter {
 			die;
 		}
 		
-		// If we ran a select statement, return the data
-		if (!in_array($beginSql, array('insert','update','delete'))) {
-			// Fetch and return as an associative array
-			$res = array();
-			while( $row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC) ) {
-				$res[] = $row;
-			}
-
-			return $res;
-		// If dealing with an insert statement, we need to get the last insert ID and store it
-		} else if ($beginSql == 'insert') {
+		// Check if we're just running an INSERT statement first
+		if ($beginSql == 'insert') {
+			// If we ran a simple INSERT statement, we also added a SELECT SCOPE_IDENTITY() after it here,
+			// so we want to retrieve that result
 			sqlsrv_next_result($stmt);
      		sqlsrv_fetch($stmt);
+     		// Store the inserted ID int the lastInsertId property so we can access it from other classes
 			$this->lastInsertId = sqlsrv_get_field($stmt, 0);
+		// If not dealing with a simple INSERT, we can find all results from the operation that don't belong
+		// to INSERT/UPDATE/DELETE statements
+		} else {
+			// This array will store all the results
+			$results = [];
+			do {
+				// Check the metadata on the statement
+				$meta = sqlsrv_field_metadata($stmt);
+				// If there's metadata (fields), it means it's a select statement, so we can get the data
+				if (count($meta)) {
+					// Fetch and return as an associative array
+					$res = [];
+					while( $row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC) ) {
+						$res[] = $row;
+					}
+					// Add the data to the global result set
+					$results[] = $res;
+				}
+			} while(sqlsrv_next_result($stmt)); // Fetch the next result
+
+			// If we have only one result set, pop it out of the result set and return it
+			if (count($results) === 1) {
+				return $results[0];
+			// If we have multiple result sets, return them all in the main array
+			} else if (count($results) > 1) {
+				return $results;
+			}
 		}
 
+		// If we had no result sets to return, just return true (for insert/update/delete)
 		return true;
 	}
 
