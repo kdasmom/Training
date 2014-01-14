@@ -18,12 +18,23 @@ Ext.define('NP.view.systemSetup.Main', {
     	'NP.view.systemSetup.CustomFields',
     	'NP.view.systemSetup.Picklists',
     	'NP.view.systemSetup.DefaultSplits',
-        'NP.view.systemSetup.LoginPage'
+        'NP.view.systemSetup.LoginPage',
+		'NP.view.shared.button.UserManager',
+		'NP.view.shared.button.PropertySetup'
     ],
 
     title: 'System Setup',
     
     initComponent: function() {
+		this.tbar = [
+			{
+				xtype: 'shared.button.usermanager'
+			},
+			{
+				xtype: 'shared.button.propertysetup'
+			}
+		];
+
     	this.items = [
     		{
 	    		xtype: 'systemsetup.overview'

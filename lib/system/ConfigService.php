@@ -310,7 +310,7 @@ class ConfigService extends AbstractService {
 		}
 		return $arTemp;
 	}
-	
+
 	/**
 	 * Saves password configuration fields
 	 *
@@ -502,6 +502,10 @@ class ConfigService extends AbstractService {
             die('Invalid file');
         }
     }
+
+	public function getConfigSysValByCat($configsysclient_name = null, $configsysval_load = null, $configsyscat_name = null, $configsysval_show = null) {
+
+	}
 }
 
 ?>

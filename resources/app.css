@@ -78,6 +78,9 @@
 .go-button .x-btn-inner { width: 33px !important; }
 .go-button button { width: 33px !important; }
 
+.usermanager-btn {background-image: url("images/buttons/user_manager.gif"); }
+.propertysetup-btn {background-image: url("images/buttons/property_setup.gif"); }
+
 /* STYLE FOR USING AN IMAGE AS A BUTTON IN A GRID BY SPECIFYING THIS AS tdCls CONFIG OPTION */
 .image-button-cell .x-grid-cell-inner { padding-bottom: 0; }
 .image-button-cell .x-grid-cell-inner img { cursor: pointer; }

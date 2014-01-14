@@ -18,7 +18,12 @@ Ext.define('NP.controller.SystemSetup', {
 
 	stores: ['property.Properties','gl.GlAccounts','system.DfSplits'],
 
-	views: ['systemSetup.Main','systemSetup.DefaultSplitGrid','systemSetup.DefaultSplitForm'],
+	views: [
+		'systemSetup.Main',
+		'systemSetup.DefaultSplitGrid',
+		'systemSetup.DefaultSplitForm',
+		'systemSetup.SettingsGeneral'
+	],
 
 	refs : [
 		{ ref: 'passwordConfiguration', selector: '[xtype="systemsetup.passwordconfiguration"]' },
