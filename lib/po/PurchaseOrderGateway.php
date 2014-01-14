@@ -302,7 +302,7 @@ class PurchaseOrderGateway extends AbstractGateway {
 	/**
 	 * 
 	 */
-	public function unlinkInvoice($invoice_id) {
+	public function unlinkFromInvoice($invoice_id) {
 		$this->update(
 			['purchaseorder_status' => 'saved'],
 			Where::get()

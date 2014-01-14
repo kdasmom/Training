@@ -4,7 +4,16 @@ namespace NP\shared;
 use NP\core\AbstractGateway;
 
 class AudittypeGateway extends AbstractGateway {
-    protected $table = 'audittype';
+    /**
+     * 
+     */
+    public function findIdByType($audittype) {
+        return $this->findValue(
+            ['audittype'=>'?'],
+            [$audittype],
+            'audittype_id'
+        );
+    }
 
     public function getIdByTableref($tableref) {
         if (!isset($tableref) || is_null($tableref)) {

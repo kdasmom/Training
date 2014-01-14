@@ -5,7 +5,18 @@ use NP\core\AbstractGateway;
 use NP\core\db\Where;
 
 class AuditactivityGateway extends AbstractGateway {
-    protected $table = 'auditactivity';
+    /**
+     * Finds an auditactivity_id based on auditactivity value
+     * @param  string $auditactivity
+     * @return int
+     */
+    public function findIdByType($auditactivity) {
+        return $this->findValue(
+            ['auditactivity'=>'?'],
+            [$auditactivity],
+            'auditactivity_id'
+        );
+    }
 
     public function getIdByNames($names) {
         $result = $this->find(

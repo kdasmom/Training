@@ -2,6 +2,8 @@
 
 namespace NP\core;
 
+use NP\core\db\Expression;
+
 /**
  * This is an abstract class that must be extended by all gateways in the system.
  *
@@ -156,7 +158,7 @@ abstract class AbstractGateway {
 	 * @param  NP\core\db\Join|array         $joins    A join object or array of joins to use in this select statement
 	 * @return array                                   A positional array filled with associative arrays of each record found
 	 */
-	public function find($where=null, $params=array(), $order=null,  $cols=null, $pageSize=null, $page=null, $joins=null) {
+	public function find($where=null, $params=array(), $order=null,  $cols=null, $pageSize=null, $page=1, $joins=null) {
 		$select = $this->getSelect();
 
 		// Allow for passing a custom select just in case
@@ -202,7 +204,6 @@ abstract class AbstractGateway {
 	public function findSingle($where=null, $params=array(), $cols=null, $order=null, $joins=null) {
 		$recs = $this->find($where, $params, $order, $cols, 1, null, $joins);
 
-		$recs = $recs['data'];
 		if (count($recs)) {
 			return $recs[0];
 		} else {
@@ -230,7 +231,6 @@ abstract class AbstractGateway {
 		}
 		$recs = $this->find($where, $params, $order, $cols, 1, null, $joins);
 
-		$recs = $recs['data'];
 		if (count($recs)) {
 			return $recs[0][$col];
 		} else {
@@ -345,9 +345,12 @@ abstract class AbstractGateway {
 		$values = array();
 		foreach($set as $field=>$val) {
 			if ($field != $this->pk) {
-				$placeHolder = '?';
-				$fields[$field] = $placeHolder;
-				$values[] = $val;
+				if ($val instanceOf Expression) {
+					$fields[$field] = $val->toString();
+				} else {
+					$fields[$field] = '?';
+					$values[] = $val;
+				}
 			}
 		}
 
@@ -423,18 +426,21 @@ abstract class AbstractGateway {
 	 * @return array                           Associative array with 2 keys: 'total' has the total number of records for the query and 'data' has the records for the selected page and pagesize requested
 	 */
 	public function getPagingArray($select, $params, $pageSize, $page=1, $distinctCol=null) {
-		$selectTotal = $this->getSelectCountForPaging($select, $distinctCol);
-		
-		// Limit the original query to the page needed
-		$select->limit($pageSize);
+		// If we have set a page, we really need pagination, otherwise we're just limiting
 		if ($page !== null) {
 			$select->offset($pageSize * ($page - 1));
+
+			$selectTotal = $this->getSelectCountForPaging($select, $distinctCol);
+			$totalRes = $this->adapter->query($selectTotal, $params);
 		}
 		
 		$selectRes = $this->adapter->query($select, $params);
-		$totalRes = $this->adapter->query($selectTotal, $params);
 		
-		return array('total'=>$totalRes[0]['totalRows'], 'data'=>$selectRes);
+		if ($page !== null) {
+			return array('total'=>$totalRes[0]['totalRows'], 'data'=>$selectRes);
+		} else {
+			return $selectRes;
+		}
 	}
 	
 	/**

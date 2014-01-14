@@ -150,7 +150,7 @@ Ext.define('NP.model.invoice.Invoice', {
     isEditable: function() {
 		var me      = this,
 			status  = me.get('invoice_status');
-
+console.log(me.isInvoiceModifiable());
 		if (
 			(status == 'open' && me.isInvoiceModifiable())
 			|| (status == 'saved' && NP.Security.hasPermission(1068))

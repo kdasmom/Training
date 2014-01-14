@@ -112,6 +112,42 @@ class InvoiceGateway extends AbstractGateway {
 	}
 
 	/**
+	 * Finds all associated lines between an invoice and a PO 
+	 */
+	public function findInvoicePoAssociations($invoice_id, $purchaseorder_id) {
+		$select = Select::get()
+			->from(['ii'=>'invoiceitem'])
+				->join(new sql\join\InvoiceItemPoItemJoin())
+			->whereEquals('ii.invoice_id', '?')
+			->whereEquals('pi.purchaseorder_id', '?');
+
+		return $this->adapter->query($select, [$invoice_id, $purchaseorder_id]);
+	}
+
+	/**
+	 * Checks if an invoice has properties used that are different than the header property.
+	 *
+	 * @param  int $invoice_id
+	 * @return boolean
+	 */
+	public function isInvoiceMultiProp($invoice_id) {
+		$select = Select::get()
+			->count(true, 'total')
+			->from(['ii'=>'invoiceitem'])
+				->join(new sql\join\InvoiceItemInvoiceJoin())
+			->whereEquals('ii.invoice_id', '?')
+			->whereNotEquals(
+				'ii.property_id',
+				'i.property_id'
+			);
+
+
+		$total = $this->adapter->query($select, [$invoice_id]);
+
+		return (count($total)) ? true : false;
+	}
+
+	/**
 	 * 
 	 */
 	public function findInvalidPostDates($invoice_id) {

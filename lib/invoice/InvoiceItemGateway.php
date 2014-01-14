@@ -27,7 +27,7 @@ class InvoiceItemGateway extends AbstractGateway {
 		$select->allColumns('ii')
 				->columnBudgetVariance($this->configService->get('PN.Intl.budgetCompareWithTax', '1'))
 				->join(new sql\join\InvoiceItemInvoiceJoin())
-				->join(new sql\join\InvoiceItemPoItemJoin())
+				->join(new sql\join\InvoiceItemPoItemJoin(['poitem_id','poitem_amount','purchaseorder_id']))
 				->join(new \NP\po\sql\join\PoItemPurchaseorderJoin(['purchaseorder_ref'], Select::JOIN_LEFT))
 				->join(new sql\join\InvoiceItemPropertyJoin())
 				->join(new sql\join\InvoiceItemGlAccountJoin())
@@ -76,7 +76,55 @@ class InvoiceItemGateway extends AbstractGateway {
 		
 		$this->adapter->query($update, $params);
 	}
-	
+
+	/**
+	 * Returns information relevant to the invoice item link to a PO item 
+	 * (returns invoiceitem info and poitem info for linked items)
+	 *
+	 * @param  int $invoiceitem_id
+	 * @return array
+	 */
+	public function findLinkByItem($invoiceitem_id) {
+		$select = Select::get()
+			->columns(['invoiceitem_id','invoice_id', 'property_id'])
+			->from(['ii'=>'invoiceitem'])
+			->join(new sql\join\InvoiceItemPoItemJoin(['poitem_id','purchaseorder_id'], Select::JOIN_INNER))
+			->whereEquals('ii.invoiceitem_id', '?');
+
+		$res = $this->adapter->query($select, [$invoiceitem_id]);
+
+		return $res;
+	}
+
+	/**
+	 * 
+	 */
+	public function findItemTotal($invoice_id, $taxItemsOnly=false) {
+		$conditions = ['invoice_id' => '?'];
+		if ($taxItemsOnly) {
+			$conditions['invoiceitem_taxflag'] = "'Y'";
+		}
+
+		return $this->findValue(
+			$conditions,
+			[$invoice_id],
+			['total' => new Expression("SUM(invoiceitem_amount)")]
+		);
+	}
+
+	public function findTaxAndShippingTotal($invoice_id) {
+		$res = $this->find(
+			['invoice_id' => '?'],
+			[$invoice_id],
+			null,
+			[
+				'tax'      => new Expression("SUM(invoiceitem_salestax)"),
+				'shipping' => new Expression("SUM(invoiceitem_shipping)")
+			]
+		);
+
+		return array_pop($res);
+	}
 }
 
 ?>

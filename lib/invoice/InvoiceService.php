@@ -3,9 +3,6 @@
 namespace NP\invoice;
 
 use NP\shared\AbstractInvoicePoService;
-use NP\security\SecurityService;
-use NP\budget\BudgetService;
-use NP\property\FiscalCalService;
 
 /**
  * Service class for operations related to Invoices
@@ -16,17 +13,6 @@ class InvoiceService extends AbstractInvoicePoService {
 	
 	protected $type = 'invoice';
 
-	protected $securityService, $fiscalCalService, $budgetService;
-	
-	public function __construct(SecurityService $securityService, FiscalCalService $fiscalCalService,
-								BudgetService $budgetService) {
-		parent::__construct();
-
-		$this->securityService           = $securityService;
-		$this->fiscalCalService          = $fiscalCalService;
-		$this->budgetService             = $budgetService;
-	}
-	
 	/**
 	 * Retrieves a record for the specified invoice ID
 	 *
@@ -836,8 +822,7 @@ class InvoiceService extends AbstractInvoicePoService {
 			}
 
 			// Unlink POs and PO lines from this invoice
-			$this->purchaseOrderGateway->unlinkInvoice($invoice_id);
-			$this->poItemGateway->unlinkInvoice($invoice_id);
+			$this->unlinkPoFromInvoice($invoice_id);
 
 			// Delete all lines
 			$this->clearLines($invoice_id);
@@ -989,6 +974,8 @@ class InvoiceService extends AbstractInvoicePoService {
 				}
 			}
 
+			$this->allocateTaxAndShipping($invoice->invoice_id, $data['tax'], $data['shipping']);
+
 			// As a precaution, update the period on all line items to match the header
 			if (!count($errors)) {
 				$this->invoiceItemGateway->update(
@@ -1026,7 +1013,106 @@ class InvoiceService extends AbstractInvoicePoService {
 	 * @return array
 	 */
 	public function deleteLine($invoiceitem_id) {
+		$errors = [];
+		$this->invoiceItemGateway->beginTransaction();
 		
+		try {
+			// Get invoice ID
+			$invoice_id = $this->invoiceItemGateway->findValue(
+				['invoiceitem_id'=>'?'],
+				[$invoiceitem_id],
+				'invoice_id'
+			);
+
+			// Find linked PO items
+			$poitems = $this->invoiceItemGateway->findLinkByItem($invoiceitem_id);
+
+			// Loop through linked items
+			foreach ($poitems as $poitem) {
+				$poitem_id = $poitem['poitem_id'];
+
+				// Check if there's a VendorConnect invoice item linked to this po item
+				$va_invoiceitem = $this->vendorAccessInvoiceItemGateway->findByLinkedPo($poitem_id);
+
+				// If an VendorConnect invoice item exists, proceed
+				if ($va_invoiceitem !== null) {
+					// Re-link the PO item to the VendorConnect invoice item
+					$this->linkPoItemToVendorConnectInvoiceItem(
+						$poitem_id,
+						$va_invoiceitem['invoiceitem_id']
+					);
+				}
+
+				// Remove association from PO line
+				$result = $this->unlinkPoItem($poitem_id, $invoiceitem_id);
+
+				// If unlinking PO item errors, log it and break
+				if (!$result['success']) {
+					$this->entityValidator->addError(
+						$errors,
+						'global',
+						'Unexpected error trying to unlink PO item'
+					);
+					break;
+				}
+			}
+
+			if (!count($errors)) {
+				// Update the status of the invoice_multiproperty column for the invoice
+				$invoice_multiproperty = ($this->invoiceGateway->isInvoiceMultiProp($invoice_id)) ? 1 : 0;
+				$this->invoiceGateway->update([
+					'invoice_id'            => $invoice_id,
+					'invoice_multiproperty' => $invoice_multiproperty
+				]);
+
+				// Delete any job associations if appropriate
+				if ($this->configService->get('pn.jobcosting.jobcostingEnabled', '0') == '1') {
+					$this->unassignJob($invoiceitem_id);
+				}
+
+				// Retrieve current Tax and Shipping totals for auditing purposes before deleting
+				$oldTotals = $this->invoiceItemGateway->findTaxAndShippingTotal($invoice_id);
+
+				// Delete the invoice line
+				$this->invoiceItemGateway->delete('invoiceitem_id = ?', [$invoiceitem_id]);
+
+				// Redo tax and shipping allocation
+				$totals = $this->invoiceItemGateway->findTaxAndShippingTotal($invoice_id);
+				$this->allocateTaxAndShipping($invoice_id, $totals['tax'], $totals['shipping']);
+
+				// Save audit of changes to tax and shipping
+				$result = $this->auditTaxShippingChanges(
+					$invoice_id,
+					$oldTotals['tax'],
+					$totals['tax'],
+					$oldTotals['shipping'],
+					$totals['shipping']
+				);
+
+				if (!$result['success']) {
+					$this->entityValidator->addError(
+						$errors,
+						'global',
+						'Unexpected error trying to audit tax and shipping changes'
+					);
+				}
+			}
+
+			// TODO: add code to deal with jobcosting contract actuals
+		} catch(\Exception $e) {
+			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+		
+		if (count($errors)) {
+			$this->invoiceItemGateway->rollback();
+		} else {
+			$this->invoiceItemGateway->commit();
+		}
+		
+		return array(
+		    'success' => (count($errors)) ? false : true,
+		    'errors'  => $errors
+		);
 	}
 
 	/**
