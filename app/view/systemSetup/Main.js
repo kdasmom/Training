@@ -28,10 +28,12 @@ Ext.define('NP.view.systemSetup.Main', {
     initComponent: function() {
 		this.tbar = [
 			{
-				xtype: 'shared.button.usermanager'
+				xtype: 'shared.button.usermanager',
+				itemId: 'backToUserManagerBtn'
 			},
 			{
-				xtype: 'shared.button.propertysetup'
+				xtype: 'shared.button.propertysetup',
+				itemId: 'backToPropertySetupBtn'
 			}
 		];
 

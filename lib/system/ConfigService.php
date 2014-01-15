@@ -503,8 +503,17 @@ class ConfigService extends AbstractService {
         }
     }
 
+	/**
+	 * Retrieve sysvals list
+	 *
+	 * @param null $configsysclient_name
+	 * @param null $configsysval_load
+	 * @param null $configsyscat_name
+	 * @param null $configsysval_show
+	 * @return array|bool
+	 */
 	public function getConfigSysValByCat($configsysclient_name = null, $configsysval_load = null, $configsyscat_name = null, $configsysval_show = null) {
-
+		return $this->configsysGateway->getConfigSysValByCat($configsysclient_name, $configsysval_load, $configsyscat_name, $configsysval_show);
 	}
 }
 

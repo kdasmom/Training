@@ -143,6 +143,16 @@ Ext.define('NP.controller.SystemSetup', {
 			},
 			'#removeClientLogoBtn': {
 				click: me.removeClientLogo
+			},
+			'#backToUserManagerBtn': {
+				click: function() {
+					me.addHistory('UserManager:showUserManager');
+				}
+			},
+			'#backToPropertySetupBtn': {
+				click: function() {
+					me.addHistory('PropertySetup:showPropertySetup');
+				}
 			}
 		});
 
