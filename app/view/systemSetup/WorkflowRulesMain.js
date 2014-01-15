@@ -8,7 +8,6 @@ Ext.define('NP.view.systemSetup.WorkflowRulesMain', {
     requires: [
         'NP.view.systemSetup.WorkflowRulesGrid',
         'NP.view.systemSetup.WorkflowRuleTypeCombo',
-
         'NP.view.shared.button.Cancel',
         'NP.view.shared.button.CreateRule',
         'NP.view.shared.button.Print',
@@ -26,15 +25,14 @@ Ext.define('NP.view.systemSetup.WorkflowRulesMain', {
                         xtype: 'panel',
                         title: 'Rules',
                         tbar: [
-		            { xtype: 'shared.button.cancel', itemId: 'buttonWorkflowCancel' },
-		            { xtype: 'shared.button.createrule', itemId: 'buttonWorkflowCreateRule' },
-		            { xtype: 'shared.button.print', itemId: 'buttonWorkflowPrint' },
-		            { xtype: 'shared.button.report', itemId: 'buttonWorkflowReport' },
-		            { xtype: 'shared.button.activate', itemId: 'buttonWorkflowActivateRule' },
-		            { xtype: 'shared.button.inactivate', itemId: 'buttonWorkflowDeactivateRule', text: 'Deactivate' },
-
+		                    { xtype: 'shared.button.cancel', itemId: 'buttonWorkflowCancel' },
+		                    { xtype: 'shared.button.createrule', itemId: 'buttonWorkflowCreateRule' },
+		                    { xtype: 'shared.button.print', itemId: 'buttonWorkflowPrint' },
+		                    { xtype: 'shared.button.report', itemId: 'buttonWorkflowReport' },
+		                    { xtype: 'shared.button.activate', itemId: 'buttonWorkflowActivateRule' },
+		                    { xtype: 'shared.button.inactivate', itemId: 'buttonWorkflowDeactivateRule', text: 'Deactivate' },
                             { xtype: 'systemsetup.WorkflowRuleTypeCombo'}
-        		],
+        		        ],
                         items: [
                             {
                                 xtype: 'systemsetup.WorkflowRulesGrid'

@@ -38,7 +38,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesModify', {
                 baseCls: 'header-highlight'
             },
             {
-                xtype: 'systemsetup.WorkflowRulesBuilderRules'
+                xtype: 'systemsetup.WorkflowRulesBuilderRules',
+				data: me.data
             },
             {
                 xtype: 'systemsetup.WorkflowRulesBuilderRoutes',

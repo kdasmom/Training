@@ -13,6 +13,7 @@ class Select extends AbstractFilterableSql implements SQLInterface, SQLElement {
 	const JOIN_LEFT  = 'LEFT';
 	const JOIN_RIGHT = 'RIGHT';
 	const JOIN_CROSS = 'CROSS';
+	const JOIN_LEFT_OUTER  = 'LEFT OUTER';
 
 	/**
 	 * @var array Associative array with table alias as key and table name as value

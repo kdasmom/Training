@@ -161,7 +161,6 @@ class WfRuleGateway extends AbstractGateway {
             'actions' => $this->adapter->query(
                 new sql\GetRuleActionsSelect($ruleid, $asp_client_id)
             ),
-
             'properties' => $this->adapter->query(
                 new sql\GetRulePropertiesSelect($ruleid)
             ),
@@ -208,6 +207,13 @@ class WfRuleGateway extends AbstractGateway {
             if (empty($keys)) { $keys = [0]; }
 
             $type = $result['rule']['wfruletype_id'];
+
+//			if ($result['rule']['wfrule_status'] != 'new') {
+//				$result['rule']['originator'] = $this->adapter->query(
+//					new sql\GetRuleOriginatorSelect($ruleid, $asp_client_id, $type)
+//				);
+//			}
+
             if (in_array($type, [3, 7, 8, 13, 29, 31, 33, 37])) {
                 $result['codes'] = $this->adapter->query(
                     new sql\GLAccountByWFRuleSelect($ruleid, $asp_client_id)
