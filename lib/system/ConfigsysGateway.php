@@ -231,6 +231,7 @@ class ConfigsysGateway extends AbstractGateway {
 			->join(['c' => 'configsys'], 'cv.configsys_id = c.configsys_id', ['configsys_id', 'configsyslkp_id', 'configsys_range', 'configsys_tbl', 'configsys_tbl_order_fld', 'configsys_tbl_name_fld', 'configsys_tbl_val_fld', 'configsys_name', 'configsys_displayname', 'configsys_shortname', 'configsys_required', 'configsys_maxlength'], Select::JOIN_INNER)
 			->join(['cl' => 'configsysclient'], 'cv.configsysclient_id = cl.configsysclient_id', [], Select::JOIN_INNER)
 			->join(['ct' => 'configsystype'], 'c.configsystype_id = ct.configsystype_id', ['configsystype_name'], Select::JOIN_LEFT)
+			->join(['cc' => 'configsyscat'], 'c.configsyscat_id = cc.configsyscat_id', [], Select::JOIN_LEFT)
 			->join(['c2' => 'configsys'], 'c.configsys_parent_yesno_id = c2.configsys_id', [], Select::JOIN_LEFT)
 			->join(['cv2' => 'configsysval'], ' c2.configsys_id = cv2.configsys_id', ['parent_configsysval_id' => 'configsysval_id'], Select::JOIN_LEFT)
 			->whereNest('OR')

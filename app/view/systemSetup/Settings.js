@@ -9,15 +9,7 @@ Ext.define('NP.view.systemSetup.Settings', {
 
     requires: [
 		'NP.lib.core.Translator',
-		'NP.view.systemSetup.SettingsGeneral',
-		'NP.view.systemSetup.SettingsRegister',
-		'NP.view.systemSetup.SettingsImaging',
-		'NP.view.systemSetup.SettingsInvoice',
-		'NP.view.systemSetup.SettingsJobCost',
-		'NP.view.systemSetup.SettingsPurchaseOrder',
-		'NP.view.systemSetup.SettingsVendor',
-		'NP.view.systemSetup.SettingsBudget',
-		'NP.view.systemSetup.SettingsIntl',
+		'NP.view.systemSetup.SettingsTab',
 		'NP.view.shared.button.Cancel',
 		'NP.view.shared.button.Save',
 		'NP.view.shared.button.Print'
@@ -48,31 +40,49 @@ Ext.define('NP.view.systemSetup.Settings', {
 				border: false,
 				items: [
 					{
-						xtype: 'systemsetup.settingsgeneral'
+						xtype: 'systemsetup.settingstab',
+						itemId: 'general',
+						title: 'General'
 					},
 					{
-						xtype: 'systemsetup.settingsregister'
+						xtype: 'systemsetup.settingstab',
+						itemId: 'register',
+						title: 'Register'
 					},
 					{
-						xtype: 'systemsetup.settingsimaging'
+						xtype: 'systemsetup.settingstab',
+						itemId: 'imaging',
+						title: 'Imaging'
 					},
 					{
-						xtype: 'systemsetup.settingsinvoice'
+						xtype: 'systemsetup.settingstab',
+						itemId: 'invoice',
+						title: 'Invoice'
 					},
 					{
-						xtype: 'systemsetup.settingsjobcost'
+						xtype: 'systemsetup.settingstab',
+						itemId: 'jobcost',
+						title: 'Job Cost'
 					},
 					{
-						xtype: 'systemsetup.settingspurchaseorder'
+						xtype: 'systemsetup.settingstab',
+						itemId: 'purchaseorder',
+						title: 'Purchase Order'
 					},
 					{
-						xtype: 'systemsetup.settingsvendor'
+						xtype: 'systemsetup.settingstab',
+						itemId: 'vendor',
+						title: 'Vendor'
 					},
 					{
-						xtype: 'systemsetup.settingsbudget'
+						xtype: 'systemsetup.settingstab',
+						itemId: 'budget',
+						title: 'Budget and GL'
 					},
 					{
-						xtype: 'systemsetup.settingsintl'
+						xtype: 'systemsetup.settingstab',
+						itemId: 'intl',
+						title: 'Intl'
 					}
 				]
 			}

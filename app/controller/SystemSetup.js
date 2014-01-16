@@ -22,7 +22,7 @@ Ext.define('NP.controller.SystemSetup', {
 		'systemSetup.Main',
 		'systemSetup.DefaultSplitGrid',
 		'systemSetup.DefaultSplitForm',
-		'systemSetup.SettingsGeneral'
+		'systemSetup.SettingsTab'
 	],
 
 	refs : [
@@ -153,6 +153,9 @@ Ext.define('NP.controller.SystemSetup', {
 				click: function() {
 					me.addHistory('PropertySetup:showPropertySetup');
 				}
+			},
+			'[xtype="systemsetup.settings"] [xtype="verticaltabpanel"]': {
+				tabchange: me.changeSettingsTab
 			}
 		});
 
@@ -188,6 +191,11 @@ Ext.define('NP.controller.SystemSetup', {
 		if (that[showMethod]) {
 			// If the show method exists, run it
 			that[showMethod](subSection, id);
+		}
+
+		if (activeTab == 'Settings') {
+			var generaltab = tab.down('#general');
+			this.filltabContent(generaltab);
 		}
 	},
 
@@ -756,6 +764,86 @@ Ext.define('NP.controller.SystemSetup', {
 						}
 					}
 				});
+			}
+		});
+	},
+
+	/**
+	 * Change tab for the "Settings"
+	 *
+	 * @param tabPanel
+	 * @param tab
+	 */
+	changeSettingsTab: function(tabPanel, tab) {
+		this.filltabContent(tab);
+	},
+
+	/**
+	 * Add
+	 *
+	 * @param tab
+	 */
+	filltabContent: function(tab) {
+		var tabName;
+
+		switch (tab.itemId) {
+			case ('general'):
+			default :
+				tabName =  'General';
+				break;
+			case ('register'):
+				tabName =  'Register';
+				break;
+			case ('imaging'):
+				tabName =  'Imaging';
+				break;
+			case ('invoice'):
+				tabName =  'Invoice';
+				break;
+			case ('jobcost'):
+				tabName =  'Job Cost';
+				break;
+			case ('purchaseorder'):
+				tabName =  'Purchase Order';
+				break;
+			case ('vendor'):
+				tabName =  'Vendor';
+				break;
+			case ('budget'):
+				tabName =  'Budget';
+				break;
+			case ('intl'):
+				tabName =  'Intl';
+				break;
+		}
+
+		var fieldcontainer = tab.down('[name="params"]');
+		fieldcontainer.removeAll();
+
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service					: 'ConfigService',
+				action					: 'getConfigSysValByCat',
+				configsysclient_name		: NP.lib.core.Config.getAppName(),
+				configsysval_load		: null,
+				configsyscat_name		: tabName,
+				configsysval_show		: 1,
+				success: function(success) {
+					if (success.length > 0) {
+						Ext.each(success, function(field){
+							switch (field.configsystype_name) {
+								case 'Text':
+									fieldcontainer.add({
+										xtype: 'textfield',
+										name: field.configsys_name,
+										fieldLabel: field.configsys_displayname,
+										value: field.configsysval_val
+									});
+									break;
+							}
+						});
+					}
+				}
 			}
 		});
 	}
