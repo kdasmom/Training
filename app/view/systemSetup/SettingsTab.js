@@ -32,10 +32,11 @@ Ext.define('NP.view.systemSetup.SettingsTab', {
 				value:'Please remember to save your changes before proceeding to the next section. Any changes made without clicking "Save Settings" will be lost.'
 			},
 			{
-				xtype: 'fieldcontainer',
+				xtype: 'form',
 				name: 'params',
+				border: false,
 				items: [],
-				layout: 'fit',
+				layout: 'form',
 				defaults: {
 					labelWidth: '80%',
 					padding: '5 0'

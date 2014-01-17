@@ -516,17 +516,36 @@ class ConfigService extends AbstractService {
 		return $this->configsysGateway->getConfigSysValByCat($configsysclient_name, $configsysval_load, $configsyscat_name, $configsysval_show);
 	}
 
+	/**
+	 * List of vals for the combobox
+	 *
+	 * @param null $configsyslkp_id
+	 * @return array|bool
+	 */
 	public function getConfigSysLkpVal($configsyslkp_id = null) {
 		return $this->configsysGateway->getConfigSysLkpVal($configsyslkp_id);
 	}
 
+	/**
+	 * List of val for table field
+	 *
+	 * @param null $tablename
+	 * @param null $configsys_tbl_name_fld
+	 * @param null $configsys_tbl_val_fld
+	 * @return array|bool
+	 */
 	public function getConfigSysValTable($tablename = null, $configsys_tbl_name_fld = null, $configsys_tbl_val_fld = null) {
 		if (!$tablename || !$configsys_tbl_val_fld || !$configsys_tbl_name_fld) {
 			return [];
 		}
 
 		return $this->configsysGateway->getConfigSysValTable($tablename, $configsys_tbl_name_fld, $configsys_tbl_val_fld);
+	}
 
+	public function saveSettings($data) {
+		print("<pre>");
+		print_r($data);
+		print("</pre>");
 	}
 }
 

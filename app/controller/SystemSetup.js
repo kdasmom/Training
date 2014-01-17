@@ -40,6 +40,7 @@ Ext.define('NP.controller.SystemSetup', {
 		{ ref: 'splitGridUnitCombo',    selector: '#splitGridUnitCombo' },
 		{ ref: 'addSplitAllocBtn',      selector: '#addSplitAllocBtn' }
 	],
+	settingsActiveTab: 'general',
 	
 	init: function() {
 		Ext.log('SystemSetup controller initialized');
@@ -156,6 +157,9 @@ Ext.define('NP.controller.SystemSetup', {
 			},
 			'[xtype="systemsetup.settings"] [xtype="verticaltabpanel"]': {
 				tabchange: me.changeSettingsTab
+			},
+			'[xtype="systemsetup.settings"] [xtype="shared.button.save"]': {
+				click: me.saveSettings
 			}
 		});
 
@@ -195,7 +199,8 @@ Ext.define('NP.controller.SystemSetup', {
 
 		if (activeTab == 'Settings') {
 			var generaltab = tab.down('#general');
-			this.filltabContent(generaltab);
+
+			this.filltabContent(generaltab, this.addField);
 		}
 	},
 
@@ -818,6 +823,7 @@ Ext.define('NP.controller.SystemSetup', {
 				tabName =  'Intl';
 				break;
 		}
+		this.settingsActiveTab = tab.itemId;
 
 		var fieldcontainer = tab.down('[name="params"]');
 		fieldcontainer.removeAll();
@@ -1008,5 +1014,26 @@ Ext.define('NP.controller.SystemSetup', {
 				}
 			);
 		});
+	},
+
+	saveSettings: function() {
+		var form = this.getCmp('systemsetup.settings').down('#' + this.settingsActiveTab).down('[name="params"]');
+
+		if (form.isValid()) {
+			NP.lib.core.Net.remoteCall({
+				requests: {
+					service			: 'ConfigService',
+					action			: 'saveSettings',
+					data			: form.getValues(),
+					extraParams		: {
+						userprofile_id	: NP.Security.getUser().get('userprofile_id')
+					},
+					success: function(success) {
+						console.log('success: ', success);
+					}
+				}
+			});
+			console.log(form.getValues());
+		}
 	}
 });
