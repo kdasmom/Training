@@ -775,7 +775,7 @@ Ext.define('NP.controller.SystemSetup', {
 	 * @param tab
 	 */
 	changeSettingsTab: function(tabPanel, tab) {
-		this.filltabContent(tab);
+		this.filltabContent(tab, this.addField);
 	},
 
 	/**
@@ -783,7 +783,9 @@ Ext.define('NP.controller.SystemSetup', {
 	 *
 	 * @param tab
 	 */
-	filltabContent: function(tab) {
+	filltabContent: function(tab, callback) {
+
+		callback = callback || Ext.emptyFn;
 		var tabName;
 
 		switch (tab.itemId) {
@@ -810,7 +812,7 @@ Ext.define('NP.controller.SystemSetup', {
 				tabName =  'Vendor';
 				break;
 			case ('budget'):
-				tabName =  'Budget';
+				tabName =  'Budget and GL';
 				break;
 			case ('intl'):
 				tabName =  'Intl';
@@ -819,7 +821,8 @@ Ext.define('NP.controller.SystemSetup', {
 
 		var fieldcontainer = tab.down('[name="params"]');
 		fieldcontainer.removeAll();
-
+		var mask = new Ext.LoadMask({ target: tab });
+		mask.show();
 		NP.lib.core.Net.remoteCall({
 			requests: {
 				service					: 'ConfigService',
@@ -830,21 +833,180 @@ Ext.define('NP.controller.SystemSetup', {
 				configsysval_show		: 1,
 				success: function(success) {
 					if (success.length > 0) {
-						Ext.each(success, function(field){
-							switch (field.configsystype_name) {
-								case 'Text':
-									fieldcontainer.add({
-										xtype: 'textfield',
-										name: field.configsys_name,
-										fieldLabel: field.configsys_displayname,
-										value: field.configsysval_val
-									});
-									break;
-							}
-						});
+						callback(tab, success, fieldcontainer);
+						mask.destroy();
 					}
 				}
 			}
+		});
+	},
+
+	addField: function(tab, fields, fieldcontainer) {
+		Ext.each(fields, function(field){
+			switch (field.configsystype_name) {
+				case 'Text':
+					fieldcontainer.add({
+						xtype: 'textfield',
+						name: 'setting_' + field.configsysval_id,
+						fieldLabel: field.configsys_displayname,
+						value: field.configsysval_val
+					});
+					break;
+				case 'Yes/No':
+					fieldcontainer.add(
+						{
+							xtype: 'shared.yesnofield',
+							name: 'setting_' + field.configsysval_id,
+							fieldLabel: field.configsys_displayname,
+							value: field.configsysval_val,
+							allowBlank: field.configsys_required
+						}
+					);
+					break;
+				case 'Number':
+					fieldcontainer.add(
+						{
+							xtype: 'numberfield',
+							name: 'setting_' + field.configsysval_id,
+							fieldLabel: field.configsys_displayname,
+							value: field.configsysval_val,
+							decimalPrecision: 0,
+							allowBlank: false
+						}
+					);
+					break;
+				case 'Date':
+					fieldcontainer.add(
+						{
+							xtype: 'datefield',
+							name: 'setting_' + field.configsysval_id,
+							fieldLabel: field.configsys_displayname,
+							value: field.configsysval_val,
+							allowBlank: false
+						}
+					);
+					break;
+				case 'Lookup':
+					fieldcontainer.add(
+						{
+							xtype: 'customcombo',
+							name: 'setting_' + field.configsysval_id,
+							fieldLabel: field.configsys_displayname,
+							store:Ext.create('NP.store.system.ConfigSysLkpVals', {
+								service    	: 'ConfigService',
+								action     	: 'getConfigSysLkpVal',
+								extraParams: {
+									configsyslkp_id: field.configsyslkp_id
+								},
+								autoLoad	: true
+							}),
+							displayField: 'configsyslkpval_name',
+							valueField: 'configsyslkpval_val',
+							allowBlank: false,
+							editable: false,
+							typeAhead:false,
+							listeners: {
+								afterrender: function(combo, eOpts) {
+									combo.setValue(field.configsysval_val);
+								}
+							}
+						}
+					);
+					break;
+				case 'LookupMultiple':
+					fieldcontainer.add(
+						{
+							xtype: 'customcombo',
+							name: 'setting_' + field.configsysval_id,
+							fieldLabel: field.configsys_displayname,
+							store:Ext.create('NP.store.system.ConfigSysLkpVals', {
+								service    	: 'ConfigService',
+								action     	: 'getConfigSysLkpVal',
+								extraParams: {
+									configsyslkp_id: field.configsyslkp_id
+								},
+								autoLoad	: true
+							}),
+							displayField: 'configsyslkpval_name',
+							valueField: 'configsyslkpval_val',
+							multiple: true,
+							editable: false,
+							allowBlank: false,
+							typeAhead:false,
+							listeners: {
+								afterrender: function(combo, eOpts) {
+									combo.setValue(field.configsysval_val);
+								}
+							}
+						}
+					);
+					break;
+				case 'Table':
+					fieldcontainer.add(
+						{
+							xtype: 'customcombo',
+							name: 'setting_' + field.configsysval_id,
+							fieldLabel: field.configsys_displayname,
+							store: Ext.create('NP.lib.data.Store', {
+								service    	: 'ConfigService',
+								action     	: 'getConfigSysValTable',
+								extraParams: {
+									tablename: field.configsys_tbl,
+									configsys_tbl_name_fld: field.configsys_tbl_name_fld,
+									configsys_tbl_val_fld: field.configsys_tbl_val_fld
+								},
+								autoLoad	: true,
+								fields: ['configsyslkpval_name', 'configsyslkpval_val']
+							}),
+							displayField: 'configsyslkpval_name',
+							valueField: 'configsyslkpval_val',
+							value: field.configsysval_val,
+							allowBlank: false,
+							editable: false,
+							typeAhead:false,
+							listeners: {
+								afterrender: function(combo, eOpts) {
+									combo.setValue(field.configsysval_val);
+								}
+							}
+						}
+					);
+					break;
+				case 'Range':
+					var range = field.configsys_range.split('-');
+					var values = [];
+					for (var index = range[0]; index <= range[1]; index++) {
+						values.push([index, index]);
+					}
+					fieldcontainer.add({
+						xtype: 'customcombo',
+						name: 'setting_' + field.configsysval_id,
+						fieldLabel: field.configsys_displayname,
+						store: Ext.create('Ext.data.ArrayStore', {
+							fields: ['configsyslkpval_val', 'configsyslkpval_name'],
+							autoLoad : true,
+							data: values
+						}),
+						displayField: 'configsyslkpval_name',
+						valueField: 'configsyslkpval_val',
+						allowBlank: false,
+						editable: false,
+						typeAhead:false,
+						listeners: {
+							afterrender: function(combo, eOpts) {
+								combo.setValue(field.configsysval_val);
+							}
+						}
+					});
+					break;
+			}
+			fieldcontainer.add(
+				{
+					xtype: 'hiddenfield',
+					name: 'parent_id' + field.configsysval_id,
+					value: field.parent_configsysval_id
+				}
+			);
 		});
 	}
 });

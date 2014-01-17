@@ -515,6 +515,19 @@ class ConfigService extends AbstractService {
 	public function getConfigSysValByCat($configsysclient_name = null, $configsysval_load = null, $configsyscat_name = null, $configsysval_show = null) {
 		return $this->configsysGateway->getConfigSysValByCat($configsysclient_name, $configsysval_load, $configsyscat_name, $configsysval_show);
 	}
+
+	public function getConfigSysLkpVal($configsyslkp_id = null) {
+		return $this->configsysGateway->getConfigSysLkpVal($configsyslkp_id);
+	}
+
+	public function getConfigSysValTable($tablename = null, $configsys_tbl_name_fld = null, $configsys_tbl_val_fld = null) {
+		if (!$tablename || !$configsys_tbl_val_fld || !$configsys_tbl_name_fld) {
+			return [];
+		}
+
+		return $this->configsysGateway->getConfigSysValTable($tablename, $configsys_tbl_name_fld, $configsys_tbl_val_fld);
+
+	}
 }
 
 ?>

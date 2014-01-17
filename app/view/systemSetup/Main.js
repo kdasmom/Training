@@ -24,6 +24,7 @@ Ext.define('NP.view.systemSetup.Main', {
     ],
 
     title: 'System Setup',
+	autoScroll: true,
     
     initComponent: function() {
 		this.tbar = [

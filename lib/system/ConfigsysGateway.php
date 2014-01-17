@@ -250,6 +250,35 @@ class ConfigsysGateway extends AbstractGateway {
 
 		return $this->adapter->query($select, [$configsyscat_name, $configsyscat_name, $configsysval_load, $configsysval_load, $configsysval_show, $configsysval_show, $configsysclient_name]);
 	}
+
+	/**
+	 * return values for the list
+	 *
+	 * @param $configsyslkp_id
+	 * @return array|bool
+	 */
+	public function getConfigSysLkpVal($configsyslkp_id) {
+		$select = new Select();
+
+		$select->from(['c' => 'configsyslkpval'])
+			->where(['configsyslkp_id' => '?'])
+			->order('configsyslkpval_order');
+
+		return $this->adapter->query($select, [$configsyslkp_id]);
+	}
+
+	public function getConfigSysValTable($tablename, $configsys_tbl_name_fld, $configsys_tbl_val_fld) {
+		$select = new Select();
+
+		$select->from(['t' => $tablename])
+			->columns([
+				'configsyslkpval_name'	=> $configsys_tbl_name_fld,
+				'configsyslkpval_val'	=> $configsys_tbl_val_fld
+			])
+			->order('configsys_tbl_order_fld');
+
+		return $this->adapter->query($select);
+	}
 }
 
 ?>

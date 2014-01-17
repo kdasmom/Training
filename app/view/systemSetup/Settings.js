@@ -17,6 +17,8 @@ Ext.define('NP.view.systemSetup.Settings', {
     
     title: 'Settings',
 	layout: 'fit',
+	autoScroll: true,
+	height: '100%',
 
     initComponent: function() {
     	this.title = NP.Translator.translate(this.title);
