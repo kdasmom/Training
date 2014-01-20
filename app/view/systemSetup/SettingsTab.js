@@ -29,7 +29,7 @@ Ext.define('NP.view.systemSetup.SettingsTab', {
 		me.items = [
 			{
 				xtype: 'displayfield',
-				value:'Please remember to save your changes before proceeding to the next section. Any changes made without clicking "Save Settings" will be lost.'
+				value:'<div style="color: red;">Please remember to save your changes before proceeding to the next section. Any changes made without clicking "Save Settings" will be lost.</div>'
 			},
 			{
 				xtype: 'form',

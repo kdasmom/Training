@@ -909,8 +909,7 @@ Ext.define('NP.controller.SystemSetup', {
 								action     	: 'getConfigSysLkpVal',
 								extraParams: {
 									configsyslkp_id: field.configsyslkp_id
-								},
-								autoLoad	: true
+								}
 							}),
 							displayField: 'configsyslkpval_name',
 							valueField: 'configsyslkpval_val',
@@ -919,6 +918,7 @@ Ext.define('NP.controller.SystemSetup', {
 							typeAhead:false,
 							listeners: {
 								afterrender: function(combo, eOpts) {
+									combo.getStore().load();
 									combo.setValue(field.configsysval_val);
 								}
 							}
@@ -936,8 +936,7 @@ Ext.define('NP.controller.SystemSetup', {
 								action     	: 'getConfigSysLkpVal',
 								extraParams: {
 									configsyslkp_id: field.configsyslkp_id
-								},
-								autoLoad	: true
+								}
 							}),
 							displayField: 'configsyslkpval_name',
 							valueField: 'configsyslkpval_val',
@@ -947,6 +946,7 @@ Ext.define('NP.controller.SystemSetup', {
 							typeAhead:false,
 							listeners: {
 								afterrender: function(combo, eOpts) {
+									combo.getStore().load();
 									combo.setValue(field.configsysval_val);
 								}
 							}
@@ -967,18 +967,17 @@ Ext.define('NP.controller.SystemSetup', {
 									configsys_tbl_name_fld: field.configsys_tbl_name_fld,
 									configsys_tbl_val_fld: field.configsys_tbl_val_fld
 								},
-								autoLoad	: true,
 								fields: ['configsyslkpval_name', 'configsyslkpval_val']
 							}),
 							displayField: 'configsyslkpval_name',
 							valueField: 'configsyslkpval_val',
-							value: field.configsysval_val,
 							allowBlank: false,
 							editable: false,
 							typeAhead:false,
 							listeners: {
 								afterrender: function(combo, eOpts) {
-									combo.setValue(field.configsysval_val);
+									combo.getStore().load();
+									combo.setValue(parseInt(field.configsysval_val));
 								}
 							}
 						}
@@ -996,7 +995,6 @@ Ext.define('NP.controller.SystemSetup', {
 						fieldLabel: field.configsys_displayname,
 						store: Ext.create('Ext.data.ArrayStore', {
 							fields: ['configsyslkpval_val', 'configsyslkpval_name'],
-							autoLoad : true,
 							data: values
 						}),
 						displayField: 'configsyslkpval_name',
@@ -1006,6 +1004,7 @@ Ext.define('NP.controller.SystemSetup', {
 						typeAhead:false,
 						listeners: {
 							afterrender: function(combo, eOpts) {
+								combo.getStore().load();
 								combo.setValue(field.configsysval_val);
 							}
 						}
@@ -1043,7 +1042,6 @@ Ext.define('NP.controller.SystemSetup', {
 						if (success.success) {
 							NP.Util.showFadingWindow({ html: 'Settings were saved successfully' });
 						} else {
-
 							NP.Util.showFadingWindow({ html: success.errors });
 						}
 					}
