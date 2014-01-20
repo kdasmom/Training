@@ -784,7 +784,7 @@ Ext.define('NP.controller.SystemSetup', {
 	},
 
 	/**
-	 * Add
+	 * Fill form
 	 *
 	 * @param tab
 	 */
@@ -847,6 +847,12 @@ Ext.define('NP.controller.SystemSetup', {
 		});
 	},
 
+	/**
+	 * Add fields
+	 * @param tab
+	 * @param fields
+	 * @param fieldcontainer
+	 */
 	addField: function(tab, fields, fieldcontainer) {
 		Ext.each(fields, function(field){
 			switch (field.configsystype_name) {
@@ -1016,24 +1022,33 @@ Ext.define('NP.controller.SystemSetup', {
 		});
 	},
 
+	/**
+	 * Save settings
+	 */
 	saveSettings: function() {
-		var form = this.getCmp('systemsetup.settings').down('#' + this.settingsActiveTab).down('[name="params"]');
+		var form = this.getCmp('systemsetup.settings').down('#' + this.settingsActiveTab).down('[name="params"]'),
+			data = form.getValues();
+
+		data = Ext.apply(data, {
+			userprofile_id	: NP.Security.getUser().get('userprofile_id')
+		});
 
 		if (form.isValid()) {
 			NP.lib.core.Net.remoteCall({
 				requests: {
 					service			: 'ConfigService',
 					action			: 'saveSettings',
-					data			: form.getValues(),
-					extraParams		: {
-						userprofile_id	: NP.Security.getUser().get('userprofile_id')
-					},
+					data			: data,
 					success: function(success) {
-						console.log('success: ', success);
+						if (success.success) {
+							NP.Util.showFadingWindow({ html: 'Settings were saved successfully' });
+						} else {
+
+							NP.Util.showFadingWindow({ html: success.errors });
+						}
 					}
 				}
 			});
-			console.log(form.getValues());
 		}
 	}
 });

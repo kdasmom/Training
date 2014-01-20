@@ -6,6 +6,7 @@ use NP\core\AbstractService;
 use NP\core\Exception;
 use NP\core\Config;
 use NP\security\SecurityService;
+use NP\util\Util;
 
 /**
  * Service class for operations related to app configuration
@@ -14,14 +15,15 @@ use NP\security\SecurityService;
  */
 class ConfigService extends AbstractService {
 	
-	protected $config, $securityService, $siteService, $appName, $intPkgGateway, $configsysGateway;
+	protected $config, $securityService, $siteService, $appName, $intPkgGateway, $configsysGateway, $configSysValGateway;
 	
-	public function __construct(Config $config, SecurityService $securityService, SiteService $siteService, IntegrationPackageGateway $intPkgGateway, ConfigsysGateway $configsysGateway) {
+	public function __construct(Config $config, SecurityService $securityService, SiteService $siteService, IntegrationPackageGateway $intPkgGateway, ConfigsysGateway $configsysGateway, ConfigSysValGateway $configSysValGateway) {
 		$this->config           = $config;
 		$this->securityService  = $securityService;
 		$this->siteService      = $siteService;
 		$this->intPkgGateway    = $intPkgGateway;
 		$this->configsysGateway = $configsysGateway;
+		$this->configSysValGateway = $configSysValGateway;
 
 		$this->appName          = $siteService->getAppName();
 		
@@ -542,10 +544,39 @@ class ConfigService extends AbstractService {
 		return $this->configsysGateway->getConfigSysValTable($tablename, $configsys_tbl_name_fld, $configsys_tbl_val_fld);
 	}
 
+	/**
+	 * save settings
+	 *
+	 * @param $data
+	 * @return array
+	 */
 	public function saveSettings($data) {
-		print("<pre>");
-		print_r($data);
-		print("</pre>");
+
+		foreach ($data as $key => $value) {
+			if (strstr($key, 'setting_')) {
+				$setting = explode('_', $key);
+
+				try {
+					$this->configSysValGateway->update(
+						['configsysval_updated_by' => $data['userprofile_id'], 'configsysval_val' => $value, 'configsysval_updated_datetm' => Util::formatDateForDB()],
+						['configsysval_id' => '?'],
+						[$setting[1]]
+					);
+				} catch(\Exception $e) {
+					return [
+						'success'	=> false,
+						'errors'	=> ['field' => 'global', 'msg' => $e->getMessage(), 'extra' => null]
+					];
+				}
+			}
+
+			$this->config->loadConfigCache();
+			return [
+				'success'	=> true,
+				'errors'	=> []
+			];
+		}
+
 	}
 }
 

@@ -9,7 +9,7 @@
 namespace NP\system;
 
 
-class ConfigSysVal extends \NP\core\AbstractEntity {
+class ConfigSysValEntity extends \NP\core\AbstractEntity {
 
 	protected $fields = array(
 		'configsysval_id'	 => array(
