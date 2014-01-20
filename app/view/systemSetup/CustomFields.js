@@ -7,14 +7,51 @@ Ext.define('NP.view.systemSetup.CustomFields', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.systemsetup.customfields',
 
-    requires: ['NP.lib.core.Translator'],
+    requires: [
+		'NP.lib.core.Translator',
+		'NP.view.systemSetup.CustomFieldsHeader',
+		'NP.view.systemSetup.CustomFieldsLineItem',
+		'NP.view.systemSetup.CustomFieldsServiceFields',
+		'NP.view.systemSetup.CustomFieldsPropertyFields'
+	],
     
     title: 'Custom Fields',
 
-    html: 'Coming soon...',
+	layout: 'fit',
 
     initComponent: function() {
     	this.title = NP.Translator.translate(this.title);
+
+		this.tbar = [
+			{
+				xtype: 'shared.button.cancel'
+			}
+		];
+
+		this.items = [
+			{
+				xtype : 'verticaltabpanel',
+				border: false,
+				items: [
+					{
+						xtype: 'systemsetup.customfieldsheader',
+						title: 'Header'
+					},
+					{
+						xtype: 'systemsetup.customfieldslineitem',
+						title: 'Line Item'
+					},
+					{
+						xtype: 'systemsetup.customfieldsservicefields',
+						title: 'Service Fields'
+					},
+					{
+						xtype: 'systemsetup.customfieldspropertyfields',
+						title: 'Proeprty Fields'
+					}
+				]
+			}
+		];
 
     	this.callParent(arguments);
     }

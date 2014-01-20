@@ -8,6 +8,7 @@ use NP\core\db\Insert;
 use NP\core\db\Update;
 use NP\core\db\Select;
 use NP\core\db\Where;
+use NP\system\sql\InvoiceOnOffSelect;
 
 /**
  * Gateway for the CONFIGSYS table
@@ -278,6 +279,44 @@ class ConfigsysGateway extends AbstractGateway {
 			->order('configsys_tbl_order_fld');
 
 		return $this->adapter->query($select);
+	}
+
+	public function getHeaderVals($pageSize, $page, $order) {
+		$select = new Select();
+
+		$select->from(['c2' => 'configsys'])
+			->columns([
+				'controlpanelitem_name'		=> 'configsys_name',
+				'controlpanelitem_value'	=> 'configsysval_val',
+				'controlpanelitem_required'	=> 'configsys_required',
+				'inv_on_off' => new sql\CustomFieldSelect(8),
+				'inv_req' => new sql\CustomFieldSelect(5),
+				'po_on_off' => new sql\CustomFieldSelect(8),
+				'po_req' => new sql\CustomFieldSelect(5),
+				'vef_on_off' => new sql\CustomFieldSelect(8),
+				'vef_req' => new sql\CustomFieldSelect(5),
+				'imgidx_on_off' => new sql\CustomFieldSelect(10),
+				'type' => new sql\CustomFieldSelect(6),
+			])
+			->join(['cv2' => 'configsysval'], ' c2.configsys_id = cv2.configsys_id')
+			->whereLike('c2.configsys_name', '?')
+			->whereNotLike('c2.configsys_name', '?')
+			->whereEquals('cv2.configsysval_active', '?')
+			->order($order)
+			->offset($pageSize * ($page - 1))
+			->limit($pageSize);
+
+		return $this->adapter->query($select, [
+			'CP.INVOICE_CUSTOM_FIELD%', 1, '%_ON_OFF', '%LINEITEM%',
+			'CP.INVOICE_CUSTOM_FIELD%', 1, '%_REQ', '%LINEITEM%',
+			'CP.PO_CUSTOM_FIELD%', 1, '%_ON_OFF', '%LINEITEM%',
+			'CP.PO_CUSTOM_FIELD%', 1, '%_REQ', '%LINEITEM%',
+			'CP.VEF_CUSTOM_FIELD%', 1, '%_ON_OFF', '%LINEITEM%',
+			'CP.VEF_CUSTOM_FIELD%', 1, '%_REQ', '%LINEITEM%',
+			'CP.INVOICE_CUSTOM_FIELD%', 1, '%_IMGINDEX', '%LINEITEM%',
+			'CP.CUSTOM_FIELD%', 1, '%_TYPE', '%LINEITEM%',
+			'CP.CUSTOM_FIELD_LABEL%', '%LINEITEM%', 1
+		]);
 	}
 }
 
