@@ -602,6 +602,10 @@ class ConfigService extends AbstractService {
 	public function getLineItems($limit = 25, $page = 1, $sort = 'configsys_name') {
 		return $this->configsysGateway->getLineItems($limit, $page, $sort);
 	}
+
+	public function getCustomFields($limit = 25, $page = 1, $sort = 'controlpanelitem_name', $fieldname = 'serviceField') {
+		return $this->configsysGateway->getCustomFields($limit, $page, $sort, $fieldname);
+	}
 }
 
 ?>

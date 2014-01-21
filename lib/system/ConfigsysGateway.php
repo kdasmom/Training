@@ -325,14 +325,13 @@ class ConfigsysGateway extends AbstractGateway {
 			->columns([
 				'controlpanelitem_name'		=> 'configsys_name',
 				'controlpanelitem_required'	=> 'configsys_required',
-				'inv_on_off' => new sql\CustomFieldSelect(8, false),
-				'inv_req' => new sql\CustomFieldSelect(5, false),
-				'po_on_off' => new sql\CustomFieldSelect(8, false),
-				'po_req' => new sql\CustomFieldSelect(5, false),
-				'vef_on_off' => new sql\CustomFieldSelect(8, false),
-				'vef_req' => new sql\CustomFieldSelect(5, false),
-				'imgidx_on_off' => new sql\CustomFieldSelect(10, false),
-				'type' => new sql\CustomFieldSelect(6, false),
+				'inv_on_off' => new sql\CustomFieldSelect(17, false, 10),
+				'inv_req' => new sql\CustomFieldSelect(14, false, 10),
+				'po_on_off' => new sql\CustomFieldSelect(17, false, 10),
+				'po_req' => new sql\CustomFieldSelect(14, false, 10),
+				'vef_on_off' => new sql\CustomFieldSelect(17, false, 10),
+				'vef_req' => new sql\CustomFieldSelect(17, false, 10),
+				'imgidx_on_off' => new sql\CustomFieldSelect(14, false, 10)
 			])
 			->join(['cv2' => 'configsysval'], ' c2.configsys_id = cv2.configsys_id', ['controlpanelitem_value' => 'configsysval_val'])
 			->whereLike('c2.configsys_name', '?')
@@ -350,9 +349,35 @@ class ConfigsysGateway extends AbstractGateway {
 			'CP.VEF_CUSTOM_FIELD%', 1, '%LINEITEM_ON_OFF',
 			'CP.VEF_CUSTOM_FIELD%', 1, '%LINEITEM_REQ',
 			'CP.INVOICE_CUSTOM_FIELD%', 1, '%_IMGINDEX',
-			'CP.CUSTOM_FIELD%', 1, '%_TYPE',
 			'CP.CUSTOM_FIELD_LABEL%', '%LINEITEM%', 1
 		]);
+	}
+
+	/**
+	 * get service fields list
+	 * @param $pageSize
+	 * @param $page
+	 * @param $order
+	 * @return array|bool
+	 */
+	public function getCustomFields($pageSize, $page, $order, $fieldname = 'serviceField') {
+		$select = new Select();
+
+		$select->from(['p' => 'pncustomfields'])
+			->columns([
+				'customfield_id',
+				'controlpanelitem_name'		=> 'customfield_name',
+				'controlpanelitem_required'	=> 'customfield_required',
+				'controlpanelitem_value'	=> 'customfield_label',
+				'po_on_off'					=> 'customfield_status',
+				'po_req'					=> 'customfield_required'
+			])
+			->whereLike('customfield_name', '?')
+			->order($order)
+			->offset($pageSize * ($page - 1))
+			->limit($pageSize);
+
+		return $this->adapter->query($select, [$fieldname . '%']);
 	}
 }
 

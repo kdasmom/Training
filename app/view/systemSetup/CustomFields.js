@@ -47,7 +47,7 @@ Ext.define('NP.view.systemSetup.CustomFields', {
 					},
 					{
 						xtype: 'systemsetup.customfieldspropertyfields',
-						title: 'Proeprty Fields'
+						title: 'Property Fields'
 					}
 				]
 			}

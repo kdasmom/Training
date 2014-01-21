@@ -13,7 +13,7 @@ use NP\core\db\Expression;
 use NP\core\db\Select;
 
 class CustomFieldSelect extends Select {
-	public function __construct($rightPosition, $useUnLike = true) {
+	public function __construct($rightPosition, $useUnLike = true, $leftPosition = false) {
 		parent::__construct();
 
 		$this->from(['c' => 'configsys'])
@@ -27,8 +27,12 @@ class CustomFieldSelect extends Select {
 			$this->whereNotLike('c.configsys_name', '?');
 		}
 
-		$this->whereEquals(New Expression("left(right(c.configsys_name,{$rightPosition}),1)"), 'right(c2.configsys_name,1)')
-			->limit(1);
+		if (!$leftPosition) {
+			$this->whereEquals(New Expression("left(right(c.configsys_name,{$rightPosition}),1)"), 'right(c2.configsys_name,1)');
+		} else {
+			$this->whereEquals(New Expression("left(right(c.configsys_name,{$rightPosition}),1)"), "left(right(c2.configsys_name,{$leftPosition}),1)");
+		}
+		$this->limit(1);
 
 	}
 } 

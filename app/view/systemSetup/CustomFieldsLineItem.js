@@ -57,7 +57,7 @@ Ext.define('NP.view.systemSetup.CustomFieldsLineItem', {
 					service    	: 'ConfigService',
 					action     	: 'getLineItems',
 					autoLoad	: true,
-					fields: ['controlpanelitem_name', 'controlpanelitem_value', 'controlpanelitem_required', 'inv_on_off', 'inv_req', 'po_on_off', 'po_req', 'vef_on_off', 'vef_req', 'imgidx_on_off', 'type']
+					fields: ['controlpanelitem_name', 'controlpanelitem_value', 'controlpanelitem_required', 'inv_on_off', 'inv_req', 'po_on_off', 'po_req', 'vef_on_off', 'vef_req', 'imgidx_on_off']
 				})
 			}
 		];
