@@ -160,6 +160,16 @@ Ext.define('NP.controller.SystemSetup', {
 			},
 			'[xtype="systemsetup.settings"] [xtype="shared.button.save"]': {
 				click: me.saveSettings
+			},
+			'[xtype="systemsetup.customfields"] [xtype="shared.button.cancel"]': {
+				click: function() {
+					me.addHistory('SystemSetup:showSystemSetup:Overview');
+				}
+			},
+			'[xtype="systemsetup.settings"] [xtype="shared.button.cancel"]': {
+				click: function() {
+					me.addHistory('SystemSetup:showSystemSetup:Overview');
+				}
 			}
 		});
 
