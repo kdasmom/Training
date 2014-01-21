@@ -5,6 +5,7 @@ namespace NP\image;
 use NP\core\AbstractService;
 use NP\security\SecurityService;
 use NP\core\io\FileUpload;
+use NP\core\db\Where;
 use NP\system\ConfigService;
 use NP\system\IntegrationPackageGateway;
 use NP\vendor\UtilityAccountGateway;
@@ -20,6 +21,25 @@ use NP\invoice\InvoiceGateway;
 class ImageService extends AbstractService {
 
     protected $configService, $securityService;
+
+    /**
+     * @var array
+     */
+    private $validMimeTypes = array(
+        'application/pdf',
+        'image/gif',
+        'image/jpeg',
+        'image/tiff',
+        'application/msword',
+        'application/vnd.ms-excel',
+        'application/octet-stream',
+        'application/vnd.ms-powerpoint'
+    );
+
+    private $validFileExtensions = [
+        'pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx',
+        'jpeg', 'jpg', 'gif', 'tif', 'tiff'
+    ];
 
     public function setConfigService($configService) {
         $this->configService = $configService;
@@ -95,13 +115,6 @@ class ImageService extends AbstractService {
      */
     public function getImagesToIndex($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
         return $this->imageIndexGateway->findImagesToIndex($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
-    }
-
-    /**
-     * Get images for an invoice (all or primary only)
-     */
-    public function getInvoiceImages($invoice_id, $mainOnly=false) {
-        return $this->imageIndexGateway->findEntityImages($invoice_id, 'Invoice', $mainOnly);
     }
 
     /**
@@ -237,116 +250,76 @@ class ImageService extends AbstractService {
      * 
      * @return 
      */
-    public function upload() {
-        $upload = $this->uploadProcess();
+    public function upload($image_tableref_name, $tablekey_id) {
+        $upload = $this->processImageUpload();
         if ($upload['success']) {
-            return $this->create($upload);
+            return $this->create($upload['file'], $image_tableref_name, $tablekey_id);
+        } else {
+            return $upload;
         }
     }
 
     /**
-     * Process file uploading.
-     * Method processes following operations:
-     *  1. Get pure file name and file extension.
-     *  2. Check file name for incorrect symbols.
-     *  3. Move uploaded file to the correct place.
-     *  4. Correct mime-type if default php mechanism get it wrong.
      * 
-     * @return [] Object with file details.
      */
-    private function uploadProcess() {
-        $field = 'Filedata';
-        $target = $this->configService->get('PN.Main.FileUploadLocation');
-        if (!is_dir($target)) {
-            mkdir($target, 0777, true);
+    public function processImageUpload() {
+        $file = null;
+        $destinationPath = $this->configService->get('PN.Main.FileUploadLocation');
+        
+        // If destination directory doesn't exist, create it
+        if (!is_dir($destinationPath)) {
+            mkdir($destinationPath, 0777, true);
         }
 
-        $mimetypes = [
-            'xls'   => 'application/vnd.ms-excel',
-            'xlsx'  => 'application/vnd.ms-excel',
-            'pdf'   => 'application/pdf',
-            'doc'   => 'application/msword',
-            'docx'  => 'application/msword',
-            'tif'   => 'image/tiff',
-            'tiff'  => 'image/tiff',
-            'gif'   => 'image/gif',
-            'jpeg'  => 'image/jpeg',
-            'jpg'   => 'image/jpeg'
-        ];
-        $extensions = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'jpeg', 'jpg', 'gif', 'tif', 'tiff'];
-
-        // Remove extension
-        $filename = $_FILES['Filedata']['name'];
-        $fileextension = null;
-        foreach($extensions as $extension) {
-            if (substr($filename, -(strlen($extension) + 1)) == '.'.$extension) {
-                $filename = substr($filename, 0, strlen($filename) - strlen($extension) - 1);
-                $fileextension = $extension;
-
-                break;
-            }
-        }
-        // If file extension is not correct then interrupt uploading.
-        if (!$fileextension) return;
-
-        // Check file name for incorrect symbol usage.
-        $symbols = 
-            ['/', '"', ':', ';', '\'', '#', '!', '@', '$', '%', '^', '&', '*', '(', ')', '<', '>', '?']
-        ;
-        foreach ($symbols as $symbol) {
-            str_replace($symbol, '', $filename);
-        }
-
-        // Make file name unique.
-        $fullname = 
-            $filename.
-                $this->securityService->getUserId().
-                date('mdYHis').
-            '.'.
-            $fileextension
-        ;
-
-        // Coorect target file name according to the rules which are described before.
-        $_FILES['Filedata']['name'] = $fullname;
-
-        // Upload file
-        $params = [
-            'allowedTypes'  => [
-                'application/pdf',
-                'image/gif',
-                'image/jpeg',
-                'image/tiff',
-                'application/msword',
-                'application/vnd.ms-excel',
-                'application/octet-stream',
-                'application/vnd.ms-powerpoint'
+        // Create the upload object
+        $fileUpload = new FileUpload(
+            'Filedata',
+            $destinationPath,
+            [
+                'allowedTypes'      => $this->validMimeTypes,
+                'allowedExtensions' => $this->validFileExtensions,
+                'overwrite'         => false
             ]
-        ];
+        );
 
-        $upload =
-            new FileUpload($field, $target, $params)
-        ;
-        $upload->upload();
+        // Do the file upload
+        $fileUpload->upload();
+        $file   = $fileUpload->getFile();
+        $errors = $fileUpload->getErrors();
 
-        //Correct mime type if necessary
-        $mimetype = $upload->getFile()['type'];
-        if ($mimetype == 'application/octet-stream') {
-            foreach ($mimetypes as $extension => $type) {
-                if ($fileextension == $extension) {
-                    $mimetype = $type;
+        // Localize the errors
+        foreach ($errors as $k => $v) {
+            $errors[$k] = $this->localizationService->getMessage($v);
+        }
+
+        if (!count($errors)) {
+            // Correct mime type for files that may get uploaded as octet-stream and are actually something else
+            $mimeTypeMap = [
+                'xls'  => 'application/vnd.ms-excel',
+                'xlsx' => 'application/vnd.ms-excel',
+                'pdf'  => 'application/pdf',
+                'doc'  => 'application/msword',
+                'docx' => 'application/msword',
+                'tif'  => 'image/tiff',
+                'tiff' => 'image/tiff',
+                'gif'  => 'image/gif',
+                'jpeg' => 'image/jpeg',
+                'jpg'  => 'image/jpeg'
+            ];
+
+            $file = $fileUpload->getFile();
+            if ($file['type'] == 'application/octet-stream') {
+                if (array_key_exists($file['extension'], $mimeTypeMap)) {
+                    $file['type'] = $mimeTypeMap[$file['extension']];
                 }
             }
         }
 
-        $result = [
-            'success'   => 
-                count($upload->getErrors()) > 0 ? false : true
-            ,
-            'mimetype'  => $mimetype,
-            'filename'  => $filename,
-            'fullname'  => $target . $fullname
-        ];
-        return $result;
+        return array(
+            'success' => (count($errors)) ? false : true,
+            'file'    => $file,
+            'errors'  => (array)$errors
+        );
     }
 
     /**
@@ -360,362 +333,140 @@ class ImageService extends AbstractService {
      * @param [] $file Object contains necessary details about uploaded file.
      * @param [] $request
      */
-    private function create($file, $request = []) {
-        $params = $this->prepareCreateParams();
-        $request = $this->prepareCreateRequest($request, $params);
-
-        if ($request['transfer_srcTablekey_id'] == -1) {
-            $source = 
-                $this->invoiceImageSourceGateway->getByName($request['transfer_srcTableName'])
-            ;
-            $request['transfer_srcTableName'] = 'INVOICEIMAGESOURCE';
-            $request['transfer_srcTablekey_id'] = $source['source_id_alt'];
-            $request['invoiceimage_source_id']  = $source['source_id'];
-        }
-
-        // IMAGE INDEX: prepare data for save
-        $imageIndexData = 
-            $this->prepareCreateImage($file, $params, $request)
-        ;
-
-        // Adjust image_tableref_id because it couldn't be done earlier during IMAGE INDEX data 
-        // preparation. 
-        if ($request['invoice_id'] == -1) {
-            // This should be done because original logic allows different nonlinear assignment.
-            $request['image_tableref_id'] = 0;
-        }
-
-        // Find out is this primary image or not
-        if ($request['image_tableref_id'] <> 5) {
-            if ($request['invoice_id'] > 0) {
-                $count = $this->imageIndexGateway->countImagesByTableref(
-                    isset($imageIndexData['image_tableref_id']) ? $imageIndexData['image_tableref_id'] :$request['image_tableref_id'],
-                    $request['invoice_id']
-                );
-
-                $imageIndexData['image_index_status'] = 1;
-                $imageIndexData['image_index_primary'] = $count > 1 ? 0 : 1;
-            }
-        } else {
-            $count = $this->imageIndexGateway->countImagesByDoctype(
-                $imageIndexData['image_doctype'],
-                $request['invoice_id']
-            );
-            if ($count > 1) {
-                $imageIndexData['image_index_status'] = 1;
-                $imageIndexData['image_index_primary'] = 0;
-            }
-        }
-
-        // IMAGE INDEX: prepare entity for save
-        $imageIndexEntity = new ImageIndexEntity([
-            'Image_Index_Name'          => 
-                isset($imageIndexData['invoiceimage_name']) ? 
-                    $imageIndexData['invoiceimage_name'] : 
-                    'Invoice Image'
-            ,
-            'Image_Index_Id_Alt'        => $request['document_id'],
-            'Image_Index_VendorSite_Id' => $request['vendorsite_id'],
-            'Property_Id'               => $request['property_id'],
-            'Image_Index_Ref'           => $request['invoiceimage_ref'],
-            'Image_Index_Amount'        => $request['invoiceimage_amount'],
-            'Image_Index_Invoice_Date'  =>
-                isset($imageIndexData['invoiceimage_date']) ? 
-                    $imageIndexData['invoiceimage_name'] :
-                    $request['invoiceimage_date']
-            ,
-            'asp_client_id'             => $request['asp_client_id'],
-            'Tablekey_Id'               => $request['invoice_id'],
-            'Image_Index_Status'        =>
-                isset($imageIndexData['invoiceimage_status']) ?
-                    $imageIndexData['invoiceimage_status'] :
-                    $request['invoiceimage_status']
-            ,
-            'Image_Index_Source_Id'     => 
-                empty($request['invoiceimage_source_id']) ? 
-                    1 :
-                    $request['invoiceimage_source_id']
-            ,
-            'Tableref_Id'               =>
-                isset($imageIndexData['image_tableref_id']) ? 
-                    $imageIndexData['image_tableref_id'] :
-                    $request['image_tableref_id']
-            ,
-            'Image_Index_Date_Entered'  => date('Y-m-d H:i:s'),
-            'Image_Doctype_Id'          => $imageIndexData['image_doctype'],
-            'Image_Index_Primary'       => 
-                !empty($imageIndexData['image_index_primary']) ?
-                    $imageIndexData['image_index_primary'] :
-                    1
-            ,
-            'image_index_indexed_datetm'=> $imageIndexData['image_index_indexed_datetm'],
-            'image_index_indexed_by'    => $imageIndexData['image_index_indexed_by']
-        ]);
-
-        $errors = $this->entityValidator->validate($imageIndexEntity);
-        if (!count($errors)) {
-            try {
-                $this->imageIndexGateway->beginTransaction();
-
-                // IMAGE INDEX: Save data
-                $invoiceimage_id = $this->imageIndexGateway->save($imageIndexEntity);
-            } catch (\Exception $e) {
-                $this->imageIndexGateway->rollback();
-                return [
-                    'field' => 'global', 
-                    'msg' => $this->handleUnexpectedError($e)
-                ];
-            }
-        }        
+    private function create($file, $image_tableref_name=null, $tablekey_id=null) {
+        $errors = [];
+        $this->imageIndexGateway->beginTransaction();
         
-        // IMAGE TRANSFER: prepare data for save
-        // IMAGE TRANSFER: prepare entity for save
-        $imageTransferEntity = new ImageTransferEntity([
-            'transfer_type'           => $file['mimetype'],
-            'transfer_status'         => 1,
-            'transfer_filename'       => $file['fullname'],
-            'transfer_documentid'     => $request['document_id'],
-            'transfer_databaseid'     => $request['database_id'],
-            'invoiceimage_id'         => $invoiceimage_id,
-            'transfer_srcTableName'   => $request['transfer_srcTableName'],
-            'transfer_srcTablekey_id' => $request['transfer_srcTablekey_id']
-        ]);
+        try {
+            $image_index_id = null;
+            $now = \NP\util\Util::formatDateForDB();
+            $userprofile_id = $this->securityService->getUserId();
 
-        $errors = $this->entityValidator->validate($imageTransferEntity);
-        if (!count($errors)) {
+            $entityData = [
+                'Image_Index_Name'         => $file['name'],
+                'Image_Index_Id_Alt'       => 0,
+                'asp_client_id'            => $this->configService->getClientId(),
+                'Tablekey_Id'              => $tablekey_id,
+                'Image_Index_Status'       => -1,
+                'Image_Index_Source_Id'    => 1,
+                'Image_Index_Date_Entered' => $now,
+                'Image_Doctype_Id'         => 0,
+                'Image_Index_Primary'      => 0
+            ];
+            
+            $imageIndex = new ImageIndexEntity($entityData);
+
+            $errors = $this->entityValidator->validate($imageIndex);
+            
+            if (!count($errors)) {
+                $this->imageIndexGateway->save($imageIndex);
+
+                $imageTransfer = new ImageTransferEntity([
+                    'invoiceimage_id'         => $imageIndex->Image_Index_Id,
+                    'transfer_type'           => $file['type'],
+                    'transfer_filename'       => $file['file_path'],
+                    'transfer_srcTableName'   => 'userprofile',
+                    'transfer_srcTablekey_id' => $userprofile_id
+                ]);
+
+                $errors = $this->entityValidator->validate($imageTransfer);
+
+                if (!count($errors)) {
+                    $this->imageTransferGateway->save($imageTransfer);
+
+                    $image_index_id = $imageIndex->Image_Index_Id;
+                }
+            }
+        } catch(\Exception $e) {
+            $errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+        }
+        
+        if (count($errors)) {
+            $this->imageIndexGateway->rollback();
+            // If there was any error, try to delete the file
             try {
-                $this->imageTransferGateway->beginTransaction();
-
-                //IMAGE TRANSFER: Save data
-                $this->imageTransferGateway->save($imageTransferEntity);
-            } catch (\Exception $e) {
-                $this->imageIndexGateway->rollback();
-                $this->imageTransferGateway->rollback();
-
-                return [
-                    'field' => 'global', 
-                    'msg' => $this->handleUnexpectedError($e)
-                ];
-            }
-        }        
-        $this->imageIndexGateway->commit();
-        $this->imageTransferGateway->commit();
-
-        if (is_numeric($request['invoice_id']) && $request['invoice_id'] > 0) {
-            // Log this operation
-            $activities = $this->auditactivityGateway->getIdByNames(['ImgUploaded', 'ImgAdded']);
-            $type       = $this->audittypeGateway->getIdByTableref($request['image_tableref_id']);
-
-            $this->auditlogGateway->logImageUploaded(
-                $type, 
-                $activities['ImgUploaded'],
-                $request['invoice_id'],
-                $invoiceimage_id,
-                $this->invoiceImageSourceGateway->getById($request['invoiceimage_source_id']), //$invoiceimage_source_name,
-                $this->securityService->getUserId(),
-                $request['delegation_to_userprofile_id']
-            );
-            $this->auditlogGateway->logImageAdded(
-                $type, 
-                $activities['ImgUploaded'],
-                $request['invoice_id'],
-                $invoiceimage_id,
-                $this->securityService->getUserId(),
-                $request['delegation_to_userprofile_id']
-            );
+                unlink($file['file_path']);
+            // In this case, we'll just do nothing if deleting doesn't work because it's not critical
+            } catch(\Exception $e) {}
+        } else {
+            $this->imageIndexGateway->commit();
         }
-
-        return $invoiceimage_id;
+        
+        return array(
+            'success'        => (count($errors)) ? false : true,
+            'file'           => $file,
+            'errors'         => $errors,
+            'image_index_id' => $image_index_id
+        );
     }
 
     /**
-     * Prepare useful parameters for image creation mechanism. 
-     * Request from database some additional values which will be used during image creation process.
-     * 
-     * @return [] Object with useful parameters.
-     */    
-    private function prepareCreateParams() {
-        $result = [
-            'tableref' => [],
-            'doctypes' => []
-        ];
-        $result['tableref'][strtolower('vendor')] = 
-            $this->imageTablerefGateway->getIdByName('vendor')
-        ;
-
-        $doctypes = 
-            $this->imageDoctypeGateway->getIdByNames(['receipt', 'Vendor Access'])
-        ;
-        foreach ($doctypes as $doctype => $id) {
-            $result['doctypes'][strtolower($doctype)] = $id;
-        }
-
-        return $result;
-    }
-
-    /**
-     * Prepare request data.
-     * Before saving some fields should have specific values, some fields should be initilized.
-     * All preparations should be done in this method.
-     * 
-     * @param [] $request Request 
-     * @return [] Prepared request object.
+     * Adds images to an entity
      */
-    private function prepareCreateRequest($request) {
-        $result = $request;
-
-        if (isset($request['VendorEst_id'])) {
-            $result['image_tableref_id'] = 4;
-        } elseif (isset($request['table_name'])) {
-            if ($request['table_name'] == 'purchaseorder') {
-                $result['image_tableref_id'] = 3;
-            } elseif ($request['table_name'] == 'receipt') {
-                $result['image_tableref_id'] = 7;
+    public function attach($entity_id, $image_tableref_name, $image_index_id_list) {
+        $errors = [];
+        $new_primary_image = null;
+        $this->imageIndexGateway->beginTransaction();
+        
+        try {
+            if ($image_tableref_name === 'Invoice') {
+                $entity = $this->invoiceGateway->findSingle(
+                    ['invoice_id' => '?'],
+                    [$entity_id],
+                    ['vendorsite_id'=>'paytablekey_id','property_id']
+                );
+            } else if ($image_tableref_name === 'Purchase Order') {
+                $entity = $this->purchaseOrderGateway->findSingle(
+                    ['purchaseorder_id' => '?'],
+                    [$entity_id],
+                    ['vendorsite_id','property_id']
+                );
             }
-        } elseif (!isset($request['invoice_id']) && isset($request['vendorsite_id'])) {
-            $result['image_tableref_id'] = $request['image_tableref_id'];
-        } else {
-            $result['image_tableref_id'] = 0;
-        }
 
-        if (!isset($request['database_id'])) {
-            $result['document_id'] = 0;
-        }
-        if (!isset($request['database_id'])) {
-            $result['database_id'] = 0;
-        }
+            $tableref_id = $this->imageTablerefGateway->getIdByName($image_tableref_name);
 
-        if (!isset($request['vendorsite_id'])) {
-            $result['vendorsite_id'] = null;
-        }
-        if (!isset($request['property_id'])) {
-            $result['property_id'] = null;
-        }
-        if (!isset($request['invoiceimage_ref'])) {
-            $result['invoiceimage_ref'] = null;
-        }
-        if (!isset($request['invoiceimage_amount'])) {
-            $result['invoiceimage_amount'] = null;
-        }
+            // Update all images being uploaded to link them to the entity and
+            // set them all to NOT be primary
+            $this->imageIndexGateway->update(
+                [
+                    'image_index_status'        => 1,
+                    'tablekey_id'               => $entity_id,
+                    'tableref_id'               => $tableref_id,
+                    'image_index_primary'       => 0,
+                    'image_index_vendorsite_id' => $entity['vendorsite_id'],
+                    'property_id'               => $entity['property_id']
+                ],
+                Where::get()->in(
+                    'image_index_id',
+                    $this->imageIndexGateway->createPlaceholders($image_index_id_list)
+                ),
+                $image_index_id_list
+            );
 
-        if (isset($request['invoiceimage_date']) && $request['invoiceimage_date'] != "") {
-            $result['invoiceimage_date'] = urldecode($request['invoiceimage_date']); // pass null, field timestamped, but really - no
-        } elseif (isset($request['doc_datetm'])) {
-            $result['invoiceimage_date'] = $request['doc_datetm'];
-        } else {
-            $result['invoiceimage_date'] = null;
-        }
+            // Check if there's already a primary image
+            $primaryImage = $this->imageIndexGateway->findEntityImages(
+                $entity_id,
+                $image_tableref_name,
+                true
+            );
 
-        $result['asp_client_id'] = $this->configService->getClientId();
+            // If there's no primary image, set the first added image as the primary
+            if ($primaryImage === null) {
+                $this->imageIndexGateway->update([
+                    'Image_Index_Id'      => $image_index_id_list[0],
+                    'image_index_primary' => 1
+                ]);
 
-        if (isset($request['invoice_id'])) {
-            $result['invoice_id'] = $request['invoice_id'];
-        } elseif (isset($request['VendorEst_id'])) {
-            $result['invoice_id'] = $request['VendorEst_id'];
-        } elseif (isset($request['tablekey_id'])) {
-            $result['invoice_id'] = $request['tablekey_id'];
-        } elseif (isset($request['vendorsite_id'])) {
-            $result['invoice_id'] = -1;
-        } else {
-            $result['invoice_id'] = 0;
-        }
-
-        if (!isset($request['invoiceimage_source_id'])) {
-            $result['invoiceimage_source_id'] = 1;
-        }
-
-        if (isset($request['vendorsite_id'])) {
-            $result['invoiceimage_status'] = 1;
-        } else {
-            $result['invoiceimage_status'] = 0;
-        }
-
-        if (!isset($request['transfer_srcTableName'])) {
-            $result['transfer_srcTableName'] = 'userprofile';
-        }
-        if (!isset($request['transfer_srcTablekey_id'])) {
-            $result['transfer_srcTablekey_id'] = $this->securityService->getUserId();
-        }
-
-        if (!isset($request['delegation_to_userprofile_id'])) {
-            $result['delegation_to_userprofile_id'] = $this->securityService->getUserId();; 
-        }
-
-        if (!empty($request['invoice_id'])) {
-            $referrences = $this->invoiceGateway->getInvoiceRef($request['invoice_id']);
-            if (count($referrences) > 0) {
-                $request['invoiceimage_ref'] = $referrences[0]['invoice_ref'];
+                $new_primary_image = $this->imageIndexGateway->findById($image_index_id_list[0]);
             }
+
+            $this->imageIndexGateway->commit();
+        } catch(\Exception $e) {
+            $this->imageIndexGateway->rollback();
+            throw $e;
         }
 
-        return $result;
-    }
-
-    /**
-     * Prepare Image Index data for save.
-     * 
-     * @param type $file Uploaded file data.
-     * @param type $params Calculated parameters, based on database requests and so on.
-     * @param type $request  Request contains all primary parameters.
-     */
-    private function prepareCreateImage($file, $params, $request) {
-        $data = [];
-
-        $data['invoiceimage_name'] = $file['filename'];
-        if (empty($data['invoiceimage_name'])) {
-            $data['invoiceimage_name'] = 'Invoice Image';
-        }
-
-        if ($request['invoiceimage_source_id'] <> 1) {
-            $data['image_doctype'] = 1;
-        }
-
-        if ($request['invoiceimage_date'] == '1900-01-01 00:00:00.000') {
-            $data['invoiceimage_date'] = null;
-        }
-
-        if ($request['invoice_id'] == 0) {
-            $data['image_doctype'] = 0;
-            $data['image_tableref_id'] = 0;
-        } elseif ($request['invoice_id'] == -1) {
-            $data['image_doctype'] = $request['image_tableref_id'];
-            $data['image_tableref_id'] = $params['tableref'][strtolower('vendor')];
-
-            $request['image_tableref_id'] = 0; // It also will be updated in the caller method
-        } else {
-            $data['image_doctype'] = 1;
-            $data['image_tableref_id'] = 1;
-        }
-
-        if (isset($request['invoiceimage_status'])) {
-            if ($request['property_id'] == 0 || is_null($request['property_id']))
-                $data['invoiceimage_status'] = 0;
-            if ($request['vendorsite_id'] == 0 || is_null($request['vendorsite_id']))
-                $data['invoiceimage_status'] = 0;
-        }
-
-        if ($request['image_tableref_id'] == 3) {
-            $data['image_tableref_id'] = $request['image_tableref_id'];
-            $data['invoiceimage_status'] = 1;
-            $data['image_doctype'] = 2;
-        } elseif ($request['image_tableref_id'] == 7) {
-            $data['image_tableref_id'] = $request['image_tableref_id'];
-            $data['invoiceimage_status'] = 1;
-            $data['image_doctype'] = $params['doctypes'][strtolower('receipt')];
-        } elseif ($request['image_tableref_id'] == 4) {
-            $data['image_tableref_id'] = $request['image_tableref_id'];
-            $data['invoiceimage_status'] = 1;
-            $data['image_doctype'] = 3;
-        } elseif ($request['image_tableref_id'] == 5) {
-            $data['image_tableref_id'] = $request['image_tableref_id'];
-            $data['invoiceimage_status'] = 0;
-            $data['image_doctype'] = $params['doctypes'][strtolower('Vendor Access')];
-        }
-
-        $data['image_index_indexed_datetm'] = null;
-        $data['image_index_indexed_by']     = null;
-
-        return $data;
+        return $new_primary_image;
     }
    
     /**
@@ -803,6 +554,14 @@ class ImageService extends AbstractService {
      */
     public function getDocTypes() {
         return $this->imageDoctypeGateway->listDocTypes();
+    }
+
+    /**
+     * Makes the specified image a primary image
+     * @param  int $image_index_id
+     */
+    public function makePrimary($image_index_id) {
+        $this->imageIndexGateway->makePrimary($image_index_id);
     }
 
     public function update($data) {

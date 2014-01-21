@@ -5,15 +5,6 @@
  */
 Ext.define('NP.model.invoice.InvoiceItem', {
 	extend: 'Ext.data.Model',
-	
-	requires: [
-		'NP.lib.core.Config',
-		'NP.model.jobcosting.JbContract',
-		'NP.model.jobcosting.JbChangeOrder',
-		'NP.model.jobcosting.JbJobCode',
-		'NP.model.jobcosting.JbPhaseCode',
-		'NP.model.jobcosting.JbCostCode'
-	],
 
 	idProperty: 'invoiceitem_id',
 	fields: [

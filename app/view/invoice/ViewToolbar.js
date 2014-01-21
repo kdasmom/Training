@@ -131,6 +131,7 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                 displayCondition: me.isModifyScheduleBtnVisible
             },{
                 text            : 'Manage Images',
+                itemId          : 'invoiceImageManageBtn',
                 iconCls         : 'image-manage-btn',
                 displayCondition: me.isManageImagesBtnVisible
             },{
@@ -193,17 +194,20 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                 menu    : [
                     {
                         text            : 'Upload Image',
+                        itemId          : 'invoiceImageUploadBtn',
                         iconCls         : 'upload-btn',
                         moduleId        : 2081,
                         displayCondition: me.isUploadImageBtnVisible
                     },
                     {
                         text            : 'View Image',
+                        itemId          : 'invoiceImageViewBtn',
                         iconCls         : 'image-view-btn',
                         displayCondition: me.isManageImagesBtnVisible
                     },
                     {
                         text            : 'Add Image',
+                        itemId          : 'invoiceImageAddBtn',
                         iconCls         : 'image-add-btn',
                         moduleId        : 2039,
                         displayCondition: me.isAddImageBtnVisible
@@ -323,7 +327,7 @@ Ext.define('NP.view.invoice.ViewToolbar', {
     },
 
     isManageImagesBtnVisible: function(data) {
-        return (data['images'].length > 0);
+        return (data['image'] !== null);
     },
 
     isLinkPoBtnVisible: function(data) {

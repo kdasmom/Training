@@ -230,7 +230,17 @@ class ImageIndexGateway extends AbstractGateway {
 			$select->order('img.Image_Index_Primary DESC, img.image_index_name ASC');
 		}
 
-		return $this->adapter->query($select, array($tablekey_id, $image_tableref_name));
+		$res = $this->adapter->query($select, array($tablekey_id, $image_tableref_name));
+
+		if ($primaryOnly) {
+			if (count($res)) {
+				return $res[0];
+			} else {
+				return null;
+			}
+		} else {
+			return $res;
+		}
 	}
 
 	public function findImagePath($image_index_id) {
@@ -273,6 +283,27 @@ class ImageIndexGateway extends AbstractGateway {
 		}
 	}
  
+	/**
+	 * Returns all images that can be added to an entity type with a specific vendor
+	 */
+	public function findAddableImages($vendor_id, $tableref_id) {
+		$select = Select::get()
+			->allColumns('img')
+			->from(array('img'=>'image_index'))
+				->join(new sql\join\ImageIndexPropertyJoin(array('property_id_alt','property_name'), Select::JOIN_INNER))
+				->join(new sql\join\ImageIndexVendorsiteJoin(array(), Select::JOIN_INNER))
+				->join(new \NP\vendor\sql\join\VendorsiteVendorJoin())
+				->join(new sql\join\ImageIndexDocTypeJoin())
+			->whereNest('OR')
+				->whereEquals('img.tablekey_id', '0')
+				->whereIsNull('img.tablekey_id')
+			->whereUnnest()
+			->whereNotEquals('img.image_index_status', '2')
+			->whereEquals('img.tableref_id', '?')
+			->whereEquals('v.vendor_id', '?');
+
+		return $this->adapter->query($select, [$tableref_id, $vendor_id]);
+	}
 
     /**
      * Delete images from database.
@@ -306,12 +337,40 @@ class ImageIndexGateway extends AbstractGateway {
                 ->value('image_index_primary', 0)
                 ->value('image_index_deleted_datetm', '\''.date('Y-m-d H:i:s').'\'')
                 ->value('image_index_deleted_by', $userprofile_id)
-            ->where(
-                Where::get()
-                    ->in('image_index_id', implode(',', $identifiers))
-            )
+            ->whereIn('image_index_id', $this->createPlaceholders($identifiers))
         ;
-        return $this->adapter->query($update);
+        return $this->adapter->query($update, $identifiers);
+    }
+
+    /**
+     * Makes the specified image a primary image
+     * @param  int $image_index_id
+     */
+    public function makePrimary($image_index_id) {
+    	$error = null;
+    	$this->beginTransaction();
+    	
+    	try {
+    		$image = $this->findById($image_index_id);
+
+    		// Remove primary status for all images for the entity
+			$this->update(
+	            ['Image_Index_Primary' => 0],
+	            ['tablekey_id'=>'?', 'tableref_id'=>'?'],
+	            [$image['Tablekey_Id'], $image['Tableref_Id']]
+	        );
+
+			// Set primary status on the new entity
+	        $this->update([
+	            'Image_Index_Id'      => $image_index_id,
+	            'Image_Index_Primary' => 1
+	        ]);
+
+	        $this->commit();
+    	} catch(\Exception $e) {
+    		$this->rollback();
+    		throw $e;
+    	}
     }
 
     /**

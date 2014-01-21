@@ -7,6 +7,7 @@ use NP\core\db\Expression;
 use NP\security\SecurityService;
 use NP\budget\BudgetService;
 use NP\property\FiscalCalService;
+use NP\image\ImageService;
 
 /**
  * Service class for operations related to both Invoices and POs, to be extended by both the PO and Invoice class
@@ -21,12 +22,13 @@ Abstract class AbstractInvoicePoService extends AbstractService {
 	protected $type;
 
 	protected $table, $itemTable, $pkField, $itemPkField, $configService, $securityService, 
-			$fiscalCalService, $budgetService;
+			$fiscalCalService, $budgetService, $imageService;
 	
 	public function __construct(FiscalCalService $fiscalCalService,
-								BudgetService $budgetService) {
+								BudgetService $budgetService, ImageService $imageService) {
 		$this->fiscalCalService = $fiscalCalService;
 		$this->budgetService    = $budgetService;
+		$this->imageService     = $imageService;
 
 		if ($this->type === 'invoice') {
 			$this->table       = 'invoice';
@@ -169,6 +171,151 @@ Abstract class AbstractInvoicePoService extends AbstractService {
 
 		return null;
 	}
+
+    /**
+     * Get images for an entity
+     */
+    public function getImages($entity_id, $primaryOnly=false) {
+        return $this->imageIndexGateway->findEntityImages($entity_id, $this->title, $primaryOnly);
+    }
+
+    /**
+     * Gets all images that have been indexed and can be added to an entity matching the
+     * vendor_id passed in
+     *
+     * @param  int $vendor_id
+     */
+    public function getAddableImages($vendor_id) {
+    	$tableref_id = $this->imageTablerefGateway->getIdByName($this->title);
+
+        return $this->imageIndexGateway->findAddableImages($vendor_id, $tableref_id);
+    }
+
+    /**
+     * 
+     */
+    public function uploadImage($entity_id) {
+    	$errors = [];
+    	$file = null;
+    	$image_index_id = null;
+    	$this->imageIndexGateway->beginTransaction();
+    	
+    	try {
+    		// Add an the image to the system
+			$result         = $this->imageService->upload($this->title, $entity_id);
+			$file           = $result['file'];
+			$image_index_id = $result['image_index_id'];
+			$errors         = $result['errors'];
+
+    		// If image is successfully added, attach it to the invoice/po
+    		if (!count($errors)) {
+    			$result = $this->addImages($entity_id, $image_index_id);
+    			$errors = $result['errors'];
+    		}
+    	} catch(\Exception $e) {
+    		$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+    	}
+    	
+    	if (count($errors)) {
+    		$this->imageIndexGateway->rollback();
+    		// If there was any error, try to delete the file
+            try {
+                unlink($file['file_path']);
+            // In this case, we'll just do nothing if deleting doesn't work because it's not critical
+            } catch(\Exception $e) {}
+    	} else {
+    		$this->imageIndexGateway->commit();
+    	}
+    	
+    	return array(
+			'success'        => (count($errors)) ? false : true,
+			'file'           => $file,
+			'image_index_id' => $image_index_id,
+			'errors'         => $errors
+    	);
+    }
+
+    /**
+     * Attaches one or more images to an invoice
+     *
+     * @param  int       $entity_id
+     * @param  int|array $image_index_id_list
+     */
+    public function addImages($entity_id, $image_index_id_list) {
+    	if (!is_array($image_index_id_list)) {
+    		$image_index_id_list = [$image_index_id_list];
+    	}
+    	
+    	$errors = [];
+    	$new_primary_image = null;
+    	$this->imageIndexGateway->beginTransaction();
+    	
+    	try {
+    		$new_primary_image = $this->imageService->attach($entity_id, $this->title, $image_index_id_list);
+
+	    	// TODO: add code for auditing (from dbo.INVOICEIMAGE_ATTACH_IMAGE_TO_INVOICE_SAVE.PRC)
+
+    	} catch(\Exception $e) {
+    		$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+    	}
+    	
+    	if (count($errors)) {
+    		$this->imageIndexGateway->rollback();
+    	} else {
+    		$this->imageIndexGateway->commit();
+    	}
+    	
+    	return array(
+			'success'           => (count($errors)) ? false : true,
+			'errors'            => $errors,
+			'new_primary_image' => $new_primary_image
+    	);
+    }
+
+    /**
+     * This unassigns an image from an invoice/po and moves it to the deleted list.
+     * (the image is NOT permanently deleted)
+     */
+    public function removeImages($entity_id, $image_index_id_list) {
+	    $errors = [];
+	    $this->imageIndexGateway->beginTransaction();
+	    
+	    try {
+	    	// Get the current primary image so we can check if it was among the deleted
+	    	$primaryImage = $this->getImages($entity_id, true);
+	    	$newPrimary = null;
+
+	    	// Delete the images
+	    	$this->imageIndexGateway->deleteTemporary(
+	    		$image_index_id_list,
+	    		$this->securityService->getUserId()
+	    	);
+
+	    	// Check if the primary image was deleted
+	    	if (in_array($primaryImage['Image_Index_Id'], $image_index_id_list)) {
+	    		// If primary image was deleted, make the first other image the primary one
+	    		$images = $this->getImages($entity_id);
+		    	if (count($images)) {
+		    		$newPrimary = $images[0];
+		    		$this->imageIndexGateway->makePrimary($newPrimary['Image_Index_Id']);
+		    	}
+	    	}
+	    } catch(\Exception $e) {
+	    	$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+	    }
+	    
+	    if (count($errors)) {
+	    	$this->imageIndexGateway->rollback();
+	    } else {
+	    	$this->imageIndexGateway->commit();
+	    }
+	    
+	    return array(
+			'success'            => (count($errors)) ? false : true,
+			'errors'             => $errors,
+			'new_primary_image'  => $newPrimary
+	    );
+    }
 
 	public function unlinkPoFromInvoice($invoice_id) {
 		$this->purchaseOrderGatewayGateway->beginTransaction();

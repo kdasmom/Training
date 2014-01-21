@@ -47,7 +47,7 @@ class InvoiceService extends AbstractInvoicePoService {
 		}
 
 		// Get invoice images
-		$invoice['images'] = $this->imageIndexGateway->findEntityImages($invoice_id, 'Invoice', true);
+		$invoice['image'] = $this->imageIndexGateway->findEntityImages($invoice_id, 'Invoice', true);
 
 		// Get linkable POs
 		$invoice['has_linkable_pos'] = (count($this->getLinkablePOs($invoice_id))) ? true : false;
@@ -1030,7 +1030,7 @@ class InvoiceService extends AbstractInvoicePoService {
 				$this->updateMultiPropertyStatus($invoice->invoice_id);
 			}
 
-			// TODO: add code to deal with jobcosting contract actuals
+			// TODO: add code to deal with jobcosting contract actuals (UPDATE_PN_ACTUALS)
 
 		} catch(\Exception $e) {
 			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
@@ -1288,7 +1288,7 @@ class InvoiceService extends AbstractInvoicePoService {
 				$this->invoiceGateway->delete('invoice_id = ?', [$invoice_id]);
 			}
 
-			// TODO: add code to deal with jobcosting contract actuals
+			// TODO: add code to deal with jobcosting contract actuals (UPDATE_PN_ACTUALS)
 
 		} catch(\Exception $e) {
 			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));

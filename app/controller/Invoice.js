@@ -13,15 +13,18 @@ Ext.define('NP.controller.Invoice', {
 		'NP.lib.core.Translator',
 		'NP.lib.core.Net',
 		'NP.lib.core.Util',
+		'NP.lib.ui.Uploader',
 		'NP.view.shared.invoicepo.SplitWindow'
 	],
 	
 	models: ['NP.model.invoice.InvoiceItem'],
 
 	stores: ['invoice.Invoices','system.PriorityFlags','invoice.InvoicePaymentTypes',
-			'invoice.InvoiceItems','invoice.InvoicePayments','shared.Reasons'],
+			'invoice.InvoiceItems','invoice.InvoicePayments','shared.Reasons',
+			'image.ImageIndexes'],
 	
-	views: ['invoice.Register','invoice.View','invoice.VoidWindow','invoice.HoldWindow'],
+	views: ['invoice.Register','invoice.View','invoice.VoidWindow','invoice.HoldWindow',
+			'shared.invoicepo.ImagesManageWindow','shared.invoicepo.ImagesAddWindow'],
 
 	refs: [
 		{ ref: 'invoiceView', selector: '[xtype="invoice.view"]' },
@@ -196,10 +199,12 @@ Ext.define('NP.controller.Invoice', {
 				click: me.onShowVoidInvoice.bind(me)
 			},
 
+			// Cancel button on the Void popup window
 			'#invoiceVoidCancelBtn': {
 				click: me.onCancelVoidInvoice.bind(me)
 			},
 
+			// Save button on the Void popup window
 			'#invoiceVoidSaveBtn': {
 				click: me.onSaveVoidInvoice.bind(me)
 			},
@@ -209,24 +214,63 @@ Ext.define('NP.controller.Invoice', {
 				click: me.onShowOnHoldInvoice.bind(me)
 			},
 
+			// Cancel button on On Hold popup window
 			'#invoiceOnHoldCancelBtn': {
 				click: me.onCancelOnHoldInvoice.bind(me)
 			},
 
+			// Save button on the On Hold popup window
 			'#invoiceOnHoldSaveBtn': {
 				click: me.onSaveOnHoldInvoice.bind(me)
 			},
 
+			// Activate invoice button
 			'#activateBtn': {
 				click: me.onActivateInvoice.bind(me)
 			},
 
+			// Save invoice button
 			'#invoiceSaveBtn': {
 				click: me.onSaveInvoice
 			},
 
+			// Delete invoice button
 			'#invoiceDeleteBtn': {
 				click: me.onDeleteInvoice
+			},
+
+			// View Image button
+			'#invoiceImageViewBtn': {
+				click: me.onViewImage
+			},
+
+			// Manage Images button
+			'#invoiceImageManageBtn': {
+				click: me.onManageImages
+			},
+
+			// Delete button on the Manage Images window
+			'#invoiceManageImageWin [xtype="shared.button.delete"]': {
+				click: me.onDeleteImage
+			},
+
+			// Make primary button on the Manage Images window
+			'#invoiceManageImageWin': {
+				makeprimary: me.onMakePrimary
+			},
+
+			// Add Images button
+			'#invoiceImageAddBtn': {
+				click: me.onAddImage
+			},
+
+			// Delete button on the Manage Images window
+			'#invoiceAddImageWin [xtype="shared.button.save"]': {
+				click: me.onAddImageSave
+			},
+
+			'#invoiceImageUploadBtn': {
+				click: me.onUploadImage
 			}
 		});
 	},
@@ -1060,7 +1104,7 @@ Ext.define('NP.controller.Invoice', {
 			invoice              = me.getInvoiceView().getModel('invoice.Invoice'),
 			toolbar              = me.getInvoiceViewToolbar();
 
-		data = data || { is_approver: false, images: [] };
+		data = data || { is_approver: false, image: null };
 		toolbar.displayConditionData = {};
 
 		Ext.apply(toolbar.displayConditionData, Ext.apply(data, { invoice: invoice }));
@@ -1068,30 +1112,48 @@ Ext.define('NP.controller.Invoice', {
 		toolbar.refresh();
 	},
 
+	getImageRegion: function() {
+		var me           = this,
+            user         = NP.Security.getUser(),
+			isHorizontal = user.get('userprofile_splitscreen_isHorizontal'),
+            imageOrder   = user.get('userprofile_splitscreen_ImageOrder'),
+            imageRegion  = 'west';
+
+            if (isHorizontal == 1) {
+	            imageRegion = (imageOrder == 1) ? 'north' : 'south';
+	        } else if (isHorizontal == 0) {
+	            imageRegion = (imageOrder == 1) ? 'east' : 'west';
+	        }
+
+	        return imageRegion;
+	},
+
+	getImagePanel: function() {
+		var me = this;
+
+		return Ext.ComponentQuery.query('#' + me.getImageRegion() + 'Panel')[0];
+	},
+
 	loadImage: function(showImage) {
 		var me           = this,
 			data         = me.getInvoiceView().getLoadedData(),
             user         = NP.Security.getUser(),
-            isHorizontal = user.get('userprofile_splitscreen_isHorizontal'),
-            imageOrder   = user.get('userprofile_splitscreen_ImageOrder'),
             hideImg      = user.get('userprofile_splitscreen_LoadWithoutImage'),
             splitSize    = user.get('userprofile_splitscreen_size'),
-            imageRegion  = 'west',
+            imageRegion  = me.getImageRegion(),
             showImage    = showImage || false,
             sizeProp,
             imagePanel,
             iframeId,
             iframeEl;
 
-		if (data['images'].length) {
-			if (isHorizontal == 1) {
-	            imageRegion = (imageOrder == 1) ? 'north' : 'south';
-	            sizeProp = 'height';
-	        } else if (isHorizontal == 0) {
-	            imageRegion = (imageOrder == 1) ? 'east' : 'west';
-	            sizeProp = 'width';
-	        }
-	        imagePanel = Ext.ComponentQuery.query('#' + imageRegion + 'Panel')[0];
+		if (data['image'] !== null) {
+			if (Ext.Array.contains(['north','south'], imageRegion)) {
+				sizeProp = 'height';
+			} else {
+				sizeProp = 'width';
+			}
+	        imagePanel = me.getImagePanel();
 	        
 	        iframeId = 'invoice-image-iframe-' + imageRegion;
 			iframeEl = Ext.get(iframeId);
@@ -1109,7 +1171,7 @@ Ext.define('NP.controller.Invoice', {
 		    }
 
 		    if (showImage) {
-		    	var src = 'showImage.php?image_index_id=' + data['images'][0]['Image_Index_Id'];
+		    	var src = 'showImage.php?image_index_id=' + data['image']['Image_Index_Id'];
 		    	if (iframeEl.dom.src != src) {
 					iframeEl.dom.src = src;
 				}
@@ -1899,7 +1961,7 @@ Ext.define('NP.controller.Invoice', {
 			dialogTitle = NP.Translator.translate('Delete Invoice?'),
 			dialogText  = NP.Translator.translate('Are you sure you want to delete this Invoice?');
 
-		if (data['images'].length) {
+		if (data['image'] !== null) {
 			dialogText += "<br /> You will only be able to view the attached image(s) in the Deleted Images section of Image Management.";
 		}
 
@@ -1933,5 +1995,256 @@ Ext.define('NP.controller.Invoice', {
 				});
 			}
 		});
+	},
+
+	onViewImage: function() {
+		alert(1);
+		var me   = this,
+			data = me.getInvoiceView().getLoadedData();
+
+		if (data['image'] != null) {
+			var url = 'showImage.php?image_index_id=' + data['image']['Image_Index_Id'];
+
+			window.open(
+                url,
+                '_blank',
+                'width=800, height=600, resizable=yes, scrollbars=yes'
+            );
+		}
+	},
+
+	onManageImages: function() {
+		var me    = this,
+			win   = Ext.widget('shared.invoicepo.imagesmanagewindow', { itemId: 'invoiceManageImageWin', type: 'invoice' }),
+			store = win.down('customgrid').getStore();
+
+		store.addExtraParams({
+			entity_id: me.getInvoiceRecord().get('invoice_id')
+		});
+		store.load();
+
+		win.show();
+	},
+
+	onDeleteImage: function() {
+		var me          = this,
+			form        = me.getInvoiceView(),
+			win         = me.getCmp('shared.invoicepo.imagesmanagewindow'),
+			grid        = win.down('customgrid'),
+			recs        = grid.getSelectionModel().getSelection(),
+			dialogTitle = NP.Translator.translate('Delete Images?'),
+			dialogText  = NP.Translator.translate('Are you sure you want to delete the selected images?');
+
+		// Check if any image was selected for deletion
+		if (!recs.length) {
+			// if no image was selected, show an error
+			Ext.MessageBox.alert(
+				NP.Translator.translate('Error'),
+				NP.Translator.translate('You must select at least one image to delete.')
+			);
+		// If images were selected, provided confirmation box
+		} else {
+			Ext.MessageBox.confirm(dialogTitle, dialogText, function(btn) {
+				// If user clicks Yes, proceed with deleting
+				if (btn == 'yes') {
+					recs = NP.Util.valueList(recs, 'Image_Index_Id');
+
+					NP.Net.remoteCall({
+						method  : 'POST',
+						mask    : grid,
+						requests: {
+							service            : 'InvoiceService',
+							action             : 'removeImages',
+							entity_id          : me.getInvoiceRecord().get('invoice_id'),
+							image_index_id_list: recs,
+							success            : function(result) {
+								var data = me.getInvoiceView().getLoadedData();
+
+								NP.Util.showFadingWindow({
+									html: NP.Translator.translate('Images have been deleted')
+								});
+
+								// Deal with deletion of all images
+								if (grid.getStore().getCount() == recs.length) {
+									Ext.suspendLayouts();
+									
+									data['image'] = null;
+									me.getImagePanel().hide();
+									me.buildViewToolbar(form.getLoadedData());
+
+									Ext.resumeLayouts(true);
+								}
+								// Deal with deletion of primary image
+								else if (Ext.Array.contains(recs, data['image']['Image_Index_Id'])) {
+									if (result['new_primary_image'] !== null) {
+										data['image'] = result['new_primary_image'];
+										me.loadImage();
+									}
+								}
+
+								win.close();
+							}
+						}
+					});
+				}
+			});
+		}
+	},
+
+	onMakePrimary: function(rowIndex, rec) {
+		var me         = this,
+			win        = me.getCmp('shared.invoicepo.imagesmanagewindow'),
+			grid       = win.down('customgrid'),
+			primaryRec = grid.getStore().findRecord('Image_Index_Primary', 1);;
+
+		NP.Net.remoteCall({
+			method  : 'POST',
+			mask    : grid,
+			requests: {
+				service       : 'ImageService',
+				action        : 'makePrimary',
+				// Extra params
+				image_index_id: rec.get('Image_Index_Id'),
+				
+				success       : function(result) {
+					primaryRec.set('Image_Index_Primary', 0);
+					rec.set('Image_Index_Primary', 1);
+
+					NP.Util.showFadingWindow({
+						html: NP.Translator.translate('Primary image has been changed')
+					});
+				}
+			}
+		});
+	},
+
+	onAddImage: function() {
+		var me    = this,
+			win   = Ext.widget('shared.invoicepo.imagesaddwindow', { itemId: 'invoiceAddImageWin', type: 'invoice' }),
+			store = win.down('customgrid').getStore();
+
+		store.addExtraParams({
+			vendor_id: me.getInvoiceVendorCombo().getValue()
+		});
+		store.load();
+
+		win.show();
+	},
+
+	onAddImageSave: function() {
+		var me   = this,
+			form = me.getInvoiceView(),
+			win  = me.getCmp('shared.invoicepo.imagesaddwindow'),
+			grid = win.down('customgrid'),
+			recs = grid.getSelectionModel().getSelection();
+
+		if (!recs.length) {
+			Ext.MessageBox.alert(
+				NP.Translator.translate('Error'),
+				NP.Translator.translate('You must select at least one image to add.')
+			);
+		} else {
+			recs = NP.Util.valueList(recs, 'Image_Index_Id');
+
+			NP.Net.remoteCall({
+				method  : 'POST',
+				mask    : grid,
+				requests: {
+					service            : 'InvoiceService',
+					action             : 'addImages',
+					entity_id          : me.getInvoiceRecord().get('invoice_id'),
+					image_index_id_list: recs,
+					success            : function(result) {
+						var data = me.getInvoiceView().getLoadedData();
+
+						NP.Util.showFadingWindow({
+							html: NP.Translator.translate('Images have been added')
+						});
+
+						// Deal with deletion of all images
+						if (data['image'] === null) {
+							data['image'] = result['new_primary_image'];
+							me.loadImage();
+						}
+
+						win.close();
+					}
+				}
+			});
+		}
+	},
+
+	onUploadImage: function() {
+		var me       = this,
+			data     = me.getInvoiceView().getLoadedData(),
+			uploader = Ext.create('NP.lib.ui.Uploader', {
+	            params: {
+	            	files: {
+	            		extensions : '*.pdf; *.doc; *.docx; *.ppt; *.pptx; *.xls; *.xlsx; *.jpeg; *.jpg; *.gif; *.tif; *.tiff',
+	            		description: 'Image Files'
+	            	},
+	                form: {
+						service  : 'InvoiceService',
+						action   :  'uploadImage',
+						entity_id: me.getInvoiceRecord().get('invoice_id')
+	                },
+	                listeners: {
+	                    onUploadComplete: function(file, returnVal) {
+	                    	// Process the status for the image upload
+	                    	var result = Ext.JSON.decode(returnVal);
+
+	                    	// If individual image upload failed, store file name
+	                    	if (!result.success) {
+	                    		uploader.errors.push(file.name);
+	                    	}
+	                    	// Else if there's no image currently attached to invoice
+	                    	// and this is the first image uploaded, store the ID so we can use
+	                    	// it later to display the invoice when all uploads are done
+	                    	else if (data['image'] === null && !uploader.image_index_id) {
+	                    		uploader.image_index_id = result['image_index_id'];
+	                    	}
+	                    },
+	                    onQueueComplete: function(uploads) {
+	                    	var msg = NP.Translator.translate('File(s) uploaded');
+
+	                    	// If any file upload failed, display an alert indicating
+	                    	// which files failed to upload
+	                    	if (uploader.errors.length) {
+	                    		msg += '<br /><br />';
+	                    		msg += NP.Translator.translate('The following files could not be uploaded:');
+	                    		for (var i=0; i<uploader.errors.length; i++) {
+	                    			msg += uploader.errors.join(',');
+	                    		}
+
+	                    		Ext.MessageBox.alert(
+									NP.Translator.translate('Error'),
+									msg
+								);
+	                    	}
+	                    	// Otherwise just display a message that indicates the upload was successful
+	                    	else {
+	                    		NP.Util.showFadingWindow({
+		                        	html: msg
+		                        });
+	                    	}
+
+	                    	// If there's a new primary image, make it display
+	                    	if (data['image'] === null && uploader.image_index_id) {
+	                        	// Update the image reference
+	                        	data['image'] = { Image_Index_Id: uploader.image_index_id };
+	                        	// Show the image
+	                        	me.loadImage();
+	                        	// Update the toolbar to make sure the "Manage Images" button shows
+	                        	me.buildViewToolbar(data);
+	                        }
+
+	                    	uploader.close();
+	                    }
+	                }
+	            }
+	        });
+		
+		uploader.errors = [];
+        uploader.show();
 	}
 });

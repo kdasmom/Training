@@ -12,7 +12,12 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
         'NP.lib.core.Security',
         'NP.lib.core.Util',
         'Ext.view.View',
-        'NP.view.shared.button.Edit'
+        'NP.view.shared.button.Edit',,
+        'NP.model.jobcosting.JbContract',
+        'NP.model.jobcosting.JbChangeOrder',
+        'NP.model.jobcosting.JbJobCode',
+        'NP.model.jobcosting.JbPhaseCode',
+        'NP.model.jobcosting.JbCostCode'
     ],
 
     layout     : 'fit',
@@ -276,31 +281,31 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                 '<tpl if="this.getSetting(\'pn.jobcosting.useContracts\', \'0\') == \'1\' && jbcontract_id !== null">' +
                     '<div>' +
                         '<b>{[this.getSetting("PN.jobcosting.contractTerm")]}:</b>' +
-                        ' {display_name}' +
+                        ' {[NP.model.jobcosting.JbContract.formatName(values)]}' +
                     '</div>' +
                 '</tpl>' +
                 '<tpl if="jbchangeorder_id !== null">' +
                     '<div>' +
                         '<b>{[this.getSetting("PN.jobcosting.changeOrderTerm")]}:</b>' +
-                        ' {display_name}' +
+                        ' {[NP.model.jobcosting.JbChangeOrderCode.formatName(values)]}' +
                     '</div>' +
                 '</tpl>' +
                 '<tpl if="jbjobcode_id !== null">' +
                     '<div>' +
                         '<b>{[this.getSetting("PN.jobcosting.jobCodeTerm")]}:</b>' +
-                        ' {display_name}' +
+                        ' {[NP.model.jobcosting.JbJobCode.formatName(values)]}' +
                     '</div>' +
                 '</tpl>' +
                 '<tpl if="jbphasecode_id !== null">' +
                     '<div>' +
                         '<b>{[this.getSetting("PN.jobcosting.phaseCodeTerm")]}:</b>' +
-                        ' {display_name}' +
+                        ' {[NP.model.jobcosting.JbPhaseCode.formatName(values)]}' +
                     '</div>' +
                 '</tpl>' +
                 '<tpl if="this.getSetting(\'pn.jobcosting.useCostCodes\', \'0\') == \'1\' && jbcostcode_id !== null">' +
                     '<div>' +
                         '<b>{[this.getSetting("PN.jobcosting.costCodeTerm")]}:</b>' +
-                        ' {display_name}' +
+                        ' {[NP.model.jobcosting.JbCostCode.formatName(values)]}' +
                     '</div>' +
                 '</tpl>' +
                 '<tpl if="jbassociation_retamt !== 0">' +
