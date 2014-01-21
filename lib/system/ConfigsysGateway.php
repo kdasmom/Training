@@ -317,6 +317,43 @@ class ConfigsysGateway extends AbstractGateway {
 			'CP.CUSTOM_FIELD_LABEL%', '%LINEITEM%', 1
 		]);
 	}
+
+	public function getLineItems($pageSize, $page, $order) {
+		$select = new Select();
+
+		$select->from(['c2' => 'configsys'])
+			->columns([
+				'controlpanelitem_name'		=> 'configsys_name',
+				'controlpanelitem_required'	=> 'configsys_required',
+				'inv_on_off' => new sql\CustomFieldSelect(8, false),
+				'inv_req' => new sql\CustomFieldSelect(5, false),
+				'po_on_off' => new sql\CustomFieldSelect(8, false),
+				'po_req' => new sql\CustomFieldSelect(5, false),
+				'vef_on_off' => new sql\CustomFieldSelect(8, false),
+				'vef_req' => new sql\CustomFieldSelect(5, false),
+				'imgidx_on_off' => new sql\CustomFieldSelect(10, false),
+				'type' => new sql\CustomFieldSelect(6, false),
+			])
+			->join(['cv2' => 'configsysval'], ' c2.configsys_id = cv2.configsys_id', ['controlpanelitem_value' => 'configsysval_val'])
+			->whereLike('c2.configsys_name', '?')
+			->whereLike('c2.configsys_name', '?')
+			->whereEquals('cv2.configsysval_active', '?')
+			->order($order)
+			->offset($pageSize * ($page - 1))
+			->limit($pageSize);
+
+		return $this->adapter->query($select, [
+			'CP.INVOICE_CUSTOM_FIELD%', 1, '%LINEITEM_ON_OFF',
+			'CP.INVOICE_CUSTOM_FIELD%', 1, '%LINEITEM_REQ',
+			'CP.PO_CUSTOM_FIELD%', 1, '%LINEITEM_ON_OFF',
+			'CP.PO_CUSTOM_FIELD%', 1, '%LINEITEM_REQ',
+			'CP.VEF_CUSTOM_FIELD%', 1, '%LINEITEM_ON_OFF',
+			'CP.VEF_CUSTOM_FIELD%', 1, '%LINEITEM_REQ',
+			'CP.INVOICE_CUSTOM_FIELD%', 1, '%_IMGINDEX',
+			'CP.CUSTOM_FIELD%', 1, '%_TYPE',
+			'CP.CUSTOM_FIELD_LABEL%', '%LINEITEM%', 1
+		]);
+	}
 }
 
 ?>

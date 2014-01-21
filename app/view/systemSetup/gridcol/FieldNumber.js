@@ -16,9 +16,11 @@ Ext.define('NP.view.systemSetup.gridcol.FieldNumber', {
 	initComponent: function() {
 		this.text = NP.Translator.translate(this.text);
 
-		this.renderer = function(val, meta, rec) {
-			return val[val.length - 1];
-		};
+		if (!this.renderer) {
+			this.renderer = function(val, meta, rec) {
+				return val[val.length - 1];
+			};
+		}
 
 		this.callParent(arguments);
 	}

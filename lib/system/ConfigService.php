@@ -579,8 +579,28 @@ class ConfigService extends AbstractService {
 
 	}
 
+	/**
+	 * Retrieve headers list
+	 *
+	 * @param int $limit
+	 * @param int $page
+	 * @param string $sort
+	 * @return array|bool
+	 */
 	public function getHeaders($limit = 25, $page = 1, $sort = 'configsys_name') {
 		return $this->configsysGateway->getHeaderVals($limit, $page, $sort);
+	}
+
+	/**
+	 * Retrieve line items list
+	 *
+	 * @param int $limit
+	 * @param int $page
+	 * @param string $sort
+	 * @return array|bool
+	 */
+	public function getLineItems($limit = 25, $page = 1, $sort = 'configsys_name') {
+		return $this->configsysGateway->getLineItems($limit, $page, $sort);
 	}
 }
 
