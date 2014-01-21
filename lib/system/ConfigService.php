@@ -578,6 +578,10 @@ class ConfigService extends AbstractService {
 		}
 
 	}
+
+	public function getHeaders($limit = 25, $page = 1, $sort = 'configsys_name') {
+		return $this->configsysGateway->getHeaderVals($limit, $page, $sort);
+	}
 }
 
 ?>

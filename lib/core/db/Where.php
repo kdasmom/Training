@@ -249,6 +249,16 @@ class Where implements SQLElement {
 	}
 
 	/**
+	 * Shortcut for op('NOT LIKE', $left, $right)
+	 * @param $left
+	 * @param $right
+	 * @return Where
+	 */
+	public function notLike($left, $right) {
+		return $this->op('NOT LIKE', $left, $right);
+	}
+
+	/**
 	 * Shortcut for op('BETWEEN', $left, $right, $right2)
 	 *
 	 * @param  string|SQLElement $left   Left side of the comparison

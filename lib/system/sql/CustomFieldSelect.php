@@ -23,6 +23,7 @@ class CustomFieldSelect extends Select {
 			->whereEquals('cv.configsysval_active', '?')
 			->whereLike('c.configsys_name', '?')
 			->whereNotLike('c.configsys_name', '?')
-			->whereEquals(New Expression('left(right(c.configsys_name,{$rightPosition}),1)'), 'right(c2.configsys_name,1))');
+			->whereEquals(New Expression("left(right(c.configsys_name,{$rightPosition}),1)"), 'right(c2.configsys_name,1)')
+			->limit(1);
 	}
 } 

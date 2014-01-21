@@ -287,7 +287,6 @@ class ConfigsysGateway extends AbstractGateway {
 		$select->from(['c2' => 'configsys'])
 			->columns([
 				'controlpanelitem_name'		=> 'configsys_name',
-				'controlpanelitem_value'	=> 'configsysval_val',
 				'controlpanelitem_required'	=> 'configsys_required',
 				'inv_on_off' => new sql\CustomFieldSelect(8),
 				'inv_req' => new sql\CustomFieldSelect(5),
@@ -298,7 +297,7 @@ class ConfigsysGateway extends AbstractGateway {
 				'imgidx_on_off' => new sql\CustomFieldSelect(10),
 				'type' => new sql\CustomFieldSelect(6),
 			])
-			->join(['cv2' => 'configsysval'], ' c2.configsys_id = cv2.configsys_id')
+			->join(['cv2' => 'configsysval'], ' c2.configsys_id = cv2.configsys_id', ['controlpanelitem_value' => 'configsysval_val'])
 			->whereLike('c2.configsys_name', '?')
 			->whereNotLike('c2.configsys_name', '?')
 			->whereEquals('cv2.configsysval_active', '?')
