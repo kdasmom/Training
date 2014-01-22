@@ -31,76 +31,71 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilderRules', {
             border: 0
         };
 
-		this.items = [{
-			xtype: 'fieldset',
-			title: 'Rule Builder',
-			defaultType: 'textfield',
-			items: [
-				// Name
-				{
-					xtype: 'textfield',
-					fieldLabel: 'Name:'
-				},
-				// Create Rule for
-				{
-					width: 1200,
-					xtype: 'radiogroup',
-					fieldLabel: 'Properties',
-					//columns: 2,
-					items: [
-						{
-							boxLabel: 'ALL',
-							checked: true,
-							name: 'propprop',
-							listeners: {
-								change: function(field, newValue, oldValue, options) {
-									if (newValue) {
-										me.down('#properties').hide();
-									}
-								}
-							}
-						},
-						{
-							boxLabel: 'SPECIFIC',
-							name: 'propprop',
-							listeners: {
-								change: function(field, newValue, oldValue, options) {
-									if (newValue) {
-										me.down('#properties').show();
-									}
+		this.items = [
+			// Name
+			{
+				xtype: 'textfield',
+				fieldLabel: 'Name:'
+			},
+			// Create Rule for
+			{
+				width: 1200,
+				xtype: 'radiogroup',
+				fieldLabel: 'Properties',
+				//columns: 2,
+				items: [
+					{
+						boxLabel: 'ALL',
+						checked: true,
+						name: 'propprop',
+						listeners: {
+							change: function(field, newValue, oldValue, options) {
+								if (newValue) {
+									me.down('#properties').hide();
 								}
 							}
 						}
-					]
-				},
-				{
-					width: 1200,
-					xtype     : 'shared.propertyassigner',
-					itemId    : 'properties',
-					name      : 'properties',
-					store     : storeProp,
-					autoScroll: true,
-					height    : 200,
-					hidden: true,
-					fieldLabel: '',
-					labelWidth: 200
-				},
-				// Rule Type
-				{
-					xtype: 'customcombo',
-					fieldLabel: 'Rule Type',
-					store: storeRuleTypes,
-					valueField: 'wfruletype_id',
-					displayField: 'wfruletype_name',
-					listeners: {
-						change: function(field, value) {
-							me.show(value);
+					},
+					{
+						boxLabel: 'SPECIFIC',
+						name: 'propprop',
+						listeners: {
+							change: function(field, newValue, oldValue, options) {
+								if (newValue) {
+									me.down('#properties').show();
+								}
+							}
 						}
 					}
+				]
+			},
+			{
+				width: 1200,
+				xtype     : 'shared.propertyassigner',
+				itemId    : 'properties',
+				name      : 'properties',
+				store     : storeProp,
+				autoScroll: true,
+				height    : 200,
+				hidden: true,
+				fieldLabel: '',
+				labelWidth: 200
+			},
+			// Rule Type
+			{
+				xtype: 'customcombo',
+				fieldLabel: 'Rule Type',
+				store: storeRuleTypes,
+				valueField: 'wfruletype_id',
+				displayField: 'wfruletype_name',
+				listeners: {
+					change: function(field, value) {
+						me.show(value);
+					}
 				}
-				// Amount / Variency
-			]
-		}];
+			}
+			// Amount / Variency
+		];
 
 
 	    me.items.push(

@@ -176,7 +176,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesSummary', {
 	},
 
 	sectionOriginates: function(data) {
-		console.log('data', data);
+//		console.log('data', data);
 		var originator = data.rule.originator;
 		if (data.rule.originator && data.rule.originator.length && data.rule.onames.length) {
 			originator += ': ' + data.rule.onames

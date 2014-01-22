@@ -151,7 +151,6 @@ class GlAccountGateway extends AbstractGateway {
                 ->whereEquals('integration_package_id', '?')
                 ->whereIsNull('glaccounttype_id');
 
-		echo $select->toString();
         $res = $this->adapter->query($select, array($glaccount_name, $integration_package_id));
 
         return (count($res)) ? $res[0] : null;
