@@ -603,8 +603,42 @@ class ConfigService extends AbstractService {
 		return $this->configsysGateway->getLineItems($limit, $page, $sort);
 	}
 
+	/**
+	 * Return custom fields list
+	 *
+	 * @param int $limit
+	 * @param int $page
+	 * @param string $sort
+	 * @param string $fieldname
+	 * @return array|bool
+	 */
 	public function getCustomFields($limit = 25, $page = 1, $sort = 'controlpanelitem_name', $fieldname = 'serviceField') {
 		return $this->configsysGateway->getCustomFields($limit, $page, $sort, $fieldname);
+	}
+
+	/**
+	 * Get header values
+	 *
+	 * @param null $asp_client_id
+	 * @param null $fid
+	 * @return array
+	 */
+	public function getHeaderValues($asp_client_id = null, $fid = null) {
+		$data = [];
+		if (!$fid || !$asp_client_id) {
+			return $data;
+		}
+		$data['inv_custom_field_on_off'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'INVOICE_CUSTOM_FIELD' . $fid . '_ON_OFF', '');
+		$data['po_custom_field_on_off'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'PO_CUSTOM_FIELD' . $fid . '_ON_OFF', '');
+		$data['vef_custom_field_on_off'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'VEF_CUSTOM_FIELD' . $fid . '_ON_OFF', '');
+		$data['inv_custom_field_req'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'INVOICE_CUSTOM_FIELD' . $fid . '_REQ', '');
+		$data['po_custom_field_req'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'PO_CUSTOM_FIELD' . $fid . '_REQ', '');
+		$data['vef_custom_field_req'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'VEF_CUSTOM_FIELD' . $fid . '_REQ', '');
+		$data['custom_field_lbl'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'CUSTOM_FIELD_LABEL' . $fid, '');
+		$data['inv_custom_field_imgindex'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'invoice_custom_field' . $fid . '_imgindex', '');
+		$data['customFieldType'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'custom_field' . $fid . '_type', 'select');
+
+		return $data;
 	}
 }
 

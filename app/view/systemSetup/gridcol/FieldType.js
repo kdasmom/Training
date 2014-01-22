@@ -20,7 +20,7 @@ Ext.define('NP.view.systemSetup.gridcol.FieldType', {
 				default:
 					return val;
 				case 'select':
-					return 'Drop-Box';
+					return 'Drop-Down';
 				case 'date':
 					return 'Date';
 			}

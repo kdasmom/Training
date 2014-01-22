@@ -379,6 +379,28 @@ class ConfigsysGateway extends AbstractGateway {
 
 		return $this->adapter->query($select, [$fieldname . '%']);
 	}
+
+	/**
+	 * Return control panel item
+	 *
+	 * @param $asp_client_id
+	 * @param $controlpanelitem_name
+	 * @param $controlpanelitem_value_default
+	 * @param $controlpanelitem_value
+	 * @return mixed
+	 */
+	public function getControlPanelItem($asp_client_id, $controlpanelitem_name, $controlpanelitem_value_default) {
+		$select = new Select();
+
+		$select->from(['c' => 'configsys'])
+			->columns(['controlpanelitem_value' => new Expression("isnull(cv.configsysval_val, {$controlpanelitem_value_default})")])
+			->join(['cv' => 'configsysval'], 'c.configsys_id = cv.configsys_id', [])
+			->where(['c.configsys_name' => '?']);
+
+		$result = $this->adapter->query($select, ['CP.' . $controlpanelitem_name]);
+
+		return !$result['controlpanelitem_value'] ? $controlpanelitem_value_default : $result['controlpanelitem_value'];
+	}
 }
 
 ?>
