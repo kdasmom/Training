@@ -16,16 +16,11 @@ Ext.define('NP.view.shared.VendorAssigner', {
     toTitle     : 'Assigned',
     buttons     : ['add','remove'],
     msgTarget   : 'under',
-    
-    initComponent: function() {
-        if (!this.store) {
-            this.store = Ext.create('NP.store.vendor.Vendors', {
-					service           : 'VendorService',
-					action            : 'getAll',
-					autoLoad          : true
-			    });
-        }
 
-        this.callParent(arguments);
-    }
+	store: Ext.create('NP.store.vendor.Vendors', {
+		service	: 'VendorService',
+		action	: 'getAll',
+		autoLoad: true,
+		fields	: ['vendor_id', 'vendor_name', 'vendor_id_alt']
+	})
 });

@@ -180,7 +180,7 @@ abstract class AbstractGateway {
 		if ($order !== null) {
 			$select->order($order);
 		}
-		
+
 		// If paging is needed
 		if ($pageSize !== null) {
 			return $this->getPagingArray($select, $params, $pageSize, $page);

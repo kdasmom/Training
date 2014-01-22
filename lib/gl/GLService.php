@@ -546,4 +546,22 @@ class GLService extends AbstractService {
             'error'  => $error
         );
     }
+
+	/**
+	 * Get budget amount (by GL category)
+	 *
+	 * @return array - Array of budget amount records
+	 */
+	public function getBudgetAmountByGlCategory() {
+		return $this->glAccountGateway->findBudgetAmountByGlCategory(1);
+	}
+
+	/**
+	 * Get budget amount (by GL code)
+	 *
+	 * @return array - Array of budget amount records
+	 */
+	public function getBudgetAmountByGlCode($sort) {
+		return $this->glAccountGateway->findBudgetAmountByGlCode(1, $sort);
+	}
 }

@@ -246,11 +246,11 @@ class WfRuleGateway extends AbstractGateway {
                     }
                 }
             }
-            if (in_array($type, [9, 10, 11, 12, 14, 30, 32, 34, 38])) {
+//            if (in_array($type, [9, 10, 11, 12, 14, 30, 32, 34, 38])) {
                 $result['categories'] = $this->adapter->query(
                     new sql\GLAccountByWFRuleSelect($ruleid, $asp_client_id)
                 );
-            }
+//            }
             if (in_array($type, [24, 25, 26, 27])) {
                 $result['contracts'] = $this->adapter->query(
                     new sql\JobContractByWFRuleScope($ruleid)

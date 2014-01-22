@@ -5,7 +5,10 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilderRules', {
     
     requires: [
         'NP.view.shared.PropertyAssigner',
-        'NP.view.shared.VendorAssigner'
+        'NP.view.shared.VendorAssigner',
+		'NP.view.systemSetup.BudgetByGlCategoryAssigner',
+		'NP.view.systemSetup.BudgetByGlCodeAssigner',
+		'NP.view.systemSetup.InvoiceItemAmountAssigner'
     ],
 
     initComponent: function() {
@@ -101,9 +104,9 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilderRules', {
 
 
 	    me.items.push(
-            this.sectionBudget(),
+            this.sectionBudgetByGlCode(),
             this.sectionUnit(),
-            this.sectionBudgetCategory(),
+            this.sectionBudgetByGlCategory(),
             this.sectionVendor(),
             this.sectionJobCode(),
             this.sectionJobContract(),
@@ -141,10 +144,14 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilderRules', {
     },
 
     sectionJobCode: function() {
-        return {
-            itemId: 'section-job-code',
-            html: 'section-job-code coming soon'
-        };
+		return {
+			itemId: 'section-job-code',
+			xtype: 'systemSetup.invoiceitemamountassigner',
+
+			width: 1200,
+			labelWidth: 200,
+			height    : 200
+		};
     },
 
     sectionJobContract: function() {
@@ -154,18 +161,26 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilderRules', {
         };
     },
 
-    sectionBudget: function() {
-        return {
-            itemId: 'section-budget',
-            html: 'section-budget coming soon'
-        };
+    sectionBudgetByGlCode: function() {
+		return {
+			itemId: 'section-budget',
+			xtype: 'systemSetup.budgetbyglcodeassigner',
+
+			width: 1200,
+			labelWidth: 200,
+			height    : 200
+		};
     },
 
-    sectionBudgetCategory: function() {
-        return {
-            itemId: 'section-budget-category',
-            html: 'section-budget-category coming soon'
-        };
+    sectionBudgetByGlCategory: function() {
+		return {
+			itemId: 'section-budget-category',
+			xtype: 'systemSetup.budgetbyglcategoryassigner',
+
+			width: 1200,
+			labelWidth: 200,
+			height    : 200
+		};
     },
 
     sectionEmailSupression: function() {
@@ -361,8 +376,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilderRules', {
         me.showSectionVendor(type);
         me.showSectionJobCode(type);
         me.showSectionJobContract(type)
-        me.showSectionBudget(type);
-        me.showSectionBudgetCategory(type);
+        me.showSectionBudgetByGlCode(type);
+        me.showSectionBudgetByGlCategory(type);
         me.showSectionEmailSupression(type);
         me.showSectionLogic(type);
 
@@ -534,7 +549,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilderRules', {
         ;
     },
 
-    showSectionBudget: function(type) {
+    showSectionBudgetByGlCode: function(type) {
         var correct =
             type == 3 ||
             type >= 7 && type <= 8 ||
@@ -549,7 +564,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilderRules', {
         ;
     },
 
-    showSectionBudgetCategory: function(type) {
+    showSectionBudgetByGlCategory: function(type) {
         var correct =
             type >= 9 && type <= 12 ||
             type == 14 ||

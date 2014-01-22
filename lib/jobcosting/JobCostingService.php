@@ -43,14 +43,20 @@ class JobCostingService extends AbstractService {
 	/**
 	 * Get job costing change orders
 	 */
-	public function getJobCodes($property_id=null, $jbcontract_id=null, $jbchangeorder_id=null, $sort='jbjobcode_name') {
+	public function getJobCodes($property_id=null, $jbcontract_id=null, $jbchangeorder_id=null, $sort='jbjobcode_name', $status=null) {
 		if ($property_id === null && $jbcontract_id === null && $jbchangeorder_id === null) {
-			return $this->jbJobCodeGateway->find(null, null, $sort);
+			$where  = null;
+			$params = null;
+			if ($status !== null) {
+				$where  = array('jbjobcode_status' => '?');
+				$params = array($status);
+			}
+			return $this->jbJobCodeGateway->find($where, $params, $sort);
 		} else {
 			return $this->jbJobCodeGateway->findByFilter($property_id, $jbcontract_id, $jbchangeorder_id, $sort);
 		}
 	}
-	
+
 	/**
 	 * Get job costing phase codes
 	 */

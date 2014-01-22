@@ -151,6 +151,7 @@ class GlAccountGateway extends AbstractGateway {
                 ->whereEquals('integration_package_id', '?')
                 ->whereIsNull('glaccounttype_id');
 
+		echo $select->toString();
         $res = $this->adapter->query($select, array($glaccount_name, $integration_package_id));
 
         return (count($res)) ? $res[0] : null;
@@ -310,6 +311,32 @@ class GlAccountGateway extends AbstractGateway {
 
         return $this->adapter->query($select, $params);
     }
+
+
+	public function findBudgetAmountByGlCategory($integration_package_id) {
+		$select = new Select();
+		$select->from(['g'=>'glaccount'])
+			->join(new sql\join\GlAccountTreeJoin())
+			->join(new sql\join\GlAccountIntegrationPackageJoin())
+			->whereEquals('g.integration_package_id', '?')
+			->whereIsNull('glaccounttype_id');
+
+		return $this->adapter->query($select, [$integration_package_id]);
+	}
+
+
+	public function findBudgetAmountByGlCode($integration_package_id, $sort='glaccount_number') {
+		$select = new Select();
+		$select->from(['g'=>'glaccount'])
+			->join(new sql\join\GlAccountTreeJoin())
+			->join(new sql\join\GlAccountIntegrationPackageJoin())
+			->whereEquals('g.integration_package_id', '?')
+			->whereIsNotNull('g.glaccounttype_id')
+			->order('g.'.$sort);
+
+		return $this->adapter->query($select, [$integration_package_id]);
+	}
+
 }
 
 ?>
