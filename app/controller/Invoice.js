@@ -11,20 +11,20 @@ Ext.define('NP.controller.Invoice', {
 		'NP.lib.core.Security',
 		'NP.lib.core.Net',
 		'NP.lib.core.Translator',
-		'NP.lib.core.Net',
 		'NP.lib.core.Util',
-		'NP.lib.ui.Uploader',
-		'NP.view.shared.invoicepo.SplitWindow'
+		'NP.lib.ui.Uploader'
 	],
 	
-	models: ['NP.model.invoice.InvoiceItem'],
+	models: ['invoice.InvoiceItem','invoice.InvoicePayment'],
 
 	stores: ['invoice.Invoices','system.PriorityFlags','invoice.InvoicePaymentTypes',
 			'invoice.InvoiceItems','invoice.InvoicePayments','shared.Reasons',
-			'image.ImageIndexes'],
+			'image.ImageIndexes','shared.RejectionNotes','invoice.InvoicePaymentTypes'],
 	
 	views: ['invoice.Register','invoice.View','invoice.VoidWindow','invoice.HoldWindow',
-			'shared.invoicepo.ImagesManageWindow','shared.invoicepo.ImagesAddWindow'],
+			'shared.invoicepo.ImagesManageWindow','shared.invoicepo.ImagesAddWindow',
+			'invoice.UseTemplateWindow','shared.invoicepo.SplitWindow',
+			'shared.invoicepo.RejectWindow','invoice.PaymentWindow','invoice.ReclassWindow'],
 
 	refs: [
 		{ ref: 'invoiceView', selector: '[xtype="invoice.view"]' },
@@ -45,7 +45,8 @@ Ext.define('NP.controller.Invoice', {
 		{ ref: 'lineEditBtn', selector: '#invoiceLineEditBtn' },
 		{ ref: 'splitWindow', selector: '[xtype="shared.invoicepo.splitwindow"]' },
 		{ ref: 'splitGrid', selector: '[xtype="shared.invoicepo.splitwindow"] customgrid' },
-		{ ref: 'splitCombo', selector: '#splitCombo'}
+		{ ref: 'splitCombo', selector: '#splitCombo'},
+		{ ref: 'paymentFormGrid', selector: '[xtype="invoice.paymentwindow"] customgrid' }
 	],
 
 	showInvoiceImage: true,
@@ -231,7 +232,9 @@ Ext.define('NP.controller.Invoice', {
 
 			// Save invoice button
 			'#invoiceSaveBtn': {
-				click: me.onSaveInvoice
+				click: function() {
+					me.onSaveInvoice();
+				}
 			},
 
 			// Delete invoice button
@@ -271,6 +274,60 @@ Ext.define('NP.controller.Invoice', {
 
 			'#invoiceImageUploadBtn': {
 				click: me.onUploadImage
+			},
+
+			'#invoiceApplyTemplateBtn': {
+				click: me.onApplyTemplate
+			},
+
+			'#invoiceApplyTemplateWin': {
+				usetemplate: me.onApplyTemplateSave
+			},
+
+			'#invoiceSubmitForPaymentBtn': {
+				click: me.onSubmitForPayment
+			},
+
+			'#invoiceModifyBtn': {
+				click: me.onModifyInvoice
+			},
+
+			'#invoiceRejectBtn': {
+				click: me.onReject
+			},
+
+			'#invoicePostRejectBtn': {
+				click: me.onReject
+			},
+
+			'#invoiceRejectSaveBtn': {
+				click: me.onRejectSave
+			},
+
+			'#applyPaymentBtn': {
+				click: me.onApplyPayment
+			},
+
+			'#applyPaymentSaveBtn': {
+				click: me.onApplyPaymentSave
+			},
+
+			'[xtype="invoice.viewpayments"]': {
+				voidpayment: Ext.bind(me.onVoidNsfPayment, me, ['void'], true),
+				nsfpayment : Ext.bind(me.onVoidNsfPayment, me, ['NSF'], true),
+				editpayment: me.onEditPayment
+			},
+
+			'#invoiceRevertBtn': {
+				click: me.onRevert
+			},
+
+			'#invoiceReclassBtn': {
+				click: me.onReclass
+			},
+
+			'#invoiceReclassSaveBtn': {
+				click: me.onReclassShowWindow
 			}
 		});
 	},
@@ -339,8 +396,9 @@ Ext.define('NP.controller.Invoice', {
 				listeners      : {
 					dataloaded: function(boundForm, data) {
 						// Check if the invoice needs to be made readonly
+						me.setInvoiceReadOnly(me.isInvoiceReadOnly());
 						if (me.isInvoiceReadOnly()) {
-							me.makeInvoiceReadOnly();
+							me.setInvoiceReadOnly(true);
 						} else {
 							me.getLineEditBtn().enable();
 						}
@@ -394,7 +452,7 @@ Ext.define('NP.controller.Invoice', {
 						periodField.setValue(data['invoice_period']);
 
 						// Set the invoice payment to the default if needed
-						if (NP.Config.getSetting('CP.INVOICE_PAY_BY_FIELD', '0') == '1') {
+						if (me.getSetting('CP.INVOICE_PAY_BY_FIELD', '0') == '1') {
 							var payByField = boundForm.findField('invoicepayment_type_id');
 							if (payByField.getValue() === null || payByField.getValue() === 0) {
 								me.setDefaultPayBy();
@@ -442,15 +500,15 @@ Ext.define('NP.controller.Invoice', {
 			(
 				invoice_status == 'open'
 				&& (
-					NP.Security.hasPermission(1032) 
-					|| NP.Security.hasPermission(6076) 
-					|| NP.Security.hasPermission(6077)
+					me.hasPermission(1032) 
+					|| me.hasPermission(6076) 
+					|| me.hasPermission(6077)
 				)
 			)
 			|| (
 				invoice_status == 'saved' 
-				&& NP.Security.hasPermission(1068) 
-				&& NP.Config.getSetting('PN.InvoiceOptions.SkipSave') == '0'
+				&& me.hasPermission(1068) 
+				&& me.getSetting('PN.InvoiceOptions.SkipSave') == '0'
 			)
 		) {
 			field.enable();
@@ -607,7 +665,7 @@ Ext.define('NP.controller.Invoice', {
 		var me    = this;
 
     	// Only run this if property/GL association is on
-		if (NP.Config.getSetting('CP.PROPERTYGLACCOUNT_USE') == '1') {
+		if (me.getSetting('CP.PROPERTYGLACCOUNT_USE') == '1') {
             var property_id = rec.get('property_id');
 
             if (property_id !== null) {
@@ -1141,7 +1199,7 @@ Ext.define('NP.controller.Invoice', {
             hideImg      = user.get('userprofile_splitscreen_LoadWithoutImage'),
             splitSize    = user.get('userprofile_splitscreen_size'),
             imageRegion  = me.getImageRegion(),
-            showImage    = showImage || false,
+            showImage    = showImage || me.showInvoiceImage || false,
             sizeProp,
             imagePanel,
             iframeId,
@@ -1225,8 +1283,8 @@ Ext.define('NP.controller.Invoice', {
 		var me          = this,
 			invoice_id  = me.getInvoiceRecord().get('invoice_id'),
 			vendorField = me.getInvoiceVendorCombo(),
-			dialogTitle = NP.Translator.translate('Change Vendor?'),
-			dialogText  = NP.Translator.translate('Please note, when changing the vendor, all line items and previous approvals will be deleted from this invoice. Are you sure you want to proceed?');
+			dialogTitle = me.translate('Change Vendor?'),
+			dialogText  = me.translate('Please note, when changing the vendor, all line items and previous approvals will be deleted from this invoice. Are you sure you want to proceed?');
 
 		function restoreVendor() {
 			var vendorStore = vendorField.getStore(),
@@ -1259,15 +1317,12 @@ Ext.define('NP.controller.Invoice', {
 									vendor_id : vendorField.getValue(),
 									success   : function(result) {
 										if (!result.success) {
-											Ext.MessageBox.alert(
-												NP.Translator.translate('Error'),
-												NP.Translator.translate('An unexpected error occurred. Please try again.')
-											);
+											me.showUnexpectedError();
 
 											restoreVendor();
 										} else {
 											NP.Util.showFadingWindow({
-												html: NP.Translator.translate('The vendor has been changed')
+												html: me.translate('The vendor has been changed')
 											});
 
 											me.changeVendor();
@@ -1284,6 +1339,15 @@ Ext.define('NP.controller.Invoice', {
 		} else {
 			me.changeVendor();
 		}
+	},
+
+	showUnexpectedError: function() {
+		var me = this;
+
+		Ext.MessageBox.alert(
+			me.translate('Error'),
+			me.translate('An unexpected error occurred. Please try again.')
+		);
 	},
 
 	changeVendor: function() {
@@ -1359,18 +1423,23 @@ Ext.define('NP.controller.Invoice', {
 			callback();
 		// Otherwise, check the lock and only proceed if it matches
 		} else {
-			NP.lib.core.Net.remoteCall({
+			NP.Net.remoteCall({
 				requests: {
 					service   : 'InvoiceService',
 					action    : 'getLock',
-					invoice_id: invoice_id,
+					entity_id : invoice_id,
 					success   : function(lock_id) {
 						// The lock_id matches, proceed
 						if (lock_id === invoice.get('lock_id')) {
 							callback();
 						// The lock_id doesn't match, give the user some options
 						} else {
-							// TODO:
+							Ext.MessageBox.alert(
+								me.translate('Invoice Updated'),
+								me.translate('The invoice has been updated by another user and is being reloaded')
+							);
+
+							me.showView(invoice_id);
 						}
 					}
 				}
@@ -1379,8 +1448,9 @@ Ext.define('NP.controller.Invoice', {
 	},
 
 	populatePeriods: function(accounting_period, invoice_period) {
-		var periodBack       = parseInt(NP.Config.getSetting('CP.INVOICE_POST_DATE_BACK', '0')) * -1,
-			periodForward    = parseInt(NP.Config.getSetting('CP.INVOICE_POST_DATE_FORWARD', '0')),
+		var me               = this,
+			periodBack       = parseInt(me.getSetting('CP.INVOICE_POST_DATE_BACK', '0')) * -1,
+			periodForward    = parseInt(me.getSetting('CP.INVOICE_POST_DATE_FORWARD', '0')),
 			periods          = [],
 			periodField      = this.getCmp('invoice.view').findField('invoice_period'),
 			accountingPeriod = accounting_period,
@@ -1545,7 +1615,7 @@ Ext.define('NP.controller.Invoice', {
 			i;
 
 		// Retrieve the items for the selected split
-		NP.lib.core.Net.remoteCall({
+		NP.Net.remoteCall({
 			requests: {
 				service   : 'SplitService',
 				action    : 'getSplitItems',
@@ -1752,7 +1822,7 @@ Ext.define('NP.controller.Invoice', {
 		if (noteField.isValid()) {
 			invoice_id = me.getInvoiceRecord().get('invoice_id');
 
-			NP.lib.core.Net.remoteCall({
+			NP.Net.remoteCall({
 				method  : 'POST',
 				requests: {
 					service   : 'InvoiceService',
@@ -1761,13 +1831,10 @@ Ext.define('NP.controller.Invoice', {
 					note      : noteField.getValue(),
 					success   : function(result) {
 						if (!result.success) {
-							Ext.MessageBox.alert(
-								NP.Translator.translate('Error'),
-								NP.Translator.translate('An unexpected error occurred. Please try again.')
-							);
+							me.showUnexpectedError();
 						} else {
 							NP.Util.showFadingWindow({
-								html: NP.Translator.translate('The invoice has been voided')
+								html: me.translate('The invoice has been voided')
 							});
 
 							Ext.suspendLayouts();
@@ -1786,19 +1853,34 @@ Ext.define('NP.controller.Invoice', {
 
 	isInvoiceReadOnly: function() {
 		var me      = this,
-			invoice = me.getInvoiceRecord();
+			invoice = me.getInvoiceRecord(),
+			status  = invoice.get('invoice_status');
 
-		if ( Ext.Array.contains(['hold','void'], invoice.get('invoice_status')) ) {
-			return true;
+		if (
+			status == "open"
+			|| (
+				status ==  "draft" 
+				&& (
+					me.hasPermission(6076) 
+					|| (
+						me.hasPermission(6077) 
+						&& NP.Security.getUser().get('userprofile_id') == invoice.get('userprofile_id')
+					)
+				)
+			)
+			|| (status == "saved" && me.hasPermission(1068))
+		) {
+			return false;
 		}
 
-		return false;
+		return true;
 	},
 
-	makeInvoiceReadOnly: function() {
+	setInvoiceReadOnly: function(readonly) {
 		var me     = this,
 			form   = me.getInvoiceView(),
 			fields = form.getForm().getFields(),
+			fn     = (readonly) ? 'disable' : 'enable',
 			field,
 			i;
 
@@ -1808,12 +1890,12 @@ Ext.define('NP.controller.Invoice', {
 		for (i=0; i<fields.getCount(); i++) {
 			field = fields.getAt(i);
 			if (field.setReadOnly) {
-				field.setReadOnly(true);
+				field.setReadOnly(readonly);
 			}
 		}
 
 		// Disable the edit line button
-		me.getLineEditBtn().disable();
+		me.getLineEditBtn()[fn]();
 
 		Ext.resumeLayouts(true);
 	},
@@ -1841,7 +1923,7 @@ Ext.define('NP.controller.Invoice', {
 		if (form.isValid()) {
 			invoice_id = me.getInvoiceRecord().get('invoice_id');
 
-			NP.lib.core.Net.remoteCall({
+			NP.Net.remoteCall({
 				method  : 'POST',
 				requests: {
 					service   : 'InvoiceService',
@@ -1851,13 +1933,10 @@ Ext.define('NP.controller.Invoice', {
 					note      : noteField.getValue(),
 					success   : function(result) {
 						if (!result.success) {
-							Ext.MessageBox.alert(
-								NP.Translator.translate('Error'),
-								NP.Translator.translate('An unexpected error occurred. Please try again.')
-							);
+							me.showUnexpectedError()
 						} else {
 							NP.Util.showFadingWindow({
-								html: NP.Translator.translate('The invoice has been placed on hold')
+								html: me.translate('The invoice has been placed on hold')
 							});
 
 							Ext.suspendLayouts();
@@ -1876,8 +1955,8 @@ Ext.define('NP.controller.Invoice', {
 
 	onActivateInvoice: function() {
 		var me          = this,
-			dialogTitle = NP.Translator.translate('Activate Invoice?'),
-			dialogText  = NP.Translator.translate('Are you sure you want to activate the Invoice?');
+			dialogTitle = me.translate('Activate Invoice?'),
+			dialogText  = me.translate('Are you sure you want to activate the Invoice?');
 
 		Ext.MessageBox.confirm(dialogTitle, dialogText, function(btn) {
 			// If user clicks Yes, proceed with deleting
@@ -1892,13 +1971,10 @@ Ext.define('NP.controller.Invoice', {
 						invoice_id: invoice_id,
 						success   : function(result) {
 							if (!result.success) {
-								Ext.MessageBox.alert(
-									NP.Translator.translate('Error'),
-									NP.Translator.translate('An unexpected error occurred. Please try again.')
-								);
+								me.showUnexpectedError();
 							} else {
 								NP.Util.showFadingWindow({
-									html: NP.Translator.translate('The invoice has been activated')
+									html: me.translate('The invoice has been activated')
 								});
 
 								me.showView(invoice_id);
@@ -1910,47 +1986,69 @@ Ext.define('NP.controller.Invoice', {
 		});
 	},
 
-	onSaveInvoice: function() {
+	onSaveInvoice: function(callback) {
 		var me      = this,
-			form    = me.getInvoiceView(),
 			invoice = me.getInvoiceRecord();
 
-		// Check if form is valid
-		if (form.isValid()) {
-			// Get the line items that need to be saved
-			var lineStore    = me.getLineGrid().getStore(),
-				modifiedRecs = lineStore.getModifiedRecords(),
-				deletedRecs  = lineStore.getRemovedRecords(),
-				lines        = NP.Util.convertModelArrayToDataArray(modifiedRecs),
-				deletedLines = NP.Util.convertModelArrayToDataArray(deletedRecs);
-
-			// Form is valid so submit it using the bound model
-			form.submitWithBindings({
-				service: 'InvoiceService',
-				action : 'saveInvoice',
-				extraParams: {
-					userprofile_id              : NP.Security.getUser().get('userprofile_id'),
-					delegation_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id'),
-					lines                       : lines,
-					deletedLines                : deletedLines,
-					tax                         : 30,
-					shipping                    : 50
-				},
-				extraFields: {
-					vendor_id: 'vendor_id'
-				},
-				success: function(result) {
+		// Before saving, make sure invoice hasn't been updated
+		me.saveInvoice(
+			'InvoiceService',
+			'saveInvoice',
+			{},
+			function(result) {
+				if (callback) {
+					callback(result);
+				} else {
 					// Show info message
 					NP.Util.showFadingWindow({ html: 'Invoice saved successfully' });
 
 					if (invoice.get('invoice_id') === null) {
 						me.addHistory('Invoice:showView:' + result['invoice_id']);
 					} else {
-						me.showView(invoice.get('invoice_id'));
+						me.showView(result['invoice_id']);
 					}
 				}
-			});
-		}
+			}
+		);
+	},
+
+	saveInvoice: function(service, action, extraParams, callback) {
+		var me      = this,
+			form    = me.getInvoiceView(),
+			invoice = me.getInvoiceRecord();
+
+		// Before saving, make sure invoice hasn't been updated
+		me.checkLock(function() {
+			// Check if form is valid
+			if (form.isValid()) {
+				// Get the line items that need to be saved
+				var lineStore    = me.getLineGrid().getStore(),
+					modifiedRecs = lineStore.getModifiedRecords(),
+					deletedRecs  = lineStore.getRemovedRecords(),
+					lines        = NP.Util.convertModelArrayToDataArray(modifiedRecs),
+					deletedLines = NP.Util.convertModelArrayToDataArray(deletedRecs);
+
+				// Form is valid so submit it using the bound model
+				form.submitWithBindings({
+					service: service,
+					action : action,
+					extraParams: Ext.apply(extraParams, {
+						userprofile_id              : NP.Security.getUser().get('userprofile_id'),
+						delegation_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id'),
+						lines                       : lines,
+						deletedLines                : deletedLines,
+						tax                         : 30,
+						shipping                    : 50
+					}),
+					extraFields: {
+						vendor_id: 'vendor_id'
+					},
+					success: function(result) {
+						callback(result);
+					}
+				});
+			}
+		});
 	},
 
 	onDeleteInvoice: function() {
@@ -1958,8 +2056,8 @@ Ext.define('NP.controller.Invoice', {
 			invoice_id  = me.getInvoiceRecord().get('invoice_id'),
 			form        = me.getInvoiceView(),
 			data        = form.getLoadedData(),
-			dialogTitle = NP.Translator.translate('Delete Invoice?'),
-			dialogText  = NP.Translator.translate('Are you sure you want to delete this Invoice?');
+			dialogTitle = me.translate('Delete Invoice?'),
+			dialogText  = me.translate('Are you sure you want to delete this Invoice?');
 
 		if (data['image'] !== null) {
 			dialogText += "<br /> You will only be able to view the attached image(s) in the Deleted Images section of Image Management.";
@@ -1980,15 +2078,12 @@ Ext.define('NP.controller.Invoice', {
 						success: function(result) {
 							if (result.success) {
 								NP.Util.showFadingWindow({
-									html: NP.Translator.translate('The invoice has been deleted')
+									html: me.translate('The invoice has been deleted')
 								});
 
 								me.addHistory('Invoice:showRegister');
 							} else {
-								Ext.MessageBox.alert(
-									NP.Translator.translate('Error'),
-									NP.Translator.translate('An unexpected error occurred. Please try again.')
-								);
+								me.showUnexpectedError();
 							}
 						}
 					}
@@ -1998,7 +2093,6 @@ Ext.define('NP.controller.Invoice', {
 	},
 
 	onViewImage: function() {
-		alert(1);
 		var me   = this,
 			data = me.getInvoiceView().getLoadedData();
 
@@ -2032,15 +2126,15 @@ Ext.define('NP.controller.Invoice', {
 			win         = me.getCmp('shared.invoicepo.imagesmanagewindow'),
 			grid        = win.down('customgrid'),
 			recs        = grid.getSelectionModel().getSelection(),
-			dialogTitle = NP.Translator.translate('Delete Images?'),
-			dialogText  = NP.Translator.translate('Are you sure you want to delete the selected images?');
+			dialogTitle = me.translate('Delete Images?'),
+			dialogText  = me.translate('Are you sure you want to delete the selected images?');
 
 		// Check if any image was selected for deletion
 		if (!recs.length) {
 			// if no image was selected, show an error
 			Ext.MessageBox.alert(
-				NP.Translator.translate('Error'),
-				NP.Translator.translate('You must select at least one image to delete.')
+				me.translate('Error'),
+				me.translate('You must select at least one image to delete.')
 			);
 		// If images were selected, provided confirmation box
 		} else {
@@ -2061,7 +2155,7 @@ Ext.define('NP.controller.Invoice', {
 								var data = me.getInvoiceView().getLoadedData();
 
 								NP.Util.showFadingWindow({
-									html: NP.Translator.translate('Images have been deleted')
+									html: me.translate('Images have been deleted')
 								});
 
 								// Deal with deletion of all images
@@ -2110,8 +2204,11 @@ Ext.define('NP.controller.Invoice', {
 					primaryRec.set('Image_Index_Primary', 0);
 					rec.set('Image_Index_Primary', 1);
 
+					me.getInvoiceView().getLoadedData()['image'] = rec.getData();
+					me.loadImage();
+
 					NP.Util.showFadingWindow({
-						html: NP.Translator.translate('Primary image has been changed')
+						html: me.translate('Primary image has been changed')
 					});
 				}
 			}
@@ -2140,8 +2237,8 @@ Ext.define('NP.controller.Invoice', {
 
 		if (!recs.length) {
 			Ext.MessageBox.alert(
-				NP.Translator.translate('Error'),
-				NP.Translator.translate('You must select at least one image to add.')
+				me.translate('Error'),
+				me.translate('You must select at least one image to add.')
 			);
 		} else {
 			recs = NP.Util.valueList(recs, 'Image_Index_Id');
@@ -2158,7 +2255,7 @@ Ext.define('NP.controller.Invoice', {
 						var data = me.getInvoiceView().getLoadedData();
 
 						NP.Util.showFadingWindow({
-							html: NP.Translator.translate('Images have been added')
+							html: me.translate('Images have been added')
 						});
 
 						// Deal with deletion of all images
@@ -2205,19 +2302,19 @@ Ext.define('NP.controller.Invoice', {
 	                    	}
 	                    },
 	                    onQueueComplete: function(uploads) {
-	                    	var msg = NP.Translator.translate('File(s) uploaded');
+	                    	var msg = me.translate('File(s) uploaded');
 
 	                    	// If any file upload failed, display an alert indicating
 	                    	// which files failed to upload
 	                    	if (uploader.errors.length) {
 	                    		msg += '<br /><br />';
-	                    		msg += NP.Translator.translate('The following files could not be uploaded:');
+	                    		msg += me.translate('The following files could not be uploaded:');
 	                    		for (var i=0; i<uploader.errors.length; i++) {
 	                    			msg += uploader.errors.join(',');
 	                    		}
 
 	                    		Ext.MessageBox.alert(
-									NP.Translator.translate('Error'),
+									me.translate('Error'),
 									msg
 								);
 	                    	}
@@ -2246,5 +2343,370 @@ Ext.define('NP.controller.Invoice', {
 		
 		uploader.errors = [];
         uploader.show();
+	},
+
+	onApplyTemplate: function() {
+		var me            = this,
+            property_id   = me.getInvoiceView().findField('property_id').getValue(),
+            vendorsite_id = me.getVendorRecord().get('vendorsite_id');
+        
+        if (!vendorsite_id || !property_id) {
+            Ext.MessageBox.alert('Use Template', 'You must select a property and vendor.');
+            return;
+        }
+
+        var win = Ext.create('NP.view.invoice.UseTemplateWindow', {
+            itemId               : 'invoiceApplyTemplateWin',
+            property_id          : property_id,
+            vendorsite_id        : vendorsite_id
+        });
+
+        win.show();
+	},
+
+    onApplyTemplateSave: function(win, template_id) {
+        var me         = this,
+        	invoice_id = me.getInvoiceRecord().get('invoice_id');
+
+        me.checkLock(function() {
+        	NP.Net.remoteCall({
+        		method  : 'POST',
+        		mask    : me.getInvoiceView(),
+        		requests: {
+					service    : 'InvoiceService',
+					action     : 'applyTemplate',
+					invoice_id : invoice_id,
+					template_id: template_id,
+					success    : function(result) {
+						if (result.success) {
+							// Show notification
+							NP.Util.showFadingWindow({
+								html: me.translate('The template was successfully applied')
+							});
+
+							// Refresh the invoice
+							me.showView(invoice_id);
+
+							// Close the apply template window
+							win.close();
+						} else {
+							me.showUnexpectedError();
+						}
+					}
+        		}
+        	});
+        });
+    },
+
+    onSubmitForPayment: function() {
+    	var me         = this,
+        	invoice_id = me.getInvoiceRecord().get('invoice_id');
+
+        me.onSaveInvoice(function(result) {
+        	NP.Net.remoteCall({
+        		method  : 'POST',
+        		mask    : me.getInvoiceView(),
+        		requests: {
+					service    : 'InvoiceService',
+					action     : 'submitForPayment',
+					invoice_id : invoice_id,
+					success    : function(result) {
+						if (result.success) {
+							// Show notification
+							NP.Util.showFadingWindow({
+								html: me.translate('The invoice was successfully submitted')
+							});
+
+							// Refresh the invoice
+							me.showView(invoice_id);
+						} else if (result.errors[0].field === 'jobcosting') {
+							Ext.MessageBox.alert(
+								me.translate('Error'),
+								me.translate(result.errors[0].msg)
+							);
+						} else {
+							me.showUnexpectedError();
+						}
+					}
+        		}
+        	});
+        });
+    },
+
+    onModifyInvoice: function() {
+    	var me          = this,
+			dialogTitle = me.translate('Modify Invoice?'),
+			dialogText  = me.translate('Are you sure you want to modify the Invoice?');
+
+    	Ext.MessageBox.confirm(dialogTitle, dialogText, function(btn) {
+			// If user clicks Yes, proceed with deleting
+			if (btn == 'yes') {
+				NP.Net.remoteCall({
+	        		method  : 'POST',
+	        		mask    : me.getInvoiceView(),
+	        		requests: {
+						service    : 'InvoiceService',
+						action     : 'modifyInvoice',
+						invoice_id : me.getInvoiceRecord().get('invoice_id'),
+						success    : function(result) {
+							if (result.success) {
+								me.getInvoiceRecord().set({
+									invoice_status       : 'open',
+									invoice_submitteddate: null
+								});
+
+								Ext.suspendLayouts();
+								
+								me.buildViewToolbar(me.getInvoiceView().getLoadedData());
+								me.setInvoiceReadOnly(false);
+								
+								Ext.resumeLayouts(true);
+							} else {
+								me.showUnexpectedError();
+							}
+						}
+	        		}
+	        	});
+			}
+		});
+    },
+
+    onReject: function() {
+    	var win = Ext.widget('shared.invoicepo.rejectwindow', {
+    		type: 'invoice'
+    	});
+
+    	win.show();
+    },
+
+    onRejectSave: function() {
+    	var me            = this,
+    		win           = me.getCmp('shared.invoicepo.rejectwindow'),
+    		form          = win.down('form'),
+    		invoice_id    = me.getInvoiceRecord().get('invoice_id'),
+    		reasonField   = win.down('[name="rejectionnote_id"]'),
+			noteField     = win.down('[name="invoice_reject_note"]');
+
+    	if (form.isValid()) {
+    		me.checkLock(function() {
+	    		NP.Net.remoteCall({
+					method  : 'POST',
+					mask    : form,
+					requests: {
+						service            : 'InvoiceService',
+						action             : 'reject',
+						invoice_id         : invoice_id,
+						rejectionnote_id   : reasonField.getValue(),
+						invoice_reject_note: noteField.getValue(),
+						success            : function(result) {
+							if (result.success) {
+								NP.Util.showFadingWindow({
+									html: me.translate('The invoice has been rejected')
+								});
+
+								Ext.suspendLayouts();
+
+								me.showView(invoice_id);
+
+								Ext.resumeLayouts(true);
+
+								win.close();
+							} else {
+								me.showUnexpectedError()
+							}
+						}
+					}
+				});
+			});
+    	}
+    },
+
+	onApplyPayment: function() {
+		var me = this;
+
+		me.showPaymentWindow();
+        me.onAddPayment();
+	},
+
+	showPaymentWindow: function() {
+		var me      = this,
+			invoice = me.getInvoiceRecord(),
+			win     = Ext.widget('invoice.paymentwindow', {
+				invoice_status: invoice.get('invoice_status'),
+				invoice_ref   : invoice.get('invoice_ref'),
+				invoice_amount: invoice.get('entity_amount')
+	        });
+
+        win.show();
+	},
+
+	onAddPayment: function() {
+		var me    = this,
+			store = me.getPaymentFormGrid().getStore(),
+			now   = new Date();
+
+		store.add(Ext.create('NP.model.invoice.InvoicePayment', {
+			invoicepayment_datetm: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0)
+		}));
+	},
+
+	onEditPayment: function(rec) {
+		var me = this;
+
+        me.showPaymentWindow();
+        me.getPaymentFormGrid().getStore().add(rec.copy());
+	},
+
+	onApplyPaymentSave: function() {
+		var me         = this,
+			win        = me.getCmp('invoice.paymentwindow'),
+			invoice_id = me.getInvoiceRecord().get('invoice_id'),
+			payments   = [],
+			recs,
+			mark_as_paid;
+
+		if (win.isValid()) {
+			// Get all recs in the grid
+			recs = me.getPaymentFormGrid().getStore().getRange();
+
+			// Get the raw data for the records
+			for (var i=0; i<recs.length; i++) {
+				payments.push(recs[i].getData());
+			}
+
+			// Get the value for the radio button field group
+			mark_as_paid = 0;
+			if (win.down('#mark_as_paid')) {
+				mark_as_paid = win.down('#mark_as_paid').getValue()['mark_as_paid'];
+			}
+
+			// Submit the payments
+			NP.Net.remoteCall({
+				requests: {
+					service     : 'InvoiceService',
+					action      : 'savePayments',
+					invoice_id  : invoice_id,
+					mark_as_paid: mark_as_paid,
+					payments    : payments,
+					success     : function(result) {
+						// If request was successful, update the lock_id on the invoice
+						if (result.success) {
+							if (mark_as_paid == 0) {
+								me.getInvoiceRecord().set('lock_id', result.lock_id);
+								me.getPaymentGrid().getStore().load();
+								me.getPaymentGrid().show();
+							} else {
+								me.showView(invoice_id);
+							}
+
+							win.close();
+						} else {
+							me.showUnexpectedError();
+						}
+					}
+				}
+			});
+		} else {
+			Ext.MessageBox.alert(
+				me.translate('Error'),
+				me.translate(win.getErrorMsg())
+			);
+		}
+	},
+
+	onVoidNsfPayment: function(rec, status) {
+		var me = this;
+
+		NP.Net.remoteCall({
+			requests: {
+				service              : 'InvoiceService',
+				action               : 'savePaymentStatus',
+				invoicepayment_id    : rec.get('invoicepayment_id'),
+				invoicepayment_status: status,
+				success              : function(result) {
+					if (result.success) {
+						// Update the lock_id on the invoice
+						me.getInvoiceRecord().set('lock_id', result.lock_id);
+						// Reload the payment grid
+						me.getPaymentGrid().getStore().load();
+					} else {
+						me.showUnexpectedError();
+					}
+				}
+			}
+		});
+	},
+
+	onRevert: function() {
+		var me          = this,
+			invoice_id  = me.getInvoiceRecord().get('invoice_id'),
+			dialogTitle = 'Revert Invoice?',
+			dialogText  = 'You are about to Revert this Invoice as an Open Invoice. Are you sure you want to proceed?';
+
+		Ext.MessageBox.confirm(dialogTitle, dialogText, function(btn) {
+			// If user clicks Yes, proceed with reverting
+			if (btn == 'yes') {
+				NP.Net.remoteCall({
+					requests: {
+						service   : 'InvoiceService',
+						action    : 'revert',
+						invoice_id: invoice_id,
+						success   : function(result) {
+							if (result.success) {
+								me.showView(invoice_id);
+							} else {
+								me.showUnexpectedError();
+							}
+						}
+					}
+				});
+			}
+		});	
+	},
+
+	onReclass: function() {
+		var me   = this,
+			data = me.getInvoiceView().getLoadedData();
+
+		data['isReclass'] = true;
+
+		Ext.suspendLayouts();
+
+		me.buildViewToolbar(data);
+		me.setInvoiceReadOnly(false);
+		me.getLineDataView().refresh();
+
+		Ext.resumeLayouts(true);
+	},
+
+	onReclassShowWindow: function() {
+		var win = Ext.widget('invoice.reclasswindow');
+		win.show();
+	},
+
+	onReclassSave: function() {
+		/*
+		var me            = this,
+			win           = me.getCmp('invoice.reclasswindow'),
+			reclass_notes = win.down('[name="reclass_notes"]');
+
+		if (reclass_notes.isValid()) {
+			me.saveInvoice(
+				'InvoiceService',
+				'reclass',
+				{
+					reclass_notes: reclass_notes.getValue()
+				},
+				function(result) {
+					// Show info message
+					NP.Util.showFadingWindow({ html: me.translate('Invoice has been reclassed') });
+
+					me.showView(result['invoice_id']);
+
+					win.close();
+				}
+			);
+		}
+		*/
 	}
 });

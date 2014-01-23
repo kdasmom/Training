@@ -59,8 +59,11 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                             || invoiceitem_jobflag != 1
                     );
                 },
+                getInvoiceView: function() {
+                    return me.up('[xtype="'+me.type+'.view"]');
+                },
                 getInvoiceRecord: function() {
-                    return me.up('[xtype="'+me.type+'.view"]').getInvoiceRecord();
+                    return this.getInvoiceView().getInvoiceRecord();
                 },
                 getFormDataVal: function(key) {
                     return me.up('boundform').getLoadedData()[key];
@@ -206,7 +209,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
         html +=
             '<div>' +
                 '{'+me.fieldPrefix+'_description}' +
-                '<tpl if="'+me.fieldPrefix+'_description_alt !== \'\'">' +
+                '<tpl if="!Ext.isEmpty('+me.fieldPrefix+'_description_alt)">' +
                     ' - {'+me.fieldPrefix+'_description_alt}' +
                 '</tpl>' +
             '</div>' +

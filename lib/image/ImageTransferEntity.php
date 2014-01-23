@@ -21,6 +21,7 @@ class ImageTransferEntity extends \NP\core\AbstractEntity {
             )
         ),
         'transfer_datetm'    => array(
+            'timestamp' => 'created',
             'validation' => array(
                 'date' => array('format'=>'Y-m-d H:i:s.u')
             )

@@ -5,7 +5,7 @@
  */
 Ext.define('NP.view.invoice.VoidWindow', {
     extend: 'Ext.window.Window',
-    alias: 'widget.invoice.VoidWindow',
+    alias: 'widget.invoice.voidwindow',
 
     requires: [
         'NP.lib.core.Config',

@@ -125,6 +125,28 @@ class InvoiceItemGateway extends AbstractGateway {
 
 		return array_pop($res);
 	}
+
+	/**
+	 * Returns all invoice lines for an invoice that have either an inactive job contract
+	 * or inactive job code
+	 *
+	 * @param  int $invoice_id
+	 * @return array
+	 */
+	public function findLinesWithInactiveJobCodes($invoice_id) {
+		$select = Select::get()
+					->from(['ii'=>'invoiceitem'])
+						->join(new sql\join\InvoiceItemJobAssociationJoin([]))
+						->join(new \NP\jobcosting\sql\join\JobAssociationJbContractJoin())
+						->join(new \NP\jobcosting\sql\join\JobAssociationJbJobCodeJoin())
+					->whereEquals('ii.invoice_id', '?')
+					->whereNest('OR')
+						->whereEquals('jbct.jbcontract_status', "'inactive'")
+						->whereEquals('jbjc.jbjobcode_status', "'inactive'")
+					->whereUnnest();
+
+		return $this->adapter->query($select, [$invoice_id]);
+	}
 }
 
 ?>

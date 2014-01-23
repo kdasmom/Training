@@ -92,7 +92,7 @@ class ImageIndexEntity extends \NP\core\AbstractEntity {
             )
         ),
         'Image_Index_Status'     => array(
-            'defaultValue'  => -1,
+            'defaultValue'  => 0,
             'validation' => array(
                 'numeric' => array()
             )

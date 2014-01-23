@@ -382,8 +382,8 @@ Ext.define('NP.controller.Images', {
         var uploader = Ext.create('NP.lib.ui.Uploader', {
             params: {
                 form: {
-                    action:  'upload',
-                    service: 'ImageService'
+                    service: 'ImageService',
+                    action : 'upload'
                 },
                 listeners: {
                     close: function() {

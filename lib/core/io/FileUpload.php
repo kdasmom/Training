@@ -44,7 +44,11 @@ class FileUpload {
 			throw new \NP\core\Exception('No upload file for the field name provided.');
 		}
 
-		$this->destination = $destination;
+		$this->logger = new Logger();
+		$writer = new Writer\FirePhp(new Writer\FirePhp\FirePhpBridge(FirePHPClass::getInstance(true)));
+		$this->logger->addWriter($writer);
+
+		$this->destination = rtrim(rtrim($destination, '\\'), '/');
 
 		if (!array_key_exists('required', $options)) {
 			$options['required'] = true;
@@ -59,7 +63,7 @@ class FileUpload {
 		if ($this->file['name'] != '') {
 			$ext = explode('.', $this->file['name']);
 			$this->file['extension'] = array_pop($ext);
-			$this->file['filename'] = $ext;
+			$this->file['filename'] = implode('.', $ext);
 		} else {
 			$this->file['extension'] = '';
 			$this->file['filename'] = '';
@@ -80,10 +84,6 @@ class FileUpload {
 	 * @return boolean
 	 */
 	protected function isValid() {
-		$logger = new Logger();
-		$writer = new Writer\FirePhp(new Writer\FirePhp\FirePhpBridge(FirePHPClass::getInstance(true)));
-		$logger->addWriter($writer);
-
 		switch($this->file['error']) {
 			case UPLOAD_ERR_INI_SIZE:
 				$this->errors[] = 'uploadMaxSizeError';
@@ -141,24 +141,25 @@ class FileUpload {
 			// If the fileName option is specified, use it
 			$filePath = (array_key_exists('fileName', $this->options)) ? $this->options['fileName'] : $this->file['name'];
 			$this->file['uploaded_name'] = $filePath;
-			$filePath = $this->destination . '/' . $filePath;
-
+			$filePath = $this->destination . '\\' . $filePath;
+			
 			// If overwrite option is set to false, we need to make the file name unique
 			if (file_exists($filePath) && array_key_exists('overwrite', $this->options) && !$this->options['overwrite']) {
 				// We'll append _$i at the end of the file name until we get a unique name
 				$i = 1;
 				while(file_exists($filePath)){
 					$fileName = explode('.', $this->file['name']);
-					$fileExt = $fileName[1];
-					$fileName = "{$fileName[0]}_{$i}";
-				    $filePath = "{$this->destination}/{$fileName}.{$fileExt}";
+					$fileExt = array_pop($fileName);
+					$fileName = implode('.', $fileName);
+					$fileName = "{$fileName}_{$i}";
+				    $filePath = "{$this->destination}\\{$fileName}.{$fileExt}";
 				    $i++;
 				}
 				$this->file['uploaded_name'] = "{$fileName}.{$fileExt}";
 				$this->isRenamed = true;
 			}
 			$this->file['file_path'] = $filePath;
-			$this->file['file_dir']  = rtrim(rtrim($this->destination, '\\'), '/');
+			$this->file['file_dir']  = $this->destination;
 			
 			// Move the uploaded file to the desired location
 			$success = move_uploaded_file($this->file["tmp_name"], $filePath);
@@ -168,7 +169,7 @@ class FileUpload {
 		} else if (!$success && $this->file['name'] != '') {
 			// If the file uploaded was invalid, try to delete it
 			try {
-				$path = $this->destination . '/' . $this->file['name'];
+				$path = $this->destination . '\\' . $this->file['name'];
 				unlink($path);
 			// In this case, we'll just do nothing if deleting doesn't work because it's not critical
 			} catch(\Exception $e) {}

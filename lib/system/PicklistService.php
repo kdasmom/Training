@@ -157,6 +157,13 @@ class PicklistService extends AbstractService {
 	public function getHoldReasons() {
 		return $this->reasonGateway->getHoldReasons();
 	}
+
+	/**
+	 * Custom picklist function that returns reasons for rejecting an invoice or PO
+	 */
+	public function getRejectionReasons() {
+		return $this->rejectionNoteGateway->findRejectionReasons();
+	}
 }
 
 ?>

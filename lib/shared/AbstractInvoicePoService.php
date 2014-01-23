@@ -318,25 +318,17 @@ Abstract class AbstractInvoicePoService extends AbstractService {
     }
 
 	public function unlinkPoFromInvoice($invoice_id) {
-		$this->purchaseOrderGatewayGateway->beginTransaction();
+		$this->purchaseOrderGateway->beginTransaction();
 		
 		try {
 			$this->purchaseOrderGateway->unlinkFromInvoice($invoice_id);
 			$this->unlinkAllPoItemsFromInvoice($invoice_id);
+
+			$this->purchaseOrderGateway->commit();
 		} catch(\Exception $e) {
-			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+			$this->purchaseOrderGateway->rollback();
+			throw $e;
 		}
-		
-		if (count($errors)) {
-			$this->purchaseOrderGatewayGateway->rollback();
-		} else {
-			$this->purchaseOrderGatewayGateway->commit();
-		}
-		
-		return array(
-		    'success' => (count($errors)) ? false : true,
-		    'errors'  => $errors
-		);
 	}
 
 	public function unlinkAllPoItemsFromInvoice($invoice_id) {
@@ -624,5 +616,37 @@ Abstract class AbstractInvoicePoService extends AbstractService {
 		    'success' => (count($errors)) ? false : true,
 		    'errors'  => $errors
 		);
+	}
+
+	/**
+	 * Returns the lock for an invoice or PO
+	 *
+	 * @param  int $entity_id
+	 * @return int
+	 */
+	public function getLock($entity_id) {
+		$gtw = "{$this->gateway}Gateway";
+		return $this->$gtw->findValue(
+			["{$this->table}_id"=>'?'],
+			[$entity_id],
+			'lock_id'
+		);
+	}
+
+	/**
+	 * Returns the lock for an invoice or PO
+	 *
+	 * @param  int $entity_id
+	 * @return int
+	 */
+	public function setNewLock($entity_id) {
+		$gtw = "{$this->gateway}Gateway";
+		$this->$gtw->update(
+			['lock_id' => new Expression('lock_id + 1')],
+			["{$this->table}_id"=>'?'],
+			[$entity_id]
+		);
+
+		return $this->getLock($entity_id);
 	}
 }

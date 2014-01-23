@@ -133,8 +133,9 @@ Ext.define('NP.view.shared.invoicepo.ViewWarnings', {
     },
 
     renderInvoiceDuplicateDateAmount: function(data) {
+        // TODO: update link to link to other invoice
         return 'Duplicate invoice date and amount exist for this vendor. ' +
-                'Please look at Invoice <a href="#">' + data['invoice_ref'] + '</a>';
+                'Please look at Invoice <a href="#">' + data[0]['invoice_ref'] + '</a>';
     },
 
     renderLinkablePo: function(data) {

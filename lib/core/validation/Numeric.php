@@ -25,5 +25,20 @@ class Numeric extends \Zend\I18n\Validator\Float {
 
         parent::__construct($options);
     }
+
+    /**
+     * Overridden validation function that corrects a string passed representing
+     * a number with decimals that doesn't begin with a zero (like .33333).
+     * Before calling the parent function, the zero is added in front
+     *
+     * @param mixed $value
+     */
+    public function isValid($value) {
+        if (is_string($value) && substr($value, 0 ,1) === '.') {
+            $value = "0{$value}";
+        }
+
+        return parent::isValid($value);
+    }
 }
 ?>

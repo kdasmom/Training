@@ -250,10 +250,10 @@ class ImageService extends AbstractService {
      * 
      * @return 
      */
-    public function upload($image_tableref_name, $tablekey_id) {
+    public function upload() {
         $upload = $this->processImageUpload();
         if ($upload['success']) {
-            return $this->create($upload['file'], $image_tableref_name, $tablekey_id);
+            return $this->create($upload['file']);
         } else {
             return $upload;
         }
@@ -331,9 +331,8 @@ class ImageService extends AbstractService {
      * representation.
      * 
      * @param [] $file Object contains necessary details about uploaded file.
-     * @param [] $request
      */
-    private function create($file, $image_tableref_name=null, $tablekey_id=null) {
+    private function create($file) {
         $errors = [];
         $this->imageIndexGateway->beginTransaction();
         
@@ -343,15 +342,9 @@ class ImageService extends AbstractService {
             $userprofile_id = $this->securityService->getUserId();
 
             $entityData = [
-                'Image_Index_Name'         => $file['name'],
-                'Image_Index_Id_Alt'       => 0,
+                'Image_Index_Name'         => $file['filename'],
                 'asp_client_id'            => $this->configService->getClientId(),
-                'Tablekey_Id'              => $tablekey_id,
-                'Image_Index_Status'       => -1,
-                'Image_Index_Source_Id'    => 1,
-                'Image_Index_Date_Entered' => $now,
-                'Image_Doctype_Id'         => 0,
-                'Image_Index_Primary'      => 0
+                'Image_Index_Date_Entered' => $now
             ];
             
             $imageIndex = new ImageIndexEntity($entityData);
