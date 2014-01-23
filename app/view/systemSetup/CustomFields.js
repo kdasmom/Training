@@ -24,7 +24,8 @@ Ext.define('NP.view.systemSetup.CustomFields', {
 
 		this.tbar = [
 			{
-				xtype: 'shared.button.cancel'
+				xtype: 'shared.button.cancel',
+				name: 'backToOverview'
 			}
 		];
 

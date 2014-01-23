@@ -22,7 +22,8 @@ Ext.define('NP.controller.SystemSetup', {
 		'systemSetup.Main',
 		'systemSetup.DefaultSplitGrid',
 		'systemSetup.DefaultSplitForm',
-		'systemSetup.SettingsTab'
+		'systemSetup.SettingsTab',
+		'systemSetup.HeaderForm'
 	],
 
 	refs : [
@@ -161,7 +162,8 @@ Ext.define('NP.controller.SystemSetup', {
 			'[xtype="systemsetup.settings"] [xtype="shared.button.save"]': {
 				click: me.saveSettings
 			},
-			'[xtype="systemsetup.customfields"] [xtype="shared.button.cancel"]': {
+//			'[xtype="systemsetup.customfields"] [xtype="shared.button.cancel"]': {
+			'#backToOverview': {
 				click: function() {
 					me.addHistory('SystemSetup:showSystemSetup:Overview');
 				}
@@ -170,6 +172,9 @@ Ext.define('NP.controller.SystemSetup', {
 				click: function() {
 					me.addHistory('SystemSetup:showSystemSetup:Overview');
 				}
+			},
+			'[xtype="systemsetup.customfields"] [xtype="systemsetup.customfieldsheader"] [xtype="customgrid"]': {
+				itemclick: me.showFieldEditForm
 			}
 		});
 
@@ -1058,5 +1063,52 @@ Ext.define('NP.controller.SystemSetup', {
 				}
 			});
 		}
+	},
+
+	showFieldEditForm: function(dataview, record) {
+		var me = this,
+			fid = parseInt(record.get('controlpanelitem_name')[record.get('controlpanelitem_name').length - 1]),
+			headerform = me.getCmp('systemsetup.headerform');
+
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service    : 'ConfigService',
+				action     : 'getHeaderValues',
+				fid: fid,
+				success    : function(result) {
+					if (result) {
+						console.log(result);
+						headerform.setTitle('Custom Field ' + fid);
+						if (fid !== 7 && fid !== 8) {
+							headerform.getForm().findField('custom_field_maxlength').hide();
+							headerform.getChildByElement('dataandselectfield').show();
+							headerform.getForm().findField('customfielddata').setFieldLabel('Custom Field ' + fid + ' Values');
+							headerform.getForm().findField('customfielddata').getStore().getProxy().extraParams.fid = fid;
+							headerform.getForm().findField('customfielddata').getStore().load();
+						} else {
+							headerform.getForm().findField('custom_field_maxlength').show();
+							headerform.getChildByElement('dataandselectfield').hide();
+						}
+						headerform.getForm().findField('invoice_custom_field_on_off').setValue(parseInt(result['inv_custom_field_on_off']));
+						headerform.getForm().findField('invoice_custom_field_req').setValue(parseInt(result['inv_custom_field_req']));
+						headerform.getForm().findField('po_custom_field_on_off').setValue(parseInt(result['po_custom_field_on_off']));
+						headerform.getForm().findField('po_custom_field_req').setValue(parseInt(result['po_custom_field_req']));
+						headerform.getForm().findField('vef_custom_field_on_off').setValue(parseInt(result['vef_custom_field_on_off']));
+						headerform.getForm().findField('vef_custom_field_req').setValue(parseInt(result['vef_custom_field_req']));
+						headerform.getForm().findField('invoice_custom_field_imgindex').setValue(parseInt(result['invoice_custom_field_on_off']));
+						headerform.getForm().findField('custom_field_maxlength').setValue(parseInt(result['maxlength']));
+						headerform.getForm().findField('custom_field_lbl').setValue(result['custom_field_lbl']);
+						headerform.getForm().findField('customFieldType').setValue(result['customFieldType'] == 'select' ? 0 : 1);
+
+
+						headerform.show();
+					}
+				}
+			}
+		});
+
+
+
+
 	}
 });

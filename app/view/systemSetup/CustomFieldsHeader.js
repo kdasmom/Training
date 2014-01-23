@@ -4,7 +4,8 @@
  */
 
 Ext.define('NP.view.systemSetup.CustomFieldsHeader', {
-	extend: 'Ext.panel.Panel',
+//	extend: 'Ext.panel.Panel',
+	extend: 'Ext.container.Container',
 	alias: 'widget.systemsetup.customfieldsheader',
 
 	requires: [
@@ -14,11 +15,16 @@ Ext.define('NP.view.systemSetup.CustomFieldsHeader', {
 		'NP.view.systemSetup.gridcol.FieldType',
 		'NP.view.systemSetup.gridcol.Invoice',
 		'NP.view.systemSetup.gridcol.PO',
-		'NP.view.systemSetup.gridcol.VendorEst'
+		'NP.view.systemSetup.gridcol.VendorEst',
+		'NP.view.systemSetup.HeaderForm'
 	],
 
-	padding: '10',
 	border: false,
+	layout: {
+		type: 'hbox',
+		align: 'stretch'
+	},
+	padding: '5',
 
 	initComponent: function() {
 		var me  = this;
@@ -30,6 +36,7 @@ Ext.define('NP.view.systemSetup.CustomFieldsHeader', {
 				xtype: 'customgrid',
 				name: 'headerfields',
 				border: false,
+				flex: 1,
 				columns: [
 					{
 						xtype: 'systemsetup.gridcol.fieldnumber',
@@ -69,6 +76,10 @@ Ext.define('NP.view.systemSetup.CustomFieldsHeader', {
 					autoLoad	: true,
 					fields: ['controlpanelitem_name', 'controlpanelitem_value', 'controlpanelitem_required', 'inv_on_off', 'inv_req', 'po_on_off', 'po_req', 'vef_on_off', 'vef_req', 'imgidx_on_off', 'type']
 				})
+			},
+			{
+				xtype: 'systemsetup.headerform',
+				flex: 1
 			}
 		];
 

@@ -623,22 +623,34 @@ class ConfigService extends AbstractService {
 	 * @param null $fid
 	 * @return array
 	 */
-	public function getHeaderValues($asp_client_id = null, $fid = null) {
+	public function getHeaderValues($fid = null) {
 		$data = [];
-		if (!$fid || !$asp_client_id) {
-			return $data;
+		$asp_client_id = $this->getClientId();
+
+		if (!$fid) {
+			return false;
 		}
-		$data['inv_custom_field_on_off'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'INVOICE_CUSTOM_FIELD' . $fid . '_ON_OFF', '');
-		$data['po_custom_field_on_off'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'PO_CUSTOM_FIELD' . $fid . '_ON_OFF', '');
-		$data['vef_custom_field_on_off'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'VEF_CUSTOM_FIELD' . $fid . '_ON_OFF', '');
-		$data['inv_custom_field_req'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'INVOICE_CUSTOM_FIELD' . $fid . '_REQ', '');
-		$data['po_custom_field_req'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'PO_CUSTOM_FIELD' . $fid . '_REQ', '');
-		$data['vef_custom_field_req'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'VEF_CUSTOM_FIELD' . $fid . '_REQ', '');
-		$data['custom_field_lbl'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'CUSTOM_FIELD_LABEL' . $fid, '');
-		$data['inv_custom_field_imgindex'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'invoice_custom_field' . $fid . '_imgindex', '');
+
+		$data['inv_custom_field_on_off'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'INVOICE_CUSTOM_FIELD' . $fid . '_ON_OFF', "");
+		$data['po_custom_field_on_off'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'PO_CUSTOM_FIELD' . $fid . '_ON_OFF', "");
+		$data['vef_custom_field_on_off'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'VEF_CUSTOM_FIELD' . $fid . '_ON_OFF', "");
+		$data['inv_custom_field_req'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'INVOICE_CUSTOM_FIELD' . $fid . '_REQ', "");
+		$data['po_custom_field_req'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'PO_CUSTOM_FIELD' . $fid . '_REQ', "");
+		$data['vef_custom_field_req'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'VEF_CUSTOM_FIELD' . $fid . '_REQ', "");
+		$data['custom_field_lbl'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'CUSTOM_FIELD_LABEL' . $fid, "");
+		$data['inv_custom_field_imgindex'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'invoice_custom_field' . $fid . '_imgindex', "");
 		$data['customFieldType'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'custom_field' . $fid . '_type', 'select');
+		$data['maxlength'] = in_array($fid, [7,8]) ? $this->configsysGateway->getFieldLength($fid) : 0;
 
 		return $data;
+	}
+
+	public function getCustomFieldsData($fid) {
+		if(!$fid || in_array($fid, [7, 8])) {
+			return [];
+		}
+
+		return $this->configsysGateway->getCustomFieldData($fid);
 	}
 }
 

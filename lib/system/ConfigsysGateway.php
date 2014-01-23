@@ -389,17 +389,58 @@ class ConfigsysGateway extends AbstractGateway {
 	 * @param $controlpanelitem_value
 	 * @return mixed
 	 */
-	public function getControlPanelItem($asp_client_id, $controlpanelitem_name, $controlpanelitem_value_default) {
+	public function getControlPanelItem($asp_client_id, $controlpanelitem_name, $controlpanelitem_value_default = '') {
 		$select = new Select();
 
 		$select->from(['c' => 'configsys'])
-			->columns(['controlpanelitem_value' => new Expression("isnull(cv.configsysval_val, {$controlpanelitem_value_default})")])
+			->columns(['controlpanelitem_value' => new Expression("isnull(cv.configsysval_val, ?)")])
 			->join(['cv' => 'configsysval'], 'c.configsys_id = cv.configsys_id', [])
 			->where(['c.configsys_name' => '?']);
 
-		$result = $this->adapter->query($select, ['CP.' . $controlpanelitem_name]);
+		$result = $this->adapter->query($select, [$controlpanelitem_value_default, 'CP.' . $controlpanelitem_name]);
 
-		return !$result['controlpanelitem_value'] ? $controlpanelitem_value_default : $result['controlpanelitem_value'];
+		return !isset($result[0]) ? $controlpanelitem_value_default : $result[0]['controlpanelitem_value'];
+	}
+
+	/**
+	 * Return custom field length
+	 *
+	 * @param $fid
+	 * @return int
+	 */
+	public function getFieldLength($fid){
+		$select = new Select();
+
+		$select->from(['ir' => 'integrationrequirements'])
+			->columns(['maxlength' => "custom_field{$fid}_maxlength"])
+			->limit(1);
+
+		$result = $this->adapter->query($select);
+
+		return !isset($result[0]) ? 0 : $result[0]['maxlength'];
+	}
+
+	/**
+	 * Return custom field data
+	 *
+	 * @param $fid
+	 * @return array|bool
+	 */
+	public function getCustomFieldData($fid) {
+		$select = new Select();
+
+		$select->from(['pn' => 'pnuniversalfield'])
+			->columns(['universal_field_id', 'universal_field_data', 'universal_field_order'])
+			->where(
+				[
+					'universal_field_number'	=> '?',
+					'islineitem'				=> '?',
+					'customfield_pn_type'		=> '?'
+				]
+			)
+			->order('universal_field_order, universal_field_data');
+
+		return $this->adapter->query($select, [$fid, 0, 'customInvoicePO']);
 	}
 }
 
