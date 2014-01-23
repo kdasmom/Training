@@ -652,6 +652,10 @@ class ConfigService extends AbstractService {
 
 		return $this->configsysGateway->getCustomFieldData($fid);
 	}
+
+	public function saveOrder(){
+
+	}
 }
 
 ?>

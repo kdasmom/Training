@@ -128,11 +128,27 @@ Ext.define('NP.view.systemSetup.HeaderForm', {
 							extraParams: {
 								fid: null
 							},
-							fields: ['universal_field_id', 'universal_field_data', 'universal_field_order']
+							fields: ['universal_field_id', 'universal_field_data', 'universal_field_order', 'universal_field_status']
 						}),
 						ddReorder: true,
 						queryMode: 'local',
-						height: 100
+						height: 100,
+						listeners: {
+							change: function(multiselect, newValue, oldValue, eOpts ) {
+								multiselect.getStore().each(function(record) {
+									if (record.get('universal_field_id') == newValue) {
+										if (newValue == 0) {
+											me.getForm.down('action').setValue('new');
+										} else {
+											me.getForm.down('action').setValue('edit');
+										}
+										me.getForm().findField('universal_field_data').setValue(record.get('universal_field_data'));
+										me.getForm().findField('universal_field_status').setValue(parseInt(record.get('universal_field_status')));
+										return;
+									}
+								})
+							}
+						}
 					},
 					{
 						xtype: 'fieldcontainer',
@@ -171,13 +187,21 @@ Ext.define('NP.view.systemSetup.HeaderForm', {
 								boxLabel: NP.Translator.translate('Inactive'), name: 'universal_field_status', inputValue: '0'
 							},
 							{
-								boxLabel: NP.Translator.translate('Default'), name: 'universal_field_status', inputValue: '2'
+								boxLabel: NP.Translator.translate('Default'), name: 'universal_field_status', inputValue: '2', checked: true
 							}
 						]
 					},
 					{
+						xtype: 'hiddenfield',
+						name: 'action',
+						value: ''
+					},
+					{
 						xtype: 'shared.button.save',
-						text: 'Add New/Save'
+						text: 'Add New/Save',
+						handler: function(){
+							console.log('actionL ');
+						}
 					}
 				]
 			}

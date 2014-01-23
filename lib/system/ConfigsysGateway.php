@@ -430,7 +430,7 @@ class ConfigsysGateway extends AbstractGateway {
 		$select = new Select();
 
 		$select->from(['pn' => 'pnuniversalfield'])
-			->columns(['universal_field_id', 'universal_field_data', 'universal_field_order'])
+			->columns(['universal_field_id', 'universal_field_data', 'universal_field_status', 'universal_field_order'])
 			->where(
 				[
 					'universal_field_number'	=> '?',
@@ -439,8 +439,16 @@ class ConfigsysGateway extends AbstractGateway {
 				]
 			)
 			->order('universal_field_order, universal_field_data');
+		$result = [[
+			'universal_field_id'		=> 0,
+			'universal_field_data'		=> 'New',
+			'universal_field_status'	=> 1,
+			'universal_field_order'		=> 0]
+		];
 
-		return $this->adapter->query($select, [$fid, 0, 'customInvoicePO']);
+		$result = array_merge($result, $this->adapter->query($select, [$fid, 0, 'customInvoicePO']));
+
+		return $result;
 	}
 }
 
