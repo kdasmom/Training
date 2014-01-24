@@ -20,6 +20,8 @@ Ext.define('NP.view.systemSetup.CustomFields', {
 	layout: 'fit',
 
     initComponent: function() {
+		var me = this;
+
     	this.title = NP.Translator.translate(this.title);
 
 		this.tbar = [
@@ -36,19 +38,39 @@ Ext.define('NP.view.systemSetup.CustomFields', {
 				items: [
 					{
 						xtype: 'systemsetup.customfieldsheader',
-						title: 'Header'
+						title: 'Header',
+						listeners: {
+							beforehide: function(tab, eOpts) {
+								me.fireEvent('beforehidetab', tab);
+							}
+						}
 					},
 					{
 						xtype: 'systemsetup.customfieldslineitem',
-						title: 'Line Item'
+						title: 'Line Item',
+						listeners: {
+							beforehide: function(tab, eOpts) {
+								me.fireEvent('beforehidetab', tab);
+							}
+						}
 					},
 					{
 						xtype: 'systemsetup.customfieldsservicefields',
-						title: 'Service Fields'
+						title: 'Service Fields',
+						listeners: {
+							beforehide: function(tab, eOpts) {
+								me.fireEvent('beforehidetab', tab);
+							}
+						}
 					},
 					{
 						xtype: 'systemsetup.customfieldspropertyfields',
-						title: 'Property Fields'
+						title: 'Property Fields',
+						listeners: {
+							beforehide: function(tab, eOpts) {
+								me.fireEvent('beforehidetab', tab);
+							}
+						}
 					}
 				]
 			}

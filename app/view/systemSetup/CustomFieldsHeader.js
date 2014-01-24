@@ -31,6 +31,7 @@ Ext.define('NP.view.systemSetup.CustomFieldsHeader', {
 
 		this.title = NP.Translator.translate(this.title);
 
+
 		this.items = [
 			{
 				xtype: 'customgrid',
@@ -76,11 +77,11 @@ Ext.define('NP.view.systemSetup.CustomFieldsHeader', {
 					autoLoad	: true,
 					fields: ['controlpanelitem_name', 'controlpanelitem_value', 'controlpanelitem_required', 'inv_on_off', 'inv_req', 'po_on_off', 'po_req', 'vef_on_off', 'vef_req', 'imgidx_on_off', 'type']
 				})
-			},
+			}/*,
 			{
 				xtype: 'systemsetup.headerform',
 				flex: 1
-			}
+			}*/
 		];
 
 		this.callParent(arguments);

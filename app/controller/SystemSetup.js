@@ -162,7 +162,6 @@ Ext.define('NP.controller.SystemSetup', {
 			'[xtype="systemsetup.settings"] [xtype="shared.button.save"]': {
 				click: me.saveSettings
 			},
-//			'[xtype="systemsetup.customfields"] [xtype="shared.button.cancel"]': {
 			'#backToOverview': {
 				click: function() {
 					me.addHistory('SystemSetup:showSystemSetup:Overview');
@@ -173,11 +172,21 @@ Ext.define('NP.controller.SystemSetup', {
 					me.addHistory('SystemSetup:showSystemSetup:Overview');
 				}
 			},
+			'[xtype="systemsetup.customfields"] [xtype="systemsetup.customfieldslineitem"] [xtype="customgrid"]': {
+				itemclick: function(dataview, record) {
+					me.showFieldEditForm(dataview, record, true);
+				}
+			},
 			'[xtype="systemsetup.customfields"] [xtype="systemsetup.customfieldsheader"] [xtype="customgrid"]': {
-				itemclick: me.showFieldEditForm
+				itemclick: function(dataview, record) {
+					me.showFieldEditForm(dataview, record, false);
+				}
 			},
 			'[xtype="systemsetup.headerform"] [xtype="shared.button.save"]': {
 				click: me.saveCustomField
+			},
+			'[xtype="systemsetup.customfields"]': {
+				beforehidetab: me.changeCustomFieldsTab
 			}
 		});
 
@@ -1068,16 +1077,30 @@ Ext.define('NP.controller.SystemSetup', {
 		}
 	},
 
-	showFieldEditForm: function(dataview, record) {
+	showFieldEditForm: function(dataview, record, lineitem) {
+		console.log('recrod: ', record.get('controlpanelitem_name'));
 		var me = this,
-			fid = parseInt(record.get('controlpanelitem_name')[record.get('controlpanelitem_name').length - 1]),
-			headerform = me.getCmp('systemsetup.headerform');
+			fid = parseInt(record.get('controlpanelitem_name')[record.get('controlpanelitem_name').length - (!lineitem ? 1 : 10)]);
+
+		var panel = !lineitem ? me.getCmp('systemsetup.customfieldsheader') : me.getCmp('systemsetup.customfieldslineitem');
+
+//		var headerform = me.getCmp('systemsetup.headerform');
+//		if (!headerform) {
+			panel.add({
+				xtype: 'systemsetup.headerform',
+				flex: 1
+			});
+
+		var	headerform = me.getCmp('systemsetup.headerform');
+//		}
+
 
 		NP.lib.core.Net.remoteCall({
 			requests: {
 				service    : 'ConfigService',
 				action     : 'getHeaderValues',
 				fid: fid,
+				lineitem: lineitem,
 				success    : function(result) {
 					if (result) {
 						headerform.setTitle('Custom Field ' + fid);
@@ -1114,7 +1137,8 @@ Ext.define('NP.controller.SystemSetup', {
 	saveCustomField: function() {
 		var form = this.getCmp('systemsetup.headerform'),
 			values = form.getValues(),
-			data = {};
+			data = {},
+			me = this;
 
 		data['custom_fieldnumber'] = parseInt(values['universal_field_number']);
 		data['field_inv_on_off'] = values['invoice_custom_field_on_off'];
@@ -1137,10 +1161,16 @@ Ext.define('NP.controller.SystemSetup', {
 				success    : function(result) {
 					if (result) {
 						NP.Util.showFadingWindow({ html: 'Item was updated successfully!' });
-						form.hide();
+						me.getCmp('systemsetup.customfieldsheader').remove(form);
 					}
 				}
 			}
 		});
+	},
+
+//	changeCustomFieldsTab: function(tabPanel, tab, oldCard, eOpts) {
+	changeCustomFieldsTab: function(tab) {
+		var me = this;
+		tab.remove(me.getCmp('systemsetup.headerform'));
 	}
 });
