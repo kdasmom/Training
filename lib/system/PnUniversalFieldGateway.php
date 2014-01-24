@@ -4,6 +4,7 @@ namespace NP\system;
 
 use NP\core\AbstractGateway;
 use NP\core\db\Select;
+use NP\core\db\Update;
 
 /**
  * Gateway for the PNUNIVERSALFIELD table
@@ -11,6 +12,11 @@ use NP\core\db\Select;
  * @author Thomas Messier
  */
 class PnUniversalFieldGateway extends AbstractGateway {
+
+	const STATUS_ACTIVE = 1;
+	const STATUS_INACTIVE = 0;
+	const STATUS_DEFAULT = 2;
+
 	protected $pk = 'universal_field_id';
 
 	/**
@@ -75,6 +81,50 @@ class PnUniversalFieldGateway extends AbstractGateway {
 		);
 
 		return (count($res)) ? true : false;
+	}
+
+	public function updateUniversalField($data) {
+
+		if ($data['universal_field_status'] == self::STATUS_DEFAULT) {
+			$updateStatus = new Update();
+			$subSelect = new Select();
+
+			$subSelect->from(['p' => 'pnuniversalfield'])
+				->column('universal_field_number')
+				->where(
+					[
+						'universal_field_id' => '?'
+					]
+				);
+
+			$updateStatus->table('pnuniversalfield')
+				->values([
+					'universal_field_status' => '?'
+				])
+				->where(
+					[
+						'islineitem'				=> '?',
+						'universal_field_status'	=> '?',
+						'customfield_pn_type'		=> '?'
+					]
+				)
+				->whereEquals('universal_field_number', $subSelect);
+
+			$this->adapter->query($updateStatus, [self::STATUS_ACTIVE, 0, self::STATUS_DEFAULT, 'customInvoicePO', $data['universal_field_id']]);
+		}
+
+		$update = new Update();
+
+		$update->table('pnuniversalfield')
+			->values([
+				'universal_field_data'		=> '?',
+				'universal_field_status'	=> '?'
+			])
+			->where([
+				'universal_field_id'		=> '?'
+			]);
+
+		return $this->adapter->query($update, [$data['universal_field_data'], $data['universal_field_status'], $data['universal_field_id']]);
 	}
 }
 

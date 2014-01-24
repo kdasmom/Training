@@ -175,6 +175,9 @@ Ext.define('NP.controller.SystemSetup', {
 			},
 			'[xtype="systemsetup.customfields"] [xtype="systemsetup.customfieldsheader"] [xtype="customgrid"]': {
 				itemclick: me.showFieldEditForm
+			},
+			'[xtype="systemsetup.headerform"] [xtype="shared.button.save"]': {
+				click: me.saveCustomField
 			}
 		});
 
@@ -1077,7 +1080,6 @@ Ext.define('NP.controller.SystemSetup', {
 				fid: fid,
 				success    : function(result) {
 					if (result) {
-						console.log(result);
 						headerform.setTitle('Custom Field ' + fid);
 						if (fid !== 7 && fid !== 8) {
 							headerform.getForm().findField('custom_field_maxlength').hide();
@@ -1089,6 +1091,7 @@ Ext.define('NP.controller.SystemSetup', {
 							headerform.getForm().findField('custom_field_maxlength').show();
 							headerform.getChildByElement('dataandselectfield').hide();
 						}
+						headerform.getForm().findField('universal_field_number').setValue(parseInt(fid));
 						headerform.getForm().findField('invoice_custom_field_on_off').setValue(parseInt(result['inv_custom_field_on_off']));
 						headerform.getForm().findField('invoice_custom_field_req').setValue(parseInt(result['inv_custom_field_req']));
 						headerform.getForm().findField('po_custom_field_on_off').setValue(parseInt(result['po_custom_field_on_off']));
@@ -1106,9 +1109,38 @@ Ext.define('NP.controller.SystemSetup', {
 				}
 			}
 		});
+	},
 
+	saveCustomField: function() {
+		var form = this.getCmp('systemsetup.headerform'),
+			values = form.getValues(),
+			data = {};
 
+		data['custom_fieldnumber'] = parseInt(values['universal_field_number']);
+		data['field_inv_on_off'] = values['invoice_custom_field_on_off'];
+		data['field_inv_req'] = values['invoice_custom_field_req'];
+		data['field_po_on_off'] = values['po_custom_field_on_off'];
+		data['field_po_req'] = values['po_custom_field_req'];
+		data['field_vef_on_off'] = values['vef_custom_field_on_off'];
+		data['field_vef_req'] = values['vef_custom_field_req'];
+		data['field_imgindex'] = values['invoice_custom_field_imgindex'];
+		data['field_lbl'] = values['custom_field_lbl'];
+		data['islineitem'] = 0;
+		data['custom_field_maxlength'] = values['custom_field_maxlength'];
+		data['customFieldType'] = values['customFieldType'] == 0 ? 'select' : 'date';
 
-
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service    : 'ConfigService',
+				action     : 'updateCustomField',
+				data: data,
+				success    : function(result) {
+					if (result) {
+						NP.Util.showFadingWindow({ html: 'Item was updated successfully!' });
+						form.hide();
+					}
+				}
+			}
+		});
 	}
 });

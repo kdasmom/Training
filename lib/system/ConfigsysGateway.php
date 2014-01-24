@@ -3,6 +3,7 @@
 namespace NP\system;
 
 use NP\core\AbstractGateway;
+use NP\core\db\Delete;
 use NP\core\db\Expression;
 use NP\core\db\Insert;
 use NP\core\db\Update;
@@ -449,6 +450,21 @@ class ConfigsysGateway extends AbstractGateway {
 		$result = array_merge($result, $this->adapter->query($select, [$fid, 0, 'customInvoicePO']));
 
 		return $result;
+	}
+
+	/**
+	 * Delete universal field
+	 *
+	 * @param $universal_field_id
+	 * @return array|bool
+	 */
+	public function deleteUniversalField($universal_field_id) {
+		$delete = new Delete();
+
+		$delete->from('pnuniversalfield')
+			->where(['universal_field_id' => '?']);
+
+		return $this->adapter->query($delete, [$universal_field_id]);
 	}
 }
 

@@ -15,15 +15,16 @@ use NP\util\Util;
  */
 class ConfigService extends AbstractService {
 	
-	protected $config, $securityService, $siteService, $appName, $intPkgGateway, $configsysGateway, $configSysValGateway;
+	protected $config, $securityService, $siteService, $appName, $intPkgGateway, $configsysGateway, $configSysValGateway, $pnUniversalFieldGateway;
 	
-	public function __construct(Config $config, SecurityService $securityService, SiteService $siteService, IntegrationPackageGateway $intPkgGateway, ConfigsysGateway $configsysGateway, ConfigSysValGateway $configSysValGateway) {
+	public function __construct(Config $config, SecurityService $securityService, SiteService $siteService, IntegrationPackageGateway $intPkgGateway, ConfigsysGateway $configsysGateway, ConfigSysValGateway $configSysValGateway, PnUniversalFieldGateway $pnUniversalFieldGateway) {
 		$this->config           = $config;
 		$this->securityService  = $securityService;
 		$this->siteService      = $siteService;
 		$this->intPkgGateway    = $intPkgGateway;
 		$this->configsysGateway = $configsysGateway;
 		$this->configSysValGateway = $configSysValGateway;
+		$this->pnUniversalFieldGateway = $pnUniversalFieldGateway;
 
 		$this->appName          = $siteService->getAppName();
 		
@@ -655,6 +656,119 @@ class ConfigService extends AbstractService {
 
 	public function saveOrder(){
 
+	}
+
+	/**
+	 * Delete universal field
+	 *
+	 * @param $universal_field_id
+	 */
+	public function deleteUniversalField($universal_field_id) {
+		return $this->configsysGateway->deleteUniversalField($universal_field_id);
+	}
+
+	public function saveUniversalFields($data = null) {
+		if (!$data) {
+			return false;
+		}
+		if ($data['action'] == 'new') {
+			return $this->pnUniversalFieldGateway->insert([
+				'universal_field_data'		=> $data['universal_field_data'],
+				'universal_field_number'	=> $data['universal_field_number'],
+				'universal_field_status'	=> $data['universal_field_status'],
+				'universal_field_order'		=> 0,
+				'customfield_pn_type'		=> 'customInvoicePO'
+			]);
+		} else {
+			return $this->pnUniversalFieldGateway->updateUniversalField($data);
+		}
+	}
+
+	public function saveOrderForCustomFields($data = []) {
+		if (count($data) == 0) {
+			return true;
+		}
+
+		foreach ($data as $item) {
+			$this->pnUniversalFieldGateway->update(['universal_field_order' => $item['universal_field_order']], ['universal_field_id' => '?'], [$item['universal_field_id']]);
+		}
+
+		return true;
+	}
+
+	public function updateCustomField($data) {
+		foreach ($data as $key => $value) {
+			if ($key !== 'islineitem' && $key !== 'custom_field_maxlength' && $key !== 'customFieldType' && $key !== 'custom_fieldnumber') {
+				$this->updateField($key, $value, $data['custom_fieldnumber'], $data['islineitem']);
+			}
+		}
+
+		if ($data['custom_fieldnumber'] == 7 || $data['custom_fieldnumber'] == 8) {
+			$this->configSysValGateway->updateUniversalFieldLength($data['custom_field_maxlength'], $data['custom_fieldnumber']);
+		}
+
+		$this->configSysValGateway->updateUniversalFieldType($data['customFieldType'], $data['custom_fieldnumber']);
+
+		return true;
+	}
+
+	protected function updateField($key, $value, $fid, $lineitem) {
+		switch($key) {
+			case 'field_imgindex':
+				if (!$lineitem) {
+					$this->configSysValGateway->updateCustomField($value, 'CP.invoice_custom_field' .$fid . '_imgindex');
+				}
+				break;
+			case 'field_inv_on_off':
+				if (!$lineitem) {
+					$this->configSysValGateway->updateCustomField($value, 'CP.INVOICE_CUSTOM_FIELD' . $fid . '_ON_OFF');
+				} else {
+					$this->configSysValGateway->updateCustomField($value, 'CP.INVOICE_CUSTOM_FIELD' . $fid . '_LINEITEM_ON_OFF');
+				}
+				break;
+			case 'field_inv_req':
+				if (!$lineitem) {
+					$this->configSysValGateway->updateCustomField($value, 'CP.invoice_custom_field' . $fid . '_REQ');
+				} else {
+					$this->configSysValGateway->updateCustomField($value, 'CP.INVOICE_CUSTOM_FIELD' . $fid . '_LINEITEM_REQ');
+				}
+				break;
+			case 'field_po_on_off':
+				if (!$lineitem) {
+					$this->configSysValGateway->updateCustomField($value, 'CP.PO_CUSTOM_FIELD' . $fid . '_ON_OFF');
+				} else {
+					$this->configSysValGateway->updateCustomField($value, 'CP.PO_CUSTOM_FIELD' . $fid . '_LINEITEM_ON_OFF');
+				}
+				break;
+			case 'field_po_req':
+				if (!$lineitem) {
+					$this->configSysValGateway->updateCustomField($value, 'CP.PO_CUSTOM_FIELD' . $fid . '_REQ');
+				} else {
+					$this->configSysValGateway->updateCustomField($value, 'CP.PO_CUSTOM_FIELD' . $fid . '_LINEITEM_REQ');
+				}
+				break;
+			case 'field_vef_on_off':
+				if (!$lineitem) {
+					$this->configSysValGateway->updateCustomField($value, 'CP.VEF_CUSTOM_FIELD' . $fid . '_ON_OFF');
+				} else {
+					$this->configSysValGateway->updateCustomField($value, 'CP.VEF_CUSTOM_FIELD' .$fid . '_LINEITEM_ON_OFF');
+				}
+				break;
+			case 'field_vef_req':
+				if (!$lineitem) {
+					$this->configSysValGateway->updateCustomField($value, 'CP.VEF_CUSTOM_FIELD' . $fid . '_REQ');
+				} else {
+					$this->configSysValGateway->updateCustomField($value, 'CP.VEF_CUSTOM_FIELD' . $fid . '_LINEITEM_REQ');
+				}
+				break;
+			case 'field_lbl':
+				if (!$lineitem) {
+					$this->configSysValGateway->updateCustomField($value, 'CP.CUSTOM_FIELD_LABEL' . $fid);
+				} else {
+					$this->configSysValGateway->updateCustomField($value, 'CP.CUSTOM_FIELD_LABEL' . $fid . '_LINEITEM');
+				}
+				break;
+		}
 	}
 }
 

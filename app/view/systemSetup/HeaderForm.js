@@ -113,7 +113,24 @@ Ext.define('NP.view.systemSetup.HeaderForm', {
 						name: 'customFieldType',
 						fieldLabel: '',
 						yesLabel: NP.Translator.translate('Date'),
-						noLabel: NP.Translator.translate('Drop Down')
+						noLabel: NP.Translator.translate('Drop Down'),
+						listeners: {
+							change: function(radiogroup, newValue, oldValue, eOpts) {
+								if (parseInt(newValue.customFieldType) == 1) {
+									me.getForm().findField('customfielddata').hide();
+									me.getForm().findField('universal_field_data').hide();
+									me.down('[name="universal_field_status_group"]').hide();
+									me.down('[name="action_buttons"]').hide();
+									me.down('[name="saveValuesBtn"]').hide();
+								} else {
+									me.getForm().findField('customfielddata').show();
+									me.getForm().findField('universal_field_data').show();
+									me.down('[name="universal_field_status_group"]').show();
+									me.down('[name="action_buttons"]').show();
+									me.down('[name="saveValuesBtn"]').show();
+								}
+							}
+						}
 					},
 					{
 						xtype: 'multiselect',
@@ -128,6 +145,23 @@ Ext.define('NP.view.systemSetup.HeaderForm', {
 							extraParams: {
 								fid: null
 							},
+							sorters: [
+								{
+									sorterFn: function(o1, o2) {
+										if (o1.get('universal_field_id') == 0) {
+											return -1;
+										}
+									}
+								},
+								{
+									property: 'universal_field_order',
+									direction: 'asc'
+								},
+								{
+									property: 'universal_field_data',
+									direction: 'asc'
+								}
+							],
 							fields: ['universal_field_id', 'universal_field_data', 'universal_field_order', 'universal_field_status']
 						}),
 						ddReorder: true,
@@ -138,9 +172,9 @@ Ext.define('NP.view.systemSetup.HeaderForm', {
 								multiselect.getStore().each(function(record) {
 									if (record.get('universal_field_id') == newValue) {
 										if (newValue == 0) {
-											me.getForm.down('action').setValue('new');
+											me.getForm().findField('action').setValue('new');
 										} else {
-											me.getForm.down('action').setValue('edit');
+											me.getForm().findField('action').setValue('edit');
 										}
 										me.getForm().findField('universal_field_data').setValue(record.get('universal_field_data'));
 										me.getForm().findField('universal_field_status').setValue(parseInt(record.get('universal_field_status')));
@@ -152,21 +186,74 @@ Ext.define('NP.view.systemSetup.HeaderForm', {
 					},
 					{
 						xtype: 'fieldcontainer',
+						name: 'action_buttons',
 						items: [
 							{
 								xtype: 'button',
 								text: 'Save Order',
-								margin: '0 5 0 0'
+								margin: '0 5 0 0',
+								handler: function() {
+									var values = [];
+									me.getForm().findField('customfielddata').getStore().each(function(record, index) {
+										if (record.get('universal_field_id') !== 0) {
+											values.push({
+												'universal_field_id'	: record.get('universal_field_id'),
+												'universal_field_order'	: index - 1
+											})
+										}
+									});
+									NP.lib.core.Net.remoteCall({
+										requests: {
+											service    : 'ConfigService',
+											action     : 'saveOrderForCustomFields',
+											data: values,
+											success    : function(result) {
+												if (result) {
+													me.getForm().findField('universal_field_data').setValue('');
+													me.getForm().findField('universal_field_status').setValue(1);
+													me.getForm().findField('action').setValue('new');
+												}
+											}
+										}
+									});
+								}
 							},
 							{
 								xtype: 'button',
 								text: 'Delete',
-								margin: '0 5 0 0'
+								margin: '0 5 0 0',
+								handler: function() {
+									var customfielddataField = me.getForm().findField('customfielddata'),
+									universal_field_id = customfielddataField.getValue()[0];
+									if (!universal_field_id) {
+										Ext.MessageBox.alert(NP.Translator.translate('Error'), NP.Translator.translate('Cannot delete empty value!'));
+									} else {
+										NP.lib.core.Net.remoteCall({
+											requests: {
+												service    : 'ConfigService',
+												action     : 'deleteUniversalField',
+												universal_field_id: universal_field_id,
+												success    : function(result) {
+													if (result) {
+														customfielddataField.getStore().reload();
+														me.getForm().findField('universal_field_data').setValue('');
+														me.getForm().findField('universal_field_status').setValue(1);
+														me.getForm().findField('action').setValue('new');
+														NP.Util.showFadingWindow({ html: 'Item was delete successfully!' });
+													}
+												}
+											}
+										});
+									}
+								}
 							},
 							{
 								xtype: 'button',
 								text: 'Alpha sort',
-								margin: '0 5 0 0'
+								margin: '0 5 0 0',
+								handler: function() {
+									me.getForm().findField('customfielddata').getStore().sort();
+								}
 							}
 						]
 					},
@@ -178,6 +265,7 @@ Ext.define('NP.view.systemSetup.HeaderForm', {
 					},
 					{
 						xtype: 'radiogroup',
+						name: 'universal_field_status_group',
 						columns: 1,
 						items: [
 							{
@@ -197,10 +285,37 @@ Ext.define('NP.view.systemSetup.HeaderForm', {
 						value: ''
 					},
 					{
+						xtype: 'hiddenfield',
+						name: 'universal_field_number'
+					},
+					{
 						xtype: 'shared.button.save',
+						name: 'saveValuesBtn',
 						text: 'Add New/Save',
 						handler: function(){
-							console.log('actionL ');
+							var data = {
+								'universal_field_data': me.getForm().findField('universal_field_data').getValue(),
+								'universal_field_status'	: me.getForm().findField('universal_field_status').getValue(),
+								'universal_field_number'	: me.getForm().findField('universal_field_number').getValue(),
+								'action'					: me.getForm().findField('action').getValue(),
+								'universal_field_id'		: me.getForm().findField('customfielddata').getValue()[0]
+							};
+
+							NP.lib.core.Net.remoteCall({
+								requests: {
+									service    : 'ConfigService',
+									action     : 'saveUniversalFields',
+									data: data,
+									success    : function(result) {
+										if (result) {
+											me.getForm().findField('customfielddata').getStore().reload();
+											me.getForm().findField('universal_field_data').setValue('');
+											me.getForm().findField('universal_field_status').setValue(1);
+											me.getForm().findField('action').setValue('new');
+										}
+									}
+								}
+							});
 						}
 					}
 				]
