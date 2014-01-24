@@ -4,6 +4,7 @@ namespace NP\system;
 
 use NP\core\AbstractGateway;
 use NP\core\db\Select;
+use NP\core\db\Update;
 
 /**
  * Gateway for the PNUNIVERSALFIELD table
@@ -11,7 +12,6 @@ use NP\core\db\Select;
  * @author Thomas Messier
  */
 class PnUniversalFieldGateway extends AbstractGateway {
-
 	const STATUS_ACTIVE = 1;
 	const STATUS_INACTIVE = 0;
 	const STATUS_DEFAULT = 2;
