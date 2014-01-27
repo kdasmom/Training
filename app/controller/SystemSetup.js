@@ -192,7 +192,8 @@ Ext.define('NP.controller.SystemSetup', {
 					me.showFieldEditForm(dataview, record, false);
 				}
 			},
-			'[xtype="systemsetup.customfieldform"] [xtype="shared.button.save"]': {
+//			'[xtype="systemsetup.customfieldform"] [xtype="shared.button.save"]': {
+			'#saveCustomFieldBtn': {
 				click: me.saveCustomField
 			},
 			'[xtype="systemsetup.customfields"]': {
@@ -1111,17 +1112,24 @@ Ext.define('NP.controller.SystemSetup', {
 				tabindex: tabindex,
 				success    : function(result) {
 					if (result) {
+						console.log('result: ', result);
 						headerform.setTitle('Custom Field ' + fid);
-						if (fid !== 7 && fid !== 8) {
-							headerform.getForm().findField('custom_field_maxlength').hide();
-							headerform.getChildByElement('dataandselectfield').show();
-							headerform.getForm().findField('customfielddata').setFieldLabel('Custom Field ' + fid + ' Values');
+						if (tabindex != 1) {
+							headerform.getForm().findField('customfielddata').setFieldLabel((tabindex < 2 ? 'Custom Field ' : 'Field ') + fid + ' Values');
 							headerform.getForm().findField('customfielddata').getStore().getProxy().extraParams.fid = fid;
 							headerform.getForm().findField('customfielddata').getStore().load();
+							if (fid !== 7 && fid !== 8) {
+								headerform.getForm().findField('custom_field_maxlength').hide();
+								headerform.getChildByElement('dataandselectfield').show();
+							} else {
+								headerform.getForm().findField('custom_field_maxlength').show();
+								headerform.getChildByElement('dataandselectfield').hide();
+							}
 						} else {
-							headerform.getForm().findField('custom_field_maxlength').show();
 							headerform.getChildByElement('dataandselectfield').hide();
 						}
+
+
 						headerform.getForm().findField('universal_field_number').setValue(parseInt(fid));
 						headerform.getForm().findField('invoice_custom_field_on_off').setValue(parseInt(result['inv_custom_field_on_off']));
 						headerform.getForm().findField('invoice_custom_field_req').setValue(parseInt(result['inv_custom_field_req']));
@@ -1130,10 +1138,14 @@ Ext.define('NP.controller.SystemSetup', {
 						headerform.getForm().findField('vef_custom_field_on_off').setValue(parseInt(result['vef_custom_field_on_off']));
 						headerform.getForm().findField('vef_custom_field_req').setValue(parseInt(result['vef_custom_field_req']));
 						if (tabindex == 0) {
-							headerform.getForm().findField('invoice_custom_field_imgindex').setValue(parseInt(result['invoice_custom_field_on_off']));
+							headerform.getForm().findField('inv_custom_field_imgindex').setValue(parseInt(result['inv_custom_field_imgindex']));
 							headerform.getForm().findField('customFieldType').setValue(result['customFieldType'] == 'select' ? 0 : 1);
+
 						}
-						headerform.getForm().findField('custom_field_maxlength').setValue(parseInt(result['maxlength']));
+						if (tabindex > 1) {
+							headerform.getForm().findField('customFieldType').setValue(result['customfield_type'] == 'select' ? 0 : (result['customfield_type'] == '' || result['customfield_type'] == 'text' ? 3 : 2));
+						}
+						headerform.getForm().findField('custom_field_maxlength').setValue(tabindex < 2 ? parseInt(result['maxlength']) : parseInt(result['customfield_max_length']));
 						headerform.getForm().findField('custom_field_lbl').setValue(result['custom_field_lbl']);
 
 						headerform.show();
@@ -1147,7 +1159,10 @@ Ext.define('NP.controller.SystemSetup', {
 		var form = this.getCmp('systemsetup.customfieldform'),
 			values = form.getValues(),
 			data = {},
-			me = this;
+			me = this,
+			grid = form.up().up().down('customgrid');
+
+		console.log('grid: ', grid);
 
 		data['custom_fieldnumber'] = parseInt(values['universal_field_number']);
 		data['field_inv_on_off'] = values['invoice_custom_field_on_off'];
@@ -1171,6 +1186,7 @@ Ext.define('NP.controller.SystemSetup', {
 					if (result) {
 						NP.Util.showFadingWindow({ html: 'Item was updated successfully!' });
 						form.up().remove(form);
+						grid.getStore().reload();
 					}
 				}
 			}

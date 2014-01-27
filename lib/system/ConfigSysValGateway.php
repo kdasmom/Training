@@ -25,6 +25,9 @@ class ConfigSysValGateway extends AbstractGateway {
 		$update->table('configsysval')
 			->values(['configsysval_val' => '?'])
 			->whereEquals('configsys_id', $subSelect);
+//		print "\n" . $update->toString();
+//		print "\nvalue: " . $value;
+//		print "\nname: " . $name;
 
 		return $this->adapter->query($update, [$value, $name]);
 	}

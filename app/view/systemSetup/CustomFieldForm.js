@@ -33,7 +33,8 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 				}
 			},
 			{
-				xtype: 'shared.button.save'
+				xtype: 'shared.button.save',
+				itemId: 'saveCustomFieldBtn'
 			}
 		];
 
@@ -48,27 +49,45 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 				items: [
 					{
 						xtype: 'shared.yesnofield',
+						name: 'customfield_status',
+						fieldLabel: NP.Translator.translate('Active?'),
+						yesLabel: NP.Translator.translate('Yes'),
+						noLabel: NP.Translator.translate('No'),
+						hidden: me.tabindex < 2
+					},
+					{
+						xtype: 'shared.yesnofield',
+						name: 'customfield_req',
+						fieldLabel: NP.Translator.translate('Required?'),
+						hidden: me.tabindex < 2
+					},
+					{
+						xtype: 'shared.yesnofield',
 						name: 'invoice_custom_field_on_off',
 						fieldLabel: NP.Translator.translate('Invoice'),
 						yesLabel: NP.Translator.translate('On'),
-						noLabel: NP.Translator.translate('Off')
+						noLabel: NP.Translator.translate('Off'),
+						hidden: me.tabindex > 1
 					},
 					{
 						xtype: 'shared.yesnofield',
 						name: 'invoice_custom_field_req',
-						fieldLabel: NP.Translator.translate('Required?')
+						fieldLabel: NP.Translator.translate('Required?'),
+						hidden: me.tabindex > 1
 					},
 					{
 						xtype: 'shared.yesnofield',
 						name: 'po_custom_field_on_off',
 						fieldLabel: NP.Translator.translate('PO'),
 						yesLabel: NP.Translator.translate('On'),
-						noLabel: NP.Translator.translate('Off')
+						noLabel: NP.Translator.translate('Off'),
+						hidden: me.tabindex > 1
 					},
 					{
 						xtype: 'shared.yesnofield',
 						name: 'po_custom_field_req',
-						fieldLabel: NP.Translator.translate('Required?')
+						fieldLabel: NP.Translator.translate('Required?'),
+						hidden: me.tabindex > 1
 					},
 					{
 						xtype: 'shared.yesnofield',
@@ -76,17 +95,18 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 						fieldLabel: NP.Translator.translate('VEFs'),
 						yesLabel: NP.Translator.translate('On'),
 						noLabel: NP.Translator.translate('Off'),
-						hidden: !NP.Security.hasPermission('2084')
+						hidden: !NP.Security.hasPermission('2084'),
+						hidden: me.tabindex > 1
 					},
 					{
 						xtype: 'shared.yesnofield',
 						name: 'vef_custom_field_req',
 						fieldLabel: NP.Translator.translate('Required?'),
-						hidden: !NP.Security.hasPermission('2084')
+						hidden: !NP.Security.hasPermission('2084') || me.tabindex > 1
 					},
 					{
 						xtype: 'shared.yesnofield',
-						name: 'invoice_custom_field_imgindex',
+						name: 'inv_custom_field_imgindex',
 						fieldLabel: NP.Translator.translate('*Add to Quick Index'),
 						hidden: me.tabindex !== 0
 					},
@@ -115,29 +135,57 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 				border: '0 0 1 0',
 				items: [
 					{
-						xtype: 'shared.yesnofield',
-						name: 'customFieldType',
-						fieldLabel: '',
-						yesLabel: NP.Translator.translate('Date'),
-						noLabel: NP.Translator.translate('Drop Down'),
+						xtype: 'radiogroup',
+						name: 'customFieldTypeGroup',
+						columns: 4,
+						hidden: me.tabindex == 1,
+						items: [
+							{
+								boxLabel: NP.Translator.translate('Date'),
+								name: 'customFieldType',
+								inputValue: '1',
+								width: 50,
+								hidden: me.tabindex > 0
+							},
+							{
+								boxLabel: NP.Translator.translate('Text'),
+								name: 'customFieldType',
+								inputValue: '3',
+								width: 50,
+								hidden: me.tabindex < 2
+							},
+							{
+								boxLabel: NP.Translator.translate('DropDown'), name: 'customFieldType', inputValue: '0', width: 80
+							},
+							{
+								boxLabel: NP.Translator.translate('Calendar'),
+								name: 'customFieldType',
+								inputValue: '2',
+								checked: true,
+								width: 70,
+								hidden: me.tabindex < 2
+							}
+						],
 						listeners: {
 							change: function(radiogroup, newValue, oldValue, eOpts) {
-								if (parseInt(newValue.customFieldType) == 1) {
-									me.getForm().findField('customfielddata').hide();
-									me.getForm().findField('universal_field_data').hide();
-									me.down('[name="universal_field_status_group"]').hide();
-									me.down('[name="action_buttons"]').hide();
-									me.down('[name="saveValuesBtn"]').hide();
-								} else {
+								if (parseInt(newValue.customFieldType) == 0 ) {
 									me.getForm().findField('customfielddata').show();
 									me.getForm().findField('universal_field_data').show();
 									me.down('[name="universal_field_status_group"]').show();
 									me.down('[name="action_buttons"]').show();
 									me.down('[name="saveValuesBtn"]').show();
+								} else {
+									me.getForm().findField('customfielddata').hide();
+									me.getForm().findField('universal_field_data').hide();
+									me.down('[name="universal_field_status_group"]').hide();
+									me.down('[name="action_buttons"]').hide();
+									me.down('[name="saveValuesBtn"]').hide();
 								}
+							},
+							beforerender: function(radiogroup, eOpts) {
+								console.log(radiogroup);
 							}
-						},
-						hidden: me.tabindex == 1
+						}
 					},
 					{
 						xtype: 'multiselect',

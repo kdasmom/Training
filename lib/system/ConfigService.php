@@ -20,9 +20,9 @@ class ConfigService extends AbstractService {
 	const TABINDEX_CUSTOMFIELD_SERVICEFIELDS = 2;
 	const TABINDEX_CUSTOMFIELD_PROPERTYFIELDS = 3;
 
-	protected $config, $securityService, $siteService, $appName, $intPkgGateway, $configsysGateway, $configSysValGateway, $pnUniversalFieldGateway;
+	protected $config, $securityService, $siteService, $appName, $intPkgGateway, $configsysGateway, $configSysValGateway, $pnUniversalFieldGateway, $pnCustomFieldsGateway;
 	
-	public function __construct(Config $config, SecurityService $securityService, SiteService $siteService, IntegrationPackageGateway $intPkgGateway, ConfigsysGateway $configsysGateway, ConfigSysValGateway $configSysValGateway, PnUniversalFieldGateway $pnUniversalFieldGateway) {
+	public function __construct(Config $config, SecurityService $securityService, SiteService $siteService, IntegrationPackageGateway $intPkgGateway, ConfigsysGateway $configsysGateway, ConfigSysValGateway $configSysValGateway, PnUniversalFieldGateway $pnUniversalFieldGateway, PnCustomFieldsGateway $pnCustomFieldsGateway) {
 		$this->config           = $config;
 		$this->securityService  = $securityService;
 		$this->siteService      = $siteService;
@@ -30,6 +30,7 @@ class ConfigService extends AbstractService {
 		$this->configsysGateway = $configsysGateway;
 		$this->configSysValGateway = $configSysValGateway;
 		$this->pnUniversalFieldGateway = $pnUniversalFieldGateway;
+		$this->pnCustomFieldsGateway = $pnCustomFieldsGateway;
 
 		$this->appName          = $siteService->getAppName();
 		
@@ -658,23 +659,22 @@ class ConfigService extends AbstractService {
 			$data['po_custom_field_req'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'PO_CUSTOM_FIELD' . $fid . '_LINEITEM_REQ', "");
 			$data['vef_custom_field_req'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'VEF_CUSTOM_FIELD' . $fid . '_LINEITEM_REQ', "");
 			$data['custom_field_lbl'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'CUSTOM_FIELD_LABEL' . $fid . '_LINEITEM', "");
-//			$data['inv_custom_field_imgindex'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'invoice_custom_field' . $fid . '_imgindex', "");
-//			$data['customFieldType'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'custom_field' . $fid . '_type', 'select');
 			$data['maxlength'] = in_array($fid, [7,8]) ? $this->configsysGateway->getFieldLength($fid, $tabindex) : 0;
+		}
+
+		if ($tabindex >= self::TABINDEX_CUSTOMFIELD_SERVICEFIELDS) {
+			$data = $this->pnCustomFieldsGateway->getCustomFieldValues($fid);
+			return $data[0];
 		}
 		return $data;
 	}
 
 	public function getCustomFieldsData($fid, $tabindex) {
-		if(!$fid || in_array($fid, [7, 8])) {
+		if(!$fid || (in_array($fid, [7, 8]) && $tabindex < self::TABINDEX_CUSTOMFIELD_SERVICEFIELDS)) {
 			return [];
 		}
 
 		return $this->configsysGateway->getCustomFieldData($fid, $tabindex);
-	}
-
-	public function saveOrder(){
-
 	}
 
 	/**
@@ -727,66 +727,73 @@ class ConfigService extends AbstractService {
 			$this->configSysValGateway->updateUniversalFieldLength($data['custom_field_maxlength'], $data['custom_fieldnumber'], $data['islineitem']);
 		}
 
-		if (!$data['islineitem']) {
+		if ($data['islineitem'] == self::TABINDEX_CUSTOMFIELD_HEADERS) {
 			$this->configSysValGateway->updateUniversalFieldType($data['customFieldType'], $data['custom_fieldnumber']);
 		}
 
 		return true;
 	}
 
-	protected function updateField($key, $value, $fid, $lineitem) {
+	protected function updateField($key, $value, $fid, $tabindex) {
 		switch($key) {
 			case 'field_imgindex':
-				if (!$lineitem) {
+				if ($tabindex == self::TABINDEX_CUSTOMFIELD_HEADERS) {
 					$this->configSysValGateway->updateCustomField($value, 'CP.invoice_custom_field' .$fid . '_imgindex');
 				}
 				break;
 			case 'field_inv_on_off':
-				if (!$lineitem) {
+				if ($tabindex == self::TABINDEX_CUSTOMFIELD_HEADERS) {
 					$this->configSysValGateway->updateCustomField($value, 'CP.INVOICE_CUSTOM_FIELD' . $fid . '_ON_OFF');
-				} else {
+				}
+				if ($tabindex == self::TABINDEX_CUSTOMFIELD_LINEITEMS) {
 					$this->configSysValGateway->updateCustomField($value, 'CP.INVOICE_CUSTOM_FIELD' . $fid . '_LINEITEM_ON_OFF');
 				}
 				break;
 			case 'field_inv_req':
-				if (!$lineitem) {
+				if ($tabindex == self::TABINDEX_CUSTOMFIELD_HEADERS) {
 					$this->configSysValGateway->updateCustomField($value, 'CP.invoice_custom_field' . $fid . '_REQ');
-				} else {
+				}
+				if ($tabindex == self::TABINDEX_CUSTOMFIELD_LINEITEMS) {
 					$this->configSysValGateway->updateCustomField($value, 'CP.INVOICE_CUSTOM_FIELD' . $fid . '_LINEITEM_REQ');
 				}
 				break;
 			case 'field_po_on_off':
-				if (!$lineitem) {
+				if ($tabindex == self::TABINDEX_CUSTOMFIELD_HEADERS) {
 					$this->configSysValGateway->updateCustomField($value, 'CP.PO_CUSTOM_FIELD' . $fid . '_ON_OFF');
-				} else {
+				}
+				if ($tabindex == self::TABINDEX_CUSTOMFIELD_LINEITEMS) {
 					$this->configSysValGateway->updateCustomField($value, 'CP.PO_CUSTOM_FIELD' . $fid . '_LINEITEM_ON_OFF');
 				}
 				break;
 			case 'field_po_req':
-				if (!$lineitem) {
+				if ($tabindex == self::TABINDEX_CUSTOMFIELD_HEADERS) {
 					$this->configSysValGateway->updateCustomField($value, 'CP.PO_CUSTOM_FIELD' . $fid . '_REQ');
-				} else {
+				}
+				if ($tabindex == self::TABINDEX_CUSTOMFIELD_LINEITEMS) {
 					$this->configSysValGateway->updateCustomField($value, 'CP.PO_CUSTOM_FIELD' . $fid . '_LINEITEM_REQ');
 				}
 				break;
 			case 'field_vef_on_off':
-				if (!$lineitem) {
+				if ($tabindex == self::TABINDEX_CUSTOMFIELD_HEADERS) {
 					$this->configSysValGateway->updateCustomField($value, 'CP.VEF_CUSTOM_FIELD' . $fid . '_ON_OFF');
-				} else {
+				}
+				if ($tabindex == self::TABINDEX_CUSTOMFIELD_LINEITEMS) {
 					$this->configSysValGateway->updateCustomField($value, 'CP.VEF_CUSTOM_FIELD' .$fid . '_LINEITEM_ON_OFF');
 				}
 				break;
 			case 'field_vef_req':
-				if (!$lineitem) {
+				if ($tabindex == self::TABINDEX_CUSTOMFIELD_HEADERS) {
 					$this->configSysValGateway->updateCustomField($value, 'CP.VEF_CUSTOM_FIELD' . $fid . '_REQ');
-				} else {
+				}
+				if ($tabindex == self::TABINDEX_CUSTOMFIELD_LINEITEMS) {
 					$this->configSysValGateway->updateCustomField($value, 'CP.VEF_CUSTOM_FIELD' . $fid . '_LINEITEM_REQ');
 				}
 				break;
 			case 'field_lbl':
-				if (!$lineitem) {
+				if ($tabindex == self::TABINDEX_CUSTOMFIELD_HEADERS) {
 					$this->configSysValGateway->updateCustomField($value, 'CP.CUSTOM_FIELD_LABEL' . $fid);
-				} else {
+				}
+				if ($tabindex == self::TABINDEX_CUSTOMFIELD_LINEITEMS) {
 					$this->configSysValGateway->updateCustomField($value, 'CP.CUSTOM_FIELD_LABEL' . $fid . '_LINEITEM');
 				}
 				break;
