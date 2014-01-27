@@ -39,6 +39,7 @@ Ext.define('NP.view.systemSetup.CustomFields', {
 					{
 						xtype: 'systemsetup.customfieldsheader',
 						title: 'Header',
+						name: 'headers',
 						listeners: {
 							beforehide: function(tab, eOpts) {
 								me.fireEvent('beforehidetab', tab);
@@ -48,6 +49,7 @@ Ext.define('NP.view.systemSetup.CustomFields', {
 					{
 						xtype: 'systemsetup.customfieldslineitem',
 						title: 'Line Item',
+						name: 'lineitems',
 						listeners: {
 							beforehide: function(tab, eOpts) {
 								me.fireEvent('beforehidetab', tab);
@@ -57,6 +59,7 @@ Ext.define('NP.view.systemSetup.CustomFields', {
 					{
 						xtype: 'systemsetup.customfieldsservicefields',
 						title: 'Service Fields',
+						name: 'servicefields',
 						listeners: {
 							beforehide: function(tab, eOpts) {
 								me.fireEvent('beforehidetab', tab);
@@ -66,6 +69,7 @@ Ext.define('NP.view.systemSetup.CustomFields', {
 					{
 						xtype: 'systemsetup.customfieldspropertyfields',
 						title: 'Property Fields',
+						name: 'propertyfields',
 						listeners: {
 							beforehide: function(tab, eOpts) {
 								me.fireEvent('beforehidetab', tab);

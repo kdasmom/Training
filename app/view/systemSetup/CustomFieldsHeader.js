@@ -15,8 +15,7 @@ Ext.define('NP.view.systemSetup.CustomFieldsHeader', {
 		'NP.view.systemSetup.gridcol.FieldType',
 		'NP.view.systemSetup.gridcol.Invoice',
 		'NP.view.systemSetup.gridcol.PO',
-		'NP.view.systemSetup.gridcol.VendorEst',
-		'NP.view.systemSetup.HeaderForm'
+		'NP.view.systemSetup.gridcol.VendorEst'
 	],
 
 	border: false,
@@ -77,11 +76,7 @@ Ext.define('NP.view.systemSetup.CustomFieldsHeader', {
 					autoLoad	: true,
 					fields: ['controlpanelitem_name', 'controlpanelitem_value', 'controlpanelitem_required', 'inv_on_off', 'inv_req', 'po_on_off', 'po_req', 'vef_on_off', 'vef_req', 'imgidx_on_off', 'type']
 				})
-			}/*,
-			{
-				xtype: 'systemsetup.headerform',
-				flex: 1
-			}*/
+			}
 		];
 
 		this.callParent(arguments);

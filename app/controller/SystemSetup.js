@@ -23,7 +23,7 @@ Ext.define('NP.controller.SystemSetup', {
 		'systemSetup.DefaultSplitGrid',
 		'systemSetup.DefaultSplitForm',
 		'systemSetup.SettingsTab',
-		'systemSetup.HeaderForm'
+		'systemSetup.CustomFieldForm'
 	],
 
 	refs : [
@@ -182,7 +182,17 @@ Ext.define('NP.controller.SystemSetup', {
 					me.showFieldEditForm(dataview, record, false);
 				}
 			},
-			'[xtype="systemsetup.headerform"] [xtype="shared.button.save"]': {
+			'[xtype="systemsetup.customfields"] [xtype="systemsetup.customfieldspropertyfields"] [xtype="customgrid"]': {
+				itemclick: function(dataview, record) {
+					me.showFieldEditForm(dataview, record, false);
+				}
+			},
+			'[xtype="systemsetup.customfields"] [xtype="systemsetup.customfieldsservicefields"] [xtype="customgrid"]': {
+				itemclick: function(dataview, record) {
+					me.showFieldEditForm(dataview, record, false);
+				}
+			},
+			'[xtype="systemsetup.customfieldform"] [xtype="shared.button.save"]': {
 				click: me.saveCustomField
 			},
 			'[xtype="systemsetup.customfields"]': {
@@ -1078,21 +1088,16 @@ Ext.define('NP.controller.SystemSetup', {
 	},
 
 	showFieldEditForm: function(dataview, record, lineitem) {
-		console.log('recrod: ', record.get('controlpanelitem_name'));
 		var me = this,
-			fid = parseInt(record.get('controlpanelitem_name')[record.get('controlpanelitem_name').length - (!lineitem ? 1 : 10)]);
+			fid = parseInt(record.get('controlpanelitem_name')[record.get('controlpanelitem_name').length - (!lineitem ? 1 : 10)]),
+			panel = dataview.up().up();
 
-		var panel = !lineitem ? me.getCmp('systemsetup.customfieldsheader') : me.getCmp('systemsetup.customfieldslineitem');
+		panel.add({
+			xtype: 'systemsetup.customfieldform',
+			flex: 1
+		});
 
-//		var headerform = me.getCmp('systemsetup.headerform');
-//		if (!headerform) {
-			panel.add({
-				xtype: 'systemsetup.headerform',
-				flex: 1
-			});
-
-		var	headerform = me.getCmp('systemsetup.headerform');
-//		}
+		var	headerform = me.getCmp('systemsetup.customfieldform');
 
 
 		NP.lib.core.Net.remoteCall({
@@ -1135,7 +1140,7 @@ Ext.define('NP.controller.SystemSetup', {
 	},
 
 	saveCustomField: function() {
-		var form = this.getCmp('systemsetup.headerform'),
+		var form = this.getCmp('systemsetup.customfieldform'),
 			values = form.getValues(),
 			data = {},
 			me = this;
@@ -1168,9 +1173,8 @@ Ext.define('NP.controller.SystemSetup', {
 		});
 	},
 
-//	changeCustomFieldsTab: function(tabPanel, tab, oldCard, eOpts) {
 	changeCustomFieldsTab: function(tab) {
 		var me = this;
-		tab.remove(me.getCmp('systemsetup.headerform'));
+		tab.remove(me.getCmp('systemsetup.customfieldform'));
 	}
 });

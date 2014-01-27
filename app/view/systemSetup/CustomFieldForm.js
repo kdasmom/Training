@@ -3,9 +3,9 @@
  * date: 1/21/14 3:46 PM
  */
 
-Ext.define('NP.view.systemSetup.HeaderForm', {
+Ext.define('NP.view.systemSetup.CustomFieldForm', {
 	extend: 'Ext.form.Panel',
-	alias: 'widget.systemsetup.headerform',
+	alias: 'widget.systemsetup.customfieldform',
 
 	requires: [
 		'NP.lib.core.Translator',

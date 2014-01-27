@@ -9,8 +9,12 @@ Ext.define('NP.view.systemSetup.CustomFieldsPropertyFields', {
 
 	requires: ['NP.lib.core.Translator'],
 
-	padding: '10',
+	padding: '5',
 	border: false,
+	layout: {
+		type: 'hbox',
+		align: 'stretch'
+	},
 
 	initComponent: function() {
 		var me  = this;
@@ -22,6 +26,7 @@ Ext.define('NP.view.systemSetup.CustomFieldsPropertyFields', {
 				xtype: 'customgrid',
 				name: 'headerfields',
 				border: false,
+				flex: 1,
 				columns: [
 					{
 						xtype: 'systemsetup.gridcol.fieldnumber',
