@@ -4,6 +4,7 @@ namespace NP\gl;
 
 use NP\core\AbstractService;
 use NP\core\db\Where;
+use NP\property\FiscalCalService;
 
 /**
  * All operations that are closely related to GL accounts belong in this service
@@ -13,6 +14,10 @@ use NP\core\db\Where;
 class GLService extends AbstractService {
     
     protected $configService, $securityService;
+
+    public function __construct(FiscalCalService $fiscalCalService) {
+        $this->fiscalCalService = $fiscalCalService;
+    }
 
     public function setConfigService(\NP\system\ConfigService $configService) {
         $this->configService = $configService;
@@ -173,6 +178,16 @@ class GLService extends AbstractService {
 
     public function getByVendorsite($vendorsite_id, $property_id=null, $keyword=null, $glaccount_id=null) {
         return $this->glAccountGateway->findByVendorsite($vendorsite_id, $property_id, $keyword, $glaccount_id);
+    }
+
+    /**
+     * Gets the MTD spending by category
+     * 
+     */
+    public function getCategoryMtdSpend($property_id, $overbudgetOnly=false) {
+        $period = $this->fiscalCalService->getAccountingPeriod($property_id);
+        
+        return $this->glAccountGateway->findCategoryMtdSpend($property_id, $period, $overbudgetOnly);
     }
 
     /**

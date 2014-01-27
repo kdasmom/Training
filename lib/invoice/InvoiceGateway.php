@@ -376,6 +376,58 @@ class InvoiceGateway extends AbstractGateway {
 		return $select;
 	}
 
+	public function findInvoiceStatistics($property_id) {
+		$select = Select::get()
+			->distinct()
+			->count(true, 'total', 'i.invoice_id')
+			->columns([
+				'sort' => new Expression("
+					CASE i.invoice_status
+						WHEN 'open' THEN 2
+						WHEN 'forapproval' THEN 3
+						WHEN 'saved' THEN 4
+						WHEN 'hold' THEN 5
+						WHEN 'rejected' THEN 6
+					END
+				"),
+				'name' => new Expression("
+					CASE i.invoice_status
+						WHEN 'open' THEN '# of Open Invoices'
+						WHEN 'forapproval' THEN '# of Invoices Pending Approval '
+						WHEN 'saved' THEN '# of Completed Invoices to Approve'
+						WHEN 'hold' THEN '# of Invoices on Hold'
+						WHEN 'rejected' THEN '# of Rejected Invoices'
+					END
+				"),
+				'amount' => new Expression("
+					SUM(ii.invoiceitem_amount + ii.invoiceitem_shipping + ii.invoiceitem_salestax)
+				")
+			])
+			->from(['i'=>'invoice'])
+				->join(new sql\join\InvoiceInvoiceItemJoin([]))
+			->whereIn('i.invoice_status', "'open','forapproval','saved','hold','rejected'")
+			->whereEquals('i.property_id', '?')
+			->group('i.invoice_status')
+			->union(
+				Select::get()
+					->count(true, 'total')
+					->columns([
+						'sort' => new Expression('1'),
+						'name' => new Expression("'# of Images to Convert'"),
+						'amount' => new Expression('SUM(img.Image_Index_Amount)')
+					])
+					->from(['img'=>'image_index'])
+					->whereEquals('img.property_id', '?')
+					->whereMerge(new \NP\image\sql\criteria\ImageInvoiceDocCriteria('Invoice,Utility Invoice'))
+					->whereMerge(new \NP\image\sql\criteria\ImageInvoiceUnassigned())
+					->whereEquals('img.Image_Index_Status', '1')
+					->having('count(*) > 0')
+			)
+			->order('2');
+
+		return $this->adapter->query($select, [$property_id,$property_id]);
+	}
+
 	public function findDuplicates($invoice_id) {
 		$invoice = $this->adapter->query(
 			Select::get()->columns(['paytablekey_id','invoice_ref'])
@@ -644,8 +696,7 @@ class InvoiceGateway extends AbstractGateway {
 		$select = new sql\InvoiceSelect();
 		
 		if ($countOnly == 'true') {
-			$select->count(true, 'totalRecs')
-					->column('invoice_id');
+			$select->count(true, 'totalRecs', 'i.invoice_id');
 		} else {
 			$select->allColumns('i')
 					->columnAmount()

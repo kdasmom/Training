@@ -142,8 +142,7 @@ class VendorGateway extends AbstractGateway {
 		$select = new sql\VendorSelect();
 
 		if ($countOnly == 'true') {
-			$select->count(true, 'totalRecs')
-					->column('vendor_id');
+			$select->count(true, 'totalRecs', 'v.vendor_id');
 		} else {
 			if ( substr($sort, 0, 7) == 'vendor_' ) {
 				$sort = "v.{$sort}";
@@ -167,7 +166,7 @@ class VendorGateway extends AbstractGateway {
 
 		// If paging is needed
 		if ($pageSize !== null && $countOnly == 'false') {
-			return $this->getPagingArray($select, array(), $pageSize, $page, 'vendor_id');
+			return $this->getPagingArray($select, array(), $pageSize, $page, 'v.vendor_id');
 		} else if ($countOnly == 'true') {
 			$res = $this->adapter->query($select);
 			return $res[0]['totalRecs'];
@@ -262,6 +261,32 @@ class VendorGateway extends AbstractGateway {
 
 		return $this->adapter->query($select, [$intergration_package_id]);
 	}
+
+	public function findTopVendors($numberOfVendors=5) {
+		$date = new \DateTime();
+		$date->add(\DateInterval::createFromDateString('-1 year'));
+		$date = Util::formatDateForDB($date);
+
+		$select = Select::get()
+    		->columns([
+    			'vendor_id',
+    			'vendor_id_alt',
+    			'vendor_name',
+    			'total_amount' => new Expression('SUM(ii.invoiceitem_amount + ii.invoiceitem_shipping + ii.invoiceitem_salestax)')
+    		])
+    		->from(['v'=>'vendor'])
+    			->join(new sql\join\VendorVendorsiteJoin([]))
+    			->join(new sql\join\VendorsiteInvoiceJoin())
+    			->join(new \NP\invoice\sql\join\InvoiceInvoiceItemJoin())
+    		->whereEquals('v.vendor_status', "'active'")
+    		->whereEquals('vs.vendorsite_status', "'active'")
+    		->whereGreaterThan('i.invoice_datetm', '?')
+    		->group('v.vendor_id, v.vendor_id_alt, v.vendor_name')
+    		->order('total_amount DESC')
+    		->limit($numberOfVendors);
+
+    	return $this->adapter->query($select, [$date]);
+    }
 
 	/**
 	 * Validate vendor

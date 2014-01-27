@@ -174,8 +174,7 @@ class PurchaseOrderGateway extends AbstractGateway {
 		$select = new sql\PoSelect();
 		
 		if ($countOnly == 'true') {
-			$select->count(true, 'totalRecs')
-					->column('purchaseorder_id');
+			$select->count(true, 'totalRecs', 'p.purchaseorder_id');
 		} else {
 			$select->allColumns('p')
 					->columnAmount()

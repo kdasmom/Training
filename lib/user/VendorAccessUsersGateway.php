@@ -16,8 +16,7 @@ class VendorAccessUsersGateway extends AbstractGateway {
 		$select = new Select();
 
 		if ($countOnly == 'true') {
-			$select->count(true, 'totalRecs')
-					->column('vendor_user_id');
+			$select->count(true, 'totalRecs', 'vendor_user_id');
 		} else {
 			$select->order($sort);
 		}
@@ -27,7 +26,7 @@ class VendorAccessUsersGateway extends AbstractGateway {
 
 		// If paging is needed
 		if ($pageSize !== null && $countOnly == 'false') {
-			return $this->getPagingArray($select, array(), $pageSize, $page, 'vendor_id');
+			return $this->getPagingArray($select, array(), $pageSize, $page, 'vendor_user_id');
 		} else if ($countOnly == 'true') {
 			$res = $this->adapter->query($select);
 			return $res[0]['totalRecs'];

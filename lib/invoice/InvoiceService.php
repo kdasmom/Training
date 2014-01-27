@@ -445,6 +445,16 @@ class InvoiceService extends AbstractInvoicePoService {
         );
     }
 
+    /**
+     * Gets invoice statistics for a specified property
+     *
+     * @param  int $property_id
+     * @return array
+     */
+    public function getInvoiceStatistics($property_id) {
+    	return $this->invoiceGateway->findInvoiceStatistics($property_id);
+    }
+
 	/**
 	 * Save an invoice payment from the import tool
 	 */

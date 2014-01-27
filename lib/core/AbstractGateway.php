@@ -428,9 +428,11 @@ abstract class AbstractGateway {
 	public function getPagingArray($select, $params, $pageSize, $page=1, $distinctCol=null) {
 		// If we have set a page, we really need pagination, otherwise we're just limiting
 		if ($page !== null) {
-			$select->offset($pageSize * ($page - 1));
-
 			$selectTotal = $this->getSelectCountForPaging($select, $distinctCol);
+
+			$select->offset($pageSize * ($page - 1));
+			$select->limit($pageSize);
+			
 			$totalRes = $this->adapter->query($selectTotal, $params);
 		}
 		
@@ -456,15 +458,9 @@ abstract class AbstractGateway {
 		// Remove the order by clause
 		$selectTotal->order(null);
 
-		// If statement has DISTINCT, use only first column
-		$cols = array();
-		if ($selectTotal->getRawState('distinct')) {
-			$cols[] = $distinctCol;
-		}
-
 		// Set a new column for the count
-		$selectTotal->columns($cols)
-					->count(true, 'totalRows'); 
+		$selectTotal->columns([])
+					->count(true, 'totalRows', $distinctCol); 
 		
 		// Get all the existing joins
 		$joins = $selectTotal->getRawState('joins');

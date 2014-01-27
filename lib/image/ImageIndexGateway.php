@@ -119,8 +119,7 @@ class ImageIndexGateway extends AbstractGateway {
 		$select = new sql\ImageSelect();
 		
 		if ($countOnly == 'true') {
-			$select->count(true, 'totalRecs')
-					->column('image_index_id');
+			$select->count(true, 'totalRecs', 'img.image_index_id');
 		} else {
 			$select->columns(array(
 								'Image_Index_Id',
