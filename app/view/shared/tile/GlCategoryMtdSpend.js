@@ -54,7 +54,11 @@ Ext.define('NP.view.shared.tile.GlCategoryMtdSpend', {
                 extraParams: {
                     property_id: NP.Security.getCurrentContext().property_id
                 },
-                autoLoad   : true
+                autoLoad   : true,
+                sorters: [{
+                    property : 'glaccount_name',
+                    direction: 'DESC'
+                }]
             })
         );
     },
@@ -105,7 +109,17 @@ Ext.define('NP.view.shared.tile.GlCategoryMtdSpend', {
                         title   : NP.Translator.translate('GL Category'),
                         type    : 'Category',
                         position: 'left',
-                        fields  : ['glaccount_name']
+                        fields  : ['glaccount_name'],
+                        label   : {
+                            font    : '10px Helvetica, sans-serif',
+                            renderer: function(val) {
+                                if (val.length > 20) {
+                                    val = val.substr(0, 17) + '...';
+                                }
+
+                                return val.toUpperCase();
+                            }
+                        }
                     }
                 ],
                 series      : [{
@@ -118,12 +132,21 @@ Ext.define('NP.view.shared.tile.GlCategoryMtdSpend', {
                         display      : 'outside',
                         field        : ['budget_amount','actual'],
                         renderer     : function(val, sprite, rec) {
+                            var stroke;
+
                             if (rec.get('actual') > rec.get('budget_amount')) {
-                                sprite.setAttributes({
+                                stroke = {
                                     stroke: '#FF0000',
-                                    'stroke-width': 0.5
-                                });
+                                    'stroke-width': 0.3
+                                };
+                            } else {
+                                stroke = {
+                                    stroke: '#000',
+                                    'stroke-width': 0
+                                };
                             }
+
+                            sprite.setAttributes(stroke);
 
                             return NP.Util.currencyRenderer(val);
                         }
