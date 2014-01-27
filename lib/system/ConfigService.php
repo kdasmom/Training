@@ -14,7 +14,12 @@ use NP\util\Util;
  * @author Thomas Messier
  */
 class ConfigService extends AbstractService {
-	
+
+	const TABINDEX_CUSTOMFIELD_HEADERS = 0;
+	const TABINDEX_CUSTOMFIELD_LINEITEMS = 1;
+	const TABINDEX_CUSTOMFIELD_SERVICEFIELDS = 2;
+	const TABINDEX_CUSTOMFIELD_PROPERTYFIELDS = 3;
+
 	protected $config, $securityService, $siteService, $appName, $intPkgGateway, $configsysGateway, $configSysValGateway, $pnUniversalFieldGateway;
 	
 	public function __construct(Config $config, SecurityService $securityService, SiteService $siteService, IntegrationPackageGateway $intPkgGateway, ConfigsysGateway $configsysGateway, ConfigSysValGateway $configSysValGateway, PnUniversalFieldGateway $pnUniversalFieldGateway) {
@@ -624,14 +629,14 @@ class ConfigService extends AbstractService {
 	 * @param null $fid
 	 * @return array
 	 */
-	public function getHeaderValues($fid = null, $lineitem = false) {
+	public function getHeaderValues($fid = null, $tabindex = false) {
 		$data = [];
 		$asp_client_id = $this->getClientId();
 
 		if (!$fid) {
 			return false;
 		}
-		if (!$lineitem) {
+		if ($tabindex == self::TABINDEX_CUSTOMFIELD_HEADERS) {
 
 			$data['inv_custom_field_on_off'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'INVOICE_CUSTOM_FIELD' . $fid . '_ON_OFF', "");
 			$data['po_custom_field_on_off'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'PO_CUSTOM_FIELD' . $fid . '_ON_OFF', "");
@@ -642,18 +647,30 @@ class ConfigService extends AbstractService {
 			$data['custom_field_lbl'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'CUSTOM_FIELD_LABEL' . $fid, "");
 			$data['inv_custom_field_imgindex'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'invoice_custom_field' . $fid . '_imgindex', "");
 			$data['customFieldType'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'custom_field' . $fid . '_type', 'select');
-			$data['maxlength'] = in_array($fid, [7,8]) ? $this->configsysGateway->getFieldLength($fid) : 0;
+			$data['maxlength'] = in_array($fid, [7,8]) ? $this->configsysGateway->getFieldLength($fid, $tabindex) : 0;
 
+		}
+		if ($tabindex == self::TABINDEX_CUSTOMFIELD_LINEITEMS) {
+			$data['inv_custom_field_on_off'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'INVOICE_CUSTOM_FIELD' . $fid . '_LINEITEM_ON_OFF', "");
+			$data['po_custom_field_on_off'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'PO_CUSTOM_FIELD' . $fid . '_LINEITEM_ON_OFF', "");
+			$data['vef_custom_field_on_off'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'VEF_CUSTOM_FIELD' . $fid . '_LINEITEM_ON_OFF', "");
+			$data['inv_custom_field_req'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'INVOICE_CUSTOM_FIELD' . $fid . '_LINEITEM_REQ', "");
+			$data['po_custom_field_req'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'PO_CUSTOM_FIELD' . $fid . '_LINEITEM_REQ', "");
+			$data['vef_custom_field_req'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'VEF_CUSTOM_FIELD' . $fid . '_LINEITEM_REQ', "");
+			$data['custom_field_lbl'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'CUSTOM_FIELD_LABEL' . $fid . '_LINEITEM', "");
+//			$data['inv_custom_field_imgindex'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'invoice_custom_field' . $fid . '_imgindex', "");
+//			$data['customFieldType'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'custom_field' . $fid . '_type', 'select');
+			$data['maxlength'] = in_array($fid, [7,8]) ? $this->configsysGateway->getFieldLength($fid, $tabindex) : 0;
 		}
 		return $data;
 	}
 
-	public function getCustomFieldsData($fid) {
+	public function getCustomFieldsData($fid, $tabindex) {
 		if(!$fid || in_array($fid, [7, 8])) {
 			return [];
 		}
 
-		return $this->configsysGateway->getCustomFieldData($fid);
+		return $this->configsysGateway->getCustomFieldData($fid, $tabindex);
 	}
 
 	public function saveOrder(){
@@ -679,7 +696,8 @@ class ConfigService extends AbstractService {
 				'universal_field_number'	=> $data['universal_field_number'],
 				'universal_field_status'	=> $data['universal_field_status'],
 				'universal_field_order'		=> 0,
-				'customfield_pn_type'		=> 'customInvoicePO'
+				'customfield_pn_type'		=> 'customInvoicePO',
+				'islineitem'				=> $data['tabindex']
 			]);
 		} else {
 			return $this->pnUniversalFieldGateway->updateUniversalField($data);
@@ -706,10 +724,12 @@ class ConfigService extends AbstractService {
 		}
 
 		if ($data['custom_fieldnumber'] == 7 || $data['custom_fieldnumber'] == 8) {
-			$this->configSysValGateway->updateUniversalFieldLength($data['custom_field_maxlength'], $data['custom_fieldnumber']);
+			$this->configSysValGateway->updateUniversalFieldLength($data['custom_field_maxlength'], $data['custom_fieldnumber'], $data['islineitem']);
 		}
 
-		$this->configSysValGateway->updateUniversalFieldType($data['customFieldType'], $data['custom_fieldnumber']);
+		if (!$data['islineitem']) {
+			$this->configSysValGateway->updateUniversalFieldType($data['customFieldType'], $data['custom_fieldnumber']);
+		}
 
 		return true;
 	}

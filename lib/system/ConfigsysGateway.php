@@ -409,11 +409,14 @@ class ConfigsysGateway extends AbstractGateway {
 	 * @param $fid
 	 * @return int
 	 */
-	public function getFieldLength($fid){
+	public function getFieldLength($fid, $tabindex){
 		$select = new Select();
+		$column = "custom_field{$fid}";
+
+		$column .= $tabindex == ConfigService::TABINDEX_CUSTOMFIELD_HEADERS ? "_maxlength" : ($tabindex == ConfigService::TABINDEX_CUSTOMFIELD_LINEITEMS ? "_lineitem_maxlength" : '');
 
 		$select->from(['ir' => 'integrationrequirements'])
-			->columns(['maxlength' => "custom_field{$fid}_maxlength"])
+			->columns(['maxlength' => $column])
 			->limit(1);
 
 		$result = $this->adapter->query($select);
@@ -427,7 +430,7 @@ class ConfigsysGateway extends AbstractGateway {
 	 * @param $fid
 	 * @return array|bool
 	 */
-	public function getCustomFieldData($fid) {
+	public function getCustomFieldData($fid, $tabindex) {
 		$select = new Select();
 
 		$select->from(['pn' => 'pnuniversalfield'])
@@ -447,7 +450,7 @@ class ConfigsysGateway extends AbstractGateway {
 			'universal_field_order'		=> 0]
 		];
 
-		$result = array_merge($result, $this->adapter->query($select, [$fid, 0, 'customInvoicePO']));
+		$result = array_merge($result, $this->adapter->query($select, [$fid, $tabindex, 'customInvoicePO']));
 
 		return $result;
 	}

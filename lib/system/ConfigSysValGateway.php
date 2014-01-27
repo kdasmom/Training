@@ -29,12 +29,15 @@ class ConfigSysValGateway extends AbstractGateway {
 		return $this->adapter->query($update, [$value, $name]);
 	}
 
-	public function updateUniversalFieldLength($length, $number) {
+	public function updateUniversalFieldLength($length, $number, $tabindex) {
 
 		$update = new Update();
 
+		$column = "custom_field$number";
+		$column .= $tabindex == ConfigService::TABINDEX_CUSTOMFIELD_HEADERS ? '_maxlength' : ($tabindex == ConfigService::TABINDEX_CUSTOMFIELD_LINEITEMS ? '_lineitem_maxlength' : '');
+
 		$update->table('integrationrequirements')
-			->values(['custom_field' . $number . '_maxlength' => $length]);
+			->values([$column => $length]);
 
 		return $this->adapter->query($update);
 	}

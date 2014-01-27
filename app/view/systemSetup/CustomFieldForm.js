@@ -20,6 +20,7 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 	layout: 'column',
 	hidden: true,
 	padding: '0 5 5 5',
+	tabindex: 0,
 
 	initComponent: function() {
 		var me = this;
@@ -41,6 +42,9 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 			{
 				xtype: 'fieldcontainer',
 				width: 400,
+				defaults: {
+					labelWidth: 200
+				},
 				items: [
 					{
 						xtype: 'shared.yesnofield',
@@ -83,7 +87,8 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 					{
 						xtype: 'shared.yesnofield',
 						name: 'invoice_custom_field_imgindex',
-						fieldLabel: NP.Translator.translate('*Add to Quick Index')
+						fieldLabel: NP.Translator.translate('*Add to Quick Index'),
+						hidden: me.tabindex !== 0
 					},
 					{
 						xtype: 'textfield',
@@ -97,7 +102,8 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 					},
 					{
 						xtype: 'displayfield',
-						value: NP.Translator.translate('*Yes must be selected for Add to Quick Index in order for the Custom Field Default Value to take affect')
+						value: NP.Translator.translate('*Yes must be selected for Add to Quick Index in order for the Custom Field Default Value to take affect'),
+						hidden: me.tabindex !== 0
 					}
 				]
 			},
@@ -130,7 +136,8 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 									me.down('[name="saveValuesBtn"]').show();
 								}
 							}
-						}
+						},
+						hidden: me.tabindex == 1
 					},
 					{
 						xtype: 'multiselect',
@@ -143,7 +150,8 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 							service    	: 'ConfigService',
 							action     	: 'getCustomFieldsData',
 							extraParams: {
-								fid: null
+								fid: null,
+								tabindex: me.tabindex
 							},
 							sorters: [
 								{
@@ -298,7 +306,8 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 								'universal_field_status'	: me.getForm().findField('universal_field_status').getValue(),
 								'universal_field_number'	: me.getForm().findField('universal_field_number').getValue(),
 								'action'					: me.getForm().findField('action').getValue(),
-								'universal_field_id'		: me.getForm().findField('customfielddata').getValue()[0]
+								'universal_field_id'		: me.getForm().findField('customfielddata').getValue()[0],
+								'tabindex'					: me.tabindex
 							};
 
 							NP.lib.core.Net.remoteCall({
