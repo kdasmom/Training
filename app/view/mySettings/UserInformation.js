@@ -8,6 +8,7 @@ Ext.define('NP.view.mySettings.UserInformation', {
     alias: 'widget.mysettings.userinformation',
     
     requires: [
+        'NP.lib.core.Config',
         'NP.lib.core.Security',
         'NP.lib.ui.VerticalTabPanel',
     	'NP.view.user.UsersFormDetails',
@@ -97,15 +98,29 @@ Ext.define('NP.view.mySettings.UserInformation', {
     },
 
     isValid: function() {
-        var me = this;
+        var me          = this,
+            isValid     = this.callParent(),
+            field       = this.findField('properties'),
+            codingField = this.findField('coding_properties');
 
-        // Call the standard validation function
-        var isValid = this.callParent();
-
-        var field = this.findField('properties');
+        
         if (field && field.getValue().length == 0) {
             field.markInvalid('This field is required.');
             isValid = false;
+        }
+
+        // Only check this if there are no other errors
+        if (isValid) {
+            var props       = field.getValue()
+                codingProps = codingField.getValue();
+
+            for (var i=0; i<codingProps.length; i++) {
+                if (Ext.Array.contains(props, codingProps[i])) {
+                    field.markInvalid('A ' + NP.Config.getPropertyLabel() + ' cannot have full access and coding-only access at the same time');
+                    isValid = false;
+                    break;
+                }
+            }
         }
 
         // Check for errors
