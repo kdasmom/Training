@@ -423,52 +423,6 @@ class ConfigsysGateway extends AbstractGateway {
 
 		return !isset($result[0]) ? 0 : $result[0]['maxlength'];
 	}
-
-	/**
-	 * Return custom field data
-	 *
-	 * @param $fid
-	 * @return array|bool
-	 */
-	public function getCustomFieldData($fid, $tabindex) {
-		$select = new Select();
-
-		$select->from(['pn' => 'pnuniversalfield'])
-			->columns(['universal_field_id', 'universal_field_data', 'universal_field_status', 'universal_field_order'])
-			->where(
-				[
-					'universal_field_number'	=> '?',
-					'islineitem'				=> '?',
-					'customfield_pn_type'		=> '?'
-				]
-			)
-			->order('universal_field_order, universal_field_data');
-		$result = [[
-			'universal_field_id'		=> 0,
-			'universal_field_data'		=> 'New',
-			'universal_field_status'	=> 1,
-			'universal_field_order'		=> 0]
-		];
-
-		$result = array_merge($result, $this->adapter->query($select, [$fid, $tabindex, 'customInvoicePO']));
-
-		return $result;
-	}
-
-	/**
-	 * Delete universal field
-	 *
-	 * @param $universal_field_id
-	 * @return array|bool
-	 */
-	public function deleteUniversalField($universal_field_id) {
-		$delete = new Delete();
-
-		$delete->from('pnuniversalfield')
-			->where(['universal_field_id' => '?']);
-
-		return $this->adapter->query($delete, [$universal_field_id]);
-	}
 }
 
 ?>

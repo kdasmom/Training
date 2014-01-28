@@ -3,6 +3,8 @@
 namespace NP\system;
 
 use NP\core\AbstractGateway;
+use NP\core\db\Delete;
+use NP\core\db\Expression;
 use NP\core\db\Select;
 
 /**
@@ -123,6 +125,106 @@ class PnUniversalFieldGateway extends AbstractGateway {
 			]);
 
 		return $this->adapter->query($update, [$data['universal_field_data'], $data['universal_field_status'], $data['universal_field_id']]);
+	}
+
+	/**
+	 * @param $type
+	 * @return int
+	 */
+	public function getNextMaxUFN($type) {
+		$select = new Select();
+
+		$select->from(['p' => 'pnuniversalfield'])
+			->columns(['maxUFN' => new Expression('max(universal_field_number)')])
+			->where(['customfield_pn_type' => '?']);
+
+		$result = $this->adapter->query($select, [$type]);
+
+		return $result[0]['maxUFN'] == '' ? 1 : $result[0]['maxUFN'];
+	}
+
+	/**
+	 * Return custom field data
+	 *
+	 * @param $fid
+	 * @return array|bool
+	 */
+	public function getCustomFieldData($fid, $tabindex, $pntype = false) {
+		$select = new Select();
+
+		$result = [
+			[
+				'universal_field_id'		=> 0,
+				'universal_field_data'		=> 'New',
+				'universal_field_status'	=> 1,
+				'universal_field_order'		=> 0
+			]
+		];
+
+		if ($tabindex < ConfigService::TABINDEX_CUSTOMFIELD_SERVICEFIELDS) {
+			$select->from(['pn' => 'pnuniversalfield'])
+				->columns(['universal_field_id', 'universal_field_data', 'universal_field_status', 'universal_field_order'])
+				->where(
+					[
+						'universal_field_number'	=> '?',
+						'islineitem'				=> '?',
+						'customfield_pn_type'		=> '?'
+					]
+				)
+				->order('universal_field_order, universal_field_data');
+
+			$result = array_merge($result, $this->adapter->query($select, [$fid, $tabindex, 'customInvoicePO']));
+		} else {
+			$select->from(['pu' => 'pnuniversalfield'])
+				->where(
+					[
+						'universal_field_number'	=> '?',
+						'customfield_pn_type'		=> '?'
+					]
+				)
+				->order('universal_field_order');
+
+			$result = array_merge($result, $this->adapter->query($select, [$fid, $pntype]));
+		}
+
+		return $result;
+	}
+
+
+
+	/**
+	 * Delete universal field
+	 *
+	 * @param $universal_field_id
+	 * @return array|bool
+	 */
+	public function deleteUniversalField($universal_field_id) {
+		$delete = new Delete();
+
+		$delete->from('pnuniversalfield')
+			->where(['universal_field_id' => '?']);
+
+		return $this->adapter->query($delete, [$universal_field_id]);
+	}
+
+	/**
+	 * Return next universal field number
+	 *
+	 * @param $pn_type
+	 * @return int
+	 */
+	public function getNextUniversalFieldNumber($pn_type) {
+		$select = new Select();
+
+		$select->from(['pu' => 'pnuniversalfield'])
+			->columns(['nextNum' => new Expression('isnull(max(universal_field_number), 0)+1')])
+			->where([
+				'customfield_pn_type' => '?'
+			]);
+
+		$result = $this->adapter->query($select, [$pn_type]);
+
+		return $result[0]['nextNum'] == '' ? 1 : $result[0]['nextNum'];
 	}
 }
 

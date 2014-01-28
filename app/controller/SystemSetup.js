@@ -1090,10 +1090,10 @@ Ext.define('NP.controller.SystemSetup', {
 
 	showFieldEditForm: function(dataview, record, lineitem) {
 		var me = this,
-			fid = parseInt(record.get('controlpanelitem_name')[record.get('controlpanelitem_name').length - (!lineitem ? 1 : 10)]),
 			panel = dataview.up().up(),
 			tabindex = panel.name == 'headers' ? 0 : (panel.name == 'lineitems' ? 1 : (panel.name == 'servicefields' ? 2 : 3)),
-			headerform = me.getCmp('systemsetup.customfieldform');
+			headerform = me.getCmp('systemsetup.customfieldform'),
+			fid = tabindex < 2 ? parseInt(record.get('controlpanelitem_name')[record.get('controlpanelitem_name').length - (!lineitem ? 1 : 10)]) : parseInt(record.get('customfield_id'));
 
 		if (!headerform) {
 			panel.add({
@@ -1112,12 +1112,20 @@ Ext.define('NP.controller.SystemSetup', {
 				tabindex: tabindex,
 				success    : function(result) {
 					if (result) {
-						console.log('result: ', result);
+						console.log('data: ', result);
 						headerform.setTitle('Custom Field ' + fid);
-						if (tabindex != 1) {
-							headerform.getForm().findField('customfielddata').setFieldLabel((tabindex < 2 ? 'Custom Field ' : 'Field ') + fid + ' Values');
-							headerform.getForm().findField('customfielddata').getStore().getProxy().extraParams.fid = fid;
-							headerform.getForm().findField('customfielddata').getStore().load();
+						headerform.getForm().findField('customfielddata').setFieldLabel((tabindex < 2 ? 'Custom Field ' : 'Field ') + fid + ' Values');
+						headerform.getForm().findField('customfielddata').getStore().getProxy().extraParams.fid = fid;
+						if (tabindex >= 2) {
+							headerform.getForm().findField('customfielddata').getStore().getProxy().extraParams.pntype = result.customfield_pn_type;
+						}
+						headerform.getForm().findField('customfielddata').getStore().load();
+						headerform.getChildByElement('dataandselectfield').hide();
+
+						if (tabindex >= 2) {
+							headerform.getChildByElement('dataandselectfield').show();
+							headerform.getForm().findField('custom_field_maxlength').show();
+						} else {
 							if (fid !== 7 && fid !== 8) {
 								headerform.getForm().findField('custom_field_maxlength').hide();
 								headerform.getChildByElement('dataandselectfield').show();
@@ -1125,12 +1133,10 @@ Ext.define('NP.controller.SystemSetup', {
 								headerform.getForm().findField('custom_field_maxlength').show();
 								headerform.getChildByElement('dataandselectfield').hide();
 							}
-						} else {
-							headerform.getChildByElement('dataandselectfield').hide();
 						}
 
-
-						headerform.getForm().findField('universal_field_number').setValue(parseInt(fid));
+						headerform.getForm().findField('universal_field_number').setValue(!result['universal_field_number'] ? '' : result['universal_field_number']);
+						headerform.getForm().findField('fid').setValue(parseInt(fid));
 						headerform.getForm().findField('invoice_custom_field_on_off').setValue(parseInt(result['inv_custom_field_on_off']));
 						headerform.getForm().findField('invoice_custom_field_req').setValue(parseInt(result['inv_custom_field_req']));
 						headerform.getForm().findField('po_custom_field_on_off').setValue(parseInt(result['po_custom_field_on_off']));
@@ -1144,9 +1150,14 @@ Ext.define('NP.controller.SystemSetup', {
 						}
 						if (tabindex > 1) {
 							headerform.getForm().findField('customFieldType').setValue(result['customfield_type'] == 'select' ? 0 : (result['customfield_type'] == '' || result['customfield_type'] == 'text' ? 3 : 2));
+							headerform.getForm().findField('custom_field_lbl').setValue(result['customfield_label']);
+							headerform.getForm().findField('customfield_status').setValue(result['po_on_off']);
+							headerform.getForm().findField('customfield_req').setValue(result['po_req']);
+						}else {
+							headerform.getForm().findField('custom_field_lbl').setValue(result['custom_field_lbl']);
 						}
-						headerform.getForm().findField('custom_field_maxlength').setValue(tabindex < 2 ? parseInt(result['maxlength']) : parseInt(result['customfield_max_length']));
-						headerform.getForm().findField('custom_field_lbl').setValue(result['custom_field_lbl']);
+
+						headerform.getForm().findField('custom_field_maxlength').setValue(tabindex < 2 ? parseInt(!result['maxlength'] ? 0 : result['maxlength']) : parseInt(!result['customfield_max_length'] ? 0 : result['customfield_max_length']));
 
 						headerform.show();
 					}
@@ -1160,22 +1171,30 @@ Ext.define('NP.controller.SystemSetup', {
 			values = form.getValues(),
 			data = {},
 			me = this,
-			grid = form.up().up().down('customgrid');
+			grid = form.up().down('customgrid');
 
-		console.log('grid: ', grid);
-
-		data['custom_fieldnumber'] = parseInt(values['universal_field_number']);
-		data['field_inv_on_off'] = values['invoice_custom_field_on_off'];
-		data['field_inv_req'] = values['invoice_custom_field_req'];
-		data['field_po_on_off'] = values['po_custom_field_on_off'];
-		data['field_po_req'] = values['po_custom_field_req'];
-		data['field_vef_on_off'] = values['vef_custom_field_on_off'];
-		data['field_vef_req'] = values['vef_custom_field_req'];
-		data['field_imgindex'] = values['invoice_custom_field_imgindex'];
-		data['field_lbl'] = values['custom_field_lbl'];
+		data['universal_field_number'] = parseInt(values['universal_field_number']);
+		data['fid'] = parseInt(values['fid']);
 		data['islineitem'] = form.tabindex;
 		data['custom_field_maxlength'] = values['custom_field_maxlength'];
-		data['customFieldType'] = values['customFieldType'] == 0 ? 'select' : 'date';
+
+		if (form.tabindex < 2) {
+			data['field_inv_on_off'] = values['invoice_custom_field_on_off'];
+			data['field_inv_req'] = values['invoice_custom_field_req'];
+			data['field_po_on_off'] = values['po_custom_field_on_off'];
+			data['field_po_req'] = values['po_custom_field_req'];
+			data['field_vef_on_off'] = values['vef_custom_field_on_off'];
+			data['field_vef_req'] = values['vef_custom_field_req'];
+			data['field_imgindex'] = values['invoice_custom_field_imgindex'];
+			data['field_lbl'] = values['custom_field_lbl'];
+			data['customFieldType'] = values['customFieldType'] == 0 ? 'select' : 'date';
+		} else {
+			data['custom_field_lbl'] 			= values['custom_field_lbl'];
+			data['customfield_req'] 			= values['customfield_req'];
+			data['customfield_status']			= values['customfield_status'];
+			data['customfield_type']			= values['customFieldType'] == 0 ? 'select' : (values['customFieldType'] == 2 ? 'date' : 'text');
+			data['customfield_lastupdateby']	= NP.Security.getUser().get('userprofile_id');
+		}
 
 		NP.lib.core.Net.remoteCall({
 			requests: {

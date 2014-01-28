@@ -161,13 +161,13 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 								boxLabel: NP.Translator.translate('Calendar'),
 								name: 'customFieldType',
 								inputValue: '2',
-								checked: true,
 								width: 70,
-								hidden: me.tabindex < 2
+								hidden: me.tabindex !== 2
 							}
 						],
 						listeners: {
 							change: function(radiogroup, newValue, oldValue, eOpts) {
+								console.log(newValue);
 								if (parseInt(newValue.customFieldType) == 0 ) {
 									me.getForm().findField('customfielddata').show();
 									me.getForm().findField('universal_field_data').show();
@@ -181,9 +181,6 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 									me.down('[name="action_buttons"]').hide();
 									me.down('[name="saveValuesBtn"]').hide();
 								}
-							},
-							beforerender: function(radiogroup, eOpts) {
-								console.log(radiogroup);
 							}
 						}
 					},
@@ -343,6 +340,10 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 					{
 						xtype: 'hiddenfield',
 						name: 'universal_field_number'
+					},
+					{
+						xtype: 'hiddenfield',
+						name: 'fid'
 					},
 					{
 						xtype: 'shared.button.save',

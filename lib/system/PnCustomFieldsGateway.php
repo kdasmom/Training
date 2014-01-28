@@ -33,6 +33,22 @@ class PnCustomFieldsGateway extends AbstractGateway {
 	public function getCustomFieldValues($fid) {
 		$select = new Select();
 
+		/**
+		 * Select
+		right(customfield_name, 1) as controlpanelitem_number,
+		customfield_name as controlpanelitem_name,
+		customfield_required as controlpanelitem_required,
+		customfield_label,
+		customfield_status as po_on_off,
+		customfield_status,
+		customfield_type,
+		customfield_max_length,
+		universal_field_number,
+		customfield_required as po_req,
+		customfield_pn_type
+		From PnCustomFields
+		Where customfield_id = <cfqueryparam value="#request.fid#"
+		 */
 		$select->from(['pc' => 'pncustomfields'])
 			->columns(
 				[
@@ -55,21 +71,7 @@ class PnCustomFieldsGateway extends AbstractGateway {
 	}
 
 
-	/**
-	 * @param $type
-	 * @return int
-	 */
-	public function getNextMaxUFN($type) {
-		$select = new Select();
 
-		$select->from(['p' => 'pnuniversalfield'])
-			->columns(['maxUFN' => new Expression('max(universal_field_number)')])
-			->where(['customfield_pn_type' => '?']);
-
-		$result = $this->adapter->query($select, [$type]);
-
-		return $result[0]['maxUFN'] == '' ? 1 : $result[0]['maxUFN'];
-	}
 
 	public function updateCustomField($data) {
 		$update = new Update();

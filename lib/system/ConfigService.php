@@ -669,12 +669,12 @@ class ConfigService extends AbstractService {
 		return $data;
 	}
 
-	public function getCustomFieldsData($fid, $tabindex) {
+	public function getCustomFieldsData($fid = null, $tabindex = null, $pntype = null) {
 		if(!$fid || (in_array($fid, [7, 8]) && $tabindex < self::TABINDEX_CUSTOMFIELD_SERVICEFIELDS)) {
 			return [];
 		}
 
-		return $this->configsysGateway->getCustomFieldData($fid, $tabindex);
+		return $this->pnUniversalFieldGateway->getCustomFieldData($fid, $tabindex, $pntype);
 	}
 
 	/**
@@ -683,24 +683,54 @@ class ConfigService extends AbstractService {
 	 * @param $universal_field_id
 	 */
 	public function deleteUniversalField($universal_field_id) {
-		return $this->configsysGateway->deleteUniversalField($universal_field_id);
+		return $this->pnUniversalFieldGateway->deleteUniversalField($universal_field_id);
 	}
 
 	public function saveUniversalFields($data = null) {
 		if (!$data) {
 			return false;
 		}
-		if ($data['action'] == 'new') {
-			return $this->pnUniversalFieldGateway->insert([
-				'universal_field_data'		=> $data['universal_field_data'],
-				'universal_field_number'	=> $data['universal_field_number'],
-				'universal_field_status'	=> $data['universal_field_status'],
-				'universal_field_order'		=> 0,
-				'customfield_pn_type'		=> 'customInvoicePO',
-				'islineitem'				=> $data['tabindex']
-			]);
+
+		if ($data['tabindex'] < self::TABINDEX_CUSTOMFIELD_SERVICEFIELDS) {
+			if ($data['action'] == 'new') {
+				return $this->pnUniversalFieldGateway->insert([
+					'universal_field_data'		=> $data['universal_field_data'],
+					'universal_field_number'	=> $data['universal_field_number'],
+					'universal_field_status'	=> $data['universal_field_status'],
+					'universal_field_order'		=> 0,
+					'customfield_pn_type'		=> 'customInvoicePO',
+					'islineitem'				=> $data['tabindex']
+				]);
+			} else {
+				return $this->pnUniversalFieldGateway->updateUniversalField($data);
+			}
 		} else {
-			return $this->pnUniversalFieldGateway->updateUniversalField($data);
+			if ($data['action'] == 'new') {
+				$customField = $this->pnCustomFieldsGateway->find(['customfield_id' => '?'], [$data['universal_field_number'], null, ['customfield_pn_type']]);
+				$nextId = $this->pnUniversalFieldGateway->getNextMaxUFN($customField[0]['customfield_pn_type']);
+				return $this->pnUniversalFieldGateway->insert(
+					[
+						'universal_field_data'		=> $data['universal_field_data'],
+						'universal_field_number'	=> $data['universal_field_number'],
+						'universal_field_status'	=> $data['universal_field_status'],
+						'universal_field_order'		=> 0,
+						'islineitem'				=> 1,
+						'customfield_pn_type'		=> $customField[0]['customfield_pn_type']
+					]
+				);
+			} else {
+				return $this->pnUniversalFieldGateway->update(
+					[
+						'universal_field_data' 		=> $data['universal_field_data'],
+						'universal_field_status'	=> $data['universal_field_status'],
+						'islineitem'				=> 1
+					],
+					[
+						'universal_field_id'		=> '?'
+					],
+					[$data['universal_field_id']]
+				);
+			}
 		}
 	}
 
@@ -717,18 +747,64 @@ class ConfigService extends AbstractService {
 	}
 
 	public function updateCustomField($data) {
-		foreach ($data as $key => $value) {
-			if ($key !== 'islineitem' && $key !== 'custom_field_maxlength' && $key !== 'customFieldType' && $key !== 'custom_fieldnumber') {
-				$this->updateField($key, $value, $data['custom_fieldnumber'], $data['islineitem']);
+		if ($data['islineitem'] > self::TABINDEX_CUSTOMFIELD_LINEITEMS) {
+			$this->pnCustomFieldsGateway->update(
+				[
+					'customfield_label'			=> $data['custom_field_lbl'],
+					'customfield_required'		=> $data['customfield_req'],
+					'customfield_status'		=> $data['customfield_status'],
+					'customfield_type'			=> $data['customfield_type'],
+					'customfield_lastupdateby'	=> $data['customfield_lastupdateby'],
+					'customfield_lastupdatedt'	=> Util::formatDateForDB()
+				],
+				[
+					'customfield_id'			=> '?'
+				],
+				[
+					$data['fid']
+				]
+			);
+
+			if ($data['customfield_type'] == 'text') {
+				$this->pnCustomFieldsGateway->update(
+					[
+						'customfield_max_length' => $data['custom_field_maxlength']
+					],
+					[
+						'customfield_id'		=> '?'
+					],
+					[
+						$data['fid']
+					]
+				);
 			}
-		}
+			if ($data['customfield_type'] == 'select') {
+				if (!$data['universal_field_number'] || $data['universal_field_number'] == '') {
+					$customField = $this->pnCustomFieldsGateway->find(['customfield_id' => '?'], [$data['fid'], null, ['customfield_pn_type']]);
+					$this->pnCustomFieldsGateway->update(
+						[
+							'universal_field_number'		=> $this->pnUniversalFieldGateway->getNextUniversalFieldNumber($customField[0]['customfield_pn_type'])
+						],
+						[
+							'customfield_id'		=> $data['fid']
+						]
+					);
+				}
+			}
+		} else {
+			foreach ($data as $key => $value) {
+				if ($key !== 'islineitem' && $key !== 'custom_field_maxlength' && $key !== 'customFieldType' && $key !== 'fid') {
+					$this->updateField($key, $value, $data['fid'], $data['islineitem']);
+				}
+			}
 
-		if ($data['custom_fieldnumber'] == 7 || $data['custom_fieldnumber'] == 8) {
-			$this->configSysValGateway->updateUniversalFieldLength($data['custom_field_maxlength'], $data['custom_fieldnumber'], $data['islineitem']);
-		}
+			if ($data['fid'] == 7 || $data['fid'] == 8) {
+				$this->configSysValGateway->updateUniversalFieldLength($data['custom_field_maxlength'], $data['fid'], $data['islineitem']);
+			}
 
-		if ($data['islineitem'] == self::TABINDEX_CUSTOMFIELD_HEADERS) {
-			$this->configSysValGateway->updateUniversalFieldType($data['customFieldType'], $data['custom_fieldnumber']);
+			if ($data['islineitem'] == self::TABINDEX_CUSTOMFIELD_HEADERS) {
+				$this->configSysValGateway->updateUniversalFieldType($data['customFieldType'], $data['fid']);
+			}
 		}
 
 		return true;
