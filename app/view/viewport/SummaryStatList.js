@@ -36,6 +36,7 @@ Ext.define('NP.view.viewport.SummaryStatList', {
     initComponent: function() {
         var that = this;
 
+        that.grids = [];
         this.items = [];
 
         // Get a list of all the valid summary stats for the current user
@@ -121,6 +122,7 @@ Ext.define('NP.view.viewport.SummaryStatList', {
                 if (selection == name) {
                     this.select(name);
                 }
+                break;
             }
         }
     },

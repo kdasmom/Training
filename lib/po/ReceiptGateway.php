@@ -170,8 +170,7 @@ class ReceiptGateway extends AbstractGateway {
 		$select = new sql\ReceiptSelect();
 		
 		if ($countOnly == 'true') {
-			$select->count(true, 'totalRecs')
-					->column('receipt_id');
+			$select->count(true, 'totalRecs', 'r.receipt_id');
 		} else {
 			$select->columns(array(
 								'receipt_id',

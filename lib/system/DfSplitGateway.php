@@ -33,7 +33,7 @@ class DfSplitGateway extends AbstractGateway {
 	}
 
 	public function findByFilter($userprofile_id=null, $delegated_to_userprofile_id=null,
-								$vendorsite_id, $property_id=null, $glaccount_id=null,
+								$vendorsite_id=null, $property_id=null, $glaccount_id=null,
 								$pageSize=null, $page=1, $sort='dfsplit_name') {
 		$select = new Select();
 		

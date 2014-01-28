@@ -75,7 +75,7 @@ class SplitService extends AbstractService {
 	 * @return array
 	 */
 	public function getByFilter($userprofile_id=null, $delegated_to_userprofile_id=null,
-								$vendorsite_id, $property_id=null, $glaccount_id=null,
+								$vendorsite_id=null, $property_id=null, $glaccount_id=null,
 								$pageSize=null, $page=1, $sort='dfsplit_name') {
 		return $this->dfSplitGateway->findByFilter($userprofile_id, $delegated_to_userprofile_id,
 													$vendorsite_id, $property_id, $glaccount_id,

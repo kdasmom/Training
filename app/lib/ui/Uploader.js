@@ -35,7 +35,7 @@ Ext.define('NP.lib.ui.Uploader', {
 
         this.params.form = this.params.form || {};
         this.params.files = this.params.files || {};
-        this.params.service = this.params.service || 'ajax.php';
+        this.params.uploadScript = this.params.uploadScript || 'ajax.php';
         this.params.listeners = this.params.listeners || {};
 
         this.params.files.extensions = this.params.files.extensions || '*.*';
@@ -62,34 +62,34 @@ Ext.define('NP.lib.ui.Uploader', {
 
                 items: [
                     {
-                        xtype:     'panel',
-                        border:    0,
-                        region:    'center',
-                        overflowY: 'scroll',
-                        html:      '<div id="uploadqueue"></div>'
+                        xtype     :     'panel',
+                        border    :    0,
+                        region    :    'center',
+                        autoScroll: true,
+                        html      :      '<div id="uploadqueue"></div>'
                     },
                     {
-                        xtype:  'panel',
+                        xtype :  'panel',
                         layout: 'border',
                         border: 0,
                         region: 'south',
                         height: 45,
 
-                        items: [
+                        items : [
                             {
-                                xtype:  'panel',
+                                xtype :  'panel',
                                 border: 0,
                                 region: 'center',
-                                html: '<input id="file_upload" type="file" name="file_upload" />'
+                                html  : '<input id="file_upload" type="file" name="file_upload" />'
                             },
                             {
-                                xtype:  'panel',
-                                border: 0,
-                                region: 'east',
-                                width:   300,
+                                xtype    :  'panel',
+                                border   : 0,
+                                region   : 'east',
+                                width    :   300,
                                 bodyStyle: 'text-align: center',
 
-                                items:[
+                                items    :[
                                     {
                                         xtype: 'button',
                                         text:  'Upload Files',
@@ -116,46 +116,44 @@ Ext.define('NP.lib.ui.Uploader', {
 
         this.listeners = this.params.listeners;
 
-        var self = this;
-        this.listeners.afterrender = function(){
-            if (this.isUploadifiveSupported()) {
-                $("#file_upload").uploadifive({
-                    auto:   false,
-                    dnd:    true,
-                    multi:  true,
-
-                    queueID:    'uploadqueue',
+        var self = this,
+            cfg = {
+                    auto          : false,
+                    multi         : true,
+                    queueID       : 'uploadqueue',
+                    height        : 30,
+                    width         : 120,
+                    formData      : this.params.form,
+                    simUploadLimit: 25,
 
                     onQueueComplete: function(uploads) {
-                        self.params.listeners.onUploadComplete(uploads);
+                        if (self.params.listeners.onQueueComplete) {
+                            self.params.listeners.onQueueComplete(uploads);
+                        }
                     },
 
-                    uploadScript:   this.params.service,
-                    formData:       this.params.form,
-                    simUploadLimit: 25
-                });
+                    onUploadComplete: function(file) {
+                        if (self.params.listeners.onUploadComplete) {
+                            self.params.listeners.onUploadComplete.apply(self, arguments);
+                        }
+                    }
+                };
+
+        this.listeners.afterrender = function(){
+            if (this.isUploadifiveSupported()) {
+                $("#file_upload").uploadifive(Ext.apply(cfg, {
+                    dnd         : true,
+                    uploadScript: this.params.uploadScript
+                }));
             } else {
                 // After component is displayed, uploadify should be notified what field it
                 // should use for file selection
-                $("#file_upload").uploadify({
-                    height: 30,
-                    width:  120,
-
-                    auto:       false,
-                    multi:      true,
-                    queueID:    'uploadqueue',
-                    swf:        '/vendor/jquery-uploadify/uploadify.swf',
-
-                    onQueueComplete: function(uploads) {
-                        self.params.listeners.onUploadComplete(uploads);
-                    },
-
-                    uploader:       this.params.service,
-                    fileTypeExts:   this.params.files.extensions,
-                    fileTypeDesc:   this.params.files.description,
-                    formData:       this.params.form,
-                    simUploadLimit: 25
-                });
+                $("#file_upload").uploadify(Ext.apply(cfg, {
+                    swf         : 'vendor/jquery-uploadify/uploadify.swf',
+                    uploader    : this.params.uploadScript,
+                    fileTypeExts: this.params.files.extensions,
+                    fileTypeDesc: this.params.files.description
+                }));
             }
         };
 

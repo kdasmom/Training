@@ -145,7 +145,9 @@ Ext.define('NP.lib.ui.Assigner', {
         
         Ext.resumeLayouts(true);
 
-        me.mask.destroy();
+        if (me.mask && me.mask.destroy) {
+            me.mask.destroy();
+        }
     },
 
     onMoveClick: function(direction, copyAll) {

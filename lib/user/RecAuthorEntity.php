@@ -4,7 +4,7 @@ namespace NP\user;
 /**
  * Entity class for RecAuthor
  *
- * @author 
+ * @author Thomas Messier
  */
 class RecAuthorEntity extends \NP\core\AbstractEntity {
 	
@@ -17,7 +17,8 @@ class RecAuthorEntity extends \NP\core\AbstractEntity {
 		'userprofile_id'	 => array(
 			'validation' => array(
 				'digits' => array()
-			)
+			),
+			'tableConstraint' => array()
 		),
 		'table_name'	 => array(
 			'validation' => array(
@@ -30,6 +31,7 @@ class RecAuthorEntity extends \NP\core\AbstractEntity {
 			)
 		),
 		'recauthor_datetm'	 => array(
+			'timestamp' => 'created',
 			'validation' => array(
 				'date' => array('format'=>'Y-m-d H:i:s.u')
 			)
@@ -37,7 +39,10 @@ class RecAuthorEntity extends \NP\core\AbstractEntity {
 		'delegation_to_userprofile_id'	 => array(
 			'validation' => array(
 				'digits' => array()
-			)
+			),
+			'tableConstraint' => array(
+                'table' => 'userprofile'
+            )
 		)
 	);
 
