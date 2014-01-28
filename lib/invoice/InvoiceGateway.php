@@ -66,8 +66,7 @@ class InvoiceGateway extends AbstractGateway {
 				->join(new sql\join\InvoiceVendorsiteJoin())
 				->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(['vendor_name','vendor_id_alt','vendor_status','integration_package_id']))
 				->join(new \NP\vendor\sql\join\VendorsiteAddressJoin())
-				->join(new \NP\vendor\sql\join\VendorsitePhoneJoin())
-				->join(new \NP\contact\sql\join\PhonePhoneTypeJoin('Main'))
+				->join(new \NP\vendor\sql\join\VendorsitePhoneJoin('Main'))
 				->join(new sql\join\InvoicePropertyJoin())
 				->join(new \NP\property\sql\join\PropertyAddressJoin([
 					'property_address_id'      => 'address_id',
@@ -110,6 +109,42 @@ class InvoiceGateway extends AbstractGateway {
 				->order('p.purchaseorder_ref');
 		
 		return $this->adapter->query($select, array($invoice_id));
+	}
+
+	/**
+	 * Finds all associated lines between an invoice and a PO 
+	 */
+	public function findInvoicePoAssociations($invoice_id, $purchaseorder_id) {
+		$select = Select::get()
+			->from(['ii'=>'invoiceitem'])
+				->join(new sql\join\InvoiceItemPoItemJoin())
+			->whereEquals('ii.invoice_id', '?')
+			->whereEquals('pi.purchaseorder_id', '?');
+
+		return $this->adapter->query($select, [$invoice_id, $purchaseorder_id]);
+	}
+
+	/**
+	 * Checks if an invoice has properties used that are different than the header property.
+	 *
+	 * @param  int $invoice_id
+	 * @return boolean
+	 */
+	public function isInvoiceMultiProp($invoice_id) {
+		$select = Select::get()
+			->count(true, 'total')
+			->from(['ii'=>'invoiceitem'])
+				->join(new sql\join\InvoiceItemInvoiceJoin())
+			->whereEquals('ii.invoice_id', '?')
+			->whereNotEquals(
+				'ii.property_id',
+				'i.property_id'
+			);
+
+
+		$total = $this->adapter->query($select, [$invoice_id]);
+
+		return (count($total)) ? true : false;
 	}
 
 	/**
@@ -339,6 +374,58 @@ class InvoiceGateway extends AbstractGateway {
 				->order($sort);
 
 		return $select;
+	}
+
+	public function findInvoiceStatistics($property_id) {
+		$select = Select::get()
+			->distinct()
+			->count(true, 'total', 'i.invoice_id')
+			->columns([
+				'sort' => new Expression("
+					CASE i.invoice_status
+						WHEN 'open' THEN 2
+						WHEN 'forapproval' THEN 3
+						WHEN 'saved' THEN 4
+						WHEN 'hold' THEN 5
+						WHEN 'rejected' THEN 6
+					END
+				"),
+				'name' => new Expression("
+					CASE i.invoice_status
+						WHEN 'open' THEN '# of Open Invoices'
+						WHEN 'forapproval' THEN '# of Invoices Pending Approval '
+						WHEN 'saved' THEN '# of Completed Invoices to Approve'
+						WHEN 'hold' THEN '# of Invoices on Hold'
+						WHEN 'rejected' THEN '# of Rejected Invoices'
+					END
+				"),
+				'amount' => new Expression("
+					SUM(ii.invoiceitem_amount + ii.invoiceitem_shipping + ii.invoiceitem_salestax)
+				")
+			])
+			->from(['i'=>'invoice'])
+				->join(new sql\join\InvoiceInvoiceItemJoin([]))
+			->whereIn('i.invoice_status', "'open','forapproval','saved','hold','rejected'")
+			->whereEquals('i.property_id', '?')
+			->group('i.invoice_status')
+			->union(
+				Select::get()
+					->count(true, 'total')
+					->columns([
+						'sort' => new Expression('1'),
+						'name' => new Expression("'# of Images to Convert'"),
+						'amount' => new Expression('SUM(img.Image_Index_Amount)')
+					])
+					->from(['img'=>'image_index'])
+					->whereEquals('img.property_id', '?')
+					->whereMerge(new \NP\image\sql\criteria\ImageInvoiceDocCriteria('Invoice,Utility Invoice'))
+					->whereMerge(new \NP\image\sql\criteria\ImageInvoiceUnassigned())
+					->whereEquals('img.Image_Index_Status', '1')
+					->having('count(*) > 0')
+			)
+			->order('2');
+
+		return $this->adapter->query($select, [$property_id,$property_id]);
 	}
 
 	public function findDuplicates($invoice_id) {
@@ -609,8 +696,7 @@ class InvoiceGateway extends AbstractGateway {
 		$select = new sql\InvoiceSelect();
 		
 		if ($countOnly == 'true') {
-			$select->count(true, 'totalRecs')
-					->column('invoice_id');
+			$select->count(true, 'totalRecs', 'i.invoice_id');
 		} else {
 			$select->allColumns('i')
 					->columnAmount()

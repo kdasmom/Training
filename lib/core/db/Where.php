@@ -345,6 +345,32 @@ class Where implements SQLElement {
 	}
 
 	/**
+	 * Checks if a string field is empty by checking if it's NULL or an empty string
+	 *
+	 * @param  string|SQLElement $left  Field to check
+     * @return \NP\core\db\Where        The current Where object
+	 */
+	public function isEmpty($left) {
+		return $this->nest('OR')
+						->isNull($left)
+						->equals($left, "''")
+					->unnest();
+	}
+
+	/**
+	 * Checks if a string field is not empty by checking if it's not NULL and not an empty string
+	 *
+	 * @param  string|SQLElement $left  Field to check
+     * @return \NP\core\db\Where        The current Where object
+	 */
+	public function isNotEmpty($left) {
+		return $this->nest('AND')
+						->isNotNull($left)
+						->notEquals($left, "''")
+					->unnest();
+	}
+
+	/**
 	 * Returns predicates in this Where object
 	 *
 	 * @return  array

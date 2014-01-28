@@ -12,7 +12,7 @@ use NP\core\db\Select;
  */
 class JobAssociationJbContractJoin extends Join {
 	
-	public function __construct($cols=array('jbcontract_name','jbcontract_desc'), $type=Select::JOIN_LEFT, $toAlias='jbct', $fromAlias='jb') {
+	public function __construct($cols=array('jbcontract_name','jbcontract_desc','jbcontract_status'), $type=Select::JOIN_LEFT, $toAlias='jbct', $fromAlias='jb') {
 		$this->setTable(array($toAlias=>'jbcontract'))
 			->setCondition("{$fromAlias}.jbcontract_id = {$toAlias}.jbcontract_id")
 			->setCols($cols)

@@ -19,9 +19,12 @@ Ext.define('NP.lib.core.DBProvider', {
      * Saves a name/value pair for state to the database
      */
     set: function(name, value){
-        // Use the Config object to save the state in the database
-        NP.lib.core.Config.saveUserSetting(name, value);
-        // Call the abstract provider's set() function to save the name/value pair in the state object
-        this.callParent(arguments);
+        // Only save a setting if it has changed
+        if (Ext.JSON.encode(value) != Ext.JSON.encode(this.state[name])) {
+            // Use the Config object to save the state in the database
+            NP.lib.core.Config.saveUserSetting(name, value);
+            // Call the abstract provider's set() function to save the name/value pair in the state object
+            this.callParent(arguments);
+        }
     }
 });

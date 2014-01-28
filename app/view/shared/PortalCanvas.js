@@ -55,7 +55,7 @@ Ext.define('NP.view.shared.PortalCanvas', {
 		var row = this.add({
 			xtype    : 'shared.portalrow',
 			border   : false,
-			flex     : 1,
+			flex     : flex,
 			removable: removable,
 			viewOnly : this.viewOnly
 		});
