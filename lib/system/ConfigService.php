@@ -875,6 +875,7 @@ class ConfigService extends AbstractService {
 				break;
 		}
 	}
+
 }
 
 ?>

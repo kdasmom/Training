@@ -139,6 +139,71 @@ class PicklistService extends AbstractService {
 
 		return $entityType;
 	}
+
+
+	public function getPicklistValuesList($mode = 'Insurance') {
+
+		switch ($mode) {
+			case ('Insurance'):
+				$tablename = 'insurancetype';
+				$tablekey_id = 1005;
+				$tableid = 1005;
+				break;
+			case ('Rejection'):
+				$tablename = 'rejectionnote';
+				$tablekey_id = 1010;
+				$tableid = 1010;
+				break;
+			case ('On_Hold'):
+				$tablename = 'reason';
+				$tablekey_id = 2013;
+				$tableid = 2013;
+				break;
+			case ('TaxPayor'):
+				$tablename = 'insurancetype';
+				$tablekey_id = 2014;
+				$tableid = 2014;
+				break;
+			case ('Payee'):
+				$tablename = 'lookupcode';
+				$tablekey_id = 2015;
+				$tableid = 2015;
+				break;
+			case ('Vendor_Types'):
+				$tablename = 'vendortype';
+				$tablekey_id = 2011;
+				$tableid = 2011;
+				break;
+			case ('PayBy'):
+				$tablename = 'invoicepaymenttype';
+				$tablekey_id = 2016;
+				$tableid = 2016;
+				break;
+			case ('UtilityType'):
+				$tablename = 'utilitytype';
+				$tablekey_id = 2017;
+				$tableid = 2017;
+				break;
+			case ('Vendor_Documents'):
+				$tablename = 'image_doctype';
+				$tablekey_id = 2018;
+				$tableid = 2018;
+				break;
+		}
+		$asp_client_id = $this->configService->getClientId();
+
+		$result = [
+			[
+				'column_data'		=> 'New',
+				'column_pk_data'	=> 0,
+				'column_status'		=> 1
+			]
+		];
+
+		$result = array_merge($result, $this->picklistGateway->getPicklistColumns($tableid, $asp_client_id));
+
+		return $result;
+	}
 }
 
 ?>

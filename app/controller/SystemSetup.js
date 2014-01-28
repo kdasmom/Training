@@ -198,6 +198,9 @@ Ext.define('NP.controller.SystemSetup', {
 			},
 			'[xtype="systemsetup.customfields"]': {
 				beforehidetab: me.changeCustomFieldsTab
+			},
+			'[xtype="systemsetup.picklists"] [name="picklistmodes"]': {
+				itemclick: me.loadPicklistColumns
 			}
 		});
 
@@ -1088,6 +1091,12 @@ Ext.define('NP.controller.SystemSetup', {
 		}
 	},
 
+	/**
+	 * Show edit form for the custom field
+	 * @param dataview
+	 * @param record
+	 * @param lineitem
+	 */
 	showFieldEditForm: function(dataview, record, lineitem) {
 		var me = this,
 			panel = dataview.up().up(),
@@ -1220,5 +1229,13 @@ Ext.define('NP.controller.SystemSetup', {
 	changeCustomFieldsTab: function(tab) {
 		var me = this;
 		tab.remove(me.getCmp('systemsetup.customfieldform'));
+	},
+
+	loadPicklistColumns: function (grid, record) {
+		var me = this,
+			columnsgrid = me.getCmp('systemsetup.picklists').down('[name="picklistcolumns"]');
+
+		columnsgrid.getStore().getProxy().extraParams.mode = record.get('mode');
+		columnsgrid.getStore().reload();
 	}
 });

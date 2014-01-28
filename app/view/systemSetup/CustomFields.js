@@ -17,7 +17,11 @@ Ext.define('NP.view.systemSetup.CustomFields', {
     
     title: 'Custom Fields',
 
-	layout: 'fit',
+	layout: {
+		type: 'hbox',
+		align: 'stretch'
+	},
+	autoScroll: true,
 
     initComponent: function() {
 		var me = this;
@@ -35,6 +39,7 @@ Ext.define('NP.view.systemSetup.CustomFields', {
 			{
 				xtype : 'verticaltabpanel',
 				border: false,
+				flex: 1,
 				items: [
 					{
 						xtype: 'systemsetup.customfieldsheader',
