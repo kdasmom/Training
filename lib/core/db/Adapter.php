@@ -116,7 +116,7 @@ class Adapter {
 		}
 
 		$sql = trim($sql);
-		$beginSql = strtolower(substr($sql, 0, 6));
+		$beginSql = strtolower(substr(trim($sql), 0, 6));
 
 		// If dealing with an insert statement, append SCOPE_IDENTITY QUERY at the end
 		if ($beginSql == 'insert') {
@@ -139,22 +139,39 @@ class Adapter {
 			die;
 		}
 		
-		// If we ran a select statement, return the data
-		if (!in_array($beginSql, array('insert','update','delete'))) {
-			// Fetch and return as an associative array
-			$res = array();
-			while( $row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC) ) {
-				$res[] = $row;
+		// This array will store all the results
+		$results = [];
+		do {
+			// Check the metadata on the statement
+			$meta = sqlsrv_field_metadata($stmt);
+			// If there's metadata (fields), it means it's a select statement, so we can get the data
+			if (count($meta)) {
+				// Fetch and return as an associative array
+				$res = [];
+				while( $row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC) ) {
+					$res[] = $row;
+				}
+				// Add the data to the global result set
+				$results[] = $res;
 			}
-
-			return $res;
-		// If dealing with an insert statement, we need to get the last insert ID and store it
-		} else if ($beginSql == 'insert') {
-			sqlsrv_next_result($stmt);
-     		sqlsrv_fetch($stmt);
-			$this->lastInsertId = sqlsrv_get_field($stmt, 0);
+		} while(sqlsrv_next_result($stmt)); // Fetch the next result
+		
+		// If dealing with a single insert statement, we need to do something different to capture the
+		// ID of the record inserted
+		if ($beginSql == 'insert') {
+			$this->lastInsertId = $results[0][0]['last_id'];
+			return true;
 		}
 
+		// If we have only one result set, pop it out of the result set and return it
+		if (count($results) === 1) {
+			return $results[0];
+		// If we have multiple result sets, return them all in the main array
+		} else if (count($results) > 1) {
+			return $results;
+		}
+
+		// If we had no result sets to return, just return true (for insert/update/delete)
 		return true;
 	}
 
@@ -165,6 +182,17 @@ class Adapter {
 	 */
 	public function lastInsertId() {
 		return $this->lastInsertId;
+	}
+
+	/**
+	 * Return the current ID for a table (the next insert ID)
+	 *
+	 * @return int
+	 */
+	public function currentId($table) {
+		$rec = $this->query("SELECT IDENT_CURRENT('{$table}') as current_id");
+		
+		return $rec[0]['current_id'];
 	}
 
 	/**

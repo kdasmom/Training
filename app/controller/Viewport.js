@@ -24,6 +24,7 @@ Ext.define('NP.controller.Viewport', {
 		'NP.view.shared.tile.InvoicesOnHold',
 		'NP.view.shared.tile.InvoicesRejected',
 		'NP.view.shared.tile.InvoicesToApprove',
+		'NP.view.shared.tile.InvoiceStatistics',
 		'NP.view.shared.tile.MtdOverBudgetCategories',
 		'NP.view.shared.tile.PosByUser',
 		'NP.view.shared.tile.PosRejected',
@@ -34,7 +35,8 @@ Ext.define('NP.controller.Viewport', {
 		'NP.view.shared.tile.ReceiptsToApprove',
 		'NP.view.shared.tile.VcAuthRequests',
 		'NP.view.shared.tile.VendorsToApprove',
-		'NP.view.shared.tile.YtdOverBudgetCategories'
+		'NP.view.shared.tile.YtdOverBudgetCategories',
+		'NP.view.shared.tile.YtdTopSpendByVendor'
 	],
 
     stores: ['system.SummaryStatCategories'],
