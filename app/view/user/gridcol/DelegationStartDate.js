@@ -14,13 +14,6 @@ Ext.define('NP.view.user.gridcol.DelegationStartDate', {
 
     initComponent: function() {
     	this.text = NP.Translator.translate(this.text);
-
-		this.renderer = function(val, meta, record) {
-			if (val == undefined) {
-				return record.raw['Delegation_StartDate'];
-			}
-			return val;
-		};
     	
     	this.callParent(arguments);
     }
