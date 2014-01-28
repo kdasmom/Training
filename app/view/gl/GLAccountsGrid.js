@@ -171,10 +171,13 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
                                 fieldLabel: 'Category',
                                 labelWidth: filterLabelWidth,
                                 store     : {
-                                    type    : 'gl.glaccounts',
-                                    service : 'GLService',
-                                    action  : 'getCategories',
-                                    autoLoad: true
+                                    type       : 'gl.glaccounts',
+                                    service    : 'GLService',
+                                    action     : 'getCategories',
+                                    extraParams: {
+                                        getInUseOnly: true
+                                    },
+                                    autoLoad   : true
                                 },
                                 displayField: 'glaccount_name',
                                 valueField  : 'tree_id',

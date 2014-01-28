@@ -298,18 +298,27 @@ class GlAccountGateway extends AbstractGateway {
     }
         
     /**
-     * 
+     * Gets GL Account categories
      */
-    public function getCategories($integration_package_id=null, $activeOnly = false) {
+    public function getCategories($integration_package_id=null, $activeOnly=false, $getInUseOnly=false) {
         $select = new Select();
         $select->columns(array('glaccount_id','integration_package_id','glaccount_name','glaccount_status','glaccount_category' =>'glaccount_name', 'glaccount_order'))
                 ->from(array('g'=>'glaccount'))
                 ->join(new sql\join\GlAccountTreeJoin(array('tree_id')))
                 ->whereIsNull('glaccounttype_id')
-				->whereEquals('glaccount_usable', '?')
-                ->order('g.glaccount_name, g.glaccount_order');
+				->order('g.glaccount_name, g.glaccount_order');
 
-        $params = ['Y'];
+        $params = [];
+        if ($getInUseOnly == 'true') {
+            $select->whereExists(
+                Select::get()
+                    ->from(['g2'=>'glaccount'])
+                        ->join(new sql\join\GlAccountTreeJoin([], Select::JOIN_INNER, 'tr2', 'g2'))
+                    ->whereIsNotNull('g2.glaccounttype_id')
+                    ->whereEquals('tr.tree_id', 'tr2.tree_parent')
+            );
+        }
+
         if ($integration_package_id !== null) {
             $select->whereEquals('g.integration_package_id', '?');
             $params[] = $integration_package_id;

@@ -13,7 +13,6 @@ Ext.define('NP.view.gl.Category', {
         'NP.lib.core.Config',    	
         'NP.view.gl.CategoryGrid',
     	'NP.view.gl.CategoryForm',
-        'NP.view.shared.GlCategoryOrder',
     	'NP.view.shared.button.Cancel',
     	'NP.view.shared.button.Save',
     	'NP.view.shared.button.New',
