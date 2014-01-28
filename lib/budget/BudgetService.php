@@ -88,7 +88,7 @@ class BudgetService extends AbstractService {
      * @return array
      */
     public function getBudgetOveragesByProperty($property_id, $pageSize=null, $page=null, $sort="property_name") {
-        return $this->budgetOverageGateway->findByPropertyId($property_id, $pageSize, $page);
+        return $this->budgetOverageGateway->findByPropertyId($property_id, $pageSize, $page, $sort);
     }
 
     /**

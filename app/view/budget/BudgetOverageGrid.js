@@ -81,10 +81,15 @@ Ext.define('NP.view.budget.BudgetOverageGrid', {
 				flex: 1
 			},
 			{
-				dataIndex: 'userprofile_username',
+				dataIndex: 'budgetoverage_created',
 				text: NP.Translator.translate('Added by'),
+                flex: 0.6,
 				renderer: function (val, meta, record) {
-					return Ext.Date.format(record.get('budgetoverage_created'), 'm/d/Y H:i:s') + (record.raw['person_firstname'] ? (' (' + record.raw['person_firstname'] + (record.raw['person_lastname'] ? (', ' + record.raw['person_lastname']) : '') + ')') : '') ;
+                    var person = '';
+                    if (record.get('person_id') !== null) {
+                        person = ' (' + record.get('person_lastname') + ', ' + record.get('person_firstname') + ')';
+                    }
+					return Ext.Date.format(record.get('budgetoverage_created'), NP.Config.getDefaultDateTimeFormat()) + person;
 				}
 			},
 			{
