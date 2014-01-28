@@ -524,6 +524,9 @@ class PropertyService extends AbstractService {
 					// Update the billto/shipto property IDs to be the ones for this property and re-save the record
 					$property->default_billto_property_id = $property->property_id;
 					$property->default_shipto_property_id = $property->property_id;
+
+					$property->UserProfile_ID             = $data['userprofile_id'];
+					
 					$this->propertyGateway->save($property);
 
 					// Save the creator of the property
