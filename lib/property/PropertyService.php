@@ -119,55 +119,8 @@ class PropertyService extends AbstractService {
 	 * @param  string $sort            Field(s) by which to sort the result; defaults to property_name
 	 * @return array                   Array of property records
 	 */
-	public function getByStatus($property_status = null, $pageSize=null, $page=null, $sort="property_name") {
-		$joins = array(
-			new sql\join\PropertyIntPkgJoin(),
-			new sql\join\PropertyRegionJoin(),
-			new sql\join\PropertyCreatedByUserJoin(),
-			new sql\join\FiscalDisplayTypeJoin(),
-			new sql\join\PropertyPropertyShipToJoin(),
-			new sql\join\PropertyPropertyBillToJoin(),
-			new sql\join\PropertyAddressJoin(),
-			new sql\join\PropertyPhoneJoin(['phone_id', 'phone_number']),
-			new sql\join\PropertyFaxJoin(),
-			new \NP\user\sql\join\UserUserroleJoin(array(
-				'created_by_userprofilerole_id' =>'userprofilerole_id',
-				'created_by_tablekey_id'        =>'tablekey_id'
-			)),
-			new \NP\user\sql\join\UserroleStaffJoin(array(
-				'created_by_staff_id'  =>'staff_id',
-				'created_by_person_id' =>'person_id'
-			)),
-			new \NP\user\sql\join\StaffPersonJoin(array(
-				'created_by_person_firstname' =>'person_firstname',
-				'created_by_person_lastname'  =>'person_lastname'
-			)),
-			new sql\join\PropertyUpdatedByUserJoin(),
-			new \NP\user\sql\join\UserUserroleJoin(array(
-				'updated_by_userprofilerole_id' =>'userprofilerole_id',
-				'updated_by_tablekey_id'        =>'tablekey_id'
-			), 'ur2', 'u2'),
-			new \NP\user\sql\join\UserroleStaffJoin(array(
-				'updated_by_staff_id'  =>'staff_id',
-				'updated_by_person_id' =>'person_id'
-			), 's2', 'ur2'),
-			new \NP\user\sql\join\StaffPersonJoin(array(
-				'updated_by_person_firstname' =>'person_firstname',
-				'updated_by_person_lastname'  =>'person_lastname'
-			), 'pe2', 's2')
-		);
-
-        $pageSize = !$pageSize ? null : $pageSize;
-
-		return $this->propertyGateway->find(
-			$property_status == 2 ? null : new sql\criteria\PropertyStatusCriteria(),	// filter
-			$property_status == 2 ? [] : array($property_status),			// params
-			$sort,								// order by
-			null,								// columns
-			$pageSize,
-			$page,
-			$joins
-		);
+	public function getByStatus($property_status=null, $pageSize=null, $page=null, $sort="property_name") {
+		return $this->propertyGateway->findByStatus($property_status, $pageSize, $page, $sort);
 	}
 
 	/**
