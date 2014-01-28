@@ -1112,8 +1112,13 @@ Ext.define('NP.controller.SystemSetup', {
 				tabindex: tabindex,
 				success    : function(result) {
 					if (result) {
-						headerform.setTitle('Custom Field ' + fid);
-						headerform.getForm().findField('customfielddata').setFieldLabel((tabindex < 2 ? 'Custom Field ' : 'Field ') + fid + ' Values');
+						if (tabindex < 2) {
+							headerform.setTitle('Custom Field ' + fid);
+							headerform.getForm().findField('customfielddata').setFieldLabel((tabindex < 2 ? 'Custom Field ' : 'Field ') + fid + ' Values');
+						} else {
+							headerform.setTitle('Custom Field ' + record.get('controlpanelitem_name')[record.get('controlpanelitem_name').length - 1]);
+							headerform.getForm().findField('customfielddata').setFieldLabel((tabindex < 2 ? 'Custom Field ' : 'Field ') + record.get('controlpanelitem_name')[record.get('controlpanelitem_name').length - 1] + ' Values');
+						}
 						headerform.getForm().findField('customfielddata').getStore().getProxy().extraParams.fid = fid;
 						if (tabindex >= 2) {
 							headerform.getForm().findField('customfielddata').getStore().getProxy().extraParams.pntype = result.customfield_pn_type;
