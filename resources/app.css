@@ -9,6 +9,11 @@
 	font       : 24px tahoma, arial, sans-serif;
 }
 
+/* Override to remove bullet from combo items in Chrome */
+li.x-boundlist-item {
+	list-style: none;
+}
+
 /* STYLES FOR PAGE HEADER */
 #npHeaderLogo { cursor: pointer; }
 #learningNexusImg { margin-right: 8px; cursor: pointer; }
