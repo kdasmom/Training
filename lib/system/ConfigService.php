@@ -669,12 +669,12 @@ class ConfigService extends AbstractService {
 		return $data;
 	}
 
-	public function getCustomFieldsData($fid = null, $tabindex = null, $pntype = null) {
-		if(!$fid || (in_array($fid, [7, 8]) && $tabindex < self::TABINDEX_CUSTOMFIELD_SERVICEFIELDS)) {
+	public function getCustomFieldsData($fid = null, $tabindex = null, $pntype = null, $universal_field_id = null) {
+		if(!$fid) {
 			return [];
 		}
 
-		return $this->pnUniversalFieldGateway->getCustomFieldData($fid, $tabindex, $pntype);
+		return $this->pnUniversalFieldGateway->getCustomFieldData($fid, $tabindex, $pntype, $universal_field_id);
 	}
 
 	/**
@@ -706,7 +706,7 @@ class ConfigService extends AbstractService {
 			}
 		} else {
 			if ($data['action'] == 'new') {
-				$customField = $this->pnCustomFieldsGateway->find(['customfield_id' => '?'], [$data['universal_field_number'], null, ['customfield_pn_type']]);
+				$customField = $this->pnCustomFieldsGateway->find(['customfield_id' => '?'], [$data['fid'], null, ['customfield_pn_type']]);
 				$nextId = $this->pnUniversalFieldGateway->getNextMaxUFN($customField[0]['customfield_pn_type']);
 				return $this->pnUniversalFieldGateway->insert(
 					[

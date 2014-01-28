@@ -140,7 +140,7 @@ class PnUniversalFieldGateway extends AbstractGateway {
 
 		$result = $this->adapter->query($select, [$type]);
 
-		return $result[0]['maxUFN'] == '' ? 1 : $result[0]['maxUFN'];
+		return $result[0]['maxUFN'] == '' ? 1 : $result[0]['maxUFN']+1;
 	}
 
 	/**
@@ -149,7 +149,7 @@ class PnUniversalFieldGateway extends AbstractGateway {
 	 * @param $fid
 	 * @return array|bool
 	 */
-	public function getCustomFieldData($fid, $tabindex, $pntype = false) {
+	public function getCustomFieldData($fid, $tabindex, $pntype = false, $universal_field_id = null) {
 		$select = new Select();
 
 		$result = [
@@ -184,7 +184,7 @@ class PnUniversalFieldGateway extends AbstractGateway {
 				)
 				->order('universal_field_order');
 
-			$result = array_merge($result, $this->adapter->query($select, [$fid, $pntype]));
+			$result = array_merge($result, $this->adapter->query($select, [$universal_field_id, $pntype]));
 		}
 
 		return $result;

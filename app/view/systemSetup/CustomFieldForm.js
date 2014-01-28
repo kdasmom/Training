@@ -167,7 +167,6 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 						],
 						listeners: {
 							change: function(radiogroup, newValue, oldValue, eOpts) {
-								console.log(newValue);
 								if (parseInt(newValue.customFieldType) == 0 ) {
 									me.getForm().findField('customfielddata').show();
 									me.getForm().findField('universal_field_data').show();
@@ -351,12 +350,13 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 						text: 'Add New/Save',
 						handler: function(){
 							var data = {
-								'universal_field_data': me.getForm().findField('universal_field_data').getValue(),
+								'universal_field_data'		: me.getForm().findField('universal_field_data').getValue(),
 								'universal_field_status'	: me.getForm().findField('universal_field_status').getValue(),
 								'universal_field_number'	: me.getForm().findField('universal_field_number').getValue(),
 								'action'					: me.getForm().findField('action').getValue(),
 								'universal_field_id'		: me.getForm().findField('customfielddata').getValue()[0],
-								'tabindex'					: me.tabindex
+								'tabindex'					: me.tabindex,
+								'fid'						: me.getForm().findField('fid').getValue()
 							};
 
 							NP.lib.core.Net.remoteCall({
