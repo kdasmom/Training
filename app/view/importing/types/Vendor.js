@@ -12,6 +12,7 @@ Ext.define('NP.view.importing.types.Vendor', {
     tabTitle          : 'Vendor',
     entityName        : 'Vendor',
     sectionName       : 'Vendor Setup',
+    instructions      : null,
     
     vendorIdColText   : 'Vendor ID',
     vendorNameColText : 'Name',

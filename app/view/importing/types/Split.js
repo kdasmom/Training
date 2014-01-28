@@ -6,25 +6,20 @@
 Ext.define('NP.view.importing.types.Split', {
     extend  : 'NP.view.importing.types.AbstractImportType',
     
+    requires: [
+        'NP.lib.core.Config',
+        'NP.lib.core.Translator'
+    ],
+
     fieldName  : 'file_upload_split',
 
-    // For localization
-    tabTitle                 : 'Splits',
-    entityName               : 'Split',
-    sectionName              : 'Split Setup',
-    colTextIntegrationPackage: 'Integration Package',
-    colTextSplitName         : 'Split Name',
-    colTextVendorCode        : 'Vendor Code',
-    colTextPropertyCode      : 'Property Code',
-    colTextGLCode            : 'GL Code',
-    colTextDepartment        : 'Department',
-    colTextCustomField1      : 'Custom Field 1',
-    colTextCustomField2      : 'Custom Field 2',
-    colTextCustomField3      : 'Custom Field 3',
-    colTextCustomField4      : 'Custom Field 4',
-    colTextCustomField5      : 'Custom Field 5',
-    colTextCustomField6      : 'Custom Field 6',
-    colTextPercent           : 'Percent',
+    constructor: function() {
+        var me = this;
+
+        me.callParent(arguments);
+
+        me.translateText();
+    },
     
     getGrid: function() {
         return {
@@ -45,6 +40,32 @@ Ext.define('NP.view.importing.types.Split', {
                 ]
             }
         };
-    }
+    },
 
+    translateText: function() {
+        var me = this;
+
+        me.tabTitle    = NP.Translator.translate('Splits');
+        me.entityName  = NP.Translator.translate('Split');
+        me.sectionName = NP.Translator.translate('Split Setup');
+        me.instructions= NP.Translator.translate(
+            'When creating Vendor Default Splits, please ensure that the '+
+            '{property} has rights to the GL Code prior to uploading the .csv file.',
+            { property: NP.Config.getPropertyLabel() }
+        );
+
+        me.colTextIntegrationPackage= NP.Translator.translate('Integration Package');
+        me.colTextSplitName         = NP.Translator.translate('Split Name');
+        me.colTextVendorCode        = NP.Translator.translate('Vendor Code');
+        me.colTextPropertyCode      = NP.Translator.translate('Property Code');
+        me.colTextGLCode            = NP.Translator.translate('GL Code');
+        me.colTextDepartment        = NP.Translator.translate('Department');
+        me.colTextCustomField1      = NP.Translator.translate('Custom Field 1');
+        me.colTextCustomField2      = NP.Translator.translate('Custom Field 2');
+        me.colTextCustomField3      = NP.Translator.translate('Custom Field 3');
+        me.colTextCustomField4      = NP.Translator.translate('Custom Field 4');
+        me.colTextCustomField5      = NP.Translator.translate('Custom Field 5');
+        me.colTextCustomField6      = NP.Translator.translate('Custom Field 6');
+        me.colTextPercent           = NP.Translator.translate('Percent');
+    }
 });

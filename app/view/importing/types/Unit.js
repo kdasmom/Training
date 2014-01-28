@@ -53,7 +53,7 @@ Ext.define('NP.view.importing.types.Unit', {
 
         me.tabTitle            = NP.Translator.translate('{unit}', { unit: unitText});
         me.entityName          = NP.Translator.translate('{unit}', { unit: unitText});
-        me.sectionName         = NP.Translator.translate('{unit}', { unit: unitText});
+        me.sectionName         = NP.Translator.translate('{property} Setup', { property: propertyText });
         me.intPkgColText       = NP.Translator.translate('Integration Package');
         me.propertyCodeColText = NP.Translator.translate('{property} Code', { property: propertyText });
         me.codeColText         = NP.Translator.translate('Code');

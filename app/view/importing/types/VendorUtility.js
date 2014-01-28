@@ -9,9 +9,14 @@ Ext.define('NP.view.importing.types.VendorUtility', {
     fieldName  : 'file_upload_vendor_utility',
 
     // For localization
-    tabTitle            : 'Vendor Utility',
-    entityName          : 'Vendor Utility',
-    sectionName         : 'Vendor Setup',
+    tabTitle    : 'Vendor Utility',
+    entityName  : 'Vendor Utility',
+    sectionName : 'Vendor Setup',
+    instructions: 'When creating the vendor utility account upload file, ' +
+                'please make sure the Vendor ID, Utlity Type, Account Number and Property Id ' +
+                'are input exactly as they are setup in the system. The upload file is only ' +
+                'valid for Active Vendor IDs in the system.',
+
     vendorCodeColText   : 'Vendor Code',
     UtilityTypeColText  : 'Utility Code',
     AccountNumberColText: 'Account Number',

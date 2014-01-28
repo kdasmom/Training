@@ -9,6 +9,7 @@ Ext.define('NP.view.importing.types.GLActual', {
     fieldName  : 'file_upload_gl_actuals',
 
     // For localization
-    tabTitle            : 'Actuals',
-    entityName          : 'GLActuals'
+	tabTitle    : 'Actuals',
+	entityName  : 'Actuals',
+	instructions: null
 });

@@ -9,9 +9,12 @@ Ext.define('NP.view.importing.types.CustomFieldHeader', {
     fieldName  : 'file_upload_custom_field_headers',
 
     // For localization
-    tabTitle : 'Header',
-    entityName : 'Custom Field Header',
-    sectionName: 'Custom Field Header',
+    tabTitle    : 'Header',
+    entityName  : 'Custom Field Header',
+    sectionName : 'Custom Field Header',
+    instructions: 'To edit existing custom field values you must edit the values ' +
+                    'directly in the custom field setup section in System Setup.',
+    
     customField : "Custom Field",
 
     getGrid: function() {

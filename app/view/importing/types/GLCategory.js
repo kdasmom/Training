@@ -10,7 +10,7 @@ Ext.define('NP.view.importing.types.GLCategory', {
 
     // For localization
     tabTitle            : 'GL Category',
-    entityName          : 'GLCategory',
+    entityName          : 'GL Categories',
     sectionName         : 'GL Account Setup',
     categoryColText     : 'Category Name',
     intPkgColText       : 'Integration Package',

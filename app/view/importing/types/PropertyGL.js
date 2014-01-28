@@ -14,7 +14,7 @@ Ext.define('NP.view.importing.types.PropertyGL', {
 
     // For localization
     tabTitle            : 'Property GL Assignment',
-    entityName          : 'Property GL Assignment',
+    entityName          : 'Property GL Assignments',
     sectionName         : 'Property Setup',
     propertyCodeColText : 'Property Code',
     glCodeColText       : 'GL Code',
