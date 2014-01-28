@@ -48,7 +48,8 @@ Ext.define('NP.Application', {
 		'SystemSetup',
 		'UserManager',
 		'UtilitySetup',
-		'VendorCatalog'
+		'VendorCatalog',
+		'VendorManager'
 	],
 
 	statcategoriesloaded: false,
