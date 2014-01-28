@@ -49,7 +49,10 @@ Ext.define('NP.view.gl.Category', {
                             store: {
                                 type   : 'gl.glaccounts',
                                 service: 'GLService',
-                                action : 'getCategories'
+                                action : 'getCategories',
+                                sorters: [{
+                                    property: 'glaccount_order'
+                                }]
                             },
                             flex: 1
 		    	},{
