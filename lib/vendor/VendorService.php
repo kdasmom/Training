@@ -726,6 +726,16 @@ class VendorService extends AbstractService {
             array('vendor_id','vendor_name')
         );
     }
+
+    /**
+     * Gets the top spending vendors
+     *
+     * @param  int $numberOfVendors
+     * @return array
+     */
+    public function getTopVendors($numberOfVendors=5) {
+    	return $this->vendorGateway->findTopVendors($numberOfVendors);
+    }
     
     /**
      * Retrieves vendor records by integration package, 

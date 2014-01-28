@@ -10,7 +10,11 @@ Ext.define('NP.view.shared.tile.AbstractTile', {
      * @return {String} The name of the tile, which will be shown in the title of the panel
      */
     getName: function() {
-    	throw 'You must implement the getName() function in your tile. It defines the name of your tile';
+        var store     = Ext.getStore('system.Tiles'),
+            className = Ext.getClassName(this).split('.').pop(),
+            rec       = store.findRecord('className', className);
+
+        return rec.get('name');
     },
     
     /**

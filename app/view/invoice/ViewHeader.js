@@ -14,7 +14,11 @@ Ext.define('NP.view.invoice.ViewHeader', {
     	'NP.store.system.PriorityFlags',
     	'NP.store.invoice.InvoicePaymentTypes',
     	'Ext.layout.container.Form',
-    	'Ext.form.field.Date'
+    	'Ext.form.field.Date',
+    	'NP.view.invoice.numberPattern.Pattern',
+    	'NP.view.invoice.numberPattern.Pattern2',
+    	'NP.view.invoice.numberPattern.Pattern3',
+    	'NP.view.invoice.numberPattern.Pattern4'
     ],
 
     layout: {
@@ -116,13 +120,24 @@ Ext.define('NP.view.invoice.ViewHeader', {
     },
 
     buildCol3Items: function() {
-    	var me    = this,
-    		items = [
+    	var me      = this,
+    		pattern = NP.Config.getSetting('PN.InvoiceOptions.OverRidealphaNumericFilter', 'pattern'),
+    		items,
+    		maskRe,
+    		stripRe;
+    	
+		pattern = Ext.util.Format.capitalize(pattern);
+		pattern = Ext.create('NP.view.invoice.numberPattern.' + pattern);
+		stripRe = new RegExp(pattern.getPattern().replace('[', '[^'), pattern.getModifiers());
+
+    	items = [
 			{
-				xtype     : 'textfield',
-				fieldLabel: this.invoiceNumLbl,
-				name      : 'invoice_ref',
-				allowBlank: false
+				xtype       : 'textfield',
+				fieldLabel  : this.invoiceNumLbl,
+				name        : 'invoice_ref',
+				allowBlank  : false,
+				stripCharsRe: stripRe,
+				maxLength   : 100
 			},{
 				xtype           : 'numberfield',
 				fieldLabel      : this.invoiceTotalLbl,

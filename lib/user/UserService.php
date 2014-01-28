@@ -325,6 +325,16 @@ class UserService extends AbstractService {
 								);
 				}
 			}
+			// If no errors, save coding properties
+			if (!count($errors) && array_key_exists('coding_properties', $data)) {
+				$success = $this->savePropertyAssignment($userprofile_id, $data['coding_properties'], true);
+				if (!$success) {
+					$errors[] = array(
+						'field' => 'coding_properties',
+						'msg'   => $this->localizationService->getMessage('codingPropertyAssignmentError')
+					);
+				}
+			}
 		} catch(\Exception $e) {
 			$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
 		}

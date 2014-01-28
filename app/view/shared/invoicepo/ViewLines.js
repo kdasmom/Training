@@ -12,7 +12,12 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
         'NP.lib.core.Security',
         'NP.lib.core.Util',
         'Ext.view.View',
-        'NP.view.shared.button.Edit'
+        'NP.view.shared.button.Edit',,
+        'NP.model.jobcosting.JbContract',
+        'NP.model.jobcosting.JbChangeOrder',
+        'NP.model.jobcosting.JbJobCode',
+        'NP.model.jobcosting.JbPhaseCode',
+        'NP.model.jobcosting.JbCostCode'
     ],
 
     layout     : 'fit',
@@ -28,7 +33,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
         var me = this;
         
         me.tbar = [
-            { xtype: 'shared.button.edit', itemId: 'invoiceLineEditBtn' }
+            { xtype: 'shared.button.edit', itemId: 'invoiceLineEditBtn', disabled: true }
         ];
 
         me.fieldPrefix  = me.type + 'item';
@@ -54,8 +59,11 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                             || invoiceitem_jobflag != 1
                     );
                 },
+                getInvoiceView: function() {
+                    return me.up('[xtype="'+me.type+'.view"]');
+                },
                 getInvoiceRecord: function() {
-                    return me.up('[xtype="'+me.type+'.view"]').getInvoiceRecord();
+                    return this.getInvoiceView().getInvoiceRecord();
                 },
                 getFormDataVal: function(key) {
                     return me.up('boundform').getLoadedData()[key];
@@ -201,7 +209,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
         html +=
             '<div>' +
                 '{'+me.fieldPrefix+'_description}' +
-                '<tpl if="'+me.fieldPrefix+'_description_alt !== \'\'">' +
+                '<tpl if="!Ext.isEmpty('+me.fieldPrefix+'_description_alt)">' +
                     ' - {'+me.fieldPrefix+'_description_alt}' +
                 '</tpl>' +
             '</div>' +
@@ -276,31 +284,31 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                 '<tpl if="this.getSetting(\'pn.jobcosting.useContracts\', \'0\') == \'1\' && jbcontract_id !== null">' +
                     '<div>' +
                         '<b>{[this.getSetting("PN.jobcosting.contractTerm")]}:</b>' +
-                        ' {display_name}' +
+                        ' {[NP.model.jobcosting.JbContract.formatName(values)]}' +
                     '</div>' +
                 '</tpl>' +
                 '<tpl if="jbchangeorder_id !== null">' +
                     '<div>' +
                         '<b>{[this.getSetting("PN.jobcosting.changeOrderTerm")]}:</b>' +
-                        ' {display_name}' +
+                        ' {[NP.model.jobcosting.JbChangeOrderCode.formatName(values)]}' +
                     '</div>' +
                 '</tpl>' +
                 '<tpl if="jbjobcode_id !== null">' +
                     '<div>' +
                         '<b>{[this.getSetting("PN.jobcosting.jobCodeTerm")]}:</b>' +
-                        ' {display_name}' +
+                        ' {[NP.model.jobcosting.JbJobCode.formatName(values)]}' +
                     '</div>' +
                 '</tpl>' +
                 '<tpl if="jbphasecode_id !== null">' +
                     '<div>' +
                         '<b>{[this.getSetting("PN.jobcosting.phaseCodeTerm")]}:</b>' +
-                        ' {display_name}' +
+                        ' {[NP.model.jobcosting.JbPhaseCode.formatName(values)]}' +
                     '</div>' +
                 '</tpl>' +
                 '<tpl if="this.getSetting(\'pn.jobcosting.useCostCodes\', \'0\') == \'1\' && jbcostcode_id !== null">' +
                     '<div>' +
                         '<b>{[this.getSetting("PN.jobcosting.costCodeTerm")]}:</b>' +
-                        ' {display_name}' +
+                        ' {[NP.model.jobcosting.JbCostCode.formatName(values)]}' +
                     '</div>' +
                 '</tpl>' +
                 '<tpl if="jbassociation_retamt !== 0">' +
@@ -361,7 +369,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
     buildItemPriceCol: function() {
         var me = this;
         return '<td align="right">' +
-                '{[this.renderCurrency(values.'+me.fieldPrefix+'_unitprice_long)]}' +
+                '{[this.renderCurrency(values.'+me.fieldPrefix+'_unitprice)]}' +
                 '<tpl if="invoiceitem_taxflag == \'Y\'">' +
                     '<div class="taxableFlag">Taxable</div>' +
                 '</tpl>' +

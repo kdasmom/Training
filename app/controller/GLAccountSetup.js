@@ -151,6 +151,11 @@ Ext.define('NP.controller.GLAccountSetup', {
 			'[xtype="gl.categoryform"] [xtype="shared.button.save"]': {
 				click: this.saveCategory
 			},
+			'[xtype="gl.categoryform"] [xtype="shared.button.saveandadd"]': {
+				click: function(button, e) {
+					this.saveCategory(button, e, true);
+				}
+			},
                         // The save button on the glcategory form
 			'#glcategoryOrderSaveBtn': {
 				click: this.saveOrderCategory
@@ -209,7 +214,7 @@ Ext.define('NP.controller.GLAccountSetup', {
 		var tabPanel = that.setView('NP.view.gl.Main');
 
 		// If no active tab is passed, default to Open
-		if (!activeTab) activeTab = 'Overview';
+		if (!activeTab) activeTab = 'GLAccounts';
 		
 		// Check if the tab to be selected is already active, if it isn't make it the active tab
 		var tab = that.getCmp('gl.' + activeTab.toLowerCase());
@@ -324,8 +329,7 @@ Ext.define('NP.controller.GLAccountSetup', {
                 extraFields: ['vendors', 'properties', 'glaccount_id_list']
             });
         }
-
-        var form = this.setView('NP.view.gl.GLAccountsForm', viewCfg, '[xtype="gl.glaccounts"]', forceView); 
+        var form = this.setView('NP.view.gl.GLAccountsForm', viewCfg, '[xtype="gl.glaccounts"]', forceView);
 
         if (this.glaccount_id_list.length > 1) {
             form.findField('glaccount_id_list').setValue(this.glaccount_id_list);
@@ -360,14 +364,16 @@ Ext.define('NP.controller.GLAccountSetup', {
         Ext.each(['tree_parent','vendors','properties'], function(fieldName) {
             var field = form.findField(fieldName);
 
-            if (integration_package_id !== null) {
-                field.getStore().addExtraParams({
-                    integration_package_id: integration_package_id
-                });
-                field.getStore().load();
-            } else if (fieldName == 'tree_parent') {
-                field.getStore().removeAll();
-            }
+			if (field !== null) {
+				if (integration_package_id !== null) {
+					field.getStore().addExtraParams({
+						integration_package_id: integration_package_id
+					});
+					field.getStore().load();
+				} else if (fieldName == 'tree_parent') {
+					field.getStore().removeAll();
+				}
+			}
         });
     },
 
@@ -446,7 +452,7 @@ Ext.define('NP.controller.GLAccountSetup', {
 		this.selectedCategory = null;
 	},
 
-	saveCategory: function(button, e) {
+	saveCategory: function(button, e, addNew) {
 		var me = this,
             form = me.getCategoryForm(),
             grid = me.getCategoryGrid(),
@@ -463,7 +469,11 @@ Ext.define('NP.controller.GLAccountSetup', {
                         data      : { glaccount: data, tree_parent: 0 },
                         success   : function(result, deferred) {
                             grid.getStore().reload();
-                            form.hide();
+							if (!addNew) {
+                            	form.hide();
+							} else {
+								form.getForm().reset();
+							}
 
                             // Show a friendly message saying action was successful
                             NP.Util.showFadingWindow({ html: me.categorySuccessText });
@@ -499,7 +509,7 @@ Ext.define('NP.controller.GLAccountSetup', {
                 success: function(result, deferred) {
                     grid.getStore().commitChanges();
                     // Show a friendly message saying action was successful
-                    NP.Util.showFadingWindow({ html: that['orderSuccessText'] });
+                    NP.Util.showFadingWindow({ html: me['orderSuccessText'] });
                 },
                 failure: function(response, options, deferred) {
                     grid.getStore().rejectChanges();

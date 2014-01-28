@@ -164,9 +164,10 @@ class Select extends AbstractFilterableSql implements SQLInterface, SQLElement {
 	 * @param string  $alias    Alias for count()
 	 * @return \NP\core\db\Select Caller object returned for easy chaining
 	 */
-	public function count($count=true, $alias=null) {
+	public function count($count=true, $alias=null, $col=null) {
 		$this->count = $count;
 		$this->countAlias = $alias;
+		$this->countCol = $col;
 		return $this;
 	}
 
@@ -303,28 +304,19 @@ class Select extends AbstractFilterableSql implements SQLInterface, SQLElement {
 
 		// Do this if count has been set
 		if ($this->count) {
-			// If count is set, you can only have one column defined ( to do SELECT count(col_name) )
-			if (is_array($this->cols) && count($this->cols) > 1) {
-				throw new \NP\core\Exception('Select statement using count() can have a maximum of one column from the main table specified');
-			}
 			// Include the count clause first
 			$sql .= "COUNT(";
 			// If distinct is also set, means we want to do something like SELECT COUNT(DISTINCT col_name)
 			if ($this->distinct) {
-				// This requires that one column be set
-				if (is_array($this->cols) && count($this->cols) == 0) {
-					throw new \NP\core\Exception('Select statement using count() and distinct must include exactly one column from the main table');
-				}
 				$sql .= "DISTINCT ";
 			}
 			// If we have a column specified, we need to add it to count()
-			if (is_array($this->cols) && count($this->cols)) {
-				$firstCol = $this->cols[0];
+			if (!empty($this->countCol)) {
 				// Check if we're dealing with an expression or a string
-				if ($firstCol instanceOf Expression) {
-					$sql .= $firstCol->toString();
+				if ($this->countCol instanceOf Expression) {
+					$sql .= $this->countCol->toString();
 				} else {
-					$sql .= "{$this->table->getColumnPrefix()}.{$firstCol}";
+					$sql .= $this->countCol;
 				}
 			// If there are no columns, we can just do count(*)
 			} else {
@@ -333,6 +325,9 @@ class Select extends AbstractFilterableSql implements SQLInterface, SQLElement {
 			$sql .= ") ";
 			if ($this->countAlias !== null) {
 				$sql .= "AS {$this->countAlias} ";
+			}
+			if (count($this->cols)) {
+				$sql .= ',';
 			}
 		// If distinct is set, add the distinct directive before the columns
 		} else if ($this->distinct) {
@@ -347,39 +342,38 @@ class Select extends AbstractFilterableSql implements SQLInterface, SQLElement {
 		// Track the columns to be included
 		$cols = array();
 		
-		// Only add to the $cols array if not dealing with a count query
-		if (!$this->count) {
-			// If no columns have been specified for the "from" table, just include * for that table
-			if ($this->cols === null) {
+		// If no columns have been specified for the "from" table, just include * for that table
+		if ($this->cols === null) {
+			if (!$this->count) {
 				$cols[] = "{$this->table->getColumnPrefix()}.*";
-			// Otherwise, figure out which columns to include
-			} else {
-				// Loop through all the columsn to include
-				foreach ($this->cols as $alias=>$col) {
-					// If $alias is numeric, means we didn't specify an alias
-					if (is_numeric($alias)) {
-						$alias = null;
-					}
-					// If the column is a string, assume we're dealing with a regular table column
-					if (is_string($col)) {
-						$colSql = "{$this->table->getColumnPrefix()}.{$col}";
-					// If we have an Expression object, we just run the toString() method to get the value
-					} else if ($col instanceOf Expression) {
-						$colSql = $col->toString();
-					// If we have a Select object, our column is a subquery so we wrap it in parentheses
-					} else if ($col instanceOf Select) {
-						$colSql = "({$col->toString()})";
-					// For any other case, throw an exception
-					} else {
-						throw new \NP\core\Exception('Invalid column definition');
-					}
-					// If there is a column alias, add it
-					if ($alias !== null) {
-						$colSql .= " AS {$alias}";
-					}
-					// Add the column SQL to the column array
-					$cols[] = $colSql;
+			}
+		// Otherwise, figure out which columns to include
+		} else {
+			// Loop through all the columsn to include
+			foreach ($this->cols as $alias=>$col) {
+				// If $alias is numeric, means we didn't specify an alias
+				if (is_numeric($alias)) {
+					$alias = null;
 				}
+				// If the column is a string, assume we're dealing with a regular table column
+				if (is_string($col)) {
+					$colSql = "{$this->table->getColumnPrefix()}.{$col}";
+				// If we have an Expression object, we just run the toString() method to get the value
+				} else if ($col instanceOf Expression) {
+					$colSql = $col->toString();
+				// If we have a Select object, our column is a subquery so we wrap it in parentheses
+				} else if ($col instanceOf Select) {
+					$colSql = "({$col->toString()})";
+				// For any other case, throw an exception
+				} else {
+					throw new \NP\core\Exception('Invalid column definition');
+				}
+				// If there is a column alias, add it
+				if ($alias !== null) {
+					$colSql .= " AS {$alias}";
+				}
+				// Add the column SQL to the column array
+				$cols[] = $colSql;
 			}
 		}
 
@@ -430,6 +424,11 @@ class Select extends AbstractFilterableSql implements SQLInterface, SQLElement {
 			}
 		}
 
+		// If there's a group by clause, add it
+		if ($this->group !== null) {
+			$sql .= " GROUP BY " . $this->group->toString();
+		}
+
 		// If there are unions, process them
 		foreach ($this->unions as $union) {
 			$unionClause = ($union['isAll']) ? 'UNION ALL' : 'UNION';
@@ -437,11 +436,6 @@ class Select extends AbstractFilterableSql implements SQLInterface, SQLElement {
 				{$unionClause}
 				{$union['select']->toString()}
 			";
-		}
-
-		// If there's a group by clause, add it
-		if ($this->group !== null) {
-			$sql .= " GROUP BY " . $this->group->toString();
 		}
 
 		// If there's a having clause, add it

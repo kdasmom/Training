@@ -10,7 +10,8 @@ Ext.define('NP.view.gl.CategoryForm', {
     requires: [
     	'NP.view.gl.CategoryGrid',
     	'NP.view.shared.button.Cancel',
-    	'NP.view.shared.button.Save'
+    	'NP.view.shared.button.Save',
+		'NP.view.shared.button.SaveAndAdd'
     ],
 
     title      : 'Category',
@@ -25,6 +26,7 @@ Ext.define('NP.view.gl.CategoryForm', {
             dock  : 'top',
             items : [
                 { xtype: 'shared.button.save' },
+				{ xtype: 'shared.button.saveandadd', itemId: 'glaccountCategorySaveAndCreateNewBtn', text: 'Save and Create New'},
                 { xtype: 'shared.button.cancel' }
             ]
         };

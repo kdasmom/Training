@@ -382,15 +382,15 @@ Ext.define('NP.controller.Images', {
         var uploader = Ext.create('NP.lib.ui.Uploader', {
             params: {
                 form: {
-                    action:  'upload',
-                    service: 'ImageService'
+                    service: 'ImageService',
+                    action : 'upload'
                 },
                 listeners: {
                     close: function() {
                         var grid = self.getCurrentGrid();
                         grid.store.reload();
                     },
-                    onUploadComplete: function(uploads) {
+                    onQueueComplete: function(uploads) {
                         NP.Util.showFadingWindow(
                             { html: 'Files uploaded successfully' }
                         );

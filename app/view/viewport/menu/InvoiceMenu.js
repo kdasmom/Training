@@ -102,6 +102,7 @@ Ext.define('NP.view.viewport.menu.InvoiceMenu', {
     	// New Invoice
     	if ( NP.lib.core.Security.hasPermission(1032) ) {
     		this.menu.items.push({
+    			itemId: 'newInvoiceMenuBtn',
 				text: NP.Translator.translate('New Invoice')
 			});
     	}

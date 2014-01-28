@@ -133,7 +133,7 @@ Ext.define('NP.view.invoice.ViewPayments', {
 		            	// We need to compute the amount remaining by looping over all records, so only
 		            	// do it once, no need to do it every single time
 		            	if (!('amountRemaining' in me)) {
-		            		me._hasEditable = false;
+                            me._hasEditable = false;
 
 		            		var recs = me.getStore().getRange(),
 		            			current_balance = me.totalAmount,
@@ -155,18 +155,68 @@ Ext.define('NP.view.invoice.ViewPayments', {
 		            			me.amountRemaining[i] = current_balance;
 		            		}
 		            	}
-
-		            	return NP.Util.currencyRenderer(me.amountRemaining[rowIndex]);
+                        return NP.Util.currencyRenderer(me.amountRemaining[rowIndex]);
 		            },
             		align    : 'right'
 		        }
 		    );
 
 			if (NP.Security.hasPermission(6064)) {
-				//me.columns.items.push();
+                function isDisabled(view, rowIndex, colIndex, item, rec) {
+                    if (
+                        rec.get('invoicepayment_paid_by') !== null
+                        && rec.get('invoicepayment_status') == 'paid'
+                        && rec.get('voided_invoicepayment_id') === null
+                    ) {
+                        return false;
+                    }
+
+                    return true;
+                }
+
+				me.columns.items.push({
+                    xtype   : 'actioncolumn',
+                    flex    : 0,
+                    width   : 70,
+                    align   : 'center',
+                    items: [
+                        {
+                            tooltip   : 'Void',
+                            iconCls   : 'void-btn action-button',
+                            isDisabled: isDisabled,
+                            handler   : function(view, rowIndex, colIndex, item, e, rec, row) {
+                                me.fireEvent('voidpayment', rec);
+                            }
+                        },{
+                            tooltip   : 'NSF',
+                            iconCls   : 'revert-btn action-button',
+                            isDisabled: isDisabled,
+                            handler   : function(view, rowIndex, colIndex, item, e, rec, row) {
+                                me.fireEvent('nsfpayment', rec);
+                            }
+                        },{
+                            tooltip   : 'Edit',
+                            iconCls   : 'edit-btn action-button',
+                            isDisabled: isDisabled,
+                            handler   : function(view, rowIndex, colIndex, item, e, rec, row) {
+                                me.fireEvent('editpayment', rec);
+                            }
+                        }
+                    ]
+                });
 			}
 		}
 
         me.callParent(arguments);
+
+        me.addEvents('voidpayment','nsfpayment','editpayment');
+
+        // Any time the store is reloaded, we need to clear the amountRemaining
+        // property to make sure the amount remaining gets recalculated correctly
+        me.getStore().on('beforeload', function() {
+            if ('amountRemaining' in me) {
+                delete me.amountRemaining;
+            }
+        });
     }
 });
