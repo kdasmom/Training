@@ -238,7 +238,7 @@ class GlAccountGateway extends AbstractGateway {
     /**
      * 
      */
-    public function findByFilter($integration_package_id=null, $glaccount_from=null,$glaccount_to=null,$glaccount_status=null, $property_id=null, $glaccounttype_id=null, $glaccount_category=null, $pageSize=null, $page=1, $sort='glaccount_name') {
+    public function findByFilter($integration_package_id=null, $glaccount_from=null,$glaccount_to=null,$glaccount_status=null, $property_id=null, $glaccounttype_id=null, $glaccount_category=null, $glaccount_name = null, $pageSize=null, $page=1, $sort='glaccount_name') {
         $select = $this->getSelect()
                         ->join(new sql\join\GlAccountIntegrationPackageJoin())
                         ->order($sort);
@@ -284,6 +284,11 @@ class GlAccountGateway extends AbstractGateway {
             $params[] = $glaccount_category;
         }
 
+		if ($glaccount_name !== null && $glaccount_name !== '') {
+			$select->whereLike('g.glaccount_name', '?');
+			$params[] = '%' . $glaccount_name . '%';
+		}
+
         // If paging is needed
         if ($pageSize !== null) {
             return $this->getPagingArray($select, $params, $pageSize, $page);
@@ -293,21 +298,36 @@ class GlAccountGateway extends AbstractGateway {
     }
         
     /**
-     * 
+     * Gets GL Account categories
      */
-    public function getCategories($integration_package_id=null) {
+    public function getCategories($integration_package_id=null, $activeOnly=false, $getInUseOnly=false) {
         $select = new Select();
         $select->columns(array('glaccount_id','integration_package_id','glaccount_name','glaccount_status','glaccount_category' =>'glaccount_name', 'glaccount_order'))
                 ->from(array('g'=>'glaccount'))
                 ->join(new sql\join\GlAccountTreeJoin(array('tree_id')))
                 ->whereIsNull('glaccounttype_id')
-                ->order('g.glaccount_order');
+				->order('g.glaccount_name, g.glaccount_order');
 
         $params = [];
+        if ($getInUseOnly == 'true') {
+            $select->whereExists(
+                Select::get()
+                    ->from(['g2'=>'glaccount'])
+                        ->join(new sql\join\GlAccountTreeJoin([], Select::JOIN_INNER, 'tr2', 'g2'))
+                    ->whereIsNotNull('g2.glaccounttype_id')
+                    ->whereEquals('tr.tree_id', 'tr2.tree_parent')
+            );
+        }
+
         if ($integration_package_id !== null) {
             $select->whereEquals('g.integration_package_id', '?');
             $params[] = $integration_package_id;
         }
+
+		if ($activeOnly) {
+			$select->whereEquals('g.glaccount_status', '?');
+			$params[] = 'active';
+		}
 
         return $this->adapter->query($select, $params);
     }
@@ -370,6 +390,65 @@ class GlAccountGateway extends AbstractGateway {
 
 		return $this->adapter->query($select, $params);
 	}
+
+    public function findCategoryMtdSpend($property_id, $period, $overbudgetOnly=false) {
+        $period = \NP\util\Util::formatDateForDB($period);
+
+        $select = Select::get()
+            ->columns([
+                'glaccount_name',
+                'budget_amount',
+                'actual'   => new Expression('b.oracle_actual + b.invoice_actual + b.po_actual'),
+                'variance' => new Expression('b.budget_amount - (b.oracle_actual + b.invoice_actual + b.po_actual)')
+            ])
+            ->from([
+                'b' => Select::get()
+                        ->columns([
+                            'budget_amount'  => new Expression('ISNULL(SUM(b.budget_amount), 0)'),
+                            'oracle_actual'  => new Expression('ISNULL(SUM(b.oracle_actual), 0)'),
+                            'invoice_actual' => Select::get()
+                                ->columns([
+                                    new Expression('ISNULL(SUM(ii.invoiceitem_amount + ii.invoiceitem_salestax + ii.invoiceitem_shipping), 0)')
+                                ])
+                                ->from(['ii'=>'invoiceitem'])
+                                    ->join(new \NP\invoice\sql\join\InvoiceItemInvoiceJoin([]))
+                                    ->join(new \NP\gl\sql\join\GlAccountTreeJoin([], Select::JOIN_INNER, 'tri', 'ii'))
+                                    ->join(new \NP\system\sql\join\TreeTreeParentJoin([], Select::JOIN_INNER, 'tri2', 'tri'))
+                                ->whereEquals('i.property_id', 'gy.property_id')
+                                ->whereEquals('i.invoice_period', 'b.budget_period')
+                                ->whereNotIn('i.invoice_status', "'draft','posted', 'paid','rejected', 'void'")
+                                ->whereEquals('tr2.tablekey_id', 'tri2.tablekey_id'),
+                            'po_actual' => Select::get()
+                                ->columns([
+                                    new Expression('ISNULL(SUM(pi.poitem_amount + pi.poitem_salestax + pi.poitem_shipping), 0)')
+                                ])
+                                ->from(['pi'=>'poitem'])
+                                    ->join(new \NP\po\sql\join\PoItemPurchaseorderJoin([]))
+                                    ->join(new \NP\gl\sql\join\GlAccountTreeJoin([], Select::JOIN_INNER, 'tri', 'pi'))
+                                    ->join(new \NP\system\sql\join\TreeTreeParentJoin([], Select::JOIN_INNER, 'tri2', 'tri'))
+                                ->whereEquals('p.property_id', 'gy.property_id')
+                                ->whereEquals('p.purchaseorder_period', 'b.budget_period')
+                                ->whereNotIn('p.purchaseorder_status', "'draft','closed','rejected'")
+                                ->whereEquals('tr2.tablekey_id', 'tri2.tablekey_id')
+                        ])
+                        ->from(['g'=>'glaccount'])
+                            ->join(new sql\join\GlAccountGlAccountYearJoin([]))
+                            ->join(new \NP\budget\sql\join\GlAccountYearBudgetJoin(['budget_period']))
+                            ->join(new sql\join\GlAccountTreeJoin([]))
+                            ->join(new \NP\system\sql\join\TreeTreeParentJoin([]))
+                            ->join(new \NP\system\sql\join\TreeParentGlCategoryJoin(['glaccount_name']))
+                        ->whereEquals('gy.property_id', '?')
+                        ->whereEquals('b.budget_period', '?')
+                        ->group('g2.glaccount_name, b.budget_period, tr2.tablekey_id, gy.property_id')
+            ])
+            ->order('b.glaccount_name');
+
+        if ($overbudgetOnly) {
+            $select->whereGreaterThan('(b.oracle_actual + b.invoice_actual + b.po_actual)', '0');
+        }
+
+        return $this->adapter->query($select, [$property_id, $period]);
+    }
 }
 
 ?>

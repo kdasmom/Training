@@ -2,26 +2,15 @@
 
 namespace NP\po;
 
-use NP\core\AbstractService;
-use NP\security\SecurityService;
-use NP\budget\BudgetService;
+use NP\shared\AbstractInvoicePoService;
 
 /**
  * Service class for operations related to Purchase Orders
  *
  * @author Thomas Messier
  */
-class PoService extends AbstractService {
-
-	protected $securityService, $budgetService;
-
-	public function __construct(BudgetService $budgetService) {
-		$this->budgetService = $budgetService;
-	}
-
-	public function setSecurityService(SecurityService $securityService) {
-		$this->securityService = $securityService;
-	}
+class PoService extends AbstractInvoicePoService {
+	protected $type = 'po';
 
 	/**
 	 * Get list of POs to approve

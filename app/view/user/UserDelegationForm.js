@@ -66,12 +66,11 @@ Ext.define('NP.view.user.UserDelegationForm', {
 				height			: 100,
 				fieldLabel		: NP.Translator.translate('{properties} to Delegate', { properties: NP.Config.getPropertyLabel(true) }),
 				name			: 'delegation_properties',
-				allowBlank		: false,
 				store			: Ext.create('NP.store.property.Properties', {
 					service	: 'UserService',
 					action	: 'getUserProperties',
                     extraParams: {
-                        property_statuses: '1,-1',
+                        property_statuses: '1,-1'
                     }
 				})
 			},
@@ -101,6 +100,11 @@ Ext.define('NP.view.user.UserDelegationForm', {
         if (stopDate.getValue() < startDate.getValue()) {
             stopDate.markInvalid('The Stop Date must be the same or later than the Start Date.');
         }
+
+		var delegations = this.findField('delegation_properties');
+		if (delegations.getValue().length == 0) {
+			delegations.markInvalid('Select at least one property.');
+		}
 
         // Check for errors
         var errors = this.findInvalid();

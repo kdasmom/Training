@@ -13,10 +13,79 @@ use NP\util\SoapService;
  */
 class BudgetService extends AbstractService {
 
-    protected $soapService;
+    protected $soapService, $fiscalCalService;
 
-    public function __construct(SoapService $soapService) {
-        $this->soapService = $soapService;
+    public function __construct(SoapService $soapService, FiscalCalService $fiscalCalService) {
+        $this->soapService      = $soapService;
+        $this->fiscalCalService = $fiscalCalService;
+    }
+
+    /**
+     * 
+     */
+    public function createBudget($property_id, $glaccount_id, $period, $budget, $actual) {
+        $errors = [];
+        $this->budgetGateway->beginTransaction();
+        
+        try {
+            $propPeriod = $this->fiscalCalService->getAccountingPeriod($property_id);
+            $year = intVal($period->format('Y'));
+
+            $glaccountyear = $this->glAccountYearGateway->findSingle(
+                ['property_id' => '?','glaccount_id' => '?','glaccountyear_year' => '?'],
+                [$property_id, $glaccount_id, $year],
+                ['glaccountyear_id']
+            );
+
+            if ($glaccountyear === null) {
+                $status = 'active';
+                if ($year != intVal($propPeriod->format('Y'))) {
+                    $status = 'inactive';
+                }
+
+                $glYear = new \NP\budget\GlAccountYearEntity([
+                    'property_id'          => $property_id,
+                    'glaccount_id'         => $glaccount_id,
+                    'glaccountyear_year'   => $year,
+                    'glaccountyear_status' => $status
+                ]);
+
+                $this->glAccountYearGateway->save($glYear);
+                $glaccountyear['glaccountyear_id'] = $glYear->glaccountyear_id;
+            }
+
+            $budget = $this->budgetGateway->findSingle(
+                ['glaccountyear_id' => '?', 'budget_period' => '?'],
+                [$glaccountyear['glaccountyear_id'], \NP\util\Util::formatDateForDB($period)],
+                ['budget_id']
+            );
+
+            if ($budget === null) {
+                $budgetObj = new \NP\budget\BudgetEntity([
+                    'glaccountyear_id'   => $glaccountyear['glaccountyear_id'],
+                    'glaccount_id'       => $glaccount_id,
+                    'budget_period'      => $period,
+                    'oracle_period_name' => substr($period->format('F'), 0, 3) . '-' . $period->format('y'),
+                    'budget_amount'      => $budget,
+                    'oracle_actual'      => $actual
+                ]);
+
+                $this->budgetGateway->save($budgetObj);
+            }
+        } catch(\Exception $e) {
+            $errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+        }
+        
+        if (count($errors)) {
+            $this->budgetGateway->rollback();
+        } else {
+            $this->budgetGateway->commit();
+        }
+        
+        return array(
+            'success' => (count($errors)) ? false : true,
+            'errors'  => $errors
+        );
     }
 
     public function createMissingBudgets($entityType) {

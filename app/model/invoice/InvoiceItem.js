@@ -5,24 +5,15 @@
  */
 Ext.define('NP.model.invoice.InvoiceItem', {
 	extend: 'Ext.data.Model',
-	
-	requires: [
-		'NP.lib.core.Config',
-		'NP.model.jobcosting.JbContract',
-		'NP.model.jobcosting.JbChangeOrder',
-		'NP.model.jobcosting.JbJobCode',
-		'NP.model.jobcosting.JbPhaseCode',
-		'NP.model.jobcosting.JbCostCode'
-	],
 
 	idProperty: 'invoiceitem_id',
 	fields: [
 		{ name: 'invoiceitem_id', type: 'int' },
 		{ name: 'invoice_id', type: 'int' },
-		{ name: 'invoiceitem_linenum' },
+		{ name: 'invoiceitem_linenum', type: 'int' },
 		{ name: 'glaccount_id', type: 'int' },
 		{ name: 'invoiceitem_description' },
-		{ name: 'invoiceitem_quantity', type: 'float', defaultValue: 1 },
+		{ name: 'invoiceitem_quantity', type: 'float', defaultValue: 1.0 },
 		{ name: 'invoiceitem_unitprice', type: 'float', useNull: false },
 		{ name: 'invoiceitem_amount', type: 'float', useNull: false },
 		{ name: 'invoiceitem_budgetvariance', type: 'float', useNull: false },
