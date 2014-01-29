@@ -37,6 +37,7 @@ Ext.define('NP.Application', {
 	controllers: [
 		'Viewport',
 		'BudgetOverage',
+		'Favorites',
 		'CatalogMaintenance',
 		'Images',
 		'Import',

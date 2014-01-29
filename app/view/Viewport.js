@@ -62,17 +62,28 @@ Ext.define('NP.view.Viewport', {
 						        	align: 'right'
 						        },
 						        items: [
-						        	{
-						        		xtype: 'component',
-						        		html: '<div id="npHeaderRight">' +
-							        			'<img id="learningNexusImg" src="resources/images/learningnexus.gif" align="top" />' +
-							        			'<span id="npHeaderRightLinks">' + 
-							        				'<a href="javascript:void(0)" id="npHomeLink">Home</a>' + ' | ' + 
-							        				'<a href="javascript:void(0);" id="npHelpLink">Help</a>' + ' | ' + 
-							        				'<a href="javascript:void(0);" id="npLogoutLink">Logout</a>' + 
-							        			'</span>' +
-							        		'</div>'
-						        	},
+									{
+										xtype: 'container',
+										layout: 'hbox',
+										items: [
+											{
+												xtype: 'shared.button.favorite',
+												itemId: 'favoritesBtn',
+												margin: '0 10 0 0'
+											},
+											{
+												xtype: 'component',
+												html: '<div id="npHeaderRight">' +
+														'<img id="learningNexusImg" src="resources/images/learningnexus.gif" align="top" />' +
+														'<span id="npHeaderRightLinks">' +
+															'<a href="javascript:void(o)" id="npHomeLink">Home</a>' + ' | ' +
+															'<a href="javascript:void(o);" id="npHelpLink">Help</a>' + ' | ' +
+															'<a href="javascript:void(o);" id="npLogoutLink">Logout</a>' +
+														'</span>' +
+													  '</div>'
+											}
+										]
+									},
 						        	{ xtype: 'viewport.delegationpicker' }
 						        ]
 						    }

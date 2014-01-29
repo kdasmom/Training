@@ -98,6 +98,14 @@ Ext.define('NP.view.viewport.TopMenu', {
 			});
 	    }
 
+		this.items.push('->');
+		// Favorites
+		this.items.push({
+			xtype: 'shared.button.favorite',
+			itemId: 'addtofavoritesBtn',
+			text: NP.Translator.translate('Add to Favorites')
+		});
+
 	    this.callParent(arguments);
     }
 });
