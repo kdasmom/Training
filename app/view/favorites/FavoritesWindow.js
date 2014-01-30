@@ -11,7 +11,7 @@ Ext.define('NP.view.favorites.FavoritesWindow', {
 		'NP.view.favorites.FavoriteGrid'
 	],
 
-	layout		: 'fit',
+	layout		: 'accordion',
 
 	modal		: true,
 	draggable	: false,
@@ -23,36 +23,33 @@ Ext.define('NP.view.favorites.FavoritesWindow', {
 	initComponent: function() {
 		var that = this;
 
-		this.items = [{
-			layout:'accordion',
-			items: [
-				{
-					name : 'favorites',
-					title: NP.Translator.translate('Favorites'),
-					xtype: 'favorites.favoritegrid',
-					store: {
-						fields: ['title'],
-						data  : NP.Config.getUserSettings()['user_favorites']
-					}
-				},
-				{
-					name: 'recentrecords',
-					title: NP.Translator.translate('Recent Records'),
-					xtype: 'favorites.favoritegrid',
-					store: {
-						showremovebutton: true,
-						fields: ['title'],
-						data  : NP.Config.getUserSettings()['user_recent_records']
-					}
-				},
-				{
-					name: 'recentreports',
-					title: NP.Translator.translate('Recent Reports'),
-					xtype: 'favorites.favoritegrid',
-					store: []
-				}
-			]
-		}];
+		this.items = [
+            {
+                name: 'favorites',
+                title: NP.Translator.translate('Favorites'),
+                xtype: 'favorites.favoritegrid',
+                store: {
+                    fields: ['title'],
+                    data: NP.Config.getUserSettings()['user_favorites']
+                }
+            },
+            {
+                name: 'recentrecords',
+                title: NP.Translator.translate('Recent Records'),
+                xtype: 'favorites.favoritegrid',
+                store: {
+                    showremovebutton: true,
+                    fields: ['title'],
+                    data: NP.Config.getUserSettings()['user_recent_records']
+                }
+            },
+            {
+                name: 'recentreports',
+                title: NP.Translator.translate('Recent Reports'),
+                xtype: 'favorites.favoritegrid',
+                store: []
+            }
+        ];
 
 		this.callParent(arguments);
 
