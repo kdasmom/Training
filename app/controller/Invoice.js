@@ -313,7 +313,8 @@ Ext.define('NP.controller.Invoice', {
 			});
 		}
 
-		var form = me.setView('NP.view.invoice.View', viewCfg);
+        // set forceCreate flag to true to update view when a user choose another invoice from 'Recent records'
+		var form = me.setView('NP.view.invoice.View', viewCfg, null, true);
 
 		if (!invoice_id) {
 			// Set the title
