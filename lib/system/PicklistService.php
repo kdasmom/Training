@@ -143,7 +143,34 @@ class PicklistService extends AbstractService {
 
 	public function getPicklistValuesList($mode = 'Insurance') {
 
+
+		$asp_client_id = $this->configService->getClientId();
+
+		$tableParams = $this->_getTableKeyByPicklistMode($mode);
+
+		$result = [
+			[
+				'column_data'		=> 'New',
+				'column_pk_data'	=> 0,
+				'column_status'		=> 1
+			]
+		];
+
+		$result = array_merge($result, $this->picklistGateway->getPicklistColumns($tableParams['table_id'], $asp_client_id));
+
+		return $result;
+	}
+
+	public function getFormFields($mode = 'Insurance', $column_status = null) {
+		$tableParams = $this->_getTableKeyByPicklistMode($mode);
+		$aspClientId = $this->configService->getClientId();
+
+		return $this->picklistGateway->getColumnsValue($tableParams['table_id'], $tableParams['tablename'], $aspClientId, $column_status);
+	}
+
+	private function _getTableKeyByPicklistMode($mode) {
 		switch ($mode) {
+			default:
 			case ('Insurance'):
 				$tablename = 'insurancetype';
 				$tablekey_id = 1005;
@@ -190,19 +217,26 @@ class PicklistService extends AbstractService {
 				$tableid = 2018;
 				break;
 		}
-		$asp_client_id = $this->configService->getClientId();
 
-		$result = [
-			[
-				'column_data'		=> 'New',
-				'column_pk_data'	=> 0,
-				'column_status'		=> 1
-			]
+		return [
+			'tablename'		=> $tablename,
+			'tablekey_id'	=> $tablekey_id,
+			'table_id'		=> $tableid
 		];
+	}
 
-		$result = array_merge($result, $this->picklistGateway->getPicklistColumns($tableid, $asp_client_id));
+	/**
+	 * Values for the dropdown field
+	 *
+	 * @param null $column_id
+	 * @return array
+	 */
+	public function prepareDropdownValues($column_id = null, $dropdown_flag = 1) {
+		if (!$column_id) {
+			return [];
+		}
 
-		return $result;
+		return $this->picklistGateway->getDropDownValuesPicklistColumn($column_id, $this->configService->getClientId(), $dropdown_flag);
 	}
 }
 

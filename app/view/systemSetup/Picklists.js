@@ -15,8 +15,8 @@ Ext.define('NP.view.systemSetup.Picklists', {
 		type: 'hbox',
 		align: 'stretch'
 	},
-	padding: '5',
 	autoScroll: true,
+	mode: 'Insurance',
 
     initComponent: function() {
 		var me = this,
@@ -31,6 +31,13 @@ Ext.define('NP.view.systemSetup.Picklists', {
 				['PayBy', 'Pay By Types'],
 				['UtilityType', 'Utility Types']
 			];
+
+		this.tbar = [
+			{
+				xtype: 'shared.button.cancel',
+				name: 'backToOverview'
+			}
+		];
 
     	this.title = NP.Translator.translate(this.title);
 
@@ -75,13 +82,33 @@ Ext.define('NP.view.systemSetup.Picklists', {
 				store: Ext.create('NP.lib.data.Store', {
 					service    	: 'PicklistService',
 					action     	: 'getPicklistValuesList',
-					mode	: 'Insurance',
+					mode	: me.mode,
 					autoLoad	: true,
 					fields: ['column_data', 'column_pk_data', 'column_status']
 				}),
 				padding: '5',
 				flex: 0.2,
 				maxWidth: 300
+			},
+			{
+				xtype: 'form',
+				name: 'picklistfields',
+				defaults: {
+					labelWidth: 200,
+					padding: '5'
+				},
+				tbar : [
+					{
+						xtype: 'shared.button.cancel',
+						text: 'Reset'
+					},
+					{
+						xtype: 'shared.button.save'
+					}
+				],
+				padding: '5',
+				border: 1,
+				flex: 1
 			}
 		];
 

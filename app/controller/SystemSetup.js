@@ -192,7 +192,6 @@ Ext.define('NP.controller.SystemSetup', {
 					me.showFieldEditForm(dataview, record, false);
 				}
 			},
-//			'[xtype="systemsetup.customfieldform"] [xtype="shared.button.save"]': {
 			'#saveCustomFieldBtn': {
 				click: me.saveCustomField
 			},
@@ -201,6 +200,9 @@ Ext.define('NP.controller.SystemSetup', {
 			},
 			'[xtype="systemsetup.picklists"] [name="picklistmodes"]': {
 				itemclick: me.loadPicklistColumns
+			},
+			'[xtype="systemsetup.picklists"] [name="picklistcolumns"]': {
+				itemclick: me.loadPicklistForm
 			}
 		});
 
@@ -1233,9 +1235,181 @@ Ext.define('NP.controller.SystemSetup', {
 
 	loadPicklistColumns: function (grid, record) {
 		var me = this,
-			columnsgrid = me.getCmp('systemsetup.picklists').down('[name="picklistcolumns"]');
+			picklistview = me.getCmp('systemsetup.picklists'),
+			columnsgrid = picklistview.down('[name="picklistcolumns"]');
 
+		picklistview.mode = record.get('mode');
 		columnsgrid.getStore().getProxy().extraParams.mode = record.get('mode');
 		columnsgrid.getStore().reload();
+	},
+
+	loadPicklistForm: function(grid, record) {
+		var me = this,
+			picklistview = me.getCmp('systemsetup.picklists'),
+			picklistform = picklistview.down('[name="picklistfields"]');
+
+
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service    : 'PicklistService',
+				action     : 'getFormFields',
+				mode: picklistview.mode,
+				column_status: record.get('column_status'),
+				success    : function(result) {
+					if (result) {
+						picklistform.removeAll();
+						console.log(result);
+						Ext.each(result, function(column){
+							picklistform.add(me.fillPicklistForm(column));
+						});
+					}
+				}
+			}
+		});
+	},
+
+	fillPicklistForm: function(column) {
+		var field;
+
+		if (column.dropdown_flag == 1) {
+			field = {
+				xtype: 'customcombo',
+				name: column.column_name,
+				allowBlank: !column.column_info[0].NULLABLE,
+				addBlankRecord: column.column_info[0].NULLABLE,
+				displayField: 'dropdown_display_text',
+				valueField: 'dropdown_value',
+				fieldLabel: column.column_name_title,
+				store: Ext.create('NP.lib.data.Store', {
+					service    	: 'PicklistService',
+					action     	: 'prepareDropdownValues',
+					extraParams: {
+						column_id: column.picklist_column_id,
+						dropdown_flag: 1
+					},
+					autoLoad	: true,
+					fields: ['dropdown_value', 'dropdown_display_text']
+				})
+			};
+		} else {
+			if (column.dropdown_flag == 2) {
+				field = {
+					xtype: 'customcombo',
+					name: column.column_name,
+					allowBlank: !column.column_info[0].NULLABLE,
+					addBlankRecord: column.column_info[0].NULLABLE,
+					displayField: 'dropdown_display_text',
+					valueField: 'dropdown_value',
+					fieldLabel: column.column_name_title,
+					store: Ext.create('NP.lib.data.Store', {
+						service    	: 'PicklistService',
+						action     	: 'prepareDropdownValues',
+						extraParams: {
+							column_id: column.picklist_column_id,
+							dropdown_flag: 2
+						},
+						autoLoad	: true,
+						fields: ['dropdown_value', 'dropdown_display_text']
+					})
+				};
+				console.log('field: ', field);
+			} else {
+				if (column.column_name == 'universal_field_status') {
+					field = {
+						xtype: 'radiogroup',
+						name: 'col_universal_field_status',
+						fieldLabel: 'Status',
+						layout: 'hbox',
+						columns: 1,
+						items: [
+							{
+								boxLabel: NP.Translator.translate('Active'), name: 'universal_field_status', inputValue: '1', checked: true, padding: '0 15 0 0'
+							},
+							{
+								boxLabel: NP.Translator.translate('Inactive'), name: 'universal_field_status', inputValue: '0', padding: '0 15 0 0'
+							},
+							{
+								boxLabel: NP.Translator.translate('Default'), name: 'universal_field_status', inputValue: '2', padding: '0 15 0 0'
+							}
+						]
+					};
+				} else {
+					if (column.column_info[0].TYPE_NAME == 'varchar' ||
+						column.column_info[0].TYPE_NAME == 'char' ||
+						column.column_info[0].TYPE_NAME == 'StringStatus' ||
+						column.column_info[0].TYPE_NAME == 'StringSubject' ||
+						column.column_info[0].TYPE_NAME == 'StringDescription'
+						) {
+						field = {
+							xtype: 'textfield',
+							name: 'col_' + column.column_name,
+							fieldLabel: column.column_name_title,
+							disabled: column.column_name.length > 0 && column.readonly,
+							allowBlank: !column.column_info[0].NULLABLE
+						};
+					}
+					if (column.column_info[0].TYPE_NAME == 'int' && column.column_name !== 'universal_field_status') {
+						field = {
+							xtype: 'numberfield',
+							name: 'col_' + column.column_name,
+							fieldLabel: column.column_name_title,
+							disabled: column.column_name.length > 0 && column.readonly,
+							allowBlank: !column.column_info[0].NULLABLE,
+							decimalPrecision: 0
+						};
+					}
+
+					if (column.column_info[0].TYPE_NAME == 'bigint' ||
+						column.column_info[0].TYPE_NAME == 'real' ||
+						column.column_info[0].TYPE_NAME == 'money' ||
+						column.column_info[0].TYPE_NAME == 'decimal' ||
+						column.column_info[0].TYPE_NAME == 'float'
+						) {
+						field = {
+							xtype: 'numberfield',
+							name: 'col_' + column.column_name,
+							fieldLabel: column.column_name_title,
+							disabled: column.column_name.length > 0 && column.readonly,
+							allowBlank: !column.column_info[0].NULLABLE,
+							decimalPrecision: column.column_info[0].TYPE_NAME == 'bigint' ? 0 : 2
+						};
+					}
+
+					if (column.column_info[0].TYPE_NAME == 'bit' ||
+						column.column_info[0].TYPE_NAME == 'Boolean') {
+
+						field = {
+							xtype: 'shared.yesnofield',
+							name: 'col_' + column.column_name,
+							fieldLabel: column.column_name_title,
+							disabled: column.column_name.length > 0 && column.readonly
+						};
+					}
+
+					if (column.column_info[0].TYPE_NAME == 'datetime') {
+						field = {
+							xtype: 'datefield',
+							name: 'col_' + column.column_name,
+							fieldLabel: column.column_name_title,
+							disabled: column.column_name.length > 0 && column.readonly
+						};
+					}
+
+					if (column.column_info[0].TYPE_NAME == 'text') {
+						field = {
+							xtype: 'textareafield',
+							name: 'col_' + column.column_name,
+							fieldLabel: column.column_name_title,
+							disabled: column.column_name.length > 0 && column.readonly
+						};
+					}
+				}
+
+			}
+
+		}
+
+
+		return field;
 	}
 });
