@@ -23,8 +23,10 @@ class SessionService {
 
 		// Setup cookie parameters based on the type of URL (if we have a unique domain or domain and sub directory)
 		if (count($loginUrl) > 1) {
+			session_name("nexus_{$loginUrl[1]}");
 			session_set_cookie_params(0, '/'.$loginUrl[1].'/', $loginUrl[0]);
 		} else {
+			session_name("nexus_session");
 			session_set_cookie_params(0, '/', $loginUrl[0]);
 		}
 		session_start();
