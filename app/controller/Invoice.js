@@ -307,7 +307,7 @@ Ext.define('NP.controller.Invoice', {
 						me.loadImage();
 
 						// Save to recent records
-						me.application.getController('Favorites').saveToRecentRecord('invoice - ' + invoice_id);
+						me.application.getController('Favorites').saveToRecentRecord('Invoice - ' + data['invoice_ref']);
 					}
 				}
 			});

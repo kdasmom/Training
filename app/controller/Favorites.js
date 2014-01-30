@@ -32,9 +32,11 @@ Ext.define('NP.controller.Favorites', {
 				click: me.saveToFavorites
 			},
 			'[xtype="favorites.favoriteswindow"] [name="favorites"], [xtype="favorites.favoriteswindow"] [name="recentrecords"]': {
-				itemclick: function(dataview, record) {
-					me.gotoToken(record.raw.token);
-					me.getCmp('favorites.favoriteswindow').close();
+				cellclick: function(gridView, td, cellIndex, record, tr, rowIndex, e, eOpts) {
+					if (cellIndex == 0) {
+						me.application.addHistory(record.raw.token);
+						me.getCmp('favorites.favoriteswindow').close();
+					}
 				}
 			}
 		});
@@ -98,7 +100,7 @@ Ext.define('NP.controller.Favorites', {
 
 		for (var i=0; i<recentRecord.length; i++) {
 			if (recentRecord[i].token == token) {
-				return;
+				recentRecord.splice(i, 1);
 			}
 		}
 
@@ -106,7 +108,7 @@ Ext.define('NP.controller.Favorites', {
 		recentRecord.unshift({ title: pageTitle, token: token });
 
 		if (recentRecord.length > 10) {
-			recentRecord.shift();
+			recentRecord.pop();
 		}
 
 		// Save the recent records
@@ -139,14 +141,9 @@ Ext.define('NP.controller.Favorites', {
 		return token;
 	},
 
-	gotoToken: function(token) {
-		var userHash = CryptoJS.SHA1(NP.Security.getUser().get('userprofile_id')+'');
-		var tokenHash = CryptoJS.SHA1(token);
-
-		this.application.gotoToken(token + ':' + tokenHash + ':' + userHash);
-	},
-
 	favoritesView: function() {
-		Ext.create('NP.view.favorites.FavoritesWindow', {}).show();
+		var favoritesWindow = Ext.create('NP.view.favorites.FavoritesWindow', {}).show();
+
+		favoritesWindow.alignTo(Ext.getBody(), 'tr-tr', [-200, 32]);
 	}
 });

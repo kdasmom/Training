@@ -18,7 +18,11 @@ Ext.define('NP.view.favorites.FavoriteGrid', {
 			{
 				text: 'title',
 				dataIndex: 'title',
-				flex: 1
+				flex: 1,
+				renderer: function (val, metadata, record) {
+					metadata.style = 'cursor: pointer;';
+					return val;
+				}
 			}, {
 				xtype: 'actioncolumn',
 				width: 30,

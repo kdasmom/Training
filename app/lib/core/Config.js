@@ -97,7 +97,7 @@ Ext.define('NP.lib.core.Config', function() {
 				Ext.log('No value provided for setting ' + name);
 				return false;
 			}
-			
+
 			if(settings[name] = value){
 				return true;
 			}
@@ -192,8 +192,10 @@ Ext.define('NP.lib.core.Config', function() {
 	                name:   name,
 	                value:  Ext.JSON.encode(value),
 	                success: function(result) {
+						userSettings[name] = value;
+
 	                    Ext.log('Setting was saved');
-	                	
+
 	                	if (callback) {
 	                		callback();
 	                	}

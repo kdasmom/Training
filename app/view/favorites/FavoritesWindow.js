@@ -19,7 +19,6 @@ Ext.define('NP.view.favorites.FavoritesWindow', {
 	closable	: false,
 	width		: 380,
 	y			: 32,
-//	x			: 10,
 
 	initComponent: function() {
 		var that = this;
