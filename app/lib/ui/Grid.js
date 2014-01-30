@@ -7,7 +7,10 @@ Ext.define('NP.lib.ui.Grid', {
 	extend : 'Ext.grid.Panel',
 	alias : 'widget.customgrid',
 
-	requires: ['Ext.toolbar.Spacer'],
+	requires: [
+		'Ext.toolbar.Spacer',
+		'NP.view.shared.button.Print'
+	],
 	
 	/**
 	 * @cfg {Boolean} paging               Whether or not paging will be used for this grid
@@ -53,7 +56,18 @@ Ext.define('NP.lib.ui.Grid', {
 			} else {
 				this.pagingToolbarButtons = [];
 			}
-			this.pagingToolbarButtons.unshift('-', 'Records per page:', this.pageSizeCombo);
+			this.pagingToolbarButtons.unshift(
+				'-', {
+					xtype  : 'shared.button.print',
+					text   : null,
+					handler: function() {
+						Ext.ux.grid.Printer.stylesheetPath = 'vendor/extjs/ux/grid/gridPrinterCss/print.css';
+						Ext.ux.grid.Printer.print(that);
+					}
+				},
+				'-', 
+				'Records per page:', this.pageSizeCombo
+			);
 
 			var pagingToolbar = Ext.create('Ext.toolbar.Paging', {
 				dock       : 'top',

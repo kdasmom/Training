@@ -19,6 +19,7 @@ if (!$isAuth) {
         <!-- <x-bootstrap> -->
             <link rel="stylesheet" href="ext/packages/ext-theme-classic/build/resources/ext-theme-classic-all-debug.css" />
             <link rel="stylesheet" href="resources/VerticalTabPanel.css" />
+            <link rel="stylesheet" href="vendor/extjs/ux/grid/gridPrinterCss/print.css" />
             <link rel="stylesheet" href="resources/app.css" />
             <link rel="stylesheet" href="resources/uploader.css" />
             <link rel="stylesheet" href="vendor/jquery-uploadify/uploadify.css" />
@@ -31,6 +32,7 @@ if (!$isAuth) {
         <script src="vendor/jquery-uploadify/jquery.uploadify.min.js"></script>
         <script src="vendor/jquery-uploadifive/jquery.uploadifive.min.js"></script>
         <script src="vendor/CryptoJS/sha1.js"></script>
+        <script src="vendor/extjs/ux/grid/Printer.js"></script>
         <script src="app.js"></script>
     <!-- </x-compile> -->
 </head>
