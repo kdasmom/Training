@@ -23,6 +23,9 @@ Ext.define('NP.controller.Favorites', {
 			'#addtofavoritesBtn': {
 				click: me.addToFavorites
 			},
+			'#removefromfavoritesBtn': {
+				click: me.removeFromFavoritesBtn
+			},
 			'#closeAddToFavoriteWindow': {
 				click: function() {
 					this.getCmp('favorites.addtofavoriteswindow').close();
@@ -31,7 +34,7 @@ Ext.define('NP.controller.Favorites', {
 			'#saveToFavorites': {
 				click: me.saveToFavorites
 			},
-			'[xtype="favorites.favoriteswindow"] [name="favorites"], [xtype="favorites.favoriteswindow"] [name="recentrecords"]': {
+			'[xtype="favorites.favoriteswindow"] [name="favorites"], [xtype="favorites.favoriteswindow"] [name="recentrecords"], [xtype="favorites.favoriteswindow"] [name="recentreports"]': {
 				cellclick: function(gridView, td, cellIndex, record, tr, rowIndex, e, eOpts) {
 					if (cellIndex == 0) {
 						me.application.addHistory(record.raw.token);
@@ -49,6 +52,45 @@ Ext.define('NP.controller.Favorites', {
 		Ext.create('NP.view.favorites.AddToFavoritesWindow', {pageTitle: pageTitle}).show();
 	},
 
+	removeFromFavoritesBtn: function() {
+		var favorites = NP.Config.getUserSettings()['user_favorites'];
+		var token = this.getToken( Ext.History.getToken() );
+
+		for (var i=0; i<favorites.length; i++) {
+			if (favorites[i].token == token) {
+				favorites.splice(i, 1);
+				break;
+			}
+		}
+
+		Ext.getCmp('addtofavoritesBtn').show();
+		Ext.getCmp('removefromfavoritesBtn').hide();
+	},
+
+	refreshFavoriteButtons: function(token) {
+		var favorites = NP.Config.getUserSettings()['user_favorites'];
+		var token = this.getToken( token );
+
+		if (this.issetTokenInFavoriteslist(token, favorites)) {
+			Ext.getCmp('addtofavoritesBtn').hide();
+			Ext.getCmp('removefromfavoritesBtn').show();
+		}
+		else {
+			Ext.getCmp('addtofavoritesBtn').show();
+			Ext.getCmp('removefromfavoritesBtn').hide();
+		}
+	},
+
+	issetTokenInFavoriteslist: function(token, favoritelist) {
+		for (var key=0; key<favoritelist.length; key++) {
+			if (favoritelist[key].token == token) {
+				return true;
+			}
+		}
+
+		return false;
+	},
+
 	saveToFavorites: function() {
 		var me = this;
 
@@ -61,16 +103,14 @@ Ext.define('NP.controller.Favorites', {
 
 		// Get the current favorites
 		var favorites = NP.Config.getUserSettings()['user_favorites'];
-		var token = this.getCurrentToken();
+		var token = this.getToken( Ext.History.getToken() );
 
 		if (favorites) {
-			for (var i=0; i<favorites.length; i++) {
-				if (favorites[i].token == token) {
-					me.getCmp('favorites.addtofavoriteswindow').close();
+			if (this.issetTokenInFavoriteslist(token, favorites)) {
+				me.getCmp('favorites.addtofavoriteswindow').close();
 
-					NP.Util.showFadingWindow({ html: NP.Translator.translate('This page already exists in Favorites')});
-					return;
-				}
+				NP.Util.showFadingWindow({ html: NP.Translator.translate('This page already exists in Favorites')});
+				return;
 			}
 		}
 		else {
@@ -84,6 +124,9 @@ Ext.define('NP.controller.Favorites', {
 		NP.Config.saveUserSetting('user_favorites', favorites, function() {
 			me.getCmp('favorites.addtofavoriteswindow').close();
 
+			Ext.getCmp('addtofavoritesBtn').hide();
+			Ext.getCmp('removefromfavoritesBtn').show();
+
 			NP.Util.showFadingWindow({
 				html: NP.Translator.translate('New favorite has been added')
 			});
@@ -96,7 +139,7 @@ Ext.define('NP.controller.Favorites', {
 			recentRecord = [];
 		}
 
-		var token = this.getCurrentToken();
+		var token = this.getToken( Ext.History.getToken() );
 
 		for (var i=0; i<recentRecord.length; i++) {
 			if (recentRecord[i].token == token) {
@@ -115,21 +158,11 @@ Ext.define('NP.controller.Favorites', {
 		NP.Config.saveUserSetting('user_recent_records', recentRecord);
 	},
 
-	deleteFromFavorite: function(id) {
-		var favorites = NP.Config.getUserSettings()['user_favorites'];
-
-		favorites.splice(id, 1);
-
-		NP.Config.saveUserSetting('user_favorites', favorites);
-	},
-
 	/**
-	 * Get the token for the page we're currently on
-	 * @returns token
+	 * Get the token witchout user hash and token hash
+ 	 * @returns token
 	 */
-	getCurrentToken: function() {
-		var token = Ext.History.getToken();
-
+	getToken: function(token) {
 		if (token) {
 			tokenItems = token.split(':');
 			tokenItems.splice(-2, 2);

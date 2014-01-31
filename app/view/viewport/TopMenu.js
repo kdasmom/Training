@@ -99,10 +99,19 @@ Ext.define('NP.view.viewport.TopMenu', {
 	    }
 
 		this.items.push('->');
+
 		// Favorites
 		this.items.push({
 			xtype: 'shared.button.favorite',
+			itemId: 'removefromfavoritesBtn',
+			id: 'removefromfavoritesBtn',
+			text: NP.Translator.translate('Remove from Favorites')
+		});
+
+		this.items.push({
+			xtype: 'shared.button.favorite',
 			itemId: 'addtofavoritesBtn',
+			id: 'addtofavoritesBtn',
 			text: NP.Translator.translate('Add to Favorites')
 		});
 

@@ -148,6 +148,8 @@ Ext.define('NP.Application', {
      * @private
      */
 	gotoToken: function(token) {
+		this.getController('Favorites').refreshFavoriteButtons(token);
+
 		Ext.log('Going to token: ' + token);
 
 		// If the token is not null, do some operations to get the hash
