@@ -17,7 +17,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesSummary', {
 
 		this.items = [{
 			xtype: 'fieldset',
-			title: 'Rule Summary',
+			title: NP.Translator.translate('Rule Summary'),
 			defaultType: 'textfield',
 			padding: '8',
 			items: this.ruleSummaryItems

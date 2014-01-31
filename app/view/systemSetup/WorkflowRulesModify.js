@@ -25,42 +25,44 @@ Ext.define('NP.view.systemSetup.WorkflowRulesModify', {
     initComponent: function() {
         var me = this;
 
-        me.items = [
+		me.items = [
             {
                 xtype: 'systemsetup.WorkflowRulesSummary',
                 data: me.data,
 
                 margin: '0 0 20 0'
             },
-            {
-                xtype: 'panel',
-                html: 'Rule Builder',
-                baseCls: 'header-highlight'
-            },
-            {
-                xtype: 'systemsetup.WorkflowRulesBuilderRules',
-				data: me.data
-            },
-            {
-                xtype: 'systemsetup.WorkflowRulesBuilderRoutes',
-                hidden: true
-            }
+			{
+				xtype: 'fieldset',
+				title: NP.Translator.translate('Rule Builder'),
+				defaultType: 'textfield',
+				padding: '8',
+				border: true,
+				items: [
+					{
+						xtype: 'systemsetup.WorkflowRulesBuilderRules',
+						border: false,
+						data: me.data
+					},
+					{
+						xtype: 'systemsetup.WorkflowRulesBuilderRoutes',
+						hidden: true
+					}
+				]
+			}
         ];
 
         me.tbar = me.stepRulesToolbar();
-
         me.callParent(arguments);
     },
 
     stepRules: function() {
         var me = this;
 
-        me.down('[xtype="systemsetup.WorkflowRulesBuilderRules"]').show();
-        me.down('[xtype="systemsetup.WorkflowRulesBuilderRoutes"]').hide();
+		me.down('[xtype="systemsetup.WorkflowRulesBuilderRules"]').show();
+		me.down('[xtype="systemsetup.WorkflowRulesBuilderRoutes"]').hide();
 
-        var toolbar = 
-            me.getDockedItems()[0]
-        ;
+        var toolbar = me.getDockedItems()[0];
         toolbar.removeAll();
         toolbar.add(me.stepRulesToolbar());
     },
