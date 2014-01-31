@@ -9,9 +9,11 @@ Ext.define('NP.view.importing.types.InvoicePayment', {
     fieldName  : 'file_upload_invoice_payment',
 
     // For localization
-    tabTitle                 : 'Payments',
-    entityName               : 'Invoice Payments',
-    sectionName              : 'Invoice Payments',
+    tabTitle    : 'Payments',
+    entityName  : 'Invoice Payments',
+    sectionName : 'Invoice Payments',
+    instructions: null,
+    
     colTextBusinessUnit      : 'Business Unit',
     colTextVendorID          : 'Vendor ID',
     colTextInvoiceID         : 'Invoice ID',

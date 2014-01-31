@@ -21,10 +21,7 @@ Ext.define('NP.view.property.Main', {
     title: 'Property Setup',
     
     initComponent: function() {
-    	this.items = [
-    		{
-	    		xtype: 'property.overview'
-	    	},{
+    	this.items = [{
 	    		xtype: 'property.properties'
 	    	},{
 	    		xtype: 'property.calendar'
@@ -34,7 +31,10 @@ Ext.define('NP.view.property.Main', {
                 xtype: 'property.region'
             },{
                 xtype: 'property.reports'
-            }
+            },
+			{
+				xtype: 'property.overview'
+			}
     	];
 
     	this.callParent(arguments);

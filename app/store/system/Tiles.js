@@ -32,6 +32,21 @@ Ext.define('NP.store.system.Tiles', {
 			});
 		});
 
+		this.data.push({
+			name     : 'GL Category MTD Spend',
+			className: 'GlCategoryMtdSpend'
+		});
+
+		this.data.push({
+			name     : 'Invoice Statistics',
+			className: 'InvoiceStatistics'
+		});
+
+		this.data.push({
+			name     : 'YTD Top Spend by Vendor',
+			className: 'YtdTopSpendByVendor'
+		});
+
 		this.callParent(arguments);
 	}
 });

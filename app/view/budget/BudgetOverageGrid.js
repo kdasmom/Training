@@ -54,11 +54,11 @@ Ext.define('NP.view.budget.BudgetOverageGrid', {
         this.columns = [
             {
                 xtype    : 'property.gridcol.propertyname',
-                flex     : 1
+				flex     : 0.5
             },{
                 text     : this.categoryColText,
                 dataIndex: 'glaccount_name',
-                flex     : 1,
+                flex     : 0.5,
                 renderer : function(val, meta, rec) {
                     return NP.model.gl.GlAccount.formatName(rec.get('glaccount_number'), rec.get('glaccount_name'));
                 }
@@ -74,7 +74,25 @@ Ext.define('NP.view.budget.BudgetOverageGrid', {
                 dataIndex: 'budgetoverage_amount',
                 renderer : NP.Util.currencyRenderer,
                 align    : 'right'
-            },{
+            },
+			{
+				dataIndex: 'budgetoverage_note',
+				text: NP.Translator.translate('Reason'),
+				flex: 1
+			},
+			{
+				dataIndex: 'budgetoverage_created',
+				text: NP.Translator.translate('Added by'),
+                flex: 0.6,
+				renderer: function (val, meta, record) {
+                    var person = '';
+                    if (record.get('person_id') !== null) {
+                        person = ' (' + record.get('person_lastname') + ', ' + record.get('person_firstname') + ')';
+                    }
+					return Ext.Date.format(record.get('budgetoverage_created'), NP.Config.getDefaultDateTimeFormat()) + person;
+				}
+			},
+			{
                 xtype: 'actioncolumn',
                 items: [
                     {

@@ -153,6 +153,8 @@ Ext.define('NP.view.shared.PortalColumn', {
 		
 		Ext.suspendLayouts();
 
+		Ext.ComponentQuery.query('[xtype="viewport.summarystatlist"]')[0].hide();
+
 		Ext.each(rows, function(row) {
 			if (owner.up('[xtype="shared.portalrow"]').getId() != row.getId()) {
 				row.hide();
@@ -169,6 +171,7 @@ Ext.define('NP.view.shared.PortalColumn', {
 		});
 		tool.disable();
 		owner.down('tool[type="minimize"]').enable();
+		
 		Ext.resumeLayouts(true);
 	},
 
@@ -176,11 +179,15 @@ Ext.define('NP.view.shared.PortalColumn', {
 		var me = this;
 
 		Ext.suspendLayouts();
+
 		Ext.each(me._hiddenItems, function(hiddenItem) {
 			hiddenItem.show();
 		});
 		tool.disable();
 		owner.down('tool[type="maximize"]').enable();
+
+		Ext.ComponentQuery.query('[xtype="viewport.summarystatlist"]')[0].show();
+
 		Ext.resumeLayouts(true);
 
 		me._hiddenItems = null;

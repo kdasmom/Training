@@ -8,6 +8,7 @@
 Ext.define('NP.lib.core.SummaryStatManager', function() {
 	// Private variable to track valid summary stats for the logged in user
 	var userStats = {};
+	var userStatList = [];
 	var userStatsLoaded = false;
 
 	return {
@@ -37,6 +38,7 @@ Ext.define('NP.lib.core.SummaryStatManager', function() {
 							userStats[cat] = [];
 						}
 						userStats[cat].push(rec.getData());
+						userStatList.push({ cat: cat, idx: userStats[cat].length-1 });
 					}
 				});
 				userStatsLoaded = true;
@@ -84,12 +86,7 @@ Ext.define('NP.lib.core.SummaryStatManager', function() {
 							countOnly                  : true,
 							contextType                : contextType,
 							contextSelection           : contextSelection,
-							property_id                : property_id,
-							success: function(result) {
-								// Update the stat count for this requests' summary stat
-								var listPanel = Ext.ComponentQuery.query('[xtype="viewport.summarystatlist"]')[0];
-        						listPanel.updateStatCount(stat.name, result);
-							}
+							property_id                : property_id
 						});
 					});
 				}
@@ -98,7 +95,22 @@ Ext.define('NP.lib.core.SummaryStatManager', function() {
 			// Run ajax request for the batch
 			var req = {
 				method  : 'POST',
-				requests: batch.requests
+				requests: batch.requests,
+				success : function(results) {
+					// Suspend layouts to speed up the updating of the dashboard
+					Ext.suspendLayouts();
+
+					for (var i=0; i<results.length; i++) {
+						// Update the stat count for this requests' summary stat
+						var listPanel = Ext.ComponentQuery.query('[xtype="viewport.summarystatlist"]')[0];
+						var stat = userStatList[i];
+						
+						listPanel.updateStatCount(stats[stat.cat][stat.idx].name, results[i]);
+					}
+
+					// Resume layouts now that all stats are updated
+					Ext.resumeLayouts(true);
+				}
 			};
 			
 			if (!initCall) {

@@ -63,22 +63,28 @@ Ext.define('NP.controller.Favorites', {
 			}
 		}
 
-		Ext.getCmp('addtofavoritesBtn').show();
-		Ext.getCmp('removefromfavoritesBtn').hide();
+		this.query('#addtofavoritesBtn', true).show();
+		this.query('#removefromfavoritesBtn', true).hide();
 	},
 
 	refreshFavoriteButtons: function(token) {
-		var favorites = NP.Config.getUserSettings()['user_favorites'];
-		var token = this.getToken( token );
+		var me        = this,
+			favorites = NP.Config.getUserSettings()['user_favorites'],
+			addBtn    = this.query('#addtofavoritesBtn', true),
+			removeBtn = this.query('#removefromfavoritesBtn', true);
+		
+		if (favorites) {
+			var token = this.getToken(token);
 
-		if (this.issetTokenInFavoriteslist(token, favorites)) {
-			Ext.getCmp('addtofavoritesBtn').hide();
-			Ext.getCmp('removefromfavoritesBtn').show();
+			if (this.issetTokenInFavoriteslist(token, favorites)) {
+				addBtn.hide();
+				removeBtn.show();
+				return;
+			}
 		}
-		else {
-			Ext.getCmp('addtofavoritesBtn').show();
-			Ext.getCmp('removefromfavoritesBtn').hide();
-		}
+
+		addBtn.show();
+		removeBtn.hide();
 	},
 
 	issetTokenInFavoriteslist: function(token, favoritelist) {
@@ -124,8 +130,8 @@ Ext.define('NP.controller.Favorites', {
 		NP.Config.saveUserSetting('user_favorites', favorites, function() {
 			me.getCmp('favorites.addtofavoriteswindow').close();
 
-			Ext.getCmp('addtofavoritesBtn').hide();
-			Ext.getCmp('removefromfavoritesBtn').show();
+			me.query('#addtofavoritesBtn', true).hide();
+			me.query('#removefromfavoritesBtn', true).show();
 
 			NP.Util.showFadingWindow({
 				html: NP.Translator.translate('New favorite has been added')

@@ -255,11 +255,12 @@ Ext.define('NP.view.property.PropertiesMain', {
                     name          : 'property_status',
                     displayField  : 'property_status_name',
                     valueField    : 'property_status',
-                    value         : 1,
+                    value         : 2,
                     store         : Ext.create('Ext.data.Store', {
                         fields: ['property_status', 'property_status_name'],
                         data : [
-                            { property_status: 1, property_status_name: 'Current' },
+                            { property_status: 2, property_status_name: 'All' },
+                            { property_status: 1, property_status_name: 'Active' },
                             { property_status: -1, property_status_name: 'On Hold' },
                             { property_status: 0, property_status_name: 'Inactive' }
                         ]

@@ -9,9 +9,11 @@ Ext.define('NP.view.importing.types.InvoiceExport', {
     fieldName  : 'file_upload_invoice_export',
 
      // For localization
-    tabTitle : 'Invoice Export',
-    entityName          : 'Invoice Export',
-    sectionName         : 'Invoice Export',
+    tabTitle    : 'Invoice Export',
+    entityName  : 'Invoice Export',
+    sectionName : 'Invoice Export',
+    instructions: null,
+    
     colTextPropertyCode : 'Property Code',
     colTextInvoiceNumber : 'Invoice Number',
     colTextVendorCode : 'Vendor Code',

@@ -10,8 +10,8 @@ Ext.define('NP.view.importing.types.VendorGL', {
 
     // For localization
     tabTitle     : 'Vendor GL Assignment',
-    entityName   : 'Vendor GL Assignment',
-    sectionName  : 'Vendor Setup',
+    entityName   : 'Vendor GL Assignments',
+    sectionName  : 'the Vendor record',
 
     getGrid: function() {
         return {

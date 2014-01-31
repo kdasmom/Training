@@ -16,7 +16,7 @@ Ext.define('NP.view.mySettings.UserPermissions', {
     
     autoScroll: true,
     margin    : 8,
-    hideLabel : true,
+    hideLabel : false,
     name      : 'properties',
     anchor    : '100%',
     store     : 'property.AllProperties',

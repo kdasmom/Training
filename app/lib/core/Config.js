@@ -165,6 +165,14 @@ Ext.define('NP.lib.core.Config', function() {
 		getDefaultDateFormat: function() {
 			return 'm/d/Y';
 		},
+		
+		/**
+		 * Returns the default date format used when displaying dates in the app
+		 * @return {String}
+		 */
+		getDefaultDateTimeFormat: function() {
+			return 'm/d/Y H:i:s';
+		},
 
 		/**
 		 * Returns all settings for the currently logged in user

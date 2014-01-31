@@ -12,7 +12,7 @@ use NP\core\db\Select;
  */
 class InvoiceItemPoItemJoin extends Join {
 	
-	public function __construct($cols=array('poitem_id','poitem_amount','purchaseorder_id'), $type=Select::JOIN_LEFT, $toAlias='pi', $fromAlias='ii') {
+	public function __construct($cols=null, $type=Select::JOIN_LEFT, $toAlias='pi', $fromAlias='ii') {
 		$this->setTable(array($toAlias=>'poitem'))
 			->setCondition("{$fromAlias}.invoiceitem_id = {$toAlias}.reftablekey_id OR {$fromAlias}.reftablekey_id = {$toAlias}.poitem_id")
 			->setCols($cols)

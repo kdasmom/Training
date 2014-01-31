@@ -185,7 +185,7 @@ Ext.define('NP.controller.PropertySetup', {
 		var tabPanel = that.setView('NP.view.property.Main');
 
 		// If no active tab is passed, default to Open
-		if (!activeTab) activeTab = 'Overview';
+		if (!activeTab) activeTab = 'Properties';
 		
 		// Check if the tab to be selected is already active, if it isn't make it the active tab
 		var tab = that.getCmp('property.' + activeTab.toLowerCase());

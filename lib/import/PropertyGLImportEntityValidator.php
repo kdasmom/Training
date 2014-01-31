@@ -39,7 +39,7 @@ class PropertyGLImportEntityValidator extends AbstractImportEntityValidator {
         if (!empty($intPkg)) {
             // Validate property
             $prop = $this->propertyGateway->find(
-                array('property_id_alt'=>'?', 'integration_package_id'=>'?'),
+                array('pr.property_id_alt'=>'?', 'pr.integration_package_id'=>'?'),
                 array($entity->property_id_alt, $intPkg[0]['integration_package_id'])
             );
             
@@ -49,7 +49,7 @@ class PropertyGLImportEntityValidator extends AbstractImportEntityValidator {
 
             // Validate GL account
             $gl = $this->glAccountGateway->find(
-                array('glaccount_number'=>'?', 'integration_package_id'=>'?'),
+                array('g.glaccount_number'=>'?', 'g.integration_package_id'=>'?'),
                 array($entity->glaccount_number, $intPkg[0]['integration_package_id'])
             );
 

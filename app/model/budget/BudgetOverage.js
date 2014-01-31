@@ -30,6 +30,10 @@ Ext.define('NP.model.budget.BudgetOverage', {
         { name: 'property_name' },
 
         { name: 'glaccount_number' },
-        { name: 'glaccount_name' }
+        { name: 'glaccount_name' },
+
+        { name: 'person_id', type: 'int' },
+        { name: 'person_firstname' },
+        { name: 'person_lastname' }
     ]
 });

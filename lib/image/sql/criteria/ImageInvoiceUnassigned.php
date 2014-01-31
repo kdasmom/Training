@@ -18,8 +18,9 @@ class ImageInvoiceUnassigned extends Where {
 		parent::__construct();
 
 		return $this->nest('OR')
-					->isNull("{$alias}.Tablekey_Id")
-					->equals("{$alias}.Tablekey_Id", 0);
+						->isNull("{$alias}.Tablekey_Id")
+						->equals("{$alias}.Tablekey_Id", 0)
+					->unnest();
 	}
 	
 }

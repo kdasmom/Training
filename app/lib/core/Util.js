@@ -243,5 +243,16 @@ Ext.define('NP.lib.core.Util', {
 	 */
 	getIdProperty: function(modelClass) {
 		return Ext.ClassManager.get('NP.model.' + modelClass).getFields()[0].name;
+	},
+
+	convertModelArrayToDataArray: function(modelArray) {
+		var data = [],
+			i;
+		
+		for (i=0; i<modelArray.length; i++) {
+			data.push(modelArray[i].getData());
+		}
+
+		return data;
 	}
 });
