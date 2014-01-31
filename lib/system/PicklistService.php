@@ -161,11 +161,11 @@ class PicklistService extends AbstractService {
 		return $result;
 	}
 
-	public function getFormFields($mode = 'Insurance', $column_status = null) {
+	public function getFormFields($mode = 'Insurance', $column_id = null, $column_status = null) {
 		$tableParams = $this->_getTableKeyByPicklistMode($mode);
 		$aspClientId = $this->configService->getClientId();
 
-		return $this->picklistGateway->getColumnsValue($tableParams['table_id'], $tableParams['tablename'], $aspClientId, $column_status);
+		return $this->picklistGateway->getColumnsValue($tableParams['table_id'], $tableParams['tablename'], $aspClientId, $column_status, $column_id);
 	}
 
 	private function _getTableKeyByPicklistMode($mode) {
@@ -238,6 +238,7 @@ class PicklistService extends AbstractService {
 
 		return $this->picklistGateway->getDropDownValuesPicklistColumn($column_id, $this->configService->getClientId(), $dropdown_flag);
 	}
+
 }
 
 ?>

@@ -1248,19 +1248,19 @@ Ext.define('NP.controller.SystemSetup', {
 			picklistview = me.getCmp('systemsetup.picklists'),
 			picklistform = picklistview.down('[name="picklistfields"]');
 
-
 		NP.lib.core.Net.remoteCall({
 			requests: {
 				service    : 'PicklistService',
 				action     : 'getFormFields',
 				mode: picklistview.mode,
 				column_status: record.get('column_status'),
+				column_id: record.get('column_pk_data'),
 				success    : function(result) {
 					if (result) {
+						var values = result['values'];
 						picklistform.removeAll();
-						console.log(result);
-						Ext.each(result, function(column){
-							picklistform.add(me.fillPicklistForm(column));
+						Ext.each(result['fields'], function(column){
+							picklistform.add(me.fillPicklistForm(column, values[0]));
 						});
 					}
 				}
@@ -1268,7 +1268,7 @@ Ext.define('NP.controller.SystemSetup', {
 		});
 	},
 
-	fillPicklistForm: function(column) {
+	fillPicklistForm: function(column, values) {
 		var field;
 
 		if (column.dropdown_flag == 1) {
@@ -1287,9 +1287,15 @@ Ext.define('NP.controller.SystemSetup', {
 						column_id: column.picklist_column_id,
 						dropdown_flag: 1
 					},
-					autoLoad	: true,
+//					autoLoad	: true,
 					fields: ['dropdown_value', 'dropdown_display_text']
-				})
+				}),
+				listeners: {
+					afterrender: function(combo, eOpts) {
+						combo.getStore().load();
+						combo.setValue(!values ? '' : values[column.column_name]);
+					}
+				}
 			};
 		} else {
 			if (column.dropdown_flag == 2) {
@@ -1308,16 +1314,22 @@ Ext.define('NP.controller.SystemSetup', {
 							column_id: column.picklist_column_id,
 							dropdown_flag: 2
 						},
-						autoLoad	: true,
+						autoLoad	: false,
 						fields: ['dropdown_value', 'dropdown_display_text']
-					})
+					}),
+					listeners: {
+						afterrender: function(combo, eOpts) {
+							combo.getStore().load();
+							combo.setValue(!values ? '' : values[column.column_name]);
+						}
+					}/*,
+					value: !values ? '' : values[column.column_name]*/
 				};
-				console.log('field: ', field);
 			} else {
 				if (column.column_name == 'universal_field_status') {
 					field = {
 						xtype: 'radiogroup',
-						name: 'col_universal_field_status',
+						name: 'universal_field_status',
 						fieldLabel: 'Status',
 						layout: 'hbox',
 						columns: 1,
@@ -1331,7 +1343,8 @@ Ext.define('NP.controller.SystemSetup', {
 							{
 								boxLabel: NP.Translator.translate('Default'), name: 'universal_field_status', inputValue: '2', padding: '0 15 0 0'
 							}
-						]
+						],
+						value: !values ? '' : values[column.column_name]
 					};
 				} else {
 					if (column.column_info[0].TYPE_NAME == 'varchar' ||
@@ -1342,20 +1355,22 @@ Ext.define('NP.controller.SystemSetup', {
 						) {
 						field = {
 							xtype: 'textfield',
-							name: 'col_' + column.column_name,
+							name: column.column_name,
 							fieldLabel: column.column_name_title,
 							disabled: column.column_name.length > 0 && column.readonly,
-							allowBlank: !column.column_info[0].NULLABLE
+							allowBlank: !column.column_info[0].NULLABLE,
+							value: !values ? '' : values[column.column_name]
 						};
 					}
 					if (column.column_info[0].TYPE_NAME == 'int' && column.column_name !== 'universal_field_status') {
 						field = {
 							xtype: 'numberfield',
-							name: 'col_' + column.column_name,
+							name: column.column_name,
 							fieldLabel: column.column_name_title,
 							disabled: column.column_name.length > 0 && column.readonly,
 							allowBlank: !column.column_info[0].NULLABLE,
-							decimalPrecision: 0
+							decimalPrecision: 0,
+							value: !values ? '' : values[column.column_name]
 						};
 					}
 
@@ -1367,11 +1382,12 @@ Ext.define('NP.controller.SystemSetup', {
 						) {
 						field = {
 							xtype: 'numberfield',
-							name: 'col_' + column.column_name,
+							name: column.column_name,
 							fieldLabel: column.column_name_title,
 							disabled: column.column_name.length > 0 && column.readonly,
 							allowBlank: !column.column_info[0].NULLABLE,
-							decimalPrecision: column.column_info[0].TYPE_NAME == 'bigint' ? 0 : 2
+							decimalPrecision: column.column_info[0].TYPE_NAME == 'bigint' ? 0 : 2,
+							value: !values ? '' : values[column.column_name]
 						};
 					}
 
@@ -1380,27 +1396,30 @@ Ext.define('NP.controller.SystemSetup', {
 
 						field = {
 							xtype: 'shared.yesnofield',
-							name: 'col_' + column.column_name,
+							name: column.column_name,
 							fieldLabel: column.column_name_title,
-							disabled: column.column_name.length > 0 && column.readonly
+							disabled: column.column_name.length > 0 && column.readonly,
+							value: !values ? '' : values[column.column_name]
 						};
 					}
 
 					if (column.column_info[0].TYPE_NAME == 'datetime') {
 						field = {
 							xtype: 'datefield',
-							name: 'col_' + column.column_name,
+							name: column.column_name,
 							fieldLabel: column.column_name_title,
-							disabled: column.column_name.length > 0 && column.readonly
+							disabled: column.column_name.length > 0 && column.readonly,
+							value: !values ? '' : values[column.column_name]
 						};
 					}
 
 					if (column.column_info[0].TYPE_NAME == 'text') {
 						field = {
 							xtype: 'textareafield',
-							name: 'col_' + column.column_name,
+							name: column.column_name,
 							fieldLabel: column.column_name_title,
-							disabled: column.column_name.length > 0 && column.readonly
+							disabled: column.column_name.length > 0 && column.readonly,
+							value: !values ? '' : values[column.column_name]
 						};
 					}
 				}

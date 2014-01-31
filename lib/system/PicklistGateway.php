@@ -24,8 +24,6 @@ class PicklistGateway extends AbstractGateway {
 	 */
 	public function getPicklistColumns($tablekey_id, $asp_client_id) {
 		$select = new Select();
-		$selectColumns = new Select();
-		$params = [];
 
 		$select->from(['pt' => 'picklist_table'])
 			->columns(['picklist_pk_column', 'picklist_data_column', 'picklist_display_column', 'table_name', 'picklist_table_id', 'picklist_table_from_sql', 'picklist_table_where_sql', 'picklist_table_orderby_sql', 'picklist_table_allow_new'])
@@ -45,19 +43,6 @@ class PicklistGateway extends AbstractGateway {
 		}
 
 		$fromtable = !$table[0]['picklist_table_from_sql'] ? $table[0]['table_name'] : $table[0]['picklist_table_from_sql'];
-
-		/**
-		 * SELECT
-		CASE
-		WHEN #qry_picklist_table.table_name#.universal_field_status = 0 THEN #PreserveSingleQuotes(qry_picklist_table.picklist_data_column)# + ' (Inactive)'
-		ELSE #PreserveSingleQuotes(qry_picklist_table.picklist_data_column)#
-		END AS column_data,
-		#qry_picklist_table.picklist_pk_column# as column_pk_data,
-		#qry_picklist_table.table_name#.universal_field_status as column_status
-		FROM <CFIF qry_picklist_table.picklist_table_from_sql NEQ "">#qry_picklist_table.picklist_table_from_sql#<CFELSE>#qry_picklist_table.table_name#</CFIF>
-		#PreserveSingleQuotes(WhereClause)#
-		<CFIF qry_picklist_table.picklist_table_orderby_sql NEQ "">ORDER BY #qry_picklist_table.picklist_table_orderby_sql#<CFELSE>ORDER BY #qry_picklist_table.picklist_data_column#</CFIF>
-		 */
 
 		$sql = "SELECT CASE
 		WHEN {$table[0]['table_name']}.universal_field_status = 0 THEN {$table[0]['picklist_data_column']} + ' (Inactive)'
@@ -80,26 +65,12 @@ class PicklistGateway extends AbstractGateway {
 			$sql .= " ORDER BY {$table[0]['picklist_data_column']}";
 		}
 
-		
-
-//		$selectColumns->from([$fromtable => $fromtable])
-//			->columns([
-//				'column_data'	=> new Expression("CASE
-//					WHEN {$fromtable}.universal_field_status = 0 THEN {$table[0]['picklist_data_column']} + ' (Inactive)'
-//					ELSE {$table[0]['picklist_data_column']}
-//				END"),
-//				'column_pk_data'	=> $table[0]['picklist_pk_column'],
-//				'column_status'		=> 'universal_field_status'
-//			]);
-//
-//		$sql = $selectColumns->toString() . ' ' . $whereClause . ' order by ' . (!$table[0]['picklist_table_orderby_sql'] ? $table[0]['picklist_data_column'] : $table[0]['picklist_table_orderby_sql']);
-//
 		$columns = $this->adapter->query($sql);
 
 		return $columns;
 	}
 
-	public function getColumnsValue($tablekey_id, $table_name, $asp_client_id, $columnStatus) {
+	public function getColumnsValue($tablekey_id, $table_name, $asp_client_id, $columnStatus, $column_id) {
 		$selectTable = new Select();
 		$selectColumns = new Select();
 //		select table
@@ -150,7 +121,10 @@ class PicklistGateway extends AbstractGateway {
 			$column['universal_field_status'] = $columnStatus;
 		}
 
-		return $result;
+		$columns['fields'] = $result;
+		$columns['values'] = $this->findPicklistValues($column_id, $table[0]['picklist_pk_column'], $table[0]['table_name']);
+
+		return $columns;
 	}
 
 	/**
@@ -215,7 +189,7 @@ class PicklistGateway extends AbstractGateway {
 			if ($column[0]['dropdown_sql_select']) {
 				$sql .= $column[0]['dropdown_sql_select'] . ' FROM ';
 			} else {
-				$sql .= $column[0]['dropdown_value_column'] . ', ' . $column[0]['dropdown_name_column'] . ' FROM ';
+				$sql .= $column[0]['dropdown_value_column'] . ' as dropdown_value, ' . $column[0]['dropdown_name_column'] . ' as dropdown_display_text FROM ';
 			}
 			if (strlen($column[0]['dropdown_sql_from'] > 0)) {
 				$sql .= $column[0]['dropdown_sql_from'];
@@ -236,6 +210,32 @@ class PicklistGateway extends AbstractGateway {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Retrieve record for the picklist value
+	 *
+	 * @param $column_id
+	 * @param $column_name
+	 * @param $table_name
+	 * @return array|bool
+	 */
+	public function findPicklistValues($column_id, $column_name, $table_name) {
+		$select = new Select();
+
+		$select->from(['t' => $table_name])
+			->where([$column_name => '?']);
+
+		$result = $this->adapter->query($select, [$column_id]);
+
+		$item = [];
+		if (count($result) > 0) {
+			foreach ($result[0] as $key => $value) {
+				$item[strtolower($key)] = $value;
+			}
+		}
+
+		return count($item) > 0 ? [$item] : [];
 	}
 
 } 
