@@ -3,6 +3,7 @@
 namespace NP\system;
 
 use NP\core\AbstractService;
+use NP\core\db\Select;
 use NP\core\validation\EntityValidator;
 use NP\core\db\Update;
 use NP\property\RegionEntity;
@@ -237,6 +238,19 @@ class PicklistService extends AbstractService {
 		}
 
 		return $this->picklistGateway->getDropDownValuesPicklistColumn($column_id, $this->configService->getClientId(), $dropdown_flag);
+	}
+
+	public function savePicklist($data = null) {
+
+		if (!$data) {
+			return false;
+		}
+
+		$asp_client_id = $this->configService->getClientId();
+
+		$table = $this->_getTableKeyByPicklistMode($data['mode']);
+
+		return $this->picklistGateway->savePicklist($data, $table, $asp_client_id);
 	}
 
 }

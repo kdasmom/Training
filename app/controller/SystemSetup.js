@@ -203,6 +203,12 @@ Ext.define('NP.controller.SystemSetup', {
 			},
 			'[xtype="systemsetup.picklists"] [name="picklistcolumns"]': {
 				itemclick: me.loadPicklistForm
+			},
+			'[xtype="systemsetup.picklists"] [name="picklistfields"] [xtype="shared.button.save"]': {
+				click: me.savePicklist
+			},
+			'[xtype="systemsetup.picklists"] [name="picklistfields"] [xtype="shared.button.cancel"]': {
+				click: me.resetPickListForm
 			}
 		});
 
@@ -1182,6 +1188,9 @@ Ext.define('NP.controller.SystemSetup', {
 		});
 	},
 
+	/**
+	 * Save custom fields values
+	 */
 	saveCustomField: function() {
 		var form = this.getCmp('systemsetup.customfieldform'),
 			values = form.getValues(),
@@ -1228,11 +1237,22 @@ Ext.define('NP.controller.SystemSetup', {
 		});
 	},
 
+	/**
+	 * Change custom fields tab
+	 *
+	 * @param tab
+	 */
 	changeCustomFieldsTab: function(tab) {
 		var me = this;
 		tab.remove(me.getCmp('systemsetup.customfieldform'));
 	},
 
+	/**
+	 * Load picklist columns
+	 *
+	 * @param grid
+	 * @param record
+	 */
 	loadPicklistColumns: function (grid, record) {
 		var me = this,
 			picklistview = me.getCmp('systemsetup.picklists'),
@@ -1241,26 +1261,48 @@ Ext.define('NP.controller.SystemSetup', {
 		picklistview.mode = record.get('mode');
 		columnsgrid.getStore().getProxy().extraParams.mode = record.get('mode');
 		columnsgrid.getStore().reload();
+		me.resetPickListForm();
 	},
 
+	/**
+	 * Load picklist form
+	 *
+	 * @param grid
+	 * @param record
+	 */
 	loadPicklistForm: function(grid, record) {
 		var me = this,
 			picklistview = me.getCmp('systemsetup.picklists'),
-			picklistform = picklistview.down('[name="picklistfields"]');
+			picklistform = picklistview.down('[name="picklistfields"]'),
+			recordvalue = {
+				column_status: record.get('column_status'),
+				column_pk_data: record.get('column_pk_data')
+			};
+
+		me.fillFormPicklist(recordvalue, picklistform, picklistview.mode);
+	},
+
+	fillFormPicklist: function(record, form, mode) {
+		var me = this;
 
 		NP.lib.core.Net.remoteCall({
 			requests: {
 				service    : 'PicklistService',
 				action     : 'getFormFields',
-				mode: picklistview.mode,
-				column_status: record.get('column_status'),
-				column_id: record.get('column_pk_data'),
+				mode:mode,
+				column_status: record.column_status,
+				column_id: record.column_pk_data,
 				success    : function(result) {
 					if (result) {
 						var values = result['values'];
-						picklistform.removeAll();
+						form.removeAll();
 						Ext.each(result['fields'], function(column){
-							picklistform.add(me.fillPicklistForm(column, values[0]));
+							form.add(me.fillPicklistForm(column, values[0]));
+						});
+						form.add({
+							xtype: 'hiddenfield',
+							name: 'column_id',
+							value: record.column_pk_data
 						});
 					}
 				}
@@ -1268,6 +1310,13 @@ Ext.define('NP.controller.SystemSetup', {
 		});
 	},
 
+	/**
+	 * Add form's fields
+	 *
+	 * @param column
+	 * @param values
+	 * @returns {*}
+	 */
 	fillPicklistForm: function(column, values) {
 		var field;
 
@@ -1322,8 +1371,7 @@ Ext.define('NP.controller.SystemSetup', {
 							combo.getStore().load();
 							combo.setValue(!values ? '' : values[column.column_name]);
 						}
-					}/*,
-					value: !values ? '' : values[column.column_name]*/
+					}
 				};
 			} else {
 				if (column.column_name == 'universal_field_status') {
@@ -1335,16 +1383,15 @@ Ext.define('NP.controller.SystemSetup', {
 						columns: 1,
 						items: [
 							{
-								boxLabel: NP.Translator.translate('Active'), name: 'universal_field_status', inputValue: '1', checked: true, padding: '0 15 0 0'
+								boxLabel: NP.Translator.translate('Active'), name: 'universal_field_status', inputValue: '1', checked: !values ? true : (values[column.column_name] == 1 ? true : false), padding: '0 15 0 0'
 							},
 							{
-								boxLabel: NP.Translator.translate('Inactive'), name: 'universal_field_status', inputValue: '0', padding: '0 15 0 0'
+								boxLabel: NP.Translator.translate('Inactive'), name: 'universal_field_status', inputValue: '0', padding: '0 15 0 0', checked: !values ? false : (values[column.column_name] == 0 ? true : false)
 							},
 							{
-								boxLabel: NP.Translator.translate('Default'), name: 'universal_field_status', inputValue: '2', padding: '0 15 0 0'
+								boxLabel: NP.Translator.translate('Default'), name: 'universal_field_status', inputValue: '2', padding: '0 15 0 0', checked: !values ? false : (values[column.column_name] == 2 ? true : false)
 							}
-						],
-						value: !values ? '' : values[column.column_name]
+						]
 					};
 				} else {
 					if (column.column_info[0].TYPE_NAME == 'varchar' ||
@@ -1428,7 +1475,52 @@ Ext.define('NP.controller.SystemSetup', {
 
 		}
 
-
 		return field;
+	},
+
+	/**
+	 * Save picklist field values
+	 *
+	 */
+	savePicklist: function() {
+		var me = this,
+			picklistview = me.getCmp('systemsetup.picklists'),
+			picklistform = picklistview.down('[name="picklistfields"]'),
+			data = picklistform.getValues();
+
+		Ext.apply(data, {
+			mode: picklistview.mode
+		});
+
+		if (picklistform.isValid()) {
+			NP.lib.core.Net.remoteCall({
+				requests: {
+					service    : 'PicklistService',
+					action     : 'savePicklist',
+					data: data,
+					success    : function(result) {
+						if (result) {
+							me.fillFormPicklist({
+								column_pk_data: 0,
+								column_status: 1
+							}, picklistform, picklistview.mode)
+							picklistview.down('[name="picklistcolumns"]').getStore().reload();
+						}
+					}
+				}
+			});
+		}
+	},
+
+	resetPickListForm: function() {
+		var me = this,
+			picklistview = me.getCmp('systemsetup.picklists'),
+			picklistform = picklistview.down('[name="picklistfields"]'),
+			recordvalue = {
+				column_status: 1,
+				column_pk_data: 0
+			};
+
+		me.fillFormPicklist(recordvalue, picklistform, picklistview.mode);
 	}
 });
