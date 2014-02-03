@@ -19,6 +19,7 @@ Ext.define('NP.view.systemSetup.Main', {
     	'NP.view.systemSetup.Picklists',
     	'NP.view.systemSetup.DefaultSplits',
         'NP.view.systemSetup.LoginPage',
+        'NP.view.systemSetup.POPrintSettings',
 		'NP.view.shared.button.UserManager',
 		'NP.view.shared.button.PropertySetup'
     ],
@@ -82,6 +83,10 @@ Ext.define('NP.view.systemSetup.Main', {
     	
         this.items.push({
             xtype: 'systemsetup.loginpage'
+        });
+
+        this.items.push({
+            xtype: 'systemsetup.poprintsettings'
         });
 
     	this.callParent(arguments);
