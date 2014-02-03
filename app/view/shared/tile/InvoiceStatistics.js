@@ -95,13 +95,13 @@ Ext.define('NP.view.shared.tile.InvoiceStatistics', {
                     align    : 'right',
                     text     : 'Items',
                     dataIndex: 'total',
-                    width    : 90
+                    width    : 70
                 },{
                     xtype    : 'numbercolumn',
                     text     : 'Amount',
                     dataIndex: 'amount',
                     align    : 'right',
-                    width    : 150,
+                    width    : 90,
                     renderer : NP.Util.currencyRenderer
                 }
             ]

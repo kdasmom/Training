@@ -643,7 +643,7 @@ class VendorGateway extends AbstractGateway {
 		if ($category == 'top20') {
 
 		}
-		return $this->getPagingArray($select, [AddressGateway::ADDRESS_TYPE_MAILING, $keyword . '%', $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%'] , $pageSize, $page, 'vendor_id');
+		return $this->getPagingArray($select, [AddressGateway::ADDRESS_TYPE_MAILING, $keyword . '%', $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%'] , $pageSize, $page, 'v.vendor_id');
 	}
 
 	public function findByKeywordWithTaskType($allowExpInsurance) {

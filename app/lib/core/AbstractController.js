@@ -34,5 +34,18 @@ Ext.define('NP.lib.core.AbstractController', {
 
 	hasPermission: function(moduleId) {
 		return NP.Security.hasPermission(moduleId);
+	},
+
+	query: function(selector, singleItem) {
+		singleItem = singleItem || false;
+
+		var items = Ext.ComponentQuery.query(selector);
+		if (singleItem) {
+			if (items.length) {
+				return items[0];
+			}
+			return null;
+		}
+		return items;
 	}
 });

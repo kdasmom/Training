@@ -17,7 +17,8 @@ Ext.define('NP.view.Viewport', {
     	'NP.view.viewport.TopToolbar',
     	'NP.view.viewport.TopMenu',
     	'NP.view.viewport.Home',
-    	'NP.view.viewport.ImagePanel'
+    	'NP.view.viewport.ImagePanel',
+    	'NP.view.shared.button.FavoriteGlobal'
 	],
 	
 	layout: 'border',
@@ -62,16 +63,30 @@ Ext.define('NP.view.Viewport', {
 						        	align: 'right'
 						        },
 						        items: [
-						        	{
-						        		xtype: 'component',
-						        		html: '<div id="npHeaderRight">' +
-							        			'<img id="learningNexusImg" src="resources/images/learningnexus.gif" align="top" />' +
-							        			'<span id="npHeaderRightLinks">' + 
-							        				'<a href="javascript:void(0)" id="npHomeLink">Home</a>' + ' | ' + 
-							        				'<a href="javascript:void(0);" id="npHelpLink">Help</a>' + ' | ' + 
-							        				'<a href="javascript:void(0);" id="npLogoutLink">Logout</a>' + 
-							        			'</span>' +
-							        		'</div>'
+									{
+						        		xtype : 'container',
+						        		layout: 'hbox',
+						        		items: [
+						        			{
+												xtype: 'shared.button.favoriteglobal',
+												itemId: 'favoritesBtn',
+												margin: '0 10 0 0'
+											},
+											{
+						        				xtype: 'component',
+						        				html : '<img id="learningNexusImg" src="resources/images/learningnexus.gif" align="top" />',
+						        				width: 109,
+						        				margin: '0 8 0 0'
+						        			},{
+						        				xtype: 'component',
+						        				width: 125,
+						        				html : '<span id="npHeaderRightLinks">' + 
+									        				'<a href="javascript:void(0)" id="npHomeLink">Home</a>' + ' | ' + 
+									        				'<a href="javascript:void(0);" id="npHelpLink">Help</a>' + ' | ' + 
+									        				'<a href="javascript:void(0);" id="npLogoutLink">Logout</a>' + 
+									        			'</span>'
+						        			}
+						        		]
 						        	},
 						        	{ xtype: 'viewport.delegationpicker' }
 						        ]

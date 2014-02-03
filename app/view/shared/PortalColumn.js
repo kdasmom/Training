@@ -82,6 +82,8 @@ Ext.define('NP.view.shared.PortalColumn', {
 		var row = this.ownerCt;
 		row.remove(this);
 
+		this.adjustRatios(row);
+
 		if (!this.viewOnly && row.items.items.length < row.maxCols) {
 			row.down('[xtype="shared.button.new"]').enable();
 		}

@@ -49,7 +49,7 @@ class SiteService {
 			
 			// Loop through all URLs for this client and store them in a struct with a reference to the client config values
 			foreach($client->access_url as $access_url) {
-				$site_urls[(string)$access_url] = $appName;
+				$site_urls[strtolower((string)$access_url)] = $appName;
 			}
 		}
 		
@@ -112,13 +112,13 @@ class SiteService {
 	public function urlExists($url) {
 		$urls = $this->getSiteUrls();
 		
-		return array_key_exists($url, $urls);
+		return array_key_exists(strtolower($url), $urls);
 	}
 	
 	public function getAppNameByUrl($url) {
 		$urls = $this->getSiteUrls();
 		
-		return $urls[$url];
+		return $urls[strtolower($url)];
 	}
 
 }

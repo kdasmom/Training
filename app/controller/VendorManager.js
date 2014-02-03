@@ -164,7 +164,7 @@ Ext.define('NP.controller.VendorManager', {
 
 		var insurancesForm = that.getCmp('vendor.vendorinsurancesetup');
 		if (insurancesForm) {
-			insurancesForm.down('fieldcontainer').removeAll();
+			insurancesForm.down('container').removeAll();
 		}
 
 		var viewCfg = {
@@ -200,6 +200,11 @@ Ext.define('NP.controller.VendorManager', {
 			Ext.apply(viewCfg, {
 				listeners: {
 					dataloaded: function(formPanel, data) {
+						// Save to recent records
+						that.application.getController('Favorites').saveToRecentRecord(
+							'Vendor - ' + data['vendor_name'] + ' (' + data['vendor_id_alt'] + ')'
+						);
+
 						that.vendor_status = data['vendor_status'];
 
 						customFieldData = data['custom_fields'];
@@ -264,7 +269,7 @@ Ext.define('NP.controller.VendorManager', {
 	 */
 	setVendorView: function(config, vendor_id, search) {
 		var that = this;
-		var form = this.setView('NP.view.vendor.VendorForm', config);
+		var form = this.setView('NP.view.vendor.VendorForm', config, null, true);
 		if (!vendor_id) {
 			form.getForm().reset();
 			form.resetModels();

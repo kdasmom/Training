@@ -27,7 +27,7 @@ Ext.define('NP.view.shared.PortalCanvas', {
 		var that = this;
 
 		if (!that.viewOnly) {
-			this.tbar = [{ xtype: 'shared.button.new', text: 'Add Row', handler: Ext.bind(this.addRow, this, [true, 1, true]) }];
+			this.tbar = [{ xtype: 'shared.button.new', text: 'Add Row', handler: Ext.bind(this.addRow, this, [true, null, true]) }];
 		}
 
     	this.callParent(arguments);
@@ -52,13 +52,24 @@ Ext.define('NP.view.shared.PortalCanvas', {
 			this.items.items[0].down('#removeRowBtn').enable();
 		}
 
+		// Suspend layouts because we may have multiple updates to take care of
+		Ext.suspendLayouts();
+
+		// Add the row to the panel
 		var row = this.add({
 			xtype    : 'shared.portalrow',
 			border   : false,
-			flex     : flex,
+			flex     : (flex === null) ? 1 : flex,
 			removable: removable,
 			viewOnly : this.viewOnly
 		});
+
+		// If no flex was provided (happens when add button was clicked), run changeSize()
+		if (flex === null) {
+			// We pass changeSize() a specific ratio and it'll take care of making sure we don't
+			// make any panel smaller than our minimum sizes allow
+			row.changeSize('plus', 1 / (this.items.items.length));
+		}
 
 		if (addCol) {
 			row.addColumn(false, 1);
@@ -67,6 +78,8 @@ Ext.define('NP.view.shared.PortalCanvas', {
 		if (!this.viewOnly && this.items.items.length >= this.maxRows) {
 			this.down('[xtype="shared.button.new"]').disable();
 		}
+
+		Ext.resumeLayouts(true);
 
 		return row;
 	},

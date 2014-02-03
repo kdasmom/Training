@@ -468,12 +468,15 @@ Ext.define('NP.controller.Invoice', {
 
 						// Load image if needed
 						me.loadImage();
+
+						// Save to recent records
+						me.application.getController('Favorites').saveToRecentRecord('Invoice - ' + data['invoice_ref']);
 					}
 				}
 			});
 		}
 
-		var form = me.setView('NP.view.invoice.View', viewCfg, '#contentPanel', true);
+		var form = me.setView('NP.view.invoice.View', viewCfg, null, true);
 
 		if (!invoice_id) {
 			// Set the title

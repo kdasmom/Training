@@ -400,11 +400,11 @@ class InvoiceGateway extends AbstractGateway {
 					END
 				"),
 				'amount' => new Expression("
-					SUM(ii.invoiceitem_amount + ii.invoiceitem_shipping + ii.invoiceitem_salestax)
+					ISNULL(SUM(ii.invoiceitem_amount + ii.invoiceitem_shipping + ii.invoiceitem_salestax), 0)
 				")
 			])
 			->from(['i'=>'invoice'])
-				->join(new sql\join\InvoiceInvoiceItemJoin([]))
+				->join(new sql\join\InvoiceInvoiceItemJoin([], Select::JOIN_LEFT))
 			->whereIn('i.invoice_status', "'open','forapproval','saved','hold','rejected'")
 			->whereEquals('i.property_id', '?')
 			->group('i.invoice_status')
