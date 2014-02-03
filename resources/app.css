@@ -32,6 +32,8 @@ li.x-boundlist-item {
 .copy-btn { background-image: url("images/buttons/copy.gif"); }
 .delete-btn { background-image: url("images/buttons/delete.gif"); width: 15px; height: 15px; }
 .edit-btn { background-image: url("images/buttons/edit.gif"); }
+.favorites-btn { background-image: url("images/buttons/favorites.png"); }
+.favorites-empty-btn { background-image: url("images/buttons/favorites_empty.png"); }
 .go-btn { background-image: url("images/buttons/go.gif"); width: 33px !important; }
 .hold-activate-btn { background-image: url("images/buttons/hold_activate.gif"); }
 .hourglass-btn { background-image: url("images/buttons/hourglass.gif"); }
@@ -73,7 +75,7 @@ li.x-boundlist-item {
 .view-btn { background-image: url("images/buttons/view.gif"); background-repeat: no-repeat; }
 .void-btn { background-image: url("images/buttons/void.gif"); }
 .shop-btn { background-image: url("images/buttons/vc_shopping_bag.gif"); }
-.star-btn { background-image: url("images/buttons/icon_star.gif"); }
+.star-btn { background-image: url("images/buttons/star.gif"); }
 
 .npiss-button .x-btn-inner { padding-left: 24px !important; }
 .nsiss-button .x-btn-inner { padding-left: 34px !important; }

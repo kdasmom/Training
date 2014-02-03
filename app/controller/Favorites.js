@@ -34,13 +34,18 @@ Ext.define('NP.controller.Favorites', {
 			'#saveToFavorites': {
 				click: me.saveToFavorites
 			},
-			'[xtype="favorites.favoriteswindow"] [name="favorites"], [xtype="favorites.favoriteswindow"] [name="recentrecords"], [xtype="favorites.favoriteswindow"] [name="recentreports"]': {
+			'#favoritesGrid, #recentRecordsGrid, #recentReportsGrid': {
 				cellclick: function(gridView, td, cellIndex, record, tr, rowIndex, e, eOpts) {
-					if (cellIndex == 0) {
-						me.application.addHistory(record.raw.token);
+					if (cellIndex != 0) {
+						me.application.addHistory(record.get('token'));
 						me.getCmp('favorites.favoriteswindow').close();
 					}
 				}
+			},
+			'[xtype="favorites.favoritegrid"]': {
+				addfavfromrecent   : me.addFavFromRecent,
+				removefavfromrecent: me.removeFavFromRecent,
+				removefavorite     : me.removeFavFromGrid
 			}
 		});
 	},
@@ -53,18 +58,49 @@ Ext.define('NP.controller.Favorites', {
 	},
 
 	removeFromFavoritesBtn: function() {
-		var favorites = NP.Config.getUserSettings()['user_favorites'];
-		var token = this.getToken( Ext.History.getToken() );
+		var me    = this,
+			token = this.getToken( Ext.History.getToken() );
+
+		me.removeFavorite(token, function() {
+			me.query('#addtofavoritesBtn', true).show();
+			me.query('#removefromfavoritesBtn', true).hide();
+		});
+	},
+
+	removeFavorite: function(token, callback) {
+		var me        = this,
+			favorites = NP.Config.getUserSettings()['user_favorites'];
+
+		callback = callback || Ext.emptyFn;
 
 		for (var i=0; i<favorites.length; i++) {
 			if (favorites[i].token == token) {
 				favorites.splice(i, 1);
-				break;
+				NP.Config.saveUserSetting('user_favorites', favorites, callback);
+				return true;
 			}
 		}
 
-		this.query('#addtofavoritesBtn', true).show();
-		this.query('#removefromfavoritesBtn', true).hide();
+		return false;
+	},
+
+	removeFavFromGrid: function(rec) {
+		var me = this;
+
+		me.removeFavorite(rec.get('token'), function() {
+			me.query('#favoritesGrid', true).getStore().remove(rec);
+			me.query('#recentRecordsGrid', true).getView().refresh();
+			me.query('#recentReportsGrid', true).getView().refresh();
+		});
+	},
+
+	removeFavFromRecent: function(rec, gridId) {
+		var me = this;
+
+		me.removeFavorite(rec.get('token'), function() {
+			me.query('#' + gridId, true).getView().refresh();
+			me.reloadFavoriteGrid();
+		});
 	},
 
 	refreshFavoriteButtons: function(token) {
@@ -111,8 +147,26 @@ Ext.define('NP.controller.Favorites', {
 		var favorites = NP.Config.getUserSettings()['user_favorites'];
 		var token = this.getToken( Ext.History.getToken() );
 
+		me.saveFavorite(pageTitle, token, function() {
+			me.getCmp('favorites.addtofavoriteswindow').close();
+
+			me.query('#addtofavoritesBtn', true).hide();
+			me.query('#removefromfavoritesBtn', true).show();
+
+			NP.Util.showFadingWindow({
+				html: NP.Translator.translate('New favorite has been added')
+			});
+		});
+	},
+
+	saveFavorite: function(title, token, callback) {
+		var me        = this,
+			favorites = NP.Config.getUserSettings()['user_favorites'];
+
+		callback = callback || Ext.emptyFn;
+		
 		if (favorites) {
-			if (this.issetTokenInFavoriteslist(token, favorites)) {
+			if (me.issetTokenInFavoriteslist(token, favorites)) {
 				me.getCmp('favorites.addtofavoriteswindow').close();
 
 				NP.Util.showFadingWindow({ html: NP.Translator.translate('This page already exists in Favorites')});
@@ -124,19 +178,10 @@ Ext.define('NP.controller.Favorites', {
 		}
 
 		// Add the new favorite
-		favorites.unshift({ title: pageTitle, token: token });
+		favorites.unshift({ title: title, token: token });
 
 		// Save the favorites
-		NP.Config.saveUserSetting('user_favorites', favorites, function() {
-			me.getCmp('favorites.addtofavoriteswindow').close();
-
-			me.query('#addtofavoritesBtn', true).hide();
-			me.query('#removefromfavoritesBtn', true).show();
-
-			NP.Util.showFadingWindow({
-				html: NP.Translator.translate('New favorite has been added')
-			});
-		});
+		NP.Config.saveUserSetting('user_favorites', favorites, callback);
 	},
 
 	saveToRecentRecord: function(pageTitle) {
@@ -184,5 +229,27 @@ Ext.define('NP.controller.Favorites', {
 		var favoritesWindow = Ext.create('NP.view.favorites.FavoritesWindow', {}).show();
 
 		favoritesWindow.alignTo(Ext.getBody(), 'tr-tr', [-200, 32]);
+	},
+
+	addFavFromRecent: function(rec, gridId) {
+		var me = this;
+
+		me.saveFavorite(rec.get('title'), rec.get('token'), function() {
+			me.query('#' + gridId, true).getView().refresh();
+			me.reloadFavoriteGrid();
+		});
+	},
+
+	removeFavFromRecent: function(rec, gridId) {
+		var me = this;
+
+		me.removeFavorite(rec.get('token'), function() {
+			me.query('#' + gridId, true).getView().refresh();
+			me.reloadFavoriteGrid();
+		});
+	},
+
+	reloadFavoriteGrid: function() {
+		this.query('#favoritesGrid', true).getStore().loadData(NP.Config.getUserSettings()['user_favorites']);
 	}
 });

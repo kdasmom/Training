@@ -11,11 +11,62 @@ Ext.define('NP.view.favorites.FavoriteGrid', {
 		'NP.view.shared.button.Delete'
 	],
 
-	hideHeaders   : true,
+	hideHeaders    : true,
+	showRemoveCol  : false,
+	showFavoriteCol: false,
 
 	initComponent: function() {
+		var me = this;
+
+		var actionCols = [];
+		if (me.showRemoveCol) {
+			actionCols.push({
+				hidden: !this.showRemove,
+				icon: 'resources/images/buttons/delete.gif',
+				tooltip: 'Delete',
+				scope: this,
+				handler: function(gridView, rowIndex, colIndex, item, e, rec) {
+					me.fireEvent('removefavorite', rec);
+					
+				}
+			});
+		}
+
+		if (me.showFavoriteCol) {
+			me.buildFavoriteHashMap();
+			
+			actionCols.push({
+				getClass: function(val, meta, rec) {
+					if (rec.get('token') in me.favorites) {
+						return 'favorites-btn';
+					} else {
+						return 'favorites-empty-btn';
+					}
+				},
+				getTip: function(val, meta, rec) {
+					if (rec.get('token') in me.favorites) {
+						return 'Remove From Favorites';
+					} else {
+						return 'Add To Favorites';
+					}
+				},
+				scope: this,
+				handler: function(gridView, rowIndex, colIndex, item, e, rec){
+					if (rec.get('token') in me.favorites) {
+						me.fireEvent('removefavfromrecent', rec, me.itemId);
+					} else {
+						me.fireEvent('addfavfromrecent', rec, me.itemId);
+					}
+				}
+			});
+		}
+
 		this.columns = [
 			{
+				xtype: 'actioncolumn',
+				width: 30,
+				items: actionCols
+			},{
 				text: 'title',
 				dataIndex: 'title',
 				flex: 1,
@@ -23,22 +74,6 @@ Ext.define('NP.view.favorites.FavoriteGrid', {
 					metadata.style = 'cursor: pointer;';
 					return val;
 				}
-			}, {
-				xtype: 'actioncolumn',
-				width: 30,
-				hidden: this.getStore().showremovebutton,
-				items: [{
-					icon: 'resources/images/buttons/delete.gif',
-					tooltip: 'Delete',
-					scope: this,
-					handler: function(grid, rowIndex){
-						var favorites = NP.Config.getUserSettings()['user_favorites'];
-						favorites.splice(rowIndex, 1);
-						NP.Config.saveUserSetting('user_favorites', favorites);
-
-						this.getStore().removeAt(rowIndex);
-					}
-				}]
 			}
 		];
 
@@ -47,5 +82,26 @@ Ext.define('NP.view.favorites.FavoriteGrid', {
 		}
 
 		this.callParent(arguments);
+
+		if (me.showRemoveCol) {
+			me.addEvents('removefavorite');
+		}
+
+		if (me.showFavoriteCol) {
+			me.addEvents('addfavfromrecent', 'removefavfromrecent');
+			me.getView().on('beforerefresh', me.buildFavoriteHashMap.bind(me))
+		}
+	},
+
+	buildFavoriteHashMap: function() {
+		var me = this;
+
+		me.favorites = {};
+		var favorites = NP.Config.getUserSettings()['user_favorites'];
+		if (favorites) {
+			for (var i=0; i<favorites.length; i++) {
+				me.favorites[favorites[i].token] = true;
+			}
+		}
 	}
 });

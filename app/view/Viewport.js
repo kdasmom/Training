@@ -17,7 +17,8 @@ Ext.define('NP.view.Viewport', {
     	'NP.view.viewport.TopToolbar',
     	'NP.view.viewport.TopMenu',
     	'NP.view.viewport.Home',
-    	'NP.view.viewport.ImagePanel'
+    	'NP.view.viewport.ImagePanel',
+    	'NP.view.shared.button.FavoriteGlobal'
 	],
 	
 	layout: 'border',
@@ -67,7 +68,7 @@ Ext.define('NP.view.Viewport', {
 						        		layout: 'hbox',
 						        		items: [
 						        			{
-												xtype: 'shared.button.favorite',
+												xtype: 'shared.button.favoriteglobal',
 												itemId: 'favoritesBtn',
 												margin: '0 10 0 0'
 											},

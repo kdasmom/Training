@@ -25,29 +25,34 @@ Ext.define('NP.view.favorites.FavoritesWindow', {
 
 		this.items = [
             {
-                name: 'favorites',
-                title: NP.Translator.translate('Favorites'),
-                xtype: 'favorites.favoritegrid',
-                store: {
-                    fields: ['title'],
-                    data: NP.Config.getUserSettings()['user_favorites']
+                itemId       : 'favoritesGrid',
+                title        : NP.Translator.translate('Favorites'),
+                xtype        : 'favorites.favoritegrid',
+                showRemoveCol: true,
+                store        : {
+                    fields: ['title', 'token'],
+                    data  : NP.Config.getUserSettings()['user_favorites']
                 }
             },
             {
-                name: 'recentrecords',
-                title: NP.Translator.translate('Recent Records'),
-                xtype: 'favorites.favoritegrid',
-                store: {
-                    showremovebutton: true,
-                    fields: ['title'],
-                    data: NP.Config.getUserSettings()['user_recent_records']
+                itemId         : 'recentRecordsGrid',
+                title          : NP.Translator.translate('Recent Records'),
+                xtype          : 'favorites.favoritegrid',
+                showFavoriteCol: true,
+                store          : {
+                    fields: ['title', 'token'],
+                    data  : NP.Config.getUserSettings()['user_recent_records']
                 }
             },
             {
-                name: 'recentreports',
-                title: NP.Translator.translate('Recent Reports'),
-                xtype: 'favorites.favoritegrid',
-                store: []
+                itemId         : 'recentReportsGrid',
+                title          : NP.Translator.translate('Recent Reports'),
+                xtype          : 'favorites.favoritegrid',
+                showFavoriteCol: true,
+                store          : {
+                    fields: ['title', 'token'],
+                    data  : []
+                }
             }
         ];
 
