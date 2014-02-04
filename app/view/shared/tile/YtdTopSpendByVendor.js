@@ -9,7 +9,9 @@ Ext.define('NP.view.shared.tile.YtdTopSpendByVendor', {
     requires: [
         'Ext.chart.Chart',
         'NP.lib.core.Util',
-        'NP.lib.data.Store'
+        'NP.lib.data.Store',
+        'NP.lib.print.Manager',
+        'NP.view.shared.button.Print'
     ],
 
     /**
@@ -58,49 +60,62 @@ Ext.define('NP.view.shared.tile.YtdTopSpendByVendor', {
         });
 
         return {
-            xtype  : 'chart',
-            animate: true,
-            store  : store,
-            shadow : true,
-            /*legend : {
-                position: 'right'
-            },*/
-            insetPadding: 30,
-            theme       : 'Base:gradients',
-            series      : [{
-                type        : 'pie',
-                angleField  : 'total_amount',
-                //showInLegend: true,
-                tips        : {
-                    trackMouse: true,
-                    width     : 250,
-                    height    : 36,
-                    renderer  : function(rec, item) {
-                        this.setTitle(rec.get('vendor_name') + '<br />' +
-                            NP.Util.currencyRenderer(rec.get('total_amount')) + ' (' +
-                            Math.round(rec.get('total_amount') / total * 100) + '%)');
-                    }
-                },
-                highlight: {
-                  segment: {
-                    margin: 20
-                  }
-                },
-                label: {
-                    field   : 'vendor_name',
-                    display : 'rotate',
-                    contrast: true,
-                    font    : '12px Arial',
-                    renderer: function(val) {
-                        if (val.length > 20) {
-                            return val.substr(0, 17) + '...';
-                        }
-                        
-                        return val;
-                    }
+            xtype : 'panel',
+            layout: 'fit',
+            tbar  : [{
+                xtype  : 'shared.button.print',
+                handler: function() {
+                    var me    = this,
+                        chart = me.up('panel').down('chart');
+                    
+                    NP.PrintManager.print(chart);
                 }
+            }],
+            items: [{
+                xtype  : 'chart',
+                animate: true,
+                store  : store,
+                shadow : true,
+                /*legend : {
+                    position: 'right'
+                },*/
+                insetPadding: 30,
+                theme       : 'Base:gradients',
+                series      : [{
+                    type        : 'pie',
+                    angleField  : 'total_amount',
+                    //showInLegend: true,
+                    tips        : {
+                        trackMouse: true,
+                        width     : 250,
+                        height    : 36,
+                        renderer  : function(rec, item) {
+                            this.setTitle(rec.get('vendor_name') + '<br />' +
+                                NP.Util.currencyRenderer(rec.get('total_amount')) + ' (' +
+                                Math.round(rec.get('total_amount') / total * 100) + '%)');
+                        }
+                    },
+                    highlight: {
+                      segment: {
+                        margin: 20
+                      }
+                    },
+                    label: {
+                        field   : 'vendor_name',
+                        display : 'rotate',
+                        contrast: true,
+                        font    : '12px Arial',
+                        renderer: function(val) {
+                            if (val.length > 20) {
+                                return val.substr(0, 17) + '...';
+                            }
+                            
+                            return val;
+                        }
+                    }
+                }]
             }]
-        }
+        };
     },
 
     getStoreFields: function() {

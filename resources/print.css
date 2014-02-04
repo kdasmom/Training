@@ -1,0 +1,94 @@
+html.x-grid-print,.x-grid-print div,.x-grid-print dl,.x-grid-print dt,.x-grid-print dd,
+.x-grid-print ul,.x-grid-print ol,.x-grid-print li,.x-grid-print h1,.x-grid-print h2,
+.x-grid-print h3,.x-grid-print h4,.x-grid-print h5,.x-grid-print h6,.x-grid-print pre,.x-grid-print form,
+.x-grid-print fieldset,.x-grid-print input,.x-grid-print p,.x-grid-print blockquote,.x-grid-print th,.x-grid-print td
+    {
+    margin: 0;
+    padding: 0;
+}
+
+html.x-grid-print, .x-grid-print img,.x-grid-print body {
+    border: 0;
+}
+
+.x-grid-print address,.x-grid-print caption,.x-grid-print cite,.x-grid-print code,.x-grid-print dfn,.x-grid-print em,.x-grid-print strong,.x-grid-print th,.x-grid-print var {
+    font-style: normal;
+    font-weight: normal;
+}
+
+.x-grid-print ol,.x-grid-print ul {
+    list-style: none;
+}
+
+.x-grid-print caption,.x-grid-print th {
+    text-align: left;
+}
+
+.x-grid-print h1,.x-grid-print h2,.x-grid-print h3,.x-grid-print h4,.x-grid-print h5,.x-grid-print h6 {
+    font-size: 100%;
+}
+
+.x-grid-print q:before,.x-grid-print q:after {
+    content: '';
+}
+
+.x-grid-print .x-grid-print-links {
+    padding: 0 0 20px 0;
+}
+
+.x-grid-print a.x-grid-print-linkprint {
+    padding: 0 0 0 18px;
+    margin: 0 5px;
+    background: url(images/button/print.gif) no-repeat bottom left !important;
+}
+
+.x-grid-print a.x-grid-print-linkclose {
+    padding: 0 0 0 18px;
+    margin: 0 5px;
+    background: url(images/button/delete.gif) no-repeat bottom left !important;
+}
+
+.x-grid-print table {
+    width: 100%;
+    text-align: left;
+    font-size: 11px;
+    font-family: arial;
+    border-collapse: collapse;
+}
+
+.x-grid-print table th {
+    font-weight: bold;
+    padding: 4px 3px 4px 5px;
+    border: 1px solid #d0d0d0;
+    background-color: #ededed;
+}
+
+.x-grid-print table tr.odd {
+    background-color: #ffffff;
+}
+
+.x-grid-print table tr.even {
+    background-color: #f9f9f9;
+}
+
+.x-grid-print table td {
+    padding: 4px 3px 4px 5px;
+    border-style: none solid solid;
+    border-width: 1px;
+    border-color: #d0d0d0;
+}
+
+@media print {
+    .x-grid-print body {
+        margin: 0;
+        padding: 0;
+    }
+    .x-grid-print div.x-grid-print-noprint {
+        display: none;
+    }
+}
+.group-header {
+    border-bottom : 2px solid black;
+    font-size     : 14px;
+}
+

@@ -12,7 +12,8 @@ Ext.define('NP.view.shared.tile.InvoiceStatistics', {
         'NP.lib.core.Translator',
         'NP.lib.ui.Grid',
         'NP.lib.core.Util',
-        'NP.lib.data.Store'
+        'NP.lib.data.Store',
+        'NP.view.shared.button.Print'
     ],
 
     /**
@@ -58,26 +59,35 @@ Ext.define('NP.view.shared.tile.InvoiceStatistics', {
     getGrid: function(store) {
         return {
             xtype     : 'customgrid',
-            tbar      : [{
-                xtype       : 'customcombo',
-                margin      : '0 0 0 8',
-                fieldLabel  : NP.Config.getPropertyLabel(),
-                labelWidth  : 50,
-                width       : 350,
-                name        : 'property_id',
-                displayField: 'property_name',
-                valueField  : 'property_id',
-                value       : NP.Security.getCurrentContext().property_id,
-                allowBlank  : false,
-                store       : 'user.Properties',
-                listeners   : {
-                    select: function(combo, recs) {
-                        var store = combo.up('customgrid').getStore();
-                        store.addExtraParams({ property_id: recs[0].get('property_id') });
-                        store.load();
+            tbar      : [
+                {
+                    xtype       : 'customcombo',
+                    margin      : '0 8 0 8',
+                    fieldLabel  : NP.Config.getPropertyLabel(),
+                    labelWidth  : 50,
+                    width       : 350,
+                    name        : 'property_id',
+                    displayField: 'property_name',
+                    valueField  : 'property_id',
+                    value       : NP.Security.getCurrentContext().property_id,
+                    allowBlank  : false,
+                    store       : 'user.Properties',
+                    listeners   : {
+                        select: function(combo, recs) {
+                            var store = combo.up('customgrid').getStore();
+                            store.addExtraParams({ property_id: recs[0].get('property_id') });
+                            store.load();
+                        }
+                    }
+                },
+                '-',
+                {
+                    xtype  : 'shared.button.print',
+                    handler: function() {
+                        NP.PrintManager.print(this.up('customgrid'));
                     }
                 }
-            }],
+            ],
             emptyText         : NP.Translator.translate('No statistics found for this property'),
             sortableColumns   : false,
             enableColumnHide  : false,

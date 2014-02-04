@@ -12,7 +12,9 @@ Ext.define('NP.view.shared.tile.GlCategoryMtdSpend', {
         'NP.lib.core.Util',
         'NP.lib.core.Security',
         'NP.lib.data.Store',
-        'NP.lib.ui.ComboBox'
+        'NP.lib.ui.ComboBox',
+        'NP.lib.print.Manager',
+        'NP.view.shared.button.Print'
     ],
 
     /**
@@ -67,26 +69,50 @@ Ext.define('NP.view.shared.tile.GlCategoryMtdSpend', {
         return {
             xtype : 'panel',
             layout: 'fit',
-            tbar  : [{
-                xtype       : 'customcombo',
-                margin      : '0 0 0 8',
-                fieldLabel  : NP.Config.getPropertyLabel(),
-                labelWidth  : 50,
-                width       : 350,
-                name        : 'property_id',
-                displayField: 'property_name',
-                valueField  : 'property_id',
-                value       : NP.Security.getCurrentContext().property_id,
-                allowBlank  : false,
-                store       : 'user.Properties',
-                listeners   : {
-                    select: function(combo, recs) {
-                        var store = combo.up('panel').down('chart').getStore();
-                        store.addExtraParams({ property_id: recs[0].get('property_id') });
-                        store.load();
+            tbar  : [
+                {
+                    xtype       : 'customcombo',
+                    margin      : '0 0 0 8',
+                    fieldLabel  : NP.Config.getPropertyLabel(),
+                    labelWidth  : 50,
+                    width       : 350,
+                    name        : 'property_id',
+                    displayField: 'property_name',
+                    valueField  : 'property_id',
+                    value       : NP.Security.getCurrentContext().property_id,
+                    allowBlank  : false,
+                    store       : 'user.Properties',
+                    listeners   : {
+                        select: function(combo, recs) {
+                            var store = combo.up('panel').down('chart').getStore();
+                            store.addExtraParams({ property_id: recs[0].get('property_id') });
+                            store.load();
+                        }
+                    }
+                },
+                '-',
+                {
+                xtype  : 'shared.button.print',
+                    handler: function() {
+                        var me    = this,
+                            chart = me.up('panel').down('chart');
+                        
+                        NP.PrintManager.print(chart);
+                        /*
+                        var me    = this,
+                            chart = me.up('panel').down('chart');
+                        
+                        var html = chart.getEl().getHTML();
+
+                        var win = window.open('');
+                        
+                        win.document.open();
+                        win.document.write(html);
+                        win.document.close();
+                        */
                     }
                 }
-            }],
+            ],
             items: [{
                 xtype  : 'chart',
                 animate: true,

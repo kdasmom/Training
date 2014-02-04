@@ -9,7 +9,8 @@ Ext.define('NP.lib.ui.Grid', {
 
 	requires: [
 		'Ext.toolbar.Spacer',
-		'NP.view.shared.button.Print'
+		'NP.view.shared.button.Print',
+		'NP.lib.print.Manager'
 	],
 	
 	/**
@@ -61,8 +62,7 @@ Ext.define('NP.lib.ui.Grid', {
 					xtype  : 'shared.button.print',
 					text   : null,
 					handler: function() {
-						Ext.ux.grid.Printer.stylesheetPath = 'vendor/extjs/ux/grid/gridPrinterCss/print.css';
-						Ext.ux.grid.Printer.print(that);
+						NP.PrintManager.print(that);
 					}
 				},
 				'-', 
