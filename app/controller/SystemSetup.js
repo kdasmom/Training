@@ -209,6 +209,9 @@ Ext.define('NP.controller.SystemSetup', {
 			},
 			'[xtype="systemsetup.picklists"] [name="picklistfields"] [xtype="shared.button.cancel"]': {
 				click: me.resetPickListForm
+			},
+			'[xtype="systemsetup.poprintsettings"] [xtype="shared.button.new"]': {
+				click: me.showPrintTemplate
 			}
 		});
 
@@ -1522,5 +1525,14 @@ Ext.define('NP.controller.SystemSetup', {
 			};
 
 		me.fillFormPicklist(recordvalue, picklistform, picklistview.mode);
+	},
+
+	showPrintTemplate: function(id) {
+		var me = this,
+			templatePanel = me.getCmp('systemsetup.poprintsettings').down('[name="templatemanager"]'),
+			templatesGrig = me.getCmp('systemsetup.poprintsettings').down('customgrid');
+
+		templatesGrig.hide();
+		templatePanel.show();
 	}
 });

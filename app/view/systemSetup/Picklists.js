@@ -10,7 +10,6 @@ Ext.define('NP.view.systemSetup.Picklists', {
     requires: ['NP.lib.core.Translator'],
     
     title: 'Picklist',
-
 	layout: {
 		type: 'hbox',
 		align: 'stretch'
@@ -31,6 +30,7 @@ Ext.define('NP.view.systemSetup.Picklists', {
 				['PayBy', 'Pay By Types'],
 				['UtilityType', 'Utility Types']
 			];
+
 
 		this.tbar = [
 			{
@@ -93,6 +93,7 @@ Ext.define('NP.view.systemSetup.Picklists', {
 			{
 				xtype: 'form',
 				name: 'picklistfields',
+				autoScroll: true,
 				defaults: {
 					labelWidth: 200,
 					padding: '5'

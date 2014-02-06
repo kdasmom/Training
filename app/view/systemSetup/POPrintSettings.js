@@ -9,11 +9,15 @@ Ext.define('NP.view.systemSetup.POPrintSettings', {
 	requires: [
 		'NP.lib.core.Translator',
 		'NP.view.shared.button.Cancel',
-		'NP.view.shared.button.New'
+		'NP.view.shared.button.New',
+		'NP.view.systemSetup.TemplatesManager'
 	],
 
 	title: 'PO Print Settings',
-	layout: 'fit',
+	layout: {
+		type: 'fit',
+		align: 'stretch'
+	},
 	autoScroll: true,
 
 	initComponent: function() {
@@ -103,6 +107,12 @@ Ext.define('NP.view.systemSetup.POPrintSettings', {
 					action  : 'getAll',
 					autoLoad: true
 				})
+			},
+			{
+				xtype: 'systemsetup.templatesmanager',
+				hidden: true,
+				name: 'templatemanager',
+				width: '100%'
 			}
 		];
 

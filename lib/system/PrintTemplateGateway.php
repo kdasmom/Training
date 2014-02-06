@@ -41,4 +41,31 @@ class PrintTemplateGateway extends AbstractGateway {
 
 		return $this->adapter->query($select, ['PO']);
 	}
+
+	/**
+	 * Retrieve template's data
+	 *
+	 * @param int $id
+	 * @return array|bool
+	 */
+	public function getTemplateData($id) {
+		$select = new Select();
+
+		$select->from(['p' => 'print_templates'])
+			->columns([
+				'Print_Template_Id',
+				'Print_Template_Name',
+				'Print_Template_Label'		=> new Expression("isNull(Print_Template_Label, 'Purchase Order')"),
+				'Print_Template_Type',
+				'Print_Template_LastUpdateDt',
+				'Print_Template_LastUpdateBy',
+				'Print_Template_Data',
+				'isActive'
+			])
+			->where([
+				'Print_Template_Id'		=> '?'
+			]);
+
+		return $this->adapter->query($select, [$id]);
+	}
 } 
