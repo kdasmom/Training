@@ -315,11 +315,6 @@ class InvoiceEntity extends \NP\core\AbstractEntity {
 				'digits' => array()
 			)
 		),
-		'invoicefromvendor_id'	 => array(
-			'validation' => array(
-				'digits' => array()
-			)
-		),
 		'template_name'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>100)

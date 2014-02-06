@@ -65,7 +65,6 @@ Ext.define('NP.model.invoice.Invoice', {
 		{ name: 'universal_field8' },
 		{ name: 'payablesconnect_flag' },
 		{ name: 'address_id', type: 'int' },
-		{ name: 'invoicefromvendor_id', type: 'int' },
 		{ name: 'template_name' },
 
 		// These fields are not in the INVOICE table
