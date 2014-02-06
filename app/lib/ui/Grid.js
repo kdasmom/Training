@@ -10,7 +10,8 @@ Ext.define('NP.lib.ui.Grid', {
 	requires: [
 		'Ext.toolbar.Spacer',
 		'NP.view.shared.button.Print',
-		'NP.lib.print.Manager'
+		'NP.lib.print.Manager',
+		'NP.lib.core.Translator'
 	],
 	
 	/**
@@ -41,7 +42,7 @@ Ext.define('NP.lib.ui.Grid', {
 				editable      : false,
 				mode          : 'remote',
 				value         : this.store.pageSize,
-				width         : 50,
+				width         : 55,
 				store         : this.pageSizeOptions,
 				listeners     : {
 					select: function(combo, value, i){
@@ -66,7 +67,7 @@ Ext.define('NP.lib.ui.Grid', {
 					}
 				},
 				'-', 
-				'Records per page:', this.pageSizeCombo
+				NP.Translator.translate('Records per page:'), this.pageSizeCombo
 			);
 
 			var pagingToolbar = Ext.create('Ext.toolbar.Paging', {

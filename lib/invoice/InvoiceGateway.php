@@ -64,7 +64,7 @@ class InvoiceGateway extends AbstractGateway {
 				->columnTaxAmount()
 				->columnCreatedBy()
 				->join(new sql\join\InvoiceVendorsiteJoin())
-				->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(['vendor_name','vendor_id_alt','vendor_status','integration_package_id']))
+				->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(['vendor_name','vendor_id_alt','vendor_status','integration_package_id','default_glaccount_id']))
 				->join(new \NP\vendor\sql\join\VendorsiteAddressJoin())
 				->join(new \NP\vendor\sql\join\VendorsitePhoneJoin('Main'))
 				->join(new sql\join\InvoicePropertyJoin())
@@ -369,6 +369,7 @@ class InvoiceGateway extends AbstractGateway {
 				->join(new sql\join\InvoiceVendorsiteJoin())
 				->join(new \NP\vendor\sql\join\VendorsiteVendorJoin())
 				->join(new sql\join\InvoicePropertyJoin())
+				->join(new sql\join\InvoicePriorityFlagJoin())
 				->whereIn('vs.vendorsite_status', "'active','inactive','rejected'")
 				->whereIn('i.property_id', $propertyFilterSelect)
 				->order($sort);

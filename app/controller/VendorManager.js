@@ -23,6 +23,10 @@ Ext.define('NP.controller.VendorManager', {
     		'vendor.InsuranceUploadForm','vendor.VendorRejectWindow','vendor.VendorSearch',
     		'vendor.AddImagesWindow'],
 
+    refs: [
+    	{ ref: 'vendorForm', selector: '[xtype="vendor.vendorform"]' }
+    ],
+
 	//	custom
 	vendor_status		: false,
 	vendor_id			: false,
@@ -113,6 +117,10 @@ Ext.define('NP.controller.VendorManager', {
 				click: function() {
 					this.rejectVendor();
 				}
+			},
+
+			'[xtype="vendor.vendorgeneralinfoandsettings"] [name="default_glaccount_id"]': {
+				select: this.onSelectDefaultGl
 			}
 		});
 
@@ -286,7 +294,22 @@ Ext.define('NP.controller.VendorManager', {
 		return form;
 	},
 
+	/**
+	 * When selecting a default GL, we need to make sure it's part of the GL assignments
+	 */
+	onSelectDefaultGl: function(combo, recs) {
+		var me      = this;
 
+		if (recs.length) {
+			var glaccount_id = recs[0].get('glaccount_id'),
+				glField      = me.getVendorForm().findField('glaccounts'),
+				toStore      = glField.getToStore();
+
+			if (toStore.indexOfId(glaccount_id) == -1) {
+				glField.addValues(glaccount_id);
+			}
+		}
+	},
 
     /**
      * save vendor

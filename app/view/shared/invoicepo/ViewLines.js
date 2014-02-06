@@ -150,7 +150,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
             '<tbody>' +
             '<tpl if="this.getStoreCount() &gt; 0">' +
                 '<tpl for=".">' +
-                    '<tr id="lineItem_{[values.'+me.fieldPrefix+'_id]}">' +
+                    '<tr id="lineItem_{#}">' +
                         me.buildQuantityCol() +
                         me.buildDescriptionCol() +
                         me.buildGlCol() +
@@ -241,8 +241,8 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                 '<div>' +
                     '<b>PO:</b> ' +
                     // TODO: fix the link to the PO and add the readonly condition (latter might not be needed)
-                    '<a>{purchaseorde_ref}</a>' +
-                    '<tpl if="poitem_amount > 0">' +
+                    '<a class="poRefBtn">{purchaseorder_ref}</a>' +
+                    '<tpl if="poitem_amount &gt; 0">' +
                         ' - <i>{[NP.Util.currencyRenderer(values.poitem_amount)]}</i>' +
                     '</tpl>' +
                 '</div>' +
@@ -464,23 +464,24 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
         var me = this;
 
         me.addEvents('clicksplitline','clickeditsplit','clickmodifygl',
-                        'clicklinkline','clickdeleteline');
+                        'clicklinkline','clickdeleteline','clickporef');
 
         // Add a generic event handler on the body element to make things more efficient
         me.mon(Ext.getBody(), 'click', function(e, target) {
             var clickedEl  = Ext.get(target),
                 btnClasses = ['splitLineBtn','editSplitBtn','modifyGlBtn','linkLineBtn',
-                                'deleteLineBtn'];
+                                'deleteLineBtn','poRefBtn'];
             
             for (var i=0; i<btnClasses.length; i++) {
                 var btnClass = btnClasses[i];
 
                 if (clickedEl.hasCls(btnClass)) {
-                    var rowEl          = Ext.get(target).up('tr'),
-                        invoiceitem_id = parseInt(rowEl.id.split('_')[1]),
-                        evtName        = 'click' + btnClass.replace('Btn', '').toLowerCase();
+                    var rowEl   = Ext.get(target).up('tr'),
+                        row     = parseInt(rowEl.id.split('_')[1]),
+                        rec     = me.store.getAt(row-1),
+                        evtName = 'click' + btnClass.replace('Btn', '').toLowerCase();
 
-                    me.fireEvent(evtName, invoiceitem_id);
+                    me.fireEvent(evtName, rec);
                     e.stopEvent();
                 }
             }

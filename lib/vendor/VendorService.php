@@ -162,7 +162,7 @@ class VendorService extends AbstractService {
 			}
 //				assign glaccounts
 			if ($glaccounts !== '') {
-				if (!$this->vendorsiteGateway->assignGlAccounts($glaccounts, $out_vendor_id)) {
+				if (!$this->vendorGlAccountsGateway->assignGlAccounts($glaccounts, $out_vendor_id)) {
 					throw new \NP\core\Exception("Cannot assign glaccounts");
 				}
 			}

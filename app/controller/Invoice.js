@@ -520,21 +520,32 @@ Ext.define('NP.controller.Invoice', {
 		}		
 	},
 
-	getVendorRecord: function() {
-		var me          = this,
-			vendorField = me.getInvoiceView().findField('vendor_id');
-
-		return vendorField.findRecordByValue(vendorField.getValue());
-	},
-
 	onLineEditClick: function() {
 		this.getLineMainView().getLayout().setActiveItem(1);
 	},
 
 	onLineAddClick: function() {
-		var me = this;
+		var me           = this,
+			store        = me.getLineGrid().getStore(),
+			lines        = store.getRange(),
+			lineNum      = 1;
 		
-		me.getLineGrid().getStore().add(Ext.create('NP.model.invoice.InvoiceItem'));
+		// Since we're sorting by line number, let's figure out the max line number to set
+		// the value for the new one
+		if (lines.length) {
+			lineNum = lines[lines.length-1].get('invoiceitem_linenum') + 1;
+		}
+
+		store.add(Ext.create(
+			'NP.model.invoice.InvoiceItem',
+			{
+				// Default property to header property
+				property_id        : me.getInvoicePropertyCombo().getValue(),
+				// Default GL Account to vendor default GL account
+				glaccount_id       : me.getVendorRecord().get('default_glaccount_id'),
+				invoiceitem_linenum: lineNum
+			}
+		));
 	},
 
 	onLineSaveClick: function() {
@@ -546,25 +557,34 @@ Ext.define('NP.controller.Invoice', {
 	},
 
 	validateLineItems: function() {
-		var me    = this,
-			grid  = me.getLineGrid(),
-			store = grid.getStore(),
-			count = store.getCount(),
-			reqFields = ['glaccount_id','property_id'],
-			valid = true,
+		var me            = this,
+			grid          = me.getLineGrid(),
+			store         = grid.getStore(),
+			count         = store.getCount(),
+			reqFields     = ['glaccount_id','property_id'],
+			nonZeroFields = ['invoiceitem_unitprice','invoiceitem_amount','invoiceitem_quantity'],
+			valid         = true,
 			rec,
-			col,
 			cellNode;
 
 		for (var i=0; i<count; i++) {
 			rec = store.getAt(i);
 			for (var j=0; j<grid.columns.length; j++) {
-				col = grid.columns[j];
-				if (Ext.Array.contains(reqFields, col.dataIndex) && rec.get(col.dataIndex) == null) {
+				var error = null,
+					col   = grid.columns[j],
+					val   = rec.get(col.dataIndex);
+
+				if (Ext.Array.contains(reqFields, col.dataIndex) && val == null) {
+					error = 'This field is required';
+				} else if (Ext.Array.contains(nonZeroFields, col.dataIndex) && val == 0) {
+					error = 'This field cannot be set to zero';
+				}
+
+				if (error != null) {
 					cellNode = grid.getView().getCell(rec, col);
 					cellNode.addCls('grid-invalid-cell');
 					cellNode.set({
-						'data-qtip': 'This field is required'
+						'data-qtip': error
 					});
 					valid = false;
 				}
@@ -1523,18 +1543,15 @@ Ext.define('NP.controller.Invoice', {
 		return this.getInvoiceView().getModel('invoice.Invoice');
 	},
 
-	onDeleteLineClick: function(invoiceitem_id) {
+	onDeleteLineClick: function(lineRec) {
 		var me        = this,
-			lineStore = me.getLineView().getStore()
-			lineRec   = lineStore.getById(invoiceitem_id);
+			lineStore = me.getLineDataView().getStore();
 
 		lineStore.remove(lineRec);
 	},
 
-	onSplitLineClick: function(invoiceitem_id) {
+	onSplitLineClick: function(lineRec) {
 		var me              = this,
-			lineStore       = me.getLineDataView().getStore(),
-			lineRec         = lineStore.getById(invoiceitem_id),
 			vendorsite_id   = me.getVendorRecord().get('vendorsite_id'),
 			win             = Ext.create('NP.view.shared.invoicepo.SplitWindow', {
 								type: 'invoice'

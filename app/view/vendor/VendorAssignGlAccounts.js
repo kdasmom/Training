@@ -3,9 +3,9 @@
  * @date 10/4/13
  */
 
-Ext.define('NP.view.vendor.VendorAssignGlAccouns', {
+Ext.define('NP.view.vendor.VendorAssignGlAccounts', {
 	extend: 'Ext.container.Container',
-	alias: 'widget.vendor.vendorassignglaccouns',
+	alias: 'widget.vendor.vendorassignglaccounts',
 
 	requires: [
 		'NP.lib.core.Security',
