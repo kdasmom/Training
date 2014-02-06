@@ -303,7 +303,13 @@ Ext.define('NP.Application', {
 	 * @return {Ext.container.Container}
 	 */
 	getComponent: function(comp) {
-		return Ext.ComponentQuery.query('[xtype="' + comp + '"]')[0];
+		var comp = Ext.ComponentQuery.query('[xtype="' + comp + '"]');
+		
+		if (comp.length) {
+			return comp[0];
+		}
+
+		return null;
 	},
 
 	getStateProvider: function() {

@@ -99,20 +99,23 @@ Ext.define('NP.view.viewport.TopMenu', {
 			});
 	    }
 
-		this.items.push('->');
-
 		// Favorites
-		this.items.push({
-			xtype: 'shared.button.favoriteglobal',
-			itemId: 'removefromfavoritesBtn',
-			text: NP.Translator.translate('Remove from Favorites')
-		});
-
-		this.items.push({
-			xtype: 'shared.button.favoriteglobal',
-			itemId: 'addtofavoritesBtn',
-			text: NP.Translator.translate('Add to Favorites')
-		});
+		this.items.push(
+			'->',
+			{
+				xtype: 'shared.button.favoriteglobal',
+				itemId: 'favoritesBtn',
+				cls   : 'favoritesBtn'
+			},{
+				xtype: 'shared.button.favoriteglobal',
+				itemId: 'removefromfavoritesBtn',
+				text: NP.Translator.translate('Remove from Favorites')
+			},{
+				xtype: 'shared.button.favoriteglobal',
+				itemId: 'addtofavoritesBtn',
+				text: NP.Translator.translate('Add to Favorites')
+			}
+		);
 
 	    this.callParent(arguments);
     }

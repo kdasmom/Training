@@ -18,7 +18,7 @@ Ext.define('NP.controller.Favorites', {
 
 		me.control({
 			'#favoritesBtn': {
-				click: me.favoritesView
+				mouseover: me.favoritesView
 			},
 			'#addtofavoritesBtn': {
 				click: me.addToFavorites
@@ -225,10 +225,39 @@ Ext.define('NP.controller.Favorites', {
 		return token;
 	},
 
-	favoritesView: function() {
-		var favoritesWindow = Ext.create('NP.view.favorites.FavoritesWindow', {}).show();
+	favoritesView: function(button) {
+		// Check if the window already exists, only proceed if it doesn't
+		if (this.getCmp('favorites.favoriteswindow') === null) {
+			// Create the window and show it
+			var win = Ext.create('NP.view.favorites.FavoritesWindow', {}).show();
 
-		favoritesWindow.alignTo(Ext.getBody(), 'tr-tr', [-200, 32]);
+			// Align the window right below the button
+			win.alignTo(button, 'tr-br');
+
+			// Function for monitoring when we are no longer over the button or window so
+			// we can automatically close the window (we need it as a separate function
+			// so we can remove the listener when done
+			var bodyMouseOver = function(e, t) {
+				var el = Ext.get(t);
+				
+				if (
+					!el.hasCls('favoritesBtn')
+					&& !el.hasCls('favoritesWin')
+					&& !el.up('.favoritesBtn')
+					&& !el.up('.favoritesWin')
+				) {
+					win.close();
+				}
+			};
+
+			// Whenever the window closes, remove the mousemove listener
+			win.on('close', function() {
+				Ext.getBody().removeListener('mousemove', bodyMouseOver);
+			});
+
+			// Add the listener to the body element
+			Ext.getBody().on('mousemove', bodyMouseOver);
+		}
 	},
 
 	addFavFromRecent: function(rec, gridId) {

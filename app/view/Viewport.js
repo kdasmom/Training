@@ -68,11 +68,6 @@ Ext.define('NP.view.Viewport', {
 						        		layout: 'hbox',
 						        		items: [
 						        			{
-												xtype: 'shared.button.favoriteglobal',
-												itemId: 'favoritesBtn',
-												margin: '0 10 0 0'
-											},
-											{
 						        				xtype: 'component',
 						        				html : '<img id="learningNexusImg" src="resources/images/learningnexus.gif" align="top" />',
 						        				width: 109,
