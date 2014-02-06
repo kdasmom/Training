@@ -13,12 +13,13 @@ Ext.define('NP.view.favorites.FavoritesWindow', {
 
 	layout		: 'accordion',
 
-	modal		: true,
 	draggable	: false,
 	resizable	: false,
 	closable	: false,
 	width		: 380,
 	y			: 32,
+
+    cls         : 'favoritesWin',
 
 	initComponent: function() {
 		var that = this;
