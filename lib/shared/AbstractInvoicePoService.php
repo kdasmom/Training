@@ -445,7 +445,7 @@ Abstract class AbstractInvoicePoService extends AbstractService {
 		$params       = [];
 
 		if ($total == 0) {
-			$salesTax = 0;
+			$salestax = 0;
 			$shipping = 0;
 		} else {
 			$taxableTotal = $this->$gateway->findItemTotal($entity_id, true);

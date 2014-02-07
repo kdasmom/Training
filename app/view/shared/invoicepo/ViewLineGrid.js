@@ -41,6 +41,8 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
     autoScroll     : true,
     sortableColumns: false,
 
+    stateId        : 'invoice_line_grid',
+
     initComponent: function() {
         var me               = this
             customFields     = NP.Config.getCustomFields().line.fields,
@@ -75,7 +77,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
 
         // Set the CellEditing plugin on the grid
         me.plugins = [
-            Ext.create('Ext.grid.plugin.CellEditing', { clicksToEdit: 1 })
+            Ext.create('Ext.grid.plugin.CellEditing', { pluginId: 'cellediting', clicksToEdit: 1 })
         ];
 
         me.propertyStore = Ext.create('NP.store.property.Properties', {
@@ -90,10 +92,13 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
 
         me.columns = [
             {
-                xtype   : 'actioncolumn',
-                width   : 25,
-                align   : 'center',
-                getClass: function(v, meta, rec, rowIndex) {
+                xtype     : 'actioncolumn',
+                width     : 25,
+                align     : 'center',
+                hideable  : false,
+                resizeable: false,
+                draggable : false,
+                getClass  : function(v, meta, rec, rowIndex) {
                     if (invoiceStatus == 'paid') {
                         return '';
                     } else {
@@ -111,6 +116,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                 xtype    : 'numbercolumn',
                 text     : NP.Translator.translate('QTY'),
                 dataIndex: 'invoiceitem_quantity',
+                hideable : false,
                 format   : '0,000.000000',
                 width    : 100,
                 editor   : {
@@ -127,6 +133,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
             {
                 text     : NP.Translator.translate('Description'),
                 dataIndex: 'invoiceitem_description',
+                hideable : false,
                 width    : 300,
                 editor   : {
                     xtype: 'textfield'
@@ -137,6 +144,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                 xtype    : 'numbercolumn',
                 text     : NP.Translator.translate('Unit Price'),
                 dataIndex: 'invoiceitem_unitprice',
+                hideable : false,
                 format   : '0,000.000000',
                 width    : 100,
                 editor   : {
@@ -154,6 +162,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                 xtype    : 'numbercolumn',
                 text     : NP.Translator.translate('Amount'),
                 dataIndex: 'invoiceitem_amount',
+                hideable : false,
                 format   : '0,000.000000',
                 width    : 100,
                 editor   : {
@@ -170,6 +179,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
             {
                 text     : NP.Config.getPropertyLabel(),
                 dataIndex: 'property_id',
+                hideable : false,
                 width    : 200,
                 renderer : function(val, meta) {
                     if (val == null || val == '' || isNaN(val)) {
@@ -180,7 +190,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     return rec.get('property_name');
                 },
                 editor: {
-                    xtype       : 'customcombo',
+                    xtype       : 'autocomplete',
                     itemId      : 'lineGridPropertyCombo',
                     displayField: 'property_name',
                     valueField  : 'property_id',
@@ -191,6 +201,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
             {
                 text     : NP.Translator.translate('GL Account'),
                 dataIndex: 'glaccount_id',
+                hideable : false,
                 width    : 250,
                 renderer : function(val, meta) {
                     if (val == null || val == '' || isNaN(val)) {
@@ -201,7 +212,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     return rec.get('display_name');
                 },
                 editor: {
-                    xtype       : 'customcombo',
+                    xtype       : 'autocomplete',
                     itemId      : 'lineGridGlCombo',
                     displayField: 'display_name',
                     valueField  : 'glaccount_id',
@@ -233,12 +244,11 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     return rec.get('unit_number');
                 },
                 editor: {
-                    xtype       : 'customcombo',
+                    xtype       : 'autocomplete',
                     itemId      : 'lineGridUnitCombo',
                     displayField: 'unit_number',
                     valueField  : 'unit_id',
-                    store       : me.unitStore,
-                    hideLabel   : true
+                    store       : me.unitStore
                 }
             });
         }

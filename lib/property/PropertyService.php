@@ -175,14 +175,8 @@ class PropertyService extends AbstractService {
 	 * @param  string $unit_status The status of units to retrieve
 	 * @return array            Array of unit records
 	 */
-	public function getUnits($property_id, $unit_status=null) {
-		$fields = array('u.property_id'=>'?');
-		$vals = array($property_id);
-		if ($unit_status !== null) {
-			$fields['unit_status'] = '?';
-			$vals[] = $unit_status;
-		}
-		return $this->unitGateway->find($fields, $vals, "unit_number");
+	public function getUnits($property_id, $unit_status=null, $keyword=null) {
+		return $this->unitGateway->findByStatus($property_id, $unit_status, $keyword);
 	}
 	
 	/**

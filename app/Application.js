@@ -28,6 +28,7 @@ Ext.define('NP.Application', {
 		'Ext.state.*',
 		'NP.lib.core.DataLoader',
 		'NP.lib.core.DBProvider',
+		'NP.lib.core.KeyManager',
 		'NP.lib.core.Security',
 		'NP.lib.core.Net',
 		'NP.lib.core.Translator',

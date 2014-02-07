@@ -12,7 +12,8 @@ Ext.define('NP.controller.Invoice', {
 		'NP.lib.core.Net',
 		'NP.lib.core.Translator',
 		'NP.lib.core.Util',
-		'NP.lib.ui.Uploader'
+		'NP.lib.ui.Uploader',
+		'NP.lib.core.KeyManager'
 	],
 	
 	models: ['invoice.InvoiceItem','invoice.InvoicePayment'],
@@ -142,7 +143,7 @@ Ext.define('NP.controller.Invoice', {
 
 			// Clicking the Edit button on the line item list
 			'#invoiceLineEditBtn': {
-				click: me.onLineEditClick.bind(me)
+				click: me.onLineEditClick.bind(me, true)
 			},
 
 			// Clicking on the Add Line button
@@ -330,8 +331,76 @@ Ext.define('NP.controller.Invoice', {
 				click: me.onReclassShowWindow
 			}
 		});
+
+		me.setKeyboardShortcuts();
 	},
 	
+	setKeyboardShortcuts: function() {
+		var me             = this,
+			editCondition  = function() {
+				var activeItem = me.getLineMainView().getLayout().getActiveItem();
+				if (Ext.getClassName(activeItem) == 'NP.view.shared.invoicepo.ViewLineGrid') {
+					return true;
+				}
+				return false;
+			};
+
+		NP.Keys.addShortcut('Invoice:showView:\\d+', [
+			// Shortcut for clicking the Edit button on line item panel
+			{
+				title : 'Edit Lines',
+				key   : Ext.EventObject.E,
+				fn    : me.onLineEditClick,
+				scope : me,
+				argsFn: function () { return [true]; }
+			},
+			// Shortcut for clicking the Add button on line item grid
+			{
+				title : 'Add Line',
+				key   : Ext.EventObject.A,
+				fn    : function() {
+					me.onLineEditClick(false);
+					me.onLineAddClick();
+				},
+				scope : me
+			},
+			// Shortcut for going to the next line item in the grid
+			{
+				title      : 'Next Line',
+				key        : Ext.EventObject.RIGHT,
+				useAlt     : true,
+				fn         : me.selectNextLineItem,
+				scope      : me,
+				conditionFn: editCondition.bind(me)
+			},
+			// Shortcut for going to the previous line item in the grid
+			{
+				title      : 'Previous Line',
+				key        : Ext.EventObject.LEFT,
+				useAlt     : true,
+				fn         : me.selectPreviousLineItem,
+				scope      : me,
+				conditionFn: editCondition.bind(me)
+			},
+			// Shortcut for saving line changes
+			{
+				title      : 'Done With Lines',
+				key        : Ext.EventObject.U,
+				useAlt     : true,
+				fn         : me.onLineSaveClick,
+				scope      : me,
+				conditionFn: editCondition.bind(me)
+			},
+			// Shortcut for saving invoice
+			{
+				title: 'Save Invoice',
+				key  : Ext.EventObject.U,
+				fn   : me.onSaveInvoice,
+				scope: me
+			}
+		]);
+	},
+
 	/**
 	 * Reloads a register grid, passing the current context to its store proxy, and moving it back to page 1
 	 * @private
@@ -520,15 +589,59 @@ Ext.define('NP.controller.Invoice', {
 		}		
 	},
 
-	onLineEditClick: function() {
+	onLineEditClick: function(setFocus) {
+		var me       = this,
+			grid     = me.getLineGrid(),
+			store    = grid.getStore(),
+			setFocus = setFocus || false;
+
 		this.getLineMainView().getLayout().setActiveItem(1);
+
+		if (store.getCount() && setFocus) {
+			Ext.defer(function() {
+				grid.getPlugin('cellediting').startEditByPosition({ row: 0, column: 1 });
+			}, 50);
+		}
+	},
+
+	selectNextLineItem: function() {
+		this.selectSequenceLineItem('next');
+	},
+
+	selectPreviousLineItem: function() {
+		this.selectSequenceLineItem('previous');
+	},
+
+	selectSequenceLineItem: function(dir) {
+		var me        = this,
+			grid      = me.getLineGrid(),
+			store     = grid.getStore(),
+			increment = (dir == 'previous') ? -1 : 1;;
+
+		if (store.getCount() > 0) {
+			var selModel  = grid.getSelectionModel(),
+				pos       = selModel.getCurrentPosition();
+
+			if (!pos || store.getCount() == 1) {
+				grid.getPlugin('cellediting').startEditByPosition({ row: 0, column: 1 });
+			} else {
+				var newRow = pos.row + increment;
+				if (newRow >= store.getCount()) {
+					newRow = 0;
+				} else if (newRow < 0) {
+					newRow = store.getCount()-1;
+				}
+				grid.getPlugin('cellediting').startEditByPosition({ row: newRow, column: 1 });
+			}
+		}
 	},
 
 	onLineAddClick: function() {
-		var me           = this,
-			store        = me.getLineGrid().getStore(),
-			lines        = store.getRange(),
-			lineNum      = 1;
+		var me      = this,
+			grid    = me.getLineGrid(),
+			store   = grid.getStore(),
+			lines   = store.getRange(),
+			lineNum = 1;
 		
 		// Since we're sorting by line number, let's figure out the max line number to set
 		// the value for the new one
@@ -546,14 +659,19 @@ Ext.define('NP.controller.Invoice', {
 				invoiceitem_linenum: lineNum
 			}
 		));
+
+		grid.getPlugin('cellediting').startEditByPosition({ row: lines.length, column: 1 });
 	},
 
 	onLineSaveClick: function() {
-		var me = this;
+		var me      = this,
+			isValid = me.validateLineItems();
 		
-		if (me.validateLineItems()) {
+		if (isValid) {
 			me.getLineMainView().getLayout().setActiveItem(0);
 		}
+
+		return isValid;
 	},
 
 	validateLineItems: function() {
@@ -581,6 +699,8 @@ Ext.define('NP.controller.Invoice', {
 				}
 
 				if (error != null) {
+					me.getLineMainView().getLayout().setActiveItem(1);
+
 					cellNode = grid.getView().getCell(rec, col);
 					cellNode.addCls('grid-invalid-cell');
 					cellNode.set({
@@ -653,94 +773,72 @@ Ext.define('NP.controller.Invoice', {
 	},
 
 	onOpenPropertyEditor: function(editor, grid, rec, field) {
-		this.loadPropertyStore(grid.propertyStore);
-	},
-
-	loadPropertyStore: function(store, callback) {
-		var me    = this,
+		var me            = this,
 			propertyField = me.getInvoicePropertyCombo(),
     		property_id   = propertyField.getValue(),
+    		store         = grid.propertyStore,
 			integration_package_id;
 
 		if (property_id !== null) {
 			integration_package_id = propertyField.findRecordByValue(property_id).get('integration_package_id')
 		}
 
+		store.removeAll();
+
 		if (integration_package_id) {
-	    	if (integration_package_id != store.getExtraParam('integration_package_id')) {
+			if (integration_package_id != store.getExtraParam('integration_package_id')) {
 	    		store.addExtraParams({ integration_package_id: integration_package_id });
-	    		store.load(function() {
-	    			if (callback) {
-	    				callback(store);
-	    			}
-	    		});
+	    		
+	    		store.add(grid.selectedRec);
 			}
-		} else {
-			store.removeAll();
 		}
 	},
 
-	onOpenGlAccountEditor: function(editor, grid, rec, field) {
-		this.loadGlAccountStore(grid.glStore, rec);
-	},
+	setGlExtraParams: function(grid, rec) {
+		var me    = this,
+			store = grid.glStore;
 
-	loadGlAccountStore: function(store, rec, callback) {
-		var me    = this;
-
-    	// Only run this if property/GL association is on
+		// Only run this if property/GL association is on
 		if (me.getSetting('CP.PROPERTYGLACCOUNT_USE') == '1') {
             var property_id = rec.get('property_id');
 
             if (property_id !== null) {
             	if (property_id != store.getExtraParam('property_id')) {
             		store.addExtraParams({ property_id: property_id });
-            		store.load(function() {
-            			if (callback) {
-            				callback(store);
-            			}
-            		});
                 }
-            } else {
-                store.removeAll();
             }
         // Otherwise run code for associating with integration package
         } else {
         	var integration_package_id = me.getInvoiceView().getLoadedData().integration_package_id;
         	if (integration_package_id != store.getExtraParam('integration_package_id')) {
         		store.addExtraParams({ integration_package_id: integration_package_id });
-        		store.load(function() {
-        			if (callback) {
-        				callback(store);
-        			}
-        		});
     		}
         }
 	},
 
-	onOpenUnitEditor: function(editor, grid, rec, field) {
+	onOpenGlAccountEditor: function(editor, grid, rec, field) {
 		var me    = this,
-    		combo = me.getLineGridUnitCombo();
+			store = grid.glStore;
 
-    	me.loadUnitStore(grid.unitStore, rec, function(store) {
-    		combo.setValue(rec.get('unit_id'));
-    	});
+		store.removeAll();
+
+		me.setGlExtraParams(grid, rec);
+
+		store.add(Ext.create('NP.model.gl.GlAccount', grid.selectedRec.getData()));
 	},
 
-	loadUnitStore: function(store, rec, callback) {
+	onOpenUnitEditor: function(editor, grid, rec, field) {
 		var me          = this,
-    		property_id = rec.get('property_id');
+    		combo       = me.getLineGridUnitCombo(),
+    		property_id = rec.get('property_id'),
+    		store       = grid.unitStore;
 
+    	store.removeAll();
     	if (property_id !== null) {
         	if (property_id != store.getExtraParam('property_id')) {
         		store.addExtraParams({ property_id: property_id });
-        		store.load(function() {
-        			if (callback) {
-        				callback(store);
-        			}
-        		});
+        		store.add(grid.selectedRec);
             }
-        } else {
-            store.removeAll();
         }
 	},
 
@@ -1058,9 +1156,10 @@ Ext.define('NP.controller.Invoice', {
 				// If there's a GL Account set in the column, proceed
 				if (glaccount_id !== null) {
 					// Reload the GL Account store
-					me.loadGlAccountStore(e.record, function(store) {
+					me.setGlExtraParams(grid, e.record);
+					grid.glStore.load(function() {
 						// If the current grid value doesn't exist in the store, clear it
-						if (store.getById(glaccount_id) === null) {
+						if (grid.glStore.getById(glaccount_id) === null) {
 							grid.selectedRec.set('glaccount_id', null);
 							grid.selectedRec.set('glaccount_name', null);
 							grid.selectedRec.set('glaccount_number', null);
@@ -1790,28 +1889,42 @@ Ext.define('NP.controller.Invoice', {
 			lineStore    = me.getLineGrid().getStore(),
 			desc         = Ext.ComponentQuery.query('#splitDescription')[0].getValue(),
 			rec,
+			lineRec,
 			i;
 
 		Ext.suspendLayouts();
 
 		if (me.isNewSplit) {
-			lineStore.remove(me.openSplitLineRec);
+			rec = splitStore.getById(me.openSplitLineRec.get('invoiceitem_id'));
+			if (!rec) {
+				lineStore.remove(me.openSplitLineRec);
+			}
 		} else {
 			var oldRecs = me.getSplitLines(me.openSplitLineRec);
 
 			oldRecs.each(function(lineRec) {
-				lineStore.remove(lineRec);
+				rec = splitStore.getById(lineRec.get('invoiceitem_id'));
+				if (!rec) {
+					lineStore.remove(lineRec);
+				}
 			});
 		}
-
 		
 		me.openSplitLineRec = null;
 
 		for (i=0; i<totalRecs; i++) {
 			rec = splitStore.getAt(i);
-			rec.set('invoiceitem_description', desc);
-			rec.set('invoiceitem_split', 1);
-			lineStore.add(rec);
+			lineRec = lineStore.getById(rec.get('invoiceitem_id'));
+			if (lineRec) {
+				lineRec.set(Ext.apply(rec.getData(), {
+					invoiceitem_description: desc,
+					invoiceitem_split: 1
+				}));
+			} else {
+				rec.set('invoiceitem_description', desc);
+				rec.set('invoiceitem_split', 1);
+				lineStore.add(rec);
+			}
 		}
 
 		lineDataView.refresh();
@@ -2037,38 +2150,40 @@ Ext.define('NP.controller.Invoice', {
 			form    = me.getInvoiceView(),
 			invoice = me.getInvoiceRecord();
 
-		// Before saving, make sure invoice hasn't been updated
-		me.checkLock(function() {
-			// Check if form is valid
-			if (form.isValid()) {
-				// Get the line items that need to be saved
-				var lineStore    = me.getLineGrid().getStore(),
-					modifiedRecs = lineStore.getModifiedRecords(),
-					deletedRecs  = lineStore.getRemovedRecords(),
-					lines        = NP.Util.convertModelArrayToDataArray(modifiedRecs),
-					deletedLines = NP.Util.convertModelArrayToDataArray(deletedRecs);
+		if (me.onLineSaveClick()) {
+			// Before saving, make sure invoice hasn't been updated
+			me.checkLock(function() {
+				// Check if form is valid
+				if (form.isValid()) {
+					// Get the line items that need to be saved
+					var lineStore    = me.getLineGrid().getStore(),
+						modifiedRecs = lineStore.getModifiedRecords(),
+						deletedRecs  = lineStore.getRemovedRecords(),
+						lines        = NP.Util.convertModelArrayToDataArray(modifiedRecs),
+						deletedLines = NP.Util.convertModelArrayToDataArray(deletedRecs);
 
-				// Form is valid so submit it using the bound model
-				form.submitWithBindings({
-					service: service,
-					action : action,
-					extraParams: Ext.apply(extraParams, {
-						userprofile_id              : NP.Security.getUser().get('userprofile_id'),
-						delegation_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id'),
-						lines                       : lines,
-						deletedLines                : deletedLines,
-						tax                         : 30,
-						shipping                    : 50
-					}),
-					extraFields: {
-						vendor_id: 'vendor_id'
-					},
-					success: function(result) {
-						callback(result);
-					}
-				});
-			}
-		});
+					// Form is valid so submit it using the bound model
+					form.submitWithBindings({
+						service: service,
+						action : action,
+						extraParams: Ext.apply(extraParams, {
+							userprofile_id              : NP.Security.getUser().get('userprofile_id'),
+							delegation_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id'),
+							lines                       : lines,
+							deletedLines                : deletedLines,
+							tax                         : 30,
+							shipping                    : 50
+						}),
+						extraFields: {
+							vendor_id: 'vendor_id'
+						},
+						success: function(result) {
+							callback(result);
+						}
+					});
+				}
+			});
+		}
 	},
 
 	onDeleteInvoice: function() {
