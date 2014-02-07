@@ -21,8 +21,6 @@ Ext.define('NP.view.systemSetup.PrintTemplateTab', {
 		align: 'stretch'
 	},
 
-//	layout: 'fit',
-
 	defaults: {
 		labelWidth: '80%'
 	},
@@ -56,7 +54,7 @@ Ext.define('NP.view.systemSetup.PrintTemplateTab', {
 		me.items = [
 			{
 				xtype: 'form',
-				flex: 0.2,
+				height: 100,
 				title: NP.Translator.translate('TEMPLATE DETAILS'),
 				items: [
 					{
@@ -76,7 +74,6 @@ Ext.define('NP.view.systemSetup.PrintTemplateTab', {
 			{
 				xtype: 'panel',
 				title: NP.Translator.translate('TEMPLATE LAYOUT'),
-				flex: 0.6,
 				layout: 'hbox',
 				items: [
 					{
@@ -88,12 +85,38 @@ Ext.define('NP.view.systemSetup.PrintTemplateTab', {
 						flex: 0.8
 					}
 				],
-				autoScroll: true
+				minHeight: 600
 			},
 			{
-				xtype: 'panel',
+				xtype: 'form',
 				title: NP.Translator.translate('TEMPLATE PROPERTIES'),
-				flex: 0.2
+				height: 300,
+				layout: {
+					type: 'vbox',
+					align: 'stretch'
+				},
+				items: [
+					{
+						xtype: 'shared.yesnofield',
+						yesLabel: 'All Properties',
+						noLabel: 'Selected Properties',
+						name: 'property_type',
+						columns: 1
+					},
+					{
+						xtype: 'shared.propertyassigner',
+						name: 'property_id',
+						store: Ext.create('NP.store.property.Properties', {
+							service: 'PropertyService',
+							action: 'getAllByAdmin',
+							isAdminRole: NP.Security.getRole().get('is_admin_role'),
+							hasPermission: NP.Security.hasPermission(2010),
+							autoLoad: true
+						}),
+						height: 200
+					}
+				],
+				padding: '0 0 20 0'
 			}
 		];
 

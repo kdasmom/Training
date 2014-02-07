@@ -18,7 +18,8 @@ Ext.define('NP.view.systemSetup.POPrintSettings', {
 		type: 'fit',
 		align: 'stretch'
 	},
-	autoScroll: true,
+//	autoScroll: true,
+	overflowY: true,
 
 	initComponent: function() {
 		var me = this;

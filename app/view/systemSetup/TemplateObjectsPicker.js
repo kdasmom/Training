@@ -28,8 +28,6 @@ Ext.define('NP.view.systemSetup.TemplateObjectsPicker', {
 			enableDrop: false
 		}
 	},
-	autoScroll: true,
-	height: 300,
 
 	title  : 'Unassigned objects',
 	data: [],
