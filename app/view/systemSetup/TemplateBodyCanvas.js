@@ -19,6 +19,7 @@ Ext.define('NP.view.systemSetup.TemplateBodyCanvas', {
 
 	padding: '0 10',
 	border: false,
+	autoScroll: true,
 
 	initComponent: function() {
 		var me  = this;

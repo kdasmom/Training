@@ -44,10 +44,8 @@ Ext.define('NP.view.systemSetup.CanvasPanel', {
 					},
 					notifyDrop : function(ddSource, e, data){
 						var tileRec = ddSource.dragData.records[0],
-							index = tileRec.index,
-							store = data.view.store;
+							index = tileRec.index;
 
-						store.removeAt(index);
 
 						var tile = Ext.create('Ext.panel.Panel', {
 							layout: 'fit',
@@ -60,9 +58,10 @@ Ext.define('NP.view.systemSetup.CanvasPanel', {
 						});
 						var tilepanel = colPanel.add(tile);
 
+						me.fireEvent('addtemplateitem', index);
+
 						tilepanel.on('close', function() {
-							store.add([[this.index, this.field, this.title]]);
-							store.reload();
+							me.fireEvent('removetemplateitem', this.index, [this.index, this.field, this.title]);
 						});
 
 						return true;

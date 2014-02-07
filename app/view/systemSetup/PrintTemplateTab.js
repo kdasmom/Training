@@ -87,7 +87,8 @@ Ext.define('NP.view.systemSetup.PrintTemplateTab', {
 						xtype: 'systemsetup.templatebodycanvas',
 						flex: 0.8
 					}
-				]
+				],
+				autoScroll: true
 			},
 			{
 				xtype: 'panel',

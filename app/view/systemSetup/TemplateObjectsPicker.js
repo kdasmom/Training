@@ -72,19 +72,32 @@ Ext.define('NP.view.systemSetup.TemplateObjectsPicker', {
 					{ name: 'title' }
 				],
 				data: me.data,
-				autoLoad: true,
-				listeners: {
-					remove: function(store, record, index, isMove, eOpts ) {
-						me.data.splice(index, 1);
-					},
-					add: function( store, records, index, eOpts) {
-						me.data.push([records[0].get('index'), records[0].get('field'), records[0].get('title')]);
-						store.reload();
-					}
-				}
+				autoLoad: true
 			});
 		}
 
 		this.callParent(arguments);
+	},
+
+	removeRecord: function(index) {
+		var me = this;
+
+		me.data.splice(index, 1);
+		me.getStore().reload();
+	},
+
+	addRecord: function(index, record) {
+		var me = this,
+			insertindex = 0;
+
+		Ext.each(me.data, function(recorditem, cIndex) {
+			if (recorditem[0] > index) {
+				insertindex = cIndex;
+				return false;
+			}
+		});
+
+		me.data.splice(insertindex, 0, record);
+		me.getStore().reload();
 	}
 });

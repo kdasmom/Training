@@ -212,6 +212,10 @@ Ext.define('NP.controller.SystemSetup', {
 			},
 			'[xtype="systemsetup.poprintsettings"] [xtype="shared.button.new"]': {
 				click: me.showPrintTemplate
+			},
+			'[xtype="systemsetup.canvaspanel"]': {
+				addtemplateitem: me.addTemplateItem,
+				removetemplateitem: me.removeTemplateItem
 			}
 		});
 
@@ -1534,5 +1538,19 @@ Ext.define('NP.controller.SystemSetup', {
 
 		templatesGrig.hide();
 		templatePanel.show();
+	},
+
+	addTemplateItem: function(index) {
+		var me = this,
+			templatesPicker = me.getCmp('systemsetup.templateobjectspicker');
+
+		templatesPicker.removeRecord(index);
+	},
+
+	removeTemplateItem: function(index, record) {
+		var me = this,
+			templatesPicker = me.getCmp('systemsetup.templateobjectspicker');
+
+		templatesPicker.addRecord(index, record);
 	}
 });
