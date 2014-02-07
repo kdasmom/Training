@@ -211,7 +211,9 @@ Ext.define('NP.controller.SystemSetup', {
 				click: me.resetPickListForm
 			},
 			'[xtype="systemsetup.poprintsettings"] [xtype="shared.button.new"]': {
-				click: me.showPrintTemplate
+				click: function() {
+					me.showPrintTemplate();
+				}
 			},
 			'[xtype="systemsetup.canvaspanel"]': {
 				addtemplateitem: me.addTemplateItem,
@@ -1534,7 +1536,14 @@ Ext.define('NP.controller.SystemSetup', {
 	showPrintTemplate: function(id) {
 		var me = this,
 			templatePanel = me.getCmp('systemsetup.poprintsettings').down('[name="templatemanager"]'),
-			templatesGrig = me.getCmp('systemsetup.poprintsettings').down('customgrid');
+			templatesGrig = me.getCmp('systemsetup.poprintsettings').down('customgrid'),
+			templateTab = me.getCmp('systemsetup.printtemplatetab'),
+			templateIdField = templateTab.down('[name="templatedetails"]').getForm().findField('template_id');
+
+
+		if (arguments.length > 0) {
+			templateIdField.setValue(id);
+		}
 
 		templatesGrig.hide();
 		templatePanel.show();
@@ -1552,5 +1561,10 @@ Ext.define('NP.controller.SystemSetup', {
 			templatesPicker = me.getCmp('systemsetup.templateobjectspicker');
 
 		templatesPicker.addRecord(index, record);
+	},
+
+	savePrintTemplate: function() {
+		var me = this,
+			templateTab = me.getCmp('systemsetup.printtemplatetab');
 	}
 });

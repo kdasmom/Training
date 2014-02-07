@@ -9,7 +9,10 @@ Ext.define('NP.view.systemSetup.PrintHeaderTab', {
 
 	requires: ['NP.lib.core.Translator'],
 
-	layout: 'fit',
+	layout: {
+		type: 'vbox',
+		align: 'stretch'
+	},
 
 	defaults: {
 		labelWidth: '80%'
@@ -23,7 +26,25 @@ Ext.define('NP.view.systemSetup.PrintHeaderTab', {
 
 		me.title = NP.Translator.translate(this.title);
 
-		me.items = [];
+		me.items = [
+			{
+				xtype: 'displayfield',
+				fieldLabel: NP.Translator.translate('Editing Template'),
+				value: ''
+			},
+			{
+				xtype: 'checkbox',
+				name: 'poprint_customfields',
+				inputValue: '0',
+				boxLabel: NP.Translator.translate('Please check here if you want to include the PO Custom Fields in the header')
+			},
+			{
+				xtype: 'textareafield',
+				name: 'poprint_text',
+				fieldLabel: NP.Translator.translate('The following text will be included in the header area on both the print and forward view of a Purchase Order. '),
+				labelAlign: 'top'
+			}
+		];
 
 		this.callParent(arguments);
 	}

@@ -54,20 +54,27 @@ Ext.define('NP.view.systemSetup.PrintTemplateTab', {
 		me.items = [
 			{
 				xtype: 'form',
-				height: 100,
+				height: 200,
+				name: 'templatedetails',
 				title: NP.Translator.translate('TEMPLATE DETAILS'),
 				items: [
 					{
 						xtype: 'textfield',
 						name: 'print_template_name',
 						fieldLabel: NP.Translator.translate('Template Name'),
-						padding: '5'
+						padding: '5',
+						allowBlank: false
 					},
 					{
 						xtype: 'textfield',
 						name: 'print_template_label',
 						fieldLabel: NP.Translator.translate('Template Label'),
-						padding: '5'
+						padding: '5',
+						allowBlank: false
+					},
+					{
+						xtype: 'hiddenfield',
+						name: 'template_id'
 					}
 				]
 			},

@@ -16,10 +16,6 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 		'NP.lib.ui.VerticalTabPanel'
 	],
 
-//	layout: {
-//		type: 'hbox',
-//		align: 'stretch'
-//	},
 	layout: 'fit',
 
 	defaults: {
@@ -56,7 +52,7 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 					},
 					{
 						xtype: 'systemsetup.printadditionaltexttab',
-						title: 'Footer',
+						title: 'Additional Text',
 						flex: 1
 					}
 				]

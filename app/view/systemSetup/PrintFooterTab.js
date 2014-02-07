@@ -10,7 +10,11 @@ Ext.define('NP.view.systemSetup.PrintFooterTab', {
 
 	requires: ['NP.lib.core.Translator'],
 
-	layout: 'fit',
+
+	layout: {
+		type: 'vbox',
+		align: 'stretch'
+	},
 
 	defaults: {
 		labelWidth: '80%'
@@ -24,7 +28,19 @@ Ext.define('NP.view.systemSetup.PrintFooterTab', {
 
 		me.title = NP.Translator.translate(this.title);
 
-		me.items = [];
+		me.items = [
+			{
+				xtype: 'displayfield',
+				fieldLabel: NP.Translator.translate('Editing Template'),
+				value: ''
+			},
+			{
+				xtype: 'textareafield',
+				name: 'poprint_text',
+				fieldLabel: NP.Translator.translate('The following text will be included in the footer area on both the print and forward view of a Purchase Order. This will display on all pages.'),
+				labelAlign: 'top'
+			}
+		];
 
 		this.callParent(arguments);
 	}

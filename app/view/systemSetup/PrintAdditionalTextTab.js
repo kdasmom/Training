@@ -9,7 +9,10 @@ Ext.define('NP.view.systemSetup.PrintAdditionalTextTab', {
 
 	requires: ['NP.lib.core.Translator'],
 
-	layout: 'fit',
+	layout: {
+		type: 'vbox',
+		align: 'stretch'
+	},
 
 	defaults: {
 		labelWidth: '80%'
@@ -21,10 +24,22 @@ Ext.define('NP.view.systemSetup.PrintAdditionalTextTab', {
 	initComponent: function() {
 		var me  = this;
 
-		me.title = NP.Translator.translate(this.title);
+		me.title = NP.Translator.translate(me.title);
 
-		me.items = [];
+		me.items = [
+			{
+				xtype: 'displayfield',
+				fieldLabel: NP.Translator.translate('Editing Template'),
+				value: ''
+			},
+			{
+				xtype: 'textareafield',
+				name: 'poprint_text',
+				fieldLabel: NP.Translator.translate('The following text will be included at the end of the Purchase Order and will be included on both the print and forward view of a Purchase Order. This will only display at the end of the Purchase Order. There is no limit to the number of characters allowed.'),
+				labelAlign: 'top'
+			}
+		];
 
-		this.callParent(arguments);
+		me.callParent(arguments);
 	}
 });
