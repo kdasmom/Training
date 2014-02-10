@@ -13,6 +13,7 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 		'NP.view.systemSetup.PrintHeaderTab',
 		'NP.view.systemSetup.PrintFooterTab',
 		'NP.view.systemSetup.PrintAdditionalTextTab',
+		'NP.view.systemSetup.PrintSettingsTab',
 		'NP.lib.ui.VerticalTabPanel'
 	],
 
@@ -53,6 +54,11 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 					{
 						xtype: 'systemsetup.printadditionaltexttab',
 						title: 'Additional Text',
+						flex: 1
+					},
+					{
+						xtype: 'systemsetup.printsettingstab',
+						title: 'Settings',
 						flex: 1
 					}
 				]
