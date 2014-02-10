@@ -3,7 +3,7 @@
  */
 
 Ext.define('NP.view.favorites.FavoritesWindow', {
-	extend: 'Ext.window.Window',
+	extend: 'Ext.panel.Panel',
 	alias: 'widget.favorites.favoriteswindow',
 
 	requires: [
@@ -11,25 +11,30 @@ Ext.define('NP.view.favorites.FavoritesWindow', {
 		'NP.view.favorites.FavoriteGrid'
 	],
 
-	layout		: 'accordion',
+    layout   : {
+        type : 'vbox',
+        align: 'stretch'
+    },
 
-	draggable	: false,
-	resizable	: false,
-	closable	: false,
-	width		: 380,
-	y			: 32,
+    floating : true,
+    width    : 380,
 
-    cls         : 'favoritesWin',
+    cls      : 'favoritesWin',
 
 	initComponent: function() {
 		var that = this;
 
+        this.defaults = { border: false, minHeight: 100, maxHeight: 250 };
 		this.items = [
             {
                 itemId       : 'favoritesGrid',
                 title        : NP.Translator.translate('Favorites'),
                 xtype        : 'favorites.favoritegrid',
                 showRemoveCol: true,
+                viewConfig     : {
+                    emptyText: NP.Translator.translate('No favorites'),
+                    deferEmptyText: false
+                },
                 store        : {
                     fields: ['title', 'token'],
                     data  : NP.Config.getUserSettings()['user_favorites']
@@ -40,6 +45,10 @@ Ext.define('NP.view.favorites.FavoritesWindow', {
                 title          : NP.Translator.translate('Recent Records'),
                 xtype          : 'favorites.favoritegrid',
                 showFavoriteCol: true,
+                viewConfig     : {
+                    emptyText: NP.Translator.translate('No recent records'),
+                    deferEmptyText: false
+                },
                 store          : {
                     fields: ['title', 'token'],
                     data  : NP.Config.getUserSettings()['user_recent_records']
@@ -50,6 +59,10 @@ Ext.define('NP.view.favorites.FavoritesWindow', {
                 title          : NP.Translator.translate('Recent Reports'),
                 xtype          : 'favorites.favoritegrid',
                 showFavoriteCol: true,
+                viewConfig     : {
+                    emptyText: NP.Translator.translate('No recent reports'),
+                    deferEmptyText: false
+                },
                 store          : {
                     fields: ['title', 'token'],
                     data  : []

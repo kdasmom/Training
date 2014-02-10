@@ -11,6 +11,8 @@ Ext.define('NP.controller.Favorites', {
 		'NP.lib.core.Translator'
 	],
 
+	views: ['favorites.FavoritesWindow'],
+
 	init: function() {
 		Ext.log('Favorites controller initialized');
 
