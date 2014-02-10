@@ -14,11 +14,17 @@ class JobCostingService extends AbstractService {
 	/**
 	 * Get job costing contracts
 	 */
-	public function getContracts($vendorsite_id=null, $sort='jbcontract_name') {
+	public function getContracts($vendorsite_id=null, $sort='jbcontract_name', $status = null) {
 		if ($vendorsite_id !== null) {
 			return $this->jbContractGateway->findByVendorsite($vendorsite_id, $sort);
 		} else {
-			return $this->jbContractGateway->find(null, null, $sort);
+			$where  = null;
+			$params = null;
+			if ($status !== null) {
+				$where  = array('jbcontract_status' => '?');
+				$params = array($status);
+			}
+			return $this->jbContractGateway->find($where, $params, $sort);
 		}
 	}
 	

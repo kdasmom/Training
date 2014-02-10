@@ -1,5 +1,6 @@
 Ext.define('NP.view.systemSetup.WorkflowRulesView', {
-    extend: 'Ext.window.Window',
+//    extend: 'Ext.window.Window',
+	extend: 'Ext.panel.Panel',
     alias:  'widget.systemsetup.WorkflowRulesView',
 
     title:  'Workflow Management',
@@ -15,9 +16,10 @@ Ext.define('NP.view.systemSetup.WorkflowRulesView', {
     bodyPadding: 10,
 
     requires: [
-        'NP.view.shared.button.Close',
         'NP.view.shared.button.Print',
-        
+		'NP.view.shared.button.Cancel',
+		'NP.view.shared.button.Edit',
+
         'NP.view.shared.ExpandableSection'
     ],
 
@@ -112,14 +114,10 @@ Ext.define('NP.view.systemSetup.WorkflowRulesView', {
         ;
 
         this.tbar = [
-            {xtype: 'shared.button.close', itemId: 'buttonClose', text: 'Close', 
-                listeners: {
-                    click: function() {
-                        me.close();
-                    }
-                }
-            },
-            {xtype: 'shared.button.print', itemId: 'buttonPrint', text: 'Print',
+			{ xtype: 'shared.button.cancel', itemId: 'buttonWorkflowBackToMain' },
+			{ xtype: 'shared.button.edit', itemId: 'buttonWorkflowCancel' },
+            {
+				xtype: 'shared.button.print', itemId: 'buttonPrint', text: 'Print',
                 listeners: {
                     click: function() {
                         Ext.MessageBox.alert('Print', 'Coming soon')
@@ -222,30 +220,34 @@ Ext.define('NP.view.systemSetup.WorkflowRulesView', {
             });
         }
 
-        var description = '';
-        if (data.rule.wfruletype_tablename.toLowerCase() == 'budget' && data.rule.wfruletype_id != 12) {
-            description += 'If the variance is ';
-        } else if (data.rule.wfruletype_tablename.toLowerCase() == 'userprofile') {
-            description += 'If the assigned user has ';
-        } else if (data.rule.wfruletype_tablename.toLowerCase() == 'email' || data.rule.wfruletype_id == 12) {
-            //
-        } else {
-            description += 'If total amount is ';
-        }
+		var description = '',
+			wfruletype_tablename = (data.rule.wfruletype_tablename != null) ? data.rule.wfruletype_tablename.toLowerCase() : null,
+			wfrule_string = (data.rule.wfrule_string != null) ? data.rule.wfrule_string.toLowerCase() : null,
+			wfrule_operand = (data.rule.wfrule_operand != null) ? data.rule.wfrule_operand.toLowerCase() : null;
 
-        if (data.rule.wfrule_operand.length) {
-            description += data.rule.wfrule_operand + ' ';
-            if (data.rule.wfrule_string.toLowerCase() == 'actual') {
-                description += data.rule.wfrule_number + ' ';
-                if (data.rule.wfrule_operand == 'in range') {
-                    description += data.rule.wfrule_number_end + ' ';
-                }
-            } else if (data.rule.wfrule_string == 'percentage') {
-                description += data.rule.wfrule_number;
-            } else {
-                description += data.rule.wfrule_string;
-            }
-        }
+		if (data.rule.wfrule_operand !== null) {
+			if (wfruletype_tablename == 'budget' && data.rule.wfruletype_id != 12) {
+				description += 'If the variance is ';
+			} else if (wfruletype_tablename == 'userprofile') {
+				description += 'If the assigned user has ';
+			} else if (wfruletype_tablename == 'email' || data.rule.wfruletype_id == 12) {
+			} else {
+				description += 'If total amount is ';
+			}
+
+			description += data.rule.wfrule_operand + ' ';
+			if (wfrule_string == 'actual') {
+				description += data.rule.wfrule_number + ' ';
+				if (wfrule_operand == 'in range') {
+					description += data.rule.wfrule_number_end + ' ';
+				}
+			} else if (wfrule_string == 'percentage') {
+				description += data.rule.wfrule_number;
+			} else {
+				description += data.rule.wfrule_string;
+			}
+		}
+
         details.push({
             xtype: 'panel',
             items: [

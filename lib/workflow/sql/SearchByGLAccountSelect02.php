@@ -14,10 +14,14 @@ class SearchByGLAccountSelect02 extends Select {
                     'wfrule_name',
                     'wfrule_status',
                     'wfrule_id',
-                    'wfrule_datetm'
+                    'wfrule_datetm',
+					'wfrule_operand',
+					'wfrule_string',
+					'wfrule_number_end',
+					'wfrule_number'
                 ])
             ->from(['WF' => 'wfrule'])
-                ->join(new join\WFRuleWFRuleTypeJoin())
+                ->join(new join\WFRuleWFRuleTypeJoin(['wfruletype_tablename', 'wfruletype_id', 'type_id_alt']))
                 ->join(new join\WFRuleWFRuleScopeJoin(true))
                 ->join(new join\WFRuleTree01Join())
                 ->join(new join\WFRuleTree02Join())

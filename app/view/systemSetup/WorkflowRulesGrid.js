@@ -4,12 +4,11 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 
     requires: [
         'NP.view.systemSetup.gridcol.Name',
-        'NP.view.systemSetup.gridcol.AppliedTo',
+        'NP.view.systemSetup.gridcol.RuleType',
+        'NP.view.systemSetup.gridcol.Property',
+        'NP.view.systemSetup.gridcol.Threshold',
         'NP.view.systemSetup.gridcol.LastUpdated',
-        'NP.view.systemSetup.gridcol.Status',
-        'NP.view.systemSetup.gridcol.Copy',
-        'NP.view.systemSetup.gridcol.Delete',
-        'NP.view.systemSetup.gridcol.View',
+        'NP.view.systemSetup.gridcol.Status'
     ],
 
     initComponent: function(){
@@ -22,13 +21,12 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
         });
 
         this.columns = [
-            { xtype: 'systemsetup.gridcol.name' },
-            { xtype: 'systemsetup.gridcol.appliedto' },
-            { xtype: 'systemsetup.gridcol.lastupdated' },
-            { xtype: 'systemsetup.gridcol.status' },
-            { xtype: 'systemsetup.gridcol.copy' },
-            { xtype: 'systemsetup.gridcol.delete' },
-            { xtype: 'systemsetup.gridcol.view' }
+            { xtype: 'systemsetup.gridcol.name', flex: 2.2 },
+            { xtype: 'systemsetup.gridcol.ruletype', flex: 1.2 },
+            { xtype: 'systemsetup.gridcol.property', flex: 0.5 },
+            { xtype: 'systemsetup.gridcol.threshold', flex: 1.7 },
+            { xtype: 'systemsetup.gridcol.lastupdated', flex: 1.2 },
+            { xtype: 'systemsetup.gridcol.status', flex: 0.4 }
         ];
 
         this.paging = true;

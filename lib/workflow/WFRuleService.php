@@ -43,7 +43,24 @@ class WFRuleService extends AbstractService {
         );
     }
 
-    public function copy($id) {
+	public function copyRules($ruleIdList) {
+		if (!empty($ruleIdList)) {
+			$ruleIdArray = explode(',', $ruleIdList);
+
+			foreach ($ruleIdArray as $id) {
+				$result = $this->copy($id);
+
+				if (!$result['success']) {
+					return $result;
+				}
+			}
+		}
+		return [
+			'success' => true
+		];
+	}
+
+    private function copy($id) {
         // Find target rule
         $rule = $this->wfRuleGateway->findById($id);
 
@@ -141,19 +158,38 @@ class WFRuleService extends AbstractService {
         
     }
 
-    public function delete($id) {
-        if (!empty($id)) {
-            $this->wfRuleGateway->setRuleStatus($id, 3);
-            return [
-                'success' => true
-            ];
-        }
-        return [
-            'success' => false,
-            'error'   => 'Incorrect identifier'
-        ];
+    public function deleteRules($ruleIdList) {
+		if (!empty($ruleIdList)) {
+			$ruleIdArray = explode(',', $ruleIdList);
+
+			foreach ($ruleIdArray as $id) {
+				$this->wfRuleGateway->setRuleStatus($id, 3);
+			}
+			return [
+				'success' => true
+			];
+		}
+		return [
+			'success' => false,
+			'error'   => 'Incorrect identifiers list'
+		];
     }
 
+
+/*
+	public function delete($id) {
+		if (!empty($id)) {
+			$this->wfRuleGateway->setRuleStatus($id, 3);
+			return [
+				'success' => true
+			];
+		}
+		return [
+			'success' => false,
+			'error'   => 'Incorrect identifier'
+		];
+	}
+*/
     public function status($id, $status) {
         if (!empty($id) && in_array($status, [1, 2])) {
             foreach ($id as $item) {
@@ -169,9 +205,9 @@ class WFRuleService extends AbstractService {
         ];
     }
 
-    public function search($type = 0, $criteria = null, $page = null, $pageSize = null, $order = "wfrule_name") {
+    public function search($type = 0, $criteria = null, $page = null, $pageSize = null, $sort = "wfrule_name") {
         $asp_client_id = $this->configService->getClientId();
-        return $this->wfRuleGateway->findRule($asp_client_id, $type, $criteria, $page, $pageSize, $order);
+        return $this->wfRuleGateway->findRule($asp_client_id, $type, $criteria, $page, $pageSize, $sort);
     }
 
     public function listRulesType() {

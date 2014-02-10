@@ -14,10 +14,14 @@ class SearchByVendorSelect extends Select {
                     'wfrule_name',
                     'wfrule_status',
                     'wfrule_id',
-                    'wfrule_datetm'
+                    'wfrule_datetm',
+					'wfrule_operand',
+					'wfrule_string',
+					'wfrule_number_end',
+					'wfrule_number'
                 ])
             ->from(['WF' => 'wfrule'])
-                ->join(new join\WFRuleWFRuleTypeJoin())
+                ->join(new join\WFRuleWFRuleTypeJoin(['wfruletype_tablename', 'wfruletype_id', 'type_id_alt']))
                 ->join(new join\WFRuleWFRuleScopeJoin())
                 ->join(new join\WFRuleVendorJoin())
                 ->join(new join\WFRuleUserprofileJoin())

@@ -3,17 +3,9 @@ Ext.define('NP.view.systemSetup.gridcol.LastUpdated', {
     alias: 'widget.systemsetup.gridcol.lastupdated',
 
     text     : 'Last Updated',
-    dataIndex: 'userprofile_username',
+    dataIndex: 'wfrule_datetm',
 
     renderer: function(val, meta, rec) {
-        /*if (!val) {
-            val = rec.raw['approval_type'];
-	}
-
-	if (val != 'New') {
-            return 'Modification';
-	}*/
-
-	return val;
+		return Ext.Date.format(rec.data.wfrule_datetm, NP.Config.getDefaultDateFormat() + ' h:iA') + ' (' + rec.data.userprofile_username + ')';
     }
 });

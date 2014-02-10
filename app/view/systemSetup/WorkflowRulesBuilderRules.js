@@ -8,7 +8,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilderRules', {
         'NP.view.shared.VendorAssigner',
 		'NP.view.systemSetup.BudgetByGlCategoryAssigner',
 		'NP.view.systemSetup.BudgetByGlCodeAssigner',
-		'NP.view.systemSetup.InvoiceItemAmountAssigner'
+		'NP.view.systemSetup.InvoiceItemAmountAssigner',
+		'NP.view.systemSetup.ContractAssigner'
     ],
 
     initComponent: function() {
@@ -150,10 +151,46 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilderRules', {
     },
 
     sectionJobContract: function() {
-        return {
-            itemId: 'section-job-contract',
-            html: 'section-job-contract coming soon'
-        };
+		/*
+		return {
+			itemId: 'section-job-contract',
+			xtype: 'container',
+			height: 53,
+			layout: {
+				type: 'hbox',
+				align: 'stretch'
+			},
+			items: [
+				{
+					boxLabel: 'ALL',
+					checked: true,
+					name: 'propprop',
+					listeners: {
+						change: function(field, newValue, oldValue, options) {
+
+						}
+					}
+				},
+				{
+					boxLabel: 'SPECIFIC',
+					name: 'propprop',
+					listeners: {
+						change: function(field, newValue, oldValue, options) {
+
+						}
+					}
+				}
+			]
+		};
+*/
+		return {
+			itemId: 'section-job-contract',
+			xtype: 'systemSetup.contractassigner',
+
+			width: 1200,
+			labelWidth: 200,
+			height    : 200
+		};
     },
 
     sectionBudgetByGlCode: function() {

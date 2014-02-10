@@ -11,7 +11,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesModify', {
 
         'NP.view.systemSetup.WorkflowRulesSummary',
         'NP.view.systemSetup.WorkflowRulesBuilderRules',
-        'NP.view.systemSetup.WorkflowRulesBuilderRoutes'
+        'NP.view.systemSetup.WorkflowRulesBuilderRoutes',
+		'NP.view.systemSetup.PaymentTypeAssigner'
     ],
 
     border: 0,
@@ -29,7 +30,6 @@ Ext.define('NP.view.systemSetup.WorkflowRulesModify', {
             {
                 xtype: 'systemsetup.WorkflowRulesSummary',
                 data: me.data,
-
                 margin: '0 0 20 0'
             },
 			{
@@ -83,7 +83,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesModify', {
     stepRulesToolbar: function() {
         var me = this;
         return [
-            { xtype: 'shared.button.cancel', itemId: 'buttonWorkflowCancel' },
+            { xtype: 'shared.button.cancel', itemId: 'buttonWorkflowBackToMain' },
             { xtype: 'shared.button.copy', itemId: 'buttonWorkflowCopy' },
             { xtype: 'shared.button.next', itemId: 'buttonWorkflowNext',
                 handler: me.stepRoutes.bind(me)
@@ -95,7 +95,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesModify', {
     stepRoutesToolbar: function() {
         var me = this;
         return [
-            { xtype: 'shared.button.cancel', itemId: 'buttonWorkflowCancel' },
+            { xtype: 'shared.button.cancel', itemId: 'buttonWorkflowBackToMain' },
             { xtype: 'shared.button.back', itemId: 'buttonWorkflowNext',
                 handler: me.stepRules.bind(me)
             },

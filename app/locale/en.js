@@ -662,6 +662,12 @@ Ext.define('NP.Locale', {
 	'Associated POs'       : 'Associated POs',
 	'Vendor Code'          : 'Vendor Code',
 	'Cycle From'           : 'Cycle From',
-	'Cycle To'             : 'Cycle To'
+	'Cycle To'             : 'Cycle To',
+
+	/**
+	 *  WORKFLOW MANAGEMENT
+	 */
+	'Workflow Definitions' : 'Workflow Definitions',
+	'Workflow Rules'       : 'Workflow Rules'
 
 });

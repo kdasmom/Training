@@ -9,10 +9,7 @@ class GetPropertiesCountSelect extends Select {
         parent::__construct();
 
         $this
-            ->count()
-            ->columns([
-                'property_id'
-            ])
+			->count(true, 'count')
             ->from('PROPERTY')
                 ->join(new join\PropertyIntPkgJoin([], Select::JOIN_INNER, 'ip', 'PROPERTY'))
                 ->join(new join\PropertyRegionJoin(['region_name'], Select::JOIN_LEFT, 'REGION', 'PROPERTY'))

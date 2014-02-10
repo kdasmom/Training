@@ -69,9 +69,6 @@ class WfRuleGateway extends AbstractGateway {
 		return ($res[0]['ruleCount']) ? true : false;
 	}
 
-
-
-
     public function findRule($asp_client_id, $type, $criteria, $page, $size, $order) {
         if (!empty($criteria) && $criteria <> '0') {
             $criteria = json_decode($criteria);
@@ -130,6 +127,11 @@ class WfRuleGateway extends AbstractGateway {
                 break;
         }
 
+		$countPropertiesResult = $this->adapter->query(
+			new \NP\property\sql\GetPropertiesCountSelect($asp_client_id)
+		);
+		$countProperties = $countPropertiesResult[0]['count'];
+
         $result = [];
         if ($type != 0) {
             if (!empty($selectors)) {
@@ -144,6 +146,11 @@ class WfRuleGateway extends AbstractGateway {
                 $result = $this->adapter->query($selectors[0]);
             }
         }
+
+		foreach ($result['data'] as &$item) {
+			$item['all_properties_selected'] = ($item['count_properties'] == $countProperties) ? true : false;
+		}
+
         return $result;
     }
 
@@ -175,9 +182,11 @@ class WfRuleGateway extends AbstractGateway {
         if (!empty($result['rule']) && !empty($result['rule'][0])) {
             $result['rule'] = $result['rule'][0];
 
-            $count = $this->adapter->query(
-                new \NP\property\sql\GetPropertiesCountSelect($asp_client_id)
-            );
+			$countPropertiesResult = $this->adapter->query(
+				new \NP\property\sql\GetPropertiesCountSelect($asp_client_id)
+			);
+			$countProperties = $countPropertiesResult[0]['count'];
+
 
             $selected = 0;
             $properties = [];
@@ -194,8 +203,8 @@ class WfRuleGateway extends AbstractGateway {
             }
 
             $result['properties'] = [
-                'all' => 
-                    $count == $selected
+                'all' =>
+					$countProperties == $selected
                 ,
                 'properties' => $properties
             ];
