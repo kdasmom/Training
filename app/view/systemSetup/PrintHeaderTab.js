@@ -39,7 +39,7 @@ Ext.define('NP.view.systemSetup.PrintHeaderTab', {
 				boxLabel: NP.Translator.translate('Please check here if you want to include the PO Custom Fields in the header')
 			},
 			{
-				xtype: 'textareafield',
+				xtype: 'htmleditor',
 				name: 'poprint_text',
 				fieldLabel: NP.Translator.translate('The following text will be included in the header area on both the print and forward view of a Purchase Order. '),
 				labelAlign: 'top'

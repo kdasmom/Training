@@ -35,7 +35,7 @@ Ext.define('NP.view.systemSetup.PrintFooterTab', {
 				value: ''
 			},
 			{
-				xtype: 'textareafield',
+				xtype: 'htmleditor',
 				name: 'poprint_text',
 				fieldLabel: NP.Translator.translate('The following text will be included in the footer area on both the print and forward view of a Purchase Order. This will display on all pages.'),
 				labelAlign: 'top'

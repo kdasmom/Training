@@ -33,7 +33,7 @@ Ext.define('NP.view.systemSetup.PrintAdditionalTextTab', {
 				value: ''
 			},
 			{
-				xtype: 'textareafield',
+				xtype: 'htmleditor',
 				name: 'poprint_text',
 				fieldLabel: NP.Translator.translate('The following text will be included at the end of the Purchase Order and will be included on both the print and forward view of a Purchase Order. This will only display at the end of the Purchase Order. There is no limit to the number of characters allowed.'),
 				labelAlign: 'top'
