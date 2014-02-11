@@ -28,7 +28,6 @@ Ext.define('NP.view.systemSetup.TemplateBodyCanvas', {
 
 		me.items = [
 			{
-
 				items: [
 					{
 						xtype: 'panel',
@@ -41,16 +40,19 @@ Ext.define('NP.view.systemSetup.TemplateBodyCanvas', {
 						items: [
 							{
 								xtype    : 'systemsetup.canvaspanel',
+								name: 'template_logo_left',
 								flex: 0.3,
 								minHeight: 30
 							},
 							{
 								xtype    : 'systemsetup.canvaspanel',
+								name: 'template_logo_center',
 								flex: 0.3,
 								minHeight: 30
 							},
 							{
 								xtype    : 'systemsetup.canvaspanel',
+								name: 'template_logo_right',
 								flex: 0.3,
 								minHeight: 30
 							}
@@ -68,11 +70,13 @@ Ext.define('NP.view.systemSetup.TemplateBodyCanvas', {
 						items: [
 							{
 								xtype    : 'systemsetup.canvaspanel',
+								name: 'template_header_left',
 								flex: 0.5,
 								minHeight: 30
 							},
 							{
 								xtype    : 'systemsetup.canvaspanel',
+								name: 'template_header_right',
 								flex: 0.5,
 								minHeight: 30
 							}
@@ -91,7 +95,25 @@ Ext.define('NP.view.systemSetup.TemplateBodyCanvas', {
 							{
 								xtype    : 'systemsetup.canvaspanel',
 								flex: 1,
-								minHeight: 30
+								minHeight: 30,
+								name: 'template_header'
+							}
+						]
+					},
+					{
+						xtype: 'panel',
+						title: NP.Translator.translate('Body'),
+						layout: {
+							type: 'hbox',
+							align: 'stretch'
+						},
+						padding: '15 15 0 15',
+						items: [
+							{
+								xtype    : 'systemsetup.canvaspanel',
+								flex: 1,
+								minHeight: 30,
+								name: 'template_body'
 							}
 						]
 					},
@@ -107,12 +129,14 @@ Ext.define('NP.view.systemSetup.TemplateBodyCanvas', {
 							{
 								xtype    : 'systemsetup.canvaspanel',
 								flex: 0.5,
-								minHeight: 30
+								minHeight: 30,
+								name: 'template_footer_left'
 							},
 							{
 								xtype    : 'systemsetup.canvaspanel',
 								flex: 0.5,
-								minHeight: 30
+								minHeight: 30,
+								name: 'template_footer_right'
 							}
 						]
 					},
@@ -127,6 +151,7 @@ Ext.define('NP.view.systemSetup.TemplateBodyCanvas', {
 						items: [
 							{
 								xtype    : 'systemsetup.canvaspanel',
+								name: 'template_footer',
 								flex: 1,
 								minHeight: 30
 							}

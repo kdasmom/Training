@@ -28,28 +28,23 @@ Ext.define('NP.view.systemSetup.PrintTemplateTab', {
 
 	padding: '0 10',
 	border: false,
+	positions: {
+		'template_logo_left'	: [],
+		'template_logo_center'	: [],
+		'template_logo_right'	: [],
+		'template_header_left'	: [],
+		'template_header_right'	: [],
+		'template_header'		: [],
+		'template_body'			: [],
+		'template_footer_left'	: [],
+		'template_footer_right'	: [],
+		'template_footer'		: []
+	},
 
 	initComponent: function() {
 		var me  = this;
 
 		me.title = NP.Translator.translate(this.title);
-
-		me.tbar = [
-			{
-				xtype: 'shared.button.cancel'
-			},
-			{
-				xtype: 'shared.button.save'
-			},
-			{
-				xtype: 'shared.button.save',
-				text: NP.Translator.translate('Save & Activate')
-			},
-			{
-				xtype: 'shared.button.save',
-				text: NP.Translator.translate('Save & Deactivate')
-			}
-		];
 
 		me.items = [
 			{
@@ -98,6 +93,7 @@ Ext.define('NP.view.systemSetup.PrintTemplateTab', {
 				xtype: 'form',
 				title: NP.Translator.translate('TEMPLATE PROPERTIES'),
 				height: 300,
+				name: 'properties',
 				layout: {
 					type: 'vbox',
 					align: 'stretch'
@@ -128,5 +124,42 @@ Ext.define('NP.view.systemSetup.PrintTemplateTab', {
 		];
 
 		me.callParent(arguments);
+	},
+
+	/**
+	 * add template
+	 *
+	 * @param region
+	 * @param template_name
+	 * @returns {*}
+	 */
+	addTemplate: function(region, template_name) {
+		var me = this;
+
+		me.positions[region].push(template_name);
+
+		return me.positions;
+	},
+
+	/**
+	 * remove template
+	 *
+	 * @param region
+	 * @param name
+	 */
+	removeTemplate: function(region, name) {
+		var me = this,
+			deleteIndex = 0;
+
+		Ext.each(me.positions[region], function(template, index) {
+			if (template == name) {
+				deleteIndex = index;
+				return false;
+			}
+		});
+
+		me.positions[region].splice(deleteIndex, 1);
+
+		return me.positions;
 	}
 });

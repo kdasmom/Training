@@ -212,12 +212,16 @@ Ext.define('NP.controller.SystemSetup', {
 			},
 			'[xtype="systemsetup.poprintsettings"] [xtype="shared.button.new"]': {
 				click: function() {
-					me.showPrintTemplate();
+					me.addHistory('SystemSetup:showSystemSetup:POPrintSettings:PrintTemplate');
+//					me.showPrintTemplate();
 				}
 			},
 			'[xtype="systemsetup.canvaspanel"]': {
 				addtemplateitem: me.addTemplateItem,
 				removetemplateitem: me.removeTemplateItem
+			},
+			'[xtype="systemsetup.templatesmanager"]': {
+				savetemplate: me.savePrintTemplate
 			}
 		});
 
@@ -259,6 +263,16 @@ Ext.define('NP.controller.SystemSetup', {
 			var generaltab = tab.down('#general');
 
 			this.filltabContent(generaltab, this.addField);
+		}
+	},
+
+	showPOPrintSettings: function(subpanel, id) {
+		var me = this;
+
+		subpanel = !subpanel ? 'TemplatesGrid' : subpanel;
+
+		if (me['show' + subpanel]) {
+			me['show' + subpanel](id);
 		}
 	},
 
@@ -1533,38 +1547,66 @@ Ext.define('NP.controller.SystemSetup', {
 		me.fillFormPicklist(recordvalue, picklistform, picklistview.mode);
 	},
 
-	showPrintTemplate: function(id) {
-		var me = this,
-			templatePanel = me.getCmp('systemsetup.poprintsettings').down('[name="templatemanager"]'),
-			templatesGrig = me.getCmp('systemsetup.poprintsettings').down('customgrid'),
-			templateTab = me.getCmp('systemsetup.printtemplatetab'),
-			templateIdField = templateTab.down('[name="templatedetails"]').getForm().findField('template_id');
-
-
-		if (arguments.length > 0) {
-			templateIdField.setValue(id);
-		}
-
-		templatesGrig.hide();
-		templatePanel.show();
+	showTemplatesGrid: function() {
+		this.setView('NP.view.systemSetup.TemplatesGrid', {}, '[xtype="systemsetup.poprintsettings"]');
 	},
 
-	addTemplateItem: function(index) {
+	showPrintTemplate: function(id) {
 		var me = this,
-			templatesPicker = me.getCmp('systemsetup.templateobjectspicker');
+			viewConfig = { bind: { models: ['system.PrintTemplate'] }};
+
+		var form = this.setView('NP.view.systemSetup.TemplatesManager', viewConfig, '[xtype="systemsetup.poprintsettings"]');
+	},
+
+	addTemplateItem: function(index, name) {
+		var me = this,
+			templatesPicker = me.getCmp('systemsetup.templateobjectspicker'),
+			templateTab = me.getCmp('systemsetup.printtemplatetab'),
+			record = templatesPicker.getRecordByndex(index),
+			templates = templateTab.addTemplate(name, record[1]);
 
 		templatesPicker.removeRecord(index);
 	},
 
-	removeTemplateItem: function(index, record) {
+	removeTemplateItem: function(index, name, record) {
+		console.log(index, name, record);
 		var me = this,
-			templatesPicker = me.getCmp('systemsetup.templateobjectspicker');
+			templatesPicker = me.getCmp('systemsetup.templateobjectspicker'),
+			templatesTab = me.getCmp('systemsetup.printtemplatetab'),
+			templates = templatesTab.removeTemplate(name, record[1]);
 
 		templatesPicker.addRecord(index, record);
 	},
 
-	savePrintTemplate: function() {
+	savePrintTemplate: function(action, id) {
 		var me = this,
-			templateTab = me.getCmp('systemsetup.printtemplatetab');
+			templateTabs = me.getCmp('systemsetup.templatesmanager'),
+			activeTab = templateTabs.down('[name="templatestab"]').getActiveTab(),
+			data = {};
+
+		if (activeTab.name == 'templatetab') {
+			console.log(activeTab.positions);
+			data['tempplatedetails'] = activeTab.down('[name="templatedetails"]').getValues();
+			data['templateorder'] = activeTab.positions;
+			data['properties'] = activeTab.down('[name="properties"]').getValues();
+
+			console.log('data: ', data);
+		}
+
+		Ext.apply(data, {
+			action: action
+		})
+
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service    : 'PrintTemplateService',
+				action     : 'saveTemplates',
+				data : data,
+				success    : function(result) {
+				}
+			}
+		});
+
+		console.log('activeTab: ', activeTab);
 	}
 });

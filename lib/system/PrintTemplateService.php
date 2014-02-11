@@ -38,4 +38,8 @@ class PrintTemplateService extends AbstractService {
 
 		return $this->printTemplateGateway->getTemplateData($id);
 	}
+
+	public function saveTemplates($data = []) {
+		print_r($data);
+	}
 } 

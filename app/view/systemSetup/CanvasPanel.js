@@ -58,10 +58,10 @@ Ext.define('NP.view.systemSetup.CanvasPanel', {
 						});
 						var tilepanel = colPanel.add(tile);
 
-						me.fireEvent('addtemplateitem', index);
+						me.fireEvent('addtemplateitem', index, me.name);
 
 						tilepanel.on('close', function() {
-							me.fireEvent('removetemplateitem', this.index, [this.index, this.field, this.title]);
+							me.fireEvent('removetemplateitem', this.index, me.name, [this.index, this.field, this.title]);
 						});
 
 						return true;

@@ -97,5 +97,11 @@ Ext.define('NP.view.systemSetup.TemplateObjectsPicker', {
 
 		me.data.splice(insertindex, 0, record);
 		me.getStore().reload();
+	},
+
+	getRecordByndex: function(index) {
+		var me = this;
+
+		return me.data[index];
 	}
 });
