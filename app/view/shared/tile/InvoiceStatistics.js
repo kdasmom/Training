@@ -26,12 +26,12 @@ Ext.define('NP.view.shared.tile.InvoiceStatistics', {
             Ext.create('NP.lib.data.Store', {
                 fields: me.getStoreFields(),
                 data  : [
-                    { name: '# of Images to Convert', total: 6, amount: 120.00 },
-                    { name: '# of Open Invoices', total: 12, amount: 5891.5729 },
-                    { name: '# of Invoices Pending Approval ', total: 55, amount: 54755.85 },
-                    { name: '# of Completed Invoices to Approve', total: 26, amount: 8194.53 },
-                    { name: '# of Invoices on Hold', total: 3, amount: 1430.00 },
-                    { name: '# of Rejected Invoices', total: 18, amount: 6904.65 }
+                    { name: NP.Translator.translate('# of Images to Convert'), total: 6, amount: 120.00 },
+                    { name: NP.Translator.translate('# of Open Invoices'), total: 12, amount: 5891.5729 },
+                    { name: NP.Translator.translate('# of Invoices Pending Approval'), total: 55, amount: 54755.85 },
+                    { name: NP.Translator.translate('# of Completed Invoices to Approve'), total: 26, amount: 8194.53 },
+                    { name: NP.Translator.translate('# of Invoices on Hold'), total: 3, amount: 1430.00 },
+                    { name: NP.Translator.translate('# of Rejected Invoices'), total: 18, amount: 6904.65 }
                 ]
             })
         );
@@ -83,12 +83,13 @@ Ext.define('NP.view.shared.tile.InvoiceStatistics', {
                 '-',
                 {
                     xtype  : 'shared.button.print',
+                    text   : null,
                     handler: function() {
                         NP.PrintManager.print(this.up('customgrid'));
                     }
                 }
             ],
-            emptyText         : NP.Translator.translate('No statistics found for this property'),
+            emptyText         : NP.Translator.translate('No statistics found for this {property}', { property: NP.Config.getPropertyLabel() }),
             sortableColumns   : false,
             enableColumnHide  : false,
             enableColumnMove  : false,
@@ -97,18 +98,18 @@ Ext.define('NP.view.shared.tile.InvoiceStatistics', {
             columns           : [
                 {
                     dataIndex: 'name',
-                    text     : 'Stat',
+                    text     : NP.Translator.translate('Stat'),
                     flex     : 1
                 },{
                     xtype    : 'numbercolumn',
                     format   : '0,000',
                     align    : 'right',
-                    text     : 'Items',
+                    text     : NP.Translator.translate('Items'),
                     dataIndex: 'total',
                     width    : 70
                 },{
                     xtype    : 'numbercolumn',
-                    text     : 'Amount',
+                    text     : NP.Translator.translate('Amount'),
                     dataIndex: 'amount',
                     align    : 'right',
                     width    : 90,

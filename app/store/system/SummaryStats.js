@@ -84,6 +84,7 @@ Ext.define('NP.store.system.SummaryStats', {
 			var recs = me.getRange();
 			for (var i=0; i<recs.length; i++) {
 				recs[i].set('title', NP.Translator.translate(recs[i].get('title')));
+				recs[i].set('category', NP.Translator.translate(recs[i].get('category')));
 			}
 
 			me.fireEvent('statsloaded');

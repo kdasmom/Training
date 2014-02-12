@@ -12,6 +12,9 @@ $di = new Pimple();
 
 // DI Parameters
 $di['locale'] = 'En';
+if (array_key_exists('NP_locale', $_COOKIE)) {
+	$di['locale'] = ucfirst($_COOKIE['NP_locale']);
+}
 $di['reloadCache'] = $reloadCache;
 $di['configPath'] = $__CONFIG['appRoot'] . 'config\\site_config.xml';
 $di['config'] = $__CONFIG;

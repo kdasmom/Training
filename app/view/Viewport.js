@@ -10,6 +10,7 @@ Ext.define('NP.view.Viewport', {
     extend: 'Ext.container.Viewport',
     
     requires: [
+    	'NP.lib.core.Translator',
     	'Ext.layout.container.Border',
     	'NP.lib.ui.HoverButton',
     	'NP.lib.core.Config',
@@ -68,17 +69,33 @@ Ext.define('NP.view.Viewport', {
 						        		layout: 'hbox',
 						        		items: [
 						        			{
+												xtype       : 'customcombo',
+												itemId      : 'NP_locale',
+												valueField  : 'val',
+												displayField: 'name',
+												iconClsField: 'icon',
+												typeAhead   : false,
+												editable    : false,
+												value       : NP.Translator.getLocale(),
+												store: Ext.create('Ext.data.Store', {
+													fields: ['name', 'val', 'icon'],
+													data  : [
+														{ name: 'English', val: 'en', icon: 'locale-en' },
+														{ name: 'Français', val: 'fr', icon: 'locale-fr' }
+													]
+												}),
+												margin: '0 32 0 0'
+						        			},{
 						        				xtype: 'component',
 						        				html : '<img id="learningNexusImg" src="resources/images/learningnexus.gif" align="top" />',
 						        				width: 109,
 						        				margin: '0 8 0 0'
 						        			},{
 						        				xtype: 'component',
-						        				width: 125,
 						        				html : '<span id="npHeaderRightLinks">' + 
-									        				'<a href="javascript:void(0)" id="npHomeLink">Home</a>' + ' | ' + 
-									        				'<a href="javascript:void(0);" id="npHelpLink">Help</a>' + ' | ' + 
-									        				'<a href="javascript:void(0);" id="npLogoutLink">Logout</a>' + 
+									        				'<a href="javascript:void(0)" id="npHomeLink">' + NP.Translator.translate('Home') + '</a>' + ' | ' + 
+									        				'<a href="javascript:void(0);" id="npHelpLink">' + NP.Translator.translate('Help') + '</a>' + ' | ' + 
+									        				'<a href="javascript:void(0);" id="npLogoutLink">' + NP.Translator.translate('Logout') + '</a>' + 
 									        			'</span>'
 						        			}
 						        		]

@@ -42,43 +42,45 @@ Ext.define('NP.view.viewport.DelegationPicker', {
         var delegationStore = Ext.StoreManager.lookup('user.Delegations'),
             signedOnText    = 'You are signed on as';
 
-        this.items.push({
-            flex  : 1,
-            html  : NP.Translator.translate(signedOnText) + ': ' + NP.lib.core.Security.getUser().get('userprofile_username'),
-            hidden: (delegationStore.getTotalCount() == 0) ? false : true,
-            margin: '4 0 4 0'
-        },{
-            flex  : 1,
-            layout: {
-                type : 'hbox',
-                align: 'middle'
-            },
-            items : {
-                xtype            : 'customcombo',
-                fieldLabel       : NP.Translator.translate(signedOnText),
-                labelWidth       : 120,
-                store            : delegationStore,
-                selectFirstRecord: true,
-                displayField     : 'userprofile_username',
-                valueField       : 'UserProfile_Id',
-                value            : NP.lib.core.Security.getUser().get('userprofile_id'),
-                hidden           : (delegationStore.getTotalCount() == 0) ? true : false,
-                margin           : '2 0 2 0',
-                listeners        : {
-                    change: function(combo) {
-                        // If the user is changed via delegation, change the user on the server and re-create the entire Viewport
-                        // so that things like the top menu get re-rendered with the proper things showing based on permissions
-                        var userprofile_id = combo.getValue();
-                        NP.lib.core.Security.changeUser(userprofile_id, function() {
-                            var viewport = Ext.ComponentQuery.query('viewport')[0];
-                            Ext.destroy(viewport);
-                            Ext.create('NP.view.Viewport');
-                            window.location = '#';
-                        });
+        this.items.push(
+            {
+                flex  : 1,
+                html  : '<span style="white-space: nowrap;">' + NP.Translator.translate(signedOnText) + ': ' + NP.lib.core.Security.getUser().get('userprofile_username') + '</span>',
+                hidden: (delegationStore.getTotalCount() == 0) ? false : true,
+                margin: '4 0 4 0'
+            },{
+                flex  : 1,
+                hidden: (delegationStore.getTotalCount() == 0) ? true : false,
+                layout: {
+                    type : 'hbox',
+                    align: 'middle'
+                },
+                items : [{
+                    xtype            : 'customcombo',
+                    fieldLabel       : NP.Translator.translate(signedOnText),
+                    labelWidth       : 120,
+                    store            : delegationStore,
+                    selectFirstRecord: true,
+                    displayField     : 'userprofile_username',
+                    valueField       : 'UserProfile_Id',
+                    value            : NP.lib.core.Security.getUser().get('userprofile_id'),
+                    margin           : '2 0 2 0',
+                    listeners        : {
+                        change: function(combo) {
+                            // If the user is changed via delegation, change the user on the server and re-create the entire Viewport
+                            // so that things like the top menu get re-rendered with the proper things showing based on permissions
+                            var userprofile_id = combo.getValue();
+                            NP.lib.core.Security.changeUser(userprofile_id, function() {
+                                var viewport = Ext.ComponentQuery.query('viewport')[0];
+                                Ext.destroy(viewport);
+                                Ext.create('NP.view.Viewport');
+                                window.location = '#';
+                            });
+                        }
                     }
-                }
+                }]
             }
-        });
+        );
 
         this.callParent(arguments);
     }

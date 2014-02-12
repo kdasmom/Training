@@ -8,6 +8,7 @@ Ext.define('NP.view.shared.tile.YtdTopSpendByVendor', {
 
     requires: [
         'Ext.chart.Chart',
+        'Ext.chart.series.Pie',
         'NP.lib.core.Util',
         'NP.lib.data.Store',
         'NP.lib.print.Manager',
@@ -64,6 +65,7 @@ Ext.define('NP.view.shared.tile.YtdTopSpendByVendor', {
             layout: 'fit',
             tbar  : [{
                 xtype  : 'shared.button.print',
+                text   : null,
                 handler: function() {
                     var me    = this,
                         chart = me.up('panel').down('chart');

@@ -17,7 +17,8 @@ li.x-boundlist-item {
 /* STYLES FOR PAGE HEADER */
 #npHeaderLogo { cursor: pointer; }
 #learningNexusImg { margin-right: 8px; cursor: pointer; }
-#npHeaderRightLinks, #npHeaderRightLinks a { color: #FFFFFF; text-decoration: none; }
+#npHeaderRightLinks { white-space: nowrap; color: #FFFFFF; }
+	#npHeaderRightLinks a { color: #FFFFFF; text-decoration: none; display: inline-block; }
 #npHeaderRightWelcomeText { margin-top: 8px; color: #9FCCFA; font-style:italic; }
 
 /* BUTTONS */
@@ -84,6 +85,23 @@ li.x-boundlist-item {
 .go-button {padding: 0 !important; border: 0 !important; }
 .go-button .x-btn-inner { width: 33px !important; }
 .go-button button { width: 33px !important; }
+
+/* FLAGS (for localization combo) */
+.ux-icon-combo-input, .ux-icon-combo-item {
+	background-repeat  : no-repeat;
+}
+.ux-icon-combo-input {
+	background-position: left 4px center;
+	padding-left       : 23px;
+}
+
+.ux-icon-combo-item {
+	background-position: left center;
+	padding-left       : 20px;
+}
+
+.locale-en { background-image: url("images/flags/en.png"); }
+.locale-fr { background-image: url("images/flags/fr.png"); }
 
 /* STYLE FOR USING AN IMAGE AS A BUTTON IN A GRID BY SPECIFYING THIS AS tdCls CONFIG OPTION */
 .image-button-cell .x-grid-cell-inner { padding-bottom: 0; }

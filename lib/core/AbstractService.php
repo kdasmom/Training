@@ -37,6 +37,13 @@ abstract class AbstractService {
 	}
 
 	/**
+	 * Shortcut for translating
+	 */
+	public function translate($phrase) {
+		return $this->localizationService->translate($phrase);
+	}
+
+	/**
 	 * @internal Setter function required by DI framework to set the entity validator via setter injection
 	 * @param \NP\core\validation\EntityValidator $entityValidator
 	 */

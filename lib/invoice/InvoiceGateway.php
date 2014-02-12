@@ -50,6 +50,14 @@ class InvoiceGateway extends AbstractGateway {
 		$this->securityService = $securityService;
 	}
 	
+	public function setLocalizationService(\NP\locale\LocalizationService $localizationService) {
+		$this->localizationService = $localizationService;
+	}
+
+	public function translateForSql($phrase) {
+		return str_replace("'", "''", $this->localizationService->translate($phrase));
+	}
+	
 	/**
 	 * Overrides the default gateway function and returns a record for the specified invoice ID
 	 *
@@ -394,11 +402,11 @@ class InvoiceGateway extends AbstractGateway {
 				"),
 				'name' => new Expression("
 					CASE i.invoice_status
-						WHEN 'open' THEN '# of Open Invoices'
-						WHEN 'forapproval' THEN '# of Invoices Pending Approval '
-						WHEN 'saved' THEN '# of Completed Invoices to Approve'
-						WHEN 'hold' THEN '# of Invoices on Hold'
-						WHEN 'rejected' THEN '# of Rejected Invoices'
+						WHEN 'open' THEN '{$this->translateForSql('# of Open Invoices')}'
+						WHEN 'forapproval' THEN '{$this->translateForSql('# of Invoices Pending Approval')}'
+						WHEN 'saved' THEN '{$this->translateForSql('# of Completed Invoices to Approve')}'
+						WHEN 'hold' THEN '{$this->translateForSql('# of Invoices on Hold')}'
+						WHEN 'rejected' THEN '{$this->translateForSql('# of Rejected Invoices')}'
 					END
 				"),
 				'amount' => new Expression("
@@ -415,7 +423,7 @@ class InvoiceGateway extends AbstractGateway {
 					->count(true, 'total')
 					->columns([
 						'sort' => new Expression('1'),
-						'name' => new Expression("'# of Images to Convert'"),
+						'name' => new Expression("'{$this->translateForSql('# of Images to Convert')}'"),
 						'amount' => new Expression('SUM(img.Image_Index_Amount)')
 					])
 					->from(['img'=>'image_index'])

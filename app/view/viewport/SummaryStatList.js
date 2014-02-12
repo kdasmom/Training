@@ -75,7 +75,7 @@ Ext.define('NP.view.viewport.SummaryStatList', {
                                 }),
                     columns   : [
                         { text: 'Name', dataIndex: 'title', flex: 1 },
-                        { text: 'Count', dataIndex: 'count', width: 35 }
+                        { text: 'Count', dataIndex: 'count', width: 45 }
                     ],
                     listeners : {
                         itemclick: function(grid, rec, item, index, e) {
