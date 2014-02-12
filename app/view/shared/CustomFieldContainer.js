@@ -41,9 +41,14 @@ Ext.define('NP.view.shared.CustomFieldContainer', {
     	customFields = (me.isLineItem) ? customFields.line : customFields.header;
 
     	me.type = me.type.substring(0, 3);
-    	maxPerCol = Math.ceil(customFields[me.type + 'OnCount'] / 2);
+    	
+    	if (customFields[me.type + 'OnCount'] == 1) {
+    		me.useColumns = false;
+    	}
 
     	if (me.useColumns) {
+    		maxPerCol = Math.ceil(customFields[me.type + 'OnCount'] / 2);
+
     		me.layout = {
 				type : 'hbox',
 				align: 'stretch'
@@ -57,7 +62,7 @@ Ext.define('NP.view.shared.CustomFieldContainer', {
     	Ext.Object.each(customFields.fields, function(fieldNum, fieldObj) {
     		// Only add the field if it's turned on
             if (fieldObj[me.type + 'On']) {
-            	if (colItemCount % maxPerCol === 0 && me.useColumns) {
+            	if (me.useColumns && colItemCount % maxPerCol === 0) {
 	    			colItems = [];
 	    		} else if (colItemCount === 0) {
 	    			colItems = [];
@@ -76,12 +81,12 @@ Ext.define('NP.view.shared.CustomFieldContainer', {
 		        }, me.fieldCfg));
 
 		        colItemCount++;
-		        if (colItemCount % maxPerCol === 0 && me.useColumns) {
+		        if (me.useColumns && colItemCount % maxPerCol === 0) {
 		        	me.items.push({
 						xtype : 'container',
 						flex  : 1,
 						layout: 'form',
-						margin: (colItemCount != maxPerCol) ? '0 32 0 32' : 0,
+						margin: (colItemCount != maxPerCol) ? '0 8 0 32' : 0,
 						items : colItems
 		        	});
 		        }

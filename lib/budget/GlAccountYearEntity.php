@@ -32,10 +32,10 @@ class GlAccountYearEntity extends \NP\core\AbstractEntity {
 		),
 		'glaccountyear_status'	 => array(
 			'validation' => array(
-				'stringLength' => array('max'=>50)
-			),
-			'inArray' => array(
-				'haystack' => array('active','inactive')
+				'stringLength' => array('max'=>50),
+				'inArray' => array(
+					'haystack' => array('active','inactive')
+				)
 			)
 		),
 		'glaccount_id'	 => array(

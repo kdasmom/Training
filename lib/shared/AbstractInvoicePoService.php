@@ -8,6 +8,7 @@ use NP\security\SecurityService;
 use NP\budget\BudgetService;
 use NP\property\FiscalCalService;
 use NP\image\ImageService;
+use NP\jobcosting\JobCostingService;
 
 /**
  * Service class for operations related to both Invoices and POs, to be extended by both the PO and Invoice class
@@ -22,13 +23,15 @@ Abstract class AbstractInvoicePoService extends AbstractService {
 	protected $type;
 
 	protected $table, $itemTable, $pkField, $itemPkField, $configService, $securityService, 
-			$fiscalCalService, $budgetService, $imageService;
+			$fiscalCalService, $budgetService, $imageService, $jobCostingService;
 	
 	public function __construct(FiscalCalService $fiscalCalService,
-								BudgetService $budgetService, ImageService $imageService) {
-		$this->fiscalCalService = $fiscalCalService;
-		$this->budgetService    = $budgetService;
-		$this->imageService     = $imageService;
+								BudgetService $budgetService, ImageService $imageService,
+								JobCostingService $jobCostingService) {
+		$this->fiscalCalService  = $fiscalCalService;
+		$this->budgetService     = $budgetService;
+		$this->imageService      = $imageService;
+		$this->jobCostingService = $jobCostingService;
 
 		if ($this->type === 'invoice') {
 			$this->table       = 'invoice';
@@ -640,13 +643,17 @@ Abstract class AbstractInvoicePoService extends AbstractService {
 	 * @return int
 	 */
 	public function setNewLock($entity_id) {
+		$lock_id = $this->getLock($entity_id);
+		$lock_id = ($lock_id === null) ? 1 : $lock_id + 1;
+
 		$gtw = "{$this->gateway}Gateway";
+		
 		$this->$gtw->update(
-			['lock_id' => new Expression('lock_id + 1')],
+			['lock_id' => $lock_id],
 			["{$this->table}_id"=>'?'],
 			[$entity_id]
 		);
 
-		return $this->getLock($entity_id);
+		return $lock_id;
 	}
 }

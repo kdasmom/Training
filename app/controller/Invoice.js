@@ -35,6 +35,8 @@ Ext.define('NP.controller.Invoice', {
 		{ ref: 'lineMainView', selector: '[xtype="shared.invoicepo.viewlineitems"]' },
 		{ ref: 'lineView', selector: '[xtype="shared.invoicepo.viewlines"]' },
 		{ ref: 'lineDataView', selector: '[xtype="shared.invoicepo.viewlines"] dataview' },
+		{ ref: 'taxField', selector: '#entity_tax_amount' },
+		{ ref: 'shippingField', selector: '#entity_shipping_amount' },
 		{ ref: 'lineGrid', selector: '[xtype="shared.invoicepo.viewlinegrid"]' },
 		{ ref: 'forwardsGrid', selector: '[xtype="shared.invoicepo.forwardsgrid"]' },
 		{ ref: 'historyLogGrid', selector: '[xtype="shared.invoicepo.historyloggrid"]' },
@@ -112,12 +114,22 @@ Ext.define('NP.controller.Invoice', {
 			'[xtype="invoice.view"] [xtype="shared.invoicepo.viewlinegrid"]': {
 				beforeedit          : me.onBeforeInvoiceLineGridEdit.bind(me),
 				edit                : me.onAfterInvoiceLineGridEdit.bind(me),
-				selectjcfield       : me.onSelectJcField.bind(me),
 				selectutilityaccount: me.onSelectUtilityAccount.bind(me),
 				selectusagetype     : me.onSelectUsageType.bind(me),
 				changequantity      : me.onChangeQuantity.bind(me),
 				changeunitprice     : me.onChangeUnitPrice.bind(me),
 				changeamount        : me.onChangeAmount.bind(me)
+			},
+
+			'[xtype="invoice.view"] [xtype="shared.invoicepo.viewlines"]': {
+				changetaxtotal      : me.onChangeTaxTotal.bind(me),
+				changeshippingtotal : me.onChangeShippingTotal.bind(me)
+			},
+
+			'[xtype="invoice.view"] [xtype="shared.invoicepo.viewlineitems"]': {
+				lineadd   : me.onStoreAddLine,
+				lineupdate: me.onStoreUpdateLine,
+				lineremove: me.onStoreRemoveLine
 			},
 
 			// Property combo on the invoice view page
@@ -395,7 +407,7 @@ Ext.define('NP.controller.Invoice', {
 			{
 				title: 'Save Invoice',
 				key  : Ext.EventObject.U,
-				fn   : me.onSaveInvoice,
+				fn   : function() { me.onSaveInvoice(); },
 				scope: me
 			}
 		]);
@@ -464,13 +476,10 @@ Ext.define('NP.controller.Invoice', {
 			Ext.apply(viewCfg, {
 				listeners      : {
 					dataloaded: function(boundForm, data) {
+						Ext.suspendLayouts();
+
 						// Check if the invoice needs to be made readonly
 						me.setInvoiceReadOnly(me.isInvoiceReadOnly());
-						if (me.isInvoiceReadOnly()) {
-							me.setInvoiceReadOnly(true);
-						} else {
-							me.getLineEditBtn().enable();
-						}
 						
 						// Set the title
 						me.setInvoiceViewTitle();
@@ -478,6 +487,13 @@ Ext.define('NP.controller.Invoice', {
 						// Build the toolbar
 						me.buildViewToolbar(data);
 						
+						// Show warnings if any
+						var warnings = data['warnings'];
+						if (warnings.length) {
+							me.getWarningsView().getStore().add(warnings);
+							me.getWarningsView().up('panel').show();
+						}
+
 						var lineView     = me.getLineView(),
 							lineStore    = me.getLineDataView().getStore(),
 							paymentGrid  = me.getPaymentGrid(),
@@ -529,7 +545,7 @@ Ext.define('NP.controller.Invoice', {
 						}
 
 						// Initiate some stores that depend on an invoice_id
-						Ext.each(['WarningsView','HistoryLogGrid','ForwardsGrid'], function(viewName) {
+						Ext.each(['HistoryLogGrid','ForwardsGrid'], function(viewName) {
 							var store = me['get'+viewName]().getStore();
 							store.addExtraParams({ invoice_id: invoice_id });
 							store.load();
@@ -537,6 +553,8 @@ Ext.define('NP.controller.Invoice', {
 
 						// Load image if needed
 						me.loadImage();
+
+						Ext.resumeLayouts(true);
 
 						// Save to recent records
 						me.application.getController('Favorites').saveToRecentRecord('Invoice - ' + data['invoice_ref']);
@@ -641,7 +659,9 @@ Ext.define('NP.controller.Invoice', {
 			grid    = me.getLineGrid(),
 			store   = grid.getStore(),
 			lines   = store.getRange(),
-			lineNum = 1;
+			lineNum = 1,
+			propertyRec = me.getPropertyRecord(),
+			vendorRec = me.getVendorRecord();
 		
 		// Since we're sorting by line number, let's figure out the max line number to set
 		// the value for the new one
@@ -653,9 +673,15 @@ Ext.define('NP.controller.Invoice', {
 			'NP.model.invoice.InvoiceItem',
 			{
 				// Default property to header property
-				property_id        : me.getInvoicePropertyCombo().getValue(),
+				property_id    : propertyRec.get('property_id'),
+				property_id_alt: propertyRec.get('property_id_alt'),
+				property_name  : propertyRec.get('property_name'),
+				
 				// Default GL Account to vendor default GL account
-				glaccount_id       : me.getVendorRecord().get('default_glaccount_id'),
+				glaccount_id    : vendorRec.get('glaccount_id'),
+				glaccount_number: vendorRec.get('glaccount_number'),
+				glaccount_name  : vendorRec.get('glaccount_name'),
+
 				invoiceitem_linenum: lineNum
 			}
 		));
@@ -675,16 +701,26 @@ Ext.define('NP.controller.Invoice', {
 	},
 
 	validateLineItems: function() {
-		var me            = this,
-			grid          = me.getLineGrid(),
-			store         = grid.getStore(),
-			count         = store.getCount(),
-			reqFields     = ['glaccount_id','property_id'],
-			nonZeroFields = ['invoiceitem_unitprice','invoiceitem_amount','invoiceitem_quantity'],
-			valid         = true,
+		var me                = this,
+			grid              = me.getLineGrid(),
+			store             = grid.getStore(),
+			count             = store.getCount(),
+			reqFields         = ['glaccount_id','property_id'],
+			nonZeroFields     = ['invoiceitem_unitprice','invoiceitem_amount','invoiceitem_quantity'],
+			jobCostingEnabled = me.getSetting('pn.jobcosting.jobcostingEnabled', '0'),
+			useContracts      = me.getSetting('pn.jobcosting.useContracts', '0'),
+			useChangeOrders   = me.getSetting('JB_UseChangeOrders', '0'),
+			useJobCodes       = me.getSetting('pn.jobcosting.useJobCodes', '0'),
+			usePhaseCodes     = me.getSetting('JB_UsePhaseCodes', '0'),
+			phaseCodeReq      = me.getSetting('PN.jobcosting.phaseCodeReq', '0'),
+			useCostCodes      = me.getSetting('pn.jobcosting.useCostCodes', '0'),
+			valid             = true,
 			rec,
 			cellNode;
 
+		Ext.suspendLayouts();
+
+		// Go through every line to validate it
 		for (var i=0; i<count; i++) {
 			rec = store.getAt(i);
 			for (var j=0; j<grid.columns.length; j++) {
@@ -698,18 +734,39 @@ Ext.define('NP.controller.Invoice', {
 					error = 'This field cannot be set to zero';
 				}
 
+				// Validate job costing fields
+				if (jobCostingEnabled == '1') {
+					// If a job code was entered, check some more fields
+					if (rec.get('jbjobcode_id') !== null) {
+						// Phase code needs to be picked if phase codes are enabled and a job code was picked
+						if (usePhaseCodes == '1' && phaseCodeReq == '1' && col.dataIndex == 'jbphasecode_id' && val == null) {
+							error = 'This field is required';
+						}
+						
+						if (useCostCodes == '1' && col.dataIndex == 'jbcostcode_id' && val == null) {
+							error = 'This field is required';
+						}
+					} else if (useContracts && rec.get('jbcontract_id') !== null) {
+						if (col.dataIndex == 'jbjobcode_id' && val == null) {
+							error = 'This field is required';
+						}
+					}
+				}
+
 				if (error != null) {
 					me.getLineMainView().getLayout().setActiveItem(1);
 
 					cellNode = grid.getView().getCell(rec, col);
 					cellNode.addCls('grid-invalid-cell');
 					cellNode.set({
-						'data-qtip': error
+						'data-qtip': me.translate(error)
 					});
 					valid = false;
 				}
 			}
 		}
+
+		Ext.resumeLayouts(true);
 
 		return valid;
 	},
@@ -734,6 +791,45 @@ Ext.define('NP.controller.Invoice', {
 			'data-qtip': ''
 		});
 
+		if (field && field.getStore && field.queryMode == 'remote') {
+			// Delete the last query on the combo, otherwise we get weird cases where
+			// the field is blank and the combo still doesn't pull any records
+			delete field.lastQuery;
+
+			field.getStore().removeAll();
+
+			field.on('select', function(combo, recs) {
+				// Only run this if a record was selected
+				if (recs.length) {
+					var fields = recs[0].raw;
+
+					// There are certain fields we don't want to overwrite; for example
+					// job code has a default glaccount_id field, but we don't want to
+					// overwrite the gl account using it, so we remove it from data
+					if ('glaccount_id' in fields && field.valueField != 'glaccount_id') {
+						delete fields['glaccount_id'];
+					}
+
+					// Same applies to property_id
+					if ('property_id' in fields && field.valueField != 'property_id') {
+						delete fields['property_id'];
+					}
+
+					grid.selectedRec.set(fields);
+				}
+			}, me);
+		}
+
+		if (grid.selectedRec.get(e.field) === null) {
+			if (field && field.setValue) {
+				field.setValue(null);
+			}
+
+			if (field && field.setRawValue) {
+				field.setRawValue('');
+			}
+		}
+
 		if (e.field == 'invoiceitem_quantity' || e.field == 'invoiceitem_unitprice' 
 				|| e.field == 'invoiceitem_amount' || e.field == 'invoiceitem_description') {
 			me.onOpenInvalidSplitField(editor, e.record, field);
@@ -742,25 +838,25 @@ Ext.define('NP.controller.Invoice', {
 		} else if (e.field == 'glaccount_id') {
 			me.onOpenGlAccountEditor(editor, e.grid, e.record, field);
 		} else if (e.field == 'unit_id') {
-			me.onOpenUnitEditor(editor, e.grid, e.record);
+			me.onOpenUnitEditor(editor, e.grid, e.record, field);
 		} else if (e.field == 'vcitem_number' || e.field == 'vcitem_uom') {
 			me.onOpenVcItemEditor(editor, e.record, field);
 		} else if (e.field == 'jbcontract_id') {
-			me.onOpenContractEditor(editor, e.record, field);
+			me.onOpenContractEditor(editor, e.grid, e.record, field);
 		} else if (e.field == 'jbchangeorder_id') {
-			me.onOpenChangeOrderEditor(editor, e.record, field);
+			me.onOpenChangeOrderEditor(editor, e.grid, e.record, field);
 		} else if (e.field == 'jbjobcode_id') {
-			me.onOpenJobCodeEditor(editor, e.record, field);
+			me.onOpenJobCodeEditor(editor, e.grid, e.record, field);
 		} else if (e.field == 'jbphasecode_id') {
-			me.onOpenPhaseCodeEditor(editor, e.record, field);
+			me.onOpenPhaseCodeEditor(editor, e.grid, e.record, field);
 		} else if (e.field == 'jbcostcode_id') {
-			me.onOpenCostCodeEditor(editor, e.record, field);
+			me.onOpenCostCodeEditor(editor, e.grid, e.record, field);
 		} else if (e.field == 'utilityaccount_id') {
 			me.onOpenUtilityAccountEditor(editor, e.record, field);
 		} else if (e.field == 'utilitycolumn_usagetype_id') {
 			me.onOpenUsageTypeEditor(editor, e.record, field);
 		} else if (e.field.substr(0, 15) == 'universal_field') {
-			me.onOpenCustomFieldEditor(editor, e.record, field);
+			me.onOpenCustomFieldEditor(editor, e.grid, e.record, field);
 		}
 	},
 
@@ -783,14 +879,14 @@ Ext.define('NP.controller.Invoice', {
 			integration_package_id = propertyField.findRecordByValue(property_id).get('integration_package_id')
 		}
 
-		store.removeAll();
-
 		if (integration_package_id) {
 			if (integration_package_id != store.getExtraParam('integration_package_id')) {
 	    		store.addExtraParams({ integration_package_id: integration_package_id });
-	    		
-	    		store.add(grid.selectedRec);
 			}
+		}
+
+		if (grid.selectedRec.get('property_id') !== null) {
+			store.add(grid.selectedRec.getData());
 		}
 	},
 
@@ -820,11 +916,11 @@ Ext.define('NP.controller.Invoice', {
 		var me    = this,
 			store = grid.glStore;
 
-		store.removeAll();
-
 		me.setGlExtraParams(grid, rec);
 
-		store.add(Ext.create('NP.model.gl.GlAccount', grid.selectedRec.getData()));
+		if (grid.selectedRec.get('glaccount_id') !== null) {
+			store.add(grid.selectedRec.getData());
+		}
 	},
 
 	onOpenUnitEditor: function(editor, grid, rec, field) {
@@ -833,16 +929,18 @@ Ext.define('NP.controller.Invoice', {
     		property_id = rec.get('property_id'),
     		store       = grid.unitStore;
 
-    	store.removeAll();
     	if (property_id !== null) {
         	if (property_id != store.getExtraParam('property_id')) {
         		store.addExtraParams({ property_id: property_id });
-        		store.add(grid.selectedRec);
             }
         }
+
+        if (grid.selectedRec.get('unit_id') !== null) {
+			store.add(grid.selectedRec.getData());
+		}
 	},
 
-	onOpenCustomFieldEditor: function(editor, rec, customField) {
+	onOpenCustomFieldEditor: function(editor, grid, rec, customField) {
 		var field = customField.field,
 			store,
 			fieldNumber,
@@ -851,8 +949,10 @@ Ext.define('NP.controller.Invoice', {
 
 		// Check if the custom field is a combo box
 		if (field.getStore) {
-			// If the custom field is a combo, get the store and extract the field number
+			// If the custom field is a combo, get the store and clear it
 			store = field.getStore();
+			
+			// Extract the field number
 			fieldNumber = field.getName().substr(15, 1);
 
 			// If we're dealing with line custom field 1, need to look into the GL association
@@ -865,15 +965,13 @@ Ext.define('NP.controller.Invoice', {
 					if (!('glaccount_id' in extraParams) || extraParams['glaccount_id'] != glaccount_id) {
 						// If GL account is new, add it to the store and load it
 						store.addExtraParams({ glaccount_id: rec.get('glaccount_id') });
-						store.load();
 					}
-				// If the GL is blank, just clear the store
-				} else {
-					store.removeAll();
 				}
-			// If not dealing with line custom field 1, just load the store
-			} else {
-				store.load();
+			}
+
+			var val = grid.selectedRec.get('universal_field' + fieldNumber);
+	        if (!Ext.isEmpty(val)) {
+				store.add({ universal_field_data: val });
 			}
 		}
 	},
@@ -886,7 +984,7 @@ Ext.define('NP.controller.Invoice', {
 		}
 	},
 
-	onOpenContractEditor: function(editor, rec, field) {
+	onOpenContractEditor: function(editor, grid, rec, field) {
 		var me            = this,
 			store         = field.getStore(),
 			vendorsite_id = me.getVendorRecord().get('vendorsite_id'),
@@ -896,12 +994,14 @@ Ext.define('NP.controller.Invoice', {
 			store.addExtraParams({
 				vendorsite_id: vendorsite_id
 			});
+		}
 
-			store.load()
+        if (grid.selectedRec.get('jbcontract_id') !== null) {
+			store.add(grid.selectedRec.getData());
 		}
 	},
 
-	onOpenChangeOrderEditor: function(editor, rec, field) {
+	onOpenChangeOrderEditor: function(editor, grid, rec, field) {
 		var me                  = this,
 			store               = field.getStore(),
 			jbcontract_id       = rec.get('jbcontract_id'),
@@ -915,126 +1015,105 @@ Ext.define('NP.controller.Invoice', {
 		/* If a contract has been specified and it's not the same as the one currently
 		used by the store, we need to load the change orders that belong to the
 		selected contract */
-		if (jbcontract_id !== current_contract_id && jbcontract_id !== null) {
+		if (jbcontract_id !== current_contract_id) {
 			// Add the contract ID to the store
 			store.addExtraParams({
 				jbcontract_id: jbcontract_id
 			});
+		}
 
-			// Load the data into the store
-			store.load();
-		// Otherwise if no contract was selected, we need to clear the store
-		} else if (jbcontract_id === null) {
-			store.removeAll();
+        if (grid.selectedRec.get('jbchangeorder_id') !== null) {
+			store.add(grid.selectedRec.getData());
 		}
 	},
 
-	onOpenJobCodeEditor: function(editor, rec, field) {
+	onOpenJobCodeEditor: function(editor, grid, rec, field) {
 		var me               = this,
 			store            = field.getStore(),
-			jbcontract_id    = rec.get('jbcontract_id'),
-			jbchangeorder_id = rec.get('jbchangeorder_id'),
-			property_id      = rec.get('property_id'),
 			extraParams      = store.getExtraParams(),
 			newExtraParams   = {
 				service: 'JobCostingService',
                 action : 'getJobCodes'
 			};
 
-		if (property_id !== null) {
-			// We want to see if extra params have changed to 
-			Ext.each(['property_id','jbcontract_id','jbchangeorder_id'], function(field) {
-				var val = eval(field);
-				if (val !== null) {
-					newExtraParams[field] = val;
-				}
-			});
-			
-			/* If a contract has been specified and it's not the same as the one currently
-			used by the store, we need to load the change orders that belong to the
-			selected contract */
-			if (Ext.JSON.encode(extraParams) != Ext.JSON.encode(newExtraParams)) {
-				// Add the extra parameters to the store
-				store.setExtraParams(newExtraParams);
-
-				// Load the data into the store
-				store.load();
+		// We want to see if extra params have changed to 
+		Ext.each(['property_id','jbcontract_id','jbchangeorder_id'], function(field) {
+			var val = rec.get(field);
+			if (val !== null) {
+				newExtraParams[field] = val;
 			}
-		} else {
-			store.removeAll();
+		});
+		
+		/* If a contract has been specified and it's not the same as the one currently
+		used by the store, we need to load the change orders that belong to the
+		selected contract */
+		if (Ext.JSON.encode(extraParams) != Ext.JSON.encode(newExtraParams)) {
+			// Add the extra parameters to the store
+			store.setExtraParams(newExtraParams);
+		}
+
+        if (grid.selectedRec.get('jbjobcode_id') !== null) {
+			store.add(grid.selectedRec.getData());
 		}
 	},
 
-	onOpenPhaseCodeEditor: function(editor, rec, field) {
+	onOpenPhaseCodeEditor: function(editor, grid, rec, field) {
 		var me               = this,
 			store            = field.getStore(),
-			jbcontract_id    = rec.get('jbcontract_id'),
-			jbchangeorder_id = rec.get('jbchangeorder_id'),
-			jbjobcode_id     = rec.get('jbjobcode_id'),
 			extraParams      = store.getExtraParams(),
 			newExtraParams   = {
 				service: 'JobCostingService',
                 action : 'getPhaseCodes'
 			};
 
-		if (jbjobcode_id !== null) {
-			// We want to see if extra params have changed to 
-			Ext.each(['jbcontract_id','jbchangeorder_id','jbjobcode_id'], function(field) {
-				var val = eval(field);
-				if (val !== null) {
-					newExtraParams[field] = val;
-				}
-			});
-			
-			/* If a contract has been specified and it's not the same as the one currently
-			used by the store, we need to load the change orders that belong to the
-			selected contract */
-			if (Ext.JSON.encode(extraParams) != Ext.JSON.encode(newExtraParams)) {
-				// Add the extra parameters to the store
-				store.setExtraParams(newExtraParams);
-
-				// Load the data into the store
-				store.load();
+		// We want to see if extra params have changed to 
+		Ext.each(['jbcontract_id','jbchangeorder_id','jbjobcode_id'], function(field) {
+			var val = rec.get(field);
+			if (val !== null) {
+				newExtraParams[field] = val;
 			}
-		} else {
-			store.removeAll();
+		});
+		
+		/* If a contract has been specified and it's not the same as the one currently
+		used by the store, we need to load the change orders that belong to the
+		selected contract */
+		if (Ext.JSON.encode(extraParams) != Ext.JSON.encode(newExtraParams)) {
+			// Add the extra parameters to the store
+			store.setExtraParams(newExtraParams);
+		}
+
+        if (grid.selectedRec.get('jbphasecode_id') !== null) {
+			store.add(grid.selectedRec.getData());
 		}
 	},
 
-	onOpenCostCodeEditor: function(editor, rec, field) {
+	onOpenCostCodeEditor: function(editor, grid, rec, field) {
 		var me               = this,
 			store            = field.getStore(),
-			jbcontract_id    = rec.get('jbcontract_id'),
-			jbchangeorder_id = rec.get('jbchangeorder_id'),
-			jbjobcode_id     = rec.get('jbjobcode_id'),
-			jbphasecode_id   = rec.get('jbphasecode_id'),
 			extraParams      = store.getExtraParams(),
 			newExtraParams   = {
 				service: 'JobCostingService',
                 action : 'getCostCodes'
 			};
 
-		if (jbjobcode_id !== null) {
-			// We want to see if extra params have changed to 
-			Ext.each(['jbcontract_id','jbchangeorder_id','jbjobcode_id','jbphasecode_id'], function(field) {
-				var val = eval(field);
-				if (val !== null) {
-					newExtraParams[field] = val;
-				}
-			});
-			
-			/* If a contract has been specified and it's not the same as the one currently
-			used by the store, we need to load the change orders that belong to the
-			selected contract */
-			if (Ext.JSON.encode(extraParams) != Ext.JSON.encode(newExtraParams)) {
-				// Add the extra parameters to the store
-				store.setExtraParams(newExtraParams);
-
-				// Load the data into the store
-				store.load();
+		// We want to see if extra params have changed to 
+		Ext.each(['jbcontract_id','jbchangeorder_id','jbjobcode_id','jbphasecode_id'], function(field) {
+			var val = rec.get(field);
+			if (val !== null) {
+				newExtraParams[field] = val;
 			}
-		} else {
-			store.removeAll();
+		});
+		
+		/* If a contract has been specified and it's not the same as the one currently
+		used by the store, we need to load the change orders that belong to the
+		selected contract */
+		if (Ext.JSON.encode(extraParams) != Ext.JSON.encode(newExtraParams)) {
+			// Add the extra parameters to the store
+			store.setExtraParams(newExtraParams);
+		}
+
+        if (grid.selectedRec.get('jbcostcode_id') !== null) {
+			store.add(grid.selectedRec.getData());
 		}
 	},
 
@@ -1188,6 +1267,81 @@ Ext.define('NP.controller.Invoice', {
 		}
 	},
 
+	onStoreUpdateLine: function(store, rec, operation, modifiedFieldNames) {
+		if (operation == Ext.data.Model.EDIT) {
+			var me = this;
+
+            // Set the job costing flag accordingly
+            var item_jobflag = ( rec.get('jbjobcode_id') !== null ) ? 1 : 0;
+            rec.set('invoiceitem_jobflag', item_jobflag);
+
+            // See if the tax and shipping needs to be recalculated
+            var taxUpdated = false;
+            for (var i=0; i<modifiedFieldNames.length; i++) {
+            	var field = modifiedFieldNames[i];
+            	if (field == 'invoiceitem_taxflag') {
+            		if (rec.get('invoiceitem_taxflag') == 'N') {
+            			rec.set('invoiceitem_salestax', 0);
+            		}
+            		if (!taxUpdated) {
+	            		me.onChangeTaxTotal();
+	            		taxUpdated = true;
+	            	}
+            	} else if (field == 'invoiceitem_amount') {
+            		if (!taxUpdated) {
+	            		me.onChangeTaxTotal();
+	            		taxUpdated = true;
+	            	}
+	            	me.onChangeShippingTotal();
+            	}
+            }
+        }
+	},
+
+	onStoreAddLine: function(store, recs, index) {
+        this.onChangeShippingTotal();
+    },
+
+	onStoreRemoveLine: function(store, rec, index, isMove) {
+      this.onChangeTaxTotal();
+      this.onChangeShippingTotal();  
+    },
+
+	onChangeTaxTotal: function() {
+		var me           = this,
+			tpl          = me.getLineDataView().tpl,
+			store        = me.getLineGrid().getStore(),
+			recs         = store.query('invoiceitem_taxflag', 'Y'),
+			taxableTotal = 0,
+			totalTax     = me.getTaxField().getValue();
+
+		recs.each(function(rec) {
+			taxableTotal += rec.get('invoiceitem_amount');
+		});
+
+		recs.each(function(rec) {
+			var amount = rec.get('invoiceitem_amount');
+			rec.set('invoiceitem_salestax', (amount / taxableTotal) * totalTax);
+		});
+
+		tpl.updateTotals();
+	},
+
+	onChangeShippingTotal: function() {
+		var me        = this,
+			tpl       = me.getLineDataView().tpl,
+			store     = me.getLineGrid().getStore(),
+			total     = tpl.getSum('invoiceitem_amount'),
+			totalShip = me.getShippingField().getValue();
+
+		store.each(function(rec) {
+			var amount = rec.get('invoiceitem_amount');
+			rec.set('invoiceitem_shipping', (amount / total) * totalShip);
+		});
+
+		tpl.updateTotals();
+	},
+
 	clearUtilityAccount: function(grid) {
 		grid.selectedRec.set('utilityaccount_id', null);
 		grid.selectedRec.set('UtilityAccount_AccountNumber', null);
@@ -1199,23 +1353,6 @@ Ext.define('NP.controller.Invoice', {
 	clearUsageType: function(grid) {
 		grid.selectedRec.set('utilitycolumn_usagetype_id', null);
 		grid.selectedRec.set('UtilityColumn_UsageType_Name', null);
-	},
-
-	onSelectJcField: function(field, grid, combo, recs) {
-		var me     = this,
-			newRec = {};
-
-        if (recs.length) {
-			newRec[field+'_id']   = recs[0].get(field+'_id');
-			newRec[field+'_name'] = recs[0].get(field+'_name');
-			newRec[field+'_desc'] = recs[0].get(field+'_desc');
-        } else {
-            newRec[field+'_id']   = null;
-			newRec[field+'_name'] = null;
-			newRec[field+'_desc'] = null;
-        }
-
-        grid.selectedRec.set(newRec);
 	},
 
 	onSelectUtilityAccount: function(grid, combo, recs) {
@@ -1506,6 +1643,17 @@ Ext.define('NP.controller.Invoice', {
 
 		if (vendorField.getValue() !== null) {
 			return vendorField.findRecordByValue(vendorField.getValue());
+		}
+
+		return null;
+	},
+
+	getPropertyRecord: function() {
+		var me          = this,
+			propField   = me.getInvoicePropertyCombo();
+
+		if (propField.getValue() !== null) {
+			return propField.findRecordByValue(propField.getValue());
 		}
 
 		return null;
@@ -2138,7 +2286,9 @@ Ext.define('NP.controller.Invoice', {
 					if (invoice.get('invoice_id') === null) {
 						me.addHistory('Invoice:showView:' + result['invoice_id']);
 					} else {
-						me.showView(result['invoice_id']);
+						me.getInvoiceRecord().set('lock_id', result.lock_id);
+
+						// TODO: need to account for UI changes that may be required on a save
 					}
 				}
 			}
@@ -2150,38 +2300,45 @@ Ext.define('NP.controller.Invoice', {
 			form    = me.getInvoiceView(),
 			invoice = me.getInvoiceRecord();
 
-		if (me.onLineSaveClick()) {
+		if (me.onLineSaveClick() && form.isValid()) {
 			// Before saving, make sure invoice hasn't been updated
 			me.checkLock(function() {
-				// Check if form is valid
-				if (form.isValid()) {
-					// Get the line items that need to be saved
-					var lineStore    = me.getLineGrid().getStore(),
-						modifiedRecs = lineStore.getModifiedRecords(),
-						deletedRecs  = lineStore.getRemovedRecords(),
-						lines        = NP.Util.convertModelArrayToDataArray(modifiedRecs),
-						deletedLines = NP.Util.convertModelArrayToDataArray(deletedRecs);
+				// Get the line items that need to be saved
+				var lineStore    = me.getLineGrid().getStore(),
+					modifiedRecs = lineStore.getModifiedRecords(),
+					deletedRecs  = lineStore.getRemovedRecords(),
+					lines        = NP.Util.convertModelArrayToDataArray(modifiedRecs),
+					deletedLines = NP.Util.convertModelArrayToDataArray(deletedRecs),
+					tax_amount,
+					shipping_amount;
 
-					// Form is valid so submit it using the bound model
-					form.submitWithBindings({
-						service: service,
-						action : action,
-						extraParams: Ext.apply(extraParams, {
-							userprofile_id              : NP.Security.getUser().get('userprofile_id'),
-							delegation_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id'),
-							lines                       : lines,
-							deletedLines                : deletedLines,
-							tax                         : 30,
-							shipping                    : 50
-						}),
-						extraFields: {
-							vendor_id: 'vendor_id'
-						},
-						success: function(result) {
-							callback(result);
-						}
-					});
+				if (me.query('#entity_tax_amount').length) {
+					tax_amount = me.query('#entity_tax_amount', true).getValue();
+					shipping_amount = me.query('#entity_shipping_amount', true).getValue();
+				} else {
+					tax_amount = 0;
+					shipping_amount = 0;
 				}
+
+				// Form is valid so submit it using the bound model
+				form.submitWithBindings({
+					service: service,
+					action : action,
+					extraParams: Ext.apply(extraParams, {
+						userprofile_id              : NP.Security.getUser().get('userprofile_id'),
+						delegation_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id'),
+						lines                       : lines,
+						deletedLines                : deletedLines,
+						tax                         : tax_amount,
+						shipping                    : shipping_amount
+					}),
+					extraFields: {
+						vendor_id: 'vendor_id'
+					},
+					success: function(result) {
+						callback(result);
+					}
+				});
 			});
 		}
 	},

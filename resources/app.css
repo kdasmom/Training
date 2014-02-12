@@ -218,6 +218,14 @@ li.x-boundlist-item {
 		text-align: right;
 	}
 
+	#lineItemTable .footer_field {
+		width: 70px;
+	}
+		#lineItemTable .footer_field th, #lineItemTable .footer_field td {
+			border-width: 0;
+			padding     : 0;
+		}
+
 #warningTable {
 	border-collapse: collapse;
 }

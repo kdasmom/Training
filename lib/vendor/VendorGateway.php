@@ -78,7 +78,8 @@ class VendorGateway extends AbstractGateway {
 		$select = $this->getSelect()
 						->columns(['vendor_id','vendor_id_alt','vendor_name','remit_req','default_glaccount_id'])
 						->join(new sql\join\VendorsiteAddressJoin())
-						->join(new sql\join\VendorsitePhoneJoin('Main'));
+						->join(new sql\join\VendorsitePhoneJoin('Main'))
+						->join(new sql\join\VendorGlAccountJoin());
 
 		if ($vendor_id !== null && $keyword === null) {
 			$select->whereEquals('v.vendor_id', '?');

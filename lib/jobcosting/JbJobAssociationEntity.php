@@ -17,7 +17,10 @@ class JbJobAssociationEntity extends \NP\core\AbstractEntity {
 		),
 		'table_name'	 => array(
 			'validation' => array(
-				'stringLength' => array('max'=>20)
+				'stringLength' => array('max'=>20),
+	            'inArray'      => array(
+	                'haystack' => array('invoiceitem','poitem','rctitem')
+	            )
 			)
 		),
 		'jbjobcode_id'	 => array(

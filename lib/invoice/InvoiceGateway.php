@@ -65,6 +65,7 @@ class InvoiceGateway extends AbstractGateway {
 				->columnCreatedBy()
 				->join(new sql\join\InvoiceVendorsiteJoin())
 				->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(['vendor_name','vendor_id_alt','vendor_status','integration_package_id','default_glaccount_id']))
+				->join(new \NP\vendor\sql\join\VendorGlAccountJoin())
 				->join(new \NP\vendor\sql\join\VendorsiteAddressJoin())
 				->join(new \NP\vendor\sql\join\VendorsitePhoneJoin('Main'))
 				->join(new sql\join\InvoicePropertyJoin())

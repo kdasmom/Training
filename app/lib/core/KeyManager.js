@@ -21,6 +21,8 @@ Ext.define('NP.lib.core.KeyManager', {
 		Ext.getBody().on('keydown', me.handleShortcuts, me);
 
 		me.callParent(arguments);
+
+		me.win = null;
 	},
 
 	addShortcut: function(token, key, fn, cfg) {
@@ -82,25 +84,29 @@ Ext.define('NP.lib.core.KeyManager', {
 			token,
 			len;
 
-		if (e.ctrlKey) {
-			if (e.altKey && e.getKey() == Ext.EventObject.H) {
-				me.showShortcuts();
-			} else if (e.altKey in me.shortcuts) {
-				shortcuts = me.shortcuts[e.altKey];
-				if (e.getKey() in shortcuts) {
-					shortcuts = shortcuts[e.getKey()];
-					token     = me.getPageToken();
-					len       = token.split(':').length;
-					if (len in shortcuts) {
-						shortcuts = shortcuts[len];
-						for (scutToken in shortcuts) {
-							if (token.match(new RegExp(scutToken, 'i')) !== null) {
-								scut = shortcuts[scutToken];
+		if (e.getKey() == Ext.EventObject.ESC && me.win) {
+			me.closeShortcutWindow();
+		} else {
+			if (e.ctrlKey) {
+				if (e.altKey && e.getKey() == Ext.EventObject.H) {
+					me.showShortcuts();
+				} else if (e.altKey in me.shortcuts) {
+					shortcuts = me.shortcuts[e.altKey];
+					if (e.getKey() in shortcuts) {
+						shortcuts = shortcuts[e.getKey()];
+						token     = me.getPageToken();
+						len       = token.split(':').length;
+						if (len in shortcuts) {
+							shortcuts = shortcuts[len];
+							for (scutToken in shortcuts) {
+								if (token.match(new RegExp(scutToken, 'i')) !== null) {
+									scut = shortcuts[scutToken];
 
-								if (scut.conditionFn()) {
-									scut.fn.apply(scut.scope, scut.argsFn);
-									e.preventDefault();
-									return false;
+									if (scut.conditionFn()) {
+										scut.fn.apply(scut.scope, scut.argsFn);
+										e.preventDefault();
+										return false;
+									}
 								}
 							}
 						}
@@ -124,7 +130,8 @@ Ext.define('NP.lib.core.KeyManager', {
 			fields = [],
 			scutToken,
 			shortcuts,
-			scutText;
+			scutText,
+			keyString;
 
 		for (scutToken in me.shortcutHelp) {
 			if (token.match(new RegExp(scutToken, 'i')) !== null) {
@@ -135,7 +142,27 @@ Ext.define('NP.lib.core.KeyManager', {
 						if (shortcuts[i].useAlt) {
 							scutText += ' ALT +';
 						}
-						scutText += String.fromCharCode(shortcuts[i].key) + ')';
+						if (shortcuts[i].key == Ext.EventObject.RIGHT) {
+							keyString = 'right arrow';
+						} else if (shortcuts[i].key == Ext.EventObject.LEFT) {
+							keyString = 'left arrow';
+						} else if (shortcuts[i].key == Ext.EventObject.ESC) {
+							keyString = 'esc';
+						} else if (shortcuts[i].key == Ext.EventObject.ENTER) {
+							keyString = 'enter';
+						} else if (shortcuts[i].key == Ext.EventObject.RETURN) {
+							keyString = 'return';
+						} else if (shortcuts[i].key == Ext.EventObject.TAB) {
+							keyString = 'tab';
+						} else if (shortcuts[i].key == Ext.EventObject.DOWN) {
+							keyString = 'down arrow';
+						} else if (shortcuts[i].key == Ext.EventObject.UP) {
+							keyString = 'up arrow';
+						} else {
+							keyString = String.fromCharCode(shortcuts[i].key);
+						}
+
+						scutText += ' ' + keyString + ')';
 
 						fields.push({
 							xtype     : 'displayfield',
@@ -148,20 +175,34 @@ Ext.define('NP.lib.core.KeyManager', {
 		}
 
 		if (fields.length) {
-			var win = Ext.create('Ext.window.Window', {
-				title: NP.Translator.translate('Keyboard Shorcuts'),
-				width: 250,
+			me.win = Ext.create('Ext.panel.Panel', {
+				title      : NP.Translator.translate('Keyboard Shorcuts'),
+				modal      : true,
+				floating   : true,
+				width      : 350,
 				bodyPadding: 8,
-				layout: {
+				tools: [{
+					type   : 'close',
+					handler: function() {
+						me.closeShortcutWindow();
+					}
+	        	}],
+				layout     : {
 					type : 'vbox',
 					align: 'stretch'
 				},
-				items: fields
+				defaults: { labelWidth: 100 },
+				items   : fields
 			});
 
-			win.show();
-
-			win.alignTo(Ext.getBody(), 'br-br');
+			me.win.show();
 		}
+	},
+
+	closeShortcutWindow: function() {
+		var me = this;
+		
+		me.win.destroy();
+		me.win = null;
 	}
 });

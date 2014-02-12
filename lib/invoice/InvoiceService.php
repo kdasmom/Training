@@ -72,6 +72,10 @@ class InvoiceService extends AbstractInvoicePoService {
 			$invoice['has_dummy_accounts'] = false;
 		}
 
+		// Get invoice warnings
+		$invoice['warnings'] = $this->getWarnings($invoice);
+
+
 		return $invoice;
 	}
 
@@ -1192,9 +1196,17 @@ class InvoiceService extends AbstractInvoicePoService {
 			// Validate invoice record
 			$errors = $this->entityValidator->validate($invoiceItem);
 
-			// Save invoice if valid
+			// Save invoice line if valid
 			if (!count($errors)) {
 				$this->invoiceItemGateway->save($invoiceItem);
+			}
+
+			// Save job costing info if appropriate
+			if (!count($errors)) {
+				$data['table_name']  = 'invoiceitem';
+				$data['tablekey_id'] = $invoiceItem->invoiceitem_id;
+				$res = $this->jobCostingService->saveJobCostingInfo($data);
+				$errors = $res['errors'];
 			}
 		} catch(\Exception $e) {
 			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
