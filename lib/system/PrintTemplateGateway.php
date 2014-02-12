@@ -10,10 +10,16 @@ namespace NP\system;
 
 
 use NP\core\AbstractGateway;
+use NP\core\db\Delete;
 use NP\core\db\Expression;
+use NP\core\db\Insert;
 use NP\core\db\Select;
+use NP\util\Util;
 
 class PrintTemplateGateway extends AbstractGateway {
+
+	protected $table = 'print_templates';
+	protected $pk    = 'Print_Template_Id';
 
 	public function getTemplates($page, $pageSize, $order) {
 		$select = new Select();
@@ -67,5 +73,36 @@ class PrintTemplateGateway extends AbstractGateway {
 			]);
 
 		return $this->adapter->query($select, [$id]);
+	}
+
+	public function savePrintTemplateProperties($property_id, $template_id, $userprofile_id) {
+		$insert = new Insert();
+
+		$insert->into('Print_Template_Property')
+			->columns([
+				'Print_Template_Id',
+				'Property_Id',
+				'Print_Templates_Properties_LastUpdateDt',
+				'Print_Templates_Properties_LastUpdateBy'
+			])
+			->values([Select::get()->columns([
+				new Expression('?'),
+				new Expression('?'),
+				new Expression('?'),
+				new Expression('?')
+			])]);
+
+		$this->adapter->query($insert, [$template_id, $property_id, Util::formatDateForDB(), $userprofile_id]);
+	}
+
+	public function deletePrintTemplateProperties($template_id) {
+		$delete = new Delete();
+
+		$delete->from('Print_Template_Property')
+			->where([
+				'Print_Template_Id' => '?'
+			]);
+
+		return $this->adapter->query($delete, [$template_id]);
 	}
 } 

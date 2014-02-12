@@ -48,28 +48,28 @@ Ext.define('NP.view.systemSetup.PrintTemplateTab', {
 
 		me.items = [
 			{
-				xtype: 'form',
+				xtype: 'panel',
 				height: 200,
 				name: 'templatedetails',
 				title: NP.Translator.translate('TEMPLATE DETAILS'),
 				items: [
 					{
 						xtype: 'textfield',
-						name: 'print_template_name',
+						name: 'Print_Template_Name',
 						fieldLabel: NP.Translator.translate('Template Name'),
 						padding: '5',
 						allowBlank: false
 					},
 					{
 						xtype: 'textfield',
-						name: 'print_template_label',
+						name: 'Print_template_label',
 						fieldLabel: NP.Translator.translate('Template Label'),
 						padding: '5',
 						allowBlank: false
 					},
 					{
 						xtype: 'hiddenfield',
-						name: 'template_id'
+						name: 'Print_Template_Id'
 					}
 				]
 			},
@@ -90,7 +90,7 @@ Ext.define('NP.view.systemSetup.PrintTemplateTab', {
 				minHeight: 600
 			},
 			{
-				xtype: 'form',
+				xtype: 'panel',
 				title: NP.Translator.translate('TEMPLATE PROPERTIES'),
 				height: 300,
 				name: 'properties',

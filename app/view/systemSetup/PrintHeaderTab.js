@@ -40,7 +40,7 @@ Ext.define('NP.view.systemSetup.PrintHeaderTab', {
 			},
 			{
 				xtype: 'htmleditor',
-				name: 'poprint_text',
+				name: 'poprint_header',
 				fieldLabel: NP.Translator.translate('The following text will be included in the header area on both the print and forward view of a Purchase Order. '),
 				labelAlign: 'top'
 			}

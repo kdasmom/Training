@@ -33,17 +33,25 @@ Ext.define('NP.view.systemSetup.TemplatesGrid', {
 			},
 			{
 				text: NP.Translator.translate('Assigned To'),
-				flex: 0.5
+				flex: 0.5,
+				renderer: function(val, meta, record) {
+					return NP.Translator.translate('View Assignments')
+				}
 			},
 			{
 				dataIndex: 'Print_Template_LastUpdateDt',
+				xtype: 'datecolumn',
 				text: NP.Translator.translate('Last Updated Date'),
-				flex: 0.3
+				flex: 0.3,
+				format: 'm/d/Y'
 			},
 			{
 				dataIndex: 'Print_Template_LastUpdateByUserName',
 				text: NP.Translator.translate('Updated By'),
-				flex: 0.5
+				flex: 0.5,
+				renderer: function(val, meta, record) {
+					return record.raw['Print_Template_LastUpdateByUserName'];
+				}
 			},
 			{
 				text: NP.Translator.translate('Edit'),
@@ -73,7 +81,7 @@ Ext.define('NP.view.systemSetup.TemplatesGrid', {
 				text: NP.Translator.translate('Status'),
 				flex: 0.2,
 				renderer: function(val, meta, record) {
-					return val == 1 ? NP.Translator.translate('Active') : NP.Translator.translate('InActive')
+					return val == 1 ? NP.Translator.translate('Active') : NP.Translator.translate('Inactive')
 				}
 			},
 			{

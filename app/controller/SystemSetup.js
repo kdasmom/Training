@@ -1553,7 +1553,13 @@ Ext.define('NP.controller.SystemSetup', {
 
 	showPrintTemplate: function(id) {
 		var me = this,
-			viewConfig = { bind: { models: ['system.PrintTemplate'] }};
+			viewConfig = {
+				bind: {
+					models: [
+						'system.PrintTemplate'
+					]
+				}
+			};
 
 		var form = this.setView('NP.view.systemSetup.TemplatesManager', viewConfig, '[xtype="systemsetup.poprintsettings"]');
 	},
@@ -1580,33 +1586,38 @@ Ext.define('NP.controller.SystemSetup', {
 
 	savePrintTemplate: function(action, id) {
 		var me = this,
-			templateTabs = me.getCmp('systemsetup.templatesmanager'),
-			activeTab = templateTabs.down('[name="templatestab"]').getActiveTab(),
-			data = {};
+			form = me.getCmp('systemsetup.templatesmanager'),
+			templateobj = form.down('[name="templatetab"]').positions;
 
-		if (activeTab.name == 'templatetab') {
-			console.log(activeTab.positions);
-			data['tempplatedetails'] = activeTab.down('[name="templatedetails"]').getValues();
-			data['templateorder'] = activeTab.positions;
-			data['properties'] = activeTab.down('[name="properties"]').getValues();
+		templateobj.template_footer_text = form.findField('poprint_footer').getValue();
+		templateobj.template_header_text = form.findField('poprint_header').getValue();
+		templateobj.template_additional_text = form.findField('poprint_additional_text').getValue();
+		templateobj.settings = {
+			po_lineitems_display_opts_itemnum: form.findField('po_lineitems_display_opts_itemnum').getValue(),
+			po_lineitems_display_opts_uom: form.findField('po_lineitems_display_opts_uom').getValue(),
+			po_lineitems_display_opts_glcode: form.findField('po_lineitems_display_opts_glcode').getValue(),
+			po_lineitems_display_opts_buildingcode: form.findField('po_lineitems_display_opts_buildingcode').getValue(),
+			po_lineitems_display_opts_jobcost: form.findField('po_lineitems_display_opts_jobcost').getValue(),
+			po_lineitems_display_opts_customfields: form.findField('po_lineitems_display_opts_customfields').getValue(),
+			po_include_attachments: form.findField('po_include_attachments').getValue()
+		};
 
-			console.log('data: ', data);
-		}
-
-		Ext.apply(data, {
-			action: action
-		})
-
-		NP.lib.core.Net.remoteCall({
-			requests: {
-				service    : 'PrintTemplateService',
-				action     : 'saveTemplates',
-				data : data,
-				success    : function(result) {
+		if (form.isValid()) {
+			form.submitWithBindings({
+				service: 'PrintTemplateService',
+				action: 'saveTemplates',
+				extraParams: {
+					templateobj: JSON.stringify(form.down('[name="templatetab"]').positions),
+					userprofile_id: NP.Security.getUser().get('userprofile_id'),
+					properties: form.findField('property_id').getValue(),
+					property_type: form.findField('property_type').getValue()
+				},
+				success: function(result) {
+					if (result.success) {
+						me.addHistory('SystemSetup:showSystemSetup:POPrintSettings');
+					}
 				}
-			}
-		});
-
-		console.log('activeTab: ', activeTab);
+			});
+		}
 	}
 });
