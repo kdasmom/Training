@@ -213,7 +213,11 @@ Ext.define('NP.controller.SystemSetup', {
 			'[xtype="systemsetup.poprintsettings"] [xtype="shared.button.new"]': {
 				click: function() {
 					me.addHistory('SystemSetup:showSystemSetup:POPrintSettings:PrintTemplate');
-//					me.showPrintTemplate();
+				}
+			},
+			'[xtype="systemsetup.poprintsettings"] [xtype="systemsetup.templatesgrid"]': {
+				itemclick: function(grid, record) {
+					me.addHistory('SystemSetup:showSystemSetup:POPrintSettings:PrintTemplate:' + record.get('Print_Template_Id'));
 				}
 			},
 			'[xtype="systemsetup.canvaspanel"]': {
@@ -1560,6 +1564,16 @@ Ext.define('NP.controller.SystemSetup', {
 					]
 				}
 			};
+
+		if (arguments.length > 0) {
+			Ext.apply(viewConfig.bind, {
+				service    : 'PrintTemplateService',
+				action     : 'get',
+				extraParams: {
+					id: id
+				}
+			});
+		}
 
 		var form = this.setView('NP.view.systemSetup.TemplatesManager', viewConfig, '[xtype="systemsetup.poprintsettings"]');
 	},

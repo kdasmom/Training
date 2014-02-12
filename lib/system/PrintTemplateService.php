@@ -32,17 +32,15 @@ class PrintTemplateService extends AbstractService {
 	 * @param null $id
 	 * @return array
 	 */
-	public function getById($id = null) {
+	public function get($id = null) {
 		if (!$id) {
 			return [];
 		}
 
-		return $this->printTemplateGateway->getTemplateData($id);
+		return $this->printTemplateGateway->findById($id);
 	}
 
 	public function saveTemplates($data = []) {
-//		print_r($data);
-//		exit;
 		$printTemplate = new PrintTemplateEntity($data['printtemplate']);
 		$errors = [];
 
