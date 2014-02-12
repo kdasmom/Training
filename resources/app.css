@@ -33,6 +33,8 @@ li.x-boundlist-item {
 .delete-btn { background-image: url("images/buttons/delete.gif"); width: 15px; height: 15px; }
 .edit-btn { background-image: url("images/buttons/edit.gif"); }
 .favorites-btn { background-image: url("images/buttons/favorites.png"); }
+.favorites-add-btn { background-image: url("images/buttons/favorites_add.gif"); width: 20px !important; }
+	.favorites-add-cmp-btn .x-btn-inner { padding-left: 24px !important; }
 .favorites-empty-btn { background-image: url("images/buttons/favorites_empty.png"); }
 .go-btn { background-image: url("images/buttons/go.gif"); width: 33px !important; }
 .hold-activate-btn { background-image: url("images/buttons/hold_activate.gif"); }

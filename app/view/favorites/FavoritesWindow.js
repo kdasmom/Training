@@ -24,7 +24,7 @@ Ext.define('NP.view.favorites.FavoritesWindow', {
 	initComponent: function() {
 		var that = this;
 
-        this.defaults = { border: false, minHeight: 100, maxHeight: 250 };
+        this.defaults = { border: false, minHeight: 50, maxHeight: 250 };
 		this.items = [
             {
                 itemId       : 'favoritesGrid',
