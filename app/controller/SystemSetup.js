@@ -1570,7 +1570,7 @@ Ext.define('NP.controller.SystemSetup', {
 				}
 			};
 
-		if (arguments.length > 0) {
+		if (id) {
 			Ext.apply(viewConfig.bind, {
 				service    : 'PrintTemplateService',
 				action     : 'get',
