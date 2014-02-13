@@ -79,4 +79,11 @@ class PrintTemplateService extends AbstractService {
 			'errors'			=> $errors
 		];
 	}
+
+	public function getAssignedProperties($id = null) {
+		if (!$id) {
+			return [];
+		}
+		return $this->printTemplateGateway->getAssignedProperties($id);
+	}
 } 

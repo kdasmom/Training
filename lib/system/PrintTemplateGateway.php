@@ -104,4 +104,20 @@ class PrintTemplateGateway extends AbstractGateway {
 
 		return $this->adapter->query($delete, [$template_id]);
 	}
+
+	public function getAssignedProperties($id) {
+
+		$select = new Select();
+
+		$select->from(['pt' => 'print_template_property'])
+			->join(['p' => 'property'], 'p.property_id = pt.Property_Id', ['property_name'], Select::JOIN_LEFT)
+			->where([
+				'pt.Print_Template_Id' => '?'
+			])
+			->order('p.property_name');
+
+		return $this->adapter->query($select, [$id]);
+	}
+
+
 } 

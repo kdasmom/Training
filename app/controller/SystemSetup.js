@@ -217,7 +217,14 @@ Ext.define('NP.controller.SystemSetup', {
 			},
 			'[xtype="systemsetup.poprintsettings"] [xtype="systemsetup.templatesgrid"]': {
 				itemclick: function(grid, record) {
-					me.addHistory('SystemSetup:showSystemSetup:POPrintSettings:PrintTemplate:' + record.get('Print_Template_Id'));
+//					me.addHistory('SystemSetup:showSystemSetup:POPrintSettings:PrintTemplate:' + record.get('Print_Template_Id'));
+				},
+				cellclick: function(grid, td, cellIndex, record, tr, rowIndex, e, eOpts) {
+					if (cellIndex !== 1) {
+						me.addHistory('SystemSetup:showSystemSetup:POPrintSettings:PrintTemplate:' + record.get('Print_Template_Id'));
+					} else {
+						me.showTemplatePropertyAssignmentWindow(record.get('Print_Template_Id'));
+					}
 				}
 			},
 			'[xtype="systemsetup.poprintsettings"] [xtype="systemsetup.templatesmanager"] [xtype="shared.button.cancel"]': {
@@ -1646,6 +1653,9 @@ Ext.define('NP.controller.SystemSetup', {
 					}
 				}
 			};
+			Ext.apply(viewConfig, {
+				id: id
+			})
 		}
 
 		var form = this.setView('NP.view.systemSetup.TemplatesManager', viewConfig, '[xtype="systemsetup.poprintsettings"]');
@@ -1706,5 +1716,38 @@ Ext.define('NP.controller.SystemSetup', {
 				}
 			});
 		}
+	},
+
+	showTemplatePropertyAssignmentWindow: function(id) {
+		var me = this,
+			window,
+			list = '<ul>';
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service    : 'PrintTemplateService',
+				action     : 'getAssignedProperties',
+				id: id,
+				success    : function(result) {
+					window = Ext.create('NP.view.systemSetup.PropertyAssignmentsWindow');
+
+					if (result.length == 0) {
+						list += '<li>' + NP.Translator.translate('No Assignments') + '</li>';
+					} else {
+						if (result.length == 1 && result[0]['Property_Id'] == -1) {
+
+							list += '<li>' + NP.Translator.translate('All Properties') + '</li>';
+						} else {
+							Ext.each(result, function(property) {
+								list += '<li>' +property.property_name + '</li>';
+							})
+						}
+					}
+					window.down('[name="propertyassignments"]').setValue(
+						list + '</ul>'
+					);
+					window.show();
+				}
+			}
+		});
 	}
 });

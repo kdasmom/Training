@@ -30,6 +30,7 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 
 	initComponent: function() {
 		var me  = this;
+		console.log('me id: ', me.id);
 
 		me.title = NP.Translator.translate(this.title);
 
@@ -40,7 +41,7 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 			{
 				xtype: 'shared.button.save',
 				handler: function() {
-					me.fireEvent('savetemplate', 'save');
+					me.fireEvent('savetemplate');
 				}
 			},
 			{
@@ -58,6 +59,13 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 					me.down('[name="isActive"]').setValue(0);
 					me.fireEvent('savetemplate');
 				}
+			},
+			{
+				xtype: 'shared.button.delete',
+				handler: function() {
+					me.fireEvent('deletetemplate');
+				},
+				hidden: true
 			}
 		];
 
