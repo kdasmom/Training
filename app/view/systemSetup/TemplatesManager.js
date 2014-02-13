@@ -68,7 +68,8 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 						xtype: 'systemsetup.printtemplatetab',
 						title: 'Template',
 						name: 'templatetab',
-						flex: 1
+						flex: 1,
+						data: me.data ? me.data : null
 					},
 					{
 						xtype: 'systemsetup.printheadertab',

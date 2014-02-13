@@ -220,6 +220,11 @@ Ext.define('NP.controller.SystemSetup', {
 					me.addHistory('SystemSetup:showSystemSetup:POPrintSettings:PrintTemplate:' + record.get('Print_Template_Id'));
 				}
 			},
+			'[xtype="systemsetup.poprintsettings"] [xtype="systemsetup.templatesmanager"] [xtype="shared.button.cancel"]': {
+				click: function() {
+					me.addHistory('SystemSetup:showSystemSetup:POPrintSettings');
+				}
+			},
 			'[xtype="systemsetup.canvaspanel"]': {
 				addtemplateitem: me.addTemplateItem,
 				removetemplateitem: me.removeTemplateItem
@@ -1573,6 +1578,64 @@ Ext.define('NP.controller.SystemSetup', {
 					id: id
 				}
 			});
+
+			viewConfig.listeners = {
+				dataloaded: function(boundForm, data) {
+					var templateObj = JSON.parse(data.Print_Template_Data),
+						assignedObjects = [],
+						assignedTemplates = {},
+						regions = [
+							'template_body',
+							'template_footer',
+							'template_footer_left',
+							'template_footer_right',
+							'template_header',
+							'template_header_left',
+							'template_header_right',
+							'template_logo_center',
+							'template_logo_left',
+							'template_logo_right'
+						],
+						templatesPicker = boundForm.down('[name="templatespicker"]'),
+						templatesCanvas;
+
+//					header, footer, additional text
+					boundForm.getForm().findField('poprint_header').setValue(templateObj.template_additional_text);
+					boundForm.getForm().findField('poprint_footer').setValue(templateObj.template_footer_text);
+					boundForm.getForm().findField('poprint_additional_text').setValue(templateObj.template_header_text);
+
+//					settings
+					boundForm.getForm().findField('po_include_attachments').setValue(templateObj.settings.po_include_attachments);
+					boundForm.getForm().findField('po_lineitems_display_opts_buildingcode').setValue(templateObj.settings.po_lineitems_display_opts_buildingcode);
+					boundForm.getForm().findField('po_lineitems_display_opts_customfields').setValue(templateObj.settings.po_lineitems_display_opts_customfields);
+					boundForm.getForm().findField('po_lineitems_display_opts_glcode').setValue(templateObj.settings.po_lineitems_display_opts_glcode);
+					boundForm.getForm().findField('po_lineitems_display_opts_itemnum').setValue(templateObj.settings.po_lineitems_display_opts_itemnum);
+					boundForm.getForm().findField('po_lineitems_display_opts_jobcost').setValue(templateObj.settings.po_lineitems_display_opts_jobcost);
+					boundForm.getForm().findField('po_lineitems_display_opts_uom').setValue(templateObj.settings.po_lineitems_display_opts_uom);
+
+//					unassigned objects
+					Ext.each(regions, function(region) {
+						if (templateObj[region].length > 0) {
+							Ext.each(templateObj[region], function(item) {
+								assignedObjects.push(item);
+							})
+						}
+					});
+
+					assignedTemplates = templatesPicker.listDiff(assignedObjects);
+
+					Ext.each(regions, function(region){
+						if (templateObj[region].length > 0) {
+							templatesCanvas = boundForm.down('[name="' + region + '"]');
+							Ext.each(templateObj[region], function(item) {
+								if (assignedTemplates[item]) {
+									templatesCanvas.addTile(assignedTemplates[item][0][0], assignedTemplates[item][0][2], assignedTemplates[item][0][1]);
+								}
+							});
+						}
+					})
+				}
+			};
 		}
 
 		var form = this.setView('NP.view.systemSetup.TemplatesManager', viewConfig, '[xtype="systemsetup.poprintsettings"]');
@@ -1585,11 +1648,11 @@ Ext.define('NP.controller.SystemSetup', {
 			record = templatesPicker.getRecordByndex(index),
 			templates = templateTab.addTemplate(name, record[1]);
 
+
 		templatesPicker.removeRecord(index);
 	},
 
 	removeTemplateItem: function(index, name, record) {
-		console.log(index, name, record);
 		var me = this,
 			templatesPicker = me.getCmp('systemsetup.templateobjectspicker'),
 			templatesTab = me.getCmp('systemsetup.printtemplatetab'),

@@ -80,7 +80,9 @@ Ext.define('NP.view.systemSetup.PrintTemplateTab', {
 				items: [
 					{
 						xtype: 'systemsetup.templateobjectspicker',
-						flex: 0.2
+						name: 'templatespicker',
+						flex: 0.2,
+						data: me.data ? me.data : null
 					},
 					{
 						xtype: 'systemsetup.templatebodycanvas',

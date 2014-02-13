@@ -37,7 +37,7 @@ class PrintTemplateService extends AbstractService {
 			return [];
 		}
 
-		return $this->printTemplateGateway->findById($id);
+		return $this->printTemplateGateway->getTemplateData($id);
 	}
 
 	public function saveTemplates($data = []) {
@@ -57,9 +57,9 @@ class PrintTemplateService extends AbstractService {
 			$template_id = $this->printTemplateGateway->save($printTemplate);
 			$this->printTemplateGateway->commit();
 
-			$template_id = !$printTemplate->Print_Template_Id ? $template_id : $printTemplate->PrintTemplateId;
+			$template_id = !$printTemplate->Print_Template_Id ? $template_id : $printTemplate->Print_Template_Id;
 
-			if (!$this->printTempalteGateway->deletePrintTemplateProperties($template_id)) {
+			if (!$this->printTemplateGateway->deletePrintTemplateProperties($template_id)) {
 				throw new \NP\core\Exception('Cannot delete template properties.');
 			}
 			if ($data['property_type'] == 1) {

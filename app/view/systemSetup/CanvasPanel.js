@@ -56,13 +56,8 @@ Ext.define('NP.view.systemSetup.CanvasPanel', {
 							field: tileRec.get('field'),
 							index: tileRec.get('index')
 						});
-						var tilepanel = colPanel.add(tile);
 
-						me.fireEvent('addtemplateitem', index, me.name);
-
-						tilepanel.on('close', function() {
-							me.fireEvent('removetemplateitem', this.index, me.name, [this.index, this.field, this.title]);
-						});
+						me.addTile(index, tileRec.get('title'), tileRec.get('field'), true);
 
 						return true;
 					}
@@ -71,5 +66,28 @@ Ext.define('NP.view.systemSetup.CanvasPanel', {
 		};
 
 		me.callParent(arguments);
+	},
+
+	addTile: function(index, title, field, isDragged) {
+		var me = this,
+			tilePanel,
+			panel = Ext.create('Ext.panel.Panel', {
+				layout: 'fit',
+				title: title,
+				width: '100%',
+				closable: true,
+				cloaseAction: 'destroy',
+				field: field,
+				index: index
+			});
+
+		tilePanel = me.add(panel);
+		if (isDragged) {
+			me.fireEvent('addtemplateitem', index, me.name);
+		}
+
+		tilePanel.on('close', function() {
+			me.fireEvent('removetemplateitem', this.index, me.name, [this.index, this.field, this.title]);
+		});
 	}
 });

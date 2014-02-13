@@ -55,24 +55,19 @@ class PrintTemplateGateway extends AbstractGateway {
 	 * @return array|bool
 	 */
 	public function getTemplateData($id) {
+
+		$template = $this->findById($id);
+
 		$select = new Select();
 
-		$select->from(['p' => 'print_templates'])
-			->columns([
-				'Print_Template_Id',
-				'Print_Template_Name',
-				'Print_Template_Label'		=> new Expression("isNull(Print_Template_Label, 'Purchase Order')"),
-				'Print_Template_Type',
-				'Print_Template_LastUpdateDt',
-				'Print_Template_LastUpdateBy',
-				'Print_Template_Data',
-				'isActive'
-			])
+		$select->from(['p' => 'Print_Template_Property'])
 			->where([
-				'Print_Template_Id'		=> '?'
+				'Print_Template_Id'	=> '?'
 			]);
 
-		return $this->adapter->query($select, [$id]);
+		$template['properties'] = $this->adapter->query($select, [$id]);
+
+		return $template;
 	}
 
 	public function savePrintTemplateProperties($property_id, $template_id, $userprofile_id) {
@@ -85,12 +80,12 @@ class PrintTemplateGateway extends AbstractGateway {
 				'Print_Templates_Properties_LastUpdateDt',
 				'Print_Templates_Properties_LastUpdateBy'
 			])
-			->values([Select::get()->columns([
+			->values(Select::get()->columns([
 				new Expression('?'),
 				new Expression('?'),
 				new Expression('?'),
 				new Expression('?')
-			])]);
+			]));
 
 		$this->adapter->query($insert, [$template_id, $property_id, Util::formatDateForDB(), $userprofile_id]);
 	}

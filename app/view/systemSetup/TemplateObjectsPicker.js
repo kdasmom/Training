@@ -30,13 +30,14 @@ Ext.define('NP.view.systemSetup.TemplateObjectsPicker', {
 	},
 
 	title  : 'Unassigned objects',
-	data: [],
+	data: null,
+	defaultList: [],
 
 	initComponent: function() {
 		var me = this,
 			title = NP.Translator.translate(me.title);
 
-		me.data = [
+		me.defaultList = [
 				[0, 'po_items_logo', 'Logo'],
 				[1, 'po_items_createdby', 'Created By'],
 				[2, 'po_items_lastapprover', 'Last Approver'],
@@ -59,7 +60,9 @@ Ext.define('NP.view.systemSetup.TemplateObjectsPicker', {
 				[19, 'po_items_initials', 'Initials'],
 				[20, 'po_items_overagenotes', 'Budget Overage Notes']
 			];
-
+		if (!me.data) {
+			me.data = me.defaultList;
+		}
 
 		if (!me.store) {
 
@@ -103,5 +106,27 @@ Ext.define('NP.view.systemSetup.TemplateObjectsPicker', {
 		var me = this;
 
 		return me.data[index];
+	},
+
+	listDiff: function(savedItems) {
+		var me = this,
+			defaultList = me.defaultList,
+			assignedObjects = {};
+
+		Ext.each(defaultList, function(item, index){
+			if (item) {
+				Ext.each(savedItems, function(savedItem){
+					if (item[1] == savedItem) {
+						assignedObjects[savedItem] = defaultList.splice(index, 1);
+						return false;
+					}
+				});
+			}
+		});
+
+		me.data = defaultList;
+		me.getStore().reload();
+
+		return assignedObjects;
 	}
 });
