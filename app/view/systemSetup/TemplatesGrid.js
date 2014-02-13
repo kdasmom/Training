@@ -16,10 +16,6 @@ Ext.define('NP.view.systemSetup.TemplatesGrid', {
 
 		me.tbar = [
 			{
-				xtype: 'shared.button.cancel',
-				name: 'backToOverview'
-			},
-			{
 				xtype: 'shared.button.new',
 				text: NP.Translator.translate('New template')
 			}
