@@ -10,7 +10,7 @@ Ext.define('NP.view.invoice.gridcol.NeededByDate', {
 	requires: ['NP.lib.core.Translator'],
 
 	text     : 'Needed By',
-	dataIndex: 'invoice_neededby_datetm',
+	dataIndex: 'invoice_NeededBy_datetm',
 
     initComponent: function() {
     	this.text = NP.Translator.translate(this.text);

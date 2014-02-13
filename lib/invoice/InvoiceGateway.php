@@ -375,10 +375,12 @@ class InvoiceGateway extends AbstractGateway {
 		$select->allColumns('i')
 				->columnAmount()
 				->columnCreatedBy()
+				->columnPendingDays()
 				->join(new sql\join\InvoiceVendorsiteJoin())
 				->join(new \NP\vendor\sql\join\VendorsiteVendorJoin())
 				->join(new sql\join\InvoicePropertyJoin())
 				->join(new sql\join\InvoicePriorityFlagJoin())
+				->join(new sql\join\InvoiceInvoicePaymentTypeJoin())
 				->whereIn('vs.vendorsite_status', "'active','inactive','rejected'")
 				->whereIn('i.property_id', $propertyFilterSelect)
 				->order($sort);
@@ -543,7 +545,9 @@ class InvoiceGateway extends AbstractGateway {
 
 		if ($countOnly != 'true') {
 			$select->columnOnHoldDays()
-					->columnOnHoldBy();
+					->columnOnHoldBy()
+					->columnOnHoldNotes()
+					->columnOnHoldReason();
 		}
 
 		$where->equals('i.invoice_status', "'hold'")
@@ -726,6 +730,7 @@ class InvoiceGateway extends AbstractGateway {
 			->join(new \NP\vendor\sql\join\VendorsiteVendorJoin())
 			->join(new sql\join\InvoicePriorityFlagJoin())
 			->join(new sql\join\InvoiceVendorOneTimeJoin())
+			->join(new sql\join\InvoiceInvoicePaymentTypeJoin())
 			->whereIn('i.property_id', $propertyFilterSelect);
 
 		return $select;

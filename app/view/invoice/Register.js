@@ -60,6 +60,7 @@ Ext.define('NP.view.invoice.Register', {
 							'shared.gridcol.RejectedReason','shared.gridcol.LastApprovedDate',
 							'shared.gridcol.LastApprovedBy','invoice.gridcol.HoldDate',
 							'invoice.gridcol.DaysOnHold','invoice.gridcol.OnHoldBy',
+							'invoice.gridcol.OnHoldReason','invoice.gridcol.OnHoldNotes',
 							'invoice.gridcol.TemplateName','shared.gridcol.PendingApprovalDays',
 							'shared.gridcol.PendingApprovalFor','invoice.gridcol.VoidDate',
 							'invoice.gridcol.VoidBy','invoice.gridcol.PaymentDetails',
@@ -79,6 +80,14 @@ Ext.define('NP.view.invoice.Register', {
 		// Setup columns for Rejected grid
 		rejectedCols = openCols.slice(0);
 		rejectedCols.push('shared.gridcol.CreatedBy','shared.gridcol.RejectedDate','shared.gridcol.RejectedBy');
+		rejectedExcluded = ['shared.gridcol.LastApprovedDate',
+							'shared.gridcol.LastApprovedBy','invoice.gridcol.HoldDate',
+							'invoice.gridcol.DaysOnHold','invoice.gridcol.OnHoldBy',
+							'invoice.gridcol.OnHoldReason','invoice.gridcol.OnHoldNotes',
+							'invoice.gridcol.TemplateName','shared.gridcol.PendingApprovalDays',
+							'shared.gridcol.PendingApprovalFor','invoice.gridcol.VoidDate',
+							'invoice.gridcol.VoidBy','invoice.gridcol.PaymentDetails',
+							'invoice.gridcol.PaymentAmountRemaining'];
 		
 		// Setup columns for Overdue grid
 		overdueCols.push('invoice.gridcol.Date','invoice.gridcol.DueDate','invoice.gridcol.Status');
@@ -88,6 +97,13 @@ Ext.define('NP.view.invoice.Register', {
 
 		// Setup columns for On Hold grid
 		onHoldCols.push('invoice.gridcol.DueDate','invoice.gridcol.HoldDate','invoice.gridcol.DaysOnHold','invoice.gridcol.OnHoldBy');
+		holdExcluded = ['shared.gridcol.RejectedDate','shared.gridcol.RejectedBy',
+							'shared.gridcol.RejectedReason','shared.gridcol.LastApprovedDate',
+							'shared.gridcol.LastApprovedBy',
+							'invoice.gridcol.TemplateName','shared.gridcol.PendingApprovalDays',
+							'shared.gridcol.PendingApprovalFor','invoice.gridcol.VoidDate',
+							'invoice.gridcol.VoidBy','invoice.gridcol.PaymentDetails',
+							'invoice.gridcol.PaymentAmountRemaining'],
 
 		// Setup columns for Pending grid
 		pendingCols     = openCols.slice(0);
@@ -115,8 +131,9 @@ Ext.define('NP.view.invoice.Register', {
 				cols        : openCols,
 				excludedCols: excludedCols
 			},{
-				title: 'Rejected',
-				cols : rejectedCols
+				title       : 'Rejected',
+				cols        : rejectedCols,
+				excludedCols: rejectedExcluded
 			},{
 				title: 'Overdue',
 				cols : overdueCols,
@@ -129,7 +146,7 @@ Ext.define('NP.view.invoice.Register', {
 				tab  : 'OnHold',
 				title: 'On Hold',
 				cols : onHoldCols,
-				excludedCols: excludedCols
+				excludedCols: holdExcluded
 			},{
 				title: 'Pending',
 				cols : pendingCols,

@@ -57,6 +57,53 @@ class InvoiceSelect extends AbstractEntitySelect {
 	public function columnOnHoldBy() {
 		return $this->column(new Expression('(SELECT userprofile_username FROM USERPROFILE WHERE userprofile_id = a.userprofile_id)'), 'invoice_onhold_by');
 	}
+	
+	/**
+	 * Adds the on hold notes column
+	 *
+	 * @return \NP\invoice\InvoiceSelect Returns caller object for easy chaining
+	 */
+	public function columnOnHoldNotes() {
+		return $this->column(
+			$this->getHoldSelect()->column('note'),
+			'invoice_onhold_notes'
+		);
+	}
+	
+	/**
+	 * Adds the on hold reason column
+	 *
+	 * @return \NP\invoice\InvoiceSelect Returns caller object for easy chaining
+	 */
+	public function columnOnHoldReason() {
+		return $this->column(
+			$this->getHoldSelect()->columns([])
+								->join(
+									['rea'=>'reason'],
+									'n.reason_id = rea.reason_id',
+									['reason_text']
+								),
+			'invoice_onhold_reason'
+		);
+	}
+
+	/**
+	 * 
+	 */
+	protected function getHoldSelect() {
+		return Select::get()
+			->from(['n'=>'note'])
+				->join(
+					['ot'=>'objecttype'],
+					'n.objecttype_id = ot.objtype_id',
+					[]
+				)
+			->whereEquals('n.table_name', "'invoice'")
+			->whereEquals('n.tablekey_id', 'i.invoice_id')
+			->whereEquals('ot.objtype_name', "'onhold'")
+			->limit(1)
+			->order('n.note_createddatetm DESC');
+	}
 
 	/**
 	 * Adds the void date column

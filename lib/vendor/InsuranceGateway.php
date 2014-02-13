@@ -159,9 +159,9 @@ class InsuranceGateway extends AbstractGateway {
 		if (count($insurance)) {
 			$now = \NP\util\Util::formatDateForDB();
 
-			$select->whereNest('OR')
+			$select->whereNest()
 						->whereGreaterThan('ins.insurance_expdatetm', '?')
-						->whereIsNull('ins.insurance_expdatetm')
+						->whereIsNotNull('ins.insurance_expdatetm')
 					->whereUnnest();
 
 			$insurance = $this->adapter->query($select, [$tablekey_id, $now]);
