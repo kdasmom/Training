@@ -70,6 +70,10 @@ Ext.define('NP.view.systemSetup.PrintTemplateTab', {
 					{
 						xtype: 'hiddenfield',
 						name: 'Print_Template_Id'
+					},
+					{
+						xtype: 'hiddenfield',
+						name: 'isActive'
 					}
 				]
 			},

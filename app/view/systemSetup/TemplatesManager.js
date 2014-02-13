@@ -47,14 +47,16 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 				xtype: 'shared.button.save',
 				text: NP.Translator.translate('Save & Activate'),
 				handler: function() {
-					me.fireEvent('savetemplate', 'activate');
+					me.down('[name="isActive"]').setValue(1);
+					me.fireEvent('savetemplate');
 				}
 			},
 			{
 				xtype: 'shared.button.save',
 				text: NP.Translator.translate('Save & Deactivate'),
 				handler: function() {
-					me.fireEvent('saveanddeactivatetemplate', 'deactivate');
+					me.down('[name="isActive"]').setValue(0);
+					me.fireEvent('savetemplate');
 				}
 			}
 		];

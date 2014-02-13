@@ -65,7 +65,11 @@ class PrintTemplateGateway extends AbstractGateway {
 				'Print_Template_Id'	=> '?'
 			]);
 
-		$template['properties'] = $this->adapter->query($select, [$id]);
+		$result = $this->adapter->query($select, [$id]);
+
+		foreach ($result as $property) {
+			$template['properties'][] = $property['Property_Id'];
+		}
 
 		return $template;
 	}

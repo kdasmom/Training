@@ -1576,7 +1576,8 @@ Ext.define('NP.controller.SystemSetup', {
 				action     : 'get',
 				extraParams: {
 					id: id
-				}
+				},
+				extraFieds: ['properties']
 			});
 
 			viewConfig.listeners = {
@@ -1633,7 +1634,16 @@ Ext.define('NP.controller.SystemSetup', {
 								}
 							});
 						}
-					})
+					});
+
+					if (data.properties.length > 0) {
+						if (data.properties[0] == -1) {
+							boundForm.getForm().findField('property_type').setValue(1);
+						} else {
+							boundForm.getForm().findField('property_type').setValue(0);
+							boundForm.getForm().findField('property_id').setValue(data.properties);
+						}
+					}
 				}
 			};
 		}
@@ -1661,7 +1671,7 @@ Ext.define('NP.controller.SystemSetup', {
 		templatesPicker.addRecord(index, record);
 	},
 
-	savePrintTemplate: function(action, id) {
+	savePrintTemplate: function() {
 		var me = this,
 			form = me.getCmp('systemsetup.templatesmanager'),
 			templateobj = form.down('[name="templatetab"]').positions;
