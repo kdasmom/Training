@@ -12,7 +12,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
         'NP.lib.core.Security',
         'NP.lib.core.Util',
         'Ext.view.View',
-        'NP.view.shared.button.Edit',,
+        'NP.view.shared.button.Edit',
         'NP.model.jobcosting.JbContract',
         'NP.model.jobcosting.JbChangeOrder',
         'NP.model.jobcosting.JbJobCode',

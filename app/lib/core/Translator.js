@@ -33,7 +33,7 @@ Ext.define('NP.lib.core.Translator', {
 
 		// Inject a script elements with the language JS file
 		Ext.Loader.injectScriptElement('app/locale/'+lang+'.js?_dc='+time, function() {
-			Ext.Loader.injectScriptElement('ext/locale/ext-lang-'+lang+'.js?_dc='+time, function() {
+			Ext.Loader.injectScriptElement('app/locale/ext-lang-'+lang+'.js?_dc='+time, function() {
 				me.localeLoaded = true;
 
 				// Fire the event to indicate a new locale has been loaded

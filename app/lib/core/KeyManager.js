@@ -18,7 +18,9 @@ Ext.define('NP.lib.core.KeyManager', {
 
 		me = Ext.apply(me, cfg);
 
-		Ext.getBody().on('keydown', me.handleShortcuts, me);
+		Ext.onReady(function() {
+			Ext.getBody().on('keydown', me.handleShortcuts, me);
+		});
 
 		me.callParent(arguments);
 

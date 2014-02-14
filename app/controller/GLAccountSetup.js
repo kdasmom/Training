@@ -390,7 +390,7 @@ Ext.define('NP.controller.GLAccountSetup', {
                 service: 'GLService',
                 action: 'saveGlAccount',
                 extraParams: {
-                    tree_parent: form.findField('tree_parent').getValue(),
+                    tree_parent: form.findField('tree_parent').getValue()
                 },
                 extraFields: {
                     vendors    : 'vendors',
