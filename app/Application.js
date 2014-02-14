@@ -67,7 +67,7 @@ Ext.define('NP.Application', {
 		// Start loading the minimum inital data we need to be able to run the application
 		NP.lib.core.DataLoader.loadStartupData(function(res) {
             // Language to load; static for now, will be updated in future when we offer more languages
-            var lang = 'en';
+            var lang = NP.Translator.getLocale();
             
             // Inject the correct file for localization
             NP.Translator.loadLocale(lang);

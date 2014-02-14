@@ -64,7 +64,7 @@ Ext.define('NP.view.messageCenter.MessageGrid', {
 				}
 
 				return 'Users';
-			}},
+			}}
         ];
 
         // Create the store, only thing that changes between stores is the vc_status

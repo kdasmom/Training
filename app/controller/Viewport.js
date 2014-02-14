@@ -8,6 +8,7 @@ Ext.define('NP.controller.Viewport', {
 	extend: 'NP.lib.core.AbstractController',
 	
 	requires: [
+		'NP.lib.core.Translator',
 		'NP.lib.core.Security',
 		'NP.lib.core.Config',
 		'NP.lib.core.SummaryStatManager'
@@ -15,6 +16,7 @@ Ext.define('NP.controller.Viewport', {
 
 	uses: [
 		'NP.view.shared.tile.ExpiredInsuranceCerts',
+		'NP.view.shared.tile.GlCategoryMtdSpend',
 		'NP.view.shared.tile.ImageExceptions',
 		'NP.view.shared.tile.ImagesToConvert',
 		'NP.view.shared.tile.ImagesToIndex',
@@ -38,8 +40,6 @@ Ext.define('NP.controller.Viewport', {
 		'NP.view.shared.tile.YtdOverBudgetCategories',
 		'NP.view.shared.tile.YtdTopSpendByVendor'
 	],
-
-    stores: ['system.SummaryStatCategories'],
 
     views: ['viewport.Home','shared.PortalCanvas'],
 	
@@ -69,6 +69,13 @@ Ext.define('NP.controller.Viewport', {
 				// Clicking on the Logout link in the header top right
 				nplogoutlink: function() {
 					NP.Security.logout(function() { window.location = 'login.php'; });
+				}
+			},
+
+			'#NP_locale': {
+				select: function(combo, recs) {
+					NP.Translator.setLocale(combo.getValue());
+					window.location.reload();
 				}
 			},
 

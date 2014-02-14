@@ -8,6 +8,9 @@ Ext.define('NP.view.shared.tile.GlCategoryMtdSpend', {
 
     requires: [
         'Ext.chart.Chart',
+        'Ext.chart.series.Bar',
+        'Ext.chart.axis.Numeric',
+        'Ext.chart.axis.Category',
         'NP.lib.core.Translator',
         'NP.lib.core.Util',
         'NP.lib.core.Security',
@@ -92,24 +95,13 @@ Ext.define('NP.view.shared.tile.GlCategoryMtdSpend', {
                 },
                 '-',
                 {
-                xtype  : 'shared.button.print',
+                    xtype  : 'shared.button.print',
+                    text   : null,
                     handler: function() {
                         var me    = this,
                             chart = me.up('panel').down('chart');
                         
                         NP.PrintManager.print(chart);
-                        /*
-                        var me    = this,
-                            chart = me.up('panel').down('chart');
-                        
-                        var html = chart.getEl().getHTML();
-
-                        var win = window.open('');
-                        
-                        win.document.open();
-                        win.document.write(html);
-                        win.document.close();
-                        */
                     }
                 }
             ],
@@ -153,7 +145,7 @@ Ext.define('NP.view.shared.tile.GlCategoryMtdSpend', {
                     axis  : 'bottom',
                     xField: 'glaccount_name',
                     yField: ['budget_amount','actual'],
-                    title : ['Budget','Actual'],
+                    title : [NP.Translator.translate('Budget'), NP.Translator.translate('Actual')],
                     label: {
                         display      : 'outside',
                         field        : ['budget_amount','actual'],

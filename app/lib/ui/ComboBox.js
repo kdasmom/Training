@@ -39,6 +39,8 @@ Ext.define('NP.lib.ui.ComboBox', {
 	 */
 	blankRecordDisplayValue: '',
 
+	iconClsField: null,
+
 	constructor: function(cfg) {
 		if (cfg.displayField) {
 			this.displayField = cfg.displayField;
@@ -56,6 +58,40 @@ Ext.define('NP.lib.ui.ComboBox', {
 
 		// Key events must be on
 		this.enableKeyEvents = true;
+
+		// Option for adding an icon to the combo
+		if (!Ext.isEmpty(this.iconClsField)) {
+			Ext.apply(this, {
+				scope:this,
+				listConfig: {
+					scope       : this,
+					iconClsField: this.iconClsField,
+					itemTpl     : '<tpl for=".">' +
+							'<div class="x-combo-list-item ux-icon-combo-item ' +
+							'{' + this.iconClsField + '}">' +
+							'{' + this.displayField + '}' +
+							'</div></tpl>'
+				},
+				fieldSubTpl: [
+					'<div class="{hiddenDataCls}" role="presentation"></div>',
+					'<input id="{id}" type="{type}" {inputAttrTpl}',
+					'<tpl if="value"> value="{value}"</tpl>',
+					'<tpl if="name"> name="{name}"</tpl>',
+					'<tpl if="placeholder"> placeholder="{placeholder}"</tpl>',
+					'<tpl if="size"> size="{size}"</tpl>',
+					'<tpl if="maxLength !== undefined"> maxlength="{maxLength}"</tpl>',
+					'<tpl if="readOnly"> readonly="readonly"</tpl>',
+					'<tpl if="disabled"> disabled="disabled"</tpl>',
+					'<tpl if="tabIdx"> tabIndex="{tabIdx}"</tpl>',
+					'<tpl if="fieldStyle"> style="{fieldStyle}"</tpl>',
+					'class="ux-icon-combo-input {fieldCls} {typeCls}" autocomplete="off" />',
+					{
+						compiled      : true,
+						disableFormats: true
+					}
+				]
+			});
+		}
 
 		this.callParent(arguments);
 
@@ -188,5 +224,37 @@ Ext.define('NP.lib.ui.ComboBox', {
 		this.resumeEvents();
 
 		return this;
+	},
+
+	setIconCls: function() {
+		if (this.rendered) {
+			var rec  = this.store.findRecord(this.valueField, this.getValue()),
+				icon = Ext.get(this.el.down('input'));
+
+			if (rec) {
+				var iconCls = rec.get(this.iconClsField);
+
+				if (this.currentIconCls) {
+					icon.replaceCls(this.currentIconCls, iconCls);
+				} else {
+					icon.addCls(iconCls);
+				}
+
+				this.currentIconCls = iconCls;
+			}
+		} else {
+			this.on('render', this.setIconCls, this, {
+				single: true
+			});
+		}
+	},
+
+	setValue: function(value) {
+		this.callParent(arguments);
+
+		// If icon was specified, we need to set it
+		if (!Ext.isEmpty(this.iconClsField)) {	
+			this.setIconCls();
+		}
 	}
 });

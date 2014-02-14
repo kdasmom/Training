@@ -29,6 +29,7 @@ class InvoiceEntity extends \NP\core\AbstractEntity {
 			]
 		),
 		'invoice_createddatetm'	 => array(
+			'timestamp' => 'created',
 			'validation' => array(
 				'date' => array('format'=>'Y-m-d H:i:s.u')
 			)

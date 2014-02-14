@@ -119,11 +119,13 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                 text     : NP.Translator.translate('QTY'),
                 dataIndex: 'invoiceitem_quantity',
                 hideable : false,
-                format   : '0,000.000000',
+                format   : '0,000.00',
+                //format   : '0,000.000000',    // Temporarily changing to 2 decimals for user conference
                 width    : 100,
                 editor   : {
                     xtype           : 'numberfield',
-                    decimalPrecision: 6,
+                    decimalPrecision: 2,
+                    //decimalPrecision: 6,    // Temporarily changing to 2 decimals for user conference
                     selectOnFocus   : true,
                     listeners       : {
                         blur: function(field, e) {
@@ -149,11 +151,13 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                 text     : NP.Translator.translate('Unit Price'),
                 dataIndex: 'invoiceitem_unitprice',
                 hideable : false,
-                format   : '0,000.000000',
+                format   : '0,000.00',
+                //format   : '0,000.000000',    // Temporarily changing to 2 decimals for user conference
                 width    : 100,
                 editor   : {
                     xtype           : 'numberfield',
-                    decimalPrecision: 6,
+                    decimalPrecision: 2,
+                    //decimalPrecision: 6,    // Temporarily changing to 2 decimals for user conference
                     selectOnFocus   : true,
                     listeners       : {
                         blur: function(field, e) {
@@ -168,11 +172,13 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                 text     : NP.Translator.translate('Amount'),
                 dataIndex: 'invoiceitem_amount',
                 hideable : false,
-                format   : '0,000.000000',
+                format   : '0,000.00',
+                //format   : '0,000.000000',    // Temporarily changing to 2 decimals for user conference
                 width    : 100,
                 editor   : {
                     xtype           : 'numberfield',
-                    decimalPrecision: 6,
+                    decimalPrecision: 2,
+                    //decimalPrecision: 6,    // Temporarily changing to 2 decimals for user conference
                     selectOnFocus   : true,
                     listeners       : {
                         blur: function(field, e) {

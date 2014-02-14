@@ -17,7 +17,8 @@ li.x-boundlist-item {
 /* STYLES FOR PAGE HEADER */
 #npHeaderLogo { cursor: pointer; }
 #learningNexusImg { margin-right: 8px; cursor: pointer; }
-#npHeaderRightLinks, #npHeaderRightLinks a { color: #FFFFFF; text-decoration: none; }
+#npHeaderRightLinks { white-space: nowrap; color: #FFFFFF; }
+	#npHeaderRightLinks a { color: #FFFFFF; text-decoration: none; display: inline-block; }
 #npHeaderRightWelcomeText { margin-top: 8px; color: #9FCCFA; font-style:italic; }
 
 /* BUTTONS */
@@ -45,7 +46,7 @@ li.x-boundlist-item {
 .image-view-btn { background-image: url("images/buttons/image_view.gif"); }
 .inactivate-btn { background-image: url("images/buttons/inactivate.gif"); }
 .link-btn { background-image: url("images/buttons/link.gif"); }
-.message-btn { background-image: url("images/buttons/message.gif"); width: 32px !important;}
+.message-btn { background-image: url("images/buttons/message.gif"); width: 19px !important; background-repeat: no-repeat; }
 .new-btn { background-image: url("images/buttons/new.gif"); }
 .next-btn { background-image: url("images/buttons/next.gif"); }
 .npiss-btn { background-image: url("images/buttons/npiss.gif"); width: 20px !important; }
@@ -88,6 +89,23 @@ li.x-boundlist-item {
 .go-button .x-btn-inner { width: 33px !important; }
 .go-button button { width: 33px !important; }
 
+/* FLAGS (for localization combo) */
+.ux-icon-combo-input, .ux-icon-combo-item {
+	background-repeat  : no-repeat;
+}
+.ux-icon-combo-input {
+	background-position: left 4px center;
+	padding-left       : 23px;
+}
+
+.ux-icon-combo-item {
+	background-position: left center;
+	padding-left       : 20px;
+}
+
+.locale-en { background-image: url("images/flags/en.png"); }
+.locale-fr { background-image: url("images/flags/fr.png"); }
+
 /* STYLE FOR USING AN IMAGE AS A BUTTON IN A GRID BY SPECIFYING THIS AS tdCls CONFIG OPTION */
 .image-button-cell .x-grid-cell-inner { padding-bottom: 0; }
 .image-button-cell .x-grid-cell-inner img { cursor: pointer; }
@@ -123,29 +141,6 @@ li.x-boundlist-item {
 /* CURSOR STYLE */
 .pointer { cursor: pointer; }
 .no-pointer { cursor: auto !important; }
-
-/* BOXSELECT */
-/* We need to override this style and make it !important to get the right size for a BoxSelect component in an editing grid */
-.x-border-box .x-grid-editor .auto-complete .x-form-trigger, .x-border-box .x-grid-row-editor .auto-complete .x-form-trigger {
-    height: 22px !important;
-}
-
-.x-border-box .x-grid-editor .auto-complete .x-boxselect-input-field {
-	height: 16px !important;
-}
-
-/* This is to fix the issue where tabbing from previous field to boxselect will jump over it if no value is selected */
-.x-boxselect-input .x-form-empty-field {
-	display: inline;
-}
-
-.x-boxselect-list.x-boxselect-singleselect.form-focus .x-boxselect-input .x-form-empty-field {
-	display: none;
-}
-
-.x-boxselect-emptyinput {
-	display: inline !important;
-}
 
 
 /* GENERIC STYLES */

@@ -50,6 +50,14 @@ class InvoiceGateway extends AbstractGateway {
 		$this->securityService = $securityService;
 	}
 	
+	public function setLocalizationService(\NP\locale\LocalizationService $localizationService) {
+		$this->localizationService = $localizationService;
+	}
+
+	public function translateForSql($phrase) {
+		return str_replace("'", "''", $this->localizationService->translate($phrase));
+	}
+	
 	/**
 	 * Overrides the default gateway function and returns a record for the specified invoice ID
 	 *
@@ -367,10 +375,12 @@ class InvoiceGateway extends AbstractGateway {
 		$select->allColumns('i')
 				->columnAmount()
 				->columnCreatedBy()
+				->columnPendingDays()
 				->join(new sql\join\InvoiceVendorsiteJoin())
 				->join(new \NP\vendor\sql\join\VendorsiteVendorJoin())
 				->join(new sql\join\InvoicePropertyJoin())
 				->join(new sql\join\InvoicePriorityFlagJoin())
+				->join(new sql\join\InvoiceInvoicePaymentTypeJoin())
 				->whereIn('vs.vendorsite_status', "'active','inactive','rejected'")
 				->whereIn('i.property_id', $propertyFilterSelect)
 				->order($sort);
@@ -394,11 +404,11 @@ class InvoiceGateway extends AbstractGateway {
 				"),
 				'name' => new Expression("
 					CASE i.invoice_status
-						WHEN 'open' THEN '# of Open Invoices'
-						WHEN 'forapproval' THEN '# of Invoices Pending Approval '
-						WHEN 'saved' THEN '# of Completed Invoices to Approve'
-						WHEN 'hold' THEN '# of Invoices on Hold'
-						WHEN 'rejected' THEN '# of Rejected Invoices'
+						WHEN 'open' THEN '{$this->translateForSql('# of Open Invoices')}'
+						WHEN 'forapproval' THEN '{$this->translateForSql('# of Invoices Pending Approval')}'
+						WHEN 'saved' THEN '{$this->translateForSql('# of Completed Invoices to Approve')}'
+						WHEN 'hold' THEN '{$this->translateForSql('# of Invoices on Hold')}'
+						WHEN 'rejected' THEN '{$this->translateForSql('# of Rejected Invoices')}'
 					END
 				"),
 				'amount' => new Expression("
@@ -415,7 +425,7 @@ class InvoiceGateway extends AbstractGateway {
 					->count(true, 'total')
 					->columns([
 						'sort' => new Expression('1'),
-						'name' => new Expression("'# of Images to Convert'"),
+						'name' => new Expression("'{$this->translateForSql('# of Images to Convert')}'"),
 						'amount' => new Expression('SUM(img.Image_Index_Amount)')
 					])
 					->from(['img'=>'image_index'])
@@ -535,7 +545,9 @@ class InvoiceGateway extends AbstractGateway {
 
 		if ($countOnly != 'true') {
 			$select->columnOnHoldDays()
-					->columnOnHoldBy();
+					->columnOnHoldBy()
+					->columnOnHoldNotes()
+					->columnOnHoldReason();
 		}
 
 		$where->equals('i.invoice_status', "'hold'")
@@ -718,6 +730,7 @@ class InvoiceGateway extends AbstractGateway {
 			->join(new \NP\vendor\sql\join\VendorsiteVendorJoin())
 			->join(new sql\join\InvoicePriorityFlagJoin())
 			->join(new sql\join\InvoiceVendorOneTimeJoin())
+			->join(new sql\join\InvoiceInvoicePaymentTypeJoin())
 			->whereIn('i.property_id', $propertyFilterSelect);
 
 		return $select;

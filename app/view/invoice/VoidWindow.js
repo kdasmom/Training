@@ -44,7 +44,7 @@ Ext.define('NP.view.invoice.VoidWindow', {
                 {
                     xtype: 'component',
                     html : '<b>' + NP.Translator.translate(instructions) + '</b>',
-                    margin: '0 0 8 0',
+                    margin: '0 0 8 0'
                 },{
                     xtype     : 'textarea',
                     name      : 'note',
