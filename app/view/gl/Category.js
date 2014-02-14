@@ -15,7 +15,7 @@ Ext.define('NP.view.gl.Category', {
     	'NP.view.gl.CategoryForm',
     	'NP.view.shared.button.Cancel',
     	'NP.view.shared.button.Save',
-    	'NP.view.shared.button.New',
+    	'NP.view.shared.button.New'
     ],
     
     nameFieldText : 'Name',

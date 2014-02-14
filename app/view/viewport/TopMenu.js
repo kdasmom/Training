@@ -103,17 +103,19 @@ Ext.define('NP.view.viewport.TopMenu', {
 		this.items.push(
 			'->',
 			{
-				xtype: 'shared.button.favoriteglobal',
+				xtype : 'shared.button.favoriteglobal',
 				itemId: 'favoritesBtn',
 				cls   : 'favoritesBtn'
 			},{
-				xtype: 'shared.button.favoriteglobal',
-				itemId: 'removefromfavoritesBtn',
-				text: NP.Translator.translate('Remove from Favorites')
+				xtype       : 'button',
+				componentCls: 'favorites-cmp-btn',
+				iconCls     : 'favorites-remove-btn',
+				itemId      : 'removefromfavoritesBtn'
 			},{
-				xtype: 'shared.button.favoriteglobal',
-				itemId: 'addtofavoritesBtn',
-				text: NP.Translator.translate('Add to Favorites')
+				xtype       : 'button',
+				componentCls: 'favorites-cmp-btn',
+				iconCls     : 'favorites-add-btn',
+				itemId      : 'addtofavoritesBtn'
 			}
 		);
 

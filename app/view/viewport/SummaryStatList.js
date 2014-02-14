@@ -42,7 +42,7 @@ Ext.define('NP.view.viewport.SummaryStatList', {
         // Get a list of all the valid summary stats for the current user
         var stats = NP.lib.core.SummaryStatManager.getStats();
 
-        var categories = Ext.create('NP.store.system.SummaryStatCategories').getRange();
+        var categories = Ext.getStore('system.SummaryStatCategories').getRange();
 
         // Loop through categories
         Ext.each(categories, function(cat) {

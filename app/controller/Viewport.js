@@ -16,6 +16,7 @@ Ext.define('NP.controller.Viewport', {
 
 	uses: [
 		'NP.view.shared.tile.ExpiredInsuranceCerts',
+		'NP.view.shared.tile.GlCategoryMtdSpend',
 		'NP.view.shared.tile.ImageExceptions',
 		'NP.view.shared.tile.ImagesToConvert',
 		'NP.view.shared.tile.ImagesToIndex',
@@ -39,8 +40,6 @@ Ext.define('NP.controller.Viewport', {
 		'NP.view.shared.tile.YtdOverBudgetCategories',
 		'NP.view.shared.tile.YtdTopSpendByVendor'
 	],
-
-    stores: ['system.SummaryStatCategories'],
 
     views: ['viewport.Home','shared.PortalCanvas'],
 	
