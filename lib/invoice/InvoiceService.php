@@ -22,9 +22,8 @@ class InvoiceService extends AbstractInvoicePoService {
 	public function get($invoice_id) {
 		$invoice = $this->invoiceGateway->findById($invoice_id);
 
-		/*** THIS QUERY IS RUNNING SLOW ***/
 		$invoice['associated_pos']  = $this->getAssociatedPOs($invoice_id);
-
+		
 		$invoice['accounting_period'] = $this->fiscalCalService->getAccountingPeriod($invoice['property_id'])->format('Y-m-d');
 
 		if ($this->configService->get('pn.jobcosting.jobcostingEnabled', '0') == '1') {
@@ -52,8 +51,9 @@ class InvoiceService extends AbstractInvoicePoService {
 		// Get invoice images
 		/*** THIS QUERY IS RUNNING SLOW ***/
 		$invoice['image'] = $this->imageIndexGateway->findEntityImages($invoice_id, 'Invoice', true);
-
+		
 		// Get linkable POs
+		/*** THIS QUERY IS RUNNING SLOW ***/
 		$invoice['has_linkable_pos'] = (count($this->getLinkablePOs($invoice_id))) ? true : false;
 
 		// Check if there are any schedules if invoice is a draft

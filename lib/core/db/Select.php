@@ -279,6 +279,13 @@ class Select extends AbstractFilterableSql implements SQLInterface, SQLElement {
 	}
 
 	/**
+	 * 
+	 */
+	public function __clone() {
+		$this->where = clone $this->where;
+	}
+
+	/**
 	 * Returns certain internal elements of the object in their raw form
 	 *
 	 * @param  $item string Valid values are "table","cols","joins","where","order","limit","offset","count","distinct", and "group"

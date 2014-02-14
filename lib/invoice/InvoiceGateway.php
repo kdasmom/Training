@@ -110,14 +110,32 @@ class InvoiceGateway extends AbstractGateway {
 		$select = new Select(array('ii'=>'invoiceitem'));
 		
 		$select->column(new Expression("ISNULL(SUM(pi.poitem_amount + pi.poitem_salestax + pi.poitem_shipping), 0)"), 'po_total')
-				->join(new sql\join\InvoiceItemPoItemJoin([]))
+				->where("ii.invoice_id = ?")
+				->group('p.purchaseorder_id, p.purchaseorder_ref, pr.matching_threshold');
+		
+		$select2 = clone $select;
+
+		$select->join(
+					['pi'=>'poitem'],
+					'ii.invoiceitem_id = pi.reftablekey_id',
+					[]
+				)
 				->join(new \NP\po\sql\join\PoItemPurchaseorderJoin(['purchaseorder_id','purchaseorder_ref']))
 				->join(new \NP\po\sql\join\PoPropertyJoin(['matching_threshold']))
-				->where("ii.invoice_id = ?")
-				->group('p.purchaseorder_id, p.purchaseorder_ref, pr.matching_threshold')
+				->whereNotEquals('ii.reftablekey_id', 'pi.poitem_id')
 				->order('p.purchaseorder_ref');
-		
-		return $this->adapter->query($select, array($invoice_id));
+
+		$select2->join(
+					['pi'=>'poitem'],
+					'ii.reftablekey_id = pi.poitem_id',
+					[]
+				)
+				->join(new \NP\po\sql\join\PoItemPurchaseorderJoin(['purchaseorder_id','purchaseorder_ref']))
+				->join(new \NP\po\sql\join\PoPropertyJoin(['matching_threshold']));
+
+		$select->union($select2);
+
+		return $this->adapter->query($select, [$invoice_id, $invoice_id]);
 	}
 
 	/**
