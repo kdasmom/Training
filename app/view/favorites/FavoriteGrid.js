@@ -22,7 +22,7 @@ Ext.define('NP.view.favorites.FavoriteGrid', {
 		if (me.showRemoveCol) {
 			actionCols.push({
 				hidden: !this.showRemove,
-				icon: 'resources/images/buttons/delete.gif',
+				iconCls: 'favorites-remove-btn',
 				tooltip: 'Delete',
 				scope: this,
 				handler: function(gridView, rowIndex, colIndex, item, e, rec) {

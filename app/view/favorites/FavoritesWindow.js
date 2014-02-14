@@ -28,7 +28,7 @@ Ext.define('NP.view.favorites.FavoritesWindow', {
 		this.items = [
             {
                 itemId       : 'favoritesGrid',
-                title        : NP.Translator.translate('Favorites'),
+                title        : NP.Translator.translate('My Favorites'),
                 xtype        : 'favorites.favoritegrid',
                 showRemoveCol: true,
                 viewConfig     : {
@@ -42,7 +42,7 @@ Ext.define('NP.view.favorites.FavoritesWindow', {
             },
             {
                 itemId         : 'recentRecordsGrid',
-                title          : NP.Translator.translate('Recent Records'),
+                title          : NP.Translator.translate('Recently Viewed Records'),
                 xtype          : 'favorites.favoritegrid',
                 showFavoriteCol: true,
                 viewConfig     : {
@@ -56,7 +56,7 @@ Ext.define('NP.view.favorites.FavoritesWindow', {
             },
             {
                 itemId         : 'recentReportsGrid',
-                title          : NP.Translator.translate('Recent Reports'),
+                title          : NP.Translator.translate('Recently Viewed Reports'),
                 xtype          : 'favorites.favoritegrid',
                 showFavoriteCol: true,
                 viewConfig     : {
