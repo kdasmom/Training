@@ -63,9 +63,9 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 			{
 				xtype: 'shared.button.delete',
 				handler: function() {
-					me.fireEvent('deletetemplate');
+					me.fireEvent('deletetemplate', me.id);
 				},
-				hidden: true
+				hidden: parseInt(me.id) > 0 ? false : true
 			}
 		];
 

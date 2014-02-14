@@ -237,7 +237,8 @@ Ext.define('NP.controller.SystemSetup', {
 				removetemplateitem: me.removeTemplateItem
 			},
 			'[xtype="systemsetup.templatesmanager"]': {
-				savetemplate: me.savePrintTemplate
+				savetemplate: me.savePrintTemplate,
+				deletetemplate: me.deletePrintTemplate
 			}
 		});
 
@@ -1746,6 +1747,24 @@ Ext.define('NP.controller.SystemSetup', {
 						list + '</ul>'
 					);
 					window.show();
+				}
+			}
+		});
+	},
+
+	deletePrintTemplate: function(id) {
+		var me = this;
+
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service    : 'PrintTemplateService',
+				action     : 'deleteTemplate',
+				id: id,
+				success    : function(result) {
+					if (result) {
+						NP.Util.showFadingWindow({ html: NP.Translator.translate('Template was delete successfully!') });
+						me.addHistory('SystemSetup:showSystemSetup:POPrintSettings');
+					}
 				}
 			}
 		});

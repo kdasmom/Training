@@ -86,4 +86,14 @@ class PrintTemplateService extends AbstractService {
 		}
 		return $this->printTemplateGateway->getAssignedProperties($id);
 	}
+
+	public function deleteTemplate($id) {
+		if (!$id) {
+			return false;
+		}
+		if (!$this->printTemplateGateway->deletePrintTemplateProperties($id)) {
+			throw new \NP\core\Exception('Cannot delete template properties.');
+		}
+		return $this->printTemplateGateway->delete(['Print_Template_Id' => '?'], [$id]);
+	}
 } 
