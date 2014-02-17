@@ -650,6 +650,7 @@ class ConfigService extends AbstractService {
 			$data['customFieldType'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'custom_field' . $fid . '_type', 'select');
 			$data['maxlength'] = in_array($fid, [7,8]) ? $this->configsysGateway->getFieldLength($fid, $tabindex) : 0;
 
+
 		}
 		if ($tabindex == self::TABINDEX_CUSTOMFIELD_LINEITEMS) {
 			$data['inv_custom_field_on_off'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'INVOICE_CUSTOM_FIELD' . $fid . '_LINEITEM_ON_OFF', "");
@@ -661,6 +662,7 @@ class ConfigService extends AbstractService {
 			$data['custom_field_lbl'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'CUSTOM_FIELD_LABEL' . $fid . '_LINEITEM', "");
 			$data['maxlength'] = in_array($fid, [7,8]) ? $this->configsysGateway->getFieldLength($fid, $tabindex) : 0;
 		}
+		$data['universal_field_number'] = $fid;
 
 		if ($tabindex >= self::TABINDEX_CUSTOMFIELD_SERVICEFIELDS) {
 			$data = $this->pnCustomFieldsGateway->getCustomFieldValues($fid);

@@ -6,6 +6,7 @@ use NP\core\AbstractGateway;
 use NP\core\db\Delete;
 use NP\core\db\Expression;
 use NP\core\db\Select;
+use NP\core\db\Update;
 
 /**
  * Gateway for the PNUNIVERSALFIELD table
@@ -84,7 +85,6 @@ class PnUniversalFieldGateway extends AbstractGateway {
 	}
 
 	public function updateUniversalField($data) {
-
 		if ($data['universal_field_status'] == self::STATUS_DEFAULT) {
 			$updateStatus = new Update();
 			$subSelect = new Select();
@@ -109,6 +109,7 @@ class PnUniversalFieldGateway extends AbstractGateway {
 					]
 				)
 				->whereEquals('universal_field_number', $subSelect);
+
 
 			$this->adapter->query($updateStatus, [self::STATUS_ACTIVE, $data['tabindex'], self::STATUS_DEFAULT, 'customInvoicePO', $data['universal_field_id']]);
 		}
