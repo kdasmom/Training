@@ -1207,7 +1207,7 @@ Ext.define('NP.controller.SystemSetup', {
 						headerform.getForm().findField('vef_custom_field_on_off').setValue(parseInt(result['vef_custom_field_on_off']));
 						headerform.getForm().findField('vef_custom_field_req').setValue(parseInt(result['vef_custom_field_req']));
 						if (tabindex == 0) {
-							headerform.getForm().findField('inv_custom_field_imgindex').setValue(parseInt(result['inv_custom_field_imgindex']));
+							headerform.getForm().findField('inv_custom_field_imgindex').setValue(parseInt(parseInt(result['inv_custom_field_imgindex'])));
 							headerform.getForm().findField('customFieldType').setValue(result['customFieldType'] == 'select' ? 0 : 1);
 
 						}
@@ -1251,7 +1251,7 @@ Ext.define('NP.controller.SystemSetup', {
 			data['field_po_req'] = values['po_custom_field_req'];
 			data['field_vef_on_off'] = values['vef_custom_field_on_off'];
 			data['field_vef_req'] = values['vef_custom_field_req'];
-			data['field_imgindex'] = values['invoice_custom_field_imgindex'];
+			data['field_imgindex'] = values['inv_custom_field_imgindex'];
 			data['field_lbl'] = values['custom_field_lbl'];
 			data['customFieldType'] = values['customFieldType'] == 0 ? 'select' : 'date';
 		} else {
