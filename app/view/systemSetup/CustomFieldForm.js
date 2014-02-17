@@ -21,6 +21,7 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 	hidden: true,
 	padding: '0 5 5 5',
 	tabindex: 0,
+	autoScroll: true,
 
 	initComponent: function() {
 		var me = this;

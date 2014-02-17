@@ -198,9 +198,13 @@ Ext.define('NP.controller.SystemSetup', {
 			'[xtype="systemsetup.customfields"]': {
 				beforehidetab: me.changeCustomFieldsTab
 			},
-			'[xtype="systemsetup.picklists"] [name="picklistmodes"]': {
-				itemclick: me.loadPicklistColumns
+			'[xtype="systemsetup.picklists"] verticaltabpanel': {
+				tabchange: me.loadPicklistColumns
 			},
+//			'[xtype="systemsetup.picklists"] [xtype="systemsetup.picklisttab"]': {
+//				savepicklist: me.savePicklist,
+//				cancelpicklist: me.resetPickListForm
+//			},
 			'[xtype="systemsetup.picklists"] [name="picklistcolumns"]': {
 				itemclick: me.loadPicklistForm
 			},
@@ -216,12 +220,9 @@ Ext.define('NP.controller.SystemSetup', {
 				}
 			},
 			'[xtype="systemsetup.poprintsettings"] [xtype="systemsetup.templatesgrid"]': {
-				itemclick: function(grid, record) {
-//					me.addHistory('SystemSetup:showSystemSetup:POPrintSettings:PrintTemplate:' + record.get('Print_Template_Id'));
-				},
 				cellclick: function(grid, td, cellIndex, record, tr, rowIndex, e, eOpts) {
 					if (cellIndex !== 1) {
-						me.addHistory('SystemSetup:showSystemSetup:POPrintSettings:PrintTemplate:' + record.get('Print_Template_Id'));
+						me.addHistory('SystemSetup:showSystemSetup:POPrintSettings:PrintTemplate:' + record.get('Print_Template_Id') + (cellIndex == 5 ? (':copy') : ''));
 					} else {
 						me.showTemplatePropertyAssignmentWindow(record.get('Print_Template_Id'));
 					}
@@ -250,7 +251,7 @@ Ext.define('NP.controller.SystemSetup', {
 	 * @param {String} [subSection]       The seubsection of the tab to open
 	 * @param {String} [id]               Id for an item being viewed
 	 */
-	showSystemSetup: function(activeTab, subSection, id) {
+	showSystemSetup: function(activeTab, subSection, id, copy) {
 		var that = this;
 
 		// Set the SystemSetup view
@@ -273,7 +274,7 @@ Ext.define('NP.controller.SystemSetup', {
 		var showMethod = 'show' + activeTab;
 		if (that[showMethod]) {
 			// If the show method exists, run it
-			that[showMethod](subSection, id);
+			that[showMethod](subSection, id, copy);
 		}
 
 		if (activeTab == 'Settings') {
@@ -283,13 +284,13 @@ Ext.define('NP.controller.SystemSetup', {
 		}
 	},
 
-	showPOPrintSettings: function(subpanel, id) {
+	showPOPrintSettings: function(subpanel, id, copy) {
 		var me = this;
 
 		subpanel = !subpanel ? 'TemplatesGrid' : subpanel;
 
 		if (me['show' + subpanel]) {
-			me['show' + subpanel](id);
+			me['show' + subpanel](id, copy);
 		}
 	},
 
@@ -1293,13 +1294,12 @@ Ext.define('NP.controller.SystemSetup', {
 	 * @param grid
 	 * @param record
 	 */
-	loadPicklistColumns: function (grid, record) {
+	loadPicklistColumns: function (tabPanel, tab) {
+		console.log('tab: ', tab);
 		var me = this,
-			picklistview = me.getCmp('systemsetup.picklists'),
-			columnsgrid = picklistview.down('[name="picklistcolumns"]');
-
-		picklistview.mode = record.get('mode');
-		columnsgrid.getStore().getProxy().extraParams.mode = record.get('mode');
+			columnsgrid = tab.down('[name="picklistcolumns"]');
+//
+		columnsgrid.getStore().getProxy().extraParams.mode = tab.mode;
 		columnsgrid.getStore().reload();
 		me.resetPickListForm();
 	},
@@ -1312,7 +1312,7 @@ Ext.define('NP.controller.SystemSetup', {
 	 */
 	loadPicklistForm: function(grid, record) {
 		var me = this,
-			picklistview = me.getCmp('systemsetup.picklists'),
+			picklistview = grid.up().up(),
 			picklistform = picklistview.down('[name="picklistfields"]'),
 			recordvalue = {
 				column_status: record.get('column_status'),
@@ -1522,53 +1522,57 @@ Ext.define('NP.controller.SystemSetup', {
 	 * Save picklist field values
 	 *
 	 */
-	savePicklist: function() {
-		var me = this,
-			picklistview = me.getCmp('systemsetup.picklists'),
-			picklistform = picklistview.down('[name="picklistfields"]'),
+	savePicklist: function(button) {
+		var me = this;
+		if (button) {
+			var picklistform = button.up().up(),
+			picklistview = picklistform.up(),
 			data = picklistform.getValues();
 
-		Ext.apply(data, {
-			mode: picklistview.mode
-		});
+			Ext.apply(data, {
+				mode: picklistview.mode
+			});
 
-		if (picklistform.isValid()) {
-			NP.lib.core.Net.remoteCall({
-				requests: {
-					service    : 'PicklistService',
-					action     : 'savePicklist',
-					data: data,
-					success    : function(result) {
-						if (result) {
-							me.fillFormPicklist({
-								column_pk_data: 0,
-								column_status: 1
-							}, picklistform, picklistview.mode)
-							picklistview.down('[name="picklistcolumns"]').getStore().reload();
+			if (picklistform.isValid()) {
+				NP.lib.core.Net.remoteCall({
+					requests: {
+						service    : 'PicklistService',
+						action     : 'savePicklist',
+						data: data,
+						success    : function(result) {
+							if (result) {
+								me.fillFormPicklist({
+									column_pk_data: 0,
+									column_status: 1
+								}, picklistform, picklistview.mode)
+								picklistview.down('[name="picklistcolumns"]').getStore().reload();
+							}
 						}
 					}
-				}
-			});
+				});
+			}
 		}
 	},
 
-	resetPickListForm: function() {
-		var me = this,
-			picklistview = me.getCmp('systemsetup.picklists'),
-			picklistform = picklistview.down('[name="picklistfields"]'),
-			recordvalue = {
-				column_status: 1,
-				column_pk_data: 0
-			};
+	resetPickListForm: function(button) {
+		var me = this;
+		if (button) {
+			var picklistform = button.up().up(),
+			picklistview = picklistform.up(),
+				recordvalue = {
+					column_status: 1,
+					column_pk_data: 0
+				};
 
-		me.fillFormPicklist(recordvalue, picklistform, picklistview.mode);
+			me.fillFormPicklist(recordvalue, picklistform, picklistview.mode);
+		}
 	},
 
 	showTemplatesGrid: function() {
 		this.setView('NP.view.systemSetup.TemplatesGrid', {}, '[xtype="systemsetup.poprintsettings"]');
 	},
 
-	showPrintTemplate: function(id) {
+	showPrintTemplate: function(id, copy) {
 		var me = this,
 			viewConfig = {
 				bind: {
@@ -1606,6 +1610,7 @@ Ext.define('NP.controller.SystemSetup', {
 							'template_logo_right'
 						],
 						templatesPicker = boundForm.down('[name="templatespicker"]'),
+						templatetab = boundForm.down('[name="templatetab"]'),
 						templatesCanvas;
 
 //					header, footer, additional text
@@ -1639,6 +1644,7 @@ Ext.define('NP.controller.SystemSetup', {
 							Ext.each(templateObj[region], function(item) {
 								if (assignedTemplates[item]) {
 									templatesCanvas.addTile(assignedTemplates[item][0][0], assignedTemplates[item][0][2], assignedTemplates[item][0][1]);
+									templatetab.addTemplate(region, assignedTemplates[item][0][1]);
 								}
 							});
 						}
@@ -1651,6 +1657,11 @@ Ext.define('NP.controller.SystemSetup', {
 							boundForm.getForm().findField('property_type').setValue(0);
 							boundForm.getForm().findField('property_id').setValue(data.properties);
 						}
+					}
+
+					if (copy) {
+						boundForm.getForm().findField('Print_Template_Id').setValue('');
+						boundForm.getForm().findField('Print_Template_Name').setValue(data.Print_Template_Name + ' (copy)');
 					}
 				}
 			};
@@ -1700,6 +1711,8 @@ Ext.define('NP.controller.SystemSetup', {
 			po_include_attachments: form.findField('po_include_attachments').getValue()
 		};
 
+//		console.log(templateobj);
+//		return;
 		if (form.isValid()) {
 			form.submitWithBindings({
 				service: 'PrintTemplateService',
