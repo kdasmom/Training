@@ -1253,7 +1253,7 @@ Ext.define('NP.controller.SystemSetup', {
 			data['field_vef_req'] = values['vef_custom_field_req'];
 			data['field_imgindex'] = values['inv_custom_field_imgindex'];
 			data['field_lbl'] = values['custom_field_lbl'];
-			data['customFieldType'] = values['customFieldType'] == 0 ? 'select' : 'date';
+			data['customfield_type'] = values['customFieldType'] == 0 ? 'select' : 'date';
 		} else {
 			data['custom_field_lbl'] 			= values['custom_field_lbl'];
 			data['customfield_req'] 			= values['customfield_req'];

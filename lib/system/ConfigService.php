@@ -805,7 +805,7 @@ class ConfigService extends AbstractService {
 			}
 
 			if ($data['islineitem'] == self::TABINDEX_CUSTOMFIELD_HEADERS) {
-				$this->configSysValGateway->updateUniversalFieldType($data['customFieldType'], $data['fid']);
+				$this->configSysValGateway->updateUniversalFieldType($data['customfield_type'], $data['fid']);
 			}
 		}
 
