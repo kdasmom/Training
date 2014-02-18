@@ -19,13 +19,33 @@ Ext.define('NP.view.systemSetup.PrintSettingsTab', {
 		labelWidth: '80%'
 	},
 
-	padding: '10',
+	padding: '0 10 10 10',
 	border: false,
 
 	initComponent: function() {
 		var me  = this;
 
 		me.title = NP.Translator.translate(me.title);
+
+		me.tbar = [
+			{
+				xtype: 'shared.button.cancel',
+				name: 'canceluploadbtn',
+				handler: function() {
+					me.getDockedItems('toolbar[dock="top"]')[0].hide();
+					me.down('[name="params"]').show();
+					me.down('[name="uploadimage"]').hide();
+				}
+			},
+			{
+				xtype: 'shared.button.delete',
+				name: 'deleteuploadbtn'
+			},
+			{
+				xtype: 'shared.button.upload',
+				name: 'uploadattachmentbtn'
+			}
+		];
 
 		me.items = [
 			{
@@ -39,6 +59,7 @@ Ext.define('NP.view.systemSetup.PrintSettingsTab', {
 					type: 'vbox',
 					align: 'stretch'
 				},
+				name: 'params',
 				title: NP.Translator.translate('Line Item Elements to Include'),
 				items: [
 					{
@@ -96,6 +117,14 @@ Ext.define('NP.view.systemSetup.PrintSettingsTab', {
 						padding: '0 5'
 					}
 				]
+			},
+			{
+				xtype: 'filefield',
+				name: 'uploadimage',
+				fieldLabel: NP.Translator.translate('Additional image'),
+				width: 300,
+				labelAlign: 'top',
+				afterSubTpl: NP.Translator.translate('The Additional Image is the Image that will display on the PO Print/PDF view. This will replace the image that is currently used on other reports in the application. The image must be a .JPG file')
 			}
 		];
 

@@ -30,7 +30,6 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 
 	initComponent: function() {
 		var me  = this;
-		console.log('me id: ', me.id);
 
 		me.title = NP.Translator.translate(this.title);
 
@@ -66,6 +65,24 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 					me.fireEvent('deletetemplate', me.id);
 				},
 				hidden: parseInt(me.id) > 0 ? false : true
+			},
+			{
+				xtype: 'shared.button.upload',
+				text: 'Upload attachment',
+				name: 'uploadattachment',
+				hidden: true,
+				handler: function() {
+					me.fireEvent('uploadattachment', me.id);
+				}
+			},
+			{
+				xtype: 'shared.button.upload',
+				text: 'Upload image',
+				name: 'uploadimage',
+				hidden: true,
+				handler: function() {
+					me.fireEvent('uploadimage', me.id);
+				}
 			}
 		];
 
@@ -78,6 +95,7 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 						xtype: 'systemsetup.printtemplatetab',
 						title: 'Template',
 						name: 'templatetab',
+						autoScroll: true,
 						flex: 1,
 						data: me.data ? me.data : null
 					},
@@ -85,24 +103,28 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 						xtype: 'systemsetup.printheadertab',
 						title: 'Header',
 						name: 'headertab',
+						autoScroll: true,
 						flex: 1
 					},
 					{
 						xtype: 'systemsetup.printfootertab',
 						title: 'Footer',
 						name: 'footertab',
+						autoScroll: true,
 						flex: 1
 					},
 					{
 						xtype: 'systemsetup.printadditionaltexttab',
 						title: 'Additional Text',
 						name: 'additionaltexttab',
+						autoScroll: true,
 						flex: 1
 					},
 					{
 						xtype: 'systemsetup.printsettingstab',
 						title: 'Settings',
 						name: 'settings',
+						autoScroll: true,
 						flex: 1
 					}
 				]

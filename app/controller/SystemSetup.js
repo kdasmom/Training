@@ -201,10 +201,6 @@ Ext.define('NP.controller.SystemSetup', {
 			'[xtype="systemsetup.picklists"] verticaltabpanel': {
 				tabchange: me.loadPicklistColumns
 			},
-//			'[xtype="systemsetup.picklists"] [xtype="systemsetup.picklisttab"]': {
-//				savepicklist: me.savePicklist,
-//				cancelpicklist: me.resetPickListForm
-//			},
 			'[xtype="systemsetup.picklists"] [name="picklistcolumns"]': {
 				itemclick: me.loadPicklistForm
 			},
@@ -229,8 +225,10 @@ Ext.define('NP.controller.SystemSetup', {
 				}
 			},
 			'[xtype="systemsetup.poprintsettings"] [xtype="systemsetup.templatesmanager"] [xtype="shared.button.cancel"]': {
-				click: function() {
-					me.addHistory('SystemSetup:showSystemSetup:POPrintSettings');
+				click: function(button) {
+					if (button.name !== 'canceluploadbtn') {
+						me.addHistory('SystemSetup:showSystemSetup:POPrintSettings');
+					}
 				}
 			},
 			'[xtype="systemsetup.canvaspanel"]': {
@@ -239,7 +237,12 @@ Ext.define('NP.controller.SystemSetup', {
 			},
 			'[xtype="systemsetup.templatesmanager"]': {
 				savetemplate: me.savePrintTemplate,
-				deletetemplate: me.deletePrintTemplate
+				deletetemplate: me.deletePrintTemplate,
+				uploadattachment: me.showUploadAttachment,
+				uploadimage: me.showUploadImage
+			},
+			'[xtype="systemsetup.templatesmanager"] verticaltabpanel': {
+				tabchange: me.changepotabs
 			}
 		});
 
@@ -1781,5 +1784,41 @@ Ext.define('NP.controller.SystemSetup', {
 				}
 			}
 		});
+	},
+
+	changepotabs: function(tabpanel, tab) {
+		tabpanel.up().down('[name="uploadattachment"]').hide();
+		tabpanel.up().down('[name="uploadimage"]').hide();
+
+		if (tab.name == 'additionaltexttab') {
+			tab.getDockedItems('toolbar[dock="top"]')[0].hide();
+			tabpanel.up().down('[name="uploadattachment"]').show();
+			tab.down('[name="params"]').show();
+			tab.down('[name="uploadattachment"]').hide();
+		}if (tab.name == 'settings') {
+			tab.getDockedItems('toolbar[dock="top"]')[0].hide();
+			tabpanel.up().down('[name="uploadimage"]').show();
+			tab.down('[name="params"]').show();
+			tab.down('[name="uploadimage"]').hide();
+		}
+	},
+
+	showUploadAttachment: function(id) {
+		var me = this,
+			tab = me.getCmp('systemsetup.printadditionaltexttab');
+
+		tab.down('[name="params"]').hide();
+		tab.down('[name="uploadattachment"]').show();
+		tab.getDockedItems('toolbar[dock="top"]')[0].show();
+	},
+
+	showUploadImage: function(id) {
+		var me = this,
+			tab = me.getCmp('systemsetup.printsettingstab');
+
+		tab.down('[name="params"]').hide();
+		tab.down('[name="uploadimage"]').show();
+
+		tab.getDockedItems('toolbar[dock="top"]')[0].show();
 	}
 });
