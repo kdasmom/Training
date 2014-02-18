@@ -35,7 +35,10 @@ if (!$isAuth) {
     <!-- </x-compile> -->
 </head>
 <body>
-    <div id="loading-app">Loading...</div>
+    <div id="loading-app">
+        <img src="resources/images/login_loader_logo.gif" /><br />
+        Loading...
+    </div>
 </body>
 </html>
 
