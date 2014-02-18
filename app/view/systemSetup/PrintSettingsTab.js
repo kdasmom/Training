@@ -43,7 +43,10 @@ Ext.define('NP.view.systemSetup.PrintSettingsTab', {
 			},
 			{
 				xtype: 'shared.button.upload',
-				name: 'uploadattachmentbtn'
+				name: 'uploadattachmentbtn',
+				handler: function() {
+					me.uploadImage();
+				}
 			}
 		];
 
@@ -54,7 +57,8 @@ Ext.define('NP.view.systemSetup.PrintSettingsTab', {
 				value: ''
 			},
 			{
-				xtype: 'form',
+				xtype: 'fieldcontainer',
+//				xtype: 'form',
 				layout: {
 					type: 'vbox',
 					align: 'stretch'
@@ -124,6 +128,7 @@ Ext.define('NP.view.systemSetup.PrintSettingsTab', {
 				items: [
 					{
 						xtype: 'filefield',
+						name: 'jpeg_file',
 						fieldLabel: NP.Translator.translate('Additional image'),
 						width: 300,
 						labelAlign: 'top',
@@ -134,5 +139,39 @@ Ext.define('NP.view.systemSetup.PrintSettingsTab', {
 		];
 
 		me.callParent(arguments);
+	},
+
+	uploadImage: function() {
+		var me = this,
+			uploadForm = me.down('[name="uploadimage"]');
+
+		var fileField = uploadForm.query('filefield')[0];
+		var file = fileField.getValue();
+		console.log(me.getItemId());
+		var formEl = NP.Util.createFormForUpload('#' + me.getItemId() + ' form');
+//		var formEl = me.down('[name="uploadimage"]');
+
+		NP.lib.core.Net.remoteCall({
+			method: 'POST',
+			mask  : me,
+			isUpload: true,
+			form: formEl.id,
+			requests: {
+				service      : 'PrintTemplateService',
+				action       : 'saveAttachmentImage',
+				file         : file,
+				userprofile_id: NP.Security.getUser().get('userprofile_id'),
+				id: me.templateid,
+				success      : function(result) {
+					if (result.success) {
+						me.getDockedItems('toolbar[dock="top"]')[0].hide();
+						me.down('[name="params"]').show();
+						me.down('[name="uploadimage"]').hide();
+					} else {
+						fileField.markInvalid(result.errors);
+					}
+				}
+			}
+		});
 	}
 });

@@ -93,8 +93,6 @@ Ext.define('NP.view.systemSetup.PrintAdditionalTextTab', {
 		var me = this,
 			uploadForm = me.down('[name="uploadattachment"]');
 
-		console.log(uploadForm);
-
 		var fileField = uploadForm.query('filefield')[0];
 		var file = fileField.getValue();
 		var formEl = NP.Util.createFormForUpload('#' + me.getItemId() + ' form');

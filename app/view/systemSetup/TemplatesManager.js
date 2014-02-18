@@ -126,7 +126,8 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 						title: 'Settings',
 						name: 'settings',
 						autoScroll: true,
-						flex: 1
+						flex: 1,
+						templateid: me.id
 					}
 				]
 			}

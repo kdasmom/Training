@@ -11,6 +11,7 @@ namespace NP\system;
 
 use NP\core\AbstractService;
 use NP\core\Exception;
+use NP\util\Util;
 
 class PrintTemplateService extends AbstractService {
 
@@ -111,7 +112,7 @@ class PrintTemplateService extends AbstractService {
 	}
 
 	public function saveAttachmentPdf($userprofile_id = null, $id = null) {
-		if (!$userprofile_id) {
+		if (!$userprofile_id || !$id) {
 			return false;
 		};
 
@@ -124,7 +125,7 @@ class PrintTemplateService extends AbstractService {
 			'pdf_file',
 			$destPath,
 			array(
-				'fileName'=>"$id.pdf",
+				'fileName'=>"poprint_additional_$id.pdf",
 				'allowedTypes'=>array('application/pdf')
 			)
 		);
@@ -132,17 +133,76 @@ class PrintTemplateService extends AbstractService {
 		$fileUpload->upload();
 		$errors = $fileUpload->getErrors();
 
+		if (count($errors) == 0) {
+			$template = $this->printTemplateGateway->findById($id);
+			$templateData = json_decode($template['Print_Template_Data']);
+
+			$templateData->template_attachment = $destPath;
+
+			$template['Print_Template_Data'] = json_encode($templateData);
+			$template['Print_Template_LastUpdateBy'] = $userprofile_id;
+			$template['Print_Template_LastUpdateDt'] = Util::formatDateForDB();
+
+			$printTemplate = new PrintTemplateEntity($template);
+			if (!$this->printTemplateGateway->save($printTemplate)) {
+				throw new \NP\core\Exception('Cannot save print template.');
+			}
+
+		}
+
 		return array(
 			'success'          => (count($errors)) ? false : true,
 			'errors'           => $errors
 		);
 	}
 
-	protected function getUploadPath($isPDF = true) {
-		if ($isPDF) {
-			return "{$this->configService->getAppRoot()}/clients/{$this->configService->getAppName()}/web/images/print_pdf/";
+	public function saveAttachmentImage($userprofile_id = null, $id = null) {
+		if (!$userprofile_id || !$id) {
+			return false;
+		};
+
+		$destPath = $this->getUploadPath();
+
+		if (!is_dir($destPath)) {
+			mkdir($destPath, 0777, true);
+		}
+		$fileUpload = new \NP\core\io\FileUpload(
+			'jpeg_file',
+			$destPath,
+			array(
+				'fileName'=>"poprint_additional_image_$id.jpg",
+				'allowedTypes'=>array('image/jpeg')
+			)
+		);
+
+		$fileUpload->upload();
+		$errors = $fileUpload->getErrors();
+
+		if (count($errors) == 0) {
+			$template = $this->printTemplateGateway->findById($id);
+			$templateData = json_decode($template['Print_Template_Data']);
+
+			$templateData->template_settings['print_template_additional_image'] = $destPath;
+
+			$template['Print_Template_Data'] = json_encode($templateData);
+			$template['Print_Template_LastUpdateBy'] = $userprofile_id;
+			$template['Print_Template_LastUpdateDt'] = Util::formatDateForDB();
+
+			$printTemplate = new PrintTemplateEntity($template);
+
+			if (!$this->printTemplateGateway->save($printTemplate)) {
+				throw new \NP\core\Exception('Cannot save print template.');
+			}
+
 		}
 
-		return "{$this->configService->getAppRoot()}/clients/{$this->configService->getAppName()}/web/images/print_pdf/";
+		return array(
+			'success'          => (count($errors)) ? false : true,
+			'errors'           => $errors
+		);
+	}
+
+	protected function getUploadPath() {
+			return "{$this->configService->getAppRoot()}/clients/{$this->configService->getAppName()}/web/images/print_pdf/";
 	}
 } 
