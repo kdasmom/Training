@@ -118,7 +118,8 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 						title: 'Additional Text',
 						name: 'additionaltexttab',
 						autoScroll: true,
-						flex: 1
+						flex: 1,
+						templateid: me.id
 					},
 					{
 						xtype: 'systemsetup.printsettingstab',

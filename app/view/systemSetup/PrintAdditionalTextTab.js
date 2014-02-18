@@ -42,7 +42,10 @@ Ext.define('NP.view.systemSetup.PrintAdditionalTextTab', {
 			},
 			{
 				xtype: 'shared.button.upload',
-				name: 'uploadimagebtn'
+				name: 'uploadimagebtn',
+				handler: function() {
+					me.uploadAttachment();
+				}
 			}
 		];
 
@@ -67,14 +70,56 @@ Ext.define('NP.view.systemSetup.PrintAdditionalTextTab', {
 				]
 			},
 			{
-				xtype: 'filefield',
+				xtype: 'form',
+				border: false,
+				layout: 'fit',
 				name: 'uploadattachment',
-				fieldLabel: NP.Translator.translate('Select a valid PDF file to upload. The contents of this file will be appended at the end of your purchase orders'),
-				width: 300,
-				labelAlign: 'top'
+				items: [
+					{
+						xtype: 'filefield',
+						name: 'pdf_file',
+						fieldLabel: NP.Translator.translate('Select a valid PDF file to upload. The contents of this file will be appended at the end of your purchase orders'),
+						width: 300,
+						labelAlign: 'top'
+					}
+				]
 			}
 		];
 
 		me.callParent(arguments);
+	},
+
+	uploadAttachment: function() {
+		var me = this,
+			uploadForm = me.down('[name="uploadattachment"]');
+
+		console.log(uploadForm);
+
+		var fileField = uploadForm.query('filefield')[0];
+		var file = fileField.getValue();
+		var formEl = NP.Util.createFormForUpload('#' + me.getItemId() + ' form');
+
+		NP.lib.core.Net.remoteCall({
+			method: 'POST',
+			mask  : me,
+			isUpload: true,
+			form: formEl.id,
+			requests: {
+				service      : 'PrintTemplateService',
+				action       : 'saveAttachmentPdf',
+				file         : file,
+				userprofile_id: NP.Security.getUser().get('userprofile_id'),
+				id: me.templateid,
+				success      : function(result) {
+					if (result.success) {
+						me.getDockedItems('toolbar[dock="top"]')[0].hide();
+						me.down('[name="params"]').show();
+						me.down('[name="uploadattachment"]').hide();
+					} else {
+						fileField.markInvalid(result.errors);
+					}
+				}
+			}
+		});
 	}
 });

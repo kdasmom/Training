@@ -119,12 +119,17 @@ Ext.define('NP.view.systemSetup.PrintSettingsTab', {
 				]
 			},
 			{
-				xtype: 'filefield',
+				xtype: 'form',
 				name: 'uploadimage',
-				fieldLabel: NP.Translator.translate('Additional image'),
-				width: 300,
-				labelAlign: 'top',
-				afterSubTpl: NP.Translator.translate('The Additional Image is the Image that will display on the PO Print/PDF view. This will replace the image that is currently used on other reports in the application. The image must be a .JPG file')
+				items: [
+					{
+						xtype: 'filefield',
+						fieldLabel: NP.Translator.translate('Additional image'),
+						width: 300,
+						labelAlign: 'top',
+						afterSubTpl: NP.Translator.translate('The Additional Image is the Image that will display on the PO Print/PDF view. This will replace the image that is currently used on other reports in the application. The image must be a .JPG file')
+					}
+				]
 			}
 		];
 

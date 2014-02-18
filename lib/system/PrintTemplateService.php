@@ -15,6 +15,19 @@ use NP\core\Exception;
 class PrintTemplateService extends AbstractService {
 
 	/**
+	 * @var ConfigService
+	 */
+	protected $configService;
+
+	/**
+	 * @param ConfigService $configService set by Pimple di bootstrap
+	 */
+	public function setConfigService(ConfigService $configService)
+	{
+		$this->configService = $configService;
+	}
+
+	/**
 	 * Retrieve all print templates
 	 *
 	 * @param int $page
@@ -95,5 +108,41 @@ class PrintTemplateService extends AbstractService {
 			throw new \NP\core\Exception('Cannot delete template properties.');
 		}
 		return $this->printTemplateGateway->delete(['Print_Template_Id' => '?'], [$id]);
+	}
+
+	public function saveAttachmentPdf($userprofile_id = null, $id = null) {
+		if (!$userprofile_id) {
+			return false;
+		};
+
+		$destPath = $this->getUploadPath();
+
+		if (!is_dir($destPath)) {
+			mkdir($destPath, 0777, true);
+		}
+		$fileUpload = new \NP\core\io\FileUpload(
+			'pdf_file',
+			$destPath,
+			array(
+				'fileName'=>"$id.pdf",
+				'allowedTypes'=>array('application/pdf')
+			)
+		);
+
+		$fileUpload->upload();
+		$errors = $fileUpload->getErrors();
+
+		return array(
+			'success'          => (count($errors)) ? false : true,
+			'errors'           => $errors
+		);
+	}
+
+	protected function getUploadPath($isPDF = true) {
+		if ($isPDF) {
+			return "{$this->configService->getAppRoot()}/clients/{$this->configService->getAppName()}/web/images/print_pdf/";
+		}
+
+		return "{$this->configService->getAppRoot()}/clients/{$this->configService->getAppName()}/web/images/print_pdf/";
 	}
 } 
