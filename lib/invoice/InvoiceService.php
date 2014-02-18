@@ -1023,14 +1023,11 @@ class InvoiceService extends AbstractInvoicePoService {
 		try {
 			$now = \NP\util\Util::formatDateForDB();
 
-			// Set a new lock on the invoice to prevent other people from updating it simultaneously
-			$lock_id = null;
-			if ($data['invoice']['invoice_id'] !== null) {
-				$lock_id = $this->setNewLock($data['invoice']['invoice_id']);
-			}
-
 			// Create the invoice entity with initial data
 			$invoice = new InvoiceEntity($data['invoice']);
+
+			// Set a new lock on the invoice to prevent other people from updating it simultaneously
+			$invoice->lock_id = $this->getLock($invoice->invoice_id) + 1;
 
 			// If paytablekey_id wasn't added, we need to get it based on vendor_id
 			if ($invoice->paytablekey_id === null) {
@@ -1170,7 +1167,7 @@ class InvoiceService extends AbstractInvoicePoService {
 			'success'    => (count($errors)) ? false : true,
 			'errors'     => $errors,
 			'invoice_id' => $invoice->invoice_id,
-			'lock_id'    => $lock_id
+			'lock_id'    => $invoice->lock_id
 		);
 	}
 

@@ -465,6 +465,8 @@ Ext.define('NP.controller.Invoice', {
 			    }
 			};
 
+		me.selectedVendor = null;
+
 		if (invoice_id) {
 			Ext.apply(viewCfg.bind, {
 				service    : 'InvoiceService',
@@ -1299,7 +1301,9 @@ Ext.define('NP.controller.Invoice', {
 	},
 
 	onStoreAddLine: function(store, recs, index) {
-        this.onChangeShippingTotal();
+		if (this.query('#entity_tax_amount').length) {
+        	this.onChangeShippingTotal();
+        }
     },
 
 	onStoreRemoveLine: function(store, rec, index, isMove) {

@@ -69,7 +69,13 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                     return this.getInvoiceView().getInvoiceRecord();
                 },
                 getFormDataVal: function(key) {
-                    return me.up('boundform').getLoadedData()[key];
+                    var data = me.up('boundform').getLoadedData();
+
+                    if (data) {
+                        return data[key];
+                    }
+
+                    return null;
                 },
                 getSum: function(field) {
                     var total = 0;

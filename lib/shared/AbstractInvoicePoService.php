@@ -628,12 +628,19 @@ Abstract class AbstractInvoicePoService extends AbstractService {
 	 * @return int
 	 */
 	public function getLock($entity_id) {
+		if ($entity_id === null) {
+			return 0;
+		}
+
 		$gtw = "{$this->gateway}Gateway";
-		return $this->$gtw->findValue(
+
+		$lock_id = $this->$gtw->findValue(
 			["{$this->table}_id"=>'?'],
 			[$entity_id],
 			'lock_id'
 		);
+
+		return $lock_id;
 	}
 
 	/**
@@ -653,7 +660,7 @@ Abstract class AbstractInvoicePoService extends AbstractService {
 			["{$this->table}_id"=>'?'],
 			[$entity_id]
 		);
-
+		
 		return $lock_id;
 	}
 }
