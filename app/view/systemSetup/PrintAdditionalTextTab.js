@@ -34,6 +34,7 @@ Ext.define('NP.view.systemSetup.PrintAdditionalTextTab', {
 					me.getDockedItems('toolbar[dock="top"]')[0].hide();
 					me.down('[name="params"]').show();
 					me.down('[name="uploadattachment"]').hide();
+					me.up().up().getDockedItems('toolbar[dock="top"]')[0].show();
 				}
 			},
 			{
@@ -111,6 +112,7 @@ Ext.define('NP.view.systemSetup.PrintAdditionalTextTab', {
 				success      : function(result) {
 					if (result.success) {
 						me.getDockedItems('toolbar[dock="top"]')[0].hide();
+						me.up().up().getDockedItems('toolbar[dock="top"]')[0].show();
 						me.down('[name="params"]').show();
 						me.down('[name="uploadattachment"]').hide();
 					} else {

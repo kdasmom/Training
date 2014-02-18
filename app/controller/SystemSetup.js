@@ -1805,20 +1805,25 @@ Ext.define('NP.controller.SystemSetup', {
 
 	showUploadAttachment: function(id) {
 		var me = this,
-			tab = me.getCmp('systemsetup.printadditionaltexttab');
+			tab = me.getCmp('systemsetup.printadditionaltexttab'),
+			toptab = tab.up().up();
 
 		tab.down('[name="params"]').hide();
 		tab.down('[name="uploadattachment"]').show();
+
 		tab.getDockedItems('toolbar[dock="top"]')[0].show();
+		toptab.getDockedItems('toolbar[dock="top"]')[0].hide();
 	},
 
 	showUploadImage: function(id) {
 		var me = this,
-			tab = me.getCmp('systemsetup.printsettingstab');
+			tab = me.getCmp('systemsetup.printsettingstab'),
+			toptab = tab.up().up();
 
 		tab.down('[name="params"]').hide();
 		tab.down('[name="uploadimage"]').show();
 
 		tab.getDockedItems('toolbar[dock="top"]')[0].show();
+		toptab.getDockedItems('toolbar[dock="top"]')[0].hide();
 	}
 });

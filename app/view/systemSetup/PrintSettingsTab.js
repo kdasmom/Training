@@ -33,6 +33,7 @@ Ext.define('NP.view.systemSetup.PrintSettingsTab', {
 				name: 'canceluploadbtn',
 				handler: function() {
 					me.getDockedItems('toolbar[dock="top"]')[0].hide();
+					me.up().up().getDockedItems('toolbar[dock="top"]')[0].show();
 					me.down('[name="params"]').show();
 					me.down('[name="uploadimage"]').hide();
 				}
@@ -58,7 +59,6 @@ Ext.define('NP.view.systemSetup.PrintSettingsTab', {
 			},
 			{
 				xtype: 'fieldcontainer',
-//				xtype: 'form',
 				layout: {
 					type: 'vbox',
 					align: 'stretch'
@@ -149,7 +149,6 @@ Ext.define('NP.view.systemSetup.PrintSettingsTab', {
 		var file = fileField.getValue();
 		console.log(me.getItemId());
 		var formEl = NP.Util.createFormForUpload('#' + me.getItemId() + ' form');
-//		var formEl = me.down('[name="uploadimage"]');
 
 		NP.lib.core.Net.remoteCall({
 			method: 'POST',
@@ -165,6 +164,7 @@ Ext.define('NP.view.systemSetup.PrintSettingsTab', {
 				success      : function(result) {
 					if (result.success) {
 						me.getDockedItems('toolbar[dock="top"]')[0].hide();
+						me.up().up().getDockedItems('toolbar[dock="top"]')[0].show();
 						me.down('[name="params"]').show();
 						me.down('[name="uploadimage"]').hide();
 					} else {
