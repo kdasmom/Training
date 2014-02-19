@@ -88,7 +88,12 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 				xtype: 'shared.button.view',
 				text: 'View Attachment',
 				name: 'viewAttachmentBtn',
-				hidden: true
+				hidden: true,
+				handler: function() {
+					console.log(me.id);
+					var win = Ext.create('NP.view.systemSetup.PrintTemplateViewAttachmentWindow', {templateid: me.id});
+					win.show();
+				}
 			},
 			{
 				xtype: 'shared.button.delete',
