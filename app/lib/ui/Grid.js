@@ -10,6 +10,7 @@ Ext.define('NP.lib.ui.Grid', {
 	requires: [
 		'Ext.toolbar.Spacer',
 		'NP.view.shared.button.Print',
+		'NP.view.shared.button.Excel',
 		'NP.lib.print.Manager',
 		'NP.lib.core.Translator'
 	],
@@ -59,11 +60,21 @@ Ext.define('NP.lib.ui.Grid', {
 				this.pagingToolbarButtons = [];
 			}
 			this.pagingToolbarButtons.unshift(
-				'-', {
+				'-',
+				{
 					xtype  : 'shared.button.print',
+					tooltip: NP.Translator.translate('Print'),
 					text   : null,
 					handler: function() {
 						NP.PrintManager.print(that);
+					}
+				},
+				{
+					xtype  : 'shared.button.excel',
+					tooltip: NP.Translator.translate('Export to Excel'),
+					text   : null,
+					handler: function() {
+						// TODO: add handler for Excel export functionality
 					}
 				},
 				'-', 

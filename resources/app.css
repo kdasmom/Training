@@ -34,6 +34,7 @@ li.x-boundlist-item {
 .copy-btn { background-image: url("images/buttons/copy.gif"); }
 .delete-btn { background-image: url("images/buttons/delete.gif"); width: 15px; height: 15px; }
 .edit-btn { background-image: url("images/buttons/edit.gif"); }
+.excel-btn { background-image: url("images/buttons/excel.gif"); }
 .favorites-btn { background-image: url("images/buttons/favorites.png"); }
 .favorites-remove-btn { background-image: url("images/buttons/favorites_remove.gif"); width: 20px !important; }
 .favorites-add-btn { background-image: url("images/buttons/favorites_add.gif"); width: 20px !important; }
