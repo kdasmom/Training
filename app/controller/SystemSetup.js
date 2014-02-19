@@ -1669,18 +1669,19 @@ Ext.define('NP.controller.SystemSetup', {
 						}
 					}
 
-					if (templateObj.template_settings && parseInt(templateObj.template_settings.print_template_additional_image)) {
-						boundForm.getForm().findField('print_template_additional_image').setValue(1);
-					}
-					if (parseInt(templateObj.template_attachment)) {
-						boundForm.getForm().findField('template_attachment').setValue(1);
-					}
-
 					if (copy) {
 						boundForm.getForm().findField('Print_Template_Id').setValue('');
 						boundForm.getForm().findField('Print_Template_Name').setValue(data.Print_Template_Name + ' (copy)');
 						boundForm.getForm().findField('print_template_additional_image').setValue(0);
 						boundForm.getForm().findField('template_attachment').setValue(0);
+					} else {
+						if (templateObj.template_settings && templateObj.template_settings.print_template_additional_image) {
+							boundForm.getForm().findField('print_template_additional_image').setValue(1);
+						}
+						if (templateObj.template_attachment) {
+							boundForm.getForm().findField('template_attachment').setValue(1);
+						}
+
 					}
 				}
 			};
@@ -1824,19 +1825,20 @@ Ext.define('NP.controller.SystemSetup', {
 			tabpanel.up().down('[name="uploadattachment"]').show();
 			tab.down('[name="params"]').show();
 			tab.down('[name="uploadattachment"]').hide();
-			if (isWithAttachment) {
+			if (isWithAttachment == 1) {
 				tabpanel.up().down('[name="viewAttachmentBtn"]').show();
 				tabpanel.up().down('[name="deleteAttachmentBtn"]').show();
 			}
 
 		}if (tab.name == 'settings') {
 			isWithImage = tab.down('[name="print_template_additional_image"]').getValue();
+			console.log(isWithImage);
 
 			tab.getDockedItems('toolbar[dock="top"]')[0].hide();
 			tabpanel.up().down('[name="uploadimage"]').show();
 			tab.down('[name="params"]').show();
 			tab.down('[name="uploadimage"]').hide();
-			if (isWithImage) {
+			if (isWithImage == 1) {
 				tabpanel.up().down('[name="viewImageBtn"]').show();
 				tabpanel.up().down('[name="deleteImageBtn"]').show();
 			}

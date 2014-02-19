@@ -121,6 +121,8 @@ Ext.define('NP.view.systemSetup.PrintAdditionalTextTab', {
 						me.down('[name="params"]').show();
 						me.down('[name="uploadattachment"]').hide();
 						me.down('[name="template_attachment"]').setValue(1);
+						me.up().up().down('[name="viewAttachmentBtn"]').show();
+						me.up().up().down('[name="deleteAttachmentBtn"]').show();
 					} else {
 						fileField.markInvalid(result.errors);
 					}

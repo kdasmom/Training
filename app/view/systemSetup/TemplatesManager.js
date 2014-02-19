@@ -99,7 +99,10 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 				xtype: 'shared.button.delete',
 				text: 'Delete Attachment',
 				name: 'deleteAttachmentBtn',
-				hidden: true
+				hidden: true,
+				handler: function() {
+					me.deleteAttachment(me.id, false);
+				}
 			},
 			{
 				xtype: 'shared.button.view',
@@ -116,7 +119,10 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 				xtype: 'shared.button.delete',
 				text: 'Delete Image',
 				name: 'deleteImageBtn',
-				hidden: true
+				hidden: true,
+				handler: function() {
+					me.deleteAttachment(me.id, true);
+				}
 			}
 		];
 
@@ -168,5 +174,30 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 		];
 
 		this.callParent(arguments);
+	},
+
+	deleteAttachment: function(id, image) {
+		var me = this;
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service    : 'PrintTemplateService',
+				action     : 'deleteAttachments',
+				id: id,
+				image: image,
+				success    : function(result) {
+					if (result) {
+						if (image) {
+							me.down('[name="print_template_additional_image"]').setValue(0);
+							me.down('[name="viewImageBtn"]').hide();
+							me.down('[name="deleteImageBtn"]').hide();
+						} else {
+							me.down('[name="template_attachment"]').setValue(0);
+							me.down('[name="viewAttachmentBtn"]').hide();
+							me.down('[name="deleteAttachmentBtn"]').hide();
+						}
+					}
+				}
+			}
+		});
 	}
 });

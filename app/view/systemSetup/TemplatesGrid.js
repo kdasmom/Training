@@ -92,11 +92,11 @@ Ext.define('NP.view.systemSetup.TemplatesGrid', {
 				flex: 0.3,
 				renderer: function(val, meta, record) {
 					var templateObj = JSON.parse(record.get('Print_Template_Data'));
-					if (parseInt(templateObj.template_attachment) == 1) {
-						return NP.Translator.translate('View Attachment');
+					if (parseInt(templateObj.template_attachment) == 0) {
+						return '';
 					}
 
-					return '';
+					return NP.Translator.translate('View Attachment');;
 				}
 			}
 		];

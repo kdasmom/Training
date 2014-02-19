@@ -196,10 +196,10 @@ class PrintTemplateService extends AbstractService {
 			$template = $this->printTemplateGateway->findById($id);
 			$templateData = json_decode($template['Print_Template_Data']);
 
-			if ($templateData->template_settings) {
+			if (isset($templateData->template_settings)) {
 				$templateData->template_settings->print_template_additional_image = $destPath;
 			} else {
-				$templateData->template_settings['print_template_additional_image'] = $destPath;
+				$templateData->template_settings['print_template_additional_image']= $destPath;
 			}
 
 			$template['Print_Template_Data'] = json_encode($templateData);
@@ -216,12 +216,43 @@ class PrintTemplateService extends AbstractService {
 
 		return array(
 			'success'			=> (count($errors)) ? false : true,
-			'errors'			=> $errors,
-			'path'				=> $destPath
+			'errors'			=> $errors
 		);
 	}
 
 	protected function getUploadPath() {
 			return "{$this->configService->getAppRoot()}/clients/{$this->configService->getAppName()}/web/images/print_pdf/";
+	}
+
+	public function deleteAttachments($id = false, $image = false) {
+		if (!$id) {
+			return false;
+		}
+
+		$template = $this->printTemplateGateway->findById($id);
+		$templateData = json_decode($template['Print_Template_Data']);
+
+		if (!$image) {
+			unset($templateData->template_attachment);
+		} else {
+			unset($templateData->template_settings);
+		}
+
+		$template['Print_Template_Data'] = json_encode($templateData);
+
+		$printTemplateEntity = new PrintTemplateEntity($template);
+		if (!$this->printTemplateGateway->save($printTemplateEntity)) {
+			throw new \NP\core\Exception('Cannot delete template attachment.');
+		}
+		if ($image) {
+			$filename = "poprint_additional_image_$id.jpg";
+		} else {
+			$filename = "poprint_additional_$id.pdf";
+		}
+		if (file_exists($this->getUploadPath() . $filename)) {
+			unlink($this->getUploadPath() . $filename);
+		}
+
+		return true;
 	}
 } 

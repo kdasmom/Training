@@ -174,6 +174,8 @@ Ext.define('NP.view.systemSetup.PrintSettingsTab', {
 						me.down('[name="params"]').show();
 						me.down('[name="uploadimage"]').hide();
 						me.down('[name="print_template_additional_image"]').setValue(1);
+						me.up().up().down('[name="viewImageBtn"]').show();
+						me.up().up().down('[name="deleteImageBtn"]').show();
 					} else {
 						fileField.markInvalid(result.errors);
 					}
