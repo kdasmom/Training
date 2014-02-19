@@ -1625,9 +1625,9 @@ Ext.define('NP.controller.SystemSetup', {
 						templatesCanvas = null;
 
 //					header, footer, additional text
-					boundForm.getForm().findField('poprint_header').setValue(templateObj.template_additional_text);
+					boundForm.getForm().findField('poprint_additional_text').setValue(templateObj.template_additional_text);
 					boundForm.getForm().findField('poprint_footer').setValue(templateObj.template_footer_text);
-					boundForm.getForm().findField('poprint_additional_text').setValue(templateObj.template_header_text);
+					boundForm.getForm().findField('poprint_header').setValue(templateObj.template_header_text);
 
 //					settings
 					boundForm.getForm().findField('po_include_attachments').setValue(templateObj.settings.po_include_attachments);
