@@ -217,10 +217,16 @@ Ext.define('NP.controller.SystemSetup', {
 			},
 			'[xtype="systemsetup.poprintsettings"] [xtype="systemsetup.templatesgrid"]': {
 				cellclick: function(grid, td, cellIndex, record, tr, rowIndex, e, eOpts) {
-					if (cellIndex !== 1) {
+					console.log(cellIndex);
+					if (cellIndex !== 1 && cellIndex !== 8) {
 						me.addHistory('SystemSetup:showSystemSetup:POPrintSettings:PrintTemplate:' + record.get('Print_Template_Id') + (cellIndex == 5 ? (':copy') : ''));
 					} else {
-						me.showTemplatePropertyAssignmentWindow(record.get('Print_Template_Id'));
+						if (cellIndex == 1) {
+							me.showTemplatePropertyAssignmentWindow(record.get('Print_Template_Id'));
+						} else {
+							var win = Ext.create('NP.view.systemSetup.PrintTemplateViewAttachmentWindow', {templateid: record.get('Print_Template_Id')});
+							win.show();
+						}
 					}
 				}
 			},
@@ -1663,16 +1669,18 @@ Ext.define('NP.controller.SystemSetup', {
 						}
 					}
 
+					if (templateObj.template_settings && parseInt(templateObj.template_settings.print_template_additional_image)) {
+						boundForm.getForm().findField('print_template_additional_image').setValue(1);
+					}
+					if (parseInt(templateObj.template_attachment)) {
+						boundForm.getForm().findField('template_attachment').setValue(1);
+					}
+
 					if (copy) {
 						boundForm.getForm().findField('Print_Template_Id').setValue('');
 						boundForm.getForm().findField('Print_Template_Name').setValue(data.Print_Template_Name + ' (copy)');
-					}
-
-					if (templateObj.template_settings && templateObj.template_settings.print_template_additional_image) {
-						boundForm.getForm().findField('print_template_additional_image').setValue(1);
-					}
-					if (templateObj.template_attachment) {
-						boundForm.getForm().findField('template_attachment').setValue(1);
+						boundForm.getForm().findField('print_template_additional_image').setValue(0);
+						boundForm.getForm().findField('template_attachment').setValue(0);
 					}
 				}
 			};

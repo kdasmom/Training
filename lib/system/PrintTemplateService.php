@@ -60,6 +60,7 @@ class PrintTemplateService extends AbstractService {
 
 		if ($data['templateobj']) {
 			$templateobj = json_decode($data['templateobj']);
+
 			if ($templateobj->template_attachment) {
 				$templateobj->template_attachment = $this->getUploadPath();
 			} else {
@@ -70,6 +71,7 @@ class PrintTemplateService extends AbstractService {
 			} else {
 				unset($templateobj->template_settings);
 			}
+
 			$printTemplate->Print_Template_Data = $data['templateobj'];
 		}
 		$printTemplate->Print_Template_Type = 'PO';
