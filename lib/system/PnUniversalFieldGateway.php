@@ -113,7 +113,7 @@ class PnUniversalFieldGateway extends AbstractGateway {
 
 			$this->adapter->query($updateStatus, [self::STATUS_ACTIVE, $data['tabindex'], self::STATUS_DEFAULT, 'customInvoicePO', $data['universal_field_id']]);
 		}
-		
+
 
 		$update = new Update();
 
