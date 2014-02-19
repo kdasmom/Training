@@ -34,6 +34,7 @@ Ext.define('NP.view.systemSetup.PrintSettingsTab', {
 				handler: function() {
 					me.getDockedItems('toolbar[dock="top"]')[0].hide();
 					me.up().up().getDockedItems('toolbar[dock="top"]')[0].show();
+
 					me.down('[name="params"]').show();
 					me.down('[name="uploadimage"]').hide();
 				}
@@ -119,12 +120,19 @@ Ext.define('NP.view.systemSetup.PrintSettingsTab', {
 						labelWidth: '80%',
 						name: 'po_include_attachments',
 						padding: '0 5'
+					},
+					{
+						xtype: 'hiddenfield',
+						name: 'print_template_additional_image',
+						value: ''
 					}
 				]
 			},
 			{
 				xtype: 'form',
 				name: 'uploadimage',
+				border: false,
+				layout: 'fit',
 				items: [
 					{
 						xtype: 'filefield',
@@ -143,12 +151,10 @@ Ext.define('NP.view.systemSetup.PrintSettingsTab', {
 
 	uploadImage: function() {
 		var me = this,
-			uploadForm = me.down('[name="uploadimage"]');
-
-		var fileField = uploadForm.query('filefield')[0];
-		var file = fileField.getValue();
-		console.log(me.getItemId());
-		var formEl = NP.Util.createFormForUpload('#' + me.getItemId() + ' form');
+			uploadForm = me.down('[name="uploadimage"]'),
+			fileField = uploadForm.query('filefield')[0],
+			file = fileField.getValue(),
+			formEl = NP.Util.createFormForUpload('#' + me.getItemId() + ' form');
 
 		NP.lib.core.Net.remoteCall({
 			method: 'POST',
@@ -167,6 +173,7 @@ Ext.define('NP.view.systemSetup.PrintSettingsTab', {
 						me.up().up().getDockedItems('toolbar[dock="top"]')[0].show();
 						me.down('[name="params"]').show();
 						me.down('[name="uploadimage"]').hide();
+						uploadForm.down('[name="print_template_additional_image"]').setValue(result.path);
 					} else {
 						fileField.markInvalid(result.errors);
 					}

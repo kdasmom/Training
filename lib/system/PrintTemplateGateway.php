@@ -71,6 +71,8 @@ class PrintTemplateGateway extends AbstractGateway {
 			$template['properties'][] = $property['Property_Id'];
 		}
 
+//		print_r($template);
+
 		return $template;
 	}
 

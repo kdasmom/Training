@@ -140,9 +140,19 @@ Ext.define('NP.view.systemSetup.PrintTemplateTab', {
 	 * @returns {*}
 	 */
 	addTemplate: function(region, template_name) {
-		var me = this;
+		var me = this,
+			inarray = false;
 
-		me.positions[region].push(template_name);
+		Ext.each(me.positions[region], function(template) {
+			if (template == template_name) {
+				inarray = true;
+				return false;
+			}
+		});
+
+		if (!inarray) {
+			me.positions[region].push(template_name);
+		}
 
 		return me.positions;
 	},

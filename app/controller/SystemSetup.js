@@ -1298,10 +1298,9 @@ Ext.define('NP.controller.SystemSetup', {
 	 * @param record
 	 */
 	loadPicklistColumns: function (tabPanel, tab) {
-		console.log('tab: ', tab);
 		var me = this,
 			columnsgrid = tab.down('[name="picklistcolumns"]');
-//
+
 		columnsgrid.getStore().getProxy().extraParams.mode = tab.mode;
 		columnsgrid.getStore().reload();
 		me.resetPickListForm();
@@ -1583,7 +1582,22 @@ Ext.define('NP.controller.SystemSetup', {
 						'system.PrintTemplate'
 					]
 				}
-			};
+			},
+			templateObj,
+			assignedObjects = [],
+			assignedTemplates = {},
+			regions = [
+				'template_body',
+				'template_footer',
+				'template_footer_left',
+				'template_footer_right',
+				'template_header',
+				'template_header_left',
+				'template_header_right',
+				'template_logo_center',
+				'template_logo_left',
+				'template_logo_right'
+			];
 
 		if (id) {
 			Ext.apply(viewConfig.bind, {
@@ -1597,24 +1611,10 @@ Ext.define('NP.controller.SystemSetup', {
 
 			viewConfig.listeners = {
 				dataloaded: function(boundForm, data) {
-					var templateObj = JSON.parse(data.Print_Template_Data),
-						assignedObjects = [],
-						assignedTemplates = {},
-						regions = [
-							'template_body',
-							'template_footer',
-							'template_footer_left',
-							'template_footer_right',
-							'template_header',
-							'template_header_left',
-							'template_header_right',
-							'template_logo_center',
-							'template_logo_left',
-							'template_logo_right'
-						],
+					templateObj = JSON.parse(data.Print_Template_Data),
 						templatesPicker = boundForm.down('[name="templatespicker"]'),
 						templatetab = boundForm.down('[name="templatetab"]'),
-						templatesCanvas;
+						templatesCanvas = null;
 
 //					header, footer, additional text
 					boundForm.getForm().findField('poprint_header').setValue(templateObj.template_additional_text);
@@ -1629,6 +1629,7 @@ Ext.define('NP.controller.SystemSetup', {
 					boundForm.getForm().findField('po_lineitems_display_opts_itemnum').setValue(templateObj.settings.po_lineitems_display_opts_itemnum);
 					boundForm.getForm().findField('po_lineitems_display_opts_jobcost').setValue(templateObj.settings.po_lineitems_display_opts_jobcost);
 					boundForm.getForm().findField('po_lineitems_display_opts_uom').setValue(templateObj.settings.po_lineitems_display_opts_uom);
+
 
 //					unassigned objects
 					Ext.each(regions, function(region) {
@@ -1714,8 +1715,6 @@ Ext.define('NP.controller.SystemSetup', {
 			po_include_attachments: form.findField('po_include_attachments').getValue()
 		};
 
-//		console.log(templateobj);
-//		return;
 		if (form.isValid()) {
 			form.submitWithBindings({
 				service: 'PrintTemplateService',

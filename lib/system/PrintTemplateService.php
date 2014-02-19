@@ -151,8 +151,9 @@ class PrintTemplateService extends AbstractService {
 		}
 
 		return array(
-			'success'          => (count($errors)) ? false : true,
-			'errors'           => $errors
+			'success'			=> (count($errors)) ? false : true,
+			'errors'			=> $errors,
+			'path'				=> $destPath
 		);
 	}
 
@@ -182,7 +183,11 @@ class PrintTemplateService extends AbstractService {
 			$template = $this->printTemplateGateway->findById($id);
 			$templateData = json_decode($template['Print_Template_Data']);
 
-			$templateData->template_settings['print_template_additional_image'] = $destPath;
+			if ($templateData->template_settings) {
+				$templateData->template_settings->print_template_additional_image = $destPath;
+			} else {
+				$templateData->template_settings['print_template_additional_image'] = $destPath;
+			}
 
 			$template['Print_Template_Data'] = json_encode($templateData);
 			$template['Print_Template_LastUpdateBy'] = $userprofile_id;
@@ -197,8 +202,9 @@ class PrintTemplateService extends AbstractService {
 		}
 
 		return array(
-			'success'          => (count($errors)) ? false : true,
-			'errors'           => $errors
+			'success'			=> (count($errors)) ? false : true,
+			'errors'			=> $errors,
+			'path'				=> $destPath
 		);
 	}
 
