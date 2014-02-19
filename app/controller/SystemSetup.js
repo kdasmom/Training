@@ -198,11 +198,59 @@ Ext.define('NP.controller.SystemSetup', {
 			'[xtype="systemsetup.customfields"]': {
 				beforehidetab: me.changeCustomFieldsTab
 			},
-			'[xtype="systemsetup.picklists"] [name="picklistmodes"]': {
-				itemclick: me.loadPicklistColumns
+			'[xtype="systemsetup.picklists"] verticaltabpanel': {
+				tabchange: me.loadPicklistColumns
 			},
 			'[xtype="systemsetup.picklists"] [name="picklistcolumns"]': {
 				itemclick: me.loadPicklistForm
+			},
+			'[xtype="systemsetup.picklists"] [name="picklistfields"] [xtype="shared.button.save"]': {
+				click: me.savePicklist
+			},
+			'[xtype="systemsetup.picklists"] [name="picklistfields"] [xtype="shared.button.cancel"]': {
+				click: me.resetPickListForm
+			},
+			'[xtype="systemsetup.poprintsettings"] [xtype="shared.button.new"]': {
+				click: function() {
+					me.addHistory('SystemSetup:showSystemSetup:POPrintSettings:PrintTemplate');
+				}
+			},
+			'[xtype="systemsetup.poprintsettings"] [xtype="systemsetup.templatesgrid"]': {
+				cellclick: function(grid, td, cellIndex, record, tr, rowIndex, e, eOpts) {
+					if (cellIndex !== 1 && cellIndex !== 8) {
+						me.addHistory('SystemSetup:showSystemSetup:POPrintSettings:PrintTemplate:' + record.get('Print_Template_Id') + (cellIndex == 5 ? (':copy') : ''));
+					} else {
+						if (cellIndex == 1) {
+							me.showTemplatePropertyAssignmentWindow(record.get('Print_Template_Id'));
+						} else {
+							var templateObj = JSON.parse(record.get('Print_Template_Data'));
+							if (templateObj.template_attachment !== '0') {
+								var win = Ext.create('NP.view.systemSetup.PrintTemplateViewAttachmentWindow', {templateid: record.get('Print_Template_Id')});
+								win.show();
+							}
+						}
+					}
+				}
+			},
+			'[xtype="systemsetup.poprintsettings"] [xtype="systemsetup.templatesmanager"] [xtype="shared.button.cancel"]': {
+				click: function(button) {
+					if (button.name !== 'canceluploadbtn') {
+						me.addHistory('SystemSetup:showSystemSetup:POPrintSettings');
+					}
+				}
+			},
+			'[xtype="systemsetup.canvaspanel"]': {
+				addtemplateitem: me.addTemplateItem,
+				removetemplateitem: me.removeTemplateItem
+			},
+			'[xtype="systemsetup.templatesmanager"]': {
+				savetemplate: me.savePrintTemplate,
+				deletetemplate: me.deletePrintTemplate,
+				uploadattachment: me.showUploadAttachment,
+				uploadimage: me.showUploadImage
+			},
+			'[xtype="systemsetup.templatesmanager"] verticaltabpanel': {
+				tabchange: me.changepotabs
 			}
 		});
 
@@ -214,7 +262,7 @@ Ext.define('NP.controller.SystemSetup', {
 	 * @param {String} [subSection]       The seubsection of the tab to open
 	 * @param {String} [id]               Id for an item being viewed
 	 */
-	showSystemSetup: function(activeTab, subSection, id) {
+	showSystemSetup: function(activeTab, subSection, id, copy) {
 		var that = this;
 
 		// Set the SystemSetup view
@@ -237,13 +285,23 @@ Ext.define('NP.controller.SystemSetup', {
 		var showMethod = 'show' + activeTab;
 		if (that[showMethod]) {
 			// If the show method exists, run it
-			that[showMethod](subSection, id);
+			that[showMethod](subSection, id, copy);
 		}
 
 		if (activeTab == 'Settings') {
 			var generaltab = tab.down('#general');
 
 			this.filltabContent(generaltab, this.addField);
+		}
+	},
+
+	showPOPrintSettings: function(subpanel, id, copy) {
+		var me = this;
+
+		subpanel = !subpanel ? 'TemplatesGrid' : subpanel;
+
+		if (me['show' + subpanel]) {
+			me['show' + subpanel](id, copy);
 		}
 	},
 
@@ -1160,7 +1218,7 @@ Ext.define('NP.controller.SystemSetup', {
 						headerform.getForm().findField('vef_custom_field_on_off').setValue(parseInt(result['vef_custom_field_on_off']));
 						headerform.getForm().findField('vef_custom_field_req').setValue(parseInt(result['vef_custom_field_req']));
 						if (tabindex == 0) {
-							headerform.getForm().findField('inv_custom_field_imgindex').setValue(parseInt(result['inv_custom_field_imgindex']));
+							headerform.getForm().findField('inv_custom_field_imgindex').setValue(parseInt(parseInt(result['inv_custom_field_imgindex'])));
 							headerform.getForm().findField('customFieldType').setValue(result['customFieldType'] == 'select' ? 0 : 1);
 
 						}
@@ -1182,6 +1240,9 @@ Ext.define('NP.controller.SystemSetup', {
 		});
 	},
 
+	/**
+	 * Save custom fields values
+	 */
 	saveCustomField: function() {
 		var form = this.getCmp('systemsetup.customfieldform'),
 			values = form.getValues(),
@@ -1201,9 +1262,9 @@ Ext.define('NP.controller.SystemSetup', {
 			data['field_po_req'] = values['po_custom_field_req'];
 			data['field_vef_on_off'] = values['vef_custom_field_on_off'];
 			data['field_vef_req'] = values['vef_custom_field_req'];
-			data['field_imgindex'] = values['invoice_custom_field_imgindex'];
+			data['field_imgindex'] = values['inv_custom_field_imgindex'];
 			data['field_lbl'] = values['custom_field_lbl'];
-			data['customFieldType'] = values['customFieldType'] == 0 ? 'select' : 'date';
+			data['customfield_type'] = values['customFieldType'] == 0 ? 'select' : 'date';
 		} else {
 			data['custom_field_lbl'] 			= values['custom_field_lbl'];
 			data['customfield_req'] 			= values['customfield_req'];
@@ -1228,39 +1289,70 @@ Ext.define('NP.controller.SystemSetup', {
 		});
 	},
 
+	/**
+	 * Change custom fields tab
+	 *
+	 * @param tab
+	 */
 	changeCustomFieldsTab: function(tab) {
 		var me = this;
 		tab.remove(me.getCmp('systemsetup.customfieldform'));
 	},
 
-	loadPicklistColumns: function (grid, record) {
+	/**
+	 * Load picklist columns
+	 *
+	 * @param grid
+	 * @param record
+	 */
+	loadPicklistColumns: function (tabPanel, tab) {
 		var me = this,
-			picklistview = me.getCmp('systemsetup.picklists'),
-			columnsgrid = picklistview.down('[name="picklistcolumns"]');
+			columnsgrid = tab.down('[name="picklistcolumns"]');
 
-		picklistview.mode = record.get('mode');
-		columnsgrid.getStore().getProxy().extraParams.mode = record.get('mode');
+		columnsgrid.getStore().getProxy().extraParams.mode = tab.mode;
 		columnsgrid.getStore().reload();
+		me.resetPickListForm();
 	},
 
+	/**
+	 * Load picklist form
+	 *
+	 * @param grid
+	 * @param record
+	 */
 	loadPicklistForm: function(grid, record) {
 		var me = this,
-			picklistview = me.getCmp('systemsetup.picklists'),
-			picklistform = picklistview.down('[name="picklistfields"]');
+			picklistview = grid.up().up(),
+			picklistform = picklistview.down('[name="picklistfields"]'),
+			recordvalue = {
+				column_status: record.get('column_status'),
+				column_pk_data: record.get('column_pk_data')
+			};
+
+		me.fillFormPicklist(recordvalue, picklistform, picklistview.mode);
+	},
+
+	fillFormPicklist: function(record, form, mode) {
+		var me = this;
 
 		NP.lib.core.Net.remoteCall({
 			requests: {
 				service    : 'PicklistService',
 				action     : 'getFormFields',
-				mode: picklistview.mode,
-				column_status: record.get('column_status'),
-				column_id: record.get('column_pk_data'),
+				mode:mode,
+				column_status: record.column_status,
+				column_id: record.column_pk_data,
 				success    : function(result) {
 					if (result) {
 						var values = result['values'];
-						picklistform.removeAll();
+						form.removeAll();
 						Ext.each(result['fields'], function(column){
-							picklistform.add(me.fillPicklistForm(column, values[0]));
+							form.add(me.fillPicklistForm(column, values[0]));
+						});
+						form.add({
+							xtype: 'hiddenfield',
+							name: 'column_id',
+							value: record.column_pk_data
 						});
 					}
 				}
@@ -1268,6 +1360,13 @@ Ext.define('NP.controller.SystemSetup', {
 		});
 	},
 
+	/**
+	 * Add form's fields
+	 *
+	 * @param column
+	 * @param values
+	 * @returns {*}
+	 */
 	fillPicklistForm: function(column, values) {
 		var field;
 
@@ -1322,8 +1421,7 @@ Ext.define('NP.controller.SystemSetup', {
 							combo.getStore().load();
 							combo.setValue(!values ? '' : values[column.column_name]);
 						}
-					}/*,
-					value: !values ? '' : values[column.column_name]*/
+					}
 				};
 			} else {
 				if (column.column_name == 'universal_field_status') {
@@ -1335,16 +1433,15 @@ Ext.define('NP.controller.SystemSetup', {
 						columns: 1,
 						items: [
 							{
-								boxLabel: NP.Translator.translate('Active'), name: 'universal_field_status', inputValue: '1', checked: true, padding: '0 15 0 0'
+								boxLabel: NP.Translator.translate('Active'), name: 'universal_field_status', inputValue: '1', checked: !values ? true : (values[column.column_name] == 1 ? true : false), padding: '0 15 0 0'
 							},
 							{
-								boxLabel: NP.Translator.translate('Inactive'), name: 'universal_field_status', inputValue: '0', padding: '0 15 0 0'
+								boxLabel: NP.Translator.translate('Inactive'), name: 'universal_field_status', inputValue: '0', padding: '0 15 0 0', checked: !values ? false : (values[column.column_name] == 0 ? true : false)
 							},
 							{
-								boxLabel: NP.Translator.translate('Default'), name: 'universal_field_status', inputValue: '2', padding: '0 15 0 0'
+								boxLabel: NP.Translator.translate('Default'), name: 'universal_field_status', inputValue: '2', padding: '0 15 0 0', checked: !values ? false : (values[column.column_name] == 2 ? true : false)
 							}
-						],
-						value: !values ? '' : values[column.column_name]
+						]
 					};
 				} else {
 					if (column.column_info[0].TYPE_NAME == 'varchar' ||
@@ -1428,7 +1525,355 @@ Ext.define('NP.controller.SystemSetup', {
 
 		}
 
-
 		return field;
+	},
+
+	/**
+	 * Save picklist field values
+	 *
+	 */
+	savePicklist: function(button) {
+		var me = this;
+		if (button) {
+			var picklistform = button.up().up(),
+			picklistview = picklistform.up(),
+			data = picklistform.getValues();
+
+			Ext.apply(data, {
+				mode: picklistview.mode
+			});
+
+			if (picklistform.isValid()) {
+				NP.lib.core.Net.remoteCall({
+					requests: {
+						service    : 'PicklistService',
+						action     : 'savePicklist',
+						data: data,
+						success    : function(result) {
+							if (result) {
+								me.fillFormPicklist({
+									column_pk_data: 0,
+									column_status: 1
+								}, picklistform, picklistview.mode)
+								picklistview.down('[name="picklistcolumns"]').getStore().reload();
+							}
+						}
+					}
+				});
+			}
+		}
+	},
+
+	resetPickListForm: function(button) {
+		var me = this;
+		if (button) {
+			var picklistform = button.up().up(),
+			picklistview = picklistform.up(),
+				recordvalue = {
+					column_status: 1,
+					column_pk_data: 0
+				};
+
+			me.fillFormPicklist(recordvalue, picklistform, picklistview.mode);
+		}
+	},
+
+	showTemplatesGrid: function() {
+		this.setView('NP.view.systemSetup.TemplatesGrid', {}, '[xtype="systemsetup.poprintsettings"]');
+	},
+
+	showPrintTemplate: function(id, copy) {
+		var me = this,
+			viewConfig = {
+				bind: {
+					models: [
+						'system.PrintTemplate'
+					]
+				}
+			},
+			templateObj,
+			assignedObjects = [],
+			assignedTemplates = {},
+			regions = [
+				'template_body',
+				'template_footer',
+				'template_footer_left',
+				'template_footer_right',
+				'template_header',
+				'template_header_left',
+				'template_header_right',
+				'template_logo_center',
+				'template_logo_left',
+				'template_logo_right'
+			];
+
+		if (id) {
+			Ext.apply(viewConfig.bind, {
+				service    : 'PrintTemplateService',
+				action     : 'get',
+				extraParams: {
+					id: id
+				},
+				extraFieds: ['properties']
+			});
+
+			viewConfig.listeners = {
+				dataloaded: function(boundForm, data) {
+					templateObj = JSON.parse(data.Print_Template_Data),
+						templatesPicker = boundForm.down('[name="templatespicker"]'),
+						templatetab = boundForm.down('[name="templatetab"]'),
+						templatesCanvas = null;
+
+//					header, footer, additional text
+					boundForm.getForm().findField('poprint_additional_text').setValue(templateObj.template_additional_text);
+					boundForm.getForm().findField('poprint_footer').setValue(templateObj.template_footer_text);
+					boundForm.getForm().findField('poprint_header').setValue(templateObj.template_header_text);
+
+//					settings
+					boundForm.getForm().findField('po_include_attachments').setValue(templateObj.settings.po_include_attachments);
+					boundForm.getForm().findField('po_lineitems_display_opts_buildingcode').setValue(templateObj.settings.po_lineitems_display_opts_buildingcode);
+					boundForm.getForm().findField('po_lineitems_display_opts_customfields').setValue(templateObj.settings.po_lineitems_display_opts_customfields);
+					boundForm.getForm().findField('po_lineitems_display_opts_glcode').setValue(templateObj.settings.po_lineitems_display_opts_glcode);
+					boundForm.getForm().findField('po_lineitems_display_opts_itemnum').setValue(templateObj.settings.po_lineitems_display_opts_itemnum);
+					boundForm.getForm().findField('po_lineitems_display_opts_jobcost').setValue(templateObj.settings.po_lineitems_display_opts_jobcost);
+					boundForm.getForm().findField('po_lineitems_display_opts_uom').setValue(templateObj.settings.po_lineitems_display_opts_uom);
+
+
+//					unassigned objects
+					Ext.each(regions, function(region) {
+						if (templateObj[region].length > 0) {
+							Ext.each(templateObj[region], function(item) {
+								assignedObjects.push(item);
+							})
+						}
+					});
+
+					assignedTemplates = templatesPicker.listDiff(assignedObjects);
+
+					Ext.each(regions, function(region){
+						if (templateObj[region].length > 0) {
+							templatesCanvas = boundForm.down('[name="' + region + '"]');
+							Ext.each(templateObj[region], function(item) {
+								if (assignedTemplates[item]) {
+									templatesCanvas.addTile(assignedTemplates[item][0], assignedTemplates[item][2], assignedTemplates[item][1]);
+									templatetab.addTemplate(region, assignedTemplates[item][1]);
+								}
+							});
+						}
+					});
+
+					if (data.properties && data.properties.length > 0) {
+						if (data.properties[0] == -1) {
+							boundForm.getForm().findField('property_type').setValue(1);
+						} else {
+							boundForm.getForm().findField('property_type').setValue(0);
+							boundForm.getForm().findField('property_id').setValue(data.properties);
+						}
+					}
+
+					boundForm.getForm().findField('edittemplatename_settings').setValue(data.Print_Template_Name);
+					boundForm.getForm().findField('edittemplatename_header').setValue(data.Print_Template_Name);
+					boundForm.getForm().findField('edittemplatename_footer').setValue(data.Print_Template_Name);
+
+					if (copy) {
+						boundForm.getForm().findField('Print_Template_Id').setValue('');
+						boundForm.getForm().findField('Print_Template_Name').setValue(data.Print_Template_Name + ' (copy)');
+						boundForm.getForm().findField('print_template_additional_image').setValue(0);
+						boundForm.getForm().findField('template_attachment').setValue(0);
+					} else {
+						if (templateObj.template_settings && templateObj.template_settings.print_template_additional_image) {
+							boundForm.getForm().findField('print_template_additional_image').setValue(1);
+						}
+						if (templateObj.template_attachment) {
+							boundForm.getForm().findField('template_attachment').setValue(1);
+						}
+
+					}
+				}
+			};
+			Ext.apply(viewConfig, {
+				id: id
+			})
+		}
+
+		var form = this.setView('NP.view.systemSetup.TemplatesManager', viewConfig, '[xtype="systemsetup.poprintsettings"]');
+	},
+
+	addTemplateItem: function(index, name) {
+		var me = this,
+			templatesPicker = me.getCmp('systemsetup.templateobjectspicker'),
+			templateTab = me.getCmp('systemsetup.printtemplatetab'),
+			record = templatesPicker.getRecordByndex(index),
+			templates = templateTab.addTemplate(name, record[1]);
+
+		templatesPicker.removeRecord(index);
+
+	},
+
+	removeTemplateItem: function(index, name, record) {
+		var me = this,
+			templatesPicker = me.getCmp('systemsetup.templateobjectspicker'),
+			templatesTab = me.getCmp('systemsetup.printtemplatetab'),
+			templates = templatesTab.removeTemplate(name, record[1]);
+
+		templatesPicker.addRecord(index, record);
+	},
+
+	savePrintTemplate: function() {
+		var me = this,
+			form = me.getCmp('systemsetup.templatesmanager'),
+			templateobj = form.down('[name="templatetab"]').positions;
+
+		templateobj.template_footer_text = form.findField('poprint_footer').getValue();
+		templateobj.template_header_text = form.findField('poprint_header').getValue();
+		templateobj.template_additional_text = form.findField('poprint_additional_text').getValue();
+		templateobj.settings = {
+			po_lineitems_display_opts_itemnum: form.findField('po_lineitems_display_opts_itemnum').getValue(),
+			po_lineitems_display_opts_uom: form.findField('po_lineitems_display_opts_uom').getValue(),
+			po_lineitems_display_opts_glcode: form.findField('po_lineitems_display_opts_glcode').getValue(),
+			po_lineitems_display_opts_buildingcode: form.findField('po_lineitems_display_opts_buildingcode').getValue(),
+			po_lineitems_display_opts_jobcost: form.findField('po_lineitems_display_opts_jobcost').getValue(),
+			po_lineitems_display_opts_customfields: form.findField('po_lineitems_display_opts_customfields').getValue(),
+			po_include_attachments: form.findField('po_include_attachments').getValue()
+		};
+
+		templateobj.template_attachment = form.findField('template_attachment').getValue();
+		templateobj.template_settings = {};
+		templateobj.template_settings.print_template_additional_image = form.findField('print_template_additional_image').getValue();
+
+		if (form.isValid()) {
+			form.submitWithBindings({
+				service: 'PrintTemplateService',
+				action: 'saveTemplates',
+				extraParams: {
+					templateobj: JSON.stringify(form.down('[name="templatetab"]').positions),
+					userprofile_id: NP.Security.getUser().get('userprofile_id'),
+					properties: form.findField('property_id').getValue(),
+					property_type: form.findField('property_type').getValue()
+				},
+				success: function(result) {
+					if (result.success) {
+						me.addHistory('SystemSetup:showSystemSetup:POPrintSettings');
+					}
+				}
+			});
+		}
+	},
+
+	showTemplatePropertyAssignmentWindow: function(id) {
+		var me = this,
+			window,
+			list = '<ul>';
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service    : 'PrintTemplateService',
+				action     : 'getAssignedProperties',
+				id: id,
+				success    : function(result) {
+					window = Ext.create('NP.view.systemSetup.PropertyAssignmentsWindow');
+
+					if (result.length == 0) {
+						list += '<li>' + NP.Translator.translate('No Assignments') + '</li>';
+					} else {
+						if (result.length == 1 && result[0]['Property_Id'] == -1) {
+
+							list += '<li>' + NP.Translator.translate('All Properties') + '</li>';
+						} else {
+							Ext.each(result, function(property) {
+								list += '<li>' +property.property_name + '</li>';
+							})
+						}
+					}
+					window.down('[name="propertyassignments"]').setValue(
+						list + '</ul>'
+					);
+					window.show();
+				}
+			}
+		});
+	},
+
+	deletePrintTemplate: function(id) {
+		var me = this;
+
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service    : 'PrintTemplateService',
+				action     : 'deleteTemplate',
+				id: id,
+				success    : function(result) {
+					if (result) {
+						NP.Util.showFadingWindow({ html: NP.Translator.translate('Template was delete successfully!') });
+						me.addHistory('SystemSetup:showSystemSetup:POPrintSettings');
+					}
+				}
+			}
+		});
+	},
+
+	changepotabs: function(tabpanel, tab) {
+		var isWithAttachment, isWithImage;
+
+
+		tabpanel.up().down('[name="uploadattachment"]').hide();
+		tabpanel.up().down('[name="uploadimage"]').hide();
+
+
+		tabpanel.up().down('[name="viewImageBtn"]').hide();
+		tabpanel.up().down('[name="deleteImageBtn"]').hide();
+		tabpanel.up().down('[name="viewAttachmentBtn"]').hide();
+		tabpanel.up().down('[name="deleteAttachmentBtn"]').hide();
+
+		if (tab.name == 'additionaltexttab') {
+			isWithAttachment = tab.down('[name="template_attachment"]').getValue();
+
+			tab.getDockedItems('toolbar[dock="top"]')[0].hide();
+			tabpanel.up().down('[name="uploadattachment"]').show();
+			tab.down('[name="params"]').show();
+			tab.down('[name="uploadattachment"]').hide();
+			if (isWithAttachment == 1) {
+				tabpanel.up().down('[name="viewAttachmentBtn"]').show();
+				tabpanel.up().down('[name="deleteAttachmentBtn"]').show();
+			}
+
+		}if (tab.name == 'settings') {
+			isWithImage = tab.down('[name="print_template_additional_image"]').getValue();
+			console.log(isWithImage);
+
+			tab.getDockedItems('toolbar[dock="top"]')[0].hide();
+			tabpanel.up().down('[name="uploadimage"]').show();
+			tab.down('[name="params"]').show();
+			tab.down('[name="uploadimage"]').hide();
+			if (isWithImage == 1) {
+				tabpanel.up().down('[name="viewImageBtn"]').show();
+				tabpanel.up().down('[name="deleteImageBtn"]').show();
+			}
+		}
+	},
+
+	showUploadAttachment: function(id) {
+		var me = this,
+			tab = me.getCmp('systemsetup.printadditionaltexttab'),
+			toptab = tab.up().up(),
+			isWithAttachment = tab.down('[name="template_attachment"]').getValue();
+
+		tab.down('[name="params"]').hide();
+		tab.down('[name="uploadattachment"]').show();
+
+		tab.getDockedItems('toolbar[dock="top"]')[0].show();
+
+		toptab.getDockedItems('toolbar[dock="top"]')[0].hide();
+	},
+
+	showUploadImage: function(id) {
+		var me = this,
+			tab = me.getCmp('systemsetup.printsettingstab'),
+			toptab = tab.up().up();
+
+		tab.down('[name="params"]').hide();
+		tab.down('[name="uploadimage"]').show();
+
+		tab.getDockedItems('toolbar[dock="top"]')[0].show();
+		toptab.getDockedItems('toolbar[dock="top"]')[0].hide();
 	}
 });

@@ -557,8 +557,7 @@ class ConfigService extends AbstractService {
 	 * @param $data
 	 * @return array
 	 */
-	public function saveSettings($data) {
-
+	public function saveSettings($data = null) {
 		foreach ($data as $key => $value) {
 			if (strstr($key, 'setting_')) {
 				$setting = explode('_', $key);
@@ -576,13 +575,13 @@ class ConfigService extends AbstractService {
 					];
 				}
 			}
-
-			$this->config->loadConfigCache();
-			return [
-				'success'	=> true,
-				'errors'	=> []
-			];
 		}
+
+		$this->config->loadConfigCache();
+		return [
+			'success'	=> true,
+			'errors'	=> []
+		];
 
 	}
 
@@ -650,6 +649,7 @@ class ConfigService extends AbstractService {
 			$data['customFieldType'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'custom_field' . $fid . '_type', 'select');
 			$data['maxlength'] = in_array($fid, [7,8]) ? $this->configsysGateway->getFieldLength($fid, $tabindex) : 0;
 
+
 		}
 		if ($tabindex == self::TABINDEX_CUSTOMFIELD_LINEITEMS) {
 			$data['inv_custom_field_on_off'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'INVOICE_CUSTOM_FIELD' . $fid . '_LINEITEM_ON_OFF', "");
@@ -661,6 +661,7 @@ class ConfigService extends AbstractService {
 			$data['custom_field_lbl'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'CUSTOM_FIELD_LABEL' . $fid . '_LINEITEM', "");
 			$data['maxlength'] = in_array($fid, [7,8]) ? $this->configsysGateway->getFieldLength($fid, $tabindex) : 0;
 		}
+		$data['universal_field_number'] = $fid;
 
 		if ($tabindex >= self::TABINDEX_CUSTOMFIELD_SERVICEFIELDS) {
 			$data = $this->pnCustomFieldsGateway->getCustomFieldValues($fid);
@@ -803,7 +804,7 @@ class ConfigService extends AbstractService {
 			}
 
 			if ($data['islineitem'] == self::TABINDEX_CUSTOMFIELD_HEADERS) {
-				$this->configSysValGateway->updateUniversalFieldType($data['customFieldType'], $data['fid']);
+				$this->configSysValGateway->updateUniversalFieldType($data['customfield_type'], $data['fid']);
 			}
 		}
 

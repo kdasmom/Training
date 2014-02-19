@@ -7,30 +7,21 @@ Ext.define('NP.view.systemSetup.Picklists', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.systemsetup.picklists',
 
-    requires: ['NP.lib.core.Translator'],
+    requires: [
+		'NP.lib.core.Translator',
+		'NP.view.systemSetup.PicklistTab'
+	],
     
     title: 'Picklist',
-
+	autoScroll: true,
 	layout: {
-		type: 'hbox',
+		type: 'vbox',
 		align: 'stretch'
 	},
-	autoScroll: true,
-	mode: 'Insurance',
 
     initComponent: function() {
-		var me = this,
-			modes = [
-				['Insurance', 'Insurance Management'],
-				['Payee', 'Payee Type'],
-				['Rejection', 'Rejection Notes'],
-				['TaxPayor', 'Tax Payor Type'],
-				['On_Hold', 'On Hold Notes'],
-				['Vendor_Types', 'Vendor Types'],
-				['Vendor_Documents', 'Vendor Document Types'],
-				['PayBy', 'Pay By Types'],
-				['UtilityType', 'Utility Types']
-			];
+		var me = this;
+
 
 		this.tbar = [
 			{
@@ -41,74 +32,68 @@ Ext.define('NP.view.systemSetup.Picklists', {
 
     	this.title = NP.Translator.translate(this.title);
 
-
-
 		this.items = [
 			{
-				xtype: 'customgrid',
-				hideHeaders: true,
-				name: 'picklistmodes',
-				columns: [
+				xtype : 'verticaltabpanel',
+				border: false,
+				flex: 1,
+				items: [
 					{
-						dataIndex: 'title',
-						sortable : false,
-						flex: 1
-					}
-				],
-				store: Ext.create('Ext.data.ArrayStore', {
-					fields: [
-						{ name: 'mode'},
-						{ name: 'title' }
-					],
-					autoLoad : true,
-					data: modes
-				}),
-				border: 1,
-				padding: '5',
-				flex: 0.2,
-				maxWidth: 300
-			},
-			{
-				xtype: 'customgrid',
-				hideHeaders: true,
-				name: 'picklistcolumns',
-				columns: [
-					{
-						dataIndex: 'column_data',
-						sortable: false,
-						flex: 1
-					}
-				],
-				store: Ext.create('NP.lib.data.Store', {
-					service    	: 'PicklistService',
-					action     	: 'getPicklistValuesList',
-					mode	: me.mode,
-					autoLoad	: true,
-					fields: ['column_data', 'column_pk_data', 'column_status']
-				}),
-				padding: '5',
-				flex: 0.2,
-				maxWidth: 300
-			},
-			{
-				xtype: 'form',
-				name: 'picklistfields',
-				defaults: {
-					labelWidth: 200,
-					padding: '5'
-				},
-				tbar : [
-					{
-						xtype: 'shared.button.cancel',
-						text: 'Reset'
+						xtype: "systemsetup.picklisttab",
+						title: 'Insurance Management',
+						mode: 'Insurance',
+						name: 'insurance'
+
 					},
 					{
-						xtype: 'shared.button.save'
+						xtype: "systemsetup.picklisttab",
+						title: 'Payee Type',
+						mode: 'Payee',
+						name: 'payee'
+					},
+					{
+						xtype: "systemsetup.picklisttab",
+						title: 'Rejection Notes',
+						mode: 'Rejection',
+						name: 'rejection'
+					},
+					{
+						xtype: "systemsetup.picklisttab",
+						title: 'Tax Payor Type',
+						mode: 'TaxPayor',
+						name: 'taxpayor'
+					},
+					{
+						xtype: "systemsetup.picklisttab",
+						title: 'On Hold Notes',
+						mode: 'On_Hold',
+						name: 'on_hold'
+					},
+					{
+						xtype: "systemsetup.picklisttab",
+						title: 'Vendor Types',
+						mode: 'Vendor_Types',
+						name: 'vendor_types'
+					},
+					{
+						xtype: "systemsetup.picklisttab",
+						title: 'Vendor Document Types',
+						mode: 'Vendor_Documents',
+						name: 'vendor_documents'
+					},
+					{
+						xtype: "systemsetup.picklisttab",
+						title: 'Pay By Types',
+						mode: 'PayBy',
+						name: 'payby'
+					},
+					{
+						xtype: "systemsetup.picklisttab",
+						title: 'Utility Types',
+						mode: 'UtilityType',
+						name: 'utilitytype'
 					}
-				],
-				padding: '5',
-				border: 1,
-				flex: 1
+				]
 			}
 		];
 
