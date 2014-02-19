@@ -83,6 +83,35 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 				handler: function() {
 					me.fireEvent('uploadimage', me.id);
 				}
+			},
+			{
+				xtype: 'shared.button.view',
+				text: 'View Attachment',
+				name: 'viewAttachmentBtn',
+				hidden: true
+			},
+			{
+				xtype: 'shared.button.delete',
+				text: 'Delete Attachment',
+				name: 'deleteAttachmentBtn',
+				hidden: true
+			},
+			{
+				xtype: 'shared.button.view',
+				text: 'View Image',
+				name: 'viewImageBtn',
+				hidden: true,
+				handler: function() {
+					console.log(me.id);
+					var win = Ext.create('NP.view.systemSetup.PrintTemplateViewImageWindow', {templateid: me.id});
+					win.show();
+				}
+			},
+			{
+				xtype: 'shared.button.delete',
+				text: 'Delete Image',
+				name: 'deleteImageBtn',
+				hidden: true
 			}
 		];
 

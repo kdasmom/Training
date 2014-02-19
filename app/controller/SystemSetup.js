@@ -1797,31 +1797,55 @@ Ext.define('NP.controller.SystemSetup', {
 	},
 
 	changepotabs: function(tabpanel, tab) {
+		var isWithAttachment, isWithImage;
+
+
 		tabpanel.up().down('[name="uploadattachment"]').hide();
 		tabpanel.up().down('[name="uploadimage"]').hide();
 
+
+		tabpanel.up().down('[name="viewImageBtn"]').hide();
+		tabpanel.up().down('[name="deleteImageBtn"]').hide();
+		tabpanel.up().down('[name="viewAttachmentBtn"]').hide();
+		tabpanel.up().down('[name="deleteAttachmentBtn"]').hide();
+
 		if (tab.name == 'additionaltexttab') {
+			isWithAttachment = tab.down('[name="template_attachment"]').getValue();
+
 			tab.getDockedItems('toolbar[dock="top"]')[0].hide();
 			tabpanel.up().down('[name="uploadattachment"]').show();
 			tab.down('[name="params"]').show();
 			tab.down('[name="uploadattachment"]').hide();
+			if (isWithAttachment) {
+				tabpanel.up().down('[name="viewAttachmentBtn"]').show();
+				tabpanel.up().down('[name="deleteAttachmentBtn"]').show();
+			}
+
 		}if (tab.name == 'settings') {
+			isWithImage = tab.down('[name="print_template_additional_image"]').getValue();
+
 			tab.getDockedItems('toolbar[dock="top"]')[0].hide();
 			tabpanel.up().down('[name="uploadimage"]').show();
 			tab.down('[name="params"]').show();
 			tab.down('[name="uploadimage"]').hide();
+			if (isWithImage) {
+				tabpanel.up().down('[name="viewImageBtn"]').show();
+				tabpanel.up().down('[name="deleteImageBtn"]').show();
+			}
 		}
 	},
 
 	showUploadAttachment: function(id) {
 		var me = this,
 			tab = me.getCmp('systemsetup.printadditionaltexttab'),
-			toptab = tab.up().up();
+			toptab = tab.up().up(),
+			isWithAttachment = tab.down('[name="template_attachment"]').getValue();
 
 		tab.down('[name="params"]').hide();
 		tab.down('[name="uploadattachment"]').show();
 
 		tab.getDockedItems('toolbar[dock="top"]')[0].show();
+
 		toptab.getDockedItems('toolbar[dock="top"]')[0].hide();
 	},
 
