@@ -217,15 +217,17 @@ Ext.define('NP.controller.SystemSetup', {
 			},
 			'[xtype="systemsetup.poprintsettings"] [xtype="systemsetup.templatesgrid"]': {
 				cellclick: function(grid, td, cellIndex, record, tr, rowIndex, e, eOpts) {
-					console.log(cellIndex);
 					if (cellIndex !== 1 && cellIndex !== 8) {
 						me.addHistory('SystemSetup:showSystemSetup:POPrintSettings:PrintTemplate:' + record.get('Print_Template_Id') + (cellIndex == 5 ? (':copy') : ''));
 					} else {
 						if (cellIndex == 1) {
 							me.showTemplatePropertyAssignmentWindow(record.get('Print_Template_Id'));
 						} else {
-							var win = Ext.create('NP.view.systemSetup.PrintTemplateViewAttachmentWindow', {templateid: record.get('Print_Template_Id')});
-							win.show();
+							var templateObj = JSON.parse(record.get('Print_Template_Data'));
+							if (templateObj.template_attachment !== '0') {
+								var win = Ext.create('NP.view.systemSetup.PrintTemplateViewAttachmentWindow', {templateid: record.get('Print_Template_Id')});
+								win.show();
+							}
 						}
 					}
 				}
