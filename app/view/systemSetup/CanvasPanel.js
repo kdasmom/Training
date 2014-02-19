@@ -24,12 +24,6 @@ Ext.define('NP.view.systemSetup.CanvasPanel', {
 
 	padding: '5',
 
-	listeners: {
-		added: function(panel, container, pos, eOpts) {
-			console.log('afterrender: ', panel);
-		}
-	},
-
 	initComponent: function() {
 		var me = this;
 		me.html = NP.Translator.translate('Drag & Drop Here');

@@ -1655,8 +1655,8 @@ Ext.define('NP.controller.SystemSetup', {
 							templatesCanvas = boundForm.down('[name="' + region + '"]');
 							Ext.each(templateObj[region], function(item) {
 								if (assignedTemplates[item]) {
-									templatesCanvas.addTile(assignedTemplates[item][0][0], assignedTemplates[item][0][2], assignedTemplates[item][0][1]);
-									templatetab.addTemplate(region, assignedTemplates[item][0][1]);
+									templatesCanvas.addTile(assignedTemplates[item][0], assignedTemplates[item][2], assignedTemplates[item][1]);
+									templatetab.addTemplate(region, assignedTemplates[item][1]);
 								}
 							});
 						}
@@ -1702,8 +1702,8 @@ Ext.define('NP.controller.SystemSetup', {
 			record = templatesPicker.getRecordByndex(index),
 			templates = templateTab.addTemplate(name, record[1]);
 
-
 		templatesPicker.removeRecord(index);
+
 	},
 
 	removeTemplateItem: function(index, name, record) {
