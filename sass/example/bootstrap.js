@@ -192,6 +192,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.view.invoice.gridcol.BudgetNotes": [],
   "NP.view.property.PropertiesFormUserReport": [],
   "NP.view.invoice.gridcol.PaymentDetails": [],
+  "NP.view.shared.button.Excel": [],
   "NP.view.property.gridcol.LastUpdated": [],
   "Ext.ux.LiveSearchGridPanel": [],
   "Ext.locale.en.picker.Date": [],
@@ -1136,6 +1137,9 @@ Ext.ClassManager.addNameAliasMappings({
   ],
   "NP.view.invoice.gridcol.PaymentDetails": [
     "widget.invoice.gridcol.paymentdetails"
+  ],
+  "NP.view.shared.button.Excel": [
+    "widget.shared.button.excel"
   ],
   "NP.view.property.gridcol.LastUpdated": [
     "widget.property.gridcol.lastupdated"
