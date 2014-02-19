@@ -557,8 +557,7 @@ class ConfigService extends AbstractService {
 	 * @param $data
 	 * @return array
 	 */
-	public function saveSettings($data) {
-
+	public function saveSettings($data = null) {
 		foreach ($data as $key => $value) {
 			if (strstr($key, 'setting_')) {
 				$setting = explode('_', $key);
@@ -576,13 +575,13 @@ class ConfigService extends AbstractService {
 					];
 				}
 			}
-
-			$this->config->loadConfigCache();
-			return [
-				'success'	=> true,
-				'errors'	=> []
-			];
 		}
+
+		$this->config->loadConfigCache();
+		return [
+			'success'	=> true,
+			'errors'	=> []
+		];
 
 	}
 
