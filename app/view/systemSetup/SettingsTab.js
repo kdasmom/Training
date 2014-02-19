@@ -20,7 +20,7 @@ Ext.define('NP.view.systemSetup.SettingsTab', {
 
 	padding: '10',
 	border: false,
-	autoScroll: true, 
+	autoScroll: true,
 
 	initComponent: function() {
 		var me  = this;

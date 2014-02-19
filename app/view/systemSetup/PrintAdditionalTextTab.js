@@ -84,6 +84,11 @@ Ext.define('NP.view.systemSetup.PrintAdditionalTextTab', {
 						labelAlign: 'top'
 					}
 				]
+			},
+			{
+				xtype: 'hiddenfield',
+				name: 'template_attachment',
+				value: 0
 			}
 		];
 
@@ -115,6 +120,7 @@ Ext.define('NP.view.systemSetup.PrintAdditionalTextTab', {
 						me.up().up().getDockedItems('toolbar[dock="top"]')[0].show();
 						me.down('[name="params"]').show();
 						me.down('[name="uploadattachment"]').hide();
+						me.down('[name="template_attachment"]').setValue(1);
 					} else {
 						fileField.markInvalid(result.errors);
 					}

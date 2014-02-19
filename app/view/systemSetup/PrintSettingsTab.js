@@ -124,7 +124,7 @@ Ext.define('NP.view.systemSetup.PrintSettingsTab', {
 					{
 						xtype: 'hiddenfield',
 						name: 'print_template_additional_image',
-						value: ''
+						value: 0
 					}
 				]
 			},
@@ -173,7 +173,7 @@ Ext.define('NP.view.systemSetup.PrintSettingsTab', {
 						me.up().up().getDockedItems('toolbar[dock="top"]')[0].show();
 						me.down('[name="params"]').show();
 						me.down('[name="uploadimage"]').hide();
-						uploadForm.down('[name="print_template_additional_image"]').setValue(result.path);
+						me.down('[name="print_template_additional_image"]').setValue(1);
 					} else {
 						fileField.markInvalid(result.errors);
 					}

@@ -59,6 +59,17 @@ class PrintTemplateService extends AbstractService {
 		$errors = [];
 
 		if ($data['templateobj']) {
+			$templateobj = json_decode($data['templateobj']);
+			if ($templateobj->template_attachment) {
+				$templateobj->template_attachment = $this->getUploadPath();
+			} else {
+				unset($templateobj->template_attachment);
+			}
+			if ($templateobj->template_settings->print_template_additional_image) {
+				$templateobj->template_settings->print_template_additional_image = $this->getUploadPath();
+			} else {
+				unset($templateobj->template_settings);
+			}
 			$printTemplate->Print_Template_Data = $data['templateobj'];
 		}
 		$printTemplate->Print_Template_Type = 'PO';

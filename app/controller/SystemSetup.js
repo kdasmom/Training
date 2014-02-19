@@ -1667,6 +1667,13 @@ Ext.define('NP.controller.SystemSetup', {
 						boundForm.getForm().findField('Print_Template_Id').setValue('');
 						boundForm.getForm().findField('Print_Template_Name').setValue(data.Print_Template_Name + ' (copy)');
 					}
+
+					if (templateObj.template_settings && templateObj.template_settings.print_template_additional_image) {
+						boundForm.getForm().findField('print_template_additional_image').setValue(1);
+					}
+					if (templateObj.template_attachment) {
+						boundForm.getForm().findField('template_attachment').setValue(1);
+					}
 				}
 			};
 			Ext.apply(viewConfig, {
@@ -1714,6 +1721,10 @@ Ext.define('NP.controller.SystemSetup', {
 			po_lineitems_display_opts_customfields: form.findField('po_lineitems_display_opts_customfields').getValue(),
 			po_include_attachments: form.findField('po_include_attachments').getValue()
 		};
+
+		templateobj.template_attachment = form.findField('template_attachment').getValue();
+		templateobj.template_settings = {};
+		templateobj.template_settings.print_template_additional_image = form.findField('print_template_additional_image').getValue();
 
 		if (form.isValid()) {
 			form.submitWithBindings({

@@ -89,7 +89,15 @@ Ext.define('NP.view.systemSetup.TemplatesGrid', {
 			},
 			{
 				text: NP.Translator.translate('View Attachment'),
-				flex: 0.3
+				flex: 0.3,
+				renderer: function(val, meta, record) {
+					var templateObj = JSON.parse(record.get('Print_Template_Data'));
+					if (templateObj.template_attachment) {
+						return NP.Translator.translate('View Attachment');
+					}
+
+					return '';
+				}
 			}
 		];
 
