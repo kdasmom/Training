@@ -31,6 +31,8 @@ Ext.define('NP.view.systemSetup.PrintFooterTab', {
 		me.items = [
 			{
 				xtype: 'displayfield',
+				name: 'edittemplatename_footer',
+				labelWidth: 150,
 				fieldLabel: NP.Translator.translate('Editing Template'),
 				value: ''
 			},

@@ -55,6 +55,8 @@ Ext.define('NP.view.systemSetup.PrintSettingsTab', {
 		me.items = [
 			{
 				xtype: 'displayfield',
+				name: 'edittemplatename_settings',
+				labelWidth: 150,
 				fieldLabel: NP.Translator.translate('Editing Template'),
 				value: ''
 			},
@@ -155,6 +157,11 @@ Ext.define('NP.view.systemSetup.PrintSettingsTab', {
 			fileField = uploadForm.query('filefield')[0],
 			file = fileField.getValue(),
 			formEl = NP.Util.createFormForUpload('#' + me.getItemId() + ' form');
+
+		if (!file) {
+			fileField.markInvalid(NP.Translator.translate('Select file, please!'));
+			return false;
+		}
 
 		NP.lib.core.Net.remoteCall({
 			method: 'POST',

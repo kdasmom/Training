@@ -29,6 +29,8 @@ Ext.define('NP.view.systemSetup.PrintHeaderTab', {
 		me.items = [
 			{
 				xtype: 'displayfield',
+				name: 'edittemplatename_header',
+				labelWidth: 150,
 				fieldLabel: NP.Translator.translate('Editing Template'),
 				value: ''
 			},

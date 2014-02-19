@@ -1662,7 +1662,7 @@ Ext.define('NP.controller.SystemSetup', {
 						}
 					});
 
-					if (data.properties.length > 0) {
+					if (data.properties && data.properties.length > 0) {
 						if (data.properties[0] == -1) {
 							boundForm.getForm().findField('property_type').setValue(1);
 						} else {
@@ -1670,6 +1670,10 @@ Ext.define('NP.controller.SystemSetup', {
 							boundForm.getForm().findField('property_id').setValue(data.properties);
 						}
 					}
+
+					boundForm.getForm().findField('edittemplatename_settings').setValue(data.Print_Template_Name);
+					boundForm.getForm().findField('edittemplatename_header').setValue(data.Print_Template_Name);
+					boundForm.getForm().findField('edittemplatename_footer').setValue(data.Print_Template_Name);
 
 					if (copy) {
 						boundForm.getForm().findField('Print_Template_Id').setValue('');
