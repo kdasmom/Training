@@ -54,7 +54,8 @@ Ext.define('NP.view.systemSetup.TemplatesGrid', {
 				flex: 0.2,
 				renderer: function(val, meta, rec){
 					return NP.Translator.translate('Edit')
-				}
+				},
+				tdCls: 'grid-clickable-col'
 			},
 			{
 				xtype: 'actioncolumn',
@@ -85,7 +86,8 @@ Ext.define('NP.view.systemSetup.TemplatesGrid', {
 				flex: 0.2,
 				renderer: function(val, meta, rec){
 					return NP.Translator.translate('View Sample')
-				}
+				},
+				tdCls: 'grid-clickable-col'
 			},
 			{
 				text: NP.Translator.translate('View Attachment'),
@@ -97,7 +99,8 @@ Ext.define('NP.view.systemSetup.TemplatesGrid', {
 					}
 
 					return NP.Translator.translate('View Attachment');;
-				}
+				},
+				tdCls: 'grid-clickable-col'
 			}
 		];
 
