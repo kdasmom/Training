@@ -32,7 +32,8 @@ Ext.define('NP.view.systemSetup.TemplatesGrid', {
 				flex: 0.5,
 				renderer: function(val, meta, record) {
 					return NP.Translator.translate('View Assignments')
-				}
+				},
+				tdCls: 'grid-clickable-col'
 			},
 			{
 				dataIndex: 'Print_Template_LastUpdateDt',
