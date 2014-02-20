@@ -328,7 +328,6 @@ Ext.define('NP.controller.SystemSetup', {
 		
 	},
 
-	
 	/**
 	 * Save Password Configuration
 	 */
@@ -1146,7 +1145,6 @@ Ext.define('NP.controller.SystemSetup', {
 							NP.Util.showFadingWindow({ html: 'Settings were saved successfully' });
 							for (var index in data) {
 								if ((regexpArr = /^setting_(\d+)/.exec(index)) !== null) {
-									console.log(data[index]);
 									NP.Config.setSetting(regexpArr[1], data[index]);
 								}
 							}

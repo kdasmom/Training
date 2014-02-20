@@ -43,7 +43,7 @@ Ext.define('NP.view.systemSetup.PicklistTab', {
 					extraFields:{
 						mode: me.mode
 					},
-					autoLoad	: true,
+					autoLoad	: false,
 					fields: ['column_data', 'column_pk_data', 'column_status']
 				}),
 				padding: '5',
@@ -74,6 +74,12 @@ Ext.define('NP.view.systemSetup.PicklistTab', {
 				height: 400
 			}
 		];
+
+		me.listeners = {
+			afterrender: function() {
+				me.down('customgrid').getStore().reload();
+			}
+		};
 
 		me.callParent(arguments);
 	}
