@@ -939,7 +939,7 @@ Ext.define('NP.controller.SystemSetup', {
 				configsyscat_name		: tabName,
 				configsysval_show		: 1,
 				success: function(success) {
-					if (success.length > 0) {
+					if (success && success.length > 0) {
 						callback(tab, success, fieldcontainer);
 						mask.destroy();
 					}
@@ -955,6 +955,7 @@ Ext.define('NP.controller.SystemSetup', {
 	 * @param fieldcontainer
 	 */
 	addField: function(tab, fields, fieldcontainer) {
+		Ext.suspendLayouts();
 		Ext.each(fields, function(field){
 			switch (field.configsystype_name) {
 				case 'Text':
@@ -1120,6 +1121,7 @@ Ext.define('NP.controller.SystemSetup', {
 				}
 			);
 		});
+		Ext.resumeLayouts(true);
 	},
 
 	/**
@@ -1142,6 +1144,12 @@ Ext.define('NP.controller.SystemSetup', {
 					success: function(success) {
 						if (success.success) {
 							NP.Util.showFadingWindow({ html: 'Settings were saved successfully' });
+							for (var index in data) {
+								if ((regexpArr = /^setting_(\d+)/.exec(index)) !== null) {
+									console.log(data[index]);
+									NP.Config.setSetting(regexpArr[1], data[index]);
+								}
+							}
 						} else {
 							NP.Util.showFadingWindow({ html: success.errors });
 						}
