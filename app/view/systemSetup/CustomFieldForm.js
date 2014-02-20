@@ -96,8 +96,7 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 						fieldLabel: NP.Translator.translate('VEFs'),
 						yesLabel: NP.Translator.translate('On'),
 						noLabel: NP.Translator.translate('Off'),
-						hidden: !NP.Security.hasPermission('2084'),
-						hidden: me.tabindex > 1
+						hidden: !NP.Security.hasPermission('2084')
 					},
 					{
 						xtype: 'shared.yesnofield',

@@ -1844,7 +1844,6 @@ Ext.define('NP.controller.SystemSetup', {
 
 		}if (tab.name == 'settings') {
 			isWithImage = tab.down('[name="print_template_additional_image"]').getValue();
-			console.log(isWithImage);
 
 			tab.getDockedItems('toolbar[dock="top"]')[0].hide();
 			tabpanel.up().down('[name="uploadimage"]').show();
