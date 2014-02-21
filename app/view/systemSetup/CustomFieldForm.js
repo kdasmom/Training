@@ -358,7 +358,7 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 						handler: function(){
 							var data = {
 								'universal_field_data'		: me.getForm().findField('universal_field_data').getValue(),
-								'universal_field_status'	: me.getForm().findField('universal_field_status').getValue(),
+								'universal_field_status'	: me.getForm().findField('universal_field_status_group').getValue()['universal_field_status'],
 								'universal_field_number'	: me.getForm().findField('universal_field_number').getValue(),
 								'action'					: me.getForm().findField('action').getValue(),
 								'universal_field_id'		: me.getForm().findField('customfielddata').getValue()[0],
