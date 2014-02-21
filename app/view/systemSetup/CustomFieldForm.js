@@ -133,6 +133,10 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 				id: 'dataandselectfield',
 				padding: '0 0 15 0',
 				border: '0 0 1 0',
+				layout: {
+					type: 'vbox',
+					align: 'left'
+				},
 				items: [
 					{
 						xtype: 'radiogroup',
@@ -190,6 +194,8 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 						labelAlign: 'top',
 						displayField: 'universal_field_data',
 						valueField: 'universal_field_id',
+						padding: '5 0',
+						width: 200,
 						store: Ext.create('NP.lib.data.Store', {
 							service    	: 'ConfigService',
 							action     	: 'getCustomFieldsData',
@@ -239,6 +245,7 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 					{
 						xtype: 'fieldcontainer',
 						name: 'action_buttons',
+						padding: '5 0',
 						items: [
 							{
 								xtype: 'button',
