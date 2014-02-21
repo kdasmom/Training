@@ -39,6 +39,10 @@ $di['mailUsername'] = $__CONFIG['mailServer']['username'];
 $di['mailPassword'] = $__CONFIG['mailServer']['password'];
 $di['mailEncryptionType'] = $__CONFIG['mailServer']['encryptionType'];
 
+$di['reportUrl']      = $__CONFIG['reportServer']['url'];
+$di['reportUsername'] = $__CONFIG['reportServer']['username'];
+$di['reportPassword'] = $__CONFIG['reportServer']['password'];
+
 // DI Definitions
 $diDefinition = array(
 	'Zend\Cache\Storage\Adapter\WinCache',
@@ -79,6 +83,7 @@ $diDefinition = array(
 	'NP\security\SecurityService'                    => array('config','SiteService','SessionService'),
 	'NP\system\ConfigService'                        => array('Config','SecurityService','SiteService','IntegrationPackageGateway', 'ConfigsysGateway'),
 	'NP\system\LoggingService'                       => array('logPath','enabledNamespaces','fileEnabled','debugEnabled'),
+	'NP\system\ReportService'                        => array('reportUrl','reportUsername','reportPassword'),
 	'NP\system\SessionService'                       => array('Config','SiteService'),
 	'NP\system\SiteService'                          => array('WinCache','configPath','reloadCache'),
 	'NP\user\DelegationGateway'                      => array('Adapter','RoleGateway'),

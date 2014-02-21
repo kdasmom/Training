@@ -26,6 +26,11 @@ $__CONFIG = array(
 			'username'       => null, // leave null if no authentication
 			'password'       => null, // leave null if no authentication
 			'encryptionType' => null  // valid options are ssl and tls; leave null if no encryption;
+	),
+	'reportServer' => array(
+		'url'      => 'http://yourserver/ssrs_webservice_location',
+		'username' => 'your_username',
+		'password' => 'your_password'
 	)
 );
 
