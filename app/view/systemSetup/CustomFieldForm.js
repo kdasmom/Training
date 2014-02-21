@@ -40,6 +40,8 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 		];
 
 		this.title = NP.Translator.translate(this.title);
+
+		console.log('fissd: ', me.fid);
 		this.items = [
 			{
 				xtype: 'fieldcontainer',
@@ -142,7 +144,7 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 						xtype: 'radiogroup',
 						name: 'customFieldTypeGroup',
 						columns: 4,
-						hidden: me.tabindex == 1,
+						hidden: (me.tabindex == 1 || (me.tabindex == 0 && me.fid > 2)),
 						items: [
 							{
 								boxLabel: NP.Translator.translate('Date'),

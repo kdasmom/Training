@@ -1167,14 +1167,15 @@ Ext.define('NP.controller.SystemSetup', {
 		var me = this,
 			panel = dataview.up().up(),
 			tabindex = panel.name == 'headers' ? 0 : (panel.name == 'lineitems' ? 1 : (panel.name == 'servicefields' ? 2 : 3)),
-			headerform = me.getCmp('systemsetup.customfieldform'),
-			fid = tabindex < 2 ? parseInt(record.get('controlpanelitem_name')[record.get('controlpanelitem_name').length - (!lineitem ? 1 : 10)]) : parseInt(record.get('customfield_id'));
+			fid = tabindex < 2 ? parseInt(record.get('controlpanelitem_name')[record.get('controlpanelitem_name').length - (!lineitem ? 1 : 10)]) : parseInt(record.get('customfield_id')),
+			headerform = me.getCmp('systemsetup.customfieldform', {tabindex: tabindex, fid: fid});
 
 		if (!headerform) {
 			panel.add({
 				xtype: 'systemsetup.customfieldform',
 				flex: 1,
-				tabindex: tabindex
+				tabindex: tabindex,
+				fid: fid
 			});
 			headerform = me.getCmp('systemsetup.customfieldform');
 		}
@@ -1209,6 +1210,9 @@ Ext.define('NP.controller.SystemSetup', {
 							if (fid !== 7 && fid !== 8) {
 								headerform.getForm().findField('custom_field_maxlength').hide();
 								headerform.getChildByElement('dataandselectfield').show();
+								if (tabindex == 0 && fid > 2) {
+									headerform.down('[name="customFieldTypeGroup"]').hide();
+								}
 							} else {
 								headerform.getForm().findField('custom_field_maxlength').show();
 								headerform.getChildByElement('dataandselectfield').hide();
