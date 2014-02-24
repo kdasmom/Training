@@ -9,7 +9,8 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 
 	requires: [
 		'NP.lib.core.Translator',
-		'NP.view.shared.YesNoField'
+		'NP.view.shared.YesNoField',
+		'NP.view.systemSetup.AssignGlAccountsWindow'
 	],
 
 	defaults: {
@@ -132,7 +133,7 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 			{
 				xtype: 'fieldcontainer',
 				width: 400,
-				id: 'dataandselectfield',
+				name: 'dataandselectfield',
 				padding: '0 0 15 0',
 				border: '0 0 1 0',
 				layout: {
@@ -251,7 +252,7 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 						items: [
 							{
 								xtype: 'button',
-								text: 'Save Order',
+								text: NP.Translator.translate('Save Order'),
 								margin: '0 5 0 0',
 								handler: function() {
 									var values = [];
@@ -281,7 +282,7 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 							},
 							{
 								xtype: 'button',
-								text: 'Delete',
+								text: NP.Translator.translate('Delete'),
 								margin: '0 5 0 0',
 								handler: function() {
 									var customfielddataField = me.getForm().findField('customfielddata'),
@@ -310,10 +311,23 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 							},
 							{
 								xtype: 'button',
-								text: 'Alpha sort',
+								text: NP.Translator.translate('Alpha sort'),
 								margin: '0 5 0 0',
 								handler: function() {
 									me.getForm().findField('customfielddata').getStore().sort();
+								}
+							},
+							{
+								xtype: 'button',
+								name: 'glaccountBtn',
+								text: NP.Translator.translate('Add/Edit GL Relationship'),
+								margin: '0 5 0 0',
+								handler: function() {
+									var fieldId = me.down('[name="customfielddata"]').getValue();
+									if (fieldId[0]) {
+										var window = Ext.create('NP.view.systemSetup.AssignGlAccountsWindow', {customfield_id: fieldId[0]});
+										window.show();
+									}
 								}
 							}
 						]

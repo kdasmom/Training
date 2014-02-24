@@ -877,6 +877,27 @@ class ConfigService extends AbstractService {
 		}
 	}
 
+	/**
+	 * find universal fields assigned glaccounts
+	 *
+	 * @param null $field_id
+	 * @return array
+	 */
+	public function getUniversalFieldsAssignedGlaccount($field_id = null) {
+		if (!$field_id) {
+			return [];
+		}
+
+		return $this->pnUniversalFieldGateway->findAssignedGlaccounts($field_id);
+	}
+
+	public function assigneGlaccounts($field_id = null, $glaccounts = null) {
+		if (!$field_id || !$glaccounts) {
+			return false;
+		}
+
+		return $this->pnUniversalFieldGateway->assignGlAccountToTheUniversalFields($field_id, $glaccounts);
+	}
 }
 
 ?>

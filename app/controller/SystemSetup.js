@@ -1201,7 +1201,7 @@ Ext.define('NP.controller.SystemSetup', {
 							headerform.getForm().findField('customfielddata').getStore().getProxy().extraParams.universal_field_id = result.universal_field_number;
 						}
 						headerform.getForm().findField('customfielddata').getStore().load();
-						headerform.getChildByElement('dataandselectfield').hide();
+						headerform.down('[name="dataandselectfield"]').hide();
 
 						if (tabindex >= 2) {
 							headerform.getChildByElement('dataandselectfield').show();
@@ -1209,14 +1209,19 @@ Ext.define('NP.controller.SystemSetup', {
 						} else {
 							if (fid !== 7 && fid !== 8) {
 								headerform.getForm().findField('custom_field_maxlength').hide();
-								headerform.getChildByElement('dataandselectfield').show();
+								headerform.down('[name="dataandselectfield"]').show();
 								if (tabindex == 0 && fid > 2) {
 									headerform.down('[name="customFieldTypeGroup"]').hide();
 								}
 							} else {
 								headerform.getForm().findField('custom_field_maxlength').show();
-								headerform.getChildByElement('dataandselectfield').hide();
+								headerform.down('[name="dataandselectfield"]').hide();
 							}
+						}
+						if (tabindex !== 1 || fid !== 1) {
+							headerform.down('[name="glaccountBtn"]').hide();
+						} else {
+							headerform.down('[name="glaccountBtn"]').show();
 						}
 
 						headerform.getForm().findField('universal_field_number').setValue(!result['universal_field_number'] ? '' : result['universal_field_number']);
@@ -1240,6 +1245,8 @@ Ext.define('NP.controller.SystemSetup', {
 						}else {
 							headerform.getForm().findField('custom_field_lbl').setValue(result['custom_field_lbl']);
 						}
+
+
 
 						headerform.getForm().findField('custom_field_maxlength').setValue(tabindex < 2 ? parseInt(!result['maxlength'] ? 0 : result['maxlength']) : parseInt(!result['customfield_max_length'] ? 0 : result['customfield_max_length']));
 

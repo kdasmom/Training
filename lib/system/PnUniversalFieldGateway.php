@@ -5,6 +5,7 @@ namespace NP\system;
 use NP\core\AbstractGateway;
 use NP\core\db\Delete;
 use NP\core\db\Expression;
+use NP\core\db\Insert;
 use NP\core\db\Select;
 use NP\core\db\Update;
 
@@ -227,6 +228,65 @@ class PnUniversalFieldGateway extends AbstractGateway {
 		$result = $this->adapter->query($select, [$pn_type]);
 
 		return $result[0]['nextNum'] == '' ? 1 : $result[0]['nextNum'];
+	}
+
+	/**
+	 * Find assigned glaccounts
+	 *
+	 * @param $field_id
+	 * @return array
+	 */
+	public function findAssignedGlaccounts($field_id) {
+		$select = new Select();
+
+		$select->from(['l' => 'link_universal_gl'])
+			->columns(['glaccount_id' => 'gl_id'])
+			->distinct()
+			->where(['universal_field_id' => '?']);
+
+		$result = $this->adapter->query($select, [$field_id]);
+
+		$glaccounts = [];
+		foreach ($result as $item) {
+			$glaccounts[] = $item['glaccount_id'];
+		}
+
+		return $glaccounts;
+	}
+
+	/**
+	 * Assign glaccounts
+	 *
+	 * @param $field_id
+	 * @param $glaccounts
+	 * @return bool
+	 * @throws \NP\core\Exception
+	 */
+	public function assignGlAccountToTheUniversalFields($field_id, $glaccounts) {
+		$insert = new Insert();
+		$delete = new Delete();
+
+		$delete->from('link_universal_gl')
+			->where(['universal_field_id' => '?']);
+
+		$this->adapter->query($delete, [$field_id]);
+
+		if (count($glaccounts) > 0) {
+			foreach ($glaccounts as $account) {
+				$insert->into('link_universal_gl')
+					->columns(['universal_field_id', 'gl_id'])
+					->values(Select::get()->columns([
+						new Expression('?'),
+						new Expression('?')
+					]));
+
+				if (!$this->adapter->query($insert, [$field_id, $account])) {
+					throw new \NP\core\Exception("Cannot assign glaccount ot the universal field.");
+				}
+			}
+		}
+
+		return true;
 	}
 }
 
