@@ -1328,7 +1328,7 @@ Ext.define('NP.controller.SystemSetup', {
 
 		columnsgrid.getStore().getProxy().extraParams.mode = tab.mode;
 		columnsgrid.getStore().reload();
-		me.resetPickListForm();
+		me.resetPickListForm(false, tab);
 	},
 
 	/**
@@ -1363,6 +1363,7 @@ Ext.define('NP.controller.SystemSetup', {
 					if (result) {
 						var values = result['values'];
 						form.removeAll();
+						Ext.suspendLayouts();
 						Ext.each(result['fields'], function(column){
 							form.add(me.fillPicklistForm(column, values[0]));
 						});
@@ -1371,6 +1372,7 @@ Ext.define('NP.controller.SystemSetup', {
 							name: 'column_id',
 							value: record.column_pk_data
 						});
+						Ext.resumeLayouts(true);
 					}
 				}
 			}
@@ -1581,18 +1583,16 @@ Ext.define('NP.controller.SystemSetup', {
 		}
 	},
 
-	resetPickListForm: function(button) {
-		var me = this;
-		if (button) {
-			var picklistform = button.up().up(),
+	resetPickListForm: function(button, tab) {
+		var me = this,
+			picklistform = !button ? tab.down('[name="picklistfields"]') : button.up().up(),
 			picklistview = picklistform.up(),
-				recordvalue = {
-					column_status: 1,
-					column_pk_data: 0
-				};
+			recordvalue = {
+				column_status: 1,
+				column_pk_data: 0
+			};
 
-			me.fillFormPicklist(recordvalue, picklistform, picklistview.mode);
-		}
+		me.fillFormPicklist(recordvalue, picklistform, picklistview.mode);
 	},
 
 	showTemplatesGrid: function() {
@@ -1893,5 +1893,12 @@ Ext.define('NP.controller.SystemSetup', {
 
 		tab.getDockedItems('toolbar[dock="top"]')[0].show();
 		toptab.getDockedItems('toolbar[dock="top"]')[0].hide();
+	},
+
+	showPicklists: function() {
+		var me = this,
+			tab = me.getCmp('systemsetup.picklists').down('[name="insurance"]');
+
+		me.resetPickListForm(false, tab);
 	}
 });

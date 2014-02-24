@@ -811,6 +811,14 @@ class ConfigService extends AbstractService {
 		return true;
 	}
 
+	/**
+	 * Update universal field
+	 *
+	 * @param $key
+	 * @param $value
+	 * @param $fid
+	 * @param $tabindex
+	 */
 	protected function updateField($key, $value, $fid, $tabindex) {
 		switch($key) {
 			case 'field_imgindex':
@@ -891,6 +899,13 @@ class ConfigService extends AbstractService {
 		return $this->pnUniversalFieldGateway->findAssignedGlaccounts($field_id);
 	}
 
+	/***
+	 * Assign glaccounts to the universal fields
+	 *
+	 * @param null $field_id
+	 * @param null $glaccounts
+	 * @return bool
+	 */
 	public function assigneGlaccounts($field_id = null, $glaccounts = null) {
 		if (!$field_id || !$glaccounts) {
 			return false;
