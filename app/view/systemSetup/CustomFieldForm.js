@@ -42,7 +42,6 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 
 		this.title = NP.Translator.translate(this.title);
 
-		console.log('fissd: ', me.fid);
 		this.items = [
 			{
 				xtype: 'fieldcontainer',

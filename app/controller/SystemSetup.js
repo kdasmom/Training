@@ -1647,13 +1647,15 @@ Ext.define('NP.controller.SystemSetup', {
 					boundForm.getForm().findField('poprint_header').setValue(templateObj.template_header_text);
 
 //					settings
-					boundForm.getForm().findField('po_include_attachments').setValue(templateObj.settings.po_include_attachments);
-					boundForm.getForm().findField('po_lineitems_display_opts_buildingcode').setValue(templateObj.settings.po_lineitems_display_opts_buildingcode);
-					boundForm.getForm().findField('po_lineitems_display_opts_customfields').setValue(templateObj.settings.po_lineitems_display_opts_customfields);
-					boundForm.getForm().findField('po_lineitems_display_opts_glcode').setValue(templateObj.settings.po_lineitems_display_opts_glcode);
-					boundForm.getForm().findField('po_lineitems_display_opts_itemnum').setValue(templateObj.settings.po_lineitems_display_opts_itemnum);
-					boundForm.getForm().findField('po_lineitems_display_opts_jobcost').setValue(templateObj.settings.po_lineitems_display_opts_jobcost);
-					boundForm.getForm().findField('po_lineitems_display_opts_uom').setValue(templateObj.settings.po_lineitems_display_opts_uom);
+					if (templateObj.settings) {
+						boundForm.getForm().findField('po_include_attachments').setValue(templateObj.settings.po_include_attachments);
+						boundForm.getForm().findField('po_lineitems_display_opts_buildingcode').setValue(templateObj.settings.po_lineitems_display_opts_buildingcode);
+						boundForm.getForm().findField('po_lineitems_display_opts_customfields').setValue(templateObj.settings.po_lineitems_display_opts_customfields);
+						boundForm.getForm().findField('po_lineitems_display_opts_glcode').setValue(templateObj.settings.po_lineitems_display_opts_glcode);
+						boundForm.getForm().findField('po_lineitems_display_opts_itemnum').setValue(templateObj.settings.po_lineitems_display_opts_itemnum);
+						boundForm.getForm().findField('po_lineitems_display_opts_jobcost').setValue(templateObj.settings.po_lineitems_display_opts_jobcost);
+						boundForm.getForm().findField('po_lineitems_display_opts_uom').setValue(templateObj.settings.po_lineitems_display_opts_uom);
+					}
 
 
 //					unassigned objects
