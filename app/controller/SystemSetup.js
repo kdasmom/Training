@@ -224,7 +224,7 @@ Ext.define('NP.controller.SystemSetup', {
 							me.showTemplatePropertyAssignmentWindow(record.get('Print_Template_Id'));
 						} else {
 							var templateObj = JSON.parse(record.get('Print_Template_Data'));
-							if (templateObj.template_attachment !== '0') {
+							if (templateObj.template_attachment && templateObj.template_attachment !== '0') {
 								var win = Ext.create('NP.view.systemSetup.PrintTemplateViewAttachmentWindow', {templateid: record.get('Print_Template_Id')});
 								win.show();
 							}
@@ -1684,6 +1684,7 @@ Ext.define('NP.controller.SystemSetup', {
 					if (data.properties && data.properties.length > 0) {
 						if (data.properties[0] == -1) {
 							boundForm.getForm().findField('property_type').setValue(1);
+							boundForm.getForm().findField('property_id').hide();
 						} else {
 							boundForm.getForm().findField('property_type').setValue(0);
 							boundForm.getForm().findField('property_id').setValue(data.properties);
