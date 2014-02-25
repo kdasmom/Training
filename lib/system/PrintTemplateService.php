@@ -96,6 +96,12 @@ class PrintTemplateService extends AbstractService {
 					$this->printTemplateGateway->savePrintTemplateProperties($property_id, $template_id, $data['userprofile_id']);
 				}
 			}
+			if (isset($templateobj->template_header_text)) {
+				if (!$this->clientGateway->updateHeader($templateobj->template_header_text, $this->configService->getClientId())) {
+					throw new \NP\core\Exception('Cannot save client header.');
+				}
+			}
+
 		} catch(\Exception $e) {
 			$this->printTemplateGateway->rollback();
 			$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
