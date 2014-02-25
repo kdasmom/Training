@@ -1204,7 +1204,7 @@ Ext.define('NP.controller.SystemSetup', {
 						headerform.down('[name="dataandselectfield"]').hide();
 
 						if (tabindex >= 2) {
-							headerform.getChildByElement('dataandselectfield').show();
+							headerform.down('[name="dataandselectfield"]').show();
 							headerform.getForm().findField('custom_field_maxlength').show();
 						} else {
 							if (fid !== 7 && fid !== 8) {
