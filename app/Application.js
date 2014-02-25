@@ -46,6 +46,7 @@ Ext.define('NP.Application', {
 		'MessageCenter',
 		'MobileSetup',
 		'MySettings',
+		'Po',
 		'PropertySetup',
 		'SystemSetup',
 		'UserManager',

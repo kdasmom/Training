@@ -91,6 +91,20 @@ Ext.define('NP.controller.Viewport', {
 					this.addHistory(token);
 				}
 			},
+
+			// Clicking on Purchase Orders, PO Register, or any of the subitems under PO Register
+			'#poMenuBtn,#poRegisterMenuBtn,#poRegisterMenuBtn menuitem': {
+				click: function(itemClicked) {
+					var token = 'Po:showRegister';
+					if (itemClicked.itemId != 'poMenuBtn' && itemClicked.itemId != 'poRegisterMenuBtn') {
+						token += ':' + itemClicked.itemId.replace('PoRegisterMenuBtn', '');
+					} else {
+						token += ':open';
+					}
+					this.addHistory(token);
+				}
+			},
+
 			// Clicking on the Administration > Image Management menu or sub menu
 			'#imageMenuBtn,#imageMenuBtn menuitem': {
 				click: function(itemClicked) {

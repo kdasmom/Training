@@ -65,6 +65,8 @@ Ext.define('NP.model.po.Purchaseorder', {
 		{ name: 'property_name' },
 
 		{ name: 'PriorityFlag_Display' },
+		
+		{ name: 'received_status'},
 
 		{ name: 'entity_amount', type: 'float' },
 		{ name: 'created_by' },

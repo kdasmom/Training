@@ -321,6 +321,71 @@ class PurchaseOrderGateway extends AbstractGateway {
 			['closed', 'invoiceitem', $invoice_id]
 		);
 	}
+
+	/**
+	 * Returns Select object that can be re-used for all the registers
+	 */
+	private function getBaseRegisterSelect($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort) {
+		$propertyContext = new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection);
+		$propertyFilterSelect = new PropertyFilterSelect($propertyContext);
+
+		$select = new sql\PoSelect();
+		$select->allColumns('p')
+				->columnAmount()
+				->columnCreatedBy()
+				->columnPendingDays()
+				->join(new sql\join\PoVendorsiteJoin())
+				->join(new \NP\vendor\sql\join\VendorsiteVendorJoin())
+				->join(new sql\join\PoPropertyJoin())
+				->join(new sql\join\PoPriorityFlagJoin())
+				->whereIn('vs.vendorsite_status', "'active','inactive','rejected'")
+				->whereIn('p.property_id', $propertyFilterSelect)
+				->order($sort);
+
+		return $select;
+	}
+	
+	/**
+	 * Find open invoices for a user given a certain context filter
+	 *
+	 * @param  int    $userprofile_id              The active user ID, can be a delegated account
+	 * @param  int    $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
+	 * @param  string $contextType                 The context filter type; valid values are 'property','region', and 'all'
+	 * @param  int    $contextSelection            The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
+	 * @param  int    $pageSize                    The number of records per page; if null, all records are returned
+	 * @param  int    $page                        The page for which to return records
+	 * @param  string $sort                        Field(s) by which to sort the result; defaults to vendor_name
+	 * @return array                               Array of invoice records
+	 */
+	public function findOpenPos($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=1, $sort='vendor_name') {
+		$select = $this->getBaseRegisterSelect($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
+		
+		$select->whereEquals('p.purchaseorder_status', "'open'");
+		
+		// If paging is needed
+		if ($pageSize !== null) {
+			return $this->getPagingArray($select, array(), $pageSize, $page);
+		} else {
+			return $this->adapter->query($select);
+		}
+	}
+	
+	/**
+	 * Find rejected POs for a user given a certain context filter
+	 *
+	 * @param  int    $userprofile_id              The active user ID, can be a delegated account
+	 * @param  int    $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
+	 * @param  string $contextType                 The context filter type; valid values are 'property','region', and 'all'
+	 * @param  int    $contextSelection            The context filter selection; if filter type is 'all', should be null, if 'property' should be a property ID, if 'region' should be a region ID
+	 * @param  int    $pageSize                    The number of records per page; if null, all records are returned
+	 * @param  int    $page                        The page for which to return records
+	 * @param  string $sort                        Field(s) by which to sort the result; defaults to vendor_name
+	 * @return array                               Array of invoice records
+	 */
+	public function findRejectedPos($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=1, $sort='vendor_name') {
+		// Just use the same function as the one used for Rejected Invoices dashboard
+		return $this->findPosRejected(false, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
+	}
 }
 
 ?>
