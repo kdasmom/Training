@@ -1706,7 +1706,7 @@ Ext.define('NP.controller.SystemSetup', {
 					} else {
 						if (templateObj.template_settings && templateObj.template_settings.print_template_additional_image) {
 							boundForm.getForm().findField('print_template_additional_image').setValue(1);
-							boundForm.down('[name="settingsimage"]').src = 'clients/' + NP.lib.core.Config.getAppName() + '/web/images/print_pdf/poprint_additional_image_' + id + '.jpg';
+							boundForm.down('[name="settingsimage"]').setSrc('clients/' + NP.lib.core.Config.getAppName() + '/web/images/print_pdf/poprint_additional_image_' + id + '.jpg');
 							boundForm.down('[name="settingsimage"]').show();
 						}
 						if (templateObj.template_attachment) {
