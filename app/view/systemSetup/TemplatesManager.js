@@ -188,6 +188,7 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 							me.down('[name="print_template_additional_image"]').setValue(0);
 							me.down('[name="viewImageBtn"]').hide();
 							me.down('[name="deleteImageBtn"]').hide();
+							me.down('[name="settingsimage"]').hide();
 						} else {
 							me.down('[name="template_attachment"]').setValue(0);
 							me.down('[name="viewAttachmentBtn"]').hide();
