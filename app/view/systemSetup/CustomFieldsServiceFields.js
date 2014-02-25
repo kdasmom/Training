@@ -52,7 +52,7 @@ Ext.define('NP.view.systemSetup.CustomFieldsServiceFields', {
 					extraParams	:{
 						fieldname: 'serviceField'
 					},
-					autoLoad	: true,
+					autoLoad	: false,
 					fields: ['customfield_id', 'controlpanelitem_name', 'controlpanelitem_value', 'controlpanelitem_required', 'po_on_off', 'po_req']
 				})
 			}

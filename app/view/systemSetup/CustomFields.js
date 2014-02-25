@@ -48,6 +48,9 @@ Ext.define('NP.view.systemSetup.CustomFields', {
 						listeners: {
 							beforehide: function(tab, eOpts) {
 								me.fireEvent('beforehidetab', tab);
+							},
+							afterrender: function(tab) {
+								tab.down('customgrid').getStore().reload();
 							}
 						}
 					},
@@ -58,6 +61,9 @@ Ext.define('NP.view.systemSetup.CustomFields', {
 						listeners: {
 							beforehide: function(tab, eOpts) {
 								me.fireEvent('beforehidetab', tab);
+							},
+							afterrender: function(tab) {
+								tab.down('customgrid').getStore().reload();
 							}
 						}
 					},
@@ -68,6 +74,9 @@ Ext.define('NP.view.systemSetup.CustomFields', {
 						listeners: {
 							beforehide: function(tab, eOpts) {
 								me.fireEvent('beforehidetab', tab);
+							},
+							afterrender: function(tab) {
+								tab.down('customgrid').getStore().reload();
 							}
 						}
 					},
@@ -78,6 +87,9 @@ Ext.define('NP.view.systemSetup.CustomFields', {
 						listeners: {
 							beforehide: function(tab, eOpts) {
 								me.fireEvent('beforehidetab', tab);
+							},
+							afterrender: function(tab) {
+								tab.down('customgrid').getStore().reload();
 							}
 						}
 					}

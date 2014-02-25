@@ -96,6 +96,23 @@ class PrintTemplateService extends AbstractService {
 					$this->printTemplateGateway->savePrintTemplateProperties($property_id, $template_id, $data['userprofile_id']);
 				}
 			}
+
+			if (isset($templateobj->template_header_text)) {
+				if (!$this->clientGateway->update(['poprint_header' => !$templateobj->template_header_text ? null : "$templateobj->template_header_text"], ['asp_client_id' => '?'], [$this->configService->getClientId()])) {
+					throw new \NP\core\Exception('Cannot save client header.');
+				}
+			}
+			if (isset($templateobj->template_footer_text)) {
+				if (!$this->clientGateway->update(['poprint_footer' => !$templateobj->template_footer_text ? null : "$templateobj->template_footer_text"], ['asp_client_id' => '?'], [$this->configService->getClientId()])) {
+					throw new \NP\core\Exception('Cannot save client footer.');
+				}
+			}
+			if (isset($templateobj->template_additional_text)) {
+				if (!$this->clientGateway->update(['poprint_additional_text' => !$templateobj->template_additional_text ? null : "$templateobj->template_additional_text"], ['asp_client_id' => '?'], [$this->configService->getClientId()])) {
+					throw new \NP\core\Exception('Cannot save client additional text.');
+				}
+			}
+
 		} catch(\Exception $e) {
 			$this->printTemplateGateway->rollback();
 			$errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);

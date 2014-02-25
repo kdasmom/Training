@@ -246,6 +246,7 @@ class PicklistService extends AbstractService {
 			return false;
 		}
 
+
 		$asp_client_id = $this->configService->getClientId();
 
 		$table = $this->_getTableKeyByPicklistMode($data['mode']);

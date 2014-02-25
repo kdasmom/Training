@@ -224,7 +224,7 @@ Ext.define('NP.controller.SystemSetup', {
 							me.showTemplatePropertyAssignmentWindow(record.get('Print_Template_Id'));
 						} else {
 							var templateObj = JSON.parse(record.get('Print_Template_Data'));
-							if (templateObj.template_attachment !== '0') {
+							if (templateObj.template_attachment && templateObj.template_attachment !== '0') {
 								var win = Ext.create('NP.view.systemSetup.PrintTemplateViewAttachmentWindow', {templateid: record.get('Print_Template_Id')});
 								win.show();
 							}
@@ -328,7 +328,6 @@ Ext.define('NP.controller.SystemSetup', {
 		
 	},
 
-	
 	/**
 	 * Save Password Configuration
 	 */
@@ -939,7 +938,7 @@ Ext.define('NP.controller.SystemSetup', {
 				configsyscat_name		: tabName,
 				configsysval_show		: 1,
 				success: function(success) {
-					if (success.length > 0) {
+					if (success && success.length > 0) {
 						callback(tab, success, fieldcontainer);
 						mask.destroy();
 					}
@@ -955,6 +954,7 @@ Ext.define('NP.controller.SystemSetup', {
 	 * @param fieldcontainer
 	 */
 	addField: function(tab, fields, fieldcontainer) {
+		Ext.suspendLayouts();
 		Ext.each(fields, function(field){
 			switch (field.configsystype_name) {
 				case 'Text':
@@ -1120,6 +1120,7 @@ Ext.define('NP.controller.SystemSetup', {
 				}
 			);
 		});
+		Ext.resumeLayouts(true);
 	},
 
 	/**
@@ -1142,6 +1143,11 @@ Ext.define('NP.controller.SystemSetup', {
 					success: function(success) {
 						if (success.success) {
 							NP.Util.showFadingWindow({ html: 'Settings were saved successfully' });
+							for (var index in data) {
+								if ((regexpArr = /^setting_(\d+)/.exec(index)) !== null) {
+									NP.Config.setSetting(regexpArr[1], data[index]);
+								}
+							}
 						} else {
 							NP.Util.showFadingWindow({ html: success.errors });
 						}
@@ -1161,14 +1167,15 @@ Ext.define('NP.controller.SystemSetup', {
 		var me = this,
 			panel = dataview.up().up(),
 			tabindex = panel.name == 'headers' ? 0 : (panel.name == 'lineitems' ? 1 : (panel.name == 'servicefields' ? 2 : 3)),
-			headerform = me.getCmp('systemsetup.customfieldform'),
-			fid = tabindex < 2 ? parseInt(record.get('controlpanelitem_name')[record.get('controlpanelitem_name').length - (!lineitem ? 1 : 10)]) : parseInt(record.get('customfield_id'));
+			fid = tabindex < 2 ? parseInt(record.get('controlpanelitem_name')[record.get('controlpanelitem_name').length - (!lineitem ? 1 : 10)]) : parseInt(record.get('customfield_id')),
+			headerform = me.getCmp('systemsetup.customfieldform', {tabindex: tabindex, fid: fid});
 
 		if (!headerform) {
 			panel.add({
 				xtype: 'systemsetup.customfieldform',
 				flex: 1,
-				tabindex: tabindex
+				tabindex: tabindex,
+				fid: fid
 			});
 			headerform = me.getCmp('systemsetup.customfieldform');
 		}
@@ -1194,7 +1201,7 @@ Ext.define('NP.controller.SystemSetup', {
 							headerform.getForm().findField('customfielddata').getStore().getProxy().extraParams.universal_field_id = result.universal_field_number;
 						}
 						headerform.getForm().findField('customfielddata').getStore().load();
-						headerform.getChildByElement('dataandselectfield').hide();
+						headerform.down('[name="dataandselectfield"]').hide();
 
 						if (tabindex >= 2) {
 							headerform.getChildByElement('dataandselectfield').show();
@@ -1202,11 +1209,19 @@ Ext.define('NP.controller.SystemSetup', {
 						} else {
 							if (fid !== 7 && fid !== 8) {
 								headerform.getForm().findField('custom_field_maxlength').hide();
-								headerform.getChildByElement('dataandselectfield').show();
+								headerform.down('[name="dataandselectfield"]').show();
+								if (tabindex == 0 && fid > 2) {
+									headerform.down('[name="customFieldTypeGroup"]').hide();
+								}
 							} else {
 								headerform.getForm().findField('custom_field_maxlength').show();
-								headerform.getChildByElement('dataandselectfield').hide();
+								headerform.down('[name="dataandselectfield"]').hide();
 							}
+						}
+						if (tabindex !== 1 || fid !== 1) {
+							headerform.down('[name="glaccountBtn"]').hide();
+						} else {
+							headerform.down('[name="glaccountBtn"]').show();
 						}
 
 						headerform.getForm().findField('universal_field_number').setValue(!result['universal_field_number'] ? '' : result['universal_field_number']);
@@ -1230,6 +1245,8 @@ Ext.define('NP.controller.SystemSetup', {
 						}else {
 							headerform.getForm().findField('custom_field_lbl').setValue(result['custom_field_lbl']);
 						}
+
+
 
 						headerform.getForm().findField('custom_field_maxlength').setValue(tabindex < 2 ? parseInt(!result['maxlength'] ? 0 : result['maxlength']) : parseInt(!result['customfield_max_length'] ? 0 : result['customfield_max_length']));
 
@@ -1311,7 +1328,7 @@ Ext.define('NP.controller.SystemSetup', {
 
 		columnsgrid.getStore().getProxy().extraParams.mode = tab.mode;
 		columnsgrid.getStore().reload();
-		me.resetPickListForm();
+		me.resetPickListForm(false, tab);
 	},
 
 	/**
@@ -1346,6 +1363,7 @@ Ext.define('NP.controller.SystemSetup', {
 					if (result) {
 						var values = result['values'];
 						form.removeAll();
+						Ext.suspendLayouts();
 						Ext.each(result['fields'], function(column){
 							form.add(me.fillPicklistForm(column, values[0]));
 						});
@@ -1354,6 +1372,7 @@ Ext.define('NP.controller.SystemSetup', {
 							name: 'column_id',
 							value: record.column_pk_data
 						});
+						Ext.resumeLayouts(true);
 					}
 				}
 			}
@@ -1564,18 +1583,16 @@ Ext.define('NP.controller.SystemSetup', {
 		}
 	},
 
-	resetPickListForm: function(button) {
-		var me = this;
-		if (button) {
-			var picklistform = button.up().up(),
+	resetPickListForm: function(button, tab) {
+		var me = this,
+			picklistform = !button ? tab.down('[name="picklistfields"]') : button.up().up(),
 			picklistview = picklistform.up(),
-				recordvalue = {
-					column_status: 1,
-					column_pk_data: 0
-				};
+			recordvalue = {
+				column_status: 1,
+				column_pk_data: 0
+			};
 
-			me.fillFormPicklist(recordvalue, picklistform, picklistview.mode);
-		}
+		me.fillFormPicklist(recordvalue, picklistform, picklistview.mode);
 	},
 
 	showTemplatesGrid: function() {
@@ -1605,7 +1622,8 @@ Ext.define('NP.controller.SystemSetup', {
 				'template_logo_center',
 				'template_logo_left',
 				'template_logo_right'
-			];
+			],
+			id = parseInt(id) ? parseInt(id) : 0;
 
 		if (id) {
 			Ext.apply(viewConfig.bind, {
@@ -1630,13 +1648,15 @@ Ext.define('NP.controller.SystemSetup', {
 					boundForm.getForm().findField('poprint_header').setValue(templateObj.template_header_text);
 
 //					settings
-					boundForm.getForm().findField('po_include_attachments').setValue(templateObj.settings.po_include_attachments);
-					boundForm.getForm().findField('po_lineitems_display_opts_buildingcode').setValue(templateObj.settings.po_lineitems_display_opts_buildingcode);
-					boundForm.getForm().findField('po_lineitems_display_opts_customfields').setValue(templateObj.settings.po_lineitems_display_opts_customfields);
-					boundForm.getForm().findField('po_lineitems_display_opts_glcode').setValue(templateObj.settings.po_lineitems_display_opts_glcode);
-					boundForm.getForm().findField('po_lineitems_display_opts_itemnum').setValue(templateObj.settings.po_lineitems_display_opts_itemnum);
-					boundForm.getForm().findField('po_lineitems_display_opts_jobcost').setValue(templateObj.settings.po_lineitems_display_opts_jobcost);
-					boundForm.getForm().findField('po_lineitems_display_opts_uom').setValue(templateObj.settings.po_lineitems_display_opts_uom);
+					if (templateObj.settings) {
+						boundForm.getForm().findField('po_include_attachments').setValue(templateObj.settings.po_include_attachments);
+						boundForm.getForm().findField('po_lineitems_display_opts_buildingcode').setValue(templateObj.settings.po_lineitems_display_opts_buildingcode);
+						boundForm.getForm().findField('po_lineitems_display_opts_customfields').setValue(templateObj.settings.po_lineitems_display_opts_customfields);
+						boundForm.getForm().findField('po_lineitems_display_opts_glcode').setValue(templateObj.settings.po_lineitems_display_opts_glcode);
+						boundForm.getForm().findField('po_lineitems_display_opts_itemnum').setValue(templateObj.settings.po_lineitems_display_opts_itemnum);
+						boundForm.getForm().findField('po_lineitems_display_opts_jobcost').setValue(templateObj.settings.po_lineitems_display_opts_jobcost);
+						boundForm.getForm().findField('po_lineitems_display_opts_uom').setValue(templateObj.settings.po_lineitems_display_opts_uom);
+					}
 
 
 //					unassigned objects
@@ -1665,6 +1685,7 @@ Ext.define('NP.controller.SystemSetup', {
 					if (data.properties && data.properties.length > 0) {
 						if (data.properties[0] == -1) {
 							boundForm.getForm().findField('property_type').setValue(1);
+							boundForm.getForm().findField('property_id').hide();
 						} else {
 							boundForm.getForm().findField('property_type').setValue(0);
 							boundForm.getForm().findField('property_id').setValue(data.properties);
@@ -1674,6 +1695,7 @@ Ext.define('NP.controller.SystemSetup', {
 					boundForm.getForm().findField('edittemplatename_settings').setValue(data.Print_Template_Name);
 					boundForm.getForm().findField('edittemplatename_header').setValue(data.Print_Template_Name);
 					boundForm.getForm().findField('edittemplatename_footer').setValue(data.Print_Template_Name);
+					boundForm.getForm().findField('edittemplatename_additional').setValue(data.Print_Template_Name);
 
 					if (copy) {
 						boundForm.getForm().findField('Print_Template_Id').setValue('');
@@ -1691,10 +1713,10 @@ Ext.define('NP.controller.SystemSetup', {
 					}
 				}
 			};
-			Ext.apply(viewConfig, {
-				id: id
-			})
 		}
+		Ext.apply(viewConfig, {
+			templateid: id
+		});
 
 		var form = this.setView('NP.view.systemSetup.TemplatesManager', viewConfig, '[xtype="systemsetup.poprintsettings"]');
 	},
@@ -1812,17 +1834,20 @@ Ext.define('NP.controller.SystemSetup', {
 	},
 
 	changepotabs: function(tabpanel, tab) {
-		var isWithAttachment, isWithImage;
-
+		var isWithAttachment,
+			isWithImage,
+			me = this;
 
 		tabpanel.up().down('[name="uploadattachment"]').hide();
 		tabpanel.up().down('[name="uploadimage"]').hide();
-
-
 		tabpanel.up().down('[name="viewImageBtn"]').hide();
 		tabpanel.up().down('[name="deleteImageBtn"]').hide();
 		tabpanel.up().down('[name="viewAttachmentBtn"]').hide();
 		tabpanel.up().down('[name="deleteAttachmentBtn"]').hide();
+
+		if (tab.name !== 'templatetab' && tabpanel.up().templateid == 0) {
+			me.addHistory('SystemSetup:showSystemSetup:POPrintSettings');
+		}
 
 		if (tab.name == 'additionaltexttab') {
 			isWithAttachment = tab.down('[name="template_attachment"]').getValue();
@@ -1838,7 +1863,6 @@ Ext.define('NP.controller.SystemSetup', {
 
 		}if (tab.name == 'settings') {
 			isWithImage = tab.down('[name="print_template_additional_image"]').getValue();
-			console.log(isWithImage);
 
 			tab.getDockedItems('toolbar[dock="top"]')[0].hide();
 			tabpanel.up().down('[name="uploadimage"]').show();
@@ -1875,5 +1899,12 @@ Ext.define('NP.controller.SystemSetup', {
 
 		tab.getDockedItems('toolbar[dock="top"]')[0].show();
 		toptab.getDockedItems('toolbar[dock="top"]')[0].hide();
+	},
+
+	showPicklists: function() {
+		var me = this,
+			tab = me.getCmp('systemsetup.picklists').down('[name="insurance"]');
+
+		me.resetPickListForm(false, tab);
 	}
 });

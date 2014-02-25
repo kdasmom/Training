@@ -53,7 +53,7 @@ Ext.define('NP.view.systemSetup.CustomFieldsPropertyFields', {
 					extraParams	:{
 						fieldname: 'propertyCustom'
 					},
-					autoLoad	: true,
+					autoLoad	: false,
 					fields: ['customfield_id', 'controlpanelitem_name', 'controlpanelitem_value', 'controlpanelitem_required', 'po_on_off', 'po_req']
 				})
 			}

@@ -90,7 +90,6 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 				name: 'viewAttachmentBtn',
 				hidden: true,
 				handler: function() {
-					console.log(me.id);
 					var win = Ext.create('NP.view.systemSetup.PrintTemplateViewAttachmentWindow', {templateid: me.id});
 					win.show();
 				}
@@ -110,7 +109,6 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 				name: 'viewImageBtn',
 				hidden: true,
 				handler: function() {
-					console.log(me.id);
 					var win = Ext.create('NP.view.systemSetup.PrintTemplateViewImageWindow', {templateid: me.id});
 					win.show();
 				}

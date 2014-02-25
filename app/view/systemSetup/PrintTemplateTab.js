@@ -110,7 +110,16 @@ Ext.define('NP.view.systemSetup.PrintTemplateTab', {
 						yesLabel: 'All Properties',
 						noLabel: 'Selected Properties',
 						name: 'property_type',
-						columns: 1
+						columns: 1,
+						listeners: {
+							change: function(radiogroup, newValue, oldValue, eOpts) {
+								if (newValue.property_type == 0) {
+									me.down('[name="property_id"]').show();
+								} else {
+									me.down('[name="property_id"]').hide();
+								}
+							}
+						}
 					},
 					{
 						xtype: 'shared.propertyassigner',

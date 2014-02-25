@@ -86,10 +86,7 @@ Ext.define('NP.view.systemSetup.TemplateBodyCanvas', {
 					{
 						xtype: 'panel',
 						title: NP.Translator.translate('Header (first page only)'),
-						layout: {
-							type: 'hbox',
-							align: 'stretch'
-						},
+						layout: 'fit',
 						padding: '15 15 0 15',
 						items: [
 							{
@@ -103,10 +100,7 @@ Ext.define('NP.view.systemSetup.TemplateBodyCanvas', {
 					{
 						xtype: 'panel',
 						title: NP.Translator.translate('Body'),
-						layout: {
-							type: 'hbox',
-							align: 'stretch'
-						},
+						layout: 'fit',
 						padding: '15 15 0 15',
 						items: [
 							{
@@ -143,17 +137,14 @@ Ext.define('NP.view.systemSetup.TemplateBodyCanvas', {
 					{
 						xtype: 'panel',
 						title: NP.Translator.translate('Footer (last page only)'),
-						layout: {
-							type: 'hbox',
-							align: 'stretch'
-						},
+						layout: 'fit',
 						padding: '15',
 						items: [
 							{
 								xtype    : 'systemsetup.canvaspanel',
 								name: 'template_footer',
-								flex: 1,
-								minHeight: 30
+								minHeight: 30,
+								flex: 1
 							}
 						]
 					}

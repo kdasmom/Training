@@ -258,6 +258,8 @@ class PicklistGateway extends AbstractGateway {
 		$result = $this->adapter->query($qry_picklist_tableSelect, [$table['table_id'], $asp_client_id]);
 		$qry_picklist_table = $result[0];
 
+
+
 //		select column
 		$qry_picklist_columnSelect = new Select();
 		$params = [];
@@ -306,6 +308,26 @@ class PicklistGateway extends AbstractGateway {
 						}
 					}
 				}
+			}
+
+			if ($data['universal_field_status'] == PnUniversalFieldGateway::STATUS_DEFAULT) {
+				$update = new Update();
+
+				$values = [
+					'universal_field_status'		=> 1
+				];
+
+				if (count($ExistsAspClientColumn) > 0) {
+					$values['asp_client_id'] = $asp_client_id;
+				}
+
+				$update->table($qry_picklist_table['table_name'])
+					->values($values)
+					->where([
+						'universal_field_status'	=> '?'
+					]);
+
+				$this->adapter->query($update, [PnUniversalFieldGateway::STATUS_DEFAULT]);
 			}
 
 //			update unversal_field_status

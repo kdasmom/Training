@@ -32,7 +32,8 @@ Ext.define('NP.view.systemSetup.TemplatesGrid', {
 				flex: 0.5,
 				renderer: function(val, meta, record) {
 					return NP.Translator.translate('View Assignments')
-				}
+				},
+				tdCls: 'grid-clickable-col'
 			},
 			{
 				dataIndex: 'Print_Template_LastUpdateDt',
@@ -54,7 +55,8 @@ Ext.define('NP.view.systemSetup.TemplatesGrid', {
 				flex: 0.2,
 				renderer: function(val, meta, rec){
 					return NP.Translator.translate('Edit')
-				}
+				},
+				tdCls: 'grid-clickable-col'
 			},
 			{
 				xtype: 'actioncolumn',
@@ -85,19 +87,21 @@ Ext.define('NP.view.systemSetup.TemplatesGrid', {
 				flex: 0.2,
 				renderer: function(val, meta, rec){
 					return NP.Translator.translate('View Sample')
-				}
+				},
+				tdCls: 'grid-clickable-col'
 			},
 			{
 				text: NP.Translator.translate('View Attachment'),
 				flex: 0.3,
 				renderer: function(val, meta, record) {
 					var templateObj = JSON.parse(record.get('Print_Template_Data'));
-					if (parseInt(templateObj.template_attachment) == 0) {
+					if (!templateObj.template_attachment || parseInt(templateObj.template_attachment) == 0) {
 						return '';
 					}
 
 					return NP.Translator.translate('View Attachment');;
-				}
+				},
+				tdCls: 'grid-clickable-col'
 			}
 		];
 

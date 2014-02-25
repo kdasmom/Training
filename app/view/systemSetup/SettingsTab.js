@@ -37,7 +37,10 @@ Ext.define('NP.view.systemSetup.SettingsTab', {
 				name: 'params',
 				border: false,
 				items: [],
-				layout: 'form',
+				layout: {
+					type: 'vbox',
+					align: 'stretch'
+				},
 				defaults: {
 					labelWidth: '80%',
 					padding: '5 0'
