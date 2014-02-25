@@ -62,9 +62,9 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 			{
 				xtype: 'shared.button.delete',
 				handler: function() {
-					me.fireEvent('deletetemplate', me.id);
+					me.fireEvent('deletetemplate', me.templateid);
 				},
-				hidden: parseInt(me.id) > 0 ? false : true
+				hidden: parseInt(me.templateid) > 0 ? false : true
 			},
 			{
 				xtype: 'shared.button.upload',
@@ -72,7 +72,7 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 				name: 'uploadattachment',
 				hidden: true,
 				handler: function() {
-					me.fireEvent('uploadattachment', me.id);
+					me.fireEvent('uploadattachment', me.templateid);
 				}
 			},
 			{
@@ -81,7 +81,7 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 				name: 'uploadimage',
 				hidden: true,
 				handler: function() {
-					me.fireEvent('uploadimage', me.id);
+					me.fireEvent('uploadimage', me.templateid);
 				}
 			},
 			{
@@ -90,7 +90,7 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 				name: 'viewAttachmentBtn',
 				hidden: true,
 				handler: function() {
-					var win = Ext.create('NP.view.systemSetup.PrintTemplateViewAttachmentWindow', {templateid: me.id});
+					var win = Ext.create('NP.view.systemSetup.PrintTemplateViewAttachmentWindow', {templateid: me.templateid});
 					win.show();
 				}
 			},
@@ -100,7 +100,7 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 				name: 'deleteAttachmentBtn',
 				hidden: true,
 				handler: function() {
-					me.deleteAttachment(me.id, false);
+					me.deleteAttachment(me.templateid, false);
 				}
 			},
 			{
@@ -109,7 +109,7 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 				name: 'viewImageBtn',
 				hidden: true,
 				handler: function() {
-					var win = Ext.create('NP.view.systemSetup.PrintTemplateViewImageWindow', {templateid: me.id});
+					var win = Ext.create('NP.view.systemSetup.PrintTemplateViewImageWindow', {templateid: me.templateid});
 					win.show();
 				}
 			},
@@ -119,7 +119,7 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 				name: 'deleteImageBtn',
 				hidden: true,
 				handler: function() {
-					me.deleteAttachment(me.id, true);
+					me.deleteAttachment(me.templateid, true);
 				}
 			}
 		];
@@ -157,7 +157,7 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 						name: 'additionaltexttab',
 						autoScroll: true,
 						flex: 1,
-						templateid: me.id
+						templateid: me.templateid
 					},
 					{
 						xtype: 'systemsetup.printsettingstab',
@@ -165,7 +165,7 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 						name: 'settings',
 						autoScroll: true,
 						flex: 1,
-						templateid: me.id
+						templateid: me.templateid
 					}
 				]
 			}
