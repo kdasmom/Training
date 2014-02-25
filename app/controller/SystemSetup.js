@@ -1622,7 +1622,8 @@ Ext.define('NP.controller.SystemSetup', {
 				'template_logo_center',
 				'template_logo_left',
 				'template_logo_right'
-			];
+			],
+			id = parseInt(id) ? parseInt(id) : 0;
 
 		if (id) {
 			Ext.apply(viewConfig.bind, {
@@ -1694,6 +1695,7 @@ Ext.define('NP.controller.SystemSetup', {
 					boundForm.getForm().findField('edittemplatename_settings').setValue(data.Print_Template_Name);
 					boundForm.getForm().findField('edittemplatename_header').setValue(data.Print_Template_Name);
 					boundForm.getForm().findField('edittemplatename_footer').setValue(data.Print_Template_Name);
+					boundForm.getForm().findField('edittemplatename_additional').setValue(data.Print_Template_Name);
 
 					if (copy) {
 						boundForm.getForm().findField('Print_Template_Id').setValue('');
@@ -1711,10 +1713,10 @@ Ext.define('NP.controller.SystemSetup', {
 					}
 				}
 			};
-			Ext.apply(viewConfig, {
-				id: id
-			})
 		}
+		Ext.apply(viewConfig, {
+			templateid: id
+		});
 
 		var form = this.setView('NP.view.systemSetup.TemplatesManager', viewConfig, '[xtype="systemsetup.poprintsettings"]');
 	},
@@ -1832,17 +1834,20 @@ Ext.define('NP.controller.SystemSetup', {
 	},
 
 	changepotabs: function(tabpanel, tab) {
-		var isWithAttachment, isWithImage;
-
+		var isWithAttachment,
+			isWithImage,
+			me = this;
 
 		tabpanel.up().down('[name="uploadattachment"]').hide();
 		tabpanel.up().down('[name="uploadimage"]').hide();
-
-
 		tabpanel.up().down('[name="viewImageBtn"]').hide();
 		tabpanel.up().down('[name="deleteImageBtn"]').hide();
 		tabpanel.up().down('[name="viewAttachmentBtn"]').hide();
 		tabpanel.up().down('[name="deleteAttachmentBtn"]').hide();
+
+		if (tab.name !== 'templatetab' && tabpanel.up().templateid == 0) {
+			me.addHistory('SystemSetup:showSystemSetup:POPrintSettings');
+		}
 
 		if (tab.name == 'additionaltexttab') {
 			isWithAttachment = tab.down('[name="template_attachment"]').getValue();

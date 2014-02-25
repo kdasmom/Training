@@ -59,8 +59,9 @@ Ext.define('NP.view.systemSetup.PrintAdditionalTextTab', {
 					{
 						xtype: 'displayfield',
 						fieldLabel: NP.Translator.translate('Editing Template'),
+						name: 'edittemplatename_additional',
 						value: '',
-						labelWidth: '80%'
+						labelWidth: 150
 					},
 					{
 						xtype: 'htmleditor',
