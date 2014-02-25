@@ -1696,6 +1696,7 @@ Ext.define('NP.controller.SystemSetup', {
 					boundForm.getForm().findField('edittemplatename_header').setValue(data.Print_Template_Name);
 					boundForm.getForm().findField('edittemplatename_footer').setValue(data.Print_Template_Name);
 					boundForm.getForm().findField('edittemplatename_additional').setValue(data.Print_Template_Name);
+					boundForm.getForm().findField('poprint_customfields').setValue(NP.Config.getSetting('PN.POOptions.POPrintCustomFields'));
 
 					if (copy) {
 						boundForm.getForm().findField('Print_Template_Id').setValue('');
@@ -1762,6 +1763,7 @@ Ext.define('NP.controller.SystemSetup', {
 		templateobj.template_attachment = form.findField('template_attachment').getValue();
 		templateobj.template_settings = {};
 		templateobj.template_settings.print_template_additional_image = form.findField('print_template_additional_image').getValue();
+		poprint_customfields = form.findField('poprint_customfields').getValue();
 
 		if (form.isValid()) {
 			form.submitWithBindings({
@@ -1771,10 +1773,12 @@ Ext.define('NP.controller.SystemSetup', {
 					templateobj: JSON.stringify(form.down('[name="templatetab"]').positions),
 					userprofile_id: NP.Security.getUser().get('userprofile_id'),
 					properties: form.findField('property_id').getValue(),
-					property_type: form.findField('property_type').getValue()
+					property_type: form.findField('property_type').getValue(),
+					poprint_customfields: poprint_customfields
 				},
 				success: function(result) {
 					if (result.success) {
+						NP.Config.setSetting('PN.POOptions.POPrintCustomFields', poprint_customfields);
 						me.addHistory('SystemSetup:showSystemSetup:POPrintSettings');
 					}
 				}

@@ -51,7 +51,9 @@ class PrintTemplateService extends AbstractService {
 			return [];
 		}
 
-		return $this->printTemplateGateway->getTemplateData($id);
+		$result = $this->printTemplateGateway->getTemplateData($id);
+
+		return $result;
 	}
 
 	public function saveTemplates($data = []) {
@@ -111,6 +113,9 @@ class PrintTemplateService extends AbstractService {
 				if (!$this->clientGateway->update(['poprint_additional_text' => !$templateobj->template_additional_text ? null : "$templateobj->template_additional_text"], ['asp_client_id' => '?'], [$this->configService->getClientId()])) {
 					throw new \NP\core\Exception('Cannot save client additional text.');
 				}
+			}
+			if (!$this->configsysGateway->saveConfigValue('PN.POOptions.POPrintCustomFields', $data['poprint_customfields'], $data['userprofile_id'])) {
+				throw new \NP\core\Exception('Cannot save settings for poprint customfields.');
 			}
 
 		} catch(\Exception $e) {
