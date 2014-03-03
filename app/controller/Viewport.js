@@ -255,6 +255,12 @@ Ext.define('NP.controller.Viewport', {
 				click: function() {
 					this.addHistory('VendorCatalog:showFavorites');
 				}
+			},
+
+			'#integrationMenuBtn': {
+				click: function() {
+					this.addHistory('Integration:showIntegration');
+				}
 			}
 		});
 	},
