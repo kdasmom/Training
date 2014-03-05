@@ -31,6 +31,12 @@ Ext.define('NP.controller.Integration', {
 
 					me.addHistory('Integration:showIntegration:' + activeTab);
 				}
+			},
+			'[xtype="integration.settings"]': {
+				'loadsettings': me.loadSettings
+			},
+			'[xtype="integration.settings"] [xtype="shared.button.save"]': {
+				'click': me.saveSettings
 			}
 		});
 	},
@@ -57,6 +63,49 @@ Ext.define('NP.controller.Integration', {
 
 		if (me[showMethod]) {
 			me[showMethod](subSection, id);
+		}
+	},
+
+	loadSettings: function(integrationPackageId) {
+		var me = this,
+			field;
+
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service					: 'IntegrationService',
+				action					: 'getIntegrationSettings',
+				integration_package_id	: integrationPackageId,
+				success: function(result) {
+					if (result) {
+						var form = me.getCmp('integration.settings').down('[name="settingsform"]');
+						for (var key in result) {
+							if ((field = form.getForm().findField(key))) {
+								field.setValue(result[key]);
+							}
+						}
+					}
+				}
+			}
+		});
+	},
+
+	saveSettings: function() {
+		var me = this,
+			form = me.getCmp('integration.settings').down('[name="settingsform"]');
+
+		if (form.isValid()) {
+			NP.lib.core.Net.remoteCall({
+				method  : 'POST',
+				mask    : form,
+				requests: {
+					service		: 'IntegrationService',
+					action		: 'saveSettings',
+					settings	: form.getValues(),
+					success		: function(result) {
+						console.log('retuls: ', result);
+					}
+				}
+			});
 		}
 	}
 
