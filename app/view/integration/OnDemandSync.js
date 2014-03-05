@@ -20,6 +20,16 @@ Ext.define('NP.view.integration.OnDemandSync', {
 		var me = this;
 		me.title = NP.Translator.translate(me.title);
 
+		me.tbar = [
+			{
+				xtype: 'shared.button.cancel'
+			},
+			{
+				xtype: 'shared.button.next',
+				text: 'Request Transfer'
+			}
+		];
+
 		me.items = [
 			{
 				xtype: 'panel',
@@ -32,6 +42,9 @@ Ext.define('NP.view.integration.OnDemandSync', {
 							':00 minutes<br/>:15 past the hour</br>:30 past the hour</br>:45 past the hour<br/>' +
 							'For example, if you initiate the request in NexusPayables to run the Invoice transfer at 10:05 am, the Invoice transfer will run at 10:15 am.'),
 						padding: '10'
+					},
+					{
+
 					}
 				]
 			},
@@ -39,6 +52,7 @@ Ext.define('NP.view.integration.OnDemandSync', {
 				xtype: 'panel',
 				title: NP.Translator.translate('TASKS TO RUN'),
 				border: false,
+				padding: '0 0 20 0',
 				items: [
 					{
 						xtype: 'displayfield',
@@ -47,6 +61,7 @@ Ext.define('NP.view.integration.OnDemandSync', {
 					},
 					{
 						xtype: 'integration.taskstorungrid',
+						name: 'taskstorun',
 						border: false,
 						padding: '0 10 10 10'
 					}
@@ -54,10 +69,18 @@ Ext.define('NP.view.integration.OnDemandSync', {
 			},
 			{
 				xtype: 'integration.outstandingrequestsgrid',
+				name: 'outstandingrequests',
 				title: NP.Translator.translate('OUTSTANDING ON DEMAND SYCH REQUESTS'),
 				border: false
 			}
 		];
+
+		me.listeners = {
+			afterrender: function() {
+				me.down('[name="taskstorun"]').getStore().load();
+				me.down('[name="outstandingrequests"]').getStore().load();
+			}
+		};
 
 
 		this.callParent(arguments);

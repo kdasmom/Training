@@ -40,7 +40,10 @@ Ext.define('NP.view.integration.OutstandingRequestsGrid', {
 			}
 		];
 
-		me.store = [];
+		me.store = Ext.create('NP.store.integration.PnSchedules', {
+			service: 'PnScheduleService',
+			action: 'getOutstandingSync'
+		});
 
 		me.callParent(arguments);
 	}

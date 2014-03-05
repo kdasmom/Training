@@ -36,4 +36,16 @@ class PnScheduleService extends AbstractService {
 	public function getSynchHistory($page = 1, $limit = null, $order = 'transferred_datetm') {
 		return $this->pnScheduleGateway->getSynchHistory($page, $limit, $order);
 	}
+
+	/**
+	 * Retrieve outstanding sync tasks
+	 *
+	 * @param int $page
+	 * @param null $limit
+	 * @param string $order
+	 * @return mixed
+	 */
+	public function getOutstandingSync($page = 1, $limit = null, $order = 'schedulename') {
+		return $this->pnScheduleGateway->getOutstandingSync($page, $limit, $order);
+	}
 } 

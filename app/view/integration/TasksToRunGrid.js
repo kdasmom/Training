@@ -13,14 +13,21 @@ Ext.define('NP.view.integration.TasksToRunGrid', {
 	],
 
 	paging  : true,
+	selModel: Ext.create('Ext.selection.CheckboxModel'),
 
 	initComponent: function() {
 		var me = this;
+		me.columns = [
+			{
+				text: NP.Translator.translate('Schedule Name'),
+				flex: 1
+			}
+		];
 
-
-		me.columns = [];
-
-		me.store = [];
+		me.store = Ext.create('NP.store.integration.PnSchedules', {
+			service: 'PnScheduleService',
+			action: 'getAllAvailabletransfer'
+		});
 
 		me.callParent(arguments);
 	}

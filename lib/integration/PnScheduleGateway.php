@@ -114,4 +114,35 @@ class PnScheduleGateway extends AbstractGateway {
 
 		return $this->adapter->query($select, ['Completed', 0]);
 	}
+
+	/**
+	 * Retrieve outstanding sync tasks
+	 *
+	 * @return array|bool
+	 */
+	public function getOutstandingSync($page, $pageSize, $order = 'schedulename') {
+		$select = new Select();
+		$subSelect = new Select();
+
+		$subSelect->from(['u2' => 'userprofile'])
+			->columns(['userprofile_id'])
+			->join(['w' => 'webservices_pn_scheduler_history'], 'w.userprofile_id = u2.userprofile_id', [])
+			->join(['ur' => 'userprofilerole'], 'u2.userprofile_id = ur.userprofile_id', [])
+			->join(['s' => 'staff'], 'ur.tablekey_id = s.staff_id', [])
+			->join(['p' => 'person'], 's.person_id = p.person_id', ['person_firstname', 'person_lastname']);
+
+		$select->from(['ws' => 'webservices_pn_scheduler'])
+			->distinct()
+			->columns([
+				'schedulename', 'schedulecode'
+			])
+			->join(['wsh' => 'webservices_pn_scheduler_history'], 'ws.schedule_id =wsh.schedule_id', ['request_datetm', 'status'])
+			->join(['Requesters' => $subSelect], 'Requesters.userprofile_id = wsh.userprofile_id', ['person_firstname',  'person_lastname'])
+			->whereIn('wsh.status', '?')
+			->order($order)
+			->limit($pageSize)
+			->offset($pageSize * ($page - 1));
+
+		return $this->adapter->query($select, [implode(',', ['Waiting', 'Running'])]);
+	}
 } 
