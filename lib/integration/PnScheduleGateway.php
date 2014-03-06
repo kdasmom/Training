@@ -145,4 +145,37 @@ class PnScheduleGateway extends AbstractGateway {
 
 		return $this->adapter->query($select, [implode(',', ['Waiting', 'Running'])]);
 	}
+
+	/**
+	 * Get on Demand transfer
+	 *
+	 * @param $page
+	 * @param $pageSize
+	 * @param $order
+	 * @return array|bool
+	 */
+	public function getOnDemandTransfer($page, $pageSize, $order) {
+		$select = new Select();
+
+		$select->from(['wsc' => 'webservices_pn_scheduler'])
+			->columns([
+				'schedulecode',
+				'schedulename',
+				'integration_id',
+				'LastRun_datetm'			=> new Expression("MAX(ISNULL(wsc.lastrun_datetm, '1900-01-01'))"),
+				'ShouldAllow'				=> new Expression("CASE WHEN wsc.schedulecode + '~' + CAST(wsc.integration_id AS VARCHAR) IN (SELECT schedulecode + '~' + CAST(integration_id AS VARCHAR) FROM WEBSERVICES_PN_SCHEDULER_HISTORY INNER JOIN WEBSERVICES_PN_SCHEDULER ON WEBSERVICES_PN_SCHEDULER_HISTORY.schedule_id = WEBSERVICES_PN_SCHEDULER.schedule_id WHERE STATUS IN ('Waiting','Running') AND DATEDIFF(minute, request_datetm, GETDATE()) < " . self::MAXWINDOW . ") THEN 0 ELSE 1 END"),
+				'Next_Scheduled_Run_Time'	=> new Expression("MIN(DATEADD(minute, ((DATEDIFF(minute, wsc.seed_datetm, GETDATE()) / runeveryxminutes) * runeveryxminutes) + runeveryxminutes, wsc.seed_datetm))")
+			])
+			->join(['wscf' => 'webservices_pn_scheduler_frequency'], 'wsc.schedulecode  = wscf.schedulecode', ['run_frequency'])
+			->join(['ip' => 'integrationpackage'], 'ip.integration_package_id = wsc.integration_id', ['integration_package_name'])
+			->where([
+				'wsc.isactive' => '?',
+				'wsc.isondemand' => '?',
+			])
+			->group(['wsc.schedulecode', 'wsc.schedulename', 'wsc.integration_id', 'wscf.run_frequency', 'ip.integration_package_name'])
+			->limit($pageSize)
+			->offset($pageSize * ($page - 1));
+
+		return $this->adapter->query($select, [1, 1]);
+	}
 } 

@@ -26,7 +26,7 @@ Ext.define('NP.view.integration.TasksToRunGrid', {
 
 		me.store = Ext.create('NP.store.integration.PnSchedules', {
 			service: 'PnScheduleService',
-			action: 'getAllAvailabletransfer'
+			action: 'getOnDemandTransfer'
 		});
 
 		me.callParent(arguments);

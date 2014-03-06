@@ -17,6 +17,7 @@ Ext.define('NP.controller.Integration', {
 		'NP.view.integration.Main',
 		'NP.view.integration.Overview',
 		'NP.view.integration.OnDemandSync',
+		'NP.view.integration.FailedSynchDetailsWindow'
 	],
 
 	init: function() {
@@ -41,6 +42,11 @@ Ext.define('NP.controller.Integration', {
 		});
 	},
 
+	/**
+	 * Show integration tabs ("Overview" as default)
+	 *
+	 * @param activeTab
+	 */
 	showIntegration: function(activeTab) {
 		var me = this,
 			showMethod = 'show' + activeTab,
@@ -66,6 +72,11 @@ Ext.define('NP.controller.Integration', {
 		}
 	},
 
+	/**
+	 * Load settings
+	 *
+	 * @param integrationPackageId
+	 */
 	loadSettings: function(integrationPackageId) {
 		var me = this,
 			field;
@@ -89,6 +100,10 @@ Ext.define('NP.controller.Integration', {
 		});
 	},
 
+	/**
+	 * Save settings
+	 *
+	 */
 	saveSettings: function() {
 		var me = this,
 			form = me.getCmp('integration.settings').down('[name="settingsform"]');

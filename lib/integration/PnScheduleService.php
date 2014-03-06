@@ -48,4 +48,16 @@ class PnScheduleService extends AbstractService {
 	public function getOutstandingSync($page = 1, $limit = null, $order = 'schedulename') {
 		return $this->pnScheduleGateway->getOutstandingSync($page, $limit, $order);
 	}
+
+	/**
+	 * Get on Demand transfer
+	 *
+	 * @param $page
+	 * @param $limit
+	 * @param string $order
+	 * @return mixed
+	 */
+	public function getOnDemandTransfer($page, $limit, $order = 'schedulename'){
+		return $this->pnScheduleGateway->getOnDemandTransfer($page, $limit, $order);
+	}
 } 
