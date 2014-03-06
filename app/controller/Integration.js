@@ -42,6 +42,13 @@ Ext.define('NP.controller.Integration', {
 				click: function() {
 					me.addHistory('Integration:showIntegration:Overview')
 				}
+			},
+			'[xtype="integration.overview"] [xtype="integration.synchhistorygrid"]': {
+				cellclick: function(gridView, td, cellIndex, record, tr, rowIndex, e, eOpts) {
+					if (cellIndex == 6 && record.get('Details') == 'error') {
+						me.showFailedSynchDetails(record.raw['history_id']);
+					}
+				}
 			}
 		});
 	},
@@ -126,6 +133,29 @@ Ext.define('NP.controller.Integration', {
 				}
 			});
 		}
+	},
+
+	showFailedSynchDetails: function(history_id) {
+		var me = this;
+
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service		: 'PnScheduleService',
+				action		: 'getByHistoryId',
+				history_id	: history_id,
+				success		: function(result) {
+					if (result) {
+						var window = Ext.create('NP.view.integration.FailedSynchDetailsWindow', {
+							title: result[0].schedulename,
+							transferred_datetm: result[0].transferred_datetm,
+							history_id: history_id
+						});
+						window.show();
+					}
+				}
+			}
+		});
+
 	}
 
 });

@@ -60,4 +60,18 @@ class PnScheduleService extends AbstractService {
 	public function getOnDemandTransfer($page, $limit, $order = 'schedulename'){
 		return $this->pnScheduleGateway->getOnDemandTransfer($page, $limit, $order);
 	}
+
+	/**
+	 * Return schedule by history id
+	 *
+	 * @param null $history_id
+	 * @return bool
+	 */
+	public function getByHistoryId($history_id = null) {
+		if (!$history_id) {
+			return false;
+		}
+
+		return $this->pnScheduleGateway->getByHistoryId($history_id);
+	}
 } 

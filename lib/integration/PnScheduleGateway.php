@@ -178,4 +178,23 @@ class PnScheduleGateway extends AbstractGateway {
 
 		return $this->adapter->query($select, [1, 1]);
 	}
+
+	/**
+	 * Return schedule by history id
+	 *
+	 * @param $history_id
+	 * @return array|bool
+	 */
+	public function getByHistoryId($history_id) {
+		$select = new Select();
+
+		$select->from(['wsh' => 'webservices_pn_scheduler_history'])
+			->columns(['transferred_datetm'])
+			->join(['ws' => 'webservices_pn_scheduler'], 'wsh.schedule_id = ws.schedule_id', ['schedulename', 'schedulecode'])
+			->where([
+				'wsh.history_id'	=> '?'
+			]);
+
+		return $this->adapter->query($select, [$history_id]);
+	}
 } 
