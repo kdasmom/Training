@@ -26,10 +26,9 @@ Ext.define('NP.controller.Integration', {
 
 		// Setup event handlers
 		me.control({
-			'[xtype="systemsetup.main"]': {
+			'[xtype="integration.main"]': {
 				tabchange: function(tabPanel, newCard, oldCard, eOpts) {
 					var activeTab = Ext.getClassName(newCard).split('.').pop();
-
 					me.addHistory('Integration:showIntegration:' + activeTab);
 				}
 			},
@@ -37,7 +36,12 @@ Ext.define('NP.controller.Integration', {
 				'loadsettings': me.loadSettings
 			},
 			'[xtype="integration.settings"] [xtype="shared.button.save"]': {
-				'click': me.saveSettings
+				click: me.saveSettings
+			},
+			'[xtype="integration.ondemandsync"] [xtype="shared.button.cancel"]': {
+				click: function() {
+					me.addHistory('Integration:showIntegration:Overview')
+				}
 			}
 		});
 	},

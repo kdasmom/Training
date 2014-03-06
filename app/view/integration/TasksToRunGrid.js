@@ -20,6 +20,7 @@ Ext.define('NP.view.integration.TasksToRunGrid', {
 		me.columns = [
 			{
 				text: NP.Translator.translate('Schedule Name'),
+				dataIndex: "schedulename",
 				flex: 1
 			}
 		];
