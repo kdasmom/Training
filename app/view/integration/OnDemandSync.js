@@ -15,6 +15,7 @@ Ext.define('NP.view.integration.OnDemandSync', {
 	],
 
 	title: 'On Demand Sync',
+	autoScroll: true,
 
 	initComponent: function() {
 		var me = this;

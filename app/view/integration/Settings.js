@@ -13,6 +13,7 @@ Ext.define('NP.view.integration.Settings', {
 	],
 
 	title: 'Settings',
+	autoScroll: true,
 
 	initComponent: function() {
 		var me = this;
