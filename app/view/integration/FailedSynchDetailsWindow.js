@@ -37,22 +37,32 @@ Ext.define('NP.view.integration.FailedSynchDetailsWindow', {
 				columns: [
 					{
 						text: NP.Translator.translate('Invoice Ref Number'),
-						flex: 0.5
+						flex: 0.5,
+						dataIndex: 'invoice_ref'
 					},
 					{
 						text: NP.Translator.translate('Vendor Name(Vendor ID)'),
-						flex: 0.5
+						flex: 0.5,
+						dataIndex: 'vendor_name'
 					},
 					{
 						text: NP.Translator.translate('Header Property'),
-						flex: 0.5
+						flex: 0.5,
+						dataIndex: 'property_name'
 					},
 					{
 						text: NP.Translator.translate('Message'),
-						flex: 1
+						flex: 1,
+						dataIndex: 'errormessage'
 					}
 				],
-				store: []
+				store: Ext.create('NP.lib.data.Store', {
+					service    	: 'PnScheduleService',
+					action     	: 'getFailedSynchHistory',
+					history_id	: me.history_id,
+					autoLoad	: true,
+					fields: ['vendor_name', 'property_name', 'errormessage', 'invoice_ref']
+				})
 			}
 		];
 		me.callParent(arguments);

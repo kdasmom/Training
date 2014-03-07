@@ -49,6 +49,9 @@ Ext.define('NP.controller.Integration', {
 						me.showFailedSynchDetails(record.raw['history_id']);
 					}
 				}
+			},
+			'[xtype="integration.ondemandsync"] [xtype="shared.button.next"]': {
+				click: me.requestTransfer
 			}
 		});
 	},
@@ -135,6 +138,11 @@ Ext.define('NP.controller.Integration', {
 		}
 	},
 
+	/**
+	 * show failed sync details
+	 *
+	 * @param history_id
+	 */
 	showFailedSynchDetails: function(history_id) {
 		var me = this;
 
@@ -156,6 +164,33 @@ Ext.define('NP.controller.Integration', {
 			}
 		});
 
+	},
+
+	requestTransfer: function() {
+		var me = this,
+			grid = me.getCmp('integration.taskstorungrid'),
+			schedules = grid.getSelectionModel().getSelection();
+
+		if (schedules.length > 0) {
+			NP.lib.core.Net.remoteCall({
+				method  : 'POST',
+				mask    : grid,
+				requests: {
+					service               : 'PnScheduleService',
+					action                : 'importOnDemandIntegration',
+					userprofile_id: NP.Security.getUser().get('userprofile_id'),
+					schedules   : schedules,
+					success: function(result) {
+						grid.getStore().commitChanges();
+						NP.Util.showFadingWindow({ html: NP.Translator.translate('Import was completed successfully') });
+					},
+					failure: function(response, options) {
+						grid.getStore().rejectChanges();
+						Ext.MessageBox.alert(NP.Translator.translate('Error'), NP.Translator.translate('Cannot import tasks'));
+					}
+				}
+			});
+		}
 	}
 
 });

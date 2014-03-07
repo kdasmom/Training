@@ -11,6 +11,7 @@ namespace NP\integration;
 
 use NP\core\AbstractGateway;
 use NP\core\db\Expression;
+use NP\core\db\Insert;
 use NP\core\db\Select;
 use Symfony\Component\Config\Definition\Exception\Exception;
 
@@ -196,5 +197,86 @@ class PnScheduleGateway extends AbstractGateway {
 			]);
 
 		return $this->adapter->query($select, [$history_id]);
+	}
+
+	public function importOnDemandIntegration($userprofile_id, $schedules) {
+		$selectActive = new Select();
+
+		$selectActive->from(['wsc' => 'webservices_pn_scheduler'])
+			->columns(['schedulename', 'integration_id'])
+			->where([
+				'isondemand'	=> '?',
+				'isactive'		=> '?'
+			]);
+
+		$result = $this->adapter->query($selectActive, [1, 1]);
+		foreach ($result as $record) {
+			if (in_array($result['schedulecode'], $schedules)) {
+				$insert = new Insert();
+				$select = new Select();
+
+				$select->from(['w' => 'webservices_pn_scheduler'])
+					->columns(
+						[
+							'schedule_id'			=> new Expression("min(schedule_id)"),
+							'userprofile_id'		=> new Expression('?'),
+							'request_datetm'		=> new Expression("getdate()"),
+							'rollback_datetm'		=> new Expression("null"),
+							'transferred_datetm'	=> new Expression("null"),
+							'status'				=> new Expression('?'),
+							'resultcount'			=> new Expression("null"),
+							'errorcode'				=> new Expression("null"),
+							'errormessage'			=> new Expression("null")
+						]
+					)
+					->where([
+						'schedulecode'		=> '?',
+						'integration_id'	=> '?',
+						'isOndemand'		=> '?'
+					]);
+
+				$insert->into('webservices_pn_scheduler_history')
+					->columns(
+						[
+							'schedule_id',
+							'userprofile_id',
+							'request_datetm',
+							'rollback_datetm',
+							'transferred_datetm',
+							'status', 'resultcount',
+							'errorcode',
+							'errormessage'
+						]
+					)
+					->values($select);
+
+				return $this->adapter->query($insert, [$userprofile_id, 'Waiting', $record['schedulecode'], $record['integration_id'], 1]);
+			}
+		}
+	}
+
+	/**
+	 * Get failed synch history
+	 *
+	 * @param $history_id
+	 * @return array|bool
+	 */
+	public function getFailedSynchHistory($history_id) {
+		$select = new Select();
+
+		$select->from(['i' => 'invoice'])
+			->columns(['invoice_ref'])
+			->join(['vs' => 'vendorsite'], 'i.paytablekey_id = vs.vendorsite_id', [])
+			->join(['v' => 'vendor'], 'v.vendor_id = vs.vendor_id', ['vendor_name'])
+			->join(['p' => 'property'], 'p.property_id = i.property_id', ['property_name'])
+			->join(['wdth' => 'webservices_pn_data_transfer_history'], 'wdth.tablekey_id = i.invoice_id', ['errormessage' => 'WSDataTransferHistory_errormessage'])
+			->join(['wsh' => 'webservices_pn_scheduler_history'], 'wsh.history_id = wdth.history_id', ['transferred_datetm', 'errorcode'])
+			->join(['ws' => 'webservices_pn_scheduler'], 'wsh.schedule_id = ws.schedule_id', ['schedulename'])
+			->where([
+				'wdth.table_name'	=> '?',
+				'wdth.history'		=> '?'
+			]);
+
+		return $this->adapter->query($select, ['invoice', $history_id]);
 	}
 } 

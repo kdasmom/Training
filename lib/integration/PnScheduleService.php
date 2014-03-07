@@ -10,6 +10,7 @@ namespace NP\integration;
 
 
 use NP\core\AbstractService;
+use NP\core\Exception;
 
 class PnScheduleService extends AbstractService {
 
@@ -73,5 +74,40 @@ class PnScheduleService extends AbstractService {
 		}
 
 		return $this->pnScheduleGateway->getByHistoryId($history_id);
+	}
+
+	/**
+	 * Get failed synch history
+	 *
+	 * @param $history_id
+	 * @return mixed
+	 */
+	public function getFailedSynchHistory($history_id = null) {
+		if (!$history_id) {
+			return [];
+		}
+
+		return $this->pnScheduleGateway->getFailedSynchHistory($history_id);
+	}
+
+	/**
+	 * Import on demand integration
+	 *
+	 * @param null $userprofile_id
+	 * @param $data
+	 * @return bool
+	 */
+	public function importOnDemandIntegration($userprofile_id = null, $schedules = []) {
+		if (!$userprofile_id) {
+			return false;
+		}
+
+		if (count($schedules) > 0) {
+			if (!$this->pnScheduleGateway->importOnDemandIntegration($userprofile_id, $schedules)) {
+				throw new Exception('Cannot import!');
+			};
+		}
+
+		return true;
 	}
 } 
