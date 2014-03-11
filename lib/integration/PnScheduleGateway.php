@@ -13,6 +13,7 @@ use NP\core\AbstractGateway;
 use NP\core\db\Expression;
 use NP\core\db\Insert;
 use NP\core\db\Select;
+use NP\util\Util;
 use Symfony\Component\Config\Definition\Exception\Exception;
 
 class PnScheduleGateway extends AbstractGateway {
@@ -51,7 +52,7 @@ class PnScheduleGateway extends AbstractGateway {
 			->limit($pageSize)
 			->offset($pageSize * ($page - 1))
 			->order($order);
-
+		
 		return $this->adapter->query($select);
 	}
 
