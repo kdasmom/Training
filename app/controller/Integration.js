@@ -169,7 +169,11 @@ Ext.define('NP.controller.Integration', {
 	requestTransfer: function() {
 		var me = this,
 			grid = me.getCmp('integration.taskstorungrid'),
-			schedules = grid.getSelectionModel().getSelection();
+			schedules = [];
+
+		Ext.each(grid.getSelectionModel().getSelection(), function(schedule) {
+			schedules.push(schedule.raw['schedulecode']);
+		});
 
 		if (schedules.length > 0) {
 			NP.lib.core.Net.remoteCall({

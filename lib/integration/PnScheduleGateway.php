@@ -14,7 +14,6 @@ use NP\core\db\Expression;
 use NP\core\db\Insert;
 use NP\core\db\Select;
 use NP\util\Util;
-use Symfony\Component\Config\Definition\Exception\Exception;
 
 class PnScheduleGateway extends AbstractGateway {
 
@@ -178,6 +177,11 @@ class PnScheduleGateway extends AbstractGateway {
 			->limit($pageSize)
 			->offset($pageSize * ($page - 1));
 
+		return [
+			'schedulecode'	=> 'dadasd',
+			'schedulename'	=> 'schedule'
+		];
+
 		return $this->adapter->query($select, [1, 1]);
 	}
 
@@ -211,49 +215,56 @@ class PnScheduleGateway extends AbstractGateway {
 			]);
 
 		$result = $this->adapter->query($selectActive, [1, 1]);
-		foreach ($result as $record) {
-			if (in_array($result['schedulecode'], $schedules)) {
-				$insert = new Insert();
-				$select = new Select();
 
-				$select->from(['w' => 'webservices_pn_scheduler'])
-					->columns(
-						[
-							'schedule_id'			=> new Expression("min(schedule_id)"),
-							'userprofile_id'		=> new Expression('?'),
-							'request_datetm'		=> new Expression("getdate()"),
-							'rollback_datetm'		=> new Expression("null"),
-							'transferred_datetm'	=> new Expression("null"),
-							'status'				=> new Expression('?'),
-							'resultcount'			=> new Expression("null"),
-							'errorcode'				=> new Expression("null"),
-							'errormessage'			=> new Expression("null")
-						]
-					)
-					->where([
-						'schedulecode'		=> '?',
-						'integration_id'	=> '?',
-						'isOndemand'		=> '?'
-					]);
+		if (count($result) > 0) {
+			foreach ($result as $record) {
+				if (in_array($record['schedulecode'], $schedules)) {
+					$insert = new Insert();
+					$select = new Select();
 
-				$insert->into('webservices_pn_scheduler_history')
-					->columns(
-						[
-							'schedule_id',
-							'userprofile_id',
-							'request_datetm',
-							'rollback_datetm',
-							'transferred_datetm',
-							'status', 'resultcount',
-							'errorcode',
-							'errormessage'
-						]
-					)
-					->values($select);
+					$select->from(['w' => 'webservices_pn_scheduler'])
+						->columns(
+							[
+								'schedule_id'			=> new Expression("min(schedule_id)"),
+								'userprofile_id'		=> new Expression('?'),
+								'request_datetm'		=> new Expression("getdate()"),
+								'rollback_datetm'		=> new Expression("null"),
+								'transferred_datetm'	=> new Expression("null"),
+								'status'				=> new Expression('?'),
+								'resultcount'			=> new Expression("null"),
+								'errorcode'				=> new Expression("null"),
+								'errormessage'			=> new Expression("null")
+							]
+						)
+						->where([
+							'schedulecode'		=> '?',
+							'integration_id'	=> '?',
+							'isOndemand'		=> '?'
+						]);
 
-				return $this->adapter->query($insert, [$userprofile_id, 'Waiting', $record['schedulecode'], $record['integration_id'], 1]);
+					$insert->into('webservices_pn_scheduler_history')
+						->columns(
+							[
+								'schedule_id',
+								'userprofile_id',
+								'request_datetm',
+								'rollback_datetm',
+								'transferred_datetm',
+								'status', 'resultcount',
+								'errorcode',
+								'errormessage'
+							]
+						)
+						->values($select);
+
+					if (!$this->adapter->query($insert, [$userprofile_id, 'Waiting', $record['schedulecode'], $record['integration_id'], 1])) {
+						throw new \Exception('Cannot save integration!');
+					}
+				}
 			}
 		}
+
+		return true;
 	}
 
 	/**
