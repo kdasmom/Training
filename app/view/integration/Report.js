@@ -18,6 +18,13 @@ Ext.define('NP.view.integration.Report', {
 		var me = this;
 		me.title = NP.Translator.translate(me.title);
 
+		me.tbar = [
+			{
+				xtype: 'shared.button.report',
+				text: 'Generate Report'
+			}
+		];
+
 		me.html = NP.Translator.translate('Coming soon...');
 
 		me.items = [];
