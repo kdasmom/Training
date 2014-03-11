@@ -22,18 +22,23 @@ Ext.define('NP.view.integration.SynchHistoryGrid', {
 				text: NP.Translator.translate('Transfer Date'),
 				flex: 0.2,
 				dataIndex: 'transferred_datetm',
-				xtype: 'datecolumn',
 				renderer: function(val, meta, record) {
-					return Ext.util.Format.date(record.raw['transferred_datetm'], "m/d/Y");
+					var datestr = record.raw['transferred_datetm'].split(' '),
+						day = datestr[0].split('-');
+
+					return day[2] + '/' + day[1] + '/' + day[0];
 				}
 			},
 			{
 				text: NP.Translator.translate('Transfer Time'),
 				flex: 0.2,
 				dataIndex: 'transferred_datetm',
-				xtype: 'datecolumn',
 				renderer: function(val, meta, record) {
-					return Ext.util.Format.date(record.raw['transferred_datetm'], "H:i:s");
+					var datestr = record.raw['transferred_datetm'].split(' '),
+						day = datestr[0].split('-'),
+						time = datestr[1].split(':');
+
+					return Ext.util.Format.date(new Date(day[0], day[1], day[2], time[0], time[1], time[2]), 'H:i:s');
 				}
 			},
 			{
