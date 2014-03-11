@@ -17,14 +17,15 @@ Ext.define('NP.controller.Integration', {
 		'NP.view.integration.Main',
 		'NP.view.integration.Overview',
 		'NP.view.integration.OnDemandSync',
-		'NP.view.integration.FailedSynchDetailsWindow'
+		'NP.view.integration.FailedSynchDetailsWindow',
+		'NP.view.integration.Report',
+		'NP.view.integration.Settings'
 	],
 
 	init: function() {
 		var me  = this,
 			app = me.application;
 
-		// Setup event handlers
 		me.control({
 			'[xtype="integration.main"]': {
 				tabchange: function(tabPanel, newCard, oldCard, eOpts) {
