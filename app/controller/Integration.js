@@ -22,6 +22,14 @@ Ext.define('NP.controller.Integration', {
 		'NP.view.integration.Settings'
 	],
 
+	stores: [
+		'integration.PnSchedules'
+	],
+
+	models: [
+		'integration.PnSchedule'
+	],
+
 	init: function() {
 		var me  = this,
 			app = me.application;
