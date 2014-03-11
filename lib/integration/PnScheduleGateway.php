@@ -177,11 +177,6 @@ class PnScheduleGateway extends AbstractGateway {
 			->limit($pageSize)
 			->offset($pageSize * ($page - 1));
 
-		return [
-			'schedulecode'	=> 'dadasd',
-			'schedulename'	=> 'schedule'
-		];
-
 		return $this->adapter->query($select, [1, 1]);
 	}
 
