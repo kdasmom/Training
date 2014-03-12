@@ -2,102 +2,148 @@
 
 namespace NP\report;
 
+use NP\system\ConfigService;
+use NP\security\SecurityService;
+use NP\core\GatewayManager;
+
 /**
  * Base class for reports
  *
  * @author Thomas Messier
  */
 abstract class AbstractReport implements ReportInterface {
-	
-	// You can override these values in your concrete report
-	public $title, $orientation='L', $sql, $showGrandTotal=true, $showBulkPdf=false;
+	protected $configService;
 
-	protected $configService, $params, $cols=[], $groups=[], $queryParams=[];
+	private $options, $cols=[], $groups=[];
 
-	public function __construct($configService, $gatewayManager, $params=[]) {
-		$this->configService  = $configService;
-		$this->gatewayManager = $gatewayManager;
-		$this->params         = $params;
+	/**
+	 * Constructor for reports
+	 *
+	 * @param NP\system\ConfigService   $configService   Service injected in for accessing configuration options
+	 * @param NP\system\SecurityService $securityService Service injected in for accessing security options
+	 * @param NP\core\GatewayManager    $gatewayManager  Injected to facilidate data access (mostly for getData() method)
+	 */
+	public function __construct(
+		ConfigService $configService,
+		SecurityService $securityService,
+		GatewayManager $gatewayManager,
+		ReportOptions $options,
+		$extraParams=[]
+	) {
+		$this->configService   = $configService;
+		$this->securityService = $securityService;
+		$this->gatewayManager  = $gatewayManager;
+		$this->options         = $options;
+
+		$this->extraParams = $extraParams;
 
 		$this->init();
 	}
 
+	/**
+	 * Needs to be defined in concrete report class. Used to define report columns, groups, etc.
+	 */
 	abstract function init();
 
-	public function getTitle() {
-		return $this->title;
+	/**
+	 * Needs to return a string with the report title
+	 *
+	 * @return string The report title
+	 */
+	abstract function getTitle();
+
+	/**
+	 * Return the data for the report in the form of a statement resource
+	 *
+	 * @return resource The SQL statement resource
+	 */
+	abstract function getData();
+
+	/**
+	 * Optional function that can be overriden to add to the data for the current row
+	 * (by performing conditional logic checks or running additional queries)
+	 *
+	 * @param  array $currentRow An associative array containing the data for the current row
+	 * @return array             An associative array with data to add to the current row
+	 */
+	public function getSubData($currentRow) {
+		return null;
 	}
 
-	public function getOrientation() {
-		return $this->orientation;
-	}
-
-	public function getParams() {
-		return $this->params;
-	}
-
-	public function getSql() {
-		return $this->sql;
-	}
-
+	/**
+	 * Returns an array of groups for this report
+	 *
+	 * @return NP\report\ReportGroup[]
+	 */
 	public function getGroups() {
 		return $this->groups;
 	}
 
-	public function getCols() {
-		return $this->cols;
-	}
-
-	public function getQueryParams() {
-		return $this->queryParams;
-	}
-
-	public function currencyRenderer($val, $row, $params) {
-		return '$' . number_format($val, 2);
-	}
-
-	public function dateRenderer($val, $row, $params) {
-		if (!empty($val)) {
-			return $this->parseDate($val)->format('m/d/Y');
-		}
-
-		return '';
-	}
-
-	public function dateTimeRenderer($val, $row, $params) {
-		return $this->parseDate($val)->format('m/d/Y h:ia');
-	}
-
-	public function periodRenderer($val, $row, $params) {
-		if (!empty($val)) {
-			return $this->parseDate($val)->format('m/Y');
-		}
-
-		return '';
-	}
-
-	public function addCol(ReportColumn $col) {
-		$this->cols[] = $col;
-	}
-
-	public function addCols($cols) {
-		foreach ($cols as $col) {
-			$this->addCol($col);
-		}
-	}
-
+	/**
+	 * Adds a report group
+	 *
+	 * @param NP\report\ReportGroup $group
+	 */
 	public function addGroup(ReportGroup $group) {
 		$this->groups[] = $group;
 	}
 
+	/**
+	 * Adds multiple groups to the report
+	 *
+	 * @param NP\report\ReportGroup[] $group
+	 */
 	public function addGroups($groups) {
 		foreach ($groups as $group) {
 			$this->addGroup($group);
 		}
 	}
 
-	protected function parseDate($val) {
-		return \DateTime::createFromFormat('Y-m-d H:i:s.u', $val);
+	/**
+	 * Returns an array of columns for this report
+	 *
+	 * @return NP\report\ReportColumn[]
+	 */
+	public function getCols() {
+		return $this->cols;
+	}
+
+	/**
+	 * Adds a column to this report
+	 *
+	 * @param $col NP\report\ReportColumn
+	 */
+	public function addCol(ReportColumn $col) {
+		$this->cols[] = $col;
+	}
+
+	/**
+	 * Adds multiple columns to this report
+	 *
+	 * @param $cols NP\report\ReportColumn[]
+	 */
+	public function addCols($cols) {
+		foreach ($cols as $col) {
+			$this->addCol($col);
+		}
+	}
+
+	/**
+	 * Returns options for this report
+	 *
+	 * @return NP\report\ReportOptions
+	 */
+	public function getOptions() {
+		return $this->options;
+	}
+
+	/**
+	 * Returns any extra parameters passed into the report
+	 *
+	 * @return array
+	 */
+	public function getExtraParams() {
+		return $this->extraParams;
 	}
 }
 

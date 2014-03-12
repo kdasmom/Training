@@ -3,45 +3,51 @@
 namespace NP\report\renderer;
 
 /**
- * Renderer to generate a PDF report
+ * PDF renderer for reports (relies on wkhtmltopdf PHP library and command line tool)
  *
  * @author Thomas Messier
  */
 
 require_once('/vendor/phpwkhtmltopdf/WkHtmlToPdf.php');
 
-class PdfReportRenderer implements ReportRendererInterface {
+class PdfReportRenderer extends HtmlReportRenderer implements ReportRendererInterface {	
 	
-	public function __construct($configService, \NP\report\ReportInterface $report, $data) {
-		$this->configService = $configService;
-		$this->report        = $report;
-		$this->data          = $data;
-	}
-	
-	/**
-	 * 
-	 */
 	public function render() {
-		$htmlRenderer = new HtmlReportRenderer($this->configService, $this->report, $this->data);
-
 		ob_start();
 		
-		$htmlRenderer->render();
+		parent::render();
 
 		$html = ob_get_clean();
 
+		$baseUrl = $this->configService->getLoginUrl();
+
 		$pdf = new \WkHtmlToPdf([
-			'binPath'     =>'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe',
-			'tmp'         => 'c:\temp',
-			'orientation' =>'landscape'
+			'footer-html'       => $this->configService->getLoginUrl() . '/lib/report/footer.php?baseUrl={$baseUrl}',
+			'binPath'           => $this->configService->getConfig('reportServer')['wkhtmltopdfPath'],
+			'tmp'               => $this->configService->getConfig('reportServer')['tempDir'],
+			'orientation'       => $this->report->getOptions()->orientation,
+			'margin-top'        => 5,
+			'margin-bottom'     => 12,
+			'footer-spacing'    => 5,
+			'disable-javascript'
 		]);
 		$pdf->addPage($html);
 
-		$pdf->send();
+		$pdf->send('report.pdf');
 
 		if ($pdf->getError() !== null) {
 			echo $pdf->getError();
 		}
+	}
+
+	public function getRecordRenderValue($col, $val, $row) {
+		$val = $this->applyColRenderer($val, $row, $col);
+
+		if ($val === null) {
+			$val = '';
+		}
+
+		return $val;
 	}
 }
 

@@ -879,12 +879,12 @@ Ext.define('NP.controller.Images', {
                 searchtype      : searchtype.getValue(),
                 searchstring    : searchstring,
 
-                contextType     : contextpicker.getState().type,
-                contextSelection: contextpicker.getState().selected
-            }
+                userprofile_id              : NP.Security.getUser().get('userprofile_id'),
+                delegated_to_userprofile_id : NP.Security.getDelegatedToUser().get('userprofile_id'),
 
-            if (params.contextSelection && params.contextSelection.join) {
-                params.contextSelection = params.contextSelection.join(',');
+                contextType     : contextpicker.getState().type,
+                contextSelection: contextpicker.getState().selected,
+                property_status: contextpicker.getState().property_status
             }
 
             result.show();

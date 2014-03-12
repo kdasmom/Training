@@ -203,6 +203,13 @@ Ext.define('NP.controller.Viewport', {
 				}
 			},
 
+			// Clicking on the Reports > Invoice Register Reports menu
+			'#invoiceReportMenuBtn': {
+				click: function() {
+					this.addHistory('Report:invoice');
+				}
+			},
+
 			// Runs after Home panel has been rendered
 			'[xtype="viewport.home"]': {
 				afterrender: function() {

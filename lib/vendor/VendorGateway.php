@@ -50,6 +50,38 @@ class VendorGateway extends AbstractGateway {
 	}
 	
 	/**
+	 * 
+	 */
+	public function findAll($vendor_status='active', $integration_package_id=null, $keyword=null, $pageSize=null, $page=1, $sort='vendor_name') {
+		$select = $this->getSelect()
+						->columns(['vendor_id','vendor_name'])
+						->whereEquals('v.vendor_status', '?')
+						->order($sort);
+
+		$params = [$vendor_status];
+
+		if (!empty($integration_package_id)) {
+			$select->whereEquals('v.integration_package_id', '?');
+			$params[] = $integration_package_id;
+		}
+
+		if (!empty($keyword)) {
+			$select->whereNest('OR')
+				->whereLike('v.vendor_name', '?')
+				->whereLike('v.vendor_id_alt', '?');
+			$params[] = $keyword . '%';
+			$params[] = $keyword . '%';
+		}
+
+		// If paging is needed
+		if ($pageSize !== null) {
+			return $this->getPagingArray($select, $params, $pageSize, $page, 'v.vendor_id');
+		} else {
+			return $this->adapter->query($select, $params);
+		}
+	}
+
+	/**
 	 * Retrieves a vendor record looking it up by vendorsite ID
 	 *
 	 * @param  int $vendorsite_id

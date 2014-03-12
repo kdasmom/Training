@@ -76,6 +76,15 @@ class PropertyGateway  extends AbstractGateway {
 		return $this->adapter->query($select, $params);
 	}
 
+	public function findByContext($propertyContext) {
+		$select = Select::get()
+						->columns(['property_id','property_id_alt','property_name'])
+						->from('property')
+						->whereIn('property_id', new \NP\property\sql\PropertyFilterSelect($propertyContext));
+
+		return $this->adapter->query($select);
+	}
+
 	/**
 	 * Find properties for a given user
 	 *

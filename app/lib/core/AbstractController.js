@@ -9,7 +9,9 @@ Ext.define('NP.lib.core.AbstractController', {
 	requires: [
 		'NP.lib.core.Config',
 		'NP.lib.core.Security',
-		'NP.lib.core.Translator'
+		'NP.lib.core.Translator',
+		'NP.lib.core.Net',
+		'NP.lib.core.Util'
 	],
 
 	getCmp: function(comp) {

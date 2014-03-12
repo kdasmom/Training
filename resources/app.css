@@ -60,6 +60,8 @@ li.x-boundlist-item {
 	.process-comp-btn .x-btn-inner { padding-left: 24px !important; }
 .reclass-btn { background-image: url("images/buttons/reclass.gif"); }
 .reject-btn { background-image: url("images/buttons/reject.gif"); }
+.register-blue-btn { background-image: url("images/buttons/register_blue.gif"); }
+.register-yellow-btn { background-image: url("images/buttons/register_yellow.gif"); }
 .report-btn { background-image: url("images/buttons/report.gif"); }
 .reset-btn { background-image: url("images/buttons/reset.gif"); width: 17px !important; }
 .revert-btn { background-image: url("images/buttons/revert.gif"); }

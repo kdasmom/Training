@@ -510,8 +510,12 @@ class ImageIndexGateway extends AbstractGateway {
      *      on context type.
      * @return [] List of images.
      */
-    public function imageSearch($doctype, $searchtype, $searchstring, $property_type, $property_list) {
+    public function imageSearch($doctype, $searchtype, $searchstring, $userprofile_id, $delegated_to_userprofile_id, $property_type, $property_list, $property_status=null) {
         $select01 = new sql\ImageSearchSelect();
+
+        $propertyFilterSelect = new PropertyFilterSelect(new PropertyContext(
+			$userprofile_id, $delegated_to_userprofile_id, $property_type, $property_list, $property_status
+		));
 
         if ($searchtype == 1 || $searchtype == 3) {
             $searchstring = rtrim(ltrim($searchstring));
@@ -524,20 +528,6 @@ class ImageIndexGateway extends AbstractGateway {
             $searchstring = str_replace('?', '|?', $searchstring);
         }
 
-        switch ($property_type) {
-            case 'property':
-            case 'multiProperty':
-                $left = 'ii.property_id';
-                break;
-            case 'region':
-                $left = 'p.region_id';
-                break;
-            case 'all':
-                $left = 'p.property_status';
-                break;
-        }
-
-
         switch ($searchtype) {
             case 1:
                 $select01
@@ -547,7 +537,7 @@ class ImageIndexGateway extends AbstractGateway {
                             ->like('ii.image_index_name', '\'%'.$searchstring.'%\' ESCAPE \'|\'')
                             ->nest('OR')
                                 ->equals('ii.property_id', 0)
-                                ->in($left, $property_list)
+                                ->in('ii.property_id', $propertyFilterSelect)
                             ->unnest()
                     )
                 ;
@@ -560,7 +550,7 @@ class ImageIndexGateway extends AbstractGateway {
                             ->equals('dbo.DateNoTime(ii.image_index_date_entered)', 'CONVERT(datetime, \''.$searchstring.'\')')
                             ->nest('OR')
                                 ->equals('ii.property_id', 0)
-                                ->in($left, $property_list)
+                                ->in('ii.property_id', $propertyFilterSelect)
                             ->unnest()
                     )
                 ;
@@ -573,7 +563,7 @@ class ImageIndexGateway extends AbstractGateway {
                             ->like('v.vendor_name', '\'%'.$searchstring.'%\' ESCAPE \'|\'')
                             ->nest('OR')
                                 ->equals('ii.property_id', 0)
-                                ->in($left, $property_list)
+                                ->in('ii.property_id', $propertyFilterSelect)
                             ->unnest()
                     )
                 ;

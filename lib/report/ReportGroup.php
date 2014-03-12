@@ -9,11 +9,12 @@ namespace NP\report;
  */
 class ReportGroup {
 	
-	public $field, $subTotalFields;
+	public $field, $subTotalFields, $showRow;
 	
-	public function __construct($field, $subTotalFields=[]) {
+	public function __construct($field, $subTotalFields=[], $showRow=true) {
 		$this->field          = $field;
 		$this->subTotalFields = $subTotalFields;
+		$this->showRow        = $showRow;
 	}
 }
 

@@ -47,6 +47,7 @@ Ext.define('NP.Application', {
 		'MobileSetup',
 		'MySettings',
 		'PropertySetup',
+		'Report',
 		'SystemSetup',
 		'UserManager',
 		'UtilitySetup',

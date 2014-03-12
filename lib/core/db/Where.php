@@ -11,6 +11,10 @@ class Where implements SQLElement {
 	const OR_OP  = 'OR';
 	const AND_OP = 'AND';
 
+	private $validOperators = ['equals','notEquals','in','notIn','like','between','greaterThan',
+								'greaterThanOrEqual','lessThan','lessThanOrEqual','exists',
+								'notExists','isNull','isNotNull','isEmpty','isNotEmpty'];
+
 	/**
 	 * @var array Collection of criteria for WHERE clause
 	 */
@@ -82,9 +86,14 @@ class Where implements SQLElement {
 			if (is_array($where)) {
 				foreach($where as $col=>$val) {
 					if (is_numeric($col)) {
-						throw new \NP\core\Exception('If $where is an array, it must be an associative array.');
+						$op = array_shift($val);
+						if (!in_array($op, $this->validOperators)) {
+							throw new \NP\core\Exception("Invalid SQL operation '{$op}'; valid operations are " . implode(',', $this->validOperators));
+						}
+						call_user_func_array([$this, $op], $val);
+					} else {
+						$this->equals($col, $val);
 					}
-					$this->equals($col, $val);
 				}
 			// If $where is a string, just add it as an Expression
 			} else if (is_string($where)) {

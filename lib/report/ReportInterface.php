@@ -2,6 +2,10 @@
 
 namespace NP\report;
 
+use NP\system\ConfigService;
+use NP\security\SecurityService;
+use NP\core\GatewayManager;
+
 /**
  * Report interface
  *
@@ -9,27 +13,25 @@ namespace NP\report;
  */
 interface ReportInterface {
 	
-	public function __construct($configService, $params);
-
-	public function init();
+	public function __construct(
+		ConfigService $configService,
+		SecurityService $securityService,
+		GatewayManager $gatewayManager,
+		ReportOptions $options,
+		$extraParams
+	);
 
 	public function getTitle();
-
-	public function getParams();
-
-	public function getQueryParams();
 
 	public function getCols();
 
 	public function getGroups();
 
-	public function getSql();
+	public function getData();
 
-	public function getOrientation();
+	public function getOptions();
 
-	public function addCol(ReportColumn $col);
-
-	public function addGroup(ReportGroup $group);
+	public function getExtraParams();
 }
 
 ?>

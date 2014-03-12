@@ -89,6 +89,23 @@ abstract class AbstractEntitySelect extends Select {
 	}
 	
 	/**
+	 * Adds the approved by subquery as a column
+	 *
+	 * @param \NP\shared\AbstractEntitySelect Returns caller object for easy chaining
+	 */
+	public function columnApprovedBy() {
+		return $this->column(
+			$this->getApproveSelect('a', '%approved%')
+				->column(new Expression("pe.person_firstname + ' ' + pe.person_lastname"))
+				->join(new \NP\workflow\sql\join\ApproveUserJoin([]))
+				->join(new \NP\user\sql\join\UserUserroleJoin(array()))
+				->join(new \NP\user\sql\join\UserroleStaffJoin(array()))
+				->join(new \NP\user\sql\join\StaffPersonJoin(array())),
+			'approved_by'
+		);
+	}
+	
+	/**
 	 * Adds the pending approval days column
 	 *
 	 * @param \NP\shared\AbstractEntitySelect Returns caller object for easy chaining
