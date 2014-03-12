@@ -10,7 +10,6 @@ Ext.define('NP.view.integration.OnDemandSync', {
 	requires: [
 		'NP.lib.core.Config',
 		'NP.lib.core.Security',
-		'NP.view.integration.TasksToRunGrid',
 		'NP.view.integration.OutstandingRequestsGrid'
 	],
 
@@ -61,10 +60,13 @@ Ext.define('NP.view.integration.OnDemandSync', {
 						padding: '10'
 					},
 					{
-						xtype: 'integration.taskstorungrid',
+						xtype: 'checkboxgroup',
+						columns: 1,
 						name: 'taskstorun',
-						border: false,
+						vertical: true,
+						items: [],
 						padding: '0 10 10 10'
+
 					}
 				]
 			},
@@ -78,12 +80,40 @@ Ext.define('NP.view.integration.OnDemandSync', {
 
 		me.listeners = {
 			afterrender: function() {
-				me.down('[name="taskstorun"]').getStore().load();
+				me.filltaskstorun();
+//				me.down('[name="taskstorun"]').getStore().load();
 				me.down('[name="outstandingrequests"]').getStore().load();
 			}
 		};
 
 
 		this.callParent(arguments);
+	},
+
+	filltaskstorun: function() {
+		var me = this,
+			tasks = me.down('[name="taskstorun"]');
+
+		tasks.removeAll();
+
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service		: 'PnScheduleService',
+				action		: 'getOnDemandTransfer',
+				success		: function(result) {
+					if (result) {
+						if (result.length > 0) {
+							Ext.each(result, function(element) {
+								var cb = Ext.create('Ext.form.field.Checkbox', {
+									boxLabel: element['schedulename'],
+									inputValue: element['schedulecode']
+								});
+								tasks.add(cb);
+							})
+						}
+					}
+				}
+			}
+		});
 	}
 });

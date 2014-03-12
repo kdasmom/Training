@@ -179,28 +179,28 @@ Ext.define('NP.controller.Integration', {
 
 	requestTransfer: function() {
 		var me = this,
-			grid = me.getCmp('integration.taskstorungrid'),
+			tab = me.getCmp('integration.ondemandsync'),
+			chboxes = tab.down('[name="taskstorun"]'),
 			schedules = [];
 
-		Ext.each(grid.getSelectionModel().getSelection(), function(schedule) {
-			schedules.push(schedule.raw['schedulecode']);
+		Ext.each(chboxes.getChecked(), function(schedule) {
+			schedules.push(schedule.inputValue);
 		});
 
 		if (schedules.length > 0) {
 			NP.lib.core.Net.remoteCall({
 				method  : 'POST',
-				mask    : grid,
+				mask    : chboxes,
 				requests: {
 					service               : 'PnScheduleService',
 					action                : 'importOnDemandIntegration',
 					userprofile_id: NP.Security.getUser().get('userprofile_id'),
 					schedules   : schedules,
 					success: function(result) {
-						grid.getStore().commitChanges();
+						chboxes.reset();
 						NP.Util.showFadingWindow({ html: NP.Translator.translate('Import was completed successfully') });
 					},
-					failure: function(response, options) {
-						grid.getStore().rejectChanges();
+					failure: function(response, options){
 						Ext.MessageBox.alert(NP.Translator.translate('Error'), NP.Translator.translate('Cannot import tasks'));
 					}
 				}

@@ -58,7 +58,7 @@ class PnScheduleService extends AbstractService {
 	 * @param string $order
 	 * @return mixed
 	 */
-	public function getOnDemandTransfer($page, $limit, $order = 'schedulename'){
+	public function getOnDemandTransfer($page = 1, $limit = null, $order = 'schedulename'){
 		return $this->pnScheduleGateway->getOnDemandTransfer($page, $limit, $order);
 	}
 
