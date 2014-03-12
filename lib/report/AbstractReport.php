@@ -71,6 +71,17 @@ abstract class AbstractReport implements ReportInterface {
 	}
 
 	/**
+	 * Optional function that can be overriden to filter out certain rows based on
+	 * an arbitrary condition; the function must return true or false
+	 *
+	 * @param  array $currentRow
+	 * @param  boolean
+	 */
+	public function showRowCondition($currentRow) {
+		return true;
+	}
+
+	/**
 	 * Returns an array of groups for this report
 	 *
 	 * @return NP\report\ReportGroup[]

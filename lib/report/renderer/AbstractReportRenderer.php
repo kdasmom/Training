@@ -265,10 +265,13 @@ abstract class AbstractReportRenderer implements ReportRendererInterface {
 			if ($data !== null) {
 				$row = array_merge($row, $data);
 			}
+			$showRow = $this->report->showRowCondition($row);
 
-			$this->renderRecord($row, $idx, $cols);
-			$lastRow = $row;
-			$idx++;
+			if ($showRow) {
+				$this->renderRecord($row, $idx, $cols);
+				$lastRow = $row;
+				$idx++;
+			}
 		}
 
 		// Process subtotals for the last row in groups if applicable
