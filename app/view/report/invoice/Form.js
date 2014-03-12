@@ -3,9 +3,9 @@
  *
  * @author Thomas Messier
  */
-Ext.define('NP.view.report.InvoiceForm', {
-	extend: 'Ext.form.Panel',
-	alias : 'widget.report.invoiceform',
+Ext.define('NP.view.report.invoice.Form', {
+	extend: 'NP.view.report.AbstractReportForm',
+	alias : 'widget.report.invoice.form',
 
 	requires: [
 		'NP.lib.ui.ComboBox',
@@ -19,9 +19,6 @@ Ext.define('NP.view.report.InvoiceForm', {
 		'NP.store.user.Userprofiles',
 		'NP.store.report.InvoiceReports'
 	],
-
-	border     : false,
-	bodyPadding: 8,
 
 	initComponent: function() {
 		var me = this;
@@ -44,7 +41,12 @@ Ext.define('NP.view.report.InvoiceForm', {
 				valueField       : 'report_name',
 				width            : 520,
 				store            : { type: 'report.invoicereports' },
-				selectFirstRecord: true
+				selectFirstRecord: true,
+				listeners        : {
+					select: function(combo, recs) {
+						me.selectReport(recs[0].get('report_name'));
+					}
+				}
 			},
 			{ xtype: 'report.reportformatfield', itemId: 'report_format' },
 			{
@@ -90,7 +92,7 @@ Ext.define('NP.view.report.InvoiceForm', {
 			}
 		];
 
-		this.callParent(arguments);
+		me.callParent(arguments);
 	},
 
 	getStatusStore: function() {

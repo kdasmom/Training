@@ -3,10 +3,10 @@
  *
  * @author Thomas Messier
  */
-Ext.define('NP.view.report.invoice.InvoiceSummary', {
+Ext.define('NP.view.report.invoice.Summary', {
 	extend: 'NP.view.report.invoice.AbstractInvoiceReport',
 	
-	initForm: function() {
+	setupForm: function() {
 		var me = this;
 
 		me.getDateFilter().setFilterTypeVisibility({

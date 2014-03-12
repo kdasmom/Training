@@ -255,7 +255,7 @@ class InvoiceSelect extends AbstractEntitySelect {
 							->whereEquals('i.invoice_id', 'ii.invoice_id');
 
 		if ($capExOnly) {
-			$select->join(sql\join\InvoiceItemGlAccountJoin([]))
+			$select->join(new join\InvoiceItemGlAccountJoin([]))
 				->whereEquals('g.glaccounttype_id', 1);
 		}
 

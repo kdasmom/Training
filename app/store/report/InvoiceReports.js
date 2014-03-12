@@ -15,7 +15,7 @@ Ext.define('NP.store.report.InvoiceReports', {
     ],
 
     data: [
-    	{ report_name: 'invoice.InvoiceSummary', report_display_name: 'Summary' }
+    	{ report_name: 'invoice.Summary', report_display_name: 'Summary' }
     ],
 
     constructor: function() {

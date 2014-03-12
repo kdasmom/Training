@@ -10,14 +10,13 @@ Ext.define('NP.controller.Report', {
 
 	stores: [],
 
-	views: ['report.InvoiceForm'],
+	views: ['report.invoice.Form'],
 
 	requires: [
-		'NP.view.report.invoice.InvoiceSummary'
+		'NP.view.report.invoice.Summary'
 	],
 
 	refs: [
-		{ ref: 'reportType', selector: '#report_type' },
 		{ ref: 'reportFormat', selector: '#report_format' },
 		{ ref: 'propertyPicker', selector: '#property_picker' }
 	],
@@ -27,42 +26,22 @@ Ext.define('NP.controller.Report', {
 
 		// Setup event handlers
 		me.control({
-			'[xtype="report.invoiceform"] [xtype="shared.button.report"]': {
-				click: me.generateReport
-			},
-			'#report_type': {
-				select: function(combo, selRecs) {
-					me.selectReport(selRecs[0].get('report_name'));
-				}
-			}
+			
 		});
 	},
 
-	invoice: function() {
+	show: function(section) {
 		var me = this;
 
-		me.setView('NP.view.report.InvoiceForm');
-
-		me.selectReport('invoice.InvoiceSummary');
-	},
-
-	selectReport: function(report_name) {
-		this.getReport(report_name).initForm();
-	},
-
-	getReport: function(report_name) {
-		return Ext.create('NP.view.report.' + report_name);
-	},
-
-	getFormat: function() {
-		return this.getReportFormat().getFormat();
+		me.currentForm = me.setView('NP.view.report.' + section + '.Form');
+		me.currentForm.getGenerateReportButton().on('click', me.generateReport.bind(me));
 	},
 
 	generateReport: function() {
 		var me         = this,
-			reportType = me.getReportType().getValue(),
-			format     = me.getFormat(),
-			report     = me.getReport(reportType);
+			reportType = me.currentForm.getReportType(),
+			format     = me.currentForm.getReportFormat(),
+			report     = me.currentForm.getReport();
 
 		if (report.validateForm()) {
 			var reportWinName = 'report_' + reportType,

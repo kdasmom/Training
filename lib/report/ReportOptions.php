@@ -8,8 +8,63 @@ namespace NP\report;
  * @author Thomas Messier
  */
 class ReportOptions {
-	protected $showGrandTotal, $showBulkPdf, $orientation, $propertyContext, $dateFilterName,
-				$dateType, $dateTo, $dateFrom, $extraHeaderFilters;
+
+	/**
+	 * Whether or not to show a grand total at the bottom of the report (only applies if you have
+	 * subtotal fields defined); defaults to true
+	 * @var boolean
+	 */
+	protected $showGrandTotal;
+	
+	/**
+	 * Whether or not to show the bulk PDF option for this report; defaults to false
+	 * @var boolean
+	 */
+	protected $showBulkPdf;
+
+	/**
+	 * Whether this report should be generated in portrait or landscape (only applies to PDF format).
+	 * Valid values are "portrait" and "landscape"; defaults to "landscape"
+	 * @var string
+	 */
+	protected $orientation; 
+
+	/**
+	 * The property context for the report; optional, defaults to null
+	 * @var NP\property\PropertyContext
+	 */
+	protected $propertyContext; 
+	
+	/**
+	 * If dateFrom/dateTo are specified, what name to show for the date filter at the top of
+	 * the report
+	 * @var string
+	 */
+	protected $dateFilterName; 
+	
+	/**
+	 * The type of date at the top of the report; valid values are "period" and "date"; defaults to "date"
+	 * @var string
+	 */
+	protected $dateType;
+
+	/**
+	 * Date to start filtering the report by
+	 * @var DateTime
+	 */
+	protected $dateFrom; 
+
+	/**
+	 * Date to end filtering the report by
+	 * @var DateTime
+	 */
+	protected $dateTo;
+
+	/**
+	 * Ann associative array with additional filters to display in the report header
+	 * @var array
+	 */
+	protected $extraHeaderFilters;
 
 	protected $defaultOptions = [
 		'showGrandTotal'     => true,

@@ -77,7 +77,7 @@ abstract class AbstractReport implements ReportInterface {
 	 * @param  array $currentRow
 	 * @param  boolean
 	 */
-	public function showRowCondition($currentRow) {
+	public function isRowVisible($currentRow) {
 		return true;
 	}
 

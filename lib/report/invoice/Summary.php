@@ -15,7 +15,7 @@ use NP\property\sql\PropertyFilterSelect;
  *
  * @author Thomas Messier
  */
-class InvoiceSummary extends AbstractReport implements ReportInterface {
+class Summary extends AbstractReport implements ReportInterface {
 	
 	private $showUnit;
 
@@ -70,12 +70,12 @@ class InvoiceSummary extends AbstractReport implements ReportInterface {
 	}
 
 	public function getData() {
-		$extraParams     = $this->getExtraParams();
-		$dateType        = $extraParams['date_filter'];
-		$dateFrom = $this->getOptions()->dateFrom;
-		$dateTo = $this->getOptions()->dateTo;
-
-		$showUnit = $this->configService->get('pn.InvoiceOptions.AllowUnitAttach', '0');
+		$extraParams = $this->getExtraParams();
+		$dateType    = $extraParams['date_filter'];
+		$dateFrom    = $this->getOptions()->dateFrom;
+		$dateTo      = $this->getOptions()->dateTo;
+		$showUnit    = $this->configService->get('pn.InvoiceOptions.AllowUnitAttach', '0');
+    	
     	$queryParams = [];
 
     	$propertyFilterSelect = new PropertyFilterSelect($this->getOptions()->propertyContext);
@@ -121,7 +121,7 @@ class InvoiceSummary extends AbstractReport implements ReportInterface {
     	}
 
     	if ($extraParams['only_cap_ex'] == 1) {
-    		$select->join(new \NP\invoice\sql\join\InvoiceItemGlAccount([]));
+    		$select->join(new \NP\invoice\sql\join\InvoiceItemGlAccountJoin([]));
     		$select->whereEquals('g.glaccounttype_id', 1);
     	}
 
@@ -170,7 +170,7 @@ class InvoiceSummary extends AbstractReport implements ReportInterface {
 		}
 
 		if (!empty($extraParams['vendor_id'])) {
-			$sql .= " AND v.vendor_id = ?)";
+			$select->whereEquals('v.vendor_id', '?');
 			$queryParams[] = $extraParams['vendor_id'];
 		}
 

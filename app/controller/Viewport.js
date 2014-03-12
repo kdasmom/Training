@@ -206,7 +206,7 @@ Ext.define('NP.controller.Viewport', {
 			// Clicking on the Reports > Invoice Register Reports menu
 			'#invoiceReportMenuBtn': {
 				click: function() {
-					this.addHistory('Report:invoice');
+					this.addHistory('Report:show:invoice');
 				}
 			},
 

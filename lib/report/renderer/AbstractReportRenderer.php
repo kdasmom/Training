@@ -265,7 +265,7 @@ abstract class AbstractReportRenderer implements ReportRendererInterface {
 			if ($data !== null) {
 				$row = array_merge($row, $data);
 			}
-			$showRow = $this->report->showRowCondition($row);
+			$showRow = $this->report->isRowVisible($row);
 
 			if ($showRow) {
 				$this->renderRecord($row, $idx, $cols);

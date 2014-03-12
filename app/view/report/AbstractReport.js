@@ -6,8 +6,8 @@
  */
 Ext.define('NP.view.report.AbstractReport', {
 	
-	initForm: function() {
-		throw 'You must define initForm() in a concrete class';
+	setupForm: function() {
+		throw 'You must define setupForm() in a concrete class';
 	},
 
 	validateForm: function() {

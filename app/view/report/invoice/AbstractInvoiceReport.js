@@ -10,7 +10,7 @@ Ext.define('NP.view.report.invoice.AbstractInvoiceReport', {
 	requires: ['NP.lib.core.Security'],
 
 	getForm: function() {
-		return Ext.ComponentQuery.query('[xtype="report.invoiceform"]')[0].getForm();
+		return Ext.ComponentQuery.query('[xtype="report.invoice.form"]')[0].getForm();
 	},
 
 	getPropertyPicker: function() {
