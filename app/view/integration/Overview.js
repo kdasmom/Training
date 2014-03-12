@@ -22,12 +22,6 @@ Ext.define('NP.view.integration.Overview', {
 		var me = this;
 		me.title = NP.Translator.translate(me.title);
 
-		me.tbar = [
-			{
-				xtype: 'shared.button.print'
-			}
-		];
-
 		me.items = [
 			{
 				xtype: 'panel',

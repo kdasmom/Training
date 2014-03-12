@@ -140,7 +140,9 @@ Ext.define('NP.controller.Integration', {
 					action		: 'saveSettings',
 					settings	: form.getValues(),
 					success		: function(result) {
-						console.log('retuls: ', result);
+						if (result) {
+							NP.Util.showFadingWindow({ html: NP.Translator.translate('Settings were saved successfully!') });
+						}
 					}
 				}
 			});
