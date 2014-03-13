@@ -18,38 +18,38 @@ Ext.define('NP.view.integration.Overview', {
 
 	autoScroll: true,
 
+	layout: 'fit',
+
 	initComponent: function() {
 		var me = this;
 		me.title = NP.Translator.translate(me.title);
 
-		me.items = [
-			{
-				xtype: 'panel',
-				title: NP.Translator.translate('AUTOMATED INTEGRATION SCHEDULE'),
-				padding: '5 0 20 0',
-				border: false,
-				items: [
-					{
-						xtype: 'displayfield',
-						value: NP.Translator.translate('The following schedule is the breakdown of all the automated transfers setup to run between NexusPayables and your general ledger system, including the time the transfer last ran and the next scheduled run time.'),
-						padding: '5 5 20 5'
-					},
-					{
-						xtype: 'integration.automatedintegrationschedulesgrid'
-					}
-				]
+		me.items = [{
+			xtype  : 'panel',
+			title  : NP.Translator.translate('AUTOMATED INTEGRATION SCHEDULE'),
+			layout : {
+				type : 'vbox',
+				align: 'stretch'
 			},
-			{
-				xtype: 'panel',
-				title: NP.Translator.translate('SYNCH HISTORY'),
-				border: false,
-				items: [
-					{
-						xtype: 'integration.synchhistorygrid'
-					}
-				]
-			}
-		];
+			border : false,
+			items  : [
+				{
+					xtype  : 'component',
+					html   : NP.Translator.translate('The following schedule is the breakdown of all the automated transfers setup to run between NexusPayables and your general ledger system, including the time the transfer last ran and the next scheduled run time.'),
+					padding: 8
+				},
+				{
+					xtype: 'integration.automatedintegrationschedulesgrid',
+					flex : 1
+				},
+				{
+					xtype: 'integration.synchhistorygrid',
+					title : NP.Translator.translate('SYNCH HISTORY'),
+					border: false,
+					flex  : 1
+				}
+			]
+		}];
 
 
 		this.callParent(arguments);

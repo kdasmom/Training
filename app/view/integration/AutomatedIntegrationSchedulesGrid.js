@@ -42,25 +42,26 @@ Ext.define('NP.view.integration.AutomatedIntegrationSchedulesGrid', {
 				}
 			},
 			{
+				xtype: 'datecolumn',
 				text: NP.Translator.translate('Last Run'),
 				flex: 0.2,
-				dataIndex: 'LastRun_datetm',
+				dataIndex: 'lastrun_datetm',
 				renderer: function(val, meta, record) {
-					return Ext.util.Format.date(record.raw['LastRun_datetm'], "m-d-Y")
+					return Ext.util.Format.date(val, NP.Config.getDefaultDateTimeFormat())
 				}
 			},
 			{
 				text: NP.Translator.translate('Next Run'),
 				flex: 0.2,
-				dataIndex: 'Next_Scheduled_Run_Time',
+				dataIndex: 'next_scheduled_run_time',
 				renderer: function(val, meta, record) {
-					return Ext.util.Format.date(record.raw['Next_Scheduled_Run_Time'], "m-d-Y")
+					return Ext.util.Format.date(val, NP.Config.getDefaultDateTimeFormat())
 				}
 			}
 		];
 
 		me.store = Ext.create('NP.store.integration.PnSchedules', {
-			service: 'PnScheduleService',
+			service: 'IntegrationService',
 			action: 'getAllAvailabletransfer',
 			autoLoad: true
 		});

@@ -57,7 +57,7 @@ Ext.define('NP.view.integration.FailedSynchDetailsWindow', {
 					}
 				],
 				store: Ext.create('NP.lib.data.Store', {
-					service    	: 'PnScheduleService',
+					service    	: 'IntegrationService',
 					action     	: 'getFailedSynchHistory',
 					history_id	: me.history_id,
 					autoLoad	: true,

@@ -40,9 +40,9 @@ class PnScheduleGateway extends AbstractGateway {
 					'schedulecode',
 					'schedulename',
 					'integration_id',
-					'LastRun_datetm'			=> new Expression("MAX(ISNULL(wsc.lastrun_datetm, '1900-01-01'))"),
+					'lastrun_datetm'			=> new Expression("MAX(ISNULL(wsc.lastrun_datetm, '1900-01-01'))"),
 					'ShouldAllow'				=> new Expression("CASE WHEN wsc.schedulecode + '~' + CAST(wsc.integration_id AS VARCHAR) IN (SELECT schedulecode + '~' + CAST(integration_id AS VARCHAR) FROM WEBSERVICES_PN_SCHEDULER_HISTORY INNER JOIN WEBSERVICES_PN_SCHEDULER ON WEBSERVICES_PN_SCHEDULER_HISTORY.schedule_id = WEBSERVICES_PN_SCHEDULER.schedule_id WHERE STATUS IN ('Waiting','Running') AND DATEDIFF(minute, request_datetm, GETDATE()) < " . self::MAXWINDOW . ") THEN 0 ELSE 1 END"),
-					'Next_Scheduled_Run_Time'	=> new Expression("MIN(DATEADD(minute, ((DATEDIFF(minute, wsc.seed_datetm, GETDATE())/ runeveryxminutes) * runeveryxminutes) + runeveryxminutes, wsc.seed_datetm))")
+					'next_scheduled_run_time'	=> new Expression("MIN(DATEADD(minute, ((DATEDIFF(minute, wsc.seed_datetm, GETDATE())/ runeveryxminutes) * runeveryxminutes) + runeveryxminutes, wsc.seed_datetm))")
 				]
 			)
 			->join(['wscf' => 'webservices_pn_scheduler_frequency'], 'wsc.schedulecode  = wscf.schedulecode', ['run_frequency'])
@@ -109,6 +109,7 @@ class PnScheduleGateway extends AbstractGateway {
 			->whereUnnest()
 			->whereUnnest()
 			->whereUnnest()
+			->whereEquals(new Expression('DateDiff(hour, transferred_datetm, getDate())'), 24)
 			->order($order)
 			->limit($pageSize)
 			->offset($pageSize * ($page - 1));

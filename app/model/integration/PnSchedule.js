@@ -25,6 +25,9 @@ Ext.define('NP.model.integration.PnSchedule', {
 		{ name: 'priority', type: 'float' },
 		{ name: 'universal_field1' },
 		{ name: 'universal_field2' },
-		{ name: 'universal_field3' }
+		{ name: 'universal_field3' },
+
+		// These fields are not database columns
+		{ name: 'next_scheduled_run_time', type: 'date' }
 	]
 });

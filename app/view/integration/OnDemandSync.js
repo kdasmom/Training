@@ -98,7 +98,7 @@ Ext.define('NP.view.integration.OnDemandSync', {
 
 		NP.lib.core.Net.remoteCall({
 			requests: {
-				service		: 'PnScheduleService',
+				service		: 'IntegrationService',
 				action		: 'getOnDemandTransfer',
 				success		: function(result) {
 					if (result) {

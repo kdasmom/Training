@@ -81,7 +81,7 @@ Ext.define('NP.view.integration.SynchHistoryGrid', {
 		];
 
 		me.store = Ext.create('NP.store.integration.PnSchedules', {
-			service: 'PnScheduleService',
+			service: 'IntegrationService',
 			action: 'getSynchHistory',
 			autoLoad: true
 		});

@@ -30,6 +30,10 @@ Ext.define('NP.controller.Integration', {
 		'integration.PnSchedule'
 	],
 
+	refs: [
+		{ ref: 'settingsForm', selector: '[xtype="integration.settings"]' }
+	],
+
 	init: function() {
 		var me  = this,
 			app = me.application;
@@ -41,8 +45,10 @@ Ext.define('NP.controller.Integration', {
 					me.addHistory('Integration:showIntegration:' + activeTab);
 				}
 			},
-			'[xtype="integration.settings"]': {
-				'loadsettings': me.loadSettings
+			'[xtype="integration.settings"] [name="integration_package_id"]': {
+				select: function(combo, recs) {
+					me.loadSettings(recs[0].get('integration_package_id'));
+				}
 			},
 			'[xtype="integration.settings"] [xtype="shared.button.save"]': {
 				click: me.saveSettings
@@ -91,34 +97,31 @@ Ext.define('NP.controller.Integration', {
 		}
 
 		if (me[showMethod]) {
-			me[showMethod](subSection, id);
+			me[showMethod]();
 		}
+	},
+
+	showSettings: function() {
+		var me    = this,
+			form  = me.getSettingsForm().getForm(),
+			integration_package_id = form.findField('integration_package_id').getValue();
+		
+		me.loadSettings(integration_package_id);
 	},
 
 	/**
 	 * Load settings
 	 *
-	 * @param integrationPackageId
 	 */
-	loadSettings: function(integrationPackageId) {
-		var me = this,
-			field;
+	loadSettings: function(integration_package_id) {
+		var me     = this,
+			intPkg = Ext.getStore('system.IntegrationPackages').getById(integration_package_id),
+			fields = me.getSettingsForm().getForm().getFields();
 
-		NP.lib.core.Net.remoteCall({
-			requests: {
-				service					: 'IntegrationService',
-				action					: 'getIntegrationSettings',
-				integration_package_id	: integrationPackageId,
-				success: function(result) {
-					if (result) {
-						var form = me.getCmp('integration.settings').down('[name="settingsform"]');
-						for (var key in result) {
-							if ((field = form.getForm().findField(key))) {
-								field.setValue(result[key]);
-							}
-						}
-					}
-				}
+		fields.each(function(field) {
+			var fieldName = field.getName();
+			if (fieldName !== 'integration_package_id' && (fieldName in intPkg.getData())) {
+				field.setValue(intPkg.get(fieldName));
 			}
 		});
 	},
@@ -128,8 +131,24 @@ Ext.define('NP.controller.Integration', {
 	 *
 	 */
 	saveSettings: function() {
-		var me = this,
-			form = me.getCmp('integration.settings').down('[name="settingsform"]');
+		var me       = this,
+			form     = me.getSettingsForm(),
+			settings = form.getValues(),
+			rec      = Ext.getStore('system.IntegrationPackages').getById(settings.integration_package_id);
+
+		settings = Ext.apply(rec.getData(), settings);
+		settingDefaults = {
+			custom_field7_maxlength         : 50,
+			custom_field8_maxlength         : 50,
+			custom_field7_lineitem_maxlength: 50,
+			custom_field8_lineitem_maxlength: 50
+		};
+
+		for (var field in settingDefaults) {
+			if (settings[field] === null) {
+				settings[field] = settingDefaults[field];
+			}
+		}
 
 		if (form.isValid()) {
 			NP.lib.core.Net.remoteCall({
@@ -138,9 +157,11 @@ Ext.define('NP.controller.Integration', {
 				requests: {
 					service		: 'IntegrationService',
 					action		: 'saveSettings',
-					settings	: form.getValues(),
+					settings	: settings,
 					success		: function(result) {
 						if (result) {
+							var rec = Ext.getStore('system.IntegrationPackages').getById(settings.integration_package_id);
+							rec.set(settings);
 							NP.Util.showFadingWindow({ html: NP.Translator.translate('Settings were saved successfully!') });
 						}
 					}
@@ -159,7 +180,7 @@ Ext.define('NP.controller.Integration', {
 
 		NP.lib.core.Net.remoteCall({
 			requests: {
-				service		: 'PnScheduleService',
+				service		: 'IntegrationService',
 				action		: 'getByHistoryId',
 				history_id	: history_id,
 				success		: function(result) {
@@ -192,7 +213,7 @@ Ext.define('NP.controller.Integration', {
 				method  : 'POST',
 				mask    : chboxes,
 				requests: {
-					service               : 'PnScheduleService',
+					service               : 'IntegrationService',
 					action                : 'importOnDemandIntegration',
 					userprofile_id: NP.Security.getUser().get('userprofile_id'),
 					schedules   : schedules,
