@@ -61,6 +61,15 @@ Ext.define('NP.view.systemSetup.PrintSettingsTab', {
 				value: ''
 			},
 			{
+				xtype: 'image',
+				name: 'settingsimage',
+				fieldLabel: NP.Translator.translate('Editing image'),
+				src: '',
+				hidden: true,
+				maxWidth: 200,
+				flex: 1
+			},
+			{
 				xtype: 'fieldcontainer',
 				layout: {
 					type: 'vbox',
@@ -181,6 +190,8 @@ Ext.define('NP.view.systemSetup.PrintSettingsTab', {
 						me.down('[name="params"]').show();
 						me.down('[name="uploadimage"]').hide();
 						me.down('[name="print_template_additional_image"]').setValue(1);
+						me.down('[name="settingsimage"]').setSrc('clients/' + NP.lib.core.Config.getAppName() + '/web/images/print_pdf/poprint_additional_image_' + me.templateid + '.jpg');
+						me.down('[name="settingsimage"]').show();
 						me.up().up().down('[name="viewImageBtn"]').show();
 						me.up().up().down('[name="deleteImageBtn"]').show();
 					} else {

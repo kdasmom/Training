@@ -1204,7 +1204,7 @@ Ext.define('NP.controller.SystemSetup', {
 						headerform.down('[name="dataandselectfield"]').hide();
 
 						if (tabindex >= 2) {
-							headerform.getChildByElement('dataandselectfield').show();
+							headerform.down('[name="dataandselectfield"]').show();
 							headerform.getForm().findField('custom_field_maxlength').show();
 						} else {
 							if (fid !== 7 && fid !== 8) {
@@ -1696,6 +1696,7 @@ Ext.define('NP.controller.SystemSetup', {
 					boundForm.getForm().findField('edittemplatename_header').setValue(data.Print_Template_Name);
 					boundForm.getForm().findField('edittemplatename_footer').setValue(data.Print_Template_Name);
 					boundForm.getForm().findField('edittemplatename_additional').setValue(data.Print_Template_Name);
+					boundForm.getForm().findField('poprint_customfields').setValue(NP.Config.getSetting('PN.POOptions.POPrintCustomFields'));
 
 					if (copy) {
 						boundForm.getForm().findField('Print_Template_Id').setValue('');
@@ -1705,6 +1706,8 @@ Ext.define('NP.controller.SystemSetup', {
 					} else {
 						if (templateObj.template_settings && templateObj.template_settings.print_template_additional_image) {
 							boundForm.getForm().findField('print_template_additional_image').setValue(1);
+							boundForm.down('[name="settingsimage"]').setSrc('clients/' + NP.lib.core.Config.getAppName() + '/web/images/print_pdf/poprint_additional_image_' + id + '.jpg');
+							boundForm.down('[name="settingsimage"]').show();
 						}
 						if (templateObj.template_attachment) {
 							boundForm.getForm().findField('template_attachment').setValue(1);
@@ -1762,6 +1765,7 @@ Ext.define('NP.controller.SystemSetup', {
 		templateobj.template_attachment = form.findField('template_attachment').getValue();
 		templateobj.template_settings = {};
 		templateobj.template_settings.print_template_additional_image = form.findField('print_template_additional_image').getValue();
+		poprint_customfields = form.findField('poprint_customfields').getValue();
 
 		if (form.isValid()) {
 			form.submitWithBindings({
@@ -1771,10 +1775,12 @@ Ext.define('NP.controller.SystemSetup', {
 					templateobj: JSON.stringify(form.down('[name="templatetab"]').positions),
 					userprofile_id: NP.Security.getUser().get('userprofile_id'),
 					properties: form.findField('property_id').getValue(),
-					property_type: form.findField('property_type').getValue()
+					property_type: form.findField('property_type').getValue(),
+					poprint_customfields: poprint_customfields
 				},
 				success: function(result) {
 					if (result.success) {
+						NP.Config.setSetting('PN.POOptions.POPrintCustomFields', poprint_customfields);
 						me.addHistory('SystemSetup:showSystemSetup:POPrintSettings');
 					}
 				}

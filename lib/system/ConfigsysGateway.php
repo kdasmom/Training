@@ -10,6 +10,7 @@ use NP\core\db\Update;
 use NP\core\db\Select;
 use NP\core\db\Where;
 use NP\system\sql\InvoiceOnOffSelect;
+use NP\util\Util;
 
 /**
  * Gateway for the CONFIGSYS table
@@ -422,6 +423,51 @@ class ConfigsysGateway extends AbstractGateway {
 		$result = $this->adapter->query($select);
 
 		return !isset($result[0]) ? 0 : $result[0]['maxlength'];
+	}
+
+	/**
+	 * Save config value
+	 *
+	 * @param $name
+	 * @param $value
+	 * @param $userprofile_id
+	 * @return array|bool
+	 */
+	public function saveConfigValue($name, $value, $userprofile_id) {
+		$update = new Update();
+		$select = new Select();
+
+		$select->from(['c' => 'configsys'])
+			->limit(1)
+			->columns([])
+			->join(['cv' => 'configsysval'], 'cv.configsys_id = c.configsys_id', ['configsysval_id'])
+			->where(
+				[
+					'c.configsys_name'	=> '?'
+				]
+			);
+
+		$id = $this->adapter->query($select, [$name]);
+
+		$value = !$value ? 0 : $value;
+
+		$update->table('configsysval')
+			->values(
+				[
+					'configsysval_val'		=> "$value",
+					'configsysval_updated_datetm'	=> "'" . Util::formatDateForDB() . "'",
+					'configsysval_updated_by'		=> $userprofile_id
+				]
+			)
+			->where(
+				[
+					'configsysval_id' => '?'
+				]
+			);
+
+		$result = $this->adapter->query($update, [$id[0]['configsysval_id']]);
+
+		return $result;
 	}
 }
 
