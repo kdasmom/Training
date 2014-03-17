@@ -42,6 +42,7 @@ Ext.define('NP.Application', {
 		'CatalogMaintenance',
 		'Images',
 		'Import',
+		'Integration',
 		'Invoice',
 		'MessageCenter',
 		'MobileSetup',

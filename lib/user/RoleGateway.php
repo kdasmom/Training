@@ -159,5 +159,5 @@ class RoleGateway extends AbstractGateway {
 
 		return (count($res)) ? false : true;
 	}
-	
+
 }

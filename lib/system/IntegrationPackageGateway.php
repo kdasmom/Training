@@ -13,6 +13,11 @@ use NP\core\db\Select;
 class IntegrationPackageGateway extends AbstractGateway {
 	protected $pk = 'integration_package_id';
 
+	public function getSelect() {
+		return Select::get()->from(['ipk'=>'integrationpackage'])
+							->join(new sql\join\IntPkgIntReqJoin());
+	}
+
 	/**
 	 * Retrieve integration package record by userprofile and aspclient_id
 	 *

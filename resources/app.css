@@ -93,6 +93,9 @@ li.x-boundlist-item {
 .go-button .x-btn-inner { width: 33px !important; }
 .go-button button { width: 33px !important; }
 
+.usermanager-btn {background-image: url("images/buttons/user_manager.gif"); }
+.propertysetup-btn {background-image: url("images/buttons/property_setup.gif"); }
+
 /* FLAGS (for localization combo) */
 .ux-icon-combo-input, .ux-icon-combo-item {
 	background-repeat  : no-repeat;

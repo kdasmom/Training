@@ -3,6 +3,7 @@
 namespace NP\system;
 
 use NP\core\AbstractService;
+use NP\core\db\Select;
 use NP\core\validation\EntityValidator;
 use NP\core\db\Select;
 use NP\core\db\Update;
@@ -149,6 +150,118 @@ class PicklistService extends AbstractService {
 		$entityType = array_pop($entityType);
 
 		return $entityType;
+	}
+
+	public function getPicklistValuesList($mode = 'Insurance') {
+
+
+		$asp_client_id = $this->configService->getClientId();
+
+		$tableParams = $this->_getTableKeyByPicklistMode($mode);
+
+		$result = [
+			[
+				'column_data'		=> 'New',
+				'column_pk_data'	=> 0,
+				'column_status'		=> 1
+			]
+		];
+
+		$result = array_merge($result, $this->picklistGateway->getPicklistColumns($tableParams['table_id'], $asp_client_id));
+
+		return $result;
+	}
+
+	public function getFormFields($mode = 'Insurance', $column_id = null, $column_status = null) {
+		$tableParams = $this->_getTableKeyByPicklistMode($mode);
+		$aspClientId = $this->configService->getClientId();
+
+		return $this->picklistGateway->getColumnsValue($tableParams['table_id'], $tableParams['tablename'], $aspClientId, $column_status, $column_id);
+	}
+
+	private function _getTableKeyByPicklistMode($mode) {
+		switch ($mode) {
+			default:
+			case ('Insurance'):
+				$tablename = 'insurancetype';
+				$tablekey_id = 1005;
+				$tableid = 1005;
+				break;
+			case ('Rejection'):
+				$tablename = 'rejectionnote';
+				$tablekey_id = 1010;
+				$tableid = 1010;
+				break;
+			case ('On_Hold'):
+				$tablename = 'reason';
+				$tablekey_id = 2013;
+				$tableid = 2013;
+				break;
+			case ('TaxPayor'):
+				$tablename = 'insurancetype';
+				$tablekey_id = 2014;
+				$tableid = 2014;
+				break;
+			case ('Payee'):
+				$tablename = 'lookupcode';
+				$tablekey_id = 2015;
+				$tableid = 2015;
+				break;
+			case ('Vendor_Types'):
+				$tablename = 'vendortype';
+				$tablekey_id = 2011;
+				$tableid = 2011;
+				break;
+			case ('PayBy'):
+				$tablename = 'invoicepaymenttype';
+				$tablekey_id = 2016;
+				$tableid = 2016;
+				break;
+			case ('UtilityType'):
+				$tablename = 'utilitytype';
+				$tablekey_id = 2017;
+				$tableid = 2017;
+				break;
+			case ('Vendor_Documents'):
+				$tablename = 'image_doctype';
+				$tablekey_id = 2018;
+				$tableid = 2018;
+				break;
+		}
+
+		return [
+			'tablename'		=> $tablename,
+			'tablekey_id'	=> $tablekey_id,
+			'table_id'		=> $tableid
+		];
+	}
+
+	/**
+	 * Values for the dropdown field
+	 *
+	 * @param null $column_id
+	 * @return array
+	 */
+	public function prepareDropdownValues($column_id = null, $dropdown_flag = 1) {
+		if (!$column_id) {
+			return [];
+		}
+
+		return $this->picklistGateway->getDropDownValuesPicklistColumn($column_id, $this->configService->getClientId(), $dropdown_flag);
+	}
+
+	public function savePicklist($data = null) {
+
+		if (!$data) {
+			return false;
+		}
+
+
+		$asp_client_id = $this->configService->getClientId();
+
+		$table = $this->_getTableKeyByPicklistMode($data['mode']);
+
+		return $this->picklistGateway->savePicklist($data, $table, $asp_client_id);
 	}
 
 	/**

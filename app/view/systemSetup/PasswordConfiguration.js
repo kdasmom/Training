@@ -19,6 +19,7 @@ Ext.define('NP.view.systemSetup.PasswordConfiguration', {
     autoScroll: true,
     defaults : { 
     	labelWidth: 280,
+      width     : 380,
     	allowBlank: false
     },
     
@@ -54,22 +55,19 @@ Ext.define('NP.view.systemSetup.PasswordConfiguration', {
                         displayField	: 'chars',
                         valueField		: 'chars',
                         forceSelection	: true,
-                        editable		: false,
-                    	width	  		: 340
+                        editable		: false
               		},{
         				xtype     : 'numberfield',
         				name      : 'cp.password_expire_interval',
         				fieldLabel: this.passwordExpireIntervalText,
                         minValue  : 0,
-                        maxValue  : 999,
-                    	width	  : 340
+                        maxValue  : 999
             		},{
         				xtype     : 'numberfield',
         				name      : 'cp.password_history_interval',
         				fieldLabel: this.passwordHistoryIntervalText,
                         minValue  : 0,
-                        maxValue  : 999,
-                    	width	  : 340
+                        maxValue  : 999
             		},{
               			xtype: 'radiogroup',
               			fieldLabel: this.passwordChangeOnLoginText,
@@ -80,9 +78,10 @@ Ext.define('NP.view.systemSetup.PasswordConfiguration', {
               				{ boxLabel: this.passwordChangeOnLoginNoText, inputValue: 0 }
               			]
               		},{
-                        xtype     : 'displayfield',
-                        itemId    : 'pwdCfgExplanationField',
-                        value     : this.pwdCfgExplanationText
+                        xtype : 'component',
+                        itemId: 'pwdCfgExplanationField',
+                        html  : this.pwdCfgExplanationText,
+                        width : null
             		}
               	];
     	

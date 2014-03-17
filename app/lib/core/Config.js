@@ -171,7 +171,7 @@ Ext.define('NP.lib.core.Config', function() {
 		 * @return {String}
 		 */
 		getDefaultDateTimeFormat: function() {
-			return 'm/d/Y H:i:s';
+			return 'm/d/Y g:ia';
 		},
 
 		/**

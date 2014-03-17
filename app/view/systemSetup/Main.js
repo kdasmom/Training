@@ -13,17 +13,31 @@ Ext.define('NP.view.systemSetup.Main', {
     	'NP.view.systemSetup.Overview',
     	'NP.view.systemSetup.Settings',
     	'NP.view.systemSetup.WorkflowManager',
-    	'NP.view.systemSetup.GLAccounts',
     	'NP.view.systemSetup.PasswordConfiguration',
     	'NP.view.systemSetup.CustomFields',
     	'NP.view.systemSetup.Picklists',
     	'NP.view.systemSetup.DefaultSplits',
-        'NP.view.systemSetup.LoginPage'
+        'NP.view.systemSetup.LoginPage',
+        'NP.view.systemSetup.POPrintSettings',
+		'NP.view.shared.button.UserManager',
+		'NP.view.shared.button.PropertySetup'
     ],
 
     title: 'System Setup',
+	autoScroll: true,
     
     initComponent: function() {
+		this.tbar = [
+			{
+				xtype: 'shared.button.usermanager',
+				itemId: 'backToUserManagerBtn'
+			},
+			{
+				xtype: 'shared.button.propertysetup',
+				itemId: 'backToPropertySetupBtn'
+			}
+		];
+
     	this.items = [
     		{
 	    		xtype: 'systemsetup.overview'
@@ -37,10 +51,6 @@ Ext.define('NP.view.systemSetup.Main', {
                 xtype: 'systemsetup.workflowmanager'
             });
         }
-    	
-    	 this.items.push({
-             xtype: 'systemsetup.glaccounts'
-         });
     	
     	if (NP.Security.hasPermission(6085)) {
             this.items.push({
@@ -68,6 +78,10 @@ Ext.define('NP.view.systemSetup.Main', {
     	
         this.items.push({
             xtype: 'systemsetup.loginpage'
+        });
+
+        this.items.push({
+            xtype: 'systemsetup.poprintsettings'
         });
 
     	this.callParent(arguments);

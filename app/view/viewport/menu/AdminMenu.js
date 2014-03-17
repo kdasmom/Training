@@ -44,6 +44,7 @@ Ext.define('NP.view.viewport.menu.AdminMenu', {
 		// Integration
 		if ( NP.lib.core.Security.hasPermission(6047) ) {
 			this.menu.items.push({
+				itemId: 'integrationMenuBtn',
 				text: NP.Translator.translate('Integration')
 			});
 		}
