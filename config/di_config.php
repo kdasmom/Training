@@ -12,6 +12,9 @@ $di = new Pimple();
 
 // DI Parameters
 $di['locale'] = 'En';
+if (array_key_exists('NP_locale', $_COOKIE)) {
+	$di['locale'] = ucfirst($_COOKIE['NP_locale']);
+}
 $di['reloadCache'] = $reloadCache;
 $di['configPath'] = $__CONFIG['appRoot'] . 'config\\site_config.xml';
 $di['config'] = $__CONFIG;
@@ -44,12 +47,13 @@ $diDefinition = array(
 	'NP\core\notification\Emailer'                   => array('mailHost','mailPort','mailUsername','mailPassword','mailEncryptionType'),
 	'NP\core\validation\EntityValidator'             => array('LocalizationService','Adapter'),
 	'NP\budget\BudgetGateway'                        => array('Adapter','FiscalCalService'),
-	'NP\budget\BudgetService'                        => array('SoapService'),
+	'NP\budget\BudgetService'                        => array('SoapService','FiscalCalService'),
 	'NP\core\Config'                                 => array('config','reloadCache','WinCache','SiteService','ConfigsysGateway'),
-	'NP\import\GLActualImportEntityValidator'        => array('LocalizationService','Adapter','IntegrationPackageGateway','GLAccountGateway','PropertyGateway','Config','SoapService'),
-	'NP\import\GLBudgetImportEntityValidator'        => array('LocalizationService','Adapter','IntegrationPackageGateway','GLAccountGateway','PropertyGateway','Config','SoapService'),
-	'NP\import\GLCategoryImportEntityValidator'      => array('LocalizationService','Adapter','IntegrationPackageGateway','GLAccountGateway'),
-	'NP\import\GLCodeImportEntityValidator'          => array('LocalizationService','Adapter','IntegrationPackageGateway','GLAccountGateway'),
+	'NP\gl\GLService'                                => array('FiscalCalService'),
+	'NP\import\GLActualImportEntityValidator'        => array('LocalizationService','Adapter','IntegrationPackageGateway','GlAccountGateway','PropertyGateway','Config','SoapService'),
+	'NP\import\GLBudgetImportEntityValidator'        => array('LocalizationService','Adapter','IntegrationPackageGateway','GlAccountGateway','PropertyGateway','Config','SoapService'),
+	'NP\import\GLCategoryImportEntityValidator'      => array('LocalizationService','Adapter','IntegrationPackageGateway','GlAccountGateway'),
+	'NP\import\GLCodeImportEntityValidator'          => array('LocalizationService','Adapter','IntegrationPackageGateway','GlAccountGateway'),
 	'NP\import\InvoicePaymentImportEntityValidator'  => array('LocalizationService','Adapter','IntegrationPackageGateway','VendorGateway','PropertyGateway','SoapService'),
 	'NP\import\PropertyImportEntityValidator'        => array('LocalizationService','Adapter','Config','IntegrationPackageGateway','StateGateway','PnCustomFieldsGateway','PnUniversalFieldGateway'),
 	'NP\import\PropertyGLImportEntityValidator'      => array('LocalizationService','Adapter','IntegrationPackageGateway','PropertyGateway','GlAccountGateway','PropertyGlAccountGateway'),
@@ -64,12 +68,12 @@ $diDefinition = array(
 	'NP\import\VendorImportEntityValidator'          => array('LocalizationService','Adapter','Config','IntegrationPackageGateway','StateGateway','VendorTypeGateway','GlAccountGateway','SoapService'),
 	'NP\import\VendorGLImportEntityValidator'        => array('LocalizationService','Adapter','IntegrationPackageGateway','VendorGateway','GlAccountGateway','VendorGlAccountsGateway'),
 	'NP\invoice\InvoiceGateway'                      => array('Adapter','FiscalCalService','RoleGateway','RegionGateway'),
-	'NP\invoice\InvoiceService'                      => array('SecurityService','FiscalCalService','BudgetService'),
+	'NP\invoice\InvoiceService'                      => array('FiscalCalService','BudgetService','ImageService','JobCostingService'),
 	'NP\invoice\InvoiceServiceInterceptor',
 	'NP\locale\LocalizationService'                  => array('locale','LoggingService'),
 	'NP\notification\NotificationService'            => array('Config','Emailer'),
 	'NP\po\PurchaseOrderGateway'                     => array('Adapter','RoleGateway'),
-	'NP\po\PoService'                                => array('BudgetService'),
+	'NP\po\PoService'                                => array('FiscalCalService','BudgetService','ImageService','JobCostingService'),
 	'NP\po\ReceiptGateway'                           => array('Adapter','RoleGateway'),
 	'NP\property\PropertyService'                    => array('SecurityService','InvoiceService','PoService','FiscalCalService','UnitTypeMeasGateway'),
 	'NP\security\SecurityService'                    => array('config','SiteService','SessionService'),

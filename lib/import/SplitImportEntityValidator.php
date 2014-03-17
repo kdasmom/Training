@@ -53,7 +53,7 @@ class SplitImportEntityValidator extends AbstractImportEntityValidator {
         if (!empty($intPkg)) {
             // Validate vendor
             $vendor = $this->vendorGateway->find(
-                array('vendor_id_alt'=>'?', 'vendor_status'=>'?', 'integration_package_id'=>'?'),
+                array('v.vendor_id_alt'=>'?', 'v.vendor_status'=>'?', 'v.integration_package_id'=>'?'),
                 array($entity->vendor_id_alt, 'active', $intPkg[0]['integration_package_id'])
             );
             
@@ -63,7 +63,7 @@ class SplitImportEntityValidator extends AbstractImportEntityValidator {
 
             // Validate property
             $prop = $this->propertyGateway->find(
-                array('property_id_alt'=>'?', 'integration_package_id'=>'?'),
+                array('pr.property_id_alt'=>'?', 'pr.integration_package_id'=>'?'),
                 array($entity->property_id_alt, $intPkg[0]['integration_package_id'])
             );
             
@@ -81,7 +81,7 @@ class SplitImportEntityValidator extends AbstractImportEntityValidator {
 
             // Validate the default glaccount if not blank
             $rec = $this->glAccountGateway->find(
-                array('glaccount_number' => '?', 'integration_package_id' => '?'),
+                array('g.glaccount_number' => '?', 'g.integration_package_id' => '?'),
                 array($entity->glaccount_number, $intPkg[0]['integration_package_id'])
             );
 
@@ -90,7 +90,7 @@ class SplitImportEntityValidator extends AbstractImportEntityValidator {
             }
 
             // Make sure the split is new
-            $rec = $this->dfSplitGateway->find('dfsplit_name = ?', array($entity->dfsplit_name));
+            $rec = $this->dfSplitGateway->find('s.dfsplit_name = ?', array($entity->dfsplit_name));
             if (!empty($rec)) {
                 $this->addError($errors, 'dfsplit_name', 'importFieldSplitExistsError');
             }

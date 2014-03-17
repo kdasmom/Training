@@ -225,7 +225,7 @@ Ext.define('NP.view.image.Index', {
                 listeners: {
                     select: this.onIntegrationPackageChange.bind(this)
                 }
-            },
+            }
         ]
     },
 
@@ -528,7 +528,7 @@ Ext.define('NP.view.image.Index', {
                             listeners: {
                                 select: this.reloadUtilityAccounts.bind(this)
                             }
-                        },
+                        }
                     ]
                 };
             };
@@ -553,7 +553,7 @@ Ext.define('NP.view.image.Index', {
                             userprofile_id              : NP.Security.getUser().get('userprofile_id'),
                             delegation_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id')
                         }
-                    }),
+                    })
                 }
             ];
         }
@@ -874,7 +874,7 @@ Ext.define('NP.view.image.Index', {
                 xtype           : 'numberfield',
                 decimalPrecision: 2,
                 fieldLabel      : NP.Translator.translate('Amount')
-            },
+            }
         ]
     },
 
@@ -906,7 +906,7 @@ Ext.define('NP.view.image.Index', {
                         name: 'cycle_to',
                         xtype: 'datefield',
                         fieldLabel: NP.Translator.translate('Cycle To Date')
-                    },
+                    }
                 ]
             }
         ];
@@ -952,7 +952,7 @@ Ext.define('NP.view.image.Index', {
 
                 name: 'remit_advice',
                 fieldLabel: NP.Translator.translate('Remittance Advice')
-            },
+            }
         ];
     },
 

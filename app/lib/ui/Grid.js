@@ -7,7 +7,13 @@ Ext.define('NP.lib.ui.Grid', {
 	extend : 'Ext.grid.Panel',
 	alias : 'widget.customgrid',
 
-	requires: ['Ext.toolbar.Spacer'],
+	requires: [
+		'Ext.toolbar.Spacer',
+		'NP.view.shared.button.Print',
+		'NP.view.shared.button.Excel',
+		'NP.lib.print.Manager',
+		'NP.lib.core.Translator'
+	],
 	
 	/**
 	 * @cfg {Boolean} paging               Whether or not paging will be used for this grid
@@ -37,7 +43,7 @@ Ext.define('NP.lib.ui.Grid', {
 				editable      : false,
 				mode          : 'remote',
 				value         : this.store.pageSize,
-				width         : 50,
+				width         : 55,
 				store         : this.pageSizeOptions,
 				listeners     : {
 					select: function(combo, value, i){
@@ -53,7 +59,27 @@ Ext.define('NP.lib.ui.Grid', {
 			} else {
 				this.pagingToolbarButtons = [];
 			}
-			this.pagingToolbarButtons.unshift('-', 'Records per page:', this.pageSizeCombo);
+			this.pagingToolbarButtons.unshift(
+				'-',
+				{
+					xtype  : 'shared.button.print',
+					tooltip: NP.Translator.translate('Print'),
+					text   : null,
+					handler: function() {
+						NP.PrintManager.print(that);
+					}
+				},
+				{
+					xtype  : 'shared.button.excel',
+					tooltip: NP.Translator.translate('Export to Excel'),
+					text   : null,
+					handler: function() {
+						// TODO: add handler for Excel export functionality
+					}
+				},
+				'-', 
+				NP.Translator.translate('Records per page:'), this.pageSizeCombo
+			);
 
 			var pagingToolbar = Ext.create('Ext.toolbar.Paging', {
 				dock       : 'top',

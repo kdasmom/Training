@@ -19,7 +19,7 @@ class JbJobCodeGateway extends AbstractGateway {
 	/**
 	 * Get job codes based on a set of values passed to filter
 	 */
-	public function findByFilter($property_id=null, $jbcontract_id=null, $jbchangeorder_id=null, $sort='jbjobcode_name') {
+	public function findByFilter($property_id=null, $jbcontract_id=null, $jbchangeorder_id=null, $keyword=null, $sort='jbjobcode_name') {
 		$select = $this->getSelect()->from(['jbjc'=>'jbjobcode'])
 									->whereEquals('jbjc.jbjobcode_status', "'active'")
 									->order($sort);
@@ -56,6 +56,17 @@ class JbJobCodeGateway extends AbstractGateway {
 								->whereEquals('jbctb.jbchangeorder_id', '?')
 				);
 			}
+		}
+
+		if (!empty($keyword)) {
+			$select->whereNest('OR')
+						->whereLike('jbjc.jbjobcode_name', '?')
+						->whereLike('jbjc.jbjobcode_desc', '?')
+					->whereUnnest();
+
+			$keyword .= '%';
+			$params[] = $keyword;
+			$params[] = $keyword;
 		}
 
 		return $this->adapter->query($select, $params);

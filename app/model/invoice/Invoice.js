@@ -65,7 +65,6 @@ Ext.define('NP.model.invoice.Invoice', {
 		{ name: 'universal_field8' },
 		{ name: 'payablesconnect_flag' },
 		{ name: 'address_id', type: 'int' },
-		{ name: 'invoicefromvendor_id', type: 'int' },
 		{ name: 'template_name' },
 
 		// These fields are not in the INVOICE table
@@ -93,7 +92,10 @@ Ext.define('NP.model.invoice.Invoice', {
 		{ name: 'invoice_pending_days', type: 'int' },
 		{ name: 'invoice_onhold_by' },
 		{ name: 'invoice_days_onhold', type: 'int' },
+		{ name: 'invoice_onhold_reason' },
+		{ name: 'invoice_onhold_notes' },
 		{ name: 'invoice_hold_datetm', type: 'date' },
+		{ name: 'invoicepayment_type' },
 		{ name: 'pending_approval_days', type: 'int' },
 		{ name: 'pending_approval_for' },
 		{ name: 'last_approved_datetm', type: 'date' },
@@ -152,7 +154,7 @@ Ext.define('NP.model.invoice.Invoice', {
 			status  = me.get('invoice_status');
 
 		if (
-			(status == 'open' && me.isInvoiceModifiable())
+			(status == 'open' && me.isModifiable())
 			|| (status == 'saved' && NP.Security.hasPermission(1068))
 			|| (status == 'paid' && NP.Security.hasPermission(2094))
 		) {
@@ -168,7 +170,7 @@ Ext.define('NP.model.invoice.Invoice', {
 
         if (
             (status == 'open' && (NP.Security.hasPermission(1032) || NP.Security.hasPermission(6076) || NP.Security.hasPermission(6077)))
-            || (status == 'saved' && NP.Security.hasPermission(1068) && me.isInvoiceModifiable())
+            || (status == 'saved' && NP.Security.hasPermission(1068) && me.isModifiable())
             || (status == 'paid' && NP.Security.hasPermission(2094))
         ) {
             return true;

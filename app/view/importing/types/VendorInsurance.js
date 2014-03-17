@@ -9,9 +9,13 @@ Ext.define('NP.view.importing.types.VendorInsurance', {
     fieldName  : 'file_upload_vendor_insurance',
 
     // For localization
-    tabTitle : 'Vendor Insurance',
-    entityName : 'Vendor Insurance',
-    sectionName: 'Vendor Setup',
+    tabTitle    : 'Vendor Insurance',
+    entityName  : 'Vendor Insurance',
+    sectionName : 'Vendor Setup',
+    instructions: 'When creating the vendor insurance upload file, please ' +
+                'make sure the Vendor ID, Integration Package Name, and Insurance ' +
+                'Type are input exactly as they are setup in the system. The upload ' +
+                'file is only valid for Active Vendor IDs in the system.',
     
     intPkgColText           : 'Integration Package Name',
     vendorIdColText         : 'Vendor ID',

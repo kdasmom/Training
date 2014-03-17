@@ -12,7 +12,7 @@ Ext.define('NP.view.vendor.VendorForm', {
 		'NP.view.shared.button.Save',
 		'NP.view.shared.button.Cancel',
 		'NP.view.vendor.VendorNameAndInformation',
-		'NP.view.vendor.VendorAssignGlAccouns',
+		'NP.view.vendor.VendorAssignGlAccounts',
 		'NP.view.vendor.VendorInsuranceSetup',
 		'NP.view.vendor.VendorGeneralInfoAndSettings',
 		'NP.view.vendor.VendorDocumentsForm',
@@ -70,7 +70,7 @@ Ext.define('NP.view.vendor.VendorForm', {
 		}
 
 		this.items[0].items.push({ xtype: 'vendor.vendorgeneralinfoandsettings', opened: this.opened, itemId: 'settings', customFields: this.customFieldData});
-		this.items[0].items.push({ xtype: 'vendor.vendorassignglaccouns', itemId: 'glaccounts'});
+		this.items[0].items.push({ xtype: 'vendor.vendorassignglaccounts', itemId: 'glaccounts'});
 		this.items[0].items.push({ xtype: 'vendor.vendorinsurancesetup', itemId: 'insurances', insurances: this.insurances});
 
 		if (this.opened) {

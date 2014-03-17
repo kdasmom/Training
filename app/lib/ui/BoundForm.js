@@ -64,6 +64,7 @@ Ext.define('NP.lib.ui.BoundForm', {
 				// Copy the model data to the form fields
 				that.updateBoundFields();
 			});
+			this.loadedData = null;
 		} else {
 			// Do the data binding once the form has been shown
 			this.on(this.bind.evt, function() {

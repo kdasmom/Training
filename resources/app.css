@@ -1,18 +1,25 @@
 #loading-app {
 	position   : absolute;
 	top        : 50%;
-	height     : 20px;
-	margin-top : -10px;
+	height     : 60px;
+	margin-top : -30px;
 	left       : 50%;
-	width      : 100px;
-	margin-left: -50px;
-	font       : 24px tahoma, arial, sans-serif;
+	width      : 60px;
+	margin-left: -30px;
+	text-align : center;
+	font       : bold 12px tahoma, arial, sans-serif;
+}
+
+/* Override to remove bullet from combo items in Chrome */
+li.x-boundlist-item {
+	list-style: none;
 }
 
 /* STYLES FOR PAGE HEADER */
 #npHeaderLogo { cursor: pointer; }
 #learningNexusImg { margin-right: 8px; cursor: pointer; }
-#npHeaderRightLinks, #npHeaderRightLinks a { color: #FFFFFF; text-decoration: none; }
+#npHeaderRightLinks { white-space: nowrap; color: #FFFFFF; }
+	#npHeaderRightLinks a { color: #FFFFFF; text-decoration: none; display: inline-block; }
 #npHeaderRightWelcomeText { margin-top: 8px; color: #9FCCFA; font-style:italic; }
 
 /* BUTTONS */
@@ -27,6 +34,12 @@
 .copy-btn { background-image: url("images/buttons/copy.gif"); }
 .delete-btn { background-image: url("images/buttons/delete.gif"); width: 15px; height: 15px; }
 .edit-btn { background-image: url("images/buttons/edit.gif"); }
+.excel-btn { background-image: url("images/buttons/excel.gif"); }
+.favorites-btn { background-image: url("images/buttons/favorites.png"); }
+.favorites-remove-btn { background-image: url("images/buttons/favorites_remove.gif"); width: 20px !important; }
+.favorites-add-btn { background-image: url("images/buttons/favorites_add.gif"); width: 20px !important; }
+.favorites-cmp-btn .x-btn-inner { padding-left: 24px !important; }
+.favorites-empty-btn { background-image: url("images/buttons/favorites_empty.png"); }
 .go-btn { background-image: url("images/buttons/go.gif"); width: 33px !important; }
 .hold-activate-btn { background-image: url("images/buttons/hold_activate.gif"); }
 .hourglass-btn { background-image: url("images/buttons/hourglass.gif"); }
@@ -35,7 +48,7 @@
 .image-view-btn { background-image: url("images/buttons/image_view.gif"); }
 .inactivate-btn { background-image: url("images/buttons/inactivate.gif"); }
 .link-btn { background-image: url("images/buttons/link.gif"); }
-.message-btn { background-image: url("images/buttons/message.gif"); width: 32px !important;}
+.message-btn { background-image: url("images/buttons/message.gif"); width: 19px !important; background-repeat: no-repeat; }
 .new-btn { background-image: url("images/buttons/new.gif"); }
 .next-btn { background-image: url("images/buttons/next.gif"); }
 .npiss-btn { background-image: url("images/buttons/npiss.gif"); width: 20px !important; }
@@ -65,10 +78,10 @@
 .template-save-user-btn { background-image: url("images/buttons/template_save_user.gif"); }
 .upload-btn { background-image: url("images/buttons/upload.gif"); }
 .upload-sheet-btn { background-image: url("images/buttons/upload_sheet.gif"); }
-.view-btn { background-image: url("images/buttons/view.gif"); }
+.view-btn { background-image: url("images/buttons/view.gif"); background-repeat: no-repeat; }
 .void-btn { background-image: url("images/buttons/void.gif"); }
 .shop-btn { background-image: url("images/buttons/vc_shopping_bag.gif"); }
-.star-btn { background-image: url("images/buttons/icon_star.gif"); }
+.star-btn { background-image: url("images/buttons/star.gif"); }
 
 .npiss-button .x-btn-inner { padding-left: 24px !important; }
 .nsiss-button .x-btn-inner { padding-left: 34px !important; }
@@ -80,6 +93,23 @@
 
 .usermanager-btn {background-image: url("images/buttons/user_manager.gif"); }
 .propertysetup-btn {background-image: url("images/buttons/property_setup.gif"); }
+
+/* FLAGS (for localization combo) */
+.ux-icon-combo-input, .ux-icon-combo-item {
+	background-repeat  : no-repeat;
+}
+.ux-icon-combo-input {
+	background-position: left 4px center;
+	padding-left       : 23px;
+}
+
+.ux-icon-combo-item {
+	background-position: left center;
+	padding-left       : 20px;
+}
+
+.locale-en { background-image: url("images/flags/en.png"); }
+.locale-fr { background-image: url("images/flags/fr.png"); }
 
 /* STYLE FOR USING AN IMAGE AS A BUTTON IN A GRID BY SPECIFYING THIS AS tdCls CONFIG OPTION */
 .image-button-cell .x-grid-cell-inner { padding-bottom: 0; }
@@ -115,35 +145,14 @@
 
 /* CURSOR STYLE */
 .pointer { cursor: pointer; }
-
-/* BOXSELECT */
-/* We need to override this style and make it !important to get the right size for a BoxSelect component in an editing grid */
-.x-border-box .x-grid-editor .auto-complete .x-form-trigger, .x-border-box .x-grid-row-editor .auto-complete .x-form-trigger {
-    height: 22px !important;
-}
-
-.x-border-box .x-grid-editor .auto-complete .x-boxselect-input-field {
-	height: 16px !important;
-}
-
-/* This is to fix the issue where tabbing from previous field to boxselect will jump over it if no value is selected */
-.x-boxselect-input .x-form-empty-field {
-	display: inline;
-}
-
-.x-boxselect-list.x-boxselect-singleselect.form-focus .x-boxselect-input .x-form-empty-field {
-	display: none;
-}
-
-.x-boxselect-emptyinput {
-	display: inline !important;
-}
+.no-pointer { cursor: auto !important; }
 
 
 /* GENERIC STYLES */
 .error-text { color: #c0272b; font: normal 11px tahoma, arial, verdana, sans-serif; }
 .valid-text { color: #00cc00; font: normal 11px tahoma, arial, verdana, sans-serif; }
 .align-right { text-align: right; }
+.action-button { margin-right: 8px; }
 
 /* IMPORT SECTION */
 .importTemplates a { color: #000; margin-left: 16px; }
@@ -211,6 +220,14 @@
 	#lineItemTable tfoot td input {
 		text-align: right;
 	}
+
+	#lineItemTable .footer_field {
+		width: 70px;
+	}
+		#lineItemTable .footer_field th, #lineItemTable .footer_field td {
+			border-width: 0;
+			padding     : 0;
+		}
 
 #warningTable {
 	border-collapse: collapse;

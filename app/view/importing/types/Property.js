@@ -58,13 +58,14 @@ Ext.define('NP.view.importing.types.Property', {
 
     translateText: function() {
         var me = this,
-            propertyText = NP.Config.getPropertyLabel(),
-            regionText   = NP.Config.getSetting('PN.main.RegionLabel', 'Region'),
-            unitText     = NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit'),
-            taxText      = NP.Config.getSetting('PN.General.salesTaxTerm', 'Sales Tax');
+            propertyText   = NP.Config.getPropertyLabel(),
+            propertiesText = NP.Config.getPropertyLabel(true),
+            regionText     = NP.Config.getSetting('PN.main.RegionLabel', 'Region'),
+            unitText       = NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit'),
+            taxText        = NP.Config.getSetting('PN.General.salesTaxTerm', 'Sales Tax');
 
         me.tabTitle                       = NP.Translator.translate('{property}', { property: propertyText });
-        me.entityName                     = NP.Translator.translate('{property}', { property: propertyText });
+        me.entityName                     = NP.Translator.translate('{properties}', { property: propertiesText });
         me.sectionName                    = NP.Translator.translate('{property} Setup', { property: propertyText });
         me.colTextPropertyCode            = NP.Translator.translate('{property} Code', { property: propertyText });
         me.colTextPropertyName            = NP.Translator.translate('{property} Name', { property: propertyText });

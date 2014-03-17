@@ -7,9 +7,22 @@ Ext.define('NP.view.image.gridcol.ImageStatus', {
 	alias: 'widget.image.gridcol.imagestatus',
 
 	text     : 'Image status',
-	dataIndex: 'image_index_status',
+	dataIndex: 'Image_Index_Status',
 
 	renderer: function(val, meta, rec) {
-		return val;
+		switch(val) {
+			case 0:
+				return 'Scanned';
+				break;
+			case 1:
+				return 'Ready To Convert';
+				break;
+			case -1:
+				return 'Deleted';
+				break;
+			case 2:
+				return 'Assigned';
+				break;
+		}
 	}
 });

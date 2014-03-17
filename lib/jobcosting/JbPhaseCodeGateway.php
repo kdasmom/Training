@@ -19,12 +19,12 @@ class JbPhaseCodeGateway extends AbstractGateway {
 	/**
 	 * Get job codes based on a set of values passed to filter
 	 */
-	public function findByFilter($jbcontract_id=null, $jbchangeorder_id=null, $jbjobcode_id=null, $sort='jbphasecode_name') {
+	public function findByFilter($jbcontract_id=null, $jbchangeorder_id=null, $jbjobcode_id=null, $keyword=null, $sort='jbphasecode_name') {
 		$select = $this->getSelect()->from(['jbpc'=>'jbphasecode'])
 									->order($sort);
 
 		$params = [];
-		if ($jbcontract_id !== null) {
+		if (!empty($jbcontract_id)) {
 			$select->whereExists(
 				Select::get()->from(['jbctb'=>'jbcontractbudget'])
 							->whereEquals('jbctb.jbphasecode_id', 'jbpc.jbphasecode_id')
@@ -47,6 +47,17 @@ class JbPhaseCodeGateway extends AbstractGateway {
 			);
 		}
 		$params[] = $jbjobcode_id;
+
+		if (!empty($keyword)) {
+			$select->whereNest('OR')
+						->whereLike('jbpc.jbphasecode_name', '?')
+						->whereLike('jbpc.jbphasecode_desc', '?')
+					->whereUnnest();
+
+			$keyword .= '%';
+			$params[] = $keyword;
+			$params[] = $keyword;
+		}
 
 		return $this->adapter->query($select, $params);
 	}

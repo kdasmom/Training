@@ -91,14 +91,22 @@ class RoleGateway extends AbstractGateway {
 		$select = new Select();
 		$subSelect = new Select();
 		$subSelectCol = new Select();
+		$subSelectColInactive = new Select();
 
 		$select->columns(array(
 					'role_id',
 					'role_name',
 					'role_updated_by',
 					'role_updated_datetm',
-					'role_user_count'=>$subSelectCol->count()
+					'role_user_count_active'=>$subSelectCol->count()
 														->from(array('ur'=>'userprofilerole'))
+														->join(['u' => 'userprofile'], 'u.userprofile_id = ur.userprofile_id', [])
+														->whereEquals('u.userprofile_status', '?')
+														->whereEquals('r.role_id', 'ur.role_id'),
+					'role_user_count_inactive'=>$subSelectColInactive->count()
+														->from(array('ur'=>'userprofilerole'))
+														->join(['u' => 'userprofile'], 'u.userprofile_id = ur.userprofile_id', [])
+														->whereEquals('u.userprofile_status', '?')
 														->whereEquals('r.role_id', 'ur.role_id')
 				))
 				->from(array('r'=>'role'))
@@ -111,7 +119,7 @@ class RoleGateway extends AbstractGateway {
 				->join(array('r2' => 'role'), 'r2.role_id = rt2.tablekey_id', ['parent_role_name' => 'role_name'])
 				->order($sort);
 
-		$params = array();
+		$params = array('active', 'inactive');
 		if ($module_id !== null && $module_id != 0) {
 			$select->whereExists(
 				$subSelect->from(array('mp'=>'modulepriv'))

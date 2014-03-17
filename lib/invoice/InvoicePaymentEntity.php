@@ -51,6 +51,7 @@ class InvoicePaymentEntity extends \NP\core\AbstractEntity {
 			)
 		),
 		'paid'	 => array(
+			'defaultValue' => 1,
 			'validation' => array(
 				'digits' => array()
 			)
@@ -96,6 +97,7 @@ class InvoicePaymentEntity extends \NP\core\AbstractEntity {
 			)
 		),
 		'invoicepayment_paid_datetm'	 => array(
+			'timestamp' => 'created',
 			'validation' => array(
 				'date' => array('format'=>'Y-m-d H:i:s.u')
 			)

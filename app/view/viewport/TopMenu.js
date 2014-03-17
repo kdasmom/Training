@@ -16,7 +16,8 @@ Ext.define('NP.view.viewport.TopMenu', {
     	'NP.view.viewport.menu.ImageMenu',
     	'NP.view.viewport.menu.BudgetMenu',
     	'NP.view.viewport.menu.ReportMenu',
-    	'NP.view.viewport.menu.AdminMenu'
+    	'NP.view.viewport.menu.AdminMenu',
+    	'NP.view.shared.button.FavoriteGlobal'
     ],
 
     dock: 'top',
@@ -97,6 +98,26 @@ Ext.define('NP.view.viewport.TopMenu', {
 				itemId: 'adminMenuBtn'
 			});
 	    }
+
+		// Favorites
+		this.items.push(
+			'->',
+			{
+				xtype : 'shared.button.favoriteglobal',
+				itemId: 'favoritesBtn',
+				cls   : 'favoritesBtn'
+			},{
+				xtype       : 'button',
+				componentCls: 'favorites-cmp-btn',
+				iconCls     : 'favorites-remove-btn',
+				itemId      : 'removefromfavoritesBtn'
+			},{
+				xtype       : 'button',
+				componentCls: 'favorites-cmp-btn',
+				iconCls     : 'favorites-add-btn',
+				itemId      : 'addtofavoritesBtn'
+			}
+		);
 
 	    this.callParent(arguments);
     }

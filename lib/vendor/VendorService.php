@@ -162,7 +162,7 @@ class VendorService extends AbstractService {
 			}
 //				assign glaccounts
 			if ($glaccounts !== '') {
-				if (!$this->vendorsiteGateway->assignGlAccounts($glaccounts, $out_vendor_id)) {
+				if (!$this->vendorGlAccountsGateway->assignGlAccounts($glaccounts, $out_vendor_id)) {
 					throw new \NP\core\Exception("Cannot assign glaccounts");
 				}
 			}
@@ -725,6 +725,16 @@ class VendorService extends AbstractService {
             'vendor_name ASC',
             array('vendor_id','vendor_name')
         );
+    }
+
+    /**
+     * Gets the top spending vendors
+     *
+     * @param  int $numberOfVendors
+     * @return array
+     */
+    public function getTopVendors($numberOfVendors=5) {
+    	return $this->vendorGateway->findTopVendors($numberOfVendors);
     }
     
     /**

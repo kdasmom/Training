@@ -4,6 +4,7 @@ namespace NP\gl;
 
 use NP\core\AbstractService;
 use NP\core\db\Where;
+use NP\property\FiscalCalService;
 
 /**
  * All operations that are closely related to GL accounts belong in this service
@@ -13,6 +14,10 @@ use NP\core\db\Where;
 class GLService extends AbstractService {
     
     protected $configService, $securityService;
+
+    public function __construct(FiscalCalService $fiscalCalService) {
+        $this->fiscalCalService = $fiscalCalService;
+    }
 
     public function setConfigService(\NP\system\ConfigService $configService) {
         $this->configService = $configService;
@@ -39,8 +44,8 @@ class GLService extends AbstractService {
     /**
      * Returns all Category in the system
      */
-    public function getCategories($integration_package_id=null) {
-        return $this->glAccountGateway->getCategories($integration_package_id);
+    public function getCategories($integration_package_id=null, $activeOnly=false, $getInUseOnly=false) {
+        return $this->glAccountGateway->getCategories($integration_package_id, $activeOnly, $getInUseOnly);
     }
         
     /**
@@ -48,8 +53,8 @@ class GLService extends AbstractService {
      *
      * @return array
      */
-    public function getAllGLAccounts($integration_package_id=null, $glaccount_from=null,$glaccount_to=null,$glaccount_status=null, $property_id=null, $glaccounttype_id=null, $glaccount_category=null, $pageSize=null, $page=1, $sort='glaccount_name') {
-        return $this->glAccountGateway->findByFilter($integration_package_id, $glaccount_from, $glaccount_to, $glaccount_status, $property_id, $glaccounttype_id, $glaccount_category, $pageSize, $page, $sort);
+    public function getAllGLAccounts($integration_package_id=null, $glaccount_from=null,$glaccount_to=null,$glaccount_status=null, $property_id=null, $glaccounttype_id=null, $glaccount_category=null, $glaccount_name = null, $pageSize=null, $page=1, $sort='glaccount_name') {
+        return $this->glAccountGateway->findByFilter($integration_package_id, $glaccount_from, $glaccount_to, $glaccount_status, $property_id, $glaccounttype_id, $glaccount_category, $glaccount_name, $pageSize, $page, $sort);
     }
         
     /**
@@ -173,6 +178,16 @@ class GLService extends AbstractService {
 
     public function getByVendorsite($vendorsite_id, $property_id=null, $keyword=null, $glaccount_id=null) {
         return $this->glAccountGateway->findByVendorsite($vendorsite_id, $property_id, $keyword, $glaccount_id);
+    }
+
+    /**
+     * Gets the MTD spending by category
+     * 
+     */
+    public function getCategoryMtdSpend($property_id, $overbudgetOnly=false) {
+        $period = $this->fiscalCalService->getAccountingPeriod($property_id);
+        
+        return $this->glAccountGateway->findCategoryMtdSpend($property_id, $period, $overbudgetOnly);
     }
 
     /**

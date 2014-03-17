@@ -11,7 +11,6 @@ Ext.define('NP.model.gl.GlAccountType', {
 	idProperty: 'glaccounttype_id',
 	fields: [
 		{ name: 'glaccounttype_id', type: 'int' },
-		{ name: 'glaccounttype_name' },
-
+		{ name: 'glaccounttype_name' }
 	]
 });

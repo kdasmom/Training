@@ -5,330 +5,243 @@
  * metadata-driven class system features 
  */
 Ext.Loader.addClassPathMappings({
-  "Ext.ux.form.field.BoxSelect": "../../vendor/BoxSelect/src/BoxSelect.js",
-  "NP.Locale": "../../app/locale/en.js",
-  " Ext.Msg": "../../ext/src/window/MessageBox.js",
-  "overrides": "../../overrides",
-  "Ext": "../../ext/src",
-  "Ext.ux.layout.component.field.BoxSelectField": "../../vendor/BoxSelect/src/BoxSelect.js",
+  "Ext.locale.en.form.field.Text": "../../app/locale/ext-lang-en.js",
+  "Ext.locale.en.grid.header.Container": "../../app/locale/ext-lang-en.js",
+  "Ext.locale.en.picker.Month": "../../app/locale/ext-lang-en.js",
+  "Ext.locale.fr_CA.form.field.VTypes": "../../app/locale/ext-lang-fr.js",
+  "Ext.locale.fr_CA.form.field.ComboBox": "../../app/locale/ext-lang-fr.js",
+  "Ext.locale.fr_CA.Component": "../../app/locale/ext-lang-fr.js",
+  "Ext.locale.en.window.MessageBox": "../../app/locale/ext-lang-en.js",
+  "Ext.locale.fr_CA.form.field.Number": "../../app/locale/ext-lang-fr.js",
+  "Ext.locale.fr_CA.form.field.Base": "../../app/locale/ext-lang-fr.js",
+  "Ext.locale.en.grid.GroupingFeature": "../../app/locale/ext-lang-en.js",
+  "Ext.locale.en.form.field.Number": "../../app/locale/ext-lang-en.js",
+  "Ext.locale.en.form.field.Time": "../../app/locale/ext-lang-en.js",
+  "Ext.locale.fr_CA.form.field.Date": "../../app/locale/ext-lang-fr.js",
+  "Ext.locale.en.form.field.HtmlEditor": "../../app/locale/ext-lang-en.js",
+  "Ext.locale.en.form.field.VTypes": "../../app/locale/ext-lang-en.js",
   "Ext.locale.en.data.validations": "../../app/locale/en.js",
   "Ext.rtl.EventObjectImpl": "../../ext/src/rtl/EventObject.js",
-  "NP": "../../app"
+  "Ext.locale.en.grid.BooleanColumn": "../../app/locale/ext-lang-en.js",
+  "NP": "../../app",
+  "Ext.locale.en.form.Basic": "../../app/locale/ext-lang-en.js",
+  "Ext.locale.fr_CA.view.View": "../../app/locale/ext-lang-fr.js",
+  "Ext.locale.en.view.AbstractView": "../../app/locale/ext-lang-en.js",
+  "Ext": "../../ext/src",
+  "Ext.locale.fr_CA.window.MessageBox": "../../app/locale/ext-lang-fr.js",
+  "Ext.locale.en.grid.plugin.DragDrop": "../../app/locale/ext-lang-en.js",
+  "Ext.locale.fr_CA.picker.Date": "../../app/locale/ext-lang-fr.js",
+  "Ext.locale.en.grid.NumberColumn": "../../app/locale/ext-lang-en.js",
+  "Ext.locale.en.grid.PropertyColumnModel": "../../app/locale/ext-lang-en.js",
+  "Ext.locale.en.grid.DateColumn": "../../app/locale/ext-lang-en.js",
+  "Ext.locale.en.form.field.Date": "../../app/locale/ext-lang-en.js",
+  "overrides": "../../overrides",
+  "Ext.locale.fr_CA.view.AbstractView": "../../app/locale/ext-lang-fr.js",
+  "Ext.locale.fr_CA.grid.PropertyColumnModel": "../../app/locale/ext-lang-fr.js",
+  "Ext.locale.en.form.field.Base": "../../app/locale/ext-lang-en.js",
+  "Ext.locale.fr_CA.grid.plugin.DragDrop": "../../app/locale/ext-lang-fr.js",
+  "Ext.locale.fr_CA.form.field.File": "../../app/locale/ext-lang-fr.js",
+  "Ext.locale.fr_CA.tab.Tab": "../../app/locale/ext-lang-fr.js",
+  "Ext.locale.fr_CA.toolbar.Paging": "../../app/locale/ext-lang-fr.js",
+  "Ext.locale.fr_CA.form.field.Text": "../../app/locale/ext-lang-fr.js",
+  "Ext.locale.en.view.View": "../../app/locale/ext-lang-en.js",
+  "Ext.locale.en.form.CheckboxGroup": "../../app/locale/ext-lang-en.js",
+  "Ext.locale.en.picker.Date": "../../app/locale/ext-lang-en.js",
+  "NP.Locale": "../../app/locale/en.js",
+  " Ext.Msg": "../../ext/src/window/MessageBox.js",
+  "Ext.locale.fr_CA.grid.header.Container": "../../app/locale/ext-lang-fr.js",
+  "Ext.locale.en.toolbar.Paging": "../../app/locale/ext-lang-en.js",
+  "Ext.locale.en.Component": "../../app/locale/ext-lang-en.js",
+  "Ext.locale.en.form.field.ComboBox": "../../app/locale/ext-lang-en.js",
+  "Ext.locale.en.form.RadioGroup": "../../app/locale/ext-lang-en.js"
 });
 Ext.ClassManager.addNameAlternateMappings({
-  "NP.model.catalog.UnspscCommodity": [],
-  "NP.model.importing.GLActual": [],
-  "NP.model.vendor.UtilityType": [],
+  "overrides.grid.column.Column": [],
   "NP.view.shared.Address": [],
-  "NP.view.vendor.gridcol.VendorStatus": [],
   "NP.view.property.gridcol.TotalUnits": [],
-  "NP.view.property.gridcol.PropertyApCode": [],
+  "NP.view.vendor.gridcol.VendorStatus": [],
   "NP.view.mySettings.EmailAlerts": [],
   "NP.model.gl.GlAccount": [],
-  "NP.view.shared.gridcol.ButtonImg": [],
-  "NP.view.invoice.gridcol.DueDate": [],
+  "NP.view.image.grid.Search": [],
+  "NP.controller.Favorites": [],
   "NP.view.shared.invoicepo.HistoryLogGrid": [],
+  "NP.view.invoice.numberPattern.Pattern": [],
+  "NP.view.catalog.FavoritesView": [],
   "NP.view.shared.SearchByAlphabetButtons": [],
   "NP.store.vendor.Insurances": [],
+  "NP.view.image.gridcol.DeleteDate": [],
   "NP.store.vendor.InsuranceTypes": [],
-  "NP.view.mySettings.Settings": [],
-  "NP.view.shared.gridcol.LastApprovedBy": [],
-  "NP.model.importing.Unit": [],
   "NP.store.catalog.Vc": [],
   "NP.lib.ui.Uploader": [],
-  "Ext.ux.layout.component.field.BoxSelectField": [],
-  "NP.view.vendor.gridcol.ViewVendor": [],
-  "NP.view.catalog.gridcol.VcItemNumber": [],
   "NP.view.shared.button.Print": [],
-  "NP.view.gl.GLAccountsGrid": [],
   "NP.lib.ui.Grid": [],
-  "NP.view.invoice.gridcol.Notes": [],
   "NP.model.importing.UserProperty": [],
   "NP.view.systemSetup.Settings": [],
   "NP.lib.ui.BoundForm": [],
-  "NP.view.catalogMaintenance.types.Punchout": [],
   "NP.view.viewport.TopToolbar": [],
-  "NP.store.system.IntegrationPackages": [],
-  "NP.model.jobcosting.JbJobCode": [],
   "NP.view.viewport.DelegationPicker": [],
+  "NP.lib.print.Manager": [
+    "NP.PrintManager"
+  ],
   "NP.store.property.VolumeTypes": [],
-  "NP.view.viewport.menu.BudgetMenu": [],
-  "NP.view.invoice.ViewToolbar": [],
-  "NP.view.shared.tile.AbstractTile": [],
+  "NP.view.catalog.OrderItemWindow": [],
   "NP.model.jobcosting.JbJobAssociation": [],
-  "NP.model.invoice.InvoicePayment": [],
-  "NP.view.catalog.gridcol.VcItemPrice": [],
+  "NP.view.shared.tile.AbstractTile": [],
+  "NP.model.shared.Reason": [],
   "NP.view.shared.button.New": [],
-  "NP.view.catalog.gridcol.VcItemType": [],
-  "Ext.ux.ajax.Simlet": [],
-  "NP.store.system.PriorityFlags": [],
-  "NP.model.property.Property": [],
-  "NP.model.property.UnitType": [],
+  "Ext.locale.fr_CA.form.field.Date": [],
+  "Ext.locale.en.grid.BooleanColumn": [],
   "NP.model.importing.VendorInsurance": [],
   "NP.view.mobileSetup.MobileForm": [],
-  "NP.model.jobcosting.JbCostCode": [],
   "NP.view.shared.button.Search": [],
-  "NP.view.property.UnitGrid": [],
-  "NP.store.system.Countries": [],
   "NP.view.systemSetup.Overview": [],
-  "NP.view.vendor.gridcol.SentForApprovalBy": [],
-  "NP.view.user.UsersGrid": [],
   "NP.view.systemSetup.GLAccounts": [],
-  "NP.view.shared.button.Camera": [],
   "NP.view.catalog.gridcol.VcNumberOfItems": [],
-  "NP.view.user.gridcol.DelegationCreatedBy": [],
   "NP.view.vendor.grid.VendorApproved": [],
   "NP.lib.ui.HoverButton": [],
-  "NP.view.receipt.gridcol.ReceiveDate": [],
   "NP.view.systemSetup.PasswordConfiguration": [],
-  "Ext.ux.IFrame": [],
-  "NP.model.system.DfSplitItem": [],
-  "NP.view.image.gridcol.NeededByDate": [],
-  "NP.view.importing.types.InvoicePayment": [],
-  "NP.view.catalogMaintenance.CatalogFormCategories": [],
-  "NP.store.budget.BudgetOverages": [],
-  "NP.view.shared.Phone": [],
   "NP.view.shared.button.Edit": [],
-  "NP.model.importing.Vendor": [],
-  "NP.view.importing.UploadForm": [],
+  "NP.view.catalog.SimpleSearchView": [],
   "overrides.form.field.Base": [],
-  "NP.store.vendor.UtilityColumnUsageTypes": [],
   "NP.model.shared.Warning": [],
-  "NP.view.image.gridcol.InvoiceDate": [],
-  "NP.view.shared.button.Inactivate": [],
-  "NP.view.vendor.VendorNameAndInformation": [],
-  "NP.view.invoice.ViewNotes": [],
+  "NP.view.invoice.UseTemplateWindow": [],
+  "Ext.locale.en.picker.Month": [],
+  "NP.view.invoice.gridcol.OnHoldNotes": [],
   "NP.view.systemSetup.Main": [],
-  "NP.view.viewport.SummaryStatList": [],
   "NP.view.utilitySetup.AccountForm": [],
   "NP.view.user.gridcol.DelegationEndDate": [],
-  "NP.view.shared.tile.InvoicesToApprove": [],
-  "NP.model.contact.Person": [],
-  "NP.model.user.Delegation": [],
   "Ext.ux.FieldReplicator": [],
-  "NP.view.viewport.menu.VendorMenu": [],
   "NP.view.catalogMaintenance.types.Url": [],
-  "NP.model.user.Role": [],
   "NP.model.vendor.VendorType": [],
   "NP.view.importing.types.GLCode": [],
-  "NP.view.po.gridcol.BudgetNotes": [],
-  "NP.view.importing.CSVGrid": [],
-  "NP.view.property.Calendar": [],
   "NP.model.property.UnitTypeVal": [],
+  "NP.store.shared.Reasons": [],
   "NP.store.system.SummaryStats": [],
   "NP.view.shared.CustomFieldContainer": [],
-  "NP.view.gl.Overview": [],
   "Ext.ux.dd.PanelFieldDragZone": [],
-  "NP.model.jobcosting.JbChangeOrder": [],
   "NP.model.invoice.Invoice": [],
   "NP.store.system.PnCustomFields": [],
-  "NP.view.shared.tile.ImageExceptions": [],
   "NP.view.invoice.gridcol.VoidDate": [],
+  "NP.view.invoice.numberPattern.Pattern4": [],
+  "NP.view.invoice.numberPattern.Pattern3": [],
+  "Ext.locale.en.form.field.Date": [],
   "overrides.data.Validations": [],
   "NP.lib.data.JsonFlat": [],
-  "overrides.grid.plugin.CellEditing": [],
   "NP.Application": [],
-  "Ext.ux.GroupTabPanel": [],
   "NP.store.invoice.Invoices": [],
   "NP.view.mySettings.Dashboard": [],
+  "NP.view.invoice.numberPattern.Pattern2": [],
   "Ext.ux.statusbar.ValidationStatus": [],
-  "NP.view.vendor.AddImagesWindow": [],
-  "Ext.ux.layout.Center": [],
-  "NP.view.mobileSetup.MobileGrid": [],
-  "NP.model.vendor.Insurance": [],
   "NP.store.jobcosting.JbChangeOrders": [],
-  "NP.view.receipt.gridcol.TransferDate": [],
+  "NP.model.vendor.Insurance": [],
   "NP.store.system.HistoryLogs": [],
   "NP.view.shared.button.Report": [],
-  "NP.view.property.UnitTypeGrid": [],
-  "Ext.ux.form.field.BoxSelect": [],
   "NP.view.user.gridcol.DelegationStartDate": [],
-  "NP.view.shared.invoicepo.Toolbar": [],
-  "NP.view.po.gridcol.SentToVendor": [],
-  "NP.view.shared.button.Cancel": [],
+  "NP.model.shared.RejectionNote": [],
   "NP.view.shared.ContextPickerMulti": [],
-  "NP.view.receipt.ReceiptGrid": [],
+  "Ext.locale.en.grid.GroupingFeature": [],
   "NP.view.shared.invoicepo.ViewLineItems": [],
-  "NP.view.shared.button.Back": [],
-  "NP.view.vendor.gridcol.VendorCode": [],
-  "NP.view.po.gridcol.Number": [],
-  "NP.view.shared.YesNoField": [],
+  "NP.view.catalog.ItemsView": [],
+  "Ext.locale.en.form.field.VTypes": [],
   "NP.store.property.FiscalDisplayTypes": [],
-  "NP.view.importing.types.CustomFieldLine": [],
-  "NP.view.shared.button.Allocate": [],
   "NP.store.jobcosting.JbCostCodes": [],
   "NP.view.shared.tile.ImagesToConvert": [],
   "NP.view.image.gridcol.Reference": [],
-  "Ext.ux.event.Player": [],
-  "NP.view.po.gridcol.ReceiptRequired": [],
   "NP.view.user.UsersFormEmail": [],
-  "NP.view.vendor.gridcol.VendorName": [],
   "NP.lib.ui.VerticalTabPanel": [],
-  "NP.model.invoice.InvoiceItem": [],
+  "Ext.locale.en.grid.plugin.DragDrop": [],
   "NP.view.catalogMaintenance.types.Pdf": [],
-  "NP.view.viewport.menu.ReportMenu": [],
-  "NP.view.property.PropertiesForm": [],
-  "NP.view.systemSetup.Picklists": [],
+  "NP.view.image.grid.DeletedImages": [],
   "Ext.ux.ToolbarDroppable": [],
-  "NP.view.catalog.gridcol.VcItemManufacturer": [],
   "NP.store.po.Receipts": [],
-  "NP.controller.PropertySetup": [],
-  "NP.view.image.gridcol.Name": [],
   "NP.view.viewport.SummaryDetailPanel": [],
-  "Ext.ux.TabCloseMenu": [],
   "NP.controller.CatalogMaintenance": [],
   "NP.view.shared.invoicepo.ViewLineGrid": [],
-  "NP.model.user.VendorAccessUser": [],
-  "Ext.ux.grid.filter.DateTimeFilter": [],
-  "NP.store.shared.InvoicePoForwards": [],
-  "Ext.ux.grid.FiltersFeature": [],
   "NP.view.po.gridcol.Notes": [],
   "overrides.data.Model": [],
-  "NP.view.image.gridcol.DueDate": [],
-  "NP.view.property.gridcol.Code": [],
-  "NP.model.contact.Address": [],
-  "NP.view.invoice.View": [],
   "NP.view.shared.gridcol.PendingDays": [],
-  "Ext.ux.grid.TransformGrid": [],
-  "NP.view.image.gridcol.ScanDate": [],
-  "NP.view.utilitySetup.UtilitySetupForm": [],
   "NP.view.importing.types.InvoiceExport": [],
   "NP.store.system.TaxPayorTypes": [],
-  "NP.view.importing.types.Property": [],
+  "NP.lib.ui.ListPicker": [],
   "NP.view.viewport.menu.VCMenu": [],
   "NP.view.po.gridcol.Date": [],
   "Ext.ux.event.Driver": [],
-  "Ext.ux.ajax.XmlSimlet": [],
-  "NP.view.user.UserContactInfo": [],
   "NP.view.shared.tile.InvoicesCompleted": [],
-  "NP.view.shared.button.Hourglass": [],
-  "NP.view.shared.invoicepo.ViewLines": [],
   "NP.view.catalogMaintenance.CatalogForm": [],
-  "NP.view.property.PropertiesFormCal": [],
   "NP.view.mySettings.Overview": [],
   "NP.view.shared.button.View": [],
-  "NP.store.catalog.CatalogTypes": [],
-  "NP.view.catalog.gridcol.VcStatus": [],
-  "NP.store.po.Purchaseorders": [],
-  "NP.view.vendor.VendorsManager": [],
   "NP.model.user.Staff": [],
   "NP.model.property.Unit": [],
-  "NP.store.system.DfSplitItems": [],
+  "NP.view.vendor.VendorsManager": [],
   "NP.view.user.UserDelegationMain": [],
-  "Ext.ux.form.MultiSelect": [
-    "Ext.ux.Multiselect"
-  ],
+  "NP.store.system.DfSplitItems": [],
   "NP.store.property.Regions": [],
-  "NP.view.vendor.grid.VendorPending": [],
-  "NP.view.shared.ContextPicker": [],
-  "NP.view.shared.button.Upload": [],
   "NP.view.importing.types.PropertyGL": [],
-  "NP.controller.MySettings": [],
   "Ext.ux.event.RecorderManager": [],
-  "NP.model.importing.InvoicePayment": [],
+  "NP.view.favorites.FavoriteGrid": [],
   "NP.view.importing.types.Split": [],
+  "NP.model.importing.InvoicePayment": [],
+  "NP.store.image.ImageDocTypes": [],
   "NP.view.shared.PortalColumn": [],
   "NP.view.invoice.gridcol.PaymentAmountRemaining": [],
-  "NP.model.property.FiscalCalMonth": [],
-  "NP.view.gl.CategoryGrid": [],
   "NP.store.user.VendorAccessUsers": [],
-  "NP.view.shared.tile.ReceiptsToApprove": [],
   "NP.view.property.gridcol.UnitNumber": [],
-  "NP.model.invoice.InvoicePaymentType": [],
-  "NP.view.vendor.gridcol.SubmittedBy": [],
   "NP.view.vendor.gridcol.DateSubmitted": [],
-  "overrides.Component": [],
-  "overrides.ux.form.ItemSelector": [],
   "NP.model.importing.PropertyGL": [],
-  "NP.view.shared.GlCategoryOrder": [],
   "NP.store.system.SummaryStatCategories": [],
   "NP.view.invoice.gridcol.BudgetNotes": [],
   "NP.view.property.PropertiesFormUserReport": [],
-  "NP.store.property.FiscalCalMonths": [],
-  "NP.lib.core.AbstractController": [],
-  "NP.view.utilitySetup.UtilityGrid": [],
   "NP.view.invoice.gridcol.PaymentDetails": [],
-  "Ext.ux.TabScrollerMenu": [],
+  "NP.view.shared.button.Excel": [],
   "NP.view.property.gridcol.LastUpdated": [],
-  "NP.model.budget.BudgetOverage": [],
-  "overrides.form.field.ComboBox": [],
   "Ext.ux.LiveSearchGridPanel": [],
-  "NP.view.importing.types.GLCategory": [],
-  "NP.store.jobcosting.JbPhaseCodes": [],
-  "NP.view.property.gridcol.CreatedDate": [],
-  "Ext.ux.grid.filter.DateFilter": [],
+  "Ext.locale.en.picker.Date": [],
   "NP.view.importing.types.VendorInsurance": [],
+  "Ext.ux.grid.filter.DateFilter": [],
   "NP.view.user.UsersFormDetails": [],
-  "NP.lib.data.Store": [],
   "NP.view.property.PropertiesFormGl": [],
   "NP.model.importing.GLCode": [],
-  "overrides.app.EventDomain": [],
   "NP.store.user.Userprofiles": [],
-  "NP.view.user.gridcol.DelegationCancel": [],
   "NP.view.shared.Person": [],
   "NP.view.shared.button.Delete": [],
   "Ext.ux.BoxReorderer": [],
-  "NP.view.property.gridcol.PropertyStatus": [],
-  "NP.view.image.gridcol.ExceptionBy": [],
   "NP.view.shared.PickList": [],
-  "NP.view.vendor.VendorImageUploadForm": [],
-  "NP.lib.core.SummaryStatManager": [],
   "NP.controller.UtilitySetup": [],
   "NP.view.property.PropertiesFormUnits": [],
-  "NP.model.importing.VendorFavorite": [],
   "NP.view.image.gridcol.DaysOutstanding": [],
-  "NP.view.receipt.gridcol.Period": [],
   "NP.view.invoice.gridcol.Number": [],
-  "NP.view.catalogMaintenance.ItemGrid": [],
-  "NP.view.vendor.gridcol.AddToFavorite": [],
   "NP.model.gl.GlAccountType": [],
-  "NP.view.property.PropertiesFormAccounting": [],
-  "NP.view.mySettings.UserInformation": [],
   "NP.view.shared.gridcol.PriorityFlag": [],
-  "NP.view.shared.button.Reject": [],
-  "NP.view.catalog.gridcol.VcItemDesc": [],
-  "NP.view.messageCenter.MessageForm": [],
-  "NP.view.vendor.VendorRejectWindow": [],
-  "NP.view.user.Users": [],
   "NP.view.shared.tile.ImagesToIndex": [],
-  "NP.view.vendor.InsuranceForm": [],
-  "NP.view.catalog.gridcol.VcItemUom": [],
+  "NP.view.image.grid.SearchCDIndex": [],
   "Ext.ux.grid.filter.StringFilter": [],
-  "NP.model.user.Userprofile": [],
+  "NP.view.shared.button.RemoveFromFavorites": [],
   "NP.store.invoice.InvoiceItems": [],
   "NP.view.vendor.VendorDocumentsForm": [],
-  "NP.view.image.ImageGrid": [],
   "NP.model.property.FiscalDisplayType": [],
   "NP.view.shared.tile.VcAuthRequests": [],
   "NP.view.vendor.grid.VendorRejected": [],
   "NP.model.property.FiscalCal": [],
   "NP.view.catalogMaintenance.CatalogFormUploadLogo": [],
-  "NP.view.shared.VendorAssigner": [],
   "NP.view.shared.UtilityTypeAssigner": [],
-  "NP.view.user.GroupsFormPermissions": [],
+  "NP.view.catalog.UserOrder": [],
   "NP.store.system.States": [],
+  "NP.view.user.GroupsFormPermissions": [],
+  "Ext.locale.en.form.field.Text": [],
   "NP.view.mobileSetup.MobileInfoForm": [],
   "NP.view.property.Reports": [],
   "NP.view.shared.tile.ExpiredInsuranceCerts": [],
-  "NP.model.shared.InvoicePoForward": [],
-  "NP.view.shared.tile.AbstractBudgetTile": [],
-  "NP.store.jobcosting.JbContracts": [],
-  "NP.view.shared.tile.InvoicesByUser": [],
-  "NP.view.vendor.InsuranceUploadForm": [],
   "NP.store.image.ImageIndexes": [],
   "NP.view.viewport.menu.POMenu": [],
   "Ext.ux.grid.menu.RangeMenu": [],
   "NP.model.vendor.Vendor": [],
   "NP.view.invoice.gridcol.OnHoldBy": [],
   "NP.store.catalog.VcItems": [],
-  "NP.store.catalog.VcItemCategories": [],
   "NP.view.shared.gridcol.Amount": [],
-  "NP.view.mySettings.MobileSettings": [],
+  "NP.store.catalog.VcItemCategories": [],
   "NP.view.systemSetup.DefaultSplitGrid": [],
-  "NP.view.invoice.gridcol.CreatedDate": [],
-  "NP.view.image.gridcol.InvoiceNumber": [],
-  "NP.lib.ui.AutoComplete": [],
   "NP.view.shared.gridcol.RejectedDate": [],
+  "NP.lib.ui.AutoComplete": [],
   "NP.store.notification.EmailAlertTypes": [],
   "NP.store.user.Delegations": [],
   "NP.view.shared.tile.ImagesToProcess": [],
@@ -337,267 +250,165 @@ Ext.ClassManager.addNameAlternateMappings({
   "NP.view.receipt.gridcol.Number": [],
   "NP.view.invoice.gridcol.VoidBy": [],
   "NP.view.messageCenter.MessageGrid": [],
-  "NP.view.shared.tile.AbstractPoTile": [],
-  "NP.view.image.gridcol.DocType": [],
   "NP.view.shared.PropertyCombo": [],
-  "NP.store.system.UserMessages": [],
   "NP.view.catalogMaintenance.types.Excel": [],
-  "Ext.ux.DataTip": [],
-  "NP.view.vendor.VendorAssignGlAccouns": [],
-  "Ext.ux.ajax.JsonSimlet": [],
-  "NP.view.invoice.ViewHeader": [],
+  "NP.controller.VendorCatalog": [],
   "NP.view.user.UsersFormPermissions": [],
-  "NP.view.importing.types.VendorFavorite": [],
-  "NP.view.shared.PortalTilePicker": [],
+  "Ext.locale.fr_CA.Component": [],
   "NP.view.systemSetup.CustomFields": [],
-  "NP.model.user.MobInfo": [],
+  "NP.lib.ui.Assigner": [],
+  "Ext.locale.fr_CA.form.field.Base": [],
   "NP.view.mySettings.EmailFrequency": [],
-  "NP.store.invoice.InvoicePayments": [],
-  "NP.view.budget.BudgetOverageForm": [],
   "NP.view.invoice.gridcol.NeededByDate": [],
-  "NP.store.contact.States": [],
+  "NP.view.budget.BudgetOverageForm": [],
   "NP.store.system.PayeeTypes": [],
+  "NP.store.contact.States": [],
   "NP.view.receipt.gridcol.Notes": [],
-  "NP.view.shared.invoicepo.ForwardsGrid": [],
-  "NP.view.gl.Category": [],
   "NP.view.vendor.gridcol.SentForApprovalDate": [],
-  "NP.model.importing.UnitType": [],
-  "NP.view.importing.types.VendorUtility": [],
   "NP.view.receipt.gridcol.CreatedDate": [],
-  "NP.view.vendor.gridcol.ApprovalType": [],
   "NP.view.viewport.menu.ImageMenu": [],
-  "Ext.ux.DataView.DragSelector": [],
   "NP.view.property.FiscalCalendarForm": [],
   "NP.view.shared.tile.PosReleased": [],
-  "NP.view.importing.types.UnitType": [],
   "NP.view.invoice.gridcol.RemittanceAdvice": [],
   "NP.view.shared.UnitCombo": [],
-  "Ext.ux.grid.menu.ListMenu": [],
-  "NP.view.shared.tile.PosToApprove": [],
-  "NP.model.image.InvoiceImageSource": [],
   "NP.view.user.gridcol.DelegationToName": [],
-  "NP.store.vendor.VendorTypes": [],
-  "NP.view.importing.types.GLBudget": [],
-  "NP.lib.core.DataLoader": [],
+  "Ext.locale.fr_CA.grid.plugin.DragDrop": [],
+  "NP.store.catalog.LinkVcVcCats": [],
   "NP.view.invoice.gridcol.TemplateName": [],
   "NP.view.vendor.PurchaseOrder": [],
-  "NP.controller.UserManager": [],
-  "NP.view.user.UsersFormDelegation": [],
-  "NP.model.system.DfSplit": [],
+  "NP.view.invoice.PaymentWindow": [],
   "NP.store.property.Units": [],
   "NP.model.system.PnCustomField": [],
-  "Ext.ux.PreviewPlugin": [],
+  "NP.lib.print.renderer.AbstractRenderer": [],
   "NP.view.systemSetup.WorkflowManager": [],
-  "Ext.ux.ajax.SimXhr": [],
-  "NP.model.catalog.VcItem": [],
+  "NP.view.image.grid.Index": [],
   "NP.view.shared.tile.ReceiptsRejected": [],
-  "Ext.ux.CellDragDrop": [],
-  "NP.lib.core.DBProvider": [],
-  "NP.view.shared.button.Message": [],
-  "NP.view.viewport.ImagePanel": [],
+  "Ext.locale.en.grid.header.Container": [],
   "Ext.ux.SlidingPager": [],
-  "Ext.ux.TabReorderer": [],
-  "NP.view.shared.UserAssigner": [],
-  "NP.view.vendor.VendorInsuranceSetup": [],
-  "Ext.ux.grid.filter.NumericFilter": [],
+  "NP.view.image.gridcol.ImageToCDDiskNum": [],
   "NP.view.user.gridcol.DelegationFromName": [],
-  "Ext.ux.event.Recorder": [],
-  "NP.model.image.ImageDocType": [],
-  "NP.view.mySettings.Display": [],
-  "NP.view.user.GroupsGrid": [],
-  "Ext.ux.grid.filter.BooleanFilter": [],
+  "NP.view.catalog.FavoriteItemsGrid": [],
   "NP.view.shared.tile.MtdOverBudgetCategories": [],
-  "NP.view.shared.tile.InvoicesRejected": [],
+  "NP.view.catalog.VCGrid": [],
   "NP.view.budget.BudgetOverageGrid": [],
   "Ext.ux.form.SearchField": [],
   "Ext.ux.dd.CellFieldDropZone": [],
-  "NP.store.property.FiscalCals": [],
   "NP.view.invoice.gridcol.Status": [],
   "NP.model.jobcosting.JbContractBudget": [],
-  "NP.view.gl.gridcol.GlAccountName": [],
-  "NP.view.shared.GlCombo": [],
   "NP.view.user.gridcol.DelegationView": [],
   "NP.store.shared.Warnings": [],
-  "NP.store.system.DfSplits": [],
-  "NP.view.user.Groups": [],
   "NP.view.shared.tile.PosByUser": [],
-  "NP.view.viewport.menu.InvoiceMenu": [],
-  "NP.view.shared.tile.YtdOverBudgetCategories": [],
   "NP.lib.core.Security": [
     "NP.Security"
   ],
-  "NP.view.property.PropertiesMain": [],
   "NP.view.property.FiscalCalendarGrid": [],
   "NP.view.property.Region": [],
-  "NP.view.shared.tile.ReceiptsPendingPost": [],
-  "NP.model.system.PnUniversalField": [],
-  "Ext.ux.grid.filter.ListFilter": [],
-  "NP.view.systemSetup.DefaultSplits": [],
-  "NP.view.vendor.VendorGrid": [],
-  "NP.view.user.UserDelegationForm": [],
-  "NP.view.invoice.gridcol.Period": [],
-  "NP.view.shared.tile.InvoicesOnHold": [],
-  "NP.controller.Import": [],
+  "NP.model.catalog.VcOrder": [],
+  "Ext.locale.fr_CA.picker.Date": [],
   "NP.view.user.UserManager": [],
   "Ext.ux.GMapPanel": [],
-  "NP.store.gl.GlAccounts": [],
-  "NP.view.invoice.gridcol.HoldDate": [],
-  "NP.store.invoice.InvoicePaymentTypes": [],
-  "NP.view.catalog.gridcol.VcCreatedOn": [],
   "NP.model.importing.Property": [],
-  "NP.model.po.Purchaseorder": [],
-  "NP.view.vendor.InvoiceDocuments": [],
-  "NP.store.catalog.VcCats": [],
-  "NP.view.importing.types.Vendor": [],
   "NP.view.shared.CustomField": [],
+  "NP.store.catalog.VcCats": [],
+  "NP.view.vendor.InvoiceDocuments": [],
   "NP.view.catalogMaintenance.CatalogFormUploadInfoPdf": [],
   "NP.view.shared.invoicepo.ViewWarnings": [],
   "Ext.ux.DataView.Animated": [],
-  "NP.view.property.Overview": [],
-  "NP.store.gl.GlAccountTypes": [],
   "NP.model.vendor.InsuranceType": [],
+  "NP.store.gl.GlAccountTypes": [],
+  "NP.view.shared.tile.GlCategoryMtdSpend": [],
   "NP.view.property.gridcol.PropertyName": [],
   "NP.view.shared.button.Reset": [],
   "Ext.ux.statusbar.StatusBar": [
     "Ext.ux.StatusBar"
   ],
-  "NP.view.invoice.gridcol.Date": [],
+  "NP.view.shared.button.Favorite": [],
   "NP.model.contact.State": [],
-  "NP.view.gl.Reports": [],
-  "NP.view.catalogMaintenance.CatalogFormPoSubmission": [],
   "overrides.form.Basic": [],
   "NP.view.shared.PropertyAssigner": [],
   "NP.view.mySettings.UserPermissions": [],
   "NP.view.shared.gridcol.PendingApprovalDays": [],
-  "NP.view.user.UserDelegation": [],
+  "NP.view.catalog.ItemsFilter": [],
+  "NP.view.image.Search": [],
   "NP.lib.core.Util": [
     "NP.Util"
   ],
   "NP.view.catalog.gridcol.VcType": [],
-  "NP.model.catalog.VcCat": [],
   "NP.model.importing.CustomFieldLine": [],
-  "NP.view.catalogMaintenance.CatalogRegister": [],
   "NP.view.shared.gridcol.RejectedBy": [],
-  "NP.lib.ui.DateTimeField": [],
+  "Ext.locale.fr_CA.grid.PropertyColumnModel": [],
   "NP.store.user.Roles": [],
   "NP.view.vendor.VendorSearch": [],
-  "Ext.ux.DataView.Draggable": [],
-  "overrides.form.Panel": [],
+  "NP.view.image.grid.Invoices": [],
   "NP.view.property.UnitTypeForm": [],
   "NP.view.catalogMaintenance.CatalogFormInfo": [],
-  "NP.model.contact.Phone": [],
   "Ext.ux.form.ItemSelector": [
     "Ext.ux.ItemSelector"
   ],
   "NP.store.jobcosting.JbJobCodes": [],
-  "NP.view.shared.gridcol.CreatedBy": [],
-  "NP.model.system.UserMessage": [],
-  "Ext.ux.Spotlight": [],
   "NP.view.importing.types.CustomFieldHeader": [],
+  "Ext.ux.Spotlight": [],
   "NP.view.shared.tile.AbstractReceiptTile": [],
-  "NP.view.invoice.ViewReclass": [],
+  "NP.view.image.Main": [],
+  "NP.view.catalog.CatalogView": [],
   "NP.controller.Viewport": [],
-  "NP.view.image.gridcol.Amount": [],
-  "NP.view.viewport.menu.AdminMenu": [],
-  "NP.model.notification.EmailAlertType": [],
-  "NP.view.shared.tile.AbstractImageTile": [],
-  "NP.view.user.GroupsFormDashboard": [],
-  "NP.view.user.GroupsFormInfo": [],
+  "NP.view.shared.button.AddToFavorites": [],
   "Ext.ux.ajax.DataSimlet": [],
-  "NP.view.image.gridcol.Source": [],
+  "NP.view.catalog.gridcol.VcCatalogCategory": [],
   "NP.view.catalogMaintenance.types.AbstractCatalog": [],
+  "NP.view.image.grid.Base": [],
+  "NP.view.invoice.numberPattern.AbstractPattern": [],
   "NP.model.jobcosting.JbPhaseCode": [],
   "NP.model.importing.VendorGL": [],
-  "NP.controller.BudgetOverage": [],
   "NP.store.contact.Addresses": [],
   "NP.store.property.UnitTypeVals": [],
-  "NP.model.importing.Split": [],
-  "NP.view.po.gridcol.Period": [],
-  "NP.view.property.gridcol.RegionName": [],
-  "NP.view.viewport.TopMenu": [],
-  "NP.view.user.UsersForm": [],
   "NP.view.shared.gridcol.PendingApprovalFor": [],
-  "NP.model.importing.GLBudget": [],
-  "NP.view.user.UserDelegationGrid": [],
-  "NP.Locale": [],
-  "NP.store.user.Mobinfos": [],
-  "NP.view.catalog.gridcol.VcItemCategory": [],
-  "NP.view.importing.Main": [],
   "NP.view.shared.VendorAutoComplete": [],
-  "NP.view.shared.GlAccountAssigner": [],
-  "NP.controller.VendorManager": [],
-  "NP.view.invoice.Register": [],
-  "NP.model.importing.CustomFieldHeader": [],
-  "NP.lib.ui.ComboBox": [],
+  "NP.view.image.Report": [],
   "NP.view.importing.Overview": [],
   "NP.lib.core.Translator": [
     "NP.Translator"
   ],
-  "NP.view.shared.tile.AbstractInvoiceTile": [],
-  "NP.view.property.PropertiesFormInfo": [],
   "Ext.ux.ProgressBarPager": [],
-  "NP.model.importing.User": [],
   "NP.model.po.Receipt": [],
-  "NP.model.system.HistoryLog": [],
   "NP.view.vendor.VendorGeneralInfoAndSettings": [],
-  "NP.view.shared.PermissionToolbar": [],
-  "NP.controller.Invoice": [],
-  "NP.store.budget.BudgetOverage": [],
+  "Ext.locale.en.form.field.Time": [],
   "NP.model.importing.VendorUtility": [],
   "overrides.JSON": [],
   "NP.model.system.IntegrationPackage": [],
-  "NP.view.property.Properties": [],
   "NP.view.shared.PortalCanvas": [],
   "NP.model.contact.Email": [],
   "Ext.ux.ajax.SimManager": [],
-  "NP.view.systemSetup.DefaultSplitForm": [],
   "NP.controller.MobileSetup": [],
+  "NP.view.systemSetup.DefaultSplitForm": [],
+  "NP.view.catalog.BrandsDataView": [],
   "NP.model.user.RecAuthor": [],
-  "NP.view.po.PoGrid": [],
-  "NP.store.vendor.UtilityTypes": [],
-  "NP.store.user.RoleTree": [],
   "NP.model.vendor.UtilityAccount": [],
+  "NP.store.user.RoleTree": [],
+  "NP.view.po.PoGrid": [],
   "NP.view.shared.invoicepo.ViewHeaderPickers": [],
+  "NP.view.image.gridcol.ScanSource": [],
   "NP.model.image.ImageIndex": [],
   "NP.view.vendor.VendorForm": [],
+  "NP.view.shared.tile.InvoiceStatistics": [],
   "NP.view.invoice.InvoiceGrid": [],
   "NP.view.mySettings.EmailNotification": [],
-  "NP.view.image.gridcol.ImageStatus": [],
-  "NP.model.system.PriorityFlag": [],
-  "NP.store.system.PnUniversalFields": [],
-  "NP.view.po.gridcol.Status": [],
-  "NP.store.vendor.Vendors": [],
-  "overrides.util.Format": [],
   "NP.view.invoice.gridcol.PendingDays": [],
-  "NP.view.shared.tile.VendorsToApprove": [],
-  "Ext.ux.TreePicker": [],
   "NP.view.shared.gridcol.IntegrationPackageName": [],
   "NP.view.importing.types.AbstractImportType": [],
-  "NP.view.po.gridcol.NeededByDate": [],
-  "NP.view.utilitySetup.UtilityAccountList": [],
-  "NP.model.importing.GLCategory": [],
-  "Ext.ux.data.PagingMemoryProxy": [
-    "Ext.data.PagingMemoryProxy"
-  ],
   "NP.view.importing.types.VendorGL": [],
-  "NP.store.vendor.Utilities": [],
+  "NP.model.importing.GLCategory": [],
+  "NP.view.po.gridcol.NeededByDate": [],
   "NP.view.shared.button.Save": [],
-  "NP.view.gl.GLAccountsForm": [],
-  "NP.controller.SystemSetup": [],
+  "Ext.locale.fr_CA.form.field.Number": [],
   "Ext.ux.grid.filter.Filter": [],
-  "Ext.ux.GroupTabRenderer": [],
+  "NP.controller.SystemSetup": [],
   "NP.view.catalogMaintenance.CatalogFormProperties": [],
-  "NP.view.catalogMaintenance.CatalogFormVendors": [],
-  "NP.view.shared.RoleAssigner": [],
+  "NP.view.shared.button.Close": [],
   "NP.view.mySettings.Main": [],
-  "NP.store.property.UnitTypeMeasurements": [],
-  "NP.view.user.GroupsForm": [],
+  "NP.view.invoice.VoidWindow": [],
   "NP.model.jobcosting.JbContract": [],
-  "NP.view.viewport.Home": [],
   "NP.model.catalog.Vc": [],
-  "NP.model.vendor.Utility": [],
-  "NP.controller.GLAccountSetup": [],
-  "NP.view.Viewport": [],
   "NP.view.invoice.ViewPayments": [],
   "NP.view.property.IntegrationPackage": [],
   "NP.view.shared.button.Activate": [],
@@ -605,122 +416,491 @@ Ext.ClassManager.addNameAlternateMappings({
     "NP.Net"
   ],
   "NP.view.importing.types.User": [],
-  "NP.view.gl.Main": [],
-  "NP.view.gl.CategoryForm": [],
+  "NP.view.catalog.JumpToCatalogForm": [],
   "NP.view.shared.button.SaveAndAdd": [],
+  "NP.view.gl.CategoryForm": [],
+  "NP.view.gl.Main": [],
   "NP.view.vendor.gridcol.InsuranceTypeName": [],
-  "Ext.ux.DataView.LabelEditor": [],
   "NP.view.user.gridcol.DelegationStatus": [],
+  "NP.view.catalog.VcOrdersGrid": [],
   "overrides.form.field.Number": [],
   "NP.store.security.ModuleTree": [],
   "NP.store.system.Tiles": [],
-  "NP.view.importing.types.Unit": [],
   "NP.controller.MessageCenter": [],
-  "NP.view.property.Main": [],
-  "NP.store.system.SecurityQuestions": [],
+  "NP.view.shared.button.Previous": [],
+  "Ext.locale.en.form.field.ComboBox": [],
   "NP.view.importing.ImportSection": [],
+  "Ext.locale.fr_CA.form.field.VTypes": [],
   "NP.view.shared.tile.AbstractSummaryStatTile": [],
   "NP.model.user.Userprofilerole": [],
-  "NP.view.shared.tile.PosRejected": [],
   "overrides.data.Field": [],
   "Ext.locale.en.data.validations": [],
+  "NP.store.image.ImageToCDs": [],
   "NP.view.shared.PortalRow": [],
   "NP.model.vendor.UtilityColumnUsageType": [],
-  "NP.view.vendor.AlternativeAddresses": [],
   "Ext.ux.RowExpander": [],
-  "NP.view.property.gridcol.PropertyCode": [],
   "NP.model.vendor.Vendorsite": [],
   "NP.view.catalog.gridcol.VcLastUpdated": [],
-  "NP.store.vendor.UtilityAccounts": [],
-  "NP.view.shared.gridcol.RejectedReason": [],
-  "Ext.ux.event.Maker": [],
-  "NP.view.importing.types.GLActual": [],
+  "NP.lib.print.renderer.GridPanel": [],
   "NP.view.shared.PortalComponent": [],
-  "NP.view.shared.gridcol.UniversalField": [],
-  "NP.view.property.PropertiesFormUnitMeasurements": [],
   "NP.model.property.Region": [],
-  "NP.view.shared.gridcol.LastApprovedDate": [],
   "NP.model.importing.InvoiceExport": [],
-  "NP.view.user.UsersFrequentlyBasedEmailAlertsForm": [],
-  "NP.view.property.UnitForm": [],
   "NP.view.catalogMaintenance.CatalogView": [],
+  "NP.view.shared.button.Process": [],
   "NP.view.gl.GLAccounts": [],
-  "NP.view.catalogMaintenance.CatalogGrid": [],
   "NP.view.user.Reports": [],
-  "NP.view.importing.types.UserProperty": [],
-  "NP.store.property.UnitTypes": [],
-  "NP.view.invoice.gridcol.DaysOnHold": [],
-  "NP.view.shared.button.Approve": [],
   "NP.lib.core.Config": [
     "NP.Config"
   ],
-  "NP.view.po.gridcol.CreatedDate": []
-});
-Ext.ClassManager.addNameAliasMappings({
+  "NP.view.po.gridcol.CreatedDate": [],
   "NP.model.catalog.UnspscCommodity": [],
   "NP.model.importing.GLActual": [],
   "NP.model.vendor.UtilityType": [],
+  "NP.view.property.gridcol.PropertyApCode": [],
+  "NP.view.shared.gridcol.ButtonImg": [],
+  "NP.view.invoice.gridcol.DueDate": [],
+  "NP.view.mySettings.Settings": [],
+  "Ext.locale.fr_CA.view.View": [],
+  "NP.view.shared.gridcol.LastApprovedBy": [],
+  "NP.model.importing.Unit": [],
+  "NP.view.vendor.gridcol.ViewVendor": [],
+  "NP.view.catalog.gridcol.VcItemNumber": [],
+  "NP.view.gl.GLAccountsGrid": [],
+  "NP.view.invoice.gridcol.Notes": [],
+  "NP.store.catalog.VcOrders": [],
+  "NP.view.catalogMaintenance.types.Punchout": [],
+  "NP.store.system.IntegrationPackages": [],
+  "NP.model.jobcosting.JbJobCode": [],
+  "NP.view.viewport.menu.BudgetMenu": [],
+  "NP.view.image.grid.PurchaseOrders": [],
+  "NP.view.invoice.ViewToolbar": [],
+  "NP.view.image.gridcol.CreatedDT": [],
+  "NP.model.invoice.InvoicePayment": [],
+  "NP.view.catalog.gridcol.VcItemPrice": [],
+  "NP.view.catalog.gridcol.VcItemType": [],
+  "Ext.ux.ajax.Simlet": [],
+  "NP.store.system.PriorityFlags": [],
+  "NP.model.property.Property": [],
+  "NP.model.property.UnitType": [],
+  "NP.model.jobcosting.JbCostCode": [],
+  "NP.view.property.UnitGrid": [],
+  "NP.store.system.Countries": [],
+  "NP.view.vendor.gridcol.SentForApprovalBy": [],
+  "NP.view.shared.button.Camera": [],
+  "NP.view.user.UsersGrid": [],
+  "NP.view.systemSetup.LoginPage": [],
+  "NP.view.user.gridcol.DelegationCreatedBy": [],
+  "NP.lib.print.renderer.Chart": [],
+  "NP.view.receipt.gridcol.ReceiveDate": [],
+  "Ext.ux.IFrame": [],
+  "NP.model.system.DfSplitItem": [],
+  "NP.view.image.gridcol.NeededByDate": [],
+  "NP.view.importing.types.InvoicePayment": [],
+  "NP.view.catalogMaintenance.CatalogFormCategories": [],
+  "NP.view.shared.Phone": [],
+  "NP.store.budget.BudgetOverages": [],
+  "NP.model.importing.Vendor": [],
+  "NP.view.importing.UploadForm": [],
+  "NP.store.vendor.UtilityColumnUsageTypes": [],
+  "NP.view.image.gridcol.InvoiceDate": [],
+  "NP.view.shared.button.Inactivate": [],
+  "NP.view.catalog.VCListing": [],
+  "NP.view.vendor.VendorNameAndInformation": [],
+  "NP.view.invoice.ViewNotes": [],
+  "NP.view.viewport.SummaryStatList": [],
+  "NP.model.contact.Person": [],
+  "NP.view.shared.tile.InvoicesToApprove": [],
+  "NP.model.user.Delegation": [],
+  "NP.view.viewport.menu.VendorMenu": [],
+  "NP.model.user.Role": [],
+  "NP.view.invoice.HoldWindow": [],
+  "NP.view.po.gridcol.BudgetNotes": [],
+  "NP.view.importing.CSVGrid": [],
+  "NP.view.property.Calendar": [],
+  "NP.view.gl.Overview": [],
+  "NP.model.jobcosting.JbChangeOrder": [],
+  "NP.view.shared.tile.ImageExceptions": [],
+  "overrides.grid.plugin.CellEditing": [],
+  "Ext.ux.GroupTabPanel": [],
+  "Ext.ux.layout.Center": [],
+  "NP.view.vendor.AddImagesWindow": [],
+  "NP.view.mobileSetup.MobileGrid": [],
+  "NP.view.catalog.VCCatalogView": [],
+  "NP.view.receipt.gridcol.TransferDate": [],
+  "NP.view.property.UnitTypeGrid": [],
+  "NP.view.shared.invoicepo.Toolbar": [],
+  "NP.view.shared.button.Cancel": [],
+  "NP.view.po.gridcol.SentToVendor": [],
+  "NP.view.receipt.ReceiptGrid": [],
+  "NP.view.shared.button.Back": [],
+  "NP.view.vendor.gridcol.VendorCode": [],
+  "NP.view.po.gridcol.Number": [],
+  "NP.view.importing.types.CustomFieldLine": [],
+  "NP.view.shared.YesNoField": [],
+  "NP.view.shared.button.Allocate": [],
+  "Ext.ux.event.Player": [],
+  "Ext.locale.en.view.AbstractView": [],
+  "NP.view.po.gridcol.ReceiptRequired": [],
+  "NP.view.vendor.gridcol.VendorName": [],
+  "NP.model.invoice.InvoiceItem": [],
+  "NP.view.viewport.menu.ReportMenu": [],
+  "NP.view.property.PropertiesForm": [],
+  "NP.view.systemSetup.Picklists": [],
+  "NP.view.catalog.gridcol.VcItemManufacturer": [],
+  "Ext.locale.fr_CA.form.field.File": [],
+  "Ext.locale.en.form.field.Base": [],
+  "NP.controller.PropertySetup": [],
+  "NP.view.image.gridcol.Name": [],
+  "Ext.ux.TabCloseMenu": [],
+  "Ext.ux.grid.filter.DateTimeFilter": [],
+  "NP.store.shared.InvoicePoForwards": [],
+  "NP.model.user.VendorAccessUser": [],
+  "Ext.locale.en.toolbar.Paging": [],
+  "Ext.ux.grid.FiltersFeature": [],
+  "NP.view.image.gridcol.DueDate": [],
+  "NP.view.property.gridcol.Code": [],
+  "NP.model.contact.Address": [],
+  "NP.view.invoice.View": [],
+  "Ext.ux.grid.TransformGrid": [],
+  "NP.view.image.gridcol.ScanDate": [],
+  "NP.view.invoice.gridcol.OnHoldReason": [],
+  "NP.view.utilitySetup.UtilitySetupForm": [],
+  "NP.view.importing.types.Property": [],
+  "Ext.locale.fr_CA.window.MessageBox": [],
+  "Ext.ux.ajax.XmlSimlet": [],
+  "NP.view.user.UserContactInfo": [],
+  "NP.view.shared.button.Hourglass": [],
+  "NP.view.shared.invoicepo.ViewLines": [],
+  "NP.model.image.ImageToCD": [],
+  "NP.view.property.PropertiesFormCal": [],
+  "NP.store.catalog.CatalogTypes": [],
+  "NP.view.image.SearchCDIndex": [],
+  "NP.view.catalog.gridcol.VcStatus": [],
+  "NP.store.po.Purchaseorders": [],
+  "Ext.ux.form.MultiSelect": [
+    "Ext.ux.Multiselect"
+  ],
+  "NP.view.vendor.grid.VendorPending": [],
+  "NP.view.catalog.AlphabeticalBrandsGrid": [],
+  "NP.view.shared.ContextPicker": [],
+  "NP.view.shared.button.Upload": [],
+  "NP.controller.MySettings": [],
+  "NP.view.image.gridcol.Type": [],
+  "NP.model.property.FiscalCalMonth": [],
+  "Ext.locale.en.form.field.HtmlEditor": [],
+  "NP.view.gl.CategoryGrid": [],
+  "NP.view.shared.tile.ReceiptsToApprove": [],
+  "Ext.locale.en.form.Basic": [],
+  "NP.model.invoice.InvoicePaymentType": [],
+  "NP.view.vendor.gridcol.SubmittedBy": [],
+  "overrides.Component": [],
+  "Ext.locale.en.grid.NumberColumn": [],
+  "NP.controller.Images": [],
+  "NP.store.property.FiscalCalMonths": [],
+  "NP.lib.core.AbstractController": [],
+  "NP.view.utilitySetup.UtilityGrid": [],
+  "Ext.ux.TabScrollerMenu": [],
+  "NP.model.budget.BudgetOverage": [],
+  "overrides.form.field.ComboBox": [],
+  "NP.view.importing.types.GLCategory": [],
+  "NP.store.jobcosting.JbPhaseCodes": [],
+  "NP.view.property.gridcol.CreatedDate": [],
+  "NP.lib.data.Store": [],
+  "NP.view.image.gridcol.ImageType": [],
+  "overrides.app.EventDomain": [],
+  "NP.view.user.gridcol.DelegationCancel": [],
+  "Ext.locale.fr_CA.form.field.ComboBox": [],
+  "NP.view.property.gridcol.PropertyStatus": [],
+  "NP.view.image.gridcol.ExceptionBy": [],
+  "NP.lib.core.SummaryStatManager": [],
+  "NP.view.vendor.VendorImageUploadForm": [],
+  "NP.view.shared.tile.YtdTopSpendByVendor": [],
+  "NP.model.importing.VendorFavorite": [],
+  "NP.view.image.Index": [],
+  "NP.view.invoice.ReclassWindow": [],
+  "NP.view.receipt.gridcol.Period": [],
+  "NP.view.vendor.gridcol.AddToFavorite": [],
+  "NP.view.catalogMaintenance.ItemGrid": [],
+  "NP.view.mySettings.UserInformation": [],
+  "NP.view.property.PropertiesFormAccounting": [],
+  "NP.view.shared.button.Reject": [],
+  "Ext.locale.en.grid.DateColumn": [],
+  "NP.view.messageCenter.MessageForm": [],
+  "NP.view.catalog.gridcol.VcItemDesc": [],
+  "NP.view.user.Users": [],
+  "NP.view.vendor.VendorRejectWindow": [],
+  "NP.view.vendor.InsuranceForm": [],
+  "NP.view.catalog.gridcol.VcItemUom": [],
+  "NP.model.user.Userprofile": [],
+  "NP.view.image.ImageGrid": [],
+  "NP.model.invoice.UtilityAccount": [],
+  "Ext.locale.en.Component": [],
+  "NP.view.shared.VendorAssigner": [],
+  "NP.model.shared.InvoicePoForward": [],
+  "NP.store.jobcosting.JbContracts": [],
+  "NP.view.shared.tile.AbstractBudgetTile": [],
+  "NP.view.vendor.InsuranceUploadForm": [],
+  "NP.view.shared.tile.InvoicesByUser": [],
+  "NP.view.mySettings.MobileSettings": [],
+  "NP.view.invoice.gridcol.CreatedDate": [],
+  "NP.view.image.gridcol.InvoiceNumber": [],
+  "NP.view.invoice.InvoicePrintView": [],
+  "NP.view.shared.tile.AbstractPoTile": [],
+  "NP.view.image.gridcol.DocType": [],
+  "Ext.locale.en.form.CheckboxGroup": [],
+  "NP.store.system.UserMessages": [],
+  "Ext.ux.DataTip": [],
+  "Ext.ux.ajax.JsonSimlet": [],
+  "NP.view.invoice.ViewHeader": [],
+  "NP.view.importing.types.VendorFavorite": [],
+  "NP.view.shared.PortalTilePicker": [],
+  "NP.model.user.MobInfo": [],
+  "NP.store.invoice.InvoicePayments": [],
+  "Ext.locale.en.form.field.Number": [],
+  "NP.view.shared.invoicepo.ForwardsGrid": [],
+  "NP.view.gl.Category": [],
+  "NP.model.importing.UnitType": [],
+  "NP.view.importing.types.VendorUtility": [],
+  "NP.view.vendor.gridcol.ApprovalType": [],
+  "Ext.ux.DataView.DragSelector": [],
+  "Ext.locale.en.grid.PropertyColumnModel": [],
+  "NP.view.importing.types.UnitType": [],
+  "Ext.ux.grid.menu.ListMenu": [],
+  "NP.view.shared.invoicepo.SplitWindow": [],
+  "NP.view.shared.tile.PosToApprove": [],
+  "NP.model.image.InvoiceImageSource": [],
+  "NP.view.shared.button.SaveAndPrevious": [],
+  "NP.model.catalog.LinkVcVcCat": [],
+  "NP.view.importing.types.GLBudget": [],
+  "NP.store.vendor.VendorTypes": [],
+  "NP.lib.core.DataLoader": [],
+  "NP.view.shared.button.FavoriteGlobal": [],
+  "NP.controller.UserManager": [],
+  "NP.model.system.DfSplit": [],
+  "Ext.ux.PreviewPlugin": [],
+  "Ext.locale.fr_CA.grid.header.Container": [],
+  "Ext.ux.ajax.SimXhr": [],
+  "NP.model.catalog.VcItem": [],
+  "Ext.ux.CellDragDrop": [],
+  "NP.lib.core.DBProvider": [],
+  "NP.view.shared.button.Message": [],
+  "NP.view.viewport.ImagePanel": [],
+  "Ext.ux.TabReorderer": [],
+  "NP.view.shared.UserAssigner": [],
+  "Ext.ux.grid.filter.NumericFilter": [],
+  "NP.view.vendor.VendorInsuranceSetup": [],
+  "NP.view.shared.button.PurchaseOrder": [],
+  "Ext.ux.event.Recorder": [],
+  "NP.view.image.gridcol.ExceptionDate": [],
+  "NP.model.image.ImageDocType": [],
+  "NP.view.shared.invoicepo.RejectWindow": [],
+  "NP.view.mySettings.Display": [],
+  "NP.view.user.GroupsGrid": [],
+  "Ext.ux.grid.filter.BooleanFilter": [],
+  "NP.view.shared.tile.InvoicesRejected": [],
+  "NP.view.vendor.VendorAssignGlAccounts": [],
+  "Ext.locale.en.view.View": [],
+  "NP.store.property.FiscalCals": [],
+  "NP.view.gl.gridcol.GlAccountName": [],
+  "NP.view.shared.GlCombo": [],
+  "Ext.locale.en.window.MessageBox": [],
+  "NP.store.system.DfSplits": [],
+  "NP.view.shared.invoicepo.ImagesAddWindow": [],
+  "NP.view.user.Groups": [],
+  "NP.view.viewport.menu.InvoiceMenu": [],
+  "NP.view.shared.tile.YtdOverBudgetCategories": [],
+  "NP.view.property.PropertiesMain": [],
+  "NP.view.shared.tile.ReceiptsPendingPost": [],
+  "NP.model.system.PnUniversalField": [],
+  "Ext.ux.grid.filter.ListFilter": [],
+  "NP.view.systemSetup.DefaultSplits": [],
+  "NP.view.vendor.VendorGrid": [],
+  "NP.view.invoice.gridcol.Period": [],
+  "NP.view.user.UserDelegationForm": [],
+  "NP.view.shared.tile.InvoicesOnHold": [],
+  "NP.store.shared.RejectionNotes": [],
+  "NP.view.catalog.SearchForm": [],
+  "NP.controller.Import": [],
+  "NP.store.gl.GlAccounts": [],
+  "NP.view.invoice.gridcol.HoldDate": [],
+  "NP.store.invoice.InvoicePaymentTypes": [],
+  "NP.view.catalog.gridcol.VcCreatedOn": [],
+  "NP.model.po.Purchaseorder": [],
+  "NP.view.importing.types.Vendor": [],
+  "NP.view.catalog.BrandsView": [],
+  "NP.view.property.Overview": [],
+  "NP.view.invoice.gridcol.Date": [],
+  "NP.view.gl.Reports": [],
+  "NP.view.catalogMaintenance.CatalogFormPoSubmission": [],
+  "NP.view.user.UserDelegation": [],
+  "NP.model.catalog.VcCat": [],
+  "NP.view.catalogMaintenance.CatalogRegister": [],
+  "NP.lib.ui.DateTimeField": [],
+  "Ext.ux.DataView.Draggable": [],
+  "overrides.form.Panel": [],
+  "Ext.locale.fr_CA.form.field.Text": [],
+  "NP.view.shared.button.Next": [],
+  "NP.model.contact.Phone": [],
+  "NP.view.shared.gridcol.CreatedBy": [],
+  "NP.model.system.UserMessage": [],
+  "NP.view.catalog.CategoriesDataView": [],
+  "NP.view.invoice.ViewReclass": [],
+  "NP.view.image.gridcol.Amount": [],
+  "NP.view.viewport.menu.AdminMenu": [],
+  "NP.model.notification.EmailAlertType": [],
+  "NP.view.shared.tile.AbstractImageTile": [],
+  "NP.view.catalog.VcOrder": [],
+  "NP.view.user.GroupsFormInfo": [],
+  "NP.view.user.GroupsFormDashboard": [],
+  "NP.view.image.gridcol.Source": [],
+  "NP.view.catalog.OrderView": [],
+  "NP.view.image.button.nsiss": [],
+  "NP.controller.BudgetOverage": [],
+  "NP.model.importing.Split": [],
+  "NP.model.invoice.UtilityColumnUsageType": [],
+  "NP.view.po.gridcol.Period": [],
+  "NP.view.viewport.TopMenu": [],
+  "NP.view.property.gridcol.RegionName": [],
+  "NP.view.user.UsersForm": [],
+  "NP.view.image.button.npiss": [],
+  "NP.model.importing.GLBudget": [],
+  "NP.view.user.UserDelegationGrid": [],
+  "NP.Locale": [],
+  "NP.store.user.Mobinfos": [],
+  "NP.view.importing.Main": [],
+  "NP.view.catalog.gridcol.VcItemCategory": [],
+  "NP.view.catalog.CreateOrderGrid": [],
+  "NP.view.shared.GlAccountAssigner": [],
+  "NP.controller.VendorManager": [],
+  "NP.view.invoice.Register": [],
+  "NP.lib.ui.ComboBox": [],
+  "NP.model.importing.CustomFieldHeader": [],
+  "NP.view.shared.tile.AbstractInvoiceTile": [],
+  "NP.model.importing.User": [],
+  "NP.view.property.PropertiesFormInfo": [],
+  "NP.view.catalog.TopBar": [],
+  "NP.model.system.HistoryLog": [],
+  "NP.view.shared.PermissionToolbar": [],
+  "NP.controller.Invoice": [],
+  "NP.store.budget.BudgetOverage": [],
+  "NP.view.property.Properties": [],
+  "NP.store.vendor.UtilityTypes": [],
+  "NP.view.shared.button.Cd": [],
+  "NP.view.image.gridcol.DeletedBy": [],
+  "NP.view.image.gridcol.ImageStatus": [],
+  "NP.model.system.PriorityFlag": [],
+  "NP.store.system.PnUniversalFields": [],
+  "NP.view.po.gridcol.Status": [],
+  "NP.store.vendor.Vendors": [],
+  "NP.view.shared.button.Shop": [],
+  "NP.lib.core.SequenceTracker": [
+    "NP.SequenceTracker"
+  ],
+  "overrides.util.Format": [],
+  "NP.view.shared.tile.VendorsToApprove": [],
+  "Ext.ux.TreePicker": [],
+  "Ext.ux.data.PagingMemoryProxy": [
+    "Ext.data.PagingMemoryProxy"
+  ],
+  "NP.view.utilitySetup.UtilityAccountList": [],
+  "NP.store.vendor.Utilities": [],
+  "NP.view.gl.GLAccountsForm": [],
+  "Ext.ux.GroupTabRenderer": [],
+  "NP.view.favorites.AddToFavoritesWindow": [],
+  "NP.view.catalogMaintenance.CatalogFormVendors": [],
+  "NP.view.shared.RoleAssigner": [],
+  "NP.store.property.UnitTypeMeasurements": [],
+  "NP.view.catalog.OrderPropertiesForm": [],
+  "NP.view.user.GroupsForm": [],
+  "NP.view.viewport.Home": [],
+  "NP.model.vendor.Utility": [],
+  "NP.view.Viewport": [],
+  "NP.controller.GLAccountSetup": [],
+  "NP.view.shared.button.SaveAndNext": [],
+  "Ext.locale.fr_CA.tab.Tab": [],
+  "Ext.locale.fr_CA.toolbar.Paging": [],
+  "Ext.ux.DataView.LabelEditor": [],
+  "NP.view.image.grid.Exceptions": [],
+  "NP.view.catalog.AdvancedSearch": [],
+  "NP.view.importing.types.Unit": [],
+  "NP.view.property.Main": [],
+  "NP.store.system.SecurityQuestions": [],
+  "NP.lib.core.KeyManager": [
+    "NP.Keys"
+  ],
+  "NP.view.shared.tile.PosRejected": [],
+  "overrides.util.Sorter": [],
+  "NP.view.property.gridcol.PropertyCode": [],
+  "NP.view.vendor.AlternativeAddresses": [],
+  "NP.store.vendor.UtilityAccounts": [],
+  "NP.view.shared.gridcol.RejectedReason": [],
+  "NP.view.catalog.OrderCreate": [],
+  "NP.view.favorites.FavoritesWindow": [],
+  "Ext.ux.event.Maker": [],
+  "NP.view.shared.button.Go": [],
+  "NP.view.importing.types.GLActual": [],
+  "Ext.locale.fr_CA.view.AbstractView": [],
+  "NP.view.shared.button.AddToOrder": [],
+  "NP.view.shared.gridcol.UniversalField": [],
+  "NP.view.shared.gridcol.LastApprovedDate": [],
+  "NP.view.property.PropertiesFormUnitMeasurements": [],
+  "NP.view.property.UnitForm": [],
+  "NP.view.user.UsersFrequentlyBasedEmailAlertsForm": [],
+  "NP.view.invoice.gridcol.PayBy": [],
+  "NP.view.shared.invoicepo.ImagesManageWindow": [],
+  "NP.view.catalogMaintenance.CatalogGrid": [],
+  "NP.view.importing.types.UserProperty": [],
+  "NP.store.property.UnitTypes": [],
+  "NP.view.invoice.gridcol.DaysOnHold": [],
+  "NP.model.invoice.UnitTypeMaterial": [],
+  "NP.view.shared.button.Approve": [],
+  "Ext.locale.en.form.RadioGroup": []
+});
+Ext.ClassManager.addNameAliasMappings({
+  "overrides.grid.column.Column": [],
   "NP.view.shared.Address": [
     "widget.shared.address"
-  ],
-  "NP.view.vendor.gridcol.VendorStatus": [
-    "widget.vendor.gridcol.vendorstatus"
   ],
   "NP.view.property.gridcol.TotalUnits": [
     "widget.property.gridcol.totalunits"
   ],
-  "NP.view.property.gridcol.PropertyApCode": [
-    "widget.property.gridcol.propertyapcode"
+  "NP.view.vendor.gridcol.VendorStatus": [
+    "widget.vendor.gridcol.vendorstatus"
   ],
   "NP.view.mySettings.EmailAlerts": [
     "widget.mysettings.emailalerts"
   ],
   "NP.model.gl.GlAccount": [],
-  "NP.view.shared.gridcol.ButtonImg": [
-    "widget.shared.gridcol.buttonimg"
+  "NP.view.image.grid.Search": [
+    "widget.image.grid.Search"
   ],
-  "NP.view.invoice.gridcol.DueDate": [
-    "widget.invoice.gridcol.duedate"
-  ],
+  "NP.controller.Favorites": [],
   "NP.view.shared.invoicepo.HistoryLogGrid": [
     "widget.shared.invoicepo.historyloggrid"
+  ],
+  "NP.view.invoice.numberPattern.Pattern": [],
+  "NP.view.catalog.FavoritesView": [
+    "widget.catalog.favoritesview"
   ],
   "NP.view.shared.SearchByAlphabetButtons": [
     "widget.shared.searchbyalphabetbuttons"
   ],
   "NP.store.vendor.Insurances": [],
+  "NP.view.image.gridcol.DeleteDate": [
+    "widget.image.gridcol.deletedate"
+  ],
   "NP.store.vendor.InsuranceTypes": [],
-  "NP.view.mySettings.Settings": [
-    "widget.mysettings.settings"
+  "NP.store.catalog.Vc": [
+    "store.catalog.vc"
   ],
-  "NP.view.shared.gridcol.LastApprovedBy": [
-    "widget.shared.gridcol.lastapprovedby"
-  ],
-  "NP.model.importing.Unit": [],
-  "NP.store.catalog.Vc": [],
   "NP.lib.ui.Uploader": [
     "widget.uploader"
-  ],
-  "Ext.ux.layout.component.field.BoxSelectField": [
-    "layout.boxselectfield"
-  ],
-  "NP.view.vendor.gridcol.ViewVendor": [
-    "widget.vendor.gridcol.viewvendor"
-  ],
-  "NP.view.catalog.gridcol.VcItemNumber": [
-    "widget.catalog.gridcol.vcitemnumber"
   ],
   "NP.view.shared.button.Print": [
     "widget.shared.button.print"
   ],
-  "NP.view.gl.GLAccountsGrid": [
-    "widget.gl.glaccountsgrid"
-  ],
   "NP.lib.ui.Grid": [
     "widget.customgrid"
-  ],
-  "NP.view.invoice.gridcol.Notes": [
-    "widget.invoice.gridcol.notes"
   ],
   "NP.model.importing.UserProperty": [],
   "NP.view.systemSetup.Settings": [
@@ -729,74 +909,40 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.lib.ui.BoundForm": [
     "widget.boundform"
   ],
-  "NP.view.catalogMaintenance.types.Punchout": [],
   "NP.view.viewport.TopToolbar": [
     "widget.viewport.toptoolbar"
   ],
-  "NP.store.system.IntegrationPackages": [],
-  "NP.model.jobcosting.JbJobCode": [],
   "NP.view.viewport.DelegationPicker": [
     "widget.viewport.delegationpicker"
   ],
+  "NP.lib.print.Manager": [],
   "NP.store.property.VolumeTypes": [],
-  "NP.view.viewport.menu.BudgetMenu": [
-    "widget.viewport.menu.budgetmenu"
+  "NP.view.catalog.OrderItemWindow": [
+    "widget.catalog.orderitemwindow"
   ],
-  "NP.view.invoice.ViewToolbar": [
-    "widget.invoice.viewtoolbar"
-  ],
-  "NP.view.shared.tile.AbstractTile": [],
   "NP.model.jobcosting.JbJobAssociation": [],
-  "NP.model.invoice.InvoicePayment": [],
-  "NP.view.catalog.gridcol.VcItemPrice": [
-    "widget.catalog.gridcol.vcitemprice"
-  ],
+  "NP.view.shared.tile.AbstractTile": [],
+  "NP.model.shared.Reason": [],
   "NP.view.shared.button.New": [
     "widget.shared.button.new"
   ],
-  "NP.view.catalog.gridcol.VcItemType": [
-    "widget.catalog.gridcol.vcitemtype"
-  ],
-  "Ext.ux.ajax.Simlet": [
-    "simlet.basic"
-  ],
-  "NP.store.system.PriorityFlags": [
-    "store.system.priorityflags"
-  ],
-  "NP.model.property.Property": [],
-  "NP.model.property.UnitType": [],
+  "Ext.locale.fr_CA.form.field.Date": [],
+  "Ext.locale.en.grid.BooleanColumn": [],
   "NP.model.importing.VendorInsurance": [],
   "NP.view.mobileSetup.MobileForm": [
     "widget.mobilesetup.mobileform"
   ],
-  "NP.model.jobcosting.JbCostCode": [],
   "NP.view.shared.button.Search": [
     "widget.shared.button.search"
   ],
-  "NP.view.property.UnitGrid": [
-    "widget.property.unitgrid"
-  ],
-  "NP.store.system.Countries": [],
   "NP.view.systemSetup.Overview": [
     "widget.systemsetup.overview"
-  ],
-  "NP.view.vendor.gridcol.SentForApprovalBy": [
-    "widget.vendor.gridcol.sentforapprovalby"
-  ],
-  "NP.view.user.UsersGrid": [
-    "widget.user.usersgrid"
   ],
   "NP.view.systemSetup.GLAccounts": [
     "widget.systemsetup.glaccounts"
   ],
-  "NP.view.shared.button.Camera": [
-    "widget.shared.button.camera"
-  ],
   "NP.view.catalog.gridcol.VcNumberOfItems": [
     "widget.catalog.gridcol.vcnumberofitems"
-  ],
-  "NP.view.user.gridcol.DelegationCreatedBy": [
-    "widget.user.gridcol.delegationcreatedby"
   ],
   "NP.view.vendor.grid.VendorApproved": [
     "widget.vendor.grid.vendorapproved"
@@ -804,56 +950,26 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.lib.ui.HoverButton": [
     "widget.hoverButton"
   ],
-  "NP.view.receipt.gridcol.ReceiveDate": [
-    "widget.receipt.gridcol.receivedate"
-  ],
   "NP.view.systemSetup.PasswordConfiguration": [
     "widget.systemsetup.passwordconfiguration"
-  ],
-  "Ext.ux.IFrame": [
-    "widget.uxiframe"
-  ],
-  "NP.model.system.DfSplitItem": [],
-  "NP.view.image.gridcol.NeededByDate": [
-    "widget.image.gridcol.neededbydate"
-  ],
-  "NP.view.importing.types.InvoicePayment": [],
-  "NP.view.catalogMaintenance.CatalogFormCategories": [
-    "widget.catalogmaintenance.catalogformcategories"
-  ],
-  "NP.store.budget.BudgetOverages": [],
-  "NP.view.shared.Phone": [
-    "widget.shared.phone"
   ],
   "NP.view.shared.button.Edit": [
     "widget.shared.button.edit"
   ],
-  "NP.model.importing.Vendor": [],
-  "NP.view.importing.UploadForm": [
-    "widget.importing.uploadform"
+  "NP.view.catalog.SimpleSearchView": [
+    "widget.catalog.simplesearchview"
   ],
   "overrides.form.field.Base": [],
-  "NP.store.vendor.UtilityColumnUsageTypes": [
-    "store.vendor.utilitycolumnusagetypes"
-  ],
   "NP.model.shared.Warning": [],
-  "NP.view.image.gridcol.InvoiceDate": [
-    "widget.image.gridcol.invoicedate"
+  "NP.view.invoice.UseTemplateWindow": [
+    "widget.invoice.usetemplatewindow"
   ],
-  "NP.view.shared.button.Inactivate": [
-    "widget.shared.button.inactivate"
-  ],
-  "NP.view.vendor.VendorNameAndInformation": [
-    "widget.vendor.vendornameandinformation"
-  ],
-  "NP.view.invoice.ViewNotes": [
-    "widget.invoice.viewnotes"
+  "Ext.locale.en.picker.Month": [],
+  "NP.view.invoice.gridcol.OnHoldNotes": [
+    "widget.invoice.gridcol.onholdnotes"
   ],
   "NP.view.systemSetup.Main": [
     "widget.systemsetup.main"
-  ],
-  "NP.view.viewport.SummaryStatList": [
-    "widget.viewport.summarystatlist"
   ],
   "NP.view.utilitySetup.AccountForm": [
     "widget.utilitysetup.accountform"
@@ -861,125 +977,66 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.view.user.gridcol.DelegationEndDate": [
     "widget.user.gridcol.delegationenddate"
   ],
-  "NP.view.shared.tile.InvoicesToApprove": [],
-  "NP.model.contact.Person": [],
-  "NP.model.user.Delegation": [],
   "Ext.ux.FieldReplicator": [],
-  "NP.view.viewport.menu.VendorMenu": [
-    "widget.viewport.menu.vendormenu"
-  ],
   "NP.view.catalogMaintenance.types.Url": [],
-  "NP.model.user.Role": [],
   "NP.model.vendor.VendorType": [],
   "NP.view.importing.types.GLCode": [],
-  "NP.view.po.gridcol.BudgetNotes": [
-    "widget.po.gridcol.budgetnotes"
-  ],
-  "NP.view.importing.CSVGrid": [
-    "widget.importing.csvgrid"
-  ],
-  "NP.view.property.Calendar": [
-    "widget.property.calendar"
-  ],
   "NP.model.property.UnitTypeVal": [],
+  "NP.store.shared.Reasons": [
+    "store.shared.reasons"
+  ],
   "NP.store.system.SummaryStats": [],
   "NP.view.shared.CustomFieldContainer": [
     "widget.shared.customfieldcontainer"
   ],
-  "NP.view.gl.Overview": [
-    "widget.gl.overview"
-  ],
   "Ext.ux.dd.PanelFieldDragZone": [],
-  "NP.model.jobcosting.JbChangeOrder": [],
   "NP.model.invoice.Invoice": [],
   "NP.store.system.PnCustomFields": [],
-  "NP.view.shared.tile.ImageExceptions": [],
   "NP.view.invoice.gridcol.VoidDate": [
     "widget.invoice.gridcol.voiddate"
   ],
+  "NP.view.invoice.numberPattern.Pattern4": [],
+  "NP.view.invoice.numberPattern.Pattern3": [],
+  "Ext.locale.en.form.field.Date": [],
   "overrides.data.Validations": [],
   "NP.lib.data.JsonFlat": [
     "reader.jsonflat"
   ],
-  "overrides.grid.plugin.CellEditing": [],
   "NP.Application": [],
-  "Ext.ux.GroupTabPanel": [
-    "widget.grouptabpanel"
-  ],
   "NP.store.invoice.Invoices": [
     "store.invoice.invoices"
   ],
   "NP.view.mySettings.Dashboard": [
     "widget.mysettings.dashboard"
   ],
+  "NP.view.invoice.numberPattern.Pattern2": [],
   "Ext.ux.statusbar.ValidationStatus": [],
-  "NP.view.vendor.AddImagesWindow": [
-    "widget.vendor.addimageswindow"
-  ],
-  "Ext.ux.layout.Center": [
-    "layout.ux.center"
-  ],
-  "NP.view.mobileSetup.MobileGrid": [
-    "widget.mobilesetup.mobilegrid"
-  ],
-  "NP.model.vendor.Insurance": [],
   "NP.store.jobcosting.JbChangeOrders": [
     "store.jobcosting.jbchangeorders"
   ],
-  "NP.view.receipt.gridcol.TransferDate": [
-    "widget.receipt.gridcol.transferdate"
-  ],
+  "NP.model.vendor.Insurance": [],
   "NP.store.system.HistoryLogs": [
     "store.system.historylogs"
   ],
   "NP.view.shared.button.Report": [
     "widget.shared.button.report"
   ],
-  "NP.view.property.UnitTypeGrid": [
-    "widget.property.unittypegrid"
-  ],
-  "Ext.ux.form.field.BoxSelect": [
-    "widget.boxselect",
-    "widget.comboboxselect"
-  ],
   "NP.view.user.gridcol.DelegationStartDate": [
     "widget.user.gridcol.delegationstartdate"
   ],
-  "NP.view.shared.invoicepo.Toolbar": [
-    "widget.shared.invoicepo.toolbar"
-  ],
-  "NP.view.po.gridcol.SentToVendor": [
-    "widget.po.gridcol.senttovendor"
-  ],
-  "NP.view.shared.button.Cancel": [
-    "widget.shared.button.cancel"
-  ],
+  "NP.model.shared.RejectionNote": [],
   "NP.view.shared.ContextPickerMulti": [
     "widget.shared.contextpickermulti"
   ],
-  "NP.view.receipt.ReceiptGrid": [
-    "widget.receipt.receiptgrid"
-  ],
+  "Ext.locale.en.grid.GroupingFeature": [],
   "NP.view.shared.invoicepo.ViewLineItems": [
     "widget.shared.invoicepo.viewlineitems"
   ],
-  "NP.view.shared.button.Back": [
-    "widget.shared.button.back"
+  "NP.view.catalog.ItemsView": [
+    "widget.catalog.itemsview"
   ],
-  "NP.view.vendor.gridcol.VendorCode": [
-    "widget.vendor.gridcol.vendorcode"
-  ],
-  "NP.view.po.gridcol.Number": [
-    "widget.po.gridcol.number"
-  ],
-  "NP.view.shared.YesNoField": [
-    "widget.shared.yesnofield"
-  ],
+  "Ext.locale.en.form.field.VTypes": [],
   "NP.store.property.FiscalDisplayTypes": [],
-  "NP.view.importing.types.CustomFieldLine": [],
-  "NP.view.shared.button.Allocate": [
-    "widget.shared.button.allocate"
-  ],
   "NP.store.jobcosting.JbCostCodes": [
     "store.jobcosting.jbcostcodes"
   ],
@@ -987,86 +1044,38 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.view.image.gridcol.Reference": [
     "widget.image.gridcol.reference"
   ],
-  "Ext.ux.event.Player": [],
-  "NP.view.po.gridcol.ReceiptRequired": [
-    "widget.po.gridcol.receiptrequired"
-  ],
   "NP.view.user.UsersFormEmail": [
     "widget.user.usersformemail"
-  ],
-  "NP.view.vendor.gridcol.VendorName": [
-    "widget.vendor.gridcol.vendorname"
   ],
   "NP.lib.ui.VerticalTabPanel": [
     "widget.verticaltabpanel"
   ],
-  "NP.model.invoice.InvoiceItem": [],
+  "Ext.locale.en.grid.plugin.DragDrop": [],
   "NP.view.catalogMaintenance.types.Pdf": [],
-  "NP.view.viewport.menu.ReportMenu": [
-    "widget.viewport.menu.reportmenu"
-  ],
-  "NP.view.property.PropertiesForm": [
-    "widget.property.propertiesform"
-  ],
-  "NP.view.systemSetup.Picklists": [
-    "widget.systemsetup.picklists"
+  "NP.view.image.grid.DeletedImages": [
+    "widget.image.grid.DeletedImages"
   ],
   "Ext.ux.ToolbarDroppable": [],
-  "NP.view.catalog.gridcol.VcItemManufacturer": [
-    "widget.catalog.gridcol.vcitemmanufacturer"
-  ],
   "NP.store.po.Receipts": [],
-  "NP.controller.PropertySetup": [],
-  "NP.view.image.gridcol.Name": [
-    "widget.image.gridcol.name"
-  ],
   "NP.view.viewport.SummaryDetailPanel": [
     "widget.viewport.summarydetailpanel"
-  ],
-  "Ext.ux.TabCloseMenu": [
-    "plugin.tabclosemenu"
   ],
   "NP.controller.CatalogMaintenance": [],
   "NP.view.shared.invoicepo.ViewLineGrid": [
     "widget.shared.invoicepo.viewlinegrid"
   ],
-  "NP.model.user.VendorAccessUser": [],
-  "Ext.ux.grid.filter.DateTimeFilter": [
-    "gridfilter.datetime"
-  ],
-  "NP.store.shared.InvoicePoForwards": [
-    "store.shared.invoicepoforwards"
-  ],
-  "Ext.ux.grid.FiltersFeature": [
-    "feature.filters"
-  ],
   "NP.view.po.gridcol.Notes": [
     "widget.po.gridcol.notes"
   ],
   "overrides.data.Model": [],
-  "NP.view.image.gridcol.DueDate": [
-    "widget.image.gridcol.duedate"
-  ],
-  "NP.view.property.gridcol.Code": [
-    "widget.property.gridcol.code"
-  ],
-  "NP.model.contact.Address": [],
-  "NP.view.invoice.View": [
-    "widget.invoice.view"
-  ],
   "NP.view.shared.gridcol.PendingDays": [
     "widget.shared.gridcol.pendingdays"
   ],
-  "Ext.ux.grid.TransformGrid": [],
-  "NP.view.image.gridcol.ScanDate": [
-    "widget.image.gridcol.scandate"
-  ],
-  "NP.view.utilitySetup.UtilitySetupForm": [
-    "widget.utilitysetup.utilitysetupform"
-  ],
   "NP.view.importing.types.InvoiceExport": [],
   "NP.store.system.TaxPayorTypes": [],
-  "NP.view.importing.types.Property": [],
+  "NP.lib.ui.ListPicker": [
+    "widget.listpicker"
+  ],
   "NP.view.viewport.menu.VCMenu": [
     "widget.viewport.menu.vcmenu"
   ],
@@ -1074,24 +1083,9 @@ Ext.ClassManager.addNameAliasMappings({
     "widget.po.gridcol.date"
   ],
   "Ext.ux.event.Driver": [],
-  "Ext.ux.ajax.XmlSimlet": [
-    "simlet.xml"
-  ],
-  "NP.view.user.UserContactInfo": [
-    "widget.user.usercontactinfo"
-  ],
   "NP.view.shared.tile.InvoicesCompleted": [],
-  "NP.view.shared.button.Hourglass": [
-    "widget.shared.button.hourglass"
-  ],
-  "NP.view.shared.invoicepo.ViewLines": [
-    "widget.shared.invoicepo.viewlines"
-  ],
   "NP.view.catalogMaintenance.CatalogForm": [
     "widget.catalogmaintenance.catalogform"
-  ],
-  "NP.view.property.PropertiesFormCal": [
-    "widget.property.propertiesformcal"
   ],
   "NP.view.mySettings.Overview": [
     "widget.mysettings.overview"
@@ -1099,70 +1093,41 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.view.shared.button.View": [
     "widget.shared.button.view"
   ],
-  "NP.store.catalog.CatalogTypes": [],
-  "NP.view.catalog.gridcol.VcStatus": [
-    "widget.catalog.gridcol.vcstatus"
-  ],
-  "NP.store.po.Purchaseorders": [],
+  "NP.model.user.Staff": [],
+  "NP.model.property.Unit": [],
   "NP.view.vendor.VendorsManager": [
     "widget.vendor.vendorsmanager"
   ],
-  "NP.model.user.Staff": [],
-  "NP.model.property.Unit": [],
-  "NP.store.system.DfSplitItems": [],
   "NP.view.user.UserDelegationMain": [
     "widget.user.userdelegationmain"
   ],
-  "Ext.ux.form.MultiSelect": [
-    "widget.multiselect",
-    "widget.multiselectfield"
-  ],
+  "NP.store.system.DfSplitItems": [],
   "NP.store.property.Regions": [],
-  "NP.view.vendor.grid.VendorPending": [
-    "widget.vendor.grid.vendorpending"
-  ],
-  "NP.view.shared.ContextPicker": [
-    "widget.shared.contextpicker"
-  ],
-  "NP.view.shared.button.Upload": [
-    "widget.shared.button.upload"
-  ],
   "NP.view.importing.types.PropertyGL": [],
-  "NP.controller.MySettings": [],
   "Ext.ux.event.RecorderManager": [
     "widget.eventrecordermanager"
   ],
-  "NP.model.importing.InvoicePayment": [],
+  "NP.view.favorites.FavoriteGrid": [
+    "widget.favorites.favoritegrid"
+  ],
   "NP.view.importing.types.Split": [],
+  "NP.model.importing.InvoicePayment": [],
+  "NP.store.image.ImageDocTypes": [],
   "NP.view.shared.PortalColumn": [
     "widget.shared.portalcolumn"
   ],
   "NP.view.invoice.gridcol.PaymentAmountRemaining": [
     "widget.invoice.gridcol.paymentamountremaining"
   ],
-  "NP.model.property.FiscalCalMonth": [],
-  "NP.view.gl.CategoryGrid": [
-    "widget.gl.categorygrid"
-  ],
   "NP.store.user.VendorAccessUsers": [],
-  "NP.view.shared.tile.ReceiptsToApprove": [],
   "NP.view.property.gridcol.UnitNumber": [
     "widget.property.gridcol.unitnumber"
-  ],
-  "NP.model.invoice.InvoicePaymentType": [],
-  "NP.view.vendor.gridcol.SubmittedBy": [
-    "widget.vendor.gridcol.submittedby"
   ],
   "NP.view.vendor.gridcol.DateSubmitted": [
     "widget.date",
     "widget.vendor.gridcol.datesubmitted"
   ],
-  "overrides.Component": [],
-  "overrides.ux.form.ItemSelector": [],
   "NP.model.importing.PropertyGL": [],
-  "NP.view.shared.GlCategoryOrder": [
-    "widget.shared.glcategoryorder"
-  ],
   "NP.store.system.SummaryStatCategories": [],
   "NP.view.invoice.gridcol.BudgetNotes": [
     "widget.invoice.gridcol.budgetnotes"
@@ -1170,51 +1135,30 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.view.property.PropertiesFormUserReport": [
     "widget.property.propertiesformuserreport"
   ],
-  "NP.store.property.FiscalCalMonths": [],
-  "NP.lib.core.AbstractController": [],
-  "NP.view.utilitySetup.UtilityGrid": [
-    "widget.utilitysetup.utilitygrid"
-  ],
   "NP.view.invoice.gridcol.PaymentDetails": [
     "widget.invoice.gridcol.paymentdetails"
   ],
-  "Ext.ux.TabScrollerMenu": [
-    "plugin.tabscrollermenu"
+  "NP.view.shared.button.Excel": [
+    "widget.shared.button.excel"
   ],
   "NP.view.property.gridcol.LastUpdated": [
     "widget.property.gridcol.lastupdated"
   ],
-  "NP.model.budget.BudgetOverage": [],
-  "overrides.form.field.ComboBox": [],
   "Ext.ux.LiveSearchGridPanel": [],
-  "NP.view.importing.types.GLCategory": [],
-  "NP.store.jobcosting.JbPhaseCodes": [
-    "store.jobcosting.jbphasecodes"
-  ],
-  "Ext.ux.grid.filter.DateFilter": [
-    "gridfilter.date"
-  ],
-  "NP.view.property.gridcol.CreatedDate": [
-    "widget.property.gridcol.createddate"
-  ],
-  "Ext.ux.grid.filter.DateFilter": [
-    "gridfilter.date"
-  ],
+  "Ext.locale.en.picker.Date": [],
   "NP.view.importing.types.VendorInsurance": [],
+  "Ext.ux.grid.filter.DateFilter": [
+    "gridfilter.date"
+  ],
   "NP.view.user.UsersFormDetails": [
     "widget.user.usersformdetails"
   ],
-  "NP.lib.data.Store": [],
   "NP.view.property.PropertiesFormGl": [
     "widget.property.propertiesformgl"
   ],
   "NP.model.importing.GLCode": [],
-  "overrides.app.EventDomain": [],
   "NP.store.user.Userprofiles": [
     "store.user.userprofiles"
-  ],
-  "NP.view.user.gridcol.DelegationCancel": [
-    "widget.user.gridcol.delegationcancel"
   ],
   "NP.view.shared.Person": [
     "widget.shared.person"
@@ -1223,81 +1167,38 @@ Ext.ClassManager.addNameAliasMappings({
     "widget.shared.button.delete"
   ],
   "Ext.ux.BoxReorderer": [],
-  "NP.view.property.gridcol.PropertyStatus": [
-    "widget.property.gridcol.propertystatus"
-  ],
-  "NP.view.image.gridcol.ExceptionBy": [
-    "widget.image.gridcol.exceptionby"
-  ],
   "NP.view.shared.PickList": [
     "widget.shared.picklist"
   ],
-  "NP.view.vendor.VendorImageUploadForm": [
-    "widget.vendor.vendorimageuploadform"
-  ],
-  "NP.lib.core.SummaryStatManager": [],
   "NP.controller.UtilitySetup": [],
   "NP.view.property.PropertiesFormUnits": [
     "widget.property.propertiesformunits"
   ],
-  "NP.model.importing.VendorFavorite": [],
   "NP.view.image.gridcol.DaysOutstanding": [
     "widget.image.gridcol.daysoutstanding"
-  ],
-  "NP.view.receipt.gridcol.Period": [
-    "widget.receipt.gridcol.period"
   ],
   "NP.view.invoice.gridcol.Number": [
     "widget.invoice.gridcol.number"
   ],
-  "NP.view.catalogMaintenance.ItemGrid": [
-    "widget.catalogmaintenance.itemgrid"
-  ],
-  "NP.view.vendor.gridcol.AddToFavorite": [
-    "widget.vendor.gridcol.addtofavorite"
-  ],
   "NP.model.gl.GlAccountType": [],
-  "NP.view.property.PropertiesFormAccounting": [
-    "widget.property.propertiesformaccounting"
-  ],
-  "NP.view.mySettings.UserInformation": [
-    "widget.mysettings.userinformation"
-  ],
   "NP.view.shared.gridcol.PriorityFlag": [
     "widget.shared.gridcol.priorityflag"
   ],
-  "NP.view.shared.button.Reject": [
-    "widget.shared.button.reject"
-  ],
-  "NP.view.catalog.gridcol.VcItemDesc": [
-    "widget.catalog.gridcol.vcitemdesc"
-  ],
-  "NP.view.messageCenter.MessageForm": [
-    "widget.messagecenter.messageform"
-  ],
-  "NP.view.vendor.VendorRejectWindow": [
-    "widget.vendor.vendorrejectwindow"
-  ],
-  "NP.view.user.Users": [
-    "widget.user.users"
-  ],
   "NP.view.shared.tile.ImagesToIndex": [],
-  "NP.view.vendor.InsuranceForm": [
-    "widget.vendor.insuranceform"
-  ],
-  "NP.view.catalog.gridcol.VcItemUom": [
-    "widget.catalog.gridcol.vcitemuom"
+  "NP.view.image.grid.SearchCDIndex": [
+    "widget.image.grid.searchcdindex"
   ],
   "Ext.ux.grid.filter.StringFilter": [
     "gridfilter.string"
   ],
-  "NP.model.user.Userprofile": [],
-  "NP.store.invoice.InvoiceItems": [],
+  "NP.view.shared.button.RemoveFromFavorites": [
+    "widget.shared.button.removefromfavorites"
+  ],
+  "NP.store.invoice.InvoiceItems": [
+    "store.invoice.invoiceitems"
+  ],
   "NP.view.vendor.VendorDocumentsForm": [
     "widget.vendor.vendordocumentsform"
-  ],
-  "NP.view.image.ImageGrid": [
-    "widget.image.imagegrid"
   ],
   "NP.model.property.FiscalDisplayType": [],
   "NP.view.shared.tile.VcAuthRequests": [],
@@ -1308,16 +1209,17 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.view.catalogMaintenance.CatalogFormUploadLogo": [
     "widget.catalogmaintenance.catalogformuploadlogo"
   ],
-  "NP.view.shared.VendorAssigner": [
-    "widget.shared.vendorassigner"
-  ],
   "NP.view.shared.UtilityTypeAssigner": [
     "widget.shared.utilitytypeassigner"
   ],
+  "NP.view.catalog.UserOrder": [
+    "widget.catalog.userorder"
+  ],
+  "NP.store.system.States": [],
   "NP.view.user.GroupsFormPermissions": [
     "widget.user.groupsformpermissions"
   ],
-  "NP.store.system.States": [],
+  "Ext.locale.en.form.field.Text": [],
   "NP.view.mobileSetup.MobileInfoForm": [
     "widget.mobilesetup.mobileinfoform"
   ],
@@ -1325,16 +1227,9 @@ Ext.ClassManager.addNameAliasMappings({
     "widget.property.reports"
   ],
   "NP.view.shared.tile.ExpiredInsuranceCerts": [],
-  "NP.model.shared.InvoicePoForward": [],
-  "NP.view.shared.tile.AbstractBudgetTile": [],
-  "NP.store.jobcosting.JbContracts": [
-    "store.jobcosting.jbcontracts"
+  "NP.store.image.ImageIndexes": [
+    "store.image.imageindexes"
   ],
-  "NP.view.shared.tile.InvoicesByUser": [],
-  "NP.view.vendor.InsuranceUploadForm": [
-    "widget.vendor.insuranceuploadform"
-  ],
-  "NP.store.image.ImageIndexes": [],
   "NP.view.viewport.menu.POMenu": [
     "widget.viewport.menu.pomenu"
   ],
@@ -1344,30 +1239,23 @@ Ext.ClassManager.addNameAliasMappings({
     "widget.invoice.gridcol.onholdby"
   ],
   "NP.store.catalog.VcItems": [],
-  "NP.store.catalog.VcItemCategories": [],
   "NP.view.shared.gridcol.Amount": [
     "widget.shared.gridcol.amount"
   ],
-  "NP.view.mySettings.MobileSettings": [
-    "widget.mysettings.mobilesettings"
-  ],
+  "NP.store.catalog.VcItemCategories": [],
   "NP.view.systemSetup.DefaultSplitGrid": [
     "widget.systemsetup.defaultsplitgrid"
-  ],
-  "NP.view.invoice.gridcol.CreatedDate": [
-    "widget.invoice.gridcol.createddate"
-  ],
-  "NP.view.image.gridcol.InvoiceNumber": [
-    "widget.image.gridcol.invoicenumber"
-  ],
-  "NP.lib.ui.AutoComplete": [
-    "widget.autocomplete"
   ],
   "NP.view.shared.gridcol.RejectedDate": [
     "widget.shared.gridcol.rejecteddate"
   ],
+  "NP.lib.ui.AutoComplete": [
+    "widget.autocomplete"
+  ],
   "NP.store.notification.EmailAlertTypes": [],
-  "NP.store.user.Delegations": [],
+  "NP.store.user.Delegations": [
+    "store.user.delegations"
+  ],
   "NP.view.shared.tile.ImagesToProcess": [],
   "NP.store.property.Properties": [
     "store.property.properties"
@@ -1384,20 +1272,847 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.view.messageCenter.MessageGrid": [
     "widget.messagecenter.messagegrid"
   ],
+  "NP.view.shared.PropertyCombo": [
+    "widget.shared.propertycombo"
+  ],
+  "NP.view.catalogMaintenance.types.Excel": [],
+  "NP.controller.VendorCatalog": [],
+  "NP.view.user.UsersFormPermissions": [
+    "widget.user.usersformpermissions"
+  ],
+  "Ext.locale.fr_CA.Component": [],
+  "NP.view.systemSetup.CustomFields": [
+    "widget.systemsetup.customfields"
+  ],
+  "NP.lib.ui.Assigner": [
+    "widget.assigner"
+  ],
+  "Ext.locale.fr_CA.form.field.Base": [],
+  "NP.view.mySettings.EmailFrequency": [
+    "widget.mysettings.emailfrequency"
+  ],
+  "NP.view.invoice.gridcol.NeededByDate": [
+    "widget.invoice.gridcol.neededbydate"
+  ],
+  "NP.view.budget.BudgetOverageForm": [
+    "widget.budget.budgetoverageform"
+  ],
+  "NP.store.system.PayeeTypes": [],
+  "NP.store.contact.States": [],
+  "NP.view.receipt.gridcol.Notes": [
+    "widget.receipt.gridcol.notes"
+  ],
+  "NP.view.vendor.gridcol.SentForApprovalDate": [
+    "widget.vendor.gridcol.sentforapprovaldate"
+  ],
+  "NP.view.receipt.gridcol.CreatedDate": [
+    "widget.receipt.gridcol.createddate"
+  ],
+  "NP.view.viewport.menu.ImageMenu": [
+    "widget.viewport.menu.imagemenu"
+  ],
+  "NP.view.property.FiscalCalendarForm": [
+    "widget.property.fiscalcalendarform"
+  ],
+  "NP.view.shared.tile.PosReleased": [],
+  "NP.view.invoice.gridcol.RemittanceAdvice": [
+    "widget.invoice.gridcol.remittanceadvice"
+  ],
+  "NP.view.shared.UnitCombo": [
+    "widget.shared.unitcombo"
+  ],
+  "NP.view.user.gridcol.DelegationToName": [
+    "widget.user.gridcol.delegationtoname"
+  ],
+  "Ext.locale.fr_CA.grid.plugin.DragDrop": [],
+  "NP.store.catalog.LinkVcVcCats": [],
+  "NP.view.invoice.gridcol.TemplateName": [
+    "widget.invoice.gridcol.templatename"
+  ],
+  "NP.view.vendor.PurchaseOrder": [
+    "widget.vendor.purchaseorder"
+  ],
+  "NP.view.invoice.PaymentWindow": [
+    "widget.invoice.paymentwindow"
+  ],
+  "NP.store.property.Units": [
+    "store.property.units"
+  ],
+  "NP.model.system.PnCustomField": [],
+  "NP.lib.print.renderer.AbstractRenderer": [],
+  "NP.view.systemSetup.WorkflowManager": [
+    "widget.systemsetup.workflowmanager"
+  ],
+  "NP.view.image.grid.Index": [
+    "widget.image.grid.Index"
+  ],
+  "NP.view.shared.tile.ReceiptsRejected": [],
+  "Ext.locale.en.grid.header.Container": [],
+  "Ext.ux.SlidingPager": [],
+  "NP.view.image.gridcol.ImageToCDDiskNum": [
+    "widget.image.gridcol.imagetocddisknum"
+  ],
+  "NP.view.user.gridcol.DelegationFromName": [
+    "widget.user.gridcol.delegationfromname"
+  ],
+  "NP.view.catalog.FavoriteItemsGrid": [
+    "widget.catalog.favoriteitemsgrid"
+  ],
+  "NP.view.shared.tile.MtdOverBudgetCategories": [],
+  "NP.view.catalog.VCGrid": [
+    "widget.catalog.vcgrid"
+  ],
+  "NP.view.budget.BudgetOverageGrid": [
+    "widget.budget.budgetoveragegrid"
+  ],
+  "Ext.ux.form.SearchField": [
+    "widget.searchfield"
+  ],
+  "Ext.ux.dd.CellFieldDropZone": [],
+  "NP.view.invoice.gridcol.Status": [
+    "widget.invoice.gridcol.status"
+  ],
+  "NP.model.jobcosting.JbContractBudget": [],
+  "NP.view.user.gridcol.DelegationView": [
+    "widget.user.gridcol.delegationview"
+  ],
+  "NP.store.shared.Warnings": [
+    "store.shared.warnings"
+  ],
+  "NP.view.shared.tile.PosByUser": [],
+  "NP.lib.core.Security": [],
+  "NP.view.property.FiscalCalendarGrid": [
+    "widget.property.fiscalcalendargrid"
+  ],
+  "NP.view.property.Region": [
+    "widget.property.region"
+  ],
+  "NP.model.catalog.VcOrder": [],
+  "Ext.locale.fr_CA.picker.Date": [],
+  "NP.view.user.UserManager": [
+    "widget.user.usermanager"
+  ],
+  "Ext.ux.GMapPanel": [
+    "widget.gmappanel"
+  ],
+  "NP.model.importing.Property": [],
+  "NP.view.shared.CustomField": [
+    "widget.shared.customfield"
+  ],
+  "NP.store.catalog.VcCats": [
+    "store.catalog.vccats"
+  ],
+  "NP.view.vendor.InvoiceDocuments": [
+    "widget.vendor.invoicedocuments"
+  ],
+  "NP.view.catalogMaintenance.CatalogFormUploadInfoPdf": [
+    "widget.catalogmaintenance.catalogformuploadinfopdf"
+  ],
+  "NP.view.shared.invoicepo.ViewWarnings": [
+    "widget.shared.invoicepo.viewwarnings"
+  ],
+  "Ext.ux.DataView.Animated": [],
+  "NP.model.vendor.InsuranceType": [],
+  "NP.store.gl.GlAccountTypes": [
+    "store.gl.glaccounttypes"
+  ],
+  "NP.view.shared.tile.GlCategoryMtdSpend": [],
+  "NP.view.property.gridcol.PropertyName": [
+    "widget.property.gridcol.propertyname"
+  ],
+  "NP.view.shared.button.Reset": [
+    "widget.shared.button.reset"
+  ],
+  "Ext.ux.statusbar.StatusBar": [
+    "widget.statusbar"
+  ],
+  "NP.view.shared.button.Favorite": [
+    "widget.shared.button.favorite"
+  ],
+  "NP.model.contact.State": [],
+  "overrides.form.Basic": [],
+  "NP.view.shared.PropertyAssigner": [
+    "widget.shared.propertyassigner"
+  ],
+  "NP.view.mySettings.UserPermissions": [
+    "widget.mysettings.userpermissions"
+  ],
+  "NP.view.shared.gridcol.PendingApprovalDays": [
+    "widget.shared.gridcol.pendingapprovaldays"
+  ],
+  "NP.view.catalog.ItemsFilter": [
+    "widget.catalog.itemsfilter"
+  ],
+  "NP.view.image.Search": [
+    "widget.image.search"
+  ],
+  "NP.lib.core.Util": [],
+  "NP.view.catalog.gridcol.VcType": [
+    "widget.catalog.gridcol.vctype"
+  ],
+  "NP.model.importing.CustomFieldLine": [],
+  "NP.view.shared.gridcol.RejectedBy": [
+    "widget.shared.gridcol.rejectedby"
+  ],
+  "Ext.locale.fr_CA.grid.PropertyColumnModel": [],
+  "NP.store.user.Roles": [
+    "store.user.roles"
+  ],
+  "NP.view.vendor.VendorSearch": [
+    "widget.vendor.vendorsearch"
+  ],
+  "NP.view.image.grid.Invoices": [
+    "widget.image.grid.Invoices"
+  ],
+  "NP.view.property.UnitTypeForm": [
+    "widget.property.unittypeform"
+  ],
+  "NP.view.catalogMaintenance.CatalogFormInfo": [
+    "widget.catalogmaintenance.catalogforminfo"
+  ],
+  "Ext.ux.form.ItemSelector": [
+    "widget.itemselector",
+    "widget.itemselectorfield"
+  ],
+  "NP.store.jobcosting.JbJobCodes": [
+    "store.jobcosting.jbjobcodes"
+  ],
+  "NP.view.importing.types.CustomFieldHeader": [],
+  "Ext.ux.Spotlight": [],
+  "NP.view.shared.tile.AbstractReceiptTile": [],
+  "NP.view.image.Main": [
+    "widget.image.main"
+  ],
+  "NP.view.catalog.CatalogView": [
+    "widget.catalog.catalogview"
+  ],
+  "NP.controller.Viewport": [],
+  "NP.view.shared.button.AddToFavorites": [
+    "widget.shared.button.addtofavorites"
+  ],
+  "Ext.ux.ajax.DataSimlet": [],
+  "NP.view.catalog.gridcol.VcCatalogCategory": [
+    "widget.catalog.gridcol.vccatalogcategory"
+  ],
+  "NP.view.catalogMaintenance.types.AbstractCatalog": [],
+  "NP.view.image.grid.Base": [
+    "widget.image.grid.Base"
+  ],
+  "NP.view.invoice.numberPattern.AbstractPattern": [],
+  "NP.model.jobcosting.JbPhaseCode": [],
+  "NP.model.importing.VendorGL": [],
+  "NP.store.contact.Addresses": [],
+  "NP.store.property.UnitTypeVals": [],
+  "NP.view.shared.gridcol.PendingApprovalFor": [
+    "widget.shared.gridcol.pendingapprovalfor"
+  ],
+  "NP.view.shared.VendorAutoComplete": [
+    "widget.shared.vendorautocomplete"
+  ],
+  "NP.view.image.Report": [
+    "widget.image.report"
+  ],
+  "NP.view.importing.Overview": [
+    "widget.importing.overview"
+  ],
+  "NP.lib.core.Translator": [],
+  "Ext.ux.ProgressBarPager": [],
+  "NP.model.po.Receipt": [],
+  "NP.view.vendor.VendorGeneralInfoAndSettings": [
+    "widget.vendor.vendorgeneralinfoandsettings"
+  ],
+  "Ext.locale.en.form.field.Time": [],
+  "NP.model.importing.VendorUtility": [],
+  "overrides.JSON": [],
+  "NP.model.system.IntegrationPackage": [],
+  "NP.view.shared.PortalCanvas": [
+    "widget.shared.portalcanvas"
+  ],
+  "NP.model.contact.Email": [],
+  "Ext.ux.ajax.SimManager": [],
+  "NP.controller.MobileSetup": [],
+  "NP.view.systemSetup.DefaultSplitForm": [
+    "widget.systemsetup.defaultsplitform"
+  ],
+  "NP.view.catalog.BrandsDataView": [
+    "widget.catalog.brandsdataview"
+  ],
+  "NP.model.user.RecAuthor": [],
+  "NP.model.vendor.UtilityAccount": [],
+  "NP.store.user.RoleTree": [],
+  "NP.view.po.PoGrid": [
+    "widget.po.pogrid"
+  ],
+  "NP.view.shared.invoicepo.ViewHeaderPickers": [
+    "widget.shared.invoicepo.viewheaderpickers"
+  ],
+  "NP.view.image.gridcol.ScanSource": [
+    "widget.image.gridcol.scansource"
+  ],
+  "NP.model.image.ImageIndex": [],
+  "NP.view.vendor.VendorForm": [
+    "widget.vendor.vendorform"
+  ],
+  "NP.view.shared.tile.InvoiceStatistics": [],
+  "NP.view.invoice.InvoiceGrid": [
+    "widget.invoice.invoicegrid"
+  ],
+  "NP.view.mySettings.EmailNotification": [
+    "widget.mysettings.emailnotification"
+  ],
+  "NP.view.invoice.gridcol.PendingDays": [
+    "widget.invoice.gridcol.pendingdays"
+  ],
+  "NP.view.shared.gridcol.IntegrationPackageName": [
+    "widget.shared.gridcol.integrationpackagename"
+  ],
+  "NP.view.importing.types.AbstractImportType": [],
+  "NP.view.importing.types.VendorGL": [],
+  "NP.model.importing.GLCategory": [],
+  "NP.view.po.gridcol.NeededByDate": [
+    "widget.po.gridcol.neededbydate"
+  ],
+  "NP.view.shared.button.Save": [
+    "widget.shared.button.save"
+  ],
+  "Ext.locale.fr_CA.form.field.Number": [],
+  "Ext.ux.grid.filter.Filter": [],
+  "NP.controller.SystemSetup": [],
+  "NP.view.catalogMaintenance.CatalogFormProperties": [
+    "widget.catalogmaintenance.catalogformproperties"
+  ],
+  "NP.view.shared.button.Close": [
+    "widget.shared.button.close"
+  ],
+  "NP.view.mySettings.Main": [
+    "widget.mysettings.main"
+  ],
+  "NP.view.invoice.VoidWindow": [
+    "widget.invoice.voidwindow"
+  ],
+  "NP.model.jobcosting.JbContract": [],
+  "NP.model.catalog.Vc": [],
+  "NP.view.invoice.ViewPayments": [
+    "widget.invoice.viewpayments"
+  ],
+  "NP.view.property.IntegrationPackage": [
+    "widget.property.integrationpackage"
+  ],
+  "NP.view.shared.button.Activate": [
+    "widget.shared.button.activate"
+  ],
+  "NP.lib.core.Net": [],
+  "NP.view.importing.types.User": [],
+  "NP.view.catalog.JumpToCatalogForm": [
+    "widget.catalog.jumptocatalogform"
+  ],
+  "NP.view.shared.button.SaveAndAdd": [
+    "widget.shared.button.saveandadd"
+  ],
+  "NP.view.gl.CategoryForm": [
+    "widget.gl.categoryform"
+  ],
+  "NP.view.gl.Main": [
+    "widget.gl.main"
+  ],
+  "NP.view.vendor.gridcol.InsuranceTypeName": [
+    "widget.vendor.gridcol.insurancetypename"
+  ],
+  "NP.view.user.gridcol.DelegationStatus": [
+    "widget.user.gridcol.delegationstatus"
+  ],
+  "NP.view.catalog.VcOrdersGrid": [
+    "widget.catalog.vcordersgrid"
+  ],
+  "overrides.form.field.Number": [],
+  "NP.store.security.ModuleTree": [],
+  "NP.store.system.Tiles": [],
+  "NP.controller.MessageCenter": [],
+  "NP.view.shared.button.Previous": [
+    "widget.shared.button.previous"
+  ],
+  "Ext.locale.en.form.field.ComboBox": [],
+  "NP.view.importing.ImportSection": [
+    "widget.importing.importsection"
+  ],
+  "Ext.locale.fr_CA.form.field.VTypes": [],
+  "NP.view.shared.tile.AbstractSummaryStatTile": [],
+  "NP.model.user.Userprofilerole": [],
+  "overrides.data.Field": [],
+  "Ext.locale.en.data.validations": [],
+  "NP.store.image.ImageToCDs": [
+    "store.image.imagetocds"
+  ],
+  "NP.view.shared.PortalRow": [
+    "widget.shared.portalrow"
+  ],
+  "NP.model.vendor.UtilityColumnUsageType": [],
+  "Ext.ux.RowExpander": [],
+  "NP.model.vendor.Vendorsite": [],
+  "NP.view.catalog.gridcol.VcLastUpdated": [
+    "widget.catalog.gridcol.vclastupdated"
+  ],
+  "NP.lib.print.renderer.GridPanel": [],
+  "NP.view.shared.PortalComponent": [],
+  "NP.model.property.Region": [],
+  "NP.model.importing.InvoiceExport": [],
+  "NP.view.catalogMaintenance.CatalogView": [
+    "widget.catalogmaintenance.catalogview"
+  ],
+  "NP.view.shared.button.Process": [
+    "widget.shared.button.process"
+  ],
+  "NP.view.gl.GLAccounts": [
+    "widget.gl.glaccounts"
+  ],
+  "NP.view.user.Reports": [
+    "widget.user.reports"
+  ],
+  "NP.lib.core.Config": [],
+  "NP.view.po.gridcol.CreatedDate": [
+    "widget.po.gridcol.createddate"
+  ],
+  "NP.model.catalog.UnspscCommodity": [],
+  "NP.model.importing.GLActual": [],
+  "NP.model.vendor.UtilityType": [],
+  "NP.view.property.gridcol.PropertyApCode": [
+    "widget.property.gridcol.propertyapcode"
+  ],
+  "NP.view.shared.gridcol.ButtonImg": [
+    "widget.shared.gridcol.buttonimg"
+  ],
+  "NP.view.invoice.gridcol.DueDate": [
+    "widget.invoice.gridcol.duedate"
+  ],
+  "NP.view.mySettings.Settings": [
+    "widget.mysettings.settings"
+  ],
+  "Ext.locale.fr_CA.view.View": [],
+  "NP.view.shared.gridcol.LastApprovedBy": [
+    "widget.shared.gridcol.lastapprovedby"
+  ],
+  "NP.model.importing.Unit": [],
+  "NP.view.vendor.gridcol.ViewVendor": [
+    "widget.vendor.gridcol.viewvendor"
+  ],
+  "NP.view.catalog.gridcol.VcItemNumber": [
+    "widget.catalog.gridcol.vcitemnumber"
+  ],
+  "NP.view.gl.GLAccountsGrid": [
+    "widget.gl.glaccountsgrid"
+  ],
+  "NP.view.invoice.gridcol.Notes": [
+    "widget.invoice.gridcol.notes"
+  ],
+  "NP.store.catalog.VcOrders": [],
+  "NP.view.catalogMaintenance.types.Punchout": [],
+  "NP.store.system.IntegrationPackages": [],
+  "NP.model.jobcosting.JbJobCode": [],
+  "NP.view.viewport.menu.BudgetMenu": [
+    "widget.viewport.menu.budgetmenu"
+  ],
+  "NP.view.image.grid.PurchaseOrders": [
+    "widget.image.grid.PurchaseOrders"
+  ],
+  "NP.view.invoice.ViewToolbar": [
+    "widget.invoice.viewtoolbar"
+  ],
+  "NP.view.image.gridcol.CreatedDT": [
+    "widget.image.gridcol.createddt"
+  ],
+  "NP.model.invoice.InvoicePayment": [],
+  "NP.view.catalog.gridcol.VcItemPrice": [
+    "widget.catalog.gridcol.vcitemprice"
+  ],
+  "NP.view.catalog.gridcol.VcItemType": [
+    "widget.catalog.gridcol.vcitemtype"
+  ],
+  "Ext.ux.ajax.Simlet": [
+    "simlet.basic"
+  ],
+  "NP.store.system.PriorityFlags": [
+    "store.system.priorityflags"
+  ],
+  "NP.model.property.Property": [],
+  "NP.model.property.UnitType": [],
+  "NP.model.jobcosting.JbCostCode": [],
+  "NP.view.property.UnitGrid": [
+    "widget.property.unitgrid"
+  ],
+  "NP.store.system.Countries": [],
+  "NP.view.vendor.gridcol.SentForApprovalBy": [
+    "widget.vendor.gridcol.sentforapprovalby"
+  ],
+  "NP.view.shared.button.Camera": [
+    "widget.shared.button.camera"
+  ],
+  "NP.view.user.UsersGrid": [
+    "widget.user.usersgrid"
+  ],
+  "NP.view.systemSetup.LoginPage": [
+    "widget.systemsetup.loginpage"
+  ],
+  "NP.view.user.gridcol.DelegationCreatedBy": [
+    "widget.user.gridcol.delegationcreatedby"
+  ],
+  "NP.lib.print.renderer.Chart": [],
+  "NP.view.receipt.gridcol.ReceiveDate": [
+    "widget.receipt.gridcol.receivedate"
+  ],
+  "Ext.ux.IFrame": [
+    "widget.uxiframe"
+  ],
+  "NP.model.system.DfSplitItem": [],
+  "NP.view.image.gridcol.NeededByDate": [
+    "widget.image.gridcol.neededbydate"
+  ],
+  "NP.view.importing.types.InvoicePayment": [],
+  "NP.view.catalogMaintenance.CatalogFormCategories": [
+    "widget.catalogmaintenance.catalogformcategories"
+  ],
+  "NP.view.shared.Phone": [
+    "widget.shared.phone"
+  ],
+  "NP.store.budget.BudgetOverages": [],
+  "NP.model.importing.Vendor": [],
+  "NP.view.importing.UploadForm": [
+    "widget.importing.uploadform"
+  ],
+  "NP.store.vendor.UtilityColumnUsageTypes": [
+    "store.vendor.utilitycolumnusagetypes"
+  ],
+  "NP.view.image.gridcol.InvoiceDate": [
+    "widget.image.gridcol.invoicedate"
+  ],
+  "NP.view.shared.button.Inactivate": [
+    "widget.shared.button.inactivate"
+  ],
+  "NP.view.catalog.VCListing": [
+    "widget.catalog.vclisting"
+  ],
+  "NP.view.vendor.VendorNameAndInformation": [
+    "widget.vendor.vendornameandinformation"
+  ],
+  "NP.view.invoice.ViewNotes": [
+    "widget.invoice.viewnotes"
+  ],
+  "NP.view.viewport.SummaryStatList": [
+    "widget.viewport.summarystatlist"
+  ],
+  "NP.model.contact.Person": [],
+  "NP.view.shared.tile.InvoicesToApprove": [],
+  "NP.model.user.Delegation": [],
+  "NP.view.viewport.menu.VendorMenu": [
+    "widget.viewport.menu.vendormenu"
+  ],
+  "NP.model.user.Role": [],
+  "NP.view.invoice.HoldWindow": [
+    "widget.invoice.holdwindow"
+  ],
+  "NP.view.po.gridcol.BudgetNotes": [
+    "widget.po.gridcol.budgetnotes"
+  ],
+  "NP.view.importing.CSVGrid": [
+    "widget.importing.csvgrid"
+  ],
+  "NP.view.property.Calendar": [
+    "widget.property.calendar"
+  ],
+  "NP.view.gl.Overview": [
+    "widget.gl.overview"
+  ],
+  "NP.model.jobcosting.JbChangeOrder": [],
+  "NP.view.shared.tile.ImageExceptions": [],
+  "overrides.grid.plugin.CellEditing": [],
+  "Ext.ux.GroupTabPanel": [
+    "widget.grouptabpanel"
+  ],
+  "Ext.ux.layout.Center": [
+    "layout.ux.center"
+  ],
+  "NP.view.vendor.AddImagesWindow": [
+    "widget.vendor.addimageswindow"
+  ],
+  "NP.view.mobileSetup.MobileGrid": [
+    "widget.mobilesetup.mobilegrid"
+  ],
+  "NP.view.catalog.VCCatalogView": [
+    "widget.catalog.vccatalogview"
+  ],
+  "NP.view.receipt.gridcol.TransferDate": [
+    "widget.receipt.gridcol.transferdate"
+  ],
+  "NP.view.property.UnitTypeGrid": [
+    "widget.property.unittypegrid"
+  ],
+  "NP.view.shared.invoicepo.Toolbar": [
+    "widget.shared.invoicepo.toolbar"
+  ],
+  "NP.view.shared.button.Cancel": [
+    "widget.shared.button.cancel"
+  ],
+  "NP.view.po.gridcol.SentToVendor": [
+    "widget.po.gridcol.senttovendor"
+  ],
+  "NP.view.receipt.ReceiptGrid": [
+    "widget.receipt.receiptgrid"
+  ],
+  "NP.view.shared.button.Back": [
+    "widget.shared.button.back"
+  ],
+  "NP.view.vendor.gridcol.VendorCode": [
+    "widget.vendor.gridcol.vendorcode"
+  ],
+  "NP.view.po.gridcol.Number": [
+    "widget.po.gridcol.number"
+  ],
+  "NP.view.importing.types.CustomFieldLine": [],
+  "NP.view.shared.YesNoField": [
+    "widget.shared.yesnofield"
+  ],
+  "NP.view.shared.button.Allocate": [
+    "widget.shared.button.allocate"
+  ],
+  "Ext.ux.event.Player": [],
+  "Ext.locale.en.view.AbstractView": [],
+  "NP.view.po.gridcol.ReceiptRequired": [
+    "widget.po.gridcol.receiptrequired"
+  ],
+  "NP.view.vendor.gridcol.VendorName": [
+    "widget.vendor.gridcol.vendorname"
+  ],
+  "NP.model.invoice.InvoiceItem": [],
+  "NP.view.viewport.menu.ReportMenu": [
+    "widget.viewport.menu.reportmenu"
+  ],
+  "NP.view.property.PropertiesForm": [
+    "widget.property.propertiesform"
+  ],
+  "NP.view.systemSetup.Picklists": [
+    "widget.systemsetup.picklists"
+  ],
+  "NP.view.catalog.gridcol.VcItemManufacturer": [
+    "widget.catalog.gridcol.vcitemmanufacturer"
+  ],
+  "Ext.locale.fr_CA.form.field.File": [],
+  "Ext.locale.en.form.field.Base": [],
+  "NP.controller.PropertySetup": [],
+  "NP.view.image.gridcol.Name": [
+    "widget.image.gridcol.name"
+  ],
+  "Ext.ux.TabCloseMenu": [
+    "plugin.tabclosemenu"
+  ],
+  "Ext.ux.grid.filter.DateTimeFilter": [
+    "gridfilter.datetime"
+  ],
+  "NP.store.shared.InvoicePoForwards": [
+    "store.shared.invoicepoforwards"
+  ],
+  "NP.model.user.VendorAccessUser": [],
+  "Ext.locale.en.toolbar.Paging": [],
+  "Ext.ux.grid.FiltersFeature": [
+    "feature.filters"
+  ],
+  "NP.view.image.gridcol.DueDate": [
+    "widget.image.gridcol.duedate"
+  ],
+  "NP.view.property.gridcol.Code": [
+    "widget.property.gridcol.code"
+  ],
+  "NP.model.contact.Address": [],
+  "NP.view.invoice.View": [
+    "widget.invoice.view"
+  ],
+  "Ext.ux.grid.TransformGrid": [],
+  "NP.view.image.gridcol.ScanDate": [
+    "widget.image.gridcol.scandate"
+  ],
+  "NP.view.invoice.gridcol.OnHoldReason": [
+    "widget.invoice.gridcol.onholdreason"
+  ],
+  "NP.view.utilitySetup.UtilitySetupForm": [
+    "widget.utilitysetup.utilitysetupform"
+  ],
+  "NP.view.importing.types.Property": [],
+  "Ext.locale.fr_CA.window.MessageBox": [],
+  "Ext.ux.ajax.XmlSimlet": [
+    "simlet.xml"
+  ],
+  "NP.view.user.UserContactInfo": [
+    "widget.user.usercontactinfo"
+  ],
+  "NP.view.shared.button.Hourglass": [
+    "widget.shared.button.hourglass"
+  ],
+  "NP.view.shared.invoicepo.ViewLines": [
+    "widget.shared.invoicepo.viewlines"
+  ],
+  "NP.model.image.ImageToCD": [],
+  "NP.view.property.PropertiesFormCal": [
+    "widget.property.propertiesformcal"
+  ],
+  "NP.store.catalog.CatalogTypes": [],
+  "NP.view.image.SearchCDIndex": [
+    "widget.image.searchcdindex"
+  ],
+  "NP.view.catalog.gridcol.VcStatus": [
+    "widget.catalog.gridcol.vcstatus"
+  ],
+  "NP.store.po.Purchaseorders": [],
+  "Ext.ux.form.MultiSelect": [
+    "widget.multiselect",
+    "widget.multiselectfield"
+  ],
+  "NP.view.vendor.grid.VendorPending": [
+    "widget.vendor.grid.vendorpending"
+  ],
+  "NP.view.catalog.AlphabeticalBrandsGrid": [
+    "widget.catalog.alphabeticalbrandsgrid"
+  ],
+  "NP.view.shared.ContextPicker": [
+    "widget.shared.contextpicker"
+  ],
+  "NP.view.shared.button.Upload": [
+    "widget.shared.button.upload"
+  ],
+  "NP.controller.MySettings": [],
+  "NP.view.image.gridcol.Type": [
+    "widget.image.gridcol.type"
+  ],
+  "NP.model.property.FiscalCalMonth": [],
+  "Ext.locale.en.form.field.HtmlEditor": [],
+  "NP.view.gl.CategoryGrid": [
+    "widget.gl.categorygrid"
+  ],
+  "NP.view.shared.tile.ReceiptsToApprove": [],
+  "Ext.locale.en.form.Basic": [],
+  "NP.model.invoice.InvoicePaymentType": [],
+  "NP.view.vendor.gridcol.SubmittedBy": [
+    "widget.vendor.gridcol.submittedby"
+  ],
+  "overrides.Component": [],
+  "Ext.locale.en.grid.NumberColumn": [],
+  "NP.controller.Images": [],
+  "NP.store.property.FiscalCalMonths": [],
+  "NP.lib.core.AbstractController": [],
+  "NP.view.utilitySetup.UtilityGrid": [
+    "widget.utilitysetup.utilitygrid"
+  ],
+  "Ext.ux.TabScrollerMenu": [
+    "plugin.tabscrollermenu"
+  ],
+  "NP.model.budget.BudgetOverage": [],
+  "overrides.form.field.ComboBox": [],
+  "NP.view.importing.types.GLCategory": [],
+  "NP.store.jobcosting.JbPhaseCodes": [
+    "store.jobcosting.jbphasecodes"
+  ],
+  "NP.view.property.gridcol.CreatedDate": [
+    "widget.property.gridcol.createddate"
+  ],
+  "NP.lib.data.Store": [],
+  "NP.view.image.gridcol.ImageType": [
+    "widget.image.gridcol.imagetype"
+  ],
+  "overrides.app.EventDomain": [],
+  "NP.view.user.gridcol.DelegationCancel": [
+    "widget.user.gridcol.delegationcancel"
+  ],
+  "Ext.locale.fr_CA.form.field.ComboBox": [],
+  "NP.view.property.gridcol.PropertyStatus": [
+    "widget.property.gridcol.propertystatus"
+  ],
+  "NP.view.image.gridcol.ExceptionBy": [
+    "widget.image.gridcol.exceptionby"
+  ],
+  "NP.lib.core.SummaryStatManager": [],
+  "NP.view.vendor.VendorImageUploadForm": [
+    "widget.vendor.vendorimageuploadform"
+  ],
+  "NP.view.shared.tile.YtdTopSpendByVendor": [],
+  "NP.model.importing.VendorFavorite": [],
+  "NP.view.image.Index": [
+    "widget.image.index"
+  ],
+  "NP.view.invoice.ReclassWindow": [
+    "widget.invoice.reclasswindow"
+  ],
+  "NP.view.receipt.gridcol.Period": [
+    "widget.receipt.gridcol.period"
+  ],
+  "NP.view.vendor.gridcol.AddToFavorite": [
+    "widget.vendor.gridcol.addtofavorite"
+  ],
+  "NP.view.catalogMaintenance.ItemGrid": [
+    "widget.catalogmaintenance.itemgrid"
+  ],
+  "NP.view.mySettings.UserInformation": [
+    "widget.mysettings.userinformation"
+  ],
+  "NP.view.property.PropertiesFormAccounting": [
+    "widget.property.propertiesformaccounting"
+  ],
+  "NP.view.shared.button.Reject": [
+    "widget.shared.button.reject"
+  ],
+  "Ext.locale.en.grid.DateColumn": [],
+  "NP.view.messageCenter.MessageForm": [
+    "widget.messagecenter.messageform"
+  ],
+  "NP.view.catalog.gridcol.VcItemDesc": [
+    "widget.catalog.gridcol.vcitemdesc"
+  ],
+  "NP.view.user.Users": [
+    "widget.user.users"
+  ],
+  "NP.view.vendor.VendorRejectWindow": [
+    "widget.vendor.vendorrejectwindow"
+  ],
+  "NP.view.vendor.InsuranceForm": [
+    "widget.vendor.insuranceform"
+  ],
+  "NP.view.catalog.gridcol.VcItemUom": [
+    "widget.catalog.gridcol.vcitemuom"
+  ],
+  "NP.model.user.Userprofile": [],
+  "NP.view.image.ImageGrid": [
+    "widget.image.imagegrid"
+  ],
+  "NP.model.invoice.UtilityAccount": [],
+  "Ext.locale.en.Component": [],
+  "NP.view.shared.VendorAssigner": [
+    "widget.shared.vendorassigner"
+  ],
+  "NP.model.shared.InvoicePoForward": [],
+  "NP.store.jobcosting.JbContracts": [
+    "store.jobcosting.jbcontracts"
+  ],
+  "NP.view.shared.tile.AbstractBudgetTile": [],
+  "NP.view.vendor.InsuranceUploadForm": [
+    "widget.vendor.insuranceuploadform"
+  ],
+  "NP.view.shared.tile.InvoicesByUser": [],
+  "NP.view.mySettings.MobileSettings": [
+    "widget.mysettings.mobilesettings"
+  ],
+  "NP.view.invoice.gridcol.CreatedDate": [
+    "widget.invoice.gridcol.createddate"
+  ],
+  "NP.view.image.gridcol.InvoiceNumber": [
+    "widget.image.gridcol.invoicenumber"
+  ],
+  "NP.view.invoice.InvoicePrintView": [
+    "widget.invoice.invoiceprintview"
+  ],
   "NP.view.shared.tile.AbstractPoTile": [],
   "NP.view.image.gridcol.DocType": [
     "widget.image.gridcol.doctype"
   ],
-  "NP.view.shared.PropertyCombo": [
-    "widget.shared.propertycombo"
-  ],
+  "Ext.locale.en.form.CheckboxGroup": [],
   "NP.store.system.UserMessages": [],
-  "NP.view.catalogMaintenance.types.Excel": [],
   "Ext.ux.DataTip": [
     "plugin.datatip"
-  ],
-  "NP.view.vendor.VendorAssignGlAccouns": [
-    "widget.vendor.vendorassignglaccouns"
   ],
   "Ext.ux.ajax.JsonSimlet": [
     "simlet.json"
@@ -1405,99 +2120,53 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.view.invoice.ViewHeader": [
     "widget.invoice.viewheader"
   ],
-  "NP.view.user.UsersFormPermissions": [
-    "widget.user.usersformpermissions"
-  ],
   "NP.view.importing.types.VendorFavorite": [],
   "NP.view.shared.PortalTilePicker": [
     "widget.shared.portaltilepicker"
   ],
-  "NP.view.systemSetup.CustomFields": [
-    "widget.systemsetup.customfields"
-  ],
   "NP.model.user.MobInfo": [],
-  "NP.view.mySettings.EmailFrequency": [
-    "widget.mysettings.emailfrequency"
-  ],
   "NP.store.invoice.InvoicePayments": [
     "store.invoice.invoicepayments"
   ],
-  "NP.view.budget.BudgetOverageForm": [
-    "widget.budget.budgetoverageform"
-  ],
-  "NP.view.invoice.gridcol.NeededByDate": [
-    "widget.invoice.gridcol.neededbydate"
-  ],
-  "NP.store.contact.States": [],
-  "NP.store.system.PayeeTypes": [],
-  "NP.view.receipt.gridcol.Notes": [
-    "widget.receipt.gridcol.notes"
-  ],
+  "Ext.locale.en.form.field.Number": [],
   "NP.view.shared.invoicepo.ForwardsGrid": [
     "widget.shared.invoicepo.forwardsgrid"
   ],
   "NP.view.gl.Category": [
     "widget.gl.category"
   ],
-  "NP.view.vendor.gridcol.SentForApprovalDate": [
-    "widget.vendor.gridcol.sentforapprovaldate"
-  ],
   "NP.model.importing.UnitType": [],
   "NP.view.importing.types.VendorUtility": [],
-  "NP.view.receipt.gridcol.CreatedDate": [
-    "widget.receipt.gridcol.createddate"
-  ],
   "NP.view.vendor.gridcol.ApprovalType": [
     "widget.vendor.gridcol.approvaltype"
   ],
-  "NP.view.viewport.menu.ImageMenu": [
-    "widget.viewport.menu.imagemenu"
-  ],
   "Ext.ux.DataView.DragSelector": [],
-  "NP.view.property.FiscalCalendarForm": [
-    "widget.property.fiscalcalendarform"
-  ],
-  "NP.view.shared.tile.PosReleased": [],
+  "Ext.locale.en.grid.PropertyColumnModel": [],
   "NP.view.importing.types.UnitType": [],
-  "NP.view.invoice.gridcol.RemittanceAdvice": [
-    "widget.invoice.gridcol.remittanceadvice"
-  ],
-  "NP.view.shared.UnitCombo": [
-    "widget.shared.unitcombo"
-  ],
   "Ext.ux.grid.menu.ListMenu": [],
+  "NP.view.shared.invoicepo.SplitWindow": [
+    "widget.shared.invoicepo.splitwindow"
+  ],
   "NP.view.shared.tile.PosToApprove": [],
   "NP.model.image.InvoiceImageSource": [],
-  "NP.view.user.gridcol.DelegationToName": [
-    "widget.user.gridcol.delegationtoname"
+  "NP.view.shared.button.SaveAndPrevious": [
+    "widget.shared.button.saveandprevious"
   ],
-  "NP.store.vendor.VendorTypes": [],
+  "NP.model.catalog.LinkVcVcCat": [],
   "NP.view.importing.types.GLBudget": [],
+  "NP.store.vendor.VendorTypes": [],
   "NP.lib.core.DataLoader": [],
-  "NP.view.invoice.gridcol.TemplateName": [
-    "widget.invoice.gridcol.templatename"
-  ],
-  "NP.view.vendor.PurchaseOrder": [
-    "widget.vendor.purchaseorder"
+  "NP.view.shared.button.FavoriteGlobal": [
+    "widget.shared.button.favoriteglobal"
   ],
   "NP.controller.UserManager": [],
-  "NP.view.user.UsersFormDelegation": [
-    "widget.user.usersformdelegation"
-  ],
   "NP.model.system.DfSplit": [],
-  "NP.store.property.Units": [
-    "store.property.units"
-  ],
-  "NP.model.system.PnCustomField": [],
   "Ext.ux.PreviewPlugin": [
     "plugin.preview"
   ],
-  "NP.view.systemSetup.WorkflowManager": [
-    "widget.systemsetup.workflowmanager"
-  ],
+  "Ext.locale.fr_CA.grid.header.Container": [],
   "Ext.ux.ajax.SimXhr": [],
   "NP.model.catalog.VcItem": [],
-  "NP.view.shared.tile.ReceiptsRejected": [],
   "Ext.ux.CellDragDrop": [
     "plugin.celldragdrop"
   ],
@@ -1508,22 +2177,27 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.view.viewport.ImagePanel": [
     "widget.viewport.imagepanel"
   ],
-  "Ext.ux.SlidingPager": [],
   "Ext.ux.TabReorderer": [],
   "NP.view.shared.UserAssigner": [
     "widget.shared.userassigner"
   ],
-  "NP.view.vendor.VendorInsuranceSetup": [
-    "widget.vendor.vendorinsurancesetup"
-  ],
   "Ext.ux.grid.filter.NumericFilter": [
     "gridfilter.numeric"
   ],
-  "NP.view.user.gridcol.DelegationFromName": [
-    "widget.user.gridcol.delegationfromname"
+  "NP.view.vendor.VendorInsuranceSetup": [
+    "widget.vendor.vendorinsurancesetup"
+  ],
+  "NP.view.shared.button.PurchaseOrder": [
+    "widget.shared.button.purchaseorder"
   ],
   "Ext.ux.event.Recorder": [],
+  "NP.view.image.gridcol.ExceptionDate": [
+    "widget.image.gridcol.exceptiondate"
+  ],
   "NP.model.image.ImageDocType": [],
+  "NP.view.shared.invoicepo.RejectWindow": [
+    "widget.shared.invoicepo.rejectwindow"
+  ],
   "NP.view.mySettings.Display": [
     "widget.mysettings.display"
   ],
@@ -1533,50 +2207,34 @@ Ext.ClassManager.addNameAliasMappings({
   "Ext.ux.grid.filter.BooleanFilter": [
     "gridfilter.boolean"
   ],
-  "NP.view.shared.tile.MtdOverBudgetCategories": [],
   "NP.view.shared.tile.InvoicesRejected": [],
-  "NP.view.budget.BudgetOverageGrid": [
-    "widget.budget.budgetoveragegrid"
+  "NP.view.vendor.VendorAssignGlAccounts": [
+    "widget.vendor.vendorassignglaccounts"
   ],
-  "Ext.ux.form.SearchField": [
-    "widget.searchfield"
-  ],
-  "Ext.ux.dd.CellFieldDropZone": [],
+  "Ext.locale.en.view.View": [],
   "NP.store.property.FiscalCals": [],
-  "NP.view.invoice.gridcol.Status": [
-    "widget.invoice.gridcol.status"
-  ],
-  "NP.model.jobcosting.JbContractBudget": [],
   "NP.view.gl.gridcol.GlAccountName": [
     "widget.gl.gridcol.glaccountname"
   ],
   "NP.view.shared.GlCombo": [
     "widget.shared.glcombo"
   ],
-  "NP.view.user.gridcol.DelegationView": [
-    "widget.user.gridcol.delegationview"
+  "Ext.locale.en.window.MessageBox": [],
+  "NP.store.system.DfSplits": [
+    "store.system.dfsplits"
   ],
-  "NP.store.shared.Warnings": [
-    "store.shared.warnings"
+  "NP.view.shared.invoicepo.ImagesAddWindow": [
+    "widget.shared.invoicepo.imagesaddwindow"
   ],
-  "NP.store.system.DfSplits": [],
   "NP.view.user.Groups": [
     "widget.user.groups"
   ],
-  "NP.view.shared.tile.PosByUser": [],
   "NP.view.viewport.menu.InvoiceMenu": [
     "widget.viewport.menu.invoicemenu"
   ],
   "NP.view.shared.tile.YtdOverBudgetCategories": [],
-  "NP.lib.core.Security": [],
   "NP.view.property.PropertiesMain": [
     "widget.property.propertiesmain"
-  ],
-  "NP.view.property.FiscalCalendarGrid": [
-    "widget.property.fiscalcalendargrid"
-  ],
-  "NP.view.property.Region": [
-    "widget.property.region"
   ],
   "NP.view.shared.tile.ReceiptsPendingPost": [],
   "NP.model.system.PnUniversalField": [],
@@ -1589,20 +2247,20 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.view.vendor.VendorGrid": [
     "widget.vendor.vendorgrid"
   ],
-  "NP.view.user.UserDelegationForm": [
-    "widget.user.userdelegationform"
-  ],
   "NP.view.invoice.gridcol.Period": [
     "widget.invoice.gridcol.period"
   ],
+  "NP.view.user.UserDelegationForm": [
+    "widget.user.userdelegationform"
+  ],
   "NP.view.shared.tile.InvoicesOnHold": [],
+  "NP.store.shared.RejectionNotes": [
+    "store.shared.rejectionnotes"
+  ],
+  "NP.view.catalog.SearchForm": [
+    "widget.catalog.searchform"
+  ],
   "NP.controller.Import": [],
-  "NP.view.user.UserManager": [
-    "widget.user.usermanager"
-  ],
-  "Ext.ux.GMapPanel": [
-    "widget.gmappanel"
-  ],
   "NP.store.gl.GlAccounts": [
     "store.gl.glaccounts"
   ],
@@ -1615,110 +2273,50 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.view.catalog.gridcol.VcCreatedOn": [
     "widget.catalog.gridcol.vccreatedon"
   ],
-  "NP.model.importing.Property": [],
   "NP.model.po.Purchaseorder": [],
-  "NP.view.vendor.InvoiceDocuments": [
-    "widget.vendor.invoicedocuments"
-  ],
-  "NP.store.catalog.VcCats": [],
   "NP.view.importing.types.Vendor": [],
-  "NP.view.shared.CustomField": [
-    "widget.shared.customfield"
+  "NP.view.catalog.BrandsView": [
+    "widget.catalog.brandsview"
   ],
-  "NP.view.catalogMaintenance.CatalogFormUploadInfoPdf": [
-    "widget.catalogmaintenance.catalogformuploadinfopdf"
-  ],
-  "NP.view.shared.invoicepo.ViewWarnings": [
-    "widget.shared.invoicepo.viewwarnings"
-  ],
-  "Ext.ux.DataView.Animated": [],
   "NP.view.property.Overview": [
     "widget.property.overview"
-  ],
-  "NP.store.gl.GlAccountTypes": [
-    "store.gl.glaccounttypes"
-  ],
-  "NP.model.vendor.InsuranceType": [],
-  "NP.view.property.gridcol.PropertyName": [
-    "widget.property.gridcol.propertyname"
-  ],
-  "NP.view.shared.button.Reset": [
-    "widget.shared.button.reset"
-  ],
-  "Ext.ux.statusbar.StatusBar": [
-    "widget.statusbar"
   ],
   "NP.view.invoice.gridcol.Date": [
     "widget.invoice.gridcol.date"
   ],
-  "NP.model.contact.State": [],
   "NP.view.gl.Reports": [
     "widget.gl.reports"
   ],
   "NP.view.catalogMaintenance.CatalogFormPoSubmission": [
     "widget.catalogmaintenance.catalogformposubmission"
   ],
-  "overrides.form.Basic": [],
-  "NP.view.shared.PropertyAssigner": [
-    "widget.shared.propertyassigner"
-  ],
-  "NP.view.mySettings.UserPermissions": [
-    "widget.mysettings.userpermissions"
-  ],
-  "NP.view.shared.gridcol.PendingApprovalDays": [
-    "widget.shared.gridcol.pendingapprovaldays"
-  ],
   "NP.view.user.UserDelegation": [
     "widget.user.userdelegation"
   ],
-  "NP.lib.core.Util": [],
-  "NP.view.catalog.gridcol.VcType": [
-    "widget.catalog.gridcol.vctype"
-  ],
   "NP.model.catalog.VcCat": [],
-  "NP.model.importing.CustomFieldLine": [],
   "NP.view.catalogMaintenance.CatalogRegister": [
     "widget.catalogmaintenance.catalogregister"
-  ],
-  "NP.view.shared.gridcol.RejectedBy": [
-    "widget.shared.gridcol.rejectedby"
   ],
   "NP.lib.ui.DateTimeField": [
     "widget.datetimefield"
   ],
-  "NP.store.user.Roles": [
-    "store.user.roles"
-  ],
-  "NP.view.vendor.VendorSearch": [
-    "widget.vendor.vendorsearch"
-  ],
   "Ext.ux.DataView.Draggable": [],
   "overrides.form.Panel": [],
-  "NP.view.property.UnitTypeForm": [
-    "widget.property.unittypeform"
-  ],
-  "NP.view.catalogMaintenance.CatalogFormInfo": [
-    "widget.catalogmaintenance.catalogforminfo"
+  "Ext.locale.fr_CA.form.field.Text": [],
+  "NP.view.shared.button.Next": [
+    "widget.shared.button.next"
   ],
   "NP.model.contact.Phone": [],
-  "Ext.ux.form.ItemSelector": [
-    "widget.itemselector",
-    "widget.itemselectorfield"
-  ],
-  "NP.store.jobcosting.JbJobCodes": [
-    "store.jobcosting.jbjobcodes"
-  ],
   "NP.view.shared.gridcol.CreatedBy": [
     "widget.shared.gridcol.createdby"
   ],
   "NP.model.system.UserMessage": [],
-  "Ext.ux.Spotlight": [],
-  "NP.view.importing.types.CustomFieldHeader": [],
-  "NP.view.shared.tile.AbstractReceiptTile": [],
+  "NP.view.catalog.CategoriesDataView": [
+    "widget.catalog.categoriesdataview"
+  ],
   "NP.view.invoice.ViewReclass": [
     "widget.invoice.viewreclass"
   ],
-  "NP.controller.Viewport": [],
   "NP.view.image.gridcol.Amount": [
     "widget.image.gridcol.amount"
   ],
@@ -1727,37 +2325,41 @@ Ext.ClassManager.addNameAliasMappings({
   ],
   "NP.model.notification.EmailAlertType": [],
   "NP.view.shared.tile.AbstractImageTile": [],
-  "NP.view.user.GroupsFormDashboard": [
-    "widget.user.groupsformdashboard"
+  "NP.view.catalog.VcOrder": [
+    "widget.catalog.vcorder"
   ],
   "NP.view.user.GroupsFormInfo": [
     "widget.user.groupsforminfo"
   ],
-  "Ext.ux.ajax.DataSimlet": [],
+  "NP.view.user.GroupsFormDashboard": [
+    "widget.user.groupsformdashboard"
+  ],
   "NP.view.image.gridcol.Source": [
     "widget.image.gridcol.source"
   ],
-  "NP.view.catalogMaintenance.types.AbstractCatalog": [],
-  "NP.model.jobcosting.JbPhaseCode": [],
-  "NP.model.importing.VendorGL": [],
+  "NP.view.catalog.OrderView": [
+    "widget.catalog.orderview"
+  ],
+  "NP.view.image.button.nsiss": [
+    "widget.image.button.nsiss"
+  ],
   "NP.controller.BudgetOverage": [],
-  "NP.store.contact.Addresses": [],
-  "NP.store.property.UnitTypeVals": [],
   "NP.model.importing.Split": [],
+  "NP.model.invoice.UtilityColumnUsageType": [],
   "NP.view.po.gridcol.Period": [
     "widget.po.gridcol.period"
-  ],
-  "NP.view.property.gridcol.RegionName": [
-    "widget.property.gridcol.regionname"
   ],
   "NP.view.viewport.TopMenu": [
     "widget.viewport.topmenu"
   ],
+  "NP.view.property.gridcol.RegionName": [
+    "widget.property.gridcol.regionname"
+  ],
   "NP.view.user.UsersForm": [
     "widget.user.usersform"
   ],
-  "NP.view.shared.gridcol.PendingApprovalFor": [
-    "widget.shared.gridcol.pendingapprovalfor"
+  "NP.view.image.button.npiss": [
+    "widget.image.button.npiss"
   ],
   "NP.model.importing.GLBudget": [],
   "NP.view.user.UserDelegationGrid": [
@@ -1765,14 +2367,14 @@ Ext.ClassManager.addNameAliasMappings({
   ],
   "NP.Locale": [],
   "NP.store.user.Mobinfos": [],
-  "NP.view.catalog.gridcol.VcItemCategory": [
-    "widget.catalog.gridcol.vcitemcategory"
-  ],
   "NP.view.importing.Main": [
     "widget.importing.main"
   ],
-  "NP.view.shared.VendorAutoComplete": [
-    "widget.shared.vendorautocomplete"
+  "NP.view.catalog.gridcol.VcItemCategory": [
+    "widget.catalog.gridcol.vcitemcategory"
+  ],
+  "NP.view.catalog.CreateOrderGrid": [
+    "widget.catalog.createordergrid"
   ],
   "NP.view.shared.GlAccountAssigner": [
     "widget.shared.glaccountassigner"
@@ -1781,66 +2383,35 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.view.invoice.Register": [
     "widget.invoice.register"
   ],
-  "NP.model.importing.CustomFieldHeader": [],
   "NP.lib.ui.ComboBox": [
     "widget.customcombo"
   ],
-  "NP.view.importing.Overview": [
-    "widget.importing.overview"
-  ],
-  "NP.lib.core.Translator": [],
+  "NP.model.importing.CustomFieldHeader": [],
   "NP.view.shared.tile.AbstractInvoiceTile": [],
+  "NP.model.importing.User": [],
   "NP.view.property.PropertiesFormInfo": [
     "widget.property.propertiesforminfo"
   ],
-  "Ext.ux.ProgressBarPager": [],
-  "NP.model.importing.User": [],
-  "NP.model.po.Receipt": [],
-  "NP.model.system.HistoryLog": [],
-  "NP.view.vendor.VendorGeneralInfoAndSettings": [
-    "widget.vendor.vendorgeneralinfoandsettings"
+  "NP.view.catalog.TopBar": [
+    "widget.catalog.topbar"
   ],
+  "NP.model.system.HistoryLog": [],
   "NP.view.shared.PermissionToolbar": [
     "widget.shared.permissiontoolbar"
   ],
   "NP.controller.Invoice": [],
   "NP.store.budget.BudgetOverage": [],
-  "NP.model.importing.VendorUtility": [],
-  "overrides.JSON": [],
-  "NP.model.system.IntegrationPackage": [],
   "NP.view.property.Properties": [
     "widget.property.properties"
-  ],
-  "NP.view.shared.PortalCanvas": [
-    "widget.shared.portalcanvas"
-  ],
-  "NP.model.contact.Email": [],
-  "Ext.ux.ajax.SimManager": [],
-  "NP.view.systemSetup.DefaultSplitForm": [
-    "widget.systemsetup.defaultsplitform"
-  ],
-  "NP.controller.MobileSetup": [],
-  "NP.model.user.RecAuthor": [],
-  "NP.view.po.PoGrid": [
-    "widget.po.pogrid"
   ],
   "NP.store.vendor.UtilityTypes": [
     "store.vendor.utilitytypes"
   ],
-  "NP.store.user.RoleTree": [],
-  "NP.model.vendor.UtilityAccount": [],
-  "NP.view.shared.invoicepo.ViewHeaderPickers": [
-    "widget.shared.invoicepo.viewheaderpickers"
+  "NP.view.shared.button.Cd": [
+    "widget.shared.button.cd"
   ],
-  "NP.model.image.ImageIndex": [],
-  "NP.view.vendor.VendorForm": [
-    "widget.vendor.vendorform"
-  ],
-  "NP.view.invoice.InvoiceGrid": [
-    "widget.invoice.invoicegrid"
-  ],
-  "NP.view.mySettings.EmailNotification": [
-    "widget.mysettings.emailnotification"
+  "NP.view.image.gridcol.DeletedBy": [
+    "widget.image.gridcol.deletedby"
   ],
   "NP.view.image.gridcol.ImageStatus": [
     "widget.image.gridcol.imagestatus"
@@ -1853,43 +2424,30 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.store.vendor.Vendors": [
     "store.vendor.vendors"
   ],
-  "overrides.util.Format": [],
-  "NP.view.invoice.gridcol.PendingDays": [
-    "widget.invoice.gridcol.pendingdays"
+  "NP.view.shared.button.Shop": [
+    "widget.shared.button.shop"
   ],
+  "NP.lib.core.SequenceTracker": [],
+  "overrides.util.Format": [],
   "NP.view.shared.tile.VendorsToApprove": [],
   "Ext.ux.TreePicker": [
     "widget.treepicker"
   ],
-  "NP.view.shared.gridcol.IntegrationPackageName": [
-    "widget.shared.gridcol.integrationpackagename"
-  ],
-  "NP.view.importing.types.AbstractImportType": [],
-  "NP.view.po.gridcol.NeededByDate": [
-    "widget.po.gridcol.neededbydate"
+  "Ext.ux.data.PagingMemoryProxy": [
+    "proxy.pagingmemory"
   ],
   "NP.view.utilitySetup.UtilityAccountList": [
     "widget.utilitysetup.utilityaccountlist"
   ],
-  "NP.model.importing.GLCategory": [],
-  "Ext.ux.data.PagingMemoryProxy": [
-    "proxy.pagingmemory"
-  ],
-  "NP.view.importing.types.VendorGL": [],
   "NP.store.vendor.Utilities": [],
-  "NP.view.shared.button.Save": [
-    "widget.shared.button.save"
-  ],
   "NP.view.gl.GLAccountsForm": [
     "widget.gl.glaccountsform"
   ],
-  "NP.controller.SystemSetup": [],
-  "Ext.ux.grid.filter.Filter": [],
   "Ext.ux.GroupTabRenderer": [
     "plugin.grouptabrenderer"
   ],
-  "NP.view.catalogMaintenance.CatalogFormProperties": [
-    "widget.catalogmaintenance.catalogformproperties"
+  "NP.view.favorites.AddToFavoritesWindow": [
+    "widget.favorites.addtofavoriteswindow"
   ],
   "NP.view.catalogMaintenance.CatalogFormVendors": [
     "widget.catalogmaintenance.catalogformvendors"
@@ -1897,79 +2455,44 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.view.shared.RoleAssigner": [
     "widget.shared.roleassigner"
   ],
-  "NP.view.mySettings.Main": [
-    "widget.mysettings.main"
-  ],
   "NP.store.property.UnitTypeMeasurements": [],
+  "NP.view.catalog.OrderPropertiesForm": [
+    "widget.catalog.orderpropertiesform"
+  ],
   "NP.view.user.GroupsForm": [
     "widget.user.groupsform"
   ],
-  "NP.model.jobcosting.JbContract": [],
   "NP.view.viewport.Home": [
     "widget.viewport.home"
   ],
-  "NP.model.catalog.Vc": [],
   "NP.model.vendor.Utility": [],
-  "NP.controller.GLAccountSetup": [],
   "NP.view.Viewport": [],
-  "NP.view.invoice.ViewPayments": [
-    "widget.invoice.viewpayments"
+  "NP.controller.GLAccountSetup": [],
+  "NP.view.shared.button.SaveAndNext": [
+    "widget.shared.button.saveandnext"
   ],
-  "NP.view.property.IntegrationPackage": [
-    "widget.property.integrationpackage"
-  ],
-  "NP.view.shared.button.Activate": [
-    "widget.shared.button.activate"
-  ],
-  "NP.lib.core.Net": [],
-  "NP.view.importing.types.User": [],
-  "NP.view.gl.Main": [
-    "widget.gl.main"
-  ],
-  "NP.view.gl.CategoryForm": [
-    "widget.gl.categoryform"
-  ],
-  "NP.view.shared.button.SaveAndAdd": [
-    "widget.shared.button.saveandadd"
-  ],
-  "NP.view.vendor.gridcol.InsuranceTypeName": [
-    "widget.vendor.gridcol.insurancetypename"
-  ],
+  "Ext.locale.fr_CA.tab.Tab": [],
+  "Ext.locale.fr_CA.toolbar.Paging": [],
   "Ext.ux.DataView.LabelEditor": [],
-  "NP.view.user.gridcol.DelegationStatus": [
-    "widget.user.gridcol.delegationstatus"
+  "NP.view.image.grid.Exceptions": [
+    "widget.image.grid.Exceptions"
   ],
-  "overrides.form.field.Number": [],
-  "NP.store.security.ModuleTree": [],
-  "NP.store.system.Tiles": [],
+  "NP.view.catalog.AdvancedSearch": [
+    "widget.catalog.advancedsearch"
+  ],
   "NP.view.importing.types.Unit": [],
-  "NP.controller.MessageCenter": [],
   "NP.view.property.Main": [
     "widget.property.main"
   ],
   "NP.store.system.SecurityQuestions": [],
-  "NP.view.importing.ImportSection": [
-    "widget.importing.importsection"
-  ],
-  "NP.view.shared.tile.AbstractSummaryStatTile": [],
-  "NP.model.user.Userprofilerole": [],
+  "NP.lib.core.KeyManager": [],
   "NP.view.shared.tile.PosRejected": [],
-  "overrides.data.Field": [],
-  "Ext.locale.en.data.validations": [],
-  "NP.view.shared.PortalRow": [
-    "widget.shared.portalrow"
-  ],
-  "NP.model.vendor.UtilityColumnUsageType": [],
-  "NP.view.vendor.AlternativeAddresses": [
-    "widget.vendor.alternativeaddresses"
-  ],
-  "Ext.ux.RowExpander": [],
+  "overrides.util.Sorter": [],
   "NP.view.property.gridcol.PropertyCode": [
     "widget.property.gridcol.propertycode"
   ],
-  "NP.model.vendor.Vendorsite": [],
-  "NP.view.catalog.gridcol.VcLastUpdated": [
-    "widget.catalog.gridcol.vclastupdated"
+  "NP.view.vendor.AlternativeAddresses": [
+    "widget.vendor.alternativeaddresses"
   ],
   "NP.store.vendor.UtilityAccounts": [
     "store.vendor.utilityaccounts"
@@ -1977,48 +2500,53 @@ Ext.ClassManager.addNameAliasMappings({
   "NP.view.shared.gridcol.RejectedReason": [
     "widget.shared.gridcol.rejectedreason"
   ],
+  "NP.view.catalog.OrderCreate": [
+    "widget.catalog.ordercreate"
+  ],
+  "NP.view.favorites.FavoritesWindow": [
+    "widget.favorites.favoriteswindow"
+  ],
   "Ext.ux.event.Maker": [],
+  "NP.view.shared.button.Go": [
+    "widget.shared.button.go"
+  ],
   "NP.view.importing.types.GLActual": [],
-  "NP.view.shared.PortalComponent": [],
+  "Ext.locale.fr_CA.view.AbstractView": [],
+  "NP.view.shared.button.AddToOrder": [
+    "widget.shared.button.addtoorder"
+  ],
   "NP.view.shared.gridcol.UniversalField": [
     "widget.shared.gridcol.universalfield"
+  ],
+  "NP.view.shared.gridcol.LastApprovedDate": [
+    "widget.shared.gridcol.lastapproveddate"
   ],
   "NP.view.property.PropertiesFormUnitMeasurements": [
     "widget.property.propertiesformunitmeasurements"
   ],
-  "NP.model.property.Region": [],
-  "NP.view.shared.gridcol.LastApprovedDate": [
-    "widget.shared.gridcol.lastapproveddate"
-  ],
-  "NP.model.importing.InvoiceExport": [],
-  "NP.view.user.UsersFrequentlyBasedEmailAlertsForm": [
-    "widget.user.usersfrequentlybasedemailalertsform"
-  ],
   "NP.view.property.UnitForm": [
     "widget.property.unitform"
   ],
-  "NP.view.catalogMaintenance.CatalogView": [
-    "widget.catalogmaintenance.catalogview"
+  "NP.view.user.UsersFrequentlyBasedEmailAlertsForm": [
+    "widget.user.usersfrequentlybasedemailalertsform"
   ],
-  "NP.view.gl.GLAccounts": [
-    "widget.gl.glaccounts"
+  "NP.view.invoice.gridcol.PayBy": [
+    "widget.invoice.gridcol.payby"
+  ],
+  "NP.view.shared.invoicepo.ImagesManageWindow": [
+    "widget.shared.invoicepo.imagesmanagewindow"
   ],
   "NP.view.catalogMaintenance.CatalogGrid": [
     "widget.catalogmaintenance.cataloggrid"
-  ],
-  "NP.view.user.Reports": [
-    "widget.user.reports"
   ],
   "NP.view.importing.types.UserProperty": [],
   "NP.store.property.UnitTypes": [],
   "NP.view.invoice.gridcol.DaysOnHold": [
     "widget.invoice.gridcol.daysonhold"
   ],
+  "NP.model.invoice.UnitTypeMaterial": [],
   "NP.view.shared.button.Approve": [
     "widget.shared.button.approve"
   ],
-  "NP.lib.core.Config": [],
-  "NP.view.po.gridcol.CreatedDate": [
-    "widget.po.gridcol.createddate"
-  ]
+  "Ext.locale.en.form.RadioGroup": []
 });

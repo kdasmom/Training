@@ -18,7 +18,7 @@ use NP\gl\GlAccountGateway;
 
 class VendorGLImportEntityValidator extends AbstractImportEntityValidator {
     
-    protected $integrationPackageGateway, $vendorGateway, $glAccountGateway, $glAccountGateway;
+    protected $integrationPackageGateway, $vendorGateway, $glAccountGateway;
 
     public function __construct(LocalizationService $localizationService, Adapter $adapter,
                                 IntegrationPackageGateway $integrationPackageGateway,
@@ -44,7 +44,7 @@ class VendorGLImportEntityValidator extends AbstractImportEntityValidator {
         if (!empty($intPkg)) {
             // Validate vendor
             $vendor = $this->vendorGateway->find(
-                array('vendor_id_alt'=>'?', 'integration_package_id'=>'?'),
+                array('v.vendor_id_alt'=>'?', 'v.integration_package_id'=>'?'),
                 array($entity->vendor_id_alt, $intPkg[0]['integration_package_id'])
             );
             
@@ -54,7 +54,7 @@ class VendorGLImportEntityValidator extends AbstractImportEntityValidator {
 
             // Validate GL Account
             $gl = $this->glAccountGateway->find(
-                array('glaccount_number' => '?', 'integration_package_id'=> '?'),
+                array('g.glaccount_number' => '?', 'g.integration_package_id'=> '?'),
                 array($entity->glaccount_number, $intPkg[0]['integration_package_id'])
             );
 
@@ -65,7 +65,7 @@ class VendorGLImportEntityValidator extends AbstractImportEntityValidator {
             // Check if record already exists
             if (!empty($vendor) && !empty($gl)) {
                 $rec = $this->vendorGlAccountsGateway->find(
-                    array('vendor_id'=>'?', 'glaccount_id'=>'?'),
+                    array('vg.vendor_id'=>'?', 'vg.glaccount_id'=>'?'),
                     array($vendor[0]['vendor_id'], $gl[0]['glaccount_id'])
                 );
 

@@ -60,6 +60,7 @@ Ext.define('NP.view.invoice.Register', {
 							'shared.gridcol.RejectedReason','shared.gridcol.LastApprovedDate',
 							'shared.gridcol.LastApprovedBy','invoice.gridcol.HoldDate',
 							'invoice.gridcol.DaysOnHold','invoice.gridcol.OnHoldBy',
+							'invoice.gridcol.OnHoldReason','invoice.gridcol.OnHoldNotes',
 							'invoice.gridcol.TemplateName','shared.gridcol.PendingApprovalDays',
 							'shared.gridcol.PendingApprovalFor','invoice.gridcol.VoidDate',
 							'invoice.gridcol.VoidBy','invoice.gridcol.PaymentDetails',
@@ -79,6 +80,14 @@ Ext.define('NP.view.invoice.Register', {
 		// Setup columns for Rejected grid
 		rejectedCols = openCols.slice(0);
 		rejectedCols.push('shared.gridcol.CreatedBy','shared.gridcol.RejectedDate','shared.gridcol.RejectedBy');
+		rejectedExcluded = ['shared.gridcol.LastApprovedDate',
+							'shared.gridcol.LastApprovedBy','invoice.gridcol.HoldDate',
+							'invoice.gridcol.DaysOnHold','invoice.gridcol.OnHoldBy',
+							'invoice.gridcol.OnHoldReason','invoice.gridcol.OnHoldNotes',
+							'invoice.gridcol.TemplateName','shared.gridcol.PendingApprovalDays',
+							'shared.gridcol.PendingApprovalFor','invoice.gridcol.VoidDate',
+							'invoice.gridcol.VoidBy','invoice.gridcol.PaymentDetails',
+							'invoice.gridcol.PaymentAmountRemaining'];
 		
 		// Setup columns for Overdue grid
 		overdueCols.push('invoice.gridcol.Date','invoice.gridcol.DueDate','invoice.gridcol.Status');
@@ -88,6 +97,13 @@ Ext.define('NP.view.invoice.Register', {
 
 		// Setup columns for On Hold grid
 		onHoldCols.push('invoice.gridcol.DueDate','invoice.gridcol.HoldDate','invoice.gridcol.DaysOnHold','invoice.gridcol.OnHoldBy');
+		holdExcluded = ['shared.gridcol.RejectedDate','shared.gridcol.RejectedBy',
+							'shared.gridcol.RejectedReason','shared.gridcol.LastApprovedDate',
+							'shared.gridcol.LastApprovedBy',
+							'invoice.gridcol.TemplateName','shared.gridcol.PendingApprovalDays',
+							'shared.gridcol.PendingApprovalFor','invoice.gridcol.VoidDate',
+							'invoice.gridcol.VoidBy','invoice.gridcol.PaymentDetails',
+							'invoice.gridcol.PaymentAmountRemaining'],
 
 		// Setup columns for Pending grid
 		pendingCols     = openCols.slice(0);
@@ -111,31 +127,32 @@ Ext.define('NP.view.invoice.Register', {
 
 		grids.push(
 			{
-				title       : NP.Translator.translate('Open'),
+				title       : 'Open',
 				cols        : openCols,
 				excludedCols: excludedCols
 			},{
-				title: NP.Translator.translate('Rejected'),
-				cols : rejectedCols
+				title       : 'Rejected',
+				cols        : rejectedCols,
+				excludedCols: rejectedExcluded
 			},{
-				title: NP.Translator.translate('Overdue'),
+				title: 'Overdue',
 				cols : overdueCols,
 				excludedCols: excludedCols
 			},{
-				title: NP.Translator.translate('Template'),
+				title: 'Template',
 				cols : templateCols,
 				excludedCols: excludedCols
 			},{
 				tab  : 'OnHold',
-				title: NP.Translator.translate('On Hold'),
+				title: 'On Hold',
 				cols : onHoldCols,
-				excludedCols: excludedCols
+				excludedCols: holdExcluded
 			},{
-				title: NP.Translator.translate('Pending'),
+				title: 'Pending',
 				cols : pendingCols,
 				excludedCols: excludedCols
 			},{
-				title: NP.Translator.translate('Approved'),
+				title: 'Approved',
 				cols : approvedCols,
 				excludedCols: ['shared.gridcol.RejectedDate','shared.gridcol.RejectedBy',
 							'shared.gridcol.RejectedReason','invoice.gridcol.HoldDate',
@@ -145,20 +162,20 @@ Ext.define('NP.view.invoice.Register', {
 							'invoice.gridcol.VoidBy']
 			},{
 				tab  : 'Submitted',
-				title: NP.Translator.translate('Submitted for Payment'),
+				title: 'Submitted for Payment',
 				cols : submittedCols,
 				excludedCols: excludedCols
 			},{
 				tab  : 'Transferred',
-				title: NP.Translator.translate('Transferred to GL'),
+				title: 'Transferred to GL',
 				cols : transferredCols,
 				excludedCols: excludedCols
 			},{
-				title: NP.Translator.translate('Paid'),
+				title: 'Paid',
 				cols : paidCols,
 				excludedCols: excludedCols
 			},{
-				title: NP.Translator.translate('Void'),
+				title: 'Void',
 				cols : voidCols,
 				excludedCols: excludedCols
 			}
@@ -171,7 +188,7 @@ Ext.define('NP.view.invoice.Register', {
     		gridConfigs.push({
 				xtype       : 'invoice.invoicegrid',
 				itemId      : 'invoice_grid_' + tab.toLowerCase(),
-				title       : grid.title,
+				title       : NP.Translator.translate(grid.title),
 				cols        : grid.cols,
 				excludedCols: grid.excludedCols,
 				stateful    : true,

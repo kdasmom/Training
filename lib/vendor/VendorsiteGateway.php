@@ -76,31 +76,6 @@ class VendorsiteGateway extends AbstractGateway {
 	}
 
 	/**
-	 * assign GlAccounts to vendor
-	 *
-	 * @param $glaccounts
-	 * @param $vendor_id
-	 * @return bool
-	 */
-	public function assignGlAccounts($glaccounts, $vendor_id) {
-
-		foreach (explode(',', $glaccounts) as $glaccount) {
-			$insert = new Insert();
-			$select = new Select();
-			$insert->into('vendorglaccounts')
-						->columns(array('vendor_id', 'glaccount_id'))
-						->values($select->columns([new Expression('?'), new Expression('?')]));
-
-			$result = $this->adapter->query($insert, [$vendor_id, $glaccount]);
-			if (!$result) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	/**
 	 * Approve vendorsite
 	 *
 	 * @param $asp_client_id

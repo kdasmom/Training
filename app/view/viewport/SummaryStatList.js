@@ -36,12 +36,13 @@ Ext.define('NP.view.viewport.SummaryStatList', {
     initComponent: function() {
         var that = this;
 
+        that.grids = [];
         this.items = [];
 
         // Get a list of all the valid summary stats for the current user
         var stats = NP.lib.core.SummaryStatManager.getStats();
 
-        var categories = Ext.create('NP.store.system.SummaryStatCategories').getRange();
+        var categories = Ext.getStore('system.SummaryStatCategories').getRange();
 
         // Loop through categories
         Ext.each(categories, function(cat) {
@@ -74,7 +75,7 @@ Ext.define('NP.view.viewport.SummaryStatList', {
                                 }),
                     columns   : [
                         { text: 'Name', dataIndex: 'title', flex: 1 },
-                        { text: 'Count', dataIndex: 'count' }
+                        { text: 'Count', dataIndex: 'count', width: 45 }
                     ],
                     listeners : {
                         itemclick: function(grid, rec, item, index, e) {
@@ -121,6 +122,7 @@ Ext.define('NP.view.viewport.SummaryStatList', {
                 if (selection == name) {
                     this.select(name);
                 }
+                break;
             }
         }
     },

@@ -53,6 +53,22 @@ Ext.define('NP.lib.ui.Assigner', {
     getStore: function() {
         return this.store;
     },
+    
+    getFromField: function() {
+        return this.fromField;
+    },
+    
+    getToField: function() {
+        return this.toField;
+    },
+    
+    getFromStore: function() {
+        return this.getFromField().getStore();
+    },
+    
+    getToStore: function() {
+        return this.getToField().getStore();
+    },
 
     createListPicker: function(isFrom) {
         var me    = this,
@@ -218,31 +234,25 @@ Ext.define('NP.lib.ui.Assigner', {
         return vals;
     },
 
-    setValue: function(vals) {
-        var me = this,
-            fromStore = me.fromField.getStore(),
-            toStore = me.toField.getStore(),
-            rec,
-            recs = [];
+    addValues: function(vals) {
+        var me        = this,
+            recs      = [],
+            rec;
         
         if (!me.store.isLoaded) {
             me.store.on({
-                load: Ext.bind(me.setValue, me, [vals]),
+                load: Ext.bind(me.addValues, me, [vals]),
                 single: true
             });
             
             return;
         }
-        
+
         if (!Ext.isArray(vals)) {
             vals = [vals];
         }
-        
+
         Ext.suspendLayouts();
-        
-        toStore.removeAll();
-        fromStore.removeAll();
-        fromStore.add(me.store.getRange());
 
         for (var i=0; i<vals.length; i++) {
             rec = vals[i];
@@ -263,7 +273,36 @@ Ext.define('NP.lib.ui.Assigner', {
             }
         }
         
-        me.moveRecs(fromStore, toStore, recs);
+        me.moveRecs(me.getFromStore(), me.getToStore(), recs);
+
+        Ext.resumeLayouts(true);
+    },
+
+    setValue: function(vals) {
+        var me        = this,
+            fromStore = me.getFromStore(),
+            toStore   = me.getToStore();
+        
+        if (!me.store.isLoaded) {
+            me.store.on({
+                load: Ext.bind(me.setValue, me, [vals]),
+                single: true
+            });
+            
+            return;
+        }
+        
+        if (!Ext.isArray(vals)) {
+            vals = [vals];
+        }
+        
+        Ext.suspendLayouts();
+        
+        toStore.removeAll();
+        fromStore.removeAll();
+        fromStore.add(me.store.getRange());
+
+        me.addValues(vals);
 
         Ext.resumeLayouts(true);
     },

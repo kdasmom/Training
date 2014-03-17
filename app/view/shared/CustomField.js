@@ -50,7 +50,7 @@ Ext.define('NP.view.shared.CustomField', {
      */
     comboUi: 'autocomplete',
 
-    layout    : 'fit',
+    layout    : 'form',
 
     initComponent: function() {
         var me = this;
