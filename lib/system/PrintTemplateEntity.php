@@ -23,7 +23,7 @@ class PrintTemplateEntity extends \NP\core\AbstractEntity {
 				'stringLength' => array('max'=>255)
 			)
 		),
-		'Print_template_label'	 => array(
+		'print_template_label'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
 			)

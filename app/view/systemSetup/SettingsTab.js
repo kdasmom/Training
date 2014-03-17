@@ -18,7 +18,6 @@ Ext.define('NP.view.systemSetup.SettingsTab', {
 		labelWidth: '80%'
 	},
 
-	padding: '10',
 	border: false,
 	autoScroll: true,
 
@@ -29,20 +28,21 @@ Ext.define('NP.view.systemSetup.SettingsTab', {
 
 		me.items = [
 			{
-				xtype: 'displayfield',
-				value:'<div style="color: red;">Please remember to save your changes before proceeding to the next section. Any changes made without clicking "Save Settings" will be lost.</div>'
+				xtype  : 'component',
+				html   : '<div style="color: red;">Please remember to save your changes before proceeding to the next section. Any changes made without clicking "Save Settings" will be lost.</div>',
+				padding: 8
 			},
 			{
-				xtype: 'form',
-				name: 'params',
-				border: false,
-				items: [],
-				layout: {
-					type: 'vbox',
-					align: 'stretch'
+				xtype      : 'form',
+				name       : 'params',
+				border     : false,
+				bodyPadding: 8,
+				items      : [],
+				layout     : {
+					type   : 'table',
+					columns: 2
 				},
 				defaults: {
-					labelWidth: '80%',
 					padding: '5 0'
 				}
 			}

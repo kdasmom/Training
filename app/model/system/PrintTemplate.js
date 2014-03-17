@@ -12,7 +12,7 @@ Ext.define('NP.model.system.PrintTemplate', {
 	fields: [
 		{ name: 'Print_Template_Id', type: 'int' },
 		{ name: 'Print_Template_Name' },
-		{ name: 'Print_template_label' },
+		{ name: 'print_template_label' },
 		{ name: 'Print_Template_Type' },
 		{ name: 'Print_Template_LastUpdateDt', type: 'date' },
 		{ name: 'Print_Template_LastUpdateBy', type: 'int' },

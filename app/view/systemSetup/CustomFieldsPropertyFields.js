@@ -9,7 +9,6 @@ Ext.define('NP.view.systemSetup.CustomFieldsPropertyFields', {
 
 	requires: ['NP.lib.core.Translator'],
 
-	padding: '5',
 	border: false,
 	layout: {
 		type: 'hbox',

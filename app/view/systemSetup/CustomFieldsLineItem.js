@@ -7,14 +7,19 @@ Ext.define('NP.view.systemSetup.CustomFieldsLineItem', {
 	extend: 'Ext.panel.Panel',
 	alias: 'widget.systemsetup.customfieldslineitem',
 
-	requires: ['NP.lib.core.Translator'],
+	requires: [
+		'NP.lib.core.Translator',
+		'NP.view.systemSetup.gridcol.FieldNumber',
+		'NP.view.systemSetup.gridcol.Label',
+		'NP.view.systemSetup.gridcol.Invoice',
+		'NP.view.systemSetup.gridcol.PO'
+	],
 
 	border: false,
 	layout: {
 		type: 'hbox',
 		align: 'stretch'
 	},
-	padding: '5',
 
 	initComponent: function() {
 		var me  = this;
@@ -48,13 +53,6 @@ Ext.define('NP.view.systemSetup.CustomFieldsLineItem', {
 						xtype: 'systemsetup.gridcol.po',
 						flex: 0.2,
 						align: 'center'
-					},
-					{
-						xtype: 'systemsetup.gridcol.vendorest',
-						flex: 0.2,
-						align: 'center',
-						hidden: !NP.Security.hasPermission(2084),
-						hideable: false
 					}
 
 				],

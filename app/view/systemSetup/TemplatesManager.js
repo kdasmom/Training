@@ -126,9 +126,10 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 
 		me.items = [
 			{
-				xtype: 'verticaltabpanel',
-				name: 'templatestab',
-				items: [
+				xtype : 'verticaltabpanel',
+				name  : 'templatestab',
+				border: false,
+				items : [
 					{
 						xtype: 'systemsetup.printtemplatetab',
 						title: 'Template',
@@ -178,17 +179,19 @@ Ext.define('NP.view.systemSetup.TemplatesManager', {
 		var me = this;
 		NP.lib.core.Net.remoteCall({
 			requests: {
-				service    : 'PrintTemplateService',
-				action     : 'deleteAttachments',
-				id: id,
-				image: image,
+				service: 'PrintTemplateService',
+				action : 'deleteAttachments',
+				id     : id,
+				image  : image,
 				success    : function(result) {
 					if (result) {
+						var text = (image) ? 'Image' : 'Attachment';
+						NP.Util.showFadingWindow({ html: NP.Translator.translate(text + ' was successfully deleted.') });
+
 						if (image) {
 							me.down('[name="print_template_additional_image"]').setValue(0);
 							me.down('[name="viewImageBtn"]').hide();
 							me.down('[name="deleteImageBtn"]').hide();
-							me.down('[name="settingsimage"]').hide();
 						} else {
 							me.down('[name="template_attachment"]').setValue(0);
 							me.down('[name="viewAttachmentBtn"]').hide();

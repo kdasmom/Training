@@ -22,7 +22,8 @@ Ext.define('NP.view.systemSetup.CanvasPanel', {
 		borderRadius: '4px'
 	},
 
-	padding: '5',
+	padding    : 5,
+	bodyPadding: 2,
 
 	initComponent: function() {
 		var me = this;
@@ -40,17 +41,6 @@ Ext.define('NP.view.systemSetup.CanvasPanel', {
 						var tileRec = ddSource.dragData.records[0],
 							index = tileRec.index;
 
-
-						var tile = Ext.create('Ext.panel.Panel', {
-							layout: 'fit',
-							title: tileRec.get('title'),
-							width: '100%',
-							closable: true,
-							cloaseAction: 'destroy',
-							field: tileRec.get('field'),
-							index: tileRec.get('index')
-						});
-
 						me.addTile(index, tileRec.get('title'), tileRec.get('field'), true);
 
 						return true;
@@ -66,13 +56,14 @@ Ext.define('NP.view.systemSetup.CanvasPanel', {
 		var me = this,
 			tilePanel,
 			panel = Ext.create('Ext.panel.Panel', {
-				layout: 'fit',
-				title: title,
-				width: '100%',
-				closable: true,
-				cloaseAction: 'destroy',
-				field: field,
-				index: index
+				layout     : 'fit',
+				title      : title,
+				width      : '100%',
+				closable   : true,
+				closeAction: 'destroy',
+				field      : field,
+				index      : index,
+				border     : false
 			});
 
 		tilePanel = me.add(panel);

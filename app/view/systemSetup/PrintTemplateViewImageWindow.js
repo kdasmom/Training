@@ -11,14 +11,16 @@ Ext.define('NP.view.systemSetup.PrintTemplateViewImageWindow', {
 		'NP.lib.core.Config'
 	],
 
-	title           : 'Print Template Image',
+	title     : 'Print Template Image',
 
-	width           : '30%',
-	height          : '30%',
-	autoScroll		: true,
+	width     : 420,
+	height    : 315,
+	autoScroll: true,
 
-	modal           : true,
-	draggable       : true,
+	modal     : true,
+	draggable : true,
+
+	layout: 'fit',
 
 	initComponent: function() {
 		var me = this;

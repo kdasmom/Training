@@ -13,8 +13,7 @@ Ext.define('NP.view.systemSetup.CustomFieldsHeader', {
 		'NP.view.systemSetup.gridcol.Label',
 		'NP.view.systemSetup.gridcol.FieldType',
 		'NP.view.systemSetup.gridcol.Invoice',
-		'NP.view.systemSetup.gridcol.PO',
-		'NP.view.systemSetup.gridcol.VendorEst'
+		'NP.view.systemSetup.gridcol.PO'
 	],
 
 	border: false,
@@ -22,7 +21,6 @@ Ext.define('NP.view.systemSetup.CustomFieldsHeader', {
 		type: 'hbox',
 		align: 'stretch'
 	},
-	padding: '5',
 
 	initComponent: function() {
 		var me  = this;
@@ -59,13 +57,6 @@ Ext.define('NP.view.systemSetup.CustomFieldsHeader', {
 						xtype: 'systemsetup.gridcol.po',
 						flex: 0.2,
 						align: 'center'
-					},
-					{
-						xtype: 'systemsetup.gridcol.vendorest',
-						flex: 0.2,
-						align: 'center',
-						hidden: !NP.Security.hasPermission(2084),
-						hideable: false
 					}
 
 				],

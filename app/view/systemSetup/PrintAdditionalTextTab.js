@@ -7,18 +7,14 @@ Ext.define('NP.view.systemSetup.PrintAdditionalTextTab', {
 	extend: 'Ext.panel.Panel',
 	alias: 'widget.systemsetup.printadditionaltexttab',
 
-	requires: ['NP.lib.core.Translator'],
+	requires: [
+		'NP.lib.core.Translator',
+		'Ext.form.field.File',
+		'Ext.form.field.HtmlEditor'
+	],
 
-	layout: {
-		type: 'vbox',
-		align: 'stretch'
-	},
+	layout: 'card',
 
-	defaults: {
-		labelWidth: '80%'
-	},
-
-	padding: '0 10 10 10',
 	border: false,
 
 	initComponent: function() {
@@ -26,70 +22,58 @@ Ext.define('NP.view.systemSetup.PrintAdditionalTextTab', {
 
 		me.title = NP.Translator.translate(me.title);
 
-		me.tbar = [
-			{
-				xtype: 'shared.button.cancel',
-				name: 'canceluploadbtn',
-				handler: function() {
-					me.getDockedItems('toolbar[dock="top"]')[0].hide();
-					me.down('[name="params"]').show();
-					me.down('[name="uploadattachment"]').hide();
-					me.up().up().getDockedItems('toolbar[dock="top"]')[0].show();
-				}
-			},
-			{
-				xtype: 'shared.button.delete',
-				name: 'deleteuploadbtn'
-			},
-			{
-				xtype: 'shared.button.upload',
-				name: 'uploadimagebtn',
-				handler: function() {
-					me.uploadAttachment();
-				}
-			}
-		];
-
 		me.items = [
 			{
-				xtype: 'fieldcontainer',
-				name: 'params',
-				layout: 'fit',
-				items: [
+				xtype  : 'container',
+				name   : 'params',
+				layout : 'fit',
+				padding: 8,
+				items  : [{
+					xtype     : 'htmleditor',
+					name      : 'poprint_additional_text',
+					fieldLabel: NP.Translator.translate('The following text will be included at the end of the Purchase Order and will be included on both the print and forward view of a Purchase Order. This will only display at the end of the Purchase Order. There is no limit to the number of characters allowed.'),
+					labelAlign: 'top'
+				}]
+			},
+			{
+				xtype      : 'form',
+				border     : false,
+				layout     : {
+					type : 'vbox',
+					align: 'stretch'
+				},
+				name       : 'uploadattachment',
+				bodyPadding: 8,
+				tbar       : [
 					{
-						xtype: 'displayfield',
-						fieldLabel: NP.Translator.translate('Editing Template'),
-						name: 'edittemplatename_additional',
-						value: '',
-						labelWidth: 150
+						xtype: 'shared.button.cancel',
+						name: 'canceluploadbtn',
+						handler: function() {
+							me.getLayout().setActiveItem(0);
+						}
 					},
 					{
-						xtype: 'htmleditor',
-						name: 'poprint_additional_text',
-						fieldLabel: NP.Translator.translate('The following text will be included at the end of the Purchase Order and will be included on both the print and forward view of a Purchase Order. This will only display at the end of the Purchase Order. There is no limit to the number of characters allowed.'),
-						labelAlign: 'top'
+						xtype: 'shared.button.upload',
+						name: 'uploadimagebtn',
+						handler: function() {
+							me.uploadAttachment();
+						}
 					}
-				]
-			},
-			{
-				xtype: 'form',
-				border: false,
-				layout: 'fit',
-				name: 'uploadattachment',
-				items: [
+				],
+				items : [
 					{
-						xtype: 'filefield',
-						name: 'pdf_file',
-						fieldLabel: NP.Translator.translate('Select a valid PDF file to upload. The contents of this file will be appended at the end of your purchase orders'),
-						width: 300,
-						labelAlign: 'top'
+						xtype     : 'filefield',
+						name      : 'pdf_file',
+						fieldLabel: NP.Translator.translate('Select a valid PDF file to upload'),
+						labelAlign: 'top',
+						afterSubTpl: NP.Translator.translate('The contents of this file will be appended at the end of your purchase orders.')
+					},
+					{
+						xtype: 'hiddenfield',
+						name: 'template_attachment',
+						value: 0
 					}
 				]
-			},
-			{
-				xtype: 'hiddenfield',
-				name: 'template_attachment',
-				value: 0
 			}
 		];
 
@@ -117,10 +101,9 @@ Ext.define('NP.view.systemSetup.PrintAdditionalTextTab', {
 				id: me.templateid,
 				success      : function(result) {
 					if (result.success) {
-						me.getDockedItems('toolbar[dock="top"]')[0].hide();
-						me.up().up().getDockedItems('toolbar[dock="top"]')[0].show();
-						me.down('[name="params"]').show();
-						me.down('[name="uploadattachment"]').hide();
+						NP.Util.showFadingWindow({ html: NP.Translator.translate('Attachment was successfully uploaded.') });
+
+						me.getLayout().setActiveItem(0);
 						me.down('[name="template_attachment"]').setValue(1);
 						me.up().up().down('[name="viewAttachmentBtn"]').show();
 						me.up().up().down('[name="deleteAttachmentBtn"]').show();

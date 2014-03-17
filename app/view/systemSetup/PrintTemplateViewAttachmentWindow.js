@@ -11,14 +11,14 @@ Ext.define('NP.view.systemSetup.PrintTemplateViewAttachmentWindow', {
 		'NP.lib.core.Config'
 	],
 
-	title           : 'Print Template Attachment',
+	title     : 'Print Template Attachment',
 
-	width           : '30%',
-	height          : '30%',
-	autoScroll		: true,
-
-	modal           : true,
-	draggable       : true,
+	width     : 640,
+	height    : 480,
+	autoScroll: true,
+	
+	modal     : true,
+	draggable : true,
 
 	initComponent: function() {
 		var me = this;

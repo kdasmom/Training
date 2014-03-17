@@ -10,17 +10,18 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 	requires: [
 		'NP.lib.core.Translator',
 		'NP.view.shared.YesNoField',
-		'NP.view.systemSetup.AssignGlAccountsWindow'
+		'NP.view.systemSetup.AssignGlAccountsWindow',
+		'Ext.ux.form.MultiSelect'
 	],
 
 	defaults: {
 		labelWidth: 200,
 		width: 400,
-		padding: '5'
 	},
 	layout: 'column',
 	hidden: true,
-	padding: '0 5 5 5',
+	padding: '0 0 0 8',
+	bodyPadding: 8,
 	tabindex: 0,
 	autoScroll: true,
 
@@ -118,9 +119,10 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 						fieldLabel: NP.Translator.translate('Field Length')
 					},
 					{
-						xtype: 'textfield',
-						name: 'custom_field_lbl',
-						fieldLabel: NP.Translator.translate('Custom Field Label')
+						xtype     : 'textfield',
+						name      : 'custom_field_lbl',
+						fieldLabel: NP.Translator.translate('Custom Field Label'),
+						width     : 450
 					},
 					{
 						xtype: 'displayfield',
@@ -144,7 +146,7 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 						xtype: 'radiogroup',
 						name: 'customFieldTypeGroup',
 						columns: 4,
-						hidden: (me.tabindex == 1 || (me.tabindex == 0 && me.fid > 2)),
+						hidden: (me.tabindex != 0 || me.fid > 2),
 						items: [
 							{
 								boxLabel: NP.Translator.translate('Date'),
@@ -197,7 +199,7 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 						displayField: 'universal_field_data',
 						valueField: 'universal_field_id',
 						padding: '5 0',
-						width: 200,
+						width: 300,
 						store: Ext.create('NP.lib.data.Store', {
 							service    	: 'ConfigService',
 							action     	: 'getCustomFieldsData',
@@ -405,5 +407,26 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 		];
 
 		this.callParent(arguments);
+
+		me.on('afterrender', function() {
+			function setBorders() {
+				var header = me.getHeader();
+				
+				if (header) {
+					Ext.suspendLayouts();
+
+					header.setBorder('0 0 0 1');
+					me.setBorder('0 0 0 1');
+					me.down('toolbar').getEl().setStyle({
+						'border-right-width' : '0px'
+					});
+
+					Ext.resumeLayouts(true);
+				} else {
+					Ext.defer(setBorders, 200);
+				}
+			}
+			setBorders();
+		}, me, { single: true });
 	}
 });

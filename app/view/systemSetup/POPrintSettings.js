@@ -13,11 +13,9 @@ Ext.define('NP.view.systemSetup.POPrintSettings', {
 		'NP.view.systemSetup.TemplatesManager'
 	],
 
-	title: 'PO Print Settings',
-	layout: {
-		type: 'fit',
-		align: 'stretch'
-	},
+	title     : 'PO Print Settings',
+	layout    : 'fit',
+	border    : false,
 	autoScroll: true,
 
 	initComponent: function() {

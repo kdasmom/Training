@@ -26,9 +26,10 @@ Ext.define('NP.view.systemSetup.PrintTemplateTab', {
 	},
 	autoScroll: true,
 
-	padding: '0 10',
-	border: false,
-	positions: {
+	bodyPadding: 8,
+	border     : false,
+	
+	positions  : {
 		'template_logo_left'	: [],
 		'template_logo_center'	: [],
 		'template_logo_right'	: [],
@@ -49,22 +50,25 @@ Ext.define('NP.view.systemSetup.PrintTemplateTab', {
 		me.items = [
 			{
 				xtype: 'panel',
-				height: 200,
+				height: 100,
+				margin: '0 0 8 0',
 				name: 'templatedetails',
 				title: NP.Translator.translate('TEMPLATE DETAILS'),
 				items: [
 					{
-						xtype: 'textfield',
-						name: 'Print_Template_Name',
+						xtype     : 'textfield',
+						name      : 'Print_Template_Name',
 						fieldLabel: NP.Translator.translate('Template Name'),
-						padding: '5',
+						padding   : 5,
+						width     : 500,
 						allowBlank: false
 					},
 					{
-						xtype: 'textfield',
-						name: 'Print_template_label',
+						xtype     : 'textfield',
+						name      : 'print_template_label',
 						fieldLabel: NP.Translator.translate('Template Label'),
-						padding: '5',
+						padding   : 5,
+						width     : 500,
 						allowBlank: false
 					},
 					{
@@ -78,10 +82,13 @@ Ext.define('NP.view.systemSetup.PrintTemplateTab', {
 				]
 			},
 			{
-				xtype: 'panel',
-				title: NP.Translator.translate('TEMPLATE LAYOUT'),
-				layout: 'hbox',
-				items: [
+				xtype      : 'panel',
+				title      : NP.Translator.translate('TEMPLATE LAYOUT'),
+				layout     : 'hbox',
+				margin     : '0 0 8 0',
+				bodyPadding: 8,
+				minHeight  : 600,
+				items      : [
 					{
 						xtype: 'systemsetup.templateobjectspicker',
 						name: 'templatespicker',
@@ -92,13 +99,12 @@ Ext.define('NP.view.systemSetup.PrintTemplateTab', {
 						xtype: 'systemsetup.templatebodycanvas',
 						flex: 0.8
 					}
-				],
-				minHeight: 600
+				]
 			},
 			{
 				xtype: 'panel',
 				title: NP.Translator.translate('TEMPLATE PROPERTIES'),
-				height: 300,
+				minHeight: 100,
 				name: 'properties',
 				layout: {
 					type: 'vbox',

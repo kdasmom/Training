@@ -13,10 +13,10 @@ Ext.define('NP.view.systemSetup.AssignGlAccountsWindow', {
 		'NP.view.shared.GlAccountAssigner'
 	],
 
-	title           : 'Assign GlAccounts',
+	title           : 'Assign GL Accounts',
 
-	width           : '30%',
-	height          : '30%',
+	width           : 500,
+	height          : 350,
 	autoScroll		: true,
 	layout			: 'fit',
 
@@ -26,7 +26,7 @@ Ext.define('NP.view.systemSetup.AssignGlAccountsWindow', {
 	initComponent: function() {
 		var me = this;
 
-		me.bbar = [
+		me.tbar = [
 			{
 				xtype: 'shared.button.cancel',
 				handler: function() {
@@ -63,40 +63,43 @@ Ext.define('NP.view.systemSetup.AssignGlAccountsWindow', {
 
 		me.title = NP.Translator.translate(me.title);
 
-		me.items = [
-			{
-				xtype: 'form',
-				items: [
-					{
-						xtype: 'shared.glaccountassigner',
-						name: 'assignedglaccounts',
-						height: 200,
-						padding : '10',
-						fieldLabel: '',
-						listeners: {
-							afterrender: function() {
-								NP.lib.core.Net.remoteCall({
-									requests: {
-										service    : 'ConfigService',
-										action     : 'getUniversalFieldsAssignedGlaccount',
-										field_id: me.customfield_id,
-										success    : function(result) {
-											me.down('form').getForm().findField('assignedglaccounts').setValue(result);
-										}
+		me.items = [{
+			xtype : 'form',
+			border: false,
+			layout: {
+				type : 'vbox',
+				align: 'stretch'
+			},
+			items : [
+				{
+					xtype     : 'shared.glaccountassigner',
+					name      : 'assignedglaccounts',
+					padding   : '10',
+					fieldLabel: '',
+					flex      : 1,
+					listeners: {
+						afterrender: function() {
+							NP.lib.core.Net.remoteCall({
+								requests: {
+									service    : 'ConfigService',
+									action     : 'getUniversalFieldsAssignedGlaccount',
+									field_id: me.customfield_id,
+									success    : function(result) {
+										me.down('form').getForm().findField('assignedglaccounts').setValue(result);
 									}
-								});
-							}
+								}
+							});
 						}
-
-					},
-					{
-						xtype: 'hiddenfield',
-						name: 'customfield_id',
-						value: me.customfield_id
 					}
-				]
-			}
-		];
+
+				},
+				{
+					xtype: 'hiddenfield',
+					name: 'customfield_id',
+					value: me.customfield_id
+				}
+			]
+		}];
 
 		me.callParent(arguments);
 	}

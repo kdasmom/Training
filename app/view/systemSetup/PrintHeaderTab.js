@@ -2,12 +2,14 @@
  * Created by Andrey Baranov
  * date: 2/4/14 12:38 PM
  */
-
 Ext.define('NP.view.systemSetup.PrintHeaderTab', {
 	extend: 'Ext.panel.Panel',
 	alias: 'widget.systemsetup.printheadertab',
 
-	requires: ['NP.lib.core.Translator'],
+	requires: [
+		'NP.lib.core.Translator',
+		'Ext.form.field.HtmlEditor'
+	],
 
 	layout: {
 		type: 'vbox',
@@ -18,7 +20,7 @@ Ext.define('NP.view.systemSetup.PrintHeaderTab', {
 		labelWidth: '80%'
 	},
 
-	padding: '10',
+	bodyPadding: 8,
 	border: false,
 
 	initComponent: function() {
@@ -28,23 +30,17 @@ Ext.define('NP.view.systemSetup.PrintHeaderTab', {
 
 		me.items = [
 			{
-				xtype: 'displayfield',
-				name: 'edittemplatename_header',
-				labelWidth: 150,
-				fieldLabel: NP.Translator.translate('Editing Template'),
-				value: ''
-			},
-			{
-				xtype: 'checkbox',
-				name: 'poprint_customfields',
+				xtype     : 'checkbox',
+				name      : 'poprint_customfields',
 				inputValue: '0',
-				boxLabel: NP.Translator.translate('Please check here if you want to include the PO Custom Fields in the header')
+				boxLabel  : NP.Translator.translate('Please check here if you want to include the PO Custom Fields in the header')
 			},
 			{
-				xtype: 'htmleditor',
-				name: 'poprint_header',
+				xtype     : 'htmleditor',
+				name      : 'poprint_header',
 				fieldLabel: NP.Translator.translate('The following text will be included in the header area on both the print and forward view of a Purchase Order. '),
-				labelAlign: 'top'
+				labelAlign: 'top',
+				flex      : 1
 			}
 		];
 

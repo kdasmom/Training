@@ -11,19 +11,27 @@ Ext.define('NP.controller.SystemSetup', {
 	    'NP.lib.core.Net',
 	    'NP.lib.core.Util',
 	    'NP.lib.core.Config',
-    	'NP.lib.core.Translator'
+    	'NP.lib.core.Translator',
+    	'Ext.form.field.Hidden'
 	],
 
 	models: ['system.DfSplit'],
 
-	stores: ['property.Properties','gl.GlAccounts','system.DfSplits'],
+	stores: [
+		'property.Properties','gl.GlAccounts','system.DfSplits','system.ConfigSysLkpVals',
+		'system.PrintTemplates'
+	],
 
 	views: [
 		'systemSetup.Main',
 		'systemSetup.DefaultSplitGrid',
 		'systemSetup.DefaultSplitForm',
 		'systemSetup.SettingsTab',
-		'systemSetup.CustomFieldForm'
+		'systemSetup.CustomFieldForm',
+		'systemSetup.TemplatesGrid',
+		'systemSetup.PropertyAssignmentsWindow',
+		'systemSetup.PrintTemplateViewImageWindow',
+		'systemSetup.PrintTemplateViewAttachmentWindow'
 	],
 
 	refs : [
@@ -217,10 +225,11 @@ Ext.define('NP.controller.SystemSetup', {
 			},
 			'[xtype="systemsetup.poprintsettings"] [xtype="systemsetup.templatesgrid"]': {
 				cellclick: function(grid, td, cellIndex, record, tr, rowIndex, e, eOpts) {
-					if (cellIndex !== 1 && cellIndex !== 8) {
-						me.addHistory('SystemSetup:showSystemSetup:POPrintSettings:PrintTemplate:' + record.get('Print_Template_Id') + (cellIndex == 5 ? (':copy') : ''));
+					var colText = grid.getHeaderAtIndex(cellIndex).text;
+					if (colText != NP.Translator.translate('Assigned To') && colText != NP.Translator.translate('View Attachment')) {
+						me.addHistory('SystemSetup:showSystemSetup:POPrintSettings:PrintTemplate:' + record.get('Print_Template_Id') + (colText == NP.Translator.translate('Copy') ? (':copy') : ''));
 					} else {
-						if (cellIndex == 1) {
+						if (colText == NP.Translator.translate('Assigned To')) {
 							me.showTemplatePropertyAssignmentWindow(record.get('Print_Template_Id'));
 						} else {
 							var templateObj = JSON.parse(record.get('Print_Template_Data'));
@@ -250,7 +259,7 @@ Ext.define('NP.controller.SystemSetup', {
 				uploadimage: me.showUploadImage
 			},
 			'[xtype="systemsetup.templatesmanager"] verticaltabpanel': {
-				tabchange: me.changepotabs
+				tabchange      : me.changepotabs
 			}
 		});
 
@@ -956,133 +965,123 @@ Ext.define('NP.controller.SystemSetup', {
 	addField: function(tab, fields, fieldcontainer) {
 		Ext.suspendLayouts();
 		Ext.each(fields, function(field){
+			fieldcontainer.add({
+				xtype  :'component',
+				html   : field.configsys_displayname,
+				padding: '5 16 5 8'
+			});
 			switch (field.configsystype_name) {
 				case 'Text':
 					fieldcontainer.add({
 						xtype: 'textfield',
 						name: 'setting_' + field.configsysval_id,
-						fieldLabel: field.configsys_displayname,
-						value: field.configsysval_val
+						value: field.configsysval_val,
+						width: 250
 					});
 					break;
 				case 'Yes/No':
-					fieldcontainer.add(
-						{
-							xtype: 'shared.yesnofield',
-							name: 'setting_' + field.configsysval_id,
-							fieldLabel: field.configsys_displayname,
-							value: field.configsysval_val,
-							allowBlank: field.configsys_required
-						}
-					);
+					fieldcontainer.add({
+						xtype: 'shared.yesnofield',
+						name: 'setting_' + field.configsysval_id,
+						value: field.configsysval_val,
+						allowBlank: field.configsys_required
+					});
 					break;
 				case 'Number':
-					fieldcontainer.add(
-						{
-							xtype: 'numberfield',
-							name: 'setting_' + field.configsysval_id,
-							fieldLabel: field.configsys_displayname,
-							value: field.configsysval_val,
-							decimalPrecision: 0,
-							allowBlank: false
-						}
-					);
+					fieldcontainer.add({
+						xtype: 'numberfield',
+						name: 'setting_' + field.configsysval_id,
+						value: field.configsysval_val,
+						decimalPrecision: 0,
+						allowBlank: false,
+						width: 250
+					});
 					break;
 				case 'Date':
-					fieldcontainer.add(
-						{
-							xtype: 'datefield',
-							name: 'setting_' + field.configsysval_id,
-							fieldLabel: field.configsys_displayname,
-							value: field.configsysval_val,
-							allowBlank: false
-						}
-					);
+					fieldcontainer.add({
+						xtype: 'datefield',
+						name: 'setting_' + field.configsysval_id,
+						value: field.configsysval_val,
+						allowBlank: false
+					});
 					break;
 				case 'Lookup':
-					fieldcontainer.add(
-						{
-							xtype: 'customcombo',
-							name: 'setting_' + field.configsysval_id,
-							fieldLabel: field.configsys_displayname,
-							store:Ext.create('NP.store.system.ConfigSysLkpVals', {
-								service    	: 'ConfigService',
-								action     	: 'getConfigSysLkpVal',
-								extraParams: {
-									configsyslkp_id: field.configsyslkp_id
-								}
-							}),
-							displayField: 'configsyslkpval_name',
-							valueField: 'configsyslkpval_val',
-							allowBlank: false,
-							editable: false,
-							typeAhead:false,
-							listeners: {
-								afterrender: function(combo, eOpts) {
-									combo.getStore().load();
-									combo.setValue(field.configsysval_val);
-								}
+					fieldcontainer.add({
+						xtype: 'customcombo',
+						name: 'setting_' + field.configsysval_id,
+						store:Ext.create('NP.store.system.ConfigSysLkpVals', {
+							service    	: 'ConfigService',
+							action     	: 'getConfigSysLkpVal',
+							extraParams: {
+								configsyslkp_id: field.configsyslkp_id
 							}
-						}
-					);
+						}),
+						displayField: 'configsyslkpval_name',
+						valueField: 'configsyslkpval_val',
+						allowBlank: false,
+						editable: false,
+						typeAhead:false,
+						listeners: {
+							afterrender: function(combo, eOpts) {
+								combo.getStore().load();
+								combo.setValue(field.configsysval_val);
+							}
+						},
+						width: 250
+					});
 					break;
 				case 'LookupMultiple':
-					fieldcontainer.add(
-						{
-							xtype: 'customcombo',
-							name: 'setting_' + field.configsysval_id,
-							fieldLabel: field.configsys_displayname,
-							store:Ext.create('NP.store.system.ConfigSysLkpVals', {
-								service    	: 'ConfigService',
-								action     	: 'getConfigSysLkpVal',
-								extraParams: {
-									configsyslkp_id: field.configsyslkp_id
-								}
-							}),
-							displayField: 'configsyslkpval_name',
-							valueField: 'configsyslkpval_val',
-							multiple: true,
-							editable: false,
-							allowBlank: false,
-							typeAhead:false,
-							listeners: {
-								afterrender: function(combo, eOpts) {
-									combo.getStore().load();
-									combo.setValue(field.configsysval_val);
-								}
+					fieldcontainer.add({
+						xtype: 'customcombo',
+						name: 'setting_' + field.configsysval_id,
+						store:Ext.create('NP.store.system.ConfigSysLkpVals', {
+							service    	: 'ConfigService',
+							action     	: 'getConfigSysLkpVal',
+							extraParams: {
+								configsyslkp_id: field.configsyslkp_id
+							}
+						}),
+						displayField: 'configsyslkpval_name',
+						valueField: 'configsyslkpval_val',
+						multiple: true,
+						editable: false,
+						allowBlank: false,
+						typeAhead:false,
+						listeners: {
+							afterrender: function(combo, eOpts) {
+								combo.getStore().load();
+								combo.setValue(field.configsysval_val);
 							}
 						}
-					);
+					});
 					break;
 				case 'Table':
-					fieldcontainer.add(
-						{
-							xtype: 'customcombo',
-							name: 'setting_' + field.configsysval_id,
-							fieldLabel: field.configsys_displayname,
-							store: Ext.create('NP.lib.data.Store', {
-								service    	: 'ConfigService',
-								action     	: 'getConfigSysValTable',
-								extraParams: {
-									tablename: field.configsys_tbl,
-									configsys_tbl_name_fld: field.configsys_tbl_name_fld,
-									configsys_tbl_val_fld: field.configsys_tbl_val_fld
-								},
-								fields: ['configsyslkpval_name', 'configsyslkpval_val']
-							}),
-							displayField: 'configsyslkpval_name',
-							valueField: 'configsyslkpval_val',
-							allowBlank: false,
-							editable: false,
-							typeAhead:false,
-							listeners: {
-								afterrender: function(combo, eOpts) {
-									combo.getStore().load();
-									combo.setValue(parseInt(field.configsysval_val));
-								}
+					fieldcontainer.add({
+						xtype: 'customcombo',
+						name: 'setting_' + field.configsysval_id,
+						store: Ext.create('NP.lib.data.Store', {
+							service    	: 'ConfigService',
+							action     	: 'getConfigSysValTable',
+							extraParams: {
+								tablename: field.configsys_tbl,
+								configsys_tbl_name_fld: field.configsys_tbl_name_fld,
+								configsys_tbl_val_fld: field.configsys_tbl_val_fld
+							},
+							fields: ['configsyslkpval_name', 'configsyslkpval_val']
+						}),
+						displayField: 'configsyslkpval_name',
+						valueField: 'configsyslkpval_val',
+						allowBlank: false,
+						editable: false,
+						typeAhead:false,
+						listeners: {
+							afterrender: function(combo, eOpts) {
+								combo.getStore().load();
+								combo.setValue(parseInt(field.configsysval_val));
 							}
-						}
-					);
+						},
+						width: 250
+					});
 					break;
 				case 'Range':
 					var range = field.configsys_range.split('-');
@@ -1108,17 +1107,21 @@ Ext.define('NP.controller.SystemSetup', {
 								combo.getStore().load();
 								combo.setValue(field.configsysval_val);
 							}
-						}
+						},
+						width: 250
 					});
 					break;
 			}
-			fieldcontainer.add(
-				{
-					xtype: 'hiddenfield',
-					name: 'parent_id' + field.configsysval_id,
-					value: field.parent_configsysval_id
-				}
-			);
+			fieldcontainer.add({
+				xtype: 'hiddenfield',
+				name: 'parent_id' + field.configsysval_id,
+				value: field.parent_configsysval_id
+			});
+			fieldcontainer.add({
+				xtype: 'hiddenfield',
+				name: 'configsys_name_' + field.configsysval_id,
+				value: field.configsys_name
+			});
 		});
 		Ext.resumeLayouts(true);
 	},
@@ -1136,16 +1139,24 @@ Ext.define('NP.controller.SystemSetup', {
 
 		if (form.isValid()) {
 			NP.lib.core.Net.remoteCall({
+				method  : 'POST',
 				requests: {
-					service			: 'ConfigService',
-					action			: 'saveSettings',
-					data			: data,
+					service: 'ConfigService',
+					action : 'saveSettings',
+					data   : data,
 					success: function(success) {
 						if (success.success) {
 							NP.Util.showFadingWindow({ html: 'Settings were saved successfully' });
+							
 							for (var index in data) {
-								if ((regexpArr = /^setting_(\d+)/.exec(index)) !== null) {
-									NP.Config.setSetting(regexpArr[1], data[index]);
+								var configsysval_id = index.split('_')[1],
+									configsys_field = form.getForm().findField('configsys_name_' + configsysval_id),
+									configsys_name;
+
+								if (configsys_field) {
+									configsys_name = configsys_field.getValue();
+								
+									NP.Config.setSetting(configsys_name, data[index]);
 								}
 							}
 						} else {
@@ -1188,6 +1199,11 @@ Ext.define('NP.controller.SystemSetup', {
 				tabindex: tabindex,
 				success    : function(result) {
 					if (result) {
+						Ext.suspendLayouts();
+
+						var fieldTypeFn = (tabindex != 0 || fid > 2) ? 'hide' : 'show';
+						headerform.down('[name="customFieldTypeGroup"]')[fieldTypeFn]();
+
 						if (tabindex < 2) {
 							headerform.setTitle('Custom Field ' + fid);
 							headerform.getForm().findField('customfielddata').setFieldLabel((tabindex < 2 ? 'Custom Field ' : 'Field ') + fid + ' Values');
@@ -1210,9 +1226,6 @@ Ext.define('NP.controller.SystemSetup', {
 							if (fid !== 7 && fid !== 8) {
 								headerform.getForm().findField('custom_field_maxlength').hide();
 								headerform.down('[name="dataandselectfield"]').show();
-								if (tabindex == 0 && fid > 2) {
-									headerform.down('[name="customFieldTypeGroup"]').hide();
-								}
 							} else {
 								headerform.getForm().findField('custom_field_maxlength').show();
 								headerform.down('[name="dataandselectfield"]').hide();
@@ -1242,15 +1255,15 @@ Ext.define('NP.controller.SystemSetup', {
 							headerform.getForm().findField('custom_field_lbl').setValue(result['customfield_label']);
 							headerform.getForm().findField('customfield_status').setValue(result['po_on_off']);
 							headerform.getForm().findField('customfield_req').setValue(result['po_req']);
-						}else {
+						} else {
 							headerform.getForm().findField('custom_field_lbl').setValue(result['custom_field_lbl']);
 						}
-
-
 
 						headerform.getForm().findField('custom_field_maxlength').setValue(tabindex < 2 ? parseInt(!result['maxlength'] ? 0 : result['maxlength']) : parseInt(!result['customfield_max_length'] ? 0 : result['customfield_max_length']));
 
 						headerform.show();
+
+						Ext.resumeLayouts(true);
 					}
 				}
 			}
@@ -1312,8 +1325,12 @@ Ext.define('NP.controller.SystemSetup', {
 	 * @param tab
 	 */
 	changeCustomFieldsTab: function(tab) {
-		var me = this;
-		tab.remove(me.getCmp('systemsetup.customfieldform'));
+		var me   = this,
+			form = me.getCmp('systemsetup.customfieldform');
+		if (form) {
+			tab.remove(form);
+		}
+		form = null;
 	},
 
 	/**
@@ -1388,12 +1405,12 @@ Ext.define('NP.controller.SystemSetup', {
 	 */
 	fillPicklistForm: function(column, values) {
 		var field;
-
+		
 		if (column.dropdown_flag == 1) {
 			field = {
 				xtype: 'customcombo',
 				name: column.column_name,
-				allowBlank: !column.column_info[0].NULLABLE,
+				allowBlank: column.column_info[0].NULLABLE,
 				addBlankRecord: column.column_info[0].NULLABLE,
 				displayField: 'dropdown_display_text',
 				valueField: 'dropdown_value',
@@ -1420,7 +1437,7 @@ Ext.define('NP.controller.SystemSetup', {
 				field = {
 					xtype: 'customcombo',
 					name: column.column_name,
-					allowBlank: !column.column_info[0].NULLABLE,
+					allowBlank: column.column_info[0].NULLABLE,
 					addBlankRecord: column.column_info[0].NULLABLE,
 					displayField: 'dropdown_display_text',
 					valueField: 'dropdown_value',
@@ -1474,7 +1491,7 @@ Ext.define('NP.controller.SystemSetup', {
 							name: column.column_name,
 							fieldLabel: column.column_name_title,
 							disabled: column.column_name.length > 0 && column.readonly,
-							allowBlank: !column.column_info[0].NULLABLE,
+							allowBlank: column.column_info[0].NULLABLE,
 							value: !values ? '' : values[column.column_name]
 						};
 					}
@@ -1484,7 +1501,7 @@ Ext.define('NP.controller.SystemSetup', {
 							name: column.column_name,
 							fieldLabel: column.column_name_title,
 							disabled: column.column_name.length > 0 && column.readonly,
-							allowBlank: !column.column_info[0].NULLABLE,
+							allowBlank: column.column_info[0].NULLABLE,
 							decimalPrecision: 0,
 							value: !values ? '' : values[column.column_name]
 						};
@@ -1501,7 +1518,7 @@ Ext.define('NP.controller.SystemSetup', {
 							name: column.column_name,
 							fieldLabel: column.column_name_title,
 							disabled: column.column_name.length > 0 && column.readonly,
-							allowBlank: !column.column_info[0].NULLABLE,
+							allowBlank: column.column_info[0].NULLABLE,
 							decimalPrecision: column.column_info[0].TYPE_NAME == 'bigint' ? 0 : 2,
 							value: !values ? '' : values[column.column_name]
 						};
@@ -1637,6 +1654,8 @@ Ext.define('NP.controller.SystemSetup', {
 
 			viewConfig.listeners = {
 				dataloaded: function(boundForm, data) {
+					Ext.suspendLayouts();
+
 					templateObj = JSON.parse(data.Print_Template_Data),
 						templatesPicker = boundForm.down('[name="templatespicker"]'),
 						templatetab = boundForm.down('[name="templatetab"]'),
@@ -1692,10 +1711,12 @@ Ext.define('NP.controller.SystemSetup', {
 						}
 					}
 
-					boundForm.getForm().findField('edittemplatename_settings').setValue(data.Print_Template_Name);
-					boundForm.getForm().findField('edittemplatename_header').setValue(data.Print_Template_Name);
-					boundForm.getForm().findField('edittemplatename_footer').setValue(data.Print_Template_Name);
-					boundForm.getForm().findField('edittemplatename_additional').setValue(data.Print_Template_Name);
+					me.getCmp('systemsetup.printtemplatetab').setTitle(data.Print_Template_Name);
+					me.getCmp('systemsetup.printheadertab').setTitle(data.Print_Template_Name);
+					me.getCmp('systemsetup.printfootertab').setTitle(data.Print_Template_Name);
+					me.getCmp('systemsetup.printsettingstab').setTitle(data.Print_Template_Name);
+					me.getCmp('systemsetup.printadditionaltexttab').setTitle(data.Print_Template_Name);
+
 					boundForm.getForm().findField('poprint_customfields').setValue(NP.Config.getSetting('PN.POOptions.POPrintCustomFields'));
 
 					if (copy) {
@@ -1706,14 +1727,14 @@ Ext.define('NP.controller.SystemSetup', {
 					} else {
 						if (templateObj.template_settings && templateObj.template_settings.print_template_additional_image) {
 							boundForm.getForm().findField('print_template_additional_image').setValue(1);
-							boundForm.down('[name="settingsimage"]').setSrc('clients/' + NP.lib.core.Config.getAppName() + '/web/images/print_pdf/poprint_additional_image_' + id + '.jpg');
-							boundForm.down('[name="settingsimage"]').show();
 						}
 						if (templateObj.template_attachment) {
 							boundForm.getForm().findField('template_attachment').setValue(1);
 						}
 
 					}
+
+					Ext.resumeLayouts(true);
 				}
 			};
 		}
@@ -1722,6 +1743,26 @@ Ext.define('NP.controller.SystemSetup', {
 		});
 
 		var form = this.setView('NP.view.systemSetup.TemplatesManager', viewConfig, '[xtype="systemsetup.poprintsettings"]');
+
+		// We need to jump through hoops to set the proper borders on the title
+		function setBorders() {
+			var header = me.getCmp('systemsetup.printtemplatetab').getHeader();
+			
+			if (header) {
+				Ext.suspendLayouts();
+
+				header.setBorder('0 0 1 0');
+				header.getEl().removeCls('x-docked-top');
+				header.getEl().setStyle({
+					'border-bottom-width' : '1px'
+				});
+
+				Ext.resumeLayouts(true);
+			} else {
+				Ext.defer(setBorders, 200);
+			}
+		}
+		setBorders();
 	},
 
 	addTemplateItem: function(index, name) {
@@ -1822,19 +1863,26 @@ Ext.define('NP.controller.SystemSetup', {
 	},
 
 	deletePrintTemplate: function(id) {
-		var me = this;
+		var me = this,
+			deleteTemplate     = NP.Translator.translate('Delete template?'),
+			deleteTemplateText = NP.Translator.translate('Are you sure you want to delete this print template?');
 
-		NP.lib.core.Net.remoteCall({
-			requests: {
-				service    : 'PrintTemplateService',
-				action     : 'deleteTemplate',
-				id: id,
-				success    : function(result) {
-					if (result) {
-						NP.Util.showFadingWindow({ html: NP.Translator.translate('Template was delete successfully!') });
-						me.addHistory('SystemSetup:showSystemSetup:POPrintSettings');
+		Ext.MessageBox.confirm(deleteTemplate, deleteTemplateText, function(btn) {
+			// If user clicks Yes, proceed with deleting
+			if (btn == 'yes') {
+				NP.lib.core.Net.remoteCall({
+					requests: {
+						service: 'PrintTemplateService',
+						action : 'deleteTemplate',
+						id     : id,
+						success: function(result) {
+							if (result) {
+								NP.Util.showFadingWindow({ html: NP.Translator.translate('Template was delete successfully!') });
+								me.addHistory('SystemSetup:showSystemSetup:POPrintSettings');
+							}
+						}
 					}
-				}
+				});
 			}
 		});
 	},
@@ -1844,41 +1892,45 @@ Ext.define('NP.controller.SystemSetup', {
 			isWithImage,
 			me = this;
 
-		tabpanel.up().down('[name="uploadattachment"]').hide();
-		tabpanel.up().down('[name="uploadimage"]').hide();
-		tabpanel.up().down('[name="viewImageBtn"]').hide();
-		tabpanel.up().down('[name="deleteImageBtn"]').hide();
-		tabpanel.up().down('[name="viewAttachmentBtn"]').hide();
-		tabpanel.up().down('[name="deleteAttachmentBtn"]').hide();
+		Ext.suspendLayouts();
 
 		if (tab.name !== 'templatetab' && tabpanel.up().templateid == 0) {
 			me.addHistory('SystemSetup:showSystemSetup:POPrintSettings');
 		}
 
+		tabpanel.up().down('[name="uploadattachment"]').hide();
+		tabpanel.up().down('[name="viewAttachmentBtn"]').hide();
+		tabpanel.up().down('[name="deleteAttachmentBtn"]').hide();
+
+		tabpanel.up().down('[name="uploadimage"]').hide();
+		tabpanel.up().down('[name="viewImageBtn"]').hide();
+		tabpanel.up().down('[name="deleteImageBtn"]').hide();
+
 		if (tab.name == 'additionaltexttab') {
 			isWithAttachment = tab.down('[name="template_attachment"]').getValue();
 
-			tab.getDockedItems('toolbar[dock="top"]')[0].hide();
 			tabpanel.up().down('[name="uploadattachment"]').show();
-			tab.down('[name="params"]').show();
-			tab.down('[name="uploadattachment"]').hide();
+			
 			if (isWithAttachment == 1) {
 				tabpanel.up().down('[name="viewAttachmentBtn"]').show();
 				tabpanel.up().down('[name="deleteAttachmentBtn"]').show();
 			}
 
-		}if (tab.name == 'settings') {
+			tab.getLayout().setActiveItem(0);
+		} else if (tab.name == 'settings') {
 			isWithImage = tab.down('[name="print_template_additional_image"]').getValue();
 
-			tab.getDockedItems('toolbar[dock="top"]')[0].hide();
 			tabpanel.up().down('[name="uploadimage"]').show();
-			tab.down('[name="params"]').show();
-			tab.down('[name="uploadimage"]').hide();
+
 			if (isWithImage == 1) {
 				tabpanel.up().down('[name="viewImageBtn"]').show();
 				tabpanel.up().down('[name="deleteImageBtn"]').show();
 			}
+
+			tab.getLayout().setActiveItem(0);
 		}
+
+		Ext.resumeLayouts(true);
 	},
 
 	showUploadAttachment: function(id) {
@@ -1887,12 +1939,9 @@ Ext.define('NP.controller.SystemSetup', {
 			toptab = tab.up().up(),
 			isWithAttachment = tab.down('[name="template_attachment"]').getValue();
 
-		tab.down('[name="params"]').hide();
 		tab.down('[name="uploadattachment"]').show();
 
-		tab.getDockedItems('toolbar[dock="top"]')[0].show();
-
-		toptab.getDockedItems('toolbar[dock="top"]')[0].hide();
+		tab.getLayout().setActiveItem(1);
 	},
 
 	showUploadImage: function(id) {
@@ -1900,11 +1949,9 @@ Ext.define('NP.controller.SystemSetup', {
 			tab = me.getCmp('systemsetup.printsettingstab'),
 			toptab = tab.up().up();
 
-		tab.down('[name="params"]').hide();
 		tab.down('[name="uploadimage"]').show();
 
-		tab.getDockedItems('toolbar[dock="top"]')[0].show();
-		toptab.getDockedItems('toolbar[dock="top"]')[0].hide();
+		tab.getLayout().setActiveItem(1);
 	},
 
 	showPicklists: function() {

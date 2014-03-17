@@ -11,6 +11,8 @@ Ext.define('NP.view.systemSetup.TemplatesGrid', {
 		'NP.lib.core.Config'
 	],
 
+	border: false,
+
 	initComponent: function() {
 		var me = this;
 
@@ -49,14 +51,6 @@ Ext.define('NP.view.systemSetup.TemplatesGrid', {
 				renderer: function(val, meta, record) {
 					return record.raw['Print_Template_LastUpdateByUserName'];
 				}
-			},
-			{
-				text: NP.Translator.translate('Edit'),
-				flex: 0.2,
-				renderer: function(val, meta, rec){
-					return NP.Translator.translate('Edit')
-				},
-				tdCls: 'grid-clickable-col'
 			},
 			{
 				xtype: 'actioncolumn',

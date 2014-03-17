@@ -8,76 +8,31 @@ Ext.define('NP.view.systemSetup.PrintSettingsTab', {
 	extend: 'Ext.panel.Panel',
 	alias: 'widget.systemsetup.printsettingstab',
 
-	requires: ['NP.lib.core.Translator'],
+	requires: [
+		'NP.lib.core.Translator',
+		'Ext.form.field.File'
+	],
 
-	layout: {
-		type: 'vbox',
-		align: 'stretch'
-	},
+	layout: 'card',
 
-	defaults: {
-		labelWidth: '80%'
-	},
-
-	padding: '0 10 10 10',
-	border: false,
-
+	border     : false,
+	
 	initComponent: function() {
 		var me  = this;
 
 		me.title = NP.Translator.translate(me.title);
 
-		me.tbar = [
-			{
-				xtype: 'shared.button.cancel',
-				name: 'canceluploadbtn',
-				handler: function() {
-					me.getDockedItems('toolbar[dock="top"]')[0].hide();
-					me.up().up().getDockedItems('toolbar[dock="top"]')[0].show();
-
-					me.down('[name="params"]').show();
-					me.down('[name="uploadimage"]').hide();
-				}
-			},
-			{
-				xtype: 'shared.button.delete',
-				name: 'deleteuploadbtn'
-			},
-			{
-				xtype: 'shared.button.upload',
-				name: 'uploadattachmentbtn',
-				handler: function() {
-					me.uploadImage();
-				}
-			}
-		];
-
 		me.items = [
 			{
-				xtype: 'displayfield',
-				name: 'edittemplatename_settings',
-				labelWidth: 150,
-				fieldLabel: NP.Translator.translate('Editing Template'),
-				value: ''
-			},
-			{
-				xtype: 'image',
-				name: 'settingsimage',
-				fieldLabel: NP.Translator.translate('Editing image'),
-				src: '',
-				hidden: true,
-				maxWidth: 200,
-				flex: 1
-			},
-			{
-				xtype: 'fieldcontainer',
-				layout: {
+				xtype     : 'container',
+				name      : 'params',
+				autoScroll: true,
+				padding   : 8,
+				layout    : {
 					type: 'vbox',
 					align: 'stretch'
 				},
-				name: 'params',
-				title: NP.Translator.translate('Line Item Elements to Include'),
-				items: [
+				items     : [
 					{
 						xtype: 'displayfield',
 						value: NP.Translator.translate('Any item selected below will automatically be included on the PO Print View'),
@@ -140,20 +95,40 @@ Ext.define('NP.view.systemSetup.PrintSettingsTab', {
 				]
 			},
 			{
-				xtype: 'form',
-				name: 'uploadimage',
-				border: false,
-				layout: 'fit',
-				items: [
+				xtype      : 'form',
+				name       : 'uploadimage',
+				border     : false,
+				layout     : {
+					type : 'vbox',
+					align: 'stretch'
+				},
+				bodyPadding: 8,
+				tbar       : [
 					{
-						xtype: 'filefield',
-						name: 'jpeg_file',
-						fieldLabel: NP.Translator.translate('Additional image'),
-						width: 300,
-						labelAlign: 'top',
-						afterSubTpl: NP.Translator.translate('The Additional Image is the Image that will display on the PO Print/PDF view. This will replace the image that is currently used on other reports in the application. The image must be a .JPG file')
+						xtype: 'shared.button.cancel',
+						name: 'canceluploadbtn',
+						handler: function() {
+							me.getLayout().setActiveItem(0);
+							
+							me.down('[name="params"]').show();
+							me.down('[name="uploadimage"]').hide();
+						}
+					},
+					{
+						xtype: 'shared.button.upload',
+						name: 'uploadattachmentbtn',
+						handler: function() {
+							me.uploadImage();
+						}
 					}
-				]
+				],
+				items: [{
+					xtype: 'filefield',
+					name: 'jpeg_file',
+					fieldLabel: NP.Translator.translate('Additional image'),
+					labelAlign: 'top',
+					afterSubTpl: NP.Translator.translate('The Additional Image is the Image that will display on the PO Print/PDF view. This will replace the image that is currently used on other reports in the application. The image must be a .JPG file.')
+				}]
 			}
 		];
 
@@ -185,13 +160,10 @@ Ext.define('NP.view.systemSetup.PrintSettingsTab', {
 				id: me.templateid,
 				success      : function(result) {
 					if (result.success) {
-						me.getDockedItems('toolbar[dock="top"]')[0].hide();
-						me.up().up().getDockedItems('toolbar[dock="top"]')[0].show();
-						me.down('[name="params"]').show();
-						me.down('[name="uploadimage"]').hide();
+						NP.Util.showFadingWindow({ html: NP.Translator.translate('Image was successfully uploaded.') });
+
+						me.getLayout().setActiveItem(0);
 						me.down('[name="print_template_additional_image"]').setValue(1);
-						me.down('[name="settingsimage"]').setSrc('clients/' + NP.lib.core.Config.getAppName() + '/web/images/print_pdf/poprint_additional_image_' + me.templateid + '.jpg');
-						me.down('[name="settingsimage"]').show();
 						me.up().up().down('[name="viewImageBtn"]').show();
 						me.up().up().down('[name="deleteImageBtn"]').show();
 					} else {

@@ -13,7 +13,6 @@ Ext.define('NP.view.systemSetup.Main', {
     	'NP.view.systemSetup.Overview',
     	'NP.view.systemSetup.Settings',
     	'NP.view.systemSetup.WorkflowManager',
-    	'NP.view.systemSetup.GLAccounts',
     	'NP.view.systemSetup.PasswordConfiguration',
     	'NP.view.systemSetup.CustomFields',
     	'NP.view.systemSetup.Picklists',
@@ -52,10 +51,6 @@ Ext.define('NP.view.systemSetup.Main', {
                 xtype: 'systemsetup.workflowmanager'
             });
         }
-    	
-    	 this.items.push({
-             xtype: 'systemsetup.glaccounts'
-         });
     	
     	if (NP.Security.hasPermission(6085)) {
             this.items.push({
