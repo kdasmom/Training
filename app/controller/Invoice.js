@@ -46,6 +46,7 @@ Ext.define('NP.controller.Invoice', {
 		{ ref: 'lineGridGlCombo', selector: '#lineGridGlCombo' },
 		{ ref: 'lineGridUnitCombo', selector: '#lineGridUnitCombo' },
 		{ ref: 'lineEditBtn', selector: '#invoiceLineEditBtn' },
+		{ ref: 'lineAddBtn', selector: '#invoiceLineViewAddBtn' },
 		{ ref: 'splitWindow', selector: '[xtype="shared.invoicepo.splitwindow"]' },
 		{ ref: 'splitGrid', selector: '[xtype="shared.invoicepo.splitwindow"] customgrid' },
 		{ ref: 'splitCombo', selector: '#splitCombo'},
@@ -154,8 +155,13 @@ Ext.define('NP.controller.Invoice', {
 			},
 
 			// Clicking the Edit button on the line item list
+			'#invoiceLineViewAddBtn': {
+				click: me.onLineViewAddClick.bind(me)
+			},
+
+			// Clicking the Edit button on the line item list
 			'#invoiceLineEditBtn': {
-				click: me.onLineEditClick.bind(me, true)
+				click: me.onLineEditClick.bind(me)
 			},
 
 			// Clicking on the Add Line button
@@ -175,6 +181,8 @@ Ext.define('NP.controller.Invoice', {
 
 			// Line item view
 			'[xtype="shared.invoicepo.viewlines"]': {
+				// Clicking the Edit link on a line item
+				clickeditline  : me.onEditLineClick.bind(me),
 				// Clicking the Split link on a line item
 				clicksplitline : me.onSplitLineClick.bind(me),
 				clickeditsplit : me.onSplitLineClick.bind(me),
@@ -364,6 +372,7 @@ Ext.define('NP.controller.Invoice', {
 				key   : Ext.EventObject.E,
 				fn    : me.onLineEditClick,
 				scope : me,
+				conditionFn: editCondition.bind(me),
 				argsFn: function () { return [true]; }
 			},
 			// Shortcut for clicking the Add button on line item grid
@@ -371,8 +380,7 @@ Ext.define('NP.controller.Invoice', {
 				title : 'Add Line',
 				key   : Ext.EventObject.A,
 				fn    : function() {
-					me.onLineEditClick(false);
-					me.onLineAddClick();
+					me.onLineViewAddClick();
 				},
 				scope : me
 			},
@@ -609,15 +617,22 @@ Ext.define('NP.controller.Invoice', {
 		}		
 	},
 
-	onLineEditClick: function(setFocus) {
-		var me       = this,
-			grid     = me.getLineGrid(),
-			store    = grid.getStore(),
-			setFocus = setFocus || false;
+	onLineViewAddClick: function() {
+		var me = this;
+
+		me.getLineMainView().getLayout().setActiveItem(1);
+
+		me.onLineAddClick();
+	},
+
+	onLineEditClick: function() {
+		var me    = this,
+			grid  = me.getLineGrid(),
+			store = grid.getStore();
 
 		this.getLineMainView().getLayout().setActiveItem(1);
 
-		if (store.getCount() && setFocus) {
+		if (store.getCount()) {
 			Ext.defer(function() {
 				grid.getPlugin('cellediting').startEditByPosition({ row: 0, column: 1 });
 			}, 50);
@@ -692,10 +707,14 @@ Ext.define('NP.controller.Invoice', {
 	},
 
 	onLineSaveClick: function() {
-		var me      = this,
-			isValid = me.validateLineItems();
+		var me          = this,
+			cellEditing = me.getLineGrid().getPlugin('cellediting'),
+			isValid     = me.validateLineItems();
 		
 		if (isValid) {
+			if (cellEditing.editing) {
+				cellEditing.completeEdit();
+			}
 			me.getLineMainView().getLayout().setActiveItem(0);
 		}
 
@@ -1628,8 +1647,9 @@ Ext.define('NP.controller.Invoice', {
 		// Remove all line items
 		me.getLineGrid().getStore().removeAll();
 
-		// Enable the edit line item button
+		// Enable the add and edit line item button
 		me.getLineEditBtn().enable();
+		me.getLineAddBtn().enable();
 
 		// Set the default remit advice for the vendor
 		form.findField('remit_advice').setValue(vendor.get('remit_req'));
@@ -1799,6 +1819,18 @@ Ext.define('NP.controller.Invoice', {
 			lineStore = me.getLineDataView().getStore();
 
 		lineStore.remove(lineRec);
+	},
+
+	onEditLineClick: function(lineRec) {
+		var me   = this,
+			grid = me.getLineGrid(),
+			row  = grid.getStore().indexOf(lineRec);
+
+		this.getLineMainView().getLayout().setActiveItem(1);
+
+		Ext.defer(function() {
+			grid.getPlugin('cellediting').startEditByPosition({ row: row, column: 1 });
+		}, 50);
 	},
 
 	onSplitLineClick: function(lineRec) {
@@ -2179,8 +2211,9 @@ Ext.define('NP.controller.Invoice', {
 			}
 		}
 
-		// Disable the edit line button
+		// Enable/disable the add and edit line button
 		me.getLineEditBtn()[fn]();
+		me.getLineAddBtn()[fn]();
 
 		Ext.resumeLayouts(true);
 	},

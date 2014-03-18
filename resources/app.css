@@ -49,6 +49,7 @@ li.x-boundlist-item {
 .inactivate-btn { background-image: url("images/buttons/inactivate.gif"); }
 .link-btn { background-image: url("images/buttons/link.gif"); }
 .message-btn { background-image: url("images/buttons/message.gif"); width: 19px !important; background-repeat: no-repeat; }
+	.message-comp-btn .x-btn-inner { padding-left: 23px !important; }
 .new-btn { background-image: url("images/buttons/new.gif"); }
 .next-btn { background-image: url("images/buttons/next.gif"); }
 .npiss-btn { background-image: url("images/buttons/npiss.gif"); width: 20px !important; }

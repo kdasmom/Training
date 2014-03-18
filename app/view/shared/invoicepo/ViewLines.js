@@ -12,7 +12,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
         'NP.lib.core.Security',
         'NP.lib.core.Util',
         'Ext.view.View',
-        'NP.view.shared.button.Edit',
+        'NP.view.shared.button.New',
         'NP.model.jobcosting.JbContract',
         'NP.model.jobcosting.JbChangeOrder',
         'NP.model.jobcosting.JbJobCode',
@@ -33,7 +33,18 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
         var me = this;
         
         me.tbar = [
-            { xtype: 'shared.button.edit', itemId: 'invoiceLineEditBtn', disabled: true }
+            {
+                xtype   : 'shared.button.new',
+                itemId  : 'invoiceLineViewAddBtn',
+                text    : NP.Translator.translate('Add Line'),
+                disabled: true
+            },
+            {
+                xtype   : 'shared.button.edit',
+                itemId  : 'invoiceLineEditBtn',
+                text    : NP.Translator.translate('Edit Lines'),
+                disabled: true
+            }
         ];
 
         me.fieldPrefix  = me.type + 'item';
@@ -461,7 +472,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                             '<tpl if="invoiceitem_jobflag != 1">' +
                                 '<a class="splitLineBtn">Split</a> ' +
                             '</tpl>' +
-                            /*'<a href="#" class="editLineBtn">Edit</a>' +*/ // TODO: cleanup once confirmed we don't need this button
+                            '<a href="#" class="editLineBtn">Edit</a>' +
                         '<tpl else>' +
                             '<tpl if="invoiceitem_jobflag != 1">' +
                                 '<a class="editSplitBtn">Edit Split</a>' +
@@ -538,13 +549,13 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
     addLineListeners: function() {
         var me = this;
 
-        me.addEvents('clicksplitline','clickeditsplit','clickmodifygl',
+        me.addEvents('clicksplitline','clickeditline','clickeditsplit','clickmodifygl',
                         'clicklinkline','clickdeleteline','clickporef');
 
         // Add a generic event handler on the body element to make things more efficient
         me.mon(Ext.getBody(), 'click', function(e, target) {
             var clickedEl  = Ext.get(target),
-                btnClasses = ['splitLineBtn','editSplitBtn','modifyGlBtn','linkLineBtn',
+                btnClasses = ['splitLineBtn','editLineBtn','editSplitBtn','modifyGlBtn','linkLineBtn',
                                 'deleteLineBtn','poRefBtn'];
             
             for (var i=0; i<btnClasses.length; i++) {

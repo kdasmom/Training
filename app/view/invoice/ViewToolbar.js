@@ -157,6 +157,13 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                 iconCls         : 'link-btn',
                 moduleId        : 2038,
                 displayCondition: me.isLinkPoBtnVisible
+            },{
+                text            : 'Forward',
+                itemId          : 'invoiceForwardBtn',
+                iconCls         : 'message-btn',
+                componentCls    : 'message-comp-btn',
+                moduleId        : 2026,
+                displayCondition: me.isForwardBtnVisible
             },
             {
                 xtype: 'tbseparator',
@@ -172,12 +179,6 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                         itemId          : 'invoicePrintBtn',
                         iconCls         : 'print-btn',
                         displayCondition: me.isPrintBtnVisible
-                    },{
-                        text            : 'Forward',
-                        itemId          : 'invoiceForwardBtn',
-                        iconCls         : 'message-btn',
-                        moduleId        : 2026,
-                        displayCondition: me.isForwardBtnVisible
                     },{
                         text            : 'Budget Report',
                         iconCls         : 'report-btn',
