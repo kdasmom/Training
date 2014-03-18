@@ -5,7 +5,6 @@ namespace NP\system;
 use NP\core\AbstractService;
 use NP\core\db\Select;
 use NP\core\validation\EntityValidator;
-use NP\core\db\Select;
 use NP\core\db\Update;
 use NP\property\RegionEntity;
 
