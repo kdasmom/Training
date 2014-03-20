@@ -108,7 +108,7 @@ class VendorGateway extends AbstractGateway {
 		$now = \NP\util\Util::formatDateForDB();
 
 		$select = $this->getSelect()
-						->columns(['vendor_id','vendor_id_alt','vendor_name','remit_req','default_glaccount_id'])
+						->columns(['vendor_id','vendor_id_alt','vendor_name','remit_req','default_glaccount_id','default_due_date'])
 						->join(new sql\join\VendorsiteAddressJoin())
 						->join(new sql\join\VendorsitePhoneJoin('Main'))
 						->join(new sql\join\VendorGlAccountJoin());

@@ -858,22 +858,6 @@ class ConfigService extends AbstractService {
 					$this->configSysValGateway->updateCustomField($value, 'CP.PO_CUSTOM_FIELD' . $fid . '_LINEITEM_REQ');
 				}
 				break;
-			case 'field_vef_on_off':
-				if ($tabindex == self::TABINDEX_CUSTOMFIELD_HEADERS) {
-					$this->configSysValGateway->updateCustomField($value, 'CP.VEF_CUSTOM_FIELD' . $fid . '_ON_OFF');
-				}
-				if ($tabindex == self::TABINDEX_CUSTOMFIELD_LINEITEMS) {
-					$this->configSysValGateway->updateCustomField($value, 'CP.VEF_CUSTOM_FIELD' .$fid . '_LINEITEM_ON_OFF');
-				}
-				break;
-			case 'field_vef_req':
-				if ($tabindex == self::TABINDEX_CUSTOMFIELD_HEADERS) {
-					$this->configSysValGateway->updateCustomField($value, 'CP.VEF_CUSTOM_FIELD' . $fid . '_REQ');
-				}
-				if ($tabindex == self::TABINDEX_CUSTOMFIELD_LINEITEMS) {
-					$this->configSysValGateway->updateCustomField($value, 'CP.VEF_CUSTOM_FIELD' . $fid . '_LINEITEM_REQ');
-				}
-				break;
 			case 'field_lbl':
 				if ($tabindex == self::TABINDEX_CUSTOMFIELD_HEADERS) {
 					$this->configSysValGateway->updateCustomField($value, 'CP.CUSTOM_FIELD_LABEL' . $fid);

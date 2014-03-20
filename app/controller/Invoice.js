@@ -143,6 +143,11 @@ Ext.define('NP.controller.Invoice', {
 				select      : me.onVendorComboSelect
 			},
 
+			// Invoice date field
+			'[xtype="invoice.viewheader"] [name="invoice_datetm"]': {
+				select: me.populateDueDate
+			},
+
 			// Invoice image panel
 			'[xtype="viewport.imagepanel"]': {
 				expand: function() {
@@ -372,7 +377,6 @@ Ext.define('NP.controller.Invoice', {
 				key   : Ext.EventObject.E,
 				fn    : me.onLineEditClick,
 				scope : me,
-				conditionFn: editCondition.bind(me),
 				argsFn: function () { return [true]; }
 			},
 			// Shortcut for clicking the Add button on line item grid
@@ -546,6 +550,8 @@ Ext.define('NP.controller.Invoice', {
 						// with a date field it doesn't work
 						periodField.setValue(data['invoice_period']);
 
+						me.populateDueDate();
+
 						// Set the invoice payment to the default if needed
 						if (me.getSetting('CP.INVOICE_PAY_BY_FIELD', '0') == '1') {
 							var payByField = boundForm.findField('invoicepayment_type_id');
@@ -615,6 +621,32 @@ Ext.define('NP.controller.Invoice', {
 		} else {
 			field.disable();
 		}		
+	},
+
+	populateDueDate: function() {
+		var me           = this,
+			form         = me.getInvoiceView(),
+			dueDateField = form.findField('invoice_duedate'),
+			rec          = me.getVendorRecord(),
+			offset;
+
+		if (dueDateField.getValue() === null) {
+			if (rec !== null && rec.get('default_due_date') !== null) {
+				offset = rec.get('default_due_date');
+			} else {
+				offset = parseInt(NP.Config.getSetting('CP.INVOICE_DEFAULT_DUE_DATE_OFFSET', '0'));
+			}
+
+			if (offset > 0) {
+				var invDate = form.findField('invoice_datetm').getValue(),
+					dueDate;
+
+				if (Ext.isDate(invDate)) {
+					dueDate = Ext.Date.add(invDate, Ext.Date.DAY, offset);
+					dueDateField.setValue(dueDate);
+				}
+			}
+		}
 	},
 
 	onLineViewAddClick: function() {
@@ -716,7 +748,58 @@ Ext.define('NP.controller.Invoice', {
 				cellEditing.completeEdit();
 			}
 			me.getLineMainView().getLayout().setActiveItem(0);
+		} else {
+			NP.Util.showFadingWindow({
+				height: 110,
+				html  : me.translate('You have one or more invalid line items. See the Line Items grid for details.')
+			});
 		}
+
+		return isValid;
+	},
+
+	validateHeader: function(isSubmit) {
+		var me      = this,
+			form    = me.getInvoiceView(),
+			isValid = true;
+
+		Ext.suspendLayouts();
+
+		form.getForm().clearInvalid();
+
+		if (isSubmit) {
+			isValid = form.isValid();
+
+			var totalAmount   = me.getLineView().getTotalAmount(),
+				controlAmount = form.findField('control_amount').getValue();
+
+			if (controlAmount !== null && controlAmount != totalAmount) {
+				form.findField('control_amount').markInvalid(
+					me.translate('Invoice Total must be equal to line total.')
+				);
+				isValid = false;
+			}
+		} else {
+			form.findField('property_id').isValid();
+			form.findField('vendor_id').isValid();
+			form.findField('invoice_period').isValid();
+
+			// We'll manually validate dates, that's because we don't want isValid() to return
+			// false if the field is blank, but we do if the text in the field is invalid
+			Ext.each(form.down('[xtype="datefield"]'), function(field) {
+				var val = field.getValue();
+				if (val !== null && !Ext.isDate(val)) {
+					field.isValid();
+				}
+			});
+
+			// Since we're not calling isValid on the form, we need to manually update our model
+			me.getInvoiceView().updateBoundModels();
+
+			isValid = form.getForm().hasInvalidField();
+		}
+
+		Ext.resumeLayouts(true);
 
 		return isValid;
 	},
@@ -726,8 +809,10 @@ Ext.define('NP.controller.Invoice', {
 			grid              = me.getLineGrid(),
 			store             = grid.getStore(),
 			count             = store.getCount(),
+			customFields      = NP.Config.getCustomFields().line.fields,
 			reqFields         = ['glaccount_id','property_id'],
 			nonZeroFields     = ['invoiceitem_unitprice','invoiceitem_amount','invoiceitem_quantity'],
+			unitFieldReq      = NP.Config.getSetting('PN.InvoiceOptions.unitFieldReq', '0'),
 			jobCostingEnabled = me.getSetting('pn.jobcosting.jobcostingEnabled', '0'),
 			useContracts      = me.getSetting('pn.jobcosting.useContracts', '0'),
 			useChangeOrders   = me.getSetting('JB_UseChangeOrders', '0'),
@@ -736,8 +821,18 @@ Ext.define('NP.controller.Invoice', {
 			phaseCodeReq      = me.getSetting('PN.jobcosting.phaseCodeReq', '0'),
 			useCostCodes      = me.getSetting('pn.jobcosting.useCostCodes', '0'),
 			valid             = true,
-			rec,
-			cellNode;
+			fieldNum,
+			rec;
+
+		if (unitFieldReq == 1) {
+			reqFields.push('unit_id');
+		}
+
+		for (fieldNum in customFields) {
+			if (customFields[fieldNum].invOn && customFields[fieldNum].invRequired) {
+				reqFields.push('universal_field' + fieldNum);
+			}
+		}
 
 		Ext.suspendLayouts();
 
@@ -749,7 +844,7 @@ Ext.define('NP.controller.Invoice', {
 					col   = grid.columns[j],
 					val   = rec.get(col.dataIndex);
 
-				if (Ext.Array.contains(reqFields, col.dataIndex) && val == null) {
+				if (Ext.Array.contains(reqFields, col.dataIndex) && (val === null || val === '')) {
 					error = 'This field is required';
 				} else if (Ext.Array.contains(nonZeroFields, col.dataIndex) && val == 0) {
 					error = 'This field cannot be set to zero';
@@ -777,11 +872,17 @@ Ext.define('NP.controller.Invoice', {
 				if (error != null) {
 					me.getLineMainView().getLayout().setActiveItem(1);
 
-					cellNode = grid.getView().getCell(rec, col);
-					cellNode.addCls('grid-invalid-cell');
-					cellNode.set({
-						'data-qtip': me.translate(error)
-					});
+					// We'll use the deferUntil() utility function because in cases where the grid
+					// was never shown, the getCell() call will fail until the grid has been fully
+					// renderer following the setActiveItem(1) call above
+					NP.Util.deferUntil(function markInvalidCells(recInner, colInner) {
+						var cellNode = grid.getView().getCell(recInner, colInner);
+						cellNode.addCls('grid-invalid-cell');
+						cellNode.set({
+							'data-qtip': me.translate(error)
+						});
+					}, { args: [rec, col] });
+					
 					valid = false;
 				}
 			}
@@ -2067,55 +2168,64 @@ Ext.define('NP.controller.Invoice', {
 
 	onSaveSplit: function() {
 		var me           = this,
-			splitStore   = me.getSplitGrid().getStore(),
-			totalRecs    = splitStore.getCount(),
-			lineDataView = me.getLineDataView(),
-			lineStore    = me.getLineGrid().getStore(),
-			desc         = Ext.ComponentQuery.query('#splitDescription')[0].getValue(),
-			rec,
-			lineRec,
-			i;
+			allocLeft    = Ext.ComponentQuery.query('#allocation_amount_left')[0].getValue();
 
-		Ext.suspendLayouts();
-
-		if (me.isNewSplit) {
-			rec = splitStore.getById(me.openSplitLineRec.get('invoiceitem_id'));
-			if (!rec) {
-				lineStore.remove(me.openSplitLineRec);
-			}
+		if (allocLeft != '0') {
+			Ext.MessageBox.alert(
+				me.translate('Error'),
+				me.translate('You have allocated too little or too much money.')
+			);
 		} else {
-			var oldRecs = me.getSplitLines(me.openSplitLineRec);
+			var splitStore   = me.getSplitGrid().getStore(),
+				totalRecs    = splitStore.getCount(),
+				lineDataView = me.getLineDataView(),
+				lineStore    = me.getLineGrid().getStore(),
+				desc         = Ext.ComponentQuery.query('#splitDescription')[0].getValue(),
+				rec,
+				lineRec,
+				i;
 
-			oldRecs.each(function(lineRec) {
-				rec = splitStore.getById(lineRec.get('invoiceitem_id'));
+			Ext.suspendLayouts();
+
+			if (me.isNewSplit) {
+				rec = splitStore.getById(me.openSplitLineRec.get('invoiceitem_id'));
 				if (!rec) {
-					lineStore.remove(lineRec);
+					lineStore.remove(me.openSplitLineRec);
 				}
-			});
-		}
-		
-		me.openSplitLineRec = null;
-
-		for (i=0; i<totalRecs; i++) {
-			rec = splitStore.getAt(i);
-			lineRec = lineStore.getById(rec.get('invoiceitem_id'));
-			if (lineRec) {
-				lineRec.set(Ext.apply(rec.getData(), {
-					invoiceitem_description: desc,
-					invoiceitem_split: 1
-				}));
 			} else {
-				rec.set('invoiceitem_description', desc);
-				rec.set('invoiceitem_split', 1);
-				lineStore.add(rec);
+				var oldRecs = me.getSplitLines(me.openSplitLineRec);
+
+				oldRecs.each(function(lineRec) {
+					rec = splitStore.getById(lineRec.get('invoiceitem_id'));
+					if (!rec) {
+						lineStore.remove(lineRec);
+					}
+				});
 			}
+			
+			me.openSplitLineRec = null;
+
+			for (i=0; i<totalRecs; i++) {
+				rec = splitStore.getAt(i);
+				lineRec = lineStore.getById(rec.get('invoiceitem_id'));
+				if (lineRec) {
+					lineRec.set(Ext.apply(rec.getData(), {
+						invoiceitem_description: desc,
+						invoiceitem_split: 1
+					}));
+				} else {
+					rec.set('invoiceitem_description', desc);
+					rec.set('invoiceitem_split', 1);
+					lineStore.add(rec);
+				}
+			}
+
+			lineDataView.refresh();
+
+			Ext.resumeLayouts(true);
+
+			me.getSplitWindow().close();
 		}
-
-		lineDataView.refresh();
-
-		Ext.resumeLayouts(true);
-
-		me.getSplitWindow().close();
 	},
 
 	onShowVoidInvoice: function() {
@@ -2337,7 +2447,7 @@ Ext.define('NP.controller.Invoice', {
 			form    = me.getInvoiceView(),
 			invoice = me.getInvoiceRecord();
 
-		if (me.onLineSaveClick() && form.isValid()) {
+		if (me.onLineSaveClick() && me.validateHeader(false)) {
 			// Before saving, make sure invoice hasn't been updated
 			me.checkLock(function() {
 				// Get the line items that need to be saved

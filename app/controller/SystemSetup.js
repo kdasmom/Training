@@ -1287,20 +1287,22 @@ Ext.define('NP.controller.SystemSetup', {
 
 		if (form.tabindex < 2) {
 			data['field_inv_on_off'] = values['invoice_custom_field_on_off'];
-			data['field_inv_req'] = values['invoice_custom_field_req'];
-			data['field_po_on_off'] = values['po_custom_field_on_off'];
-			data['field_po_req'] = values['po_custom_field_req'];
-			data['field_vef_on_off'] = values['vef_custom_field_on_off'];
-			data['field_vef_req'] = values['vef_custom_field_req'];
-			data['field_imgindex'] = values['inv_custom_field_imgindex'];
-			data['field_lbl'] = values['custom_field_lbl'];
-			data['customfield_type'] = values['customFieldType'] == 0 ? 'select' : 'date';
+			data['field_inv_req']    = values['invoice_custom_field_req'];
+			data['field_po_on_off']  = values['po_custom_field_on_off'];
+			data['field_po_req']     = values['po_custom_field_req'];
+			data['field_imgindex']   = values['inv_custom_field_imgindex'];
+			data['field_lbl']        = values['custom_field_lbl'];
+			if ('customFieldType' in values) {
+				data['customfield_type'] = (values['customFieldType'] == 0) ? 'select' : 'date';
+			} else {
+				data['customfield_type'] = 'select';
+			}
 		} else {
-			data['custom_field_lbl'] 			= values['custom_field_lbl'];
-			data['customfield_req'] 			= values['customfield_req'];
-			data['customfield_status']			= values['customfield_status'];
-			data['customfield_type']			= values['customFieldType'] == 0 ? 'select' : (values['customFieldType'] == 2 ? 'date' : 'text');
-			data['customfield_lastupdateby']	= NP.Security.getUser().get('userprofile_id');
+			data['custom_field_lbl']         = values['custom_field_lbl'];
+			data['customfield_req']          = values['customfield_req'];
+			data['customfield_status']       = values['customfield_status'];
+			data['customfield_type']         = values['customFieldType'] == 0 ? 'select' : (values['customFieldType'] == 2 ? 'date' : 'text');
+			data['customfield_lastupdateby'] = NP.Security.getUser().get('userprofile_id');
 		}
 
 		NP.lib.core.Net.remoteCall({
@@ -1310,6 +1312,20 @@ Ext.define('NP.controller.SystemSetup', {
 				data: data,
 				success    : function(result) {
 					if (result) {
+						// If successful, also update our cached variable if applicable
+						if (form.tabindex < 2) {
+							var key          = (data['islineitem']) ? 'line' : 'header',
+								customFields = NP.Config.getCustomFields(),
+								num          = data['universal_field_number'];
+							
+							customFields[key].fields[num].invOn = (data['field_inv_on_off']) ? true : false;
+							customFields[key].fields[num].invRequired = (data['field_inv_req']) ? true : false;
+							customFields[key].fields[num].poOn = (data['field_po_on_off']) ? true : false;
+							customFields[key].fields[num].poRequired = (data['field_po_req']) ? true : false;
+							customFields[key].fields[num].label = data['field_lbl'];
+							customFields[key].fields[num].type = data['customfield_type'];
+						}
+
 						NP.Util.showFadingWindow({ html: 'Item was updated successfully!' });
 						form.up().remove(form);
 						grid.getStore().reload();

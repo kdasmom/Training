@@ -120,8 +120,10 @@ Ext.define('NP.view.shared.invoicepo.SplitWindow', {
     },
 
     getButtonBar: function() {
+        var me = this;
+
         return [
-            { xtype: 'shared.button.cancel' },
+            { xtype: 'shared.button.cancel', handler: function() { me.close(); } },
             { xtype: 'shared.button.save', itemId: 'saveSplitBtn' },
             {
                 xtype : 'shared.button.save',
@@ -252,11 +254,15 @@ Ext.define('NP.view.shared.invoicepo.SplitWindow', {
                         return rec.get('property_name');
                     },
                     editor: {
-                        xtype       : 'customcombo',
-                        itemId      : 'lineGridPropertyCombo',
-                        displayField: 'property_name',
-                        valueField  : 'property_id',
-                        store       : propertyStore
+                        xtype           : 'autocomplete',
+                        itemId          : 'lineGridPropertyCombo',
+                        displayField    : 'property_name',
+                        valueField      : 'property_id',
+                        allowBlank      : false,
+                        validateOnBlur  : false,
+                        validateOnChange: false,
+                        selectOnFocus   : true,
+                        store           : propertyStore
                     }
                 },
                 // GL Account column
@@ -273,24 +279,29 @@ Ext.define('NP.view.shared.invoicepo.SplitWindow', {
                         return rec.get('display_name');
                     },
                     editor: {
-                        xtype       : 'customcombo',
-                        itemId      : 'lineGridGlCombo',
-                        displayField: 'display_name',
-                        valueField  : 'glaccount_id',
-                        store       : glStore
+                        xtype           : 'autocomplete',
+                        itemId          : 'lineGridGlCombo',
+                        displayField    : 'display_name',
+                        valueField      : 'glaccount_id',
+                        allowBlank      : false,
+                        validateOnBlur  : false,
+                        validateOnChange: false,
+                        selectOnFocus   : true,
+                        store           : glStore
                     }
                 }
             ]
         };
 
         if (NP.Config.getSetting('PN.InvoiceOptions.AllowUnitAttach') == '1') {
-            var unitStore = Ext.create('NP.store.property.Units', {
-                service    : 'PropertyService',
-                action     : 'getUnits',
-                extraParams: {
-                    unit_status: 'active'
-                }
-            });
+            var unitFieldReq = NP.Config.getSetting('PN.InvoiceOptions.unitFieldReq', '0'),
+                unitStore    = Ext.create('NP.store.property.Units', {
+                    service    : 'PropertyService',
+                    action     : 'getUnits',
+                    extraParams: {
+                        unit_status: 'active'
+                    }
+                });
 
             gridCfg.columns.push({
                 text     : NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit'),
@@ -309,12 +320,16 @@ Ext.define('NP.view.shared.invoicepo.SplitWindow', {
                     }
                 },
                 editor: {
-                    xtype       : 'customcombo',
-                    itemId      : 'lineGridUnitCombo',
-                    displayField: 'unit_number',
-                    valueField  : 'unit_id',
-                    store       : unitStore,
-                    hideLabel   : true
+                    xtype           : 'autocomplete',
+                    itemId          : 'lineGridUnitCombo',
+                    displayField    : 'unit_number',
+                    valueField      : 'unit_id',
+                    allowBlank      : (unitFieldReq == 0) ? true : false,
+                    validateOnBlur  : false,
+                    validateOnChange: false,
+                    selectOnFocus   : true,
+                    triggerAction   : 'query',
+                    store           : unitStore
                 }
             });
         }
@@ -337,7 +352,12 @@ Ext.define('NP.view.shared.invoicepo.SplitWindow', {
                         type      : customField.type,
                         isLineItem: 1,
                         number    : i,
-                        allowBlank: !customField[typeShort + 'Required']
+                        allowBlank: !customField[typeShort + 'Required'],
+                        fieldCfg  : {
+                            selectOnFocus   : true,
+                            validateOnBlur  : false,
+                            validateOnChange: false
+                        }
                     }
                 });
             }
