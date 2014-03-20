@@ -1210,6 +1210,10 @@ class PropertyService extends AbstractService {
 	public function getUnitTypeMeasByPropertyId($property_id) {
 		return $this->unitTypeMeasGateway->findMeasByPropertyId($property_id);
 	}
+
+	public function getAllByAdmin($isAdminRole = null, $hasPermission = false) {
+		return $this->propertyGateway->getByAdminRole($isAdminRole, $hasPermission, $this->configService->getClientID());
+	}
 }
 
 ?>

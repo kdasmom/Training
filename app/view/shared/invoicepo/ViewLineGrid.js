@@ -120,13 +120,16 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                 dataIndex: 'invoiceitem_quantity',
                 hideable : false,
                 format   : '0,000.00',
-                //format   : '0,000.000000',    // Temporarily changing to 2 decimals for user conference
+                //format : '0,000.000000',    // Temporarily changing to 2 decimals for user conference
                 width    : 100,
                 editor   : {
                     xtype           : 'numberfield',
                     decimalPrecision: 2,
                     //decimalPrecision: 6,    // Temporarily changing to 2 decimals for user conference
                     selectOnFocus   : true,
+                    allowBlank      : false,
+                    validateOnBlur  : false,
+                    validateOnChange: false,
                     listeners       : {
                         blur: function(field, e) {
                             me.fireEvent('changequantity', me, field, e);
@@ -152,13 +155,16 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                 dataIndex: 'invoiceitem_unitprice',
                 hideable : false,
                 format   : '0,000.00',
-                //format   : '0,000.000000',    // Temporarily changing to 2 decimals for user conference
+                //format : '0,000.000000',    // Temporarily changing to 2 decimals for user conference
                 width    : 100,
                 editor   : {
                     xtype           : 'numberfield',
                     decimalPrecision: 2,
                     //decimalPrecision: 6,    // Temporarily changing to 2 decimals for user conference
                     selectOnFocus   : true,
+                    allowBlank      : false,
+                    validateOnBlur  : false,
+                    validateOnChange: false,
                     listeners       : {
                         blur: function(field, e) {
                             me.fireEvent('changeunitprice', me, field, e);
@@ -173,13 +179,16 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                 dataIndex: 'invoiceitem_amount',
                 hideable : false,
                 format   : '0,000.00',
-                //format   : '0,000.000000',    // Temporarily changing to 2 decimals for user conference
+                //format : '0,000.000000',    // Temporarily changing to 2 decimals for user conference
                 width    : 100,
                 editor   : {
                     xtype           : 'numberfield',
                     decimalPrecision: 2,
                     //decimalPrecision: 6,    // Temporarily changing to 2 decimals for user conference
                     selectOnFocus   : true,
+                    allowBlank      : false,
+                    validateOnBlur  : false,
+                    validateOnChange: false,
                     listeners       : {
                         blur: function(field, e) {
                             me.fireEvent('changeamount', me, field, e);
@@ -202,12 +211,15 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     return rec.get('property_name');
                 },
                 editor: {
-                    xtype        : 'autocomplete',
-                    itemId       : 'lineGridPropertyCombo',
-                    displayField : 'property_name',
-                    valueField   : 'property_id',
-                    selectOnFocus: true,
-                    store        : me.propertyStore
+                    xtype           : 'autocomplete',
+                    itemId          : 'lineGridPropertyCombo',
+                    displayField    : 'property_name',
+                    valueField      : 'property_id',
+                    allowBlank      : false,
+                    validateOnBlur  : false,
+                    validateOnChange: false,
+                    selectOnFocus   : true,
+                    store           : me.propertyStore
                 }
             },
             // GL Account column
@@ -225,18 +237,23 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     return rec.get('display_name');
                 },
                 editor: {
-                    xtype        : 'autocomplete',
-                    itemId       : 'lineGridGlCombo',
-                    displayField : 'display_name',
-                    valueField   : 'glaccount_id',
-                    selectOnFocus: true,
-                    store        : me.glStore
+                    xtype           : 'autocomplete',
+                    itemId          : 'lineGridGlCombo',
+                    displayField    : 'display_name',
+                    valueField      : 'glaccount_id',
+                    allowBlank      : false,
+                    validateOnBlur  : false,
+                    validateOnChange: false,
+                    selectOnFocus   : true,
+                    store           : me.glStore
                 }
             }
         ];
 
         // Unit column
         if (NP.Config.getSetting('PN.InvoiceOptions.AllowUnitAttach') == '1') {
+            var unitFieldReq = NP.Config.getSetting('PN.InvoiceOptions.unitFieldReq', '0');
+
             me.unitStore = Ext.create('NP.store.property.Units', {
                 service    : 'PropertyService',
                 action     : 'getUnits',
@@ -258,13 +275,16 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     return rec.get('unit_number');
                 },
                 editor: {
-                    xtype        : 'autocomplete',
-                    itemId       : 'lineGridUnitCombo',
-                    displayField : 'unit_number',
-                    valueField   : 'unit_id',
-                    selectOnFocus: true,
-                    triggerAction: 'query',
-                    store        : me.unitStore
+                    xtype           : 'autocomplete',
+                    itemId          : 'lineGridUnitCombo',
+                    displayField    : 'unit_number',
+                    valueField      : 'unit_id',
+                    allowBlank      : (unitFieldReq == 0) ? true : false,
+                    validateOnBlur  : false,
+                    validateOnChange: false,
+                    selectOnFocus   : true,
+                    triggerAction   : 'query',
+                    store           : me.unitStore
                 }
             });
         }
@@ -295,7 +315,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
         });
 
         // Custom field columns
-        for (var i=1; i<8; i++) {
+        for (var i=1; i<=8; i++) {
             var customField = customFields[i];
             if (customField[typeShort+'On']) {
                 me.columns.push({
@@ -314,7 +334,11 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                         isLineItem: 1,
                         number    : i,
                         allowBlank: !customField[typeShort + 'Required'],
-                        fieldCfg  : { selectOnFocus: true }
+                        fieldCfg  : {
+                            selectOnFocus   : true,
+                            validateOnBlur  : false,
+                            validateOnChange: false
+                        }
                     }
                 });
             }

@@ -107,15 +107,12 @@ class Adapter {
 	 * @return 
 	 */
 	public function query($sql, $params=array()) {
-		// Make sure there's a connection to DB
-		$this->connect();
-
 		// If $sql is an object, convert it to a string
 		if ($sql instanceOf SQLInterface) {
 			$sql = $sql->toString();
 		}
 
-		$sql = trim($sql);
+		$sql      = trim($sql);
 		$beginSql = strtolower(substr(trim($sql), 0, 6));
 
 		// If dealing with an insert statement, append SCOPE_IDENTITY QUERY at the end
@@ -123,22 +120,9 @@ class Adapter {
 			$sql .= ';SELECT SCOPE_IDENTITY() AS last_id;';
 		}
 
-		// Log SQL queries
-		$this->loggingService->log('sql', $sql, array('sql'=>$sql, 'params'=>$params));
+		// Create the SQL statement
+		$stmt = $this->getQueryStmt($sql, $params);
 
-		// Create the SQL statement and execute it
-		$stmt = sqlsrv_query($this->conn, $sql, $params);
-		if (!$stmt) {
-			$errors = sqlsrv_errors();
-			$paramStr = (count($params)) ? implode('|', $params) : '<none>';
-			$message = "Error running query. SQL was the following:\n\n{$sql};\n\nParameters were the following: {$paramStr};\n\nError was the following:";
-			foreach ($errors as $error) {
-				$message .= "\n\nSQLSTATE: {$error['SQLSTATE']};\ncode: {$error['code']};\nmessage: {$error['message']}";
-			}
-			throw new \NP\core\Exception($message);
-			die;
-		}
-		
 		// This array will store all the results
 		$results = [];
 		do {
@@ -173,6 +157,39 @@ class Adapter {
 
 		// If we had no result sets to return, just return true (for insert/update/delete)
 		return true;
+	}
+
+	/**
+	 * 
+	 */
+	public function getQueryStmt($sql, $params=array()) {
+		// Make sure there's a connection to DB
+		$this->connect();
+
+		// If $sql is an object, convert it to a string
+		if ($sql instanceOf SQLInterface) {
+			$sql = $sql->toString();
+		}
+
+		$sql = trim($sql);
+		
+		// Log SQL queries
+		$this->loggingService->log('sql', $sql, array('sql'=>$sql, 'params'=>$params));
+
+		// Create the SQL statement and execute it
+		$stmt = sqlsrv_query($this->conn, $sql, $params);
+		if (!$stmt) {
+			$errors = sqlsrv_errors();
+			$paramStr = (count($params)) ? implode('|', $params) : '<none>';
+			$message = "Error running query. SQL was the following:\n\n{$sql};\n\nParameters were the following: {$paramStr};\n\nError was the following:";
+			foreach ($errors as $error) {
+				$message .= "\n\nSQLSTATE: {$error['SQLSTATE']};\ncode: {$error['code']};\nmessage: {$error['message']}";
+			}
+			throw new \NP\core\Exception($message);
+			die;
+		} else {
+			return $stmt;
+		}
 	}
 
 	/**

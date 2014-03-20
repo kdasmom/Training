@@ -20,12 +20,20 @@ $__CONFIG = array(
 	'fileLogEnabled'		=> false, 
 	'debugLogEnabled'		=> true,
 	'notificationsEnabled'  => true,
+	// Mail server configuration
 	'mailServer'            => array(
-			'host'           => 'smtp.yourhost.com',
-			'port'           => 25,
-			'username'       => null, // leave null if no authentication
-			'password'       => null, // leave null if no authentication
-			'encryptionType' => null  // valid options are ssl and tls; leave null if no encryption;
+		'host'           => 'smtp.yourhost.com',
+		'port'           => 25,
+		'username'       => null, // leave null if no authentication
+		'password'       => null, // leave null if no authentication
+		'encryptionType' => null  // valid options are ssl and tls; leave null if no encryption;
+	),
+	// Report server configuration
+	'reportServer' => array(
+		//'url'      => 'http://localhost/NexusPayablesPHP/report.php',
+		'url'             => null,	// If running reports locall, set to null
+		'wkhtmltopdfPath' => 'c:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe',
+		'tempDir'         => 'c:\temp'
 	)
 );
 

@@ -14,7 +14,10 @@ Ext.define('NP.view.shared.invoicepo.ViewLineItems', {
     	'NP.store.invoice.InvoiceItems'
     ],
 
-    layout     : 'card',
+    layout     : {
+        type          : 'card',
+        deferredRender: false
+    },
     border     : false,
     bodyPadding: 0,
 

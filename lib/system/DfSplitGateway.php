@@ -97,7 +97,7 @@ class DfSplitGateway extends AbstractGateway {
 			// If user ID is supplied, use it to filter
 			if (is_numeric($userprofile_id)) {
 				$propertyFilterSelect = new PropertyFilterSelect(new PropertyContext(
-					$userprofile_id, $delegated_to_userprofile_id, 'all', null, true
+					$userprofile_id, $delegated_to_userprofile_id, 'all', null, null, true
 				));
 				$subSelect->whereIn('si.property_id', $propertyFilterSelect);
 			}

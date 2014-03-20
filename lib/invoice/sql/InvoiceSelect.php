@@ -39,6 +39,30 @@ class InvoiceSelect extends AbstractEntitySelect {
 	public function columnPendingDays() {
 		return $this->column(new Expression('DateDiff(day, i.invoice_createddatetm, getDate())'), 'invoice_pending_days');
 	}
+
+	/**
+	 * 
+	 */
+	public function columnStatusDisplay() {
+		return $this->column(
+			new Expression("
+				CASE
+					WHEN i.invoice_status = 'open' THEN 'In Progress'
+					WHEN i.invoice_status = 'forapproval' THEN 'Pending Approval'
+					WHEN i.invoice_status = 'approved' THEN 'Approved'
+					WHEN i.invoice_status = 'rejected' THEN 'Rejected'
+					WHEN i.invoice_status = 'hold' THEN 'On Hold'
+					WHEN i.invoice_status = 'saved' THEN 'Completed'
+					WHEN i.invoice_status = 'submitted' THEN 'Submitted For Payment'
+					WHEN i.invoice_status = 'sent' THEN 'In ' + ipkt.Integration_Package_Type_Display_Name
+					WHEN i.invoice_status = 'posted' THEN 'Posted In ' + ipkt.Integration_Package_Type_Display_Name
+					WHEN i.invoice_status = 'paid' THEN 'Paid'
+					WHEN i.invoice_status = 'void' THEN 'Void'
+				END
+			"),
+			'invoice_status_display'
+		);
+	}
 	
 	/**
 	 * Adds the on hold days column
@@ -142,15 +166,34 @@ class InvoiceSelect extends AbstractEntitySelect {
 	 *
 	 * @return \NP\invoice\InvoiceSelect Returns caller object for easy chaining
 	 */
-	public function columnPaymentDetails() {
+	public function columnPaymentDetails($paid_status=null, $dateFormat='mm/dd/yyyy') {
+		$exp      = "'(CHK #' + ip.invoicepayment_checknum + ' - ' + ";
+		$daySql   = "CONVERT(varchar(16),DAY(ip.invoicepayment_datetm))";
+		$monthSql = "CONVERT(varchar(6),MONTH(ip.invoicepayment_datetm))";
+		$yearSql  = "CONVERT(varchar(5),YEAR(ip.invoicepayment_datetm))";
+
+		if ($dateFormat == 'dd/mm/yyyy') {
+			$exp .= "{$daySql} +'/'+ {$monthSql} + '/'+ {$yearSql} +')'";
+		} else {
+			$exp .= "{$monthSql} +'/'+ {$daySql} + '/'+ {$yearSql} +')'";
+		}
+
+		$subSel = Select::get()->column(new Expression($exp))
+							->from(['ip'=>'invoicepayment'])
+							->whereEquals('ip.invoice_id', 'i.invoice_id')
+							->limit(1)
+							->order('ip.invoicepayment_id DESC');
+
+		if (!empty($paid_status)) {
+			if (!is_int($paid_status)) {
+				throw new \NP\core\Exception("Argument \$paid_status must be an integer");
+			}
+			$subSel->join(new join\InvoicePaymentInvoicePaymentStatusJoin([]))
+					->whereEquals('ips.paid', $paid_status);
+		}
+
 		return $this->column(
-			Select::get()->column(
-							new Expression("'(CHK #' + ip.invoicepayment_checknum + ' - ' + CONVERT(varchar(6),MONTH(ip.invoicepayment_datetm))+'/'+ CONVERT(varchar(16),DAY(ip.invoicepayment_datetm))+ '/'+ CONVERT(varchar(5),YEAR(ip.invoicepayment_datetm)) +')'")
-						)
-						->from(['ip'=>'invoicepayment'])
-						->whereEquals('ip.invoice_id', 'i.invoice_id')
-						->limit(1)
-						->order('ip.invoicepayment_id DESC'),
+			new Expression("CASE WHEN i.invoice_status = 'paid' THEN ({$subSel->toString()}) ELSE '' END"),
 			'payment_details'
 		);
 	}
@@ -198,6 +241,29 @@ class InvoiceSelect extends AbstractEntitySelect {
 		);
 	}
 	
+	/**
+	 * 
+	 */
+	public function columnPoAmount($capExOnly=false) {
+		$select = Select::get()->column(new Expression("SUM(ii.invoiceitem_amount + ii.invoiceitem_salestax + ii.invoiceitem_shipping)"))
+							->from(['pi'=>'poitem'])
+								->join(
+									['ii'=>'invoiceitem'],
+									'pi.reftablekey_id = ii.invoiceitem_id',
+									[]
+								)
+							->whereEquals('i.invoice_id', 'ii.invoice_id');
+
+		if ($capExOnly) {
+			$select->join(new join\InvoiceItemGlAccountJoin([]))
+				->whereEquals('g.glaccounttype_id', 1);
+		}
+
+		return $this->column(
+			$select,
+			'po_amount'
+		);
+	}
 }
 
 ?>

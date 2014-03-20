@@ -76,6 +76,15 @@ class PropertyGateway  extends AbstractGateway {
 		return $this->adapter->query($select, $params);
 	}
 
+	public function findByContext($propertyContext) {
+		$select = Select::get()
+						->columns(['property_id','property_id_alt','property_name'])
+						->from('property')
+						->whereIn('property_id', new \NP\property\sql\PropertyFilterSelect($propertyContext));
+
+		return $this->adapter->query($select);
+	}
+
 	/**
 	 * Find properties for a given user
 	 *
@@ -598,4 +607,38 @@ class PropertyGateway  extends AbstractGateway {
         }
         return $result;
     }
+
+	public function getByAdminRole($isAdminRole, $hasPermission, $asp_client_id) {
+		$select = new Select();
+		$params = [$asp_client_id];
+
+		if (!$isAdminRole) {
+			$select->from(['p' => 'property'])
+				->join(['i' => 'integrationpackage'], 'p.integration_package_id = i.integration_package_id', [])
+				->where([
+					'i.asp_client_id' => '?'
+				])
+				->order('p.property_name');
+			if ($hasPermission) {
+				$select->whereNest('OR')
+					->whereEquals('p.property_status', '?')
+					->whereEquals('p.property_status', '?')
+					->whereUnNest();
+
+				$params = array_merge($params, [1, -1]);
+			} else {
+				$select->whereEquals('p.property_status', '?');
+				$params = array_merge($params, [1]);
+			}
+		} else {
+			$select->from(['p' => 'property'])
+				->join(['i' => 'integrationpackage'], 'p.integration_package_id = i.integration_package_id', [])
+				->where([
+					'i.asp_client_id' => '?'
+				])
+				->order('p.property_name');
+		}
+
+		return $this->adapter->query($select, $params);
+	}
 }

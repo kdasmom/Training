@@ -26,13 +26,13 @@ class SessionService {
 			session_name("nexus_{$loginUrl[1]}");
 
 			if (count(explode('.', $loginUrl[0])) == 1) {
-				session_set_cookie_params(0, '/'.$loginUrl[1].'/');
+//				session_set_cookie_params(0, '/'.$loginUrl[1].'/');
 			} else {
-				session_set_cookie_params(0, '/'.$loginUrl[1].'/', $loginUrl[0]);
+//				session_set_cookie_params(0, '/'.$loginUrl[1].'/', $loginUrl[0]);
 			}
 		} else {
 			session_name("nexus_session");
-			session_set_cookie_params(0, '/', $loginUrl[0]);
+//			session_set_cookie_params(0, '/', $loginUrl[0]);
 		}
 		session_start();
 

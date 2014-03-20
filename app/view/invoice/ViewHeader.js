@@ -27,7 +27,7 @@ Ext.define('NP.view.invoice.ViewHeader', {
     },
 
     initComponent: function() {
-    	var me        = this;
+    	var me = this;
 
     	me.title = NP.Translator.translate('Header');
 
@@ -42,12 +42,12 @@ Ext.define('NP.view.invoice.ViewHeader', {
 				xtype   : 'container',
 				flex    : 1,
 				margin  : '0 16 0 0',
-				defaults: { labelWidth: 130 },
+				defaults: { labelWidth: 130, validateOnBlur: false, validateOnChange: false },
 				items   : me.buildCol2Items()
     		},{
 				xtype   : 'container',
 				flex    : 1,
-				defaults: { labelWidth: 130 },
+				defaults: { labelWidth: 130, validateOnBlur: false, validateOnChange: false },
 				items   : me.buildCol3Items()
     		}
     	];
@@ -152,7 +152,7 @@ Ext.define('NP.view.invoice.ViewHeader', {
 				xtype     : 'datefield',
 				fieldLabel: this.invoiceDueDateLbl,
 				name      : 'invoice_duedate',
-				allowBlank      : (NP.Config.getSetting('PN.InvoiceOptions.DueOnRequired', '0') == '1') ? false : true
+				allowBlank: (NP.Config.getSetting('PN.InvoiceOptions.DueOnRequired', '0') == '1') ? false : true
 			},{
 				xtype       : 'customcombo',
 				fieldLabel  : this.invoicePeriodLbl,

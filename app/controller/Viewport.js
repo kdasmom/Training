@@ -217,6 +217,13 @@ Ext.define('NP.controller.Viewport', {
 				}
 			},
 
+			// Clicking on the Reports > Invoice Register Reports menu
+			'#invoiceReportMenuBtn': {
+				click: function() {
+					this.addHistory('Report:show:invoice');
+				}
+			},
+
 			// Runs after Home panel has been rendered
 			'[xtype="viewport.home"]': {
 				afterrender: function() {
@@ -268,6 +275,12 @@ Ext.define('NP.controller.Viewport', {
 			'#vcFavorites': {
 				click: function() {
 					this.addHistory('VendorCatalog:showFavorites');
+				}
+			},
+
+			'#integrationMenuBtn': {
+				click: function() {
+					this.addHistory('Integration:showIntegration');
 				}
 			}
 		});

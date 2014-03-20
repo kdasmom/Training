@@ -10,6 +10,7 @@ config/site_config.xml
 # Ignore some folders in the clients folder since they will contain user uploaded files
 clients/*/web/*/
 clients/*/web/images/logos/*
+clients/*/web/images/print_pdf/*
 !clients/*/web/images/
 
 # Ignore composer files for now, not ready to use it yet

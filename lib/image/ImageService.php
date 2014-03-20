@@ -483,8 +483,8 @@ class ImageService extends AbstractService {
      *      on context type.
      * @return [] List of images.
      */
-    public function imageSearch($doctype, $searchtype, $searchstring, $contextType, $contextSelection) {
-        return $this->imageIndexGateway->imageSearch($doctype, $searchtype, $searchstring, $contextType, $contextSelection);
+    public function imageSearch($doctype, $searchtype, $searchstring, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $property_status=null) {
+        return $this->imageIndexGateway->imageSearch($doctype, $searchtype, $searchstring, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $property_status);
     }
 
     /**
