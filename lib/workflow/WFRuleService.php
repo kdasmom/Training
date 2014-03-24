@@ -445,6 +445,91 @@ class WFRuleService extends AbstractService {
 	}
 
 	public function getConflictingRules($wfrule_id) {
+		$asp_client_id = $this->configService->getClientId();
+
+		$rule = $this->findById($wfrule_id);
+
+		$select = new Select();
+		$subselect = new Select();
+
+		$select->count(true, 'rulecount')
+			->from('wfrule')
+			->whereEquals('wfruletype_id', '?')
+			->whereNotEquals('wfrule_id', '?')
+			->whereEquals('asp_client_id', '?')
+			->whereNotEquals('wfrule_status', '?');
+		$result = $this->adapter->query($select, [$rule['wfruletype_id'], $wfrule_id, $asp_client_id, $rule['wfrule_status']]);
+		print_r($result);
+
+		if ($result[0]['rulecount'] > 0) {
+			$select->distinct()
+				->columns(['wfrule_id'])
+				->from(['wfr'  => 'wfrule'])
+				->join(['wfrt' => 'wfruletarget'], 'wfr.wfrule_id = wfrt.wfrule_id')
+				->join(['wfp'  => 'wfruletarget'], 'wfrt.tablekey_id = wfp.tablekey_id')
+				->whereEquals('wfrt.table_name', '?')
+				->whereNotEquals('wfr.wfrule_id', '?')
+				->whereNest('OR')
+				->whereNest()
+				->whereEquals('wfrt.table_name', '?')
+				->whereUnnest();
+
+//				->whereNest('OR')
+//					->whereNest()
+//						->whereEquals('wa.wfaction_originator_tablename', "'userprofilerole'")
+//						->whereEquals('wa.wfaction_originator_tablekey_id', '?')
+//					->whereUnnest()
+//					->whereNest()
+//						->whereEquals('wa.wfaction_originator_tablename', "'role'")
+//						->whereEquals('wa.wfaction_originator_tablekey_id', '?')
+//					->whereUnnest()
+//				->whereUnnest(),
+			;
+			$result = $this->adapter->query($select, ["'property'", $wfrule_id]);
+
+			$propertyConflictWFRules = $result;
+
+			if (count($propertyConflictWFRules) > 0) {
+				$routes = $this->wfActionGateway->find('wfrule_id = ?', [$wfrule_id]);
+
+				foreach ($routes as $route) {
+					if ($route['wfaction_originator_tablename'] == 'role') {
+
+//						SELECT userprofilerole_id FROM USERPROFILEROLE WHERE role_id = @originator_tablekey_id
+						$select->columns(['wfrule_id'])
+							->from('wfaction')
+							->whereIn(
+								'wfaction_originator_tablekey_id',
+								$subselect->columns(['userprofilerole_id'])
+									->from('userprofilerole')
+									->whereEquals('role_id', '?') // $data['wfaction_originator_tablekey_id'];
+							)
+							->whereNotEquals('wfrule_id', '?')
+							->whereEquals('wfaction_originator_tablename', '?'); // 'userprofilerole'
+						$result = $this->adapter->query($select, [$route['wfaction_originator_tablekey_id'], $wfrule_id, 'userprofilerole']);
+
+						if (count($result) == 0) {
+//							SELECT @originator_tablekey_id = role_id, @originator_tablename = 'role'
+//								FROM USERPROFILEROLE
+//							WHERE userprofilerole_id = @originator_tablekey_id
+						}
+//							IF (@originator_exists = 0)
+//							BEGIN
+//								SELECT @originator_tablekey_id = role_id, @originator_tablename = 'role'
+//								FROM USERPROFILEROLE
+//								WHERE userprofilerole_id = @originator_tablekey_id
+//							END
+					}
+
+//					wfaction_originator_tablename,
+//					wfaction_originator_tablekey_id,
+//					wfaction_receipient_tablename,
+//					wfaction_receipient_tablekey_id,
+//					wfaction_nextlevel
+				}
+			}
+		}
+//		return $this->wfRuleGateway->getConflictingRules($wfrule_id, $asp_client_id);
 	}
 
 	//TODO delete this

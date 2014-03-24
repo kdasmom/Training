@@ -73,9 +73,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 								var propertiescontainer = me.down('[name="ruleform"]').down('[name="propertiescontainer"]');
 								propertiescontainer.removeAll();
 
-								console.log('newValue', newValue);
 								if (newValue.all_properties != '1') {
-									propertiescontainer.add( me.addPropertiesSection() );
+									propertiescontainer.add( me.getPropertiesSection() );
 									me.down('[name="ruleform"]').down('[name="properties"]').setValue([]);
 								}
 							}
@@ -136,7 +135,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 		this.addRuleTypeFields(ruletype);
 
 		if (!allProperties) {
-			this.addPropertiesSection();
+			var propertiescontainer = me.down('[name="ruleform"]').down('[name="propertiescontainer"]');
+			propertiescontainer.add( me.getPropertiesSection() );
 		}
 
 		if (me.data) {
@@ -327,7 +327,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 		}
 	},
 
-	addPropertiesSection: function() {
+	getPropertiesSection: function() {
 		return {
 			width: 994,
 			xtype: 'shared.propertyassigner',
