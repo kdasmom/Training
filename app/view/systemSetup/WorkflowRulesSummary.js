@@ -1,27 +1,32 @@
 Ext.define('NP.view.systemSetup.WorkflowRulesSummary', {
 	extend: 'Ext.panel.Panel',
-	alias:  'widget.systemsetup.WorkflowRulesSummary',
+	alias:  'widget.systemsetup.workflowrulessummary',
 
 	initComponent: function() {
-		this.border = 0;
-		this.ruleSummaryItems = [];
+		this.border = false;
+
+		console.log('this.data', this.data);
 
 		if (!this.data) {
-			this.ruleSummaryItems.push({
-				xtype: 'panel',
-				html: 'No Rules Applied'
-			});
+			this.ruleSummaryItems = [
+				{
+					xtype: 'panel',
+					html: NP.Translator.translate('No Rules Applied')
+				}
+			];
 		} else {
-			this.ruleSummaryItems  = this.getRuleSummaryItems();
+			this.ruleSummaryItems = this.getRuleSummaryItems();
 		}
 
-		this.items = [{
-			xtype: 'fieldset',
-			title: NP.Translator.translate('Rule Summary'),
-			defaultType: 'textfield',
-			padding: '8',
-			items: this.ruleSummaryItems
-		}];
+		this.items = [
+			{
+				xtype: 'fieldset',
+				title: NP.Translator.translate('Rule Summary'),
+				defaultType: 'textfield',
+				padding: '8',
+				items: this.ruleSummaryItems
+			}
+		];
 
 		this.callParent(arguments);
 	},
@@ -81,17 +86,17 @@ Ext.define('NP.view.systemSetup.WorkflowRulesSummary', {
 			}
 
 			// Originates From
-			items.push(
-				{
-					xtype: 'panel',
-					border: false,
-					layout: {
-						type: 'hbox',
-						pack: 'start'
-					},
-					items: this.sectionOriginates(this.data)
-				}
-			);
+//			items.push(
+//				{
+//					xtype: 'panel',
+//					border: false,
+//					layout: {
+//						type: 'hbox',
+//						pack: 'start'
+//					},
+//					items: this.sectionOriginates(this.data)
+//				}
+//			);
 		}
 
 		return items;
@@ -147,6 +152,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesSummary', {
 
 	sectionAmount: function(data) {
 		var condition = '';
+
 		if (data.rule.wfrule_operand && data.rule.wfrule_operand != '') {
 			condition += data.rule.wfrule_operand + ' ';
 			if (data.rule.wfrule_string == 'actual') {

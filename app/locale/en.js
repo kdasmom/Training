@@ -153,6 +153,13 @@ Ext.define('NP.Locale', {
 	'Save And Add Another': 'Save And Add Another',
 	'Upload'              : 'Upload',
 	'View'                : 'View',
+	'Next Step'           : 'Next Step',
+	'Copy'                : 'Copy',
+	'Create Rule'         : 'Create Rule',
+	'Save & Activate'     : 'Save & Activate',
+	'Close'               : 'Close',
+	'Deactivate'          : 'Deactivate',
+	'Add Forward'         : 'Add Forward',
 
 	/**
 	 * VIEWPORT
@@ -371,7 +378,7 @@ Ext.define('NP.Locale', {
 	'Are you sure you want to activate the selected {properties}?'   : 'Are you sure you want to activate the selected {properties}?',
 	'{properties} were activated'                                    : '{properties} were activated',
 	'There was an error activating {properties}'                     : 'There was an error activating {properties}',
-	'Inactivate'                                                     : 'Inactivate',
+//	'Inactivate'                                                     : 'Inactivate',
 	'Are you sure you want to inactivate the selected {properties}?' : 'Are you sure you want to inactivate the selected {properties}?',
 	'{properties} were inactivated'                                  : '{properties} were inactivated',
 	'There was an error inactivating {properties}'                   : 'There was an error inactivating {properties}',
@@ -668,6 +675,50 @@ Ext.define('NP.Locale', {
 	 *  WORKFLOW MANAGEMENT
 	 */
 	'Workflow Definitions' : 'Workflow Definitions',
-	'Workflow Rules'       : 'Workflow Rules'
+	'Workflow Rules'       : 'Workflow Rules',
+	'Rule Builder'         : 'Rule Builder',
+	'Rule Summary'         : 'Rule Summary',
+	'Rule Routes'          : 'Rule Routes',
 
+	'Rule Name'              : 'Rule Name',
+	'Rule Type'              : 'Rule Type',
+	'Originates From'        : 'Originates From',
+	'Group/User'             : 'Group/User',
+	'Forward To'             : 'Forward To',
+	'Property'               : 'Property',
+	'Threshold'              : 'Threshold',
+	'Unassigned Users'       : 'Unassigned Users',
+	'Assigned Users'         : 'Assigned Users',
+	'Unassigned User Groups' : 'Unassigned User Groups',
+	'Assigned User Groups'   : 'Assigned User Groups',
+
+	'No Rules Applied'                          : 'No Rules Applied',
+	'If Amount'                                 : 'If Amount',
+	'Applied to Properties'                     : 'Applied to Properties',
+	'ALL Properties'                            : 'ALL Properties',
+	'SPECIFIC Properties'                       : 'SPECIFIC Properties',
+	'Properties'                                : 'Properties',
+	'ALL'                                       : 'ALL',
+	'SPECIFIC'                                  : 'SPECIFIC',
+	'If variance is'                            : 'If variance is',
+	'If total amount is'                        : 'If total amount is',
+	'Email Suppression'                         : 'Email Suppression',
+	'Never Suppress Email'                      : 'Never Suppress Email',
+	'Suppress Email for {supression} hours'     : 'Suppress Email for {supression} hours',
+	'Suppress Email for the rest of the period' : 'Suppress Email for the rest of the period',
+
+	'LESS THAN' : 'LESS THAN',
+	'GREATER THAN' : 'GREATER THAN',
+	'GREATER THAN OR EQUAL TO' : 'GREATER THAN OR EQUAL TO',
+	'GREATER THAN EQUAL TO OR LESS THAN' : 'GREATER THAN EQUAL TO OR LESS THAN',
+	'IN RANGE' : 'IN RANGE',
+
+	'--ALL--'                    : '--ALL--',
+	'User Group'                 : 'User Group',
+	'Filter by'                  : 'Filter by',
+	'Workflow Rule - {rulename}' : 'Workflow Rule - {rulename}',
+
+	'Conflicts with these rules'                  : 'Conflicts with these rules',
+	'Edit this rule > Admin_Invoice > {rulename}' : 'Edit this rule > Admin_Invoice > {rulename}',
+	'Delete conflicting rules'                    : 'Delete conflicting rules'
 });

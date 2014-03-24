@@ -1,12 +1,15 @@
 <?php
-namespace NP\workflow\sql;
+namespace NP\workflow;
 
+use NP\core\AbstractGateway;
+use NP\core\db\Adapter;
 use NP\core\db\Select;
-use NP\core\db\Where;
 use NP\core\db\Expression;
+use NP\core\db\Where;
+
 
 class GetRuleOriginatorSelect extends Select {
-	public function __construct($ruleid, $asp_client_id, $ruletypeid) {
+	public function __construct($ruleid, $asp_client_id) {
 		parent::__construct();
 
 /*
@@ -71,17 +74,23 @@ class GetRuleOriginatorSelect extends Select {
 
 
 		$this->columns([
-//				'role_name',
-//				'userprofilerole_id',
 				'wfaction_receipient_tablename',
 				'wfaction_receipient_tablekey_id',
 				'wfaction_originator_tablename',
 				'wfaction_originator_tablekey_id',
 				'wfaction_id',
 				'wfrule_id',
+//				'forwards' => new Expression("
+//					CASE
+//						WHEN {$ruletypeid} = 15 THEN '---'
+//						WHEN w.wfaction_receipient_tablename='role' THEN 'Role'
+//						WHEN w.wfaction_receipient_tablename='userprofilerole' THEN 'User'
+//						ELSE 'Next Level'
+//						END
+//				"),
 				'forwards' => new Expression("
 					CASE
-						WHEN {$ruletypeid} = 15 THEN '---'
+						WHEN wf.wfruletype_id = 15 THEN '---'
 						WHEN w.wfaction_receipient_tablename='role' THEN 'Role'
 						WHEN w.wfaction_receipient_tablename='userprofilerole' THEN 'User'
 						ELSE 'Next Level'
@@ -89,7 +98,7 @@ class GetRuleOriginatorSelect extends Select {
 				"),
 				'names' => new Expression("
 					CASE
-						WHEN {$ruletypeid} = 15 THEN '---'
+						WHEN wf.wfruletype_id = 15 THEN '---'
 						WHEN w.wfaction_receipient_tablename='role' THEN r.role_name
 						WHEN w.wfaction_receipient_tablename='userprofilerole'
 							THEN
@@ -162,48 +171,19 @@ class GetRuleOriginatorSelect extends Select {
 					[],
 					Select::JOIN_LEFT_OUTER
 				)
-		;
+				->join(
+					['wf' => 'WFRULE'],
+					'w.wfrule_id = wf.wfrule_id',
+					[],
+					Select::JOIN_LEFT_OUTER
+				);
 
-
-
-/*
-		$this->columns([
-			new Expression("
-					CASE
-						WHEN w.wfaction_originator_tablename='role' THEN (" .
-				Select::get()->column('role_name')
-					->from('ROLE')
-					->where('role_id = w.wfaction_originator_tablekey_id') . ")
-						WHEN w.wfaction_originator_tablename='userprofilerole'
-							THEN (
-								Select ISNULL(PERSON.person_lastname, '')+', '+ISNULL(PERSON.person_firstname, '')+' '+ISNULL(PERSON.person_middlename, '')  +
-									CASE userprofile_status
-										WHEN 'inactive' THEN ' (Inactive)'
-										ELSE ''
-									END
-								FROM
-								USERPROFILEROLE
-								INNER JOIN USERPROFILE u ON u.userprofile_id = USERPROFILEROLE.userprofile_id
-								INNER JOIN STAFF ON USERPROFILEROLE.tablekey_id = STAFF.staff_id
-								INNER JOIN PERSON ON STAFF.person_id = PERSON.person_id
-								WHERE USERPROFILEROLE.userprofilerole_id = w.wfaction_originator_tablekey_id
-								 )
-						ELSE '---'
-						END AS onames
-				")
-		])
-			->from(['w' => 'wfaction'])
-		;
-*/
-		$where = Where::get()
-			->equals('w.wfrule_id', $ruleid)
-		;
+		$where = Where::get()->equals('w.wfrule_id', $ruleid);
 		$this->where($where);
 
-
-//		echo "<pre>1";
-//		print_r($this);
-//		print_r($this->toString());
-//		echo "1</pre>";
+		echo "<pre>1";
+		print_r($this);
+		print_r($this->toString());
+		echo "1</pre>";
 	}
 }

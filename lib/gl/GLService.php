@@ -561,7 +561,7 @@ class GLService extends AbstractService {
 	 *
 	 * @return array - Array of budget amount records
 	 */
-	public function getBudgetAmountByGlCode($sort) {
-		return $this->glAccountGateway->findBudgetAmountByGlCode(1, $sort);
+	public function getBudgetAmountByGlCode() {
+		return $this->glAccountGateway->findBudgetAmountByGlCode(1);
 	}
 }

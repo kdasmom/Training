@@ -10,6 +10,7 @@ class JobContractByWFRuleScope extends Select {
 
         $this
             ->columns([
+                'jbcontract_id',
                 'jbcontract_desc',
                 'jbcontract_name'
             ])

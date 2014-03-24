@@ -10,6 +10,7 @@ class GLAccountByWFRuleSelect extends Select {
 
         $this
             ->columns([
+                'glaccount_id',
                 'glaccount_name',
                 'glaccount_number'
             ])

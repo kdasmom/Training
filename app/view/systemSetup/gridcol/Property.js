@@ -1,8 +1,7 @@
 Ext.define('NP.view.systemSetup.gridcol.property', {
 	extend: 'Ext.grid.column.Column',
 	alias: 'widget.systemsetup.gridcol.property',
-
-	text     : 'Property',
+	text: NP.Translator.translate('Property'),
 	dataIndex: 'count_properties',
 
 	renderer : function(val, meta, rec) {

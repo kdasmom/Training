@@ -1,28 +1,27 @@
 Ext.define('NP.view.systemSetup.WorkflowRuleTypeCombo', {
-    //extend: 'NP.lib.ui.ComboBox',
-    extend: 'Ext.form.field.ComboBox',
-    alias: 'widget.systemsetup.WorkflowRuleTypeCombo',
+	extend: 'Ext.form.field.ComboBox',
+	alias: 'widget.systemsetup.workflowruletypecombo',
 
-    queryMode: 'local',
-    fieldLabel: 'Filter by:',
+	queryMode: 'local',
+	fieldLabel: NP.Translator.translate('Filter by:'),
 
-    valueField: 'id',
-    displayField: 'type',
+	valueField: 'id',
+	displayField: 'type',
 
-    initComponent: function() {
-        this.store = Ext.create('Ext.data.Store', {
-            data: [
-                {id: 0, type: '--ALL--'},
-                {id: 6, type: 'Rule Type'},
-                {id: 1, type: '#request.propertylabel#'},
-                {id: 2, type: 'GL Account'},
-                {id: 3, type: 'User'},
-                {id: 4, type: 'User Group'},
-                {id: 5, type: 'Vendor'},
-            ],
-            fields: ['id', 'type']
-        });
+	initComponent: function() {
+		this.store = Ext.create('Ext.data.Store', {
+			data: [
+				{id: 0, type: NP.Translator.translate('--ALL--')},
+				{id: 6, type: NP.Translator.translate('Rule Type')},
+				{id: 1, type: NP.Translator.translate('Property')},
+				{id: 2, type: NP.Translator.translate('GL Account')},
+				{id: 3, type: NP.Translator.translate('User')},
+				{id: 4, type: NP.Translator.translate('User Group')},
+				{id: 5, type: NP.Translator.translate('Vendor')},
+			],
+			fields: ['id', 'type']
+		});
 
-        this.callParent(arguments);
-    }
+		this.callParent(arguments);
+	}
 });

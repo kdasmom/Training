@@ -12,18 +12,25 @@ Ext.define('NP.view.shared.UserAssigner', {
     fieldLabel: 'Users',
 
     name        : 'users',
-    store       : {
-                    type              : 'user.userprofiles',
-                    service           : 'UserService',
-                    action            : 'getAll',
-                    userprofile_status: 'active',
-                    autoLoad          : true
-			    },
     tpl         : '<tpl for="."><div class="x-boundlist-item">{person_lastname}, {person_firstname} ({userprofile_username})</div></tpl>',
     displayField: 'userprofile_id',
     valueField  : 'userprofile_id',
     fromTitle   : 'Unassigned',
     toTitle     : 'Assigned',
     buttons     : ['add','remove'],
-    msgTarget   : 'under'
+    msgTarget   : 'under',
+
+	initComponent: function() {
+		if (!this.store) {
+			this.store = {
+				type              : 'user.userprofiles',
+				service           : 'UserService',
+				action            : 'getAll',
+				userprofile_status: 'active',
+				autoLoad          : true
+			};
+		}
+
+		this.callParent(arguments);
+	}
 });

@@ -2,9 +2,8 @@ Ext.define('NP.view.systemSetup.gridcol.Threshold', {
 	extend: 'Ext.grid.column.Column',
 	alias: 'widget.systemsetup.gridcol.threshold',
 
-	text     : 'Threshold',
+	text: NP.Translator.translate('Threshold'),
 	dataIndex: 'wfrule_number',
-
 
 	renderer : function(val, meta, rec) {
 		var description = '',

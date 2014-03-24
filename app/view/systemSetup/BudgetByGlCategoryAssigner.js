@@ -17,11 +17,18 @@ Ext.define('NP.view.systemSetup.BudgetByGlCategoryAssigner', {
 	toTitle     : 'Assigned',
 	buttons     : ['add','remove'],
 	msgTarget   : 'under',
+	autoLoad	: true,
 
-	store: Ext.create('NP.lib.data.Store', {
-		service	: 'GLService',
-		action	: 'getBudgetAmountByGlCategory',
-		autoLoad: true,
-		fields	: ['glaccount_id', 'glaccount_name', 'glaccount_number'],
-	})
+	initComponent: function() {
+		if (!this.store) {
+			this.store = Ext.create('NP.lib.data.Store', {
+				service	 : 'GLService',
+				action	 : 'getBudgetAmountByGlCategory',
+				autoLoad : this.autoLoad,
+				fields	 : ['glaccount_id', 'glaccount_name', 'glaccount_number'],
+			});
+		}
+
+		this.callParent(arguments);
+	}
 });

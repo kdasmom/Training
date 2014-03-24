@@ -60,7 +60,7 @@ class WFRuleService extends AbstractService {
 		];
 	}
 
-    private function copy($id) {
+    public function copy($id) {
         // Find target rule
         $rule = $this->wfRuleGateway->findById($id);
 
@@ -115,7 +115,7 @@ class WFRuleService extends AbstractService {
 
         // Check if rule entity contains correct fields.
         $errors = $this->entityValidator->validate($ruleEntity);
-
+		$ruleid = null;
 
         if (empty($errors)) {
             // Try to copy the rule.
@@ -150,6 +150,7 @@ class WFRuleService extends AbstractService {
         }
         return [
             'success' => (empty($errors)) ? true : false,
+			'ruleid'  => $ruleid,
             'errors'  => $errors
         ];
     }
@@ -190,7 +191,7 @@ class WFRuleService extends AbstractService {
 		];
 	}
 */
-    public function status($id, $status) {
+    public function changeStatus($id, $status) {
         if (!empty($id) && in_array($status, [1, 2])) {
             foreach ($id as $item) {
                 $this->wfRuleGateway->setRuleStatus($item, $status);
@@ -213,4 +214,260 @@ class WFRuleService extends AbstractService {
     public function listRulesType() {
         return $this->wfRuleTypeGateway->find(null, [], 'ordinal', ['wfruletype_id', 'wfruletype_name', 'type_id_alt', 'ordinal']);
     }
+
+	public function saveRule($userprofile_id, $wfrule_id, $rulename, $ruletypeid, $property_keys=null, $all_properties, $wfrule_operand=null, $wfrule_number=null, $tablekeys = null, $wfrule_number_end = null) {
+		$now = \NP\util\Util::formatDateForDB();
+		$asp_client_id = $this->configService->getClientId();
+		$property_keys = explode(',', $property_keys);
+		$tablekeys = explode(',', $tablekeys);
+		$status = 'deactive';
+
+		$wfrule_id = ($wfrule_id != '') ? $wfrule_id : null;
+
+		switch ($ruletypeid) {
+			case WFRuleTypeGateway::VENDOR_ESTIMATE_TOTAL_DOLLAR_AMOUNT:
+			case WFRuleTypeGateway::YTD_BUDGET_PERCENT_OVERAGE_BY_GL_CODE:
+			case WFRuleTypeGateway::YTD_BUDGET_PERCENT_OVERAGE_BY_GL_CATEGORY:
+			case WFRuleTypeGateway::MTD_BUDGET_PERCENT_OVERAGE_BY_GL_CODE:
+			case WFRuleTypeGateway::MTD_BUDGET_PERCENT_OVERAGE_BY_GL_CATEGORY:
+				$numberType = wfRuleGateway::NUMBER_TYPE_PERCENTAGE;
+				break;
+			case WFRuleTypeGateway::DELEGATION:
+				$numberType = wfRuleGateway::NUMBER_TYPE_USER_PRIVILEGES;
+				break;
+			default:
+				$numberType = wfRuleGateway::NUMBER_TYPE_ACTUAL;
+		}
+
+		$dataSet = [
+			'wfrule_id' => $wfrule_id,
+			'wfrule_name' => $rulename,
+			'wfrule_status' => $status,
+			'wfruletype_id' => $ruletypeid,
+			'wfrule_datetm' => $now,
+			'asp_client_id' => $asp_client_id,
+			'wfrule_lastupdatedby' => $userprofile_id,
+			'wfrule_operand' => $wfrule_operand,
+			'wfrule_number' => $wfrule_number,
+			'wfrule_number_end' => $wfrule_number_end,
+			'wfrule_string' => $numberType,
+			'isAllPropertiesWF' => $all_properties
+		];
+
+		// save wf rule
+		if (is_null($wfrule_id)) {
+			$wfrule_id = $this->wfRuleGateway->save($dataSet);
+		}
+		else {
+			$this->wfRuleGateway->update($dataSet, ['wfrule_id' => '?', 'asp_client_id' => '?'], [$wfrule_id, $asp_client_id]);
+		}
+
+		// save wf rule properties
+		if ($all_properties) {
+			$this->wfRuleTargetGateway->addAllPropertiesToRules($wfrule_id, 'property', $asp_client_id, [1, -1]);
+		}
+		else {
+			if (!is_null($property_keys)) {
+				$this->wfRuleTargetGateway->delete(['wfrule_id' => '?'], [$wfrule_id]);
+
+				foreach ($property_keys as $property_key) {
+					$this->SaveWFRuleTarget($wfrule_id, 'property', $property_key);
+				}
+			}
+		}
+
+		// save wf rule type options
+//		$this->wfRuleScopeGateway->delete(['wfrule_id' => '?'], [$wfrule_id]);
+
+		switch ($ruletypeid) {
+			case WFRuleTypeGateway::BUDGET_AMOUNT_BY_GL_CODE:
+			case WFRuleTypeGateway::INVOICE_BY_GL_CODE:
+			case WFRuleTypeGateway::PURCHASE_ORDER_BY_GL_CODE:
+			case WFRuleTypeGateway::YEARLY_BUDGET_BY_GL_CODE:
+			case WFRuleTypeGateway::YTD_BUDGET_PERCENT_OVERAGE_BY_GL_CODE:
+			case WFRuleTypeGateway::MTD_BUDGET_PERCENT_OVERAGE_BY_GL_CODE:
+			case WFRuleTypeGateway::YTD_BUDGET_OVERAGE_BY_GL_CODE:
+			case WFRuleTypeGateway::RECEIPT_ITEM_TOTAL_BY_GL_CODE:
+			case WFRuleTypeGateway::BUDGET_AMOUNT_BY_GL_CATEGORY:
+			case WFRuleTypeGateway::INVOICE_BY_GL_CATEGORY:
+			case WFRuleTypeGateway::PURCHASE_ORDER_BY_GL_CATEGORY:
+			case WFRuleTypeGateway::BUDGET_OVERAGE_NOTIFICATION_EMAIL:
+			case WFRuleTypeGateway::YEARLY_BUDGET_BY_GL_CATEGORY:
+			case WFRuleTypeGateway::YTD_BUDGET_PERCENT_OVERAGE_BY_GL_CATEGORY:
+			case WFRuleTypeGateway::MTD_BUDGET_PERCENT_OVERAGE_BY_GL_CATEGORY:
+			case WFRuleTypeGateway::YTD_BUDGET_OVERAGE_BY_GL_CATEGORY:
+			case WFRuleTypeGateway::RECEIPT_ITEM_TOTAL_BY_GL_CATEGORY:
+				foreach ($tablekeys as $tablekeyid) {
+					$this->wfRuleScopeGateway->insert([
+						'wfrule_id'   => $wfrule_id,
+						'table_name'  => 'glaccount',
+						'tablekey_id' => $tablekeyid
+					]);
+				}
+				break;
+			case WFRuleTypeGateway::SPECIFIC_VENDOR:
+			case WFRuleTypeGateway::SPECIFIC_VENDOR_MASTER_RULE:
+				$this->wfRuleScopeGateway->saveScopeList($wfrule_id, 'vendor', 'vendor_id', $tablekeys);
+				break;
+			case WFRuleTypeGateway::INVOICE_BY_GL_JOB_CODE:
+			case WFRuleTypeGateway::PURCHASE_ORDER_BY_GL_JOB_CODE:
+				$this->wfRuleScopeGateway->saveScopeList($wfrule_id, 'jbjobcode', 'jbjobcode_id', $tablekeys);
+				break;
+			case WFRuleTypeGateway::INVOICE_BY_CONTRACT_CODE:
+			case WFRuleTypeGateway::PURCHASE_ORDER_BY_CONTRACT_CODE:
+			case WFRuleTypeGateway::INVOICE_BY_CONTRACT_CODE_MASTER:
+			case WFRuleTypeGateway::PURCHASE_ORDER_BY_CONTRACT_CODE_MASTER:
+				//todo
+				foreach ($tablekeys as $tablekeyid) {
+					$this->wfRuleScopeGateway->insert([
+						'wfrule_id'   => $wfrule_id,
+						'table_name'  => 'jbcontract',
+						'tablekey_id' => $tablekeyid
+					]);
+				}
+				break;
+			case WFRuleTypeGateway::INVOICE_TOTAL_BY_PAY_BY:
+				$this->wfRuleScopeGateway->saveScopeList($wfrule_id, 'invoicepaymenttype', 'invoicepayment_type_id', $tablekeys);
+				break;
+			case WFRuleTypeGateway::PO_ITEM_AMOUNT_BY_DEPARTMENT:
+			case WFRuleTypeGateway::INVOICE_ITEM_AMOUNT_BY_DEPARTMENT:
+				foreach ($tablekeys as $tablekeyid) {
+					$this->wfRuleScopeGateway->insert([
+						'wfrule_id'   => $wfrule_id,
+						'table_name'  => 'unit',
+						'tablekey_id' => $tablekeyid
+					]);
+				}
+				break;
+		}
+	}
+
+	public function SaveWFRuleTarget($wfrule_id, $tablename, $tablekey_id) {
+		$this->wfRuleTargetGateway->insert([
+			'wfrule_id'   => $wfrule_id,
+			'table_name'  => $tablename,
+			'tablekey_id' => $tablekey_id
+		]);
+	}
+
+	public function GetRuleOriginators($wfruleid) {
+		$asp_client_id = $this->configService->getClientId();
+		return $this->wfActionGateway->GetRuleOriginators($wfruleid, $asp_client_id);
+	}
+
+	public function DeleteRuleOriginator($wfactionid) {
+		return $this->wfActionGateway->DeleteRuleOriginator($wfactionid);
+	}
+
+
+	public function saveRoute($data) {
+		switch ($data['originatesfrom']) {
+			case 'groups':
+				$originator_tablename = 'role';
+				$originator_tablekeys_list = $data['groupsfrom'];
+				break;
+			case 'users':
+				$originator_tablename = 'userprofilerole';
+				$originator_tablekeys_list = $data['usersfrom'];
+				break;
+			default:
+				$originator_tablename = '';
+				$originator_tablekeys_list = '';
+		}
+
+		switch ($data['forwardto']) {
+			case 'groups':
+				$receipient_tablename = 'role';
+				$receipient_tablekeys_list = $data['groupsto'];
+				break;
+			case 'users':
+				$receipient_tablename = 'userprofilerole';
+				$receipient_tablekeys_list = $data['usersto'];
+				break;
+			default:
+				$receipient_tablename = '';
+				$receipient_tablekeys_list = '';
+		}
+
+		$originator_tablekeys = explode(',', $originator_tablekeys_list);
+		$receipient_tablekeys = explode(',', $receipient_tablekeys_list);
+
+		if ($data['forwardto'] == 'next') {
+			if (count($originator_tablekeys) > 0) {
+				$this->wfActionGateway->delete(
+					Where::get()->in('wfaction_originator_tablekey_id', $originator_tablekeys_list)
+						->equals('wfaction_originator_tablename', '?')
+						->equals('wfrule_id', '?'),
+					[$originator_tablename, $data['wfrule_id']]
+				);
+
+				foreach ($originator_tablekeys as $originator_tablekey) {
+					$this->wfActionGateway->insert([
+						'wfrule_id'   => $data['wfrule_id'],
+						'wfactiontype_id'  => '',
+						'wfaction_originator_tablename' => $originator_tablename,
+						'wfaction_originator_tablekey_id' => $originator_tablekey,
+						'wfaction_nextlevel' => 'Y'
+					]);
+				}
+			}
+			else {
+				// error
+			}
+		}
+		else if (count($originator_tablekeys) > 0 && count($receipient_tablekeys) > 0) {
+			$this->wfActionGateway->delete(
+				Where::get()->in('wfaction_originator_tablekey_id', $originator_tablekeys_list)
+					->equals('wfaction_originator_tablename', '?')
+					->in('wfaction_receipient_tablekey_id', $receipient_tablekeys_list)
+					->equals('wfaction_receipient_tablename', '?')
+					->equals('wfrule_id', '?'),
+				[$originator_tablename, $receipient_tablename, $data['wfrule_id']]
+			);
+
+			foreach ($originator_tablekeys as $originator_tablekey) {
+				foreach ($receipient_tablekeys as $receipient_tablekey) {
+					$this->wfActionGateway->insert([
+						'wfrule_id'   => $data['wfrule_id'],
+						'wfactiontype_id'  => '',
+						'wfaction_receipient_tablename' => $originator_tablename,
+						'wfaction_receipient_tablekey_id' => $originator_tablekey,
+						'wfaction_originator_tablename' => $receipient_tablename,
+						'wfaction_originator_tablekey_id' => $receipient_tablekey
+					]);
+				}
+			}
+		}
+		else {
+			// error
+		}
+		$oktoactivate = true;
+	}
+
+	public function getConflictingRules($wfrule_id) {
+	}
+
+	//TODO delete this
+	public function getUnits() {
+		$items = $this->wfRuleGateway->getUnits();
+
+		$unitTerm = $this->configService->get('PN.InvoiceOptions.UnitAttachDisplay', 'Unit');
+		$units = [];
+
+		foreach ($items as $item) {
+			if ($unitTerm == 'unitcode') {
+				$item['unit_display'] = strtoupper($item['unit_id_alt'] . ' - ' . $item['unit_number']);
+			}
+			else if ($item['building_id_alt'] != '') {
+				$item['unit_display'] = strtoupper($item['building_id_alt'] . ' - ' . $item['unit_number']);
+			}
+			else {
+				$item['unit_display'] = strtoupper( $item['unit_number']);
+			}
+
+			$units[] = $item;
+		}
+
+		return $units;
+	}
 }

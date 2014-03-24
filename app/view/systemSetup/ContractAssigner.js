@@ -23,14 +23,21 @@ Ext.define('NP.view.systemSetup.ContractAssigner', {
 	toTitle     : 'Assigned',
 	buttons     : ['add','remove'],
 	msgTarget   : 'under',
+	autoLoad    : true,
 
-	store: Ext.create('NP.lib.data.Store', {
-		service	: 'JobCostingService',
-		action	: 'getContracts',
-		autoLoad: true,
-		fields	: ['jbcontract_id', 'jbcontract_desc', 'jbcontract_name'],
-		extraParams: {
-			status: 'active'
+	initComponent: function() {
+		if (!this.store) {
+			this.store = Ext.create('NP.lib.data.Store', {
+				service	: 'JobCostingService',
+				action	: 'getContracts',
+				autoLoad: this.autoLoad,
+				fields	: ['jbcontract_id', 'jbcontract_desc', 'jbcontract_name'],
+				extraParams: {
+					status: 'active'
+				}
+			});
 		}
-	})
+
+		this.callParent(arguments);
+	}
 });

@@ -743,8 +743,8 @@ class VendorService extends AbstractService {
      * @return array
      */
     public function getAll($vendor_status='active', $integration_package_id=null, $pageSize=null, $page=1, $sort='vendor_name') {
-        $filter = ['vendor_status'=>'?'];
-        if ($integration_package_id === null) {
+        $filter = ['vendor_status' => '?'];
+        if ($integration_package_id !== null) {
             $filter['integration_package_id'] = $integration_package_id;
         }
 

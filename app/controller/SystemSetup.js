@@ -22,43 +22,48 @@ Ext.define('NP.controller.SystemSetup', {
 
 	refs : [
 		{ ref: 'passwordConfiguration', selector: '[xtype="systemsetup.passwordconfiguration"]' },
-		{ ref: 'defaultSplits',		 selector: '[xtype="systemsetup.defaultsplits"]' },
-		{ ref: 'defaultSplitGrid',	  selector: '[xtype="systemsetup.defaultsplitgrid"] customgrid' },
+		{ ref: 'defaultSplits',		    selector: '[xtype="systemsetup.defaultsplits"]' },
+		{ ref: 'defaultSplitGrid',	    selector: '[xtype="systemsetup.defaultsplitgrid"] customgrid' },
 		{ ref: 'splitDeleteBtn',		selector: '[xtype="systemsetup.defaultsplitgrid"] [xtype="shared.button.delete"]' },
-		{ ref: 'defaultSplitForm',	  selector: '[xtype="systemsetup.defaultsplitform"]' },
-		{ ref: 'splitFormItemGrid',	 selector: '[xtype="systemsetup.defaultsplitform"] customgrid' },
-		{ ref: 'splitFormVendor',	   selector: '[xtype="systemsetup.defaultsplitform"] [xtype="shared.vendorautocomplete"]' },
-		{ ref: 'splitFormIntPkg',	   selector: '[xtype="systemsetup.defaultsplitform"] [name="integration_package_id"]' },
+		{ ref: 'defaultSplitForm',	    selector: '[xtype="systemsetup.defaultsplitform"]' },
+		{ ref: 'splitFormItemGrid',	    selector: '[xtype="systemsetup.defaultsplitform"] customgrid' },
+		{ ref: 'splitFormVendor',	    selector: '[xtype="systemsetup.defaultsplitform"] [xtype="shared.vendorautocomplete"]' },
+		{ ref: 'splitFormIntPkg',	    selector: '[xtype="systemsetup.defaultsplitform"] [name="integration_package_id"]' },
 		{ ref: 'splitGridVendorCombo',  selector: '[xtype="systemsetup.defaultsplitform"] [xtype="shared.vendorautocomplete"]' },
 		{ ref: 'splitGridPropertyCombo',selector: '#splitGridPropertyCombo' },
-		{ ref: 'splitGridGlCombo',	  selector: '#splitGridGlCombo' },
+		{ ref: 'splitGridGlCombo',	    selector: '#splitGridGlCombo' },
 		{ ref: 'splitGridUnitCombo',	selector: '#splitGridUnitCombo' },
-		{ ref: 'addSplitAllocBtn',	  selector: '#addSplitAllocBtn' },
-		{ ref: 'workflowScreen',		selector: '[xtype="systemsetup.WorkflowRulesMain"]'},
-		{ ref: 'workflowScreenGrid',	selector: '[xtype="systemsetup.WorkflowRulesGrid"]'}
+		{ ref: 'addSplitAllocBtn',	    selector: '#addSplitAllocBtn' },
+		{ ref: 'workflowScreen',		selector: '[xtype="systemsetup.workflowrulesmain"]' },
+		{ ref: 'workflowRulesGrid',		selector: '[xtype="systemsetup.workflowrulesgrid"] customgrid' },
+		{ ref: 'workflowActivateBtn', 	selector: '[xtype="systemsetup.workflowrulesgrid"] [xtype="shared.button.activate"]' },
+		{ ref: 'workflowInactivateBtn', selector: '[xtype="systemsetup.workflowrulesgrid"] [xtype="shared.button.inactivate"]' },
+		{ ref: 'workflowCopyBtn', 		selector: '[xtype="systemsetup.workflowrulesgrid"] [xtype="shared.button.copy"]' },
+		{ ref: 'workflowDeleteBtn', 	selector: '[xtype="systemsetup.workflowrulesgrid"] [xtype="shared.button.delete"]' },
+		{ ref: 'workflowOriginatesGrid',selector: '[xtype="systemsetup.workfloworiginatesgrid"]'}
 	],
 	
 	init: function() {
 		Ext.log('SystemSetup controller initialized');
 
-	var me = this;
+		var me = this;
 
-	// For localization
-	NP.Translator.on('localeloaded', function() {
-			me.changesSavedText	   = NP.Translator.translate('Changes saved successfully');
+		// For localization
+		NP.Translator.on('localeloaded', function() {
+			me.changesSavedText	      = NP.Translator.translate('Changes saved successfully');
 			me.errorDialogTitleText   = NP.Translator.translate('Error');
 			me.deleteSplitDialogTitle = NP.Translator.translate('Delete Split?');
 			me.deleteSplitsDialogText = NP.Translator.translate('Are you sure you want to delete the selected split(s)?');
 			me.deleteSplitDialogText  = NP.Translator.translate('Are you sure you want to delete this split?');
-			me.editSplitFormTitle	 = NP.Translator.translate('Editing');
+			me.editSplitFormTitle	  = NP.Translator.translate('Editing');
 			me.newSplitFormTitle	  = NP.Translator.translate('New Split');
 			me.intPkgChangeDialogTitle= NP.Translator.translate('Change integration package?');
 			me.intPkgChangeDialogText = NP.Translator.translate('Are you sure you want to change integration package? Doing so will clear the entire form, removing all splits you have entered.');
 			me.deleteRuleDialogText   = NP.Translator.translate('Are you sure you want to delete selected rules?');
-	});
+		});
 
-	// Setup event handlers
-	me.control({
+		// Setup event handlers
+		me.control({
 			// The main System Setup panel
 			'[xtype="systemsetup.main"]': {
 				// Run this whenever the user clicks on a tab on the System Setup page
@@ -72,23 +77,23 @@ Ext.define('NP.controller.SystemSetup', {
 			// The Save button on the Password Configuration page
 			'[xtype="systemsetup.passwordconfiguration"] [xtype="shared.button.save"]': {
 				// Run this whenever the save button is clicked
-		click: me.savePasswordConfiguration
+				click: me.savePasswordConfiguration
 			},
 			// The Split grid
 			'[xtype="systemsetup.defaultsplitgrid"] customgrid': {
 				// Making a selection on the grid
-		selectionchange: me.selectSplit,
-		cellclick: function(view, td, cellIndex, rec, tr, rowIndex, e) {
+				selectionchange: me.selectSplit,
+				cellclick: function(view, td, cellIndex, rec, tr, rowIndex, e) {
 					if (cellIndex != 0) {
 						me.addHistory('SystemSetup:showSystemSetup:DefaultSplits:Form:' + rec.get('dfsplit_id'));
 					}
-		}
+				}
 			},
 			// The Create New Split button
 			'[xtype="systemsetup.defaultsplitgrid"] [xtype="shared.button.new"]': {
 				click: function() {
 					me.addHistory('SystemSetup:showSystemSetup:DefaultSplits:Form');
-		}
+				}
 			},
 			// The Delete button on the split grid
 			'[xtype="systemsetup.defaultsplitgrid"] [xtype="shared.button.delete"]': {
@@ -108,9 +113,9 @@ Ext.define('NP.controller.SystemSetup', {
 					} else if (e.field == 'unit_id') {
 						me.openUnitEditor(e.record);
 					}
-		},
-		deleterow: me.deleteSplitItem,
-		updateproperty: me.updateProperty
+				},
+				deleterow: me.deleteSplitItem,
+				updateproperty: me.updateProperty
 			},
 			'#saveSplitFormBtn': {
 				click: me.saveSplitForm
@@ -127,7 +132,7 @@ Ext.define('NP.controller.SystemSetup', {
 			'#cancelSplitFormBtn': {
 				click: function() {
 					me.addHistory('SystemSetup:showSystemSetup:DefaultSplits');
-		}
+				}
 			},
 			'#addSplitAllocBtn': {
 				click: me.addSplitLine
@@ -135,10 +140,6 @@ Ext.define('NP.controller.SystemSetup', {
 			'#autoAllocBtn': {
 				click: me.autoAllocSplit
 			},
-
-
-
-
 
 
 			'#buttonWorkflowCancel': {
@@ -156,6 +157,12 @@ Ext.define('NP.controller.SystemSetup', {
 					me.addHistory('SystemSetup:showSystemSetup:WorkflowRules:modify');
 				}
 			},
+			'#buttonWorkflowEditRule': {
+				click: function() {
+					var wfrule_id = me.getCmp('systemsetup.workflowrulesview').data.rule.wfrule_id;
+					me.addHistory('SystemSetup:showSystemSetup:WorkflowRules:modify:' + wfrule_id);
+				}
+			},
 			'#buttonWorkflowPrint': {
 				click: function() {
 					Ext.MessageBox.alert('Print', 'Coming soon')
@@ -166,23 +173,101 @@ Ext.define('NP.controller.SystemSetup', {
 					Ext.MessageBox.alert('Print', 'Coming soon')
 				}
 			},
-			'#buttonWorkflowActivateRule': {
-				click: this.workflowRuleChangeStatus.bind(this, 1)
+			'#buttonWorkflowActivateRules': {
+				click: this.workflowRulesChangeStatus.bind(this, 1)
+			},
+			'#buttonWorkflowDeactivateRules': {
+				click: this.workflowRulesChangeStatus.bind(this, 2)
+			},
+			'#buttonWorkflowSaveAndActivate': {
+				click: function() {
+					me.saveWorkflowRule();
+					me.addHistory('SystemSetup:showSystemSetup:WorkflowRules');
+				}
+			},
+			'#buttonWorkflowAddForward': {
+				click: this.saveWorkflowRoute
 			},
 			'#buttonWorkflowDeactivateRule': {
-				click: this.workflowRuleChangeStatus.bind(this, 2)
+				click: function() {
+					var wfrule_id = me.getCmp('systemsetup.workflowrulesmodify').down('[name="wfrule_id"]').value;
+					this.changeRuleStatus([wfrule_id], 2);
+					me.addHistory('SystemSetup:showSystemSetup:WorkflowRules');
+				}
 			},
-			'#buttonWorkflowCopyRule': {
+			'#buttonWorkflowCopyRules': {
 				click: this.workflowCopyRules.bind(this)
 			},
-			'#buttonWorkflowDeleteRule': {
+			'#buttonWorkflowCopyRule': {
+				click: function() {
+					var wfrule_id = me.getCmp('systemsetup.workflowrulesmodify').data.rule.wfrule_id;
+					this.workflowCopyRule(wfrule_id);
+				}
+			},
+			'#buttonWorkflowDeleteRules': {
 				click: this.workflowDeleteRules.bind(this)
 			},
+			'#buttonWorkflowNext': {
+				click: function() {
+//					console.log('systemsetup.workflowrulesmodify', me.getCmp('systemsetup.workflowrulesmodify').data);
+					if (me.saveWorkflowRule()) {
+//						Ext.suspendLayouts();
+						me.getCmp('systemsetup.workflowrulesmodify').stepRoutes();
+//						Ext.resumeLayouts(true);
+					}
 
-			'[xtype="systemsetup.WorkflowRulesGrid"]': {
+					NP.lib.core.Net.remoteCall({
+						requests: {
+							service: 'WFRuleService',
+							action : 'get',
+							id: me.getCmp('systemsetup.workflowrulesmodify').data.rule.wfrule_id,
+							success: function(data) {
+								if (data) {
+									me.getCmp('systemsetup.workflowrulesmodify').data = data;
+									me.getCmp('systemsetup.workflowrulesmodify').stepRoutes();
+								}
+							}
+						}
+					});
+				}
+			},
+
+			'[xtype="systemsetup.workflowrulesgrid"] customgrid': {
+				selectionchange: this.selectRule,
 				cellclick: this.workflowCellClickProcess.bind(this)
+			},
+			'[xtype="systemsetup.workfloworiginatesgrid"]': {
+				cellclick: function(gridView, td, cellIndex, record, tr, rowIndex, e, eOpts) {
+					var grid = this.getWorkflowOriginatesGrid();
+
+					if (cellIndex == 4 && e.target.tagName == 'IMG') {
+						Ext.MessageBox.confirm('Delete Forward?', 'Are you sure you want to delete this \'Forward\' from this rule?', function(btn) {
+							if (btn == 'yes') {
+								NP.lib.core.Net.remoteCall({
+									requests: {
+										service: 'WFRuleService',
+										action: 'DeleteRuleOriginator',
+										wfactionid: record.get('wfaction_id'),
+										success: function() {
+											grid.getStore().remove(record);
+										}
+									}
+								});
+							}
+						});
+					}
+				}
 			}
 		});
+	},
+
+	selectRule: function(selectionModel, selected) {
+		var fn = (selected.length) ? 'enable' : 'disable';
+
+		this.getWorkflowActivateBtn()[fn]();
+		this.getWorkflowInactivateBtn()[fn]();
+		this.getWorkflowCopyBtn()[fn]();
+		this.getWorkflowDeleteBtn()[fn]();
 	},
 
 	showWorkflowRules: function(section, ruleid) {
@@ -190,15 +275,6 @@ Ext.define('NP.controller.SystemSetup', {
 
 		switch (section) {
 			case 'modify':
-				/*
-				var view = me.getWorkflowScreen();
-				if (view) {
-					var mask = new Ext.LoadMask({
-						target: view
-					});
-					mask.show();
-				}
-				*/
 				if (ruleid) {
 					NP.lib.core.Net.remoteCall({
 						requests: {
@@ -207,7 +283,6 @@ Ext.define('NP.controller.SystemSetup', {
 							id: ruleid,
 							success: function(data) {
 								if (data) {
-									view && mask.destroy();
 									me.setView('NP.view.systemSetup.WorkflowRulesModify', {data: data}, '[xtype="systemsetup.workflowrules"]');
 								}
 							}
@@ -216,7 +291,7 @@ Ext.define('NP.controller.SystemSetup', {
 				}
 				// Only do this if we're creating a new rule
 				else {
-
+					me.setView('NP.view.systemSetup.WorkflowRulesModify', {}, '[xtype="systemsetup.workflowrules"]');
 				}
 				break;
 			case 'view':
@@ -228,8 +303,6 @@ Ext.define('NP.controller.SystemSetup', {
 						success: function(data) {
 							if (data) {
 								me.setView('NP.view.systemSetup.WorkflowRulesView', {data: data}, '[xtype="systemsetup.workflowrules"]');
-								//Ext.create('NP.view.systemSetup.' + 'WorkflowRulesModify', {data: data}).show();
-								//me.addHistory('SystemSetup:showSystemSetup:WorkflowRules:modify:' + rec.get('wfrule_id'), {data: data});
 							}
 						}
 					}
@@ -241,77 +314,68 @@ Ext.define('NP.controller.SystemSetup', {
 	},
 
 	workflowCellClickProcess: function(view, td, cellIndex, rec, tr, rowIndex, e) {
-		var me = this,
-			grid = this.getWorkflowScreenGrid();
+		var me = this;
+
 		switch (cellIndex) {
 			case 0:
 				// Selection. Nothing to do.
 				break;
-			case 5:
-				// View Rule
-				me.addHistory('SystemSetup:showSystemSetup:WorkflowRules:view:' + rec.get('wfrule_id'));
-				/*
-				mask = new Ext.LoadMask({
-					target: me.getWorkflowScreen()
-				});
-				mask.show();
-				NP.lib.core.Net.remoteCall({
-					requests: {
-						service: 'WFRuleService',
-						action : 'get',
-
-						id: rec.get('wfrule_id'),
-
-						success: function(data) {
-							if (data) {
-								mask.destroy();
-								Ext.create('NP.view.systemSetup.' + 'WorkflowRulesView', {data: data}).show();
-							}
-						}
-					}
-				});
-				*/
+			case 1:
+				me.addHistory('SystemSetup:showSystemSetup:WorkflowRules:modify:' + rec.get('wfrule_id'));
 				break;
 			default:
-				// Edit Rule
-				me.addHistory('SystemSetup:showSystemSetup:WorkflowRules:modify:' + rec.get('wfrule_id'));
+				me.addHistory('SystemSetup:showSystemSetup:WorkflowRules:view:' + rec.get('wfrule_id'));
 				break;
 		}
 	},
-	workflowRuleChangeStatus: function(action) {
-		var grid = this.getWorkflowScreenGrid();
+
+	workflowRulesChangeStatus: function(status) {
+		var grid = this.getWorkflowRulesGrid();
+
 		if (grid) {
 			var selection = grid.getSelectionModel().getSelection();
+
 			if (selection) {
 				var identifiers = [];
+
 				for (var i = 0, l = selection.length; i < l; i++) {
 					identifiers.push(selection[i].internalId);
 				}
 				if (identifiers.length > 0) {
 					// Identifiers are ready to be passed to the server.
-						var mask = new Ext.LoadMask({
-							target: this.getWorkflowScreen()
-						});
-						mask.show();
-						NP.lib.core.Net.remoteCall({
-							requests: {
-								service: 'WFRuleService',
-								action : 'status',
+					var mask = new Ext.LoadMask({
+						target: this.getWorkflowScreen()
+					});
+					mask.show();
 
-								id: identifiers,
-								status: action,
-
-								success: function(data) {
-									if (data) {
-										mask.destroy();
-										grid.store.reload();
-									}
+					NP.lib.core.Net.remoteCall({
+						requests: {
+							service: 'WFRuleService',
+							action : 'changeStatus',
+							id: identifiers,
+							status: status,
+							success: function(data) {
+								if (data.success) {
+									mask.destroy();
+									grid.store.reload();
 								}
 							}
-						});
+						}
+					});
 				}
 			}
 		}
+	},
+
+	changeRuleStatus: function(identifiers, status) {
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service: 'WFRuleService',
+				action : 'changeStatus',
+				id: identifiers,
+				status: status
+			}
+		});
 	},
 
 	/**
@@ -336,7 +400,7 @@ Ext.define('NP.controller.SystemSetup', {
 					if (data) {
 						mask.destroy();
 
-						grid = me.getWorkflowScreenGrid();
+						grid = me.getWorkflowRulesGrid();
 						grid.store.reload();
 					}
 				}
@@ -344,6 +408,25 @@ Ext.define('NP.controller.SystemSetup', {
 		});
 	},
 
+	/**
+	 * Copy rule
+	 */
+	workflowCopyRule: function(wfrule_id) {
+		var me = this;
+
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service: 'WFRuleService',
+				action : 'copy',
+				id: wfrule_id,
+				success: function(data) {
+					if (data.success) {
+						me.addHistory('SystemSetup:showSystemSetup:WorkflowRules:modify:' + data.ruleid);
+					}
+				}
+			}
+		});
+	},
 
 	/**
 	 * Delete selected rules
@@ -373,7 +456,7 @@ Ext.define('NP.controller.SystemSetup', {
 							success: function(data) {
 								if (data) {
 									mask.destroy();
-									grid = me.getWorkflowScreenGrid();
+									grid = me.getWorkflowRulesGrid();
 									grid.store.reload();
 								}
 							}
@@ -390,7 +473,7 @@ Ext.define('NP.controller.SystemSetup', {
 	 */
 	getSelectedRules: function() {
 		var identifiers = [],
-			grid = this.getWorkflowScreenGrid();
+			grid = this.getWorkflowRulesGrid();
 
 		if (grid) {
 			var selection = grid.getSelectionModel().getSelection();
@@ -925,5 +1008,91 @@ Ext.define('NP.controller.SystemSetup', {
 				}
 			});
 		}
+	},
+
+	saveWorkflowRoute: function() {
+		var me = this,
+			form = me.getCmp('systemsetup.workflowrulesroutes').down('[name="routeform"]'),
+			originatesGrid = me.getWorkflowOriginatesGrid();
+
+		var values = form.getValues();
+
+		if (form.isValid()) {
+			NP.lib.core.Net.remoteCall({
+				requests: {
+					service: 'WFRuleService',
+					action: 'saveRoute',
+					data: values,
+					success: function() {
+						originatesGrid.getStore().reload();
+						me.getCmp('systemsetup.workflowrulesroutes').clearForm();
+					}
+				}
+			});
+		}
+	},
+
+
+	saveWorkflowRule: function() {
+		var me = this,
+			saveResult = false,
+			form = me.getCmp('systemsetup.workflowrulesbuilder').down('[name="ruleform"]');
+
+		var values = form.getValues();
+
+		console.log('values', values);
+
+		var tablekeys;
+		if (values.categories) {
+			tablekeys = values.categories;
+		}
+		else if (values.codes) {
+			tablekeys = values.codes;
+		}
+		else if (values.jobcodes) {
+			tablekeys = values.jobcodes;
+		}
+		else if (values.contracts) {
+			tablekeys = values.contracts;
+		}
+		else if (values.vendors) {
+			tablekeys = values.vendors;
+		}
+
+		if (form.isValid()) {
+			NP.lib.core.Net.remoteCall({
+				requests: {
+					service: 'WFRuleService',
+					action: 'saveRule',
+					userprofile_id: NP.Security.getUser().get('userprofile_id'),
+					wfrule_id: values.wfrule_id,
+					rulename: values.name,
+					ruletypeid: values.ruletypeid,
+					all_properties: values.all_properties,
+					property_keys: values.properties,
+					wfrule_operand: values.comparison,
+					wfrule_number: values.comparisonValue,
+					tablekeys: tablekeys,
+					wfrule_number_end: (values.comparisonValueTo) ? values.comparisonValueTo : '',
+					wfrule_string: '',
+					success: function(result) {
+//						me.addHistory('SystemSetup:showSystemSetup:WorkflowRules');
+//						me.getCmp('systemsetup.workflowrulesmodify').data.wesrwerwe = values.properties;
+//						if (result) {
+//							console.log('data', data);
+//							Ext.applyIf(me.getCmp('systemsetup.workflowrulesmodify'), {
+//								data: data
+//							});
+//							me.getCmp('systemsetup.workflowrulesmodify').data = Ext.apply(me.getCmp('systemsetup.workflowrulesmodify'), {
+//								data: result
+//							});
+//						}
+					}
+				}
+			});
+		}
+
+		saveResult = true;
+		return saveResult;
 	}
 });

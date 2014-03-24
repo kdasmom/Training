@@ -7,24 +7,25 @@ Ext.define('NP.view.systemSetup.PaymentTypeAssigner', {
 	extend: 'Ext.ux.form.ItemSelector',
 	alias: 'widget.systemSetup.paymenttypeassigner',
 
-	fieldLabel: 'Budgets By Gl Code',
+	fieldLabel: 'Invoice Total by Pay by',
 
-	name        : 'paymenttype',
-	displayField: '',
-	valueField  : '',
-	tpl         : '<tpl for="."><div class="x-boundlist-item">{glaccount_number}</div></tpl>',
-	fromTitle   : 'Unassigned',
-	toTitle     : 'Assigned',
-	buttons     : ['add','remove'],
-	msgTarget   : 'under',
+	name         : 'paymenttype',
+	displayField : 'invoicepayment_type',
+	valueField   : 'invoicepayment_type_id',
+	tpl          : '<tpl for="."><div class="x-boundlist-item">{invoicepayment_type}</div></tpl>',
+	fromTitle    : 'Unassigned',
+	toTitle      : 'Assigned',
+	buttons      : ['add','remove'],
+	msgTarget    : 'under',
+	autoLoad     : false,
 
-	store: Ext.create('NP.lib.data.Store', {
-		service	: 'GLService',
-		action	: 'getBudgetAmountByGlCode',
-		autoLoad: true,
-		fields	: ['glaccount_id', 'glaccount_name', 'glaccount_number'],
-		extraParams: {
-//			sort: NP.Config.getSetting('PN.Budget.GLCodeSort')
+	store: Ext.create('NP.store.invoice.InvoicePaymentTypes', {
+		service     : 'InvoiceService',
+		action      : 'getPaymentTypes',
+		autoLoad	: this.autoLoad,
+		fields	    : ['invoicepayment_type_id', 'invoicepayment_type'],
+		extraParams : {
+			paymentType_id: null
 		}
 	})
 });

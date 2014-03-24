@@ -73,11 +73,55 @@ class WfRuleTargetGateway extends AbstractGateway {
             ->into('wfruletarget')
             ->columns([
                 'wfrule_id',
-		'table_name',
+				'table_name',
                 'tablekey_id'
             ])
             ->values($select)
         ;
         $this->adapter->query($insert);
     }
+
+
+	public function addAllPropertiesToRules($wfrule_id, $tablename, $asp_client_id, $property_status_list) {
+		$insert = new Insert();
+		$select = new Select();
+		$subSelect = new Select();
+
+		if (!is_array($property_status_list)) {
+			$property_status_list = array($property_status_list);
+		}
+
+		$statusPlaceHolders = $this->createPlaceholders($property_status_list);
+
+		$insert->into('wfruletarget')
+			->columns(['wfrule_id', 'table_name', 'tablekey_id'])
+			->values(
+				$select->columns([new Expression($wfrule_id), new Expression("'{$tablename}'"), 'property_id'])
+					->from(['p'  => 'property'])
+					->join(['ip' => 'integrationpackage'], 'ip.integration_package_id = p.integration_package_id', [], Select::JOIN_INNER)
+					->whereEquals('ip.asp_client_id', $asp_client_id)
+					->whereIn('p.property_status', $statusPlaceHolders)
+					->whereNotIn('p.property_id',
+						$subSelect->distinct()
+							->columns(['tablekey_id'])
+							->from(['w2' => 'wfruletarget'])
+							->whereEquals('w2.wfrule_id', $wfrule_id)
+					)
+			);
+
+		return $this->adapter->query($insert, $property_status_list);
+	}
+
+	public function deleteWFRuleTarget($wfrule_id, $ignore_tablekey_id_list) {
+		$delete = new Delete();
+
+		$delete->from('wfruletarget')
+				->whereEquals('wfrule_id', $wfrule_id);
+
+		if (is_array($ignore_tablekey_id_list) && count($ignore_tablekey_id_list)) {
+			$delete->whereNotIn('tablekey_id', $ignore_tablekey_id_list);
+		}
+
+		return $this->adapter->query($delete);
+	}
 }

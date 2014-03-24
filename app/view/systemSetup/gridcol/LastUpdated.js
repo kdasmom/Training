@@ -1,8 +1,7 @@
 Ext.define('NP.view.systemSetup.gridcol.LastUpdated', {
     extend: 'Ext.grid.column.Column',
     alias: 'widget.systemsetup.gridcol.lastupdated',
-
-    text     : 'Last Updated',
+	text: NP.Translator.translate('Last Updated'),
     dataIndex: 'wfrule_datetm',
 
     renderer: function(val, meta, rec) {

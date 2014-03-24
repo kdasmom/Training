@@ -17,14 +17,21 @@ Ext.define('NP.view.systemSetup.BudgetByGlCodeAssigner', {
 	toTitle     : 'Assigned',
 	buttons     : ['add','remove'],
 	msgTarget   : 'under',
+	autoLoad	: true,
 
-	store: Ext.create('NP.lib.data.Store', {
-		service	: 'GLService',
-		action	: 'getBudgetAmountByGlCode',
-		autoLoad: true,
-		fields	: ['glaccount_id', 'glaccount_name', 'glaccount_number'],
-		extraParams: {
-			sort: NP.Config.getSetting('PN.Budget.GLCodeSort')
+	initComponent: function() {
+		if (!this.store) {
+			this.store = Ext.create('NP.lib.data.Store', {
+				service	: 'GLService',
+				action	: 'getBudgetAmountByGlCode',
+				autoLoad: this.autoLoad,
+				fields	: ['glaccount_id', 'glaccount_name', 'glaccount_number'],
+				extraParams: {
+					sort: NP.Config.getSetting('PN.Budget.GLCodeSort')
+				}
+			});
 		}
-	})
+
+		this.callParent(arguments);
+	}
 });

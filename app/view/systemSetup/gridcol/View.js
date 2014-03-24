@@ -2,7 +2,7 @@ Ext.define('NP.view.systemSetup.gridcol.View', {
     extend: 'Ext.grid.column.Column',
     alias: 'widget.systemsetup.gridcol.view',
 
-    text: 'View',
+	text: NP.Translator.translate('View'),
     align: 'center',
     flex: 0.3,
 
