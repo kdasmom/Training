@@ -90,12 +90,12 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 						columnWidth: 0.5,
 						layout: 'form',
 						items: [
-//							{
-//								xtype                : 'shared.propertycombo',
-//								emptyText            : 'All',
-//								loadStoreOnFirstQuery: true,
-//								labelWidth           : filterLabelWidth
-//							}
+							{
+								xtype                : 'shared.propertycombo',
+								emptyText            : 'All',
+								loadStoreOnFirstQuery: true,
+								labelWidth           : filterLabelWidth
+							}
 						]
 					}
 				]
@@ -132,14 +132,87 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 		];
 
 		this.callParent(arguments);
+
+//		this.statusFilter   = this.query('[name="userprofile_status"]')[0];
+//		this.propertyFilter = this.query('[name="property_id"]')[0];
+//		this.roleFilter     = this.query('[name="role_id"]')[0];
+//		this.moduleFilter   = this.query('[name="module_id"]')[0];
+//
+//		this.filterFields = ['statusFilter','propertyFilter','roleFilter','moduleFilter'];
 	},
 
 	applyFilter: function() {
 		var that = this;
+
+		var grid = this.query('customgrid')[0];
+
+		var currentParams = grid.getStore().getProxy().extraParams;
+		var newParams = {
+			userprofile_status: this.statusFilter.getValue(),
+			property_id       : this.propertyFilter.getValue(),
+			role_id           : this.roleFilter.getValue(),
+			module_id         : this.moduleFilter.getValue()
+		};
+
+		Ext.Object.each(newParams, function(key, val) {
+			if (currentParams[key] !== newParams[key]) {
+				grid.getStore().addExtraParams(newParams);
+				grid.reloadFirstPage();
+
+				return false;
+			}
+		});
 	},
 
 	clearFilter: function() {
 		var that = this;
+
+		Ext.Array.each(this.filterFields, function(field) {
+			that[field].clearValue();
+		});
+
 		this.applyFilter();
 	}
 });
+
+/*
+Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
+    extend: 'NP.lib.ui.Grid',
+    alias:  'widget.systemsetup.workflowrulesgrid',
+
+    requires: [
+        'NP.view.systemSetup.gridcol.Name',
+        'NP.view.systemSetup.gridcol.RuleType',
+        'NP.view.systemSetup.gridcol.Property',
+        'NP.view.systemSetup.gridcol.Threshold',
+        'NP.view.systemSetup.gridcol.LastUpdated',
+        'NP.view.systemSetup.gridcol.Status'
+    ],
+
+    initComponent: function(){
+        var me = this;
+
+        this.store = Ext.create('NP.store.workflow.Rules', {
+            service : 'WFRuleService',
+            action  : 'search',
+            paging  : true
+        });
+
+        this.columns = [
+            { xtype: 'systemsetup.gridcol.name', flex: 2.2 },
+            { xtype: 'systemsetup.gridcol.ruletype', flex: 1.2 },
+            { xtype: 'systemsetup.gridcol.property', flex: 0.5 },
+            { xtype: 'systemsetup.gridcol.threshold', flex: 1.7 },
+            { xtype: 'systemsetup.gridcol.lastupdated', flex: 1.2 },
+            { xtype: 'systemsetup.gridcol.status', flex: 0.4 }
+        ];
+
+        this.paging = true;
+		this.selModel = Ext.create('Ext.selection.CheckboxModel', { checkOnly: true, mode: 'MULTI' });
+
+		me.store.load();
+
+        this.callParent(arguments);
+    }
+});
+*/
