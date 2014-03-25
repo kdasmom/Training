@@ -142,6 +142,12 @@ class WfRuleGateway extends AbstractGateway {
 		return $result;
 	}
 
+	public function getRuleData($ruleid, $asp_client_id) {
+		return $this->adapter->query(
+			new sql\GetRuleSelect($ruleid, $asp_client_id)
+		);
+	}
+
 	public function getRule($ruleid, $asp_client_id, $params = []) {
 		$result = [
 			'rule' => $this->adapter->query(

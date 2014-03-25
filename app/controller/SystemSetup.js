@@ -1085,19 +1085,28 @@ Ext.define('NP.controller.SystemSetup', {
 					wfrule_number_end: (values.comparisonValueTo) ? values.comparisonValueTo : '',
 					wfrule_string: '',
 					success: function(result) {
-						if (!values.wfrule_id) {
-							me.getCmp('systemsetup.workflowrulesmodify').data = result.ruledata;
+						if (values.wfrule_id != '') {
+							console.log('edit');
+							me.getCmp('systemsetup.workflowrulesmodify').data.rule = result.ruledata[0];
 						}
 						else {
-							me.getCmp('systemsetup.workflowrulesmodify').data.rule.wfrule_name = values.name;
-							me.getCmp('systemsetup.workflowrulesmodify').data.rule.wfruletype_id = values.ruletypeid;
-							me.getCmp('systemsetup.workflowrulesmodify').data.rule.all_properties = values.all_properties;
-							me.getCmp('systemsetup.workflowrulesmodify').data.rule.property_keys = values.properties;
-							me.getCmp('systemsetup.workflowrulesmodify').data.rule.wfrule_operand = values.comparison;
-							me.getCmp('systemsetup.workflowrulesmodify').data.rule.wfrule_number = values.comparisonValue;
-							me.getCmp('systemsetup.workflowrulesmodify').data.rule.tablekeys = values.tablekeys;
-							me.getCmp('systemsetup.workflowrulesmodify').data.rule.wfrule_number_end = (values.comparisonValueTo) ? values.comparisonValueTo : '';
+							console.log('add');
+							me.getCmp('systemsetup.workflowrulesmodify').data = result.ruledata;
 						}
+						console.log('values.wfrule_id', values.wfrule_id);
+//						if (!values.wfrule_id) {
+//							me.getCmp('systemsetup.workflowrulesmodify').data.rule = result.ruledata;
+//						}
+//						else {
+//							me.getCmp('systemsetup.workflowrulesmodify').data.rule.wfrule_name = values.name;
+//							me.getCmp('systemsetup.workflowrulesmodify').data.rule.wfruletype_id = values.ruletypeid;
+//							me.getCmp('systemsetup.workflowrulesmodify').data.rule.all_properties = values.all_properties;
+//							me.getCmp('systemsetup.workflowrulesmodify').data.rule.property_keys = values.properties;
+//							me.getCmp('systemsetup.workflowrulesmodify').data.rule.wfrule_operand = values.comparison;
+//							me.getCmp('systemsetup.workflowrulesmodify').data.rule.wfrule_number = values.comparisonValue;
+//							me.getCmp('systemsetup.workflowrulesmodify').data.rule.tablekeys = values.tablekeys;
+//							me.getCmp('systemsetup.workflowrulesmodify').data.rule.wfrule_number_end = (values.comparisonValueTo) ? values.comparisonValueTo : '';
+//						}
 
 						me.getCmp('systemsetup.workflowrulesmodify').stepRoutes();
 //						me.addHistory('SystemSetup:showSystemSetup:WorkflowRules');
