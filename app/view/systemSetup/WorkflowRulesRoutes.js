@@ -175,6 +175,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesRoutes', {
 			toTitle: NP.Translator.translate('Assigned Users'),
 			width: 800,
 			height: 200,
+			autoLoad: false,
 			allowBlank: false,
 			store: me.userStore
 		}
@@ -192,6 +193,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesRoutes', {
 			toTitle: NP.Translator.translate('Assigned User Groups'),
 			width: 800,
 			height: 200,
+			autoLoad: false,
 			allowBlank: false,
 			store: me.groupStore
 		}
@@ -209,6 +211,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesRoutes', {
 			fn = 'enable';
 		}
 
+		console.log("Ext.ComponentQuery.query('#buttonWorkflowAddForward')", Ext.ComponentQuery.query('#buttonWorkflowAddForward'));
 		Ext.ComponentQuery.query('#buttonWorkflowAddForward')[0][fn]();
 	}
 });

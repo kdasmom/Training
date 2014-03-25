@@ -18,14 +18,17 @@ Ext.define('NP.view.shared.RoleAssigner', {
     toTitle     : 'Assigned',
     buttons     : ['add','remove'],
     msgTarget   : 'under',
+	autoLoad    : true,
 
 	initComponent: function() {
+		var me = this;
+
 		if (!this.store) {
 			this.store = {
-				type    : 'user.roles',
-				service : 'UserService',
-				action  : 'getRoles',
-				autoLoad: true
+				type     : 'user.roles',
+				service  : 'UserService',
+				action   : 'getRoles',
+				autoLoad : me.autoLoad
 			};
 		}
 

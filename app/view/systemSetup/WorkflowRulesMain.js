@@ -7,7 +7,6 @@ Ext.define('NP.view.systemSetup.WorkflowRulesMain', {
 
 	requires: [
 		'NP.view.systemSetup.WorkflowRulesGrid',
-		'NP.view.systemSetup.WorkflowRuleTypeCombo',
 		'NP.view.shared.button.Cancel',
 		'NP.view.shared.button.CreateRule',
 		'NP.view.shared.button.Print',

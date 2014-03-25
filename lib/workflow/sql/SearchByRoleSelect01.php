@@ -29,12 +29,20 @@ class SearchByRoleSelect01 extends Select {
 		$where = Where::get();
 
 		if (count($roles)) {
-			$where->in('WA.wfaction_originator_tablekey_id', $roles);
+			$where->nest('OR')
+					->nest()
+						->equals('WA.wfaction_originator_tablename', "'role'")
+						->in('WA.wfaction_originator_tablekey_id', implode(',', $roles))
+					->unnest()
+					->nest()
+						->equals('WA.wfaction_receipient_tablename', "'role'")
+						->in('WA.wfaction_receipient_tablekey_id', implode(',', $roles))
+					->unnest()
+				->unnest();
 		}
 
-		$where->equals('WA.wfaction_originator_tablename', "'role'")
-			->equals('WF.asp_client_id', $asp_client_id)
-			->in('WF.wfrule_status', "'active','new','deactive'");
+		$where->equals('WF.asp_client_id', $asp_client_id)
+			  ->in('WF.wfrule_status', "'active','new','deactive'");
 
 		$this->where($where);
 	}

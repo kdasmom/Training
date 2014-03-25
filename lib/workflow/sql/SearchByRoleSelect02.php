@@ -29,7 +29,7 @@ class SearchByRoleSelect02 extends Select {
 		$where = Where::get();
 
 		if (count($roles)) {
-			$where->in('WA.wfaction_receipient_tablekey_id', $roles);
+			$where->in('WA.wfaction_receipient_tablekey_id', implode(',', $roles));
 		}
 
 		$where->equals('WA.wfaction_receipient_tablename', "'role'")

@@ -73,16 +73,12 @@ class WfRuleGateway extends AbstractGateway {
 		return ($res[0]['ruleCount']) ? true : false;
 	}
 
-	public function findRule($asp_client_id, $type, $criteria, $page, $size, $order) {
-		if (!empty($criteria) && $criteria <> '0') {
-			$criteria = json_decode($criteria);
-		} elseif (!empty($criteria)) {
-			$criteria = null;
-		} else {
-			$criteria = [];
+	public function findRule($asp_client_id, $type, $criteria = [], $page, $size, $order) {
+		if (!empty($criteria) && !is_array($criteria)) {
+			$criteria = [ $criteria ];
 		}
-		if (!empty($criteria) && is_array($criteria)) {
-			$criteria = '('.implode(',', $criteria).')';
+		else if (empty($criteria)) {
+			$criteria = [];
 		}
 
 		$selectors = [];
@@ -103,13 +99,12 @@ class WfRuleGateway extends AbstractGateway {
 				break;
 			case 4:
 				$selectors[] = new sql\SearchByRoleSelect01($asp_client_id, $criteria, $order);
-				$selectors[] = new sql\SearchByRoleSelect02($asp_client_id, $criteria, $order);
 				break;
 			case 5:
 				$selectors[] = new sql\SearchByVendorSelect($asp_client_id, $criteria, $order);
 				break;
 			case 6:
-				$selectors[] = new sql\SearchByRuleTypeSelect($asp_client_id, $criteria);
+				$selectors[] = new sql\SearchByRuleTypeSelect($asp_client_id, $criteria, $order);
 				break;
 		}
 
@@ -127,7 +122,14 @@ class WfRuleGateway extends AbstractGateway {
 //			}
 //		} else {
 			if (!empty($size)) {
-				$result = $this->getPagingArray($selectors[0], [], $size, $page, 'wfrule_id');
+//				if ($selectors > 1) {
+//					$selectors[0]->union($selectors[1], false);
+//					$result = $this->getPagingArray($selectors[0], [], $size, $page, 'wfrule_id');
+//				}
+//				else {
+					$result = $this->getPagingArray($selectors[0], [], $size, $page, 'wfrule_id');
+//				}
+
 			} else {
 				$result = $this->adapter->query($selectors[0]);
 			}

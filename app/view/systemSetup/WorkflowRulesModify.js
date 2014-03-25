@@ -47,12 +47,16 @@ Ext.define('NP.view.systemSetup.WorkflowRulesModify', {
 			toolbar = me.getDockedItems()[0],
 			sectionsContainer = this.down('[name="sectionscontainer"]');
 
+//		Ext.suspendLayouts();
+
 		sectionsContainer.removeAll();
 		sectionsContainer.add( me.ruleSummarySection() );
 		sectionsContainer.add( me.ruleFormSection() );
 
 		toolbar.removeAll();
 		toolbar.add( me.stepRulesToolbar() );
+
+//		Ext.resumeLayouts(true);
 	},
 
 	stepRoutes: function() {
@@ -60,12 +64,16 @@ Ext.define('NP.view.systemSetup.WorkflowRulesModify', {
 			toolbar = me.getDockedItems()[0],
 			sectionsContainer = this.down('[name="sectionscontainer"]');
 
+//		Ext.suspendLayouts();
+
 		sectionsContainer.removeAll();
 		sectionsContainer.add( me.ruleSummarySection() );
 		sectionsContainer.add( me.routeSection() );
 
 		toolbar.removeAll();
 		toolbar.add( me.stepRoutesToolbar() );
+
+//		Ext.resumeLayouts(true);
 	},
 
 	stepConflicts: function() {
@@ -73,12 +81,16 @@ Ext.define('NP.view.systemSetup.WorkflowRulesModify', {
 			toolbar = me.getDockedItems()[0],
 			sectionsContainer = this.down('[name="sectionscontainer"]');
 
+//		Ext.suspendLayouts();
+
 		sectionsContainer.removeAll();
 		sectionsContainer.add( me.ruleSummarySection() );
 		sectionsContainer.add( me.conflictSection() );
 
 		toolbar.removeAll();
 		toolbar.add( me.stepConflictsToolbar() );
+
+//		Ext.resumeLayouts(true);
 	},
 
 	stepRulesToolbar: function() {
@@ -112,7 +124,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesModify', {
 			{ xtype: 'shared.button.cancel', itemId: 'buttonWorkflowBackToMain' },
 			{ xtype: 'shared.button.back', itemId: 'buttonWorkflowBack', handler: me.stepRules.bind(me) },
 			{ xtype: 'shared.button.saveandactivate', itemId: 'buttonSaveAndActivate'},
-  			{ xtype: 'shared.button.copy', itemId: 'buttonWorkflowAddForward', text: NP.Translator.translate('Add Forward'), disabled:true }
+			{ xtype: 'shared.button.copy', itemId: 'buttonWorkflowAddForward', text: NP.Translator.translate('Add Forward'), disable:true }
 		]
 	},
 

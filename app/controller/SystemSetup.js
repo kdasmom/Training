@@ -201,7 +201,7 @@ Ext.define('NP.controller.SystemSetup', {
 			'#buttonWorkflowCopyRule': {
 				click: function() {
 					var wfrule_id = me.getCmp('systemsetup.workflowrulesmodify').data.rule.wfrule_id;
-					this.workflowCopyRule(wfrule_id);
+					this.workflowCopyRule(wfrule_id, this.openNewWorkflowRule);
 				}
 			},
 			'#buttonWorkflowDeleteRules': {
@@ -211,24 +211,27 @@ Ext.define('NP.controller.SystemSetup', {
 				click: function() {
 //					console.log('systemsetup.workflowrulesmodify', me.getCmp('systemsetup.workflowrulesmodify').data);
 					if (me.saveWorkflowRule()) {
-//						Ext.suspendLayouts();
-						me.getCmp('systemsetup.workflowrulesmodify').stepRoutes();
+	//						Ext.suspendLayouts();
+//						me.getCmp('systemsetup.workflowrulesmodify').stepRoutes();
 //						Ext.resumeLayouts(true);
 					}
 
-					NP.lib.core.Net.remoteCall({
-						requests: {
-							service: 'WFRuleService',
-							action : 'get',
-							id: me.getCmp('systemsetup.workflowrulesmodify').data.rule.wfrule_id,
-							success: function(data) {
-								if (data) {
-									me.getCmp('systemsetup.workflowrulesmodify').data = data;
-									me.getCmp('systemsetup.workflowrulesmodify').stepRoutes();
-								}
-							}
-						}
-					});
+
+//					me.getCmp('systemsetup.workflowrulesmodify').stepRoutes();
+//
+//					NP.lib.core.Net.remoteCall({
+//						requests: {
+//							service: 'WFRuleService',
+//							action : 'get',
+//							id: me.getCmp('systemsetup.workflowrulesmodify').data.rule.wfrule_id,
+//							success: function(data) {
+//								if (data) {
+//									me.getCmp('systemsetup.workflowrulesmodify').data = data;
+//									me.getCmp('systemsetup.workflowrulesmodify').stepRoutes();
+//								}
+//							}
+//						}
+//					});
 				}
 			},
 
@@ -283,6 +286,7 @@ Ext.define('NP.controller.SystemSetup', {
 							id: ruleid,
 							success: function(data) {
 								if (data) {
+									console.log('data', data);
 									me.setView('NP.view.systemSetup.WorkflowRulesModify', {data: data}, '[xtype="systemsetup.workflowrules"]');
 								}
 							}
@@ -411,7 +415,9 @@ Ext.define('NP.controller.SystemSetup', {
 	/**
 	 * Copy rule
 	 */
-	workflowCopyRule: function(wfrule_id) {
+	workflowCopyRule: function(wfrule_id, callback) {
+		callback = callback || Ext.emptyFn;
+
 		var me = this;
 
 		NP.lib.core.Net.remoteCall({
@@ -421,11 +427,15 @@ Ext.define('NP.controller.SystemSetup', {
 				id: wfrule_id,
 				success: function(data) {
 					if (data.success) {
-						me.addHistory('SystemSetup:showSystemSetup:WorkflowRules:modify:' + data.ruleid);
+						callback(data.ruleid, me);
 					}
 				}
 			}
 		});
+	},
+
+	openNewWorkflowRule: function(ruleid, me) {
+		me.addHistory('SystemSetup:showSystemSetup:WorkflowRules:modify:' + ruleid);
 	},
 
 	/**
@@ -1035,7 +1045,6 @@ Ext.define('NP.controller.SystemSetup', {
 
 	saveWorkflowRule: function() {
 		var me = this,
-			saveResult = false,
 			form = me.getCmp('systemsetup.workflowrulesbuilder').down('[name="ruleform"]');
 
 		var values = form.getValues();
@@ -1076,6 +1085,24 @@ Ext.define('NP.controller.SystemSetup', {
 					wfrule_number_end: (values.comparisonValueTo) ? values.comparisonValueTo : '',
 					wfrule_string: '',
 					success: function(result) {
+						if (!values.wfrule_id) {
+							me.getCmp('systemsetup.workflowrulesmodify').data = result.ruledata;
+						}
+						else {
+							me.getCmp('systemsetup.workflowrulesmodify').data.rule.name = values.name;
+							me.getCmp('systemsetup.workflowrulesmodify').data.rule.ruletypeid = values.ruletypeid;
+							me.getCmp('systemsetup.workflowrulesmodify').data.rule.all_properties = values.all_properties;
+							me.getCmp('systemsetup.workflowrulesmodify').data.rule.property_keys = values.properties;
+							me.getCmp('systemsetup.workflowrulesmodify').data.rule.wfrule_operand = values.comparison;
+							me.getCmp('systemsetup.workflowrulesmodify').data.rule.wfrule_number = values.comparisonValue;
+							me.getCmp('systemsetup.workflowrulesmodify').data.rule.tablekeys = values.tablekeys;
+							me.getCmp('systemsetup.workflowrulesmodify').data.rule.wfrule_number_end = (values.comparisonValueTo) ? values.comparisonValueTo : '';
+						}
+//						Ext.suspendLayouts();
+//						Ext.resumeLayouts(true);
+
+
+						me.getCmp('systemsetup.workflowrulesmodify').stepRoutes();
 //						me.addHistory('SystemSetup:showSystemSetup:WorkflowRules');
 //						me.getCmp('systemsetup.workflowrulesmodify').data.wesrwerwe = values.properties;
 //						if (result) {
@@ -1091,8 +1118,5 @@ Ext.define('NP.controller.SystemSetup', {
 				}
 			});
 		}
-
-		saveResult = true;
-		return saveResult;
 	}
 });

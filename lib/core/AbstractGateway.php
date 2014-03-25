@@ -380,7 +380,7 @@ abstract class AbstractGateway {
 		
 		$selectRes = $this->adapter->query($select, $params);
 		$totalRes = $this->adapter->query($selectTotal, $params);
-		
+
 		return array('total'=>$totalRes[0]['totalRows'], 'data'=>$selectRes);
 	}
 	

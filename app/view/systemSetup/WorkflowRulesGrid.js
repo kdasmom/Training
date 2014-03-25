@@ -20,7 +20,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 		'NP.view.systemSetup.gridcol.Threshold',
 		'NP.view.systemSetup.gridcol.LastUpdated',
 		'NP.view.systemSetup.gridcol.Status',
-		'NP.view.systemSetup.WorkflowRuleTypeCombo',
+		'NP.view.systemSetup.WorkflowSearchTypeCombo',
 		'NP.lib.ui.ComboBox',
 		'NP.view.shared.PropertyCombo'
 	],
@@ -42,8 +42,16 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 		];
 		this.tbar = bar;
 
-		var filterLabelWidth = 80;
-		var filterButtonWidth = 120;
+		this.filterLabelWidth = 80;
+		this.filterButtonWidth = 120;
+
+		var gridStore = Ext.create('NP.store.workflow.Rules', {
+			service : 'WFRuleService',
+			action  : 'search',
+			paging  : true
+		});
+		gridStore.load();
+
 		this.items = [
 			{
 				xtype: 'panel',
@@ -62,12 +70,12 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 						{
 							xtype: 'button',
 							text: NP.Translator.translate('Filter'),
-							width: filterButtonWidth,
+							width: me.filterButtonWidth,
 							handler: Ext.bind(this.applyFilter, this)
 						},{
 							xtype: 'button',
 							text: NP.Translator.translate('Reset'),
-							width: filterButtonWidth,
+							width: me.filterButtonWidth,
 							margin: '0 0 0 5',
 							handler: Ext.bind(this.clearFilter, this)
 						}
@@ -80,23 +88,23 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 						layout: 'form',
 						items: [
 							{
-								xtype      : 'systemsetup.workflowruletypecombo',
-								labelWidth : filterLabelWidth
+								xtype      : 'systemsetup.workflowsearchtypecombo',
+								name       : 'searchtype',
+								labelWidth : me.filterLabelWidth,
+								listeners: {
+									change: function(field, newValue, oldValue, options) {
+										me.changeCriteriaSection(newValue);
+									}
+								}
 							}
 						]
 					},
 					{
-						xtype: 'container',
+						xtype: 'fieldcontainer',
+						name: 'criteriacontainer',
 						columnWidth: 0.5,
 						layout: 'form',
-						items: [
-							{
-								xtype                : 'shared.propertycombo',
-								emptyText            : 'All',
-								loadStoreOnFirstQuery: true,
-								labelWidth           : filterLabelWidth
-							}
-						]
+						items: []
 					}
 				]
 			},
@@ -106,14 +114,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 				paging  : true,
 				flex    : 1,
 				selModel: Ext.create('Ext.selection.CheckboxModel'),
-				stateful: true,
 				stateId : 'workflow_rules_grid',
-				store   : Ext.create('NP.store.workflow.Rules', {
-					service : 'WFRuleService',
-					action  : 'search',
-					autoLoad: true,
-					paging  : true
-				}),
+				store   : gridStore,
 				columns : [
 					{ xtype: 'systemsetup.gridcol.name', flex: 2.2 },
 					{ xtype: 'systemsetup.gridcol.ruletype', flex: 1.2 },
@@ -133,25 +135,18 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 
 		this.callParent(arguments);
 
-//		this.statusFilter   = this.query('[name="userprofile_status"]')[0];
-//		this.propertyFilter = this.query('[name="property_id"]')[0];
-//		this.roleFilter     = this.query('[name="role_id"]')[0];
-//		this.moduleFilter   = this.query('[name="module_id"]')[0];
-//
-//		this.filterFields = ['statusFilter','propertyFilter','roleFilter','moduleFilter'];
+		this.searchtypeFilter = this.query('[name="searchtype"]')[0];
 	},
 
 	applyFilter: function() {
-		var that = this;
-
 		var grid = this.query('customgrid')[0];
-
 		var currentParams = grid.getStore().getProxy().extraParams;
+
+		var criteriaFilter = this.query('[name="criteria"]')[0];
+
 		var newParams = {
-			userprofile_status: this.statusFilter.getValue(),
-			property_id       : this.propertyFilter.getValue(),
-			role_id           : this.roleFilter.getValue(),
-			module_id         : this.moduleFilter.getValue()
+			type     : this.searchtypeFilter.getValue(),
+			criteria : criteriaFilter ? criteriaFilter.getValue() : null
 		};
 
 		Ext.Object.each(newParams, function(key, val) {
@@ -165,54 +160,118 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 	},
 
 	clearFilter: function() {
-		var that = this;
+		var me = this;
 
-		Ext.Array.each(this.filterFields, function(field) {
-			that[field].clearValue();
-		});
+		me.searchtypeFilter.setValue(0);
+		this.query('[name="criteriacontainer"]')[0].removeAll();
 
 		this.applyFilter();
+	},
+
+	changeCriteriaSection: function(searchtype) {
+		var me = this,
+			criteriaCombobox;
+
+		switch (searchtype) {
+			case 1:
+				criteriaCombobox = me.getPropertyCombobox();
+				break;
+			case 2:
+				criteriaCombobox = me.getGlAccountCombobox();
+				break;
+			case 3:
+				criteriaCombobox = me.getUserCombobox();
+				break;
+			case 4:
+				criteriaCombobox = me.getUserGroupCombobox();
+				break;
+			case 5:
+				criteriaCombobox = me.getVendorCombobox();
+				break;
+			case 6:
+				criteriaCombobox = me.getRuleTypeCombobox();
+				break;
+		}
+
+		var criteriacontainer = this.query('[name="criteriacontainer"]')[0];
+		criteriacontainer.removeAll();
+
+		if (criteriaCombobox) {
+			criteriacontainer.add( criteriaCombobox );
+		}
+	},
+
+	getPropertyCombobox: function() {
+		return {
+			xtype                : 'shared.propertycombo',
+			emptyText            : NP.Translator.translate('All'),
+			name                 : 'criteria',
+			loadStoreOnFirstQuery: true,
+			labelWidth           : this.filterLabelWidth
+		}
+	},
+
+	getGlAccountCombobox: function() {
+		var me = this;
+
+//		return;
+	},
+
+	getUserCombobox: function() {
+		var me = this;
+
+//		store   : Ext.create('NP.store.user.Userprofiles', {
+//			service           : 'UserService',
+//			action            : 'getAll',
+//			paging            : true,
+//			extraParams: {
+//				userprofile_status: 'active',
+//				property_id       : null,
+//				role_id           : null,
+//				module_id         : null
+//			}
+//		}),
+//		return;
+	},
+
+	getUserGroupCombobox: function() {
+		return {
+			xtype        : 'customcombo',
+			name         : 'criteria',
+			fieldLabel   : NP.Translator.translate('User Group'),
+			emptyText    : NP.Translator.translate('All'),
+			labelWidth   : this.filterLabelWidth,
+			store        : 'user.RoleTree',
+			valueField   : 'role_id',
+			displayField : 'role_name',
+			tpl          :
+			'<tpl for=".">' +
+				'<li class="x-boundlist-item">' +
+					'{indent_text}{role_name}' +
+				'</li>' +
+			'</tpl>'
+		};
+	},
+
+	getVendorCombobox: function() {
+		var me = this;
+//		return;
+	},
+
+	getRuleTypeCombobox: function() {
+		return {
+			xtype: 'customcombo',
+			fieldLabel: NP.Translator.translate('Rule Type'),
+			name: 'criteria',
+			emptyText: NP.Translator.translate('All'),
+			store: Ext.create('NP.store.workflow.RuleTypes', {
+				service: 'WFRuleService',
+				autoLoad: true,
+				action: 'listRulesType'
+			}),
+			labelWidth: this.filterLabelWidth,
+			valueField: 'wfruletype_id',
+			displayField: 'wfruletype_name'
+		};
 	}
 });
-
-/*
-Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
-    extend: 'NP.lib.ui.Grid',
-    alias:  'widget.systemsetup.workflowrulesgrid',
-
-    requires: [
-        'NP.view.systemSetup.gridcol.Name',
-        'NP.view.systemSetup.gridcol.RuleType',
-        'NP.view.systemSetup.gridcol.Property',
-        'NP.view.systemSetup.gridcol.Threshold',
-        'NP.view.systemSetup.gridcol.LastUpdated',
-        'NP.view.systemSetup.gridcol.Status'
-    ],
-
-    initComponent: function(){
-        var me = this;
-
-        this.store = Ext.create('NP.store.workflow.Rules', {
-            service : 'WFRuleService',
-            action  : 'search',
-            paging  : true
-        });
-
-        this.columns = [
-            { xtype: 'systemsetup.gridcol.name', flex: 2.2 },
-            { xtype: 'systemsetup.gridcol.ruletype', flex: 1.2 },
-            { xtype: 'systemsetup.gridcol.property', flex: 0.5 },
-            { xtype: 'systemsetup.gridcol.threshold', flex: 1.7 },
-            { xtype: 'systemsetup.gridcol.lastupdated', flex: 1.2 },
-            { xtype: 'systemsetup.gridcol.status', flex: 0.4 }
-        ];
-
-        this.paging = true;
-		this.selModel = Ext.create('Ext.selection.CheckboxModel', { checkOnly: true, mode: 'MULTI' });
-
-		me.store.load();
-
-        this.callParent(arguments);
-    }
-});
-*/

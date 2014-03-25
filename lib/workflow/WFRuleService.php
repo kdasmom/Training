@@ -222,7 +222,7 @@ class WFRuleService extends AbstractService {
 		$tablekeys = explode(',', $tablekeys);
 		$status = 'deactive';
 
-		$wfrule_id = ($wfrule_id != '') ? $wfrule_id : null;
+		$ruleid = ($wfrule_id != '') ? $wfrule_id : null;
 
 		switch ($ruletypeid) {
 			case WFRuleTypeGateway::VENDOR_ESTIMATE_TOTAL_DOLLAR_AMOUNT:
@@ -240,7 +240,7 @@ class WFRuleService extends AbstractService {
 		}
 
 		$dataSet = [
-			'wfrule_id' => $wfrule_id,
+			'wfrule_id' => $ruleid,
 			'wfrule_name' => $rulename,
 			'wfrule_status' => $status,
 			'wfruletype_id' => $ruletypeid,
@@ -255,29 +255,29 @@ class WFRuleService extends AbstractService {
 		];
 
 		// save wf rule
-		if (is_null($wfrule_id)) {
-			$wfrule_id = $this->wfRuleGateway->save($dataSet);
+		if (is_null($ruleid)) {
+			$ruleid = $this->wfRuleGateway->save($dataSet);
 		}
 		else {
-			$this->wfRuleGateway->update($dataSet, ['wfrule_id' => '?', 'asp_client_id' => '?'], [$wfrule_id, $asp_client_id]);
+			$this->wfRuleGateway->update($dataSet, ['wfrule_id' => '?', 'asp_client_id' => '?'], [$ruleid, $asp_client_id]);
 		}
 
 		// save wf rule properties
 		if ($all_properties) {
-			$this->wfRuleTargetGateway->addAllPropertiesToRules($wfrule_id, 'property', $asp_client_id, [1, -1]);
+			$this->wfRuleTargetGateway->addAllPropertiesToRules($ruleid, 'property', $asp_client_id, [1, -1]);
 		}
 		else {
 			if (!is_null($property_keys)) {
-				$this->wfRuleTargetGateway->delete(['wfrule_id' => '?'], [$wfrule_id]);
+				$this->wfRuleTargetGateway->delete(['wfrule_id' => '?'], [$ruleid]);
 
 				foreach ($property_keys as $property_key) {
-					$this->SaveWFRuleTarget($wfrule_id, 'property', $property_key);
+					$this->SaveWFRuleTarget($ruleid, 'property', $property_key);
 				}
 			}
 		}
 
 		// save wf rule type options
-//		$this->wfRuleScopeGateway->delete(['wfrule_id' => '?'], [$wfrule_id]);
+//		$this->wfRuleScopeGateway->delete(['wfrule_id' => '?'], [$ruleid]);
 
 		switch ($ruletypeid) {
 			case WFRuleTypeGateway::BUDGET_AMOUNT_BY_GL_CODE:
@@ -299,7 +299,7 @@ class WFRuleService extends AbstractService {
 			case WFRuleTypeGateway::RECEIPT_ITEM_TOTAL_BY_GL_CATEGORY:
 				foreach ($tablekeys as $tablekeyid) {
 					$this->wfRuleScopeGateway->insert([
-						'wfrule_id'   => $wfrule_id,
+						'wfrule_id'   => $ruleid,
 						'table_name'  => 'glaccount',
 						'tablekey_id' => $tablekeyid
 					]);
@@ -307,11 +307,11 @@ class WFRuleService extends AbstractService {
 				break;
 			case WFRuleTypeGateway::SPECIFIC_VENDOR:
 			case WFRuleTypeGateway::SPECIFIC_VENDOR_MASTER_RULE:
-				$this->wfRuleScopeGateway->saveScopeList($wfrule_id, 'vendor', 'vendor_id', $tablekeys);
+				$this->wfRuleScopeGateway->saveScopeList($ruleid, 'vendor', 'vendor_id', $tablekeys);
 				break;
 			case WFRuleTypeGateway::INVOICE_BY_GL_JOB_CODE:
 			case WFRuleTypeGateway::PURCHASE_ORDER_BY_GL_JOB_CODE:
-				$this->wfRuleScopeGateway->saveScopeList($wfrule_id, 'jbjobcode', 'jbjobcode_id', $tablekeys);
+				$this->wfRuleScopeGateway->saveScopeList($ruleid, 'jbjobcode', 'jbjobcode_id', $tablekeys);
 				break;
 			case WFRuleTypeGateway::INVOICE_BY_CONTRACT_CODE:
 			case WFRuleTypeGateway::PURCHASE_ORDER_BY_CONTRACT_CODE:
@@ -320,26 +320,31 @@ class WFRuleService extends AbstractService {
 				//todo
 				foreach ($tablekeys as $tablekeyid) {
 					$this->wfRuleScopeGateway->insert([
-						'wfrule_id'   => $wfrule_id,
+						'wfrule_id'   => $ruleid,
 						'table_name'  => 'jbcontract',
 						'tablekey_id' => $tablekeyid
 					]);
 				}
 				break;
 			case WFRuleTypeGateway::INVOICE_TOTAL_BY_PAY_BY:
-				$this->wfRuleScopeGateway->saveScopeList($wfrule_id, 'invoicepaymenttype', 'invoicepayment_type_id', $tablekeys);
+				$this->wfRuleScopeGateway->saveScopeList($ruleid, 'invoicepaymenttype', 'invoicepayment_type_id', $tablekeys);
 				break;
 			case WFRuleTypeGateway::PO_ITEM_AMOUNT_BY_DEPARTMENT:
 			case WFRuleTypeGateway::INVOICE_ITEM_AMOUNT_BY_DEPARTMENT:
 				foreach ($tablekeys as $tablekeyid) {
 					$this->wfRuleScopeGateway->insert([
-						'wfrule_id'   => $wfrule_id,
+						'wfrule_id'   => $ruleid,
 						'table_name'  => 'unit',
 						'tablekey_id' => $tablekeyid
 					]);
 				}
 				break;
 		}
+
+		return [
+			'success' => true,
+			'ruledata' => $wfrule_id == '' ? $this->get($ruleid) : null
+		];
 	}
 
 	public function SaveWFRuleTarget($wfrule_id, $tablename, $tablekey_id) {

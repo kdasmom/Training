@@ -28,7 +28,7 @@ class SearchByRuleTypeSelect extends Select {
 		$where = Where::get();
 
 		if (count($types)) {
-			$where->in('WT.wfruletype_id', $types);
+			$where->in('WT.wfruletype_id', implode(',', $types));
 		}
 
 		$where->equals('WF.asp_client_id', $asp_client_id)
