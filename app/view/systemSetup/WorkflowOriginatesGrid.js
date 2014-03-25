@@ -20,6 +20,8 @@ Ext.define('NP.view.systemSetup.WorkflowOriginatesGrid', {
 					wfruleid: me.data.rule.wfrule_id
 				}
 			});
+
+			this.store.load();
 		}
 
 		this.columns = [

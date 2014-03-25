@@ -181,8 +181,13 @@ Ext.define('NP.controller.SystemSetup', {
 			},
 			'#buttonWorkflowSaveAndActivate': {
 				click: function() {
-					me.saveWorkflowRule();
-					me.addHistory('SystemSetup:showSystemSetup:WorkflowRules');
+					me.saveAndActivateWorkflowRule();
+				}
+			},
+			'#buttonWorkflowActivate': {
+				click: function() {
+					var wfrule_id = me.getCmp('systemsetup.workflowrulesmodify').data.rule.wfrule_id;
+					me.activateWorkflowRule(wfrule_id);
 				}
 			},
 			'#buttonWorkflowAddForward': {
@@ -1043,6 +1048,68 @@ Ext.define('NP.controller.SystemSetup', {
 	},
 
 
+	saveAndActivateWorkflowRule: function() {
+		var me = this,
+			form = me.getCmp('systemsetup.workflowrulesbuilder').down('[name="ruleform"]');
+
+		var values = form.getValues();
+
+		var tablekeys;
+		if (values.categories) {
+			tablekeys = values.categories;
+		}
+		else if (values.codes) {
+			tablekeys = values.codes;
+		}
+		else if (values.jobcodes) {
+			tablekeys = values.jobcodes;
+		}
+		else if (values.contracts) {
+			tablekeys = values.contracts;
+		}
+		else if (values.vendors) {
+			tablekeys = values.vendors;
+		}
+
+		if (form.isValid()) {
+			NP.lib.core.Net.remoteCall({
+				requests: {
+					service: 'WFRuleService',
+					action: 'saveAndActivateRule',
+					userprofile_id: NP.Security.getUser().get('userprofile_id'),
+					wfrule_id: values.wfrule_id,
+					rulename: values.name,
+					ruletypeid: values.ruletypeid,
+					all_properties: values.all_properties,
+					property_keys: values.properties,
+					wfrule_operand: values.comparison,
+					wfrule_number: values.comparisonValue,
+					tablekeys: tablekeys,
+					wfrule_number_end: (values.comparisonValueTo) ? values.comparisonValueTo : '',
+					wfrule_string: '',
+					success: function(result) {
+						me.addHistory('SystemSetup:showSystemSetup:WorkflowRules');
+					}
+				}
+			});
+		}
+	},
+
+	activateWorkflowRule: function(ruleid) {
+		var me = this;
+
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service: 'WFRuleService',
+				action: 'activateRule',
+				ruleid: ruleid,
+				success: function() {
+					me.addHistory('SystemSetup:showSystemSetup:WorkflowRules');
+				}
+			}
+		});
+	},
+
 	saveWorkflowRule: function() {
 		var me = this,
 			form = me.getCmp('systemsetup.workflowrulesbuilder').down('[name="ruleform"]');
@@ -1086,14 +1153,11 @@ Ext.define('NP.controller.SystemSetup', {
 					wfrule_string: '',
 					success: function(result) {
 						if (values.wfrule_id != '') {
-							console.log('edit');
 							me.getCmp('systemsetup.workflowrulesmodify').data.rule = result.ruledata[0];
 						}
 						else {
-							console.log('add');
 							me.getCmp('systemsetup.workflowrulesmodify').data = result.ruledata;
 						}
-						console.log('values.wfrule_id', values.wfrule_id);
 //						if (!values.wfrule_id) {
 //							me.getCmp('systemsetup.workflowrulesmodify').data.rule = result.ruledata;
 //						}
