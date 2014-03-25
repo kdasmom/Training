@@ -287,7 +287,7 @@ Ext.define('NP.controller.SystemSetup', {
 							success: function(data) {
 								if (data) {
 									console.log('data', data);
-									me.setView('NP.view.systemSetup.WorkflowRulesModify', {data: data}, '[xtype="systemsetup.workflowrules"]');
+									me.setView('NP.view.systemSetup.WorkflowRulesModify', {data: data}, '[xtype="systemsetup.workflowrules"]', true);
 								}
 							}
 						}
@@ -1089,8 +1089,8 @@ Ext.define('NP.controller.SystemSetup', {
 							me.getCmp('systemsetup.workflowrulesmodify').data = result.ruledata;
 						}
 						else {
-							me.getCmp('systemsetup.workflowrulesmodify').data.rule.name = values.name;
-							me.getCmp('systemsetup.workflowrulesmodify').data.rule.ruletypeid = values.ruletypeid;
+							me.getCmp('systemsetup.workflowrulesmodify').data.rule.wfrule_name = values.name;
+							me.getCmp('systemsetup.workflowrulesmodify').data.rule.wfruletype_id = values.ruletypeid;
 							me.getCmp('systemsetup.workflowrulesmodify').data.rule.all_properties = values.all_properties;
 							me.getCmp('systemsetup.workflowrulesmodify').data.rule.property_keys = values.properties;
 							me.getCmp('systemsetup.workflowrulesmodify').data.rule.wfrule_operand = values.comparison;
@@ -1098,9 +1098,6 @@ Ext.define('NP.controller.SystemSetup', {
 							me.getCmp('systemsetup.workflowrulesmodify').data.rule.tablekeys = values.tablekeys;
 							me.getCmp('systemsetup.workflowrulesmodify').data.rule.wfrule_number_end = (values.comparisonValueTo) ? values.comparisonValueTo : '';
 						}
-//						Ext.suspendLayouts();
-//						Ext.resumeLayouts(true);
-
 
 						me.getCmp('systemsetup.workflowrulesmodify').stepRoutes();
 //						me.addHistory('SystemSetup:showSystemSetup:WorkflowRules');

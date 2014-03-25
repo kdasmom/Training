@@ -124,7 +124,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesModify', {
 			{ xtype: 'shared.button.cancel', itemId: 'buttonWorkflowBackToMain' },
 			{ xtype: 'shared.button.back', itemId: 'buttonWorkflowBack', handler: me.stepRules.bind(me) },
 			{ xtype: 'shared.button.saveandactivate', itemId: 'buttonSaveAndActivate'},
-			{ xtype: 'shared.button.copy', itemId: 'buttonWorkflowAddForward', text: NP.Translator.translate('Add Forward'), disable:true }
+			{ xtype: 'shared.button.copy', itemId: 'buttonWorkflowAddForward', text: NP.Translator.translate('Add Forward'), disabled:true }
 		]
 	},
 

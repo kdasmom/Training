@@ -450,6 +450,7 @@ class WFRuleService extends AbstractService {
 	}
 
 	public function getConflictingRules($wfrule_id) {
+	
 	}
 
 	//TODO delete this

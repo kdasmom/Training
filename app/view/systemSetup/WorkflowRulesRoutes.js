@@ -211,7 +211,6 @@ Ext.define('NP.view.systemSetup.WorkflowRulesRoutes', {
 			fn = 'enable';
 		}
 
-		console.log("Ext.ComponentQuery.query('#buttonWorkflowAddForward')", Ext.ComponentQuery.query('#buttonWorkflowAddForward'));
 		Ext.ComponentQuery.query('#buttonWorkflowAddForward')[0][fn]();
 	}
 });

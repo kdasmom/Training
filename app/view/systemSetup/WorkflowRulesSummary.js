@@ -33,6 +33,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesSummary', {
 
 
 	getRuleSummaryItems: function() {
+		console.log('sd.data', this.data);
+
 		var items = [
 			// Rule Name
 			{
