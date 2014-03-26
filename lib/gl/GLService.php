@@ -113,22 +113,28 @@ class GLService extends AbstractService {
      * @param  int   $integration_package_id The integration package to get GL accounts for
      * @return array                         Array of GL account records
      */
-    public function getByIntegrationPackage($integration_package_id, $glaccount_keyword=null) {
+    public function getByIntegrationPackage($integration_package_id = null, $glaccount_keyword=null) {
+	    $wheres = [
+		    'g.glaccount_usable'       => '?',
+		    'g.glaccount_status'       => '?'
+	    ];
+	    $params = ['Y', 'active'];
+
+	    if ($integration_package_id) {
+		    $wheres = array_merge(['g.integration_package_id' => '?'], $wheres);
+		    $params = array_merge([$integration_package_id], $params);
+	    }
+
         $wheres = array(
-            array(
-                'g.integration_package_id' => '?',
-                'g.glaccount_usable'       => '?',
-                'g.glaccount_status'       => '?'
-            ),
+            $wheres,
             new sql\criteria\GlIsCategoryCriteria()
         );
-        $params = array($integration_package_id, 'Y', 'active');
 
         if ($glaccount_keyword !== null) {
             $wheres[] = new sql\criteria\GlKeywordCriteria();
             $keyword = $glaccount_keyword . '%';
-            $params[] = $glaccount_keyword;
-            $params[] = $glaccount_keyword;
+            $params[] = $keyword;
+            $params[] = $keyword;
         }
 
         return $this->glAccountGateway->find(

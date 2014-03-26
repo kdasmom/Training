@@ -22,7 +22,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 		'NP.view.systemSetup.gridcol.Status',
 		'NP.view.systemSetup.WorkflowSearchTypeCombo',
 		'NP.lib.ui.ComboBox',
-		'NP.view.shared.PropertyCombo'
+		'NP.view.shared.PropertyCombo',
+		'NP.view.shared.GlCombo'
 	],
 
 	layout: {
@@ -203,16 +204,25 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 
 	getPropertyCombobox: function() {
 		return {
-			xtype                : 'shared.propertycombo',
-			emptyText            : NP.Translator.translate('All'),
-			name                 : 'criteria',
-			loadStoreOnFirstQuery: true,
-			labelWidth           : this.filterLabelWidth
+			xtype                   : 'shared.propertycombo',
+            multiSelect             : true,
+			emptyText               : NP.Translator.translate('All'),
+			name                    : 'criteria',
+			loadStoreOnFirstQuery   : true,
+			labelWidth              : this.filterLabelWidth
 		}
 	},
 
 	getGlAccountCombobox: function() {
 		var me = this;
+
+        return {
+            xtype               : 'shared.glcombo',
+            multiSelect         : true,
+            name                : 'criteria',
+            loadStoreOnFirstQuery   : true,
+            labelWidth              : this.filterLabelWidth
+        };
 
 //		return;
 	},
