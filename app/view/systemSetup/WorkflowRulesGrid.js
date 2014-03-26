@@ -23,7 +23,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 		'NP.view.systemSetup.WorkflowSearchTypeCombo',
 		'NP.lib.ui.ComboBox',
 		'NP.view.shared.PropertyCombo',
-		'NP.view.shared.GlCombo'
+		'NP.view.shared.GlCombo',
+		'NP.view.shared.UserCombo'
 	],
 
 	layout: {
@@ -208,40 +209,32 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
             multiSelect             : true,
 			emptyText               : NP.Translator.translate('All'),
 			name                    : 'criteria',
+            multiSelect             : true,
 			loadStoreOnFirstQuery   : true,
 			labelWidth              : this.filterLabelWidth
 		}
 	},
 
 	getGlAccountCombobox: function() {
-		var me = this;
-
         return {
             xtype               : 'shared.glcombo',
             multiSelect         : true,
+            emptyText               : NP.Translator.translate('All'),
             name                : 'criteria',
             loadStoreOnFirstQuery   : true,
             labelWidth              : this.filterLabelWidth
         };
-
-//		return;
 	},
 
 	getUserCombobox: function() {
-		var me = this;
-
-//		store   : Ext.create('NP.store.user.Userprofiles', {
-//			service           : 'UserService',
-//			action            : 'getAll',
-//			paging            : true,
-//			extraParams: {
-//				userprofile_status: 'active',
-//				property_id       : null,
-//				role_id           : null,
-//				module_id         : null
-//			}
-//		}),
-//		return;
+        return {
+            xtype                   : 'shared.usercombo',
+            multiSelect             : true,
+            emptyText               : NP.Translator.translate('All'),
+            name                    : 'criteria',
+            loadStoreOnFirstQuery   : true,
+            labelWidth              : this.filterLabelWidth
+        };
 	},
 
 	getUserGroupCombobox: function() {

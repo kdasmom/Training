@@ -30,7 +30,7 @@ class SearchByUserSelect02 extends Select {
 		$where = Where::get();
 
 		if (count($users)) {
-			$where->in('WA.wfaction_receipient_tablekey_id', $users);
+			$where->in('WA.wfaction_receipient_tablekey_id', implode(',', $users));
 		}
 
 		$where->equals('WA.wfaction_receipient_tablename', "'userprofilerole'")
