@@ -24,7 +24,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 		'NP.lib.ui.ComboBox',
 		'NP.view.shared.PropertyCombo',
 		'NP.view.shared.GlCombo',
-		'NP.view.shared.UserCombo'
+		'NP.view.shared.UserCombo',
+		'NP.view.shared.UserGroupsCombo'
 	],
 
 	layout: {
@@ -238,22 +239,31 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 	},
 
 	getUserGroupCombobox: function() {
-		return {
-			xtype        : 'customcombo',
-			name         : 'criteria',
-			fieldLabel   : NP.Translator.translate('User Group'),
-			emptyText    : NP.Translator.translate('All'),
-			labelWidth   : this.filterLabelWidth,
-			store        : 'user.RoleTree',
-			valueField   : 'role_id',
-			displayField : 'role_name',
-			tpl          :
-			'<tpl for=".">' +
-				'<li class="x-boundlist-item">' +
-					'{indent_text}{role_name}' +
-				'</li>' +
-			'</tpl>'
-		};
+
+        return {
+            xtype                   : 'shared.usergroupscombo',
+            multiSelect             : true,
+            emptyText               : NP.Translator.translate('All'),
+            name                    : 'criteria',
+            loadStoreOnFirstQuery   : true,
+            labelWidth              : this.filterLabelWidth
+        };
+//		return {
+//			xtype        : 'customcombo',
+//			name         : 'criteria',
+//			fieldLabel   : NP.Translator.translate('User Group'),
+//			emptyText    : NP.Translator.translate('All'),
+//			labelWidth   : this.filterLabelWidth,
+//			store        : 'user.RoleTree',
+//			valueField   : 'role_id',
+//			displayField : 'role_name',
+//			tpl          :
+//			'<tpl for=".">' +
+//				'<li class="x-boundlist-item">' +
+//					'{indent_text}{role_name}' +
+//				'</li>' +
+//			'</tpl>'
+//		};
 	},
 
 	getVendorCombobox: function() {

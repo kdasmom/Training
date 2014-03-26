@@ -9,7 +9,7 @@ Ext.define('NP.view.shared.UserCombo', {
 
     requires: ['NP.model.user.Userprofile'],
 
-    fieldLabel: 'GL Account',
+    fieldLabel: 'User',
 
     name                : 'userprofile_id',
     displayField        : 'userprofile_username',
