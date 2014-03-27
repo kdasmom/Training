@@ -464,6 +464,15 @@ class WfRuleGateway extends AbstractGateway {
 		*/
 	}
 
+	/**
+	 * Retrieve Select by criteria type
+	 *
+	 * @param $criteriaType
+	 * @param $asp_client_id
+	 * @param $criteria
+	 * @param $order
+	 * @return sql\SearchByGLAccountSelect|sql\SearchByPropertySelect|sql\SearchByRoleSelect|sql\SearchByRuleTypeSelect|sql\SearchByUserSelect|sql\SearchByVendorSelect|sql\SearchSelect
+	 */
 	private function setSearchCriteriaSelect($criteriaType,$asp_client_id, $criteria, $order) {
 		switch ($criteriaType ) {
 			case self::NO_CRITERIA:
