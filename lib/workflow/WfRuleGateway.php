@@ -20,6 +20,14 @@ class WfRuleGateway extends AbstractGateway {
 	const NUMBER_TYPE_ACTUAL = "actual";
 	const NUMBER_TYPE_USER_PRIVILEGES = "the privileges of current user";
 
+	const NO_CRITERIA = 0;
+	const PROPERTY_CRITERIA = 1;
+	const GLACCOUNTS_CRITERIA = 2;
+	const USERS_CRITERIA = 3;
+	const ROLES_CRITERIA = 4;
+	const VENDORS_CRITERIA = 5;
+	const RULETYPE_CRITERIA = 6;
+
 	protected $pk = 'wfrule_id';
 	protected $table = 'wfrule';
 
@@ -83,27 +91,27 @@ class WfRuleGateway extends AbstractGateway {
 
 		$selectors = [];
 		switch ($type) {
-			case 0: 
+			case self::NO_CRITERIA:
 				$selectors[] = new sql\SearchSelect($asp_client_id, $order);
 				break;
-			case 1:
+			case self::PROPERTY_CRITERIA:
 				$selectors[] = new sql\SearchByPropertySelect($asp_client_id, $criteria, $order);
 				break;
-			case 2:
+			case self::GLACCOUNTS_CRITERIA:
 				$selectors[] = new sql\SearchByGLAccountSelect01($asp_client_id, $criteria, $order);
 				$selectors[] = new sql\SearchByGLAccountSelect02($asp_client_id, $criteria, $order);
 				break;
-			case 3:
+			case self::USERS_CRITERIA:
 				$selectors[] = new sql\SearchByUserSelect01($asp_client_id, $criteria, $order);
 				$selectors[] = new sql\SearchByUserSelect02($asp_client_id, $criteria, $order);
 				break;
-			case 4:
+			case self::ROLES_CRITERIA:
 				$selectors[] = new sql\SearchByRoleSelect01($asp_client_id, $criteria, $order);
 				break;
-			case 5:
+			case self::VENDORS_CRITERIA:
 				$selectors[] = new sql\SearchByVendorSelect($asp_client_id, $criteria, $order);
 				break;
-			case 6:
+			case self::RULETYPE_CRITERIA:
 				$selectors[] = new sql\SearchByRuleTypeSelect($asp_client_id, $criteria, $order);
 				break;
 		}

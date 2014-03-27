@@ -211,8 +211,15 @@ class WFRuleService extends AbstractService {
         return $this->wfRuleGateway->findRule($asp_client_id, $type, $criteria, $page, $pageSize, $sort);
     }
 
-    public function listRulesType() {
-        return $this->wfRuleTypeGateway->find(null, [], 'ordinal', ['wfruletype_id', 'wfruletype_name', 'type_id_alt', 'ordinal']);
+    public function listRulesType($keyword = null) {
+	    $where = [];
+	    $params = [];
+	    if ($keyword) {
+		    $where = Where::get()->like('wfruletype_name', '?');
+		    $params[] = '%' . $keyword . '%';
+	    }
+
+        return $this->wfRuleTypeGateway->find($where, $params, 'ordinal', ['wfruletype_id', 'wfruletype_name', 'type_id_alt', 'ordinal']);
     }
 
 	public function saveRule($userprofile_id, $wfrule_id, $rulename, $ruletypeid, $property_keys=null, $all_properties, $wfrule_operand=null, $wfrule_number=null, $tablekeys = null, $wfrule_number_end = null) {

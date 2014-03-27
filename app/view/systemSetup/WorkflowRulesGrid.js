@@ -26,7 +26,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 		'NP.view.shared.GlCombo',
 		'NP.view.shared.UserCombo',
 		'NP.view.shared.UserGroupsCombo',
-		'NP.view.shared.VendorAutoComplete'
+		'NP.view.shared.VendorAutoComplete',
+		'NP.view.systemSetup.RuleTypeAutocomplete'
 	],
 
 	layout: {
@@ -264,19 +265,28 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 	},
 
 	getRuleTypeCombobox: function() {
-		return {
-			xtype: 'customcombo',
-			fieldLabel: NP.Translator.translate('Rule Type'),
-			name: 'criteria',
-			emptyText: NP.Translator.translate('All'),
-			store: Ext.create('NP.store.workflow.RuleTypes', {
-				service: 'WFRuleService',
-				autoLoad: true,
-				action: 'listRulesType'
-			}),
-			labelWidth: this.filterLabelWidth,
-			valueField: 'wfruletype_id',
-			displayField: 'wfruletype_name'
-		};
+        return {
+            xtype: 'systemSetup.ruletypeautocomplete',
+            multiSelect: true,
+            emptyText               : NP.Translator.translate('All'),
+            name                    : 'criteria',
+            loadStoreOnFirstQuery   : true,
+            labelWidth              : this.filterLabelWidth,
+            allowBlank: true
+        }
+//		return {
+//			xtype: 'customcombo',
+//			fieldLabel: NP.Translator.translate('Rule Type'),
+//			name: 'criteria',
+//			emptyText: NP.Translator.translate('All'),
+//			store: Ext.create('NP.store.workflow.RuleTypes', {
+//				service: 'WFRuleService',
+//				autoLoad: true,
+//				action: 'listRulesType'
+//			}),
+//			labelWidth: this.filterLabelWidth,
+//			valueField: 'wfruletype_id',
+//			displayField: 'wfruletype_name'
+//		};
 	}
 });
