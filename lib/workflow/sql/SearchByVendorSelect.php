@@ -31,7 +31,7 @@ class SearchByVendorSelect extends Select {
 		$where = Where::get();
 
 		if (count($vendors)) {
-			$where->in('WS.tablekey_id', $vendors);
+			$where->in('WS.tablekey_id', implode(',', $vendors));
 		}
 
 		$where->equals('WS.table_name', "'vendor'")
