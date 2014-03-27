@@ -89,32 +89,7 @@ class WfRuleGateway extends AbstractGateway {
 			$criteria = [];
 		}
 
-		$selectors = [];
-		switch ($type) {
-			case self::NO_CRITERIA:
-				$selectors[] = new sql\SearchSelect($asp_client_id, $order);
-				break;
-			case self::PROPERTY_CRITERIA:
-				$selectors[] = new sql\SearchByPropertySelect($asp_client_id, $criteria, $order);
-				break;
-			case self::GLACCOUNTS_CRITERIA:
-				$selectors[] = new sql\SearchByGLAccountSelect01($asp_client_id, $criteria, $order);
-				$selectors[] = new sql\SearchByGLAccountSelect02($asp_client_id, $criteria, $order);
-				break;
-			case self::USERS_CRITERIA:
-				$selectors[] = new sql\SearchByUserSelect01($asp_client_id, $criteria, $order);
-				$selectors[] = new sql\SearchByUserSelect02($asp_client_id, $criteria, $order);
-				break;
-			case self::ROLES_CRITERIA:
-				$selectors[] = new sql\SearchByRoleSelect01($asp_client_id, $criteria, $order);
-				break;
-			case self::VENDORS_CRITERIA:
-				$selectors[] = new sql\SearchByVendorSelect($asp_client_id, $criteria, $order);
-				break;
-			case self::RULETYPE_CRITERIA:
-				$selectors[] = new sql\SearchByRuleTypeSelect($asp_client_id, $criteria, $order);
-				break;
-		}
+		$select = $this->setSearchCriteriaSelect($type, $asp_client_id, $criteria, $order);
 
 		$countPropertiesResult = $this->adapter->query(
 			new \NP\property\sql\GetPropertiesCountSelect($asp_client_id)
@@ -122,26 +97,12 @@ class WfRuleGateway extends AbstractGateway {
 		$countProperties = $countPropertiesResult[0]['count'];
 
 		$result = [];
-//		if ($type != 0) {
-//			if (!empty($selectors)) {
-//				foreach($selectors as $select) {
-//					$result[] = $this->adapter->query($select);
-//				}
-//			}
-//		} else {
-			if (!empty($size)) {
-//				if ($selectors > 1) {
-//					$selectors[0]->union($selectors[1], false);
-//					$result = $this->getPagingArray($selectors[0], [], $size, $page, 'wfrule_id');
-//				}
-//				else {
-					$result = $this->getPagingArray($selectors[0], [], $size, $page, 'wfrule_id');
-//				}
+		if (!empty($size)) {
+			$result = $this->getPagingArray($select, [], $size, $page, 'wfrule_id');
 
-			} else {
-				$result = $this->adapter->query($selectors[0]);
-			}
-//		}
+		} else {
+			$result = $this->adapter->query($select);
+		}
 
 		foreach ($result['data'] as &$item) {
 			$item['all_properties_selected'] = ($item['count_properties'] == $countProperties) ? true : false;
@@ -501,5 +462,25 @@ class WfRuleGateway extends AbstractGateway {
 				--OR (@wfruletype_id = 13 and wfruletype_id = 14) OR (@wfruletype_id = 14 and wfruletype_id = 13)
 				)
 		*/
+	}
+
+	private function setSearchCriteriaSelect($criteriaType,$asp_client_id, $criteria, $order) {
+		switch ($criteriaType ) {
+			case self::NO_CRITERIA:
+			default:
+				return new sql\SearchSelect($asp_client_id, $order);
+			case self::PROPERTY_CRITERIA:
+				return new sql\SearchByPropertySelect($asp_client_id, $criteria, $order);
+			case self::GLACCOUNTS_CRITERIA:
+				return new sql\SearchByGLAccountSelect($asp_client_id, $criteria, $order);
+			case self::USERS_CRITERIA:
+				return new sql\SearchByUserSelect($asp_client_id, $criteria, $order);
+			case self::ROLES_CRITERIA:
+				return new sql\SearchByRoleSelect($asp_client_id, $criteria, $order);
+			case self::VENDORS_CRITERIA:
+				return new sql\SearchByVendorSelect($asp_client_id, $criteria, $order);
+			case self::RULETYPE_CRITERIA:
+				return new sql\SearchByRuleTypeSelect($asp_client_id, $criteria, $order);
+		}
 	}
 }
