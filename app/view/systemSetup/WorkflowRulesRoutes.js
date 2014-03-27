@@ -170,6 +170,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesRoutes', {
 			itemId: fieldname,
 			xtype: 'shared.userassigner',
 			name: fieldname,
+			displayField: 'userprofilerole_id',
+			valueField  : 'userprofilerole_id',
 			fieldLabel: '',
 			fromTitle: NP.Translator.translate('Unassigned Users'),
 			toTitle: NP.Translator.translate('Assigned Users'),
