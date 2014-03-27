@@ -7,6 +7,7 @@ use NP\core\db\Adapter;
 use NP\core\db\Select;
 use NP\core\db\Where;
 use NP\core\db\Update;
+use NP\core\db\Expression;
 use NP\user\UserprofileRoleGateway;
 use NP\vendor\VendorGateway;
 
@@ -333,135 +334,181 @@ class WfRuleGateway extends AbstractGateway {
 	}
 
 
-	public function getConflictingRules($wfrule_id, $asp_client_id) {
-		$rule = $this->findById($wfrule_id);
-
+	public function findCountDuplicateRules($wfrule_id, $ruletypeid, $asp_client_id) {
 		$select = new Select();
+
 		$select->count(true, 'rulecount')
-				->from('wfrule')
-					->whereEquals('wfruletype_id', '?')
-					->whereNotEquals('wfrule_id', '?')
-					->whereEquals('asp_client_id', '?')
-					->whereNotEquals('wfrule_status', '?');
-		$result = $this->adapter->query($select, [$rule['wfruletype_id'], $wfrule_id, $asp_client_id, $rule['wfrule_status']]);
-		print_r($result);
+					->from('wfrule')
+				->whereEquals('wfruletype_id', '?')
+				->whereNotEquals('wfrule_id', '?')
+				->whereEquals('asp_client_id', '?')
+				->whereNotEquals('wfrule_status', '?');
 
-		if ($result[0]['rulecount'] > 0) {
-			$select->distinct()
+		$result = $this->adapter->query($select, [$ruletypeid, $wfrule_id, $asp_client_id, 'inactive']);
+
+		return $result[0]['rulecount'];
+	}
+
+	public function findConflictingRulesByProperties($wfrule_id, $wfruletype_id, $wfrule_operand, $wfrule_number, $wfrule_number_end) {
+		$select = new Select();
+		$subselect = new Select();
+
+		$wfrule_number = is_numeric($wfrule_number) ? $wfrule_number : 'null';
+		$wfrule_number_end = is_numeric($wfrule_number_end) ? $wfrule_number_end : 'null';
+		$fraction = 0.01;
+
+		$subselect->distinct()->columns(['tablekey_id'])
+				->from(['wftarget' => 'wfruletarget'])
+					->whereEquals('wftarget.wfrule_id', $wfrule_id)
+					->whereEquals('wftarget.table_name', "'property'");
+
+		$select->distinct()
 					->columns(['wfrule_id'])
-					->from(['wfr'  => 'wfrule'])
-						->join(['wfrt' => 'wfruletarget'], 'wfr.wfrule_id = wfrt.wfrule_id')
-						->join(['wfp'  => 'wfruletarget'], 'wfrt.tablekey_id = wfp.tablekey_id')
-					->whereEquals('wfrt.table_name', '?')
-					->whereNotEquals('wfr.wfrule_id', '?')
-					->whereNest('OR')
-						->whereNest()
-							->whereEquals('wfrt.table_name', '?')
+				->from(['wfr' => 'wfrule'])
+					->join(['wfrt' => 'wfruletarget'], 'wfr.wfrule_id = wfrt.wfrule_id', [])
+				->whereEquals('wfrt.table_name', "'property'")
+				->whereIn('wfrt.tablekey_id', $subselect)
+				->whereNotEquals('wfr.wfrule_id', $wfrule_id)
+				->whereNest('OR')
+					->whereNest()
+						->whereEquals('wfr.wfrule_operand', "'{$wfrule_operand}'")
+						->whereNotEquals("'{$wfrule_operand}'", "'in range'")
+					->whereUnnest()
+					->whereEquals("'{$wfrule_operand}'", "'greater than equal to or less than'")
+					->whereEquals('wfr.wfrule_operand', "'greater than equal to or less than'")
+					->whereNest()
+						->whereNest('OR')
+							->whereEquals("'{$wfrule_operand}'", "'greater than or equal to'")
+							->whereEquals("'{$wfrule_operand}'", "'greater than'")
 						->whereUnnest()
+						->whereNest('OR')
+							->whereEquals('wfr.wfrule_operand', "'greater than or equal to'")
+							->whereEquals('wfr.wfrule_operand', "'greater than'")
+						->whereUnnest()
+					->whereUnnest()
+					->whereNest()
+						->whereEquals('wfr.wfrule_operand', "'in range'")
+						->whereEquals("'{$wfrule_operand}'", "'in range'")
+						->whereNest('OR')
+							->whereBetween('cast(wfr.wfrule_number as float)', $wfrule_number, $wfrule_number_end)
+							->whereBetween('cast(wfr.wfrule_number_end as float)', $wfrule_number, $wfrule_number_end)
+							->whereBetween($wfrule_number, 'cast(wfr.wfrule_number as float)', 'cast(wfr.wfrule_number_end as float)')
+							->whereBetween($wfrule_number_end, 'cast(wfr.wfrule_number as float)', 'cast(wfr.wfrule_number_end as float)')
+						->whereUnnest()
+					->whereUnnest()
+					->whereNest()
+						->whereEquals("'{$wfrule_operand}'", "'less than'")
+						->whereEquals('wfr.wfrule_operand', "'greater than'")
+						->whereOp('>', $wfrule_number, "cast(wfr.wfrule_number as float) + {$fraction}")
+					->whereUnnest()
+					->whereNest()
+						->whereEquals("'{$wfrule_operand}'", "'greater than'")
+						->whereEquals('wfr.wfrule_operand', "'less than'")
+						->whereOp('<', $wfrule_number, "cast(wfr.wfrule_number as float) - {$fraction}")
+					->whereUnnest()
+					->whereNest()
+						->whereEquals("'{$wfrule_operand}'", "'less than'")
+						->whereEquals('wfr.wfrule_operand', "'greater than or equal to'")
+						->whereOp('>', $wfrule_number, 'wfr.wfrule_number')
+					->whereUnnest()
+					->whereNest()
+						->whereEquals("'{$wfrule_operand}'", "'greater than or equal to'")
+						->whereEquals('wfr.wfrule_operand', "'less than'")
+						->whereOp('<', $wfrule_number, 'cast(wfr.wfrule_number as float)')
+					->whereUnnest()
+					->whereNest()
+						->whereEquals("'{$wfrule_operand}'", "'in range'")
+						->whereEquals('wfr.wfrule_operand', "'less than'")
+						->whereOp('>', 'cast(wfr.wfrule_number as float)', $wfrule_number)
+						->whereOp('<=', 'cast(wfr.wfrule_number as float)', $wfrule_number_end)
+					->whereUnnest()
+					->whereNest()
+						->whereEquals("'{$wfrule_operand}'", "'less than'")
+						->whereEquals('wfr.wfrule_operand', "'in range'")
+						->whereOp('<', 'cast(wfr.wfrule_number as float)', $wfrule_number)
+					->whereUnnest()
+					->whereNest()
+						->whereEquals("'{$wfrule_operand}'", "'in range'")
+						->whereEquals('wfr.wfrule_operand', "'greater than'")
+						->whereOp('>', $wfrule_number_end, 'cast(wfr.wfrule_number as float)')
+					->whereUnnest()
+					->whereNest()
+						->whereEquals("'{$wfrule_operand}'", "'greater than'")
+						->whereEquals('wfr.wfrule_operand', "'in range'")
+						->whereOp('<', $wfrule_number, 'cast(wfr.wfrule_number_end as float)')
+					->whereUnnest()
+					->whereNest()
+						->whereEquals("'{$wfrule_operand}'", "'in range'")
+						->whereEquals('wfr.wfrule_operand', "'greater than or equal to'")
+						->whereOp('>=', $wfrule_number_end, 'cast(wfr.wfrule_number as float)')
+					->whereUnnest()
+					->whereNest()
+						->whereEquals("'{$wfrule_operand}'", "'greater than or equal to'")
+						->whereEquals('wfr.wfrule_operand', "'in range'")
+						->whereOp('<=', $wfrule_number, 'cast(wfr.wfrule_number_end as float)')
+					->whereUnnest()
+				->whereUnnest()
+				->whereNotEquals('wfr.wfrule_status', "'inactive'")
+				->whereEquals('wfr.wfruletype_id', $wfruletype_id);
 
-//				->whereNest('OR')
-//					->whereNest()
-//						->whereEquals('wa.wfaction_originator_tablename', "'userprofilerole'")
-//						->whereEquals('wa.wfaction_originator_tablekey_id', '?')
-//					->whereUnnest()
-//					->whereNest()
-//						->whereEquals('wa.wfaction_originator_tablename', "'role'")
-//						->whereEquals('wa.wfaction_originator_tablekey_id', '?')
-//					->whereUnnest()
-//				->whereUnnest(),
-			;
-			$result = $this->adapter->query($select, ["'property'", $wfrule_id]);
+//		echo $select->toString();
+		$result = $this->adapter->query($select);
 
-			$propertyConflictWFRules = $result;
-
-			if (count($propertyConflictWFRules) > 0) {
-
-
-//				SELECT  wfaction_originator_tablename,
-//					wfaction_originator_tablekey_id,
-//					wfaction_receipient_tablename,
-//
-//					wfaction_receipient_tablekey_id,
-//					wfaction_nextlevel
-//				FROM WFACTION
-//				WHERE wfrule_id = @in_wfrule_id
-			}
+		$conflictingRulesByProperties = [];
+		foreach ($result as $item) {
+			$conflictingRulesByProperties[] = $item['wfrule_id'];
 		}
 
-		/*
-			SELECT DISTINCT wfr.wfrule_id FROM WFRULE wfr
-			INNER JOIN WFRULETARGET wfrt ON wfr.wfrule_id = wfrt.wfrule_id AND wfrt.table_name = 'property'
-			INNER JOIN @WFPROPERTY wfp ON wfrt.tablekey_id = wfp.property_id AND wfrt.table_name = 'property'
-			WHERE wfrt.table_name = 'property' AND
-				wfr.wfrule_id <> @in_wfrule_id AND (
-					(wfr.wfrule_operand = @wfrule_operand AND @wfrule_operand <> 'in range')
-				OR (@wfrule_operand = 'greater than equal to or less than')
-				OR (wfr.wfrule_operand = 'greater than equal to or less than')
+		return $conflictingRulesByProperties;
+	}
 
-				-- GTE always conflicts with GT
-				OR ((@wfrule_operand = 'greater than or equal to' OR @wfrule_operand='greater than') AND (wfr.wfrule_operand='greater than or equal to' OR wfr.wfrule_operand='greater than'))
 
-				-- range conflicts with intersecting ranges
-				OR (@wfrule_operand='in range' AND wfr.wfrule_operand='in range'
-					AND (	(cast(wfr.wfrule_number as float) BETWEEN @wfrule_number AND @wfrule_number_end)
-						OR (cast(wfr.wfrule_number_end as float) BETWEEN @wfrule_number AND @wfrule_number_end)
-						OR (@wfrule_number BETWEEN cast(wfr.wfrule_number as float) AND cast(wfr.wfrule_number_end as float))
-						OR (@wfrule_number_end BETWEEN cast(wfr.wfrule_number as float) AND cast(wfr.wfrule_number_end as float))
-					)
+	public function getConflictingRulesById($conflictingRulesIdList) {
+		$rulePlaceHolders = $this->createPlaceholders($conflictingRulesIdList);
+
+		$select = new Select();
+
+		$select->columns(['wfrule_id', 'wfrule_name', 'wfruletype_id', 'wfrule_status',
+				new Expression(
+					'CASE WHEN wfa.wfaction_originator_tablename=\'role\' THEN (' .
+						Select::get()->columns([])
+							->from(['wfn' => 'wfaction'])
+							->join(['r' => 'role'], 'wfn.wfaction_originator_tablekey_id = r.role_id', ['role_name'])
+								->whereEquals('wfn.wfaction_originator_tablekey_id', 'wfa.wfaction_originator_tablekey_id')
+								->whereEquals('wfn.wfaction_originator_tablename', "'role'")
+							->limit(1)
+							->toString() .
+					') ELSE (' .
+						Select::get()->columns([])
+							->from(['stf' => 'staff'])
+							->join(['p' => 'person'],
+									'stf.person_id = p.person_id',
+									['person_lastname + \' \' + person_firstname + \' \' + person_middlename']
+							)
+							->join(['u' => 'userprofilerole'], 'stf.staff_id = u.tablekey_id', [])
+							->join(['wfact' => 'wfaction'], 'wfact.wfaction_originator_tablekey_id = u.userprofilerole_id', [])
+								->whereEquals('wfact.wfaction_originator_tablekey_id', 'wfa.wfaction_originator_tablekey_id')
+								->whereEquals('wfact.wfaction_originator_tablename', "'userprofilerole'")
+							->limit(1)
+							->toString() .
+					') END AS originator'
 				)
+			])
+			->from(['wfr' => 'wfrule'])
+				->join(['ruletype' => 'wfruletype'], 'wfr.wfruletype_id = ruletype.wfruletype_id', ['wfruletype_name'])
+				->join(['wfa' => 'wfaction'], 'wfr.wfrule_id = wfa.wfrule_id', ['wfaction_originator_tablename'])
+//			->whereNotEquals('wfr.wfrule_status', "'inactive'")
+			->whereIn('wfr.wfrule_id', $rulePlaceHolders);
 
-				-- LT conflicts with GT when greater than GT number + 1 fraction
-				OR (@wfrule_operand='less than' AND (wfr.wfrule_operand='greater than')
-					AND (@wfrule_number > cast(wfr.wfrule_number as float) + @fraction)
-				)
-				-- GT conflicts with LT when less than LT number - 1 fraction
-				OR ((@wfrule_operand='greater than') AND wfr.wfrule_operand='less than'
-					AND (@wfrule_number < cast(wfr.wfrule_number as float) - @fraction)
-				)
+		return $this->adapter->query($select, $conflictingRulesIdList);
+	}
 
-				-- LT conflicts with GTE when not less than GTE number
-				OR (@wfrule_operand='less than' AND (wfr.wfrule_operand='greater than or equal to')
-					AND @wfrule_number > wfr.wfrule_number
-				)
-				-- GTE conflicts with LT when less than LT number
-				OR ((@wfrule_operand='greater than or equal to') AND wfr.wfrule_operand='less than'
-					AND (@wfrule_number < cast(wfr.wfrule_number as float))
-				)
+	public function findUserProfileById($id) {
+		$select = new Select();
 
-				-- range conflicts with LT when LT number between range (not including bottom end of range)
-				-- LT conflicts with range when range number less than to LT number
-				OR (@wfrule_operand='in range' AND wfr.wfrule_operand='less than' AND cast(wfr.wfrule_number as float) > @wfrule_number AND cast(wfr.wfrule_number as float) <= @wfrule_number_end) --BETWEEN @wfrule_number AND @wfrule_number_end)
-				OR (@wfrule_operand='less than' AND wfr.wfrule_operand='in range' AND cast(wfr.wfrule_number as float) < @wfrule_number)
+		$select->from('userprofilerole')->whereEquals('userprofilerole_id', '?');
 
-				-- range conflicts with GT when range end-number is greater than GT number
-				-- GT conflicts with range when GT number is less than range end-number
-				OR (@wfrule_operand='in range' AND wfr.wfrule_operand='greater than' AND @wfrule_number_end > cast(wfr.wfrule_number as float))
-				OR (@wfrule_operand='greater than' AND wfr.wfrule_operand='in range' AND @wfrule_number < cast(wfr.wfrule_number_end as float))
-
-				-- range conflicts with GTE when range end-number is greater than equal to GTE number
-				-- GTE conflicts with range when GTE number is less than equal to range end-number
-				OR (@wfrule_operand='in range' AND wfr.wfrule_operand='greater than or equal to' AND @wfrule_number_end >= cast(wfr.wfrule_number as float))
-				OR (@wfrule_operand='greater than or equal to' AND wfr.wfrule_operand='in range' AND @wfrule_number <= cast(wfr.wfrule_number_end as float))
-
-				) AND
-
-				wfr.wfrule_status <> 'inactive' AND
-				((wfruletype_id = @wfruletype_id)
-				-- These are for rules that have gl codes and gl categories...b/c the different types can conflict
-				--invoicetotal
-				--OR (@wfruletype_id = 2 and wfruletype_id = 2)
-				--pototal
-				--OR (@wfruletype_id = 1 and wfruletype_id = 1)
-				--po item
-				--OR (@wfruletype_id = 11 and wfruletype_id = 8) OR (@wfruletype_id = 8 and wfruletype_id = 11)
-				--invoiceitem
-				--OR (@wfruletype_id = 7 and wfruletype_id = 10) OR (@wfruletype_id = 10 and wfruletype_id = 7)
-				--budget
-				--OR (@wfruletype_id = 9 and wfruletype_id = 3) OR (@wfruletype_id = 3 and wfruletype_id = 9)
-				--yearly
-				--OR (@wfruletype_id = 13 and wfruletype_id = 14) OR (@wfruletype_id = 14 and wfruletype_id = 13)
-				)
-		*/
+		return $this->adapter->query($select, [$id]);
 	}
 
 	/**

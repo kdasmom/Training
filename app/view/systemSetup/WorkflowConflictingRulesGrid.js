@@ -11,11 +11,11 @@ Ext.define('NP.view.systemSetup.WorkflowConflictingRulesGrid', {
     initComponent: function(){
         var me = this;
 
-//        this.store = Ext.create('NP.store.workflow.Rules', {
-//            service : 'WFRuleService',
-//            action  : 'search',
-//            paging  : true
-//        });
+		this.store = new Ext.data.ArrayStore({
+			fields : ['wfrule_name', 'wfruletype_name', 'originator']
+		});
+
+		this.store.loadData(me.data.conflictingRules);
 
         this.columns = [
             { xtype: 'systemsetup.gridcol.name', flex: 2 },
@@ -24,6 +24,5 @@ Ext.define('NP.view.systemSetup.WorkflowConflictingRulesGrid', {
         ];
 
         this.callParent(arguments);
-
     }
 });

@@ -162,7 +162,7 @@ $diDefinition = array(
         'NP\workflow\WfRuleTargetGateway'              => array('Adapter'),
         'NP\workflow\WFRuleTypeGateway'                   => array('Adapter'),
 	'NP\workflow\WfRuleGateway'                => array('Adapter','UserprofileroleGateway', 'VendorGateway', 'WFActionGateway'),
-	'NP\workflow\WFRuleService'                => array('WfRuleGateway', 'WFActionGateway', 'WFRuleHourGateway', 'WFRuleRelationGateway', 'WFRuleScopeGateway', 'WfRuleTargetGateway', 'WFRuleTypeGateway'),
+	'NP\workflow\WFRuleService'                => array('WfRuleGateway', 'WFActionGateway', 'WFRuleHourGateway', 'WFRuleRelationGateway', 'WFRuleScopeGateway', 'WfRuleTargetGateway', 'WFRuleTypeGateway', 'UserprofileGateway'),
 );
 
 // Now we're gonna figure out some automatic definitions for gateways and services

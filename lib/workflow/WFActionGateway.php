@@ -154,4 +154,70 @@ class WFActionGateway extends AbstractGateway {
 	public function DeleteRuleOriginator($wfactionid) {
 		return $this->delete(['wfaction_id' => '?'], [$wfactionid]);
 	}
+
+
+	public function findOriginatorUserRolesConflicts($checkWfruleid, $wfrule_id_list, $originator_tablekey_id) {
+		$select = new Select();
+		$subselect = new Select();
+
+		$subselect->columns(['userprofilerole_id'])
+					->from(['upr' => 'userprofilerole'])
+						->whereIn('upr.role_id', '?');
+
+		$select->columns(['wfrule_id'])
+				->from(['wfa' => 'wfaction'])
+					->whereIn('wfa.wfaction_originator_tablekey_id', $subselect)
+					->whereIn('wfa.wfrule_id', implode(',', $wfrule_id_list))
+					->whereEquals('wfa.wfaction_originator_tablename', "'userprofilerole'")
+					->whereNotEquals('wfa.wfrule_id', '?');
+
+		$result = $this->adapter->query($select, [$originator_tablekey_id, $checkWfruleid]);
+
+		$rulesIdList = [];
+		foreach ($result as $item) {
+			$rulesIdList[] = $item['wfrule_id'];
+		}
+
+		return $rulesIdList;
+	}
+
+	public function findOriginatorRolesConflicts($checkWfruleid, $wfrule_id_list, $originator_tablekey_id) {
+		$select = new Select();
+
+		$select->columns(['wfrule_id'])
+				->from(['wfa' => 'wfaction'])
+					->whereEquals('wfa.wfaction_originator_tablekey_id', $originator_tablekey_id)
+					->whereIn('wfa.wfrule_id', implode(',', $wfrule_id_list))
+					->whereEquals('wfa.wfaction_originator_tablename', "'role'")
+					->whereNotEquals('wfa.wfrule_id', '?');
+
+		$result = $this->adapter->query($select, [$originator_tablekey_id, $checkWfruleid]);
+
+		$rulesIdList = [];
+		foreach ($result as $item) {
+			$rulesIdList[] = $item['wfrule_id'];
+		}
+
+		return $rulesIdList;
+	}
+
+	public function findOriginatorUserprofileConflicts($checkWfruleid, $wfrule_id_list, $originator_tablekey_id) {
+		$select = new Select();
+
+		$select->columns(['wfrule_id'])
+				->from(['wfa' => 'wfaction'])
+					->whereEquals('wfa.wfaction_originator_tablekey_id', '?')
+					->whereIn('wfa.wfrule_id', implode(',', $wfrule_id_list))
+					->whereEquals('wfa.wfaction_originator_tablename', "'userprofilerole'")
+					->whereNotEquals('wfa.wfrule_id', '?');
+
+		$result = $this->adapter->query($select, [$originator_tablekey_id, $checkWfruleid]);
+
+		$rulesIdList = [];
+		foreach ($result as $item) {
+			$rulesIdList[] = $item['wfrule_id'];
+		}
+
+		return $rulesIdList;
+	}
 }

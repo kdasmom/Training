@@ -134,7 +134,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesModify', {
 		return [
 			{ xtype: 'shared.button.cancel', itemId: 'buttonWorkflowBackToMain' },
 			{ xtype: 'shared.button.back', itemId: 'buttonWorkflowBack', handler: me.stepRules.bind(me) },
-			{ xtype: 'shared.button.next', itemId: 'buttonConflict' }
+			{ xtype: 'shared.button.next', itemId: 'buttoneNextOnConflictPage' }
 		]
 	},
 

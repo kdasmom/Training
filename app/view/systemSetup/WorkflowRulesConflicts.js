@@ -37,18 +37,30 @@ Ext.define('NP.view.systemSetup.WorkflowRulesConflicts', {
 						data: me.data
 					},
 					{
-						xtype: 'radiogroup',
+						xtype: 'form',
+						name: 'nextactionform',
+						itemId: 'nextactionform',
+						border: 0,
 						items: [
 							{
-								boxLabel: NP.Translator.translate('Edit this rule > Admin_Invoice > {rulename}', { rulename: me.data ? me.data.rule.wfrule_name : ''}),
-								checked: true,
-								name: '',
-								value: 'edit'
-							},
-							{
-								boxLabel: NP.Translator.translate('Delete conflicting rules'),
-								name: '',
-								value: 'delete'
+								xtype: 'radiogroup',
+								name: 'nextaction',
+								columns: 1,
+								vertical: true,
+								padding: '15 0 0 0',
+								items: [
+									{
+										boxLabel: NP.Translator.translate('Edit this rule > Admin_Invoice > {rulename}', { rulename: me.data ? me.data.rule.wfrule_name : ''}),
+										checked: true,
+										name: 'nextaction',
+										inputValue: 'edit'
+									},
+									{
+										boxLabel: NP.Translator.translate('Delete conflicting rules'),
+										name: 'nextaction',
+										inputValue: 'delete'
+									}
+								]
 							}
 						]
 					}

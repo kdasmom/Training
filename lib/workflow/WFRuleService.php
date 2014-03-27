@@ -7,14 +7,15 @@ use NP\system\ConfigService;
 use NP\security\SecurityService;
 
 use NP\workflow\WfRuleGateway;
+use NP\user\UserprofileGateway;
 use NP\core\db\Where;
 
 class WFRuleService extends AbstractService {
-    protected $configService, $securityService, $wfRuleGateway, $wfActionGateway, $wfRuleHourGateway, $wfRuleRelationGateway, $wfRuleScopeGateway, $wfRuleTargetGateway, $wfRuleTypeGateway;
+    protected $configService, $securityService, $wfRuleGateway, $wfActionGateway, $wfRuleHourGateway, $wfRuleRelationGateway, $wfRuleScopeGateway, $wfRuleTargetGateway, $wfRuleTypeGateway, $userprofileGateway;
 
     public function __construct(WfRuleGateway $wfRuleGateway, WFActionGateway $wfActionGateway, WFRuleHourGateway $wfRuleHourGateway,
                 WFRuleRelationGateway $wfRuleRelationGateway, WFRuleScopeGateway $wfRuleScopeGateway, WfRuleTargetGateway $wfRuleTargetGateway,
-                WFRuleTypeGateway $wfRuleTypeGateway
+                WFRuleTypeGateway $wfRuleTypeGateway, UserprofileGateway $userprofileGateway
     ) {
         $this->wfRuleGateway = $wfRuleGateway;
         $this->wfActionGateway = $wfActionGateway;
@@ -23,6 +24,7 @@ class WFRuleService extends AbstractService {
         $this->wfRuleScopeGateway = $wfRuleScopeGateway;
         $this->wfRuleTargetGateway = $wfRuleTargetGateway;
         $this->wfRuleTypeGateway = $wfRuleTypeGateway;
+        $this->userprofileGateway = $userprofileGateway;
     }
 
     public function setConfigService(ConfigService $configService) {
@@ -242,19 +244,43 @@ class WFRuleService extends AbstractService {
 	public function saveAndActivateRule($userprofile_id, $wfrule_id, $rulename, $ruletypeid, $property_keys=null, $all_properties, $wfrule_operand=null, $wfrule_number=null, $tablekeys = null, $wfrule_number_end = null) {
 		$ruleid = $this->saveWFRule($userprofile_id, $wfrule_id, $rulename, $ruletypeid, $property_keys, $all_properties, $wfrule_operand, $wfrule_number, $tablekeys, $wfrule_number_end);
 
-		$dataSet = [
-			'wfrule_id' => $ruleid,
-			'wfrule_status' => 'active'
+		$activateStatus = false;
+
+		$conflictingRules = $this->findConflictingRules($ruleid);
+
+		if (!count($conflictingRules)) {
+			$activateStatus = true;
+			$dataSet = [
+				'wfrule_id' => $ruleid,
+				'wfrule_status' => 'active'
+			];
+			$this->wfRuleGateway->save($dataSet);
+		}
+
+		return [
+			'activateStatus'   => $activateStatus,
+			'conflictingRules' => $conflictingRules
 		];
-		$this->wfRuleGateway->save($dataSet);
 	}
 
 	public function activateRule($ruleid) {
-		$dataSet = [
-			'wfrule_id' => $ruleid,
-			'wfrule_status' => 'active'
+		$activateStatus = false;
+
+		$conflictingRules = $this->findConflictingRules($ruleid);
+
+		if (!count($conflictingRules)) {
+			$activateStatus = true;
+			$dataSet = [
+				'wfrule_id' => $ruleid,
+				'wfrule_status' => 'active'
+			];
+			$this->wfRuleGateway->save($dataSet);
+		}
+
+		return [
+			'activateStatus'   => $activateStatus,
+			'conflictingRules' => $conflictingRules
 		];
-		$this->wfRuleGateway->save($dataSet);
 	}
 
 	private function saveWFRule($userprofile_id, $wfrule_id, $rulename, $ruletypeid, $property_keys=null, $all_properties, $wfrule_operand=null, $wfrule_number=null, $tablekeys = null, $wfrule_number_end = null) {
@@ -436,6 +462,10 @@ class WFRuleService extends AbstractService {
 		$originator_tablekeys = explode(',', $originator_tablekeys_list);
 		$receipient_tablekeys = explode(',', $receipient_tablekeys_list);
 
+//		echo "<pre>";
+//		print_r($data);
+//		echo "</pre>";
+
 		if ($data['forwardto'] == 'next') {
 			if (count($originator_tablekeys) > 0) {
 				$this->wfActionGateway->delete(
@@ -488,8 +518,57 @@ class WFRuleService extends AbstractService {
 		$oktoactivate = true;
 	}
 
-	public function getConflictingRules($wfrule_id) {
-		
+	public function findConflictingRules($wfrule_id) {
+		$asp_client_id = $this->configService->getClientId();
+
+		$rule = $this->WfRuleGateway->findById($wfrule_id);
+
+		$countDuplicateRules = $this->WfRuleGateway->findCountDuplicateRules($wfrule_id, $rule['wfruletype_id'], $asp_client_id);
+
+		$originatorConflicts = []; //delete
+
+		if ($countDuplicateRules > 0) {
+			$conflictingRulesByProperties = $this->wfRuleGateway->findConflictingRulesByProperties($rule['wfrule_id'], $rule['wfruletype_id'], $rule['wfrule_operand'], $rule['wfrule_number'], $rule['wfrule_number_end']);
+
+			if (count($conflictingRulesByProperties) > 0)
+			{
+				$routes = $this->wfActionGateway->find('wfrule_id = ?', [$wfrule_id]);
+//				$originatorConflicts = [];
+
+				foreach ($routes as $route) {
+					$originator_tablekey_id = $route['wfaction_originator_tablekey_id'];
+					$originator_tablename = $route['wfaction_originator_tablename'];
+
+					if ($originator_tablename == 'role') {
+						$originatorUserRoleConflicts = $this->wfActionGateway->findOriginatorUserRolesConflicts($wfrule_id, $conflictingRulesByProperties, $originator_tablekey_id);
+						$originatorConflicts = array_merge($originatorConflicts, $originatorUserRoleConflicts);
+					}
+
+					if ($originator_tablename == 'userprofilerole') {
+						$originatorProfileConflicts = $this->wfActionGateway->findOriginatorUserprofileConflicts($wfrule_id, $conflictingRulesByProperties, $originator_tablekey_id);
+						$originatorConflicts = array_merge($originatorConflicts, $originatorProfileConflicts);
+
+						if (!count($originatorConflicts)) {
+//							$userprofile = $this->userprofileGateway->findById($originator_tablekey_id);
+//							$originator_tablekey_id = $userprofile['role_id'];
+
+							$userprofile = $this->wfRuleGateway->findUserProfileById($originator_tablekey_id);
+							$originator_tablekey_id = $userprofile[0]['role_id'];
+						}
+					}
+
+					if (!count($originatorConflicts)) {
+						$originatorRoleConflicts = $this->wfActionGateway->findOriginatorRolesConflicts($wfrule_id, $conflictingRulesByProperties, $originator_tablekey_id);
+						$originatorConflicts = array_merge($originatorConflicts, $originatorRoleConflicts);
+					}
+				}
+			}
+		}
+
+		$originatorConflicts = array_unique($originatorConflicts);
+		$conflictingRules = (count($originatorConflicts)) ? $this->wfRuleGateway->getConflictingRulesById($originatorConflicts) : [];
+
+		return $conflictingRules;
 	}
 
 	//TODO delete this
