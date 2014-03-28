@@ -227,17 +227,9 @@ class WFRuleService extends AbstractService {
 	public function saveRule($userprofile_id, $wfrule_id, $rulename, $ruletypeid, $property_keys=null, $all_properties, $wfrule_operand=null, $wfrule_number=null, $tablekeys = null, $wfrule_number_end = null) {
 		$ruleid = $this->saveWFRule($userprofile_id, $wfrule_id, $rulename, $ruletypeid, $property_keys, $all_properties, $wfrule_operand, $wfrule_number, $tablekeys, $wfrule_number_end);
 
-		if ($wfrule_id != '') {
-			$asp_client_id = $this->configService->getClientId();
-			$ruledata = $this->wfRuleGateway->getRuleData($ruleid, $asp_client_id);
-		}
-		else {
-			$ruledata = $this->get($ruleid);
-		}
-
 		return [
 			'success' => true,
-			'ruledata' => $ruledata
+			'ruledata' => $this->get($ruleid)
 		];
 	}
 
@@ -245,6 +237,8 @@ class WFRuleService extends AbstractService {
 		$ruleid = $this->saveWFRule($userprofile_id, $wfrule_id, $rulename, $ruletypeid, $property_keys, $all_properties, $wfrule_operand, $wfrule_number, $tablekeys, $wfrule_number_end);
 
 		$activateStatus = false;
+
+//		$this->wfActionGateway->find('wfrule_id = ?', [$wfrule_id]);
 
 		$conflictingRules = $this->findConflictingRules($ruleid);
 
@@ -422,11 +416,11 @@ class WFRuleService extends AbstractService {
 
 	public function GetRuleOriginators($wfruleid) {
 		$asp_client_id = $this->configService->getClientId();
-		return $this->wfActionGateway->GetRuleOriginators($wfruleid, $asp_client_id);
+		return $this->wfActionGateway->findRuleRoutes($wfruleid, $asp_client_id);
 	}
 
 	public function DeleteRuleOriginator($wfactionid) {
-		return $this->wfActionGateway->DeleteRuleOriginator($wfactionid);
+		return $this->wfActionGateway->deleteRuleRoute($wfactionid);
 	}
 
 

@@ -4,7 +4,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesView', {
 	layout: 'fit',
 
 	modal: true,
-	autoscroll: true,
+	autoScroll: true,
 
 	width: 700,
 	height: 400,

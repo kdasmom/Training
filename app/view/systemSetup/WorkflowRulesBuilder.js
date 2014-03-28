@@ -514,15 +514,21 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 					items: [
 						{
 							name: 'email-supression',
-							boxLabel: NP.Translator.translate('Never Suppress Email')
+							boxLabel: NP.Translator.translate('Never Suppress Email'),
+							inputValue: 1,
+							checked: true
 						},
 						{
 							name: 'email-supression',
-							boxLabel: NP.Translator.translate('Suppress Email for {supression} hours',
-															  { supression : '<input name="email_supression_hours" type="text" style="width:70px;" />' })
+							inputValue: 2,
+							boxLabel: NP.Translator.translate(
+										'Suppress Email for {supression} hours',
+										{ supression : '<input name="email_supression_hours" type="text" style="width:70px;" />' }
+									  )
 						},
 						{
 							name: 'email-supression',
+							inputValue: 3,
 							boxLabel: NP.Translator.translate('Suppress Email for the rest of the period')
 						}
 					],

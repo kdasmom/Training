@@ -339,9 +339,6 @@ Ext.define('NP.controller.SystemSetup', {
 			case 0:
 				// Selection. Nothing to do.
 				break;
-			case 1:
-				me.addHistory('SystemSetup:showSystemSetup:WorkflowRules:modify:' + rec.get('wfrule_id'));
-				break;
 			default:
 				me.addHistory('SystemSetup:showSystemSetup:WorkflowRules:view:' + rec.get('wfrule_id'));
 				break;
@@ -362,11 +359,6 @@ Ext.define('NP.controller.SystemSetup', {
 				}
 				if (identifiers.length > 0) {
 					// Identifiers are ready to be passed to the server.
-					var mask = new Ext.LoadMask({
-						target: this.getWorkflowScreen()
-					});
-					mask.show();
-
 					NP.lib.core.Net.remoteCall({
 						requests: {
 							service: 'WFRuleService',
@@ -375,7 +367,7 @@ Ext.define('NP.controller.SystemSetup', {
 							status: status,
 							success: function(data) {
 								if (data.success) {
-									mask.destroy();
+									grid.getSelectionModel().deselectAll();
 									grid.store.reload();
 								}
 							}
@@ -420,6 +412,7 @@ Ext.define('NP.controller.SystemSetup', {
 						mask.destroy();
 
 						grid = me.getWorkflowRulesGrid();
+						grid.getSelectionModel().deselectAll();
 						grid.store.reload();
 					}
 				}
@@ -482,6 +475,7 @@ Ext.define('NP.controller.SystemSetup', {
 								if (data) {
 									mask.destroy();
 									grid = me.getWorkflowRulesGrid();
+									grid.getSelectionModel().deselectAll();
 									grid.store.reload();
 								}
 							}
@@ -1174,13 +1168,7 @@ Ext.define('NP.controller.SystemSetup', {
 					wfrule_number_end: (values.comparisonValueTo) ? values.comparisonValueTo : '',
 					wfrule_string: '',
 					success: function(result) {
-						if (values.wfrule_id != '') {
-							me.getCmp('systemsetup.workflowrulesmodify').data.rule = result.ruledata[0];
-						}
-						else {
-							me.getCmp('systemsetup.workflowrulesmodify').data = result.ruledata;
-						}
-
+						me.getCmp('systemsetup.workflowrulesmodify').data = result.ruledata;
 						me.getCmp('systemsetup.workflowrulesmodify').stepRoutes();
 					}
 				}

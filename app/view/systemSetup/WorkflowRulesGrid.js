@@ -210,7 +210,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 		return {
 			xtype                   : 'shared.propertycombo',
             multiSelect             : true,
-			emptyText               : NP.Translator.translate('All'),
+//			emptyText               : NP.Translator.translate('All'),
 			name                    : 'criteria',
             multiSelect             : true,
 			loadStoreOnFirstQuery   : true,
@@ -222,7 +222,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
         return {
             xtype               : 'shared.glcombo',
             multiSelect         : true,
-            emptyText               : NP.Translator.translate('All'),
+//            emptyText               : NP.Translator.translate('All'),
             name                : 'criteria',
             loadStoreOnFirstQuery   : true,
             labelWidth              : this.filterLabelWidth
@@ -233,7 +233,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
         return {
             xtype                   : 'shared.usercombo',
             multiSelect             : true,
-            emptyText               : NP.Translator.translate('All'),
+//            emptyText               : NP.Translator.translate('All'),
             name                    : 'criteria',
             loadStoreOnFirstQuery   : true,
             labelWidth              : this.filterLabelWidth
@@ -245,7 +245,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
         return {
             xtype                   : 'shared.usergroupscombo',
             multiSelect             : true,
-            emptyText               : NP.Translator.translate('All'),
+//            emptyText               : NP.Translator.translate('All'),
             name                    : 'criteria',
             loadStoreOnFirstQuery   : true,
             labelWidth              : this.filterLabelWidth
@@ -256,7 +256,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
         return {
             xtype: 'shared.vendorautocomplete',
             multiSelect: true,
-            emptyText               : NP.Translator.translate('All'),
+//            emptyText               : NP.Translator.translate('All'),
             name                    : 'criteria',
             loadStoreOnFirstQuery   : true,
             labelWidth              : this.filterLabelWidth,
@@ -268,25 +268,11 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
         return {
             xtype: 'systemSetup.ruletypeautocomplete',
             multiSelect: true,
-            emptyText               : NP.Translator.translate('All'),
+//            emptyText               : NP.Translator.translate('All'),
             name                    : 'criteria',
             loadStoreOnFirstQuery   : true,
             labelWidth              : this.filterLabelWidth,
             allowBlank: true
         }
-//		return {
-//			xtype: 'customcombo',
-//			fieldLabel: NP.Translator.translate('Rule Type'),
-//			name: 'criteria',
-//			emptyText: NP.Translator.translate('All'),
-//			store: Ext.create('NP.store.workflow.RuleTypes', {
-//				service: 'WFRuleService',
-//				autoLoad: true,
-//				action: 'listRulesType'
-//			}),
-//			labelWidth: this.filterLabelWidth,
-//			valueField: 'wfruletype_id',
-//			displayField: 'wfruletype_name'
-//		};
 	}
 });

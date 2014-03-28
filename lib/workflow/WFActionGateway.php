@@ -43,7 +43,7 @@ class WFActionGateway extends AbstractGateway {
 	}
 
 
-	public function GetRuleOriginators($wfruleid, $asp_client_id, $orderby='originator') {
+	public function findRuleRoutes($wfruleid, $asp_client_id, $orderby='originator') {
 		$select = new Select();
 
 		$select->columns([
@@ -151,7 +151,7 @@ class WFActionGateway extends AbstractGateway {
 	}
 
 
-	public function DeleteRuleOriginator($wfactionid) {
+	public function deleteRuleRoute($wfactionid) {
 		return $this->delete(['wfaction_id' => '?'], [$wfactionid]);
 	}
 
