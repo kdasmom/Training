@@ -120,8 +120,8 @@ Ext.define('NP.model.vendor.Vendor', {
 		{ name: 'taxpayor_type', type: 'int' },
 		{ name: 'payee_type', type: 'int' },
 		{ name: 'vendor_ModificationType' },
-		{ name: 'remit_req' },
-		{ name: 'insurance_req' },
+		{ name: 'remit_req', type: 'int' },
+		{ name: 'insurance_req', type: 'int' },
 
 		// This field does not exist in the DB, we are retrieving it to simplify
 		{ name: 'integration_package_name' },
@@ -143,7 +143,11 @@ Ext.define('NP.model.vendor.Vendor', {
 
 		{ name: 'phone_number', useNull: false },
 		{ name: 'phone_ext', useNull: false },
-		{ name: 'phone_countrycode', useNull: false }
+		{ name: 'phone_countrycode', useNull: false },
+
+		{ name: 'glaccount_id', type: 'int' },
+		{ name: 'glaccount_number' },
+		{ name: 'glaccount_name' }
 	],
 
     getAddressHtml: function() {

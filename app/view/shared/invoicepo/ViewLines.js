@@ -12,7 +12,12 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
         'NP.lib.core.Security',
         'NP.lib.core.Util',
         'Ext.view.View',
-        'NP.view.shared.button.Edit'
+        'NP.view.shared.button.New',
+        'NP.model.jobcosting.JbContract',
+        'NP.model.jobcosting.JbChangeOrder',
+        'NP.model.jobcosting.JbJobCode',
+        'NP.model.jobcosting.JbPhaseCode',
+        'NP.model.jobcosting.JbCostCode'
     ],
 
     layout     : 'fit',
@@ -28,7 +33,18 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
         var me = this;
         
         me.tbar = [
-            { xtype: 'shared.button.edit', itemId: 'invoiceLineEditBtn' }
+            {
+                xtype   : 'shared.button.new',
+                itemId  : 'invoiceLineViewAddBtn',
+                text    : NP.Translator.translate('Add Line'),
+                disabled: true
+            },
+            {
+                xtype   : 'shared.button.edit',
+                itemId  : 'invoiceLineEditBtn',
+                text    : NP.Translator.translate('Edit Lines'),
+                disabled: true
+            }
         ];
 
         me.fieldPrefix  = me.type + 'item';
@@ -37,6 +53,9 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
             xtype       : 'dataview',
             itemSelector: 'tbody tr',
             store       : me.store,
+            listeners   : {
+                refresh: me.renderTaxShippingFields.bind(me)
+            },
             tpl         : new Ext.XTemplate(me.buildTpl(), {
                 getSetting: function(name, defaultVal) {
                     defaultVal = defaultVal || '';
@@ -54,11 +73,20 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                             || invoiceitem_jobflag != 1
                     );
                 },
+                getInvoiceView: function() {
+                    return me.up('[xtype="'+me.type+'.view"]');
+                },
                 getInvoiceRecord: function() {
-                    return me.up('[xtype="'+me.type+'.view"]').getInvoiceRecord();
+                    return this.getInvoiceView().getInvoiceRecord();
                 },
                 getFormDataVal: function(key) {
-                    return me.up('boundform').getLoadedData()[key];
+                    var data = me.up('boundform').getLoadedData();
+
+                    if (data) {
+                        return data[key];
+                    }
+
+                    return null;
                 },
                 getSum: function(field) {
                     var total = 0;
@@ -71,10 +99,16 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                 },
                 getGrossTotal: function() {
                     me.totalAmount = this.getSum(me.fieldPrefix + '_amount') +
-                            this.getSum(me.fieldPrefix + '_shipping') +
-                            this.getSum(me.fieldPrefix + '_salestax');
+                            this.getShippingTotal() +
+                            this.getTaxTotal();
 
                     return me.totalAmount;
+                },
+                getShippingTotal: function() {
+                    return this.getSum(me.fieldPrefix + '_shipping');
+                },
+                getTaxTotal: function() {
+                    return this.getSum(me.fieldPrefix + '_salestax');
                 },
                 getRetentionTotal: function() {
                     var total = 0;
@@ -88,6 +122,17 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                     me.totalAmount = this.getGrossTotal() - this.getRetentionTotal();
 
                     return me.totalAmount;
+                },
+                updateTotals: function() {
+                    if (this.getSetting('pn.jobcosting.jobcostingEnabled', '0') == '1') {
+                        Ext.get('entity_net_amount').update(
+                            this.renderCurrency(this.getNetAmount())
+                        );
+                    }
+
+                    Ext.get('entity_gross_total').update(
+                        this.renderCurrency(this.getGrossTotal())
+                    );
                 },
                 arrayContains: function() {
                     var item = arguments[0],
@@ -124,6 +169,53 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
         this.addLineListeners();
     },
 
+    renderTaxShippingFields: function(view) {
+        var me = this;
+
+        if (Ext.ComponentQuery.query('#entity_tax_amount').length) {
+            Ext.ComponentQuery.query('#entity_tax_amount')[0].destroy();
+            Ext.ComponentQuery.query('#entity_shipping_amount')[0].destroy();
+        }
+
+        if (Ext.get('entity_tax_amount') === null) {
+            Ext.defer(function() {
+                me.renderTaxShippingFields(view);
+            }, 100);
+
+            return;
+        }
+
+        Ext.create('Ext.form.field.Number', {
+            renderTo        : 'entity_tax_amount',
+            itemId          : 'entity_tax_amount',
+            width           : 75,
+            decimalPrecision: 2,
+            hideTrigger     : true,
+            value           : view.tpl.getSum(me.fieldPrefix + '_salestax', 0).toFixed(2),
+            listeners       : {
+                blur: function() {
+                    me.fireEvent('changetaxtotal');
+                }
+            }
+        });
+
+        Ext.create('Ext.form.field.Number', {
+            renderTo        : 'entity_shipping_amount',
+            itemId          : 'entity_shipping_amount',
+            width           : 75,
+            decimalPrecision: 2,
+            hideTrigger     : true,
+            value           : view.tpl.getSum(me.fieldPrefix + '_shipping', 0).toFixed(2),
+            listeners       : {
+                blur: function() {
+                    me.fireEvent('changeshippingtotal');
+                }
+            }
+        });
+
+        view.updateLayout();
+    },
+
     buildTpl: function() {
         var me = this;
 
@@ -139,28 +231,30 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                 '<th width="5%">Amount</th>' +
             '</tr>' +
             '</thead>' +
-            '<tbody>' +
             '<tpl if="this.getStoreCount() &gt; 0">' +
-                '<tpl for=".">' +
-                    '<tr id="lineItem_{[values.'+me.fieldPrefix+'_id]}">' +
-                        me.buildQuantityCol() +
-                        me.buildDescriptionCol() +
-                        me.buildGlCol() +
-                        me.buildBudgetCol() +
-                        me.buildBudgetRemainingCol() +
-                        me.buildItemPriceCol() +
-                        me.buildAmountCol() +
-                    '</tr>' +
-                '</tpl>' +
+                '<tbody>' +
+                    '<tpl for=".">' +
+                        '<tr id="lineItem_{#}">' +
+                            me.buildQuantityCol() +
+                            me.buildDescriptionCol() +
+                            me.buildGlCol() +
+                            me.buildBudgetCol() +
+                            me.buildBudgetRemainingCol() +
+                            me.buildItemPriceCol() +
+                            me.buildAmountCol() +
+                        '</tr>' +
+                    '</tpl>' +
+                '</tbody>' +
+                '<tfoot>' +
+                me.buildFooter() +
+                '</tfoot>' +
             '<tpl else>' +
-                '<tr>' +
-                    '<td colspan="7">There are no line items for this invoice.</td>' +
-                '</tr>' +
+                '<tbody>' +
+                    '<tr>' +
+                        '<td colspan="7">There are no line items for this invoice.</td>' +
+                    '</tr>' +
+                '</tbody>' +
             '</tpl>' +
-            '</tbody>' +
-            '<tfoot>' +
-            me.buildFooter() +
-            '</tfoot>' +
             '</table>';
     },
 
@@ -201,7 +295,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
         html +=
             '<div>' +
                 '{'+me.fieldPrefix+'_description}' +
-                '<tpl if="'+me.fieldPrefix+'_description_alt !== \'\'">' +
+                '<tpl if="!Ext.isEmpty('+me.fieldPrefix+'_description_alt)">' +
                     ' - {'+me.fieldPrefix+'_description_alt}' +
                 '</tpl>' +
             '</div>' +
@@ -233,8 +327,8 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                 '<div>' +
                     '<b>PO:</b> ' +
                     // TODO: fix the link to the PO and add the readonly condition (latter might not be needed)
-                    '<a>{purchaseorde_ref}</a>' +
-                    '<tpl if="poitem_amount > 0">' +
+                    '<a class="poRefBtn">{purchaseorder_ref}</a>' +
+                    '<tpl if="poitem_amount &gt; 0">' +
                         ' - <i>{[NP.Util.currencyRenderer(values.poitem_amount)]}</i>' +
                     '</tpl>' +
                 '</div>' +
@@ -276,31 +370,31 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                 '<tpl if="this.getSetting(\'pn.jobcosting.useContracts\', \'0\') == \'1\' && jbcontract_id !== null">' +
                     '<div>' +
                         '<b>{[this.getSetting("PN.jobcosting.contractTerm")]}:</b>' +
-                        ' {display_name}' +
+                        ' {[NP.model.jobcosting.JbContract.formatName(values)]}' +
                     '</div>' +
                 '</tpl>' +
                 '<tpl if="jbchangeorder_id !== null">' +
                     '<div>' +
                         '<b>{[this.getSetting("PN.jobcosting.changeOrderTerm")]}:</b>' +
-                        ' {display_name}' +
+                        ' {[NP.model.jobcosting.JbChangeOrderCode.formatName(values)]}' +
                     '</div>' +
                 '</tpl>' +
                 '<tpl if="jbjobcode_id !== null">' +
                     '<div>' +
                         '<b>{[this.getSetting("PN.jobcosting.jobCodeTerm")]}:</b>' +
-                        ' {display_name}' +
+                        ' {[NP.model.jobcosting.JbJobCode.formatName(values)]}' +
                     '</div>' +
                 '</tpl>' +
                 '<tpl if="jbphasecode_id !== null">' +
                     '<div>' +
                         '<b>{[this.getSetting("PN.jobcosting.phaseCodeTerm")]}:</b>' +
-                        ' {display_name}' +
+                        ' {[NP.model.jobcosting.JbPhaseCode.formatName(values)]}' +
                     '</div>' +
                 '</tpl>' +
                 '<tpl if="this.getSetting(\'pn.jobcosting.useCostCodes\', \'0\') == \'1\' && jbcostcode_id !== null">' +
                     '<div>' +
                         '<b>{[this.getSetting("PN.jobcosting.costCodeTerm")]}:</b>' +
-                        ' {display_name}' +
+                        ' {[NP.model.jobcosting.JbCostCode.formatName(values)]}' +
                     '</div>' +
                 '</tpl>' +
                 '<tpl if="jbassociation_retamt !== 0">' +
@@ -361,7 +455,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
     buildItemPriceCol: function() {
         var me = this;
         return '<td align="right">' +
-                '{[this.renderCurrency(values.'+me.fieldPrefix+'_unitprice_long)]}' +
+                '{[this.renderCurrency(values.'+me.fieldPrefix+'_unitprice)]}' +
                 '<tpl if="invoiceitem_taxflag == \'Y\'">' +
                     '<div class="taxableFlag">Taxable</div>' +
                 '</tpl>' +
@@ -378,7 +472,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                             '<tpl if="invoiceitem_jobflag != 1">' +
                                 '<a class="splitLineBtn">Split</a> ' +
                             '</tpl>' +
-                            /*'<a href="#" class="editLineBtn">Edit</a>' +*/ // TODO: cleanup once confirmed we don't need this button
+                            '<a href="#" class="editLineBtn">Edit</a>' +
                         '<tpl else>' +
                             '<tpl if="invoiceitem_jobflag != 1">' +
                                 '<a class="editSplitBtn">Edit Split</a>' +
@@ -413,7 +507,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
         return '<tr>' +
                 '<th colspan="6">Shipping:</th>' +
                 '<td>' +
-                    '<input type="text" name="shipping_amount" value="{[this.getSum(\'' + me.fieldPrefix + '_shipping\', 0).toFixed(2)]}" size="9" />' +
+                    '<div id="entity_shipping_amount" class="footer_field"></div>' +
                 '</td>' +
             '</tr>' +
             '<tr>' +
@@ -422,7 +516,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                     '{[this.getSetting(\'PN.General.salesTaxTerm\', \'sales tax\')]}:' +
                 '</th>' +
                 '<td>' +
-                    '<input type="text" name="tax_amount" value="{[this.getSum(\'' + me.fieldPrefix + '_salestax\', 0).toFixed(2)]}" size="9" />' +
+                    '<div id="entity_tax_amount" class="footer_field"></div>' +
                 '</td>' +
             '</tr>' +
             '<tr>' +
@@ -432,7 +526,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                     '</tpl>' +
                     'Total:' +
                 '</th>' +
-                '<td>' +
+                '<td id="entity_gross_total">' +
                     '{[this.renderCurrency(this.getGrossTotal())]}' +
                 '</td>' +
             '</tr>' +
@@ -441,7 +535,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                     '<th colspan="6">' +
                         'Net Amount:' +
                     '</th>' +
-                    '<td>' +
+                    '<td id="entity_net_amount">' +
                         '{[this.renderCurrency(this.getNetAmount())]}' +
                     '</td>' +
                 '</tr>' +
@@ -455,28 +549,31 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
     addLineListeners: function() {
         var me = this;
 
-        me.addEvents('clicksplitline','clickeditsplit','clickmodifygl',
-                        'clicklinkline','clickdeleteline');
+        me.addEvents('clicksplitline','clickeditline','clickeditsplit','clickmodifygl',
+                        'clicklinkline','clickdeleteline','clickporef');
 
         // Add a generic event handler on the body element to make things more efficient
         me.mon(Ext.getBody(), 'click', function(e, target) {
             var clickedEl  = Ext.get(target),
-                btnClasses = ['splitLineBtn','editSplitBtn','modifyGlBtn','linkLineBtn',
-                                'deleteLineBtn'];
+                btnClasses = ['splitLineBtn','editLineBtn','editSplitBtn','modifyGlBtn','linkLineBtn',
+                                'deleteLineBtn','poRefBtn'];
             
             for (var i=0; i<btnClasses.length; i++) {
                 var btnClass = btnClasses[i];
 
                 if (clickedEl.hasCls(btnClass)) {
-                    var rowEl          = Ext.get(target).up('tr'),
-                        invoiceitem_id = parseInt(rowEl.id.split('_')[1]),
-                        evtName        = 'click' + btnClass.replace('Btn', '').toLowerCase();
+                    var rowEl   = Ext.get(target).up('tr'),
+                        row     = parseInt(rowEl.id.split('_')[1]),
+                        rec     = me.store.getAt(row-1),
+                        evtName = 'click' + btnClass.replace('Btn', '').toLowerCase();
 
-                    me.fireEvent(evtName, invoiceitem_id);
+                    me.fireEvent(evtName, rec);
                     e.stopEvent();
                 }
             }
             
         });
+
+        me.addEvents('taxchange','shippingchange');
     }
 });

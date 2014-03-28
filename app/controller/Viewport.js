@@ -8,6 +8,7 @@ Ext.define('NP.controller.Viewport', {
 	extend: 'NP.lib.core.AbstractController',
 	
 	requires: [
+		'NP.lib.core.Translator',
 		'NP.lib.core.Security',
 		'NP.lib.core.Config',
 		'NP.lib.core.SummaryStatManager'
@@ -15,6 +16,7 @@ Ext.define('NP.controller.Viewport', {
 
 	uses: [
 		'NP.view.shared.tile.ExpiredInsuranceCerts',
+		'NP.view.shared.tile.GlCategoryMtdSpend',
 		'NP.view.shared.tile.ImageExceptions',
 		'NP.view.shared.tile.ImagesToConvert',
 		'NP.view.shared.tile.ImagesToIndex',
@@ -24,6 +26,7 @@ Ext.define('NP.controller.Viewport', {
 		'NP.view.shared.tile.InvoicesOnHold',
 		'NP.view.shared.tile.InvoicesRejected',
 		'NP.view.shared.tile.InvoicesToApprove',
+		'NP.view.shared.tile.InvoiceStatistics',
 		'NP.view.shared.tile.MtdOverBudgetCategories',
 		'NP.view.shared.tile.PosByUser',
 		'NP.view.shared.tile.PosRejected',
@@ -34,10 +37,9 @@ Ext.define('NP.controller.Viewport', {
 		'NP.view.shared.tile.ReceiptsToApprove',
 		'NP.view.shared.tile.VcAuthRequests',
 		'NP.view.shared.tile.VendorsToApprove',
-		'NP.view.shared.tile.YtdOverBudgetCategories'
+		'NP.view.shared.tile.YtdOverBudgetCategories',
+		'NP.view.shared.tile.YtdTopSpendByVendor'
 	],
-
-    stores: ['system.SummaryStatCategories'],
 
     views: ['viewport.Home','shared.PortalCanvas'],
 	
@@ -67,6 +69,13 @@ Ext.define('NP.controller.Viewport', {
 				// Clicking on the Logout link in the header top right
 				nplogoutlink: function() {
 					NP.Security.logout(function() { window.location = 'login.php'; });
+				}
+			},
+
+			'#NP_locale': {
+				select: function(combo, recs) {
+					NP.Translator.setLocale(combo.getValue());
+					window.location.reload();
 				}
 			},
 
@@ -194,6 +203,13 @@ Ext.define('NP.controller.Viewport', {
 				}
 			},
 
+			// Clicking on the Reports > Invoice Register Reports menu
+			'#invoiceReportMenuBtn': {
+				click: function() {
+					this.addHistory('Report:show:invoice');
+				}
+			},
+
 			// Runs after Home panel has been rendered
 			'[xtype="viewport.home"]': {
 				afterrender: function() {
@@ -245,6 +261,12 @@ Ext.define('NP.controller.Viewport', {
 			'#vcFavorites': {
 				click: function() {
 					this.addHistory('VendorCatalog:showFavorites');
+				}
+			},
+
+			'#integrationMenuBtn': {
+				click: function() {
+					this.addHistory('Integration:showIntegration');
 				}
 			}
 		});

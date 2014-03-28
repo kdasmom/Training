@@ -33,7 +33,7 @@ class Config {
 	/**
 	 * Loads all config settings into the cache
 	 */
-	protected function loadConfigCache() {
+	public function loadConfigCache() {
 		$configs = array();
 		
 		// Get all config values from DB and cache them

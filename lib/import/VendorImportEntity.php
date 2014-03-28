@@ -64,11 +64,11 @@ class VendorImportEntity extends \NP\core\AbstractEntity {
 		'vendor_type1099'	 => array(
 			'required'   => true,
 			'validation' => array(
-				'stringLength' => array('max'=>5)
-			),
-            'inArray'      => array(
-                'haystack' => array('True','False','true','false','TRUE','FALSE')
-            )
+				'stringLength' => array('max'=>5),
+	            'inArray'      => array(
+	                'haystack' => array('True','False','true','false','TRUE','FALSE')
+	            )
+			)
 		),
 		'vendor_termsdatebasis'	 => array(
 			'validation' => array(

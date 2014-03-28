@@ -76,6 +76,15 @@ class PropertyGateway  extends AbstractGateway {
 		return $this->adapter->query($select, $params);
 	}
 
+	public function findByContext($propertyContext) {
+		$select = Select::get()
+						->columns(['property_id','property_id_alt','property_name'])
+						->from('property')
+						->whereIn('property_id', new \NP\property\sql\PropertyFilterSelect($propertyContext));
+
+		return $this->adapter->query($select);
+	}
+
 	/**
 	 * Find properties for a given user
 	 *
@@ -154,6 +163,74 @@ class PropertyGateway  extends AbstractGateway {
 		}
 
 		return $this->adapter->query($select, $params);
+	}
+
+	public function findByStatus($property_status=null, $pageSize=null, $page=null, $sort="property_name") {
+		$sort = str_replace('property_status', 'property_status_sort', $sort);
+
+		$select = Select::get()
+			->allColumns('pr')
+			// We need to create a custom column to properly sort by property status because the
+			// numbers don't match the right alphabetical order for the status name
+			->column(
+				new Expression("
+					CASE pr.property_status
+						WHEN 1 THEN 1
+						WHEN -1 THEN 3
+						WHEN 0 THEN 2
+					END
+				"),
+				'property_status_sort'
+			)
+			->from(['pr'=>'property'])
+				->join(new sql\join\PropertyIntPkgJoin())
+				->join(new sql\join\PropertyRegionJoin())
+				->join(new sql\join\PropertyCreatedByUserJoin())
+				->join(new sql\join\FiscalDisplayTypeJoin())
+				->join(new sql\join\PropertyPropertyShipToJoin())
+				->join(new sql\join\PropertyPropertyBillToJoin())
+				->join(new sql\join\PropertyAddressJoin())
+				->join(new sql\join\PropertyPhoneJoin(['phone_id', 'phone_number']))
+				->join(new sql\join\PropertyFaxJoin())
+				->join(new \NP\user\sql\join\UserUserroleJoin(array(
+					'created_by_userprofilerole_id' =>'userprofilerole_id',
+					'created_by_tablekey_id'        =>'tablekey_id'
+				)))
+				->join(new \NP\user\sql\join\UserroleStaffJoin(array(
+					'created_by_staff_id'  =>'staff_id',
+					'created_by_person_id' =>'person_id'
+				)))
+				->join(new \NP\user\sql\join\StaffPersonJoin(array(
+					'created_by_person_firstname' =>'person_firstname',
+					'created_by_person_lastname'  =>'person_lastname'
+				)))
+				->join(new sql\join\PropertyUpdatedByUserJoin())
+				->join(new \NP\user\sql\join\UserUserroleJoin(array(
+					'updated_by_userprofilerole_id' =>'userprofilerole_id',
+					'updated_by_tablekey_id'        =>'tablekey_id'
+				), 'ur2', 'u2'))
+				->join(new \NP\user\sql\join\UserroleStaffJoin(array(
+					'updated_by_staff_id'  =>'staff_id',
+					'updated_by_person_id' =>'person_id'
+				), 's2', 'ur2'))
+				->join(new \NP\user\sql\join\StaffPersonJoin(array(
+					'updated_by_person_firstname' =>'person_firstname',
+					'updated_by_person_lastname'  =>'person_lastname'
+				), 'pe2', 's2'))
+			->order($sort);
+
+		$params = [];
+		if ($property_status != 2) {
+			$select->where(new sql\criteria\PropertyStatusCriteria());
+			$params = [$property_status];
+		}
+
+		// If paging is needed
+		if ($pageSize !== null) {
+			return $this->getPagingArray($select, $params, $pageSize, $page);
+		} else {
+			return $this->adapter->query($select, $params);
+		}
 	}
 
 	/**
@@ -530,4 +607,38 @@ class PropertyGateway  extends AbstractGateway {
         }
         return $result;
     }
+
+	public function getByAdminRole($isAdminRole, $hasPermission, $asp_client_id) {
+		$select = new Select();
+		$params = [$asp_client_id];
+
+		if (!$isAdminRole) {
+			$select->from(['p' => 'property'])
+				->join(['i' => 'integrationpackage'], 'p.integration_package_id = i.integration_package_id', [])
+				->where([
+					'i.asp_client_id' => '?'
+				])
+				->order('p.property_name');
+			if ($hasPermission) {
+				$select->whereNest('OR')
+					->whereEquals('p.property_status', '?')
+					->whereEquals('p.property_status', '?')
+					->whereUnNest();
+
+				$params = array_merge($params, [1, -1]);
+			} else {
+				$select->whereEquals('p.property_status', '?');
+				$params = array_merge($params, [1]);
+			}
+		} else {
+			$select->from(['p' => 'property'])
+				->join(['i' => 'integrationpackage'], 'p.integration_package_id = i.integration_package_id', [])
+				->where([
+					'i.asp_client_id' => '?'
+				])
+				->order('p.property_name');
+		}
+
+		return $this->adapter->query($select, $params);
+	}
 }

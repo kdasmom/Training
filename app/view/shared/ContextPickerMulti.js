@@ -163,7 +163,7 @@ Ext.define('NP.view.shared.ContextPickerMulti', {
     },
 
     getState: function() {
-        var selected, type;
+        var selected, type, property_status = null;
         
         type = this.radioGroup.getValue()['contextPickerMultiType' + this.pickerId];
         if (type == 'property') {
@@ -173,9 +173,13 @@ Ext.define('NP.view.shared.ContextPickerMulti', {
         } else if (type == 'region') {
             selected = this.regionPanel.getValue();
         } else {
-            selected = this.allPanel.getValue()['contextPickerMultiAllType' + this.pickerId];
+            selected = NP.Security.getCurrentContext().property_id;
+            property_status = this.allPanel.getValue()['contextPickerMultiAllType' + this.pickerId];
+            if (property_status === undefined) {
+                property_status = null;
+            }
         }
         
-        return { type: type, selected: selected };
+        return { type: type, selected: selected, property_status: property_status };
     }
 });

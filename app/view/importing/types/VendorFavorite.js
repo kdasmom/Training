@@ -11,7 +11,7 @@ Ext.define('NP.view.importing.types.VendorFavorite', {
     // For localization
     tabTitle            : 'Vendor Favorites',
     entityName          : 'Vendor Favorites',
-    sectionName         : 'Vendor Setup',
+    sectionName         : 'Vendor Search',
     vendorCodeColText   : 'Vendor Code',
     propertyCodeColText : 'Property Code',
     intPkgColText       : 'Integration Package',

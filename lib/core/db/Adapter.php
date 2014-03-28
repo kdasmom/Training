@@ -107,6 +107,62 @@ class Adapter {
 	 * @return 
 	 */
 	public function query($sql, $params=array()) {
+		// If $sql is an object, convert it to a string
+		if ($sql instanceOf SQLInterface) {
+			$sql = $sql->toString();
+		}
+
+		$sql      = trim($sql);
+		$beginSql = strtolower(substr(trim($sql), 0, 6));
+
+		// If dealing with an insert statement, append SCOPE_IDENTITY QUERY at the end
+		if ($beginSql == 'insert') {
+			$sql .= ';SELECT SCOPE_IDENTITY() AS last_id;';
+		}
+
+		// Create the SQL statement
+		$stmt = $this->getQueryStmt($sql, $params);
+
+		// This array will store all the results
+		$results = [];
+		do {
+			// Check the metadata on the statement
+			$meta = sqlsrv_field_metadata($stmt);
+			// If there's metadata (fields), it means it's a select statement, so we can get the data
+			if (count($meta)) {
+				// Fetch and return as an associative array
+				$res = [];
+				while( $row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC) ) {
+					$res[] = $row;
+				}
+				// Add the data to the global result set
+				$results[] = $res;
+			}
+		} while(sqlsrv_next_result($stmt)); // Fetch the next result
+		
+		// If dealing with a single insert statement, we need to do something different to capture the
+		// ID of the record inserted
+		if ($beginSql == 'insert') {
+			$this->lastInsertId = $results[0][0]['last_id'];
+			return true;
+		}
+
+		// If we have only one result set, pop it out of the result set and return it
+		if (count($results) === 1) {
+			return $results[0];
+		// If we have multiple result sets, return them all in the main array
+		} else if (count($results) > 1) {
+			return $results;
+		}
+
+		// If we had no result sets to return, just return true (for insert/update/delete)
+		return true;
+	}
+
+	/**
+	 * 
+	 */
+	public function getQueryStmt($sql, $params=array()) {
 		// Make sure there's a connection to DB
 		$this->connect();
 
@@ -116,13 +172,7 @@ class Adapter {
 		}
 
 		$sql = trim($sql);
-		$beginSql = strtolower(substr($sql, 0, 6));
-
-		// If dealing with an insert statement, append SCOPE_IDENTITY QUERY at the end
-		if ($beginSql == 'insert') {
-			$sql .= ';SELECT SCOPE_IDENTITY() AS last_id;';
-		}
-
+		
 		// Log SQL queries
 		$this->loggingService->log('sql', $sql, array('sql'=>$sql, 'params'=>$params));
 
@@ -137,47 +187,9 @@ class Adapter {
 			}
 			throw new \NP\core\Exception($message);
 			die;
-		}
-		
-		// Check if we're just running an INSERT statement first
-		if ($beginSql == 'insert') {
-			// If we ran a simple INSERT statement, we also added a SELECT SCOPE_IDENTITY() after it here,
-			// so we want to retrieve that result
-			sqlsrv_next_result($stmt);
-     		sqlsrv_fetch($stmt);
-     		// Store the inserted ID int the lastInsertId property so we can access it from other classes
-			$this->lastInsertId = sqlsrv_get_field($stmt, 0);
-		// If not dealing with a simple INSERT, we can find all results from the operation that don't belong
-		// to INSERT/UPDATE/DELETE statements
 		} else {
-			// This array will store all the results
-			$results = [];
-			do {
-				// Check the metadata on the statement
-				$meta = sqlsrv_field_metadata($stmt);
-				// If there's metadata (fields), it means it's a select statement, so we can get the data
-				if (count($meta)) {
-					// Fetch and return as an associative array
-					$res = [];
-					while( $row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC) ) {
-						$res[] = $row;
-					}
-					// Add the data to the global result set
-					$results[] = $res;
-				}
-			} while(sqlsrv_next_result($stmt)); // Fetch the next result
-
-			// If we have only one result set, pop it out of the result set and return it
-			if (count($results) === 1) {
-				return $results[0];
-			// If we have multiple result sets, return them all in the main array
-			} else if (count($results) > 1) {
-				return $results;
-			}
+			return $stmt;
 		}
-
-		// If we had no result sets to return, just return true (for insert/update/delete)
-		return true;
 	}
 
 	/**
@@ -187,6 +199,17 @@ class Adapter {
 	 */
 	public function lastInsertId() {
 		return $this->lastInsertId;
+	}
+
+	/**
+	 * Return the current ID for a table (the next insert ID)
+	 *
+	 * @return int
+	 */
+	public function currentId($table) {
+		$rec = $this->query("SELECT IDENT_CURRENT('{$table}') as current_id");
+		
+		return $rec[0]['current_id'];
 	}
 
 	/**

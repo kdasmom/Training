@@ -12,22 +12,39 @@ Ext.define('NP.view.importing.UploadForm', {
     border: false,
     bodyPadding: 8,
 
+    layout: 'vbox',
+
     initComponent: function() {
-        var bar = [
+        var instructions = '<b>Please Note:</b>';
+
+        this.tbar = [
             {xtype: 'shared.button.upload'}
         ];
 
-        this.tbar = bar;
-        this.bbar = bar;
+        if ('instructions' in this) {
+            if (!Ext.isEmpty(this.instructions)) {
+                instructions += ' ' + this.instructions;
+            } else {
+                instructions = null;
+            }
+        } else {
+            instructions = instructions + ' This upload tool is for new ' + this.entityName + ' only. ' +
+                        'Any changes to the existing ' + this.entityName + 
+                        ' should be made directly in ' + this.sectionName + '.';
+        }
 
-        this.items = [
-            {html: 'Please Note:', border: false},
-            {html: '<ul><li>This upload tool is for new ' + this.entityName + ' only. \n\
-                        Any changes to the existing ' + this.entityName + ' should be made directly in ' + this.sectionName + '. </li></ul>',
-                border: false,
-                bodyPadding: '8 0 8 50'
-            },
-            {html: '<p>Select a valid CSV file to upload:</p>', border: false, margin: '10 0 0 0'},
+        this.items = [];
+
+        if (!Ext.isEmpty(instructions)) {
+            this.items.push({
+                xtype : 'component',
+                html  : instructions,
+                margin: '0 0 8 0'
+            });
+        }
+
+        this.items.push(
+            { xtype: 'component', html: '<p>Select a valid CSV file to upload:</p>' },
             {
                 itemId: 'form_upload',
                 xtype: 'form',
@@ -44,7 +61,7 @@ Ext.define('NP.view.importing.UploadForm', {
                     }
                 ]
             }
-        ];
+        );
 
         this.callParent(arguments);
     }

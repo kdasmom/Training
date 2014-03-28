@@ -114,7 +114,7 @@ class ImportService extends AbstractService
     protected function getCustomValidator($type)
     {
         $config = $this->getImportConfig($type);
-        if (array_key_exists('key', $config)) {
+        if (array_key_exists('customValidationClass', $config)) {
             $customValidationClass = $config['customValidationClass'];
         } else {
             $customValidationClass = "{$type}ImportEntityValidator";

@@ -16,8 +16,7 @@ Ext.define('NP.view.shared.PortalRow', {
 	layout  : { type: 'hbox', align: 'stretch' },
 	border  : false,
 	flex    : 1,
-	maxFlex : 3,
-	maxCols : 5,
+	maxCols : 4,
 	
 	initComponent: function() {
 		var that = this;
@@ -27,7 +26,7 @@ Ext.define('NP.view.shared.PortalRow', {
 				{
 					xtype  : 'shared.button.new',
 					text   : 'Add Column',
-					handler: Ext.bind(this.addColumn, this, [true, 1])
+					handler: Ext.bind(this.addColumn, this, [true, null])
 				},
 				{
 					xtype  : 'shared.button.delete',
@@ -55,16 +54,29 @@ Ext.define('NP.view.shared.PortalRow', {
 			this.items.items[0].down('#removeColBtn').enable();
 		}
 
+		// Suspend layouts because we may have multiple updates to take care of
+		Ext.suspendLayouts();
+
+		// Add the column to the panel
 		var col = this.add({
 			xtype    : 'shared.portalcolumn',
-			flex     : flex,
+			flex     : (flex === null) ? 1 : flex,
 			removable: removable,
 			viewOnly : this.viewOnly
 		});
 
+		// If no flex was provided (happens when add button was clicked), run changeSize()
+		if (flex === null) {
+			// We pass changeSize() a specific ratio and it'll take care of making sure we don't
+			// make any panel smaller than our minimum sizes allow
+			col.changeSize('plus', 1 / this.items.items.length);
+		}
+
 		if (!this.viewOnly && this.items.items.length >= this.maxCols) {
 			this.down('[xtype="shared.button.new"]').disable();
 		}
+
+		Ext.resumeLayouts(true);
 
 		return col;
 	},
@@ -72,6 +84,8 @@ Ext.define('NP.view.shared.PortalRow', {
 	removeRow: function() {
 		var canvas = this.ownerCt;
 		canvas.remove(this);
+
+		this.adjustRatios(canvas);
 
 		if (!this.viewOnly && canvas.items.items.length < canvas.maxRows) {
 			canvas.down('[xtype="shared.button.new"]').enable();

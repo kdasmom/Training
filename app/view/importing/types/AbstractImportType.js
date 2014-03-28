@@ -12,11 +12,17 @@ Ext.define('NP.view.importing.types.AbstractImportType', {
             }    
         });
 
-        return Ext.create('NP.view.importing.UploadForm', {
-            entityName : this.entityName,
-            sectionName: this.sectionName,
-            fieldName  : this.fieldName
-        });
+        var cfg = {
+            entityName  : this.entityName,
+            sectionName : this.sectionName,
+            fieldName   : this.fieldName
+        };
+
+        if ('instructions' in this) {
+            cfg.instructions = this.instructions;
+        }
+
+        return Ext.create('NP.view.importing.UploadForm', cfg);
     },
 
     getGrid: function() {

@@ -29,6 +29,9 @@ Ext.define('NP.lib.ui.ListPicker', {
         
         me.callParent(arguments);
 
+        me.addEvents('select','itemdblclick');
+
+        me.boundList.on('select', Ext.bind(me.onSelect, me));
         me.boundList.on('itemdblclick', Ext.bind(me.onItemDblClick, me));
         me.boundList.on('render', function() {
             Ext.create('Ext.view.BoundListKeyNav', me.boundList.getEl(), {
@@ -79,6 +82,10 @@ Ext.define('NP.lib.ui.ListPicker', {
     
     onItemDblClick: function(boundList, record, item, index, e, eOpts) {
         this.fireEvent('itemdblclick', this, boundList, record, item, index, e, eOpts);
+    },
+
+    onSelect: function(boundList, rec, eOpts) {
+        this.fireEvent('select', this, rec, boundList, eOpts);
     },
     
     onItemKeyDown: function(boundList, e) {

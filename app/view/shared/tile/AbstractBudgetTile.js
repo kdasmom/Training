@@ -15,6 +15,7 @@ Ext.define('NP.view.shared.tile.AbstractBudgetTile', {
     getGrid: function() {
     	return {
             xtype       : 'budget.budgetoveragegrid',
+            title       : null,
             paging      : true
         };
     },

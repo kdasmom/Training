@@ -11,6 +11,10 @@ class Where implements SQLElement {
 	const OR_OP  = 'OR';
 	const AND_OP = 'AND';
 
+	private $validOperators = ['equals','notEquals','in','notIn','like','between','greaterThan',
+								'greaterThanOrEqual','lessThan','lessThanOrEqual','exists',
+								'notExists','isNull','isNotNull','isEmpty','isNotEmpty'];
+
 	/**
 	 * @var array Collection of criteria for WHERE clause
 	 */
@@ -82,9 +86,14 @@ class Where implements SQLElement {
 			if (is_array($where)) {
 				foreach($where as $col=>$val) {
 					if (is_numeric($col)) {
-						throw new \NP\core\Exception('If $where is an array, it must be an associative array.');
+						$op = array_shift($val);
+						if (!in_array($op, $this->validOperators)) {
+							throw new \NP\core\Exception("Invalid SQL operation '{$op}'; valid operations are " . implode(',', $this->validOperators));
+						}
+						call_user_func_array([$this, $op], $val);
+					} else {
+						$this->equals($col, $val);
 					}
-					$this->equals($col, $val);
 				}
 			// If $where is a string, just add it as an Expression
 			} else if (is_string($where)) {
@@ -249,6 +258,16 @@ class Where implements SQLElement {
 	}
 
 	/**
+	 * Shortcut for op('NOT LIKE', $left, $right)
+	 * @param $left
+	 * @param $right
+	 * @return Where
+	 */
+	public function notLike($left, $right) {
+		return $this->op('NOT LIKE', $left, $right);
+	}
+
+	/**
 	 * Shortcut for op('BETWEEN', $left, $right, $right2)
 	 *
 	 * @param  string|SQLElement $left   Left side of the comparison
@@ -342,6 +361,32 @@ class Where implements SQLElement {
 	 */
 	public function isNotNull($left) {
 		return $this->op('notnull', $left);
+	}
+
+	/**
+	 * Checks if a string field is empty by checking if it's NULL or an empty string
+	 *
+	 * @param  string|SQLElement $left  Field to check
+     * @return \NP\core\db\Where        The current Where object
+	 */
+	public function isEmpty($left) {
+		return $this->nest('OR')
+						->isNull($left)
+						->equals($left, "''")
+					->unnest();
+	}
+
+	/**
+	 * Checks if a string field is not empty by checking if it's not NULL and not an empty string
+	 *
+	 * @param  string|SQLElement $left  Field to check
+     * @return \NP\core\db\Where        The current Where object
+	 */
+	public function isNotEmpty($left) {
+		return $this->nest('AND')
+						->isNotNull($left)
+						->notEquals($left, "''")
+					->unnest();
 	}
 
 	/**

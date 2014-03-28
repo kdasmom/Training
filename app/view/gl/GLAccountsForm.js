@@ -18,16 +18,16 @@ Ext.define('NP.view.gl.GLAccountsForm', {
         'NP.view.shared.PropertyAssigner',
         'NP.view.shared.button.Cancel',
         'NP.view.shared.button.Save',
-        'NP.view.shared.button.SaveAndAdd',
+        'NP.view.shared.button.SaveAndAdd'
     ],
 
     autoScroll: true,
+	layout: {
+		type : 'vbox',
+		align: 'left'
+	},
       
     bodyPadding: 8,
-    layout: {
-        type : 'vbox',
-        align: 'stretch'
-    },
     
     intPkgText       : 'Integration Package',
     glNumberFieldText: 'GL Number',
@@ -47,7 +47,7 @@ Ext.define('NP.view.gl.GLAccountsForm', {
             { xtype: 'button', text: 'Previous', itemId: 'prevGlacoountBtn', hidden: true, iconCls: 'back-btn' },
             { xtype: 'button', text: 'Save and Previous', itemId: 'prevSaveGlacoountBtn', hidden: true, iconCls: 'save-back-btn' },
             { xtype: 'button', text: 'Save and Next', itemId: 'nextSaveGlacoountBtn', hidden: true, iconCls: 'save-next-btn' },
-            { xtype: 'button', text: 'Next', itemId: 'nextGlacoountBtn', hidden: true, iconCls: 'next-btn' },
+            { xtype: 'button', text: 'Next', itemId: 'nextGlacoountBtn', hidden: true, iconCls: 'next-btn' }
         ];
         this.tbar = bar;
         this.bbar = bar;
@@ -56,7 +56,7 @@ Ext.define('NP.view.gl.GLAccountsForm', {
             // Ids
             {
                 xtype       : 'hidden',
-                name        : 'glaccount_id_list',
+                name        : 'glaccount_id_list'
             },
             // Integration Packages
             {
@@ -95,7 +95,10 @@ Ext.define('NP.view.gl.GLAccountsForm', {
                 store       : {
                                 type   : 'gl.glaccounts',
                                 service: 'GLService',
-                                action : 'getCategories'
+                                action : 'getCategories',
+								extraParams: {
+									activeOnly: true
+								}
                             },
                 displayField: 'glaccount_name',
                 valueField  : 'tree_id',
@@ -145,7 +148,8 @@ Ext.define('NP.view.gl.GLAccountsForm', {
                                 action  : 'getAll'
                             }, 
                 autoScroll: true,
-                height    : 200
+                height    : 200,
+			   	width: '100%'
             }
         ];
         // Property Assignment
@@ -161,9 +165,10 @@ Ext.define('NP.view.gl.GLAccountsForm', {
                                         action : 'getAll'
                                     },  
                         autoScroll: true,
-                        height    : 200
+                        height    : 200,
+						 width: '100%'
                     });       
-         }       
+         }
         this.callParent(arguments);
     }
 });

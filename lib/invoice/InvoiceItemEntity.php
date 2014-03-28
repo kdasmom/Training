@@ -19,9 +19,14 @@ class InvoiceItemEntity extends \NP\core\AbstractEntity {
 			'required' => true,
 			'validation' => array(
 				'digits' => array()
+			),
+			'tableConstraint' => array()
+		),
+		'invoiceitem_linenum'	 => array(
+			'validation' => array(
+				'digits' => array()
 			)
 		),
-		'invoiceitem_linenum'	 => array(),
 		'glaccount_id'	 => array(
 			'validation' => array(
 				'digits' => array()
@@ -30,7 +35,8 @@ class InvoiceItemEntity extends \NP\core\AbstractEntity {
 				'table'        => 'glaccount',
 				'displayField' => 'glaccount_name',
 				'displayName'  => 'GL Account'
-			]
+			],
+			'tableConstraint' => array()
 		),
 		'invoiceitem_description'	 => array(
 			'validation' => array(
@@ -41,6 +47,9 @@ class InvoiceItemEntity extends \NP\core\AbstractEntity {
 			]
 		),
 		'invoiceitem_quantity'	 => array(
+			'validation' => array(
+				'numeric' => array()
+			),
 			'auditable' => [
 				'displayName'  => 'Item Quantity'
 			]
@@ -89,7 +98,8 @@ class InvoiceItemEntity extends \NP\core\AbstractEntity {
 				'table'        => 'property',
 				'displayField' => 'property_name',
 				'displayName'  => 'Item Property'
-			]
+			],
+			'tableConstraint' => array()
 		),
 		'unit_id'	 => array(
 			'validation' => array(
@@ -99,9 +109,11 @@ class InvoiceItemEntity extends \NP\core\AbstractEntity {
 				'table'        => 'unit',
 				'displayField' => 'unit_number',
 				'displayName'  => 'Unit'
-			]
+			],
+			'tableConstraint' => array()
 		),
 		'invoiceitem_taxflag'	 => array(
+			'defaultValue' => 'N',
 			'validation' => array(
 				'stringLength' => array('max'=>1)
 			),
@@ -115,6 +127,7 @@ class InvoiceItemEntity extends \NP\core\AbstractEntity {
 			)
 		),
 		'invoiceitem_split'	 => array(
+			'defaultValue' => 0,
 			'validation' => array(
 				'digits' => array()
 			)
@@ -127,7 +140,8 @@ class InvoiceItemEntity extends \NP\core\AbstractEntity {
 		'utilityaccount_id'	 => array(
 			'validation' => array(
 				'digits' => array()
-			)
+			),
+			'tableConstraint' => array()
 		),
 		'utilitycolumn_id'	 => array(
 			'validation' => array(
@@ -137,12 +151,14 @@ class InvoiceItemEntity extends \NP\core\AbstractEntity {
 		'utilitycolumn_usagetype_id'	 => array(
 			'validation' => array(
 				'digits' => array()
-			)
+			),
+			'tableConstraint' => array()
 		),
 		'vendorsite_id'	 => array(
 			'validation' => array(
 				'digits' => array()
-			)
+			),
+			'tableConstraint' => array()
 		),
 		'invoiceitem_jobflag'	 => array(),
 		'universal_field1'	 => array(
@@ -196,7 +212,8 @@ class InvoiceItemEntity extends \NP\core\AbstractEntity {
 		'dfsplit_id'	 => array(
 			'validation' => array(
 				'digits' => array()
-			)
+			),
+			'tableConstraint' => array()
 		),
 		'vcitem_number'	 => array(
 			'validation' => array(
@@ -208,16 +225,20 @@ class InvoiceItemEntity extends \NP\core\AbstractEntity {
 				'stringLength' => array('max'=>50)
 			)
 		),
-		'is_from_catalog'	 => array(),
+		'is_from_catalog'	 => array(
+			'defaultValue' => 0
+		),
 		'unittype_material_id'	 => array(
 			'validation' => array(
 				'digits' => array()
-			)
+			),
+			'tableConstraint' => array()
 		),
 		'unittype_meas_id'	 => array(
 			'validation' => array(
 				'digits' => array()
-			)
+			),
+			'tableConstraint' => array()
 		),
 		'reftable_name'	 => array(
 			'validation' => array(
@@ -227,10 +248,22 @@ class InvoiceItemEntity extends \NP\core\AbstractEntity {
 		'reftablekey_id'	 => array(
 			'validation' => array(
 				'digits' => array()
+			),
+			'tableConstraint' => array(
+				'table'    => 'poitem',
+				'field'    => 'poitem_id'
+            )
+		),
+		'invoiceitem_quantity_long'	 => array(
+			'validation' => array(
+				'numeric' => array()
 			)
 		),
-		'invoiceitem_quantity_long'	 => array(),
-		'invoiceitem_unitprice_long'	 => array()
+		'invoiceitem_unitprice_long'	 => array(
+			'validation' => array(
+				'numeric' => array()
+			)
+		)
 	);
 
 }

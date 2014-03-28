@@ -26,8 +26,7 @@ class InsuranceGateway extends AbstractGateway {
 		$select = new Select();
 
 		if ($countOnly == 'true') {
-			$select->count(true, 'totalRecs')
-					->column('insurance_id');
+			$select->count(true, 'totalRecs', 'ins.insurance_id');
 		} else {
 			$select->columns(array(
 						'insurance_id',
@@ -54,7 +53,7 @@ class InsuranceGateway extends AbstractGateway {
 
 		// If paging is needed
 		if ($pageSize !== null && $countOnly == 'false') {
-			return $this->getPagingArray($select, array(), $pageSize, $page, 'vendor_id');
+			return $this->getPagingArray($select, array(), $pageSize, $page, 'ins.insurance_id');
 		} else if ($countOnly == 'true') {
 			$res = $this->adapter->query($select);
 			return $res[0]['totalRecs'];
@@ -160,9 +159,9 @@ class InsuranceGateway extends AbstractGateway {
 		if (count($insurance)) {
 			$now = \NP\util\Util::formatDateForDB();
 
-			$select->whereNest('OR')
+			$select->whereNest()
 						->whereGreaterThan('ins.insurance_expdatetm', '?')
-						->whereIsNull('ins.insurance_expdatetm')
+						->whereIsNotNull('ins.insurance_expdatetm')
 					->whereUnnest();
 
 			$insurance = $this->adapter->query($select, [$tablekey_id, $now]);

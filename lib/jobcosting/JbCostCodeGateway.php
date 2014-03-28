@@ -19,7 +19,7 @@ class JbCostCodeGateway extends AbstractGateway {
 	/**
 	 * Get job codes based on a set of values passed to filter
 	 */
-	public function findByFilter($jbcontract_id=null, $jbchangeorder_id=null, $jbjobcode_id=null, $jbphasecode_id=null, $sort='jbcostcode_name') {
+	public function findByFilter($jbcontract_id=null, $jbchangeorder_id=null, $jbjobcode_id=null, $jbphasecode_id=null, $keyword=null, $sort='jbcostcode_name') {
 		$useCostCodes      = $this->configService->get('pn.jobcosting.useCostCodes', '0');
 		$costCodeByJobCode = $this->configService->get('PN.jobcosting.costCodeByJobCode', '0');
 
@@ -31,7 +31,7 @@ class JbCostCodeGateway extends AbstractGateway {
 		}
 
 		$params = [];
-		if ($jbcontract_id === null || $useCostCodes == '0') {
+		if (empty($jbcontract_id) || $useCostCodes == '0') {
 			if ($costCodeByJobCode == '1') {
 				$select->whereEquals('jbcc.jbjobcode_id', '?');
 				$params[] = $jbjobcode_id;
@@ -62,12 +62,12 @@ class JbCostCodeGateway extends AbstractGateway {
 							->whereEquals('jbctb.jbjobcode_id', '?');
 			array_push($params, $jbcontract_id, $jbjobcode_id);
 
-			if ($jbchangeorder_id !== null) {
+			if (!empty($jbchangeorder_id)) {
 				$subSelect->whereEquals('jbctb.jbchangeorder_id', '?');
 				$params[] = $jbchangeorder_id;
 			}
 
-			if ($jbphasecode_id !== null) {
+			if (!empty($jbphasecode_id)) {
 				$subSelect->whereEquals('jbctb.jbphasecode_id', '?');
 				$params[] = $jbphasecode_id;
 			}
@@ -80,11 +80,22 @@ class JbCostCodeGateway extends AbstractGateway {
 				$select->whereEquals('jbcc.jbjobcode_id', '?');
 				$params[] = $jbjobcode_id;
 				
-				if ($jbphasecode_id !== null) {
+				if (!empty($jbphasecode_id)) {
 					$select->whereEquals('jbcc.jbphasecode_id', '?');
 					$params[] = $jbphasecode_id;
 				}
 			}
+		}
+
+		if (!empty($keyword)) {
+			$select->whereNest('OR')
+						->whereLike('jbcc.jbcostcode_name', '?')
+						->whereLike('jbcc.jbcostcode_desc', '?')
+					->whereUnnest();
+
+			$keyword .= '%';
+			$params[] = $keyword;
+			$params[] = $keyword;
 		}
 
 		return $this->adapter->query($select, $params);

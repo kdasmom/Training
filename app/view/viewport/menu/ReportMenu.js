@@ -54,7 +54,8 @@ Ext.define('NP.view.viewport.menu.ReportMenu', {
 		// Invoice Reports
 		if ( NP.lib.core.Security.hasPermission(1034) ) {
 			this.menu.items.push({
-				text: NP.Translator.translate('Invoice Register Reports')
+				itemId: 'invoiceReportMenuBtn',
+				text  : NP.Translator.translate('Invoice Register Reports')
 			});
 		}
 		

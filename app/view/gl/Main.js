@@ -20,10 +20,10 @@ Ext.define('NP.view.gl.Main', {
     
     initComponent: function() {
     	this.items = [
-    		{ xtype: 'gl.overview' },
             { xtype: 'gl.glaccounts' },
             { xtype: 'gl.category' },
-            { xtype: 'gl.reports' }
+            { xtype: 'gl.reports' },
+			{ xtype: 'gl.overview' }
     	];
 
     	this.callParent(arguments);

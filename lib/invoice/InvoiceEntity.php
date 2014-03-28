@@ -29,6 +29,7 @@ class InvoiceEntity extends \NP\core\AbstractEntity {
 			]
 		),
 		'invoice_createddatetm'	 => array(
+			'timestamp' => 'created',
 			'validation' => array(
 				'date' => array('format'=>'Y-m-d H:i:s.u')
 			)
@@ -311,11 +312,6 @@ class InvoiceEntity extends \NP\core\AbstractEntity {
 		),
 		'payablesconnect_flag'	 => array(),
 		'address_id'	 => array(
-			'validation' => array(
-				'digits' => array()
-			)
-		),
-		'invoicefromvendor_id'	 => array(
 			'validation' => array(
 				'digits' => array()
 			)

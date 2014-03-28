@@ -48,13 +48,10 @@ Ext.define('NP.view.importing.CSVGrid', {
     rowNumColText   : 'Row #',
 
     initComponent: function() {
-        var bar = [
+        this.tbar = [
             { xtype: 'shared.button.inactivate', text: this.declineBtnText },
             { xtype: 'shared.button.activate', text: this.acceptBtnText }
         ];
-
-        this.tbar = bar;
-        this.bbar = bar;
 
         var importClass = Ext.create('NP.view.importing.types.' + this.type),
             grid = importClass.getGrid();

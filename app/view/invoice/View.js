@@ -63,37 +63,6 @@ Ext.define('NP.view.invoice.View', {
             invoice = me.getModel('invoice.Invoice');
 
         return invoice;
-    },
-
-    isInvoiceModifiable: function() {
-        var me      = this,
-            invoice = me.getInvoiceRecord();
-
-        if (NP.Security.hasPermission(6076)) {
-            return true;
-        }
-
-        if (NP.Security.hasPermission(6077) 
-                && NP.Security.getUser().get('userprofile_id') == invoice.get('userprofile_id')) {
-            return true;
-        }
-
-        return false;
-    },
-    
-    isInvoiceLineEditable: function() {
-        var me      = this,
-            status  = me.getInvoiceRecord().get('invoice_status');
-
-        if (
-            (status == 'open' && (NP.Security.hasPermission(1032) || NP.Security.hasPermission(6076) || NP.Security.hasPermission(6077)))
-            || (status == 'saved' && NP.Security.hasPermission(1068) && me.isInvoiceModifiable())
-            || (status == 'paid' && NP.Security.hasPermission(2094))
-        ) {
-            return true;
-        }
-
-        return false;
     }
 
 

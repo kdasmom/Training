@@ -41,8 +41,8 @@ Ext.define('NP.view.importing.types.UserProperty', {
             propertyText = NP.Config.getPropertyLabel();
 
         me.tabTitle            = NP.Translator.translate('User {property} Assignment', { property: propertyText });
-        me.entityName          = NP.Translator.translate('User {property} Assignment', { property: propertyText });
-        me.sectionName         = NP.Translator.translate('User {property}', { property: propertyText });
+        me.entityName          = NP.Translator.translate('User {property} Assignments', { property: propertyText });
+        me.sectionName         = NP.Translator.translate('User Manager');
         me.usernameColText     = NP.Translator.translate('Username');
         me.propertyCodeColText = NP.Translator.translate('{property} Code', { property: propertyText });
     }

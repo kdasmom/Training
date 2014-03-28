@@ -28,6 +28,7 @@ Ext.define('NP.Application', {
 		'Ext.state.*',
 		'NP.lib.core.DataLoader',
 		'NP.lib.core.DBProvider',
+		'NP.lib.core.KeyManager',
 		'NP.lib.core.Security',
 		'NP.lib.core.Net',
 		'NP.lib.core.Translator',
@@ -37,18 +38,22 @@ Ext.define('NP.Application', {
 	controllers: [
 		'Viewport',
 		'BudgetOverage',
+		'Favorites',
 		'CatalogMaintenance',
 		'Images',
 		'Import',
+		'Integration',
 		'Invoice',
 		'MessageCenter',
 		'MobileSetup',
 		'MySettings',
 		'PropertySetup',
+		'Report',
 		'SystemSetup',
 		'UserManager',
 		'UtilitySetup',
-		'VendorCatalog'
+		'VendorCatalog',
+		'VendorManager'
 	],
 
 	statcategoriesloaded: false,
@@ -64,7 +69,7 @@ Ext.define('NP.Application', {
 		// Start loading the minimum inital data we need to be able to run the application
 		NP.lib.core.DataLoader.loadStartupData(function(res) {
             // Language to load; static for now, will be updated in future when we offer more languages
-            var lang = 'en';
+            var lang = NP.Translator.getLocale();
             
             // Inject the correct file for localization
             NP.Translator.loadLocale(lang);
@@ -147,6 +152,8 @@ Ext.define('NP.Application', {
      * @private
      */
 	gotoToken: function(token) {
+		this.getController('Favorites').refreshFavoriteButtons(token);
+
 		Ext.log('Going to token: ' + token);
 
 		// If the token is not null, do some operations to get the hash
@@ -299,7 +306,13 @@ Ext.define('NP.Application', {
 	 * @return {Ext.container.Container}
 	 */
 	getComponent: function(comp) {
-		return Ext.ComponentQuery.query('[xtype="' + comp + '"]')[0];
+		var comp = Ext.ComponentQuery.query('[xtype="' + comp + '"]');
+		
+		if (comp.length) {
+			return comp[0];
+		}
+
+		return null;
 	},
 
 	getStateProvider: function() {

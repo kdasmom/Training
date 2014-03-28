@@ -162,7 +162,7 @@ class VendorService extends AbstractService {
 			}
 //				assign glaccounts
 			if ($glaccounts !== '') {
-				if (!$this->vendorsiteGateway->assignGlAccounts($glaccounts, $out_vendor_id)) {
+				if (!$this->vendorGlAccountsGateway->assignGlAccounts($glaccounts, $out_vendor_id)) {
 					throw new \NP\core\Exception("Cannot assign glaccounts");
 				}
 			}
@@ -713,18 +713,18 @@ class VendorService extends AbstractService {
      * @param  string $vendor_status The status of the vendor (optional); valid values are 'active' or 'inactive'
      * @return array
      */
-    public function getAll($vendor_status='active', $integration_package_id=null, $pageSize=null, $page=1, $sort='vendor_name') {
-        $filter = ['vendor_status'=>'?'];
-        if ($integration_package_id !== null) {
-            $filter['integration_package_id'] = $integration_package_id;
-        }
+    public function getAll($vendor_status='active', $integration_package_id=null, $keyword=null, $pageSize=null, $page=1, $sort='vendor_name') {
+        return $this->vendorGateway->findAll($vendor_status, $integration_package_id, $keyword, $pageSize, $page, $sort);
+    }
 
-        return $this->vendorGateway->find(
-            $filter,
-            array($vendor_status),
-            'vendor_name ASC',
-            array('vendor_id','vendor_name')
-        );
+    /**
+     * Gets the top spending vendors
+     *
+     * @param  int $numberOfVendors
+     * @return array
+     */
+    public function getTopVendors($numberOfVendors=5) {
+    	return $this->vendorGateway->findTopVendors($numberOfVendors);
     }
     
     /**
