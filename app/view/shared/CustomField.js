@@ -142,7 +142,7 @@ Ext.define('NP.view.shared.CustomField', {
     setValue: function(val) {
         // If we're dealing with an autocomplete custom field drop down that's not loaded, we need to make sure
         // the record is in the store, so we can add the setDefaultRec() custom method for that
-        if (this.comboUi == 'autocomplete' && this.type == 'select' && !this.field.getStore().isLoaded) {
+        if (this.type == 'select' && !this.field.getStore().isLoaded) {
             this.field.setDefaultRec(Ext.create('NP.model.system.PnUniversalField', {
                                         universal_field_data: val
                                     }));

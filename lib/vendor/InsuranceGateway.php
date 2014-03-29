@@ -138,7 +138,7 @@ class InsuranceGateway extends AbstractGateway {
 			$vendorSiteJoinClass = '\NP\invoice\sql\join\InvoiceVendorsiteJoin';
 		} else if ($table_name == 'purchaseorder') {
 			$alias = 'p';
-			$vendorSiteJoinClass = '\NP\invoice\sql\join\PoVendorsiteJoin';
+			$vendorSiteJoinClass = '\NP\po\sql\join\PoVendorsiteJoin';
 		} else {
 			throw new \NP\core\Exception('Invalid value for $table_name argument. Value must be "invoice" or "purchaseorder"');
 		}

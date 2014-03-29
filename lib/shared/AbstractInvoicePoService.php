@@ -9,6 +9,7 @@ use NP\budget\BudgetService;
 use NP\property\FiscalCalService;
 use NP\image\ImageService;
 use NP\jobcosting\JobCostingService;
+use NP\vendor\VendorService;
 
 /**
  * Service class for operations related to both Invoices and POs, to be extended by both the PO and Invoice class
@@ -23,15 +24,16 @@ Abstract class AbstractInvoicePoService extends AbstractService {
 	protected $type;
 
 	protected $table, $itemTable, $pkField, $itemPkField, $configService, $securityService, 
-			$fiscalCalService, $budgetService, $imageService, $jobCostingService;
+			$fiscalCalService, $budgetService, $imageService, $jobCostingService, $vendorService;
 	
 	public function __construct(FiscalCalService $fiscalCalService,
 								BudgetService $budgetService, ImageService $imageService,
-								JobCostingService $jobCostingService) {
+								JobCostingService $jobCostingService, VendorService $vendorService) {
 		$this->fiscalCalService  = $fiscalCalService;
 		$this->budgetService     = $budgetService;
 		$this->imageService      = $imageService;
 		$this->jobCostingService = $jobCostingService;
+		$this->vendorService     = $vendorService;
 
 		if ($this->type === 'invoice') {
 			$this->table       = 'invoice';
@@ -174,6 +176,17 @@ Abstract class AbstractInvoicePoService extends AbstractService {
 
 		return null;
 	}
+	
+	/**
+	 * Get all invoice line items for an invoice
+	 *
+	 * @param  int $invoice_id
+	 * @return array
+	 */
+	public function getEntityLines($entity_id) {
+		$gtw = "{$this->itemGateway}Gateway";
+		return $this->$gtw->findLines($entity_id);
+	}
 
     /**
      * Get images for an entity
@@ -193,6 +206,21 @@ Abstract class AbstractInvoicePoService extends AbstractService {
 
         return $this->imageIndexGateway->findAddableImages($vendor_id, $tableref_id);
     }
+	
+	/**
+	 * Get forwards associated to an entity, if any
+	 *
+	 * @param  int $entity_id
+	 * @return array           Array with forward records in a specific format
+	 */
+	public function getForwards($entity_id) {
+		return $this->invoicePoForwardGateway->findByEntity($this->table, $entity_id);
+	}
+
+	public function getHistoryLog($entity_id, $pageSize=null, $page=null, $sort="approve_datetm") {
+		$gateway = "{$this->gateway}Gateway";
+		return $this->$gateway->findHistoryLog($entity_id, $pageSize, $page, $sort);
+	}
 
     /**
      * 

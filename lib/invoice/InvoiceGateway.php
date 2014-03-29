@@ -175,23 +175,26 @@ class InvoiceGateway extends AbstractGateway {
 	}
 
 	/**
-	 * 
+	 * Find invoices where there's one or more line properties with a period that doesn't match the
+	 * period of the header property
 	 */
 	public function findInvalidPostDates($invoice_id) {
 		$invalid = [];
 
 		$select = Select::get()->columns(['invoiceitem_id','property_id'])
 							->from(['ii'=>'invoiceitem'])
-							->join(new sql\join\InvoiceItemInvoiceJoin(['invoice_period']))
+							->join(new sql\join\InvoiceItemInvoiceJoin(['header_property_id'=>'property_id']))
 							->join(new sql\join\InvoiceItemPropertyJoin(['property_id_alt','property_name']))
-							->whereEquals('i.invoice_id', '?');
+							->whereEquals('i.invoice_id', '?')
+								->whereNotEquals('i.property_id', 'ii.property_id');
 
 		$lines = $this->adapter->query($select, [$invoice_id]);
 
 		foreach ($lines as $line) {
 			$period = $this->fiscalCalService->getAccountingPeriod($line['property_id']);
-			$invoicePeriod = \DateTime::createFromFormat('Y-m-d H:i:s.u', $line['invoice_period']);
-			if ($period->format('m') <> $invoicePeriod->format('m')) {
+			$invoicePeriod = $this->fiscalCalService->getAccountingPeriod($line['header_property_id']);
+
+			if ($period->format('Y-m') <> $invoicePeriod->format('Y-m')) {
 				$invalid[$line['invoiceitem_id']] = $period;
 			}
 		}

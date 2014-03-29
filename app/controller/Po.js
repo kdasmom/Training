@@ -16,20 +16,18 @@ Ext.define('NP.controller.Po', {
 		'NP.lib.core.KeyManager'
 	],
 	
-	//models: ['invoice.PoItem'],
+	models: ['po.PoItem'],
 
-	stores: ['po.Purchaseorders'/*,'system.PriorityFlags','po.PoItems','shared.Reasons',
-			'image.ImageIndexes','shared.RejectionNotes'*/],
+	stores: ['po.Purchaseorders','system.PriorityFlags','po.PoItems','shared.Reasons',
+			'image.ImageIndexes','shared.RejectionNotes'],
 	
-	views: ['po.Register'/*,'po.View','shared.invoicepo.ImagesManageWindow','shared.invoicepo.ImagesAddWindow',
-			'invoice.UseTemplateWindow','shared.invoicepo.SplitWindow','shared.invoicepo.RejectWindow'*/],
+	views: ['po.Register','po.View','shared.invoicepo.ImagesManageWindow','shared.invoicepo.ImagesAddWindow',
+			'shared.invoicepo.SplitWindow','shared.invoicepo.RejectWindow','NP.view.vendor.VendorSelectorWindow'
+			/*,'invoice.UseTemplateWindow'*/],
 
-	refs: [
-		{ ref: 'poView', selector: '[xtype="po.view"]' },
-		{ ref: 'poViewToolbar', selector: '[xtype="po.viewtoolbar"]' }
-	],
-
-	showPoImage: true,
+	shortName  : 'po',
+	longName   : 'purchaseorder',
+	displayName: 'Purchase Order',
 
 	init: function() {
 		Ext.log('Po controller initialized');
@@ -39,91 +37,190 @@ Ext.define('NP.controller.Po', {
 
 		// Setup event handlers
 		me.control({
-			// Clicking on an Invoice Register tab
-			'[xtype="po.register"]': {
-				tabchange: function(tabPanel, newCard, oldCard, eOpts) {
-					Ext.log('Po.onTabChange() running');
-					
-					var activeTab = newCard.getItemId().replace('po_grid_', '').toLowerCase();
-					me.addHistory('Po:showRegister:' + activeTab);
-				}
-			},
-			
-			// Clicking on an invoice in an PO Register grid
-			'[xtype="po.register"] > grid': {
-				itemclick: function(gridView, record, item, index, e, eOpts) {
-					me.addHistory( 'Po:showView:' + record.get('purchaseorder_id') );
-				}
+			'[xtype="po.view"] [xtype="shared.invoicepo.viewlinegrid"]': {
+				beforeedit     : me.onBeforeLineGridEdit.bind(me),
+				edit           : me.onAfterLineGridEdit.bind(me),
+				changequantity : me.onChangeQuantity.bind(me),
+				changeunitprice: me.onChangeUnitPrice.bind(me),
+				changeamount   : me.onChangeAmount.bind(me),
+				tablastfield   : me.onLineAddClick
 			},
 
-			// Clicking on the New Invoice button
-			'#newPoBtn,#newPoMenuBtn': {
-				click: function() {
-					me.addHistory('Po:showView');
-				}
-			},
-			
-			// Clicking on cancel button on the invoice view page
-			'[xtype="po.viewtoolbar"] [xtype="shared.button.cancel"]': {
-				click: function() {
-					Ext.util.History.back();
-				}
-			},
+			'[xtype="po.view"] [xtype="shared.invoicepo.viewlineitems"]': {
+				lineadd   : me.onStoreAddLine,
+				lineupdate: me.onStoreUpdateLine,
+				lineremove: me.onStoreRemoveLine
+			}
+		});
 
-			// Making a change to the context picker (picking from drop-down or clicking radio button)
-			'#poRegisterContextPicker': {
-				change: function(toolbar, filterType, selected) {
-					var contentView = app.getCurrentView();
-					// If user picks a different property/region and we're on a register, update the grid
-					if (contentView.getXType() == 'po.register') {
-						var activeTab = contentView.getActiveTab();
-						if (activeTab.getStore) {
-							me.loadRegisterGrid(activeTab);
+		me.callParent();
+	},
+	
+	/**
+	 * Shows the PO add/edit page
+	 * @param {Number} [purchaseorder_id] Id of the PO to edit; if not provided, will show page for adding PO
+	 */
+	showView: function(purchaseorder_id) {
+		var me      = this,
+			forwardStore,
+			viewCfg = {
+				bind: {
+			    	models: ['po.Purchaseorder']
+			    }
+			};
+
+		me.selectedVendor = null;
+
+		if (purchaseorder_id) {
+			Ext.apply(viewCfg.bind, {
+				service    : me.service,
+				action     : 'get',
+				extraParams: { purchaseorder_id: purchaseorder_id }
+			});
+
+			Ext.apply(viewCfg, {
+				listeners      : {
+					dataloaded: function(boundForm, data) {
+						Ext.suspendLayouts();
+
+						// Check if the PO needs to be made readonly
+						me.setReadOnly(me.isPoReadOnly());
+						
+						// Set the title
+						//me.setPoViewTitle();
+
+						// Build the toolbar
+						me.buildViewToolbar(data);
+						
+						// Show warnings if any
+						var warnings = data['warnings'];
+						if (warnings.length) {
+							me.getWarningsView().getStore().add(warnings);
+							me.getWarningsView().up('panel').show();
 						}
+
+						var lineView     = me.getLineView(),
+							lineStore    = me.getLineDataView().getStore();
+
+						// Add purchaseorder_id to the line and payment stores
+						lineStore.addExtraParams({ entity_id: purchaseorder_id });
+
+						// Load the line store
+						lineStore.load();
+
+						var vendorField   = boundForm.findField('vendor_id'),
+							propertyField = boundForm.findField('property_id'),
+							periodField   = boundForm.findField('purchaseorder_period'),
+							createdField  = boundForm.findField('purchaseorder_created');
+
+						createdField.setValue(
+							Ext.Date.format(
+								me.getEntityRecord().get('purchaseorder_created'),
+								NP.Config.getDefaultDateFormat()
+							)
+						);
+
+						// Set the vendor
+						vendorField.setDefaultRec(Ext.create('NP.model.vendor.Vendor', data));
+						vendorField.addExtraParams({
+							property_id: data['property_id']
+						});
+						me.setVendorDisplay();
+
+						// Set the property
+						propertyField.setDefaultRec(Ext.create('NP.model.property.Property', data));
+						// Add valid periods to the invoice period store
+						me.populatePeriods(data['accounting_period'], data['purchaseorder_period']);
+						me.setPropertyFieldState(data['purchaseorder_status']);
+
+						// Set the value for the period field; we need to do it manually because the BoundForm
+						// tries to set a date object (from the model) on the field, but since we're not dealing
+						// with a date field it doesn't work
+						periodField.setValue(data['purchaseorder_period']);
+
+						// Initiate some stores that depend on an purchaseorder_id
+						Ext.each(['HistoryLogGrid','ForwardsGrid'], function(viewName) {
+							var store = me['get'+viewName]().getStore();
+							store.addExtraParams({ entity_id: purchaseorder_id });
+							store.load();
+						});
+
+						// Load image if needed
+						me.loadImage();
+
+						Ext.resumeLayouts(true);
+
+						// Save to recent records
+						//me.application.getController('Favorites').saveToRecentRecord('PO - ' + data['purchaseorder_ref']);
 					}
 				}
-			},
-		});
-
-		//me.setKeyboardShortcuts();
-	},
-
-	/**
-	 * Reloads a register grid, passing the current context to its store proxy, and moving it back to page 1
-	 * @private
-	 * @param {Ext.grid.Panel} grid
-	 */
-	loadRegisterGrid: function(grid) {
-		var state = Ext.ComponentQuery.query('[xtype="shared.contextpicker"]')[0].getState();
-		grid.addExtraParams({
-			contextType     : state.type,
-			contextSelection: state.selected
-		});
-
-		grid.reloadFirstPage();
-	},
-
-	/**
-	 * Shows the invoice register page with a specific tab open
-	 * @param {String} [activeTab="open"] The tab currently active
-	 */
-	showRegister: function(activeTab) {
-		// Set the register view
-		this.setView('NP.view.po.Register');
-
-		// If no active tab is passed, default to Open
-		if (!activeTab) var activeTab = 'open';
-		
-		// Check if the tab to be selected is already active, if it isn't make it the active tab
-		var tab = Ext.ComponentQuery.query('#po_grid_' + activeTab)[0];
-		var tabPanel = Ext.ComponentQuery.query('tabpanel')[0];
-		
-		// Set the active tab if it hasn't been set yet
-		if (tab.getItemId() != tabPanel.getActiveTab().getItemId()) {
-			tabPanel.setActiveTab(tab);
+			});
 		}
 		
-		// Load the store
-		this.loadRegisterGrid(tab);
+		var form = me.setView('NP.view.po.View', viewCfg, null, true);
+
+		if (!purchaseorder_id) {
+			// Set the title
+			//me.setPoViewTitle();
+
+			me.buildViewToolbar();
+
+			// Enable the property field when dealing with a new invoice
+			form.findField('property_id').enable();
+		}
+	},
+
+	setPropertyFieldState: function(purchaseorder_status) {
+		var me    = this,
+			field = me.getPropertyCombo();
+
+		// Only allow changing the property field if the invoice is open and user has one of
+		// the following permissions: 'New Invoice', 'Modify Any', 'Modify Only Created';
+		// OR if the invoice is completed, user has 'Invoice Post Approval Modify' permission,
+		// and post approval modify is turned on
+		if (
+			(
+				purchaseorder_status == 'open'
+				&& (
+					me.hasPermission(1032) 
+					|| me.hasPermission(6076) 
+					|| me.hasPermission(6077)
+				)
+			)
+			|| (
+				purchaseorder_status == 'saved' 
+				&& me.hasPermission(1068) 
+				&& me.getSetting('PN.InvoiceOptions.SkipSave') == '0'
+			)
+		) {
+			field.enable();
+		} else {
+			field.disable();
+		}		
+	},
+
+	isPoReadOnly: function() {
+		var me      = this,
+			po      = me.getEntityRecord(),
+			status  = po.get('purchaseorder_status');
+
+		if (
+			status == "open"
+			|| (
+				status ==  "draft" 
+				&& (
+					me.hasPermission(6076) 
+					|| (
+						me.hasPermission(6077) 
+						&& NP.Security.getUser().get('userprofile_id') == po.get('userprofile_id')
+					)
+				)
+			)
+			|| (status == "saved" && me.hasPermission(1068))
+		) {
+			return false;
+		}
+
+		return true;
 	}
 });

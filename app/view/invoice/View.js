@@ -27,7 +27,7 @@ Ext.define('NP.view.invoice.View', {
     },
 
     autoScroll: true,
-    defaults  : { cls: 'invoiceViewPanel', frame: true },
+    defaults  : { cls: 'entityViewPanel', frame: true },
 
     // For localization
     title: 'Invoice',
@@ -40,7 +40,13 @@ Ext.define('NP.view.invoice.View', {
         me.items = [
             { xtype: 'shared.invoicepo.viewwarnings', type: 'invoice' },
             { xtype: 'invoice.viewheader' },
-            { xtype: 'shared.customfieldcontainer', title: 'Custom Fields', type: 'invoice', isLineItem: 0 },
+            {
+                xtype     : 'shared.customfieldcontainer',
+                title     : 'Custom Fields',
+                type      : 'invoice',
+                isLineItem: 0,
+                fieldCfg  : { comboUi: 'customcombo', fieldCfg: { useSmartStore: true } }
+            },
             { xtype: 'shared.invoicepo.viewlineitems', type: 'invoice' },
             { xtype: 'invoice.viewnotes' }
         ];
@@ -58,7 +64,7 @@ Ext.define('NP.view.invoice.View', {
         me.callParent(arguments);
     },
 
-    getInvoiceRecord: function() {
+    getEntityRecord: function() {
         var me      = this,
             invoice = me.getModel('invoice.Invoice');
 

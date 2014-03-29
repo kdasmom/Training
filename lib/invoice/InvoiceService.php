@@ -48,6 +48,8 @@ class InvoiceService extends AbstractInvoicePoService {
 			$invoice['is_approver'] = false;
 		}
 
+		$invoice['is_utility_vendor'] = $this->vendorService->isUtilityVendor($invoice['vendorsite_id']);
+
 		// Get invoice images
 		/*** THIS QUERY IS RUNNING SLOW ***/
 		$invoice['image'] = $this->imageIndexGateway->findEntityImages($invoice_id, 'Invoice', true);
@@ -229,7 +231,7 @@ class InvoiceService extends AbstractInvoicePoService {
 			$invalid = $this->invoiceGateway->findInvalidPostDates($invoice_id);
 			if (count($invalid)) {
 				return [
-					'warning_type'  => 'poThreshold',
+					'warning_type'  => 'invalidPeriod',
 					'warning_title' => 'Alert!',
 					'warning_icon'  => 'alert',
 					'warning_data'  => $invalid
@@ -241,16 +243,6 @@ class InvoiceService extends AbstractInvoicePoService {
 	}
 	
 	/**
-	 * Get all invoice line items for an invoice
-	 *
-	 * @param  int $invoice_id
-	 * @return array
-	 */
-	public function getInvoiceLines($invoice_id) {
-		return $this->invoiceItemGateway->findInvoiceLines($invoice_id);
-	}
-	
-	/**
 	 * Get purchase orders associated to an invoice, if any
 	 *
 	 * @param  int $invoice_id
@@ -259,15 +251,15 @@ class InvoiceService extends AbstractInvoicePoService {
 	public function getAssociatedPOs($invoice_id) {
 		return $this->invoiceGateway->findAssociatedPOs($invoice_id);
 	}
-	
+
 	/**
-	 * Get forwards associated to an invoice, if any
+	 * Gets all reclass notes for an invoice
 	 *
 	 * @param  int $invoice_id
-	 * @return array           Array with forward records in a specific format
+	 * @return array
 	 */
-	public function getForwards($invoice_id) {
-		return $this->invoicePoForwardGateway->findByEntity('invoice', $invoice_id);
+	public function getReclassNotes($invoice_id) {
+		return $this->auditReclassGateway->findByInvoice($invoice_id);
 	}
 	
 	/**
@@ -382,10 +374,6 @@ class InvoiceService extends AbstractInvoicePoService {
 	 */
 	public function getLinkablePOs($invoice_id) {
 		return $this->purchaseOrderGateway->findPosLinkableToInvoice($invoice_id);
-	}
-
-	public function getHistoryLog($invoice_id, $pageSize=null, $page=null, $sort="approve_datetm") {
-		return $this->invoiceGateway->findHistoryLog($invoice_id, $pageSize, $page, $sort);
 	}
 
 	public function getPayments($invoice_id) {
@@ -1503,7 +1491,7 @@ class InvoiceService extends AbstractInvoicePoService {
 			// Get the data for the template selected
 			$templateData = [
 				'invoice'  => $this->invoiceGateway->findSingle('invoice_id = ?', [$template_id]),
-				'lines'    => $this->getInvoiceLines($template_id),
+				'lines'    => $this->getEntityLines($template_id),
 				'tax'      => $totals['tax'],
 				'shipping' => $totals['shipping'],
 				'userprofile_id'               => $this->securityService->getUserId(),
@@ -1541,7 +1529,11 @@ class InvoiceService extends AbstractInvoicePoService {
 	 * Submits an invoice for payment
 	 */
 	public function submitForPayment($invoice_id) {
+		$lock_id      = null;
+		
+		// Look for any inactive job codes
 		$inactiveJobs = $this->invoiceItemGateway->findLinesWithInactiveJobCodes($invoice_id);
+
 		// If inactive job codes are found, return an error
 		if (count($inactiveJobs)) {
 			return array(
@@ -1565,9 +1557,12 @@ class InvoiceService extends AbstractInvoicePoService {
 				);
 				$newStatus = 'submitted';
 
+				// Set a new lock on the invoice to prevent other people from updating it simultaneously
+				$lock_id = $this->getLock($invoice_id) + 1;
+
 				// Update the invoice's status
 				$this->invoiceGateway->update(
-					['invoice_status'=>$newStatus, 'invoice_submitteddate'=>$now],
+					['invoice_status'=>$newStatus, 'invoice_submitteddate'=>$now, 'lock_id'=>$lock_id],
 					'invoice_id = ?',
 					[$invoice_id]
 				);
@@ -1613,7 +1608,8 @@ class InvoiceService extends AbstractInvoicePoService {
 			
 			return array(
 			    'success' => (count($errors)) ? false : true,
-			    'errors'  => $errors
+			    'errors'  => $errors,
+			    'lock_id' => $lock_id
 			);
 		}
 	}
@@ -1930,7 +1926,7 @@ class InvoiceService extends AbstractInvoicePoService {
 	}
 
 	/**
-	 * 
+	 * Reclasses a paid invoice
 	 */
 	public function reclass($data) {
 		$errors = [];
@@ -1943,6 +1939,8 @@ class InvoiceService extends AbstractInvoicePoService {
 				'invoice_id = ?',
 				[$invoice_id]
 			);
+			$oldInvoice = new InvoiceEntity($oldInvoice);
+			$oldLines   = $this->getEntityLines($invoice_id);
 
 			$result = $this->saveInvoice($data);
 
@@ -1950,7 +1948,55 @@ class InvoiceService extends AbstractInvoicePoService {
 				'invoice_id = ?',
 				[$invoice_id]
 			);
+
+			$newInvoice = new InvoiceEntity($newInvoice);
+			$fields = InvoiceEntity::getAuditableFields();
+			$hasChange = false;
+			foreach ($fields as $field=>$fieldDef) {
+				if (trim($newInvoice->$field) !== trim($oldInvoice->$field)) {
+					$this->saveAuditReclass($field, $oldInvoice, $newInvoice, $data);
+					$hasChange = true;
+				}
+			}
+
+			$newLines = $this->getEntityLines($invoice_id);
+
+			$fields = InvoiceItemEntity::getAuditableFields();
+			foreach ($newLines as $i=>$line) {
+				$oldLine = new InvoiceItemEntity($oldLines[$i]);
+				$newLine = new InvoiceItemEntity($line);
+
+				foreach ($fields as $field=>$fieldDef) {
+					if (trim($newLine->$field) !== trim($oldLine->$field)) {
+						$this->saveAuditReclass($field, $oldLine, $newLine, $data);
+						$hasChange = true;
+					}
+				}
+			}
+
+			if ($hasChange) {
+				$approvetype_id = $this->approveTypeGateway->getIdByName('reclassed');
+
+				$approve = new \NP\workflow\ApproveEntity([
+					'table_name'                   => 'invoice',
+					'tablekey_id'                  => $newInvoice->invoice_id,
+					'userprofile_id'               => $data['userprofile_id'],
+					'delegation_to_userprofile_id' => $data['delegation_to_userprofile_id'],
+					'approve_message'              => 'Invoice was Reclassed',
+					'approvetype_id'               => $approvetype_id,
+					'transaction_id'               => $this->approveGateway->currentId()
+				]);
+
+				$errors = $this->entityValidator->validate($approve);
+				if (!count($errors)) {
+					$this->approveGateway->save($approve);
+				} else {
+					$this->loggingService->log('global', 'Error creating approve record', $errors);
+					throw new \NP\core\Exception('Error reclassing invoice while creating approve record');
+				}
+			}
 		} catch(\Exception $e) {
+			$this->loggingService->log('global', 'Unexpected error happening');
 			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
 		}
 		
@@ -1964,6 +2010,47 @@ class InvoiceService extends AbstractInvoicePoService {
 		    'success' => (count($errors)) ? false : true,
 		    'errors'  => $errors
 		);
+	}
+
+	/**
+	 * 
+	 */
+	public function saveAuditReclass($field, \NP\core\AbstractEntity $oldEntity, \NP\core\AbstractEntity $newEntity, $data) {
+		$invoiceitem_id = null;
+		if ($newEntity->hasField('invoiceitem_id')) {
+			$invoiceitem_id = $newEntity->invoiceitem_id;
+		}
+
+		$old_val = $oldEntity->$field;
+		$new_val = $newEntity->$field;
+
+		if (is_numeric($old_val)) {
+			$old_val = strval($old_val);
+		}
+
+		if (is_numeric($new_val)) {
+			$new_val = strval($new_val);
+		}
+
+		$reclass = new AuditReclassEntity([
+			'userprofile_id'               => $data['userprofile_id'],
+			'delegation_to_userprofile_id' => $data['delegation_to_userprofile_id'],
+			'audit_note'                   => $data['reclass_notes'],
+			'invoice_id'                   => $newEntity->invoice_id,
+			'invoiceitem_id'               => $invoiceitem_id,
+			'field'                        => $field,
+			'old_val'                      => $old_val,
+			'new_val'                      => $new_val
+		]);
+		
+		$errors = $this->entityValidator->validate($reclass);
+		
+		if (!count($errors)) {
+			$this->auditReclassGateway->save($reclass);
+		} else {
+			$this->loggingService->log('global', 'Error creating reclass record', $errors);
+			throw new \NP\core\Exception('Error reclassing invoice while creating auditreclass record');
+		}
 	}
 }
 

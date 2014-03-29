@@ -21,7 +21,7 @@ class InvoiceItemGateway extends AbstractGateway {
 		$this->configService = $configService;
 	}
 
-	public function findInvoiceLines($invoice_id) {
+	public function findLines($invoice_id) {
 		$select = new sql\InvoiceItemSelect();
 
 		$select->allColumns('ii')

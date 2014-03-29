@@ -10,7 +10,7 @@ Ext.define('NP.view.shared.SearchByAlphabetButtons', {
         this. layout = 'hbox';
         this.padding = '5';
         this.defaults = {
-            margin: '0 10 5 0',
+            margin: '0 6 5 0',
             handler: this.onButton
         };
         this.items = [

@@ -42,39 +42,58 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
     sortableColumns: false,
 
     stateful       : true,
-    stateId        : 'invoice_line_grid',
-
+    
     initComponent: function() {
-        var me               = this
+        var me               = this,
             customFields     = NP.Config.getCustomFields().line.fields,
             typeShort        = (me.type == 'invoice') ? 'inv' : 'po',
             invoice          = null,
             invoiceStatus    = null;
 
+        me.itemPrefix = me.type + 'item';
+
+        me.stateId =  me.type + '_line_grid';
+
+        me.selModel = Ext.create('Ext.selection.RowModel', {
+            onEditorTab: function(editingPlugin, e) {
+                me.onEditorTab.bind(this)(editingPlugin, e, me);
+            }
+        });
+
         me.tbar = [
             {
                 xtype : 'shared.button.new',
-                itemId: 'invoiceLineAddBtn',
+                itemId: me.type + 'LineAddBtn',
                 text  : NP.Translator.translate('Add Line')
             },{
                 xtype : 'shared.button.save',
-                itemId: 'invoiceLineSaveBtn',
+                itemId: me.type + 'LineSaveBtn',
                 text  : NP.Translator.translate('Done With Changes')
             },{
                 xtype : 'shared.button.cancel',
-                itemId: 'invoiceLineCancelBtn',
+                itemId: me.type + 'LineCancelBtn',
                 text  : NP.Translator.translate('Undo Changes')
             }
         ];
 
         // We need the invoice status to determine if the row is deletable or not, but we
         // can't get it until the data has loaded
-        me.on('render', function() {
-            invoice = me.up('[xtype="'+me.type+'.view"]')
-            invoice.on('dataloaded', function(form, data) {
-                invoiceStatus = data['invoice_status'];
+        if (me.type == 'invoice') {
+            me.on('render', function() {
+                invoice = me.up('[xtype="'+me.type+'.view"]')
+                invoice.on('dataloaded', function(form, data) {
+                    invoiceStatus = data['invoice_status'];
+
+                    if (invoiceStatus == 'paid') {
+                        me.down('#' + me.type + 'LineAddBtn').disable();
+                    }
+
+                    if (data['is_utility_vendor']) {
+                        me.configureGrid();
+                    }
+                });
             });
-        });
+        }
 
         // Set the CellEditing plugin on the grid
         me.plugins = [
@@ -91,24 +110,49 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
             action  : (NP.Config.getSetting('CP.PROPERTYGLACCOUNT_USE') == '1') ? 'getByProperty' : 'getByIntegrationPackage'
         });
 
+        function onTriggerClick() {
+            var combo = this,
+                args  = arguments,
+                store = combo.getStore();
+
+            if (combo.isExpanded) {
+                combo.collapse();
+                combo.inputEl.focus();
+            } else {
+                function expandCombo() {
+                    combo.onFocus({});
+                    combo.doQuery(combo.allQuery, true);
+                    combo.inputEl.focus();
+                }
+                
+                if (combo.getStore().extraParamsHaveChanged()) {
+                    combo.getStore().load(function() {
+                        expandCombo();
+                    });
+                } else {
+                    expandCombo();
+                }
+            }
+        };
+
         me.columns = [
             {
                 xtype     : 'actioncolumn',
-                dataIndex : 'invoiceitem_action',
+                dataIndex : me.itemPrefix + '_action',
                 width     : 25,
                 align     : 'center',
                 hideable  : false,
                 resizeable: false,
                 draggable : false,
                 getClass  : function(v, meta, rec, rowIndex) {
-                    if (invoiceStatus == 'paid') {
+                    if (me.type == 'invoice' && invoiceStatus == 'paid') {
                         return '';
                     } else {
                         return 'delete-btn';
                     }
                 },
                 handler: function(view, rowIndex, colIndex, item, e, rec, row) {
-                    if (invoiceStatus != 'paid') {
+                    if (me.type == 'invoice' && invoiceStatus != 'paid') {
                         me.getStore().removeAt(rowIndex);
                     }
                 }
@@ -117,7 +161,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
             {
                 xtype    : 'numbercolumn',
                 text     : NP.Translator.translate('QTY'),
-                dataIndex: 'invoiceitem_quantity',
+                dataIndex: me.itemPrefix + '_quantity',
                 hideable : false,
                 format   : '0,000.00',
                 //format : '0,000.000000',    // Temporarily changing to 2 decimals for user conference
@@ -140,7 +184,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
             // Description column
             {
                 text     : NP.Translator.translate('Description'),
-                dataIndex: 'invoiceitem_description',
+                dataIndex: me.itemPrefix + '_description',
                 hideable : false,
                 width    : 300,
                 editor   : {
@@ -152,7 +196,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
             {
                 xtype    : 'numbercolumn',
                 text     : NP.Translator.translate('Unit Price'),
-                dataIndex: 'invoiceitem_unitprice',
+                dataIndex: me.itemPrefix + '_unitprice',
                 hideable : false,
                 format   : '0,000.00',
                 //format : '0,000.000000',    // Temporarily changing to 2 decimals for user conference
@@ -176,7 +220,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
             {
                 xtype    : 'numbercolumn',
                 text     : NP.Translator.translate('Amount'),
-                dataIndex: 'invoiceitem_amount',
+                dataIndex: me.itemPrefix + '_amount',
                 hideable : false,
                 format   : '0,000.00',
                 //format : '0,000.000000',    // Temporarily changing to 2 decimals for user conference
@@ -201,7 +245,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                 text     : NP.Config.getPropertyLabel(),
                 dataIndex: 'property_id',
                 hideable : false,
-                width    : 200,
+                width    : 300,
                 renderer : function(val, meta) {
                     if (val == null || val == '' || isNaN(val)) {
                         return '';
@@ -211,7 +255,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     return rec.get('property_name');
                 },
                 editor: {
-                    xtype           : 'autocomplete',
+                    xtype           : 'customcombo',
                     itemId          : 'lineGridPropertyCombo',
                     displayField    : 'property_name',
                     valueField      : 'property_id',
@@ -219,7 +263,8 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     validateOnBlur  : false,
                     validateOnChange: false,
                     selectOnFocus   : true,
-                    store           : me.propertyStore
+                    store           : me.propertyStore,
+                    useSmartStore   : true
                 }
             },
             // GL Account column
@@ -227,7 +272,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                 text     : NP.Translator.translate('GL Account'),
                 dataIndex: 'glaccount_id',
                 hideable : false,
-                width    : 250,
+                width    : 375,
                 renderer : function(val, meta) {
                     if (val == null || val == '' || isNaN(val)) {
                         return '';
@@ -237,7 +282,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     return rec.get('display_name');
                 },
                 editor: {
-                    xtype           : 'autocomplete',
+                    xtype           : 'customcombo',
                     itemId          : 'lineGridGlCombo',
                     displayField    : 'display_name',
                     valueField      : 'glaccount_id',
@@ -245,7 +290,8 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     validateOnBlur  : false,
                     validateOnChange: false,
                     selectOnFocus   : true,
-                    store           : me.glStore
+                    store           : me.glStore,
+                    useSmartStore   : true
                 }
             }
         ];
@@ -272,10 +318,14 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     }
                     var rec = Ext.getStore('property.AllUnits').findRecord('unit_id', val, 0, false, false, true);
                     
-                    return rec.get('unit_number');
+                    if (rec !== null) {
+                        return rec.get('unit_number');
+                    }
+
+                    return '';
                 },
                 editor: {
-                    xtype           : 'autocomplete',
+                    xtype           : 'customcombo',
                     itemId          : 'lineGridUnitCombo',
                     displayField    : 'unit_number',
                     valueField      : 'unit_id',
@@ -284,7 +334,8 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     validateOnChange: false,
                     selectOnFocus   : true,
                     triggerAction   : 'query',
-                    store           : me.unitStore
+                    store           : me.unitStore,
+                    useSmartStore   : true
                 }
             });
         }
@@ -292,7 +343,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
         // Tax column
         me.columns.push({
             text     : NP.Translator.translate('Tax?'),
-            dataIndex: 'invoiceitem_taxflag',
+            dataIndex: me.itemPrefix + '_taxflag',
             width    : 50,
             renderer : function(val) {
                 if (val === 'Y') {
@@ -325,7 +376,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     fieldNumber: i,
                     editor     : {
                         xtype     : 'shared.customfield',
-                        comboUi   : 'autocomplete',
+                        comboUi   : 'customcombo',
                         layout    : 'fit',                  // Override the layout, fit plays nicer with cellediting
                         itemId    : 'invoiceLineCustomField' + i,
                         hideLabel : true,
@@ -337,40 +388,49 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                         fieldCfg  : {
                             selectOnFocus   : true,
                             validateOnBlur  : false,
-                            validateOnChange: false
+                            validateOnChange: false,
+                            useSmartStore   : true
                         }
                     }
                 });
             }
         }
 
-        me.columns.push(
-            // Item Number column
-            {
-                text     : NP.Translator.translate('Item Number'),
-                dataIndex: 'vcitem_number',
-                width    : 150,
-                editor   : {
-                    xtype        : 'textfield',
-                    selectOnFocus: true,
-                    maxLength    : 100
+        if (NP.Config.getSetting('VC_isOn', '0') == 1) {
+            me.columns.push(
+                // Item Number column
+                {
+                    text     : NP.Translator.translate('Item Number'),
+                    dataIndex: 'vcitem_number',
+                    width    : 150,
+                    editor   : {
+                        xtype        : 'textfield',
+                        selectOnFocus: true,
+                        maxLength    : 100
+                    }
+                },
+                // UOM column
+                {
+                    text     : NP.Translator.translate('UOM'),
+                    dataIndex: 'vcitem_uom',
+                    width    : 100,
+                    editor   : {
+                        xtype        : 'textfield',
+                        selectOnFocus: true,
+                        maxLength    : 50
+                    }
                 }
-            },
-            // UOM column
-            {
-                text     : NP.Translator.translate('UOM'),
-                dataIndex: 'vcitem_uom',
-                width    : 100,
-                editor   : {
-                    xtype        : 'textfield',
-                    selectOnFocus: true,
-                    maxLength    : 50
-                }
-            }
-        );
+            );
+        }
 
         // Job costing columns (if JC is turned on)
-        if (NP.Config.getSetting('pn.jobcosting.jobcostingEnabled', '0') == '1') {
+        if (
+            NP.Config.getSetting('pn.jobcosting.jobcostingEnabled', '0') == '1'
+            && (
+                (me.type == 'invoice' && NP.Security.hasPermission(2047))
+                || (me.type == 'po' && NP.Security.hasPermission(2049))
+            )
+        ) {
             // Contract column
             if (NP.Config.getSetting('pn.jobcosting.useContracts', '0') == '1') {
                 me.columns.push({
@@ -381,11 +441,12 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                         return NP.model.jobcosting.JbContract.formatName(rec);
                     },
                     editor: {
-                        xtype        : 'autocomplete',
-                        displayField : 'display_name',
-                        valueField   : 'jbcontract_id',
-                        selectOnFocus: true,
-                        store        : {
+                        xtype         : 'customcombo',
+                        displayField  : 'display_name',
+                        valueField    : 'jbcontract_id',
+                        selectOnFocus : true,
+                        useSmartStore : true,
+                        store         : {
                             type: 'jobcosting.jbcontracts',
                             service: 'JobCostingService',
                             action : 'getContracts'
@@ -409,11 +470,12 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                         return NP.model.jobcosting.JbChangeOrder.formatName(rec);
                     },
                     editor: {
-                        xtype        : 'autocomplete',
-                        displayField : 'display_name',
-                        valueField   : 'jbchangeorder_id',
-                        selectOnFocus: true,
-                        store        : {
+                        xtype         : 'customcombo',
+                        displayField  : 'display_name',
+                        valueField    : 'jbchangeorder_id',
+                        selectOnFocus : true,
+                        useSmartStore : true,
+                        store         : {
                             type   : 'jobcosting.jbchangeorders',
                             service: 'JobCostingService',
                             action : 'getChangeOrders'
@@ -437,11 +499,12 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                         return NP.model.jobcosting.JbJobCode.formatName(rec); 
                     },
                     editor: {
-                        xtype        : 'autocomplete',
-                        displayField : 'display_name',
-                        valueField   : 'jbjobcode_id',
-                        selectOnFocus: true,
-                        store        : {
+                        xtype         : 'customcombo',
+                        displayField  : 'display_name',
+                        valueField    : 'jbjobcode_id',
+                        selectOnFocus : true,
+                        useSmartStore : true,
+                        store         : {
                             type   : 'jobcosting.jbjobcodes',
                             service: 'JobCostingService',
                             action : 'getJobCodes'
@@ -465,11 +528,12 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                         return NP.model.jobcosting.JbPhaseCode.formatName(rec);
                     },
                     editor: {
-                        xtype        : 'autocomplete',
-                        displayField : 'display_name',
-                        valueField   : 'jbphasecode_id',
-                        selectOnFocus: true,
-                        store        : {
+                        xtype         : 'customcombo',
+                        displayField  : 'display_name',
+                        valueField    : 'jbphasecode_id',
+                        selectOnFocus : true,
+                        useSmartStore : true,
+                        store         : {
                             type   : 'jobcosting.jbphasecodes',
                             service: 'JobCostingService',
                             action : 'getPhaseCodes'
@@ -493,11 +557,12 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                         return NP.model.jobcosting.JbCostCode.formatName(rec);
                     },
                     editor: {
-                        xtype        : 'autocomplete',
-                        displayField : 'display_name',
-                        valueField   : 'jbcostcode_id',
-                        selectOnFocus: true,
-                        store        : {
+                        xtype         : 'customcombo',
+                        displayField  : 'display_name',
+                        valueField    : 'jbcostcode_id',
+                        selectOnFocus : true,
+                        useSmartStore : true,
+                        store         : {
                             type   : 'jobcosting.jbcostcodes',
                             service: 'JobCostingService',
                             action : 'getCostCodes'
@@ -527,63 +592,106 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                 });
             }
         }
-        
-        me.utilityAccountStore = Ext.create('NP.store.vendor.UtilityAccounts', {
-            service: 'UtilityService',
-            action : 'getAccountsByVendorsite'
-        });
-        
-        me.usageTypeStore = Ext.create('NP.store.vendor.UtilityColumnUsageTypes', {
-            service: 'UtilityService',
-            action : 'getUsageTypesByUtilityType'
-        });
 
-        // Utility Account column
-        me.columns.push(
-            {
-                text     : 'Utility Account',
-                dataIndex: 'utilityaccount_id',
-                width    : 300,
-                renderer : function(val, meta, rec) {
-                    return NP.model.vendor.UtilityAccount.formatName(rec);
-                },
-                editor: {
-                    xtype        : 'customcombo',
-                    displayField : 'display_name',
-                    valueField   : 'UtilityAccount_Id',
-                    selectOnFocus: true,
-                    store        : me.utilityAccountStore,
-                    listeners    : {
-                        select: function(combo, recs) {
-                            me.fireEvent('selectutilityaccount', me, combo, recs);
-                        }
-                    }
-                }
-            },{
-                text     : 'Usage Type',
-                dataIndex: 'utilitycolumn_usagetype_id',
-                width    : 200,
-                renderer : function(val, meta, rec) {
-                    return rec.get('UtilityColumn_UsageType_Name');
-                },
-                editor: {
-                    xtype        : 'customcombo',
-                    displayField : 'UtilityColumn_UsageType_Name',
-                    valueField   : 'UtilityColumn_UsageType_Id',
-                    selectOnFocus: true,
-                    store        : me.usageTypeStore,
-                    listeners    : {
-                        select: function(combo, recs) {
-                            me.fireEvent('selectusagetype', me, combo, recs);
-                        }
-                    }
-                }
-            }
-        );
+        me.baseCols = me.columns;
 
         me.callParent(arguments);
 
         me.addEvents('selectjcfield','selectutilityaccount','selectusagetype',
-                    'changequantity','changeunitprice','changeamount');
+                    'changequantity','changeunitprice','changeamount','tablastfield');
+    },
+
+    onEditorTab: function(editingPlugin, e, grid) {
+        var me           = this,
+            view         = me.views[0],
+            record       = editingPlugin.getActiveRecord(),
+            header       = editingPlugin.getActiveColumn(),
+            position     = view.getPosition(record, header),
+            direction    = e.shiftKey ? 'left' : 'right',
+            row          = position.row,
+            column       = position.column,
+            lastRow      = grid.getStore().getCount()-1,
+            lastCol      = grid.columnManager.getColumns().length - 1;
+
+        if (direction == 'right' && row == lastRow && column == lastCol) {
+            grid.fireEvent('tablastfield');
+        } else {
+            // We want to continue looping while:
+            // 1) We have a valid position
+            // 2) There is no editor at that position
+            // 3) There is an editor, but editing has been cancelled (veto event)
+
+            do {
+                position  = view.walkCells(position, direction, e, me.preventWrap);
+            } while (position && (!position.columnHeader.getEditor(record) || !editingPlugin.startEditByPosition(position)));
+        }
+    },
+
+    configureGrid: function() {
+        var me              = this,
+            data            = me.up('[xtype="invoice.view"]').getLoadedData(),
+            newCols         = me.baseCols.slice();
+
+        // This is used to dynamically show or hide the Utility Account columns
+        if (data['is_utility_vendor']) {
+            if (!me.utilityAccountStore) {
+                me.utilityAccountStore = Ext.create('NP.store.vendor.UtilityAccounts', {
+                    service: 'UtilityService',
+                    action : 'getAccountsByVendorsite'
+                });
+            
+                me.usageTypeStore = Ext.create('NP.store.vendor.UtilityColumnUsageTypes', {
+                    service: 'UtilityService',
+                    action : 'getUsageTypesByUtilityType'
+                });
+            }
+
+            // Utility Account columns
+            newCols.push(
+                {
+                    text     : 'Utility Account',
+                    itemId   : 'invoiceUtilityAccountCol',
+                    dataIndex: 'utilityaccount_id',
+                    width    : 300,
+                    renderer : function(val, meta, rec) {
+                        return NP.model.vendor.UtilityAccount.formatName(rec);
+                    },
+                    editor: {
+                        xtype        : 'customcombo',
+                        displayField : 'display_name',
+                        valueField   : 'UtilityAccount_Id',
+                        selectOnFocus: true,
+                        store        : me.utilityAccountStore,
+                        listeners    : {
+                            select: function(combo, recs) {
+                                me.fireEvent('selectutilityaccount', me, combo, recs);
+                            }
+                        }
+                    }
+                },{
+                    text     : 'Usage Type',
+                    itemId   : 'invoiceUsageTypeCol',
+                    dataIndex: 'utilitycolumn_usagetype_id',
+                    width    : 200,
+                    renderer : function(val, meta, rec) {
+                        return rec.get('UtilityColumn_UsageType_Name');
+                    },
+                    editor: {
+                        xtype        : 'customcombo',
+                        displayField : 'UtilityColumn_UsageType_Name',
+                        valueField   : 'UtilityColumn_UsageType_Id',
+                        selectOnFocus: true,
+                        store        : me.usageTypeStore,
+                        listeners    : {
+                            select: function(combo, recs) {
+                                me.fireEvent('selectusagetype', me, combo, recs);
+                            }
+                        }
+                    }
+                }
+            );
+        }
+
+        me.reconfigure(null, newCols);
     }
 });

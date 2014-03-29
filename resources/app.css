@@ -68,7 +68,7 @@ li.x-boundlist-item {
 .revert-btn { background-image: url("images/buttons/revert.gif"); }
 .route-btn { background-image: url("images/buttons/route.gif"); }
 .search-btn { background-image: url("images/buttons/search.gif"); background-repeat: no-repeat;}
-.save-btn { background-image: url("images/buttons/save.gif"); }
+.save-btn { background-image: url("images/buttons/save.gif"); background-repeat: no-repeat; }
 .save-and-add-btn { background-image: url("images/buttons/save_and_add.gif"); }
 .save-and-next-btn { background-image: url("images/buttons/save_and_next.gif"); width: 24px !important; }
 	.save-and-btn .x-btn-inner { padding-left: 24px !important; }
@@ -161,15 +161,17 @@ li.x-boundlist-item {
 .importTemplates a { color: #000; margin-left: 16px; }
 
 /* INVOICE VIEW PAGE */
-.invoiceViewPanel {
+.entityViewPanel {
 	margin: 4px 8px 4px 8px;
 }
 
-	.invoiceViewPanel .x-panel-body {
+	.entityViewPanel .x-panel-body {
 		background-color: white;
 		padding         : 8px;
 		border          : solid 1px #99BCE8;
 	}
+
+#entityVendorSelectBtn, #entityVendorSelectBtn:visited { color:blue; }
 
 #lineItemTable {
 	border-collapse: collapse;

@@ -11,6 +11,7 @@ Ext.define('NP.view.shared.invoicepo.ViewWarnings', {
         'NP.lib.core.Config',
         'NP.lib.core.Security',
     	'NP.lib.core.Util',
+        'NP.lib.core.Translator',
         'NP.store.shared.Warnings'
     ],
     
@@ -53,7 +54,17 @@ Ext.define('NP.view.shared.invoicepo.ViewWarnings', {
                 },
                 renderWarningText: function(type, data) {
                     type = Ext.util.Format.capitalize(type);
-                    return me['render' + type](data);
+                    
+                    var warning = me['render' + type](data);
+                    
+                    if (!Ext.isObject(warning)) {
+                        warning = {
+                            text: warning,
+                            vals: {}
+                        }
+                    }
+
+                    return NP.Translator.translate(warning.text, warning.vals);
                 }
             })
         }];
@@ -133,9 +144,8 @@ Ext.define('NP.view.shared.invoicepo.ViewWarnings', {
     },
 
     renderInvoiceDuplicateDateAmount: function(data) {
-        // TODO: update link to link to other invoice
         return 'Duplicate invoice date and amount exist for this vendor. ' +
-                'Please look at Invoice <a href="#">' + data[0]['invoice_ref'] + '</a>';
+                'Please look at Invoice <a href="javascript:NP.app.addHistory(\'Invoice:showView:' + data[0]['invoice_id'] + '\');">' + data[0]['invoice_ref'] + '</a>';
     },
 
     renderLinkablePo: function(data) {
@@ -147,6 +157,12 @@ Ext.define('NP.view.shared.invoicepo.ViewWarnings', {
     },
 
     renderInvalidPeriod: function(data) {
-        return 'One or more line {properties} are not in the same accounting period as the header {property}.';
+        return {
+            text: 'One or more line {properties} are not in the same accounting period as the header {property}.',
+            vals: {
+                properties: NP.Config.getPropertyLabel(true),
+                property  : NP.Config.getPropertyLabel()
+            }
+        };
     }
 });

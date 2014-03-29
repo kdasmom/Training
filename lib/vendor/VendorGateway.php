@@ -104,18 +104,27 @@ class VendorGateway extends AbstractGateway {
 	/**
 	 * Get vendors that will show up as available options for an invoice
 	 */
-	public function findVendorsForInvoice($property_id, $vendor_id=null, $keyword=null) {
+	public function findVendorsForInvoice($property_id, $vendor_id=null, $useFavorites=true, $keyword=null, $criteria='begins', $pageSize=null, $page=null, $sort="vendor_name") {
 		$now = \NP\util\Util::formatDateForDB();
 
 		$select = $this->getSelect()
 						->columns(['vendor_id','vendor_id_alt','vendor_name','remit_req','default_glaccount_id','default_due_date'])
 						->join(new sql\join\VendorsiteAddressJoin())
 						->join(new sql\join\VendorsitePhoneJoin('Main'))
-						->join(new sql\join\VendorGlAccountJoin());
+						->join(new sql\join\VendorGlAccountJoin())
+						->join(new sql\join\VendorVendorTypeJoin());
+
+		$params = [];
+		if ($useFavorites) {
+			$select->join(new sql\join\VendorsiteVendorFavoriteJoin())
+					->whereEquals('vf.property_id', '?');
+
+			$params[] = $property_id;
+		}
 
 		if ($vendor_id !== null && $keyword === null) {
 			$select->whereEquals('v.vendor_id', '?');
-			$params = [$vendor_id];
+			$params[] = $vendor_id;
 		} else {
 			$select->whereEquals('v.vendor_status', "'active'")
 					->whereNotIn(
@@ -134,13 +143,17 @@ class VendorGateway extends AbstractGateway {
 									->whereEquals('ins.tablekey_id', 'v.vendor_id')
 									->whereEquals('lip.property_id', '?')
 					)
-					->order('v.vendor_name')
-					->limit(200);
+					->order($sort);
 
-			$params = [$property_id];
+			$params[] = $property_id;
 
 			if ($keyword !== null) {
-				$keyword = "%{$keyword}%";
+				$keyword = "{$keyword}%";
+
+				if ($criteria == 'contains') {
+					$keyword = "%{$keyword}";
+				}
+
 				$select->whereNest('OR')
 							->whereLike('v.vendor_name', '?')
 							->whereLike('v.vendor_id_alt', '?')
@@ -150,7 +163,12 @@ class VendorGateway extends AbstractGateway {
 			}
 		}
 
-		return $this->adapter->query($select, $params);
+		// If paging is needed
+		if ($pageSize !== null) {
+			return $this->getPagingArray($select, $params, $pageSize, $page, 'v.vendor_id');
+		} else {
+			return $this->adapter->query($select, $params);
+		}
 	}
 	
 	/**

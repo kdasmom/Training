@@ -12,6 +12,88 @@ use NP\shared\AbstractInvoicePoService;
 class PoService extends AbstractInvoicePoService {
 	protected $type = 'po';
 
+	public function get($purchaseorder_id) {
+		$po = $this->purchaseOrderGateway->findPo($purchaseorder_id);
+
+		$po['accounting_period'] = $this->fiscalCalService->getAccountingPeriod($po['property_id'])->format('Y-m-d');
+
+		if ($this->configService->get('pn.jobcosting.jobcostingEnabled', '0') == '1') {
+			$po['inactive_contracts'] = $this->jbContractGateway->findInactiveContractInEntity('purchaseorder', $purchaseorder_id);
+			$po['inactive_jobs']      = $this->jbJobCodeGateway->findInactiveJobInEntity('purchaseorder', $purchaseorder_id);
+		} else {
+			$po['inactive_contracts'] = [];
+			$po['inactive_jobs'] = [];
+		}
+
+		// If invoice is for approval, let's check if the current user is an approver
+		if ($po['purchaseorder_status'] == 'forapproval') {
+			$po['is_approver'] = $this->purchaseOrderGateway->isApprover(
+				$purchaseorder_id,
+				$this->securityService->getUserId()
+			);
+			$po['has_optional_rule'] = $this->wfRuleGateway->hasOptionalRule(
+				$po['property_id'],
+				$this->securityService->getUserId()
+			);
+		} else {
+			$po['is_approver'] = false;
+		}
+
+		// Get invoice images
+		/*** THIS QUERY IS RUNNING SLOW ***/
+		$po['image'] = $this->imageIndexGateway->findEntityImages($purchaseorder_id, 'Purchase Order', true);
+		
+		// Check if there are any schedules if invoice is a draft
+		if ($po['purchaseorder_status'] == 'draft') {
+			$res = $this->recurringSchedulerGateway->find([
+				'table_name'      => "'purchaseorder'",
+				'tablekey_id'     => '?',
+				'schedule_status' => "'active'"
+			], [$purchaseorder_id]);
+
+			$po['schedule_exists'] = (count($res)) ? true : false;
+		}
+
+		// Get invoice warnings
+		/*** THIS QUERY IS RUNNING SLOW ***/
+		$po['warnings'] = $this->getWarnings($po);
+
+		return $po;
+	}
+
+	/**
+	 * Get all warnings for an invoice; can do it using either an invoice record or an invoice ID.
+	 * Using an invoice record makes it so some queries don't need to be run
+	 *
+	 * @param  array $po               An record from the INVOICE database table
+	 * @param  int   $purchaseorder_id An ID for a record in the INVOICE table
+	 * @return array                   An array of warnings
+	 */
+	public function getWarnings($po=null, $purchaseorder_id=null) {
+		// If no invoice record was provided, get one using the ID
+		if ($po === null) {
+			$po = $this->purchaseOrderGateway->findById($purchaseorder_id);
+		}
+
+		$warnings = [];
+
+		$warningTypes = ['Job','VendorInsurance','VendorInactive'];
+
+		foreach ($warningTypes as $warningType) {
+			$fn = "get{$warningType}Warning";
+			$warning = $this->$fn($po, $purchaseorder_id);
+			if ($warning !== null) {
+				$warnings[] = $warning;
+			}
+		}
+
+		return $warnings;
+	}
+
+	public function getHistoryLog($entity_id, $pageSize=null, $page=null, $sort="approve_datetm") {
+		return [];
+	}
+
 	/**
 	 * Get list of POs to approve
 	 *

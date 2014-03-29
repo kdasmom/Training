@@ -1,11 +1,11 @@
 /**
- * The toolbar for the invoice view page
+ * The toolbar for the PO view page
  *
  * @author Thomas Messier
  */
-Ext.define('NP.view.invoice.ViewToolbar', {
+Ext.define('NP.view.po.ViewToolbar', {
     extend: 'NP.view.shared.PermissionToolbar',
-    alias: 'widget.invoice.viewtoolbar',
+    alias: 'widget.po.viewtoolbar',
 
     requires: [
         'NP.lib.core.Security',
@@ -28,24 +28,24 @@ Ext.define('NP.view.invoice.ViewToolbar', {
             {
                 xtype: 'shared.button.cancel'
             },{
-                itemId          : 'invoiceSaveBtn',
+                itemId          : 'poSaveBtn',
                 xtype           : 'shared.button.save',
                 displayCondition: me.isSaveBtnVisible
             },{
                 text            : 'Approve',
-                itemId          : 'invoiceApproveBtn',
+                itemId          : 'poApproveBtn',
                 iconCls         : 'approve-btn',
                 moduleId        : 1031,
                 displayCondition: me.isApproveBtnVisible.bind(me)
             },{
                 text            : 'Approve and Next',
-                itemId          : 'invoiceApproveAndNextBtn',
+                itemId          : 'poApproveAndNextBtn',
                 iconCls         : 'approve-next-btn',
                 moduleId        : 1031,
                 displayCondition: me.isApproveBtnVisible.bind(me)
             },{
                 text            : 'Reject',
-                itemId          : 'invoiceRejectBtn',
+                itemId          : 'poRejectBtn',
                 iconCls         : 'reject-btn',
                 moduleId        : 1031,
                 displayCondition: me.isRejectBtnVisible
@@ -58,52 +58,18 @@ Ext.define('NP.view.invoice.ViewToolbar', {
             },{
                 xtype           : 'shared.button.edit',
                 text            : 'Modify',
-                itemId          : 'invoiceModifyBtn',
+                itemId          : 'poModifyBtn',
                 displayCondition: me.isModifyBtnVisible.bind(me)
             },{
                 xtype           : 'shared.button.delete',
-                itemId          : 'invoiceDeleteBtn',
+                itemId          : 'poDeleteBtn',
                 displayCondition: me.isDeleteBtnVisible
             },{
-                text            : 'Submit For Payment',
-                itemId          : 'invoiceSubmitForPaymentBtn',
-                iconCls         : 'payment-btn',
-                displayCondition: me.isSubmitPaymentBtnVisible
-            },{
                 text            : 'Reject', // This is post approve reject, not to be confused with other reject
-                itemId          : 'invoicePostRejectBtn',
+                itemId          : 'poPostRejectBtn',
                 iconCls         : 'reject-btn',
                 moduleId        : 6002,
                 displayCondition: me.isPostApproveRejectBtnVisible
-            },{
-                xtype           : 'shared.button.hourglass',
-                text            : 'Place on Hold',
-                itemId          : 'invoiceOnHoldBtn',
-                moduleId        : 6001,
-                displayCondition: me.isOnHoldBtnVisible
-            },{
-                text            : 'Activate',
-                itemId          : 'activateBtn',
-                iconCls         : 'hold-activate-btn',
-                moduleId        : 6001,
-                displayCondition: me.isActivateBtnVisible
-            },{
-                text            : 'Revert to Invoice',
-                itemId          : 'invoiceRevertBtn',
-                iconCls         : 'revert-btn',
-                moduleId        : 1067,
-                displayCondition: me.isRevertBtnVisible
-            },{
-                text            : 'Reclass',
-                itemId          : 'invoiceReclassBtn',
-                iconCls         : 'reclass-btn',
-                displayCondition: me.isReclassBtnVisible.bind(me)
-            },{
-                text            : 'Void',
-                itemId          : 'invoiceVoidBtn',
-                iconCls         : 'void-btn',
-                moduleId        : 6069,
-                displayCondition: me.isVoidBtnVisible
             },{
                 text            : 'Approve and Route Manually',
                 iconCls         : 'route-btn',
@@ -116,7 +82,7 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                 displayCondition: me.isRouteBtnVisible.bind(me)
             },{
                 text            : 'Apply Template',
-                itemId          : 'invoiceApplyTemplateBtn',
+                itemId          : 'poApplyTemplateBtn',
                 iconCls         : 'template-apply-btn',
                 displayCondition: me.isApplyTemplateBtnVisible
             },{
@@ -144,7 +110,7 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                 displayCondition: me.isModifyScheduleBtnVisible
             },{
                 text            : 'Manage Images',
-                itemId          : 'invoiceImageManageBtn',
+                itemId          : 'poImageManageBtn',
                 iconCls         : 'image-manage-btn',
                 displayCondition: me.isManageImagesBtnVisible
             },{
@@ -154,7 +120,7 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                 displayCondition: me.isLinkPoBtnVisible
             },{
                 text            : 'Forward',
-                itemId          : 'invoiceForwardBtn',
+                itemId          : 'poForwardBtn',
                 iconCls         : 'message-btn',
                 componentCls    : 'message-comp-btn',
                 moduleId        : 2026,
@@ -171,7 +137,7 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                 menu    : [
                     {
                         text            : 'Print',
-                        itemId          : 'invoicePrintBtn',
+                        itemId          : 'poPrintBtn',
                         iconCls         : 'print-btn',
                         displayCondition: me.isPrintBtnVisible
                     },{
@@ -191,12 +157,6 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                         iconCls         : 'template-save-user-btn',
                         moduleId        : 2006,
                         displayCondition: me.isSaveUserTemplateBtnVisible.bind(me)
-                    },{
-                        text            : 'Apply Payment',
-                        itemId          : 'applyPaymentBtn',
-                        iconCls         : 'approve-btn',
-                        moduleId        : 6064,
-                        displayCondition: me.isApplyPaymentBtnVisible
                     }
                 ]
             },
@@ -211,20 +171,20 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                 menu    : [
                     {
                         text            : 'Upload Image',
-                        itemId          : 'invoiceImageUploadBtn',
+                        itemId          : 'poImageUploadBtn',
                         iconCls         : 'upload-btn',
                         moduleId        : 2081,
                         displayCondition: me.isUploadImageBtnVisible
                     },
                     {
                         text            : 'View Image',
-                        itemId          : 'invoiceImageViewBtn',
+                        itemId          : 'poImageViewBtn',
                         iconCls         : 'image-view-btn',
                         displayCondition: me.isManageImagesBtnVisible
                     },
                     {
                         text            : 'Add Image',
-                        itemId          : 'invoiceImageAddBtn',
+                        itemId          : 'poImageAddBtn',
                         iconCls         : 'image-add-btn',
                         moduleId        : 2039,
                         displayCondition: me.isAddImageBtnVisible
@@ -237,48 +197,48 @@ Ext.define('NP.view.invoice.ViewToolbar', {
     },
 
     isSaveBtnVisible: function(data) {
-        var invoice_status = data['invoice'].get('invoice_status');
+        var po_status = data['purchaseorder'].get('purchaseorder_status');
 
         return (
             (
                 (
-                    invoice_status == 'open'
+                    po_status == 'open'
                     && (
                         NP.Security.hasPermission(1032)     // New Invoice permission
                         || NP.Security.hasPermission(6076)  // Modify Any permission
                         || NP.Security.hasPermission(6077)  // Modify Only Created permission
                     )
                 ) || (
-                    invoice_status == 'saved'
+                    po_status == 'saved'
                     && NP.Security.hasPermission(1068)      // Invoice Post Approval Modify permission
                 )
                 && NP.Config.getSetting('PN.InvoiceOptions.SkipSave', '0') == '0'
             ) || (
-                invoice_status == 'forapproval'
+                po_status == 'forapproval'
                 && data['is_approver'] === true
             ) || (
-                invoice_status == 'draft'
+                po_status == 'draft'
                 && NP.Security.hasPermission(2008)          // Invoice Templates
             )
         );
     },
 
     isDeleteBtnVisible: function(data) {
-        var invoice_status = data['invoice'].get('invoice_status');
+        var po_status = data['purchaseorder'].get('purchaseorder_status');
 
-        if (data['invoice'].get('invoice_id') === null) {
+        if (data['purchaseorder'].get('purchaseorder_id') === null) {
             return false;
         }
 
         return (
             (
-                invoice_status == 'draft' 
+                po_status == 'draft' 
                 && NP.Security.hasPermission(2008)  // Invoice Templates permission
             ) || (
-                Ext.Array.contains(['saved','open','rejected','hold'], invoice_status)
+                Ext.Array.contains(['saved','open','rejected','hold'], po_status)
                 && (
                     (
-                        data['invoice'].get('userprofile_id') == NP.Security.getUser().get('userprofile_id')
+                        data['purchaseorder'].get('userprofile_id') == NP.Security.getUser().get('userprofile_id')
                         && NP.Security.hasPermission(6063)  // Delete My Invoice permission
                     ) || NP.Security.hasPermission(2000)       // Delete Any Invoice permission
                 )
@@ -286,24 +246,10 @@ Ext.define('NP.view.invoice.ViewToolbar', {
         )
     },
 
-    isOnHoldBtnVisible: function(data) {
-        return (
-            data['invoice'].get('invoice_id') !== null &&
-            Ext.Array.contains(['open','forapproval','saved'], data['invoice'].get('invoice_status'))
-        );
-    },
-
-    isVoidBtnVisible: function(data) {
-        return (
-            data['invoice'].get('invoice_id') !== null
-            && !Ext.Array.contains(['hold','void','template','paid','draft'], data['invoice'].get('invoice_status'))
-        );
-    },
-
     isApplyTemplateBtnVisible: function(data) {
         return (
-            data['invoice'].get('invoice_id') !== null &&
-            data['invoice'].get('invoice_status') == 'open'
+            data['purchaseorder'].get('purchaseorder_id') !== null &&
+            data['purchaseorder'].get('purchaseorder_status') == 'open'
             && (
                 NP.Security.hasPermission(2006)     // Invoice User Templates permission
                 || NP.Security.hasPermission(2008)  // Invoice Templates permission
@@ -313,7 +259,7 @@ Ext.define('NP.view.invoice.ViewToolbar', {
 
     isUseTemplateBtnVisible: function(data) {
         return (
-            data['invoice'].get('invoice_status') == 'draft'
+            data['purchaseorder'].get('purchaseorder_status') == 'draft'
             && data['property_status'] != -1     // Property is not on hold
             && (
                 NP.Security.hasPermission(2006)     // Invoice User Templates permission
@@ -334,13 +280,13 @@ Ext.define('NP.view.invoice.ViewToolbar', {
 
     isRejectBtnVisible: function(data) {
         return (
-            data['invoice'].get('invoice_status') == 'forapproval'
+            data['purchaseorder'].get('purchaseorder_status') == 'forapproval'
             && data['is_approver']
         );
     },
 
     isMenuVisible: function(data) {
-        return (data['invoice'].get('invoice_id') !== null);
+        return (data['purchaseorder'].get('purchaseorder_id') !== null);
     },
 
     isManageImagesBtnVisible: function(data) {
@@ -349,22 +295,22 @@ Ext.define('NP.view.invoice.ViewToolbar', {
 
     isLinkPoBtnVisible: function(data) {
         return (
-            data['invoice'].get('invoice_status') == 'open'
-            && data['invoice'].get('invoice_id') != null
+            data['purchaseorder'].get('purchaseorder_status') == 'open'
+            && data['purchaseorder'].get('purchaseorder_id') != null
             && data['has_linkable_pos']
         );
     },
 
     isPrintBtnVisible: function(data) {
-        return Ext.Array.contains(['paid','forapproval','submitted','sent','saved','posted','void'], data['invoice'].get('invoice_status'));
+        return Ext.Array.contains(['paid','forapproval','submitted','sent','saved','posted','void'], data['purchaseorder'].get('purchaseorder_status'));
     },
 
     isForwardBtnVisible: function(data) {
-        return (data['invoice'].get('invoice_id') !== null);
+        return (data['purchaseorder'].get('purchaseorder_id') !== null);
     },
 
     isBudgetReportBtnVisible: function(data) {
-        return !Ext.Array.contains(['hold','void'], data['invoice'].get('invoice_status'));
+        return !Ext.Array.contains(['hold','void'], data['purchaseorder'].get('purchaseorder_status'));
     },
 
     isSaveTemplateBtnVisible: function(data) {
@@ -394,7 +340,7 @@ Ext.define('NP.view.invoice.ViewToolbar', {
             }
 
             if (
-                data['invoice'].get('invoice_status') == 'open' 
+                data['purchaseorder'].get('purchaseorder_status') == 'open' 
                 && lineView[0].getStore().getCount() > 0
                 && NP.Security.hasPermission(moduleId)
             ) {
@@ -414,18 +360,18 @@ Ext.define('NP.view.invoice.ViewToolbar', {
             validStatusArray = validStatuses.split(',');
 
         return (
-            data['invoice'].get('invoice_id') !== null
+            data['purchaseorder'].get('purchaseorder_id') !== null
             && NP.Config.getSetting('pn.main.FileUpload', '0') == '1'
             && (
                 NP.Config.getSetting('pn.InvoiceOptions.ScanStatus', '') == 'All'
-                || Ext.Array.contains(validStatusArray, data['invoice'].get('invoice_status'))
+                || Ext.Array.contains(validStatusArray, data['purchaseorder'].get('purchaseorder_status'))
             )
         );
     },
 
     isAddImageBtnVisible: function(data) {
         return (
-            data['invoice'].get('invoice_id') !== null
+            data['purchaseorder'].get('purchaseorder_id') !== null
             && NP.Config.getSetting('pn.main.WebDoczDB', '') != ''
         );
     },
@@ -453,7 +399,7 @@ Ext.define('NP.view.invoice.ViewToolbar', {
             }
 
             if (
-                data['invoice'].get('invoice_status') == 'open' 
+                data['purchaseorder'].get('purchaseorder_status') == 'open' 
                 && lineView[0].getStore().getCount() > 0
                 && warningView[0].getStore().find('warning_type', 'invoiceDuplicate') === -1
                 && NP.Security.hasPermission(2041)
@@ -469,31 +415,6 @@ Ext.define('NP.view.invoice.ViewToolbar', {
         return showBtn();
     },
 
-    isRevertBtnVisible: function(data) {
-        var status = data['invoice'].get('invoice_status');
-        return (
-            (status == "sent"|| status == "paid" || status == "posted")
-            && NP.Security.hasPermission(2041) // Submit Invoices
-        );
-    },
-
-    isReclassBtnVisible: function(data) {
-        return (
-            data['invoice'].get('invoice_status') == 'paid'
-            && (
-                NP.Security.hasPermission(2094)     // Reclass Invoice - Any Field
-                || NP.Security.hasPermission(6093)  // Reclass Invoice - Line Item Only
-            )
-        );
-    },
-
-    isApplyPaymentBtnVisible: function(data) {
-        return Ext.Array.contains(
-            ['paid','saved','approved','submitted','posted','sent'],
-            data['invoice'].get('invoice_status')
-        );
-    },
-
     isRouteBtnVisible: function(data) {
         var me = this;
 
@@ -503,60 +424,8 @@ Ext.define('NP.view.invoice.ViewToolbar', {
         );
     },
 
-    isActivateBtnVisible: function(data) {
-        var btn   = Ext.ComponentQuery.query('#activateBtn')[0],
-            tries = 0;
-
-        // We need a function we can defer and recall in case we need to
-        // wait for some views to render or stores to load
-        function showBtn() {
-            tries++;
-            var historyGrid = Ext.ComponentQuery.query('[xtype="shared.invoicepo.historyloggrid"]'),
-                show        = false;
-
-            if (
-                data['invoice'].get('invoice_status') == 'hold'
-                && NP.Security.hasPermission(6001)          // Invoices On Hold
-            ) {
-                if (NP.Security.hasPermission(6079)) {      // Activate Any
-                    show = true;
-                }
-                else if (NP.Security.hasPermission(6078)) { // Activate
-                    // If views aren't ready or stores haven't loaded, defer the process
-                    if (!historyGrid.length || !historyGrid[0].getStore().isLoaded) {
-                        if (tries < 6) {
-                            Ext.defer(showBtn, 750);
-                        }
-                        return false;
-                    }
-
-                    // Get all the hold approval records and make sure the last one set was by the currently
-                    // signed in user
-                    var holds = historyGrid[0].getStore().query('approvetype_name', 'hold');
-
-                    if (
-                        holds.getCount() > 0
-                        && holds.getAt(holds.getCount()-1).get('userprofile_username') == NP.Security.getUser().get('userprofile_username')
-                    ) {
-                        show = true;
-                    }
-                }
-            }
-
-            if (show) {
-                btn.show();
-                return true;
-            } else {
-                btn.hide();
-                return false;
-            }
-        }
-
-        return showBtn();
-    },
-
     isModifyBtnVisible: function(data) {
-        var status = data['invoice'].get('invoice_status');
+        var status = data['purchaseorder'].get('purchaseorder_status');
 
         return (
             (
@@ -582,42 +451,28 @@ Ext.define('NP.view.invoice.ViewToolbar', {
         );
     },
 
-    isSubmitPaymentBtnVisible: function(data) {
-        return (
-            data['invoice'].get('invoice_status') == 'saved'
-            && NP.Security.hasPermission(1068) // Invoice Post Approval Modify
-            && (data['vendor_status'] == 'approved' || data['vendor_status'] == 'active')
-            && (data['vendorsite_status'] == 'approved' || data['vendorsite_status'] == 'active')
-            && (
-                NP.Config.getSetting('pn.jobcosting.jobcostingEnabled', '0') != '1'
-                || data['inactive_jobs'].length == 0
-            )
-            && !data['has_dummy_accounts']
-        );
-    },
-
     isPostApproveRejectBtnVisible: function(data) {
         return (
-            data['invoice'].get('invoice_status') == "saved"
+            data['purchaseorder'].get('purchaseorder_status') == "saved"
             && NP.Security.hasPermission(1068) // Invoice Post Approval Modify
             && NP.Config.getSetting('PN.InvoiceOptions.SkipSave', '0') == '0'
         );
     },
 
     isCopyBtnVisible: function(data) {
-        return (data['invoice'].get('invoice_status') == "draft");
+        return (data['purchaseorder'].get('purchaseorder_status') == "draft");
     },
 
     isScheduleBtnVisible: function(data) {
         return (
-            data['invoice'].get('invoice_status') == "draft"
+            data['purchaseorder'].get('purchaseorder_status') == "draft"
             && !data['scheduleExists']
         );
     },
 
     isModifyScheduleBtnVisible: function(data) {
         return (
-            data['invoice'].get('invoice_status') == "draft"
+            data['purchaseorder'].get('purchaseorder_status') == "draft"
             && data['scheduleExists']
         );
     }

@@ -40,6 +40,8 @@ Ext.define('NP.view.shared.invoicepo.SplitWindow', {
     	var me           = this,
             customFields = NP.Config.getCustomFields().line.fields;
 
+        me.itemId = me.type + 'SplitWin';
+
         me.title = NP.Translator.translate('Line Item Split');
 
         me.tbar = me.getButtonBar();

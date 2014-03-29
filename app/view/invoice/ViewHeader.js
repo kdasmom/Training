@@ -197,12 +197,14 @@ Ext.define('NP.view.invoice.ViewHeader', {
 				xtype     : 'datefield',
 				fieldLabel: this.cycleFromLbl,
 				name      : 'invoice_cycle_from',
-				hidden    : true
+				hidden    : true,
+				allowBlank: false
 			},{
 				xtype     : 'datefield',
 				fieldLabel: this.cycleToLbl,
 				name      : 'invoice_cycle_to',
-				hidden    : true
+				hidden    : true,
+				allowBlank: false
 			}
 		);
 

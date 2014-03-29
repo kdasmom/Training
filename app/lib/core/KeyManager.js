@@ -51,7 +51,7 @@ Ext.define('NP.lib.core.KeyManager', {
 			if (!(item.useAlt in me.shortcuts)) {
 				me.shortcuts[item.useAlt] = {};
 			}
-			if (!(key in me.shortcuts[item.useAlt])) {
+			if (!(item.key in me.shortcuts[item.useAlt])) {
 				me.shortcuts[item.useAlt][item.key] = {};
 			}
 			if (!(len in me.shortcuts[item.useAlt][item.key])) {
@@ -105,7 +105,7 @@ Ext.define('NP.lib.core.KeyManager', {
 									scut = shortcuts[scutToken];
 
 									if (scut.conditionFn()) {
-										scut.fn.apply(scut.scope, scut.argsFn);
+										scut.fn.apply(scut.scope, scut.argsFn());
 										e.preventDefault();
 										return false;
 									}
