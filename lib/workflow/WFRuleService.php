@@ -30,6 +30,7 @@ class WFRuleService extends AbstractService {
     public function setConfigService(ConfigService $configService) {
         $this->configService = $configService;
     }
+
     public function setSecurityService(SecurityService $securityService) {
         $this->securityService = $securityService;
     }
@@ -153,7 +154,12 @@ class WFRuleService extends AbstractService {
         ];
     }
 
-    public function deleteRules($ruleIdList) {
+	/**
+	 * Delete Rules
+	 * @param $ruleIdList - array of rule id
+	 * @return array
+	 */
+	public function deleteRules($ruleIdList) {
 		if (!empty($ruleIdList)) {
 			$ruleIdArray = explode(',', $ruleIdList);
 
@@ -171,20 +177,6 @@ class WFRuleService extends AbstractService {
     }
 
 
-/*
-	public function delete($id) {
-		if (!empty($id)) {
-			$this->wfRuleGateway->setRuleStatus($id, 3);
-			return [
-				'success' => true
-			];
-		}
-		return [
-			'success' => false,
-			'error'   => 'Incorrect identifier'
-		];
-	}
-*/
     public function changeStatus($id, $status) {
         if (!empty($id) && in_array($status, [1, 2])) {
             foreach ($id as $item) {
@@ -225,34 +217,21 @@ class WFRuleService extends AbstractService {
 		];
 	}
 
+
 	public function saveAndActivateRule($userprofile_id, $data) {
 		$ruleid = $this->saveWFRule($userprofile_id, $data);
-		$activateStatus = false;
 
-//		$this->wfActionGateway->find('wfrule_id = ?', [$wfrule_id]);
-		$conflictingRules = $this->findConflictingRules($ruleid);
-
-		if (!count($conflictingRules)) {
-			$activateStatus = true;
-			$dataSet = [
-				'wfrule_id' => $ruleid,
-				'wfrule_status' => 'active'
-			];
-			$this->wfRuleGateway->save($dataSet);
-		}
-
-		return [
-			'activateStatus'   => $activateStatus,
-			'conflictingRules' => $conflictingRules
-		];
+		return $this->activateRule($ruleid);
 	}
+
 
 	public function activateRule($ruleid) {
 		$activateStatus = false;
 
+		$routes = $this->GetRuleRoutes($ruleid);
 		$conflictingRules = $this->findConflictingRules($ruleid);
 
-		if (!count($conflictingRules)) {
+		if (!count($conflictingRules) && count($routes)) {
 			$activateStatus = true;
 			$dataSet = [
 				'wfrule_id' => $ruleid,
@@ -307,101 +286,117 @@ class WFRuleService extends AbstractService {
 			'isAllPropertiesWF' => $data['all_properties']
 		];
 
-		// save wf rule
-		if (is_null($ruleid)) {
-			$ruleid = $this->wfRuleGateway->save($dataSet);
-		}
-		else {
-			$this->wfRuleGateway->update($dataSet, ['wfrule_id' => '?', 'asp_client_id' => '?'], [$ruleid, $asp_client_id]);
-		}
+		$this->wfRuleGateway->beginTransaction();
+		$this->wfRuleTargetGateway->beginTransaction();
+		$this->wfRuleScopeGateway->beginTransaction();
+		$this->wfRuleHourGateway->beginTransaction();
 
-		// save wf rule properties
-		if ($data['all_properties']) {
-			$this->wfRuleTargetGateway->addAllPropertiesToRules($ruleid, 'property', $asp_client_id, [1, -1]);
-		}
-		else {
-			if (!is_null($property_keys)) {
-				$this->wfRuleTargetGateway->delete(['wfrule_id' => '?'], [$ruleid]);
+		try {
+			// save wf rule
+			if (is_null($ruleid)) {
+				$ruleid = $this->wfRuleGateway->save($dataSet);
+			}
+			else {
+				$this->wfRuleGateway->update($dataSet, ['wfrule_id' => '?', 'asp_client_id' => '?'], [$ruleid, $asp_client_id]);
+			}
 
-				foreach ($property_keys as $property_key) {
-					$this->SaveWFRuleTarget($ruleid, 'property', $property_key);
+			// save wf rule properties
+			if ($data['all_properties']) {
+				$this->wfRuleTargetGateway->addAllPropertiesToRules($ruleid, 'property', $asp_client_id, [1, -1]);
+			}
+			else {
+				if (!is_null($property_keys)) {
+					$this->wfRuleTargetGateway->delete(['wfrule_id' => '?'], [$ruleid]);
+
+					foreach ($property_keys as $property_key) {
+						$this->SaveWFRuleTarget($ruleid, 'property', $property_key);
+					}
 				}
 			}
-		}
 
-		// save wf rule type options
-		$this->wfRuleScopeGateway->delete(['wfrule_id' => '?'], [$ruleid]);
+			// save wf rule type options
+			$this->wfRuleScopeGateway->delete(['wfrule_id' => '?'], [$ruleid]);
 
-		switch ($data['ruletypeid']) {
-			case WFRuleTypeGateway::BUDGET_AMOUNT_BY_GL_CODE:
-			case WFRuleTypeGateway::INVOICE_BY_GL_CODE:
-			case WFRuleTypeGateway::PURCHASE_ORDER_BY_GL_CODE:
-			case WFRuleTypeGateway::YEARLY_BUDGET_BY_GL_CODE:
-			case WFRuleTypeGateway::YTD_BUDGET_PERCENT_OVERAGE_BY_GL_CODE:
-			case WFRuleTypeGateway::MTD_BUDGET_PERCENT_OVERAGE_BY_GL_CODE:
-			case WFRuleTypeGateway::YTD_BUDGET_OVERAGE_BY_GL_CODE:
-			case WFRuleTypeGateway::RECEIPT_ITEM_TOTAL_BY_GL_CODE:
-			case WFRuleTypeGateway::BUDGET_AMOUNT_BY_GL_CATEGORY:
-			case WFRuleTypeGateway::INVOICE_BY_GL_CATEGORY:
-			case WFRuleTypeGateway::PURCHASE_ORDER_BY_GL_CATEGORY:
-			case WFRuleTypeGateway::BUDGET_OVERAGE_NOTIFICATION_EMAIL:
-			case WFRuleTypeGateway::YEARLY_BUDGET_BY_GL_CATEGORY:
-			case WFRuleTypeGateway::YTD_BUDGET_PERCENT_OVERAGE_BY_GL_CATEGORY:
-			case WFRuleTypeGateway::MTD_BUDGET_PERCENT_OVERAGE_BY_GL_CATEGORY:
-			case WFRuleTypeGateway::YTD_BUDGET_OVERAGE_BY_GL_CATEGORY:
-			case WFRuleTypeGateway::RECEIPT_ITEM_TOTAL_BY_GL_CATEGORY:
-				$this->wfRuleScopeGateway->saveScopeList($ruleid, 'glaccount', 'glaccount_id', $tablekeys);
-				break;
-			case WFRuleTypeGateway::SPECIFIC_VENDOR:
-			case WFRuleTypeGateway::SPECIFIC_VENDOR_MASTER_RULE:
-				$this->wfRuleScopeGateway->saveScopeList($ruleid, 'vendor', 'vendor_id', $tablekeys);
-				break;
-			case WFRuleTypeGateway::INVOICE_BY_GL_JOB_CODE:
-			case WFRuleTypeGateway::PURCHASE_ORDER_BY_GL_JOB_CODE:
-				$this->wfRuleScopeGateway->saveScopeList($ruleid, 'jbjobcode', 'jbjobcode_id', $tablekeys);
-				break;
-			case WFRuleTypeGateway::INVOICE_BY_CONTRACT_CODE:
-			case WFRuleTypeGateway::PURCHASE_ORDER_BY_CONTRACT_CODE:
-			case WFRuleTypeGateway::INVOICE_BY_CONTRACT_CODE_MASTER:
-			case WFRuleTypeGateway::PURCHASE_ORDER_BY_CONTRACT_CODE_MASTER:
-				//todo
-				$this->wfRuleScopeGateway->saveScopeList($ruleid, 'jbcontract', 'jbcontract_id', $tablekeys);
-//				foreach ($tablekeys as $tablekeyid) {
-//					$this->wfRuleScopeGateway->insert([
-//						'wfrule_id'   => $ruleid,
-//						'table_name'  => 'jbcontract',
-//						'tablekey_id' => $tablekeyid
-//					]);
-//				}
-				break;
-			case WFRuleTypeGateway::INVOICE_TOTAL_BY_PAY_BY:
-				$this->wfRuleScopeGateway->saveScopeList($ruleid, 'invoicepaymenttype', 'invoicepayment_type_id', $tablekeys);
-				break;
-			case WFRuleTypeGateway::PO_ITEM_AMOUNT_BY_DEPARTMENT:
-			case WFRuleTypeGateway::INVOICE_ITEM_AMOUNT_BY_DEPARTMENT:
-				$this->wfRuleScopeGateway->saveScopeList($ruleid, 'unit', 'unit_id', $tablekeys);
-//				foreach ($tablekeys as $tablekeyid) {
-//					$this->wfRuleScopeGateway->insert([
-//						'wfrule_id'   => $ruleid,
-//						'table_name'  => 'unit',
-//						'tablekey_id' => $tablekeyid
-//					]);
-//				}
-				break;
-		}
-
-		// save email suppression hour
-		$this->wfRuleHourGateway->delete(['wfrule_id' => '?'], [$ruleid]);
-
-		if ($data['ruletypeid'] == WFRuleTypeGateway::APPROVAL_NOTIFICATION_EMAIL ||
-			$data['ruletypeid'] == WFRuleTypeGateway::BUDGET_OVERAGE_NOTIFICATION_EMAIL)
-		{
-			if ($data['comparisonValue'] === 'suppression_hours') {
-				$this->wfRuleHourGateway->insert([
-					'wfrule_id' => $ruleid,
-					'runhour'   => $data['email_suppression_hours']
-				]);
+			switch ($data['ruletypeid']) {
+				case WFRuleTypeGateway::BUDGET_AMOUNT_BY_GL_CODE:
+				case WFRuleTypeGateway::INVOICE_BY_GL_CODE:
+				case WFRuleTypeGateway::PURCHASE_ORDER_BY_GL_CODE:
+				case WFRuleTypeGateway::YEARLY_BUDGET_BY_GL_CODE:
+				case WFRuleTypeGateway::YTD_BUDGET_PERCENT_OVERAGE_BY_GL_CODE:
+				case WFRuleTypeGateway::MTD_BUDGET_PERCENT_OVERAGE_BY_GL_CODE:
+				case WFRuleTypeGateway::YTD_BUDGET_OVERAGE_BY_GL_CODE:
+				case WFRuleTypeGateway::RECEIPT_ITEM_TOTAL_BY_GL_CODE:
+				case WFRuleTypeGateway::BUDGET_AMOUNT_BY_GL_CATEGORY:
+				case WFRuleTypeGateway::INVOICE_BY_GL_CATEGORY:
+				case WFRuleTypeGateway::PURCHASE_ORDER_BY_GL_CATEGORY:
+				case WFRuleTypeGateway::BUDGET_OVERAGE_NOTIFICATION_EMAIL:
+				case WFRuleTypeGateway::YEARLY_BUDGET_BY_GL_CATEGORY:
+				case WFRuleTypeGateway::YTD_BUDGET_PERCENT_OVERAGE_BY_GL_CATEGORY:
+				case WFRuleTypeGateway::MTD_BUDGET_PERCENT_OVERAGE_BY_GL_CATEGORY:
+				case WFRuleTypeGateway::YTD_BUDGET_OVERAGE_BY_GL_CATEGORY:
+				case WFRuleTypeGateway::RECEIPT_ITEM_TOTAL_BY_GL_CATEGORY:
+					$this->wfRuleScopeGateway->saveScopeList($ruleid, 'glaccount', 'glaccount_id', $tablekeys);
+					break;
+				case WFRuleTypeGateway::SPECIFIC_VENDOR:
+				case WFRuleTypeGateway::SPECIFIC_VENDOR_MASTER_RULE:
+					$this->wfRuleScopeGateway->saveScopeList($ruleid, 'vendor', 'vendor_id', $tablekeys);
+					break;
+				case WFRuleTypeGateway::INVOICE_BY_GL_JOB_CODE:
+				case WFRuleTypeGateway::PURCHASE_ORDER_BY_GL_JOB_CODE:
+					$this->wfRuleScopeGateway->saveScopeList($ruleid, 'jbjobcode', 'jbjobcode_id', $tablekeys);
+					break;
+				case WFRuleTypeGateway::INVOICE_BY_CONTRACT_CODE:
+				case WFRuleTypeGateway::PURCHASE_ORDER_BY_CONTRACT_CODE:
+				case WFRuleTypeGateway::INVOICE_BY_CONTRACT_CODE_MASTER:
+				case WFRuleTypeGateway::PURCHASE_ORDER_BY_CONTRACT_CODE_MASTER:
+					$this->wfRuleScopeGateway->saveScopeList($ruleid, 'jbcontract', 'jbcontract_id', $tablekeys);
+		//				foreach ($tablekeys as $tablekeyid) {
+		//					$this->wfRuleScopeGateway->insert([
+		//						'wfrule_id'   => $ruleid,
+		//						'table_name'  => 'jbcontract',
+		//						'tablekey_id' => $tablekeyid
+		//					]);
+		//				}
+					break;
+				case WFRuleTypeGateway::INVOICE_TOTAL_BY_PAY_BY:
+					$this->wfRuleScopeGateway->saveScopeList($ruleid, 'invoicepaymenttype', 'invoicepayment_type_id', $tablekeys);
+					break;
+				case WFRuleTypeGateway::PO_ITEM_AMOUNT_BY_DEPARTMENT:
+				case WFRuleTypeGateway::INVOICE_ITEM_AMOUNT_BY_DEPARTMENT:
+					$this->wfRuleScopeGateway->saveScopeList($ruleid, 'unit', 'unit_id', $tablekeys);
+		//				foreach ($tablekeys as $tablekeyid) {
+		//					$this->wfRuleScopeGateway->insert([
+		//						'wfrule_id'   => $ruleid,
+		//						'table_name'  => 'unit',
+		//						'tablekey_id' => $tablekeyid
+		//					]);
+		//				}
+					break;
 			}
+
+			// save email suppression hour
+			$this->wfRuleHourGateway->delete(['wfrule_id' => '?'], [$ruleid]);
+
+			if ($data['ruletypeid'] == WFRuleTypeGateway::APPROVAL_NOTIFICATION_EMAIL ||
+				$data['ruletypeid'] == WFRuleTypeGateway::BUDGET_OVERAGE_NOTIFICATION_EMAIL)
+			{
+				if ($data['comparisonValue'] === 'suppression_hours') {
+					$this->wfRuleHourGateway->insert([
+						'wfrule_id' => $ruleid,
+						'runhour'   => $data['email_suppression_hours']
+					]);
+				}
+			}
+
+			$this->wfRuleGateway->commit();
+			$this->wfRuleTargetGateway->commit();
+			$this->wfRuleScopeGateway->commit();
+			$this->wfRuleHourGateway->commit();
+		} catch(\Exception $e) {
+			$this->wfRuleGateway->rollback();
+			$this->wfRuleTargetGateway->rollback();
+			$this->wfRuleScopeGateway->rollback();
+			$this->wfRuleHourGateway->rollback();
 		}
 
 		return $ruleid;
@@ -416,12 +411,12 @@ class WFRuleService extends AbstractService {
 		]);
 	}
 
-	public function GetRuleOriginators($wfruleid) {
+	public function GetRuleRoutes($wfruleid) {
 		$asp_client_id = $this->configService->getClientId();
 		return $this->wfActionGateway->findRuleRoutes($wfruleid, $asp_client_id);
 	}
 
-	public function DeleteRuleOriginator($wfactionid) {
+	public function DeleteRuleRoute($wfactionid) {
 		return $this->wfActionGateway->deleteRuleRoute($wfactionid);
 	}
 
@@ -457,10 +452,6 @@ class WFRuleService extends AbstractService {
 
 		$originator_tablekeys = explode(',', $originator_tablekeys_list);
 		$receipient_tablekeys = explode(',', $receipient_tablekeys_list);
-
-//		echo "<pre>";
-//		print_r($data);
-//		echo "</pre>";
 
 		if ($data['forwardto'] == 'next') {
 			if (count($originator_tablekeys) > 0) {
@@ -567,7 +558,7 @@ class WFRuleService extends AbstractService {
 		return $conflictingRules;
 	}
 
-	//TODO delete this
+
 	public function getUnits() {
 		$items = $this->wfRuleGateway->getUnits();
 

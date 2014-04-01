@@ -15,7 +15,7 @@ Ext.define('NP.view.systemSetup.WorkflowOriginatesGrid', {
 		if (me.data) {
 			this.store = Ext.create('NP.store.workflow.Originates', {
 				service: 'WFRuleService',
-				action : 'GetRuleOriginators',
+				action : 'GetRuleRoutes',
 				extraParams: {
 					wfruleid: me.data.rule.wfrule_id
 				}

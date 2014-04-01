@@ -245,18 +245,15 @@ class WfRuleGateway extends AbstractGateway {
 			}
 			if (in_array($type, [6, 16])) {
 				$where = Where::get()->in('v.vendor_id', implode(',', $keys));
-				$vendors = $this->vendorGateway->find($where, [], null, ['vendor_id']);
+				$vendors = $this->vendorGateway->find($where, [], null, ['vendor_id', 'vendor_name']);
 
 				$vendor_list_id = [];
 				foreach ($vendors as $vendor) {
 					$vendor_list_id[] = $vendor['vendor_id'];
+					$result['vendors'][$vendor['vendor_id']] = $vendor['vendor_name'];
 				}
 
 				$result['tablekey_list_id'] = $vendor_list_id;
-
-				foreach ($vendors as $vendor) {
-					$result['vendors'][$vendor['vendor_id']] = $vendor['vendor_name'];
-				}
 			}
 
 			if ($type == 4) {
@@ -321,6 +318,7 @@ class WfRuleGateway extends AbstractGateway {
 
 	public function getUnits($unitid = null, $propertyid = null) {
 		$select = new \NP\property\sql\GetUnitsSelect($unitid, $propertyid);
+
 		return $this->adapter->query($select);
 	}
 

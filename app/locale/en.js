@@ -721,6 +721,11 @@ Ext.define('NP.Locale', {
 	'Filter by'                  : 'Filter by',
 	'Workflow Rule - {rulename}' : 'Workflow Rule - {rulename}',
 
+	'Delete Forward?' : 'Delete Forward?',
+	'Are you sure you want to delete this \'Forward\' from this rule?' : 'Are you sure you want to delete this \'Forward\' from this rule?',
+	'Warning!' : 'Warning!',
+	'Originates From/Forward To information must be complete before the rule can be activated. Continue?' : 'Originates From/Forward To information must be complete before the rule can be activated. Continue?',
+
 	'Conflicts with these rules'                  : 'Conflicts with these rules',
 	'Edit this rule > Admin_Invoice > {rulename}' : 'Edit this rule > Admin_Invoice > {rulename}',
 	'Delete conflicting rules'                    : 'Delete conflicting rules'

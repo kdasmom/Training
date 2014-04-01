@@ -61,6 +61,10 @@ Ext.define('NP.controller.SystemSetup', {
 			me.intPkgChangeDialogTitle= NP.Translator.translate('Change integration package?');
 			me.intPkgChangeDialogText = NP.Translator.translate('Are you sure you want to change integration package? Doing so will clear the entire form, removing all splits you have entered.');
 			me.deleteRuleDialogText   = NP.Translator.translate('Are you sure you want to delete selected rules?');
+			me.deleteForwardTitle     = NP.Translator.translate('Delete Forward?');
+			me.deleteForwardText      = NP.Translator.translate('Are you sure you want to delete this \'Forward\' from this rule?');
+			me.ignoreSaveRouteTitle   = NP.Translator.translate('Warning!');
+			me.ignoreSaveRouteText    = NP.Translator.translate('Originates From/Forward To information must be complete before the rule can be activated. Continue?');
 		});
 
 		// Setup event handlers
@@ -181,16 +185,36 @@ Ext.define('NP.controller.SystemSetup', {
 				click: this.workflowRulesChangeStatus.bind(this, 2)
 			},
 			'#buttonWorkflowSaveAndActivate': {
-				click: this.saveAndActivateWorkflowRule
+				click: function(){
+					var rule = me.getCmp('systemsetup.workflowrulesmodify').data;
+
+					if (!rule.routes.length) {
+						Ext.MessageBox.confirm(me.ignoreSaveRouteTitle, me.ignoreSaveRouteText, function(btn) {
+							if (btn == 'yes') {
+								me.saveAndActivateWorkflowRule();
+							}
+						});
+					}
+					else {
+						me.saveAndActivateWorkflowRule();
+					}
+				}
 			},
 			'#buttonWorkflowActivate': {
 				click: function() {
-					var wfrule_id = me.getCmp('systemsetup.workflowrulesmodify').data.rule.wfrule_id;
-					var grid = this.getWorkflowOriginatesGrid();
+					var wfrule_id = me.getCmp('systemsetup.workflowrulesmodify').data.rule.wfrule_id,
+						grid = this.getWorkflowOriginatesGrid();
 
-//					Ext.MessageBox.alert('Report', 'Coming soon')
-					me.activateWorkflowRule(wfrule_id);
-
+					if (!grid.store.getCount()) {
+						Ext.MessageBox.confirm(me.ignoreSaveRouteTitle, me.ignoreSaveRouteText, function(btn) {
+							if (btn == 'yes') {
+								me.activateWorkflowRule(wfrule_id);
+							}
+						});
+					}
+					else {
+						me.activateWorkflowRule(wfrule_id);
+					}
 				}
 			},
 			'#buttonWorkflowAddForward': {
@@ -216,34 +240,7 @@ Ext.define('NP.controller.SystemSetup', {
 				click: this.workflowDeleteRules.bind(this)
 			},
 			'#buttoneNextOnConflictPage': {
-				click: function() {
-					var form = me.getCmp('systemsetup.workflowrulesconflicts').down('[name="nextactionform"]'),
-						values = form.getValues(),
-						ruledata = me.getCmp('systemsetup.workflowrulesmodify').data;
-
-					if (values.nextaction == 'edit') {
-						me.getCmp('systemsetup.workflowrulesmodify').stepRules();
-					}
-					else {
-						var rulesIdList = [];
-
-						for (var i in ruledata.conflictingRules) {
-							rulesIdList.push(ruledata.conflictingRules[i].wfrule_id);
-						}
-
-						NP.lib.core.Net.remoteCall({
-							requests: {
-								service: 'WFRuleService',
-								action : 'deleteRules',
-								ruleIdList: rulesIdList.join(),
-								success: function() {
-									me.activateWorkflowRule(ruledata.rule.wfrule_id);
-									me.addHistory('SystemSetup:showSystemSetup:WorkflowRules');
-								}
-							}
-						});
-					}
-				}
+				click: this.decisionRuleConflict
 			},
 			'#buttonWorkflowNext': {
 				click: me.saveWorkflowRule
@@ -258,12 +255,12 @@ Ext.define('NP.controller.SystemSetup', {
 					var grid = this.getWorkflowOriginatesGrid();
 
 					if (cellIndex == 4 && e.target.tagName == 'IMG') {
-						Ext.MessageBox.confirm('Delete Forward?', 'Are you sure you want to delete this \'Forward\' from this rule?', function(btn) {
+						Ext.MessageBox.confirm(me.deleteForwardTitle, me.deleteForwardText, function(btn) {
 							if (btn == 'yes') {
 								NP.lib.core.Net.remoteCall({
 									requests: {
 										service: 'WFRuleService',
-										action: 'DeleteRuleOriginator',
+										action: 'DeleteRuleRoute',
 										wfactionid: record.get('wfaction_id'),
 										success: function() {
 											grid.getStore().remove(record);
@@ -356,7 +353,7 @@ Ext.define('NP.controller.SystemSetup', {
 				for (var i = 0, l = selection.length; i < l; i++) {
 					identifiers.push(selection[i].internalId);
 				}
-				if (identifiers.length > 0) {
+				if (identifiers.length) {
 					// Identifiers are ready to be passed to the server.
 					NP.lib.core.Net.remoteCall({
 						requests: {
@@ -1055,7 +1052,6 @@ Ext.define('NP.controller.SystemSetup', {
 			form = me.getCmp('systemsetup.workflowrulesbuilder').down('[name="ruleform"]'),
 			values = form.getValues();
 
-
 		if (form.isValid()) {
 			NP.lib.core.Net.remoteCall({
 				requests: {
@@ -1117,6 +1113,36 @@ Ext.define('NP.controller.SystemSetup', {
 					success: function(result) {
 						me.getCmp('systemsetup.workflowrulesmodify').data = result.ruledata;
 						me.getCmp('systemsetup.workflowrulesmodify').stepRoutes();
+					}
+				}
+			});
+		}
+	},
+
+	decisionRuleConflict: function() {
+		var me = this,
+			form = me.getCmp('systemsetup.workflowrulesconflicts').down('[name="nextactionform"]'),
+			values = form.getValues(),
+			ruledata = me.getCmp('systemsetup.workflowrulesmodify').data;
+
+		if (values.nextaction == 'edit') {
+			me.getCmp('systemsetup.workflowrulesmodify').stepRules();
+		}
+		else {
+			var rulesIdList = [];
+
+			for (var i in ruledata.conflictingRules) {
+				rulesIdList.push(ruledata.conflictingRules[i].wfrule_id);
+			}
+
+			NP.lib.core.Net.remoteCall({
+				requests: {
+					service: 'WFRuleService',
+					action : 'deleteRules',
+					ruleIdList: rulesIdList.join(),
+					success: function() {
+						me.activateWorkflowRule(ruledata.rule.wfrule_id);
+						me.addHistory('SystemSetup:showSystemSetup:WorkflowRules');
 					}
 				}
 			});
