@@ -35,6 +35,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 		align: 'stretch'
 	},
 	border: false,
+	autoScroll: true,
 
 	initComponent: function() {
 		var me = this;
@@ -77,7 +78,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 							text: NP.Translator.translate('Filter'),
 							width: me.filterButtonWidth,
 							handler: Ext.bind(this.applyFilter, this)
-						},{
+						},
+						{
 							xtype: 'button',
 							text: NP.Translator.translate('Reset'),
 							width: me.filterButtonWidth,
@@ -124,8 +126,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 				columns : [
 					{ xtype: 'systemsetup.gridcol.name', flex: 2.2 },
 					{ xtype: 'systemsetup.gridcol.ruletype', flex: 1.2 },
-					{ xtype: 'systemsetup.gridcol.property', flex: 0.5 },
-					{ xtype: 'systemsetup.gridcol.threshold', flex: 1.7 },
+					{ xtype: 'systemsetup.gridcol.property', flex: 0.5, sortable: false },
+					{ xtype: 'systemsetup.gridcol.threshold', flex: 1.7, sortable: false },
 					{ xtype: 'systemsetup.gridcol.lastupdated', flex: 1.2 },
 					{ xtype: 'systemsetup.gridcol.status', flex: 0.4 }
 				],
@@ -146,7 +148,6 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 	applyFilter: function() {
 		var grid = this.query('customgrid')[0];
 		var currentParams = grid.getStore().getProxy().extraParams;
-
 		var criteriaFilter = this.query('[name="criteria"]')[0];
 
 		var newParams = {
@@ -220,10 +221,9 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 
 	getGlAccountCombobox: function() {
         return {
-            xtype               : 'shared.glcombo',
-            multiSelect         : true,
-//            emptyText               : NP.Translator.translate('All'),
-            name                : 'criteria',
+            xtype                   : 'shared.glcombo',
+            multiSelect             : true,
+            name                    : 'criteria',
             loadStoreOnFirstQuery   : true,
             labelWidth              : this.filterLabelWidth
         };
@@ -233,7 +233,6 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
         return {
             xtype                   : 'shared.usercombo',
             multiSelect             : true,
-//            emptyText               : NP.Translator.translate('All'),
             name                    : 'criteria',
             loadStoreOnFirstQuery   : true,
             labelWidth              : this.filterLabelWidth
@@ -245,7 +244,6 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
         return {
             xtype                   : 'shared.usergroupscombo',
             multiSelect             : true,
-//            emptyText               : NP.Translator.translate('All'),
             name                    : 'criteria',
             loadStoreOnFirstQuery   : true,
             labelWidth              : this.filterLabelWidth
@@ -256,7 +254,6 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
         return {
             xtype: 'shared.vendorautocomplete',
             multiSelect: true,
-//            emptyText               : NP.Translator.translate('All'),
             name                    : 'criteria',
             loadStoreOnFirstQuery   : true,
             labelWidth              : this.filterLabelWidth,
@@ -268,7 +265,6 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
         return {
             xtype: 'systemSetup.ruletypeautocomplete',
             multiSelect: true,
-//            emptyText               : NP.Translator.translate('All'),
             name                    : 'criteria',
             loadStoreOnFirstQuery   : true,
             labelWidth              : this.filterLabelWidth,

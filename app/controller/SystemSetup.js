@@ -171,7 +171,7 @@ Ext.define('NP.controller.SystemSetup', {
 			},
 			'#buttonWorkflowReport': {
 				click: function() {
-					Ext.MessageBox.alert('Print', 'Coming soon')
+					Ext.MessageBox.alert('Report', 'Coming soon')
 				}
 			},
 			'#buttonWorkflowActivateRules': {
@@ -181,14 +181,16 @@ Ext.define('NP.controller.SystemSetup', {
 				click: this.workflowRulesChangeStatus.bind(this, 2)
 			},
 			'#buttonWorkflowSaveAndActivate': {
-				click: function() {
-					me.saveAndActivateWorkflowRule();
-				}
+				click: this.saveAndActivateWorkflowRule
 			},
 			'#buttonWorkflowActivate': {
 				click: function() {
 					var wfrule_id = me.getCmp('systemsetup.workflowrulesmodify').data.rule.wfrule_id;
+					var grid = this.getWorkflowOriginatesGrid();
+
+//					Ext.MessageBox.alert('Report', 'Coming soon')
 					me.activateWorkflowRule(wfrule_id);
+
 				}
 			},
 			'#buttonWorkflowAddForward': {
@@ -215,10 +217,9 @@ Ext.define('NP.controller.SystemSetup', {
 			},
 			'#buttoneNextOnConflictPage': {
 				click: function() {
-					form = me.getCmp('systemsetup.workflowrulesconflicts').down('[name="nextactionform"]');
-
-					var values = form.getValues();
-					var ruledata = me.getCmp('systemsetup.workflowrulesmodify').data;
+					var form = me.getCmp('systemsetup.workflowrulesconflicts').down('[name="nextactionform"]'),
+						values = form.getValues(),
+						ruledata = me.getCmp('systemsetup.workflowrulesmodify').data;
 
 					if (values.nextaction == 'edit') {
 						me.getCmp('systemsetup.workflowrulesmodify').stepRules();
@@ -235,7 +236,7 @@ Ext.define('NP.controller.SystemSetup', {
 								service: 'WFRuleService',
 								action : 'deleteRules',
 								ruleIdList: rulesIdList.join(),
-								success: function(data) {
+								success: function() {
 									me.activateWorkflowRule(ruledata.rule.wfrule_id);
 									me.addHistory('SystemSetup:showSystemSetup:WorkflowRules');
 								}
@@ -245,9 +246,7 @@ Ext.define('NP.controller.SystemSetup', {
 				}
 			},
 			'#buttonWorkflowNext': {
-				click: function() {
-					me.saveWorkflowRule();
-				}
+				click: me.saveWorkflowRule
 			},
 
 			'[xtype="systemsetup.workflowrulesgrid"] customgrid': {
@@ -279,6 +278,7 @@ Ext.define('NP.controller.SystemSetup', {
 		});
 	},
 
+	// enable or disable buttons of rules grid
 	selectRule: function(selectionModel, selected) {
 		var fn = (selected.length) ? 'enable' : 'disable';
 
@@ -301,7 +301,6 @@ Ext.define('NP.controller.SystemSetup', {
 							id: ruleid,
 							success: function(data) {
 								if (data) {
-									console.log('data', data);
 									me.setView('NP.view.systemSetup.WorkflowRulesModify', {data: data}, '[xtype="systemsetup.workflowrules"]', true);
 								}
 							}
@@ -1032,9 +1031,8 @@ Ext.define('NP.controller.SystemSetup', {
 	saveWorkflowRoute: function() {
 		var me = this,
 			form = me.getCmp('systemsetup.workflowrulesroutes').down('[name="routeform"]'),
-			originatesGrid = me.getWorkflowOriginatesGrid();
-
-		var values = form.getValues();
+			originatesGrid = me.getWorkflowOriginatesGrid(),
+			values = form.getValues();
 
 		if (form.isValid()) {
 			NP.lib.core.Net.remoteCall({
@@ -1054,26 +1052,9 @@ Ext.define('NP.controller.SystemSetup', {
 
 	saveAndActivateWorkflowRule: function() {
 		var me = this,
-			form = me.getCmp('systemsetup.workflowrulesbuilder').down('[name="ruleform"]');
+			form = me.getCmp('systemsetup.workflowrulesbuilder').down('[name="ruleform"]'),
+			values = form.getValues();
 
-		var values = form.getValues();
-
-		var tablekeys;
-		if (values.categories) {
-			tablekeys = values.categories;
-		}
-		else if (values.codes) {
-			tablekeys = values.codes;
-		}
-		else if (values.jobcodes) {
-			tablekeys = values.jobcodes;
-		}
-		else if (values.contracts) {
-			tablekeys = values.contracts;
-		}
-		else if (values.vendors) {
-			tablekeys = values.vendors;
-		}
 
 		if (form.isValid()) {
 			NP.lib.core.Net.remoteCall({
@@ -1081,16 +1062,7 @@ Ext.define('NP.controller.SystemSetup', {
 					service: 'WFRuleService',
 					action: 'saveAndActivateRule',
 					userprofile_id: NP.Security.getUser().get('userprofile_id'),
-					wfrule_id: values.wfrule_id,
-					rulename: values.name,
-					ruletypeid: values.ruletypeid,
-					all_properties: values.all_properties,
-					property_keys: values.properties,
-					wfrule_operand: values.comparison,
-					wfrule_number: values.comparisonValue,
-					tablekeys: tablekeys,
-					wfrule_number_end: (values.comparisonValueTo) ? values.comparisonValueTo : '',
-					wfrule_string: '',
+					data: values,
 					success: function(result) {
 						if (result.activateStatus) {
 							me.addHistory('SystemSetup:showSystemSetup:WorkflowRules');
@@ -1128,27 +1100,11 @@ Ext.define('NP.controller.SystemSetup', {
 
 	saveWorkflowRule: function() {
 		var me = this,
-			form = me.getCmp('systemsetup.workflowrulesbuilder').down('[name="ruleform"]');
+			form = me.getCmp('systemsetup.workflowrulesbuilder').down('[name="ruleform"]'),
+			values = form.getValues();
 
-		var values = form.getValues();
-
-		console.log('values', values);
-
-		var tablekeys;
-		if (values.categories) {
-			tablekeys = values.categories;
-		}
-		else if (values.codes) {
-			tablekeys = values.codes;
-		}
-		else if (values.jobcodes) {
-			tablekeys = values.jobcodes;
-		}
-		else if (values.contracts) {
-			tablekeys = values.contracts;
-		}
-		else if (values.vendors) {
-			tablekeys = values.vendors;
+		if (Ext.get('email_suppression_hours')) {
+			values.email_suppression_hours = Ext.get('email_suppression_hours').dom.value;
 		}
 
 		if (form.isValid()) {
@@ -1157,16 +1113,7 @@ Ext.define('NP.controller.SystemSetup', {
 					service: 'WFRuleService',
 					action: 'saveRule',
 					userprofile_id: NP.Security.getUser().get('userprofile_id'),
-					wfrule_id: values.wfrule_id,
-					rulename: values.name,
-					ruletypeid: values.ruletypeid,
-					all_properties: values.all_properties,
-					property_keys: values.properties,
-					wfrule_operand: values.comparison,
-					wfrule_number: values.comparisonValue,
-					tablekeys: tablekeys,
-					wfrule_number_end: (values.comparisonValueTo) ? values.comparisonValueTo : '',
-					wfrule_string: '',
+					data: values,
 					success: function(result) {
 						me.getCmp('systemsetup.workflowrulesmodify').data = result.ruledata;
 						me.getCmp('systemsetup.workflowrulesmodify').stepRoutes();

@@ -18,6 +18,11 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 			ruletype = null,
 			allProperties = false;
 
+		me.autoScroll = true;
+		me.defaults = {
+			border: 0
+		};
+
 		if (me.data) {
 			ruletype = me.data.rule.wfruletype_id;
 			allProperties = me.data.properties.all;
@@ -28,13 +33,6 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 			action: 'listRulesType'
 		});
 		storeRuleTypes.load();
-
-		console.log('me', me);
-
-		me.autoScroll = true;
-		me.defaults = {
-			border: 0
-		};
 
 		this.items = [{
 			xtype: 'fieldset',
@@ -143,20 +141,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 			if (this.down('[name="ruleform"]').down('[name="properties"]')) {
 				this.down('[name="ruleform"]').down('[name="properties"]').setValue( me.data.properties.property_list_id );
 			}
-			if (this.down('[name="ruleform"]').down('[name="categories"]')) {
-				this.down('[name="ruleform"]').down('[name="categories"]').setValue( me.data.glaccount_list_id );
-			}
-			if (this.down('[name="ruleform"]').down('[name="codes"]')) {
-				this.down('[name="ruleform"]').down('[name="codes"]').setValue( me.data.glaccount_list_id );
-			}
-			if (this.down('[name="ruleform"]').down('[name="jobcodes"]')) {
-				this.down('[name="ruleform"]').down('[name="jobcodes"]').setValue( me.data.glaccount_list_id );
-			}
-			if (this.down('[name="ruleform"]').down('[name="contracts"]')) {
-				this.down('[name="ruleform"]').down('[name="contracts"]').setValue( me.data.contract_list_id );
-			}
-			if (this.down('[name="ruleform"]').down('[name="vendors"]')) {
-				this.down('[name="ruleform"]').down('[name="vendors"]').setValue( me.data.vendor_list_id );
+			if (this.down('[name="ruleform"]').down('[name="tablekeys"]')) {
+				this.down('[name="ruleform"]').down('[name="tablekeys"]').setValue( me.data.tablekey_list_id );
 			}
 		}
 
@@ -187,12 +173,14 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 				break;
 
 			case 5:  // Approval Notification Email
-				options.push( this.getSectionEmailSupression() );
+				Ext.suspendLayouts();
+				options.push( this.getSectionEmail() );
+				Ext.resumeLayouts(true);
 				break;
 
 			case 12: //Budget Overage Notification Email
 				options.push( this.getSectionBudgetByGlCategory() );
-				options.push( this.getSectionEmailSupression() );
+				options.push( this.getSectionEmail() );
 				break;
 
 			case 29: // YTD Budget % Overage (by GL Code)
@@ -398,7 +386,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 		return {
 			itemId: 'section-vendor',
 			xtype: 'shared.vendorassigner',
-			name: 'vendors',
+			name: 'tablekeys',
 			autoLoad: false,
 			allowBlank: false,
 			width: 1200,
@@ -422,7 +410,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 		return {
 			itemId: 'section-job-code',
 			xtype: 'systemSetup.invoiceitemamountassigner',
-			name: 'jobcodes',
+			name: 'tablekeys',
 			autoLoad: false,
 			allowBlank: false,
 			store: jobCodeStore,
@@ -446,7 +434,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 		return {
 			itemId: 'section-job-contract',
 			xtype: 'systemSetup.contractassigner',
-			name: 'contracts',
+			name: 'tablekeys',
 			autoLoad: false,
 			allowBlank: false,
 			store: contractsStore,
@@ -470,7 +458,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 		return {
 			itemId: 'section-budget',
 			xtype: 'systemSetup.budgetbyglcodeassigner',
-			name: 'codes',
+			name: 'tablekeys',
 			autoLoad: false,
 			allowBlank: false,
 			store: GLCodestore,
@@ -491,7 +479,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 		return {
 			itemId: 'section-budget-category',
 			xtype: 'systemSetup.budgetbyglcategoryassigner',
-			name: 'categories',
+			name: 'tablekeys',
 			autoLoad: false,
 			allowBlank: false,
 			store: GLCategoryStore,
@@ -501,9 +489,18 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 		};
 	},
 
-	getSectionEmailSupression: function() {
+	getSectionEmail: function() {
+		var me = this,
+			emailSupression = '',
+			wfruleNumber = '0';
+
+		if (me.data) {
+			emailSupression = (me.data.rule.runhour != null) ? me.data.rule.runhour : '';
+			wfruleNumber = me.data.rule.wfrule_number;
+		}
+
 		return {
-			itemId: 'section-email-supression',
+			itemId: 'section-email',
 			border: false,
 			items: [
 				{
@@ -513,30 +510,32 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 					layout: 'vbox',
 					items: [
 						{
-							name: 'email-supression',
+							name: 'comparisonValue',
 							boxLabel: NP.Translator.translate('Never Suppress Email'),
-							inputValue: 1,
-							checked: true
+							inputValue: '0',
+							checked: (me.data && wfruleNumber == '0') ? true : false
 						},
 						{
-							name: 'email-supression',
-							inputValue: 2,
+							name: 'comparisonValue',
+							inputValue: 'suppression_hours',
 							boxLabel: NP.Translator.translate(
 										'Suppress Email for {supression} hours',
-										{ supression : '<input name="email_supression_hours" type="text" style="width:70px;" />' }
-									  )
+										{ supression : '<input id="email_suppression_hours" value="' + emailSupression + '" type="text" style="width:70px;" />' }
+									  ),
+							checked: (me.data && !Ext.Array.contains(['-1','0'], wfruleNumber)) ? true : false
 						},
 						{
-							name: 'email-supression',
-							inputValue: 3,
-							boxLabel: NP.Translator.translate('Suppress Email for the rest of the period')
+							name: 'comparisonValue',
+							inputValue: '-1',
+							boxLabel: NP.Translator.translate('Suppress Email for the rest of the period'),
+							checked: (me.data && wfruleNumber == '-1') ? true : false
 						}
 					],
 					listeners: {
 						render: function() {
 							new Ext.form.TextField({
-								name: 'email_supression_hours',
-								applyTo: 'email_supression_hours'
+								name: 'email_suppression_hours',
+								applyTo: 'email_suppression_hours'
 							});
 						}
 					}
@@ -628,7 +627,15 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 	addSectionLogicOption: function(value) {
 		var me = this,
 			sectionLogicOption,
+			wfrule_number = '',
 			sectionLogicContainer = this.down('[name="ruleform"]').down('[name="section-logic-option"]');
+
+		if (me.data) {
+			if (me.data.rule.wfrule_operand) {
+				wfrule_number = me.data.rule.wfrule_number;
+				wfrule_number_end = me.data.rule.wfrule_number_end;
+			}
+		}
 
 		switch (value) {
 			case 'in range':
@@ -641,22 +648,22 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 					items: [
 						{
 							xtype: 'textfield',
-							fieldLabel: 'From:',
+							fieldLabel: NP.Translator.translate('From'),
 							name: 'comparisonValue',
 							labelWidth: 40,
 							width: 200,
 							allowBlank: false,
-							value: (me.data) ? me.data.rule.wfrule_number : ''
+							value: wfrule_number
 						},
 						{
 							xtype: 'textfield',
-							fieldLabel: 'To:',
+							fieldLabel: NP.Translator.translate('To'),
 							name: 'comparisonValueTo',
 							margin: '0 0 0 20',
 							labelWidth: 25,
 							width: 200,
 							allowBlank: false,
-							value: (me.data) ? me.data.rule.wfrule_number_end : ''
+							value: wfrule_number_end
 						}
 					]
 				};
@@ -668,7 +675,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 					fieldLabel: '',
 					name: 'comparisonValue',
 					allowBlank: false,
-					value: (me.data) ? me.data.rule.wfrule_number : ''
+					value: wfrule_number
 				};
 		}
 

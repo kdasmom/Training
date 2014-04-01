@@ -24,6 +24,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesMain', {
 				items: [
 					{
 						xtype: 'panel',
+						layout: 'fit',
 						title: NP.Translator.translate('Workflow Rules'),
 						items: [
 							{

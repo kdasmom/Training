@@ -7,6 +7,7 @@ use NP\core\db\Expression;
 use NP\core\db\Select;
 use NP\core\db\Delete;
 use NP\core\db\Where;
+use NP\workflow\WFRuleTypeGateway;
 
 class WFActionGateway extends AbstractGateway {
 	protected $table = 'wfaction';
@@ -39,6 +40,7 @@ class WFActionGateway extends AbstractGateway {
 				'wfaction_nextlevel'
 			])
 			->values($select);
+
 		$this->adapter->query($insert);
 	}
 
@@ -55,54 +57,59 @@ class WFActionGateway extends AbstractGateway {
 			'wfrule_id',
 			'forwards' => new Expression("
 				CASE
-					WHEN wf.wfruletype_id = 15 THEN '---'
-					WHEN w.wfaction_receipient_tablename='role' THEN 'Role'
-					WHEN w.wfaction_receipient_tablename='userprofilerole' THEN 'User'
+					WHEN wf.wfruletype_id = " . WFRuleTypeGateway::OPTIONAL_WORKFLOW . " THEN '---'
+					WHEN w.wfaction_receipient_tablename = 'role' THEN 'Role'
+					WHEN w.wfaction_receipient_tablename = 'userprofilerole' THEN 'User'
 					ELSE 'Next Level'
-					END
+				END
 			"),
 			'names' => new Expression("
 				CASE
-					WHEN wf.wfruletype_id = 15 THEN '---'
-					WHEN w.wfaction_receipient_tablename='role' THEN r.role_name
-					WHEN w.wfaction_receipient_tablename='userprofilerole'
+					WHEN wf.wfruletype_id = " . WFRuleTypeGateway::OPTIONAL_WORKFLOW . " THEN '---'
+					WHEN w.wfaction_receipient_tablename = 'role' THEN r.role_name
+					WHEN w.wfaction_receipient_tablename = 'userprofilerole'
 						THEN
-						(ISNULL(ps.person_lastname, '')+', '+ISNULL(ps.person_firstname, '')+' '+ISNULL(ps.person_middlename, '')) +
+						(ISNULL(ps.person_lastname, '') + ', ' + ISNULL(ps.person_firstname, '') + ' ' + ISNULL(ps.person_middlename, '')) +
 							CASE u.userprofile_status
 								WHEN 'inactive' THEN ' (Inactive)'
 								ELSE ''
 							END
 						ELSE '- -'
-						END
+				END
 			"),
 			'originator' => new Expression("
 				CASE
-					WHEN w.wfaction_originator_tablename='role' THEN 'Role'
-					WHEN w.wfaction_originator_tablename='userprofilerole' THEN 'User'
+					WHEN w.wfaction_originator_tablename = 'role' THEN 'Role'
+					WHEN w.wfaction_originator_tablename = 'userprofilerole' THEN 'User'
 					ELSE '---'
-					END
+				END
 			"),
 			'onames' => new Expression("
 				CASE
-					WHEN w.wfaction_originator_tablename='role' THEN (
-
-					Select role_name FROM ROLE where role_id = w.wfaction_originator_tablekey_id)
-					WHEN w.wfaction_originator_tablename='userprofilerole'
-						THEN (
-							Select ISNULL(PERSON.person_lastname, '')+', '+ISNULL(PERSON.person_firstname, '')+' '+ISNULL(PERSON.person_middlename, '')  +
-								CASE userprofile_status
-									WHEN 'inactive' THEN ' (Inactive)'
-									ELSE ''
-								END
-							FROM
-							USERPROFILEROLE
-							INNER JOIN USERPROFILE u ON u.userprofile_id = USERPROFILEROLE.userprofile_id
-							INNER JOIN STAFF ON USERPROFILEROLE.tablekey_id = STAFF.staff_id
-							INNER JOIN PERSON ON STAFF.person_id = PERSON.person_id
-							WHERE USERPROFILEROLE.userprofilerole_id = w.wfaction_originator_tablekey_id
-							 )
-					ELSE '---'
-					END
+					WHEN w.wfaction_originator_tablename = 'role'
+						THEN (" .
+							Select::get()->columns(['role_name'])
+								->from(['rl' => 'role'])
+									->whereEquals('rl.role_id', 'w.wfaction_originator_tablekey_id')
+								->toString() .
+						")
+					WHEN w.wfaction_originator_tablename = 'userprofilerole'
+						THEN (" .
+								Select::get()->columns([])
+									->from(['upr' => 'userprofilerole'])
+										->join(['u' => 'userprofile'], 'u.userprofile_id = upr.userprofile_id', [])
+										->join(['s' => 'staff'], 'upr.tablekey_id = s.staff_id', [])
+										->join(
+											['p' => 'person'],
+											's.person_id = p.person_id',
+											['person_lastname + \', \' + person_firstname + \' \' + person_middlename']
+										)
+									->whereEquals('upr.userprofilerole_id', 'w.wfaction_originator_tablekey_id')
+									->toString() .
+						")
+					ELSE
+						'---'
+				END
 			")
 		])
 		->from(['w' => 'wfaction'])
@@ -124,24 +131,9 @@ class WFActionGateway extends AbstractGateway {
 				[],
 				Select::JOIN_LEFT_OUTER
 			)
-			->join(
-				['s' => 'STAFF'],
-				'ur.tablekey_id = s.staff_id',
-				[],
-				Select::JOIN_LEFT_OUTER
-			)
-			->join(
-				['ps' => 'PERSON'],
-				's.person_id = ps.person_id',
-				[],
-				Select::JOIN_LEFT_OUTER
-			)
-			->join(
-				['wf' => 'WFRULE'],
-				'w.wfrule_id = wf.wfrule_id',
-				[],
-				Select::JOIN_LEFT_OUTER
-			);
+			->join( ['s'  => 'STAFF'], 'ur.tablekey_id = s.staff_id', [], Select::JOIN_LEFT_OUTER )
+			->join( ['ps' => 'PERSON'], 's.person_id = ps.person_id', [], Select::JOIN_LEFT_OUTER )
+			->join(	['wf' => 'WFRULE'], 'w.wfrule_id = wf.wfrule_id', [], Select::JOIN_LEFT_OUTER );
 
 		$where = Where::get()->equals('w.wfrule_id', $wfruleid);
 		$select->where($where);

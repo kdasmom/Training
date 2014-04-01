@@ -47,16 +47,12 @@ Ext.define('NP.view.systemSetup.WorkflowRulesModify', {
 			toolbar = me.getDockedItems()[0],
 			sectionsContainer = this.down('[name="sectionscontainer"]');
 
-//		Ext.suspendLayouts();
-
 		sectionsContainer.removeAll();
 		sectionsContainer.add( me.ruleSummarySection() );
 		sectionsContainer.add( me.ruleFormSection() );
 
 		toolbar.removeAll();
 		toolbar.add( me.stepRulesToolbar() );
-
-//		Ext.resumeLayouts(true);
 	},
 
 	stepRoutes: function() {
@@ -64,16 +60,12 @@ Ext.define('NP.view.systemSetup.WorkflowRulesModify', {
 			toolbar = me.getDockedItems()[0],
 			sectionsContainer = this.down('[name="sectionscontainer"]');
 
-//		Ext.suspendLayouts();
-
 		sectionsContainer.removeAll();
 		sectionsContainer.add( me.ruleSummarySection() );
 		sectionsContainer.add( me.routeSection() );
 
 		toolbar.removeAll();
 		toolbar.add( me.stepRoutesToolbar() );
-
-//		Ext.resumeLayouts(true);
 	},
 
 	stepConflicts: function() {
@@ -81,16 +73,12 @@ Ext.define('NP.view.systemSetup.WorkflowRulesModify', {
 			toolbar = me.getDockedItems()[0],
 			sectionsContainer = this.down('[name="sectionscontainer"]');
 
-//		Ext.suspendLayouts();
-
 		sectionsContainer.removeAll();
 		sectionsContainer.add( me.ruleSummarySection() );
 		sectionsContainer.add( me.conflictSection() );
 
 		toolbar.removeAll();
 		toolbar.add( me.stepConflictsToolbar() );
-
-//		Ext.resumeLayouts(true);
 	},
 
 	stepRulesToolbar: function() {

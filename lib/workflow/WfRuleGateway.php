@@ -132,15 +132,10 @@ class WfRuleGateway extends AbstractGateway {
 			'actions' => $this->adapter->query(
 				new sql\GetRuleActionsSelect($ruleid, $asp_client_id)
 			),
-			'properties' => $this->adapter->query(
-				new sql\GetRulePropertiesSelect($ruleid)
-			),
-
-			'contract_list_id' => [],
-			'units' => [],
-			'vendor_list_id' => [],
-			'glaccount_list_id' => []
+			'properties' => [],
+			'tablekey_list_id' => []
 		];
+
 
 		if (!empty($result['rule']) && !empty($result['rule'][0])) {
 			$result['rule'] = $result['rule'][0];
@@ -150,16 +145,18 @@ class WfRuleGateway extends AbstractGateway {
 			);
 			$countProperties = $countPropertiesResult[0]['count'];
 
+			$properties = $this->adapter->query( new sql\GetRulePropertiesSelect($ruleid) );
 			$selected = 0;
-			$properties = [];
-			foreach ($result['properties'] as $property) {
+			$property_list_id = [];
+			foreach ($properties as $property) {
 				$selected++;
-				$properties[] = $property['property_id'];
+				$property_list_id[] = $property['property_id'];
 			}
 
 			$result['properties'] = [
 				'all' => $countProperties == $selected,
-				'property_list_id' => $properties
+				'property_list_id' => $property_list_id,
+				'properties' => $properties
 			];
 
 			$keys = [];
@@ -210,7 +207,18 @@ class WfRuleGateway extends AbstractGateway {
 					}
 				}
 			}
-//			if (in_array($type, [9, 10, 11, 12, 14, 30, 32, 34, 38])) {
+			if (in_array($type, [21,22])) {
+				$jobcodes = $result['scope'];
+
+				$tablekey_list_id = [];
+				foreach ($jobcodes as $jobcode) {
+					$tablekey_list_id[] = $jobcode['tablekey_id'];
+				}
+
+				$result['jobcodes'] = $jobcodes;
+				$result['tablekey_list_id'] = $tablekey_list_id;
+			}
+			if (in_array($type, [9, 10, 11, 12, 14, 30, 32, 34, 38])) {
 				$glaccounts = $this->adapter->query(
 					new sql\GLAccountByWFRuleSelect($ruleid, $asp_client_id)
 				);
@@ -219,8 +227,9 @@ class WfRuleGateway extends AbstractGateway {
 					$glaccount_list_id[] = $glaccount['glaccount_id'];
 				}
 
-				$result['glaccount_list_id'] = $glaccount_list_id;
-//			}
+				$result['categories'] = $glaccounts;
+				$result['tablekey_list_id'] = $glaccount_list_id;
+			}
 			if (in_array($type, [24, 25, 26, 27])) {
 				$contracts = $this->adapter->query(
 					new sql\JobContractByWFRuleScope($ruleid)
@@ -228,10 +237,11 @@ class WfRuleGateway extends AbstractGateway {
 
 				$contract_list_id = [];
 				foreach ($contracts as $contract) {
-					$contract_list_id[] = $contract['contract_list_id'];
+					$contract_list_id[] = $contract['jbcontract_id'];
 				}
 
-				$result['contract_list_id'] = $contract_list_id;
+				$result['contracts'] = $contracts;
+				$result['tablekey_list_id'] = $contract_list_id;
 			}
 			if (in_array($type, [6, 16])) {
 				$where = Where::get()->in('v.vendor_id', implode(',', $keys));
@@ -242,11 +252,11 @@ class WfRuleGateway extends AbstractGateway {
 					$vendor_list_id[] = $vendor['vendor_id'];
 				}
 
-				$result['vendor_list_id'] = $vendor_list_id;
+				$result['tablekey_list_id'] = $vendor_list_id;
 
-//				foreach ($vendors as $vendor) {
-//					$result['vendors'][$vendor['vendor_id']] = $vendor['vendor_name'];
-//				}
+				foreach ($vendors as $vendor) {
+					$result['vendors'][$vendor['vendor_id']] = $vendor['vendor_name'];
+				}
 			}
 
 			if ($type == 4) {
@@ -348,6 +358,7 @@ class WfRuleGateway extends AbstractGateway {
 
 		return $result[0]['rulecount'];
 	}
+
 
 	public function findConflictingRulesByProperties($wfrule_id, $wfruletype_id, $wfrule_operand, $wfrule_number, $wfrule_number_end) {
 		$select = new Select();
@@ -451,7 +462,6 @@ class WfRuleGateway extends AbstractGateway {
 				->whereNotEquals('wfr.wfrule_status', "'inactive'")
 				->whereEquals('wfr.wfruletype_id', $wfruletype_id);
 
-//		echo $select->toString();
 		$result = $this->adapter->query($select);
 
 		$conflictingRulesByProperties = [];
@@ -502,6 +512,7 @@ class WfRuleGateway extends AbstractGateway {
 
 		return $this->adapter->query($select, $conflictingRulesIdList);
 	}
+
 
 	public function findUserProfileById($id) {
 		$select = new Select();

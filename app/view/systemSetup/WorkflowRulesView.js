@@ -62,6 +62,28 @@ Ext.define('NP.view.systemSetup.WorkflowRulesView', {
 					border: 0
 				},
 				items: this.sectionProperties(this.data)
+			},
+			// Last Update Date/Time Stamp UserID of User
+			{
+				xtype: 'panel',
+				layout: {
+					type: 'hbox',
+					pack: 'start'
+				},
+				defaults: {
+					border: 0
+				},
+				items: [
+					{
+						width: 200,
+						cls: 'header-text',
+						html: NP.Translator.translate('Last Update Date') + ':'
+					},
+					{
+						border: false,
+						html: Ext.Date.format(new Date(me.data.rule.wfrule_datetm), NP.Config.getDefaultDateFormat() + ' h:iA') + ' (' + me.data.rule.userprofile_username + ')'
+					}
+				]
 			}
 		];
 
