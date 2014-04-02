@@ -4,7 +4,6 @@ Ext.define('NP.view.systemSetup.WorkflowRulesSummary', {
 
 	initComponent: function() {
 		this.border = false;
-
 		console.log('this.data', this.data);
 
 		if (!this.data) {
@@ -33,8 +32,6 @@ Ext.define('NP.view.systemSetup.WorkflowRulesSummary', {
 
 
 	getRuleSummaryItems: function() {
-
-
 		var items = [
 			// Rule Name
 			{

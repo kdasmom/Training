@@ -60,6 +60,7 @@ Ext.define('NP.controller.SystemSetup', {
 			me.newSplitFormTitle	  = NP.Translator.translate('New Split');
 			me.intPkgChangeDialogTitle= NP.Translator.translate('Change integration package?');
 			me.intPkgChangeDialogText = NP.Translator.translate('Are you sure you want to change integration package? Doing so will clear the entire form, removing all splits you have entered.');
+			me.deleteRuleDialogTitle  = NP.Translator.translate('Delete rule?');
 			me.deleteRuleDialogText   = NP.Translator.translate('Are you sure you want to delete selected rules?');
 			me.deleteForwardTitle     = NP.Translator.translate('Delete Forward?');
 			me.deleteForwardText      = NP.Translator.translate('Are you sure you want to delete this \'Forward\' from this rule?');
@@ -146,7 +147,6 @@ Ext.define('NP.controller.SystemSetup', {
 				click: me.autoAllocSplit
 			},
 
-
 			'#buttonWorkflowCancel': {
 				click: function() {
 					me.addHistory('SystemSetup:showSystemSetup');
@@ -223,7 +223,7 @@ Ext.define('NP.controller.SystemSetup', {
 			'#buttonWorkflowDeactivateRule': {
 				click: function() {
 					var wfrule_id = me.getCmp('systemsetup.workflowrulesmodify').down('[name="wfrule_id"]').value;
-					this.changeRuleStatus([wfrule_id], 2);
+					me.changeRuleStatus([wfrule_id], 2);
 					me.addHistory('SystemSetup:showSystemSetup:WorkflowRules');
 				}
 			},
@@ -342,7 +342,8 @@ Ext.define('NP.controller.SystemSetup', {
 	},
 
 	workflowRulesChangeStatus: function(status) {
-		var grid = this.getWorkflowRulesGrid();
+		var me = this,
+			grid = this.getWorkflowRulesGrid();
 
 		if (grid) {
 			var selection = grid.getSelectionModel().getSelection();
@@ -354,33 +355,36 @@ Ext.define('NP.controller.SystemSetup', {
 					identifiers.push(selection[i].internalId);
 				}
 				if (identifiers.length) {
-					// Identifiers are ready to be passed to the server.
-					NP.lib.core.Net.remoteCall({
-						requests: {
-							service: 'WFRuleService',
-							action : 'changeStatus',
-							id: identifiers,
-							status: status,
-							success: function(data) {
-								if (data.success) {
-									grid.getSelectionModel().deselectAll();
-									grid.store.reload();
-								}
-							}
-						}
-					});
+					me.changeRuleStatus(identifiers, status, this.reloadWorkflowGrid);
 				}
 			}
 		}
 	},
 
-	changeRuleStatus: function(identifiers, status) {
+	reloadWorkflowGrid: function(me) {
+		var grid = me.getWorkflowRulesGrid();
+
+		if (grid) {
+			grid.getSelectionModel().deselectAll();
+			grid.store.reload();
+		}
+	},
+
+	changeRuleStatus: function(identifiers, status, callback) {
+		var me = this;
+		callback = callback || Ext.emptyFn;
+
 		NP.lib.core.Net.remoteCall({
 			requests: {
 				service: 'WFRuleService',
 				action : 'changeStatus',
 				id: identifiers,
-				status: status
+				status: status,
+				success: function(data) {
+					if (data.success) {
+						callback(me);
+					}
+				}
 			}
 		});
 	},
@@ -449,7 +453,7 @@ Ext.define('NP.controller.SystemSetup', {
 		var me = this;
 
 		Ext.MessageBox.confirm(
-			'Delete Rule',
+			me.deleteRuleDialogTitle,
 			me.deleteRuleDialogText,
 			function(button) {
 				if (button == 'yes') {
@@ -464,13 +468,12 @@ Ext.define('NP.controller.SystemSetup', {
 						requests: {
 							service: 'WFRuleService',
 							action : 'deleteRules',
-
 							ruleIdList: selectedRules.join(),
 
 							success: function(data) {
 								if (data) {
 									mask.destroy();
-									grid = me.getWorkflowRulesGrid();
+									var grid = me.getWorkflowRulesGrid();
 									grid.getSelectionModel().deselectAll();
 									grid.store.reload();
 								}

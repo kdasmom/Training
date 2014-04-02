@@ -29,9 +29,14 @@ Ext.define('NP.view.systemSetup.WorkflowRulesModify', {
 
 		me.items = [
 			{
-				xtype: 'fieldcontainer',
-				name: 'sectionscontainer',
-				items: []
+				xtype: 'panel',
+				items : [
+					{
+						xtype: 'fieldcontainer',
+						name: 'sectionscontainer',
+						items: []
+					}
+				]
 			}
 		];
 
@@ -72,6 +77,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesModify', {
 		var me = this,
 			toolbar = me.getDockedItems()[0],
 			sectionsContainer = this.down('[name="sectionscontainer"]');
+
+//		Ext.suspendLayouts();
 
 		sectionsContainer.removeAll();
 		sectionsContainer.add( me.ruleSummarySection() );

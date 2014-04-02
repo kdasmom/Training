@@ -208,6 +208,16 @@ class WfRuleGateway extends AbstractGateway {
 				}
 			}
 			if (in_array($type, [21,22])) {
+				$scope = $result['scope'];
+
+				$tablekey_list_id = [];
+				foreach ($scope as $item) {
+					$tablekey_list_id[] = $item['tablekey_id'];
+				}
+
+				$result['tablekey_list_id'] = $tablekey_list_id;
+			}
+			if (in_array($type, [6,16,28,35,36])) {
 				$jobcodes = $result['scope'];
 
 				$tablekey_list_id = [];
@@ -247,13 +257,13 @@ class WfRuleGateway extends AbstractGateway {
 				$where = Where::get()->in('v.vendor_id', implode(',', $keys));
 				$vendors = $this->vendorGateway->find($where, [], null, ['vendor_id', 'vendor_name']);
 
-				$vendor_list_id = [];
+//				$vendor_list_id = [];
 				foreach ($vendors as $vendor) {
-					$vendor_list_id[] = $vendor['vendor_id'];
+//					$vendor_list_id[] = $vendor['vendor_id'];
 					$result['vendors'][$vendor['vendor_id']] = $vendor['vendor_name'];
 				}
 
-				$result['tablekey_list_id'] = $vendor_list_id;
+//				$result['tablekey_list_id'] = $vendor_list_id;
 			}
 
 			if ($type == 4) {
@@ -342,6 +352,14 @@ class WfRuleGateway extends AbstractGateway {
 	}
 
 
+	/**
+	 * Find count duplicate rules
+	 *
+	 * @param  int $wfrule_id
+	 * @param  int $ruletypeid
+	 * @param  int $asp_client_id
+	 * @return int
+	 */
 	public function findCountDuplicateRules($wfrule_id, $ruletypeid, $asp_client_id) {
 		$select = new Select();
 
@@ -358,6 +376,16 @@ class WfRuleGateway extends AbstractGateway {
 	}
 
 
+	/**
+	 * Find conflicting rules by properties
+	 *
+	 * @param int $wfrule_id
+	 * @param int $wfruletype_id
+	 * @param int $wfrule_operand
+	 * @param int $wfrule_number
+	 * @param int $wfrule_number_end
+	 * @return array
+	 */
 	public function findConflictingRulesByProperties($wfrule_id, $wfruletype_id, $wfrule_operand, $wfrule_number, $wfrule_number_end) {
 		$select = new Select();
 		$subselect = new Select();

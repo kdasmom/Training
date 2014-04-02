@@ -35,13 +35,25 @@ class WFRuleService extends AbstractService {
         $this->securityService = $securityService;
     }
 
-    public function get($id) {
+	/**
+	 * Get workflow rule
+	 *
+	 * @param int $id - workflow rule id
+	 * @return array
+	 */
+	public function get($id) {
         $asp_client_id = $this->configService->getClientId();
 		$unitAttachDisplay = $this->configService->findSysValueByName('PN.InvoiceOptions.UnitAttachDisplay');
 
         return $this->wfRuleGateway->getRule($id, $asp_client_id, ['UnitAttachDisplay' => $unitAttachDisplay]);
     }
 
+	/**
+	 * Copy rules
+	 *
+	 * @param array $ruleIdList
+	 * @return array
+	 */
 	public function copyRules($ruleIdList) {
 		if (!empty($ruleIdList)) {
 			$ruleIdArray = explode(',', $ruleIdList);
@@ -59,7 +71,13 @@ class WFRuleService extends AbstractService {
 		];
 	}
 
-    public function copy($id) {
+	/**
+	 * Copy rule
+	 *
+	 * @param int $id
+	 * @return array
+	 */
+	public function copy($id) {
         // Find target rule
         $rule = $this->wfRuleGateway->findById($id);
 
@@ -176,8 +194,14 @@ class WFRuleService extends AbstractService {
 		];
     }
 
-
-    public function changeStatus($id, $status) {
+	/**
+	 * Change rule status
+	 *
+	 * @param int $id
+	 * @param int $status
+	 * @return array
+	 */
+	public function changeStatus($id, $status) {
         if (!empty($id) && in_array($status, [1, 2])) {
             foreach ($id as $item) {
                 $this->wfRuleGateway->setRuleStatus($item, $status);
@@ -349,14 +373,16 @@ class WFRuleService extends AbstractService {
 				case WFRuleTypeGateway::PURCHASE_ORDER_BY_CONTRACT_CODE:
 				case WFRuleTypeGateway::INVOICE_BY_CONTRACT_CODE_MASTER:
 				case WFRuleTypeGateway::PURCHASE_ORDER_BY_CONTRACT_CODE_MASTER:
-					$this->wfRuleScopeGateway->saveScopeList($ruleid, 'jbcontract', 'jbcontract_id', $tablekeys);
-		//				foreach ($tablekeys as $tablekeyid) {
-		//					$this->wfRuleScopeGateway->insert([
-		//						'wfrule_id'   => $ruleid,
-		//						'table_name'  => 'jbcontract',
-		//						'tablekey_id' => $tablekeyid
-		//					]);
-		//				}
+					if ($data['AllContracts']) {
+						$this->wfRuleScopeGateway->insert([
+							'wfrule_id'   => $ruleid,
+							'table_name'  => 'jbcontract',
+							'tablekey_id' => 0
+						]);
+					}
+					else {
+						$this->wfRuleScopeGateway->saveScopeList($ruleid, 'jbcontract', 'jbcontract_id', $tablekeys);
+					}
 					break;
 				case WFRuleTypeGateway::INVOICE_TOTAL_BY_PAY_BY:
 					$this->wfRuleScopeGateway->saveScopeList($ruleid, 'invoicepaymenttype', 'invoicepayment_type_id', $tablekeys);
@@ -364,13 +390,6 @@ class WFRuleService extends AbstractService {
 				case WFRuleTypeGateway::PO_ITEM_AMOUNT_BY_DEPARTMENT:
 				case WFRuleTypeGateway::INVOICE_ITEM_AMOUNT_BY_DEPARTMENT:
 					$this->wfRuleScopeGateway->saveScopeList($ruleid, 'unit', 'unit_id', $tablekeys);
-		//				foreach ($tablekeys as $tablekeyid) {
-		//					$this->wfRuleScopeGateway->insert([
-		//						'wfrule_id'   => $ruleid,
-		//						'table_name'  => 'unit',
-		//						'tablekey_id' => $tablekeyid
-		//					]);
-		//				}
 					break;
 			}
 
@@ -454,7 +473,7 @@ class WFRuleService extends AbstractService {
 		$receipient_tablekeys = explode(',', $receipient_tablekeys_list);
 
 		if ($data['forwardto'] == 'next') {
-			if (count($originator_tablekeys) > 0) {
+			if (count($originator_tablekeys)) {
 				$this->wfActionGateway->delete(
 					Where::get()->in('wfaction_originator_tablekey_id', $originator_tablekeys_list)
 						->equals('wfaction_originator_tablename', '?')
@@ -538,7 +557,6 @@ class WFRuleService extends AbstractService {
 						if (!count($originatorConflicts)) {
 //							$userprofile = $this->userprofileGateway->findById($originator_tablekey_id);
 //							$originator_tablekey_id = $userprofile['role_id'];
-
 							$userprofile = $this->wfRuleGateway->findUserProfileById($originator_tablekey_id);
 							$originator_tablekey_id = $userprofile[0]['role_id'];
 						}

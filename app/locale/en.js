@@ -709,6 +709,9 @@ Ext.define('NP.Locale', {
 	'Never Suppress Email'                      : 'Never Suppress Email',
 	'Suppress Email for {supression} hours'     : 'Suppress Email for {supression} hours',
 	'Suppress Email for the rest of the period' : 'Suppress Email for the rest of the period',
+	'Invoice Item Amount (by Contract)'         : 'Invoice Item Amount (by Contract)',
+	'All Contracts'                             : 'All Contracts',
+	'Specific Contracts'                        : 'Specific Contracts',
 
 	'LESS THAN' : 'LESS THAN',
 	'GREATER THAN' : 'GREATER THAN',

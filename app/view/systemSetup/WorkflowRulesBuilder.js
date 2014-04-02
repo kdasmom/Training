@@ -7,7 +7,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 		'NP.view.shared.VendorAssigner',
 		'NP.view.systemSetup.BudgetByGlCategoryAssigner',
 		'NP.view.systemSetup.BudgetByGlCodeAssigner',
-		'NP.view.systemSetup.InvoiceItemAmountAssigner',
+		'NP.view.systemSetup.Invoic' +
+			'eItemAmountAssigner',
 		'NP.view.systemSetup.ContractAssigner',
 		'NP.view.systemSetup.PaymentTypeAssigner',
 		'NP.view.systemSetup.UnitAssigner'
@@ -89,7 +90,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 								name: 'all_properties',
 								inputValue: '0',
 								padding: '0 0 0 20',
-								checked: allProperties ? false : true
+								checked: !allProperties
 							}
 						]
 					},
@@ -215,7 +216,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 			case 25: // Purchase Order Item Amount (by Contract Code)
 			case 26: // Invoice Item Amount (by Contract Code) - Master
 			case 27: // Purchase Order Item Amount (by Contract Code) - Master
-				options.push( this.getSectionJobContract() );
+				options = this.getSectionJobContract();
 				break;
 
 			case 28: // Invoice Total by Pay By - Master Rule
@@ -341,7 +342,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 		return {
 			itemId: 'section-unit',
 			xtype: 'systemSetup.unitassigner',
-			name: 'paymenttypes',
+			name: 'tablekeys',
 			autoLoad: false,
 			allowBlank: false,
 			width: 1200,
@@ -365,7 +366,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 		return {
 			itemId: 'section-payby',
 			xtype: 'systemSetup.paymenttypeassigner',
-			name: 'paymenttypes',
+			name: 'tablekeys',
 			autoLoad: false,
 			allowBlank: false,
 			width: 1200,
@@ -421,6 +422,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 	},
 
 	getSectionJobContract: function() {
+		var me = this;
+
 		var contractsStore = Ext.create('NP.lib.data.Store', {
 			service	: 'JobCostingService',
 			action	: 'getContracts',
@@ -431,17 +434,55 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 		});
 		contractsStore.load();
 
-		return {
-			itemId: 'section-job-contract',
-			xtype: 'systemSetup.contractassigner',
-			name: 'tablekeys',
-			autoLoad: false,
-			allowBlank: false,
-			store: contractsStore,
-			width: 1200,
-			labelWidth: 200,
-			height: 200
-		};
+		var allContracts = false;
+		if (me.data) {
+			allContracts = (me.data.tablekey_list_id.length) ? false : true;
+		}
+
+		return [
+			{
+				xtype: 'radiogroup',
+				layout: 'hbox',
+				margin: '10 0 10 205',
+				listeners: {
+					change: function(field, newValue, oldValue, options) {
+						var fn = (newValue.AllContracts) ? 'hide' : 'show';
+
+						me.down('#section-job-contract')[fn]();
+
+						me.down('#section-job-contract').allowBlank = (newValue.AllContracts) ? true : false;
+					}
+				},
+				items: [
+					{
+						boxLabel: NP.Translator.translate('All Contracts'),
+						checked: allContracts,
+						name: 'AllContracts',
+						inputValue: 1
+					},
+					{
+						boxLabel: NP.Translator.translate('Specific Contracts'),
+						name: 'AllContracts',
+						inputValue: 0,
+						padding: '0 0 0 20',
+						checked: !allContracts
+					}
+				]
+			},
+			{
+				itemId: 'section-job-contract',
+				xtype: 'systemSetup.contractassigner',
+				fieldLabel: NP.Translator.translate('Invoice Item Amount (by Contract)'),
+				name: 'tablekeys',
+				autoLoad: false,
+				allowBlank: allContracts,
+				hidden: allContracts,
+				store: contractsStore,
+				width: 1200,
+				labelWidth: 200,
+				height: 200
+			}
+		];
 	},
 
 	getSectionBudgetByGlCode: function() {
