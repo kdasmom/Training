@@ -5,6 +5,8 @@ namespace NP\gl;
 use NP\core\AbstractGateway;
 use NP\core\db\Expression;
 use NP\core\db\Select;
+use NP\core\db\Update;
+use NP\core\db\Where;
 use NP\system\ConfigService;
 
 use NP\core\db\Adapter;
@@ -449,6 +451,19 @@ class GlAccountGateway extends AbstractGateway {
 
         return $this->adapter->query($select, [$property_id, $period]);
     }
+
+	public function updateStatus($glaccounts, $status) {
+		$update = new Update();
+
+		$where = new Where();
+		$where->in('glaccount_id', implode(',', $glaccounts));
+
+		$update->table('glaccount')
+			->values(['glaccount_status' => "?"])
+			->where($where);
+
+		return $this->adapter->query($update, [$status]);
+	}
 }
 
 ?>

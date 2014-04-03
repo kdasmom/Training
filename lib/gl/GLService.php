@@ -578,4 +578,12 @@ class GLService extends AbstractService {
 
 		return $this->glAccountGateway->getGLUI($property_id, $vendorsite_id, $propertyAccountUse['PROPERTYGLACCOUNT_USE'], $GLCodeSort = false);
 	}
+
+	public function changeStatus($glaccounts = [], $status = null) {
+		if (!$glaccounts || count($glaccounts) == 0 || !$status) {
+			return false;
+		}
+
+		return $this->glAccountGateway->updateStatus($glaccounts, $status);
+	}
 }

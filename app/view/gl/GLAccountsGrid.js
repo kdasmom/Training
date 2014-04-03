@@ -241,12 +241,6 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
                         renderer: Ext.util.Format.capitalize
                     },
                     {
-                        text: this.statusColText,
-                        dataIndex: 'glaccount_status',
-                        flex: 0.5,
-                        renderer: Ext.util.Format.capitalize
-                    },
-                    {
                         text: this.lastUpdatedColText,
                         dataIndex: 'glaccount_updatetm',
                         renderer: function(val, meta, rec) {
@@ -264,6 +258,16 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
                     {
                         xtype   : 'shared.button.edit',
                         itemId  : 'editGLAccountsBtn',
+                        disabled: true
+                    },
+                    {
+                        xtype   : 'shared.button.activate',
+                        itemId  : 'activateGLAccountsBtn',
+                        disabled: true
+                    },
+                    {
+                        xtype   : 'shared.button.inactivate',
+                        itemId  : 'inactivateGLAccountsBtn',
                         disabled: true
                     },{
                         xtype   : 'button',
