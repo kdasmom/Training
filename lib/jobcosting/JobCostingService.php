@@ -120,7 +120,7 @@ class JobCostingService extends AbstractService {
 				$item_jobflag = 0;
 			}
 
-			// Set the item_split field in the appropriate table to 1
+			// Set the item_jobflag
 			$this->$gtw->update([
 				"{$data['table_name']}_id"      => $data['tablekey_id'],
 				"{$data['table_name']}_jobflag" => $item_jobflag

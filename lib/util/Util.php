@@ -21,7 +21,22 @@ class Util {
 		
 		// Trim out extra characters at the end that can be created if using time() function which
 		// generates 00000 for microseconds instead of a 3 digit number
-		return substr($date->format("Y-m-d H:i:s.u"), 0, 23);
+		return substr($date->format(self::getServerDateFormat()), 0, 23);
+	}
+	
+	/**
+	 * Formats a date in a format that can be used to save to the database and returns it
+	 * 
+	 * @param  DateTime  $date An integer representing time measured in the number of seconds since the Unix Epoch (January 1 1970 00:00:00 GMT)
+	 * @return string          A formatted date
+	 */
+	public static function getServerDateFormat($includeTime=true) {
+		$format = 'Y-m-d';
+		if ($includeTime) {
+			$format .= ' H:i:s.u';
+		}
+
+		return $format;
 	}
 	
 	/**
@@ -154,6 +169,35 @@ class Util {
 		}
 
 		return $wasResized;
+	}
+
+	/**
+	 * Checks if the path passed is unique, if not it changes it to a unique path
+	 */
+	public static function getUniqueFileName($path) {
+		$copyNum     = 1;
+		$path        = preg_split("/[\/\\\]+/", $path);
+		$fileName    = array_pop($path);
+		$path        = implode('/', $path);
+
+		$fileName    = explode('.', $fileName);
+		$fileExt     = array_pop($fileName);
+		$fileName    = implode('.', $fileName);
+		$newFileName = $fileName;
+
+		while ( file_exists("{$path}/{$newFileName}.{$fileExt}") ) {
+			$newFileName = "{$fileName}_copy";
+			if ($copyNum > 1) {
+				$newFileName .= $copyNum;
+			}
+
+			$copyNum++;
+		}
+
+		return [
+			'path'     => "{$path}/{$newFileName}.{$fileExt}",
+			'fileName' => "{$newFileName}.{$fileExt}"
+		];
 	}
 }
 

@@ -175,6 +175,20 @@ Ext.define('NP.model.invoice.InvoiceItem', {
 			persist     : false,
 			useNull     : false,
 			defaultValue: 0
+		},
+
+		{
+			name: 'is_utility',
+			type: 'int',
+			convert: function(v, rec) {
+				if (v === null) {
+					v = 0;
+					if (rec.get('utilityaccount_id') !== null) {
+						v = 1;
+					}
+				}
+				return v;
+			}
 		}
 	]
 });

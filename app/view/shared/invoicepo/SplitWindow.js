@@ -37,8 +37,7 @@ Ext.define('NP.view.shared.invoicepo.SplitWindow', {
     type: null,             // Needs to be set to 'invoice' or 'po'
 
     initComponent: function() {
-    	var me           = this,
-            customFields = NP.Config.getCustomFields().line.fields;
+    	var me = this;;
 
         me.itemId = me.type + 'SplitWin';
 
@@ -152,7 +151,8 @@ Ext.define('NP.view.shared.invoicepo.SplitWindow', {
     },
 
     getGrid: function() {
-        var me = this,
+        var me            = this,
+            customFields  = NP.Config.getCustomFields().line.fields,
             propertyStore = Ext.create('NP.store.property.Properties', {
                 service : 'PropertyService',
                 action  : 'getByIntegrationPackage'
@@ -339,7 +339,7 @@ Ext.define('NP.view.shared.invoicepo.SplitWindow', {
         // Custom field columns
         for (var i=1; i<8; i++) {
             var customField = customFields[i];
-            if (customField[typeShort+'On']) {
+            if (customField['invOn']) {
                 gridCfg.columns.push({
                     xtype      : 'shared.gridcol.universalfield',
                     width      : 200,
@@ -354,7 +354,7 @@ Ext.define('NP.view.shared.invoicepo.SplitWindow', {
                         type      : customField.type,
                         isLineItem: 1,
                         number    : i,
-                        allowBlank: !customField[typeShort + 'Required'],
+                        allowBlank: !customField['invRequired'],
                         fieldCfg  : {
                             selectOnFocus   : true,
                             validateOnBlur  : false,

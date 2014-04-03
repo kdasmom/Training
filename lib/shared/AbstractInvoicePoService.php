@@ -10,6 +10,7 @@ use NP\property\FiscalCalService;
 use NP\image\ImageService;
 use NP\jobcosting\JobCostingService;
 use NP\vendor\VendorService;
+use NP\util\Util;
 
 /**
  * Service class for operations related to both Invoices and POs, to be extended by both the PO and Invoice class
@@ -191,8 +192,8 @@ Abstract class AbstractInvoicePoService extends AbstractService {
     /**
      * Get images for an entity
      */
-    public function getImages($entity_id, $primaryOnly=false) {
-        return $this->imageIndexGateway->findEntityImages($entity_id, $this->title, $primaryOnly);
+    public function getImages($entity_id, $primaryOnly=false, $includeTransferData=false) {
+        return $this->imageIndexGateway->findEntityImages($entity_id, $this->title, $primaryOnly, $includeTransferData);
     }
 
     /**
@@ -220,6 +221,75 @@ Abstract class AbstractInvoicePoService extends AbstractService {
 	public function getHistoryLog($entity_id, $pageSize=null, $page=null, $sort="approve_datetm") {
 		$gateway = "{$this->gateway}Gateway";
 		return $this->$gateway->findHistoryLog($entity_id, $pageSize, $page, $sort);
+	}
+
+	/**
+	 * 
+	 */
+	public function getSchedule($entity_id) {
+		return $this->recurringSchedulerGateway->findSingle([
+			'table_name'      => "'{$this->table}'",
+			'tablekey_id'     => '?',
+			'schedule_status' => "'active'"
+		], [$entity_id]);
+	}
+
+	/**
+	 * Saves a schedule for an entity template
+	 */
+	public function saveSchedule($data) {
+		$errors = [];
+		$this->recurringSchedulerGateway->beginTransaction();
+		
+		try {
+			$schedule = new \NP\system\RecurringSchedulerEntity($data['recurringscheduler']);
+			$schedule->table_name  = $this->table;
+			$schedule->tablekey_id = $data['entity_id'];
+			$schedule->schedule_week_days = $data['schedule_week_days'];
+
+			$errors = $this->entityValidator->validate($schedule);
+			if (!count($errors)) {
+				$this->recurringSchedulerGateway->save($schedule);
+			}
+		} catch(\Exception $e) {
+			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+		
+		if (count($errors)) {
+			$this->recurringSchedulerGateway->rollback();
+		} else {
+			$this->recurringSchedulerGateway->commit();
+		}
+		
+		return array(
+		    'success' => (count($errors)) ? false : true,
+		    'errors'  => $errors
+		);
+	}
+
+	/**
+	 * Deletes a schedule for an entity template
+	 */
+	public function deleteSchedule($entity_id) {
+		$errors = [];
+		
+		try {
+			$schedule = $this->getSchedule($entity_id);
+			$recurring_scheduler_id = $schedule['recurring_scheduler_id'];
+
+			$this->recurringSchedulerGateway->update(
+				['schedule_status' => 'inactive'],
+				['recurring_scheduler_id' => '?'],
+				[$recurring_scheduler_id]
+			);
+		} catch(\Exception $e) {
+			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+		
+		return array(
+		    'success' => (count($errors)) ? false : true,
+		    'errors'  => $errors
+		);
 	}
 
     /**
@@ -690,5 +760,186 @@ Abstract class AbstractInvoicePoService extends AbstractService {
 		);
 		
 		return $lock_id;
+	}
+
+	/**
+	 * Makes a copy of an entity
+	 */
+	public function saveCopy($entity_id, $template_name, $save_invoice_number=false, $include_images=false) {
+		$errors        = [];
+		$new_entity_id = null;
+		$pk            = $this->pkField;
+		$itemPk        = $this->itemPkField;
+		$gtw           = $this->gateway . 'Gateway';
+
+		$this->$gtw->beginTransaction();
+		
+		try {
+			// Get the entity data
+			$entity = $this->$gtw->findById($entity_id);
+			$data   = [
+				$this->table                   => $entity,
+				'userprofile_id'               => $this->securityService->getUserId(),
+				'delegation_to_userprofile_id' => $this->securityService->getDelegatedUserId()
+			];
+			$data[$this->table][$pk] = null;
+
+			// Set the template name
+			$data[$this->table]['template_name'] = $template_name;
+
+			// If dealing with an invoice and option to save invoice number is false, clear invoice number
+			if ($this->type == 'invoice' && !$save_invoice_number) {
+				$data[$this->table]['invoice_ref'] = '';
+			}
+
+			// Get all lines for the entity
+			$lines = $this->getEntityLines($entity_id);
+
+			// Loop through lines
+			$data['lines']    = [];
+			$data['tax']      = 0;
+			$data['shipping'] = 0;
+			foreach ($lines as $line) {
+				// Set the entity_id on the line to associate
+				$line[$pk] = null;
+				$line[$itemPk] = null;
+
+				$data['lines'][] = $line;
+
+				$data['tax']      += $line["{$this->itemTable}_salestax"];
+				$data['shipping'] += $line["{$this->itemTable}_shipping"];
+			}
+
+			$saveFn = 'save' . ucfirst($this->type);
+			$result = $this->$saveFn($data);
+
+			if (!$result['success']) {
+				throw new \NP\core\Exception('Error saving entity while creating entity copy');
+			}
+
+			$new_entity_id = $result[$pk];
+
+			// If we've elected to copy images, proceed
+			if ($include_images) {
+				$result = $this->copyEntityImages($entity_id, $new_entity_id);
+
+				if (!$result['success']) {
+					$this->loggingService->log('error', 'Error copying images', ['result'=>$result, "{$this->table}_id"=>$entity_id]);
+					throw new \NP\core\Exception('Error while copying images for an entity');
+				}
+			}
+		} catch(\Exception $e) {
+			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+		
+		if (count($errors)) {
+			$this->$gtw->rollback();
+		} else {
+			$this->$gtw->commit();
+		}
+		
+		return array(
+			'success'    => (count($errors)) ? false : true,
+			'errors'     => $errors,
+			'entity_id' => $new_entity_id
+		);
+	}
+
+	/**
+	 * 
+	 */
+	public function copyEntityImages($old_entity_id, $new_entity_id) {
+		$errors = [];
+		$this->imageIndexGateway->beginTransaction();
+		
+		try {
+			// Get all images for entity
+			$images = $this->getImages($old_entity_id, false, true);
+
+			// Loop through images
+			foreach ($images as $image) {
+				// Create image entity
+				$imgIndex = new \NP\image\ImageIndexEntity($image);
+
+				// Associate image with entity
+				$imgIndex->Tablekey_Id = $new_entity_id;
+
+				// Insert the image
+				$this->imageIndexGateway->insert($imgIndex);
+
+				// Create transfer entity
+				$imgTransfer = new \NP\image\ImageTransferEntity($image);
+
+				// Associate transfer with image
+				$imgTransfer->invoiceimage_id   = $imgIndex->Image_Index_Id;
+
+				// Create unique filename for the new image file
+				$imgTransfer->transfer_filename = \NP\util\Util::getUniqueFileName($image['transfer_filename']);
+
+				// Insert the transfer record
+				$this->imageTransferGateway->insert($imgTransfer);
+
+				// Copy the image file
+				copy($image['transfer_filename'], $imgTransfer->transfer_filename);
+			}
+		} catch(\Exception $e) {
+			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+		
+		if (count($errors)) {
+			$this->imageIndexGateway->rollback();
+		} else {
+			$this->imageIndexGateway->commit();
+		}
+		
+		return array(
+		    'success' => (count($errors)) ? false : true,
+		    'errors'  => $errors
+		);
+	}
+
+	/**
+	 * 
+	 */
+	public function useTemplate($entity_id) {
+		$errors = [];
+		$gtw    = "{$this->gateway}Gateway";
+
+		$this->$gtw->beginTransaction();
+		
+		try {
+			// Call the copy function with default arguments
+			$result = $this->saveCopy($entity_id, '', true, true);
+
+			// Check for success before proceeding
+			if (!$result['success']) {
+				$this->loggingService->log('error', 'Error saving entity copy', ['result'=>$result, "{$this->table}_id"=>$entity_id]);
+				throw new \NP\core\Exception('Error while saving a copy of an entity while using a template');
+			}
+
+			// Get the new entity ID
+			$entity_id = $result['entity_id'];
+
+			// Update the entity status to make it open (the copy will have created a template)
+			$this->$gtw->update(
+				["{$this->table}_status" => 'open'],
+				[$this->pkField => '?'],
+				[$entity_id]
+			);
+		} catch(\Exception $e) {
+			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+		
+		if (count($errors)) {
+			$this->$gtw->rollback();
+		} else {
+			$this->$gtw->commit();
+		}
+		
+		return array(
+			'success'   => (count($errors)) ? false : true,
+			'errors'    => $errors,
+			'entity_id' => $entity_id
+		);
 	}
 }

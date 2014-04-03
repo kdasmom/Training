@@ -120,25 +120,25 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                 iconCls         : 'template-apply-btn',
                 displayCondition: me.isApplyTemplateBtnVisible
             },{
-                xtype           : 'shared.button.edit',
-                text            : 'Modify Template',
-                displayCondition: me.isUseTemplateBtnVisible.bind(me)
-            },{
                 text            : 'Use Template',
+                itemId          : 'invoiceUseTemplateBtn',
                 iconCls         : 'template-apply-btn',
                 displayCondition: me.isUseTemplateBtnVisible
             },{
                 text            : 'Create Copy',
+                itemId          : 'invoiceCreateCopy',
                 iconCls         : 'copy-btn',
                 moduleId        : 2006,
                 displayCondition: me.isCopyBtnVisible
             },{
                 text            : 'Create Schedule',
+                itemId          : 'invoiceCreateSchedule',
                 iconCls         : 'schedule-btn',
                 moduleId        : 2018,
                 displayCondition: me.isScheduleBtnVisible
             },{
                 text            : 'Modify Schedule',
+                itemId          : 'invoiceModifySchedule',
                 iconCls         : 'schedule-btn',
                 moduleId        : 2018,
                 displayCondition: me.isModifyScheduleBtnVisible
@@ -611,14 +611,14 @@ Ext.define('NP.view.invoice.ViewToolbar', {
     isScheduleBtnVisible: function(data) {
         return (
             data['invoice'].get('invoice_status') == "draft"
-            && !data['scheduleExists']
+            && !data['schedule_exists']
         );
     },
 
     isModifyScheduleBtnVisible: function(data) {
         return (
             data['invoice'].get('invoice_status') == "draft"
-            && data['scheduleExists']
+            && data['schedule_exists']
         );
     }
 });

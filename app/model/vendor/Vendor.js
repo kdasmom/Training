@@ -149,7 +149,9 @@ Ext.define('NP.model.vendor.Vendor', {
 		{ name: 'glaccount_number' },
 		{ name: 'glaccount_name' },
 
-		{ name: 'vendortype_name' }
+		{ name: 'vendortype_name' },
+
+		{ name: 'is_utility_vendor', type: 'int' }
 	],
 
     getAddressHtml: function() {

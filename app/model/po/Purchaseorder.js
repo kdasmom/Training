@@ -58,7 +58,9 @@ Ext.define('NP.model.po.Purchaseorder', {
 		{ name: 'vendor_id', type: 'int' },
 		{ name: 'vendor_id_alt' },
 		{ name: 'vendor_name' },
+		{ name: 'vendor_status' },
 		{ name: 'vendorsite_id', type: 'int' },
+		{ name: 'vendorsite_status' },
 
 		{ name: 'property_id', type: 'int' },
 		{ name: 'property_id_alt' },

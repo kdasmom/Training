@@ -689,7 +689,7 @@ class VendorService extends AbstractService {
      * @param  string $keyword     Keyword to filter list of vendors by
      * @return array               List of vendor records
      */
-    public function getVendorsForInvoice($property_id, $vendor_id=null, $useFavorites=true, $keyword=null, $criteria='begins', $pageSize=null, $page=null, $sort="vendor_name") {
+    public function getVendorsForInvoice($property_id=null, $vendor_id=null, $useFavorites=true, $keyword=null, $criteria='begins', $pageSize=null, $page=null, $sort="vendor_name") {
     	if (is_string($useFavorites)) {
     		if ($useFavorites == 'false') {
     			$useFavorites = false;

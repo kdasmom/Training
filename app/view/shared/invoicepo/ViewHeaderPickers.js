@@ -52,6 +52,7 @@ Ext.define('NP.view.shared.invoicepo.ViewHeaderPickers', {
                 valueField   : 'vendor_id',
                 displayField : 'vendor_name',
                 allowBlank   : false,
+                disabled     : true,
                 useSmartStore: true,
                 store        : {
                     type   : 'vendor.vendors',

@@ -48,7 +48,7 @@ class InvoiceService extends AbstractInvoicePoService {
 			$invoice['is_approver'] = false;
 		}
 
-		$invoice['is_utility_vendor'] = $this->vendorService->isUtilityVendor($invoice['vendorsite_id']);
+		$invoice['is_utility_vendor'] = ($this->vendorService->isUtilityVendor($invoice['vendorsite_id'])) ? 1 : 0;
 
 		// Get invoice images
 		/*** THIS QUERY IS RUNNING SLOW ***/
@@ -121,16 +121,27 @@ class InvoiceService extends AbstractInvoicePoService {
 	public function getInvoiceDuplicateWarning($invoice=null, $invoice_id=null) {
 		if ($invoice_id === null) {
 			$invoice_id = $invoice['invoice_id'];
+		} else if ($invoice === null) {
+			$invoice = $this->invoiceGateway->find(
+				'i.invoice_id = ?', 
+				[$invoice_id],
+				null,
+				['invoice_ref','invoice_status']
+			);
+			$invoice = $invoice[0];
 		}
 
-		$res = $this->invoiceGateway->findDuplicates($invoice_id);
-		if (count($res)) {
-			return [
-				'warning_type'  => 'invoiceDuplicate',
-				'warning_title' => 'Error!',
-				'warning_icon'  => 'stop',
-				'warning_data'  => []
-			];
+		if ($invoice['invoice_status'] !== 'draft' && !empty($invoice['invoice_ref'])) {
+			$res = $this->invoiceGateway->findDuplicates($invoice_id);
+
+			if (count($res)) {
+				return [
+					'warning_type'  => 'invoiceDuplicate',
+					'warning_title' => 'Error!',
+					'warning_icon'  => 'stop',
+					'warning_data'  => []
+				];
+			}
 		}
 
 		return null;
@@ -142,18 +153,28 @@ class InvoiceService extends AbstractInvoicePoService {
 	public function getInvoiceDuplicateDateAmountWarning($invoice=null, $invoice_id=null) {
 		if ($invoice_id === null) {
 			$invoice_id = $invoice['invoice_id'];
+		} else if ($invoice === null) {
+			$invoice = $this->invoiceGateway->find(
+				'i.invoice_id = ?', 
+				[$invoice_id],
+				null,
+				['invoice_status']
+			);
+			$invoice = $invoice[0];
 		}
 
-		$res = $this->invoiceGateway->findDuplicateDateAndAmount($invoice_id);
-		if (count($res)) {
-			return [
-				'warning_type'  => 'invoiceDuplicateDateAmount',
-				'warning_title' => 'Warning!',
-				'warning_icon'  => 'alert',
-				'warning_data'  => $res
-			];
+		if ($invoice['invoice_status'] !== 'draft') {
+			$res = $this->invoiceGateway->findDuplicateDateAndAmount($invoice_id);
+			if (count($res)) {
+				return [
+					'warning_type'  => 'invoiceDuplicateDateAmount',
+					'warning_title' => 'Warning!',
+					'warning_icon'  => 'alert',
+					'warning_data'  => $res
+				];
+			}
 		}
-
+		
 		return null;
 	}
 
@@ -1009,13 +1030,12 @@ class InvoiceService extends AbstractInvoicePoService {
 		$this->invoiceGateway->beginTransaction();
 		
 		try {
-			$now = \NP\util\Util::formatDateForDB();
+			$now                          = \NP\util\Util::formatDateForDB();
+			$userprofile_id               = $data['userprofile_id'];
+			$delegation_to_userprofile_id = $data['delegation_to_userprofile_id'];
 
 			// Create the invoice entity with initial data
 			$invoice = new InvoiceEntity($data['invoice']);
-
-			// Set a new lock on the invoice to prevent other people from updating it simultaneously
-			$invoice->lock_id = $this->getLock($invoice->invoice_id) + 1;
 
 			// If paytablekey_id wasn't added, we need to get it based on vendor_id
 			if ($invoice->paytablekey_id === null) {
@@ -1023,8 +1043,50 @@ class InvoiceService extends AbstractInvoicePoService {
 				$invoice->paytablekey_id = $this->vendorGateway->findVendorsite($data['vendor_id']);
 			}
 
+			// Set a new lock on the invoice to prevent other people from updating it simultaneously
+			$invoice->lock_id = $this->getLock($invoice->invoice_id) + 1;
+
 			// Validate invoice record
 			$errors = $this->entityValidator->validate($invoice);
+
+			// Deal with change to vendor on existing invoice if needed
+			if (!count($errors)) {
+				if ($invoice->invoice_id !== null) {
+					$currentInvoice = $this->invoiceGateway->findById($invoice->invoice_id);
+					// If vendor has changed, make some changes
+					if ($currentInvoice['paytablekey_id'] !== $invoice->paytablekey_id) {
+						// Delete all hold records
+						$this->invoiceHoldGateway->delete(['invoice_id'=>'?'], [$invoice->invoice_id]);
+
+						// Delete all approval records
+						$this->approveGateway->delete(
+							['table_name'=>'?', 'tablekey_id'=>'?'],
+							['invoice', $invoice->invoice_id]
+						);
+
+						// Log the vendor change
+						$approvetype_id = $this->approveTypeGateway->getIdByName('Change Vendor');
+
+						$approve = new \NP\workflow\ApproveEntity([
+							'table_name'                   => 'invoice',
+							'tablekey_id'                  => $invoice->invoice_id,
+							'userprofile_id'               => $userprofile_id,
+							'delegation_to_userprofile_id' => $delegation_to_userprofile_id,
+							'approve_message'              => 'Vendor Change',
+							'approvetype_id'               => $approvetype_id,
+							'transaction_id'               => $this->approveGateway->currentId()
+						]);
+
+						$errors = $this->entityValidator->validate($approve);
+						if (!count($errors)) {
+							$this->approveGateway->save($approve);
+						} else {
+							$this->loggingService->log('error', 'Error validating approve entity while changing vendor', $errors);
+							throw new \NP\core\Exception('Error changing vendor on entity');
+						}
+					}
+				}
+			}
 
 			// Save invoice if valid
 			if (!count($errors)) {
@@ -1035,8 +1097,8 @@ class InvoiceService extends AbstractInvoicePoService {
 			if (!count($errors) && $data['invoice']['invoice_id'] === null) {
 				// Validate author record
 				$author = new \NP\user\RecAuthorEntity([
-					'userprofile_id'               => $data['userprofile_id'],
-					'delegation_to_userprofile_id' => $data['delegation_to_userprofile_id'],
+					'userprofile_id'               => $userprofile_id,
+					'delegation_to_userprofile_id' => $delegation_to_userprofile_id,
 					'table_name'                   => 'invoice',
 					'tablekey_id'                  => $invoice->invoice_id
 				]);
@@ -1094,7 +1156,7 @@ class InvoiceService extends AbstractInvoicePoService {
 
 				$this->allocateTaxAndShipping($invoice->invoice_id, $data['tax'], $data['shipping']);
 
-				if ($data['invoice']['invoice_id'] === null) {
+				if ($data['invoice']['invoice_id'] !== null) {
 					// Save audit of changes to tax and shipping
 					$result = $this->auditTaxShippingChanges(
 						$invoice->invoice_id,

@@ -291,7 +291,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
             html +=
                 '<tpl if="utilityaccount_id !== null">' +
                     '<div><b>Account Number:</b> {UtilityAccount_AccountNumber}</div>' +
-                    '<tpl if="UtilityAccount_MeterSize !== null">' +
+                    '<tpl if="!Ext.isEmpty(UtilityAccount_MeterSize)">' +
                         '<div><b>Meter Number:</b> {UtilityAccount_MeterSize}</div>' +
                     '</tpl>' +
                 '</tpl>';

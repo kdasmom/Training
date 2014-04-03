@@ -195,6 +195,18 @@ Ext.define('NP.lib.data.Store', {
     	return false;
     },
 
+    loadIfChange: function(callback) {
+    	var me = this;
+
+    	callback = callback || Ext.emptyFn;
+
+    	if (me.extraParamsHaveChanged()) {
+    		me.load(callback);
+    	} else {
+    		callback(me.getRange(), null, true);
+    	}
+    },
+
     /**
 	 * Shortcut to set the service and action for the store proxy
 	 * @param {String} service

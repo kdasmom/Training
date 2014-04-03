@@ -109,6 +109,15 @@ class VendorGateway extends AbstractGateway {
 
 		$select = $this->getSelect()
 						->columns(['vendor_id','vendor_id_alt','vendor_name','remit_req','default_glaccount_id','default_due_date'])
+						->column(
+							Select::get()->column(new Expression('CASE WHEN count(*) > 0 THEN 1 ELSE 0 END'))
+										->from(['ut'=>'utility'])
+											->join(new sql\join\UtilityVendorsiteJoin([]))
+											->join(new sql\join\UtilityUtilityAccountJoin())
+										->whereEquals('vs.vendor_id', 'v.vendor_id')
+										->whereEquals('ua.utilityaccount_active', 1),
+							'is_utility_vendor'
+						)
 						->join(new sql\join\VendorsiteAddressJoin())
 						->join(new sql\join\VendorsitePhoneJoin('Main'))
 						->join(new sql\join\VendorGlAccountJoin())

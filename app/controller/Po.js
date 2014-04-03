@@ -22,8 +22,9 @@ Ext.define('NP.controller.Po', {
 			'image.ImageIndexes','shared.RejectionNotes'],
 	
 	views: ['po.Register','po.View','shared.invoicepo.ImagesManageWindow','shared.invoicepo.ImagesAddWindow',
-			'shared.invoicepo.SplitWindow','shared.invoicepo.RejectWindow','NP.view.vendor.VendorSelectorWindow'
-			/*,'invoice.UseTemplateWindow'*/],
+			'shared.invoicepo.SplitWindow','shared.invoicepo.RejectWindow','NP.view.vendor.VendorSelectorWindow',
+			'NP.view.shared.invoicepo.ScheduleWindow','NP.view.shared.invoicepo.TemplateWindow'/*,
+			'invoice.UseTemplateWindow'*/],
 
 	shortName  : 'po',
 	longName   : 'purchaseorder',
@@ -205,18 +206,28 @@ Ext.define('NP.controller.Po', {
 			status  = po.get('purchaseorder_status');
 
 		if (
-			status == "open"
+			(
+				status == "open"
+				&& me.hasPermission(1027)		// New PO permission
+			)
 			|| (
-				status ==  "draft" 
-				&& (
-					me.hasPermission(6076) 
-					|| (
-						me.hasPermission(6077) 
-						&& NP.Security.getUser().get('userprofile_id') == po.get('userprofile_id')
-					)
+				status ==  "draft"
+				&& me.hasPermission(2007)		// PO Templates permission
+			)
+			|| (
+				me.hasPermission(6074) 			// Modify Any permission
+				|| (
+					me.hasPermission(6075) 		// Modify Only Created permission
+					&& NP.Security.getUser().get('userprofile_id') == po.get('userprofile_id')
 				)
 			)
-			|| (status == "saved" && me.hasPermission(1068))
+			|| (
+				status == "saved"
+				&& (
+					me.hasPermission(6023)		// Mark Items as Received permission
+					|| me.hasPermission(6011)	// Post Approval Modify permission
+				)
+			)
 		) {
 			return false;
 		}

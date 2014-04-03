@@ -114,8 +114,8 @@ Ext.define('NP.view.invoice.UseTemplateWindow', {
 	                                    invoice_id: recs[0].get('invoice_id')
 	                                },{
 	                                    service   : 'InvoiceService',
-	                                    action    : 'getInvoiceLines',
-	                                    invoice_id: recs[0].get('invoice_id')
+	                                    action    : 'getEntityLines',
+	                                    entity_id: recs[0].get('invoice_id')
 	                                }
 	                            ],
 	                            success: function(results, deferred) {

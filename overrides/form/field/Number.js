@@ -8,13 +8,5 @@ Ext.define('overrides.form.field.Number', {
         if (this.allowDecimals && this.decimalPrecision && val && val.toFixed) {
         	this.setRawValue(val.toFixed(this.decimalPrecision));
         }
-	},
-
-	valueToRaw: function(val) {
-		if (this.allowDecimals && this.decimalPrecision && Ext.isNumber(val) && val.toFixed) {
-        	val = val.toFixed(this.decimalPrecision);
-        }
-
-		return '' + Ext.value(val, '');
 	}
 });

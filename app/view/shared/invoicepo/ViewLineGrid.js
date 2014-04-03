@@ -47,7 +47,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
         var me               = this,
             customFields     = NP.Config.getCustomFields().line.fields,
             typeShort        = (me.type == 'invoice') ? 'inv' : 'po',
-            invoice          = null,
+            invoiceView      = null,
             invoiceStatus    = null;
 
         me.itemPrefix = me.type + 'item';
@@ -69,26 +69,29 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                 xtype : 'shared.button.save',
                 itemId: me.type + 'LineSaveBtn',
                 text  : NP.Translator.translate('Done With Changes')
-            },{
+            }/*
+            TODO: permanently remove this once confirmed this functionality is not needed
+            ,{
                 xtype : 'shared.button.cancel',
                 itemId: me.type + 'LineCancelBtn',
                 text  : NP.Translator.translate('Undo Changes')
-            }
+            }*/
         ];
 
         // We need the invoice status to determine if the row is deletable or not, but we
         // can't get it until the data has loaded
         if (me.type == 'invoice') {
             me.on('render', function() {
-                invoice = me.up('[xtype="'+me.type+'.view"]')
-                invoice.on('dataloaded', function(form, data) {
+                invoiceView = me.up('[xtype="'+me.type+'.view"]')
+                invoiceView.on('dataloaded', function(form, data) {
                     invoiceStatus = data['invoice_status'];
 
                     if (invoiceStatus == 'paid') {
                         me.down('#' + me.type + 'LineAddBtn').disable();
                     }
 
-                    if (data['is_utility_vendor']) {
+                    var vendorRec = me.getVendorRecord();
+                    if (vendorRec && vendorRec.get('is_utility_vendor')) {
                         me.configureGrid();
                     }
                 });
@@ -110,29 +113,23 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
             action  : (NP.Config.getSetting('CP.PROPERTYGLACCOUNT_USE') == '1') ? 'getByProperty' : 'getByIntegrationPackage'
         });
 
-        function onTriggerClick() {
-            var combo = this,
-                args  = arguments,
-                store = combo.getStore();
+        me.utilityAccountStore = Ext.create('NP.store.vendor.UtilityAccounts', {
+            service: 'UtilityService',
+            action : 'getAccountsByVendorsite'
+        });
+    
+        me.usageTypeStore = Ext.create('NP.store.vendor.UtilityColumnUsageTypes', {
+            service: 'UtilityService',
+            action : 'getUsageTypesByUtilityType'
+        });
 
-            if (combo.isExpanded) {
-                combo.collapse();
-                combo.inputEl.focus();
-            } else {
-                function expandCombo() {
-                    combo.onFocus({});
-                    combo.doQuery(combo.allQuery, true);
-                    combo.inputEl.focus();
-                }
-                
-                if (combo.getStore().extraParamsHaveChanged()) {
-                    combo.getStore().load(function() {
-                        expandCombo();
-                    });
-                } else {
-                    expandCombo();
-                }
+        me.moneyRenderer = function(val, meta, rec) {
+            var format = '0,000.00';
+            if (rec.get('is_utility') === 1) {
+                format = '0,000.000000';
             }
+
+            return Ext.util.Format.number(val, format);
         };
 
         me.columns = [
@@ -158,29 +155,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                 }
             },
             // Quantity column
-            {
-                xtype    : 'numbercolumn',
-                text     : NP.Translator.translate('QTY'),
-                dataIndex: me.itemPrefix + '_quantity',
-                hideable : false,
-                format   : '0,000.00',
-                //format : '0,000.000000',    // Temporarily changing to 2 decimals for user conference
-                width    : 100,
-                editor   : {
-                    xtype           : 'numberfield',
-                    decimalPrecision: 2,
-                    //decimalPrecision: 6,    // Temporarily changing to 2 decimals for user conference
-                    selectOnFocus   : true,
-                    allowBlank      : false,
-                    validateOnBlur  : false,
-                    validateOnChange: false,
-                    listeners       : {
-                        blur: function(field, e) {
-                            me.fireEvent('changequantity', me, field, e);
-                        }
-                    }
-                }
-            },
+            me.getQtyCol(),
             // Description column
             {
                 text     : NP.Translator.translate('Description'),
@@ -193,53 +168,9 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                 }
             },
             // Unit Price column
-            {
-                xtype    : 'numbercolumn',
-                text     : NP.Translator.translate('Unit Price'),
-                dataIndex: me.itemPrefix + '_unitprice',
-                hideable : false,
-                format   : '0,000.00',
-                //format : '0,000.000000',    // Temporarily changing to 2 decimals for user conference
-                width    : 100,
-                editor   : {
-                    xtype           : 'numberfield',
-                    decimalPrecision: 2,
-                    //decimalPrecision: 6,    // Temporarily changing to 2 decimals for user conference
-                    selectOnFocus   : true,
-                    allowBlank      : false,
-                    validateOnBlur  : false,
-                    validateOnChange: false,
-                    listeners       : {
-                        blur: function(field, e) {
-                            me.fireEvent('changeunitprice', me, field, e);
-                        }
-                    }
-                }
-            },
+            me.getUnitPriceCol(),
             // Amount column
-            {
-                xtype    : 'numbercolumn',
-                text     : NP.Translator.translate('Amount'),
-                dataIndex: me.itemPrefix + '_amount',
-                hideable : false,
-                format   : '0,000.00',
-                //format : '0,000.000000',    // Temporarily changing to 2 decimals for user conference
-                width    : 100,
-                editor   : {
-                    xtype           : 'numberfield',
-                    decimalPrecision: 2,
-                    //decimalPrecision: 6,    // Temporarily changing to 2 decimals for user conference
-                    selectOnFocus   : true,
-                    allowBlank      : false,
-                    validateOnBlur  : false,
-                    validateOnChange: false,
-                    listeners       : {
-                        blur: function(field, e) {
-                            me.fireEvent('changeamount', me, field, e);
-                        }
-                    }
-                }
-            },
+            me.getAmountCol(),
             // Property column
             {
                 text     : NP.Config.getPropertyLabel(),
@@ -264,7 +195,15 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     validateOnChange: false,
                     selectOnFocus   : true,
                     store           : me.propertyStore,
-                    useSmartStore   : true
+                    useSmartStore   : true,
+                    updateLineFields: {
+                        property_id  : 'property_id',
+                        property_name: 'property_id_alt',
+                        property_name: 'property_name'
+                    },
+                    listeners: {
+                        select: me.onLineComboSelect.bind(me)
+                    }
                 }
             },
             // GL Account column
@@ -291,7 +230,15 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     validateOnChange: false,
                     selectOnFocus   : true,
                     store           : me.glStore,
-                    useSmartStore   : true
+                    useSmartStore   : true,
+                    updateLineFields: {
+                        glaccount_id    : 'glaccount_id',
+                        glaccount_number: 'glaccount_number',
+                        glaccount_name  : 'glaccount_name'
+                    },
+                    listeners: {
+                        select: me.onLineComboSelect.bind(me)
+                    }
                 }
             }
         ];
@@ -335,7 +282,15 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     selectOnFocus   : true,
                     triggerAction   : 'query',
                     store           : me.unitStore,
-                    useSmartStore   : true
+                    useSmartStore   : true,
+                    updateLineFields: {
+                        unit_id    : 'unit_id',
+                        unit_id_alt: 'unit_id_alt',
+                        unit_number: 'unit_number'
+                    },
+                    listeners: {
+                        select: me.onLineComboSelect.bind(me)
+                    }
                 }
             });
         }
@@ -451,10 +406,13 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                             service: 'JobCostingService',
                             action : 'getContracts'
                         },
+                        updateLineFields: {
+                            jbcontract_id  : 'jbcontract_id',
+                            jbcontract_name: 'jbcontract_name',
+                            jbcontract_desc: 'jbcontract_desc'
+                        },
                         listeners: {
-                            select: function(combo, recs) {
-                                me.fireEvent('selectjcfield', 'jbcontract', me, combo, recs);
-                            }
+                            select: me.onLineComboSelect.bind(me)
                         }
                     }
                 });
@@ -480,10 +438,13 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                             service: 'JobCostingService',
                             action : 'getChangeOrders'
                         },
+                        updateLineFields: {
+                            jbchangeorder_id  : 'jbchangeorder_id',
+                            jbchangeorder_name: 'jbchangeorder_name',
+                            jbchangeorder_desc: 'jbchangeorder_desc'
+                        },
                         listeners: {
-                            select: function(combo, recs) {
-                                me.fireEvent('selectjcfield', 'jbchangeorder', me, combo, recs);
-                            }
+                            select: me.onLineComboSelect.bind(me)
                         }
                     }
                 });
@@ -509,10 +470,13 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                             service: 'JobCostingService',
                             action : 'getJobCodes'
                         },
+                        updateLineFields: {
+                            jbjobcode_id  : 'jbjobcode_id',
+                            jbjobcode_name: 'jbjobcode_name',
+                            jbjobcode_desc: 'jbjobcode_desc'
+                        },
                         listeners: {
-                            select: function(combo, recs) {
-                                me.fireEvent('selectjcfield', 'jbjobcode', me, combo, recs);
-                            }
+                            select: me.onLineComboSelect.bind(me)
                         }
                     }
                 });
@@ -538,10 +502,13 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                             service: 'JobCostingService',
                             action : 'getPhaseCodes'
                         },
+                        updateLineFields: {
+                            jbphasecode_id  : 'jbphasecode_id',
+                            jbphasecode_name: 'jbphasecode_name',
+                            jbphasecode_desc: 'jbphasecode_desc'
+                        },
                         listeners: {
-                            select: function(combo, recs) {
-                                me.fireEvent('selectjcfield', 'jbphasecode', me, combo, recs);
-                            }
+                            select: me.onLineComboSelect.bind(me)
                         }
                     }
                 });
@@ -567,10 +534,13 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                             service: 'JobCostingService',
                             action : 'getCostCodes'
                         },
+                        updateLineFields: {
+                            jbcostcode_id  : 'jbcostcode_id',
+                            jbcostcode_name: 'jbcostcode_name',
+                            jbcostcode_desc: 'jbcostcode_desc'
+                        },
                         listeners: {
-                            select: function(combo, recs) {
-                                me.fireEvent('selectjcfield', 'jbcostcode', me, combo, recs);
-                            }
+                            select: me.onLineComboSelect.bind(me)
                         }
                     }
                 });
@@ -597,8 +567,94 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
 
         me.callParent(arguments);
 
-        me.addEvents('selectjcfield','selectutilityaccount','selectusagetype',
-                    'changequantity','changeunitprice','changeamount','tablastfield');
+        me.addEvents('selectutilityaccount','changequantity','changeunitprice',
+                    'changeamount','tablastfield');
+    },
+
+    getQtyCol: function() {
+        var me = this;
+
+        me.qtyEditor = Ext.widget({
+            xtype           : 'numberfield',
+            decimalPrecision: 2,
+            selectOnFocus   : true,
+            allowBlank      : false,
+            validateOnBlur  : false,
+            validateOnChange: false,
+            listeners       : {
+                blur: function(field, e) {
+                    me.fireEvent('changequantity', me, field, e);
+                }
+            }
+        });
+
+        return {
+            xtype    : 'numbercolumn',
+            text     : NP.Translator.translate('QTY'),
+            dataIndex: me.itemPrefix + '_quantity',
+            hideable : false,
+            renderer : me.moneyRenderer,
+            width    : 100,
+            editor   : me.qtyEditor
+        };
+    },
+
+    getUnitPriceCol: function() {
+        var me = this;
+
+        me.unitPriceEditor = Ext.widget({
+            xtype           : 'numberfield',
+            decimalPrecision: 2,
+            //decimalPrecision: 6,    // Temporarily changing to 2 decimals for user conference
+            selectOnFocus   : true,
+            allowBlank      : false,
+            validateOnBlur  : false,
+            validateOnChange: false,
+            listeners       : {
+                blur: function(field, e) {
+                    me.fireEvent('changeunitprice', me, field, e);
+                }
+            }
+        });
+
+        return {
+            xtype    : 'numbercolumn',
+            text     : NP.Translator.translate('Unit Price'),
+            dataIndex: me.itemPrefix + '_unitprice',
+            hideable : false,
+            renderer : me.moneyRenderer,
+            width    : 100,
+            editor   : me.unitPriceEditor
+        }
+    },
+
+    getAmountCol: function() {
+        var me = this;
+
+        me.amountEditor = Ext.widget({
+            xtype           : 'numberfield',
+            decimalPrecision: 2,
+            //decimalPrecision: 6,    // Temporarily changing to 2 decimals for user conference
+            selectOnFocus   : true,
+            allowBlank      : false,
+            validateOnBlur  : false,
+            validateOnChange: false,
+            listeners       : {
+                blur: function(field, e) {
+                    me.fireEvent('changeamount', me, field, e);
+                }
+            }
+        });
+
+        return {
+            xtype    : 'numbercolumn',
+            text     : NP.Translator.translate('Amount'),
+            dataIndex: me.itemPrefix + '_amount',
+            hideable : false,
+            renderer : me.moneyRenderer,
+            width    : 100,
+            editor   : me.amountEditor
+        }
     },
 
     onEditorTab: function(editingPlugin, e, grid) {
@@ -628,70 +684,135 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
     },
 
     configureGrid: function() {
-        var me              = this,
-            data            = me.up('[xtype="invoice.view"]').getLoadedData(),
-            newCols         = me.baseCols.slice();
+        var me        = this,
+            vendorRec = me.getVendorRecord(),
+            newCols   = me.baseCols.slice();
 
         // This is used to dynamically show or hide the Utility Account columns
-        if (data['is_utility_vendor']) {
-            if (!me.utilityAccountStore) {
-                me.utilityAccountStore = Ext.create('NP.store.vendor.UtilityAccounts', {
-                    service: 'UtilityService',
-                    action : 'getAccountsByVendorsite'
-                });
-            
-                me.usageTypeStore = Ext.create('NP.store.vendor.UtilityColumnUsageTypes', {
-                    service: 'UtilityService',
-                    action : 'getUsageTypesByUtilityType'
-                });
-            }
-
+        if (vendorRec && vendorRec.get('is_utility_vendor') === 1) {
             // Utility Account columns
             newCols.push(
-                {
-                    text     : 'Utility Account',
-                    itemId   : 'invoiceUtilityAccountCol',
-                    dataIndex: 'utilityaccount_id',
-                    width    : 300,
-                    renderer : function(val, meta, rec) {
-                        return NP.model.vendor.UtilityAccount.formatName(rec);
-                    },
-                    editor: {
-                        xtype        : 'customcombo',
-                        displayField : 'display_name',
-                        valueField   : 'UtilityAccount_Id',
-                        selectOnFocus: true,
-                        store        : me.utilityAccountStore,
-                        listeners    : {
-                            select: function(combo, recs) {
-                                me.fireEvent('selectutilityaccount', me, combo, recs);
-                            }
-                        }
-                    }
-                },{
-                    text     : 'Usage Type',
-                    itemId   : 'invoiceUsageTypeCol',
-                    dataIndex: 'utilitycolumn_usagetype_id',
-                    width    : 200,
-                    renderer : function(val, meta, rec) {
-                        return rec.get('UtilityColumn_UsageType_Name');
-                    },
-                    editor: {
-                        xtype        : 'customcombo',
-                        displayField : 'UtilityColumn_UsageType_Name',
-                        valueField   : 'UtilityColumn_UsageType_Id',
-                        selectOnFocus: true,
-                        store        : me.usageTypeStore,
-                        listeners    : {
-                            select: function(combo, recs) {
-                                me.fireEvent('selectusagetype', me, combo, recs);
-                            }
-                        }
-                    }
-                }
-            );
+                me.getUtilAccountCol(),
+                me.getUsageTypeCol()
+            );            
         }
 
         me.reconfigure(null, newCols);
+
+        me.setupUtilityEditors();
+    },
+
+    getUtilAccountCol: function() {
+        var me = this;
+
+        if (!me.utilAccountEditor) {
+            me.utilAccountEditor = Ext.widget({
+                xtype        : 'customcombo',
+                displayField : 'display_name',
+                valueField   : 'UtilityAccount_Id',
+                selectOnFocus: true,
+                store        : me.utilityAccountStore,
+                updateLineFields: {
+                    UtilityAccount_Id           : 'utilityaccount_id',
+                    UtilityAccount_AccountNumber: 'UtilityAccount_AccountNumber',
+                    UtilityAccount_MeterSize    : 'UtilityAccount_MeterSize',
+                    UtilityType_Id              : 'UtilityType_Id',
+                    UtilityType                 : 'UtilityType'
+                },
+                listeners    : {
+                    select: function(combo, recs) {
+                        me.onLineComboSelect(combo, recs);
+                        me.fireEvent('selectutilityaccount', me, combo, recs);
+                    }
+                }
+            });
+        }
+
+        return {
+            text     : 'Utility Account',
+            itemId   : 'invoiceUtilityAccountCol',
+            dataIndex: 'utilityaccount_id',
+            width    : 300,
+            renderer : function(val, meta, rec) {
+                return NP.model.vendor.UtilityAccount.formatName(rec);
+            },
+            editor: me.utilAccountEditor
+        };
+    },
+
+    getUsageTypeCol: function() {
+        var me = this;
+
+        if (!me.usageTypeEditor) {
+            me.usageTypeEditor = Ext.widget({
+                xtype        : 'customcombo',
+                displayField : 'UtilityColumn_UsageType_Name',
+                valueField   : 'UtilityColumn_UsageType_Id',
+                selectOnFocus: true,
+                store        : me.usageTypeStore,
+                useSmartStore: true,
+                updateLineFields: {
+                    UtilityColumn_UsageType_Id  : 'utilitycolumn_usagetype_id',
+                    UtilityColumn_UsageType_Name: 'UtilityColumn_UsageType_Name'
+                },
+                listeners    : {
+                    select: me.onLineComboSelect.bind(me)
+                }
+            });
+        }
+
+        return {
+            text     : 'Usage Type',
+            itemId   : 'invoiceUsageTypeCol',
+            dataIndex: 'utilitycolumn_usagetype_id',
+            width    : 200,
+            renderer : function(val, meta, rec) {
+                return rec.get('UtilityColumn_UsageType_Name');
+            },
+            editor: me.usageTypeEditor
+        };
+    },
+
+    setupUtilityEditors: function() {
+        var me           = this,
+            moneyEditors = ['qtyEditor','amountEditor','unitPriceEditor'],
+            utilEditors  = ['utilAccountEditor','usageTypeEditor'],
+            i;
+
+        for (i=0; i<moneyEditors.length; i++) {
+            me[moneyEditors[i]].decimalPrecision = (me.utilityAccountStore.getCount()) ? 6 : 2;
+        }
+        
+        for (i=0; i<utilEditors.length; i++) {
+            var readonly = (me.utilityAccountStore.getCount()) ? false : true;
+            me[utilEditors[i]].setReadOnly(readonly);
+        }
+    },
+
+    getVendorRecord: function() {
+        var me          = this,
+            vendorField = Ext.ComponentQuery.query('#entityVendorCombo')[0];
+
+        if (vendorField.getValue() !== null) {
+            return vendorField.findRecordByValue(vendorField.getValue());
+        }
+
+        return null;
+    },
+
+    onLineComboSelect: function(combo, recs) {
+        var me      = this,
+            newData = {},
+            field,
+            gridField,
+            val;
+
+        for (field in combo.updateLineFields) {
+            gridField          = combo.updateLineFields[field];
+            val                = (recs.length) ? recs[0].get(field) : null;
+            newData[gridField] = val;
+        }
+
+        me.selectedRec.set(newData);
     }
 });

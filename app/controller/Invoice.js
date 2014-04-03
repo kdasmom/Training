@@ -27,7 +27,8 @@ Ext.define('NP.controller.Invoice', {
 			'shared.invoicepo.ImagesManageWindow','shared.invoicepo.ImagesAddWindow',
 			'invoice.UseTemplateWindow','shared.invoicepo.SplitWindow',
 			'shared.invoicepo.RejectWindow','invoice.PaymentWindow','invoice.ReclassWindow',
-			'NP.view.vendor.VendorSelectorWindow'],
+			'NP.view.vendor.VendorSelectorWindow','NP.view.shared.invoicepo.ScheduleWindow',
+			'NP.view.shared.invoicepo.TemplateWindow'],
 
 	refs: [
 		{ ref: 'paymentGrid', selector: '[xtype="invoice.viewpayments"]' },
@@ -49,7 +50,6 @@ Ext.define('NP.controller.Invoice', {
 				beforeedit          : me.onBeforeLineGridEdit.bind(me),
 				edit                : me.onAfterLineGridEdit.bind(me),
 				selectutilityaccount: me.onSelectUtilityAccount.bind(me),
-				selectusagetype     : me.onSelectUsageType.bind(me),
 				changequantity      : me.onChangeQuantity.bind(me),
 				changeunitprice     : me.onChangeUnitPrice.bind(me),
 				changeamount        : me.onChangeAmount.bind(me),
@@ -143,7 +143,6 @@ Ext.define('NP.controller.Invoice', {
 	 */
 	showView: function(invoice_id) {
 		var me      = this,
-			forwardStore,
 			viewCfg = {
 				bind: {
 			    	models: ['invoice.Invoice']
@@ -263,7 +262,8 @@ Ext.define('NP.controller.Invoice', {
 		}
 
 		if (updateOption('utility')) {
-			if (data['is_utility_vendor']) {
+			var vendorRec = me.getVendorRecord();
+			if (vendorRec && vendorRec.get('is_utility_vendor')) {
 				NP.Util.deferUntil(me.loadUtilityAccounts, { scope: me });
 			}
 		}
@@ -385,13 +385,14 @@ Ext.define('NP.controller.Invoice', {
 		if (
 			status == "open"
 			|| (
-				status ==  "draft" 
-				&& (
-					me.hasPermission(6076) 
-					|| (
-						me.hasPermission(6077) 
-						&& NP.Security.getUser().get('userprofile_id') == invoice.get('userprofile_id')
-					)
+				status ==  "draft"
+				&& me.hasPermission(2008)
+			)
+			|| (
+				me.hasPermission(6076)
+				|| (
+					me.hasPermission(6077) 
+					&& NP.Security.getUser().get('userprofile_id') == invoice.get('userprofile_id')
 				)
 			)
 			|| (status == "saved" && me.hasPermission(1068))
@@ -451,10 +452,48 @@ Ext.define('NP.controller.Invoice', {
 		}
 	},
 
+	changeVendor: function() {
+		var me         = this,
+			form       = me.getEntityView(),
+			data       = form.getLoadedData(),
+			vendor     = me.getVendorRecord(),
+			cols       = me.getLineGrid().columnManager.getColumns(),
+			isUtilGrid = false;
+
+		Ext.suspendLayouts();
+
+		me.callParent();
+
+		if (vendor) {
+			if (vendor.get('is_utility_vendor') === 1) {
+				me.loadUtilityAccounts();
+			}
+
+			for (var i=0; i<cols.length; i++) {
+				if (cols[i].dataIndex == 'utilityaccount_id') {
+					isUtilGrid = true;
+					break;
+				}
+			}
+
+			if (
+				(vendor.get('is_utility_vendor') === 1 && !isUtilGrid)
+				|| (vendor.get('is_utility_vendor') !== 1 && isUtilGrid)
+			) {
+				me.getLineGrid().configureGrid();
+			}
+
+			// Set the default remit advice for the vendor
+			form.findField('remit_advice').setValue(vendor.get('remit_req'));
+		}
+
+		Ext.resumeLayouts(true);
+	},
+
 	isUtilityInvoice: function() {
 		var me = this;
 
-		return me.getEntityView().getLoadedData().is_utility_vendor;
+		return me.getVendorRecord().get('is_utility_vendor');
 	},
 
 	setCycleFieldVisibility: function() {
@@ -550,20 +589,13 @@ Ext.define('NP.controller.Invoice', {
 
         if (recs.length) {
             var rec    = recs[0],
-            	newRec = {
-	                utilityaccount_id           : rec.get('UtilityAccount_Id'),
-	                UtilityAccount_AccountNumber: rec.get('UtilityAccount_AccountNumber'),
-	                UtilityAccount_MeterSize    : rec.get('UtilityAccount_MeterSize'),
-	                UtilityType_Id              : rec.get('UtilityType_Id'),
-	                UtilityType                 : rec.get('UtilityType')
-	            },
-	            glaccount_id = rec.get('glaccount_id'),
+            	glaccount_id = rec.get('glaccount_id'),
 	            unit_id      = rec.get('unit_id');
 
             if (glaccount_id !== null) {
-            	me.setGlExtraParams(grid, grid.selectedRec);
+            	me.setGlExtraParams();
 
-            	grid.glStore.load(function() {
+            	grid.glStore.loadIfChange(function() {
 					// If the current grid value exists in the store, set it
 					if (grid.glStore.getById(glaccount_id) !== null) {
 						grid.selectedRec.set({
@@ -576,9 +608,9 @@ Ext.define('NP.controller.Invoice', {
             }
 
             if (unit_id !== null) {
-            	me.onOpenUnitEditor(null, grid, grid.selectedRec, null);
+            	me.setUnitExtraParams();
             	
-            	grid.unitStore.load(function() {
+            	grid.unitStore.loadIfChange(function() {
 					// If the current grid value exists in the store, set it
 					if (grid.unitStore.getById(unit_id) !== null) {
 						grid.selectedRec.set({
@@ -590,8 +622,6 @@ Ext.define('NP.controller.Invoice', {
 				});
             }
 
-        	grid.selectedRec.set(newRec);
-
         	// Verify that the usage type is still valid
         	me.loadUsageTypeStore(function() {
         		if (grid.usageTypeStore.find('UtilityType_Id', grid.selectedRec.get('UtilityType_Id')) === -1) {
@@ -599,7 +629,7 @@ Ext.define('NP.controller.Invoice', {
         		}
         	});
         } else {
-            me.clearUtilityAccount();
+        	grid.selectedRec.set('utilitycolumn_usagetype_id', null);
         }
 	},
 
@@ -621,7 +651,8 @@ Ext.define('NP.controller.Invoice', {
 	onOpenUsageTypeEditor: function(editor, rec, field) {
 		var me    = this,
 			grid  = me.getLineGrid(),
-			store = grid.usageTypeStore;
+			store = grid.usageTypeStore,
+			data;
 
 		me.setUsageTypeExtraParams();
 
@@ -631,19 +662,14 @@ Ext.define('NP.controller.Invoice', {
 			return;
 		}
 
-		if (rec.get('utilitycolumn_usagetype_id') === null) {
-			me.loadUsageTypeStore(function() {
-				if (store.getCount() === 0) {
-					field.setValue(null);
-					field.setReadOnly(true);
-				} else {
-					field.setReadOnly(false);
-				}
-			});
-		} else {
+		field.setReadOnly(false);
+
+		if (store.extraParamsHaveChanged() && grid.selectedRec.get('utilitycolumn_usagetype_id') !== null) {
 			store.removeAll();
-			data = grid.selectedRec.getData();
-			data['UtilityColumn_UsageType_Id'] = data['utilitycolumn_usagetype_id'];
+			data = {
+				UtilityColumn_UsageType_Id  : grid.selectedRec.get('utilitycolumn_usagetype_id'),
+				UtilityColumn_UsageType_Name: grid.selectedRec.get('UtilityColumn_UsageType_Name')
+			};
 			store.add(data);
 		}
 	},
@@ -659,14 +685,12 @@ Ext.define('NP.controller.Invoice', {
 		me.setUsageTypeExtraParams();
 
 		if (store.extraParamsHaveChanged() && UtilityType_Id !== null) {
-			store.load(function() {
-				callback();
-			});
+			store.load(callback);
 		} else {
 			if (UtilityType_Id === null) {
 				store.removeAll();
 			}
-			callback();
+			callback(store.getRange());
 		}
 	},
 
@@ -683,27 +707,77 @@ Ext.define('NP.controller.Invoice', {
 		}
 	},
 
-	onSelectUsageType: function(grid, combo, recs) {
-		var me = this;
-
-        if (recs.length) {
-            var newRec = {
-                utilitycolumn_usagetype_id  : recs[0].get('UtilityColumn_UsageType_Id'),
-                UtilityColumn_UsageType_Name: recs[0].get('UtilityColumn_UsageType_Name')
-            }
-
-        	grid.selectedRec.set(newRec);
-        } else {
-            me.clearUsageType();
-        }
-	},
-
 	clearUsageType: function() {
 		var me   = this,
 			grid = me.getLineGrid();
 
 		grid.selectedRec.set('utilitycolumn_usagetype_id', null);
 		grid.selectedRec.set('UtilityColumn_UsageType_Name', null);
+	},
+
+	onBeforeLineGridEdit: function(editor, e) {
+		var me        = this,
+			vendorRec = me.getVendorRecord(),
+			grid      = me.getLineGrid();
+
+		if (
+			vendorRec.get('is_utility_vendor')
+			&& (
+				!grid.selectedRec 
+				|| grid.selectedRec.get('property_id') != e.record.get('property_id')
+			)
+		) {
+			grid.selectedRec = e.record;
+			me.filterUtilityRecords();
+		}
+
+		me.callParent(arguments);
+	},
+
+	onChangeLineProperty: function() {
+		var me                = this,
+			grid              = me.getLineGrid(),
+			utilityaccount_id = grid.selectedRec.get('utilityaccount_id'),
+			utilStore         = grid.utilityAccountStore,
+			currentUtilCount  = utilStore.getCount();
+
+		Ext.suspendLayouts();
+
+		me.callParent();
+
+		// If there's a Utlity Account set in the column, it would not longer be valid with a property change
+		// so clear it
+		if (utilityaccount_id !== null) {
+			me.clearUtilityAccount();
+		}
+
+		me.filterUtilityRecords();
+
+		Ext.resumeLayouts(true);
+	},
+
+	filterUtilityRecords: function() {
+		var me        = this,
+			grid      = me.getLineGrid(),
+			utilStore = grid.utilityAccountStore;
+
+		utilStore.clearFilter();
+
+		// We use an even handler for this because otherwise it appears that sometimes
+		// the code would run without the store count being accurate
+		utilStore.on('filterchange', function() {
+			// If there are no utility accounts, we assume we're not dealing with utilities for this line
+			var is_utility = (grid.utilityAccountStore.getCount() > 0) ? 1 : 0;
+			grid.selectedRec.set('is_utility', is_utility);
+			// Setup utility editors
+			grid.setupUtilityEditors();
+
+			// Refresh the grid view so that the money field renderers are triggered
+			grid.getView().refresh();
+		}, me, { single: true });
+
+		// Filter the store (which should then trigger the event handler above once complete)
+		utilStore.filter('property_id', grid.selectedRec.get('property_id'));
 	},
 
 	validateLineItem: function(rec, col, val) {
