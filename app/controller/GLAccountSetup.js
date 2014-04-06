@@ -579,5 +579,11 @@ Ext.define('NP.controller.GLAccountSetup', {
         });
 
         console.log('list: ', glaccount_id_list);
-    }
+    },
+
+	showReports: function() {
+		var me = this;
+
+		me.currentForm = me.setView('NP.view.report.gl.Form');
+	}
 });

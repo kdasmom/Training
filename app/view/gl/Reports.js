@@ -1,17 +1,15 @@
 /**
- * GL Account Setup > Reports
- *
- * @author Aliaksandr Zubik
+ * Created by Andrey Baranov
+ * date: 4/4/2014 1:54 PM
  */
+
 Ext.define('NP.view.gl.Reports', {
-    extend: 'Ext.panel.Panel',
-    alias: 'widget.gl.reports',
-    
-    title: 'Reports',
+	extend: 'Ext.panel.Panel',
+	alias: 'widget.gl.reports',
 
-    html: 'Coming soon...',
+	title: NP.Translator.translate('Reports'),
 
-    initComponent: function() {
-    	this.callParent(arguments);
-    }
+	margin: 8,
+
+	html: 'Coming soon'
 });
