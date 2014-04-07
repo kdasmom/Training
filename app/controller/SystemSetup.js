@@ -942,8 +942,6 @@ Ext.define('NP.controller.SystemSetup', {
 			requests: {
 				service					: 'ConfigService',
 				action					: 'getConfigSysValByCat',
-				configsysclient_name		: NP.lib.core.Config.getAppName(),
-				configsysval_load		: null,
 				configsyscat_name		: tabName,
 				configsysval_show		: 1,
 				success: function(success) {
