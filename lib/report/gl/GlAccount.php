@@ -11,6 +11,7 @@ namespace NP\report\gl;
 
 use NP\core\db\Expression;
 use NP\core\db\Select;
+use NP\core\db\Where;
 use NP\report\AbstractReport;
 use NP\report\ReportColumn;
 use NP\report\ReportInterface;
@@ -83,16 +84,60 @@ class GlAccount extends AbstractReport implements ReportInterface {
 		}
 
 		if ($extraParams['glaccounttype_id']) {
-			$select->whereEquals('gat.glaccounttype_id', '?');
-			$queryParams[] = $extraParams['glaccounttype_id'];
+			$select->whereIn('gat.glaccounttype_id', implode(',', $extraParams['glaccounttype_id']));
 		}
 
 		if ($extraParams['glaccount_category']) {
 			$select->whereIn('glcats.glaccount_id', implode(',', $extraParams['glaccount_category']));
 		}
 
-
-		$adapter = $this->gatewayManager->get('InvoiceGateway')->getAdapter();
+		$adapter = $this->gatewayManager->get('GlAccountGateway')->getAdapter();
 		return $adapter->getQueryStmt($select, $queryParams);
+	}
+
+	public function getExtraHeaderFilters() {
+		$extraFilters = $this->getOptions()->extraHeaderFilters;
+		$result = [
+			'Report Date'   => date('m/d/Y', strtotime('now')),
+			'GL Types' => 'All',
+			'GL Categories' => 'All'
+		];
+
+		if (count($extraFilters['glaccount_category']) > 0) {
+			$select = new Select();
+			$select->from(['gla' => 'glaccount'])
+					->whereIn('glaccount_id', implode(',', $extraFilters['glaccount_category']))
+					->columns(['glaccount_name']);
+			$adapter = $this->gatewayManager->get('GlAccountGateway')->getAdapter();
+			$glcategory = $adapter->query($select);
+
+			if (count($glcategory) > 0) {
+				$result['GL Categories'] = $glcategory[0]['glaccount_name'];
+			}
+			if (count($glcategory) > 1) {
+				for ($index = 1; $index < count($glcategory); $index++) {
+					$result['GL Categories'] .= ', ' . $glcategory[$index]['glaccount_name'];
+				}
+			}
+		}
+		if (count($extraFilters['glaccount_type']) > 0) {
+			$select = new Select();
+			$select->from(['gt' => 'glaccounttype'])
+					->whereIn('glaccounttype_id', implode(',', $extraFilters['glaccount_type']))
+					->columns(['glaccounttype_name']);
+			$adapter = $this->gatewayManager->get('GlAccountGateway')->getAdapter();
+			$gltypes = $adapter->query($select);
+
+			if (count($gltypes) > 0) {
+				$result['GL Types'] = $gltypes[0]['glaccounttype_name'];
+				if (count($gltypes) > 1) {
+					for ($index = 1; $index < count($gltypes); $index++) {
+						$result['GL Types'] .= ', ' . $gltypes[$index]['glaccounttype_name'];
+					}
+				}
+			}
+		}
+
+		return $result;
 	}
 } 

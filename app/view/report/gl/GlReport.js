@@ -22,7 +22,15 @@ Ext.define('NP.view.report.gl.GlReport', {
     },
 
     getOptions: function() {
-        return {};
+        var me = this,
+            form       = me.getForm();
+
+        return {
+            extraHeaderFilters: {
+                glaccount_category  : form.findField('glaccount_category').getValue(),
+                glaccount_type      : form.findField('glaccounttype_id').getValue()
+            }
+        };
     },
 
     getExtraParams: function() {
