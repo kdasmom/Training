@@ -65,9 +65,6 @@ Ext.define('NP.view.report.gl.Form', {
                     type       : 'gl.glaccounts',
                     service    : 'GLService',
                     action     : 'getCategories',
-                    extraParams: {
-                        getInUseOnly: true
-                    },
                     autoLoad   : true
                 },
                 displayField: 'glaccount_name',
