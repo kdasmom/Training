@@ -1,0 +1,98 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: Andrey Baranov
+ * Date: 07.04.2014
+ * Time: 11:07
+ */
+
+namespace NP\report\gl;
+
+
+use NP\core\db\Expression;
+use NP\core\db\Select;
+use NP\report\AbstractReport;
+use NP\report\ReportColumn;
+use NP\report\ReportInterface;
+
+class GlAccount extends AbstractReport implements ReportInterface {
+	public function init() {
+
+		$extraParams = $this->getExtraParams();
+
+		if ($extraParams['glaccount_order'] == 'glaccount_name') {
+			$this->addCols([
+				new ReportColumn('GL Name', 'glcode_name', 0.2),
+				new ReportColumn('GL Number', 'glcode_number', 0.15, 'string', 'left')
+			]);
+		}
+		if ($extraParams['glaccount_order'] == 'glaccount_number') {
+			$this->addCols([
+				new ReportColumn('GL Number', 'glcode_number', 0.15, 'string', 'left'),
+				new ReportColumn('GL Name', 'glcode_name', 0.2)
+			]);
+		}
+
+		$this->addCols([
+			new ReportColumn('GL Category', 'glcat_name', 0.15, 'string', 'left'),
+			new ReportColumn('Status', 'glaccount_status', 0.15, 'string', 'left'),
+			new ReportColumn('Type', 'glaccounttype_name', 0.15, 'string', 'left'),
+			new ReportColumn('Integration Package', 'integration_package_name', 0.15, 'string', 'left'),
+		]);
+	}
+
+	public function getTitle() {
+		return 'Gl Account Report';
+	}
+
+	public function getData() {
+		$extraParams = $this->getExtraParams();
+
+		$queryParams = [];
+
+		$select = new Select();
+
+		$select->from(['glcats' => 'glaccount'])
+				->columns([
+					'glcat_id'  => 'glaccount_id',
+					'glcat_number'  => 'glaccount_number',
+					'glcat_name'    => 'glaccount_name',
+					'glaccount_status'  => new Expression("replace(glcode.glaccount_status, '##', '####')"),
+					'glaccounttype_name'    => new Expression("replace(gat.glaccounttype_name, '##', '####')"),
+					'glaccount_usable'      => new Expression("replace(glcats.glaccount_usable, '##', '####')"),
+					'integration_package_name'  => new Expression("replace(ip.integration_package_name, '##', '####')"),
+					'glcode_number'             => new Expression("replace(glcode.glaccount_number, '##', '####')"),
+					'glcode_name'             => new Expression("replace(glcode.glaccount_name, '##', '####')")
+				])
+				->join(['ip' => 'integrationpackage'], 'glcats.integration_package_id = ip.integration_package_id', [], Select::JOIN_LEFT)
+				->join(['treecats' => 'tree'], "glcats.glaccount_id = treecats.tablekey_id and treecats.table_name = 'glaccount'", [], Select::JOIN_INNER)
+				->join(['treecodes' => 'tree'], "treecats.tree_id = treecodes.tree_parent and treecodes.table_name = 'glaccount'", [], Select::JOIN_INNER)
+				->join(['glcode' => 'glaccount'], "treecodes.tablekey_id = glcode.glaccount_id", ['glcode_id' => 'glaccount_id'], Select::JOIN_INNER)
+				->join(['gat' => 'glaccounttype'], "glcode.glaccounttype_id = gat.glaccounttype_id", ['glaccounttype_id'], Select::JOIN_INNER)
+				->whereIsNotNull('glcats.glaccounttype_id')
+				->order('glcats.' . $extraParams['glaccount_order']);
+
+		if ($extraParams['integration_package_id']) {
+			$select->whereEquals('glcode.integration_package_id', '?');
+			$queryParams[] = $extraParams['integration_package_id'];
+		}
+
+		if ($extraParams['glaccount_status']) {
+			$select->whereEquals('glcode.glaccount_status', '?');
+			$queryParams[] = $extraParams['glaccount_status'];
+		}
+
+		if ($extraParams['glaccounttype_id']) {
+			$select->whereEquals('gat.glaccounttype_id', '?');
+			$queryParams[] = $extraParams['glaccounttype_id'];
+		}
+
+		if ($extraParams['glaccount_category']) {
+			$select->whereIn('glcats.glaccount_id', implode(',', $extraParams['glaccount_category']));
+		}
+
+
+		$adapter = $this->gatewayManager->get('InvoiceGateway')->getAdapter();
+		return $adapter->getQueryStmt($select, $queryParams);
+	}
+} 
