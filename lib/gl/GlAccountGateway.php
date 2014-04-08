@@ -334,6 +334,22 @@ class GlAccountGateway extends AbstractGateway {
         return $this->adapter->query($select, $params);
     }
 
+	public function getReportCategories($integrationPackageId) {
+		$select = new Select();
+
+		$select->from(['g1' => 'glaccount'])
+				->distinct()
+				->columns(['glaccount_name', 'glaccount_id'])
+				->join(['t1' => 'tree'], "g1.glaccount_id=t1.tablekey_id and t1.table_name='glaccount'", [])
+				->join(['t2' => 'tree'], "t1.tree_id = t2.tree_parent and t2.table_name='glaccount'", [])
+				->join(['g2' => 'glaccount'], "g2.glaccount_id=t2.tablekey_id", [])
+				->whereIsNull('g1.glaccounttype_id')
+				->whereEquals('g1.integration_package_id', '?')
+				->order('g1.glaccount_name');
+
+		return $this->adapter->query($select, [$integrationPackageId]);
+	}
+
 	/**
 	 * retrieve glcodes list
 	 *

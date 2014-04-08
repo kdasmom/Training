@@ -38,7 +38,15 @@ Ext.define('NP.view.report.gl.Form', {
                 editable: false,
                 typeAhead: false,
                 allowBlank: false,
-                selectFirstRecord: true
+                listeners: {
+                    change: function(combo, newValue, oldValue, eOpts) {
+                        var store = me.getForm().findField('glaccount_category').getStore();
+                        Ext.apply(store.getProxy().extraParams, {
+                            integration_package_id: newValue
+                        });
+                        store.reload();
+                    }
+                }
             },
             {
                 xtype       : 'customcombo',
@@ -64,11 +72,10 @@ Ext.define('NP.view.report.gl.Form', {
                 store     : {
                     type       : 'gl.glaccounts',
                     service    : 'GLService',
-                    action     : 'getCategories',
-                    autoLoad   : true
+                    action     : 'getReportCategories'
                 },
                 displayField: 'glaccount_name',
-                valueField  : 'tree_id',
+                valueField  : 'glaccount_id',
                 emptyText   : NP.Translator.translate('All'),
                 tpl: new Ext.XTemplate(
                     '<tpl for="." >',

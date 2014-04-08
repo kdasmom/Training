@@ -104,9 +104,11 @@ class GlAccount extends AbstractReport implements ReportInterface {
 		];
 
 		if (count($extraFilters['glaccount_category']) > 0) {
+
 			$select = new Select();
 			$select->from(['g' => 'glaccount'])
 					->columns([])
+					->distinct()
 					->join(['t1' => 'tree'], "t1.tablekey_id = g.glaccount_id and t1.table_name = 'glaccount'", [], Select::JOIN_INNER)
 					->join(['t2' => 'tree'], "t2.tree_id = t1.tree_parent and t1.table_name = 'glaccount'", [], Select::JOIN_INNER)
 					->join(['g2' => 'glaccount'], 'g2.glaccount_id = t2.tablekey_id', ['glaccount_name'], Select::JOIN_INNER)

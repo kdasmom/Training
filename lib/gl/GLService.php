@@ -47,6 +47,14 @@ class GLService extends AbstractService {
     public function getCategories($integration_package_id=null, $activeOnly=false, $getInUseOnly=false) {
         return $this->glAccountGateway->getCategories($integration_package_id, $activeOnly, $getInUseOnly);
     }
+
+	public function getReportCategories($integration_package_id = null) {
+		if (!$integration_package_id) {
+			return [];
+		}
+
+		return $this->glAccountGateway->getReportCategories($integration_package_id);
+	}
         
     /**
      * Retrieves all GL Accounts for grid GL Account Setup
