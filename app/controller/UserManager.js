@@ -764,5 +764,15 @@ Ext.define('NP.controller.UserManager', {
 				}
 			}
 		});
-	}
+	},
+
+    /**
+     * show user reports tab
+     */
+    showReports: function() {
+        var me = this;
+
+        me.currentForm = me.setView('NP.view.report.user.Form');
+        me.currentForm.getGenerateReportButton().on('click', me.generateReport.bind(me));
+    }
 });
