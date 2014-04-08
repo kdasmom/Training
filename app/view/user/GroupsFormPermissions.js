@@ -13,6 +13,7 @@ Ext.define('NP.view.user.GroupsFormPermissions', {
 	frame      : false,
 	border     : false,
 	displayField: 'module_name',
+    cls         : 'groups-form-permissions',
 	
     initComponent: function() {
     	var that = this;
