@@ -14,22 +14,25 @@ class FiscalCalService extends AbstractService {
 	 */
 	public function getAccountingPeriod($property_id) {
 		$now = time();
-		$today = mktime(0, 0, 0, date('n', $now), date('j', $now), date('Y', $now));
 		$year = date('Y', $now);
 		$month = date('n', $now);
+		$day = date('j', $now);
+
+		$today = new \DateTime("{$year}/{$month}/{$day}");
+		
 		// Try to get a cutoff date; if an error is thrown, it's because there's no fiscal calendar for this year
 		try {
 			$cutoffDay = $this->fiscalcalGateway->getCutoffDay($property_id, $year, $month);
 		} catch(\NP\core\Exception $e) {
 			return false;
 		}
-		$cutoffDate = mktime(0, 0, 0, $month, $cutoffDay, $year);
+		$cutoffDate = \DateTime::createFromFormat('Y-n-j H:i:s.u', "{$year}-{$month}-{$cutoffDay} 00:00:00.000");
 		
 		if ($today > $cutoffDate) {
-//			date_add($cutoffDate, date_interval_create_from_date_string('1 month'));
+			$cutoffDate->add(\DateInterval::createFromDateString('1 month'));
 		}
 		
-		$accountingPeriod = new \DateTime(date('Y', $cutoffDate) . '/' . date('n', $cutoffDate) . '/1');
+		$accountingPeriod = new \DateTime($cutoffDate->format('Y/n') . '/1');
 
 		return $accountingPeriod;
 	}

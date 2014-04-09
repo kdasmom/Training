@@ -114,6 +114,14 @@ Ext.define('NP.lib.data.Store', {
     	});
     },
 
+    loadRawData: function(data, append) {
+    	var me = this;
+
+    	me.callParent(arguments);
+    	
+    	me.isLoaded = true;
+    },
+
     /**
      * Makes a copy of this store using the data loaded in the store
      * @return {NP.lib.data.Store}

@@ -54,6 +54,26 @@ class InvoiceItemGateway extends AbstractGateway {
 
 		return $this->adapter->query($select, array($invoice_id));
 	}
+
+	/**
+	 * Used when saving an invoice to get lines that don't match the lines that were sent for saving so
+	 * they can be deleted
+	 */
+	public function getDeletedLines($invoice_id, $invoiceitem_id_list) {
+		$select = Select::get()
+				->column('invoiceitem_id')
+				->from('invoiceitem')
+				->whereEquals('invoice_id', '?');
+
+		$params = [$invoice_id];
+
+		if (count($invoiceitem_id_list)) {
+			$select->whereNotIn('invoiceitem_id', $this->createPlaceholders($invoiceitem_id_list));
+			$params = array_merge($params, $invoiceitem_id_list);
+		}
+
+		return $this->adapter->query($select, $params);
+	}
 	
 	public function rollPeriod($property_id, $newAccountingPeriod, $oldAccountingPeriod) {
 		$update = new Update();

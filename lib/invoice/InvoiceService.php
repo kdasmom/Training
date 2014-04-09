@@ -78,9 +78,15 @@ class InvoiceService extends AbstractInvoicePoService {
 			$invoice['has_dummy_accounts'] = false;
 		}
 
+		$invoice['lines'] = $this->invoiceItemGateway->findLines($invoice_id);
+
 		// Get invoice warnings
 		/*** THIS QUERY IS RUNNING SLOW ***/
 		$invoice['warnings'] = $this->getWarnings($invoice);
+
+		$invoice['hold_notes'] = $this->getHoldNotes($invoice_id);
+
+		$invoice['rejection_notes'] = $this->getRejectionNotes($invoice_id);
 
 		return $invoice;
 	}
@@ -271,6 +277,13 @@ class InvoiceService extends AbstractInvoicePoService {
 	 */
 	public function getAssociatedPOs($invoice_id) {
 		return $this->invoiceGateway->findAssociatedPOs($invoice_id);
+	}
+
+	/**
+	 * Gets hold notes for an invoice
+	 */
+	public function getHoldNotes($invoice_id) {
+		return $this->noteGateway->findHoldNotes($invoice_id);
 	}
 
 	/**
@@ -1113,14 +1126,16 @@ class InvoiceService extends AbstractInvoicePoService {
 			}
 
 			// Save invoice line items
+			$lineIds = [];
 			if (!count($errors)) {
 				if (array_key_exists('lines', $data)) {
 					// Loop through line items to add/modify
-					foreach ($data['lines'] as $invoiceitem) {
+					foreach ($data['lines'] as $invoiceitem_linenum=>$invoiceitem) {
 						// Assign some values that weren't passed in
-						$invoiceitem['invoice_id']         = $invoice->invoice_id;
-						$invoiceitem['vendorsite_id']      = $invoice->paytablekey_id;
-						$invoiceitem['invoiceitem_period'] = $invoice->invoice_period;
+						$invoiceitem['invoice_id']          = $invoice->invoice_id;
+						$invoiceitem['vendorsite_id']       = $invoice->paytablekey_id;
+						$invoiceitem['invoiceitem_period']  = $invoice->invoice_period;
+						$invoiceitem['invoiceitem_linenum'] = $invoiceitem_linenum+1;
 
 						// Save the line item
 						$result = $this->saveLine($invoiceitem);
@@ -1128,6 +1143,8 @@ class InvoiceService extends AbstractInvoicePoService {
 						// Error handling
 						if (!$result['success']) {
 							$errors = array_merge($errors, $result['errors']);
+						} else {
+							$lineIds[] = $invoiceitem['invoiceitem_id'];
 						}	
 					}
 				}
@@ -1135,19 +1152,23 @@ class InvoiceService extends AbstractInvoicePoService {
 
 			// Delete invoice line items
 			if (!count($errors)) {
-				if (array_key_exists('deletedLines', $data)) {
-					// Loop through line items to delete
-					foreach ($data['deletedLines'] as $invoiceitem) {
-						// Delete the line item
-						$result = $this->deleteLine($invoiceitem['invoiceitem_id']);
+				$deletedLines = $this->invoiceItemGateway->getDeletedLines($invoice->invoice_id, $lineIds);
+				// Loop through line items to delete
+				foreach ($deletedLines as $invoiceitem) {
+					// Delete the line item
+					$result = $this->deleteLine($invoiceitem['invoiceitem_id']);
 
-						// Error handling
-						if (!$result['success']) {
-							$errors = array_merge($errors, $result['errors']);
-							break;
-						}
+					// Error handling
+					if (!$result['success']) {
+						$errors = array_merge($errors, $result['errors']);
+						break;
 					}
 				}
+			}
+
+			// Add any missing budgets to this invoice
+			if (!count($errors)) {
+				$this->budgetService->createMissingBudgets('invoice', $invoice->invoice_id);
 			}
 
 			// Retrieve current Tax and Shipping totals for auditing purposes before deleting

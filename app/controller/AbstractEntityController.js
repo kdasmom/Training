@@ -88,6 +88,7 @@ Ext.define('NP.controller.AbstractEntityController', {
 			clicksplitline : me.onSplitLineClick.bind(me),
 			clickeditsplit : me.onSplitLineClick.bind(me),
 			clickdeleteline: me.onDeleteLineClick.bind(me),
+			clickporef     : me.onPoRefClick.bind(me),
 			// Changing Tax or Shipping
 			changetaxtotal     : me.onChangeTaxTotal.bind(me),
 			changeshippingtotal: me.onChangeShippingTotal.bind(me)
@@ -527,6 +528,24 @@ Ext.define('NP.controller.AbstractEntityController', {
 		toolbar.refresh();
 	},
 
+	setRequiredNotes: function() {
+		var me           = this,
+			lineStore    = me.getLineDataView().getStore(),
+			overageNotes = me.getEntityView().findField(me.longName + '_budgetoverage_note'),
+			allowBlank   = true;
+
+		if (NP.Security.hasPermission(2002)) {
+			lineStore.each(function(rec) {
+				if (rec.get('budget_variance') < 0) {
+					allowBlank = false;
+					return false;
+				}
+			});
+		}
+
+		overageNotes.setAllowBlank(allowBlank);
+	},
+
 	getEntityRecord: function() {
 		var me = this;
 		return me.getEntityView().getModel(me.shortName + '.' + me.modelClass);
@@ -717,16 +736,6 @@ Ext.define('NP.controller.AbstractEntityController', {
 
 		if (isSubmit) {
 			isValid = form.isValid();
-
-			var totalAmount   = me.getLineView().getTotalAmount(),
-				controlAmount = form.findField('control_amount').getValue();
-
-			if (controlAmount !== null && controlAmount != totalAmount) {
-				form.findField('control_amount').markInvalid(
-					me.translate(me.displayName + ' Total must be equal to line total.')
-				);
-				isValid = false;
-			}
 		} else {
 			isValid = isValid && form.findField('property_id').isValid();
 			isValid = isValid && form.findField('vendor_id').isValid();
@@ -787,9 +796,10 @@ Ext.define('NP.controller.AbstractEntityController', {
 		for (var i=0; i<count; i++) {
 			rec = store.getAt(i);
 			for (var j=0; j<cols.length; j++) {
-				var error = null,
-					col   = cols[j],
-					val   = rec.get(col.dataIndex);
+				var error     = null,
+					errorData = {},
+					col       = cols[j],
+					val       = rec.get(col.dataIndex);
 
 				if (Ext.Array.contains(reqFields, col.dataIndex) && (val === null || val === '')) {
 					error = 'This field is required';
@@ -814,8 +824,34 @@ Ext.define('NP.controller.AbstractEntityController', {
 							error = 'This field is required';
 						}
 					}
+
+					if (NP.Config.getSetting('pn.jobcosting.useRetention', '0') == '1') {
+						if (col.dataIndex == 'jbassociation_retamt') {
+							var lineAmount = rec.get(me.itemPrefix + '_amount');
+							if (lineAmount > 0 && val > lineAmount) {
+								error = 'The retention value cannot be greater than the item amount';
+							} else if (lineAmount < 0 && val < lineAmount) {
+								error = 'The retention value cannot be less than the item amount';
+							} else if (lineAmount > 0 && val < 0) {
+								error = 'The retention value cannot be less than 0';
+							} else if (lineAmount < 0 && val > 0) {
+								error = 'The retention value cannot be greater than 0';
+							}
+						}
+					}
 				}
 				
+				if (rec.get('property_id') !== null && col.dataIndex == me.itemPrefix + '_description') {
+					var propRec  = me.getStore('property.AllProperties').getById(rec.get('property_id')),
+						intPkg   = Ext.getStore('system.IntegrationPackages').getById(propRec.get('integration_package_id')),
+						maxLen   = intPkg.get('lineitem_description_max');
+
+					if (rec.get(me.itemPrefix + '_description').length > maxLen) {
+						error = 'The description cannot be longer than {maxLength} characters';
+						errorData.maxLength = maxLen;
+					}
+				}
+
 				if (error === null && me.validateLineItem) {
 					error = me.validateLineItem(rec, col, val);
 				}
@@ -830,7 +866,7 @@ Ext.define('NP.controller.AbstractEntityController', {
 						var cellNode = grid.getView().getCell(recInner, colInner);
 						cellNode.addCls('grid-invalid-cell');
 						cellNode.set({
-							'data-qtip': me.translate(error)
+							'data-qtip': me.translate(error, errorData)
 						});
 					}, { args: [rec, col] });
 					
@@ -1643,6 +1679,10 @@ Ext.define('NP.controller.AbstractEntityController', {
 		}, 50);
 	},
 
+	onPoRefClick: function(rec) {
+		me.addHistory('Po:showView:' + rec.get('purchaseorder_id'));
+	},
+
 	onSplitLineClick: function(lineRec) {
 		var me              = this,
 			vendorsite_id   = me.getVendorRecord().get('vendorsite_id'),
@@ -1972,17 +2012,10 @@ Ext.define('NP.controller.AbstractEntityController', {
 		// Enable/disable the tax/shipping fields; we need to wrap this in deferUntil()
 		// because sometimes the tax/shipping fields haven't yet been rendered
 		var lineStore = me.getLineDataView().getStore();
-		NP.Util.deferUntil(function() {
-			// First, we need to make sure the line store has loaded
-			if (lineStore.isLoading() || !lineStore.isLoaded) {
-				// Since we're inside deferUntil we need to make it fail until store is loaded
-				throw 'Line store not yet loaded';
-			}
-			if (lineStore.getCount()) {
-				me.query('#entity_tax_amount', true).setReadOnly(readonly);
-				me.query('#entity_shipping_amount', true).setReadOnly(readonly);
-			}
-		});
+		if (lineStore.getCount()) {
+			me.query('#entity_tax_amount', true).setReadOnly(readonly);
+			me.query('#entity_shipping_amount', true).setReadOnly(readonly);
+		}
 
 		Ext.resumeLayouts(true);
 	},
@@ -2008,6 +2041,7 @@ Ext.define('NP.controller.AbstractEntityController', {
 						me.addHistory(me.controller + ':showView:' + result[me.pk]);
 					} else {
 						me.getEntityRecord().set('lock_id', result.lock_id);
+						me.getLineGrid().getStore().commitChanges();
 
 						// TODO: need to account for UI changes that may be required on a save
 					}
@@ -2026,10 +2060,7 @@ Ext.define('NP.controller.AbstractEntityController', {
 			me.checkLock(function() {
 				// Get the line items that need to be saved
 				var lineStore    = me.getLineGrid().getStore(),
-					modifiedRecs = lineStore.getModifiedRecords(),
-					deletedRecs  = lineStore.getRemovedRecords(),
-					lines        = NP.Util.convertModelArrayToDataArray(modifiedRecs),
-					deletedLines = NP.Util.convertModelArrayToDataArray(deletedRecs),
+					lines        = NP.Util.convertModelArrayToDataArray(lineStore.getRange()),
 					tax_amount,
 					shipping_amount;
 
@@ -2049,7 +2080,6 @@ Ext.define('NP.controller.AbstractEntityController', {
 						userprofile_id              : NP.Security.getUser().get('userprofile_id'),
 						delegation_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id'),
 						lines                       : lines,
-						deletedLines                : deletedLines,
 						tax                         : tax_amount,
 						shipping                    : shipping_amount
 					}),

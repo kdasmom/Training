@@ -224,6 +224,13 @@ Abstract class AbstractInvoicePoService extends AbstractService {
 	}
 
 	/**
+	 * Gets rejection notes for an entity
+	 */
+	public function getRejectionNotes($entity_id) {
+		return $this->rejectionHistoryGateway->findRejectionNotes($this->table, $entity_id);
+	}
+
+	/**
 	 * 
 	 */
 	public function getSchedule($entity_id) {

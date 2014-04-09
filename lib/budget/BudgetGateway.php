@@ -23,7 +23,7 @@ class BudgetGateway extends AbstractGateway {
 		parent::__construct($adapter);
 	}
 
-	public function createMissingBudgets($entityType) {
+	public function createMissingBudgets($entityType, $entity_id=null) {
 		if ($entityType == 'po') {
 			$itemTable = 'poitem';
 			$entityTable = 'purchaseorder';
@@ -34,11 +34,41 @@ class BudgetGateway extends AbstractGateway {
 			throw new \NP\core\Exception("Invalid value '{$entityType}' for the \$entityType argument. Valid values are 'po' and 'invoice'");
 		}
 
-		$insert = new Insert();
-		$SELECT = new SELECT();
-		$subSELECT = new SELECT();
-
 		$now = \NP\util\Util::formatDateForDB();
+
+		$insert = new Insert();
+		$select = Select::get()
+			->distinct()
+			->columns(array(
+				'glaccount_id',
+				new Expression("UPPER(LEFT(DATENAME(month, e.{$entityTable}_period), 3)) + '-' + RIGHT(YEAR(e.{$entityTable}_period), 2)"),
+				new Expression("'active'"),
+				new Expression("'{$now}'"),
+				new Expression('0'),
+				new Expression('0'),
+				new Expression('0'),
+				new Expression("''")
+			))
+			->from(array('i'=>$itemTable))
+			->join(array('e'=>$entityTable),
+					"i.{$entityTable}_id = e.{$entityTable}_id",
+					array("{$entityTable}_period"))
+			->join(array('gy'=>'glaccountyear'),
+					"gy.glaccountyear_year = YEAR(e.{$entityTable}_period) AND gy.glaccount_id = i.glaccount_id AND gy.property_id = i.property_id",
+					array('glaccountyear_id'))
+			->whereIsNotNull('gy.glaccountyear_id')
+			->whereIsNotNull("e.{$entityTable}_period")
+			->whereNotExists(
+				Select::get()->from(array('b'=>'budget'))
+							->whereEquals('gy.glaccountyear_id', 'b.glaccountyear_id')
+							->whereEquals("e.{$entityTable}_period", 'b.budget_period')
+			);
+
+		$params = [];
+		if (!empty($entity_id)) {
+			$select->whereEquals("e.{$entityTable}_id", '?');
+			$params[] = $entity_id;
+		}
 		
 		$insert->into('budget')
 				->columns(array(
@@ -53,34 +83,9 @@ class BudgetGateway extends AbstractGateway {
 					'budget_period',
 					'glaccountyear_id'
 				))
-				->values(
-					$SELECT->columns(array(
-								'glaccount_id',
-								new Expression("UPPER(LEFT(DATENAME(month, e.{$entityTable}_period), 3)) + '-' + RIGHT(YEAR(e.{$entityTable}_period), 2)"),
-								new Expression("'active'"),
-								new Expression("'{$now}'"),
-								new Expression('0'),
-								new Expression('0'),
-								new Expression('0'),
-								new Expression("''")
-							))
-							->from(array('i'=>$itemTable))
-							->join(array('e'=>$entityTable),
-									"i.{$entityTable}_id = e.{$entityTable}_id",
-									array("{$entityTable}_period"))
-							->join(array('gy'=>'glaccountyear'),
-									"gy.glaccountyear_year = YEAR(e.{$entityTable}_period) AND gy.glaccount_id = i.glaccount_id AND gy.property_id = i.property_id",
-									array('glaccountyear_id'))
-							->whereIsNotNull('gy.glaccountyear_id')
-							->whereIsNotNull("e.{$entityTable}_period")
-							->whereNotExists(
-								$subSELECT->from(array('b'=>'budget'))
-											->whereEquals('gy.glaccountyear_id', 'b.glaccountyear_id')
-											->whereEquals("e.{$entityTable}_period", 'b.budget_period')
-							)
-				);
+				->values($select);
 
-		$this->adapter->query($insert);
+		$this->adapter->query($insert, $params);
 	}
 
 	public function findMtdOverBudgetCategories($countOnly, $property_id, $pageSize=null, $page=null, $sort="category_name") {

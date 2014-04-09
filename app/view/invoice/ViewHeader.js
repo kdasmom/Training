@@ -102,7 +102,7 @@ Ext.define('NP.view.invoice.ViewHeader', {
 				name        : 'invoicepayment_type_id',
 				displayField: 'invoicepayment_type',
 				valueField  : 'invoicepayment_type_id',
-				allowBlank  : false,
+				allowBlank  : (NP.Config.getSetting('PN.InvoiceOptions.PayByRequired', '0') == 0),
 				store       : {
 					type       : 'invoice.invoicepaymenttypes',
 					service    : 'PicklistService',
@@ -142,7 +142,7 @@ Ext.define('NP.view.invoice.ViewHeader', {
 				fieldLabel      : this.invoiceTotalLbl,
 				name            : 'control_amount',
 				decimalPrecision: 2,
-				allowBlank      : (NP.Config.getSetting('PN.InvoiceOptions.InvoiceTotalRequired', '0') == '1') ? false : true
+				allowBlank      : (NP.Config.getSetting('PN.InvoiceOptions.InvoiceTotalRequired', '0') == 0)
 			},{
 				xtype     : 'datefield',
 				fieldLabel: this.invoiceDateLbl,
@@ -152,7 +152,7 @@ Ext.define('NP.view.invoice.ViewHeader', {
 				xtype     : 'datefield',
 				fieldLabel: this.invoiceDueDateLbl,
 				name      : 'invoice_duedate',
-				allowBlank: (NP.Config.getSetting('PN.InvoiceOptions.DueOnRequired', '0') == '1') ? false : true
+				allowBlank: (NP.Config.getSetting('PN.InvoiceOptions.DueOnRequired', '0') == 0)
 			},{
 				xtype       : 'customcombo',
 				fieldLabel  : this.invoicePeriodLbl,

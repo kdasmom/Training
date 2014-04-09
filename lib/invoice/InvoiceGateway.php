@@ -195,7 +195,7 @@ class InvoiceGateway extends AbstractGateway {
 			$invoicePeriod = $this->fiscalCalService->getAccountingPeriod($line['header_property_id']);
 
 			if ($period->format('Y-m') <> $invoicePeriod->format('Y-m')) {
-				$invalid[$line['invoiceitem_id']] = $period;
+				$invalid[$line['invoiceitem_id']] = $period->format($this->configService->get('PN.Intl.DateFormat'));
 			}
 		}
 
