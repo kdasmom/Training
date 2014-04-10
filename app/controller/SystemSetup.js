@@ -705,7 +705,6 @@ Ext.define('NP.controller.SystemSetup', {
 				}
 			}
 		});
-		
 	},
 
 	/**
@@ -1822,8 +1821,8 @@ Ext.define('NP.controller.SystemSetup', {
 						me.addHistory('SystemSetup:showSystemSetup:WorkflowRules');
 					}
 				}
-			}
-		});
+			});
+		}
 	},
 
 	/**

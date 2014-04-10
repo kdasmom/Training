@@ -86,3 +86,4 @@ Ext.define('NP.view.systemSetup.Main', {
 
         this.callParent(arguments);
     }
+});

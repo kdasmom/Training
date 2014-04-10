@@ -11,21 +11,7 @@ use NP\user\UserprofileGateway;
 use NP\core\db\Where;
 
 class WFRuleService extends AbstractService {
-    protected $configService, $securityService, $wfRuleGateway, $wfActionGateway, $wfRuleHourGateway, $wfRuleRelationGateway, $wfRuleScopeGateway, $wfRuleTargetGateway, $wfRuleTypeGateway, $userprofileGateway;
-
-    public function __construct(WfRuleGateway $wfRuleGateway, WFActionGateway $wfActionGateway, WFRuleHourGateway $wfRuleHourGateway,
-                WFRuleRelationGateway $wfRuleRelationGateway, WFRuleScopeGateway $wfRuleScopeGateway, WfRuleTargetGateway $wfRuleTargetGateway,
-                WFRuleTypeGateway $wfRuleTypeGateway, UserprofileGateway $userprofileGateway
-    ) {
-        $this->wfRuleGateway = $wfRuleGateway;
-        $this->wfActionGateway = $wfActionGateway;
-        $this->wfRuleHourGateway = $wfRuleHourGateway;
-        $this->wfRuleRelationGateway = $wfRuleRelationGateway;
-        $this->wfRuleScopeGateway = $wfRuleScopeGateway;
-        $this->wfRuleTargetGateway = $wfRuleTargetGateway;
-        $this->wfRuleTypeGateway = $wfRuleTypeGateway;
-        $this->userprofileGateway = $userprofileGateway;
-    }
+    protected $configService, $securityService;
 
     public function setConfigService(ConfigService $configService) {
         $this->configService = $configService;
