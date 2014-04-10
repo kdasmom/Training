@@ -508,11 +508,11 @@ class WFRuleService extends AbstractService {
 			foreach ($originator_tablekeys as $originator_tablekey) {
 				foreach ($receipient_tablekeys as $receipient_tablekey) {
 					$this->wfActionGateway->insert([
-						'wfrule_id'   => $data['wfrule_id'],
-						'wfactiontype_id'  => '',
-						'wfaction_receipient_tablename' => $receipient_tablename,
+						'wfrule_id'                       => $data['wfrule_id'],
+						'wfactiontype_id'                 => null,
+						'wfaction_receipient_tablename'   => $receipient_tablename,
 						'wfaction_receipient_tablekey_id' => $receipient_tablekey,
-						'wfaction_originator_tablename' => $originator_tablename,
+						'wfaction_originator_tablename'   => $originator_tablename,
 						'wfaction_originator_tablekey_id' => $originator_tablekey
 					]);
 				}

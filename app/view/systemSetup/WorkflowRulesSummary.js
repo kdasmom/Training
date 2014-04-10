@@ -4,13 +4,12 @@ Ext.define('NP.view.systemSetup.WorkflowRulesSummary', {
 
 	initComponent: function() {
 		this.border = false;
-		console.log('this.data', this.data);
-
+		
 		if (!this.data) {
 			this.ruleSummaryItems = [
 				{
-					xtype: 'panel',
-					html: NP.Translator.translate('No Rules Applied')
+					xtype  : 'component',
+					html   : NP.Translator.translate('No Rules Applied')
 				}
 			];
 		} else {
@@ -19,11 +18,11 @@ Ext.define('NP.view.systemSetup.WorkflowRulesSummary', {
 
 		this.items = [
 			{
-				xtype: 'fieldset',
-				title: NP.Translator.translate('Rule Summary'),
+				xtype      : 'fieldset',
+				title      : NP.Translator.translate('Rule Summary'),
 				defaultType: 'textfield',
-				padding: '8',
-				items: this.ruleSummaryItems
+				padding    : '8',
+				items      : this.ruleSummaryItems
 			}
 		];
 

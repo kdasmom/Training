@@ -666,9 +666,10 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 	},
 
 	addSectionLogicOption: function(value) {
-		var me = this,
+		var me                    = this,
 			sectionLogicOption,
-			wfrule_number = '',
+			wfrule_number         = '',
+			wfrule_number_end     = '',
 			sectionLogicContainer = this.down('[name="ruleform"]').down('[name="section-logic-option"]');
 
 		if (me.data) {
@@ -684,39 +685,39 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 					itemId: 'section-logic',
 					border: 0,
 					margin: '0 0 0 30',
-					xtype: 'fieldcontainer',
+					xtype : 'fieldcontainer',
 					layout: 'hbox',
-					items: [
+					items : [
 						{
-							xtype: 'textfield',
+							xtype     : 'numberfield',
 							fieldLabel: NP.Translator.translate('From'),
-							name: 'comparisonValue',
+							name      : 'comparisonValue',
 							labelWidth: 40,
-							width: 200,
+							width     : 200,
 							allowBlank: false,
-							value: wfrule_number
+							value     : wfrule_number
 						},
 						{
-							xtype: 'textfield',
+							xtype     : 'numberfield',
 							fieldLabel: NP.Translator.translate('To'),
-							name: 'comparisonValueTo',
-							margin: '0 0 0 20',
+							name      : 'comparisonValueTo',
+							margin    : '0 0 0 20',
 							labelWidth: 25,
-							width: 200,
+							width     : 200,
 							allowBlank: false,
-							value: wfrule_number_end
+							value     : wfrule_number_end
 						}
 					]
 				};
 				break;
 			default:
 				sectionLogicOption = {
-					xtype: 'textfield',
-					margin: '0 0 0 30',
+					xtype     : 'numberfield',
+					margin    : '0 0 0 30',
 					fieldLabel: '',
-					name: 'comparisonValue',
+					name      : 'comparisonValue',
 					allowBlank: false,
-					value: wfrule_number
+					value     : wfrule_number
 				};
 		}
 

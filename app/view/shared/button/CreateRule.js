@@ -6,6 +6,7 @@ Ext.define('NP.view.shared.button.CreateRule', {
 
     text: 'Create Rule',
     iconCls: 'create-rule-btn',
+    componentCls: 'create-rule-comp-btn',
 
     initComponent: function() {
     	this.text = NP.Translator.translate(this.text);

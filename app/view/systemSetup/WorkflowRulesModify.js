@@ -30,11 +30,13 @@ Ext.define('NP.view.systemSetup.WorkflowRulesModify', {
 		me.items = [
 			{
 				xtype: 'panel',
+				layout: 'fit',
 				items : [
 					{
-						xtype: 'fieldcontainer',
-						name: 'sectionscontainer',
-						items: []
+						xtype : 'container',
+						itemId: 'sectionscontainer',
+						layout: { type: 'vbox', align: 'stretch' },
+						items : []
 					}
 				]
 			}
@@ -50,7 +52,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesModify', {
 	stepRules: function() {
 		var me = this,
 			toolbar = me.getDockedItems()[0],
-			sectionsContainer = this.down('[name="sectionscontainer"]');
+			sectionsContainer = this.down('#sectionscontainer');
 
 		sectionsContainer.removeAll();
 		sectionsContainer.add( me.ruleSummarySection() );
@@ -63,7 +65,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesModify', {
 	stepRoutes: function() {
 		var me = this,
 			toolbar = me.getDockedItems()[0],
-			sectionsContainer = this.down('[name="sectionscontainer"]');
+			sectionsContainer = this.down('#sectionscontainer');
 
 		sectionsContainer.removeAll();
 		sectionsContainer.add( me.ruleSummarySection() );
@@ -76,7 +78,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesModify', {
 	stepConflicts: function() {
 		var me = this,
 			toolbar = me.getDockedItems()[0],
-			sectionsContainer = this.down('[name="sectionscontainer"]');
+			sectionsContainer = this.down('#sectionscontainer');
 
 //		Ext.suspendLayouts();
 

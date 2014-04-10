@@ -33,10 +33,11 @@ Ext.define('NP.view.systemSetup.WorkflowRulesMain', {
 						]
 					},
 					{
-						xtype: 'panel',
-						title: NP.Translator.translate('Workflow Definitions'),
-						bodyPadding: 10,
-						html:[
+						xtype      : 'panel',
+						title      : NP.Translator.translate('Workflow Definitions'),
+						bodyPadding: 8,
+						autoScroll : true,
+						html       : [
 							'<p>Workflow Manager holds the rules that govern various NexusPayables activities.  Through workflow rules, the administrator indicates the appropriate routing for purchase orders and invoices and whether users should be permitted to delegate their approval authority to other users.  This section explains the types of rules that can be defined and the process used for setting them up.  There are three main types of rules: rules for Invoice and Purchase Order routing, a rule for Delegation, and a rule for Optional Workflow.  Please reference the Rule Types section for specific definitions of each rule type.</p>',
 							'<p>A list of rules in use in NexusPayables can be found by clicking on Current Workflow Rules.  From this area, rules can be easily printed, searched across, and reported on.</p>',
 							'<strong>Rules for Invoice and Purchase Order Routing</strong>',
