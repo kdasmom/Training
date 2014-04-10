@@ -34,10 +34,6 @@ class Summary extends AbstractReport implements ReportInterface {
 	public function getData() {
 		$extraParams = $this->getExtraParams();
 
-		print("<pre>");
-		print_r($extraParams);
-		print("</pre>");
-
 		$queryParams = [];
 
 		$propertyFilterSelect = new PropertyFilterSelect($this->getOptions()->propertyContext);
