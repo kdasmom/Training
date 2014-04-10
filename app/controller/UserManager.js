@@ -772,7 +772,8 @@ Ext.define('NP.controller.UserManager', {
     showReports: function() {
         var me = this;
 
-        me.currentForm = me.setView('NP.view.report.user.Form');
-        me.currentForm.getGenerateReportButton().on('click', me.generateReport.bind(me));
+        me.addHistory('Report:show:user');
+//        me.currentForm = me.setView('NP.view.report.user.Form');
+//        me.currentForm.getGenerateReportButton().on('click', me.generateReport.bind(me));
     }
 });

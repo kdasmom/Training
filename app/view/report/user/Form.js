@@ -10,7 +10,10 @@ Ext.define('NP.view.report.user.Form', {
         'NP.lib.ui.ComboBox',
         'NP.lib.data.Store',
         'NP.view.shared.button.Report',
-        'NP.view.report.ReportFormatField'
+        'NP.view.report.ReportFormatField',
+        'NP.store.report.UserReports',
+        'NP.view.shared.ContextPickerMulti',
+        'NP.view.shared.ReportTypeCombo'
     ],
 
     initComponent: function() {
@@ -25,12 +28,51 @@ Ext.define('NP.view.report.user.Form', {
             {
                 xtype: 'shared.button.back'
             },
-            { xtype: 'shared.button.report', text: NP.Translator.translate('Generate Report') }
+            {
+                xtype: 'shared.button.report',
+                text: NP.Translator.translate('Generate Report')
+            }
         ];
 
         me.defaults = { labelWidth: 260 };
 
-        me.items = [];
+        me.items = [
+            {
+                xtype: 'shared.reporttypecombo',
+                store            : { type: 'report.userreports' },
+                listeners        : {
+                    select: function(combo, recs) {
+                        me.selectReport(recs[0].get('report_name'));
+                    }
+                }
+            },
+            {
+                xtype: 'report.reportformatfield',
+                itemId: 'report_format'
+            },
+            {
+                xtype: 'customcombo',
+                itemId: 'user_status',
+                selectFirstRecord: true,
+                name: 'user_status',
+                valueField: 'user_status',
+                displayField: 'user_status_display',
+                fieldLabel: NP.Translator.translate('Status'),
+                store: Ext.create('Ext.data.Store', {
+                    fields: ['user_status', 'user_status_display'],
+                    data: [
+                        { user_status: 'all', user_status_display: NP.Translator.translate('All Users') },
+                        { user_status: 'active', user_status_display: NP.Translator.translate('Active Users') },
+                        { user_status: 'inactive', user_status_display: NP.Translator.translate('Inactive Users') }
+                    ]
+                })
+            },
+            {
+                xtype     : 'fieldcontainer',
+                fieldLabel: NP.Config.getPropertyLabel(),
+                items     : [{ xtype: 'shared.contextpickermulti', itemId: 'property_picker' }]
+            }
+        ];
         me.callParent(arguments);
     }
 });

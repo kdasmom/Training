@@ -33,7 +33,8 @@ Ext.define('NP.controller.Report', {
 	show: function(section) {
 		var me = this;
 
-		me.currentForm = me.setView('NP.view.report.' + section + '.Form');
+
+        me.currentForm = me.setView('NP.view.report.' + section + '.Form');
 		me.currentForm.getGenerateReportButton().on('click', me.generateReport.bind(me));
 	},
 
