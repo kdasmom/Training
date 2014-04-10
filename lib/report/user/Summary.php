@@ -10,6 +10,7 @@ namespace NP\report\user;
 
 
 use NP\core\db\Expression;
+use NP\core\db\Select;
 use NP\property\sql\PropertyFilterSelect;
 use NP\report\AbstractReport;
 use NP\report\ReportColumn;
@@ -50,8 +51,12 @@ class Summary extends AbstractReport implements ReportInterface {
 				'email_address'         => new Expression("REPLACE(e.email_address, '##', '####')"),
 				'userprofile_updated_by'    => new Expression("'(' + u2.userprofile_username + ')'")
 			])
-			->joinRole(['role_id'], 'r', 'u')
+			->joinRole(['role_id'], 'r', 'u', Select::JOIN_INNER, true)
+			->joinStaff([], 's', 'u')
+			->joinEmail([], 'e', 's', Select::JOIN_INNER, false)
 			->whereNotEquals('r.role_name', '?');
+
+		print $select->toString();
 
 		$queryParams[] = 'Client Manager';
 		return [];
