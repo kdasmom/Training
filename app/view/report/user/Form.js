@@ -68,6 +68,23 @@ Ext.define('NP.view.report.user.Form', {
                 })
             },
             {
+                xtype           : 'customcombo',
+                name            : 'group_id',
+                itemId          : 'group_id',
+                fieldLabel      : NP.Translator.translate('Group'),
+                store           : 'user.RoleTree',
+                width           : 500,
+                valueField      : 'role_id',
+                displayField    : 'role_name',
+                emptyText       : NP.Translator.translate('All'),
+                tpl             :
+                    '<tpl for=".">' +
+                        '<li class="x-boundlist-item">' +
+                            '{indent_text}{role_name}' +
+                        '</li>' +
+                    '</tpl>'
+            },
+            {
                 xtype     : 'fieldcontainer',
                 fieldLabel: NP.Config.getPropertyLabel(),
                 items     : [{ xtype: 'shared.contextpickermulti', itemId: 'property_picker' }]
