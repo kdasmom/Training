@@ -4,7 +4,7 @@
  * @author Renat Gatyatov
  */
 Ext.define('NP.view.systemSetup.InvoiceItemAmountAssigner', {
-	extend: 'Ext.ux.form.ItemSelector',
+	extend: 'NP.lib.ui.Assigner',
 	alias: 'widget.systemSetup.invoiceitemamountassigner',
 
 	fieldLabel: 'Invoice Item Amount By Job Code',

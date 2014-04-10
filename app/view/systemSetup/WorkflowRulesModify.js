@@ -97,12 +97,12 @@ Ext.define('NP.view.systemSetup.WorkflowRulesModify', {
 		if (me.data) {
 			toolbarItems.push( {xtype:'shared.button.cancel', itemId:'buttonWorkflowBackToMain'} );
 			toolbarItems.push( {xtype:'shared.button.copy', itemId:'buttonWorkflowCopyRule'} );
-			toolbarItems.push( {xtype:'shared.button.next', itemId:'buttonWorkflowNext'} );
-			toolbarItems.push( {xtype:'shared.button.saveandactivate', itemId:'buttonWorkflowSaveAndActivate'} );
+			toolbarItems.push( {xtype:'shared.button.next', itemId:'buttonWorkflowNext', text: NP.Translator.translate('Next Step') } );
+			toolbarItems.push( {xtype:'shared.button.saveandactivate', itemId:'buttonWorkflowSaveAndActivate' } );
 		}
 		else {
 			toolbarItems.push( {xtype:'shared.button.cancel', itemId:'buttonWorkflowBackToMain'} );
-			toolbarItems.push( {xtype:'shared.button.next', itemId:'buttonWorkflowNext'} );
+			toolbarItems.push( {xtype:'shared.button.next', itemId:'buttonWorkflowNext', text: NP.Translator.translate('Next Step') } );
 		}
 
 		if (me.data) {

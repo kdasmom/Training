@@ -4,9 +4,9 @@
 
 Ext.define('NP.view.systemSetup.RuleTypeAutocomplete', {
     extend: 'NP.lib.ui.AutoComplete',
-    alias: 'widget.systemSetup.ruletypeautocomplete',
+    alias: 'widget.systemsetup.ruletypeautocomplete',
 
-    requires: ['NP.store.workflow.RuleTypes'],
+    requires: ['NP.store.workflow.WfRuleTypes'],
 
     fieldLabel      : 'Rule Type',
 
@@ -20,9 +20,8 @@ Ext.define('NP.view.systemSetup.RuleTypeAutocomplete', {
 
     initComponent: function() {
         if (!this.store) {
-            this.store = Ext.create('NP.store.workflow.RuleTypes', {
+            this.store = Ext.create('NP.store.workflow.WfRuleTypes', {
                 service: 'WFRuleService',
-                autoLoad: true,
                 action: 'listRulesType'
             });
         }

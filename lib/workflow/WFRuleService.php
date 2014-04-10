@@ -259,8 +259,8 @@ class WFRuleService extends AbstractService {
 	private function saveWFRule($userprofile_id, $data) {
 		$now = \NP\util\Util::formatDateForDB();
 		$asp_client_id = $this->configService->getClientId();
-		$property_keys = isset($data['properties']) ? explode(',', $data['properties']) : [];
-		$tablekeys = isset($data['tablekeys']) ? explode(',', $data['tablekeys']) : [];
+		$property_keys = isset($data['properties']) ? $data['properties'] : [];
+		$tablekeys = isset($data['tablekeys']) ? $data['tablekeys'] : [];
 		$status = 'deactive';
 
 		$ruleid = ($data['wfrule_id'] != '') ? $data['wfrule_id'] : null;
@@ -455,22 +455,25 @@ class WFRuleService extends AbstractService {
 				$receipient_tablekeys_list = '';
 		}
 
-		$originator_tablekeys = explode(',', $originator_tablekeys_list);
-		$receipient_tablekeys = explode(',', $receipient_tablekeys_list);
+		$originator_tablekeys = $originator_tablekeys_list;
+		$receipient_tablekeys = $receipient_tablekeys_list;
 
 		if ($data['forwardto'] == 'next') {
 			if (count($originator_tablekeys)) {
+				$tablekey_params = array_fill(0, count($originator_tablekeys_list), '?');
+				$tablekey_params = implode(',', $tablekey_params);
+
 				$this->wfActionGateway->delete(
-					Where::get()->in('wfaction_originator_tablekey_id', $originator_tablekeys_list)
+					Where::get()->in('wfaction_originator_tablekey_id', $tablekey_params)
 						->equals('wfaction_originator_tablename', '?')
 						->equals('wfrule_id', '?'),
-					[$originator_tablename, $data['wfrule_id']]
+					array_merge($originator_tablekeys, [$originator_tablename, $data['wfrule_id']])
 				);
 
 				foreach ($originator_tablekeys as $originator_tablekey) {
 					$this->wfActionGateway->insert([
 						'wfrule_id'   => $data['wfrule_id'],
-						'wfactiontype_id'  => '',
+						'wfactiontype_id'  => null,
 						'wfaction_originator_tablename' => $originator_tablename,
 						'wfaction_originator_tablekey_id' => $originator_tablekey,
 						'wfaction_nextlevel' => 'Y'

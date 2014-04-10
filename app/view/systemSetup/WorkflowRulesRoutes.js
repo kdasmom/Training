@@ -3,6 +3,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesRoutes', {
     alias:  'widget.systemsetup.workflowrulesroutes',
 
 	requires: [
+		'Ext.form.FieldSet',
 		'NP.view.systemSetup.WorkflowOriginatesGrid',
 		'NP.view.shared.UserAssigner',
 		'NP.view.shared.RoleAssigner'

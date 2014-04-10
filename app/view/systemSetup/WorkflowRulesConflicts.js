@@ -3,6 +3,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesConflicts', {
 	alias:  'widget.systemsetup.workflowrulesconflicts',
 
 	requires: [
+		'Ext.form.FieldSet',
 		'NP.view.systemSetup.WorkflowOriginatesGrid',
 		'NP.view.systemSetup.WorkflowConflictingRulesGrid'
 	],

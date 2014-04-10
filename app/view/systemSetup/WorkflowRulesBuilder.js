@@ -3,15 +3,16 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 	alias:  'widget.systemsetup.workflowrulesbuilder',
 	
 	requires: [
+		'Ext.form.FieldSet',
 		'NP.view.shared.PropertyAssigner',
 		'NP.view.shared.VendorAssigner',
 		'NP.view.systemSetup.BudgetByGlCategoryAssigner',
 		'NP.view.systemSetup.BudgetByGlCodeAssigner',
-		'NP.view.systemSetup.Invoic' +
-			'eItemAmountAssigner',
+		'NP.view.systemSetup.InvoiceItemAmountAssigner',
 		'NP.view.systemSetup.ContractAssigner',
 		'NP.view.systemSetup.PaymentTypeAssigner',
-		'NP.view.systemSetup.UnitAssigner'
+		'NP.view.systemSetup.UnitAssigner',
+		'NP.store.invoice.InvoicePaymentTypes'
 	],
 
 	initComponent: function() {
@@ -29,7 +30,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 			allProperties = me.data.properties.all;
 		}
 
-		var storeRuleTypes = Ext.create('NP.store.workflow.RuleTypes', {
+		var storeRuleTypes = Ext.create('NP.store.workflow.WfRuleTypes', {
 			service: 'WFRuleService',
 			action: 'listRulesType'
 		});

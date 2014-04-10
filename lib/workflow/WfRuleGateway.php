@@ -99,7 +99,7 @@ class WfRuleGateway extends AbstractGateway {
 
 		$result = [];
 		if (!empty($size)) {
-			$result = $this->getPagingArray($select, [], $size, $page, 'wfrule_id');
+			$result = $this->getPagingArray($select, [], $size, $page, 'wf.wfrule_id');
 
 		} else {
 			$result = $this->adapter->query($select);

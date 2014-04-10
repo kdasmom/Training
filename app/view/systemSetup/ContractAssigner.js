@@ -4,7 +4,7 @@
  * @author Renat Gatyatov
  */
 Ext.define('NP.view.systemSetup.ContractAssigner', {
-	extend: 'Ext.ux.form.ItemSelector',
+	extend: 'NP.lib.ui.Assigner',
 	alias: 'widget.systemSetup.contractassigner',
 
 	fieldLabel: 'Invoice Item Amount (by Contract)',

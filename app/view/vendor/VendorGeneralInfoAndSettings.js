@@ -11,7 +11,8 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
 		'NP.lib.core.Security',
 		'NP.lib.ui.ComboBox',
         'NP.view.shared.YesNoField',
-		'NP.view.shared.CustomField'
+		'NP.view.shared.CustomField',
+		'NP.store.invoice.InvoicePaymentTypes'
 	],
 
 	padding: 8,

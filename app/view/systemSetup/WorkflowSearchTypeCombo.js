@@ -2,14 +2,17 @@ Ext.define('NP.view.systemSetup.WorkflowSearchTypeCombo', {
 	extend: 'Ext.form.field.ComboBox',
 	alias: 'widget.systemsetup.workflowsearchtypecombo',
 
-	queryMode: 'local',
-	fieldLabel: NP.Translator.translate('Filter by:'),
+    requires: ['NP.lib.core.Translator'],
 
+	queryMode: 'local',
+	
 	valueField: 'id',
 	displayField: 'type',
 	value: 0,
 
 	initComponent: function() {
+		this.fieldLabel = NP.Translator.translate('Filter by');
+
 		this.store = Ext.create('Ext.data.Store', {
 			data: [
 				{id: 0, type: NP.Translator.translate('--ALL--')},

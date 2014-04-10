@@ -2,6 +2,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesSummary', {
 	extend: 'Ext.panel.Panel',
 	alias:  'widget.systemsetup.workflowrulessummary',
 
+	requires: ['Ext.form.FieldSet'],
+
 	initComponent: function() {
 		this.border = false;
 		

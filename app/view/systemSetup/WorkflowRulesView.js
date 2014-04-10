@@ -1,6 +1,15 @@
 Ext.define('NP.view.systemSetup.WorkflowRulesView', {
 	extend: 'Ext.panel.Panel',
 	alias:  'widget.systemsetup.workflowrulesview',
+	
+	requires: [
+		'NP.view.shared.button.Print',
+		'NP.view.shared.button.Cancel',
+		'NP.view.shared.button.Edit',
+		'NP.view.shared.ExpandableSection',
+		'Ext.draw.Text'
+	],
+
 	layout: 'fit',
 
 	modal: true,
@@ -11,14 +20,6 @@ Ext.define('NP.view.systemSetup.WorkflowRulesView', {
 
 	bodyStyle: 'background-color: white',
 	bodyPadding: 10,
-
-	requires: [
-		'NP.view.shared.button.Print',
-		'NP.view.shared.button.Cancel',
-		'NP.view.shared.button.Edit',
-
-		'NP.view.shared.ExpandableSection'
-	],
 
 	initComponent: function() {
 		var me = this;

@@ -1,4 +1,4 @@
-Ext.define('NP.model.workflow.RuleType', {
+Ext.define('NP.model.workflow.WfRuleType', {
     extend: 'Ext.data.Model',
 
     idProperty: 'wfruletype_id',

@@ -4,7 +4,7 @@
  * @author Renat Gatyatov
  */
 Ext.define('NP.view.systemSetup.UnitAssigner', {
-	extend: 'Ext.ux.form.ItemSelector',
+	extend: 'NP.lib.ui.Assigner',
 	alias: 'widget.systemSetup.unitassigner',
 
 	fieldLabel: 'Units',

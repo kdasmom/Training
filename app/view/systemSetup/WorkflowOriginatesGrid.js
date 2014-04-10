@@ -3,6 +3,7 @@ Ext.define('NP.view.systemSetup.WorkflowOriginatesGrid', {
 	alias: 'widget.systemsetup.workfloworiginatesgrid',
 
 	requires: [
+		'NP.store.workflow.Originates',
 		'NP.view.systemSetup.gridcol.OriginatesFrom',
 		'NP.view.systemSetup.gridcol.FromUser',
 		'NP.view.systemSetup.gridcol.ForwardTo',

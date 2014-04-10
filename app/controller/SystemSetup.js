@@ -12,14 +12,16 @@ Ext.define('NP.controller.SystemSetup', {
 	    'NP.lib.core.Util',
 	    'NP.lib.core.Config',
     	'NP.lib.core.Translator',
-    	'Ext.form.field.Hidden'
+    	'Ext.form.field.Hidden',
+    	'NP.store.invoice.InvoicePaymentTypes'
 	],
 
 	models: ['system.DfSplit'],
 
 	stores: [
 		'property.Properties','gl.GlAccounts','system.DfSplits','system.ConfigSysLkpVals',
-		'system.PrintTemplates'
+		'system.PrintTemplates','workflow.WfRules','workflow.WfRuleTypes',
+		'invoice.InvoicePaymentTypes','workflow.Originates'
 	],
 
 	views: [
@@ -31,7 +33,10 @@ Ext.define('NP.controller.SystemSetup', {
 		'systemSetup.TemplatesGrid',
 		'systemSetup.PropertyAssignmentsWindow',
 		'systemSetup.PrintTemplateViewImageWindow',
-		'systemSetup.PrintTemplateViewAttachmentWindow'
+		'systemSetup.PrintTemplateViewAttachmentWindow',
+		'systemSetup.WorkflowRulesMain',
+		'systemSetup.WorkflowRulesView',
+		'systemSetup.WorkflowRulesModify'
 	],
 
 	refs : [

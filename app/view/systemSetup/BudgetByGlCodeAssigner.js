@@ -4,7 +4,7 @@
  * @author Renat Gatyatov
  */
 Ext.define('NP.view.systemSetup.BudgetByGlCodeAssigner', {
-	extend: 'Ext.ux.form.ItemSelector',
+	extend: 'NP.lib.ui.Assigner',
 	alias: 'widget.systemSetup.budgetbyglcodeassigner',
 
 	fieldLabel: 'Budgets By Gl Code',

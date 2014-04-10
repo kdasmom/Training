@@ -4,8 +4,10 @@
  * @author Renat Gatyatov
  */
 Ext.define('NP.view.systemSetup.PaymentTypeAssigner', {
-	extend: 'Ext.ux.form.ItemSelector',
+	extend: 'NP.lib.ui.Assigner',
 	alias: 'widget.systemSetup.paymenttypeassigner',
+
+	requires: ['NP.store.invoice.InvoicePaymentTypes'],
 
 	fieldLabel: 'Invoice Total by Pay by',
 

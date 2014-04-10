@@ -1,8 +1,16 @@
-Ext.define('NP.view.systemSetup.gridcol.property', {
+Ext.define('NP.view.systemSetup.gridcol.Property', {
 	extend: 'Ext.grid.column.Column',
 	alias: 'widget.systemsetup.gridcol.property',
-	text: NP.Translator.translate('Property'),
+	
+	requires: ['NP.lib.core.Config'],
+
 	dataIndex: 'count_properties',
+
+    initComponent: function() {
+    	this.text = NP.Config.getPropertyLabel();
+
+    	this.callParent(arguments);
+    },
 
 	renderer : function(val, meta, rec) {
 		return rec.data.all_properties_selected ?
