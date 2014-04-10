@@ -61,7 +61,7 @@ Ext.define('NP.view.report.user.Form', {
                 store: Ext.create('Ext.data.Store', {
                     fields: ['user_status', 'user_status_display'],
                     data: [
-                        { user_status: 'all', user_status_display: NP.Translator.translate('All Users') },
+                        { user_status: '', user_status_display: NP.Translator.translate('All Users') },
                         { user_status: 'active', user_status_display: NP.Translator.translate('Active Users') },
                         { user_status: 'inactive', user_status_display: NP.Translator.translate('Inactive Users') }
                     ]

@@ -10,10 +10,13 @@ use NP\core\db\Select;
  * @author Thomas Messier
  */
 class UserprofileSelect extends Select {
+
+	private $tableAlias;
 	
-	public function __construct() {
+	public function __construct($alias = 'u') {
 		parent::__construct();
-		$this->from(array('u'=>'userprofile'));
+		$this->tableAlias = $alias;
+		$this->from(array($this->tableAlias => 'userprofile'));
 	}
 	
 	/**
@@ -68,10 +71,10 @@ class UserprofileSelect extends Select {
 	 * @param  string[] $cols                 Columns to retrieve from the ROLE table
 	 * @return \NP\user\sql\UserprofileSelect Returns caller object for easy chaining
 	 */
-	public function joinRole($cols=array()) {
-		return $this->join(array('r' => 'role'),
-						'ur.role_id = r.role_id',
-						$cols);
+	public function joinRole($cols=array(), $fromAlias = 'r', $toAlias = 'ur', $type = Select::JOIN_INNER) {
+		return $this->join(array($fromAlias => 'role'),
+						"{$fromAlias}.role_id = {$toAlias}.role_id",
+						$cols, $type);
 	}
 	
 	/**
