@@ -16,8 +16,8 @@ use NP\util\Util;
 class UtilityService extends AbstractService {
     protected $configService;
 
-    public function __construct(ConfigService $configService) {
-        $this->configService         = $configService;
+    public function setConfigService(ConfigService $configService) {
+        $this->configService = $configService;
     }
 
     /**
@@ -58,7 +58,6 @@ class UtilityService extends AbstractService {
 
     public function getAccountsByVendorsite($vendorsite_id, $property_id = null, $utilitytype_id = null, $glaccount_id = null, $sort = 'vendor_name') {
         return $this->utilityAccountGateway->findByVendor($vendorsite_id, $property_id, $utilitytype_id, $glaccount_id, $sort);
-        
     }
 
     /**
@@ -69,7 +68,7 @@ class UtilityService extends AbstractService {
             ['UtilityType_Id'=>'?'],
             [$UtilityType_Id],
             'UtilityColumn_UsageType_Name',
-            ['UtilityColumn_UsageType_Id','UtilityColumn_UsageType_Name']
+            ['UtilityColumn_UsageType_Id','UtilityColumn_UsageType_Name','UtilityType_Id']
         );
     }
 
@@ -81,6 +80,49 @@ class UtilityService extends AbstractService {
      */
     public function getUtilTypesByVendorsiteId($vendorsite_id) {
         return $this->utilityTypeGateway->findByVendorsite_id($vendorsite_id);
+    }
+
+    /**
+     * Get list of account numbers.
+     * 
+     * @param int $userprofile_id User id.
+     * @param int $delegation_to_userprofile_id Delegate id.
+     * @return [] List of the account numbers.
+     */
+    public function getAccountNumbersByUser($userprofile_id, $delegation_to_userprofile_id) {
+        return $this->utilityAccountGateway->getAccountNumbersByUser($userprofile_id, $delegation_to_userprofile_id);
+    }
+
+    /**
+     * Get list of account numbers.
+     * 
+     * @param int $userprofile_id User id.
+     * @param int $delegation_to_userprofile_id Delegate id.
+     * @return [] List of the account numbers.
+     */
+    public function getAccountsByUser($userprofile_id, $delegation_to_userprofile_id,
+                                        $UtilityAccount_AccountNumber=null, $UtilityAccount_MeterSize=null) {
+        return $this->utilityAccountGateway->getAccountsByUser(
+            $userprofile_id,
+            $delegation_to_userprofile_id,
+            $UtilityAccount_AccountNumber,
+            $UtilityAccount_MeterSize
+        );
+    }
+
+    /**
+     * Get list of meter numbers.
+     * 
+     * @param int $UtilityAccount_AccountNumber
+     * @return [] List of the meter sizes.
+     */
+    public function getMeterSizesByAccount($userprofile_id, $delegation_to_userprofile_id,
+                                        $UtilityAccount_AccountNumber) {
+        return $this->utilityAccountGateway->getMeterSizesByAccount(
+            $userprofile_id,
+            $delegation_to_userprofile_id,
+            $UtilityAccount_AccountNumber
+        );
     }
 
     /**

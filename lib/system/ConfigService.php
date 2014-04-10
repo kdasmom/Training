@@ -6,6 +6,7 @@ use NP\core\AbstractService;
 use NP\core\Exception;
 use NP\core\Config;
 use NP\security\SecurityService;
+use NP\util\Util;
 
 /**
  * Service class for operations related to app configuration
@@ -13,17 +14,25 @@ use NP\security\SecurityService;
  * @author Thomas Messier
  */
 class ConfigService extends AbstractService {
-	
-	protected $config, $securityService, $siteService, $appName, $intPkgGateway, $configsysGateway;
-	
-	public function __construct(Config $config, SecurityService $securityService, SiteService $siteService, IntegrationPackageGateway $intPkgGateway, ConfigsysGateway $configsysGateway) {
-		$this->config          = $config;
-		$this->securityService = $securityService;
-		$this->siteService     = $siteService;
-		$this->intPkgGateway		= $intPkgGateway;
-		$this->configsysGateway = $configsysGateway;
 
-		$this->appName         = $siteService->getAppName();
+	const TABINDEX_CUSTOMFIELD_HEADERS = 0;
+	const TABINDEX_CUSTOMFIELD_LINEITEMS = 1;
+	const TABINDEX_CUSTOMFIELD_SERVICEFIELDS = 2;
+	const TABINDEX_CUSTOMFIELD_PROPERTYFIELDS = 3;
+
+	protected $config, $securityService, $siteService, $appName, $intPkgGateway, $configsysGateway, $configSysValGateway, $pnUniversalFieldGateway, $pnCustomFieldsGateway;
+	
+	public function __construct(Config $config, SecurityService $securityService, SiteService $siteService, IntegrationPackageGateway $intPkgGateway, ConfigsysGateway $configsysGateway, ConfigSysValGateway $configSysValGateway, PnUniversalFieldGateway $pnUniversalFieldGateway, PnCustomFieldsGateway $pnCustomFieldsGateway) {
+		$this->config           = $config;
+		$this->securityService  = $securityService;
+		$this->siteService      = $siteService;
+		$this->intPkgGateway    = $intPkgGateway;
+		$this->configsysGateway = $configsysGateway;
+		$this->configSysValGateway = $configSysValGateway;
+		$this->pnUniversalFieldGateway = $pnUniversalFieldGateway;
+		$this->pnCustomFieldsGateway = $pnCustomFieldsGateway;
+
+		$this->appName          = $siteService->getAppName();
 		
 		// Defaulting locale to "en" for now until we implement this, will then probably come from session
 		$this->setLocale('en');
@@ -310,7 +319,7 @@ class ConfigService extends AbstractService {
 		}
 		return $arTemp;
 	}
-	
+
 	/**
 	 * Saves password configuration fields
 	 *
@@ -329,6 +338,21 @@ class ConfigService extends AbstractService {
 		);
 	}
 
+	/**
+	 * Retrieve settings list
+	 *
+	 * @param null $settingList
+	 * @param null $defaultlist
+	 * @return array
+	 */
+	public function getCPSettings($settingList = null, $defaultlist = null) {
+		if (!$settingList) {
+			return [];
+		}
+
+		return $this->configsysGateway->getCPSettings($settingList , $defaultlist);
+	}
+	
 	/**
 	 * Retrieve integrationpackage info
 	 *
@@ -366,6 +390,512 @@ class ConfigService extends AbstractService {
 	public function saveAuditLog($userprofile_id, $tablekey_id, $audittype_id, $field_name, $field_new_value, $control_value = null) {
 
 		$this->configsysGateway->saveAuditLog($userprofile_id, $tablekey_id, $audittype_id, $field_name, $field_new_value, $control_value);
+	}
+
+	/**
+	 * Gets the file name of the custom logo set for this client
+	 *
+	 * @return string
+	 */
+	public function getCustomLogoName() {
+		$client = $this->clientGateway->find(null, null, null, ['logo_file']);
+
+		return $client[0]['logo_file'];
+	}
+
+	/**
+	 * 
+	 */
+	public function getCustomLogoPath() {
+		return "{$this->getAppRoot()}/clients/{$this->getAppName()}/web/images/logos";
+	}
+
+	/**
+	 * Saves a client logo
+	 *
+	 * @return array     Array with status info on the operation
+	 */
+	public function saveClientLogo() {
+		$fileName = null;
+
+		$this->clientGateway->beginTransaction();
+
+		try {
+			$this->removeClientLogo();
+
+			$destPath = $this->getCustomLogoPath();
+			
+			// If destination directory doesn't exist, create it
+			if (!is_dir($destPath)) {
+				mkdir($destPath, 0777, true);
+			}
+
+			// Create the upload object
+			$fileUpload = new \NP\core\io\FileUpload(
+				'logo_file', 
+				$destPath, 
+				[
+					'allowedTypes' => [
+						'image/gif',
+						'image/jpeg',
+						'image/png',
+						'image/pjpeg'
+					],
+					'overwrite'    => false
+				]
+			);
+
+			// Do the file upload
+			$fileUpload->upload();
+			$errors = $fileUpload->getErrors();
+
+			// If there are no errors, run the resize operations and DB updates
+			if (!count($errors)) {
+				// Resize the image if necessary
+				$fileName = $fileUpload->getFile();
+				$fileName = $fileName['uploaded_name'];
+				\NP\util\Util::resizeImage("{$destPath}/{$fileName}", 500, 170);
+
+				$this->clientGateway->update(['logo_file'=>$fileName]);
+			}
+		} catch(\Exception $e) {
+			$errors[] = $this->handleUnexpectedError($e);
+		}
+
+		if (count($errors)) {
+			foreach ($errors as $i=>$error) {
+				$errors[$i] = $this->localizationService->getMessage($error);
+			}
+			$this->clientGateway->rollback();
+		} else {
+			$this->clientGateway->commit();
+		}
+
+		return array(
+			'success'   => (count($errors)) ? false : true,
+			'logo_file' => $fileName,
+			'errors'    => $errors
+		);
+	}
+
+	/**
+	 * Removes a catalog logo
+	 *
+	 */
+	public function removeClientLogo() {
+		$fileName = $this->getCustomLogoName();
+		$filePath = "{$this->getCustomLogoPath()}/{$this->getCustomLogoName()}";
+
+		if (!empty($fileName) && file_exists($filePath)) {
+			unlink($filePath);
+		}
+
+		$this->clientGateway->update(['logo_file'=>null]);
+	}
+
+    public function showClientLogo() {
+    	$filename = $this->getCustomLogoName();
+    	$file = "{$this->getCustomLogoPath()}/{$filename}";
+    	try {
+            if ($file === null || !file_exists($file)) {
+                die('Invalid file');
+            } else {
+                $ext = explode('.', $filename);
+                $ext = strtolower(array_pop($ext));
+
+                header("Content-type: image/{$ext}");
+
+                die(file_get_contents($file));
+            }
+        } catch (Exception $e) {
+            die('Invalid file');
+        }
+    }
+
+	/**
+	 * Retrieve sysvals list
+	 *
+	 * @param null $configsysclient_name
+	 * @param null $configsysval_load
+	 * @param null $configsyscat_name
+	 * @param null $configsysval_show
+	 * @return array|bool
+	 */
+	public function getConfigSysValByCat($configsysval_load = null, $configsyscat_name = null, $configsysval_show = null) {
+		return $this->configsysGateway->getConfigSysValByCat($configsysval_load, $configsyscat_name, $configsysval_show);
+	}
+
+	/**
+	 * List of vals for the combobox
+	 *
+	 * @param null $configsyslkp_id
+	 * @return array|bool
+	 */
+	public function getConfigSysLkpVal($configsyslkp_id = null) {
+		return $this->configsysGateway->getConfigSysLkpVal($configsyslkp_id);
+	}
+
+	/**
+	 * List of val for table field
+	 *
+	 * @param null $tablename
+	 * @param null $configsys_tbl_name_fld
+	 * @param null $configsys_tbl_val_fld
+	 * @return array|bool
+	 */
+	public function getConfigSysValTable($tablename = null, $configsys_tbl_name_fld = null, $configsys_tbl_val_fld = null) {
+		if (!$tablename || !$configsys_tbl_val_fld || !$configsys_tbl_name_fld) {
+			return [];
+		}
+
+		return $this->configsysGateway->getConfigSysValTable($tablename, $configsys_tbl_name_fld, $configsys_tbl_val_fld);
+	}
+
+	/**
+	 * save settings
+	 *
+	 * @param $data
+	 * @return array
+	 */
+	public function saveSettings($data = null) {
+		foreach ($data as $key => $value) {
+			if (strstr($key, 'setting_')) {
+				$setting = explode('_', $key);
+
+				try {
+					$this->configSysValGateway->update(
+						['configsysval_updated_by' => $data['userprofile_id'], 'configsysval_val' => $value, 'configsysval_updated_datetm' => Util::formatDateForDB()],
+						['configsysval_id' => '?'],
+						[$setting[1]]
+					);
+				} catch(\Exception $e) {
+					return [
+						'success'	=> false,
+						'errors'	=> ['field' => 'global', 'msg' => $e->getMessage(), 'extra' => null]
+					];
+				}
+			}
+		}
+
+		$this->config->loadConfigCache();
+		return [
+			'success'	=> true,
+			'errors'	=> []
+		];
+
+	}
+
+	/**
+	 * Retrieve headers list
+	 *
+	 * @param int $limit
+	 * @param int $page
+	 * @param string $sort
+	 * @return array|bool
+	 */
+	public function getHeaders($limit = 25, $page = 1, $sort = 'configsys_name') {
+		return $this->configsysGateway->getHeaderVals($limit, $page, $sort);
+	}
+
+	/**
+	 * Retrieve line items list
+	 *
+	 * @param int $limit
+	 * @param int $page
+	 * @param string $sort
+	 * @return array|bool
+	 */
+	public function getLineItems($limit = 25, $page = 1, $sort = 'configsys_name') {
+		return $this->configsysGateway->getLineItems($limit, $page, $sort);
+	}
+
+	/**
+	 * Return custom fields list
+	 *
+	 * @param int $limit
+	 * @param int $page
+	 * @param string $sort
+	 * @param string $fieldname
+	 * @return array|bool
+	 */
+	public function getCustomFields($limit = 25, $page = 1, $sort = 'controlpanelitem_name', $fieldname = 'serviceField') {
+		return $this->configsysGateway->getCustomFields($limit, $page, $sort, $fieldname);
+	}
+
+	/**
+	 * Get header values
+	 *
+	 * @param null $asp_client_id
+	 * @param null $fid
+	 * @return array
+	 */
+	public function getHeaderValues($fid = null, $tabindex = false) {
+		$data = [];
+		$asp_client_id = $this->getClientId();
+
+		if (!$fid) {
+			return false;
+		}
+		if ($tabindex == self::TABINDEX_CUSTOMFIELD_HEADERS) {
+
+			$data['inv_custom_field_on_off'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'INVOICE_CUSTOM_FIELD' . $fid . '_ON_OFF', "");
+			$data['po_custom_field_on_off'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'PO_CUSTOM_FIELD' . $fid . '_ON_OFF', "");
+			$data['vef_custom_field_on_off'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'VEF_CUSTOM_FIELD' . $fid . '_ON_OFF', "");
+			$data['inv_custom_field_req'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'INVOICE_CUSTOM_FIELD' . $fid . '_REQ', "");
+			$data['po_custom_field_req'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'PO_CUSTOM_FIELD' . $fid . '_REQ', "");
+			$data['vef_custom_field_req'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'VEF_CUSTOM_FIELD' . $fid . '_REQ', "");
+			$data['custom_field_lbl'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'CUSTOM_FIELD_LABEL' . $fid, "");
+			$data['inv_custom_field_imgindex'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'invoice_custom_field' . $fid . '_imgindex', "");
+			$data['customFieldType'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'custom_field' . $fid . '_type', 'select');
+			$data['maxlength'] = in_array($fid, [7,8]) ? $this->configsysGateway->getFieldLength($fid, $tabindex) : 0;
+
+
+		}
+		if ($tabindex == self::TABINDEX_CUSTOMFIELD_LINEITEMS) {
+			$data['inv_custom_field_on_off'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'INVOICE_CUSTOM_FIELD' . $fid . '_LINEITEM_ON_OFF', "");
+			$data['po_custom_field_on_off'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'PO_CUSTOM_FIELD' . $fid . '_LINEITEM_ON_OFF', "");
+			$data['vef_custom_field_on_off'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'VEF_CUSTOM_FIELD' . $fid . '_LINEITEM_ON_OFF', "");
+			$data['inv_custom_field_req'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'INVOICE_CUSTOM_FIELD' . $fid . '_LINEITEM_REQ', "");
+			$data['po_custom_field_req'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'PO_CUSTOM_FIELD' . $fid . '_LINEITEM_REQ', "");
+			$data['vef_custom_field_req'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'VEF_CUSTOM_FIELD' . $fid . '_LINEITEM_REQ', "");
+			$data['custom_field_lbl'] = $this->configsysGateway->getControlPanelItem($asp_client_id, 'CUSTOM_FIELD_LABEL' . $fid . '_LINEITEM', "");
+			$data['maxlength'] = in_array($fid, [7,8]) ? $this->configsysGateway->getFieldLength($fid, $tabindex) : 0;
+		}
+		$data['universal_field_number'] = $fid;
+
+		if ($tabindex >= self::TABINDEX_CUSTOMFIELD_SERVICEFIELDS) {
+			$data = $this->pnCustomFieldsGateway->getCustomFieldValues($fid);
+			return $data[0];
+		}
+		return $data;
+	}
+
+	public function getCustomFieldsData($fid = null, $tabindex = null, $pntype = null, $universal_field_id = null) {
+		if(!$fid) {
+			return [];
+		}
+
+		return $this->pnUniversalFieldGateway->getCustomFieldData($fid, $tabindex, $pntype, $universal_field_id);
+	}
+
+	/**
+	 * Delete universal field
+	 *
+	 * @param $universal_field_id
+	 */
+	public function deleteUniversalField($universal_field_id) {
+		return $this->pnUniversalFieldGateway->deleteUniversalField($universal_field_id);
+	}
+
+	public function saveUniversalFields($data = null) {
+		if (!$data) {
+			return false;
+		}
+
+		if ($data['tabindex'] < self::TABINDEX_CUSTOMFIELD_SERVICEFIELDS) {
+			if ($data['action'] == 'new') {
+				return $this->pnUniversalFieldGateway->insert([
+					'universal_field_data'		=> $data['universal_field_data'],
+					'universal_field_number'	=> $data['universal_field_number'],
+					'universal_field_status'	=> $data['universal_field_status'],
+					'universal_field_order'		=> 0,
+					'customfield_pn_type'		=> 'customInvoicePO',
+					'islineitem'				=> $data['tabindex']
+				]);
+			} else {
+				return $this->pnUniversalFieldGateway->updateUniversalField($data);
+			}
+		} else {
+			if ($data['action'] == 'new') {
+				$customField = $this->pnCustomFieldsGateway->find(['customfield_id' => '?'], [$data['fid'], null, ['customfield_pn_type']]);
+				$nextId = $this->pnUniversalFieldGateway->getNextMaxUFN($customField[0]['customfield_pn_type']);
+				return $this->pnUniversalFieldGateway->insert(
+					[
+						'universal_field_data'		=> $data['universal_field_data'],
+						'universal_field_number'	=> $data['universal_field_number'],
+						'universal_field_status'	=> $data['universal_field_status'],
+						'universal_field_order'		=> 0,
+						'islineitem'				=> 1,
+						'customfield_pn_type'		=> $customField[0]['customfield_pn_type']
+					]
+				);
+			} else {
+				return $this->pnUniversalFieldGateway->update(
+					[
+						'universal_field_data' 		=> $data['universal_field_data'],
+						'universal_field_status'	=> $data['universal_field_status'],
+						'islineitem'				=> 1
+					],
+					[
+						'universal_field_id'		=> '?'
+					],
+					[$data['universal_field_id']]
+				);
+			}
+		}
+	}
+
+	public function saveOrderForCustomFields($data = []) {
+		if (count($data) == 0) {
+			return true;
+		}
+
+		foreach ($data as $item) {
+			$this->pnUniversalFieldGateway->update(['universal_field_order' => $item['universal_field_order']], ['universal_field_id' => '?'], [$item['universal_field_id']]);
+		}
+
+		return true;
+	}
+
+	public function updateCustomField($data) {
+		if ($data['islineitem'] > self::TABINDEX_CUSTOMFIELD_LINEITEMS) {
+			$this->pnCustomFieldsGateway->update(
+				[
+					'customfield_label'			=> $data['custom_field_lbl'],
+					'customfield_required'		=> $data['customfield_req'],
+					'customfield_status'		=> $data['customfield_status'],
+					'customfield_type'			=> $data['customfield_type'],
+					'customfield_lastupdateby'	=> $data['customfield_lastupdateby'],
+					'customfield_lastupdatedt'	=> Util::formatDateForDB()
+				],
+				[
+					'customfield_id'			=> '?'
+				],
+				[
+					$data['fid']
+				]
+			);
+
+			if ($data['customfield_type'] == 'text') {
+				$this->pnCustomFieldsGateway->update(
+					[
+						'customfield_max_length' => $data['custom_field_maxlength']
+					],
+					[
+						'customfield_id'		=> '?'
+					],
+					[
+						$data['fid']
+					]
+				);
+			}
+			if ($data['customfield_type'] == 'select') {
+				if (!$data['universal_field_number'] || $data['universal_field_number'] == '') {
+					$customField = $this->pnCustomFieldsGateway->find(['customfield_id' => '?'], [$data['fid'], null, ['customfield_pn_type']]);
+					$this->pnCustomFieldsGateway->update(
+						[
+							'universal_field_number'		=> $this->pnUniversalFieldGateway->getNextUniversalFieldNumber($customField[0]['customfield_pn_type'])
+						],
+						[
+							'customfield_id'		=> $data['fid']
+						]
+					);
+				}
+			}
+		} else {
+			foreach ($data as $key => $value) {
+				if ($key !== 'islineitem' && $key !== 'custom_field_maxlength' && $key !== 'customFieldType' && $key !== 'fid') {
+					$this->updateField($key, $value, $data['fid'], $data['islineitem']);
+				}
+			}
+
+			if ($data['fid'] == 7 || $data['fid'] == 8) {
+				$this->configSysValGateway->updateUniversalFieldLength($data['custom_field_maxlength'], $data['fid'], $data['islineitem']);
+			}
+
+			if ($data['islineitem'] == self::TABINDEX_CUSTOMFIELD_HEADERS) {
+				$this->configSysValGateway->updateUniversalFieldType($data['customfield_type'], $data['fid']);
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Update universal field
+	 *
+	 * @param $key
+	 * @param $value
+	 * @param $fid
+	 * @param $tabindex
+	 */
+	protected function updateField($key, $value, $fid, $tabindex) {
+		switch($key) {
+			case 'field_imgindex':
+				if ($tabindex == self::TABINDEX_CUSTOMFIELD_HEADERS) {
+					$this->configSysValGateway->updateCustomField($value, 'CP.invoice_custom_field' .$fid . '_imgindex');
+				}
+				break;
+			case 'field_inv_on_off':
+				if ($tabindex == self::TABINDEX_CUSTOMFIELD_HEADERS) {
+					$this->configSysValGateway->updateCustomField($value, 'CP.INVOICE_CUSTOM_FIELD' . $fid . '_ON_OFF');
+				}
+				if ($tabindex == self::TABINDEX_CUSTOMFIELD_LINEITEMS) {
+					$this->configSysValGateway->updateCustomField($value, 'CP.INVOICE_CUSTOM_FIELD' . $fid . '_LINEITEM_ON_OFF');
+				}
+				break;
+			case 'field_inv_req':
+				if ($tabindex == self::TABINDEX_CUSTOMFIELD_HEADERS) {
+					$this->configSysValGateway->updateCustomField($value, 'CP.invoice_custom_field' . $fid . '_REQ');
+				}
+				if ($tabindex == self::TABINDEX_CUSTOMFIELD_LINEITEMS) {
+					$this->configSysValGateway->updateCustomField($value, 'CP.INVOICE_CUSTOM_FIELD' . $fid . '_LINEITEM_REQ');
+				}
+				break;
+			case 'field_po_on_off':
+				if ($tabindex == self::TABINDEX_CUSTOMFIELD_HEADERS) {
+					$this->configSysValGateway->updateCustomField($value, 'CP.PO_CUSTOM_FIELD' . $fid . '_ON_OFF');
+				}
+				if ($tabindex == self::TABINDEX_CUSTOMFIELD_LINEITEMS) {
+					$this->configSysValGateway->updateCustomField($value, 'CP.PO_CUSTOM_FIELD' . $fid . '_LINEITEM_ON_OFF');
+				}
+				break;
+			case 'field_po_req':
+				if ($tabindex == self::TABINDEX_CUSTOMFIELD_HEADERS) {
+					$this->configSysValGateway->updateCustomField($value, 'CP.PO_CUSTOM_FIELD' . $fid . '_REQ');
+				}
+				if ($tabindex == self::TABINDEX_CUSTOMFIELD_LINEITEMS) {
+					$this->configSysValGateway->updateCustomField($value, 'CP.PO_CUSTOM_FIELD' . $fid . '_LINEITEM_REQ');
+				}
+				break;
+			case 'field_lbl':
+				if ($tabindex == self::TABINDEX_CUSTOMFIELD_HEADERS) {
+					$this->configSysValGateway->updateCustomField($value, 'CP.CUSTOM_FIELD_LABEL' . $fid);
+				}
+				if ($tabindex == self::TABINDEX_CUSTOMFIELD_LINEITEMS) {
+					$this->configSysValGateway->updateCustomField($value, 'CP.CUSTOM_FIELD_LABEL' . $fid . '_LINEITEM');
+				}
+				break;
+		}
+	}
+
+	/**
+	 * find universal fields assigned glaccounts
+	 *
+	 * @param null $field_id
+	 * @return array
+	 */
+	public function getUniversalFieldsAssignedGlaccount($field_id = null) {
+		if (!$field_id) {
+			return [];
+		}
+
+		return $this->pnUniversalFieldGateway->findAssignedGlaccounts($field_id);
+	}
+
+	/***
+	 * Assign glaccounts to the universal fields
+	 *
+	 * @param null $field_id
+	 * @param null $glaccounts
+	 * @return bool
+	 */
+	public function assigneGlaccounts($field_id = null, $glaccounts = null) {
+		if (!$field_id || !$glaccounts) {
+			return false;
+		}
+
+		return $this->pnUniversalFieldGateway->assignGlAccountToTheUniversalFields($field_id, $glaccounts);
 	}
 }
 

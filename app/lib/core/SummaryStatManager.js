@@ -8,6 +8,7 @@
 Ext.define('NP.lib.core.SummaryStatManager', function() {
 	// Private variable to track valid summary stats for the logged in user
 	var userStats = {};
+	var userStatList = [];
 	var userStatsLoaded = false;
 
 	return {
@@ -37,6 +38,7 @@ Ext.define('NP.lib.core.SummaryStatManager', function() {
 							userStats[cat] = [];
 						}
 						userStats[cat].push(rec.getData());
+						userStatList.push({ cat: cat, idx: userStats[cat].length-1 });
 					}
 				});
 				userStatsLoaded = true;
@@ -68,27 +70,11 @@ Ext.define('NP.lib.core.SummaryStatManager', function() {
 			// Get the summary stats for the logged in user
 			var stats = this.getStats();
 
+			var batch = { requests: [] };
+
 			// Loop through the stat categories
 			Ext.Object.each(stats, function(category, categoryStats) {
 				if (category != 'vendor' || initCall) {
-					var batch = { requests: [] };
-					
-					// If we're not dealing with the inital call and are reloading counts because context changed,
-					// mask each of the preview panels until the stats are loaded
-					if (!initCall) {
-						// Create the mask
-						batch.mask = new Ext.LoadMask({ target: Ext.ComponentQuery.query('#' + category + '_summary_stat_cat_panel')[0] });
-						// Show the mask
-						batch.mask.show();
-						// Run this callback once the ajax request has completed for this batch
-						batch.success = function() {
-							// Remove the panel loading mask
-							batch.mask.destroy();
-							batch.mask = null;
-							delete batch.mask;
-						};
-					}
-
 					// Loop through each stat in the category
 					Ext.each(categoryStats, function(stat) {
 						// Add a request to the batch for the stat
@@ -100,23 +86,38 @@ Ext.define('NP.lib.core.SummaryStatManager', function() {
 							countOnly                  : true,
 							contextType                : contextType,
 							contextSelection           : contextSelection,
-							property_id                : property_id,
-							success: function(result) {
-								// Update the stat count for this requests' summary stat
-								var listPanel = Ext.ComponentQuery.query('[xtype="viewport.summarystatlist"]')[0];
-        						listPanel.updateStatCount(stat.name, result);
-							}
+							property_id                : property_id
 						});
-					});
-
-					// Run ajax request for the batch
-					NP.lib.core.Net.remoteCall({
-						method  : 'POST',
-						requests: batch.requests,
-						success : batch.success
 					});
 				}
 			});
+
+			// Run ajax request for the batch
+			var req = {
+				method  : 'POST',
+				requests: batch.requests,
+				success : function(results) {
+					// Suspend layouts to speed up the updating of the dashboard
+					Ext.suspendLayouts();
+
+					for (var i=0; i<results.length; i++) {
+						// Update the stat count for this requests' summary stat
+						var listPanel = Ext.ComponentQuery.query('[xtype="viewport.summarystatlist"]')[0];
+						var stat = userStatList[i];
+						
+						listPanel.updateStatCount(stats[stat.cat][stat.idx].name, results[i]);
+					}
+
+					// Resume layouts now that all stats are updated
+					Ext.resumeLayouts(true);
+				}
+			};
+			
+			if (!initCall) {
+				req.mask = Ext.ComponentQuery.query('[xtype="viewport.summarystatlist"]')[0];
+			}
+
+			NP.lib.core.Net.remoteCall(req);
 		}
 	}
 });

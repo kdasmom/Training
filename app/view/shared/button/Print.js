@@ -12,8 +12,8 @@ Ext.define('NP.view.shared.button.Print', {
     iconCls: 'print-btn',
 
     initComponent: function() {
-    	this.text = NP.Translator.translate(this.text);
-    	
-    	this.callParent(arguments);
+        this.text = NP.Translator.translate(this.text);
+        
+        this.callParent(arguments);
     }
 });

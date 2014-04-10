@@ -19,7 +19,12 @@ Ext.define('NP.lib.core.Config', function() {
 	 * Stores the application settings
 	 */
 	var settings = null;
-	
+	/**
+	 * @private
+	 * @property {Int}
+	 * Stores the client ID
+	 */
+	var clientId = null;
 	/**
 	 * @private
 	 * @property {Array}
@@ -92,7 +97,7 @@ Ext.define('NP.lib.core.Config', function() {
 				Ext.log('No value provided for setting ' + name);
 				return false;
 			}
-			
+
 			if(settings[name] = value){
 				return true;
 			}
@@ -102,6 +107,13 @@ Ext.define('NP.lib.core.Config', function() {
 			settings = val;
 		},
 		
+		setClientId: function(id) {
+			clientId = id;
+		},
+
+		getClientId: function() {
+			return clientId;
+		},
 		
 		/**
 		 * Returns all custom field configuration settings
@@ -153,6 +165,14 @@ Ext.define('NP.lib.core.Config', function() {
 		getDefaultDateFormat: function() {
 			return 'm/d/Y';
 		},
+		
+		/**
+		 * Returns the default date format used when displaying dates in the app
+		 * @return {String}
+		 */
+		getDefaultDateTimeFormat: function() {
+			return 'm/d/Y g:ia';
+		},
 
 		/**
 		 * Returns all settings for the currently logged in user
@@ -180,8 +200,10 @@ Ext.define('NP.lib.core.Config', function() {
 	                name:   name,
 	                value:  Ext.JSON.encode(value),
 	                success: function(result) {
+						userSettings[name] = value;
+
 	                    Ext.log('Setting was saved');
-	                	
+
 	                	if (callback) {
 	                		callback();
 	                	}

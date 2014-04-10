@@ -55,5 +55,37 @@ Ext.define('NP.view.user.UsersForm', {
 	    }];
 
 	    this.callParent(arguments);
+    },
+
+    isValid: function() {
+        var me          = this,
+            isValid     = this.callParent(),
+            field       = this.findField('properties'),
+            codingField = this.findField('coding_properties');
+
+        
+        // Only check this if there are no other errors
+        if (isValid) {
+            var props       = field.getValue()
+                codingProps = codingField.getValue();
+
+            for (var i=0; i<codingProps.length; i++) {
+                if (Ext.Array.contains(props, codingProps[i])) {
+                    field.markInvalid('A ' + NP.Config.getPropertyLabel() + ' cannot have full access and coding-only access at the same time');
+                    isValid = false;
+                    break;
+                }
+            }
+        }
+
+        // Check for errors
+        var errors = this.findInvalid();
+
+        // If there are errors, make sure the first field is visible
+        if (errors.getCount()) {
+            errors.getAt(0).ensureVisible();
+        }
+
+        return isValid;
     }
 });

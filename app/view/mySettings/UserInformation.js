@@ -8,6 +8,7 @@ Ext.define('NP.view.mySettings.UserInformation', {
     alias: 'widget.mysettings.userinformation',
     
     requires: [
+        'NP.lib.core.Config',
         'NP.lib.core.Security',
         'NP.lib.ui.VerticalTabPanel',
     	'NP.view.user.UsersFormDetails',
@@ -22,7 +23,11 @@ Ext.define('NP.view.mySettings.UserInformation', {
     autoScroll: true,
 
     initComponent: function() {
-    	var labelWidth = 150;
+    	var labelWidth = 150,
+			codingPropertyLabel = NP.Translator.translate(
+				'{properties} for Coding Access Only',
+				{ properties: NP.Config.getPropertyLabel(true) }
+			);
     	var bar = [
 	    	 { xtype: 'shared.button.save' }
 	    ];
@@ -37,7 +42,7 @@ Ext.define('NP.view.mySettings.UserInformation', {
             extraParams: {
                 userprofile_id: NP.lib.core.Security.getUser().get('userprofile_id')
             },
-            extraFields: ['role_id'],
+            extraFields: ['role_id', 'coding_properties'],
             models: [
                 'user.Userprofile',
                 'user.Userprofilerole',
@@ -70,22 +75,52 @@ Ext.define('NP.view.mySettings.UserInformation', {
         }];
 
         if (NP.lib.core.Security.hasPermission(4)) {
-            this.items[0].items.push({ xtype: 'mysettings.userpermissions' });
+			this.items[0].items.push(
+				{
+					xtype: 'container',
+					layout: {
+						type: 'vbox',
+						align: 'stretch'
+					},
+					autoScroll: true,
+					title: 'User permissions',
+					items: [
+						{ xtype: 'mysettings.userpermissions', height: 200, fieldLabel: 'Properties' },
+						{ xtype: 'mysettings.userpermissions', name: 'coding_properties', fieldLabel: codingPropertyLabel, height: 200 }
+					]
+				}
+			);
+//            this.items[0].items.push({ xtype: 'mysettings.userpermissions' });
+//            this.items[0].items.push({ xtype: 'mysettings.userpermissions', name: 'coding_properties', id: 'coding_properties', title: codingPropertyLabel });
         }
 
     	this.callParent(arguments);
     },
 
     isValid: function() {
-        var me = this;
+        var me          = this,
+            isValid     = this.callParent(),
+            field       = this.findField('properties'),
+            codingField = this.findField('coding_properties');
 
-        // Call the standard validation function
-        var isValid = this.callParent();
-
-        var field = this.findField('properties');
+        
         if (field && field.getValue().length == 0) {
             field.markInvalid('This field is required.');
             isValid = false;
+        }
+
+        // Only check this if there are no other errors
+        if (isValid) {
+            var props       = field.getValue()
+                codingProps = codingField.getValue();
+
+            for (var i=0; i<codingProps.length; i++) {
+                if (Ext.Array.contains(props, codingProps[i])) {
+                    field.markInvalid('A ' + NP.Config.getPropertyLabel() + ' cannot have full access and coding-only access at the same time');
+                    isValid = false;
+                    break;
+                }
+            }
         }
 
         // Check for errors

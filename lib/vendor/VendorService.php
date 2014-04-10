@@ -42,42 +42,15 @@ class VendorService extends AbstractService {
 	const VENDOR_STATUS_APPROVED = 'approved';
 	const VENDOR_STATUS_REJECTED = 'rejected';
 
-	protected $vendorGateway, $insuranceGateway, $configService, $userprofileGateway, $vendorsiteGateway, $phoneGateway,
-		$addressGateway, $personGateway, $contactGateway, $emailGateway, $integrationPackageGateway, $pnCustomFieldDataGateway,
-		$messageGateway, $imageIndexGateway, $vendorEntityValidator;
+	protected $configService, $vendorEntityValidator;
 	
-	public function __construct(VendorGateway $vendorGateway,
-														InsuranceGateway $insuranceGateway,
-														ConfigService $configService,
-														UserprofileGateway $userprofileGateway,
-														VendorsiteGateway $vendorsiteGateway,
-														PhoneGateway $phoneGateway,
-														AddressGateway $addressGateway,
-														PersonGateway $personGateway,
-														ContactGateway $contactGateway,
-														EmailGateway $emailGateway,
-														IntegrationPackageGateway $integrationPackageGateway,
-														PnCustomFieldDataGateway $pnCustomFieldDataGateway,
-														MessageGateway $messageGateway,
-														ImageIndexGateway $imageIndexGateway,
-														VendorEntityValidator $vendorEntityValidator) {
-		$this->vendorGateway    = $vendorGateway;
-		$this->insuranceGateway = $insuranceGateway;
-		$this->configService = $configService;
-		$this->userprofileGateway = $userprofileGateway;
-		$this->vendorsiteGateway = $vendorsiteGateway;
-		$this->phoneGateway = $phoneGateway;
-		$this->addressGateway = $addressGateway;
-		$this->personGateway = $personGateway;
-		$this->contactGateway = $contactGateway;
-		$this->emailGateway = $emailGateway;
-		$this->integrationPackageGateway = $integrationPackageGateway;
-		$this->pnCustomFieldDataGateway = $pnCustomFieldDataGateway;
-		$this->messageGateway = $messageGateway;
-		$this->imageIndexGateway = $imageIndexGateway;
+	public function __construct(VendorEntityValidator $vendorEntityValidator) {
 		$this->vendorEntityValidator = $vendorEntityValidator;
 	}
 
+	public function setConfigService(ConfigService $configService) {
+		$this->configService = $configService;
+	}
 
 	/**
 	 * find vendors by status
@@ -88,10 +61,8 @@ class VendorService extends AbstractService {
 	 * @param string $sort
 	 * @return array|bool
 	 */
-	public function findByStatus($pageSize = null, $page = null, $status = 'pending', $sort = 'PersonName') {
-		$aspClientId = $this->configService->getClientId();
-
-		return $this->vendorGateway->findByStatus($pageSize, $page, $status, $sort, $aspClientId);
+	public function findByStatus($pageSize = null, $page = null, $status = 'pending', $sort = 'PersonName', $keyword=null) {
+		return $this->vendorGateway->findByStatus($pageSize, $page, $status, $sort, $keyword);
 	}
 
 	/**
@@ -191,7 +162,7 @@ class VendorService extends AbstractService {
 			}
 //				assign glaccounts
 			if ($glaccounts !== '') {
-				if (!$this->vendorsiteGateway->assignGlAccounts($glaccounts, $out_vendor_id)) {
+				if (!$this->vendorGlAccountsGateway->assignGlAccounts($glaccounts, $out_vendor_id)) {
 					throw new \NP\core\Exception("Cannot assign glaccounts");
 				}
 			}
@@ -718,8 +689,15 @@ class VendorService extends AbstractService {
      * @param  string $keyword     Keyword to filter list of vendors by
      * @return array               List of vendor records
      */
-    public function getVendorsForInvoice($property_id, $vendor_id=null, $keyword=null) {
-        return $this->vendorGateway->findVendorsForInvoice($property_id, $vendor_id, $keyword);
+    public function getVendorsForInvoice($property_id=null, $vendor_id=null, $useFavorites=true, $keyword=null, $criteria='begins', $pageSize=null, $page=null, $sort="vendor_name") {
+    	if (is_string($useFavorites)) {
+    		if ($useFavorites == 'false') {
+    			$useFavorites = false;
+    		} else {
+    			$useFavorites = true;
+    		}
+    	}
+        return $this->vendorGateway->findVendorsForInvoice($property_id, $vendor_id, $useFavorites, $keyword, $criteria, $pageSize, $page, $sort);
     }
 
     /**
@@ -742,18 +720,18 @@ class VendorService extends AbstractService {
      * @param  string $vendor_status The status of the vendor (optional); valid values are 'active' or 'inactive'
      * @return array
      */
-    public function getAll($vendor_status='active', $integration_package_id=null, $pageSize=null, $page=1, $sort='vendor_name') {
-        $filter = ['vendor_status' => '?'];
-        if ($integration_package_id !== null) {
-            $filter['integration_package_id'] = $integration_package_id;
-        }
+    public function getAll($vendor_status='active', $integration_package_id=null, $keyword=null, $pageSize=null, $page=1, $sort='vendor_name') {
+        return $this->vendorGateway->findAll($vendor_status, $integration_package_id, $keyword, $pageSize, $page, $sort);
+    }
 
-        return $this->vendorGateway->find(
-            $filter,
-            array($vendor_status),
-            'vendor_name ASC',
-            array('vendor_id','vendor_name')
-        );
+    /**
+     * Gets the top spending vendors
+     *
+     * @param  int $numberOfVendors
+     * @return array
+     */
+    public function getTopVendors($numberOfVendors=5) {
+    	return $this->vendorGateway->findTopVendors($numberOfVendors);
     }
     
     /**
@@ -774,9 +752,12 @@ class VendorService extends AbstractService {
                 if (!is_array($vendor_status)) {
                     $vendor_status = array($vendor_status);
                 }
-                foreach ($vendor_status as $vendor_status_val) {
-                    $params[] = $vendor_status_val;
-                }
+                // We need to do this twice because the vendorsite status also needs the params
+                for ($i=0; $i<=1; $i++) {
+	                foreach ($vendor_status as $vendor_status_val) {
+	                    $params[] = $vendor_status_val;
+	                }
+	            }
             }       
 
             if ($keyword !== null) {
@@ -843,6 +824,31 @@ class VendorService extends AbstractService {
      */
     public function getExpiredInsuranceCerts($countOnly, $pageSize=null, $page=null, $sort="insurance_expdatetm") {
         return $this->insuranceGateway->findExpiredInsuranceCerts($countOnly, $pageSize, $page, $sort);
+    }
+
+    /**
+     * Checks if a vendor has any utility accounts setup
+     */
+    public function isUtilityVendor($vendorsite_id, $property_id=0) {
+    	$Utility_Id = $this->utilityGateway->findValue(['Vendorsite_Id'=>'?'], [$vendorsite_id], 'Utility_Id');
+    	
+    	if ($Utility_Id === null) {
+    		return false;
+    	}
+
+    	if ($property_id) {
+	    	$UtilityAccount_Id = $this->utilityAccountGateway->findValue(
+	    		['Utility_Id'=>'?', 'Property_Id'=>'?', 'utilityaccount_active'=>'?'],
+	    		[$Utility_Id, $property_id, 1],
+	    		'UtilityAccount_Id'
+	    	);
+
+	    	if ($UtilityAccount_Id === null) {
+	    		return false;
+	    	}
+	    }
+
+    	return true;
     }
 
     /**

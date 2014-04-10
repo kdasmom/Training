@@ -21,9 +21,15 @@ class PropertyFilterSelect extends Select {
 	 * @param \NP\core\property\PropertyContext $propertyContext
 	 */
 	public function __construct(PropertyContext $propertyContext) {
+		$selection = $propertyContext->getSelection();
+
 		// If Current Property is selected, all we need is a simple SELECT {property_id} AS property_id statement
 		if ($propertyContext->getType() == 'property') {
-			$this->column(new Expression($propertyContext->getSelection()), 'property_id');
+			$property_id_list = $selection;
+			if (is_array($selection)) {
+				$property_id_list = implode(' UNION ALL SELECT ', $selection);
+			}
+			$this->column(new Expression($property_id_list));
 		// For Region and All Properties, we need a more complex statement
 		} else {
 			// Initialize some commonly needed objects
@@ -33,14 +39,24 @@ class PropertyFilterSelect extends Select {
 			// If the user ID and delegationToUserId are the same, it means there's no delegation happening
 			if ($propertyContext->getUserId() == $propertyContext->getDelegationToUserId()) {
 				// Build the subselect, which is the same for Region and All
-				$subSelect->from(array('__propuser'=>'propertyuserprofile'))
+				$subSelect->from(['__propuser'=>'propertyuserprofile'])
 						->column('property_id')
-						->where(array(
-							'__propuser.property_id'    => '__prop.property_id',
-							'__propuser.userprofile_id' => $propertyContext->getUserId()
-						));
-				// Add the subselect to the WHERE clause
-				$where->exists($subSelect);
+						->where(['__propuser.userprofile_id' => $propertyContext->getUserId()]);
+
+				if ($propertyContext->includeCoding()) {
+					$where->nest('OR')
+							->in('__prop.property_id', $subSelect)
+							->in(
+								'__prop.property_id',
+								Select::get()->from(['__propusercoding'=>'propertyusercoding'])
+											->column('property_id')
+											->where(['__propusercoding.userprofile_id' => $propertyContext->getUserId()])
+							)
+						->unnest();
+				} else {
+					// Add the subselect to the WHERE clause
+					$where->in('__prop.property_id', $subSelect);
+				}
 
 				// Create the basic SELECT statement, omitting the WHERE because it will be modified if dealing with region
 				$this->from(array('__prop'=>'property'))
@@ -76,7 +92,25 @@ class PropertyFilterSelect extends Select {
 
 			// If dealing with regions, we always need to filter by region_id in the WHERE clause
 			if ($propertyContext->getType() == 'region') {
-				$where->equals('__prop.region_id', $propertyContext->getSelection());
+				if (is_array($selection)) {
+					$where->in('__prop.region_id', implode(',', $selection));
+				} else {
+					$where->equals('__prop.region_id', $selection);
+				}
+			}
+			// Else if dealing with 'all', we also need to check if filtering by property_status
+			else {
+				$property_status = $propertyContext->getPropertyStatus();
+				if ($property_status !== null) {
+					if (count($property_status) > 1) {
+						// We only want to filter if not all statuses are included
+						if (!in_array(1, $property_status) || !in_array(-1, $property_status) || !in_array(0, $property_status)) {
+							$where->in('__prop.property_status', implode(',', $property_status));
+						}
+					} else {
+						$where->equals('__prop.property_status', $property_status[0]);
+					}
+				}
 			}
 
 			// Now we can add the completed WHERE clause to the SELECT statement

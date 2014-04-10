@@ -74,7 +74,7 @@ Ext.define('NP.view.utilitySetup.UtilitySetupForm', {
                     action : 'getForCatalogDropDown'
                 })
             },
-            { xtype    : 'shared.utilitytypeassigner', allowBlank: false },
+            { xtype    : 'shared.utilitytypeassigner', allowBlank: false, maxHeight: 120 },
             {
                 xtype     : 'fieldcontainer',
                 fieldLabel: this.contactPersonInputLabel,

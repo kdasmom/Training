@@ -39,6 +39,9 @@ Ext.define('NP.view.shared.ContextPicker', {
         style: 'background-color: transparent',
         bodyStyle: 'background-color: transparent'
     },
+
+    // Additional options not specific to container
+    comboWidth: 425,
     
     initComponent: function() {
         var that = this;
@@ -50,11 +53,10 @@ Ext.define('NP.view.shared.ContextPicker', {
         this.pickerId = NP.view.shared.ContextPicker.pickerInstanceId;
 
         // Middle column displays the region and property combo boxes (only one active at a time)
-        var state = NP.Security.getCurrentContext();
-        
-        var hide_prop = true;
-        var hide_region = true;
-        var select_all = false;
+        var state       = NP.Security.getCurrentContext();        
+            hide_prop   = true,
+            hide_region = true,
+            select_all  = false;
 
         if (state.type == 'region') {
             hide_region = false;
@@ -76,7 +78,7 @@ Ext.define('NP.view.shared.ContextPicker', {
                     this.propertyCombo = Ext.create('NP.lib.ui.ComboBox', {
                         store            : 'user.Properties',
                         fieldLabel       : NP.Config.getPropertyLabel(),
-                        width            : 325,
+                        width            : that.comboWidth,
                         labelAlign       : 'right',
                         displayField     : 'property_name',
                         valueField       : 'property_id',
@@ -97,7 +99,7 @@ Ext.define('NP.view.shared.ContextPicker', {
                     this.regionCombo = Ext.create('NP.lib.ui.ComboBox', {
                         store            : 'user.Regions',
                         fieldLabel       : NP.Config.getSetting('PN.Main.RegionLabel'),
-                        width            : 325,
+                        width            : that.comboWidth,
                         labelAlign       : 'right',
                         displayField     : 'region_name',
                         valueField       : 'region_id',
@@ -138,7 +140,7 @@ Ext.define('NP.view.shared.ContextPicker', {
                 },
                 items      : [
                     this.propertyRadioBtn = Ext.create('Ext.form.field.Radio', {
-                        boxLabel  : NP.Translator.translate('Current {0}', [NP.Config.getPropertyLabel()]),
+                        boxLabel  : NP.Translator.translate('Current {property}', { property: NP.Config.getPropertyLabel() }),
                         name      : 'contextPickerType' + this.pickerId, // Dynamic name to avoid errors when using multiple pickers
                         inputValue: 'property',
                         checked   : !hide_prop && !select_all
@@ -150,7 +152,7 @@ Ext.define('NP.view.shared.ContextPicker', {
                         checked   : !hide_region
                     }),
                     this.allRadioBtn = Ext.create('Ext.form.field.Radio', {
-                        boxLabel  : NP.Translator.translate('All {0}', [NP.Config.getPropertyLabel(true)]), 
+                        boxLabel  : NP.Translator.translate('All {properties}', { properties: NP.Config.getPropertyLabel(true) }), 
                         name      : 'contextPickerType' + this.pickerId, // Dynamic name to avoid errors when using multiple pickers
                         inputValue: 'all',
                         checked   : select_all

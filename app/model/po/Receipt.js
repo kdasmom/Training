@@ -7,10 +7,7 @@ Ext.define('NP.model.po.Receipt', {
 	extend: 'Ext.data.Model',
 	
 	requires: [
-		'NP.lib.core.Config',
-		'NP.model.vendor.Vendor',
-		'NP.model.property.Property',
-		'NP.model.system.PriorityFlag'
+		'NP.lib.core.Config'
 	],
 
 	idProperty: 'receipt_id',
@@ -38,6 +35,17 @@ Ext.define('NP.model.po.Receipt', {
 		{ name: 'delegation_to_userprofile_id', type: 'int' },
 
 		// These fields are not database columns
+		{ name: 'vendor_id', type: 'int' },
+		{ name: 'vendor_id_alt' },
+		{ name: 'vendor_name' },
+		{ name: 'vendorsite_id', type: 'int' },
+
+		{ name: 'property_id', type: 'int' },
+		{ name: 'property_id_alt' },
+		{ name: 'property_name' },
+
+		{ name: 'PriorityFlag_Display' },
+
 		{ name: 'entity_amount', type: 'float' },
 		{ name: 'created_by' },
 		{ name: 'pending_days', type: 'int' },
@@ -47,30 +55,5 @@ Ext.define('NP.model.po.Receipt', {
 		{ name: 'rejected_datetm', type: 'date' },
 		{ name: 'rejected_by' },
 		{ name: 'rejected_reason' }
-	],
-
-    belongsTo: [
-        {
-			model     : 'NP.model.vendor.Vendor',
-			name      : 'vendor',
-			getterName: 'getVendor',
-			foreignKey: 'vendor_id',
-			primaryKey: 'vendor_id',
-			reader    : 'jsonflat'
-        },{
-			model     : 'NP.model.property.Property',
-			name      : 'property',
-			getterName: 'getProperty',
-			foreignKey: 'property_id',
-			primaryKey: 'property_id',
-			reader    : 'jsonflat'
-        },{
-			model     : 'NP.model.system.PriorityFlag',
-			name      : 'priorityFlag',
-			getterName: 'getPriorityFlag',
-			foreignKey: 'PriorityFlag_ID_Alt',
-			primaryKey: 'PriorityFlag_ID_Alt',
-			reader    : 'jsonflat'
-        }
-    ]
+	]
 });

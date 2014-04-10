@@ -38,7 +38,7 @@ class UserService extends AbstractService {
 	public function get($userprofile_id) {
 		$res = $this->userprofileGateway->findProfileById($userprofile_id);
 		// Get property assignments for user
-		$res['properties'] = $this->getUserProperties($userprofile_id, $userprofile_id, null, false, array('property_id'));
+		$res['properties'] = $this->getUserProperties($userprofile_id, $userprofile_id, [1,-1], null, false, array('property_id'));
 		$res['properties'] = \NP\util\Util::valueList($res['properties'], 'property_id');
 		// Get coding property assignments for user
 		$res['coding_properties'] = $this->getUserCodingProperties($userprofile_id, array('property_id'));
@@ -125,8 +125,8 @@ class UserService extends AbstractService {
 	 * @param  int   $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
 	 * @return array                              Array of property records
 	 */
-	public function getUserProperties($userprofile_id, $delegated_to_userprofile_id, $keyword=null, $includeCodingOnly=false, $cols=array('property_id','property_id_alt','property_name','property_status','integration_package_id')) {
-		return $this->propertyGateway->findByUser($userprofile_id, $delegated_to_userprofile_id, $keyword, $includeCodingOnly, $cols);
+	public function getUserProperties($userprofile_id, $delegated_to_userprofile_id, $property_statuses=null, $keyword=null, $includeCodingOnly=false, $cols=array('property_id','property_id_alt','property_name','property_status','integration_package_id')) {
+		return $this->propertyGateway->findByUser($userprofile_id, $delegated_to_userprofile_id, $property_statuses, $keyword, $includeCodingOnly, $cols);
 	}
 
 	/**
@@ -323,6 +323,16 @@ class UserService extends AbstractService {
 									'msg'   => $this->localizationService->getMessage('propertyAssignmentError'),
 									'extra' => null
 								);
+				}
+			}
+			// If no errors, save coding properties
+			if (!count($errors) && array_key_exists('coding_properties', $data)) {
+				$success = $this->savePropertyAssignment($userprofile_id, $data['coding_properties'], true);
+				if (!$success) {
+					$errors[] = array(
+						'field' => 'coding_properties',
+						'msg'   => $this->localizationService->getMessage('codingPropertyAssignmentError')
+					);
 				}
 			}
 		} catch(\Exception $e) {

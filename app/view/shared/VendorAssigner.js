@@ -4,7 +4,7 @@
  * @author Aliaksandr Zubik
  */
 Ext.define('NP.view.shared.VendorAssigner', {
-    extend: 'Ext.ux.form.ItemSelector',
+    extend: 'NP.lib.ui.Assigner',
     alias: 'widget.shared.vendorassigner',
     
     fieldLabel: 'Vendors',
@@ -14,7 +14,6 @@ Ext.define('NP.view.shared.VendorAssigner', {
     valueField  : 'vendor_id',
     fromTitle   : 'Unassigned',
     toTitle     : 'Assigned',
-    buttons     : ['add','remove'],
     msgTarget   : 'under',
 	autoLoad    : true,
 

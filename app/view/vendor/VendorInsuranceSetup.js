@@ -28,7 +28,6 @@ Ext.define('NP.view.vendor.VendorInsuranceSetup', {
 
 	initComponent: function() {
 
-		console.log('init insurances');
 		var that = this;
 
 		this.defaults = {

@@ -26,44 +26,5 @@ Ext.define('NP.model.jobcosting.JbJobAssociation', {
 		{ name: 'jbassociation_retglaccount', type: 'int' },
 		{ name: 'jbchangeorder_id', type: 'int' },
 		{ name: 'jbphasecode_id', type: 'int' }
-	],
-
-	belongsTo: [
-        {
-			model     : 'NP.model.jobcosting.JbContract',
-			name      : 'contract',
-			getterName: 'getContract',
-			foreignKey: 'jbcontract_id',
-			primaryKey: 'jbcontract_id',
-			reader    : 'jsonflat'
-        },{
-			model     : 'NP.model.jobcosting.JbChangeOrder',
-			name      : 'changeOrder',
-			getterName: 'getChangeOrder',
-			foreignKey: 'jbchangeorder_id',
-			primaryKey: 'jbchangeorder_id',
-			reader    : 'jsonflat'
-        },{
-			model     : 'NP.model.jobcosting.JbJobCode',
-			name      : 'jobCode',
-			getterName: 'getJobCode',
-			foreignKey: 'jbjobcode_id',
-			primaryKey: 'jbjobcode_id',
-			reader    : 'jsonflat'
-        },{
-			model     : 'NP.model.jobcosting.JbPhaseCode',
-			name      : 'phaseCode',
-			getterName: 'getPhaseCode',
-			foreignKey: 'jbphasecode_id',
-			primaryKey: 'jbphasecode_id',
-			reader    : 'jsonflat'
-        },{
-			model     : 'NP.model.jobcosting.JbCostCode',
-			name      : 'costCode',
-			getterName: 'getCostCode',
-			foreignKey: 'jbcostcode_id',
-			primaryKey: 'jbcostcode_id',
-			reader    : 'jsonflat'
-        }
-    ]
+	]
 });

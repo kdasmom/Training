@@ -25,6 +25,9 @@ Ext.define('NP.lib.ui.ComboBox', {
 	 * @cfg {Boolean}                 loadStoreOnFirstQuery Set to true if you want the store to run its load method the first time a query is run on the combo
 	 */
 	loadStoreOnFirstQuery: false,
+
+	useSmartStore: false,
+
 	/**
 	 * @cfg {Array}                   dependentCombos   An array of IDs for combo boxes that depend on this combo; when the value of this combo is changed, the valueField will be added as a parameter to the proxy of the dependent combos specified and reload their stores
 	 */
@@ -34,6 +37,12 @@ Ext.define('NP.lib.ui.ComboBox', {
 	/**
 	 * @cfg {Object}                  extraParams       Default parameters to add to the store proxy; only applies to type "autocomplete"
 	 */
+	/**
+	 * @cfg {String}					blankRecordDisplayValue Set blank record display value
+	 */
+	blankRecordDisplayValue: '',
+
+	iconClsField: null,
 
 	constructor: function(cfg) {
 		if (cfg.displayField) {
@@ -48,8 +57,44 @@ Ext.define('NP.lib.ui.ComboBox', {
 	},
 
 	initComponent: function() {
+		var me = this;
+
 		// Key events must be on
 		this.enableKeyEvents = true;
+
+		// Option for adding an icon to the combo
+		if (!Ext.isEmpty(this.iconClsField)) {
+			Ext.apply(this, {
+				scope:this,
+				listConfig: {
+					scope       : this,
+					iconClsField: this.iconClsField,
+					itemTpl     : '<tpl for=".">' +
+							'<div class="x-combo-list-item ux-icon-combo-item ' +
+							'{' + this.iconClsField + '}">' +
+							'{' + this.displayField + '}' +
+							'</div></tpl>'
+				},
+				fieldSubTpl: [
+					'<div class="{hiddenDataCls}" role="presentation"></div>',
+					'<input id="{id}" type="{type}" {inputAttrTpl}',
+					'<tpl if="value"> value="{value}"</tpl>',
+					'<tpl if="name"> name="{name}"</tpl>',
+					'<tpl if="placeholder"> placeholder="{placeholder}"</tpl>',
+					'<tpl if="size"> size="{size}"</tpl>',
+					'<tpl if="maxLength !== undefined"> maxlength="{maxLength}"</tpl>',
+					'<tpl if="readOnly"> readonly="readonly"</tpl>',
+					'<tpl if="disabled"> disabled="disabled"</tpl>',
+					'<tpl if="tabIdx"> tabIndex="{tabIdx}"</tpl>',
+					'<tpl if="fieldStyle"> style="{fieldStyle}"</tpl>',
+					'class="ux-icon-combo-input {fieldCls} {typeCls}" autocomplete="off" />',
+					{
+						compiled      : true,
+						disableFormats: true
+					}
+				]
+			});
+		}
 
 		this.callParent(arguments);
 
@@ -98,7 +143,9 @@ Ext.define('NP.lib.ui.ComboBox', {
 		// user tries to expand the field or types text for autocomplete
 		if (this.loadStoreOnFirstQuery) {
 			this.on('beforequery', function() {
-				this.getStore().load();
+				this.getStore().load(function() {
+					me.expand();
+				});
 			}, this, { single: true });
 		}
 
@@ -109,7 +156,7 @@ Ext.define('NP.lib.ui.ComboBox', {
 				// Add a blank record to the store
 				combo.getStore().on('load', function(store) {
 					var rec = {};
-					rec[combo.displayField] = '';
+					rec[combo.displayField] = me.blankRecordDisplayValue;
 					rec[combo.valueField] = '';
 					store.insert(0, rec);
 				});
@@ -158,6 +205,73 @@ Ext.define('NP.lib.ui.ComboBox', {
 				}
 			});
 		}
+
+		if (me.useSmartStore) {
+			me.on('change', function() {
+				if (me.getStore().extraParamsHaveChanged()) {
+					function loadComboStore() {
+						me._queryRunning = true;
+						me.getStore().load();
+					}
+					if (me.getStore().isLoading()) {
+						me.getStore().on('load', function() {
+							loadComboStore();
+						}, me, { single: true });
+					} else {
+						loadComboStore();
+					}
+	            }
+			});
+		}
+	},
+
+	doRawQuery: function() {
+		var me = this;
+
+		if (me.useSmartStore) {
+			me.doQuery(me.getRawValue(), true);
+        } else {
+        	me.callParent();
+        }
+    },
+
+	onTriggerClick: function() {
+		var me    = this,
+            store = me.getStore();
+
+        if (me.useSmartStore && !me.isExpanded) {
+	        function expandCombo() {
+                me.onFocus({});
+                me.doQuery(me.allQuery, true);
+                me.inputEl.focus();
+            }
+
+        	if (me.getStore().extraParamsHaveChanged()) {
+        		me.getStore().load(function() {
+                    expandCombo();
+                });
+            } else {
+                me.callParent();
+            }
+	    } else {
+	    	me.callParent();
+	    }
+	},
+
+	onLoad: function(store, records, success) {
+		var me = this,
+			raw;
+
+		if (me.useSmartStore && me._queryRunning) {
+			raw = me.getRawValue();
+		}
+
+		me.callParent(arguments);
+
+		if (me.useSmartStore && me._queryRunning) {
+			me.setRawValue(raw);
+			me._queryRunning = false;
+		}
 	},
 
 	getFocusValue: function() {
@@ -166,5 +280,57 @@ Ext.define('NP.lib.ui.ComboBox', {
 
 	setFocusValue: function(value) {
 		this.focusValue = value;
+	},
+
+	setDefaultRec: function(rec) {
+		// Add the current value to the store, otherwise you have an empty store
+		this.getStore().add(rec);
+		
+		// Suspend events briefly to prevent change events from firing
+		this.suspendEvents(false);
+		// Set the current value
+		this.setValue( rec.get(this.valueField) );
+		// Re-enable events
+		this.resumeEvents();
+
+		return this;
+	},
+
+	setIconCls: function() {
+		if (this.rendered) {
+			var rec  = this.store.findRecord(this.valueField, this.getValue()),
+				icon = Ext.get(this.el.down('input'));
+
+			if (rec) {
+				var iconCls = rec.get(this.iconClsField);
+
+				if (this.currentIconCls) {
+					icon.replaceCls(this.currentIconCls, iconCls);
+				} else {
+					icon.addCls(iconCls);
+				}
+
+				this.currentIconCls = iconCls;
+			}
+		} else {
+			this.on('render', this.setIconCls, this, {
+				single: true
+			});
+		}
+	},
+
+	setValue: function(value) {
+		this.callParent(arguments);
+
+		// If icon was specified, we need to set it
+		if (!Ext.isEmpty(this.iconClsField)) {	
+			this.setIconCls();
+		}
+	},
+
+	addExtraParams: function(params) {
+		Ext.apply(this.getStore().getProxy().extraParams, params);
+
+		return this;
 	}
 });

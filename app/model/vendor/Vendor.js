@@ -8,8 +8,6 @@ Ext.define('NP.model.vendor.Vendor', {
 	
 	requires: [
 		'NP.lib.core.Config',
-		'NP.model.user.RecAuthor',
-		'NP.model.system.IntegrationPackage',
 		'NP.model.contact.Address',
 		'NP.model.contact.Phone'
 	],
@@ -122,11 +120,15 @@ Ext.define('NP.model.vendor.Vendor', {
 		{ name: 'taxpayor_type', type: 'int' },
 		{ name: 'payee_type', type: 'int' },
 		{ name: 'vendor_ModificationType' },
-		{ name: 'remit_req' },
-		{ name: 'insurance_req' },
+		{ name: 'remit_req', type: 'int' },
+		{ name: 'insurance_req', type: 'int' },
 
 		// This field does not exist in the DB, we are retrieving it to simplify
+		{ name: 'integration_package_name' },
+
 		{ name: 'vendorsite_id', type: 'int' },
+		{ name: 'vendorsite_status' },
+
 		{ name: 'sent_for_approval_date', type: 'date' },
 		{ name: 'sent_for_approval_by' },
 
@@ -141,29 +143,16 @@ Ext.define('NP.model.vendor.Vendor', {
 
 		{ name: 'phone_number', useNull: false },
 		{ name: 'phone_ext', useNull: false },
-		{ name: 'phone_countrycode', useNull: false }
-	],
+		{ name: 'phone_countrycode', useNull: false },
 
-	belongsTo: [
-		{
-			model     : 'NP.model.system.IntegrationPackage',
-			name      : 'integrationPackage',
-			getterName: 'getIntegrationPackage',
-			foreignKey: 'integration_package_id',
-			primaryKey: 'integration_package_id',
-			reader    : 'jsonflat'
-        }
-	],
+		{ name: 'glaccount_id', type: 'int' },
+		{ name: 'glaccount_number' },
+		{ name: 'glaccount_name' },
 
-    hasOne: [
-        {
-            model       : 'NP.model.vendor.Vendorsite',
-            name        : 'vendorsite',
-            getterName  : 'getVendorsite',
-            foreignKey  : 'vendorsite_id',
-            primaryKey  : 'vendorsite_id'
-        }
-    ],
+		{ name: 'vendortype_name' },
+
+		{ name: 'is_utility_vendor', type: 'int' }
+	],
 
     getAddressHtml: function() {
     	var address = Ext.create('NP.model.contact.Address', this.getData());

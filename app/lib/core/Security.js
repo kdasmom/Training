@@ -248,7 +248,8 @@ Ext.define('NP.lib.core.Security', function() {
 		setCurrentContext: function(context) {
 			currentContext = context;
 			NP.lib.core.Net.remoteCall({
-				requests: {
+				abortable: false,
+				requests : {
 					service    : 'SecurityService',
 					action     : 'setContext',
 					type       : context.type,

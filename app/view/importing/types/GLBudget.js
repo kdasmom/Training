@@ -9,15 +9,16 @@ Ext.define('NP.view.importing.types.GLBudget', {
     fieldName  : 'file_upload_gl_budget',
 
     // For localization
-    tabTitle            : 'Budgets',
-    entityName          : 'GLBudget',
-    sectionName         : 'GL Account Setup',
-    businessUnitColText : 'Business Unit',
-    glAccountColText    : 'GL Account',
-    periodMonthCoText   : 'Period Month',
-    periodYearCoText    : 'Period Year',
-    amountCoText        : 'Amount',
-    intPkgColText       : 'Integration Package',
+    tabTitle           : 'Budgets',
+    entityName         : 'Budgets',
+    sectionName        : 'GL Account Setup',
+    instructions       : null,
+    businessUnitColText: 'Business Unit',
+    glAccountColText   : 'GL Account',
+    periodMonthCoText  : 'Period Month',
+    periodYearCoText   : 'Period Year',
+    amountCoText       : 'Amount',
+    intPkgColText      : 'Integration Package',
 
     getGrid: function() {
         return {

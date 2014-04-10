@@ -6,6 +6,8 @@ use NP\core\AbstractGateway;
 use NP\core\db\Select;
 use NP\core\db\Expression;
 use NP\core\db\Insert;
+use NP\property\PropertyContext;
+use NP\property\sql\PropertyFilterSelect;
 
 /**
  * Gateway for the DFSPLIT table
@@ -30,7 +32,9 @@ class DfSplitGateway extends AbstractGateway {
 									Select::JOIN_LEFT);
 	}
 
-	public function findByFilter($property_id=null, $glaccount_id=null, $pageSize=null, $page=1, $sort='dfsplit_name') {
+	public function findByFilter($userprofile_id=null, $delegated_to_userprofile_id=null,
+								$vendorsite_id=null, $property_id=null, $glaccount_id=null,
+								$pageSize=null, $page=1, $sort='dfsplit_name') {
 		$select = new Select();
 		
 		// Main query
@@ -73,32 +77,46 @@ class DfSplitGateway extends AbstractGateway {
 
 		// If we have any filters selected, apply them
 		$params = array('active');
+
+		// If vendor was supplied, use it to filter
+		if (is_numeric($vendorsite_id)) {
+			$select->whereNest('OR')
+						->whereEquals('s.vendorsite_id', '?')
+						->whereEquals('s.vendorsite_id', 0)
+						->whereIsNull('s.vendorsite_id')
+					->whereUnnest();
+
+			$params[] = $vendorsite_id;
+		}
 		
-		$subSelect = new Select();
-		$subSelect->from(array('si'=>'dfsplititems'))
-						->whereEquals('s.dfsplit_id', 'si.dfsplit_id')
-						->whereExists(
-							Select::get()->from(array('p'=>'property'))
-										->whereEquals('si.property_id', 'p.property_id')
-						)
-						->whereExists(
-							Select::get()->from(array('g'=>'glaccount'))
-										->whereEquals('si.glaccount_id', 'g.glaccount_id')
-						);
+		if (is_numeric($userprofile_id) || is_numeric($property_id) || is_numeric($glaccount_id)) {
+			$subSelect = new Select();
+			$subSelect->from(array('si'=>'dfsplititems'))
+							->whereEquals('s.dfsplit_id', 'si.dfsplit_id');
 
-		// If property was supplied, use it to filter
-		if ($property_id !== null && $property_id !== '') {
-			$subSelect->whereEquals('si.property_id', '?');
-			$params[] = $property_id;
-		}
-		// If GL account was supplied, use it to filter
-		if ($glaccount_id !== null && $glaccount_id !== '') {
-			$subSelect->whereEquals('si.glaccount_id', '?');
-			$params[] = $glaccount_id;
-		}
+			// If user ID is supplied, use it to filter
+			if (is_numeric($userprofile_id)) {
+				$propertyFilterSelect = new PropertyFilterSelect(new PropertyContext(
+					$userprofile_id, $delegated_to_userprofile_id, 'all', null, null, true
+				));
+				$subSelect->whereIn('si.property_id', $propertyFilterSelect);
+			}
 
-		// Apply subquery to main query in EXISTS clause
-		$select->whereExists($subSelect);
+			// If property was supplied, use it to filter
+			if (is_numeric($property_id)) {
+				$subSelect->whereEquals('si.property_id', '?');
+				$params[] = $property_id;
+			}
+
+			// If GL account was supplied, use it to filter
+			if (is_numeric($glaccount_id)) {
+				$subSelect->whereEquals('si.glaccount_id', '?');
+				$params[] = $glaccount_id;
+			}
+
+			// Apply subquery to main query in EXISTS clause
+			$select->whereExists($subSelect);
+		}
 
 
 		// If paging is needed

@@ -76,8 +76,8 @@ Ext.define('NP.view.importing.types.UnitType', {
             unitText     = NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit');
 
         me.tabTitle            = NP.Translator.translate('{unit} Type', { unit: unitText});
-        me.entityName          = NP.Translator.translate('{unit} Type', { unit: unitText});
-        me.sectionName         = NP.Translator.translate('{unit} Type', { unit: unitText});
+        me.entityName          = NP.Translator.translate('{unit} Types', { unit: unitText});
+        me.sectionName         = NP.Translator.translate('{property} Setup', { property: propertyText });
         me.intPkgColText       = NP.Translator.translate('Integration Package');
         me.propertyCodeColText = NP.Translator.translate('{property} Code', { property: propertyText });
         me.nameColText         = NP.Translator.translate('Name');

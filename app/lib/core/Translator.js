@@ -7,6 +7,8 @@
 Ext.define('NP.lib.core.Translator', {
 	extend   : 'Ext.util.Observable',
 
+	requires: ['Ext.util.Cookies'],
+
 	alternateClassName: ['NP.Translator'],
 	singleton: true,
 	
@@ -31,11 +33,27 @@ Ext.define('NP.lib.core.Translator', {
 
 		// Inject a script elements with the language JS file
 		Ext.Loader.injectScriptElement('app/locale/'+lang+'.js?_dc='+time, function() {
-			me.localeLoaded = true;
+			Ext.Loader.injectScriptElement('app/locale/ext-lang-'+lang+'.js?_dc='+time, function() {
+				me.localeLoaded = true;
 
-			// Fire the event to indicate a new locale has been loaded
-			me.fireEvent('localeloaded', lang);
+				// Fire the event to indicate a new locale has been loaded
+				me.fireEvent('localeloaded', lang);
+			});
 		});
+	},
+
+	setLocale: function(locale) {
+		Ext.util.Cookies.set('NP_locale', locale);
+	},
+
+	getLocale: function() {
+		var locale = Ext.util.Cookies.get('NP_locale');
+		
+		if (!Ext.isEmpty(locale) && locale) {
+			return locale;
+		}
+
+		return 'en';
 	},
 
 	/**

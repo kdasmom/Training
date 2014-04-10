@@ -13,7 +13,8 @@ Ext.define('NP.view.shared.ContextPickerMulti', {
     requires: [
         'NP.lib.core.Config',
         'NP.lib.core.Security',
-        'NP.lib.core.Translator'
+        'NP.lib.core.Translator',
+        'NP.lib.ui.Assigner'
     ],
 
     // We need a static variable to be able to give the radio buttons a different name per instance
@@ -80,29 +81,21 @@ Ext.define('NP.view.shared.ContextPickerMulti', {
                     })
                 ]
             }),
-            this.multiPropertyPanel = Ext.create('Ext.ux.form.field.BoxSelect', {
-                emptyText   : NP.Translator.translate('Select {properties}...', { properties: propertiesLabel }),
-                queryMode   : 'local',
-                selectOnTab : false,
+            this.multiPropertyPanel = Ext.create('NP.lib.ui.Assigner', {
                 displayField: 'property_name',
                 valueField  : 'property_id',
                 store       : Ext.getStore('user.Properties'),
                 hidden      : true,
                 width       : 400,
-                growMin     : 75,
-                growMax     : 300
+                maxHeight   : 150
             }),
-            this.regionPanel = Ext.create('Ext.ux.form.field.BoxSelect', {
-                emptyText   : NP.Translator.translate('Select {regions}...', { regions: regionLabel + 's' }),
-                queryMode   : 'local',
-                selectOnTab : false,
+            this.regionPanel = Ext.create('NP.lib.ui.Assigner', {
                 displayField: 'region_name',
                 valueField  : 'region_id',
                 store       : Ext.getStore('user.Regions'),
                 hidden      : true,
                 width       : 400,
-                growMin     : 75,
-                growMax     : 300
+                maxHeight   : 150
             }),
             this.allPanel = Ext.create('Ext.form.CheckboxGroup', {
                 hidden: true,
@@ -170,7 +163,7 @@ Ext.define('NP.view.shared.ContextPickerMulti', {
     },
 
     getState: function() {
-        var selected, type;
+        var selected, type, property_status = null;
         
         type = this.radioGroup.getValue()['contextPickerMultiType' + this.pickerId];
         if (type == 'property') {
@@ -180,9 +173,13 @@ Ext.define('NP.view.shared.ContextPickerMulti', {
         } else if (type == 'region') {
             selected = this.regionPanel.getValue();
         } else {
-            selected = this.allPanel.getValue()['contextPickerMultiAllType' + this.pickerId];
+            selected = NP.Security.getCurrentContext().property_id;
+            property_status = this.allPanel.getValue()['contextPickerMultiAllType' + this.pickerId];
+            if (property_status === undefined) {
+                property_status = null;
+            }
         }
         
-        return { type: type, selected: selected };
+        return { type: type, selected: selected, property_status: property_status };
     }
 });

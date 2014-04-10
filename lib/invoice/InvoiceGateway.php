@@ -50,6 +50,14 @@ class InvoiceGateway extends AbstractGateway {
 		$this->securityService = $securityService;
 	}
 	
+	public function setLocalizationService(\NP\locale\LocalizationService $localizationService) {
+		$this->localizationService = $localizationService;
+	}
+
+	public function translateForSql($phrase) {
+		return str_replace("'", "''", $this->localizationService->translate($phrase));
+	}
+	
 	/**
 	 * Overrides the default gateway function and returns a record for the specified invoice ID
 	 *
@@ -62,12 +70,28 @@ class InvoiceGateway extends AbstractGateway {
 				->columnAmount()
 				->columnShippingAmount()
 				->columnTaxAmount()
+				->columnCreatedBy()
 				->join(new sql\join\InvoiceVendorsiteJoin())
-				->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(['vendor_name','vendor_id_alt','vendor_status','integration_package_id']))
+				->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(['vendor_name','vendor_id_alt','vendor_status','integration_package_id','default_glaccount_id','default_due_date']))
+				->join(new \NP\vendor\sql\join\VendorGlAccountJoin())
 				->join(new \NP\vendor\sql\join\VendorsiteAddressJoin())
-				->join(new \NP\vendor\sql\join\VendorsitePhoneJoin())
-				->join(new \NP\contact\sql\join\PhonePhoneTypeJoin('Main'))
+				->join(new \NP\vendor\sql\join\VendorsitePhoneJoin('Main'))
 				->join(new sql\join\InvoicePropertyJoin())
+				->join(new \NP\property\sql\join\PropertyAddressJoin([
+					'property_address_id'      => 'address_id',
+					'property_address_line1'   => 'address_line1',
+					'property_address_line2'   => 'address_line2',
+					'property_address_city'    => 'address_city',
+					'property_address_state'   => 'address_state',
+					'property_address_country' => 'address_country',
+					'property_address_zip'     => 'address_zip',
+					'property_address_zipext'  => 'address_zipext'
+				], Select::JOIN_LEFT, 'adrp'))
+				->join(new \NP\property\sql\join\PropertyPhoneJoin([
+					'property_phone_number'      => 'phone_number',
+					'property_phone_ext'         => 'phone_ext',
+					'property_phone_countrycode' => 'phone_countrycode'
+				], Select::JOIN_LEFT, 'php'))
 				->join(new sql\join\InvoiceRecauthorJoin())
 				->join(new \NP\user\sql\join\RecauthorUserprofileJoin(array('userprofile_username')))
 				->where('i.invoice_id = ?');
@@ -86,34 +110,91 @@ class InvoiceGateway extends AbstractGateway {
 		$select = new Select(array('ii'=>'invoiceitem'));
 		
 		$select->column(new Expression("ISNULL(SUM(pi.poitem_amount + pi.poitem_salestax + pi.poitem_shipping), 0)"), 'po_total')
-				->join(new sql\join\InvoiceItemPoItemJoin([]))
+				->where("ii.invoice_id = ?")
+				->group('p.purchaseorder_id, p.purchaseorder_ref, pr.matching_threshold');
+		
+		$select2 = clone $select;
+
+		$select->join(
+					['pi'=>'poitem'],
+					'ii.invoiceitem_id = pi.reftablekey_id',
+					[]
+				)
 				->join(new \NP\po\sql\join\PoItemPurchaseorderJoin(['purchaseorder_id','purchaseorder_ref']))
 				->join(new \NP\po\sql\join\PoPropertyJoin(['matching_threshold']))
-				->where("ii.invoice_id = ?")
-				->group('p.purchaseorder_id, p.purchaseorder_ref, pr.matching_threshold')
+				->whereNotEquals('ii.reftablekey_id', 'pi.poitem_id')
 				->order('p.purchaseorder_ref');
-		
-		return $this->adapter->query($select, array($invoice_id));
+
+		$select2->join(
+					['pi'=>'poitem'],
+					'ii.reftablekey_id = pi.poitem_id',
+					[]
+				)
+				->join(new \NP\po\sql\join\PoItemPurchaseorderJoin(['purchaseorder_id','purchaseorder_ref']))
+				->join(new \NP\po\sql\join\PoPropertyJoin(['matching_threshold']));
+
+		$select->union($select2);
+
+		return $this->adapter->query($select, [$invoice_id, $invoice_id]);
 	}
 
 	/**
-	 * 
+	 * Finds all associated lines between an invoice and a PO 
+	 */
+	public function findInvoicePoAssociations($invoice_id, $purchaseorder_id) {
+		$select = Select::get()
+			->from(['ii'=>'invoiceitem'])
+				->join(new sql\join\InvoiceItemPoItemJoin())
+			->whereEquals('ii.invoice_id', '?')
+			->whereEquals('pi.purchaseorder_id', '?');
+
+		return $this->adapter->query($select, [$invoice_id, $purchaseorder_id]);
+	}
+
+	/**
+	 * Checks if an invoice has properties used that are different than the header property.
+	 *
+	 * @param  int $invoice_id
+	 * @return boolean
+	 */
+	public function isInvoiceMultiProp($invoice_id) {
+		$select = Select::get()
+			->count(true, 'total')
+			->from(['ii'=>'invoiceitem'])
+				->join(new sql\join\InvoiceItemInvoiceJoin())
+			->whereEquals('ii.invoice_id', '?')
+			->whereNotEquals(
+				'ii.property_id',
+				'i.property_id'
+			);
+
+
+		$total = $this->adapter->query($select, [$invoice_id]);
+
+		return (count($total)) ? true : false;
+	}
+
+	/**
+	 * Find invoices where there's one or more line properties with a period that doesn't match the
+	 * period of the header property
 	 */
 	public function findInvalidPostDates($invoice_id) {
 		$invalid = [];
 
 		$select = Select::get()->columns(['invoiceitem_id','property_id'])
 							->from(['ii'=>'invoiceitem'])
-							->join(new sql\join\InvoiceItemInvoiceJoin(['invoice_period']))
+							->join(new sql\join\InvoiceItemInvoiceJoin(['header_property_id'=>'property_id']))
 							->join(new sql\join\InvoiceItemPropertyJoin(['property_id_alt','property_name']))
-							->whereEquals('i.invoice_id', '?');
+							->whereEquals('i.invoice_id', '?')
+								->whereNotEquals('i.property_id', 'ii.property_id');
 
 		$lines = $this->adapter->query($select, [$invoice_id]);
 
 		foreach ($lines as $line) {
 			$period = $this->fiscalCalService->getAccountingPeriod($line['property_id']);
-			$invoicePeriod = \DateTime::createFromFormat('Y-m-d H:i:s.u', $line['invoice_period']);
-			if ($period->format('m') <> $invoicePeriod->format('m')) {
+			$invoicePeriod = $this->fiscalCalService->getAccountingPeriod($line['header_property_id']);
+
+			if ($period->format('Y-m') <> $invoicePeriod->format('Y-m')) {
 				$invalid[$line['invoiceitem_id']] = $period;
 			}
 		}
@@ -315,14 +396,69 @@ class InvoiceGateway extends AbstractGateway {
 		$select->allColumns('i')
 				->columnAmount()
 				->columnCreatedBy()
+				->columnPendingDays()
 				->join(new sql\join\InvoiceVendorsiteJoin())
 				->join(new \NP\vendor\sql\join\VendorsiteVendorJoin())
 				->join(new sql\join\InvoicePropertyJoin())
+				->join(new sql\join\InvoicePriorityFlagJoin())
+				->join(new sql\join\InvoiceInvoicePaymentTypeJoin())
 				->whereIn('vs.vendorsite_status', "'active','inactive','rejected'")
 				->whereIn('i.property_id', $propertyFilterSelect)
 				->order($sort);
 
 		return $select;
+	}
+
+	public function findInvoiceStatistics($property_id) {
+		$select = Select::get()
+			->distinct()
+			->count(true, 'total', 'i.invoice_id')
+			->columns([
+				'sort' => new Expression("
+					CASE i.invoice_status
+						WHEN 'open' THEN 2
+						WHEN 'forapproval' THEN 3
+						WHEN 'saved' THEN 4
+						WHEN 'hold' THEN 5
+						WHEN 'rejected' THEN 6
+					END
+				"),
+				'name' => new Expression("
+					CASE i.invoice_status
+						WHEN 'open' THEN '{$this->translateForSql('# of Open Invoices')}'
+						WHEN 'forapproval' THEN '{$this->translateForSql('# of Invoices Pending Approval')}'
+						WHEN 'saved' THEN '{$this->translateForSql('# of Completed Invoices to Approve')}'
+						WHEN 'hold' THEN '{$this->translateForSql('# of Invoices on Hold')}'
+						WHEN 'rejected' THEN '{$this->translateForSql('# of Rejected Invoices')}'
+					END
+				"),
+				'amount' => new Expression("
+					ISNULL(SUM(ii.invoiceitem_amount + ii.invoiceitem_shipping + ii.invoiceitem_salestax), 0)
+				")
+			])
+			->from(['i'=>'invoice'])
+				->join(new sql\join\InvoiceInvoiceItemJoin([], Select::JOIN_LEFT))
+			->whereIn('i.invoice_status', "'open','forapproval','saved','hold','rejected'")
+			->whereEquals('i.property_id', '?')
+			->group('i.invoice_status')
+			->union(
+				Select::get()
+					->count(true, 'total')
+					->columns([
+						'sort' => new Expression('1'),
+						'name' => new Expression("'{$this->translateForSql('# of Images to Convert')}'"),
+						'amount' => new Expression('SUM(img.Image_Index_Amount)')
+					])
+					->from(['img'=>'image_index'])
+					->whereEquals('img.property_id', '?')
+					->whereMerge(new \NP\image\sql\criteria\ImageInvoiceDocCriteria('Invoice,Utility Invoice'))
+					->whereMerge(new \NP\image\sql\criteria\ImageInvoiceUnassigned())
+					->whereEquals('img.Image_Index_Status', '1')
+					->having('count(*) > 0')
+			)
+			->order('2');
+
+		return $this->adapter->query($select, [$property_id,$property_id]);
 	}
 
 	public function findDuplicates($invoice_id) {
@@ -430,7 +566,9 @@ class InvoiceGateway extends AbstractGateway {
 
 		if ($countOnly != 'true') {
 			$select->columnOnHoldDays()
-					->columnOnHoldBy();
+					->columnOnHoldBy()
+					->columnOnHoldNotes()
+					->columnOnHoldReason();
 		}
 
 		$where->equals('i.invoice_status', "'hold'")
@@ -593,8 +731,7 @@ class InvoiceGateway extends AbstractGateway {
 		$select = new sql\InvoiceSelect();
 		
 		if ($countOnly == 'true') {
-			$select->count(true, 'totalRecs')
-					->column('invoice_id');
+			$select->count(true, 'totalRecs', 'i.invoice_id');
 		} else {
 			$select->allColumns('i')
 					->columnAmount()
@@ -614,6 +751,7 @@ class InvoiceGateway extends AbstractGateway {
 			->join(new \NP\vendor\sql\join\VendorsiteVendorJoin())
 			->join(new sql\join\InvoicePriorityFlagJoin())
 			->join(new sql\join\InvoiceVendorOneTimeJoin())
+			->join(new sql\join\InvoiceInvoicePaymentTypeJoin())
 			->whereIn('i.property_id', $propertyFilterSelect);
 
 		return $select;
@@ -745,6 +883,86 @@ class InvoiceGateway extends AbstractGateway {
 
 		return $this->adapter->query($select, [1]);
 	}
+
+    public function getInvoiceRef($invoice_id) {
+        $select = new \NP\core\db\Select();
+        $select
+            ->column('invoice_ref')
+            ->from('INVOICE')
+            ->whereEquals('invoice_id', $invoice_id)
+        ;
+
+        $result = $this->adapter->query($select);
+        if (!empty($result) && !empty($result[0]) && !empty($result[0]['invoice_ref'])) {
+            return $result[0]['invoice_ref'];
+        }
+        return null;
+    }
+
+    /**
+     * Get Template for image index table.
+     * 
+     * @param int $vendorsite_id Vendorsite id.
+     * @param int $property_id Propery id.
+     * @param int $utilityaccount_id Utility account ID.
+     * @return [] List of templates.
+     */
+    public function getTemplatesByCriteria($userprofile_id, $delegation_to_userprofile_id,
+    										$vendorsite_id, $property_id,
+    										$utilityaccount_id=null) {
+        if (empty($vendorsite_id)) 
+            return;
+        if (empty($property_id)) 
+            return;
+        
+        $params = [$vendorsite_id];
+
+        $select = new Select();
+        $select = Select::get()
+		            ->columns([
+						'invoice_id'    => 'invoice_id',
+						'invoice_ref'   => 'invoice_ref',
+						'template_name' => 'template_name'
+			        ])
+		            ->from(['i' => 'invoice'])
+		            	->join(new sql\join\InvoicePropertyJoin(['property_name']))
+		            	->join(new sql\join\InvoiceVendorsiteJoin([]))
+		            	->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(['integration_package_id']))
+		            ->whereEquals('i.invoice_status', '\'draft\'')
+            		->whereEquals('vs.vendorsite_id', '?')
+            		->whereNest('OR')
+		                ->whereEquals('i.property_id', 0)
+        ;
+        
+        if ($this->configService->get('PN.Main.templateByProp', '0') == '1') {
+        	$select->whereEquals('i.property_id', '?');
+        	$params[] = $property_id;
+        } else {
+        	$select->whereIn(
+						'i.property_id',
+						new PropertyFilterSelect(
+	                        new PropertyContext(
+	                            $userprofile_id,
+	                            $delegation_to_userprofile_id,
+	                            'all',
+	                            null
+	                        )
+	                    )
+					);
+        }
+        $select->whereUnnest();
+
+        if (!empty($utilityaccount_id)) {
+            $select->whereExists(
+            	Select::get()->from(['ii' => 'invoiceitem'])
+		                    ->whereEquals('ii.invoice_id', 'i.invoice_id')
+		                    ->whereEquals('ii.utilityaccount_id', '?')
+            );
+            $params[] = $utilityaccount_id;
+        }
+
+        return $this->adapter->query($select, $params);
+    }
 }
 
 ?>

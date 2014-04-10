@@ -11,7 +11,7 @@ use NP\core\db\Where;
  */
 class VendorStatusCriteria extends Where {
 	
-	public function __construct($vendor_status=null, $op='=', $alias='v') {
+	public function __construct($vendor_status=null, $op='=', $alias='v', $siteAlias='vs') {
 		parent::__construct();
 
 		$placeHolder = '?';
@@ -28,6 +28,7 @@ class VendorStatusCriteria extends Where {
 		}
 
 		$this->op($op, "{$alias}.vendor_status", $placeHolder);
+		$this->op($op, "{$siteAlias}.vendorsite_status", $placeHolder);
 	}
 	
 }

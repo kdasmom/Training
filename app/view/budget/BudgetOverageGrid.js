@@ -9,37 +9,30 @@ Ext.define('NP.view.budget.BudgetOverageGrid', {
 
     requires: [
         'NP.lib.core.Config',
+        'NP.lib.core.Translator',
         'NP.view.shared.button.New',
         'NP.lib.ui.ComboBox',
-        'NP.model.gl.GlAccount'
+        'NP.model.gl.GlAccount',
+        'NP.view.property.gridcol.PropertyName'
     ],
-
-    // For localization
-    propertyColText: 'Property',
-    categoryColText: 'GL Code',
-    periodColText  : 'Period',
-    amountColText: 'Amount',
-    createNewBudgetOverageBtnLabel: 'New Budget Overage',
 
     paging  : true,
     stateful: true,
     stateId : 'budgetoverage_grid',
 
-//    for localization
-    title: 'Budget Overage',
-    propertyFilterLabel: 'Property',
-
     initComponent: function() {
+        this.title = NP.Translator.translate('Budget Overage');
+
         this.pagingToolbarButtons = [
             {
                 xtype: 'shared.button.new',
-                text: this.createNewBudgetOverageBtnLabel
+                text: NP.Translator.translate('New Budget Overage')
             },{
                 xtype: 'tbseparator'
             },{
                 xtype       : 'customcombo',
                 name        : 'property_id',
-                fieldLabel  : this.propertyFilterLabel,
+                fieldLabel  : NP.Config.getPropertyLabel(),
                 displayField: 'property_name',
                 valueField  : 'property_id',
                 store       : 'property.AllProperties',
@@ -52,34 +45,74 @@ Ext.define('NP.view.budget.BudgetOverageGrid', {
         // Add the base columns for the grid
         this.columns = [
             {
-                text     : this.propertyColText,
-                dataIndex: 'property_name',
-                flex     : 1,
-                renderer : function(val, meta, rec) {
-                    return rec.getProperty().get('property_name');
-                }
+                xtype    : 'property.gridcol.propertyname',
+				flex     : 0.4
             },{
-                text     : this.categoryColText,
+                text     : NP.Translator.translate('Category'),
+                dataIndex: 'category_name',
+                flex     : 0.4
+            },{
+                text     : NP.Translator.translate('GL Code'),
                 dataIndex: 'glaccount_name',
-                flex     : 1,
+                flex     : 0.5,
                 renderer : function(val, meta, rec) {
-                    var glRec = rec.getGlAccount();
-                    
-                    return NP.model.gl.GlAccount.formatName(glRec.get('glaccount_number'), glRec.get('glaccount_name'));
+                    return NP.model.gl.GlAccount.formatName(rec.get('glaccount_number'), rec.get('glaccount_name'));
                 }
             },{
-                xtype: 'datecolumn',
-                text: this.periodColText,
+                xtype    : 'datecolumn',
+                text     : NP.Translator.translate('Period'),
                 dataIndex: 'budgetoverage_period',
-                format: 'm/Y',
-                align: 'right'
+                format   : 'm/Y',
+                align    : 'right',
+                width    : 75
             },{
                 xtype    : 'numbercolumn',
-                text     : this.amountColText,
+                text     : NP.Translator.translate('Original Budget Amount'),
+                dataIndex: 'budget_amount',
+                renderer : NP.Util.currencyRenderer,
+                align    : 'right',
+                width    : 125
+            },{
+                xtype    : 'numbercolumn',
+                text     : NP.Translator.translate('Overage Amount'),
                 dataIndex: 'budgetoverage_amount',
                 renderer : NP.Util.currencyRenderer,
-                align    : 'right'
+                align    : 'right',
+                width    : 125
             },{
+                xtype    : 'numbercolumn',
+                text     : NP.Translator.translate('New Budget Amount'),
+                dataIndex: 'new_budget_amount',
+                sortable : false,
+                align    : 'right',
+                width    : 125,
+                renderer : function(val, meta, rec) {
+                    val = rec.get('budget_amount');
+
+                    if (val === null) {
+                        val = 0;
+                    }
+                    val += rec.get('budgetoverage_amount');
+
+                    return NP.Util.currencyRenderer(val);
+                }
+            },{
+                dataIndex: 'budgetoverage_note',
+                text     : NP.Translator.translate('Reason'),
+                flex     : 0.7
+			},{
+                dataIndex: 'budgetoverage_created',
+                text     : NP.Translator.translate('Added By'),
+                flex     : 0.6,
+                renderer : function (val, meta, record) {
+                    var person = '';
+                    if (record.get('person_id') !== null) {
+                        person = ' (' + record.get('person_lastname') + ', ' + record.get('person_firstname') + ')';
+                    }
+					return Ext.Date.format(record.get('budgetoverage_created'), NP.Config.getDefaultDateTimeFormat()) + person;
+				}
+			},
+			{
                 xtype: 'actioncolumn',
                 items: [
                     {
@@ -92,7 +125,7 @@ Ext.define('NP.view.budget.BudgetOverageGrid', {
                     }
                 ],
                 align: 'center',
-                flex : 0.1
+                width: 25
             }
         ];
 

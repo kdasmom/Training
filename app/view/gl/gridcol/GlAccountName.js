@@ -7,7 +7,10 @@ Ext.define('NP.view.gl.gridcol.GlAccountName', {
 	extend: 'Ext.grid.column.Column',
 	alias: 'widget.gl.gridcol.glaccountname',
 
-	requires: ['NP.lib.core.Config'],
+	requires: [
+		'NP.lib.core.Config',
+		'NP.model.gl.GlAccount'
+	],
 
 	text: 'GL Account',
 
@@ -15,7 +18,12 @@ Ext.define('NP.view.gl.gridcol.GlAccountName', {
 		if (rec.getGl) {
 			return rec.getGl().get('display_name');
 		}
-		return rec.get('display_name');
+
+		if (rec.get('glaccount_id') !== null) {
+			return NP.model.gl.GlAccount.formatName(rec.get('glaccount_number'), rec.get('glaccount_name'));
+		}
+
+		return '';
 	},
 
 	initComponent: function() {

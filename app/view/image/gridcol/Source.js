@@ -8,8 +8,5 @@ Ext.define('NP.view.image.gridcol.Source', {
 	alias: 'widget.image.gridcol.source',
 
 	text     : 'Source',
-	dataIndex: 'invoiceimage_source_name',
-	renderer : function(val, meta, rec) {
-		return rec.getSource().get('invoiceimage_source_name');
-	}
+	dataIndex: 'invoiceimage_source_name'
 });

@@ -4,7 +4,7 @@
  * @author Thomas Messier
  */
 Ext.define('NP.view.catalogMaintenance.CatalogFormProperties', {
-    extend: 'Ext.ux.form.ItemSelector',
+    extend: 'NP.lib.ui.Assigner',
     alias: 'widget.catalogmaintenance.catalogformproperties',
     
     requires: ['NP.lib.core.Config'],
@@ -16,7 +16,6 @@ Ext.define('NP.view.catalogMaintenance.CatalogFormProperties', {
     valueField  : 'property_id',
     fromTitle   : 'Unassigned',
     toTitle     : 'Assigned',
-    buttons     : ['add','remove'],
     msgTarget   : 'under',
 
     initComponent: function() {

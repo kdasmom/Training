@@ -7,7 +7,10 @@ Ext.define('NP.view.mySettings.Overview', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.mysettings.overview',
     
-    requires: ['NP.lib.core.Config'],
+    requires: [
+    	'NP.lib.core.Config',
+    	'NP.lib.core.Translator'
+    ],
 
     title: 'Overview',
 
@@ -25,21 +28,21 @@ Ext.define('NP.view.mySettings.Overview', {
 		me.userDelegText      = '<b>User Delegation</b> - allows the user to delegate approval authority to another user while they are away.  Please note this will appear only on the Settings tab and for users who have been given rights to this functionality.';
 
     	me.html = 
-    		me.introText +
+    		NP.Translator.translate(me.introText) +
 	    	'<br /><br />' +
 			'<ul>' +
-				'<li>' + me.userInfoText +'</li>' +
-				'<li>' + me.settingsText +'</li>';
+				'<li>' + NP.Translator.translate(me.userInfoText) +'</li>' +
+				'<li>' + NP.Translator.translate(me.settingsText, { property: NP.Config.getPropertyLabel() }) +'</li>';
 
 		var settingVal = NP.lib.core.Config.getSetting('pn.main.WebDocumentz', 0);
 		if (settingVal == 1 || settingVal == 2) {
-			me.html += '<li>' + me.displayText +'</li>';
+			me.html += '<li>' + NP.Translator.translate(me.displayText) +'</li>';
 		}
 		
 		me.html += 
-				'<li>' + me.emailNotifText +'</li>' +
-				'<li>' + me.mobileSettingsText +'</li>' +
-				'<li>' + me.userDelegText +'</li>' +
+				'<li>' + NP.Translator.translate(me.emailNotifText) +'</li>' +
+				'<li>' + NP.Translator.translate(me.mobileSettingsText) +'</li>' +
+				'<li>' + NP.Translator.translate(me.userDelegText) +'</li>' +
 			'</ul>';
 
 	    me.callParent(arguments);

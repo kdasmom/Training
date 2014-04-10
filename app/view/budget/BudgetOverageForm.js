@@ -108,11 +108,13 @@ Ext.define('NP.view.budget.BudgetOverageForm', {
 
     setPeriodRange: function() {
         var currentDate = new Date();
+        
+        currentDate = Ext.Date.parse(Ext.Date.format(currentDate, 'Y-m-') + '01 00:00:00.000', NP.Config.getServerDateFormat());
 
         for (var i=1; i<12; i++) {
             this.findField('budgetoverage_period').getStore().add({
                 period_name : Ext.Date.format(currentDate, 'm/Y'),
-                period_value: Ext.Date.format(currentDate, 'm/d/Y')
+                period_value: Ext.Date.format(currentDate, NP.Config.getServerDateFormat())
             });
             currentDate = Ext.Date.add(currentDate, Ext.Date.MONTH, 1);
         }

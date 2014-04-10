@@ -10,8 +10,9 @@ Ext.define('NP.view.importing.types.User', {
 
     // For localization
     tabTitle           : 'User',
-    entityName         : 'User',
-    sectionName        : 'User',
+    entityName         : 'Users',
+    sectionName        : 'User Manager',
+    
     colTextFirstName   : 'First Name',
     colTextMiddleName  : 'Middle Name',
     colTextLastName    : 'Last Name',

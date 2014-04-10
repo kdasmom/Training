@@ -13,7 +13,6 @@ Ext.define('NP.view.user.UserDelegationForm', {
         'NP.lib.core.Translator',
         'NP.view.shared.button.Cancel',
         'NP.view.shared.button.Save',
-        'Ext.ux.form.field.BoxSelect',
 		'NP.view.shared.PropertyAssigner'
     ],
 
@@ -66,11 +65,13 @@ Ext.define('NP.view.user.UserDelegationForm', {
 				xtype			: 'shared.propertyassigner',
 				height			: 100,
 				fieldLabel		: NP.Translator.translate('{properties} to Delegate', { properties: NP.Config.getPropertyLabel(true) }),
-				name				: 'delegation_properties',
-				allowBlank		: false,
+				name			: 'delegation_properties',
 				store			: Ext.create('NP.store.property.Properties', {
 					service	: 'UserService',
-					action	: 'getUserProperties'
+					action	: 'getUserProperties',
+                    extraParams: {
+                        property_statuses: '1,-1'
+                    }
 				})
 			},
             { xtype: 'hiddenfield', name: 'UserProfile_Id'}
@@ -99,6 +100,11 @@ Ext.define('NP.view.user.UserDelegationForm', {
         if (stopDate.getValue() < startDate.getValue()) {
             stopDate.markInvalid('The Stop Date must be the same or later than the Start Date.');
         }
+
+		var delegations = this.findField('delegation_properties');
+		if (delegations.getValue().length == 0) {
+			delegations.markInvalid('Select at least one property.');
+		}
 
         // Check for errors
         var errors = this.findInvalid();

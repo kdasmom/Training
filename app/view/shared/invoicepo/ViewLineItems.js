@@ -8,12 +8,16 @@ Ext.define('NP.view.shared.invoicepo.ViewLineItems', {
     alias: 'widget.shared.invoicepo.viewlineitems',
 
     requires: [
+        'NP.lib.core.Config',
     	'NP.view.shared.invoicepo.ViewLines',
     	'NP.view.shared.invoicepo.ViewLineGrid',
     	'NP.store.invoice.InvoiceItems'
     ],
 
-    layout     : 'card',
+    layout     : {
+        type          : 'card',
+        deferredRender: false
+    },
     border     : false,
     bodyPadding: 0,
 
@@ -24,35 +28,41 @@ Ext.define('NP.view.shared.invoicepo.ViewLineItems', {
     title: 'Line Items',
     
     initComponent: function() {
-    	var me   = this,
-            capType = Ext.util.Format.capitalize(me.type);
+    	var me         = this,
+            capType    = Ext.util.Format.capitalize(me.type);
 
-    	var storeCfg = Ext.create('NP.store.' + me.type + '.' + capType + 'Items', {
-            service  : capType + 'Service',
-            action   : 'get' + capType + 'Lines',
-            listeners: {
-                datachanged: function(store) {
-                    var form = me.up('boundform');
-
-                    // Enable the vendor and property fields if there are no line items
-                    if (store.getCount() === 0) {
-                        form.findField('vendor_id').enable();
-                        form.findField('property_id').enable();
-                    // Otherwise, if not lines, disable them
-                    } else {
-                        form.findField('vendor_id').disable();
-                        form.findField('property_id').disable();
+    	var store = Ext.create('NP.store.' + me.type + '.' + capType + 'Items', {
+                service  : capType + 'Service',
+                action   : 'getEntityLines',
+                listeners: {
+                    add: function(store, recs, index) {
+                        me.fireEvent('lineadd', store, recs, index);
+                        me.fireEvent('linechange', 'add', { store: store, recs: recs, index: index });
+                    },
+                    update: function(store, rec, operation, modifiedFieldNames) {
+                        me.fireEvent('lineupdate', store, rec, operation, modifiedFieldNames);
+                        me.fireEvent('linechange', 'update', {
+                            store             : store,
+                            rec               : rec,
+                            operation         : operation,
+                            modifiedFieldNames: modifiedFieldNames
+                        });
+                    },
+                    remove: function(store, rec, index, isMove) {
+                        me.fireEvent('lineremove', store, rec, index, isMove);
+                        me.fireEvent('linechange', 'remove', { store: store, rec: rec, index: index, isMove: isMove });
                     }
                 }
-            }
-    	});
+        	});
     	
-        me.defaults = { type: me.type, store: storeCfg };
+        me.defaults = { type: me.type, store: store };
     	me.items = [
             { xtype: 'shared.invoicepo.viewlines', type: me.type },
             { xtype: 'shared.invoicepo.viewlinegrid', type: me.type }
     	];
 
     	this.callParent(arguments);
+
+        this.addEvents('lineupdate','lineadd','lineremove','linechange');
     }
 });

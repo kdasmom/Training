@@ -3,7 +3,12 @@
 namespace NP\catalog;
 
 use NP\core\AbstractService;
+use NP\core\db\Expression;
+use NP\core\db\Select;
+use NP\core\Exception;
+use NP\property\PropertyGateway;
 use NP\util\Util;
+use NP\catalog\VcOrderGateway;
 
 /**
  * Service class for operations related to Vendor Catalog
@@ -36,7 +41,7 @@ class CatalogService extends AbstractService {
 		$data['vc_categories'] = Util::valueList($this->getAssignedCategories($vc_id), 'vccat_id');
 		$assignedVendors       = $this->getAssignedVendors($vc_id);
 		$data['vc_vendors']    = Util::valueList($assignedVendors, 'vendor_id');
-		$data['vendor']        = $assignedVendors[0];
+		$data['vendor']        = count($assignedVendors) > 0 ? $assignedVendors[0] : [];
 		$data['vc_properties'] = Util::valueList($this->getAssignedProperties($vc_id), 'property_id');
 
 		$pdfPath = $this->getPdfPath() . $vc_id . '.pdf';
@@ -520,7 +525,7 @@ class CatalogService extends AbstractService {
 			}
 		// If HTTP Request failed, log the error
 		} else {
-			$errorMsg .= "Connection failed. This is the connection error: {$reponse['error']}";
+			$errorMsg .= "Connection failed. This is the connection error: {$response['error']}";
 			$this->loggingService->log('catalog', $errorMsg);
 		}
 
@@ -529,6 +534,290 @@ class CatalogService extends AbstractService {
 			'success' => $success,
 			'url'     => $url
 		);
+	}
+
+	/**
+	 * Retrieve catalogs
+	 *
+	 * @param null $catalog_type
+	 * @return mixed
+	 */
+	public function getCatalogs($catalogType = null) {
+		return $this->vcGateway->getCatalogs($catalogType);
+	}
+
+	/**
+	 * Retrieve categories list
+	 *
+	 * @param null $userprofile_id
+	 * @return mixed
+	 */
+	public function getCategoriesList($userprofile_id = null) {
+		$result = $this->vcCatGateway->getCatalogCategories($userprofile_id);
+		$catalogs = [];
+
+		foreach ($result as $item) {
+			if (empty($catalogs[$item['vccat_id']])) {
+				$catalogs[$item['vccat_id']] = [
+					'category'		=> $item['vccat_name'],
+					'catalogs'		=> []
+				];
+			}
+			$catalogs[$item['vccat_id']]['catalogs'][] = [
+				'vc_id' 			=> $item['vc_id'],
+				'vc_catalogname'	=> $item['vc_catalogname']
+			];
+		}
+
+
+		return array_values($catalogs);
+	}
+
+	/**
+	 * Retrieve user's cart summary
+	 *
+	 * @param bool $userprofile_id
+	 * @return array|bool
+	 */
+	public function getUserCartSummary($userprofile_id = false) {
+		return $this->vcOrderGateway->getOrderSummary($userprofile_id);
+	}
+
+	/**
+	 * Retrieve user's orders
+	 *
+	 * @param bool $userprofile_id
+	 * @return array|bool
+	 */
+	public function getOrders($userprofile_id = false) {
+		return $this->vcOrderGateway->getOrders($userprofile_id);
+	}
+
+	/**
+	 * Remove order
+	 *
+	 * @param null $order_id
+	 * @return bool
+	 */
+	public function removeOrder($order_id = null, $userprofile_id = null) {
+		return $this->vcOrderGateway->delete(['vcorder_id' => '?', 'userprofile_id' => '?'], [$order_id, $userprofile_id]);
+	}
+
+	/**
+	 * Update vcorder params (quantity)
+	 *
+	 * @param null $vcorder
+	 * @param null $quantity
+	 * @param null $userprofile_id
+	 * @return bool
+	 */
+	public function updateOrders($vcorders = null, $userprofile_id = null) {
+		$vcorders = (array)json_decode($vcorders);
+
+		foreach ($vcorders as $vcorder_id => $item) {
+			if ($item->value == 0) {
+				$result = $this->vcOrderGateway->delete(['vcorder_id' => '?', 'userprofile_id' => '?'], [$vcorder_id, $userprofile_id]);
+				if (!$result) {
+					throw new \Exception('Can not delete order');
+				}
+			} else {
+				$result = $this->vcOrderGateway->updateQuantity($vcorder_id, $userprofile_id, $item->value);
+				if (!$result) {
+					throw new \Exception('Can not update order');
+				}
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Retrieve order's properties list
+	 *
+	 * @param null $vc_id
+	 * @param null $userprofile_id
+	 * @param null $delegation_to_userprofile_id
+	 * @return array|bool
+	 */
+	public function getOrderProperties($vc_id = null, $userprofile_id = null, $delegation_to_userprofile_id = null) {
+		return $this->propertyGateway->getOrderProperties($vc_id, $userprofile_id, $delegation_to_userprofile_id);
+	}
+
+	/**
+	 * Retrieve order vendors
+	 *
+	 * @param null $vc_id
+	 * @param null $property_id
+	 * @return mixed
+	 */
+	public function getOrderVendors($vc_id = null, $property_id = null) {
+		if (!$property_id || !$vc_id) {
+			return [];
+		}
+		$result = $this->vcGateway->getOrderVendors($vc_id, $property_id);
+		return $result;
+	}
+
+	/**
+	 * Retrieve order items
+	 *
+	 * @param null $userprofile_id
+	 * @param null $vc_id
+	 * @param null $property_id
+	 * @param null $vcorder_id
+	 * @return array
+	 */
+	public function getOrderItems($userprofile_id = null, $vc_id = null, $property_id = null, $vcorder_id = null) {
+		$usePropGL = $this->configService->getConfig('CP.PROPERTYGLACCOUNT_USE');
+
+		if (!$userprofile_id || !$vc_id || !$property_id) {
+			return [];
+		}
+		$catalog = $this->get($vc_id);
+
+		$items = $this->vcItemGateway->getOrderItems($userprofile_id, $vc_id, $property_id, $vcorder_id, $usePropGL, $catalog['vc_catalogtype']);
+
+		return $items;
+	}
+
+	/**
+	 * Retrieve vctitem details
+	 *
+	 * @param null $userprofile_id
+	 * @param null $vcitem_id
+	 * @return array
+	 */
+	public function getOrderItemInformation($userprofile_id = null, $vcitem_id = null) {
+		if (!$userprofile_id || !$vcitem_id) {
+			return [];
+		}
+
+		return $this->vcItemGateway->getItemDetails($vcitem_id, $userprofile_id);
+	}
+
+	/**
+	 * toggle favorites
+	 *
+	 * @param null $vcitem_id
+	 * @param null $userprofile_id
+	 * @param bool $add
+	 * @return array|bool
+	 */
+	public function toggleFavorites($vcitem_id = null, $userprofile_id = null, $add = true) {
+		if ($add) {
+			return $this->vcOrderGateway->addToFavorites($vcitem_id, $userprofile_id);
+		} else {
+			return $this->vcOrderGateway->deleteFromFavorites($vcitem_id, $userprofile_id);
+		}
+	}
+
+	/**
+	 * Retrieve user's favorite items
+	 *
+	 * @param null $userprofile_id
+	 * @param string $order
+	 * @param int $pageSize
+	 * @param null $page
+	 * @return mixed
+	 */
+	public function getFavorites($userprofile_id = null, $order = 'vcitem_number', $pageSize = 25, $page = null) {
+		return $this->vcItemGateway->getFavorites($userprofile_id, $order, $pageSize, $page);
+	}
+
+	/**
+	 * Add to order
+	 *
+	 * @param null $userprofile_id
+	 * @param null $vcitem_id
+	 * @param int $quantity
+	 * @return array|bool
+	 */
+	public function addToOrder($userprofile_id = null, $vcitem_id = null, $quantity = 1) {
+		if (!$userprofile_id ||!$vcitem_id) {
+			return [
+				'success'	=> false,
+				'error'		=> ['field'=>'global', 'msg'=>'Can not add to order', 'extra'=>null]
+			];
+		}
+
+		return $this->vcOrderGateway->addToOrder($userprofile_id, $vcitem_id, $quantity);
+	}
+
+	/**
+	 * Search items
+	 *
+	 * @param null $userprofile_id
+	 * @param null $catalogs
+	 * @param null $field
+	 * @param null $property
+	 * @param null $keyword
+	 * @param null $pageSize
+	 * @param int $page
+	 * @param string $sort
+	 * @return array
+	 */
+	public function searchItems($userprofile_id = null, $catalogs = null, $field = null, $property = null, $keyword = null, $pageSize = null, $page = 1, $sort = 'vcitem_number') {
+		if (!$userprofile_id || !$keyword) {
+			return [];
+		}
+		$result = $this->vcItemGateway->searchItems($userprofile_id, $catalogs, $field, $keyword, $property, $pageSize, $page, $sort);
+
+		return $result;
+	}
+
+	/**
+	 * Return categories list with items count
+	 *
+	 * @param null $vc_id
+	 * @return array
+	 */
+	public function getCategoriesWithItemsCount($vc_id = null) {
+		if (!$vc_id) {
+			return [];
+		}
+
+		return $this->vcItemGateway->getCategoriesWithItemsCount($vc_id);
+	}
+
+	/**
+	 * Return brands with items count
+	 *
+	 * @param null $vc_id
+	 * @return array
+	 */
+	public function getBrandsWithItemsCount($vc_id = null) {
+		if (!$vc_id) {
+			return [];
+		}
+
+		return $this->vcItemGateway->getBrandsWithItemsCount($vc_id);
+	}
+
+	/**
+	 * Return brands
+	 *
+	 * @return mixed
+	 */
+	public function getBrands() {
+		$result = $this->vcItemGateway->getBrands();
+
+		return $result;
+	}
+
+	public function getItemsByCategoryOrBrand($userprofile_id = null, $vc_id = null, $field = false, $value = false, $types = null, $prices = null, $sort = 'vcitem_number', $page = 1, $pageSize = 25) {
+		if (!$userprofile_id || !$vc_id) {
+			return [];
+		}
+
+		return $this->vcItemGateway->getItemsByTypesAndPrices($userprofile_id, $vc_id, $field, $value, $types, $prices, $sort, $page, $pageSize);
+	}
+
+	public function getItemsTypesByCategoryOrBrands($userprofile_id = null, $catalogs = null, $field = null, $value = null) {
+		if (!$userprofile_id || !$catalogs) {
+			return [];
+		}
+
+		return $this->vcItemGateway->getTypesForItemsFromCategoryOrBrands($userprofile_id, $catalogs, $field, $value);
 	}
 }
 

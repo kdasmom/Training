@@ -43,6 +43,7 @@ class MessageEntity extends \NP\core\AbstractEntity {
 			)
 		),
 		'message_datetm'	 => array(
+			'timestamp' => 'created',
 			'validation' => array(
 				'date' => array('format'=>'Y-m-d H:i:s.u')
 			)

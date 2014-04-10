@@ -14,6 +14,7 @@ Ext.define('NP.lib.core.DataLoader', {
 		'NP.store.property.Regions',
 		'NP.store.property.Properties',
 		'NP.store.system.States',
+		'NP.store.system.Months',
 		'NP.store.system.Countries',
 		'NP.store.security.ModuleTree',
 		'NP.store.system.Tiles',
@@ -34,6 +35,9 @@ Ext.define('NP.lib.core.DataLoader', {
 
 		// Create the state store
 		Ext.create('NP.store.system.States', { storeId: 'system.States' });
+
+		// Create the month store
+		Ext.create('NP.store.system.Months', { storeId: 'system.Months' });
 		
 		// Create the country store
 		Ext.create('NP.store.system.Countries', { storeId: 'system.Countries' });
@@ -58,6 +62,15 @@ Ext.define('NP.lib.core.DataLoader', {
 					success: function(result) {
 						// Save app name in application
 						NP.Config.setAppName(result);
+					}
+				},
+				// This request gets the app name
+				{
+					service: 'ConfigService', 
+					action: 'getClientId',
+					success: function(result) {
+						// Save app name in application
+						NP.Config.setClientId(result);
 					}
 				},
 				// This request gets config settings for the app
@@ -250,7 +263,8 @@ Ext.define('NP.lib.core.DataLoader', {
 							store                      : 'NP.store.property.Properties',
 							storeId                    : 'user.Properties',
 							userprofile_id             : NP.Security.getUser().get('userprofile_id'),
-							delegated_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id')
+							delegated_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id'),
+							property_statuses          : '1,-1'
 						},
 						// This request gets delegations for the user
 						{ 

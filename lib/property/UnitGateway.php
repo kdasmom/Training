@@ -29,6 +29,25 @@ class UnitGateway extends AbstractGateway {
 		return $select;
 	}
 
+	public function findByStatus($property_id, $unit_status=null, $keyword=null) {
+		$select = $this->getSelect()
+					->whereEquals('u.property_id', '?')
+					->order('u.unit_number');
+
+		$params = [$property_id];
+		if ($unit_status !== null) {
+			$select->whereEquals('u.unit_status', '?');
+			$params[] = $unit_status;
+		}
+
+		if ($keyword !== null) {
+			$select->whereLike('u.unit_number', '?');
+			$params[] = $keyword . '%';
+		}
+
+		return $this->adapter->query($select, $params);
+	}
+
 	/**
 	 * Removes a unit from a property
 	 *

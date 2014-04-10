@@ -5,6 +5,7 @@
  */
 Ext.define('NP.store.invoice.InvoiceItems', {
     extend: 'NP.lib.data.Store',
+    alias : 'store.invoice.invoiceitems',
 	
 	model: 'NP.model.invoice.InvoiceItem',
 

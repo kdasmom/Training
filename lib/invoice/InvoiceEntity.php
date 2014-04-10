@@ -29,6 +29,7 @@ class InvoiceEntity extends \NP\core\AbstractEntity {
 			]
 		),
 		'invoice_createddatetm'	 => array(
+			'timestamp' => 'created',
 			'validation' => array(
 				'date' => array('format'=>'Y-m-d H:i:s.u')
 			)
@@ -140,7 +141,7 @@ class InvoiceEntity extends \NP\core\AbstractEntity {
 				'digits' => array()
 			),
 			'auditable' => [
-				'table'        => 'invoicepayment_type',
+				'table'        => 'invoicepaymenttype',
 				'displayField' => 'invoicepayment_type',
 				'displayName'  => 'Paid By'
 			]
@@ -182,7 +183,9 @@ class InvoiceEntity extends \NP\core\AbstractEntity {
 			'validation' => array(
 				'date' => array('format'=>'Y-m-d H:i:s.u')
 			),
-			'auditable' => []
+			'auditable' => [
+				'displayNameSetting'=>'PN.General.postPeriodTerm'
+			]
 		),
 		'control_amount'	 => array(
 			'auditable' => [
@@ -210,12 +213,18 @@ class InvoiceEntity extends \NP\core\AbstractEntity {
 		'invoice_cycle_from'	 => array(
 			'validation' => array(
 				'date' => array('format'=>'Y-m-d H:i:s.u')
-			)
+			),
+			'auditable' => [
+				'displayName'  => 'Cycle From'
+			]
 		),
 		'invoice_cycle_to'	 => array(
 			'validation' => array(
 				'date' => array('format'=>'Y-m-d H:i:s.u')
-			)
+			),
+			'auditable' => [
+				'displayName'  => 'Cycle To'
+			]
 		),
 		'vendor_code'	 => array(
 			'validation' => array(
@@ -231,49 +240,65 @@ class InvoiceEntity extends \NP\core\AbstractEntity {
 			'validation' => array(
 				'stringLength' => array('max'=>255)
 			),
-			'auditable' => []
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL1'
+			]
 		),
 		'universal_field2'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
 			),
-			'auditable' => []
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL2'
+			]
 		),
 		'universal_field3'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
 			),
-			'auditable' => []
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL3'
+			]
 		),
 		'universal_field4'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
 			),
-			'auditable' => []
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL4'
+			]
 		),
 		'universal_field5'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
 			),
-			'auditable' => []
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL5'
+			]
 		),
 		'universal_field6'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
 			),
-			'auditable' => []
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL6'
+			]
 		),
 		'universal_field7'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
 			),
-			'auditable' => []
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL7'
+			]
 		),
 		'universal_field8'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
 			),
-			'auditable' => []
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL8'
+			]
 		),
 		'reftablekey_id'	 => array(
 			'validation' => array(
@@ -311,11 +336,6 @@ class InvoiceEntity extends \NP\core\AbstractEntity {
 		),
 		'payablesconnect_flag'	 => array(),
 		'address_id'	 => array(
-			'validation' => array(
-				'digits' => array()
-			)
-		),
-		'invoicefromvendor_id'	 => array(
 			'validation' => array(
 				'digits' => array()
 			)

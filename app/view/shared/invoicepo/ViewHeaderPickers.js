@@ -27,10 +27,11 @@ Ext.define('NP.view.shared.invoicepo.ViewHeaderPickers', {
     	me.items = [
     		{
                 xtype          : 'shared.propertycombo',
-                itemId         : 'headerPropertyCombo',
+                itemId         : 'entityPropertyCombo',
                 labelAlign     : 'top',
+                allowBlank     : false,
                 disabled       : true,
-                dependentCombos: ['invoiceVendorCombo'],
+                dependentCombos: ['entityVendorCombo'],
                 store          : {
                     type   : 'property.properties',
                     service: 'UserService',
@@ -38,15 +39,22 @@ Ext.define('NP.view.shared.invoicepo.ViewHeaderPickers', {
                     extraParams: {
                         userprofile_id             : NP.Security.getUser().get('userprofile_id'),
                         delegated_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id'),
+                        property_statuses          : '1,-1',
                         includeCodingOnly          : true
                     }
                 }
 			},{
-				xtype     : 'shared.vendorautocomplete',
-                itemId    : 'invoiceVendorCombo',
-				labelAlign: 'top',
-				disabled  : true,
-                store     : {
+                xtype        : 'customcombo',
+                itemId       : 'entityVendorCombo',
+                fieldLabel   : NP.Translator.translate('Vendor') + '<span id="entityVendorSelectOption"> (<a href="#" id="entityVendorSelectBtn">' + NP.Translator.translate('select a vendor') + '</a>)</span>',
+                labelAlign   : 'top',
+                name         : 'vendor_id',
+                valueField   : 'vendor_id',
+                displayField : 'vendor_name',
+                allowBlank   : false,
+                disabled     : true,
+                useSmartStore: true,
+                store        : {
                     type   : 'vendor.vendors',
                     service: 'VendorService',
                     action : 'getVendorsForInvoice'
@@ -59,5 +67,18 @@ Ext.define('NP.view.shared.invoicepo.ViewHeaderPickers', {
     	];
 
     	me.callParent(arguments);
+
+        me.addEvents('vendorselectclick');
+
+        me.on('afterrender', function() {
+            var el = Ext.get('entityVendorSelectBtn');
+            
+            if (el) {
+                me.mon(el, 'click', function(e) {
+                    me.fireEvent('vendorselectclick');
+                    e.stopEvent();
+                });
+            }
+        });
     }
 });

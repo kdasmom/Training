@@ -5,24 +5,15 @@
  */
 Ext.define('NP.model.invoice.InvoiceItem', {
 	extend: 'Ext.data.Model',
-	
-	requires: [
-		'NP.lib.core.Config',
-		'NP.model.jobcosting.JbContract',
-		'NP.model.jobcosting.JbChangeOrder',
-		'NP.model.jobcosting.JbJobCode',
-		'NP.model.jobcosting.JbPhaseCode',
-		'NP.model.jobcosting.JbCostCode'
-	],
 
 	idProperty: 'invoiceitem_id',
 	fields: [
 		{ name: 'invoiceitem_id', type: 'int' },
 		{ name: 'invoice_id', type: 'int' },
-		{ name: 'invoiceitem_linenum' },
+		{ name: 'invoiceitem_linenum', type: 'int' },
 		{ name: 'glaccount_id', type: 'int' },
-		{ name: 'invoiceitem_description' },
-		{ name: 'invoiceitem_quantity', type: 'float', defaultValue: 1 },
+		{ name: 'invoiceitem_description', type: 'string', defaultValue: '' },
+		{ name: 'invoiceitem_quantity', type: 'float', defaultValue: 1.0 },
 		{ name: 'invoiceitem_unitprice', type: 'float', useNull: false },
 		{ name: 'invoiceitem_amount', type: 'float', useNull: false },
 		{ name: 'invoiceitem_budgetvariance', type: 'float', useNull: false },
@@ -51,17 +42,17 @@ Ext.define('NP.model.invoice.InvoiceItem', {
 		{ name: 'utilitycolumn_usagetype_id', type: 'int' },
 		{ name: 'vendorsite_id', type: 'int' },
 		{ name: 'invoiceitem_jobflag' },
-		{ name: 'universal_field1' },
-		{ name: 'universal_field2' },
-		{ name: 'universal_field3' },
-		{ name: 'universal_field4' },
-		{ name: 'universal_field5' },
-		{ name: 'universal_field6' },
+		{ name: 'universal_field1', type: 'string', useNull: false },
+		{ name: 'universal_field2', type: 'string', useNull: false },
+		{ name: 'universal_field3', type: 'string', useNull: false },
+		{ name: 'universal_field4', type: 'string', useNull: false },
+		{ name: 'universal_field5', type: 'string', useNull: false },
+		{ name: 'universal_field6', type: 'string', useNull: false },
+		{ name: 'universal_field7', type: 'string', useNull: false },
+		{ name: 'universal_field8', type: 'string', useNull: false },
 		{ name: 'dfsplit_id', type: 'int' },
-		{ name: 'vcitem_number' },
-		{ name: 'vcitem_uom' },
-		{ name: 'universal_field7' },
-		{ name: 'universal_field8' },
+		{ name: 'vcitem_number', type: 'string', useNull: false },
+		{ name: 'vcitem_uom', type: 'string', useNull: false },
 		{ name: 'is_from_catalog', type: 'int', defaultValue: 0 },
 		{ name: 'unittype_material_id', type: 'int' },
 		{ name: 'unittype_meas_id', type: 'int' },
@@ -176,6 +167,28 @@ Ext.define('NP.model.invoice.InvoiceItem', {
 			}
 		},
 		{ name: 'jbcostcode_name' },
-		{ name: 'jbcostcode_desc' }
+		{ name: 'jbcostcode_desc' },
+		
+		{
+			name        : 'split_percentage',
+			type        : 'float',
+			persist     : false,
+			useNull     : false,
+			defaultValue: 0
+		},
+
+		{
+			name: 'is_utility',
+			type: 'int',
+			convert: function(v, rec) {
+				if (v === null) {
+					v = 0;
+					if (rec.get('utilityaccount_id') !== null) {
+						v = 1;
+					}
+				}
+				return v;
+			}
+		}
 	]
 });

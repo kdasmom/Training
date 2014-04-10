@@ -18,16 +18,19 @@ Ext.define('NP.Application', {
 		'overrides.form.field.Number',
 		'overrides.form.Basic',
 		'overrides.form.Panel',
+		'overrides.grid.column.Column',
 		'overrides.grid.plugin.CellEditing',
 		'overrides.util.Format',
-		'overrides.ux.form.ItemSelector',
+		'overrides.util.Sorter',
 		'overrides.Component',
 		'overrides.JSON',
 		'Ext.util.History',
 		'Ext.state.*',
 		'NP.lib.core.DataLoader',
 		'NP.lib.core.DBProvider',
+		'NP.lib.core.KeyManager',
 		'NP.lib.core.Security',
+		'NP.lib.core.Net',
 		'NP.lib.core.Translator',
 		'NP.view.Viewport'
 	],
@@ -35,16 +38,22 @@ Ext.define('NP.Application', {
 	controllers: [
 		'Viewport',
 		'BudgetOverage',
+		'Favorites',
 		'CatalogMaintenance',
+		'Images',
 		'Import',
+		'Integration',
 		'Invoice',
 		'MessageCenter',
 		'MobileSetup',
 		'MySettings',
+		'Po',
 		'PropertySetup',
+		'Report',
 		'SystemSetup',
 		'UserManager',
 		'UtilitySetup',
+		'VendorCatalog',
 		'VendorManager'
 	],
 
@@ -61,7 +70,7 @@ Ext.define('NP.Application', {
 		// Start loading the minimum inital data we need to be able to run the application
 		NP.lib.core.DataLoader.loadStartupData(function(res) {
             // Language to load; static for now, will be updated in future when we offer more languages
-            var lang = 'en';
+            var lang = NP.Translator.getLocale();
             
             // Inject the correct file for localization
             NP.Translator.loadLocale(lang);
@@ -85,6 +94,8 @@ Ext.define('NP.Application', {
 
 		// Only start the app if all our data has been properly loaded
 		if (me.statcategoriesloaded && me.statsloaded) {
+			Ext.get('loading-app').remove();
+
 			// Create the ViewPort
 	        Ext.create('NP.view.Viewport');
 	        
@@ -142,6 +153,8 @@ Ext.define('NP.Application', {
      * @private
      */
 	gotoToken: function(token) {
+		this.getController('Favorites').refreshFavoriteButtons(token);
+
 		Ext.log('Going to token: ' + token);
 
 		// If the token is not null, do some operations to get the hash
@@ -250,6 +263,13 @@ Ext.define('NP.Application', {
 		
 		// If we have a new view, let's add it to the parent panel
 		if (isNewView) {
+			// If updating main content panel, abort all requests that have been made so that
+			// we don't get UI errors when they complete
+			if (panel === '#contentPanel') {
+				Ext.log('Aborting all Ajax requests because of call to set view ' + view);
+				NP.Net.abortAllRequests();
+			}
+			
 			// Remove all child elements from the parent panel
 			pnl.removeAll();
 			
@@ -287,7 +307,13 @@ Ext.define('NP.Application', {
 	 * @return {Ext.container.Container}
 	 */
 	getComponent: function(comp) {
-		return Ext.ComponentQuery.query('[xtype="' + comp + '"]')[0];
+		var comp = Ext.ComponentQuery.query('[xtype="' + comp + '"]');
+		
+		if (comp.length) {
+			return comp[0];
+		}
+
+		return null;
 	},
 
 	getStateProvider: function() {

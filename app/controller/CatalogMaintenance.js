@@ -167,9 +167,6 @@ Ext.define('NP.controller.CatalogMaintenance', {
 				click: this.removePdf
 			}
 		});
-
-		// Load the Catalog Categories store
-		this.application.loadStore('catalog.VcCats', 'NP.store.catalog.VcCats');
 	},
 
 	changeGridTab: function(tabPanel, newCard, oldCard, eOpts) {

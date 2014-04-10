@@ -23,7 +23,7 @@ Ext.define('NP.view.user.UsersFormDetails', {
     initComponent: function() {
     	var that = this;
 
-        that.title = NP.Translator.translate('User Details');
+        that.title = NP.Translator.translate('Password Management');
 
     	this.defaults = { labelWidth: 150 };
 
@@ -112,15 +112,16 @@ Ext.define('NP.view.user.UsersFormDetails', {
 
     	// For My Settigns > User Information, add security questions
     	if (this.isMySettings) {
+            this.questionStore = Ext.create('NP.store.system.SecurityQuestions');
+
     		// Add the 6 security question/answer fields
 	    	for (var i=1; i<=6; i++) {
 	    		this.items.push(
 		    		{
-		    			xtype: 'combobox',
-		    			queryMode: 'local',
+		    			xtype: 'customcombo',
 		    			fieldLabel: NP.Translator.translate('Security Question') + ' ' + i,
 		    			name: 'security_question' + i,
-		    			store: 'system.SecurityQuestions',
+		    			store: this.questionStore,
 		    			displayField: 'lookupcode_description',
 		    			valueField: 'lookupcode_id',
 		    			width: 600

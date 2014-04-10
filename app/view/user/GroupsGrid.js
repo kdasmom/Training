@@ -45,17 +45,29 @@ Ext.define('NP.view.user.GroupsGrid', {
                     flex: 1,
 					hideable: false
                 },{
-                    text: NP.Translator.translate('Users'),
-                    dataIndex: 'role_user_count',
-                    flex: 1
+                    text: NP.Translator.translate('Active Users'),
+                    dataIndex: 'role_user_count_active',
+                    flex: 0.2,
+					align: 'center',
+					renderer: function(val, meta, record) {
+						return record.raw['role_user_count_active'];
+					}
+                },{
+                    text: NP.Translator.translate('Inactive Users'),
+                    dataIndex: 'role_user_count_inactive',
+                    flex: 0.2,
+					align: 'center',
+					renderer: function(val, meta, record) {
+						return record.raw['role_user_count_inactive'];
+					}
                 },{
                     text: NP.Translator.translate('Last Updated'),
                     dataIndex: 'role_updated_datetm',
-                    flex: 1,
+                    flex: 0.5,
                     renderer: function(val, meta, rec) {
                         val = Ext.Date.format(val, NP.Config.getDefaultDateFormat() + ' h:iA');
-                        if (rec.get('role_updated_by') !== null) {
-                            val += ' (' + rec.getUpdater().get('userprofile_username') + ')'
+                        if (rec.get('userprofile_username') !== null) {
+                            val += ' (' + rec.get('userprofile_username') + ')'
                         }
                         return val;
                     }

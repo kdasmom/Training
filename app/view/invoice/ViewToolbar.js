@@ -10,6 +10,7 @@ Ext.define('NP.view.invoice.ViewToolbar', {
     requires: [
         'NP.lib.core.Security',
         'NP.view.shared.button.Cancel',
+        'NP.view.shared.button.Process',
         'NP.view.shared.button.Save',
         'NP.view.shared.button.Delete',
         'NP.view.shared.button.Hourglass',
@@ -27,48 +28,57 @@ Ext.define('NP.view.invoice.ViewToolbar', {
             {
                 xtype: 'shared.button.cancel'
             },{
+                itemId          : 'invoiceSaveBtn',
                 xtype           : 'shared.button.save',
                 displayCondition: me.isSaveBtnVisible
             },{
                 text            : 'Approve',
+                itemId          : 'invoiceApproveBtn',
                 iconCls         : 'approve-btn',
                 moduleId        : 1031,
-                displayCondition: Ext.bind(me.isApproveBtnVisible, me)
+                displayCondition: me.isApproveBtnVisible.bind(me)
             },{
                 text            : 'Approve and Next',
+                itemId          : 'invoiceApproveAndNextBtn',
                 iconCls         : 'approve-next-btn',
                 moduleId        : 1031,
-                displayCondition: Ext.bind(me.isApproveBtnVisible, me)
+                displayCondition: me.isApproveBtnVisible.bind(me)
             },{
                 text            : 'Reject',
+                itemId          : 'invoiceRejectBtn',
                 iconCls         : 'reject-btn',
                 moduleId        : 1031,
                 displayCondition: me.isRejectBtnVisible
             },{
+                xtype           : 'shared.button.process',
                 text            : 'Ready For Processing',
                 itemId          : 'readyForProcessingBtn',
-                iconCls         : 'process-btn',
                 moduleId        : 2041,
                 displayCondition: me.isReadyBtnVisible
             },{
                 xtype           : 'shared.button.edit',
                 text            : 'Modify',
-                displayCondition: Ext.bind(me.isModifyBtnVisible, me)
+                itemId          : 'invoiceModifyBtn',
+                displayCondition: me.isModifyBtnVisible.bind(me)
             },{
                 xtype           : 'shared.button.delete',
+                itemId          : 'invoiceDeleteBtn',
                 displayCondition: me.isDeleteBtnVisible
             },{
                 text            : 'Submit For Payment',
+                itemId          : 'invoiceSubmitForPaymentBtn',
                 iconCls         : 'payment-btn',
                 displayCondition: me.isSubmitPaymentBtnVisible
             },{
                 text            : 'Reject', // This is post approve reject, not to be confused with other reject
+                itemId          : 'invoicePostRejectBtn',
                 iconCls         : 'reject-btn',
                 moduleId        : 6002,
                 displayCondition: me.isPostApproveRejectBtnVisible
             },{
                 xtype           : 'shared.button.hourglass',
                 text            : 'Place on Hold',
+                itemId          : 'invoiceOnHoldBtn',
                 moduleId        : 6001,
                 displayCondition: me.isOnHoldBtnVisible
             },{
@@ -78,16 +88,19 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                 moduleId        : 6001,
                 displayCondition: me.isActivateBtnVisible
             },{
-                text            : 'Revert',
+                text            : 'Revert to Invoice',
+                itemId          : 'invoiceRevertBtn',
                 iconCls         : 'revert-btn',
                 moduleId        : 1067,
                 displayCondition: me.isRevertBtnVisible
             },{
                 text            : 'Reclass',
+                itemId          : 'invoiceReclassBtn',
                 iconCls         : 'reclass-btn',
-                displayCondition: me.isReclassBtnVisible
+                displayCondition: me.isReclassBtnVisible.bind(me)
             },{
                 text            : 'Void',
+                itemId          : 'invoiceVoidBtn',
                 iconCls         : 'void-btn',
                 moduleId        : 6069,
                 displayCondition: me.isVoidBtnVisible
@@ -95,37 +108,43 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                 text            : 'Approve and Route Manually',
                 iconCls         : 'route-btn',
                 moduleId        : 1031,
-                displayCondition: Ext.bind(me.isRouteBtnVisible, me)
+                displayCondition: me.isRouteBtnVisible.bind(me)
             },{
                 text            : 'Pass and Route Manually',
                 iconCls         : 'route-btn',
                 moduleId        : 6004,
-                displayCondition: Ext.bind(me.isRouteBtnVisible, me)
+                displayCondition: me.isRouteBtnVisible.bind(me)
             },{
                 text            : 'Apply Template',
+                itemId          : 'invoiceApplyTemplateBtn',
                 iconCls         : 'template-apply-btn',
                 displayCondition: me.isApplyTemplateBtnVisible
             },{
                 text            : 'Use Template',
+                itemId          : 'invoiceUseTemplateBtn',
                 iconCls         : 'template-apply-btn',
                 displayCondition: me.isUseTemplateBtnVisible
             },{
                 text            : 'Create Copy',
+                itemId          : 'invoiceCreateCopy',
                 iconCls         : 'copy-btn',
                 moduleId        : 2006,
                 displayCondition: me.isCopyBtnVisible
             },{
                 text            : 'Create Schedule',
+                itemId          : 'invoiceCreateSchedule',
                 iconCls         : 'schedule-btn',
                 moduleId        : 2018,
                 displayCondition: me.isScheduleBtnVisible
             },{
                 text            : 'Modify Schedule',
+                itemId          : 'invoiceModifySchedule',
                 iconCls         : 'schedule-btn',
                 moduleId        : 2018,
                 displayCondition: me.isModifyScheduleBtnVisible
             },{
                 text            : 'Manage Images',
+                itemId          : 'invoiceImageManageBtn',
                 iconCls         : 'image-manage-btn',
                 displayCondition: me.isManageImagesBtnVisible
             },{
@@ -133,6 +152,13 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                 iconCls         : 'link-btn',
                 moduleId        : 2038,
                 displayCondition: me.isLinkPoBtnVisible
+            },{
+                text            : 'Forward',
+                itemId          : 'invoiceForwardBtn',
+                iconCls         : 'message-btn',
+                componentCls    : 'message-comp-btn',
+                moduleId        : 2026,
+                displayCondition: me.isForwardBtnVisible
             },
             {
                 xtype: 'tbseparator',
@@ -145,13 +171,9 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                 menu    : [
                     {
                         text            : 'Print',
+                        itemId          : 'invoicePrintBtn',
                         iconCls         : 'print-btn',
                         displayCondition: me.isPrintBtnVisible
-                    },{
-                        text            : 'Forward',
-                        iconCls         : 'message-btn',
-                        moduleId        : 2026,
-                        displayCondition: me.isForwardBtnVisible
                     },{
                         text            : 'Budget Report',
                         iconCls         : 'report-btn',
@@ -162,15 +184,16 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                         itemId          : 'saveTemplateBtn',
                         iconCls         : 'template-save-btn',
                         moduleId        : 2008,
-                        displayCondition: Ext.bind(me.isSaveTemplateBtnVisible, me)
+                        displayCondition: me.isSaveTemplateBtnVisible.bind(me)
                     },{
                         text            : 'Save as User Template',
                         itemId          : 'saveUserTemplateBtn',
                         iconCls         : 'template-save-user-btn',
                         moduleId        : 2006,
-                        displayCondition: Ext.bind(me.isSaveUserTemplateBtnVisible, me)
+                        displayCondition: me.isSaveUserTemplateBtnVisible.bind(me)
                     },{
                         text            : 'Apply Payment',
+                        itemId          : 'applyPaymentBtn',
                         iconCls         : 'approve-btn',
                         moduleId        : 6064,
                         displayCondition: me.isApplyPaymentBtnVisible
@@ -188,17 +211,20 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                 menu    : [
                     {
                         text            : 'Upload Image',
+                        itemId          : 'invoiceImageUploadBtn',
                         iconCls         : 'upload-btn',
                         moduleId        : 2081,
                         displayCondition: me.isUploadImageBtnVisible
                     },
                     {
                         text            : 'View Image',
+                        itemId          : 'invoiceImageViewBtn',
                         iconCls         : 'image-view-btn',
                         displayCondition: me.isManageImagesBtnVisible
                     },
                     {
                         text            : 'Add Image',
+                        itemId          : 'invoiceImageAddBtn',
                         iconCls         : 'image-add-btn',
                         moduleId        : 2039,
                         displayCondition: me.isAddImageBtnVisible
@@ -318,7 +344,7 @@ Ext.define('NP.view.invoice.ViewToolbar', {
     },
 
     isManageImagesBtnVisible: function(data) {
-        return (data['images'].length > 0);
+        return (data['image'] !== null);
     },
 
     isLinkPoBtnVisible: function(data) {
@@ -585,14 +611,14 @@ Ext.define('NP.view.invoice.ViewToolbar', {
     isScheduleBtnVisible: function(data) {
         return (
             data['invoice'].get('invoice_status') == "draft"
-            && !data['scheduleExists']
+            && !data['schedule_exists']
         );
     },
 
     isModifyScheduleBtnVisible: function(data) {
         return (
             data['invoice'].get('invoice_status') == "draft"
-            && data['scheduleExists']
+            && data['schedule_exists']
         );
     }
 });

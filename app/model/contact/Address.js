@@ -43,50 +43,59 @@ Ext.define('NP.model.contact.Address', {
 	],
 
 	getHtml: function() {
-		var html  = '',
-			city  = (this.get('address_city') === null) ? '' : this.get('address_city'),
-			state = (this.get('address_state') === null) ? '' : this.get('address_state'),
-			zip   = (this.get('address_zip') === null) ? '' : this.get('address_zip');
+		return NP.model.contact.Address.getHtml(this);
+	},
 
-		for (var i=1; i<=3; i++) {
-			if (this.get('address_line'+i) !== '' && this.get('address_line'+i) !== null) {
-				html += '<div>' + this.get('address_line'+i) + '</div>';
+	statics: {
+		getHtml: function(rec) {
+			if (!rec.get) {
+				rec = Ext.create('NP.model.contact.Address', rec);
 			}
-		}
+			var html  = '',
+				city  = (rec.get('address_city') === null) ? '' : rec.get('address_city'),
+				state = (rec.get('address_state') === null) ? '' : rec.get('address_state'),
+				zip   = (rec.get('address_zip') === null) ? '' : rec.get('address_zip');
 
-		if (city != '' || state != '' || zip) {
-			html += '<div>';
-			if (city != '') {
-				html += city;
+			for (var i=1; i<=3; i++) {
+				if (rec.get('address_line'+i) !== '' && rec.get('address_line'+i) !== null) {
+					html += '<div>' + rec.get('address_line'+i) + '</div>';
+				}
+			}
+
+			if (city != '' || state != '' || zip) {
+				html += '<div>';
+				if (city != '') {
+					html += city;
+					if (state != '') {
+						html += ', ';
+					} else if (zip != '') {
+						html += ' ';
+					}
+				}
 				if (state != '') {
-					html += ', ';
-				} else if (zip != '') {
-					html += ' ';
+					html += state;
+					if (zip != '') {
+						html += ' ';
+					}
 				}
-			}
-			if (state != '') {
-				html += state;
 				if (zip != '') {
-					html += ' ';
+					html += zip;
+					if (rec.get('address_zipext') != '' && rec.get('address_zipext') !== null) {
+						html += '-' + rec.get('address_zipext');
+					}
+				}
+
+				html += '</div>';
+			}
+
+			if (rec.get('address_country') !== null) {
+				var country = Ext.getStore('system.Countries').query('id', rec.get('address_country'));
+				if (country.getCount()) {
+					html += '<div>' + country.getAt(0).get('name') + '</div>';
 				}
 			}
-			if (zip != '') {
-				html += zip;
-				if (this.get('address_zipext') != '' && this.get('address_zipext') !== null) {
-					html += '-' + this.get('address_zipext');
-				}
-			}
 
-			html += '</div>';
+			return html;
 		}
-
-		if (this.get('address_country') !== null) {
-			var country = Ext.getStore('system.Countries').query('id', this.get('address_country'));
-			if (country.getCount()) {
-				html += '<div>' + country.getAt(0).get('name') + '</div>';
-			}
-		}
-
-		return html;
 	}
 });

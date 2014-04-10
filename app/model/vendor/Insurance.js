@@ -7,9 +7,7 @@ Ext.define('NP.model.vendor.Insurance', {
 	extend: 'Ext.data.Model',
 	
 	requires: [
-		'NP.lib.core.Config',
-		'NP.model.vendor.Vendor',
-		'NP.model.vendor.InsuranceType'
+		'NP.lib.core.Config'
 	],
 
 	idProperty: 'insurance_id',
@@ -28,24 +26,14 @@ Ext.define('NP.model.vendor.Insurance', {
 		{ name: 'insurance_policyreqthru', type: 'date' },
 
 		// These fields are not database columns
-		{ name: 'days_to_expiration', type: 'int' }
-	],
+		{ name: 'days_to_expiration', type: 'int' },
 
-    belongsTo: [
-        {
-			model     : 'NP.model.vendor.Vendor',
-			name      : 'vendor',
-			getterName: 'getVendor',
-			foreignKey: 'tablekey_id',
-			primaryKey: 'vendor_id',
-			reader    : 'jsonflat'
-        },{
-			model     : 'NP.model.vendor.InsuranceType',
-			name      : 'insuranceType',
-			getterName: 'getInsuranceType',
-			foreignKey: 'insurancetype_id',
-			primaryKey: 'insurancetype_id',
-			reader    : 'jsonflat'
-        }
-    ]
+		{ name: 'vendor_id', type: 'int' },
+		{ name: 'vendor_id_alt' },
+		{ name: 'vendor_name' },
+
+		{ name: 'integration_package_name' },
+
+		{ name: 'insurancetype_name' }
+	]
 });

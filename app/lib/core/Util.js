@@ -91,9 +91,11 @@ Ext.define('NP.lib.core.Util', {
 	 * @return {Array}
 	 */
 	valueList: function(records, field) {
-		var list = [];
+		var list = [],
+			val;
 		for (var i=0; i<records.length; i++) {
-			list.push(records[i][field]);
+			val = (records[i].get) ? records[i].get(field) : records[i][field];
+			list.push(val);
 		}
 
 		return list;
@@ -241,5 +243,55 @@ Ext.define('NP.lib.core.Util', {
 	 */
 	getIdProperty: function(modelClass) {
 		return Ext.ClassManager.get('NP.model.' + modelClass).getFields()[0].name;
+	},
+
+	convertModelArrayToDataArray: function(modelArray) {
+		var data = [],
+			i;
+		
+		for (i=0; i<modelArray.length; i++) {
+			data.push(modelArray[i].getData());
+		}
+
+		return data;
+	},
+
+	/**
+	 * This function repeatedly tries to run a function until it succeeds. If it fails before a
+	 * configurable maximum number of tries, an error is thrown. This function is useful when you
+	 * want to call a function that depends on a certain component being rendered and you don't
+	 * know and can't control the exact moment it'll be renderer.
+	 *
+	 * @param {Function} fn                    Function to call
+	 * @param {Object}   options               Options for the call
+	 * @param {Array}    [options.args=[]]     Arguments to pass to the function
+	 * @param {Number}   [options.delay=200]   Number of milliseconds to wait before retrying the function call
+	 * @param {Number}   [options.maxTries=10] Maximum number of times to try the function call
+	 * @param {Object}   [options.scope]       Scope of (value of the this object inside) the function
+	 * @param {Function} [options.callback]    Callback function to execute when the function has successfully run; will receive the function's return value as a first parameter and the options as the second parameter
+	 */
+	deferUntil: function(fn, options, tries) {
+		options = options || {};
+		tries   = tries || 0;
+
+		Ext.applyIf(options, {
+			args    : [],
+			delay   : 200,
+			maxTries: 10,
+			scope   : this,
+			callback: Ext.emptyFn
+		});
+
+		try {
+			var res = fn.apply(options.scope, options.args);
+			options.callback(res, options);
+		} catch(err) {
+			tries++;
+			if (tries < options.maxTries) {
+				Ext.defer(function() { NP.Util.deferUntil(fn, options, tries); }, options.delay, options.scope);
+			} else {
+				throw err;
+			}
+		}
 	}
 });

@@ -21,14 +21,22 @@ class LocalizationService {
 		$this->dictionaries = array();
 	}
 
+
+	/**
+	 * DEPRECATED, use translate() instead
+	 */
+	public function getMessage($messageName, $locale=null) {
+		return $this->translate($messageName, $locale);
+	}
+
 	/**
 	 * Get an error message in the locale specified or the default locale
 	 *
-	 * @param  string $messageName Message to retrieve
-	 * @param  string $locale      Specific locale to retrieve message for, if not specified will use the one setup with the service
+	 * @param  string $phrase Phrase to translate
+	 * @param  string $locale Specific locale to retrieve message for, if not specified will use the one setup with the service
 	 * @return string
 	 */
-	public function getMessage($messageName, $locale=null) {
+	public function translate($phrase, $locale=null) {
 		// If no locale is passed, use the one setup with the service
 		if ($locale === null) {
 			$locale = $this->locale;
@@ -36,14 +44,14 @@ class LocalizationService {
 		
 		// Try to get the message for the locale requested
 		try {
-			$msg = $this->getDictionary($locale)->getMessage($messageName);
+			$msg = $this->getDictionary($locale)->getMessage($phrase);
 		// If the message doesn't exist for the locale requested, get it from the default locale
 		} catch(\Exception $e) {
 			try {
-				$msg = $this->getDictionary($this->defaultLocale)->getMessage($messageName);
+				$msg = $this->getDictionary($this->defaultLocale)->getMessage($phrase);
 			// If the mesage is not found in the default dictionary, just return the message name
 			} catch(\Exception $e2) {
-				$msg = $messageName;
+				$msg = $phrase;
 			}
 		}
 		

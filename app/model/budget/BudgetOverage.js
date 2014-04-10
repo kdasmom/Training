@@ -22,43 +22,22 @@ Ext.define('NP.model.budget.BudgetOverage', {
         { name: 'property_id', type: 'int' },
         { name: 'glaccount_id', type: 'int' },
         { name: 'budgetoverage_period', type: 'date' },
-        { name: 'budgetoverage_amount' },
+        { name: 'budgetoverage_amount', type:'float' },
         { name: 'budgetoverage_note' },
-        { name: 'budgetoverage_created', type: 'date' }
-    ],
+        { name: 'budgetoverage_created', type: 'date' },
 
-    belongsTo: [
-        {
-            model         : 'NP.model.user.Userprofile',
-            name          : 'userprofilename',
-            getterName    : 'getUserProfile',
-            foreignKey    : 'userprofile_id',
-            primaryKey    : 'userprofile_id',
-            reader        : 'jsonflat'
-        },
-        {
-            model         : 'NP.model.user.Role',
-            name          : 'rolename',
-            getterName    : 'getRolename',
-            foreignKey    : 'role_id',
-            primaryKey    : 'role_id',
-            reader        : 'jsonflat'
-        },
-        {
-            model         : 'NP.model.property.Property',
-            name          : 'propertyname',
-            getterName    : 'getProperty',
-            foreignKey    : 'property_id',
-            primaryKey    : 'property_id',
-            reader        : 'jsonflat'
-        },
-        {
-            model         : 'NP.model.gl.GlAccount',
-            name          : 'glaccountname',
-            getterName    : 'getGlAccount',
-            foreignKey    : 'glaccount_id',
-            primaryKey    : 'glaccount_id',
-            reader        : 'jsonflat'
-        }
+        // These fields are not DB columns from this model
+        { name: 'property_name' },
+
+        { name: 'glaccount_number' },
+        { name: 'glaccount_name' },
+
+        { name: 'category_name' },
+
+        { name: 'budget_amount', type: 'float' },
+
+        { name: 'person_id', type: 'int' },
+        { name: 'person_firstname' },
+        { name: 'person_lastname' }
     ]
 });

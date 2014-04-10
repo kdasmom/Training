@@ -15,11 +15,20 @@ Ext.define('NP.view.viewport.menu.VCMenu', {
 			showSeparator: false,
 			items: [
 				// Vendor Catalog Listings
-				{ text: NP.Translator.translate('Vendor Catalog Listings') },
+				{
+					text: NP.Translator.translate('Vendor Catalog Listings'),
+					itemId: 'vendorCatalogListing'
+				},
 				// Open Orders
-				{ text: NP.Translator.translate('Open Orders') },
+				{
+					text: NP.Translator.translate('Open Orders'),
+					itemId: 'vcOrders'
+				},
 				// Favorite Items
-				{ text: NP.Translator.translate('Favorite Items') }
+				{
+					text: NP.Translator.translate('Favorite Items'),
+					itemId: 'vcFavorites'
+				}
 			]
 		};
 

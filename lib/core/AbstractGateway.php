@@ -2,6 +2,8 @@
 
 namespace NP\core;
 
+use NP\core\db\Expression;
+
 /**
  * This is an abstract class that must be extended by all gateways in the system.
  *
@@ -156,7 +158,7 @@ abstract class AbstractGateway {
 	 * @param  NP\core\db\Join|array         $joins    A join object or array of joins to use in this select statement
 	 * @return array                                   A positional array filled with associative arrays of each record found
 	 */
-	public function find($where=null, $params=array(), $order=null,  $cols=null, $pageSize=null, $page=null, $joins=null) {
+	public function find($where=null, $params=array(), $order=null,  $cols=null, $pageSize=null, $page=1, $joins=null) {
 		$select = $this->getSelect();
 
 		// Allow for passing a custom select just in case
@@ -186,6 +188,53 @@ abstract class AbstractGateway {
 			return $this->getPagingArray($select, $params, $pageSize, $page);
 		} else {
 			return $this->adapter->query($select, $params);
+		}
+	}
+	
+	/**
+	 * Utility function to retrieve a single record based on criteria
+	 * 
+	 * @param  NP\core\db\Where|string|array $where    The criteria by which to filter records
+	 * @param  array                         $params   Parameters to bind to the query (optional)
+	 * @param  array                         $columns  Columns to retrieve (optional)
+	 * @param  string|array                  $order    Ordering of the records (optional)
+	 * @param  NP\core\db\Join|array         $joins    A join object or array of joins to use in this select statement
+	 * @return array                                   A positional array filled with associative arrays of each record found
+	 */
+	public function findSingle($where=null, $params=array(), $cols=null, $order=null, $joins=null) {
+		$recs = $this->find($where, $params, $order, $cols, 1, null, $joins);
+
+		if (count($recs)) {
+			return $recs[0];
+		} else {
+			return null;
+		}
+	}
+	
+	/**
+	 * Utility function to retrieve a single record based on criteria
+	 * 
+	 * @param  NP\core\db\Where|string|array $where    The criteria by which to filter records
+	 * @param  array                         $params   Parameters to bind to the query (optional)
+	 * @param  string                        $col      Column to retrieve
+	 * @param  string|array                  $order    Ordering of the records (optional)
+	 * @param  NP\core\db\Join|array         $joins    A join object or array of joins to use in this select statement
+	 * @return mixed                                   The value requested
+	 */
+	public function findValue($where=null, $params=array(), $col, $order=null, $joins=null) {
+		$cols = $col;
+		if (!is_array($cols)) {
+			$cols = [$cols];
+		} else {
+			$keys = array_keys($cols);
+			$col = array_pop($keys);
+		}
+		$recs = $this->find($where, $params, $order, $cols, 1, null, $joins);
+
+		if (count($recs)) {
+			return $recs[0][$col];
+		} else {
+			return null;
 		}
 	}
 	
@@ -296,9 +345,12 @@ abstract class AbstractGateway {
 		$values = array();
 		foreach($set as $field=>$val) {
 			if ($field != $this->pk) {
-				$placeHolder = '?';
-				$fields[$field] = $placeHolder;
-				$values[] = $val;
+				if ($val instanceOf Expression) {
+					$fields[$field] = $val->toString();
+				} else {
+					$fields[$field] = '?';
+					$values[] = $val;
+				}
 			}
 		}
 
@@ -351,6 +403,10 @@ abstract class AbstractGateway {
 		return $this->adapter->lastInsertId();
 	}
 
+	public function currentId() {
+		return $this->adapter->currentId($this->table);
+	}
+
 	/**
 	 * This function can be overridden to specify a default select to use (if you want some joins by default, for example)
 	 */
@@ -370,18 +426,23 @@ abstract class AbstractGateway {
 	 * @return array                           Associative array with 2 keys: 'total' has the total number of records for the query and 'data' has the records for the selected page and pagesize requested
 	 */
 	public function getPagingArray($select, $params, $pageSize, $page=1, $distinctCol=null) {
-		$selectTotal = $this->getSelectCountForPaging($select, $distinctCol);
-		
-		// Limit the original query to the page needed
-		$select->limit($pageSize);
+		// If we have set a page, we really need pagination, otherwise we're just limiting
 		if ($page !== null) {
+			$selectTotal = $this->getSelectCountForPaging($select, $distinctCol);
+
 			$select->offset($pageSize * ($page - 1));
+			$select->limit($pageSize);
+			
+			$totalRes = $this->adapter->query($selectTotal, $params);
 		}
 		
 		$selectRes = $this->adapter->query($select, $params);
-		$totalRes = $this->adapter->query($selectTotal, $params);
-
-		return array('total'=>$totalRes[0]['totalRows'], 'data'=>$selectRes);
+		
+		if ($page !== null) {
+			return array('total'=>$totalRes[0]['totalRows'], 'data'=>$selectRes);
+		} else {
+			return $selectRes;
+		}
 	}
 	
 	/**
@@ -397,15 +458,9 @@ abstract class AbstractGateway {
 		// Remove the order by clause
 		$selectTotal->order(null);
 
-		// If statement has DISTINCT, use only first column
-		$cols = array();
-		if ($selectTotal->getRawState('distinct')) {
-			$cols[] = $distinctCol;
-		}
-
 		// Set a new column for the count
-		$selectTotal->columns($cols)
-					->count(true, 'totalRows'); 
+		$selectTotal->columns([])
+					->count(true, 'totalRows', $distinctCol); 
 		
 		// Get all the existing joins
 		$joins = $selectTotal->getRawState('joins');

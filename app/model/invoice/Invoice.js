@@ -8,9 +8,7 @@ Ext.define('NP.model.invoice.Invoice', {
     
     requires: [
 		'NP.lib.core.Security',
-		'NP.lib.core.Config',
-		'NP.model.vendor.Vendorsite',
-		'NP.model.property.Property'
+		'NP.lib.core.Config'
 	],
     
     idProperty: 'invoice_id',
@@ -67,10 +65,20 @@ Ext.define('NP.model.invoice.Invoice', {
 		{ name: 'universal_field8' },
 		{ name: 'payablesconnect_flag' },
 		{ name: 'address_id', type: 'int' },
-		{ name: 'invoicefromvendor_id', type: 'int' },
 		{ name: 'template_name' },
 
 		// These fields are not in the INVOICE table
+		{ name: 'vendor_id', type: 'int' },
+		{ name: 'vendor_id_alt' },
+		{ name: 'vendor_name' },
+		{ name: 'vendorsite_id', type: 'int' },
+
+		{ name: 'property_id', type: 'int' },
+		{ name: 'property_id_alt' },
+		{ name: 'property_name' },
+
+		{ name: 'PriorityFlag_Display' },
+
 		{ name: 'entity_amount', type: 'float', default_value: 0 },
 		{ name: 'shipping_amount', type: 'float', default_value: 0, useNull: false },
 		{ name: 'tax_amount', type: 'float', default_value: 0, useNull: false },
@@ -84,7 +92,10 @@ Ext.define('NP.model.invoice.Invoice', {
 		{ name: 'invoice_pending_days', type: 'int' },
 		{ name: 'invoice_onhold_by' },
 		{ name: 'invoice_days_onhold', type: 'int' },
+		{ name: 'invoice_onhold_reason' },
+		{ name: 'invoice_onhold_notes' },
 		{ name: 'invoice_hold_datetm', type: 'date' },
+		{ name: 'invoicepayment_type' },
 		{ name: 'pending_approval_days', type: 'int' },
 		{ name: 'pending_approval_for' },
 		{ name: 'last_approved_datetm', type: 'date' },
@@ -92,25 +103,35 @@ Ext.define('NP.model.invoice.Invoice', {
 		{ name: 'void_datetm', type: 'date' },
 		{ name: 'void_by' },
 		{ name: 'payment_details' },
-		{ name: 'payment_amount_remaining', type: 'float' }
-    ],
+		{ name: 'payment_amount_remaining', type: 'float' },
 
-    belongsTo: [
-        {
-			model     : 'NP.model.vendor.Vendorsite',
-			name      : 'vendorsite',
-			getterName: 'getVendorsite',
-			foreignKey: 'paytablekey_id',
-			primaryKey: 'vendorsite_id',
-			reader    : 'jsonflat'
-        },{
-			model     : 'NP.model.property.Property',
-			name      : 'property',
-			getterName: 'getProperty',
-			foreignKey: 'property_id',
-			primaryKey: 'property_id',
-			reader    : 'jsonflat'
-        }
+		// Vendor address
+		{ name: 'address_line1', useNull: false },
+		{ name: 'address_line2', useNull: false },
+		{ name: 'address_city', useNull: false },
+		{ name: 'address_state', useNull: false },
+		{ name: 'address_zip', useNull: false },
+		{ name: 'address_zipext', useNull: false },
+		{ name: 'address_country', type: 'int' },
+
+		// Vendor phone
+		{ name: 'phone_number' },
+		{ name: 'phone_ext' },
+		{ name: 'phone_countrycode' },
+
+		// Property address
+		{ name: 'property_address_line1', useNull: false },
+		{ name: 'property_address_line2', useNull: false },
+		{ name: 'property_address_city', useNull: false },
+		{ name: 'property_address_state', useNull: false },
+		{ name: 'property_address_zip', useNull: false },
+		{ name: 'property_address_zipext', useNull: false },
+		{ name: 'property_address_country', type: 'int' },
+
+		// Property phone
+		{ name: 'property_phone_number' },
+		{ name: 'property_phone_ext' },
+		{ name: 'property_phone_countrycode' }
     ],
 
     isModifiable: function() {
@@ -133,7 +154,7 @@ Ext.define('NP.model.invoice.Invoice', {
 			status  = me.get('invoice_status');
 
 		if (
-			(status == 'open' && me.isInvoiceModifiable())
+			(status == 'open' && me.isModifiable())
 			|| (status == 'saved' && NP.Security.hasPermission(1068))
 			|| (status == 'paid' && NP.Security.hasPermission(2094))
 		) {
@@ -149,8 +170,8 @@ Ext.define('NP.model.invoice.Invoice', {
 
         if (
             (status == 'open' && (NP.Security.hasPermission(1032) || NP.Security.hasPermission(6076) || NP.Security.hasPermission(6077)))
-            || (status == 'saved' && NP.Security.hasPermission(1068) && me.isInvoiceModifiable())
-            || (status == 'paid' && NP.Security.hasPermission(2094))
+            || (status == 'saved' && NP.Security.hasPermission(1068) && me.isModifiable())
+            || (status == 'paid' && (NP.Security.hasPermission(2094) || NP.Security.hasPermission(6093)))
         ) {
             return true;
         }
@@ -180,20 +201,27 @@ Ext.define('NP.model.invoice.Invoice', {
 	},
 
 	getDisplayStatus: function() {
-		var status = this.get('invoice_status');
+		var me     = this,
+			status = (me.get('invoice_id') === null) ? 'New' : me.get('invoice_status');
+		
+		return NP.model.invoice.Invoice.getDisplayStatus(status);
+	},
 
-		if (status == 'forapproval') {
-			return 'Pending Approval';
-		} else if (status == 'open') {
-			return 'In Progress';
-		} else if (status == 'saved') {
-			return 'Completed';
-		} else if (status == 'draft') {
-			return 'Template';
-		} else if (status == 'closed') {
-			return 'Invoiced';
-		} else {
-			return Ext.util.Format.capitalize(status);
+	statics: {
+		getDisplayStatus: function(status) {
+			if (status == 'forapproval') {
+				return 'Pending Approval';
+			} else if (status == 'open') {
+				return 'In Progress';
+			} else if (status == 'saved') {
+				return 'Completed';
+			} else if (status == 'draft') {
+				return 'Template';
+			} else if (status == 'closed') {
+				return 'Invoiced';
+			} else {
+				return Ext.util.Format.capitalize(status);
+			}
 		}
 	}
 });

@@ -5,17 +5,6 @@
  */
 Ext.define('NP.model.image.ImageIndex', {
 	extend: 'Ext.data.Model',
-	
-	requires: [
-		'NP.lib.core.Config',
-		'NP.model.property.Property',
-		'NP.model.vendor.Vendorsite',
-		'NP.model.image.InvoiceImageSource',
-		'NP.model.image.ImageDocType',
-		'NP.model.invoice.Invoice',
-		'NP.model.user.Userprofile',
-		'NP.model.system.PriorityFlag'
-	],
 
 	idProperty: 'Image_Index_Id',
 	fields: [
@@ -25,7 +14,7 @@ Ext.define('NP.model.image.ImageIndex', {
 		{ name: 'Image_Index_Name' },
 		{ name: 'Image_Index_Type' },
 		{ name: 'Image_Index_Ref' },
-		{ name: 'Image_Index_VendorSite_Id', type: 'int' },
+        { name: 'Image_Index_VendorSite_Id', type: 'int' },
 		{ name: 'Image_Index_Vendor_Id_Alt' },
 		{ name: 'Image_Index_Invoice_Date', type: 'date' },
 		{ name: 'Image_Index_Due_Date', type: 'date' },
@@ -41,7 +30,7 @@ Ext.define('NP.model.image.ImageIndex', {
 		{ name: 'asp_client_id', type: 'int' },
 		{ name: 'Tableref_Id', type: 'int' },
 		{ name: 'Image_Doctype_Id', type: 'int' },
-		{ name: 'remit_advice', type: 'int' },
+		{ name: 'remit_advice'},
 		{ name: 'image_index_draft_invoice_id', type: 'int' },
 		{ name: 'image_index_notes' },
 		{ name: 'universal_field1' },
@@ -71,61 +60,64 @@ Ext.define('NP.model.image.ImageIndex', {
 		{ name: 'utilityaccount_metersize' },
 
 		// This field is not a database column
+		{ name: 'vendor_id', type: 'int' },
+		{ name: 'vendor_id_alt' },
+		{ name: 'vendor_name' },
+		{ name: 'vendorsite_id', type: 'int' },
+
+		{ name: 'property_id', type: 'int' },
+		{ name: 'property_id_alt' },
+		{ name: 'property_name' },
+
+		{ name: 'exception_by_userprofile_username' }, // for Image_Index_Exception_by
+
+		{ name: 'PriorityFlag_Display' },
+
+		{ name: 'image_doctype_name' },
+
+		{ name: 'invoiceimage_source_name' },
+
+		{ name: 'userprofile_username' },
+		
+		{ name: 'scan_source' },
+
 		{ name: 'days_outstanding', type: 'int' },
-		{ name: 'pending_days', type: 'int' }
+		{ name: 'pending_days', type: 'int' },
+
+        { name: 'deletedby_username' },
+
+        { name: 'property_name' },
+        { name: 'property_id_alt' },
+        { name: 'Property_Alt_Id', type: 'int'},
+
+        { name: 'vendor_name' },
+        { name: 'vendor_id_alt'},
+
+        { name: 'invoiceimage_ref'},
+        { name: 'po_ref'},
+        { name: 'invoiceimage_vendorsite_id' },
+        { name: 'invoiceimage_vendorsite_alt_id' },
+
+		{ name: 'PriorityFlag_ID_Alt_invoice', type: 'int' },
+		{ name: 'PriorityFlag_ID_Alt_po', type: 'int' },
+		{ name: 'PriorityFlag_ID_Alt_vef', type: 'int' },
+
+		{ name: 'UtilityAccount_AccountNumber' },
+		{ name: 'UtilityAccount_MeterSize' },
+
+		{ name: 'invoice_id', type: 'int' },
+		{ name: 'invoice_ref' },
+		{ name: 'invoice_NeededBy_datetm', type: 'date' },
+		{ name: 'invoice_duedate', type: 'date' }
 	],
 
-    belongsTo: [
-        {
-			model     : 'NP.model.vendor.Vendorsite',
-			name      : 'vendorsite',
-			getterName: 'getVendorsite',
-			foreignKey: 'vendorsite_id',
-			primaryKey: 'vendorsite_id',
-			reader    : 'jsonflat'
-        },{
-			model     : 'NP.model.property.Property',
-			name      : 'property',
-			getterName: 'getProperty',
-			foreignKey: 'property_id',
-			primaryKey: 'property_id',
-			reader    : 'jsonflat'
-        },{
-			model     : 'NP.model.image.ImageDocType',
-			name      : 'docType',
-			getterName: 'getDocType',
-			foreignKey: 'Image_Doctype_Id',
-			primaryKey: 'image_doctype_id',
-			reader    : 'jsonflat'
-        },{
-			model     : 'NP.model.image.InvoiceImageSource',
-			name      : 'source',
-			getterName: 'getSource',
-			foreignKey: 'Image_Index_Source_Id',
-			primaryKey: 'invoiceimage_source_id',
-			reader    : 'jsonflat'
-        },{
-			model     : 'NP.model.invoice.Invoice',
-			name      : 'invoice',
-			getterName: 'getInvoice',
-			foreignKey: 'Tablekey_Id',
-			primaryKey: 'invoice_id',
-			reader    : 'jsonflat'
-        },{
-			model     : 'NP.model.user.Userprofile',
-			name      : 'exceptionUser',
-			getterName: 'getExceptionUser',
-			foreignKey: 'Image_Index_Exception_by',
-			primaryKey: 'userprofile_id',
-			prefix    : 'exception_by_',
-			reader    : 'jsonflat'
-        },{
-			model     : 'NP.model.system.PriorityFlag',
-			name      : 'priorityFlag',
-			getterName: 'getPriorityFlag',
-			foreignKey: 'PriorityFlag_ID_Alt',
-			primaryKey: 'PriorityFlag_ID_Alt',
-			reader    : 'jsonflat'
-        }
-    ]
+	getImageLink: function() {
+		return NP.model.image.ImageIndex.getImageLink(this.get('Image_Index_Id'));
+	},
+
+	statics: {
+		getImageLink: function(Image_Index_Id) {
+			return 'showImage.php?image_index_id=' + Image_Index_Id;
+		}
+	}
 });

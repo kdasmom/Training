@@ -15,8 +15,8 @@ Ext.define('NP.store.system.SummaryStatCategories', {
 		var me = this;
 
 		me.data = [
-			{ name: 'po', title: 'Invoice' },
-			{ name: 'invoice', title: 'Purchase Orders' },
+			{ name: 'po', title: 'Purchase Orders' },
+			{ name: 'invoice', title: 'Invoice' },
 			{ name: 'image', title: 'Image' },
 			{ name: 'vendor', title: 'Vendor' },
 			{ name: 'budget', title: 'Budget' }

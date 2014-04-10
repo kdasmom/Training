@@ -63,12 +63,9 @@ Ext.define('NP.view.property.PropertiesMain', {
                 {
                     text: 'Integration Package',
                     dataIndex: 'integration_package_name',
-                    flex: 1,
-                    renderer: function(val, meta, rec) {
-                        return rec.getIntegrationPackage().get('integration_package_name');
-                    }
+                    flex: 1
                 },
-                { xtype: 'templatecolumn', text: NP.Config.getSetting('PN.main.RegionLabel', 'Region'), tpl: '{region.region_name}', flex: 1.5 },
+                { text: NP.Config.getSetting('PN.main.RegionLabel', 'Region'), dataIndex: 'region_name', flex: 1.5 },
                 { xtype: 'property.gridcol.code', flex: 1 },
                 { xtype: 'property.gridcol.propertyapcode', flex: 1 },
                 { xtype: 'property.gridcol.totalunits', flex: 1 },
@@ -76,11 +73,10 @@ Ext.define('NP.view.property.PropertiesMain', {
                     text : 'Created By',
                     dataIndex: 'UserProfile_ID',
                     renderer: function(val, meta, rec) {
-                        var user = rec.getCreatedByUser();
-                        var returnVal = user.get('userprofile_username');
-                        if (user.get('person_id') != null) {
-                            var firstName = user.get('person_firstname');
-                            var lastName = user.get('person_lastname');
+                        var returnVal = rec.get('created_by_userprofile_username');
+                        if (rec.get('created_by_person_id') != null) {
+                            var firstName = rec.get('created_by_person_firstname');
+                            var lastName = rec.get('created_by_person_lastname');
                             if (firstName != '' || lastName != '') {
                                 returnVal += ' (' + firstName + ' ' + lastName + ')'
                             }
@@ -97,7 +93,7 @@ Ext.define('NP.view.property.PropertiesMain', {
                     renderer: function(val, meta, rec) {
                         var returnVal = Ext.Date.format(val, NP.Config.getDefaultDateFormat() + ' h:iA');
                         if (rec.get('last_updated_by') != null) {
-                            returnVal += ' (' + rec.getUpdatedByUser().get('userprofile_username') + ')'
+                            returnVal += ' (' + rec.get('updated_by_userprofile_username') + ')'
                         }
 
                         return returnVal;
@@ -259,11 +255,12 @@ Ext.define('NP.view.property.PropertiesMain', {
                     name          : 'property_status',
                     displayField  : 'property_status_name',
                     valueField    : 'property_status',
-                    value         : 1,
+                    value         : 2,
                     store         : Ext.create('Ext.data.Store', {
                         fields: ['property_status', 'property_status_name'],
                         data : [
-                            { property_status: 1, property_status_name: 'Current' },
+                            { property_status: 2, property_status_name: 'All' },
+                            { property_status: 1, property_status_name: 'Active' },
                             { property_status: -1, property_status_name: 'On Hold' },
                             { property_status: 0, property_status_name: 'Inactive' }
                         ]

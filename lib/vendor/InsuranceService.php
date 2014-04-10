@@ -12,12 +12,6 @@ namespace NP\vendor;
 use NP\core\AbstractService;
 
 class InsuranceService extends AbstractService {
-	protected $insuranceGateway;
-
-	public function __construct(InsuranceGateway $insuranceGateway) {
-		$this->insuranceGateway = $insuranceGateway;
-	}
-
 	/**
 	 * Retrieve all insurance's types
 	 *

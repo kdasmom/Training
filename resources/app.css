@@ -1,7 +1,25 @@
+#loading-app {
+	position   : absolute;
+	top        : 50%;
+	height     : 60px;
+	margin-top : -30px;
+	left       : 50%;
+	width      : 60px;
+	margin-left: -30px;
+	text-align : center;
+	font       : bold 12px tahoma, arial, sans-serif;
+}
+
+/* Override to remove bullet from combo items in Chrome */
+li.x-boundlist-item {
+	list-style: none;
+}
+
 /* STYLES FOR PAGE HEADER */
 #npHeaderLogo { cursor: pointer; }
 #learningNexusImg { margin-right: 8px; cursor: pointer; }
-#npHeaderRightLinks, #npHeaderRightLinks a { color: #FFFFFF; text-decoration: none; }
+#npHeaderRightLinks { white-space: nowrap; color: #FFFFFF; }
+	#npHeaderRightLinks a { color: #FFFFFF; text-decoration: none; display: inline-block; }
 #npHeaderRightWelcomeText { margin-top: 8px; color: #9FCCFA; font-style:italic; }
 
 /* BUTTONS */
@@ -10,12 +28,20 @@
 .approve-btn { background-image: url("images/buttons/approve.gif"); }
 .approve-next-btn { background-image: url("images/buttons/approve_next.gif"); }
 .back-btn { background-image: url("images/buttons/back.gif"); }
-.camera-btn { background-image: url("images/buttons/camera.gif"); }
+.camera-btn { background-image: url("images/buttons/camera.gif"); width: 18px !important; }
 .cancel-btn { background-image: url("images/buttons/cancel.gif"); }
 .close-btn { background-image: url("images/buttons/close.gif"); }
+.cd-btn { background-image: url("images/buttons/cd.gif"); }
 .copy-btn { background-image: url("images/buttons/copy.gif"); }
 .delete-btn { background-image: url("images/buttons/delete.gif"); width: 15px; height: 15px; }
 .edit-btn { background-image: url("images/buttons/edit.gif"); }
+.excel-btn { background-image: url("images/buttons/excel.gif"); }
+.favorites-btn { background-image: url("images/buttons/favorites.png"); }
+.favorites-remove-btn { background-image: url("images/buttons/favorites_remove.gif"); width: 20px !important; }
+.favorites-add-btn { background-image: url("images/buttons/favorites_add.gif"); width: 20px !important; }
+.favorites-cmp-btn .x-btn-inner { padding-left: 24px !important; }
+.favorites-empty-btn { background-image: url("images/buttons/favorites_empty.png"); }
+.go-btn { background-image: url("images/buttons/go.gif"); width: 33px !important; }
 .hold-activate-btn { background-image: url("images/buttons/hold_activate.gif"); }
 .hourglass-btn { background-image: url("images/buttons/hourglass.gif"); }
 .image-add-btn { background-image: url("images/buttons/image_add.gif"); }
@@ -23,27 +49,71 @@
 .image-view-btn { background-image: url("images/buttons/image_view.gif"); }
 .inactivate-btn { background-image: url("images/buttons/inactivate.gif"); }
 .link-btn { background-image: url("images/buttons/link.gif"); }
-.message-btn { background-image: url("images/buttons/message.gif"); width: 32px !important;}
+.message-btn { background-image: url("images/buttons/message.gif"); width: 19px !important; background-repeat: no-repeat; }
+	.message-comp-btn .x-btn-inner { padding-left: 23px !important; }
 .new-btn { background-image: url("images/buttons/new.gif"); }
+.next-btn { background-image: url("images/buttons/next.gif"); }
+.npiss-btn { background-image: url("images/buttons/npiss.gif"); width: 20px !important; }
+.nsiss-btn { background-image: url("images/buttons/nsiss.gif"); width: 30px !important; }
 .payment-btn { background-image: url("images/buttons/payment.gif"); }
+.previous-btn { background-image: url("images/buttons/previous.gif"); }
 .print-btn { background-image: url("images/buttons/print.gif"); }
-.process-btn { background-image: url("images/buttons/process.gif"); }
+.process-btn { background-image: url("images/buttons/process.gif"); width: 20px !important; }
+	.process-comp-btn .x-btn-inner { padding-left: 24px !important; }
 .reclass-btn { background-image: url("images/buttons/reclass.gif"); }
 .reject-btn { background-image: url("images/buttons/reject.gif"); }
+.register-blue-btn { background-image: url("images/buttons/register_blue.gif"); }
+.register-yellow-btn { background-image: url("images/buttons/register_yellow.gif"); }
 .report-btn { background-image: url("images/buttons/report.gif"); }
-.reset-btn { background-image: url("images/buttons/reset.gif"); }
+.reset-btn { background-image: url("images/buttons/reset.gif"); width: 17px !important; }
 .revert-btn { background-image: url("images/buttons/revert.gif"); }
 .route-btn { background-image: url("images/buttons/route.gif"); }
-.save-btn { background-image: url("images/buttons/save.gif"); }
+.search-btn { background-image: url("images/buttons/search.gif"); background-repeat: no-repeat;}
+.save-btn { background-image: url("images/buttons/save.gif"); background-repeat: no-repeat; }
 .save-and-add-btn { background-image: url("images/buttons/save_and_add.gif"); }
+.save-and-next-btn { background-image: url("images/buttons/save_and_next.gif"); width: 24px !important; }
+	.save-and-btn .x-btn-inner { padding-left: 24px !important; }
+.save-and-previous-btn { background-image: url("images/buttons/save_and_previous.gif"); width: 24px !important; }
 .schedule-btn { background-image: url("images/buttons/schedule.gif"); }
+.search-btn { background-image: url("images/buttons/search.gif"); width: 15px !important; }
+.submit-btn { background-image: url("images/buttons/submit.gif"); }
 .template-apply-btn { background-image: url("images/buttons/template_apply.gif"); }
 .template-save-btn { background-image: url("images/buttons/template_save.gif"); }
 .template-save-user-btn { background-image: url("images/buttons/template_save_user.gif"); }
 .upload-btn { background-image: url("images/buttons/upload.gif"); }
 .upload-sheet-btn { background-image: url("images/buttons/upload_sheet.gif"); }
-.view-btn { background-image: url("images/buttons/view.gif"); }
+.view-btn { background-image: url("images/buttons/view.gif"); background-repeat: no-repeat; }
 .void-btn { background-image: url("images/buttons/void.gif"); }
+.shop-btn { background-image: url("images/buttons/vc_shopping_bag.gif"); }
+.star-btn { background-image: url("images/buttons/star.gif"); }
+
+.npiss-button .x-btn-inner { padding-left: 24px !important; }
+.nsiss-button .x-btn-inner { padding-left: 34px !important; }
+.camera-button .x-btn-inner { padding-left: 22px !important; }
+
+.go-button {padding: 0 !important; border: 0 !important; }
+.go-button .x-btn-inner { width: 33px !important; }
+.go-button button { width: 33px !important; }
+
+.usermanager-btn {background-image: url("images/buttons/user_manager.gif"); }
+.propertysetup-btn {background-image: url("images/buttons/property_setup.gif"); }
+
+/* FLAGS (for localization combo) */
+.ux-icon-combo-input, .ux-icon-combo-item {
+	background-repeat  : no-repeat;
+}
+.ux-icon-combo-input {
+	background-position: left 4px center;
+	padding-left       : 23px;
+}
+
+.ux-icon-combo-item {
+	background-position: left center;
+	padding-left       : 20px;
+}
+
+.locale-en { background-image: url("images/flags/en.png"); }
+.locale-fr { background-image: url("images/flags/fr.png"); }
 
 .copy-btn { background-image: url("images/buttons/copy.gif"); }
 .next-btn { background-image: url("images/buttons/next.gif"); }
@@ -59,16 +129,21 @@
 
 /* STYLE FOR USING AN IMAGE AS A BUTTON IN A GRID BY SPECIFYING THIS AS tdCls CONFIG OPTION */
 .image-button-cell .x-grid-cell-inner { padding-bottom: 0; }
-	.image-button-cell .x-grid-cell-inner img { cursor: pointer; }
+.image-button-cell .x-grid-cell-inner img { cursor: pointer; }
 
 /* FORM ITEMS */
 .x-form-item-label, .x-form-item-label-top { font-weight: bold; }
 .x-form-required-field { background: repeat-x scroll 0 0 #DFE8F6; }
+	.x-form-required-field .x-boundlist-item { border-color: #DFE8F6; }
+	.x-form-required-field .x-boundlist-item-over {
+		border-width: 1px; 
+		background: none repeat scroll 0 0 #FFF; 
+		border-color: #98C0F4; 
+	}
 
 /* GRIDS */
 .grid-clickable-col:hover { text-decoration:underline; cursor: pointer; }
 .grid-invalid-cell { background-color: #F2C2C2 !important; }
-
 /* this makes a summary grid cell bold */
 .x-grid-row-summary .x-grid-cell-inner {
     font-weight: bold;
@@ -86,47 +161,30 @@
 
 /* CURSOR STYLE */
 .pointer { cursor: pointer; }
-
-/* BOXSELECT */
-/* We need to override this style and make it !important to get the right size for a BoxSelect component in an editing grid */
-.x-border-box .x-grid-editor .auto-complete .x-form-trigger, .x-border-box .x-grid-row-editor .auto-complete .x-form-trigger {
-    height: 22px !important;
-}
-
-.x-border-box .x-grid-editor .auto-complete .x-boxselect-input-field {
-	height: 16px !important;
-}
-
-/* This is to fix the issue where tabbing from previous field to boxselect will jump over it if no value is selected */
-.x-boxselect-input .x-form-empty-field {
-	display: inline;
-}
-
-.x-boxselect-list.x-boxselect-singleselect.form-focus .x-boxselect-input .x-form-empty-field {
-	display: none;
-}
-
-.x-boxselect-emptyinput {
-	display: inline !important;
-}
+.no-pointer { cursor: auto !important; }
 
 
 /* GENERIC STYLES */
 .error-text { color: #c0272b; font: normal 11px tahoma, arial, verdana, sans-serif; }
+.valid-text { color: #00cc00; font: normal 11px tahoma, arial, verdana, sans-serif; }
+.align-right { text-align: right; }
+.action-button { margin-right: 8px; }
 
 /* IMPORT SECTION */
 .importTemplates a { color: #000; margin-left: 16px; }
 
 /* INVOICE VIEW PAGE */
-.invoiceViewPanel {
+.entityViewPanel {
 	margin: 4px 8px 4px 8px;
 }
 
-	.invoiceViewPanel .x-panel-body {
+	.entityViewPanel .x-panel-body {
 		background-color: white;
 		padding         : 8px;
 		border          : solid 1px #99BCE8;
 	}
+
+#entityVendorSelectBtn, #entityVendorSelectBtn:visited { color:blue; }
 
 #lineItemTable {
 	border-collapse: collapse;
@@ -158,6 +216,8 @@
 
 	#lineItemTable td a {
 		color     : #18659C;
+		cursor: pointer;
+		text-decoration: underline;
 	}
 
 	#lineItemTable tfoot th, #lineItemTable tfoot td {
@@ -179,6 +239,14 @@
 		text-align: right;
 	}
 
+	#lineItemTable .footer_field {
+		width: 70px;
+	}
+		#lineItemTable .footer_field th, #lineItemTable .footer_field td {
+			border-width: 0;
+			padding     : 0;
+		}
+
 #warningTable {
 	border-collapse: collapse;
 }
@@ -191,3 +259,65 @@
 	#warningTable .warning_title {
 		font-weight: bold;	
 	}
+
+/* VENDOR CATALOG SECTION */
+.vccat-div {
+	display: table-cell;
+	float  : left;
+	width  : 50%;
+	padding: 4px;
+}
+
+.vccat-icon {
+	float        : left;
+	position     : relative;
+	padding-right: 10px;
+	height       : 100%;
+}
+
+.vccat-list {
+	color      : #72afd8;
+	font-weight: bold;
+	float      :left;
+	position   : relative;
+}
+
+.vccat-list ul {
+	padding   : 0;
+	margin    : 6px 0 6px 12px;
+	list-style: square;
+}
+
+.vccat-item {
+	color          : black;
+	font-weight    : normal;
+	text-decoration: underline;
+	cursor         : pointer;
+}
+
+.vc-shop-by {
+	text-decoration: underline;
+	float          : left;
+	width          : 50%;
+	cursor         : pointer;
+	margin         : 2px 0 2px 0;
+}
+
+/* Invoice/PO Print Template */
+#entityPrintTable td, #entityPrintLines th, #entityPrintLines td { font-size: 10pt; padding:0; }
+#entityPrintTable td { vertical-align: top; }
+#entityPrintTable #vendorInfo { font-size: 14px; }
+#entityPrintTable #clientShortName { font-size: 20pt; }
+#entityPrintTable #propertyName { font-size: 12pt; }
+#entityPrintTable td.blackLine { height: 1px; background-color: black; }
+#entityPrintTable td.spacer { height:4px; }
+#entityPrintLines {
+	border-collapse: collapse;
+	border-color: black;
+	border-width: 0px 0px 1px 1px;
+	border-style: solid;
+}
+	#entityPrintLines th, #entityPrintLines td { padding: 2px; border-color: black; border-style: solid; }
+	#entityPrintLines th { text-align: left; border-width: 1px 1px 1px 0px; }
+	#entityPrintLines td { border-width: 0px 1px 0px 0px; }
+	#entityPrintLines tfoot td, #entityPrintLines tfoot th { text-align: right; border-width: 1px 1px 1px 0px; }

@@ -141,9 +141,9 @@
         </macrodef>
 
         <concat destfile="${build.dir}/resources/all.css">
-            <filelist dir="${build.dir}/resources" files="app.css,VerticalTabPanel.css"/>
-            <filelist dir="${app.dir}/ext/src/ux/css" files="ItemSelector.css"/>
-            <filelist dir="${app.dir}/vendor/BoxSelect/src" files="BoxSelect.css"/>
+            <filelist dir="${build.dir}/resources" files="app.css,VerticalTabPanel.css,uploader.css"/>
+            <filelist dir="${app.dir}/vendor/jquery-uploadify" files="uploadify.css"/>
+            <filelist dir="${app.dir}/vendor/jquery-uploadifive" files="uploadifive.css"/>
         </concat>
 
         <x-compress-files
@@ -161,7 +161,15 @@
             overwrite="true" />
 
         <delete>
-            <fileset dir="${build.dir}/resources" includes="*.css" excludes="NP-all.css" />
+            <fileset dir="${build.dir}/resources" includes="*.css" excludes="NP-all.css,print.css,login.css" />
+        </delete>
+
+        <delete dir="${build.dir}/.sass-cache" />
+        
+        <delete dir="${build.dir}/migrations" />
+
+        <delete>
+            <fileset dir="${build.dir}" includes="config.rb,generator.php,NP-all.scss,NP-example.scss,test.php,theme-capture.json,theme-capture.png" />
         </delete>
     </target>
 

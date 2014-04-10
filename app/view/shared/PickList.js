@@ -177,7 +177,7 @@ Ext.define('NP.view.shared.PickList', {
         var saveAndAddBtn = this.query('[xtype="shared.button.saveandadd"]')[0];
         if (rec.get(idProperty) === null) {
             title = 'New ' + title;
-            saveAndAddBtn.setText('Save and Add Another');
+            saveAndAddBtn.setText('Save and Create New');
         } else {
             title = 'Edit ' + title;
             saveAndAddBtn.setText('Save and Edit Next');

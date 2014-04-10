@@ -12,14 +12,15 @@ use NP\system\ConfigService;
 class PropertyService extends AbstractService {
 	
 	protected $securityService, $invoiceService, $poService, $configService,
-			$fiscalCalService;
+			$fiscalCalService, $unitTypeMeasGateway;
 	
 	public function __construct(SecurityService $securityService, InvoiceService $invoiceService,
-								PoService $poService, FiscalCalService $fiscalCalService) {
+								PoService $poService, FiscalCalService $fiscalCalService, UnitTypeMeasGateway $unitTypeMeasGateway) {
 		$this->securityService            = $securityService;
 		$this->invoiceService             = $invoiceService;
 		$this->poService                  = $poService;
 		$this->fiscalCalService           = $fiscalCalService;
+		$this->unitTypeMeasGateway			= $unitTypeMeasGateway;
 	}
 
 	/**
@@ -118,55 +119,8 @@ class PropertyService extends AbstractService {
 	 * @param  string $sort            Field(s) by which to sort the result; defaults to property_name
 	 * @return array                   Array of property records
 	 */
-	public function getByStatus($property_status, $pageSize=null, $page=null, $sort="property_name") {
-		$joins = array(
-			new sql\join\PropertyIntPkgJoin(),
-			new sql\join\PropertyRegionJoin(),
-			new sql\join\PropertyCreatedByUserJoin(),
-			new sql\join\FiscalDisplayTypeJoin(),
-			new sql\join\PropertyPropertyShipToJoin(),
-			new sql\join\PropertyPropertyBillToJoin(),
-			new sql\join\PropertyAddressJoin(),
-			new sql\join\PropertyPhoneJoin(['phone_id', 'phone_number']),
-			new sql\join\PropertyFaxJoin(),
-			new \NP\user\sql\join\UserUserroleJoin(array(
-				'created_by_userprofilerole_id' =>'userprofilerole_id',
-				'created_by_tablekey_id'        =>'tablekey_id'
-			)),
-			new \NP\user\sql\join\UserroleStaffJoin(array(
-				'created_by_staff_id'  =>'staff_id',
-				'created_by_person_id' =>'person_id'
-			)),
-			new \NP\user\sql\join\StaffPersonJoin(array(
-				'created_by_person_firstname' =>'person_firstname',
-				'created_by_person_lastname'  =>'person_lastname'
-			)),
-			new sql\join\PropertyUpdatedByUserJoin(),
-			new \NP\user\sql\join\UserUserroleJoin(array(
-				'updated_by_userprofilerole_id' =>'userprofilerole_id',
-				'updated_by_tablekey_id'        =>'tablekey_id'
-			), 'ur2', 'u2'),
-			new \NP\user\sql\join\UserroleStaffJoin(array(
-				'updated_by_staff_id'  =>'staff_id',
-				'updated_by_person_id' =>'person_id'
-			), 's2', 'ur2'),
-			new \NP\user\sql\join\StaffPersonJoin(array(
-				'updated_by_person_firstname' =>'person_firstname',
-				'updated_by_person_lastname'  =>'person_lastname'
-			), 'pe2', 's2')
-		);
-
-        $pageSize = !$pageSize ? null : $pageSize;
-
-		return $this->propertyGateway->find(
-			new sql\criteria\PropertyStatusCriteria(),	// filter
-			array($property_status),			// params
-			$sort,								// order by
-			null,								// columns
-			$pageSize,
-			$page,
-			$joins
-		);
+	public function getByStatus($property_status=null, $pageSize=null, $page=null, $sort="property_name") {
+		return $this->propertyGateway->findByStatus($property_status, $pageSize, $page, $sort);
 	}
 
 	/**
@@ -221,14 +175,8 @@ class PropertyService extends AbstractService {
 	 * @param  string $unit_status The status of units to retrieve
 	 * @return array            Array of unit records
 	 */
-	public function getUnits($property_id, $unit_status=null) {
-		$fields = array('u.property_id'=>'?');
-		$vals = array($property_id);
-		if ($unit_status !== null) {
-			$fields['unit_status'] = '?';
-			$vals[] = $unit_status;
-		}
-		return $this->unitGateway->find($fields, $vals, "unit_number");
+	public function getUnits($property_id, $unit_status=null, $keyword=null) {
+		return $this->unitGateway->findByStatus($property_id, $unit_status, $keyword);
 	}
 	
 	/**
@@ -570,6 +518,9 @@ class PropertyService extends AbstractService {
 					// Update the billto/shipto property IDs to be the ones for this property and re-save the record
 					$property->default_billto_property_id = $property->property_id;
 					$property->default_shipto_property_id = $property->property_id;
+
+					$property->UserProfile_ID             = $data['userprofile_id'];
+					
 					$this->propertyGateway->save($property);
 
 					// Save the creator of the property
@@ -1254,6 +1205,14 @@ class PropertyService extends AbstractService {
             'success' => (count($errors)) ? false : true,
             'error'  => $error
         );
+	}
+
+	public function getUnitTypeMeasByPropertyId($property_id) {
+		return $this->unitTypeMeasGateway->findMeasByPropertyId($property_id);
+	}
+
+	public function getAllByAdmin($isAdminRole = null, $hasPermission = false) {
+		return $this->propertyGateway->getByAdminRole($isAdminRole, $hasPermission, $this->configService->getClientID());
 	}
 }
 

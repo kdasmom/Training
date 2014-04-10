@@ -8,6 +8,7 @@ Ext.define('NP.controller.Viewport', {
 	extend: 'NP.lib.core.AbstractController',
 	
 	requires: [
+		'NP.lib.core.Translator',
 		'NP.lib.core.Security',
 		'NP.lib.core.Config',
 		'NP.lib.core.SummaryStatManager'
@@ -15,6 +16,7 @@ Ext.define('NP.controller.Viewport', {
 
 	uses: [
 		'NP.view.shared.tile.ExpiredInsuranceCerts',
+		'NP.view.shared.tile.GlCategoryMtdSpend',
 		'NP.view.shared.tile.ImageExceptions',
 		'NP.view.shared.tile.ImagesToConvert',
 		'NP.view.shared.tile.ImagesToIndex',
@@ -24,6 +26,7 @@ Ext.define('NP.controller.Viewport', {
 		'NP.view.shared.tile.InvoicesOnHold',
 		'NP.view.shared.tile.InvoicesRejected',
 		'NP.view.shared.tile.InvoicesToApprove',
+		'NP.view.shared.tile.InvoiceStatistics',
 		'NP.view.shared.tile.MtdOverBudgetCategories',
 		'NP.view.shared.tile.PosByUser',
 		'NP.view.shared.tile.PosRejected',
@@ -34,10 +37,9 @@ Ext.define('NP.controller.Viewport', {
 		'NP.view.shared.tile.ReceiptsToApprove',
 		'NP.view.shared.tile.VcAuthRequests',
 		'NP.view.shared.tile.VendorsToApprove',
-		'NP.view.shared.tile.YtdOverBudgetCategories'
+		'NP.view.shared.tile.YtdOverBudgetCategories',
+		'NP.view.shared.tile.YtdTopSpendByVendor'
 	],
-
-    stores: ['system.SummaryStatCategories'],
 
     views: ['viewport.Home','shared.PortalCanvas'],
 	
@@ -70,6 +72,13 @@ Ext.define('NP.controller.Viewport', {
 				}
 			},
 
+			'#NP_locale': {
+				select: function(combo, recs) {
+					NP.Translator.setLocale(combo.getValue());
+					window.location.reload();
+				}
+			},
+
 			// Clicking on Invoices, Invoice Register, or any of the subitems under Invoice Register
 			'#invMenuBtn,#invRegisterMenuBtn,#invRegisterMenuBtn menuitem': {
 				click: function(itemClicked) {
@@ -78,6 +87,32 @@ Ext.define('NP.controller.Viewport', {
 						token += ':' + itemClicked.itemId.replace('InvRegisterMenuBtn', '');
 					} else {
 						token += ':open';
+					}
+					this.addHistory(token);
+				}
+			},
+
+			// Clicking on Purchase Orders, PO Register, or any of the subitems under PO Register
+			'#poMenuBtn,#poRegisterMenuBtn,#poRegisterMenuBtn menuitem': {
+				click: function(itemClicked) {
+					var token = 'Po:showRegister';
+					if (itemClicked.itemId != 'poMenuBtn' && itemClicked.itemId != 'poRegisterMenuBtn') {
+						token += ':' + itemClicked.itemId.replace('PoRegisterMenuBtn', '');
+					} else {
+						token += ':open';
+					}
+					this.addHistory(token);
+				}
+			},
+
+			// Clicking on the Administration > Image Management menu or sub menu
+			'#imageMenuBtn,#imageMenuBtn menuitem': {
+				click: function(itemClicked) {
+					var token = 'Images:showMain';
+					if (itemClicked.itemId != 'imageMenuBtn') {
+						token += ':' + itemClicked.itemId.replace('ImageMenuBtn', '');
+					} else {
+						token += ':index';
 					}
 					this.addHistory(token);
 				}
@@ -182,6 +217,13 @@ Ext.define('NP.controller.Viewport', {
 				}
 			},
 
+			// Clicking on the Reports > Invoice Register Reports menu
+			'#invoiceReportMenuBtn': {
+				click: function() {
+					this.addHistory('Report:show:invoice');
+				}
+			},
+
 			// Runs after Home panel has been rendered
 			'[xtype="viewport.home"]': {
 				afterrender: function() {
@@ -216,6 +258,30 @@ Ext.define('NP.controller.Viewport', {
 						openInvoice(rec.get('invoice_id'));
 					}
                 }
+			},
+
+			'#vcMenuBtn,#vendorCatalogListing' : {
+				click: function() {
+					this.addHistory('VendorCatalog:showVendorCatalogListing');
+				}
+			},
+
+			'#vcOrders': {
+				click: function() {
+					this.addHistory('VendorCatalog:showOpenOrders');
+				}
+			},
+
+			'#vcFavorites': {
+				click: function() {
+					this.addHistory('VendorCatalog:showFavorites');
+				}
+			},
+
+			'#integrationMenuBtn': {
+				click: function() {
+					this.addHistory('Integration:showIntegration');
+				}
 			}
 		});
 	},

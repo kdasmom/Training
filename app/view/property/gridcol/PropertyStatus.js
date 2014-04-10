@@ -12,7 +12,7 @@ Ext.define('NP.view.property.gridcol.PropertyStatus', {
 
 	renderer : function(val, meta, rec) {
 		if (val == 1) {
-			return NP.Translator.translate('Current');
+			return NP.Translator.translate('Active');
 		}
 		if (val == 0) {
 			return NP.Translator.translate('Inactive');

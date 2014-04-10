@@ -50,6 +50,38 @@ class VendorGateway extends AbstractGateway {
 	}
 	
 	/**
+	 * 
+	 */
+	public function findAll($vendor_status='active', $integration_package_id=null, $keyword=null, $pageSize=null, $page=1, $sort='vendor_name') {
+		$select = $this->getSelect()
+						->columns(['vendor_id','vendor_name'])
+						->whereEquals('v.vendor_status', '?')
+						->order($sort);
+
+		$params = [$vendor_status];
+
+		if (!empty($integration_package_id)) {
+			$select->whereEquals('v.integration_package_id', '?');
+			$params[] = $integration_package_id;
+		}
+
+		if (!empty($keyword)) {
+			$select->whereNest('OR')
+				->whereLike('v.vendor_name', '?')
+				->whereLike('v.vendor_id_alt', '?');
+			$params[] = $keyword . '%';
+			$params[] = $keyword . '%';
+		}
+
+		// If paging is needed
+		if ($pageSize !== null) {
+			return $this->getPagingArray($select, $params, $pageSize, $page, 'v.vendor_id');
+		} else {
+			return $this->adapter->query($select, $params);
+		}
+	}
+
+	/**
 	 * Retrieves a vendor record looking it up by vendorsite ID
 	 *
 	 * @param  int $vendorsite_id
@@ -61,20 +93,47 @@ class VendorGateway extends AbstractGateway {
 		return $res[0];
 	}
 
+	public function findVendorsite($vendor_id) {
+		return $this->findValue(
+			['v.vendor_id' => '?'],
+			[$vendor_id],
+			['vendorsite_id' => new \NP\core\db\Expression('vs.vendorsite_id')]
+		);
+	}
+
 	/**
 	 * Get vendors that will show up as available options for an invoice
 	 */
-	public function findVendorsForInvoice($property_id, $vendor_id=null, $keyword=null) {
+	public function findVendorsForInvoice($property_id, $vendor_id=null, $useFavorites=true, $keyword=null, $criteria='begins', $pageSize=null, $page=null, $sort="vendor_name") {
 		$now = \NP\util\Util::formatDateForDB();
 
 		$select = $this->getSelect()
-						->columns(['vendor_id','vendor_id_alt','vendor_name'])
+						->columns(['vendor_id','vendor_id_alt','vendor_name','remit_req','default_glaccount_id','default_due_date'])
+						->column(
+							Select::get()->column(new Expression('CASE WHEN count(*) > 0 THEN 1 ELSE 0 END'))
+										->from(['ut'=>'utility'])
+											->join(new sql\join\UtilityVendorsiteJoin([]))
+											->join(new sql\join\UtilityUtilityAccountJoin())
+										->whereEquals('vs.vendor_id', 'v.vendor_id')
+										->whereEquals('ua.utilityaccount_active', 1),
+							'is_utility_vendor'
+						)
 						->join(new sql\join\VendorsiteAddressJoin())
-						->join(new sql\join\VendorsitePhoneJoin());
+						->join(new sql\join\VendorsitePhoneJoin('Main'))
+						->join(new sql\join\VendorGlAccountJoin())
+						->join(new sql\join\VendorVendorTypeJoin());
+
+		$params = [];
+		if ($useFavorites) {
+			$select->join(new sql\join\VendorsiteVendorFavoriteJoin())
+					->whereEquals('vf.property_id', '?');
+
+			$params[] = $property_id;
+		}
 
 		if ($vendor_id !== null && $keyword === null) {
 			$select->whereEquals('v.vendor_id', '?');
-			$params = [$vendor_id];
+			$params[] = $vendor_id;
 		} else {
 			$select->whereEquals('v.vendor_status', "'active'")
 					->whereNotIn(
@@ -93,13 +152,17 @@ class VendorGateway extends AbstractGateway {
 									->whereEquals('ins.tablekey_id', 'v.vendor_id')
 									->whereEquals('lip.property_id', '?')
 					)
-					->order('v.vendor_name')
-					->limit(200);
+					->order($sort);
 
-			$params = [$property_id];
+			$params[] = $property_id;
 
 			if ($keyword !== null) {
-				$keyword = "%{$keyword}%";
+				$keyword = "{$keyword}%";
+
+				if ($criteria == 'contains') {
+					$keyword = "%{$keyword}";
+				}
+
 				$select->whereNest('OR')
 							->whereLike('v.vendor_name', '?')
 							->whereLike('v.vendor_id_alt', '?')
@@ -109,7 +172,12 @@ class VendorGateway extends AbstractGateway {
 			}
 		}
 
-		return $this->adapter->query($select, $params);
+		// If paging is needed
+		if ($pageSize !== null) {
+			return $this->getPagingArray($select, $params, $pageSize, $page, 'v.vendor_id');
+		} else {
+			return $this->adapter->query($select, $params);
+		}
 	}
 	
 	/**
@@ -134,8 +202,7 @@ class VendorGateway extends AbstractGateway {
 		$select = new sql\VendorSelect();
 
 		if ($countOnly == 'true') {
-			$select->count(true, 'totalRecs')
-					->column('vendor_id');
+			$select->count(true, 'totalRecs', 'v.vendor_id');
 		} else {
 			if ( substr($sort, 0, 7) == 'vendor_' ) {
 				$sort = "v.{$sort}";
@@ -159,7 +226,7 @@ class VendorGateway extends AbstractGateway {
 
 		// If paging is needed
 		if ($pageSize !== null && $countOnly == 'false') {
-			return $this->getPagingArray($select, array(), $pageSize, $page, 'vendor_id');
+			return $this->getPagingArray($select, array(), $pageSize, $page, 'v.vendor_id');
 		} else if ($countOnly == 'true') {
 			$res = $this->adapter->query($select);
 			return $res[0]['totalRecs'];
@@ -175,10 +242,9 @@ class VendorGateway extends AbstractGateway {
 	 * @param null $page
 	 * @param string $status
 	 * @param string $order
-	 * @param $aspClientId
 	 * @return array|bool
 	 */
-	public function findByStatus($pageSize = null, $page = null, $status = 'forapproval', $order = 'PersonName',  $aspClientId) {
+	public function findByStatus($pageSize = null, $page = null, $status = 'forapproval', $order = 'PersonName', $keyword=null) {
 		$selectvendor = new sql\VendorSelect();
 
 
@@ -187,23 +253,56 @@ class VendorGateway extends AbstractGateway {
 		}
 
 		$status = strtolower($status);
-		$params = [$status, $aspClientId];
-		$selectvendor->columns(['vendor_id', 'vendor_name', 'vendor_status'])
+		$params = [];
+		$selectvendor->columns(['vendor_id', 'vendor_id_alt', 'vendor_name', 'vendor_status'])
 		  			->columnsPersonName()
 					->columnSentForApprovalDate()
 					->columnApprovalType()
+					->join(new sql\join\VendorVendorsiteJoin([]))
 					->join(['i' => 'integrationpackage'], 'v.integration_package_id = i.integration_package_id', ['integration_package_name'])
-					->where(['v.vendor_status' => '?', 'i.asp_client_id' => '?'])
-					->order($order)
-					->limit($pageSize)
-					->offset($pageSize * ($page - 1));
+					->order($order);
+
+		if ($pageSize !== null) {
+			$selectvendor->limit($pageSize);
+			if ($page !== null) {
+				$selectvendor->offset($pageSize * ($page - 1));
+			}
+		}
+
+		if ($keyword !== null) {
+			$keyword .= '%';
+			$selectvendor->whereNest('OR')
+							->whereLike('v.vendor_name', '?')
+							->whereLike('v.vendor_id_alt', '?')
+						->whereUnnest();
+
+			array_push($params, $keyword, $keyword);
+		}
+
+		if ($status !== null) {
+			if (!is_array($status)) {
+				$status = explode(',', $status);
+			}
+
+			$selectvendor->whereNest('OR');
+			foreach ($status as $val) {
+				$selectvendor->whereNest('AND')
+								->whereEquals('v.vendor_status', '?')
+								->whereEquals('vs.vendorsite_status', '?')
+							->whereUnnest();
+
+				array_push($params, $val, $val);
+			}
+			$selectvendor->whereUnnest();
+		}
+
 		if ($status == 'rejected') {
 			$selectvendor->join(new sql\join\VendorRejectedJoin())
 									->whereGreaterThan('v.vendor_reject_dt', '?');
 			$date = date('Y-m-d', strtotime('-30 day'));
 			$params[] = Util::formatDateForDB(new \DateTime($date));
 		}
-
+		
 		return $this->adapter->query($selectvendor, $params);
 	}
 
@@ -222,6 +321,32 @@ class VendorGateway extends AbstractGateway {
 
 		return $this->adapter->query($select, [$intergration_package_id]);
 	}
+
+	public function findTopVendors($numberOfVendors=5) {
+		$date = new \DateTime();
+		$date->add(\DateInterval::createFromDateString('-1 year'));
+		$date = Util::formatDateForDB($date);
+
+		$select = Select::get()
+    		->columns([
+    			'vendor_id',
+    			'vendor_id_alt',
+    			'vendor_name',
+    			'total_amount' => new Expression('SUM(ii.invoiceitem_amount + ii.invoiceitem_shipping + ii.invoiceitem_salestax)')
+    		])
+    		->from(['v'=>'vendor'])
+    			->join(new sql\join\VendorVendorsiteJoin([]))
+    			->join(new sql\join\VendorsiteInvoiceJoin())
+    			->join(new \NP\invoice\sql\join\InvoiceInvoiceItemJoin())
+    		->whereEquals('v.vendor_status', "'active'")
+    		->whereEquals('vs.vendorsite_status', "'active'")
+    		->whereGreaterThan('i.invoice_datetm', '?')
+    		->group('v.vendor_id, v.vendor_id_alt, v.vendor_name')
+    		->order('total_amount DESC')
+    		->limit($numberOfVendors);
+
+    	return $this->adapter->query($select, [$date]);
+    }
 
 	/**
 	 * Validate vendor
@@ -578,7 +703,7 @@ class VendorGateway extends AbstractGateway {
 		if ($category == 'top20') {
 
 		}
-		return $this->getPagingArray($select, [AddressGateway::ADDRESS_TYPE_MAILING, $keyword . '%', $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%'] , $pageSize, $page, 'vendor_id');
+		return $this->getPagingArray($select, [AddressGateway::ADDRESS_TYPE_MAILING, $keyword . '%', $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%'] , $pageSize, $page, 'v.vendor_id');
 	}
 
 	public function findByKeywordWithTaskType($allowExpInsurance) {
@@ -1022,6 +1147,28 @@ class VendorGateway extends AbstractGateway {
 
 		return $result[0]['vendortype_code'];
 	}
+
+    public function getVendors() {
+        $select = $this->getSelect();
+        $select
+            ->columns([
+                'vendor_id',
+                'vendor_name',
+                'vendor_id_alt',
+                'vendor_status'
+            ])
+            ->where(
+                Where::get()
+                    ->nest('OR')
+                        ->equals('v.vendor_status', '\'active\'')
+                        ->equals('v.vendor_status', '\'inactive\'')
+                    ->unnest()
+            )
+            ->order('v.vendor_name')
+        ;
+
+        return $this->adapter->query($select);
+    }
 }
 
 ?>

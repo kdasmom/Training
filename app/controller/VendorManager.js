@@ -2,8 +2,6 @@
  * @author Baranov A.V.
  * @date 10/2/13
  */
-
-
 Ext.define('NP.controller.VendorManager', {
     extend: 'NP.lib.core.AbstractController',
 
@@ -24,6 +22,10 @@ Ext.define('NP.controller.VendorManager', {
     views: ['vendor.VendorsManager','vendor.VendorForm','vendor.VendorImageUploadForm',
     		'vendor.InsuranceUploadForm','vendor.VendorRejectWindow','vendor.VendorSearch',
     		'vendor.AddImagesWindow'],
+
+    refs: [
+    	{ ref: 'vendorForm', selector: '[xtype="vendor.vendorform"]' }
+    ],
 
 	//	custom
 	vendor_status		: false,
@@ -115,6 +117,10 @@ Ext.define('NP.controller.VendorManager', {
 				click: function() {
 					this.rejectVendor();
 				}
+			},
+
+			'[xtype="vendor.vendorgeneralinfoandsettings"] [name="default_glaccount_id"]': {
+				select: this.onSelectDefaultGl
 			}
 		});
 
@@ -166,7 +172,7 @@ Ext.define('NP.controller.VendorManager', {
 
 		var insurancesForm = that.getCmp('vendor.vendorinsurancesetup');
 		if (insurancesForm) {
-			insurancesForm.down('fieldcontainer').removeAll();
+			insurancesForm.down('container').removeAll();
 		}
 
 		var viewCfg = {
@@ -202,6 +208,11 @@ Ext.define('NP.controller.VendorManager', {
 			Ext.apply(viewCfg, {
 				listeners: {
 					dataloaded: function(formPanel, data) {
+						// Save to recent records
+						that.application.getController('Favorites').saveToRecentRecord(
+							'Vendor - ' + data['vendor_name'] + ' (' + data['vendor_id_alt'] + ')'
+						);
+
 						that.vendor_status = data['vendor_status'];
 
 						customFieldData = data['custom_fields'];
@@ -266,7 +277,7 @@ Ext.define('NP.controller.VendorManager', {
 	 */
 	setVendorView: function(config, vendor_id, search) {
 		var that = this;
-		var form = this.setView('NP.view.vendor.VendorForm', config);
+		var form = this.setView('NP.view.vendor.VendorForm', config, null, true);
 		if (!vendor_id) {
 			form.getForm().reset();
 			form.resetModels();
@@ -283,7 +294,22 @@ Ext.define('NP.controller.VendorManager', {
 		return form;
 	},
 
+	/**
+	 * When selecting a default GL, we need to make sure it's part of the GL assignments
+	 */
+	onSelectDefaultGl: function(combo, recs) {
+		var me      = this;
 
+		if (recs.length) {
+			var glaccount_id = recs[0].get('glaccount_id'),
+				glField      = me.getVendorForm().findField('glaccounts'),
+				toStore      = glField.getToStore();
+
+			if (toStore.indexOfId(glaccount_id) == -1) {
+				glField.addValues(glaccount_id);
+			}
+		}
+	},
 
     /**
      * save vendor

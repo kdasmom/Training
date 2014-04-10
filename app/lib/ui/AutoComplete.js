@@ -4,7 +4,7 @@
  * @author Thomas Messier
  */
 Ext.define('NP.lib.ui.AutoComplete', {
-	extend : 'Ext.ux.form.field.BoxSelect',
+	extend : 'Ext.form.field.ComboBox',
 	alias : 'widget.autocomplete',
 	
 	forceSelection: true,
@@ -12,6 +12,7 @@ Ext.define('NP.lib.ui.AutoComplete', {
 	queryParam    : 'keyword',
 	typeAhead     : false,
 	triggerAction : 'query',
+	triggerCls    : 'x-form-search-trigger',
     multiSelect   : false,
     minChars      : 0,
     cls           : 'auto-complete',
@@ -24,6 +25,27 @@ Ext.define('NP.lib.ui.AutoComplete', {
 	initComponent: function() {
 		this.callParent(arguments);
 
+		// We set a keyup event to allow us to clear the field when the value is blank and we hit escape,
+		// even if forceSelection is true
+		this.on('specialkey', function(combo, e) {
+			if (
+				e.getKey() === Ext.EventObject.ESC
+				|| e.getKey() === Ext.EventObject.ENTER
+				|| e.getKey() === Ext.EventObject.TAB
+			) {
+				var val = combo.getRawValue();
+				
+				if ((val === '' || val === null) && combo.getFocusValue() !== null) {
+					combo.clearValue();
+				}
+			}
+		});
+
+		// 
+		this.on('focus', function(combo) {
+			combo.setFocusValue(combo.getValue());
+		});
+		
 		// If dependent combos are specified, add a select event to update them when the value of their parent combo is changed
 		if (this.dependentCombos.length) {
 			this.on('select', function(combo, recs) {
@@ -41,6 +63,14 @@ Ext.define('NP.lib.ui.AutoComplete', {
 				}
 			});
 		}
+	},
+
+	getFocusValue: function() {
+		return this.focusValue;
+	},
+
+	setFocusValue: function(value) {
+		this.focusValue = value;
 	},
 
 	/* Override this function to fire the select event even when clearing the field */

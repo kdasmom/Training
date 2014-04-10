@@ -114,6 +114,18 @@ Ext.define('NP.Locale', {
 	'Utility Setup'              : 'Utility Setup',
 	'Mobile Setup'               : 'Mobile Setup',
 
+	// Favorites button
+	'Add to Favorites': 'Add to Favorites',
+
+	/**
+	 * FAVORITES
+	 */
+	'Page title'							: 'Page title',
+	'Favorites'								: 'Favorites',
+	'Recent Records'						: 'Recent Records',
+	'Recent Reports'						: 'Recent Reports',
+	'This page already exists in Favorites'	: 'This page already exists in Favorites',
+
 	/**
 	 * DELEGATION PICKER
 	 */

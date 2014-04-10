@@ -1,10 +1,13 @@
+/**
+ * Next button
+ */
 Ext.define('NP.view.shared.button.Next', {
     extend: 'Ext.button.Button',
     alias: 'widget.shared.button.next',
 
     requires: ['NP.lib.core.Translator'],
 
-    text: 'Next Step',
+    text: 'Next',
     iconCls: 'next-btn',
 
     initComponent: function() {

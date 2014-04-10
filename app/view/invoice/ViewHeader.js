@@ -14,7 +14,11 @@ Ext.define('NP.view.invoice.ViewHeader', {
     	'NP.store.system.PriorityFlags',
     	'NP.store.invoice.InvoicePaymentTypes',
     	'Ext.layout.container.Form',
-    	'Ext.form.field.Date'
+    	'Ext.form.field.Date',
+    	'NP.view.invoice.numberPattern.Pattern',
+    	'NP.view.invoice.numberPattern.Pattern2',
+    	'NP.view.invoice.numberPattern.Pattern3',
+    	'NP.view.invoice.numberPattern.Pattern4'
     ],
 
     layout: {
@@ -23,7 +27,7 @@ Ext.define('NP.view.invoice.ViewHeader', {
     },
 
     initComponent: function() {
-    	var me        = this;
+    	var me = this;
 
     	me.title = NP.Translator.translate('Header');
 
@@ -38,12 +42,12 @@ Ext.define('NP.view.invoice.ViewHeader', {
 				xtype   : 'container',
 				flex    : 1,
 				margin  : '0 16 0 0',
-				defaults: { labelWidth: 130 },
+				defaults: { labelWidth: 130, validateOnBlur: false, validateOnChange: false },
 				items   : me.buildCol2Items()
     		},{
 				xtype   : 'container',
 				flex    : 1,
-				defaults: { labelWidth: 130 },
+				defaults: { labelWidth: 130, validateOnBlur: false, validateOnChange: false },
 				items   : me.buildCol3Items()
     		}
     	];
@@ -57,7 +61,6 @@ Ext.define('NP.view.invoice.ViewHeader', {
 				{
 					xtype     : 'displayfield',
 					fieldLabel: this.createdOnLbl,
-					name      : 'invoice_createddatetm',
 					renderer  : function() {
 						var invoice = me.up('boundform').getModel('invoice.Invoice');
 						return Ext.Date.format(invoice.get('invoice_createddatetm'), NP.Config.getDefaultDateFormat());
@@ -116,13 +119,24 @@ Ext.define('NP.view.invoice.ViewHeader', {
     },
 
     buildCol3Items: function() {
-    	var me    = this,
-    		items = [
+    	var me      = this,
+    		pattern = NP.Config.getSetting('PN.InvoiceOptions.OverRidealphaNumericFilter', 'pattern'),
+    		items,
+    		maskRe,
+    		stripRe;
+    	
+		pattern = Ext.util.Format.capitalize(pattern);
+		pattern = Ext.create('NP.view.invoice.numberPattern.' + pattern);
+		stripRe = new RegExp(pattern.getPattern().replace('[', '[^'), pattern.getModifiers());
+
+    	items = [
 			{
-				xtype     : 'textfield',
-				fieldLabel: this.invoiceNumLbl,
-				name      : 'invoice_ref',
-				allowBlank: false
+				xtype       : 'textfield',
+				fieldLabel  : this.invoiceNumLbl,
+				name        : 'invoice_ref',
+				allowBlank  : false,
+				stripCharsRe: stripRe,
+				maxLength   : 100
 			},{
 				xtype           : 'numberfield',
 				fieldLabel      : this.invoiceTotalLbl,
@@ -138,7 +152,7 @@ Ext.define('NP.view.invoice.ViewHeader', {
 				xtype     : 'datefield',
 				fieldLabel: this.invoiceDueDateLbl,
 				name      : 'invoice_duedate',
-				allowBlank      : (NP.Config.getSetting('PN.InvoiceOptions.DueOnRequired', '0') == '1') ? false : true
+				allowBlank: (NP.Config.getSetting('PN.InvoiceOptions.DueOnRequired', '0') == '1') ? false : true
 			},{
 				xtype       : 'customcombo',
 				fieldLabel  : this.invoicePeriodLbl,
@@ -183,12 +197,14 @@ Ext.define('NP.view.invoice.ViewHeader', {
 				xtype     : 'datefield',
 				fieldLabel: this.cycleFromLbl,
 				name      : 'invoice_cycle_from',
-				hidden    : true
+				hidden    : true,
+				allowBlank: false
 			},{
 				xtype     : 'datefield',
 				fieldLabel: this.cycleToLbl,
 				name      : 'invoice_cycle_to',
-				hidden    : true
+				hidden    : true,
+				allowBlank: false
 			}
 		);
 
