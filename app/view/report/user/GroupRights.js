@@ -1,15 +1,15 @@
 /**
- * Created by Andrey Baranov on 10.04.2014.
+ * Created by Andrey Baranov on 11.04.2014.
  */
-Ext.define('NP.view.report.user.Summary', {
+Ext.define('NP.view.report.user.GroupRights', {
     extend: 'NP.view.report.user.AbstractUserReport',
 
     setupForm: function() {
         var me = this;
 
-        me.getForm().findField('exclude_empty').hide();
+        me.getForm().findField('exclude_empty').show();
         me.getForm().findField('group_id').show();
-        me.getForm().findField('user_status').show();
+        me.getForm().findField('user_status').hide();
         me.getForm().findField('compared_groups').hide();
         Ext.ComponentQuery.query('#property_picker_group')[0].show();
 

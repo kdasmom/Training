@@ -13,7 +13,8 @@ Ext.define('NP.view.report.user.Form', {
         'NP.view.report.ReportFormatField',
         'NP.store.report.UserReports',
         'NP.view.shared.ContextPickerMulti',
-        'NP.view.shared.ReportTypeCombo'
+        'NP.view.shared.ReportTypeCombo',
+        'NP.view.shared.UserGroupAssigner'
     ],
 
     initComponent: function() {
@@ -85,9 +86,25 @@ Ext.define('NP.view.report.user.Form', {
                     '</tpl>'
             },
             {
-                xtype     : 'fieldcontainer',
-                fieldLabel: NP.Config.getPropertyLabel(),
-                items     : [{ xtype: 'shared.contextpickermulti', itemId: 'property_picker' }]
+                xtype: 'shared.usergroupassigner',
+                store: 'user.RoleTree',
+                width: 500,
+                itemId: 'compared_groups',
+                name: 'compared_groups',
+                afterSubTpl : NP.Translator.translate('Note: Only six groups can be compared at a time')
+            },
+            {
+                xtype: 'checkbox',
+                itemId: 'exclude_empty',
+                name: 'exclude_empty',
+                fieldLabel: NP.Translator.translate('Exclude User Groups that do not have users assigned to them')
+            },
+            {
+                xtype       : 'fieldcontainer',
+                name        : 'property_picker_group',
+                itemId      : 'property_picker_group',
+                fieldLabel  : NP.Config.getPropertyLabel(),
+                items       : [{ xtype: 'shared.contextpickermulti', itemId: 'property_picker' }]
             }
         ];
         me.callParent(arguments);
