@@ -104,9 +104,7 @@ class UserprofileSelect extends Select {
 	 */
 	public function joinEmail($cols=array(), $toAlias = 'e', $fromAlias = 's', $type = Select::JOIN_INNER, $tablename = 'staff') {
 		if ($tablename) {
-			return $this->join(array($toAlias => 'email'),
-				"{$fromAlias}.staff_id = {$toAlias}.tablekey_id AND {$toAlias}.table_name = {$tablename}",
-				$cols, $type);
+			return $this->join(array($toAlias => 'email'), "{$fromAlias}.staff_id = {$toAlias}.tablekey_id AND {$toAlias}.table_name = '" . $tablename . "'", $cols, $type);
 		} else {
 			return $this->join(array($toAlias => 'email'), "{$fromAlias}.staff_id = {$toAlias}.tablekey_id", $cols, $type);
 		}
