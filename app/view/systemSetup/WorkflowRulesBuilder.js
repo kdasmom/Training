@@ -112,8 +112,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 						displayField: 'wfruletype_name',
 						value: ruletype,
 						listeners: {
-							change: function(field, value) {
-								me.addRuleTypeFields(value);
+							select: function(field, recs) {
+								me.addRuleTypeFields(field.getValue());
 
 								var ruleTypeOperand = (me.data) ? me.data.rule.wfrule_operand : '';
 								me.addSectionLogicOption(ruleTypeOperand);
@@ -304,6 +304,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 	addRuleTypeFields: function(ruletype) {
 		var ruleTypeOptions = this.down('[name="ruleform"]').down('[name="ruletype_options"]');
 
+		Ext.suspendLayouts();
+
 		ruleTypeOptions.removeAll();
 
 		var options = this.addRuleTypeOptions(ruletype);
@@ -315,6 +317,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 		if (logicSection) {
 			ruleTypeOptions.add(logicSection);
 		}
+
+		Ext.resumeLayouts(true);
 	},
 
 	getPropertiesSection: function() {
@@ -647,8 +651,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 						fields: ['comparison', 'comparison-title']
 					}),
 					listeners: {
-						change: function(field, value) {
-							me.addSectionLogicOption(value);
+						select: function(field, recs) {
+							me.addSectionLogicOption(field.getValue());
 						}
 					}
 				},
@@ -723,8 +727,15 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 		}
 
 		if (sectionLogicContainer) {
-			sectionLogicContainer.removeAll();
-			sectionLogicContainer.add(sectionLogicOption);
+			var currentLogicOption = sectionLogicContainer.down();
+			if (!currentLogicOption || currentLogicOption.getXType() !== sectionLogicOption.xtype) {
+				Ext.suspendLayouts();
+
+				sectionLogicContainer.removeAll();
+				sectionLogicContainer.add(sectionLogicOption);
+
+				Ext.resumeLayouts(true);
+			}
 		}
 	}
 });

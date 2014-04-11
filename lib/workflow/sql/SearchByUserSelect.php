@@ -5,7 +5,7 @@ use NP\core\db\Select;
 use NP\core\db\Where;
 
 class SearchByUserSelect extends Select {
-	public function __construct($asp_client_id, $users = [], $order = 'WF.wfrule_name') {
+	public function __construct($users = [], $order = 'WF.wfrule_name') {
 		parent::__construct();
 
 		$this->distinct()
@@ -33,7 +33,6 @@ class SearchByUserSelect extends Select {
 		}
 
 		$where->equals('WA.wfaction_originator_tablename', "'userprofilerole'")
-			  ->equals('WF.asp_client_id', $asp_client_id)
 			  ->in('WF.wfrule_status', "'active','new','deactive'");
 		
 		$this->where($where);

@@ -115,7 +115,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 						name: 'criteriacontainer',
 						columnWidth: 0.5,
 						layout: 'form',
-						items: []
+						items: [{ xtype: 'component', hidden: true }]
 					}
 				]
 			},
@@ -125,6 +125,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 				paging  : true,
 				flex    : 1,
 				selModel: Ext.create('Ext.selection.CheckboxModel'),
+				stateful: true,
 				stateId : 'workflow_rules_grid',
 				store   : gridStore,
 				columns : [
@@ -148,7 +149,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 
 		this.searchtypeFilter = this.query('[name="searchtype"]')[0];
 
-		if (this.WFRuleSearchParams) {
+		if (this.WFRuleSearchParams && this.WFRuleSearchParams.type) {
 			this.changeCriteriaSection( this.WFRuleSearchParams.type, this.WFRuleSearchParams.criteria );
 			this.searchtypeFilter.setValue( this.WFRuleSearchParams.type );
 		}
@@ -189,7 +190,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 		var me = this,
 			criteriaCombobox;
 
-		criteria = criteria || [];
+		criteria = criteria || null;
 
 		switch (searchtype) {
 			case 1:
@@ -217,7 +218,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 
 		if (criteriaCombobox) {
 			criteriaCombobox = criteriacontainer.add( criteriaCombobox );
-			if (criteria.length) {
+			if (criteria) {
 				criteriaCombobox.getStore().load(function() {
 					criteriaCombobox.setValue(criteria);
 				});
@@ -228,10 +229,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 	getPropertyCombobox: function() {
 		return {
 			xtype                   : 'shared.propertycombo',
-            multiSelect             : true,
-            typeAhead               : false,
-			name                    : 'criteria',
-            multiSelect             : true,
+            //multiSelect             : true,
+            name                    : 'criteria',
 			loadStoreOnFirstQuery   : true,
 			labelWidth              : this.filterLabelWidth
 		}
@@ -240,8 +239,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 	getGlAccountCombobox: function() {
         return {
             xtype                   : 'shared.glcombo',
-            multiSelect             : true,
-            typeAhead               : false,
+            //multiSelect             : true,
             name                    : 'criteria',
             loadStoreOnFirstQuery   : true,
             labelWidth              : this.filterLabelWidth
@@ -251,9 +249,9 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 	getUserCombobox: function() {
         return {
             xtype                   : 'shared.usercombo',
-            multiSelect             : true,
-            typeAhead               : false,
+            //multiSelect             : true,
             name                    : 'criteria',
+            valueField              : 'userprofilerole_id',
             loadStoreOnFirstQuery   : true,
             labelWidth              : this.filterLabelWidth
         };
@@ -262,8 +260,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 	getUserGroupCombobox: function() {
         return {
             xtype                   : 'shared.usergroupscombo',
-            multiSelect             : true,
-            typeAhead               : false,
+            //multiSelect             : true,
             name                    : 'criteria',
             loadStoreOnFirstQuery   : true,
             labelWidth              : this.filterLabelWidth
@@ -273,7 +270,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 	getVendorCombobox: function() {
         return {
             xtype                   : 'shared.vendorautocomplete',
-            multiSelect             : true,
+            //multiSelect             : true,
             name                    : 'criteria',
             loadStoreOnFirstQuery   : true,
             labelWidth              : this.filterLabelWidth,
@@ -284,7 +281,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 	getRuleTypeCombobox: function() {
         return {
             xtype                   : 'systemsetup.ruletypeautocomplete',
-            multiSelect             : true,
+            //multiSelect             : true,
+            typeAhead               : false,
             name                    : 'criteria',
             loadStoreOnFirstQuery   : true,
             labelWidth              : this.filterLabelWidth,

@@ -4,7 +4,7 @@
 
 
 Ext.define('NP.view.shared.UserCombo', {
-    extend: 'NP.lib.ui.AutoComplete',
+    extend: 'NP.lib.ui.ComboBox',
     alias: 'widget.shared.usercombo',
 
     requires: ['NP.model.user.Userprofile'],
@@ -24,7 +24,13 @@ Ext.define('NP.view.shared.UserCombo', {
             this.store = Ext.create('NP.store.user.Userprofiles', {
                 service : 'UserService',
                 action  : 'getAll',
-                userprofile_status: 'active'
+                extraParams: {
+                    userprofile_status: 'active'
+                },
+                sorters: [{
+                    property : 'person_lastname',
+                    direction: 'ASC'
+                }]
             });
         }
 

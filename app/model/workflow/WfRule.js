@@ -12,7 +12,7 @@ Ext.define('NP.model.workflow.WfRule', {
 		{ name: 'wfrule_datetm', type: 'date' },
 		{ name: 'all_properties_selected' },
 		{ name: 'wfruletype_tablename' },
-		{ name: 'wfruletype_id' },
+		{ name: 'wfruletype_id', type: 'int' },
 		{ name: 'wfrule_operand' },
 		{ name: 'wfrule_string' },
 		{ name: 'wfrule_number_end' },

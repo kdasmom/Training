@@ -7,7 +7,7 @@ Ext.define('NP.view.systemSetup.BudgetByGlCategoryAssigner', {
 	extend: 'NP.lib.ui.Assigner',
 	alias: 'widget.systemSetup.budgetbyglcategoryassigner',
 
-	fieldLabel: 'Budgets By Gl Category',
+	fieldLabel: 'GL Categories',
 
 	name        : 'budgets',
 	displayField: 'glaccount_name',

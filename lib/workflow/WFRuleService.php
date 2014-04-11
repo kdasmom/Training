@@ -282,18 +282,18 @@ class WFRuleService extends AbstractService {
 		}
 
 		$dataSet = [
-			'wfrule_id' => $ruleid,
-			'wfrule_name' => $data['name'],
-			'wfrule_status' => $status,
-			'wfruletype_id' => $data['ruletypeid'],
-			'wfrule_datetm' => $now,
-			'asp_client_id' => $asp_client_id,
+			'wfrule_id'            => $ruleid,
+			'wfrule_name'          => $data['name'],
+			'wfrule_status'        => $status,
+			'wfruletype_id'        => $data['ruletypeid'],
+			'wfrule_datetm'        => $now,
+			'asp_client_id'        => $asp_client_id,
 			'wfrule_lastupdatedby' => $userprofile_id,
-			'wfrule_operand' => isset($data['comparison']) ? $data['comparison'] : null,
-			'wfrule_number' => (isset($data['comparisonValue']) && is_numeric($data['comparisonValue'])) ? $data['comparisonValue'] : null,
-			'wfrule_number_end' => isset($data['comparisonValueTo']) ? $data['comparisonValueTo'] : null,
-			'wfrule_string' => $numberType,
-			'isAllPropertiesWF' => $data['all_properties']
+			'wfrule_operand'       => isset($data['comparison']) ? $data['comparison'] : null,
+			'wfrule_number'        => (isset($data['comparisonValue']) && is_numeric($data['comparisonValue'])) ? $data['comparisonValue'] : null,
+			'wfrule_number_end'    => isset($data['comparisonValueTo']) ? $data['comparisonValueTo'] : null,
+			'wfrule_string'        => $numberType,
+			'isAllPropertiesWF'    => $data['all_properties']
 		];
 
 		$this->wfRuleGateway->beginTransaction();
@@ -485,13 +485,18 @@ class WFRuleService extends AbstractService {
 			}
 		}
 		else if (count($originator_tablekeys) > 0 && count($receipient_tablekeys) > 0) {
+			$originator_params = array_fill(0, count($originator_tablekeys_list), '?');
+			$originator_params = implode(',', $originator_params);
+			$receipient_params = array_fill(0, count($receipient_tablekeys_list), '?');
+			$receipient_params = implode(',', $receipient_params);
+
 			$this->wfActionGateway->delete(
-				Where::get()->in('wfaction_originator_tablekey_id', $originator_tablekeys_list)
+				Where::get()->in('wfaction_originator_tablekey_id', $originator_params)
+					->in('wfaction_receipient_tablekey_id', $receipient_params)
 					->equals('wfaction_originator_tablename', '?')
-					->in('wfaction_receipient_tablekey_id', $receipient_tablekeys_list)
 					->equals('wfaction_receipient_tablename', '?')
 					->equals('wfrule_id', '?'),
-				[$originator_tablename, $receipient_tablename, $data['wfrule_id']]
+				array_merge($originator_tablekeys, $receipient_tablekeys, [$originator_tablename, $receipient_tablename, $data['wfrule_id']])
 			);
 
 			foreach ($originator_tablekeys as $originator_tablekey) {

@@ -3,7 +3,7 @@
  */
 
 Ext.define('NP.view.systemSetup.RuleTypeAutocomplete', {
-    extend: 'NP.lib.ui.AutoComplete',
+    extend: 'NP.lib.ui.ComboBox',
     alias: 'widget.systemsetup.ruletypeautocomplete',
 
     requires: ['NP.store.workflow.WfRuleTypes'],

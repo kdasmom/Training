@@ -3,6 +3,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesView', {
 	alias:  'widget.systemsetup.workflowrulesview',
 	
 	requires: [
+		'NP.lib.core.Config',
 		'NP.view.shared.button.Print',
 		'NP.view.shared.button.Cancel',
 		'NP.view.shared.button.Edit',
@@ -12,14 +13,15 @@ Ext.define('NP.view.systemSetup.WorkflowRulesView', {
 
 	layout: 'fit',
 
-	modal: true,
+	modal     : true,
 	autoScroll: true,
 
-	width: 700,
+	width : 700,
 	height: 400,
 
-	bodyStyle: 'background-color: white',
+	bodyStyle  : 'background-color: white',
 	bodyPadding: 10,
+	border     : false,
 
 	initComponent: function() {
 		var me = this;
@@ -35,12 +37,9 @@ Ext.define('NP.view.systemSetup.WorkflowRulesView', {
 
 		this.autoScroll = true;
 
+		this.title = NP.Translator.translate('Workflow Rule - {rulename}', {rulename: this.data.rule.wfrule_name});
+
 		this.items = [
-			{
-				xtype: 'panel',
-				baseCls: 'header-highlight',
-				html: NP.Translator.translate('Workflow Rule - {rulename}', {rulename: this.data.rule.wfrule_name})
-			},
 			{
 				xtype: 'panel',
 				layout: {
@@ -82,7 +81,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesView', {
 					},
 					{
 						border: false,
-						html: Ext.Date.format(new Date(me.data.rule.wfrule_datetm), NP.Config.getDefaultDateFormat() + ' h:iA') + ' (' + me.data.rule.userprofile_username + ')'
+						html: Ext.Date.format(Ext.Date.parse(me.data.rule.wfrule_datetm, NP.Config.getServerDateFormat()), NP.Config.getDefaultDateFormat() + ' h:iA') + ' (' + me.data.rule.userprofile_username + ')'
 					}
 				]
 			}
@@ -145,7 +144,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesView', {
 			{
 				width: 200,
 				cls: 'header-text',
-				html: NP.Translator.translate('Rule Type')
+				html: NP.Translator.translate('Rule Type:')
 			},
 			{
 				html: data.rule.wfruletype_name
@@ -273,12 +272,12 @@ Ext.define('NP.view.systemSetup.WorkflowRulesView', {
 		// GL Codes
 		if ([3, 7, 8, 13, 29, 31, 33, 37].indexOf(data.rule.wfruletype_id) > -1) {
 			var codes = [];
-			for (var key in data.codes) {
+			for (var key in data.categories) {
 				codes.push({
 					html:
-						data.codes[key].integration_package_name + ' - ' + 
-							data.codes[key].glaccount_name + 
-							' (' + data.codes[key].glaccount_number + ')'
+						data.categories[key].integration_package_name + ' - ' + 
+							data.categories[key].glaccount_name + 
+							' (' + data.categories[key].glaccount_number + ')'
 				});
 			}
 
@@ -294,19 +293,12 @@ Ext.define('NP.view.systemSetup.WorkflowRulesView', {
 		if ([35, 36].indexOf(data.rule.wfruletype_id) > -1) {
 			var units = [];
 			for (var key in data.units) {
-				var value =
-					data.units[key].unitcode ?
-						data.units[key].unit_id_alt.toUpperCase() + ' - ' :
-						data.units[key].building_id_alt.toUpperCase() + ' - '
-				;
-				value += data.units[key].unit_number;
-
-				units.push({html: value});
+				units.push({html: data.units[key].property_name + ' - ' + data.units[key].unit_number});
 			}
 
 			details.push({
 				xtype: 'shared.ExpandableSection',
-				opener: NP.Translator.translate('Departments') + ':',
+				opener: NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + ':',
 				itemId: 'expandableUnits',
 				values: units
 			});
@@ -319,8 +311,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesView', {
 				categories.push({
 					html:
 						data.categories[key].integration_package_name + ' - ' + 
-							data.categories[key].glaccount_name + 
-							' (' + data.categories[key].glaccount_number + ')'
+							data.categories[key].glaccount_name
 				});
 			}
 

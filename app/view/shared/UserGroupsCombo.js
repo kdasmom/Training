@@ -3,7 +3,7 @@
  */
 
 Ext.define('NP.view.shared.UserGroupsCombo', {
-    extend: 'NP.lib.ui.AutoComplete',
+    extend: 'NP.lib.ui.ComboBox',
     alias: 'widget.shared.usergroupscombo',
 
     fieldLabel: 'User Group',
@@ -13,7 +13,6 @@ Ext.define('NP.view.shared.UserGroupsCombo', {
     valueField          : 'role_id',
     queryParam          : 'keyword',
     width               : 400,
-    queryMode           : 'local',
     tpl                 : '<tpl for=".">' +
                                 '<li class="x-boundlist-item" role="option">{indent_text}{role_name}</li>' +
                             '</tpl>',

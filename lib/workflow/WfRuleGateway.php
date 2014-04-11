@@ -228,7 +228,7 @@ class WfRuleGateway extends AbstractGateway {
 				$result['jobcodes'] = $jobcodes;
 				$result['tablekey_list_id'] = $tablekey_list_id;
 			}
-			if (in_array($type, [9, 10, 11, 12, 14, 30, 32, 34, 38])) {
+			if (in_array($type, [3, 7, 8, 9, 10, 11, 12, 13, 14, 29, 30, 31, 32, 33, 34, 37, 38])) {
 				$glaccounts = $this->adapter->query(
 					new sql\GLAccountByWFRuleSelect($ruleid, $asp_client_id)
 				);
@@ -567,7 +567,7 @@ class WfRuleGateway extends AbstractGateway {
 			case self::GLACCOUNTS_CRITERIA:
 				return new sql\SearchByGLAccountSelect($asp_client_id, $criteria, $order);
 			case self::USERS_CRITERIA:
-				return new sql\SearchByUserSelect($asp_client_id, $criteria, $order);
+				return new sql\SearchByUserSelect($criteria, $order);
 			case self::ROLES_CRITERIA:
 				return new sql\SearchByRoleSelect($asp_client_id, $criteria, $order);
 			case self::VENDORS_CRITERIA:

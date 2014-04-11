@@ -1184,10 +1184,11 @@ Ext.define('NP.controller.SystemSetup', {
 
 		if (form.isValid()) {
 			NP.lib.core.Net.remoteCall({
+				method  : 'POST',
 				requests: {
 					service: 'WFRuleService',
-					action: 'saveRoute',
-					data: values,
+					action : 'saveRoute',
+					data   : values,
 					success: function() {
 						originatesGrid.getStore().reload();
 						me.getCmp('systemsetup.workflowrulesroutes').clearForm();}
@@ -1786,6 +1787,7 @@ Ext.define('NP.controller.SystemSetup', {
 
 		if (form.isValid()) {
 			NP.lib.core.Net.remoteCall({
+				method  : 'POST',
 				requests: {
 					service: 'WFRuleService',
 					action: 'saveRule',

@@ -13,7 +13,7 @@ Ext.define('NP.view.shared.UserAssigner', {
 
     name        : 'users',
     tpl         : '<tpl for="."><div class="x-boundlist-item">{person_lastname}, {person_firstname} ({userprofile_username})</div></tpl>',
-    displayField: 'userprofile_id',
+    displayField: 'person_lastname',
     valueField  : 'userprofile_id',
     fromTitle   : 'Unassigned',
     toTitle     : 'Assigned',
@@ -29,8 +29,14 @@ Ext.define('NP.view.shared.UserAssigner', {
 				type              : 'user.userprofiles',
 				service           : 'UserService',
 				action            : 'getAll',
-				userprofile_status: 'active',
-				autoLoad          : me.autoLoad
+				autoLoad          : me.autoLoad,
+				extraParams: {
+                    userprofile_status: 'active'
+                },
+                sorters: [{
+                    property : 'person_lastname',
+                    direction: 'ASC'
+                }]
 			};
 		}
 

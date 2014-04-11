@@ -13,9 +13,15 @@ Ext.define('NP.view.systemSetup.WorkflowRulesRoutes', {
 		var me = this;
 
 		me.userStore = Ext.create('NP.store.user.Userprofiles', {
-			service : 'UserService',
-			action : 'getAll',
-			userprofile_status : 'active'
+			service    : 'UserService',
+			action     : 'getAll',
+			extraParams: {
+                userprofile_status: 'active'
+            },
+            sorters: [{
+                property : 'person_lastname',
+                direction: 'ASC'
+            }]
 		});
 		me.userStore.load();
 
@@ -168,19 +174,19 @@ Ext.define('NP.view.systemSetup.WorkflowRulesRoutes', {
 		var me = this;
 
 		return {
-			itemId: fieldname,
-			xtype: 'shared.userassigner',
-			name: fieldname,
-			displayField: 'userprofilerole_id',
+			itemId      : fieldname,
+			xtype       : 'shared.userassigner',
+			name        : fieldname,
+			displayField: 'person_lastname',
 			valueField  : 'userprofilerole_id',
-			fieldLabel: '',
-			fromTitle: NP.Translator.translate('Unassigned Users'),
-			toTitle: NP.Translator.translate('Assigned Users'),
-			width: 800,
-			height: 200,
-			autoLoad: false,
-			allowBlank: false,
-			store: me.userStore
+			fieldLabel  : '',
+			fromTitle   : NP.Translator.translate('Unassigned Users'),
+			toTitle     : NP.Translator.translate('Assigned Users'),
+			width       : 800,
+			height      : 200,
+			autoLoad    : false,
+			allowBlank  : false,
+			store       : me.userStore
 		}
 	},
 
