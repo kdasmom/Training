@@ -1138,7 +1138,8 @@ Ext.define('NP.controller.AbstractEntityController', {
 			extraParams      = store.getExtraParams(),
 			newExtraParams   = {
 				service: 'JobCostingService',
-                action : 'getJobCodes'
+                action : 'getJobCodesByFilter',
+                status : 'active'
 			};
 
 		// We want to see if extra params have changed to 

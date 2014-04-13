@@ -14,12 +14,8 @@ class JobCostingService extends AbstractService {
 	/**
 	 * Get job costing contracts
 	 */
-	public function getContracts($vendorsite_id=null, $keyword=null, $sort='jbcontract_name') {
-		if ($vendorsite_id !== null) {
-			return $this->jbContractGateway->findByVendorsite($vendorsite_id, $keyword, $sort);
-		} else {
-			return $this->jbContractGateway->find(null, null, $sort);
-		}
+	public function getContracts($vendorsite_id=null, $status=null, $keyword=null, $sort='jbcontract_name') {
+		return $this->jbContractGateway->findByVendorsite($vendorsite_id, $status, $keyword, $sort);
 	}
 	
 	/**
@@ -41,16 +37,28 @@ class JobCostingService extends AbstractService {
 	}
 	
 	/**
-	 * Get job costing change orders
+	 * Get job costing job codes
 	 */
-	public function getJobCodes($property_id=null, $jbcontract_id=null, $jbchangeorder_id=null, $keyword=null, $sort='jbjobcode_name') {
+	public function getJobCodes($status=null, $sort='jbjobcode_name') {
+		$where  = null;
+		$params = null;
+
+		if (!empty($status)) {
+			$where  = array('jbjobcode_status' => '?');
+			$params = array($status);
+		}
+
+		return $this->jbJobCodeGateway->find($where, $params, $sort);	
+	}
+
+	public function getJobCodesByFilter($property_id=null, $jbcontract_id=null, $jbchangeorder_id=null, $status=null, $keyword=null, $sort='jbjobcode_name') {
 		if (empty($property_id) && empty($jbcontract_id) && empty($jbchangeorder_id)) {
 			return [];
 		} else {
-			return $this->jbJobCodeGateway->findByFilter($property_id, $jbcontract_id, $jbchangeorder_id, $keyword, $sort);
+			return $this->jbJobCodeGateway->findByFilter($property_id, $jbcontract_id, $jbchangeorder_id, $status, $keyword, $sort);
 		}
 	}
-	
+
 	/**
 	 * Get job costing phase codes
 	 */

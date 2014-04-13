@@ -15,13 +15,20 @@ class JbContractGateway extends AbstractGateway {
 	/**
 	 * 
 	 */
-	public function findByVendorsite($vendorsite_id, $keyword=null, $sort='jbcontract_name') {
+	public function findByVendorsite($vendorsite_id=null, $status=null, $keyword=null, $sort='jbcontract_name') {
 		$select = $this->getSelect()->from('jbcontract')
-									->whereEquals('vendorsite_id', '?')
-									->whereEquals('jbcontract_status', "'active'")
 									->order($sort);
 
-		$params = [$vendorsite_id];
+		$params = [];
+		if (!empty($vendorsite_id)) {
+			$select->whereEquals('vendorsite_id', '?');
+			$params[] = $vendorsite_id;
+		}
+
+		if (!empty($status)) {
+			$select->whereEquals('jbcontract_status', '?');
+			$params[] = $status;
+		}
 
 		if (!empty($keyword)) {
 			$select->whereNest('OR')

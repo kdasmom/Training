@@ -15,16 +15,18 @@ Ext.define('NP.view.shared.VendorAssigner', {
     fromTitle   : 'Unassigned',
     toTitle     : 'Assigned',
     msgTarget   : 'under',
-    
-    initComponent: function() {
-        if (!this.store) {
-            this.store = Ext.create('NP.store.vendor.Vendors', {
-					service           : 'VendorService',
-					action            : 'getAll',
-					autoLoad          : true
-			    });
-        }
+	autoLoad    : true,
 
-        this.callParent(arguments);
-    }
+	initComponent: function() {
+		if (!this.store) {
+			this.store = Ext.create('NP.store.vendor.Vendors', {
+				service	: 'VendorService',
+				action	: 'getAll',
+				autoLoad: this.autoLoad,
+				fields	: ['vendor_id', 'vendor_name', 'vendor_id_alt']
+			});
+		}
+
+		this.callParent(arguments);
+	}
 });

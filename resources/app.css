@@ -30,6 +30,7 @@ li.x-boundlist-item {
 .back-btn { background-image: url("images/buttons/back.gif"); }
 .camera-btn { background-image: url("images/buttons/camera.gif"); width: 18px !important; }
 .cancel-btn { background-image: url("images/buttons/cancel.gif"); }
+.close-btn { background-image: url("images/buttons/close.gif"); }
 .cd-btn { background-image: url("images/buttons/cd.gif"); }
 .copy-btn { background-image: url("images/buttons/copy.gif"); }
 .delete-btn { background-image: url("images/buttons/delete.gif"); width: 15px; height: 15px; }
@@ -113,6 +114,18 @@ li.x-boundlist-item {
 
 .locale-en { background-image: url("images/flags/en.png"); }
 .locale-fr { background-image: url("images/flags/fr.png"); }
+
+.copy-btn { background-image: url("images/buttons/copy.gif"); }
+.next-btn { background-image: url("images/buttons/next.gif"); }
+.save-and-activate-btn { background-image: url("images/buttons/save_and_activate.gif"); }
+.create-rule-btn { background-image: url("images/buttons/create_rule.gif"); width: 24px !important; }
+	.create-rule-comp-btn .x-btn-inner { padding-left: 26px !important; }
+.plus-btn { background-image: url("images/buttons/plus.gif"); width: 7px; height: 7px; cursor: pointer; margin-top: 4px; margin-left: 5px }
+.minus-btn { background-image: url("images/buttons/minus.gif"); width: 7px; height: 7px; cursor: pointer; margin-top: 5px; margin-left: 5px }
+
+.header-text { font-weight: bold; }
+.header-highlight { background-color: #ECECD5; width: 100%; }
+.action-cell { cursor: pointer; }
 
 /* STYLE FOR USING AN IMAGE AS A BUTTON IN A GRID BY SPECIFYING THIS AS tdCls CONFIG OPTION */
 .image-button-cell .x-grid-cell-inner { padding-bottom: 0; }

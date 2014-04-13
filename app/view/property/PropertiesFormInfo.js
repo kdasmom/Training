@@ -118,7 +118,8 @@ Ext.define('NP.view.property.PropertiesFormInfo', {
     		{ xtype: 'shared.yesnofield', fieldLabel: me.syncFieldText, name: 'sync' },
             // Accrual Cash
     		{
-    			xtype: 'radiogroup',
+    			xtype: '' +
+					'radiogroup',
     			fieldLabel: me.accrualCashFieldText,
     			defaults: {
     				name: 'cash_accural',

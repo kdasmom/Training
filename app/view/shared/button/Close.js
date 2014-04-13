@@ -4,17 +4,17 @@
  */
 
 Ext.define('NP.view.shared.button.Close', {
-	extend: 'Ext.button.Button',
-	alias: 'widget.shared.button.close',
+    extend: 'Ext.button.Button',
+    alias: 'widget.shared.button.close',
 
-	requires: ['NP.lib.core.Translator'],
+    requires: ['NP.lib.core.Translator'],
 
-	text: 'Close',
-	iconCls: 'cancel-btn',
+    text: 'Close',
+    iconCls: 'cancel-btn',
 
-	initComponent: function() {
-		this.text = NP.Translator.translate(this.text);
+    initComponent: function() {
+        this.text = NP.Translator.translate(this.text);
 
-		this.callParent(arguments);
-	}
+        this.callParent(arguments);
+    }
 });

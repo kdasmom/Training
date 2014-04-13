@@ -73,7 +73,7 @@ class Join implements SQLElement {
 			throw new \NP\core\Exception('$table cannot be null');
 		}
 
-		$validTypes = array(Select::JOIN_INNER, Select::JOIN_LEFT, Select::JOIN_RIGHT, Select::JOIN_CROSS);
+		$validTypes = array(Select::JOIN_INNER, Select::JOIN_LEFT, Select::JOIN_RIGHT, Select::JOIN_CROSS, Select::JOIN_LEFT_OUTER);
 		if (!in_array($this->type, $validTypes)) {
 			throw new \NP\core\Exception('Invalid $values argument. Valid values are ' . implode(',', $validTypes));
 		}

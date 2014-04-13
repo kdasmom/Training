@@ -1,3 +1,6 @@
+lib/gl/GlAccountGateway.php
+lib/gl/GLAccountGateway.php
+
 # Ignore test file in root
 test.php
 

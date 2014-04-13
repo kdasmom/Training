@@ -88,7 +88,7 @@ $diDefinition = array(
 	'NP\user\UserService'                            => array('SecurityService','NotificationService'),
 	'NP\vendor\validation\VendorEntityValidator'     => array('LocalizationService','Adapter', 'VendorGateway', 'ConfigService'),
 	'NP\vendor\VendorService'                        => array('VendorEntityValidator'),
-	'NP\workflow\WfRuleGateway'                      => array('Adapter','UserprofileroleGateway'),
+	'NP\workflow\WfRuleGateway'                      => array('Adapter','UserprofileroleGateway','VendorGateway','WfActionGateway'),
 );
 
 // Now we're gonna figure out some automatic definitions for gateways and services

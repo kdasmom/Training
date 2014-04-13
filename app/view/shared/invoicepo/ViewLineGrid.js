@@ -423,9 +423,12 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                         selectOnFocus : true,
                         useSmartStore : true,
                         store         : {
-                            type: 'jobcosting.jbcontracts',
-                            service: 'JobCostingService',
-                            action : 'getContracts'
+                            type       : 'jobcosting.jbcontracts',
+                            service    : 'JobCostingService',
+                            action     : 'getContracts',
+                            extraParams: {
+                                status: 'active'
+                            }
                         },
                         updateLineFields: {
                             jbcontract_id  : 'jbcontract_id',
@@ -489,7 +492,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                         store         : {
                             type   : 'jobcosting.jbjobcodes',
                             service: 'JobCostingService',
-                            action : 'getJobCodes'
+                            action : 'getJobCodesByFilter'
                         },
                         updateLineFields: {
                             jbjobcode_id  : 'jbjobcode_id',

@@ -251,7 +251,7 @@ class UserprofileGateway extends AbstractGateway {
 	/**
 	 * 
 	 */
-	public function findByFilter($userprofile_status=null, $property_id=null, $role_id=null, $module_id=null, $pageSize=null, $page=1, $sort='person_lastname') {
+	public function findByFilter($userprofile_status=null, $property_id=null, $role_id=null, $module_id=null, $keyword = null, $pageSize=null, $page=1, $sort='person_lastname') {
 		if ($sort == 'person_lastname ASC') {
 			$sort = 'p.person_lastname, p.person_firstname';
 		} else if ($sort == 'person_lastname DESC') {
@@ -292,6 +292,15 @@ class UserprofileGateway extends AbstractGateway {
 							->whereEquals('mp.module_id', '?')
 			);
 			$params[] = $module_id;
+		}
+
+		if ($keyword) {
+			$select->whereNest('OR')
+				->whereLike('u.userprofile_username', '?')
+				->whereLike('p.person_lastname', '?')
+				->whereLike('p.person_firstname', '?');
+
+			$params = array_merge($params, [$keyword . '%', $keyword . '%', $keyword . '%']);
 		}
 
 		// If paging is needed
