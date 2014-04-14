@@ -19,9 +19,6 @@ Ext.define('NP.view.vendor.InsuranceForm', {
 
     padding: 8,
 
-    // Custom options
-//    startIndex: 0,
-
     initComponent: function() {
         var that = this;
 
@@ -130,7 +127,8 @@ Ext.define('NP.view.vendor.InsuranceForm', {
 							afterrender: function(component) {
 								component.getEl().on('click', function() {
 									Ext.create('NP.view.vendor.PropertyAssignerWindow', {
-										data : that.queryById('insurance_properties_list_id' + that.startIndex).value
+										data : that.queryById('insurance_properties_list_id' + that.startIndex).value,
+										startIndex : that.startIndex
 									}).show();
 								});
 							}

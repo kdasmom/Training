@@ -52,6 +52,11 @@ Ext.define('NP.view.vendor.PropertyAssignerWindow', {
 						value: NP.Translator.translate('Select Properties')
 					},
 					{
+						xtype: 'hidden',
+						name: 'startIndex',
+						value: this.startIndex
+					},
+					{
 						xtype      : 'shared.propertyassigner',
 						itemId     : 'insuranceProperties',
 						name       : 'insuranceProperties',

@@ -133,7 +133,7 @@ Ext.define('NP.controller.VendorManager', {
 					var form = Ext.ComponentQuery.query('[xtype="vendor.propertyassignerwindow"] form')[0];
 					var values = form.getValues();
 
-//					this.getCmp('vendor.insuranceform').findField('insurance_properties_list_id').value = values.insuranceProperties;
+					this.query('#insurance_properties_list_id' + values.startIndex)[0].setValue( values.insuranceProperties );
 					this.getCmp('vendor.propertyassignerwindow').destroy();
 				}
 			}
@@ -851,14 +851,14 @@ Ext.define('NP.controller.VendorManager', {
 
 		function buttonForTab(app_count, vendor_status, tabName, bar, submit_userprofile_id, vendor_id) {
 			//todo delete
-//			bar.push(
-//				{
-//					xtype: 'shared.button.save',
-//					handler: function() {
-//						that.saveVendor('active');
-//					}
-//				}
-//			);
+			bar.push(
+				{
+					xtype: 'shared.button.save',
+					handler: function() {
+						that.saveVendor('active');
+					}
+				}
+			);
 			if (tabName !== 'altaddresses') {
 
 //				Non-Approver editing an active vendor with no pending edits
