@@ -10,6 +10,7 @@ namespace NP\report\user;
 
 
 use NP\report\AbstractReport;
+use NP\report\ReportColumn;
 use NP\report\ReportInterface;
 
 class GroupRights extends AbstractReport implements ReportInterface {
@@ -30,6 +31,7 @@ class GroupRights extends AbstractReport implements ReportInterface {
 	public function getData() {
 		$extraParams = $this->getExtraParams();
 		$propertyContext = $this->getOptions()->propertyContext;
+		
 
 		$queryParams = [];
 

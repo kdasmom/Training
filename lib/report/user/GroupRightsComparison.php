@@ -10,6 +10,7 @@ namespace NP\report\user;
 
 
 use NP\report\AbstractReport;
+use NP\report\ReportColumn;
 use NP\report\ReportInterface;
 
 class GroupRightsComparison extends AbstractReport implements ReportInterface {

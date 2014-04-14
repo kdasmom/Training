@@ -23,7 +23,7 @@ Ext.define('NP.view.report.user.GroupRights', {
         var me         = this;
 
         return {
-            propertyContext  : me.getPropertyContext()
+            propertyContext : me.getPropertyContext(),
         }
     },
 
@@ -32,7 +32,8 @@ Ext.define('NP.view.report.user.GroupRights', {
 
         return {
             role_id: me.getForm().findField('group_id').getValue(),
-            status: me.getForm().findField('user_status').getValue()
+            status: me.getForm().findField('user_status').getValue(),
+            userRoleId          : NP.Security.getUser().get('role_id')
         };
     }
 });

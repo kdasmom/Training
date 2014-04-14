@@ -3,6 +3,7 @@
 namespace NP\user;
 
 use NP\core\AbstractGateway;
+use NP\core\db\Expression;
 use NP\core\db\Select;
 
 /**
@@ -176,7 +177,27 @@ class RoleGateway extends AbstractGateway {
 	}
 
 	public function getTreeForSingleRole($table_name, $tree_parent, $level) {
+		$select = new Select();
+		$select->from(['t' => 'tree'])
+				->columns([
+						'tree_id',
+						'tree_parent',
+						'table_name',
+						'tablekey_id',
+						'tree_order' => new Expression("CASE WHEN tree_order IS NULL THEN 0 ELSE tree_order END")])
+				->where(
+					[
+						'table_name'    => '?',
+						'tree_parent'   => '?'
+					]
+				);
 
+		$result = $this->adapter->query($select, [$table_name, $tree_parent]);
+		foreach ($result as $item) {
+			$item['children'] = $this->getTreeForSingleRole($item['table_name'], $item['tree_parent']);
+		}
+
+		return $result;
 	}
 
 }

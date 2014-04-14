@@ -19,7 +19,6 @@ Ext.define('NP.view.report.user.Form', {
 
     initComponent: function() {
         var me = this;
-
         me.title = NP.Translator.translate('User Report Tool');
 
         me.tbar = [
