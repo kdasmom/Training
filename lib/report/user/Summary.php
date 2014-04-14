@@ -46,12 +46,6 @@ class Summary extends AbstractReport implements ReportInterface {
 
 		$queryParams = [];
 
-//		$propertyFilterSelect = new PropertyFilterSelect($this->getOptions()->propertyContext);
-
-//		print("<pre>");
-//		print_r($this->getOptions()->propertyContext);
-//		print("</pre>");
-
 		$select = new UserprofileroleSelect();
 
 		$select->distinct()
