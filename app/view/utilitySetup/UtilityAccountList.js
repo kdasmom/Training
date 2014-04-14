@@ -69,7 +69,7 @@ Ext.define('NP.view.utilitySetup.UtilityAccountList', {
                 ]
             },{
                 xtype: 'toolbar',
-                dock: 'bottom',
+                dock: 'top',
                 defaults: { margin: '0 4 0 0' },
                 items: [
                     {
