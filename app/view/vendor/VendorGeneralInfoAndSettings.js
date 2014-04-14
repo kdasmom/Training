@@ -11,13 +11,14 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
 		'NP.lib.core.Security',
 		'NP.lib.ui.ComboBox',
         'NP.view.shared.YesNoField',
-		'NP.view.shared.CustomField'
+		'NP.view.shared.CustomField',
+		'NP.lib.core.Translator'
 	],
 
 	padding: 8,
 
 	// For localization
-	title                     : 'General info and settings',
+	title: 'General Info and Settings',
     vendorTypeInputLabel: 'Vendor Type',
     taxPayorTypeInputLabel: 'Tax Payor Type',
     payeeTypeInputLabel: 'Payee Type',
@@ -54,6 +55,8 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
 
 	initComponent: function() {
 		var that = this;
+
+		that.title = NP.Translator.translate(that.title);
 
 		var days = [];
 

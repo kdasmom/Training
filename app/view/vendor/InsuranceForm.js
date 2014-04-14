@@ -13,29 +13,30 @@ Ext.define('NP.view.vendor.InsuranceForm', {
         'NP.lib.core.Config',
         'NP.view.shared.button.New',
         'NP.view.shared.button.Delete',
-		'NP.lib.core.Util'
+		'NP.lib.core.Util',
+		'NP.lib.core.Translator'
     ],
 
     padding: 8,
 
-    startIndex: 0,
-
-    // For localization
-    typeInputLabelText: 'Type',
-    companyInputLabelText: 'Company',
-    policyNumberInputLabelText: 'Policy Number',
-    effectiveDateInputLabelText: 'Effective Date',
-    expDateInputLabelText: 'Exp. Date',
-    policyLimitInputLabelText: 'Policy Limit',
-    additionalInsuranceInputLabelText: 'Additional Insured',
-
     // Custom options
-    startIndex: 0,
+//    startIndex: 0,
 
     initComponent: function() {
         var that = this;
 
-        this.defaults = {
+		// For localization
+		this.typeInputLabelText                = NP.Translator.translate('Type');
+		this.companyInputLabelText             = NP.Translator.translate('Company');
+		this.policyNumberInputLabelText        = NP.Translator.translate('Policy Number');
+		this.effectiveDateInputLabelText       = NP.Translator.translate('Effective Date');
+		this.expDateInputLabelText             = NP.Translator.translate('Exp. Date');
+		this.policyLimitInputLabelText         = NP.Translator.translate('Policy Limit');
+		this.additionalInsuranceInputLabelText = NP.Translator.translate('Additional Insured');
+		this.propertyAssignmentInputLabelText  = NP.Translator.translate('Property Assignment');
+		this.propertyAssignmentLinkName        = NP.Translator.translate('Assign/View Properties');
+
+		this.defaults = {
             labelWidth: 150
         };
 
@@ -116,6 +117,30 @@ Ext.define('NP.view.vendor.InsuranceForm', {
                         labelWidth: 80,
 						labelAlign: 'top',
 						value: this.modelData ? this.modelData['insurance_additional_insured_listed'] : ''
+                    },
+                    {
+						xtype: 'displayfield',
+                        fieldLabel: this.propertyAssignmentInputLabelText,
+                        padding: '0 0 0 5',
+                        labelWidth: 80,
+						labelAlign: 'top',
+						style : 'cursor: pointer',
+						value: this.propertyAssignmentLinkName,
+						listeners: {
+							afterrender: function(component) {
+								component.getEl().on('click', function() {
+									Ext.create('NP.view.vendor.PropertyAssignerWindow', {
+										data : that.queryById('insurance_properties_list_id' + that.startIndex).value
+									}).show();
+								});
+							}
+						}
+                    },
+                    {
+                        xtype: 'hidden',
+                        name: 'insurance_properties_list_id',
+                        itemId: 'insurance_properties_list_id' + this.startIndex,
+						value: this.modelData ? this.modelData['insurance_properties_list_id'] : []
                     },
                     {
                         xtype: 'hidden',

@@ -187,6 +187,10 @@ class VendorService extends AbstractService {
 				throw new \NP\core\Exception("Cannot save email");
 			}
 //				save insurances
+
+//			echo "<pre>";
+//			print_r($data['insurances']);
+//			echo "</pre>";
 			$this->saveInsurances($out_vendor_id, $data['insurances'], $data['vendorsite_DaysNotice_InsuranceExpires']);
 //				save recauthor
 			$this->vendorGateway->recauthorSave($data['userprofile_id'], 'vendor', $out_vendor_id);
@@ -574,9 +578,9 @@ class VendorService extends AbstractService {
 		}
 
 		return [
-			'success'    						=> (count($errors) > 0) ? false : true,
-			'errors'								=> $errors,
-			'lastInsertEmailId'			=> $email_id
+			'success'			=> (count($errors) > 0) ? false : true,
+			'errors'			=> $errors,
+			'lastInsertEmailId'	=> $email_id
 		];
 	}
 
@@ -643,6 +647,12 @@ class VendorService extends AbstractService {
 	public function getCustomFields($vendor_id) {
 		$result['custom_fields'] = $this->configService->getCustomFieldData('vendor', $vendor_id);
 		$result['insurances'] = $this->insuranceGateway->find(['table_name' => '?', 'tablekey_id' => '?'], ['vendor', $vendor_id]);
+
+		// find insurance properties
+		foreach ($result['insurances'] as &$insurance) {
+			$insurance_properties_list = $this->linkInsurancePropertyGateway->find(['insurance_id' => '?'], [$insurance['insurance_id']]);
+			$insurance['insurance_properties_list_id'] = \NP\util\Util::valueList($insurance_properties_list, 'property_id');
+		}
 
 		return $result;
 	}
@@ -1624,14 +1634,15 @@ class VendorService extends AbstractService {
 							'insurance_policynum'					=> $insurance->insurance_policynum[$index],
 							'insurance_policy_effective_datetm'		=> $insurance->insurance_policy_effective_datetm[$index],
 							'insurance_expdatetm'					=> $insurance->insurance_expdatetm[$index],
-							'insurance_policy_limit'					=> $insurance->insurance_policy_limit[$index],
+							'insurance_policy_limit'				=> $insurance->insurance_policy_limit[$index],
 							'insurance_additional_insured_listed'	=> $insurance->insurance_additional_insured_listed[$index],
 							'insurance_id'							=> $insurance->insurance_id[$index],
 							'tablekey_id'							=> $vendor_id,
-							'table_name'								=> 'vendor'
+							'table_name'							=> 'vendor'
 						];
 
-						$result = $this->saveInsurance(['insurance' => $saveInsurance], $vendor_id);
+						$property_id_list = explode(',', $insurance->insurance_properties_list_id[$index]);
+						$result = $this->saveInsurance(['insurance' => $saveInsurance, 'property_id_list' => $property_id_list], $vendor_id);
 
 						if (!$result['success']) {
 							throw new \NP\core\Exception("Cannot save insurance");

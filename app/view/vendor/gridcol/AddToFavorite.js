@@ -15,7 +15,8 @@ Ext.define('NP.view.vendor.gridcol.AddToFavorite', {
 	align: 'left',
 
 	initComponent: function() {
-		var that = this;
+		this.text = NP.Translator.translate('Favorite');
+
 		var property_id = NP.Security.getCurrentContext().property_id;
 
 		this.renderer = function(val, meta, rec) {
