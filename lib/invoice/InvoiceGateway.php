@@ -76,11 +76,13 @@ class InvoiceGateway extends AbstractGateway {
 				->join(new \NP\vendor\sql\join\VendorGlAccountJoin())
 				->join(new \NP\vendor\sql\join\VendorsiteAddressJoin())
 				->join(new \NP\vendor\sql\join\VendorsitePhoneJoin('Main'))
+				->join(new \NP\vendor\sql\join\VendorsiteEmailJoin('Primary'))
 				->join(new sql\join\InvoicePropertyJoin())
 				->join(new \NP\property\sql\join\PropertyAddressJoin([
 					'property_address_id'      => 'address_id',
 					'property_address_line1'   => 'address_line1',
 					'property_address_line2'   => 'address_line2',
+					'property_address_line3'   => 'address_line3',
 					'property_address_city'    => 'address_city',
 					'property_address_state'   => 'address_state',
 					'property_address_country' => 'address_country',

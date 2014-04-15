@@ -21,14 +21,14 @@ Ext.define('NP.controller.Invoice', {
 	stores: ['invoice.Invoices','system.PriorityFlags','invoice.InvoicePaymentTypes',
 			'invoice.InvoiceItems','invoice.InvoicePayments','shared.Reasons',
 			'image.ImageIndexes','shared.RejectionNotes','invoice.InvoicePaymentTypes',
-			'invoice.AuditReclasses'],
+			'invoice.AuditReclasses','NP.store.user.Userprofiles'],
 	
 	views: ['invoice.Register','invoice.View','invoice.VoidWindow','invoice.HoldWindow',
 			'shared.invoicepo.ImagesManageWindow','shared.invoicepo.ImagesAddWindow',
 			'invoice.UseTemplateWindow','shared.invoicepo.SplitWindow',
 			'shared.invoicepo.RejectWindow','invoice.PaymentWindow','invoice.ReclassWindow',
 			'NP.view.vendor.VendorSelectorWindow','NP.view.shared.invoicepo.ScheduleWindow',
-			'NP.view.shared.invoicepo.TemplateWindow'],
+			'NP.view.shared.invoicepo.TemplateWindow','NP.view.invoice.ForwardWindow'],
 
 	refs: [
 		{ ref: 'paymentGrid', selector: '[xtype="invoice.viewpayments"]' },
@@ -131,6 +131,10 @@ Ext.define('NP.controller.Invoice', {
 
 			'#invoiceReclassSaveBtn': {
 				click: me.onReclassSave
+			},
+
+			'#invoiceForwardBtn': {
+				click: me.onForward
 			}
 		});
 
@@ -1262,5 +1266,15 @@ Ext.define('NP.controller.Invoice', {
 				}
 			);
 		}
+	},
+
+	onForward: function() {
+		var me      = this,
+			win     = Ext.widget('invoice.forwardwindow', {
+				invoice: me.getEntityRecord(),
+				vendor : me.getVendorRecord()
+	        });
+
+        win.show();
 	}
 });

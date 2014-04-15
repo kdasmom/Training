@@ -62,7 +62,7 @@ Ext.define('NP.model.contact.Address', {
 				}
 			}
 
-			if (city != '' || state != '' || zip) {
+			if (city != '' || state != '' || zip != '') {
 				html += '<div>';
 				if (city != '') {
 					html += city;

@@ -120,6 +120,7 @@ class VendorGateway extends AbstractGateway {
 						)
 						->join(new sql\join\VendorsiteAddressJoin())
 						->join(new sql\join\VendorsitePhoneJoin('Main'))
+						->join(new sql\join\VendorsiteEmailJoin('Primary'))
 						->join(new sql\join\VendorGlAccountJoin())
 						->join(new sql\join\VendorVendorTypeJoin());
 

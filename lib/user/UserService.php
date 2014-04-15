@@ -150,6 +150,10 @@ class UserService extends AbstractService {
 		return $this->regionGateway->findByUser($userprofile_id, $delegated_to_userprofile_id);
 	}
 
+	public function getForForward($table_name, $tablekey_id) {
+		return $this->userprofileGateway->findForForward($table_name, $tablekey_id);
+	}
+
 	/**
 	 * Save a setting for the currently logged in user
 	 *

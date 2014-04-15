@@ -485,6 +485,20 @@ class InvoiceService extends AbstractInvoicePoService {
     	return $this->invoiceGateway->findInvoiceStatistics($property_id);
     }
 
+    /**
+     * Gets an HTML version of an invoice
+     */
+    public function getInvoiceAsHtml($invoice_id, $options=[]) {
+    	$renderer = new InvoiceHtmlRenderer($this->configService, $this->gatewayManager, $this, $invoice_id, $options);
+
+    	ob_start();
+    	$renderer->render();
+    	$html = ob_get_contents();
+    	ob_end_clean();
+
+    	return $html;
+    }
+
 	/**
 	 * Save an invoice payment from the import tool
 	 */

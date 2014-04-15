@@ -302,22 +302,3 @@ li.x-boundlist-item {
 	cursor         : pointer;
 	margin         : 2px 0 2px 0;
 }
-
-/* Invoice/PO Print Template */
-#entityPrintTable td, #entityPrintLines th, #entityPrintLines td { font-size: 10pt; padding:0; }
-#entityPrintTable td { vertical-align: top; }
-#entityPrintTable #vendorInfo { font-size: 14px; }
-#entityPrintTable #clientShortName { font-size: 20pt; }
-#entityPrintTable #propertyName { font-size: 12pt; }
-#entityPrintTable td.blackLine { height: 1px; background-color: black; }
-#entityPrintTable td.spacer { height:4px; }
-#entityPrintLines {
-	border-collapse: collapse;
-	border-color: black;
-	border-width: 0px 0px 1px 1px;
-	border-style: solid;
-}
-	#entityPrintLines th, #entityPrintLines td { padding: 2px; border-color: black; border-style: solid; }
-	#entityPrintLines th { text-align: left; border-width: 1px 1px 1px 0px; }
-	#entityPrintLines td { border-width: 0px 1px 0px 0px; }
-	#entityPrintLines tfoot td, #entityPrintLines tfoot th { text-align: right; border-width: 1px 1px 1px 0px; }
