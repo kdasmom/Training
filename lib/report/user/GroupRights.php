@@ -21,11 +21,11 @@ class GroupRights extends AbstractReport implements ReportInterface {
 			new ReportColumn('Group Name', 'child_role', 0.2),
 			new ReportColumn('Group Parent', 'parent_role', 0.15, 'string', 'left'),
 			new ReportColumn('Number of Users Assigned', 'Users_Count', 0.1, 'string', 'left'),
-			new ReportColumn('Last Updated', 'role_updated', 0.06, 'string', 'left', [$this, 'updateDatetime'])
+			new ReportColumn('Last Updated', 'userprofile_updated_by', 0.06, 'string', 'left', [$this, 'updateDatetime'])
 		]);
 	}
 
-	public function updateDatetime($val, $record, $report) {
+	public function updateDatetime($val, $row, $report) {
 		if (!empty($row['role_updated_datetime']) && $row['role_updated_datetime'] !== '') {
 			return $row['role_updated_datetime'] . ' ' . $row['userprofile_updated_by'];
 		}
@@ -130,10 +130,10 @@ class GroupRights extends AbstractReport implements ReportInterface {
 			->join(['u2' => 'userprofile'], 'Users.role_updated_by = u2.userprofile_id', [], Select::JOIN_LEFT)
 			->whereEquals('1', '1');
 
-		if ($extraParams['userRoleId']) {
+		if ($extraParams['role_id']) {
 			$select->whereEquals('ParentChildRole.child_id', '?');
 
-			$queryParams[] = $extraParams['userRoleId'];
+			$queryParams[] = $extraParams['role_id'];
 		}
 
 		if ($extraParams['exclude_empty']) {
@@ -142,6 +142,8 @@ class GroupRights extends AbstractReport implements ReportInterface {
 		}
 
 		$select->order('ParentChildRole.child_role');
+
+//		print $select->toString();
 
 
 		$adapter = $this->gatewayManager->get('UserprofileGateway')->getAdapter();
