@@ -161,7 +161,7 @@ class RoleGateway extends AbstractGateway {
 		return (count($res)) ? false : true;
 	}
 
-	public function getTreeRole($asp_client_id, $role_id, $role_type) {
+	public function getTreeRole($asp_client_id, $role_id, $role_type, $role_name) {
 		$treeParentSelect = new Select();
 		$treeParentSelect->from(['t' => 'tree'])
 						->columns(['tree_id'])
@@ -173,7 +173,7 @@ class RoleGateway extends AbstractGateway {
 								'role_name'     => '?'
 							]);
 
-		$resultTree = $this->adapter->query($treeParentSelect, [$role_id, $asp_client_id, 'Administrator']);
+		$resultTree = $this->adapter->query($treeParentSelect, [$role_id, $asp_client_id, $role_name]);
 	}
 
 	public function getTreeForSingleRole($table_name, $tree_parent, $level) {
@@ -193,8 +193,8 @@ class RoleGateway extends AbstractGateway {
 				);
 
 		$result = $this->adapter->query($select, [$table_name, $tree_parent]);
-		foreach ($result as $item) {
-			$item['children'] = $this->getTreeForSingleRole($item['table_name'], $item['tree_parent']);
+		foreach ($result as &$item) {
+			$item['children'] = $this->getTreeForSingleRole($item['table_name'], $item['tree_parent'], $level + 1);
 		}
 
 		return $result;

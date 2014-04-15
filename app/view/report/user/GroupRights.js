@@ -31,9 +31,10 @@ Ext.define('NP.view.report.user.GroupRights', {
         var me         = this;
 
         return {
-            role_id: me.getForm().findField('group_id').getValue(),
-            status: me.getForm().findField('user_status').getValue(),
-            userRoleId          : NP.Security.getUser().get('role_id')
+            role_id				: me.getForm().findField('group_id').getValue(),
+            status				: me.getForm().findField('user_status').getValue(),
+            userRoleId			: NP.Security.getUser().get('role_id'),
+			exclude_empty		: me.getForm().findField('exclude_empty').getValue()
         };
     }
 });
