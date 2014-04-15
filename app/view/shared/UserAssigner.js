@@ -19,7 +19,6 @@ Ext.define('NP.view.shared.UserAssigner', {
     toTitle     : 'Assigned',
     buttons     : ['add','remove'],
     msgTarget   : 'under',
-	autoLoad    : true,
 
 	initComponent: function() {
 		var me = this;
@@ -29,7 +28,7 @@ Ext.define('NP.view.shared.UserAssigner', {
 				type              : 'user.userprofiles',
 				service           : 'UserService',
 				action            : 'getAll',
-				autoLoad          : me.autoLoad,
+				autoLoad          : true,
 				extraParams: {
                     userprofile_status: 'active'
                 },
