@@ -33,7 +33,7 @@ class GroupRights extends AbstractReport implements ReportInterface {
 	}
 
 	public function getTitle() {
-		return 'User Group Rights Report';
+		return 'User Group Rights Report<br/>' . date('m/d/Y', strtotime('now'));
 	}
 
 	public function getData() {
@@ -143,7 +143,12 @@ class GroupRights extends AbstractReport implements ReportInterface {
 
 		$select->order('ParentChildRole.child_role');
 
-//		print $select->toString();
+		if ($extraParams['role_id']) {
+			$privListSelect = new Select();
+			$privListSelect->from(['m' => 'modulepriv'])
+				->columns(['module_id'])
+				->where(['tablekey_id' => '?', 'table_name' => '?']);
+		}
 
 
 		$adapter = $this->gatewayManager->get('UserprofileGateway')->getAdapter();
