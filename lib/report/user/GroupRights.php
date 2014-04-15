@@ -153,7 +153,5 @@ class GroupRights extends AbstractReport implements ReportInterface {
 
 		$adapter = $this->gatewayManager->get('UserprofileGateway')->getAdapter();
 		return $adapter->getQueryStmt($select, $queryParams);
-
-		return [];
 	}
 } 

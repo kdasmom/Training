@@ -22,17 +22,14 @@ Ext.define('NP.view.report.user.GroupRightsComparison', {
     getOptions: function() {
         var me         = this;
 
-        return {
-            propertyContext  : me.getPropertyContext()
-        }
+        return {}
     },
 
     getExtraParams: function() {
         var me         = this;
 
         return {
-            role_id: me.getForm().findField('group_id').getValue(),
-            status: me.getForm().findField('user_status').getValue()
+			compared_groups: me.getForm().findField('compared_groups').getValue()
         };
     }
 });
