@@ -86,7 +86,14 @@ Ext.define('NP.view.user.UsersFormDetails', {
 				name      : 'role_id',
 				fieldLabel: NP.Translator.translate('Position'),
 				allowBlank: false,
-				store     : 'user.RoleTree',
+				store		: Ext.create('NP.store.user.RoleTree', {
+					service: 'UserService',
+					action: 'getRoleTree',
+					extraParams: {
+						excludeAdmin: true
+					},
+					autoLoad: true
+				}),
 				width     : 500,
 				valueField: 'role_id',
 				displayField: 'role_name',

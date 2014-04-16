@@ -67,8 +67,10 @@ class RoleGateway extends AbstractGateway {
 		}
 	}
 
-	public function findForTree() {
+	public function findForTree($excludeAdmin = false) {
 		$select = new Select();
+		$queryParams = [];
+
 		$select->columns(array('role_id','role_name'))
 				->from(array('r'=>'role'))
 				->join(array('t'=>'tree'),
@@ -76,7 +78,12 @@ class RoleGateway extends AbstractGateway {
 						array('tree_id','tree_parent'))
 				->order('r.role_name');
 
-		return $this->adapter->query($select);
+		if ($excludeAdmin) {
+			$select->whereNotEquals('r.role_name', '?');
+			$queryParams[] = 'Administrator';
+		}
+
+		return $this->adapter->query($select, $queryParams);
 	}
 
 	/**
@@ -161,7 +168,7 @@ class RoleGateway extends AbstractGateway {
 		return (count($res)) ? false : true;
 	}
 
-	public function getTreeRole($asp_client_id, $role_id, $role_type, $role_name) {
+	/*public function getTreeRole($asp_client_id, $role_id, $role_type, $role_name) {
 		$treeParentSelect = new Select();
 		$treeParentSelect->from(['t' => 'tree'])
 						->columns(['tree_id'])
@@ -198,6 +205,6 @@ class RoleGateway extends AbstractGateway {
 		}
 
 		return $result;
-	}
+	}*/
 
 }
