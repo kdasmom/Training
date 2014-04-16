@@ -89,8 +89,7 @@ Ext.define('NP.view.report.user.Form', {
                 store: 'user.RoleTree',
                 width: 500,
                 itemId: 'compared_groups',
-                name: 'compared_groups',
-                afterSubTpl : NP.Translator.translate('Note: Only six groups can be compared at a time')
+                name: 'compared_groups'
             },
             {
                 xtype: 'checkbox',

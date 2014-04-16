@@ -471,6 +471,20 @@ class ConfigsysGateway extends AbstractGateway {
 
 		return $result;
 	}
+
+	public function getModuleTree() {
+		$select = new Select();
+		$queryParams = [];
+
+		$select->columns(array('module_id','module_name'))
+			->from(array('m'=>'module'))
+			->join(array('t'=>'tree'),
+				"t.tablekey_id = m.module_id AND t.table_name = 'module'",
+				array('tree_id','tree_parent'))
+			->order('m.module_name');
+
+		return $this->adapter->query($select, $queryParams);
+	}
 }
 
 ?>
