@@ -37,7 +37,7 @@ class GroupRightsComparison extends AbstractReport implements ReportInterface {
 	}
 
 	public function renderModule($val, $row, $report) {
-		return $val;
+		return $row['indent_text'] . $val;
 	}
 
 	public function renderRole($val, $row, $report) {
@@ -80,6 +80,39 @@ class GroupRightsComparison extends AbstractReport implements ReportInterface {
 
 
 		$adapter = $this->gatewayManager->get('UserprofileGateway')->getAdapter();
-		return $adapter->getQueryStmt($select, $queryParams);
+
+		$result = $adapter->query($select, $queryParams);
+
+		$result = $this->tree($result);
+
+		return $result;
+	}
+
+	public function tree($array) {
+		$tree = [];
+		foreach ($array as $item) {
+			if (!array_key_exists($item['tree_parent'], $tree)) {
+				$tree[$item['tree_parent']] = array();
+			}
+			$tree[$item['tree_parent']][] = $item;
+		}
+
+		$tree = $this->buildTree($tree, 0, 0);
+
+		return $tree;
+	}
+
+	private function buildTree($tree, $parent, $level=0) {
+		$modules = array();
+		if (array_key_exists($parent, $tree)) {
+			foreach($tree[$parent] as &$treeItem) {
+				$treeItem['level'] = $level;
+				$treeItem['indent_text'] = str_repeat('&nbsp;', $level*5);
+				$modules[] = $treeItem;
+				$newlevel = $level + 1;
+				$modules = array_merge($modules, $this->buildTree($tree, $treeItem['tree_id'], $newlevel));
+			}
+		}
+		return $modules;
 	}
 } 
