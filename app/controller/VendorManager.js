@@ -227,6 +227,7 @@ Ext.define('NP.controller.VendorManager', {
 						that.application.getController('Favorites').saveToRecentRecord(
 							'Vendor - ' + data['vendor_name'] + ' (' + data['vendor_id_alt'] + ')'
 						);
+						form.findField('glaccounts').setValue( data['glaccounts'].split(',') );
 
 						that.vendor_status = data['vendor_status'];
 

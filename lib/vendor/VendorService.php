@@ -1577,7 +1577,9 @@ class VendorService extends AbstractService {
 		if ($glaccounts == '') {
 			$this->vendorGateway->deleteAssignedGlaccounts($vendor_id);
 		} else {
-			if (!$this->vendorsiteGateway->assignGlAccounts($glaccounts, $vendor_id)) {
+			$this->vendorGateway->deleteAssignedGlaccounts($vendor_id);
+
+			if (!$this->vendorGlAccountsGateway->assignGlAccounts($glaccounts, $vendor_id)) {
 				return [
 					'success'		=> false,
 					'errors'		=> [array('field'=>'global', 'msg'=>'Cannot assigns glaccounts', 'extra'=>null)]
