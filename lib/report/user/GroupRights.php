@@ -152,6 +152,50 @@ class GroupRights extends AbstractReport implements ReportInterface {
 
 
 		$adapter = $this->gatewayManager->get('UserprofileGateway')->getAdapter();
-		return $adapter->getQueryStmt($select, $queryParams);
+		$result = $adapter->query($select, $queryParams);
+
+		$roles = [];
+
+		if (count($result) > 0) {
+
+			foreach ($result as &$role) {
+				$roles[] = $role;
+				$select = new Select();
+
+				$select->from(['mp' => 'modulepriv'])
+					->columns(['module_id'])
+					->where([
+						'tablekey_id' => '?',
+						'table_name' => '?'
+					]);
+
+				$rolesPriv = $adapter->query($select, [$role['role_id'], 'role']);
+				$roleModules = [];
+				foreach ($rolesPriv as $module) {
+					$roleModules[] = $module['module_id'];
+				}
+				$tree = $this->configService->getModulesTree(null, $roleModules);
+
+				if (count($tree) > 0) {
+					$roles[] = [
+						'child_role' => 'Role rights',
+						'parent_role' => '&nbsp;',
+						'Users_Count' => '&nbsp;',
+						'userprofile_updated_by' => '&nbsp;'
+					];
+				}
+
+				foreach ($tree as $element) {
+					$roles[] = [
+						'child_role' => str_repeat('&nbsp;', 5) . $element['indent_text'] . $element['module_name'],
+						'parent_role' => '&nbsp;',
+						'Users_Count' => '&nbsp;',
+						'userprofile_updated_by' => '&nbsp;'
+					];
+				}
+			}
+		}
+
+		return $roles;
 	}
 } 

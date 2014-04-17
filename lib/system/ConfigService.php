@@ -898,8 +898,8 @@ class ConfigService extends AbstractService {
 		return $this->pnUniversalFieldGateway->assignGlAccountToTheUniversalFields($field_id, $glaccounts);
 	}
 
-	public function getModulesTree($module_id = null) {
-		$modules = $this->configsysGateway->getModuleTree();
+	public function getModulesTree($module_id = null, $modulesList = []) {
+		$modules = $this->configsysGateway->getModuleTree($modulesList);
 		$tree = [];
 		$startParent = 0;
 
