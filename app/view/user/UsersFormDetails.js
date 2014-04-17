@@ -33,7 +33,8 @@ Ext.define('NP.view.user.UsersFormDetails', {
 				name      : 'userprofile_username',
 				fieldLabel: NP.Translator.translate('Username'),
 				allowBlank: false,
-				disabled  : this.isMySettings
+				disabled  : this.isMySettings,
+                maxLengthText: 50
     		}
     	];
 
@@ -61,7 +62,8 @@ Ext.define('NP.view.user.UsersFormDetails', {
 				name      : 'userprofile_password',
 				inputType : 'password',
 				fieldLabel: NP.Translator.translate('New Password'),
-                allowBlank: !this.passwordRequired
+                allowBlank: !this.passwordRequired,
+                maxLengthText: 256
     		},{
                 xtype     : 'displayfield',
                 itemId    : 'pwdExplanationField',
@@ -90,7 +92,8 @@ Ext.define('NP.view.user.UsersFormDetails', {
 					service: 'UserService',
 					action: 'getRoleTree',
 					extraParams: {
-						excludeAdmin: true
+//						excludeAdmin: true
+						excludeAdmin: !this.isNewUser ? 0 : 1
 					},
 					autoLoad: true
 				}),
@@ -131,12 +134,15 @@ Ext.define('NP.view.user.UsersFormDetails', {
 		    			store: this.questionStore,
 		    			displayField: 'lookupcode_description',
 		    			valueField: 'lookupcode_id',
-		    			width: 600
+		    			width: 600,
+                        allowBlank: false
 		    		},{
 		    			xtype: 'textfield',
 		    			fieldLabel: NP.Translator.translate('Answer') + ' ' + i,
 		    			name: 'security_answer' + i,
-		    			width: 600
+		    			width: 600,
+                        allowBlank: false,
+                        maxLengthText: 100
 		    		}
 	    		);
 	    	}

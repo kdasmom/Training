@@ -85,6 +85,7 @@ class UserService extends AbstractService {
 	public function getRoleTree($role_id=null, $excludeAdmin = null) {
 		$roles = $this->roleGateway->findForTree($excludeAdmin);
 		$tree = array();
+
 		$startParent = !$excludeAdmin ? 0 : 1;
 		foreach ($roles as $role) {
 			if ($role_id !== null && $role_id === $role['role_id']) {

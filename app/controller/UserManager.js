@@ -347,7 +347,15 @@ Ext.define('NP.controller.UserManager', {
 		        },
 		        extraFields: ['role_id','properties','coding_properties']
 			});
-		}
+
+            Ext.apply(viewCfg, {
+                isNewUser: false
+            });
+		} else {
+            Ext.apply(viewCfg, {
+                isNewUser: true
+            });
+        }
 
 		// Create the view with the configuration defined above
 		var form = that.setView('NP.view.user.UsersForm', viewCfg, '[xtype="user.users"]');
