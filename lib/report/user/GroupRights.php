@@ -178,7 +178,7 @@ class GroupRights extends AbstractReport implements ReportInterface {
 
 				if (count($tree) > 0) {
 					$roles[] = [
-						'child_role' => 'Role rights',
+						'child_role' => '<strong>Role rights</strong>',
 						'parent_role' => '&nbsp;',
 						'Users_Count' => '&nbsp;',
 						'userprofile_updated_by' => '&nbsp;'
