@@ -64,9 +64,9 @@ Ext.define('NP.view.user.UsersForm', {
             codingField = this.findField('coding_properties'),
             emailField  = this.findField('email_address'),
             zipField    = this.findField('address_zip'),
-            zipExtField    = this.findField('address_zipext');
+            zipExtField    = this.findField('address_zipext'),
+            propertiesField = this.findField('properties');
 
-        
         // Only check this if there are no other errors
         if (isValid) {
             var props       = field.getValue()
@@ -96,6 +96,11 @@ Ext.define('NP.view.user.UsersForm', {
                 if (!(isValid = /(\d{4})/.test(zipExtField.getValue()))) {
                     zipExtField.markInvalid(NP.Translator.translate('Zip ext should contain four digits.'));
                 }
+            }
+
+            if (propertiesField.getValue().length == 0) {
+                propertiesField.markInvalid(NP.Translator.translate('Please, select permissions.'));
+                isValid = false;
             }
         }
 
