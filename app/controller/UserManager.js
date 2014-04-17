@@ -186,7 +186,17 @@ Ext.define('NP.controller.UserManager', {
 			// The Groups form Responsibilities tab
 			'[xtype="user.groupsformpermissions"]': {
 				checkchangecascade: this.checkPermissionBox
-			}
+			},
+            '[xtype="report.user.form"] [xtype="shared.button.cancel"]': {
+                click: function() {
+                    this.addHistory('UserManager:showUserManager:Overview');
+                }
+            },
+            '[xtype="report.user.form"] [xtype="shared.button.back"]': {
+                click: function() {
+                    this.addHistory('UserManager:showUserManager:Overview');
+                }
+            }
 		});
 	},
 	
