@@ -195,7 +195,7 @@ Ext.define('NP.view.property.PropertiesFormInfo', {
         });
 
 		if (!me.property_id) {
-			me.items.push({ xtype: 'displayfield', value: NP.Translator.translate('Accounting Info'), padding: '10 0 0 0'});
+			me.items.push({ xtype: 'displayfield', value: '<strong>' + NP.Translator.translate('Accounting Info') + '</strong>', padding: '10 0 0 0'});
 			me.items.push({ xtype: 'property.propertiesformaccounting' });
 		}
 
