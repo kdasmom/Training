@@ -309,7 +309,6 @@ li.x-boundlist-item {
 	#entityPrintLines td { border-width: 0px 1px 0px 0px; }
 	#entityPrintLines tfoot td, #entityPrintLines tfoot th { text-align: right; border-width: 1px 1px 1px 0px; }
 
-
 /* remove leaf images*/
 .groups-form-permissions .x-tree-icon.x-tree-icon-leaf {
 	background-image: none;
