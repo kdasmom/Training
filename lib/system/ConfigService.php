@@ -897,42 +897,6 @@ class ConfigService extends AbstractService {
 
 		return $this->pnUniversalFieldGateway->assignGlAccountToTheUniversalFields($field_id, $glaccounts);
 	}
-
-	public function getModulesTree($module_id = null, $modulesList = []) {
-		$modules = $this->configsysGateway->getModuleTree($modulesList);
-		$tree = [];
-		$startParent = 0;
-
-		foreach ($modules as $module) {
-			if ($module_id !== null && $module_id === $module['module_id']) {
-				$startParent = $module['tree_parent'];
-			}
-			if (!array_key_exists($module['tree_parent'], $tree)) {
-				$tree[$module['tree_parent']] = array();
-			}
-			$tree[$module['tree_parent']][] = $module;
-		}
-		$tree = $this->buildTree($tree, $startParent, 0);
-
-		return $tree;
-	}
-
-	private function buildTree($tree, $parent, $level=0) {
-		$modules = array();
-		if (array_key_exists($parent, $tree)) {
-			foreach($tree[$parent] as $treeItem) {
-				$modules[] = array(
-					'module_id'     => $treeItem['module_id'],
-					'module_name'   => $treeItem['module_name'],
-					'level'       => $level,
-					'indent_text' => str_repeat('&nbsp;', $level*5)
-				);
-				$newlevel = $level + 1;
-				$modules = array_merge($modules, $this->buildTree($tree, $treeItem['tree_id'], $newlevel));
-			}
-		}
-		return $modules;
-	}
 }
 
 ?>

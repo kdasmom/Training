@@ -174,7 +174,8 @@ class GroupRights extends AbstractReport implements ReportInterface {
 				foreach ($rolesPriv as $module) {
 					$roleModules[] = $module['module_id'];
 				}
-				$tree = $this->configService->getModulesTree(null, $roleModules);
+
+				$tree = $this->securityService->getModuleTree(null, 0, 0, 0, 0, $roleModules);
 
 				if (count($tree) > 0) {
 					$roles[] = [

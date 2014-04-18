@@ -57,7 +57,7 @@ class GroupRightsComparison extends AbstractReport implements ReportInterface {
 
 		$queryParams = [];
 
-		$tree = $this->configService->getModulesTree();
+		$tree = $this->securityService->getModuleTree(null);
 
 		$select = new Select();
 

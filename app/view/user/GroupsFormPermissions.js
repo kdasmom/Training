@@ -13,8 +13,7 @@ Ext.define('NP.view.user.GroupsFormPermissions', {
 	frame      : false,
 	border     : false,
 	displayField: 'module_name',
-    cls         : 'groups-form-permissions',
-	
+
     initComponent: function() {
     	var that = this;
 
@@ -39,7 +38,8 @@ Ext.define('NP.view.user.GroupsFormPermissions', {
 					service       : 'SecurityService',
 					action        : 'getModuleTree',
 					module_id     : 0,
-					getAsHierarchy: true
+					getAsHierarchy: true,
+                    showLeafIcons: 0
 				}
 	        },
 	        sorters: [{
