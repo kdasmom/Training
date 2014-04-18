@@ -327,7 +327,7 @@ Ext.define('NP.lib.ui.BoundForm', {
 				}
 			}
 		});
-		
+
 		// Add model fields to the data object
 		Ext.each(this.bind.models, function(model) {
 			var paramName = model.classPath.split('.');

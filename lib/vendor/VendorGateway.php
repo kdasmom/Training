@@ -707,8 +707,9 @@ class VendorGateway extends AbstractGateway {
 						'vs_vendorsite_tax_reporting_flag' => 'vendorsite_tax_reporting_flag',
 						'vs_vendorsite_status' => 'vendorsite_status',
 						'vs_vendor_universalfield1' => 'vendor_universalfield1',
-						'vs_vendorsite_account_number' => 'vendorsite_account_number',
-						'vs_vendorsite_display_account_number_po' => 'vendorsite_display_account_number_po',
+						'vendorsite_account_number' => 'vendorsite_account_number',
+						'vendorsite_display_account_number_po' => 'vendorsite_display_account_number_po',
+						'vendorsite_DaysNotice_InsuranceExpires' => 'vendorsite_DaysNotice_InsuranceExpires',
 					])
 					->join(['p' => 'phone'], 'p.tablekey_id = vs.vendorsite_id', ['vendorsite_phone_number' => 'phone_number', 'vendorsite_phone_ext' => 'phone_ext', 'vendorsite_phone_id' => 'phone_id'], Select::JOIN_LEFT)
 					->join(['f' => 'phone'], 'f.tablekey_id = vs.vendorsite_id', ['vendorsite_fax_phone_number' => 'phone_number', 'vendorsite_fax_id' => 'phone_id'], Select::JOIN_LEFT)

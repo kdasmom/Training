@@ -74,8 +74,6 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
 			autoHeight: true
         };
 
-		this.items = [];
-
         this.items = [
 			{
 				xtype: 'textfield',
@@ -191,7 +189,7 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
 			},
 			{
 				xtype: 'customcombo',
-				name: 'default_due_datetm',
+				name: 'default_due_date',
 				displayField: 'day',
 				fieldLabel: this.defaultDateSettingsInputLabel,
 				store: daysStore,
@@ -202,7 +200,7 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
 			},
 			{
 				xtype: 'shared.yesnofield',
-				name: 'Finance_Vendor',
+				name: 'finance_vendor',
 				fieldLabel: this.financeVendorInputLabel,
 				hidden: !this.opened
 			},
@@ -349,12 +347,14 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
 			this.items.push({
 				xtype: 'checkbox',
 				name: 'remit_req',
-				fieldLabel: this.remittanceAdviceInputLabel
+				fieldLabel: this.remittanceAdviceInputLabel,
+				inputValue: 1
 			});
 			this.items.push({
 				xtype: 'checkbox',
 				name: 'insurance_req',
-				fieldLabel: this.requiresVendorInputLabel
+				fieldLabel: this.requiresVendorInputLabel,
+				inputValue: 1
 			});
 		} else {
 			this.items.push(
@@ -365,7 +365,7 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
 				},
 				{
 					xtype: 'hidden',
-					name: 'default_due_datetm',
+					name: 'default_due_date',
 					value: '30'
 				}
 			);

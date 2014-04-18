@@ -119,7 +119,7 @@ class VendorService extends AbstractService {
 			$in_app_user = $this->userprofileGateway->isInAppUser($roleId, $userprofileId);
 			$vendorstatus = $in_app_user ? $this->configService->get('PN.VendorOptions.OnApprovalStatus') : 'forapproval';
 
-//				save vendor
+//			save vendor
 			$data['vendor']['vendor_status'] = $vendorstatus;
 			$data['vendorsite']['vendor_status'] = $vendorstatus;
 
@@ -188,9 +188,6 @@ class VendorService extends AbstractService {
 			}
 //				save insurances
 
-//			echo "<pre>";
-//			print_r($data['insurances']);
-//			echo "</pre>";
 			$this->saveInsurances($out_vendor_id, $data['insurances'], $data['vendorsite_DaysNotice_InsuranceExpires']);
 //				save recauthor
 			$this->vendorGateway->recauthorSave($data['userprofile_id'], 'vendor', $out_vendor_id);
@@ -206,10 +203,10 @@ class VendorService extends AbstractService {
 					'address_city'		=> is_null($data['address']['address_city']) ? '' : $data['address']['address_city'],
 					'address_state'		=> is_null($data['address']['address_state']) ? '' : $data['address']['address_state'],
 					'address_zip'		=> is_null($data['address']['address_zip']) ? '' : $data['address']['address_zip'],
-					'address_zipext'		=> is_null($data['address']['address_zipext']) ? '' : $data['address']['address_zipext'],
-					'address_country'		=> is_null($data['address']['address_country']) ? '' : $data['address']['address_country'],
-					'person_firstname'		=> is_null($data['person']['person_firstname']) ? '' : $data['person']['person_firstname'],
-					'person_lastname'		=> is_null($data['person']['person_lastname']) ? '' : $data['person']['person_lastname'],
+					'address_zipext'	=> is_null($data['address']['address_zipext']) ? '' : $data['address']['address_zipext'],
+					'address_country'	=> is_null($data['address']['address_country']) ? '' : $data['address']['address_country'],
+					'person_firstname'	=> is_null($data['person']['person_firstname']) ? '' : $data['person']['person_firstname'],
+					'person_lastname'	=> is_null($data['person']['person_lastname']) ? '' : $data['person']['person_lastname'],
 					'phone_number'		=> is_null($data['attention_phone']['phone_number']) ? '' : $data['attention_phone']['phone_number']
 				];
 				$vendorsite_transfer_compare = $this->vendorGateway->transferCompareVendor($data['vendor']['vendor_id'], null, $compare_date);
@@ -250,7 +247,6 @@ class VendorService extends AbstractService {
 	public function saveVendorsite($data, $vendorstatus = null, $vendorId = null, $vendorsiteCode = null) {
 		if (!is_object($data) && isset($data['vendorsite'])) {
 			$vendorsite = new VendorsiteEntity($data['vendorsite']);
-
 			$vendorsite->vendorsite_lastupdate_date = Util::formatDateForDB(new \DateTime());
 			$vendorsite->vendorsite_ship_to_location_id = 1;
 			$vendorsite->vendorsite_bill_to_location_id = 1;
@@ -302,8 +298,12 @@ class VendorService extends AbstractService {
 	 */
 	public function saveVendorRecord($data) {
 		foreach ($data['vendor'] as $key => $item) {
-			if ($key !== 'paydatebasis_code' && $key !== 'paygroup_code')
-			$data['vendor'][$key] = empty($item) ? null : $item;
+			if ($key !== 'paydatebasis_code' &&
+				$key !== 'paygroup_code' &&
+				$key !== 'finance_vendor')
+			{
+				$data['vendor'][$key] = empty($item) ? null : $item;
+			}
 		}
 		if (!is_null($data['vendor']['vendor_id'])) {
 			$data['vendor']['vendor_lastupdate_date'] = Util::formatDateForDB(new \DateTime(date('Y-m-d', strtotime('now'))));
@@ -1574,9 +1574,10 @@ class VendorService extends AbstractService {
 				'errors'		=> [array('field'=>'global', 'msg'=>'Cannot assign glaccounts', 'extra'=>null)]
 			];
 		}
-		if ($glaccounts == '') {
-			$this->vendorGateway->deleteAssignedGlaccounts($vendor_id);
-		} else {
+
+		$this->vendorGateway->deleteAssignedGlaccounts($vendor_id);
+
+		if ($glaccounts != '') {
 			$this->vendorGateway->deleteAssignedGlaccounts($vendor_id);
 
 			if (!$this->vendorGlAccountsGateway->assignGlAccounts($glaccounts, $vendor_id)) {

@@ -696,5 +696,6 @@ Ext.define('NP.Locale', {
 	'Property Assignment'                         : 'Property Assignment',
 	'Assign/View Properties'                      : 'Assign/View Properties',
 	'Add / Remove Insurance Property Association' : 'Add / Remove Insurance Property Association',
-	'Select Properties'                           : 'Select Properties'
+	'Select Properties'                           : 'Select Properties',
+	'The assigned GL accounts listed above represent all GL accounts available for use for this vendor. All of these GL accounts may not be available for use if they are not also assigned to the property you are on.' : 'The assigned GL accounts listed above represent all GL accounts available for use for this vendor. All of these GL accounts may not be available for use if they are not also assigned to the property you are on.'
 });

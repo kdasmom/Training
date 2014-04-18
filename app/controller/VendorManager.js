@@ -228,6 +228,7 @@ Ext.define('NP.controller.VendorManager', {
 							'Vendor - ' + data['vendor_name'] + ' (' + data['vendor_id_alt'] + ')'
 						);
 						form.findField('glaccounts').setValue( data['glaccounts'].split(',') );
+						form.findField('vendorsite_DaysNotice_InsuranceExpires').setValue(data['vendorsite_DaysNotice_InsuranceExpires']);
 
 						that.vendor_status = data['vendor_status'];
 

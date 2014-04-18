@@ -85,7 +85,8 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
 			{
 				xtype: 'textfield',
 				fieldLabel: this.taxIDInputLabel,
-				name: 'vendor_fedid'
+				name: 'vendor_fedid',
+				maxLength: NP.Config.getSetting('PN.Vendor.taxIDLength')
 			},
             {
                 xtype: 'textfield',
