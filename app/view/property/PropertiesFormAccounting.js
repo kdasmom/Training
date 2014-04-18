@@ -27,13 +27,15 @@ Ext.define('NP.view.property.PropertiesFormAccounting', {
     		{
                 xtype           : 'numberfield',
                 name            : 'property_salestax',
-                decimalPrecision: 6,
+                decimalPrecision: 0,
                 fieldLabel      : NP.Translator.translate('{property} {salesTax}', { property: propertyText, salesTax: taxText }),
                 width           : 350,
                 minValue        : 0,
-                maxValue        : 1,
-                step            : 0.01,
-				allowBlank		: false
+                maxValue        : 100,
+                step            : 1,
+				allowBlank		: false,
+                afterBodyEl     : '%',
+                allowDecimal    : false
     		},
     		{
 				xtype     : 'numberfield',

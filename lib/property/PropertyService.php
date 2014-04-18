@@ -495,6 +495,7 @@ class PropertyService extends AbstractService {
 		try {
 			// Get entities
 			$property  = new PropertyEntity($data['property']);
+			$property->property_salestax = $property->property_salestax / 100;
 			$address   = new \NP\contact\AddressEntity($data['address']);
 			$phone     = new \NP\contact\PhoneEntity($data['phone']);
 			$fax       = new \NP\contact\PhoneEntity($data['fax_phone']);

@@ -391,6 +391,9 @@ Ext.define('NP.controller.PropertySetup', {
 									var intPkgField = form.findField('integration_package_id');
 									var intPkgNameField = form.findField('integration_package_name');
 									intPkgNameField.setValue(intPkgField.getRawValue());
+
+                                    var propertySalesTax = form.findField('property_salestax');
+                                    propertySalesTax.setValue(parseFloat(data.property_salestax) * 100);
 								}
 					        },
 							property_id: property_id
