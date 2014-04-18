@@ -428,6 +428,14 @@ Ext.define('NP.view.image.Index', {
                                 change: this.checkUtilityAccountNumber.bind(this)
                             }
                         },
+						{
+							xtype: 'hiddenfield',
+							name : 'UtilityAccountPropertyId'
+						},
+						{
+							xtype: 'hiddenfield',
+							name : 'UtilityAccountVendorsiteId'
+						},
                         // Panel: Is Utility Account Valid
                         {
                             xtype : 'displayfield',
@@ -600,9 +608,15 @@ Ext.define('NP.view.image.Index', {
                             UtilityAccount_AccountNumber: me.accountNumber,
                             success: function(result) {
                                 if (result.length) {
+									me.findField('UtilityAccountPropertyId').setValue( result[0].property_id );
+									me.findField('UtilityAccountVendorsiteId').setValue( result[0].Vendorsite_Id );
+
                                     validField.update('<span class="valid-text">Valid account number</span>');
                                     me.reloadUtilityAccounts();
                                 } else {
+									me.findField('UtilityAccountPropertyId').setValue();
+									me.findField('UtilityAccountVendorsiteId').setValue();
+
                                     validField.update('<span class="error-text">Invalid account number</span>');
                                     accountField.getStore().removeAll();
                                     accountField.setValue(null);
@@ -670,7 +684,7 @@ Ext.define('NP.view.image.Index', {
      */
     reloadUtilityAccounts: function() {
         var me = this,
-            accountField        = me.findField('UtilityAccount_AccountNumber')
+            accountField        = me.findField('UtilityAccount_AccountNumber'),
             meterField          = me.findField('UtilityAccount_MeterSize'),
             utilityAccountField = me.findField('utilityaccount_id'),
             utilityStore        = utilityAccountField.getStore();
@@ -1095,24 +1109,32 @@ Ext.define('NP.view.image.Index', {
      * Show Use Template window.
      */
     showUseTemplateWindow: function() {
-        var me         = this,
-            property   = me.findField('Property_Id'),
-            vendor     = me.findField('Image_Index_VendorSite_Id'),
+        var me = this,
+			vendorsite_id,
+			property_id,
+			utilityaccount_id,
+			doctype = me.findField('Image_Doctype_Id').getDisplayValue(),
             image_index_draft_invoice_id = me.findField('image_index_draft_invoice_id').getValue();
-        
-        if (!property || !vendor) {
-            Ext.MessageBox.alert('Use Template', 'You must select a property and vendor.');
-            return;
-        }
 
-        var vendorsite_id = vendor.getValue();
-        var property_id = property.getValue();
-        if (!vendorsite_id || !property_id) {
-            Ext.MessageBox.alert('Use Template', 'You must select a property and vendor.');
-            return;
-        }
+		if (doctype.toUpperCase() == 'Utility Invoice'.toUpperCase()) {
+			utilityaccount_id = this.findField('utilityaccount_id').getValue();
 
-        var utilityaccount_id = this.findField('utilityaccount_id').getValue();
+			property_id   = this.findField('UtilityAccountPropertyId').getValue();
+			vendorsite_id = this.findField('UtilityAccountVendorsiteId').getValue();
+
+			if (!utilityaccount_id) {
+				Ext.MessageBox.alert('Use Template', 'You must select a utility account number.');
+				return;
+			}
+		} else {
+			vendorsite_id = me.findField('Image_Index_VendorSite_Id').getValue();
+			property_id   = me.findField('Property_Id').getValue();
+
+			if (!vendorsite_id || !property_id) {
+				Ext.MessageBox.alert('Use Template', 'You must select a property and vendor.');
+				return;
+			}
+		}
 
         var win = Ext.create('NP.view.invoice.UseTemplateWindow', {
             itemId               : 'imageUseTemplateWin',
