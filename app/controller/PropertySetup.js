@@ -223,14 +223,6 @@ Ext.define('NP.controller.PropertySetup', {
 		var property_status = grid.query('[name="property_status"]')[0].getValue();
 		grid.addExtraParams({ property_status: property_status });
 		grid.reloadFirstPage();
-
-		// Change the buttons that show in the toolbar
-		var inactivateBtn = grid.query('[xtype="shared.button.inactivate"]')[0];
-		var activateBtn = grid.query('[xtype="shared.button.activate"]')[0];
-		var holdBtn = grid.query('[xtype="shared.button.hourglass"]')[0];
-		inactivateBtn.hide();
-		activateBtn.hide();
-		holdBtn.hide();
 	},
 
 	viewProperty: function(grid, rec, item, index, e) {
@@ -281,47 +273,53 @@ Ext.define('NP.controller.PropertySetup', {
 	},
 
 	gridAction: function(action, confirmDialogTitle, confirmDialogText, successDialogText, failureDialogText) {
-		var that = this;
+		var that = this,
+			grid = that.getCmp('property.properties').query('customgrid')[0],
+			properties = grid.getSelectionModel().getSelection(),
+			property_id_list = [];
 
-		// Show a confirmation dialog
-		Ext.MessageBox.confirm(confirmDialogTitle, confirmDialogText, function(btn) {
-			// If user clicks Yes, perform action
-			if (btn == 'yes') {
-				// Get the properties that were checked on the grid
-				var grid = that.getCmp('property.properties').query('customgrid')[0];
-				var properties = grid.getSelectionModel().getSelection();
-				var property_id_list = [];
-				Ext.each(properties, function(property) {
-					property_id_list.push(property.get('property_id'));
-				});
+		if (properties.length > 0) {
 
-				// Make ajax request to perform action
-				NP.lib.core.Net.remoteCall({
-					mask: grid,
-					requests: {
-						service: 'PropertyService',
-						action : action,
-						userprofile_id: NP.Security.getUser().get('userprofile_id'),
-						property_id_list: property_id_list,
-						success: function(result) {
-							// If operation successful
-							if (result.success) {
-								// Remove the row from the grid
-								grid.getStore().remove(properties);
-								// Show a friendly message saying action was successful
-								NP.Util.showFadingWindow({ html: successDialogText });
-							// If an error occurs
-							} else {
+			// Show a confirmation dialog
+			Ext.MessageBox.confirm(confirmDialogTitle, confirmDialogText, function (btn) {
+				// If user clicks Yes, perform action
+				if (btn == 'yes') {
+					// Get the properties that were checked on the grid
+
+					Ext.each(properties, function (property) {
+						property_id_list.push(property.get('property_id'));
+					});
+
+					// Make ajax request to perform action
+					NP.lib.core.Net.remoteCall({
+						mask: grid,
+						requests: {
+							service: 'PropertyService',
+							action: action,
+							userprofile_id: NP.Security.getUser().get('userprofile_id'),
+							property_id_list: property_id_list,
+							success: function (result) {
+								// If operation successful
+								if (result.success) {
+									// Remove the row from the grid
+									grid.getStore().remove(properties);
+									// Show a friendly message saying action was successful
+									NP.Util.showFadingWindow({ html: successDialogText });
+									// If an error occurs
+								} else {
+									Ext.MessageBox.alert(that.errorDialogTitleText, failureDialogText);
+								}
+							},
+							failure: function (response, options) {
 								Ext.MessageBox.alert(that.errorDialogTitleText, failureDialogText);
 							}
-						},
-						failure: function(response, options) {
-							Ext.MessageBox.alert(that.errorDialogTitleText, failureDialogText);
 						}
-					}
-				});
-			}
-		});
+					});
+				}
+			});
+		} else {
+			Ext.MessageBox.alert(NP.Translator.translate('Error'), NP.Translator.translate('Select the one property at least, please!'));
+		}
 	},
 
 	showPropertiesForm: function(property_id) {
