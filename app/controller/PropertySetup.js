@@ -811,6 +811,7 @@ Ext.define('NP.controller.PropertySetup', {
 		form.setTitle('Add ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit'));
 		form.getForm().reset();
 		this.activeUnitRecord = null;
+		form.getForm().findField('unittype_id').getStore().reload();
 
 		if (form.isHidden()) {
 			form.show();

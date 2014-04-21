@@ -712,6 +712,10 @@ class PropertyService extends AbstractService {
 	 */
 	public function saveUnit($data) {
 		$unit = new UnitEntity($data);
+		if (!$unit->unit_status) {
+			$unit->unit_status = 'active';
+		}
+
 		$errors    = $this->entityValidator->validate($unit);
 
 		if (!count($errors)) {
