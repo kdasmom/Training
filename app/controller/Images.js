@@ -194,7 +194,7 @@ Ext.define('NP.controller.Images', {
         if (tab == 'search') {
             this.addHistory('Images:showSearch');
             return;
-        };
+        }
 
         this.application.setView('NP.view.image.Main');
 
@@ -207,10 +207,7 @@ Ext.define('NP.controller.Images', {
             active.setActiveTab(target);
         }
 
-        var current = 
-            this.getCurrentGrid()
-        ;
-
+        var current = this.getCurrentGrid();
         var state = this.getCmp('shared.contextpicker').getState();
 
         current.store.addExtraParams({
