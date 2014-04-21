@@ -500,6 +500,8 @@ class PropertyService extends AbstractService {
 			$phone     = new \NP\contact\PhoneEntity($data['phone']);
 			$fax       = new \NP\contact\PhoneEntity($data['fax_phone']);
 
+			$property->last_updated_by = $data['userprofile_id'];
+
 			// Run validation
 			$errors    = $this->entityValidator->validate($property);
 
