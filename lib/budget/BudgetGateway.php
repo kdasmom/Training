@@ -362,6 +362,72 @@ class BudgetGateway extends AbstractGateway {
 							->order($sort);
 	}
 
+	/**
+	 * 
+	 */
+	public function getAccountBudgetByPeriod($glaccount_id, $property_id, $start_period, $end_period=null) {
+		$select = Select::get()
+					->columns([
+						'actual_amount' => new Expression('ISNULL(b.oracle_actual, 0)'),
+						'budget_amount' => new Expression('ISNULL(b.budget_amount, 0)')
+					])
+					->from(['gy'=>'glaccountyear'])
+						->join(new sql\join\GlAccountYearBudgetJoin([]))
+					->whereEquals('gy.glaccount_id', '?')
+					->whereEquals('gy.property_id', '?');
+
+		$params = [$glaccount_id, $property_id];
+		if (!empty($end_period)) {
+			$select->whereBetween('b.budget_period', '?', '?');
+			array_push($params, $start_period, $end_period);
+		} else {
+			$select->whereEquals('b.budget_period', '?');
+			$params[] = $start_period;
+		}
+
+		$res = $this->adapter->query($select, $params);
+		$res = $res[0];
+
+		$res['actual_amount'] = (float)$res['actual_amount'];
+		$res['budget_amount'] = (float)$res['budget_amount'];
+
+		return $res;
+	}
+
+	/**
+	 * 
+	 */
+	public function getCategoryBudgetByPeriod($category_id, $property_id, $start_period, $end_period=null) {
+		$select = Select::get()
+					->columns([
+						'actual_amount' => new Expression('ISNULL(SUM(ISNULL(b.oracle_actual, 0)), 0)'),
+						'budget_amount' => new Expression('ISNULL(SUM(ISNULL(b.budget_amount, 0)), 0)')
+					])
+					->from(['gy'=>'glaccountyear'])
+						->join(new sql\join\GlAccountYearBudgetJoin([]))
+						->join(new \NP\gl\sql\join\GlAccountTreeJoin([], Select::JOIN_INNER, 'tr', 'b'))
+						->join(new \NP\system\sql\join\TreeTreeParentJoin([]))
+					->whereEquals('tr2.tablekey_id', '?')
+					->whereEquals('gy.property_id', '?')
+					->whereEquals('b.budget_status', "'active'");
+
+		$params = [$category_id, $property_id];
+		if (!empty($end_period)) {
+			$select->whereBetween('b.budget_period', '?', '?');
+			array_push($params, $start_period, $end_period);
+		} else {
+			$select->whereEquals('b.budget_period', '?');
+			$params[] = $start_period;
+		}
+
+		$res = $this->adapter->query($select, $params);
+		$res = $res[0];
+
+		$res['actual_amount'] = (float)$res['actual_amount'];
+		$res['budget_amount'] = (float)$res['budget_amount'];
+
+		return $res;
+	}
 }
 
 ?>

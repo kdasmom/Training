@@ -59,12 +59,10 @@ Ext.define('NP.view.invoice.ViewHeader', {
     	var me   = this,
     		items = [
 				{
-					xtype     : 'displayfield',
+					xtype     : 'datefield',
 					fieldLabel: this.createdOnLbl,
-					renderer  : function() {
-						var invoice = me.up('boundform').getModel('invoice.Invoice');
-						return Ext.Date.format(invoice.get('invoice_createddatetm'), NP.Config.getDefaultDateFormat());
-					}
+					name      : 'invoice_createddatetm',
+					readOnly  : true
 				},{
 					xtype     : 'displayfield',
 					fieldLabel: this.createdByLbl,

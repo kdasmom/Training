@@ -9,6 +9,7 @@ Ext.define('NP.view.invoice.ViewToolbar', {
 
     requires: [
         'NP.lib.core.Security',
+        'NP.lib.core.Config',
         'NP.view.shared.button.Cancel',
         'NP.view.shared.button.Process',
         'NP.view.shared.button.Save',
@@ -170,6 +171,11 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                 displayCondition: me.isMenuVisible,
                 menu    : [
                     {
+                        text            : 'Change Property',
+                        itemId          : 'invoiceChangePropertyBtn',
+                        iconCls         : 'property-btn',
+                        displayCondition: me.isChangePropertyBtnVisible
+                    },{
                         text            : 'Print',
                         itemId          : 'invoicePrintBtn',
                         iconCls         : 'print-btn',
@@ -355,6 +361,29 @@ Ext.define('NP.view.invoice.ViewToolbar', {
         );
     },
 
+    isChangePropertyBtnVisible: function(data) {
+        var status = data['invoice'].get('invoice_status');
+        return (
+            data['invoice'].get('invoice_id') !== null
+            && (
+                status == 'draft'
+                || (
+                    status == 'open'
+                    && (
+                        NP.Security.hasPermission(1032)     // New Invoice permission
+                        || NP.Security.hasPermission(6076)  // Modify Any permission
+                        || NP.Security.hasPermission(6077)  // Modify Only Created permission
+                    )
+                )
+                || (
+                    status == 'saved' 
+                    && NP.Security.hasPermission(1068) 
+                    && NP.Config.getSetting('PN.InvoiceOptions.SkipSave') == '0'
+                )
+            )
+        );
+    },
+
     isPrintBtnVisible: function(data) {
         return Ext.Array.contains(['paid','forapproval','submitted','sent','saved','posted','void'], data['invoice'].get('invoice_status'));
     },
@@ -452,10 +481,20 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                 return false;
             }
 
+            var hasExpiredInsurance = false;
+            if (NP.Config.getSetting('CP.AllowExpiredInsurance', '1') == '0') {
+                var warningStore     = warningView[0].getStore(),
+                    insuranceWarning = warningStore.findExact('warning_type', 'insuranceExpiration');
+                if (insuranceWarning !== -1) {
+                    insuranceWarning = warningStore.getAt(insuranceWarning);
+                    hasExpiredInsurance = insuranceWarning.get('warning_data').expired;
+                }
+            }
             if (
                 data['invoice'].get('invoice_status') == 'open' 
                 && lineView[0].getStore().getCount() > 0
-                && warningView[0].getStore().find('warning_type', 'invoiceDuplicate') === -1
+                && warningStore.findExact('warning_type', 'invoiceDuplicate') === -1
+                && !hasExpiredInsurance
             ) {
                 btn.show();
                 return true;

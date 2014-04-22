@@ -511,6 +511,8 @@ class InvoiceGateway extends AbstractGateway {
 			if ($invoice['invoice_datetm'] !== null) {
 				$select->whereEquals('i.invoice_datetm', '?');
 				$params[] = $invoice['invoice_datetm'];
+			} else {
+				$select->whereIsNull('i.invoice_datetm');
 			}
 
 			$params[] = $invoice['entity_amount'];
@@ -812,7 +814,7 @@ class InvoiceGateway extends AbstractGateway {
 	 * @param  string $sort
 	 * @return array
 	 */
-	public function findHistoryLog($invoice_id, $pageSize=null, $page=null, $sort="approve_datetm") {
+	public function findHistoryLog($invoice_id, $showAudit=false, $pageSize=null, $page=null, $sort="approve_datetm") {
 		// Add approval log records
 		$select = new ApproveSelect();
 		$select->addHistoryLogSpecification()
@@ -823,9 +825,16 @@ class InvoiceGateway extends AbstractGateway {
 
 		// Add log items for images, splits, vendor connect
 		$unions = ['ImageDeleted'=>true,'ImageScanned'=>true,'ImageIndexed'=>true,
-				'ImageAdded'=>true, 'SplitAudit'=>true,'VendorConnect'=>true, 
-				'InvoiceCreated'=>false, 'InvoiceActivated'=>false, 'InvoiceAudit'=>false,
-				'InvoiceItemAudit'=>false];
+				'ImageAdded'=>true, 'VendorConnect'=>true, 'InvoiceCreated'=>false,
+				'InvoiceActivated'=>false];
+
+		if ($showAudit) {
+			$unions = array_merge($unions, [
+				'SplitAudit'       =>true,
+				'InvoiceAudit'     =>false,
+				'InvoiceItemAudit' =>false
+			]);
+		}
 
 		// Loop through items since they all use the same format/parameters
 		foreach ($unions as $union=>$useTableNameParam) {
@@ -964,6 +973,49 @@ class InvoiceGateway extends AbstractGateway {
         }
 
         return $this->adapter->query($select, $params);
+    }
+
+    /**
+     * Gets the total amount allocated to invoices for a certain GL/GL Category, property, and period
+     */
+    public function getTotalAmountByBudget($glaccount_id, $property_id, $start_period, $end_period=null, $isCategory=false) {
+    	$budgetCompareWithTax = $this->configService->get('PN.Intl.budgetCompareWithTax', '1');
+    	$col = 'ISNULL(SUM(ISNULL(ii.invoiceitem_amount, 0) + ISNULL(ii.invoiceitem_shipping, 0)';
+    	if ($budgetCompareWithTax == '1') {
+    		$col .= ' + ISNULL(ii.invoiceitem_salestax, 0)';
+    	}
+    	$col .= '), 0)';
+
+    	$select = Select::get()
+    		->column(
+    			new Expression($col),
+    			'invoice_total'
+    		)
+    		->from(['i'=>'invoice'])
+    			->join(new sql\join\InvoiceInvoiceItemJoin([]))
+    		->whereNotIn('i.invoice_status', "'posted', 'paid', 'rejected', 'draft', 'void'")
+    		->whereEquals('ii.property_id', '?');
+
+    	if ($isCategory) {
+    		$select->join(new \NP\gl\sql\join\GlAccountTreeJoin([], Select::JOIN_INNER, 'tr', 'ii'))
+    			->join(new \NP\system\sql\join\TreeTreeParentJoin([]))
+    			->whereEquals('tr2.tablekey_id', '?');
+    	} else {
+    		$select->whereEquals('ii.glaccount_id', '?');
+    	}
+
+		$params = [$property_id, $glaccount_id];
+		if (!empty($end_period)) {
+			$select->whereBetween('ii.invoiceitem_period', '?', '?');
+			array_push($params, $start_period, $end_period);
+		} else {
+			$select->whereEquals('ii.invoiceitem_period', '?');
+			$params[] = $start_period;
+		}
+
+    	$res = $this->adapter->query($select, $params);
+
+    	return (float)$res[0]['invoice_total'];
     }
 }
 

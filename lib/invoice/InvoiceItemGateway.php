@@ -167,6 +167,26 @@ class InvoiceItemGateway extends AbstractGateway {
 
 		return $this->adapter->query($select, [$invoice_id]);
 	}
+
+	/**
+	 * Finds lines on an invice that would be invalid if the property were changed to
+	 * the property passed in
+	 */
+	public function findInvalidLinesForProperty($invoice_id, $property_id) {
+		$select = Select::get()
+					->column('invoiceitem_id')
+					->from(['ii'=>'invoiceitem'])
+						->join(new sql\join\InvoiceItemInvoiceJoin())
+					->whereEquals('ii.invoice_id', '?')
+					->whereEquals('ii.property_id', 'i.property_id')
+					->whereExists(
+						Select::get()->from(['pg'=>'propertyglaccount'])
+									->whereEquals('pg.glaccount_id', 'ii.glaccount_id')
+									->whereEquals('pg.property_id', '?')
+					);
+
+		return $this->adapter->query($select, [$invoice_id, $property_id]);
+	}
 }
 
 ?>

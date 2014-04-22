@@ -27,7 +27,7 @@ class InvoiceHtmlRenderer extends AbstractInvoiceRenderer implements InvoiceRend
 			'phone_countrycode' => $this->invoice['property_phone_countrycode']
 		];
 		
-		echo '<link rel="stylesheet" href="resources/entity.css" />' .
+		echo '<link rel="stylesheet" href="' . $this->configService->getLoginUrl() . '/resources/entity.css" />' .
 			'<table width="100%" id="entityPrintTable">' .
 			'<tr>' .
     			'<td width="75%">';

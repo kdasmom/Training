@@ -439,14 +439,12 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                     '{glaccount_number}' +
                     '<tpl if="this.arrayContains(this.getEntityRecord().get(\''+me.longType+'_status\'), \'saved\',\'paid\',\'submitted\',\'sent\') == false">' +
                         '<tpl if="this.showBudgetComparison()">' +
-                            // TODO: listen to clickshowbudget event and build budget detail popup
-                            '&nbsp;<a class="showBudgetBtn">' +
+                            '&nbsp;' +
                             '<tpl if="budget_variance < 0">' +
-                                '<img src="resources/images/budget_warning.gif" />' +
+                                '<img src="resources/images/budget_warning.gif" class="showBudgetBtn" />' +
                             '<tpl else>' +
-                                '<img src="resources/images/budget_view.gif" />' +
+                                '<img src="resources/images/budget_view.gif" class="showBudgetBtn" />' +
                             '</tpl>' +
-                            '</a>' +
                         '</tpl>' +
                     '</tpl>' +
                 '</div>' +

@@ -10,22 +10,28 @@ use NP\property\FiscalCalService;
 use NP\image\ImageService;
 use NP\jobcosting\JobCostingService;
 use NP\vendor\VendorService;
+use NP\notification\NotificationService;
 use NP\util\Util;
+use NP\invoice\InvoiceEntity;
+use NP\invoice\InvoiceItemEntity;
+use NP\po\PurchaseOrderEntity;
+use NP\po\PoItemEntity;
 
 /**
  * Service class for operations related to both Invoices and POs, to be extended by both the PO and Invoice class
  *
  * @author Thomas Messier
  */
-Abstract class AbstractInvoicePoService extends AbstractService {
+abstract class AbstractEntityService extends AbstractService {
 
 	/**
 	 * You must override this and set it to "po" or "invoice"
 	 */
 	protected $type;
 
-	protected $table, $itemTable, $pkField, $itemPkField, $configService, $securityService, 
-			$fiscalCalService, $budgetService, $imageService, $jobCostingService, $vendorService;
+	protected $table, $itemTable, $pkField, $itemPkField, $module, $configService, $securityService, 
+			$fiscalCalService, $budgetService, $imageService, $jobCostingService, $vendorService,
+			$notificationService;
 	
 	public function __construct(FiscalCalService $fiscalCalService,
 								BudgetService $budgetService, ImageService $imageService,
@@ -36,6 +42,7 @@ Abstract class AbstractInvoicePoService extends AbstractService {
 		$this->jobCostingService = $jobCostingService;
 		$this->vendorService     = $vendorService;
 
+		$this->module = $this->type;
 		if ($this->type === 'invoice') {
 			$this->table       = 'invoice';
 			$this->title       = 'Invoice';
@@ -54,6 +61,7 @@ Abstract class AbstractInvoicePoService extends AbstractService {
 			$this->itemTable   = 'rctitem';
 			$this->gateway     = $this->table;
 			$this->itemGateway = 'rctItem';
+			$this->module      = 'po';
 		} else {
 			throw new \NP\core\Exception('Invalid value for the $type property. It must be set to either "invoice" or "po"');
 		}
@@ -74,6 +82,10 @@ Abstract class AbstractInvoicePoService extends AbstractService {
 
 	public function setSecurityService(SecurityService $securityService) {
 		$this->securityService = $securityService;
+	}
+
+	public function setNotificationService(NotificationService $notificationService) {
+		$this->notificationService = $notificationService;
 	}
 
 	/**
@@ -218,9 +230,66 @@ Abstract class AbstractInvoicePoService extends AbstractService {
 		return $this->invoicePoForwardGateway->findByEntity($this->table, $entity_id);
 	}
 
-	public function getHistoryLog($entity_id, $pageSize=null, $page=null, $sort="approve_datetm") {
+	public function getHistoryLog($entity_id, $showAudit=false, $pageSize=null, $page=null, $sort="approve_datetm") {
 		$gateway = "{$this->gateway}Gateway";
-		return $this->$gateway->findHistoryLog($entity_id, $pageSize, $page, $sort);
+		return $this->$gateway->findHistoryLog($entity_id, $showAudit, $pageSize, $page, $sort);
+	}
+
+	public function getHistoryLogDetail($approve_id, $entity_id) {
+		$approve = $this->approveGateway->findById($approve_id);
+		$data    = ['approve'=>$approve];
+		
+		if ($approve['approvetype_name'] == 'modified' && ($approve['approve_message'] == 'Modify GL' || $approve['approve_message'] == 'This receipt has been modified.')) {
+			$data['gl_mod']   = $this->approveGlLogGateway->getModifiedGl($approve_id);
+			$data['desc_mod'] = $this->approveGlLogGateway->getModifiedDesc($approve_id);
+		}
+
+		if (!empty($approve['wftarget_id'])) {
+			$target = $this->wfRuleTargetGateway->findById($approve['wftarget_id']);
+			$property_id = $target['tablekey_id'];
+		} else {
+			$gtw = "{$this->gateway}Gateway";
+			$property_id = $this->$gtw->findValue(
+				[$this->pkField => '?'],
+				[$entity_id],
+				'property_id'
+			);
+		}
+
+		if ($approve['forwardto_tablename'] == 'role') {
+			$role = $this->roleGateway->findById($approve['forwardto_tablekeyid']);
+			$data['forward_name'] = $role['role_name'];
+			$data['forward_users'] = $this->userprofileGateway->findByFilter('active', $property_id, $role['role_id']);
+		} else if (!empty($approve['forwardto_tablename'])) {
+			if ($approve['approvetype_name'] != 'hold') {
+				$data['forward_name'] = $this->userprofileGateway->findSingle(
+					'ur.userprofilerole_id = ?',
+					[$approve['forwardto_tablekeyid']]
+				);
+				$data['forward_name'] = $data['forward_name']['person_firstname'] . ' ' . $data['forward_name']['person_lastname'];
+			}
+		}
+
+		$data['property_name'] = $this->propertyGateway->findValue(
+			'property_id = ?',
+			[$property_id],
+			'property_name'
+		);
+
+		if (!empty($approve['wfrule_id'])) {
+			$data['wfrule'] = $this->wfRuleGateway->getRuleData($approve['wfrule_id']);
+			$data['wfrule'] = array_pop($data['wfrule']);
+		}
+
+		if ($approve['approvetype_name'] == 'void') {
+			$data['void_note'] = $this->noteGateway->findValue(
+				['table_name'=>'invoice', 'tablekey_id'=>'?', 'objtype_id_alt'=>2],
+				[$entity_id],
+				'note'
+			);
+		}
+
+		return $data;
 	}
 
 	/**
@@ -228,6 +297,100 @@ Abstract class AbstractInvoicePoService extends AbstractService {
 	 */
 	public function getRejectionNotes($entity_id) {
 		return $this->rejectionHistoryGateway->findRejectionNotes($this->table, $entity_id);
+	}
+
+	/**
+	 * Get info 
+	 */
+	public function getLineBudgetInfo($item_id, $type='account', $includeYear=false) {
+		$itemGtw = "{$this->itemGateway}Gateway";
+		$item = $this->$itemGtw->findById($item_id, [
+			'property_id',
+			'glaccount_id',
+			'item_period' => "{$this->itemTable}_period"
+		]);
+
+		$gl                   = $this->glAccountGateway->findById($item['glaccount_id']);
+		$period               = \DateTime::createFromFormat(Util::getServerDateFormat(), $item['item_period']);
+		$budgetCompareWithTax = $this->configService->get('PN.Intl.budgetCompareWithTax', '1');
+
+		$data = [
+			'property_name'  => $this->propertyGateway->findValue('property_id = ?', [$item['property_id']], 'property_name'),
+			'glaccount_name' => ($type == 'account') ? $gl['glaccount_name'] : $gl['glaccount_category'],
+			'month'          => (int)$period->format('n')
+		];
+		
+		$data['package_type_name'] = $this->propertyGateway->findSingle(
+			'pr.property_id = ?',
+			[$item['property_id']],
+			[],
+			null,
+			[
+				new \NP\property\sql\join\PropertyIntPkgJoin([]),
+				new \NP\system\sql\join\IntPkgIntPkgTypeJoin()
+			]
+		);
+		$data['package_type_name'] = $data['package_type_name']['Integration_Package_Type_Display_Name'];
+
+		$isCategory = ($type == 'category') ? true : false;
+		$fn = ($isCategory) ? 'getCategoryBudgetByPeriod' : 'getAccountBudgetByPeriod';
+		$glaccount_id = ($isCategory) ? $gl['glaccount_category_id'] : $gl['glaccount_id'];
+
+		$budget = $this->budgetGateway->$fn($glaccount_id, $item['property_id'], $item['item_period']);
+
+		$invoiceAmount = $this->invoiceGateway->getTotalAmountByBudget(
+			$glaccount_id,
+			$item['property_id'],
+			$item['item_period'],
+			null,
+			$isCategory
+		);
+
+		$poAmount = $this->purchaseOrderGateway->getTotalAmountByBudget(
+			$glaccount_id,
+			$item['property_id'],
+			$item['item_period'],
+			null,
+			$isCategory
+		);
+
+		$data['month_budget']  = $budget['budget_amount'];
+		$data['month_actual']  = $budget['actual_amount'];
+		$data['month_invoice'] = $invoiceAmount;
+		$data['month_po']      = $poAmount;
+
+		if ($includeYear) {
+			
+			$fiscalYear   = $this->fiscalCalService->getFiscalYear($item['property_id'], $period);
+			$start_period = Util::formatDateForDB($fiscalYear['start']);
+			$end_period   = Util::formatDateForDB($fiscalYear['end']);
+
+			$budget = $this->budgetGateway->$fn($glaccount_id, $item['property_id'], $start_period, $end_period);
+
+			$invoiceAmount = $this->invoiceGateway->getTotalAmountByBudget(
+				$glaccount_id,
+				$item['property_id'],
+				$start_period,
+				$end_period,
+				$isCategory
+			);
+
+			$poAmount = $this->purchaseOrderGateway->getTotalAmountByBudget(
+				$glaccount_id,
+				$item['property_id'],
+				$start_period,
+				$end_period,
+				$isCategory
+			);
+
+			$data['year']         = $fiscalYear['year'];
+			$data['year_budget']  = $budget['budget_amount'];
+			$data['year_actual']  = $budget['actual_amount'];
+			$data['year_invoice'] = $invoiceAmount;
+			$data['year_po']      = $poAmount;
+		}
+
+		return $data;
 	}
 
 	/**
@@ -360,9 +523,6 @@ Abstract class AbstractInvoicePoService extends AbstractService {
     	
     	try {
     		$new_primary_image = $this->imageService->attach($entity_id, $this->title, $image_index_id_list);
-
-	    	// TODO: add code for auditing (from dbo.INVOICEIMAGE_ATTACH_IMAGE_TO_INVOICE_SAVE.PRC)
-
     	} catch(\Exception $e) {
     		$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
     	}
@@ -423,6 +583,114 @@ Abstract class AbstractInvoicePoService extends AbstractService {
 			'errors'             => $errors,
 			'new_primary_image'  => $newPrimary
 	    );
+    }
+
+    /**
+     * Changes the property on an invoice or PO
+     */
+    public function changeProperty($entity_id, $property_id) {
+    	$gtw = "{$this->gateway}Gateway";
+    	$itemGtw = "{$this->itemGateway}Gateway";
+
+    	$old_property_id = $this->$gtw->findValue(
+    		[$this->pkField => '?'],
+			[$entity_id],
+			'property_id'
+		);
+
+		$property_name = $this->propertyGateway->findValue(
+    		['property_id' => '?'],
+			[$property_id],
+			'property_name'
+		);
+
+		$old_property_name = $this->propertyGateway->findValue(
+    		['property_id' => '?'],
+			[$old_property_id],
+			'property_name'
+		);
+    	
+		if ($property_id !== $old_property_id) {
+			if ($this->configService->get('CP.PROPERTYGLACCOUNT_USE', '0') == '1') {
+				$invalid = $this->$itemGtw->findInvalidLinesForProperty($entity_id, $property_id);
+			} else {
+				$invalid = [];
+			}
+
+			$invalidIds = Util::valueList($invalid, $this->itemPkField);
+			$where = [
+				['equals', $this->pkField, '?'],
+				['equals', 'property_id', '?']
+			];
+			$params = [$entity_id, $old_property_id];
+			if (count($invalidIds)) {
+				$where[] = ['notIn', $this->itemPkField, $this->$itemGtw->createPlaceholders($invalidIds)];
+				$params = array_merge($params, $invalidIds);
+			}
+
+			$validLines = $this->$itemGtw->find(
+				$where,
+				$params,
+				null,
+				[$this->itemPkField, 'glaccount_id', "{$this->itemTable}_period"]
+			);
+
+			$errors = [];
+			$this->$itemGtw->beginTransaction();
+			
+			try {
+				$this->$gtw->update([
+					$this->pkField => $entity_id,
+					'property_id'  => $property_id
+				]);
+
+				$this->audit([
+					'field_name'      => 'property_id',
+					'field_new_value' => $property_name,
+					'field_old_value' => $old_property_name,
+					'tablekey_id'     => $entity_id
+				], $this->table, 'modified');
+
+				foreach ($validLines as $validLine) {
+					$this->$itemGtw->update([
+						$this->itemPkField => $validLine[$this->itemPkField],
+						'property_id'      => $property_id
+					]);
+
+					$this->audit([
+						'field_name'      => 'property_id',
+						'field_new_value' => $property_name,
+						'field_old_value' => $old_property_name,
+						'tablekey_id'     => $validLine[$this->itemPkField]
+					], $this->itemTable, 'modified');
+
+					$itemPeriod = $validLine["{$this->itemTable}_period"];
+					$itemPeriod = \DateTime::createFromFormat(\NP\util\Util::getServerDateFormat(), $itemPeriod);
+
+					$this->budgetService->createBudget(
+						$property_id,
+						$validLine['glaccount_id'],
+						$itemPeriod,
+						0,
+						0
+					);
+				}
+			} catch(\Exception $e) {
+				$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+			}
+			
+			if (count($errors)) {
+				$this->$itemGtw->rollback();
+			} else {
+				$this->$itemGtw->commit();
+			}
+			
+			return array(
+				'success'      => (count($errors)) ? false : true,
+				'errors'       => $errors,
+				'invalidLines' => count($invalidIds)
+			);
+		}
     }
 
 	public function unlinkPoFromInvoice($invoice_id) {
@@ -633,9 +901,6 @@ Abstract class AbstractInvoicePoService extends AbstractService {
 			['table_name'=>'?', 'tablekey_id'=>'?'],
 			[$this->itemTable, $item_id]
 		);
-
-		// TODO: add code to deal with jobcosting contract actuals
-		
 	}
 
 	/**
@@ -948,5 +1213,103 @@ Abstract class AbstractInvoicePoService extends AbstractService {
 			'errors'    => $errors,
 			'entity_id' => $entity_id
 		);
+	}
+
+	public function auditEntity($entity_id, \NP\core\AbstractEntity $oldEntity, $oldLines) {
+		$gtw                          = "{$this->gateway}Gateway";
+		$itemGtw                      = "{$this->itemGateway}Gateway";
+		$entityClass                  = "NP\\{$this->module}\\" . ucfirst($this->gateway) . 'Entity';
+		$itemClass                    = "NP\\{$this->module}\\" . ucfirst($this->itemGateway) . 'Entity';
+
+		$errors = [];
+		$this->$gtw->beginTransaction();
+		
+		try {
+			$newEntity = $this->invoiceGateway->findSingle(
+				[$this->pkField => '?'],
+				[$entity_id]
+			);
+
+			$newEntity = new $entityClass($newEntity);
+
+			$auditor = new \NP\shared\EntityModificationAuditor(
+				$this->configService,
+				$this->gatewayManager,
+				$this->table,
+				$this->securityService->getUserId(),
+				$this->securityService->getDelegatedUserId()
+			);
+			$auditor->audit($newEntity, $oldEntity);
+
+			$newLines = $this->$itemGtw->find(
+				"{$this->pkField} = ?",
+				[$entity_id]
+			);
+			foreach ($newLines as $i=>$newLine) {
+				foreach ($oldLines as $j=>$oldLine) {
+					if ($oldLine[$this->itemPkField] == $newLine[$this->itemPkField]) {
+						$oldLine = new $itemClass($oldLine);
+						$newLine = new $itemClass($newLine);
+
+						$auditor->audit($newLine, $oldLine);
+						break;
+					}
+				}
+			}
+		} catch(\Exception $e) {
+			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+		
+		if (count($errors)) {
+			$this->$gtw->rollback();
+		} else {
+			$this->$gtw->commit();
+		}
+		
+		return array(
+		    'success' => (count($errors)) ? false : true,
+		    'errors'  => $errors
+		);
+	}
+
+	/**
+	 * 
+	 */
+	public function auditModifyGl(\NP\core\AbstractEntity $newLine, \NP\core\AbstractEntity $oldLine) {
+		$approvetype_id = $this->approveTypeGateway->getIdByName('modified');
+		$pkField        = $this->pkField;
+
+		// Save an approve record
+		$approve = new \NP\workflow\ApproveEntity([
+			'table_name'                   => $this->table,
+			'tablekey_id'                  => $newLine->$pkField,
+			'userprofile_id'               => $this->securityService->getUserId(),
+			'delegation_to_userprofile_id' => $this->securityService->getDelegatedUserId(),
+			'approve_status'               => 'inactive',
+			'approve_message'              => 'Modify GL',
+			'approvetype_id'               => $approvetype_id
+		]);
+		$this->approveGateway->insert($approve);
+		
+		$itemPk = $this->itemPkField;
+
+		if ($oldLine->glaccount_id !== $newLine->glaccount_id) {
+			$this->approveGlLogGateway->insert([
+				'approve_id'           => $approve->approve_id,
+				'lineitem_id'          => $newLine->$itemPk,
+				'approvegllog_gl_from' => $oldLine->glaccount_id,
+				'approvegllog_gl_to'   => $newLine->glaccount_id
+			]);
+		}
+
+		$descField = $this->itemTable . '_description';
+		if (trim($oldLine->$descField) !== trim($newLine->$descField)) {
+			$this->approveGlLogGateway->insert([
+				'approve_id'             => $approve->approve_id,
+				'lineitem_id'            => $newLine->$itemPk,
+				'approvegllog_desc_from' => $oldLine->$descField,
+				'approvegllog_desc_to'   => $newLine->$descField
+			]);
+		}
 	}
 }

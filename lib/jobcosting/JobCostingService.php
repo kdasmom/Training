@@ -148,7 +148,6 @@ class JobCostingService extends AbstractService {
 		    'errors'  => $errors
 		);
 	}
-	
 }
 
 ?>
