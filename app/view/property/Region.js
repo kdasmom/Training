@@ -53,7 +53,7 @@ Ext.define('NP.view.property.Region', {
 
     saveHandler: function(addAnother) {
     	// Overriding the function to update the user's region store as well
-		this.callParent(addAnother, function(rec) {
+		this.callParent([addAnother, function(rec) {
             var userRegionStore = Ext.getStore('user.Regions');
             var userRec = userRegionStore.findRecord('region_id', rec.get('region_id'));
             if (userRec !== null) {
@@ -61,6 +61,6 @@ Ext.define('NP.view.property.Region', {
             } else if (rec.get('universal_field_status') != 0) {
                 userRegionStore.add(rec.copy());
             }
-        });
+        }]);
 	}
 });
