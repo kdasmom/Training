@@ -51,9 +51,9 @@ Ext.define('NP.view.property.Region', {
     	this.callParent(arguments);
     },
 
-    saveHandler: function(addAnother) {
+    saveHandler: function(addAnother, editNext) {
     	// Overriding the function to update the user's region store as well
-		this.callParent([addAnother, function(rec) {
+		this.callParent([addAnother, editNext, function(rec) {
             var userRegionStore = Ext.getStore('user.Regions');
             var userRec = userRegionStore.findRecord('region_id', rec.get('region_id'));
             if (userRec !== null) {
