@@ -707,16 +707,16 @@ class VendorGateway extends AbstractGateway {
 						'vs_vendorsite_tax_reporting_flag' => 'vendorsite_tax_reporting_flag',
 						'vs_vendorsite_status' => 'vendorsite_status',
 						'vs_vendor_universalfield1' => 'vendor_universalfield1',
-						'vendorsite_account_number' => 'vendorsite_account_number',
-						'vendorsite_display_account_number_po' => 'vendorsite_display_account_number_po',
-						'vendorsite_DaysNotice_InsuranceExpires' => 'vendorsite_DaysNotice_InsuranceExpires',
+						'vs_vendorsite_account_number' => 'vendorsite_account_number',
+						'vs_vendorsite_display_account_number_po' => 'vendorsite_display_account_number_po',
+						'vs_vendorsite_DaysNotice_InsuranceExpires' => 'vendorsite_DaysNotice_InsuranceExpires',
 					])
-					->join(['p' => 'phone'], 'p.tablekey_id = vs.vendorsite_id', ['vendorsite_phone_number' => 'phone_number', 'vendorsite_phone_ext' => 'phone_ext', 'vendorsite_phone_id' => 'phone_id'], Select::JOIN_LEFT)
-					->join(['f' => 'phone'], 'f.tablekey_id = vs.vendorsite_id', ['vendorsite_fax_phone_number' => 'phone_number', 'vendorsite_fax_id' => 'phone_id'], Select::JOIN_LEFT)
+					->join(['p' => 'phone'], 'p.tablekey_id = vs.vendorsite_id', ['vendorsite_phone_countrycode' => 'phone_countrycode', 'vendorsite_phone_number' => 'phone_number', 'vendorsite_phone_ext' => 'phone_ext', 'vendorsite_phone_id' => 'phone_id'], Select::JOIN_LEFT)
+					->join(['f' => 'phone'], 'f.tablekey_id = vs.vendorsite_id', ['vendorsite_fax_phone_countrycode' => 'phone_countrycode', 'vendorsite_fax_phone_number' => 'phone_number', 'vendorsite_fax_id' => 'phone_id'], Select::JOIN_LEFT)
 					->join(['a' => 'address'], 'a.tablekey_id = vs.vendorsite_id', ['address_id', 'addresstype_id', 'tablekey_id', 'table_name', 'address_attn', 'address_company', 'address_line1', 'address_line2', 'address_line3', 'address_city', 'address_state', 'address_zip', 'address_zipext', 'address_country', 'address_id_alt'], Select::JOIN_LEFT)
 					->join(['c' => 'contact'], 'c.tablekey_id = vs.vendorsite_id', [], Select::JOIN_LEFT)
 					->join(['ps' => 'person'], 'ps.person_id = c.person_id', ['person_id','asp_client_id', 'person_title', 'person_firstname', 'person_middlename', 'person_lastname', 'person_suffix', 'person_ssn', 'person_gender', 'person_birthdate', 'personmarital_id', 'person_passport_no'], Select::JOIN_LEFT)
-					->join(['pc' => 'phone'], 'pc.tablekey_id = c.contact_id', ['attention_phone_number' => 'phone_number', 'attention_phone_ext' => 'phone_ext', 'attention_phone_id' => 'phone_id'], Select::JOIN_LEFT)
+					->join(['pc' => 'phone'], 'pc.tablekey_id = c.contact_id', ['attention_phone_countrycode' => 'phone_countrycode', 'attention_phone_number' => 'phone_number', 'attention_phone_ext' => 'phone_ext', 'attention_phone_id' => 'phone_id'], Select::JOIN_LEFT)
 					->join(['e' => 'email'], 'e.tablekey_id = vs.vendorsite_id', ['email_id', 'email_address'], Select::JOIN_LEFT)
 					->where(
 								[

@@ -852,15 +852,6 @@ Ext.define('NP.controller.VendorManager', {
 		}
 
 		function buttonForTab(app_count, vendor_status, tabName, bar, submit_userprofile_id, vendor_id) {
-			//todo delete
-			bar.push(
-				{
-					xtype: 'shared.button.save',
-					handler: function() {
-						that.saveVendor('active');
-					}
-				}
-			);
 			if (tabName !== 'altaddresses') {
 
 //				Non-Approver editing an active vendor with no pending edits

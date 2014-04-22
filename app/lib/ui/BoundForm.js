@@ -163,6 +163,11 @@ Ext.define('NP.lib.ui.BoundForm', {
 				var field = that.findField(model.prefix + col.name);
 				if (field) {
 					var val = (field.getGroupValue) ? field.getGroupValue() : field.getValue();
+
+					if (field.xtype == 'checkbox') {
+						val = (val) ? 1: 0;
+					}
+
 					model.instance.set(col.name, val);
 				}
 			});
@@ -248,7 +253,7 @@ Ext.define('NP.lib.ui.BoundForm', {
 		Ext.suspendLayouts();
 
 		this.updateBoundModels();
-		
+
 		var valid = this.getForm().isValid(options);
 		var modelValid = true;
 		

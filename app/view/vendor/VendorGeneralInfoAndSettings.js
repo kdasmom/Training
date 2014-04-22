@@ -48,8 +48,6 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
 	submitPosToVendorInputLabel: 'Electronically Submit Pos to Vendor',
 	autoEmailInputLabel: 'Auto email approved PO to vendor',
 
-
-
 	// Custom options
 	opened: false,
 
@@ -282,12 +280,12 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
             {
                 xtype: 'textfield',
                 fieldLabel: this.accountNumberInputLabel,
-                name: 'vendorsite_account_number'
+                name: 'vs_vendorsite_account_number'
             },
             {
                 xtype: 'checkbox',
                 fieldLabel:this.printViewInputLabel,
-                name: 'vendorsite_display_account_number_po'
+                name: 'vs_vendorsite_display_account_number_po'
             },
             {
                 xtype: 'shared.yesnofield',
@@ -347,14 +345,12 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
 			this.items.push({
 				xtype: 'checkbox',
 				name: 'remit_req',
-				fieldLabel: this.remittanceAdviceInputLabel,
-				inputValue: 1
+				fieldLabel: this.remittanceAdviceInputLabel
 			});
 			this.items.push({
 				xtype: 'checkbox',
 				name: 'insurance_req',
-				fieldLabel: this.requiresVendorInputLabel,
-				inputValue: 1
+				fieldLabel: this.requiresVendorInputLabel
 			});
 		} else {
 			this.items.push(
