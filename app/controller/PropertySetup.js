@@ -121,7 +121,8 @@ Ext.define('NP.controller.PropertySetup', {
 				click: this.savePropertyCalendarCutoffs
 			},
 			// The save button on the master closing calendar form
-			'[xtype="property.calendar"] [xtype="shared.button.save"]': {
+//			'[xtype="property.calendar"] [xtype="shared.button.save"]': {
+			'[xtype="property.fiscalcalendarform"] [xtype="shared.button.save"]': {
 				click: this.saveCalendarCutoffs
 			},
 			// The add fiscal calendar button
@@ -171,6 +172,9 @@ Ext.define('NP.controller.PropertySetup', {
 			},
 			'[xtype="property.fiscalcalendarform"] [xtype="shared.button.createfrom"]': {
 				click: this.showDistributor
+			},
+			'[xtype="property.closingcalendardistibutor"] [xtype="shared.button.save"]': {
+				click: this.saveDistributor
 			}
 		});
 	},
@@ -455,6 +459,7 @@ Ext.define('NP.controller.PropertySetup', {
 			    		}
 
 			    		var fiscalCalField = form.findField('fiscalcal_id');
+			    		var monthField = form.findField('fiscaldisplaytype_value');
 			    		fiscalCalField.getStore().load();
 			    		fiscalCalField.show();
 
@@ -503,6 +508,14 @@ Ext.define('NP.controller.PropertySetup', {
 
 					// Resume layouts now that fields and tabs have been updated
 					Ext.resumeLayouts(true);
+					if (!property_id) {
+						monthField.getStore().each(function(record) {
+							if (record.get('fiscaldisplaytype_order') == NP.model.property.Property.JAN_OF_CURRENT_YEAR_ORDER) {
+								monthField.setValue(record.get('fiscaldisplaytype_id'));
+								return;
+							}
+						})
+					}
 				},
 				failure: function(response, options) {}
 			}
@@ -1093,6 +1106,11 @@ Ext.define('NP.controller.PropertySetup', {
 		}
 	},
 
+	/**
+	 * show distributor form
+	 *
+	 * @param button
+	 */
 	showDistributor: function(button) {
 		var cutoffPanel = button.nextNode('[xtype="property.closingcalendardistibutor"]'),
 			calendarPanel = button.up().up(),
@@ -1108,5 +1126,33 @@ Ext.define('NP.controller.PropertySetup', {
 
 		calendarPanel.hide();
 		cutoffPanel.show();
+	},
+
+	saveDistributor: function(button) {
+		var me = this,
+			calendarpanel = button.up('[xtype="property.closingcalendardistibutor"]'),
+			form = calendarpanel.getForm();
+
+		if (form.isValid) {
+
+			NP.lib.core.Net.remoteCall({
+				method  : 'POST',
+				requests: {
+					service: 'PropertyService',
+					action : 'saveFiscalcalDistributor',
+					data: {
+						asp_client_id: me.selectedFiscalCal.get('asp_client_id'),
+						org_fiscalcal_id: form.findField('Org_fiscalcal_id').getValue(),
+						dest_fiscalcal_id: me.selectedFiscalCal.get('fiscalcal_id')
+					},
+					success: function(result) {
+
+					}
+				}
+			});
+		}
+
+
+		console.log(calendarpanel);
 	}
 });
