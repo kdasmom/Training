@@ -2066,7 +2066,7 @@ Ext.define('NP.controller.AbstractEntityController', {
 		for (i=0; i<fields.getCount(); i++) {
 			field = fields.getAt(i);
 			// Make sure the field has a setReadOnly function
-			if (field.setReadOnly) {
+			if (field.setReadOnly && field.getItemId() != 'entityPropertyCombo') {
 				// Set the readonly status to the appropriate value
 				field.setReadOnly(readonly);
 				// If the field has no value, hide it
