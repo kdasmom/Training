@@ -11,6 +11,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
         'NP.lib.core.Config',
         'NP.lib.core.Translator',
         'Ext.grid.plugin.CellEditing',
+        'Ext.grid.plugin.DragDrop',
         'Ext.grid.column.Action',
         'NP.lib.ui.AutoComplete',
         'NP.view.shared.button.New',
@@ -44,11 +45,12 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
     stateful       : true,
     
     initComponent: function() {
-        var me               = this,
-            customFields     = NP.Config.getCustomFields().line.fields,
-            typeShort        = (me.type == 'invoice') ? 'inv' : 'po',
-            invoiceView      = null,
-            invoiceStatus    = null;
+        var me           = this,
+            customFields = NP.Config.getCustomFields().line.fields,
+            typeShort    = (me.type == 'invoice') ? 'inv' : 'po',
+            orderSetting = (me.type == 'invoice') ? 'CP.INVOICE_ORDER_LINE_ITEM' : 'CP.PO_ORDER_LINE_ITEM',
+            entityView   = null,
+            entityStatus = null;
 
         me.itemPrefix = me.type + 'item';
 
@@ -82,11 +84,11 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
         // can't get it until the data has loaded
         if (me.type == 'invoice') {
             me.on('render', function() {
-                invoiceView = me.up('[xtype="'+me.type+'.view"]')
-                invoiceView.on('dataloaded', function(form, data) {
-                    invoiceStatus = data['invoice_status'];
+                entityView = me.up('[xtype="'+me.type+'.view"]');
+                entityView.on('dataloaded', function(form, data) {
+                    entityStatus = data['invoice_status'];
 
-                    if (invoiceStatus == 'paid') {
+                    if (entityStatus == 'paid') {
                         me.down('#' + me.type + 'LineAddBtn').disable();
                     }
 
@@ -102,6 +104,25 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
         me.plugins = [
             Ext.create('Ext.grid.plugin.CellEditing', { pluginId: 'cellediting', clicksToEdit: 1 })
         ];
+
+        if (NP.Config.getSetting(orderSetting, '0') == 1) {
+            me.viewConfig = {
+                plugins: {
+                    ptype: 'gridviewdragdrop'
+                },
+                listeners: {
+                    beforedrop: function() {
+                        if (Ext.Array.contains(['saved','paid','submitted','sent','draft'], entityStatus)) {
+                            Ext.MessageBox.alert(
+                                NP.Translator.translate('Cannot Re-Order'),
+                                NP.Translator.translate('Line items cannot be re-ordered in this status')
+                            );
+                            return false;
+                        }
+                    }
+                }
+            };
+        }
 
         me.propertyStore = Ext.create('NP.store.property.Properties', {
             service : 'PropertyService',
@@ -142,14 +163,14 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                 resizeable: false,
                 draggable : false,
                 getClass  : function(v, meta, rec, rowIndex) {
-                    if (me.type == 'invoice' && invoiceStatus == 'paid') {
+                    if (me.type == 'invoice' && entityStatus == 'paid') {
                         return '';
                     } else {
                         return 'delete-btn';
                     }
                 },
                 handler: function(view, rowIndex, colIndex, item, e, rec, row) {
-                    if (me.type == 'invoice' && invoiceStatus != 'paid') {
+                    if (me.type == 'invoice' && entityStatus != 'paid') {
                         me.getStore().removeAt(rowIndex);
                     }
                 }
@@ -402,9 +423,12 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                         selectOnFocus : true,
                         useSmartStore : true,
                         store         : {
-                            type: 'jobcosting.jbcontracts',
-                            service: 'JobCostingService',
-                            action : 'getContracts'
+                            type       : 'jobcosting.jbcontracts',
+                            service    : 'JobCostingService',
+                            action     : 'getContracts',
+                            extraParams: {
+                                status: 'active'
+                            }
                         },
                         updateLineFields: {
                             jbcontract_id  : 'jbcontract_id',
@@ -468,7 +492,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                         store         : {
                             type   : 'jobcosting.jbjobcodes',
                             service: 'JobCostingService',
-                            action : 'getJobCodes'
+                            action : 'getJobCodesByFilter'
                         },
                         updateLineFields: {
                             jbjobcode_id  : 'jbjobcode_id',

@@ -12,15 +12,6 @@ Ext.define('NP.view.invoice.ViewNotes', {
     	'Ext.layout.container.Table'
     ],
 
-    // For localization
-	title               : 'Notes',
-	noteFieldLbl        : 'Notes',
-	rejectNoteFieldLbl  : 'Rejection Notes',
-	rejectReasonFieldLbl: 'Rejection Reason',
-	budgetNoteFieldLbl  : 'Budget Overage Notes',
-	holdNoteFieldLbl    : 'On Hold Notes',
-	vcNoteFieldLbl      : 'VendorConnect Notes',
-
     layout: {
 		type   : 'table',
 		columns: 2,
@@ -41,45 +32,40 @@ Ext.define('NP.view.invoice.ViewNotes', {
     initComponent: function() {
     	var me = this;
 
+    	if (Ext.isEmpty(me.type) || !Ext.Array.contains(['po','invoice'], me.type)) {
+    		throw 'Invalid "type" config value specified. "type" must be set to either "invoice" or "po"';
+    	}
+
+        me.longName = (me.type == 'invoice') ? 'invoice' : 'purchaseorder';
+
+    	me.title = NP.Translator.translate('Notes');
+
     	me.defaults = { labelAlign: 'top', width: '100%' };
 
     	me.items = [
     		{
 				xtype     : 'textarea',
-				fieldLabel: me.noteFieldLbl,
-				name      : 'invoice_note'
-    		},{
-    			xtype     : 'displayfield',
-    			fieldLabel: me.rejectNoteFieldLbl,
-    			name      : 'invoice_reject_note',
-				hidden    : true,
-				listeners: {
-					change: me.onNoteFieldChange
-				}
-    		},{
-    			xtype     : 'displayfield',
-    			fieldLabel: me.rejectReasonFieldLbl,
-    			name      : 'invoice_reject_reason',
-				hidden    : true,
-				listeners: {
-					change: me.onNoteFieldChange
-				}
+				fieldLabel: NP.Translator.translate('Notes'),
+				name      : me.longName + '_note'
     		}
     	];
 
-    	if (NP.Config.getSetting('PN.InvoiceOptions.BudgetOverNotesOn') == '1') {
+    	if (
+    		(me.type == 'invoice' && NP.Config.getSetting('PN.InvoiceOptions.BudgetOverNotesOn', '0') == '1')
+    		|| (me.type == 'po' && NP.Config.getSetting('PN.POOptions.BudgetOverNotesOn', '0') == '1')
+    	) {
     		me.items.push({
     			xtype     : 'textarea',
-				fieldLabel: me.budgetNoteFieldLbl,
-				name      : 'invoice_budgetoverage_note'
+				fieldLabel: NP.Translator.translate('Budget Overage Notes'),
+				name      : me.longName + '_budgetoverage_note'
     		});
     	}
 
-    	if (NP.Config.getSetting('PN.InvoiceOptions.HoldOn') == '1') {
+    	if (me.type == 'invoice' && NP.Config.getSetting('PN.InvoiceOptions.HoldOn') == '1') {
     		me.items.push({
     			xtype     : 'displayfield',
-    			fieldLabel: me.holdNoteFieldLbl,
-    			name      : 'invoice_hold_note',
+    			fieldLabel: NP.Translator.translate('On Hold Notes'),
+    			name      : 'invoice_onhold_notes',
 				hidden    : true,
 				listeners: {
 					change: me.onNoteFieldChange
@@ -87,21 +73,43 @@ Ext.define('NP.view.invoice.ViewNotes', {
     		});
     	}
 
-    	me.items.push({
-    		xtype     : 'displayfield',
-			fieldLabel: me.vcNoteFieldLbl,
-			name      : 'vendoraccess_notes',
-			hidden    : true,
-			listeners: {
-				change: me.onNoteFieldChange
-			}
-		});
+        me.items.push(
+            {
+                xtype     : 'displayfield',
+                fieldLabel: NP.Translator.translate('Rejection Notes'),
+                name      : me.longName + '_reject_note',
+                hidden    : true,
+                listeners: {
+                    change: me.onNoteFieldChange
+                }
+            },{
+                xtype     : 'displayfield',
+                fieldLabel: NP.Translator.translate('Rejection Reason'),
+                name      : 'reject_reason',
+                hidden    : true,
+                listeners: {
+                    change: me.onNoteFieldChange
+                }
+            }
+        );
+
+    	if (me.type == 'invoice') {
+	    	me.items.push({
+	    		xtype     : 'displayfield',
+				fieldLabel: NP.Translator.translate('VendorConnect Notes'),
+				name      : 'vendoraccess_notes',
+				hidden    : true,
+				listeners: {
+					change: me.onNoteFieldChange
+				}
+			});
+		}
 
     	me.callParent(arguments);
     },
 
     onNoteFieldChange: function(field, newVal) {
-    	if (newVal === null || newVal == '') {
+        if (newVal === null || newVal == '') {
 			field.hide();
 		} else {
 			field.show();

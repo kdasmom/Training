@@ -432,7 +432,7 @@ abstract class AbstractReportRenderer implements ReportRendererInterface {
 	}
 
 	public function currencyRenderer($val) {
-		return '$' . number_format($val, 2);
+		return $this->configService->get('PN.Intl.currencySymbol', '$') . number_format($val, 2);
 	}
 
 	public function dateRenderer($val) {

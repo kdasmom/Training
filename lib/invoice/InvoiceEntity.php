@@ -141,7 +141,7 @@ class InvoiceEntity extends \NP\core\AbstractEntity {
 				'digits' => array()
 			),
 			'auditable' => [
-				'table'        => 'invoicepaymenttype',
+				'table'        => 'invoicePaymentType',
 				'displayField' => 'invoicepayment_type',
 				'displayName'  => 'Paid By'
 			]
@@ -184,12 +184,14 @@ class InvoiceEntity extends \NP\core\AbstractEntity {
 				'date' => array('format'=>'Y-m-d H:i:s.u')
 			),
 			'auditable' => [
-				'displayNameSetting'=>'PN.General.postPeriodTerm'
+				'displayNameSetting'=>'PN.General.postPeriodTerm',
+				'convert'      => 'convertPeriod'
 			]
 		),
 		'control_amount'	 => array(
 			'auditable' => [
-				'displayName'  => 'Invoice Total'
+				'displayName'  => 'Invoice Total',
+				'convert'      => 'currency'
 			]
 		),
 		'invoice_multiproperty'	 => array(
@@ -310,7 +312,8 @@ class InvoiceEntity extends \NP\core\AbstractEntity {
 				'digits' => array()
 			),
 			'auditable' => [
-				'displayName'  => 'Remittance Advice'
+				'displayName'  => 'Remittance Advice',
+				'convert'      => 'convertRemit'
 			]
 		),
 		'vendoraccess_notes'	 => array(
@@ -323,7 +326,9 @@ class InvoiceEntity extends \NP\core\AbstractEntity {
 				'digits' => array()
 			),
 			'auditable' => [
-				'displayName'  => 'Priority'
+				'displayName'  => 'Priority',
+				'table'        => 'PriorityFlag',
+				'displayField' => 'PriorityFlag_Display'
 			]
 		),
 		'invoice_NeededBy_datetm'	 => array(
@@ -347,5 +352,17 @@ class InvoiceEntity extends \NP\core\AbstractEntity {
 		)
 	);
 
+	public function convertRemit($val) {
+		return (empty($val) || $val === 0) ? 'No' : 'Yes';
+	}
+
+	public function convertPeriod($val) {
+		if (!empty($val)) {
+			$val = \DateTime::createFromFormat(\NP\util\Util::getServerDateFormat(), $val);
+			return $val->format('m/Y');
+		}
+
+		return null;
+	}
 }
 ?>

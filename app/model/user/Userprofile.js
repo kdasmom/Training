@@ -55,6 +55,7 @@ Ext.define('NP.model.user.Userprofile', {
         { name: 'person_firstname' },
         { name: 'person_lastname' },
         { name: 'updated_by_userprofile_username' },
+        { name: 'email_address' },
 
         // Calculated field that doesn't exist in the DB
         {

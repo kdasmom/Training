@@ -57,8 +57,8 @@ class UserService extends AbstractService {
 	 * @param  string $userprofile_status The status of the user (optional); valid values are 'active' or 'inactive'
 	 * @return array
 	 */
-	public function getAll($userprofile_status=null, $property_id=null, $role_id=null, $module_id=null, $pageSize=null, $page=1, $sort='person_lastname') {
-		return $this->userprofileGateway->findByFilter($userprofile_status, $property_id, $role_id, $module_id, $pageSize, $page, $sort);
+	public function getAll($userprofile_status=null, $property_id=null, $role_id=null, $module_id=null, $keyword = null, $pageSize=null, $page=1, $sort='person_lastname') {
+		return $this->userprofileGateway->findByFilter($userprofile_status, $property_id, $role_id, $module_id, $keyword, $pageSize, $page, $sort);
 	}
 
 	/**
@@ -151,6 +151,10 @@ class UserService extends AbstractService {
 	 */
 	public function getUserRegions($userprofile_id, $delegated_to_userprofile_id) {
 		return $this->regionGateway->findByUser($userprofile_id, $delegated_to_userprofile_id);
+	}
+
+	public function getForForward($table_name, $tablekey_id) {
+		return $this->userprofileGateway->findForForward($table_name, $tablekey_id);
 	}
 
 	/**
