@@ -78,31 +78,29 @@ Ext.define('NP.controller.VendorManager', {
             },
 
             '[xtype="vendor.vendorsearch"] customgrid': {
-                viewvendor: this.viewVendor,
-				itemclick: function (grid, rec, item, index, e, eOpts) {
-					if (e.target.tagName == 'IMG') {
-						var el = Ext.get(e.target);
-						if (el.hasCls('view-vendor')) {
-							this.addHistory('VendorManager:showVendorForm:' + rec.get('vendor_id') + ':' + rec.get('vendor_status') + ':' + true);
-						} else{
-							var op = 'add';
-							if (el.hasCls('favorite-remove')) {
-								op = 'remove';
-							}
-							NP.lib.core.Net.remoteCall({
-								requests: {
-									service: 'VendorService',
-									action : 'updateFavorite',
-									vendorsite_id    : rec.get('vendorsite_id'),
-									property_id: NP.Security.getCurrentContext().property_id,
-									op: op,
-									success: function(result, deferred) {
-										var page = grid.getStore().currentPage;
-										grid.getStore().reload();
-									}
-								}
-							})
+                itemclick: function (grid, rec, item, index, e, eOpts) {
+					var el = Ext.get(e.target);
+					if (el.hasCls('favorite-action') || el.up('.favorite-action') !== null) {
+						var op = 'add';
+						if (el.hasCls('favorite-remove') || el.up('.favorite-remove') !== null) {
+							op = 'remove';
 						}
+						NP.lib.core.Net.remoteCall({
+							method  : 'POST',
+							requests: {
+								service      : 'VendorService',
+								action       : 'updateFavorite',
+								vendorsite_id: rec.get('vendorsite_id'),
+								property_id  : NP.Security.getCurrentContext().property_id,
+								op           : op,
+								success      : function(result, deferred) {
+									var page = grid.getStore().currentPage;
+									grid.getStore().reload();
+								}
+							}
+						});
+					} else{
+						this.addHistory('VendorManager:showVendorForm:' + rec.get('vendor_id') + ':' + rec.get('vendor_status') + ':' + true);
 					}
 				}
             },
@@ -409,16 +407,6 @@ Ext.define('NP.controller.VendorManager', {
      */
     showVendorSearchForm: function() {
         this.setView('NP.view.vendor.VendorSearch');
-    },
-
-    /**
-     *  view vendor from search form
-     * @param grid
-     * @param rec
-     * @param rowIndex
-     */
-    viewVendor: function(grid, rec, rowIndex) {
-		this.addHistory('VendorManager:showVendorForm:' + rec.internalId + ':' + rec.get('vendor_status'));
     },
 
 	showBarCallback: function(appcount, isReject, insurance) {

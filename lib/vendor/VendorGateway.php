@@ -649,7 +649,7 @@ class VendorGateway extends AbstractGateway {
 	 * @param $keyword
 	 * @return array|bool
 	 */
-	public function findByKeyword($keyword, $sort = 'vendor_name',$category, $status, $asp_client_id, $integration_package_id,  $pageSize=null, $page=1) {
+	public function findByKeyword($keyword, $sort = 'vendor_name',$category, $status, $property_id, $asp_client_id, $integration_package_id,  $pageSize=null, $page=1) {
 		$select = new Select();
 
 		$status = !$status ? "'active', 'inactive'" : $status;
@@ -659,7 +659,7 @@ class VendorGateway extends AbstractGateway {
 						->join(['vs' => 'vendorsite'], 'vs.vendor_id = v.vendor_id', ['vendorsite_id', 'vendorsite_id_alt'])
 						->join(['a' => 'address'], 'a.tablekey_id = vs.vendorsite_id', ['address_line1', 'address_line2', 'address_city', 'address_state', 'address_zip', 'address_zipext'])
 						->join(['i' => 'integrationpackage'], 'i.integration_package_id = v.integration_package_id', ['integration_package_name'])
-						->join(['f' => 'vendorfavorite'], 'f.vendorsite_id = vs.vendorsite_id', ['vendorfavorite_id, property_id'], Select::JOIN_LEFT)
+						->join(['f' => 'vendorfavorite'], 'f.vendorsite_id = vs.vendorsite_id AND f.property_id = ?', ['vendorfavorite_id, property_id'], Select::JOIN_LEFT)
 						->join(['vt' => 'vendortype'], 'vt.vendortype_id = v.vendortype_id', ['vendortype_name'], Select::JOIN_LEFT)
 						->join(['c' => 'country'], 'a.address_country = c.country_id', ['country_name'], Select::JOIN_LEFT)
 						->where(['a.addresstype_id' => '?'])
@@ -676,7 +676,7 @@ class VendorGateway extends AbstractGateway {
 		if ($category == 'top20') {
 
 		}
-		return $this->getPagingArray($select, [AddressGateway::ADDRESS_TYPE_MAILING, $keyword . '%', $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%'] , $pageSize, $page, 'v.vendor_id');
+		return $this->getPagingArray($select, [$property_id, AddressGateway::ADDRESS_TYPE_MAILING, $keyword . '%', $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%'] , $pageSize, $page, 'v.vendor_id');
 	}
 
 	public function findByKeywordWithTaskType($allowExpInsurance) {

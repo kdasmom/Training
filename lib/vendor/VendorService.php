@@ -22,6 +22,7 @@ use NP\image\ImageIndexGateway;
 use NP\invoice\InvoiceGateway;
 use NP\locale\LocalizationService;
 use NP\system\ConfigService;
+use NP\security\SecurityService;
 use NP\system\IntegrationPackageGateway;
 use NP\system\MessageEntity;
 use NP\system\MessageGateway;
@@ -50,6 +51,10 @@ class VendorService extends AbstractService {
 
 	public function setConfigService(ConfigService $configService) {
 		$this->configService = $configService;
+	}
+
+	public function setSecurityService(SecurityService $securityService) {
+		$this->securityService = $securityService;
 	}
 
 	/**
@@ -614,9 +619,11 @@ class VendorService extends AbstractService {
 			return [];
 		}
 		$asp_client_id = $this->configService->getClientId();
+		$property_id = $this->securityService->getContext();
+		$property_id = $property_id['property_id'];
 
 		if (!$task_type) {
-			return $this->vendorGateway->findByKeyword($keyword, $sort, $category_id, $status, $asp_client_id, $integration_package_id, $pageSize, $page);
+			return $this->vendorGateway->findByKeyword($keyword, $sort, $category_id, $status, $property_id, $asp_client_id, $integration_package_id, $pageSize, $page);
 		} else {
 			$allowExpInsurance = $this->configService->findSysValueByName('CP.AllowExpiredInsurance');
 			return $this->vendorGateway->findByKeywordWithTaskType($allowExpInsurance);

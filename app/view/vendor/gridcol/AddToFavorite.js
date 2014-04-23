@@ -21,10 +21,10 @@ Ext.define('NP.view.vendor.gridcol.AddToFavorite', {
 
 		this.renderer = function(val, meta, rec) {
 			if (rec.raw.vendorfavorite_id !== null && rec.raw.property_id == property_id) {
-				return '<img src="resources/images/buttons/delete.gif" title="Remove from favorite" alt="Remove from favorite" class="favorite-remove" /> Remove from favorite';
+				return '<span class="pointer favorite-action favorite-remove"><img src="resources/images/buttons/delete.gif" title="Remove from favorite" alt="Remove from favorite" /> Remove from favorite</span>';
 			} else {
 				if (!rec.raw.vendorfavorite_id) {
-					return '<img src="resources/images/buttons/new.gif" title="Add to favorite" alt="Add to favorite" class="favorite-add" /> Add to favorite';
+					return '<span class="pointer favorite-action favorite-add"><img src="resources/images/buttons/new.gif" title="Add to favorite" alt="Add to favorite" /> Add to favorite</span>';
 				} else {
 					return ''
 				}
