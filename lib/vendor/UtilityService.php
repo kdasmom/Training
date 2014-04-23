@@ -58,7 +58,6 @@ class UtilityService extends AbstractService {
 
     public function getAccountsByVendorsite($vendorsite_id, $property_id = null, $utilitytype_id = null, $glaccount_id = null, $sort = 'vendor_name') {
         return $this->utilityAccountGateway->findByVendor($vendorsite_id, $property_id, $utilitytype_id, $glaccount_id, $sort);
-        
     }
 
     /**
@@ -69,7 +68,7 @@ class UtilityService extends AbstractService {
             ['UtilityType_Id'=>'?'],
             [$UtilityType_Id],
             'UtilityColumn_UsageType_Name',
-            ['UtilityColumn_UsageType_Id','UtilityColumn_UsageType_Name']
+            ['UtilityColumn_UsageType_Id','UtilityColumn_UsageType_Name','UtilityType_Id']
         );
     }
 

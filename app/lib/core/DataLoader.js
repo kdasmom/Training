@@ -14,6 +14,7 @@ Ext.define('NP.lib.core.DataLoader', {
 		'NP.store.property.Regions',
 		'NP.store.property.Properties',
 		'NP.store.system.States',
+		'NP.store.system.Months',
 		'NP.store.system.Countries',
 		'NP.store.security.ModuleTree',
 		'NP.store.system.Tiles',
@@ -34,6 +35,9 @@ Ext.define('NP.lib.core.DataLoader', {
 
 		// Create the state store
 		Ext.create('NP.store.system.States', { storeId: 'system.States' });
+
+		// Create the month store
+		Ext.create('NP.store.system.Months', { storeId: 'system.Months' });
 		
 		// Create the country store
 		Ext.create('NP.store.system.Countries', { storeId: 'system.Countries' });

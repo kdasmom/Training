@@ -88,16 +88,17 @@ class BudgetService extends AbstractService {
         );
     }
 
-    public function createMissingBudgets($entityType) {
+    public function createMissingBudgets($entityType, $entity_id=null) {
         $this->budgetGateway->beginTransaction();
 
         try {
-            $this->glAccountYearGateway->createMissingGlAccountYears($entityType);
-            $this->budgetGateway->createMissingBudgets($entityType);
+            $this->glAccountYearGateway->createMissingGlAccountYears($entityType, $entity_id);
+            $this->budgetGateway->createMissingBudgets($entityType, $entity_id);
 
             $this->budgetGateway->commit();
         } catch(\Exception $e) {
             $this->budgetGateway->rollback();
+            throw $e;
         }
     }
 
@@ -173,7 +174,7 @@ class BudgetService extends AbstractService {
             $budgetoverage->userprofile_id = $data['userprofile_id'];
             $budgetoverage->role_id        = $data['role_id'];
         }
-        $budgetoverage->budgetoverage_period = \NP\util\Util::formatDateForDB(new \DateTime($budgetoverage->budgetoverage_period));
+        $budgetoverage->budgetoverage_period = $data['budgetoverage_period'];
 
         $errors = $this->entityValidator->validate($budgetoverage);
 

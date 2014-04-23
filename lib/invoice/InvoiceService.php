@@ -2,14 +2,17 @@
 
 namespace NP\invoice;
 
-use NP\shared\AbstractInvoicePoService;
+use NP\shared\AbstractEntityService;
+use NP\core\notification\EmailMessage;
+use NP\core\notification\EmailAttachment;
+use NP\util\Util;
 
 /**
  * Service class for operations related to Invoices
  *
  * @author Thomas Messier
  */
-class InvoiceService extends AbstractInvoicePoService {
+class InvoiceService extends AbstractEntityService {
 	
 	protected $type = 'invoice';
 
@@ -48,6 +51,8 @@ class InvoiceService extends AbstractInvoicePoService {
 			$invoice['is_approver'] = false;
 		}
 
+		$invoice['is_utility_vendor'] = ($this->vendorService->isUtilityVendor($invoice['vendorsite_id'])) ? 1 : 0;
+
 		// Get invoice images
 		/*** THIS QUERY IS RUNNING SLOW ***/
 		$invoice['image'] = $this->imageIndexGateway->findEntityImages($invoice_id, 'Invoice', true);
@@ -76,9 +81,15 @@ class InvoiceService extends AbstractInvoicePoService {
 			$invoice['has_dummy_accounts'] = false;
 		}
 
+		$invoice['lines'] = $this->invoiceItemGateway->findLines($invoice_id);
+
 		// Get invoice warnings
 		/*** THIS QUERY IS RUNNING SLOW ***/
 		$invoice['warnings'] = $this->getWarnings($invoice);
+
+		$invoice['hold_notes'] = $this->getHoldNotes($invoice_id);
+
+		$invoice['rejection_notes'] = $this->getRejectionNotes($invoice_id);
 
 		return $invoice;
 	}
@@ -119,16 +130,27 @@ class InvoiceService extends AbstractInvoicePoService {
 	public function getInvoiceDuplicateWarning($invoice=null, $invoice_id=null) {
 		if ($invoice_id === null) {
 			$invoice_id = $invoice['invoice_id'];
+		} else if ($invoice === null) {
+			$invoice = $this->invoiceGateway->find(
+				'i.invoice_id = ?', 
+				[$invoice_id],
+				null,
+				['invoice_ref','invoice_status']
+			);
+			$invoice = $invoice[0];
 		}
 
-		$res = $this->invoiceGateway->findDuplicates($invoice_id);
-		if (count($res)) {
-			return [
-				'warning_type'  => 'invoiceDuplicate',
-				'warning_title' => 'Error!',
-				'warning_icon'  => 'stop',
-				'warning_data'  => []
-			];
+		if ($invoice['invoice_status'] !== 'draft' && !empty($invoice['invoice_ref'])) {
+			$res = $this->invoiceGateway->findDuplicates($invoice_id);
+
+			if (count($res)) {
+				return [
+					'warning_type'  => 'invoiceDuplicate',
+					'warning_title' => 'Error!',
+					'warning_icon'  => 'stop',
+					'warning_data'  => []
+				];
+			}
 		}
 
 		return null;
@@ -140,18 +162,28 @@ class InvoiceService extends AbstractInvoicePoService {
 	public function getInvoiceDuplicateDateAmountWarning($invoice=null, $invoice_id=null) {
 		if ($invoice_id === null) {
 			$invoice_id = $invoice['invoice_id'];
+		} else if ($invoice === null) {
+			$invoice = $this->invoiceGateway->find(
+				'i.invoice_id = ?', 
+				[$invoice_id],
+				null,
+				['invoice_status']
+			);
+			$invoice = $invoice[0];
 		}
 
-		$res = $this->invoiceGateway->findDuplicateDateAndAmount($invoice_id);
-		if (count($res)) {
-			return [
-				'warning_type'  => 'invoiceDuplicateDateAmount',
-				'warning_title' => 'Warning!',
-				'warning_icon'  => 'alert',
-				'warning_data'  => $res
-			];
+		if ($invoice['invoice_status'] !== 'draft') {
+			$res = $this->invoiceGateway->findDuplicateDateAndAmount($invoice_id);
+			if (count($res)) {
+				return [
+					'warning_type'  => 'invoiceDuplicateDateAmount',
+					'warning_title' => 'Warning!',
+					'warning_icon'  => 'alert',
+					'warning_data'  => $res
+				];
+			}
 		}
-
+		
 		return null;
 	}
 
@@ -229,7 +261,7 @@ class InvoiceService extends AbstractInvoicePoService {
 			$invalid = $this->invoiceGateway->findInvalidPostDates($invoice_id);
 			if (count($invalid)) {
 				return [
-					'warning_type'  => 'poThreshold',
+					'warning_type'  => 'invalidPeriod',
 					'warning_title' => 'Alert!',
 					'warning_icon'  => 'alert',
 					'warning_data'  => $invalid
@@ -241,16 +273,6 @@ class InvoiceService extends AbstractInvoicePoService {
 	}
 	
 	/**
-	 * Get all invoice line items for an invoice
-	 *
-	 * @param  int $invoice_id
-	 * @return array
-	 */
-	public function getInvoiceLines($invoice_id) {
-		return $this->invoiceItemGateway->findInvoiceLines($invoice_id);
-	}
-	
-	/**
 	 * Get purchase orders associated to an invoice, if any
 	 *
 	 * @param  int $invoice_id
@@ -259,15 +281,22 @@ class InvoiceService extends AbstractInvoicePoService {
 	public function getAssociatedPOs($invoice_id) {
 		return $this->invoiceGateway->findAssociatedPOs($invoice_id);
 	}
-	
+
 	/**
-	 * Get forwards associated to an invoice, if any
+	 * Gets hold notes for an invoice
+	 */
+	public function getHoldNotes($invoice_id) {
+		return $this->noteGateway->findHoldNotes($invoice_id);
+	}
+
+	/**
+	 * Gets all reclass notes for an invoice
 	 *
 	 * @param  int $invoice_id
-	 * @return array           Array with forward records in a specific format
+	 * @return array
 	 */
-	public function getForwards($invoice_id) {
-		return $this->invoicePoForwardGateway->findByEntity('invoice', $invoice_id);
+	public function getReclassNotes($invoice_id) {
+		return $this->auditReclassGateway->findByInvoice($invoice_id);
 	}
 	
 	/**
@@ -384,10 +413,6 @@ class InvoiceService extends AbstractInvoicePoService {
 		return $this->purchaseOrderGateway->findPosLinkableToInvoice($invoice_id);
 	}
 
-	public function getHistoryLog($invoice_id, $pageSize=null, $page=null, $sort="approve_datetm") {
-		return $this->invoiceGateway->findHistoryLog($invoice_id, $pageSize, $page, $sort);
-	}
-
 	public function getPayments($invoice_id) {
 		return $this->invoicePaymentGateway->findForInvoice($invoice_id);
 	}
@@ -461,6 +486,20 @@ class InvoiceService extends AbstractInvoicePoService {
      */
     public function getInvoiceStatistics($property_id) {
     	return $this->invoiceGateway->findInvoiceStatistics($property_id);
+    }
+
+    /**
+     * Gets an HTML version of an invoice
+     */
+    public function getInvoiceAsHtml($invoice_id, $options=[]) {
+    	$renderer = new InvoiceHtmlRenderer($this->configService, $this->gatewayManager, $this, $invoice_id, $options);
+
+    	ob_start();
+    	$renderer->render();
+    	$html = ob_get_contents();
+    	ob_end_clean();
+
+    	return $html;
     }
 
 	/**
@@ -586,7 +625,10 @@ class InvoiceService extends AbstractInvoicePoService {
 				$this->noteGateway->save($note);
 			}
 
-			// TODO: still need to replicate the call to UPDATE_PN_ACTUALS here
+			// Update job costing contract total as needed
+			if (!count($errors)) {
+				$this->updateContractActuals($invoice_id);
+			}
 		} catch(\Exception $e) {
 			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
 		}
@@ -1021,13 +1063,12 @@ class InvoiceService extends AbstractInvoicePoService {
 		$this->invoiceGateway->beginTransaction();
 		
 		try {
-			$now = \NP\util\Util::formatDateForDB();
+			$now                          = \NP\util\Util::formatDateForDB();
+			$userprofile_id               = $data['userprofile_id'];
+			$delegation_to_userprofile_id = $data['delegation_to_userprofile_id'];
 
 			// Create the invoice entity with initial data
 			$invoice = new InvoiceEntity($data['invoice']);
-
-			// Set a new lock on the invoice to prevent other people from updating it simultaneously
-			$invoice->lock_id = $this->getLock($invoice->invoice_id) + 1;
 
 			// If paytablekey_id wasn't added, we need to get it based on vendor_id
 			if ($invoice->paytablekey_id === null) {
@@ -1035,11 +1076,63 @@ class InvoiceService extends AbstractInvoicePoService {
 				$invoice->paytablekey_id = $this->vendorGateway->findVendorsite($data['vendor_id']);
 			}
 
+			// Set a new lock on the invoice to prevent other people from updating it simultaneously
+			$invoice->lock_id = $this->getLock($invoice->invoice_id) + 1;
+
 			// Validate invoice record
 			$errors = $this->entityValidator->validate($invoice);
 
+			// Deal with change to vendor on existing invoice if needed
+			if (!count($errors)) {
+				if ($invoice->invoice_id !== null) {
+					$currentInvoice = $this->invoiceGateway->findById($invoice->invoice_id);
+					// If vendor has changed, make some changes
+					if ($currentInvoice['paytablekey_id'] !== $invoice->paytablekey_id) {
+						// Delete all hold records
+						$this->invoiceHoldGateway->delete(['invoice_id'=>'?'], [$invoice->invoice_id]);
+
+						// Delete all approval records
+						$this->approveGateway->delete(
+							['table_name'=>'?', 'tablekey_id'=>'?'],
+							['invoice', $invoice->invoice_id]
+						);
+
+						// Log the vendor change
+						$approvetype_id = $this->approveTypeGateway->getIdByName('Change Vendor');
+
+						$approve = new \NP\workflow\ApproveEntity([
+							'table_name'                   => 'invoice',
+							'tablekey_id'                  => $invoice->invoice_id,
+							'userprofile_id'               => $userprofile_id,
+							'delegation_to_userprofile_id' => $delegation_to_userprofile_id,
+							'approve_message'              => 'Vendor Change',
+							'approvetype_id'               => $approvetype_id,
+							'transaction_id'               => $this->approveGateway->currentId()
+						]);
+
+						$errors = $this->entityValidator->validate($approve);
+						if (!count($errors)) {
+							$this->approveGateway->save($approve);
+						} else {
+							$this->loggingService->log('error', 'Error validating approve entity while changing vendor', $errors);
+							throw new \NP\core\Exception('Error changing vendor on entity');
+						}
+					}
+				}
+			}
+
 			// Save invoice if valid
 			if (!count($errors)) {
+				// If dealing with an existing invoice, before saving we want to grab
+				// the data as it is now for audit purposes
+				if ($data['invoice']['invoice_id'] !== null) {
+					$oldInvoice = $this->invoiceGateway->findSingle(
+						'invoice_id = ?',
+						[$invoice->invoice_id]
+					);
+					$oldInvoice = new InvoiceEntity($oldInvoice);
+					$oldLines   = $this->getEntityLines($invoice->invoice_id);
+				}
 				$this->invoiceGateway->save($invoice);
 			}
 
@@ -1047,8 +1140,8 @@ class InvoiceService extends AbstractInvoicePoService {
 			if (!count($errors) && $data['invoice']['invoice_id'] === null) {
 				// Validate author record
 				$author = new \NP\user\RecAuthorEntity([
-					'userprofile_id'               => $data['userprofile_id'],
-					'delegation_to_userprofile_id' => $data['delegation_to_userprofile_id'],
+					'userprofile_id'               => $userprofile_id,
+					'delegation_to_userprofile_id' => $delegation_to_userprofile_id,
 					'table_name'                   => 'invoice',
 					'tablekey_id'                  => $invoice->invoice_id
 				]);
@@ -1063,41 +1156,58 @@ class InvoiceService extends AbstractInvoicePoService {
 			}
 
 			// Save invoice line items
+			$lineIds = [];
 			if (!count($errors)) {
+				// Before modifying lines, we need to grab the job costing contract lines that exist
+				// so we can update them just in case (otherwise, if a contract gets changed, we can't
+				// know after the record is updated which contract budget we need to update)
+				$contractLines = [];
+				// We only do this for existing invoices
+				if ($data['invoice']['invoice_id'] !== null) {
+					$contractLines = $this->jbJobAssociationGateway->findContractLinesByInvoice($invoice->invoice_id);
+				}
 				if (array_key_exists('lines', $data)) {
 					// Loop through line items to add/modify
-					foreach ($data['lines'] as $invoiceitem) {
-						// Assign some values that weren't passed in
-						$invoiceitem['invoice_id']         = $invoice->invoice_id;
-						$invoiceitem['vendorsite_id']      = $invoice->paytablekey_id;
-						$invoiceitem['invoiceitem_period'] = $invoice->invoice_period;
+					foreach ($data['lines'] as $invoiceitem_linenum=>$invoiceitem) {
+						if (!array_key_exists('is_dirty', $invoiceitem) || $invoiceitem['is_dirty']) {
+							// Assign some values that weren't passed in
+							$invoiceitem['invoice_id']          = $invoice->invoice_id;
+							$invoiceitem['vendorsite_id']       = $invoice->paytablekey_id;
+							$invoiceitem['invoiceitem_period']  = $invoice->invoice_period;
+							$invoiceitem['invoiceitem_linenum'] = $invoiceitem_linenum+1;
 
-						// Save the line item
-						$result = $this->saveLine($invoiceitem);
+							// Save the line item
+							$result = $this->saveLine($invoiceitem);
 
-						// Error handling
-						if (!$result['success']) {
-							$errors = array_merge($errors, $result['errors']);
-						}	
+							// Error handling
+							if (!$result['success']) {
+								$errors = array_merge($errors, $result['errors']);
+							}
+						}
+						$lineIds[] = $invoiceitem['invoiceitem_id'];
 					}
 				}
 			}
 
 			// Delete invoice line items
 			if (!count($errors)) {
-				if (array_key_exists('deletedLines', $data)) {
-					// Loop through line items to delete
-					foreach ($data['deletedLines'] as $invoiceitem) {
-						// Delete the line item
-						$result = $this->deleteLine($invoiceitem['invoiceitem_id']);
+				$deletedLines = $this->invoiceItemGateway->getDeletedLines($invoice->invoice_id, $lineIds);
+				// Loop through line items to delete
+				foreach ($deletedLines as $invoiceitem) {
+					// Delete the line item
+					$result = $this->deleteLine($invoiceitem['invoiceitem_id']);
 
-						// Error handling
-						if (!$result['success']) {
-							$errors = array_merge($errors, $result['errors']);
-							break;
-						}
+					// Error handling
+					if (!$result['success']) {
+						$errors = array_merge($errors, $result['errors']);
+						break;
 					}
 				}
+			}
+
+			// Add any missing budgets to this invoice
+			if (!count($errors)) {
+				$this->budgetService->createMissingBudgets('invoice', $invoice->invoice_id);
 			}
 
 			// Retrieve current Tax and Shipping totals for auditing purposes before deleting
@@ -1106,7 +1216,7 @@ class InvoiceService extends AbstractInvoicePoService {
 
 				$this->allocateTaxAndShipping($invoice->invoice_id, $data['tax'], $data['shipping']);
 
-				if ($data['invoice']['invoice_id'] === null) {
+				if ($data['invoice']['invoice_id'] !== null) {
 					// Save audit of changes to tax and shipping
 					$result = $this->auditTaxShippingChanges(
 						$invoice->invoice_id,
@@ -1151,8 +1261,20 @@ class InvoiceService extends AbstractInvoicePoService {
 				$this->updateMultiPropertyStatus($invoice->invoice_id);
 			}
 
-			// TODO: add code to deal with jobcosting contract actuals (UPDATE_PN_ACTUALS)
+			// Audit the changes in the invoice if not new
+			if (!count($errors) && $data['invoice']['invoice_id'] !== null) {
+				$this->auditEntity($invoice->invoice_id, $oldInvoice, $oldLines);
+			}
 
+			// Update job costing contract total as needed
+			if (!count($errors)) {
+				// We need to get contract lines again in case new contracts have been added
+				$newContractLines = $this->jbJobAssociationGateway->findContractLinesByInvoice($invoice->invoice_id);
+				// We combine the old contracts with the new contracts; there may be duplicates, we'll deal with it later
+				$contractLines = array_merge($contractLines, $newContractLines);
+				// Update the contract actuals
+				$this->updateContractActuals($newContractLines);
+			}
 		} catch(\Exception $e) {
 			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
 		}
@@ -1169,6 +1291,41 @@ class InvoiceService extends AbstractInvoicePoService {
 			'invoice_id' => $invoice->invoice_id,
 			'lock_id'    => $invoice->lock_id
 		);
+	}
+
+	/**
+	 * Updates the PN Actual value for a job contract
+	 */
+	public function updateContractActuals($invoice_id) {
+		// We can either pass an invoice_id or an array of job contract lines for an invoice
+		if (!is_array($invoice_id)) {
+			$lines = $this->jbJobAssociationGateway->findContractLinesByInvoice($invoice_id);
+		} else {
+			$lines = $invoice_id;
+		}
+
+		// We'll track the contract budgets that get updated so we can skip duplicates
+		$updated = [];
+		foreach ($lines as $line) {
+			if (!array_key_exists($line['jbcontractbudget_id'], $updated)) {
+				$budget = $this->jbJobAssociationGateway->findContractActualByFilter(
+					$line['jbcontract_id'],
+					$line['jbchangeorder_id'],
+					$line['jbjobcode_id'],
+					$line['jbphasecode_id'],
+					$line['jbcostcode_id']
+				);
+
+				if ($budget !== null) {
+					$this->jbContractBudgetGateway->update([
+						'jbcontractbudget_id'           => $budget['jbcontractbudget_id'],
+						'jbcontractbudget_amt_pnactual' => $budget['invoice_actual']
+					]);
+				}
+
+				$updated[$line['jbcontractbudget_id']] = true;
+			}
+		}
 	}
 
 	/**
@@ -1189,7 +1346,12 @@ class InvoiceService extends AbstractInvoicePoService {
 	private function saveLine($data) {
 		$errors = [];
 		$this->invoiceItemGateway->beginTransaction();
-		
+		$isModifyGl = (
+			$data['invoiceitem_id'] !== null
+			&& array_key_exists('is_modify_gl', $data)
+			&& $data['is_modify_gl']
+		);
+
 		try {
 			// Create the invoice entity with initial data
 			$invoiceItem = new InvoiceItemEntity($data);
@@ -1199,7 +1361,20 @@ class InvoiceService extends AbstractInvoicePoService {
 
 			// Save invoice line if valid
 			if (!count($errors)) {
+				// Before saving, let's get the old line item if necessary for auditing
+				if ($isModifyGl) {
+					$oldLine = $this->invoiceItemGateway->findById($data['invoiceitem_id']);
+				}
+
 				$this->invoiceItemGateway->save($invoiceItem);
+			}
+
+			if (
+				!count($errors) 
+				&& $isModifyGl
+			) {
+				$oldLine = new InvoiceItemEntity($oldLine);
+				$this->auditModifyGl($invoiceItem, $oldLine);
 			}
 
 			// Save job costing info if appropriate
@@ -1412,14 +1587,20 @@ class InvoiceService extends AbstractInvoicePoService {
 				}
 			}
 
+			// Before deleting, we need to get all the contract lines so we can update
+			// job costing contracts following the deletion of records
+			$lines = $this->jbJobAssociationGateway->findContractLinesByInvoice($invoice_id);
+			
 			if (!count($errors)) {
 				$this->unlinkInvoiceFromVendorConnect($invoice_id);
 
 				$this->invoiceGateway->delete('invoice_id = ?', [$invoice_id]);
 			}
 
-			// TODO: add code to deal with jobcosting contract actuals (UPDATE_PN_ACTUALS)
-
+			// Update job costing contract total as needed
+			if (!count($errors)) {
+				$this->updateContractActuals($lines);
+			}
 		} catch(\Exception $e) {
 			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
 		}
@@ -1503,7 +1684,7 @@ class InvoiceService extends AbstractInvoicePoService {
 			// Get the data for the template selected
 			$templateData = [
 				'invoice'  => $this->invoiceGateway->findSingle('invoice_id = ?', [$template_id]),
-				'lines'    => $this->getInvoiceLines($template_id),
+				'lines'    => $this->getEntityLines($template_id),
 				'tax'      => $totals['tax'],
 				'shipping' => $totals['shipping'],
 				'userprofile_id'               => $this->securityService->getUserId(),
@@ -1541,7 +1722,11 @@ class InvoiceService extends AbstractInvoicePoService {
 	 * Submits an invoice for payment
 	 */
 	public function submitForPayment($invoice_id) {
+		$lock_id      = null;
+		
+		// Look for any inactive job codes
 		$inactiveJobs = $this->invoiceItemGateway->findLinesWithInactiveJobCodes($invoice_id);
+
 		// If inactive job codes are found, return an error
 		if (count($inactiveJobs)) {
 			return array(
@@ -1565,9 +1750,12 @@ class InvoiceService extends AbstractInvoicePoService {
 				);
 				$newStatus = 'submitted';
 
+				// Set a new lock on the invoice to prevent other people from updating it simultaneously
+				$lock_id = $this->getLock($invoice_id) + 1;
+
 				// Update the invoice's status
 				$this->invoiceGateway->update(
-					['invoice_status'=>$newStatus, 'invoice_submitteddate'=>$now],
+					['invoice_status'=>$newStatus, 'invoice_submitteddate'=>$now, 'lock_id'=>$lock_id],
 					'invoice_id = ?',
 					[$invoice_id]
 				);
@@ -1613,7 +1801,8 @@ class InvoiceService extends AbstractInvoicePoService {
 			
 			return array(
 			    'success' => (count($errors)) ? false : true,
-			    'errors'  => $errors
+			    'errors'  => $errors,
+			    'lock_id' => $lock_id
 			);
 		}
 	}
@@ -1930,7 +2119,7 @@ class InvoiceService extends AbstractInvoicePoService {
 	}
 
 	/**
-	 * 
+	 * Reclasses a paid invoice
 	 */
 	public function reclass($data) {
 		$errors = [];
@@ -1943,6 +2132,8 @@ class InvoiceService extends AbstractInvoicePoService {
 				'invoice_id = ?',
 				[$invoice_id]
 			);
+			$oldInvoice = new InvoiceEntity($oldInvoice);
+			$oldLines   = $this->getEntityLines($invoice_id);
 
 			$result = $this->saveInvoice($data);
 
@@ -1950,7 +2141,49 @@ class InvoiceService extends AbstractInvoicePoService {
 				'invoice_id = ?',
 				[$invoice_id]
 			);
+
+			$newInvoice = new InvoiceEntity($newInvoice);
+
+			$auditor = new InvoiceReclassAuditor(
+				$data['userprofile_id'],
+				$data['delegation_to_userprofile_id'],
+				$data['reclass_notes']
+			);
+			$fieldChanges = $auditor->audit($newInvoice, $oldInvoice);
+
+			$newLines = $this->getEntityLines($invoice_id);
+
+			$fields = InvoiceItemEntity::getAuditableFields();
+			foreach ($newLines as $i=>$line) {
+				$oldLine = new InvoiceItemEntity($oldLines[$i]);
+				$newLine = new InvoiceItemEntity($line);
+
+				$fieldChanges = array_merge($fieldChanges, $auditor->audit($newInvoice, $oldInvoice));
+			}
+
+			if (count($fieldChanges)) {
+				$approvetype_id = $this->approveTypeGateway->getIdByName('reclassed');
+
+				$approve = new \NP\workflow\ApproveEntity([
+					'table_name'                   => 'invoice',
+					'tablekey_id'                  => $newInvoice->invoice_id,
+					'userprofile_id'               => $data['userprofile_id'],
+					'delegation_to_userprofile_id' => $data['delegation_to_userprofile_id'],
+					'approve_message'              => 'Invoice was Reclassed',
+					'approvetype_id'               => $approvetype_id,
+					'transaction_id'               => $this->approveGateway->currentId()
+				]);
+
+				$errors = $this->entityValidator->validate($approve);
+				if (!count($errors)) {
+					$this->approveGateway->save($approve);
+				} else {
+					$this->loggingService->log('global', 'Error creating approve record', $errors);
+					throw new \NP\core\Exception('Error reclassing invoice while creating approve record');
+				}
+			}
 		} catch(\Exception $e) {
+			$this->loggingService->log('global', 'Unexpected error happening');
 			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
 		}
 		
@@ -1964,6 +2197,107 @@ class InvoiceService extends AbstractInvoicePoService {
 		    'success' => (count($errors)) ? false : true,
 		    'errors'  => $errors
 		);
+	}
+
+	/**
+	 * Forwards an invoice by email to a list of emails or users
+	 */
+	public function forwardInvoice($invoice_id, $sender_email, $forward_to, $forward_val, $message, $includes=[]) {
+		$pdfPath = null;
+		$success = false;
+		$errors  = [];
+
+		// Get invoice number for email subject line
+		$invoice_ref = $this->invoiceGateway->findValue(
+			['invoice_id'=>'?'],
+			[$invoice_id],
+			'invoice_ref'
+		);
+		
+		// Get invoice images if applicable
+		$images     = [];
+		$includeAll = in_array('allImages', $includes);
+		if (in_array('mainImage', $includes) || $includeAll) {
+			$images = $this->getImages($invoice_id, !$includeAll, true);
+			if (!$includeAll) {
+				$images = [$images];
+			}
+		}
+
+		// Figure out the email or list of emails to send to
+		if ($forward_to == 'vendor' || $forward_to == 'email') {
+			$users = [['email_address' => $forward_val]];
+		} else {
+			$users = $this->userprofileGateway->find(
+				[['in', 'u.userprofile_id', $this->userprofileGateway->createPlaceholders($forward_val)]],
+				$forward_val
+			);
+		}
+
+		// Generate the invoice PDF
+		$pdf = new InvoicePdfRenderer($this->configService, $this->gatewayManager, $this, $invoice_id, $includes);
+		$pdfPath = $this->configService->getClientFolder() . '/web/pdfs/' . $this->securityService->getUserId();
+
+		// If destination directory doesn't exist, create it
+  		if (!is_dir($pdfPath)) {
+  			mkdir($pdfPath, 0777, true);
+  		}
+  		
+		$pdfPath = Util::getUniqueFileName($pdfPath . "/invoice_{$invoice_id}.pdf");
+
+		$pdfPath = $pdfPath['path'];
+		$pdf->save($pdfPath);
+
+		$message = strip_tags(trim($message));
+		foreach ($users as $user) {
+			try {
+				$msg = EmailMessage::getNew(
+										"Invoice Order {$invoice_ref}",
+										strip_tags($message)
+									)
+									->setFrom($sender_email)
+									->setTo($user['email_address'])
+									->attach(EmailAttachment::getNew()->setPath($pdfPath));
+
+
+				foreach($images as $image) {
+					$msg->attach(EmailAttachment::getNew()->setPath($image['transfer_filename']));
+				}
+
+				$this->notificationService->sendEmail($msg);
+				$success = true;
+
+				$forward_id = (array_key_exists('userprofile_id', $user)) ? $user['userprofile_id'] : null;
+				$this->invoicePoForwardGateway->insert([
+					'table_name'                        => 'invoice',
+					'tablekey_id'                       => $invoice_id,
+					'forward_to_email'                  => $sender_email,
+					'forward_to_userprofile_id'         => $forward_id,
+					'forward_from_userprofile_id'       => $this->securityService->getUserId(),
+					'from_delegation_to_userprofile_id' => $this->securityService->getDelegatedUserId(),
+					'forward_message'                   => substr($message, 0, 500)
+				]);
+			} catch(\Exception $e) {
+				$msg = $this->handleUnexpectedError($e);
+				if ($forward_to == 'user') {
+					$errors[] = "{$user['person_firstname']} {$user['person_lastname']}";
+				} else {
+					$errors[] = $user['email_address'];
+				}
+			}
+		}
+
+		if (!$success) {
+			return [
+				'success' => false,
+				'error'   => $msg
+			];
+		} else {
+			return [
+				'success' => true,
+				'errors'  => $errors
+			];
+		}
 	}
 }
 

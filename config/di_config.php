@@ -70,12 +70,12 @@ $diDefinition = array(
 	'NP\import\VendorImportEntityValidator'          => array('LocalizationService','Adapter','Config','IntegrationPackageGateway','StateGateway','VendorTypeGateway','GlAccountGateway','SoapService'),
 	'NP\import\VendorGLImportEntityValidator'        => array('LocalizationService','Adapter','IntegrationPackageGateway','VendorGateway','GlAccountGateway','VendorGlAccountsGateway'),
 	'NP\invoice\InvoiceGateway'                      => array('Adapter','FiscalCalService','RoleGateway','RegionGateway'),
-	'NP\invoice\InvoiceService'                      => array('FiscalCalService','BudgetService','ImageService','JobCostingService'),
+	'NP\invoice\InvoiceService'                      => array('FiscalCalService','BudgetService','ImageService','JobCostingService','VendorService'),
 	'NP\invoice\InvoiceServiceInterceptor',
 	'NP\locale\LocalizationService'                  => array('locale','LoggingService'),
 	'NP\notification\NotificationService'            => array('Config','Emailer'),
 	'NP\po\PurchaseOrderGateway'                     => array('Adapter','RoleGateway'),
-	'NP\po\PoService'                                => array('FiscalCalService','BudgetService','ImageService','JobCostingService'),
+	'NP\po\PoService'                                => array('FiscalCalService','BudgetService','ImageService','JobCostingService','VendorService'),
 	'NP\po\ReceiptGateway'                           => array('Adapter','RoleGateway'),
 	'NP\property\PropertyService'                    => array('SecurityService','InvoiceService','PoService','FiscalCalService','UnitTypeMeasGateway'),
 	'NP\report\ReportService'                        => array('reportUrl'),
@@ -88,7 +88,7 @@ $diDefinition = array(
 	'NP\user\UserService'                            => array('SecurityService','NotificationService'),
 	'NP\vendor\validation\VendorEntityValidator'     => array('LocalizationService','Adapter', 'VendorGateway', 'ConfigService'),
 	'NP\vendor\VendorService'                        => array('VendorEntityValidator'),
-	'NP\workflow\WfRuleGateway'                      => array('Adapter','UserprofileroleGateway'),
+	'NP\workflow\WfRuleGateway'                      => array('Adapter','UserprofileroleGateway','VendorGateway','WfActionGateway'),
 );
 
 // Now we're gonna figure out some automatic definitions for gateways and services
@@ -186,6 +186,11 @@ foreach($diDefinition as $classPath=>$dependencies) {
 		// Inject the Locale service via setter injection to all interceptors
 		if ($r->hasMethod('setLocalizationService')) {
 			$obj->setLocalizationService($di['LocalizationService']);
+		}
+
+		// Inject the notification service via setter injection
+		if ($r->hasMethod('setNotificationService')) {
+			$obj->setNotificationService($di['NotificationService']);
 		}
 
 		// Inject the entity validator via setter injection to all interceptors

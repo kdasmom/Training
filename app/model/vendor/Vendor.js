@@ -145,9 +145,15 @@ Ext.define('NP.model.vendor.Vendor', {
 		{ name: 'phone_ext', useNull: false },
 		{ name: 'phone_countrycode', useNull: false },
 
+		{ name: 'email_address', useNull: false },
+
 		{ name: 'glaccount_id', type: 'int' },
 		{ name: 'glaccount_number' },
-		{ name: 'glaccount_name' }
+		{ name: 'glaccount_name' },
+
+		{ name: 'vendortype_name' },
+
+		{ name: 'is_utility_vendor', type: 'int' }
 	],
 
     getAddressHtml: function() {

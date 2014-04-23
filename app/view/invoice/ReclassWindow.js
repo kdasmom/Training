@@ -15,8 +15,8 @@ Ext.define('NP.view.invoice.ReclassWindow', {
     ],
 
     layout     : 'fit',
-    width      : 320,
-    height     : 240,
+    width      : 480,
+    height     : 360,
     border     : false,
     modal      : true,
     minimizable: false,
@@ -27,18 +27,22 @@ Ext.define('NP.view.invoice.ReclassWindow', {
 
         me.title = NP.Translator.translate('Reclass Invoice');
 
-        me.tbar = [
-            { xtype: 'shared.button.cancel', handler: function() { me.close() } },
-            { itemId: 'invoiceReclassSaveBtn', xtype: 'shared.button.save' }
-        ];
-
         me.items = [{
-            xtype     : 'textarea',
-            name      : 'reclass_notes',
-            fieldLabel: NP.Translator.translate('Reclass Notes'),
-            labelAlign: 'top',
-            allowBlank: false,
-            maxLength : 2000
+            xtype      : 'panel',
+            layout     : 'fit',
+            bodyPadding: '0 8 8 8',
+            tbar       : [
+                { xtype: 'shared.button.cancel', handler: function() { me.close() } },
+                { itemId: 'invoiceReclassSaveBtn', xtype: 'shared.button.save' }
+            ],
+            items: [{
+                xtype     : 'textarea',
+                name      : 'reclass_notes',
+                fieldLabel: NP.Translator.translate('Reclass Notes'),
+                labelAlign: 'top',
+                allowBlank: false,
+                maxLength : 2000
+            }]
         }];
 
     	me.callParent(arguments);

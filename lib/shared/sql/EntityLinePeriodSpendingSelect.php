@@ -56,9 +56,9 @@ class EntityLinePeriodSpendingSelect extends Select {
 			->whereEquals("{$lineTableAlias}.property_id", "{$outerTableAlias}.property_id");
 
 		if ($table == 'invoice') {
-			$this->whereIn("{$tableAlias}.invoice_status", "'draft', 'posted', 'paid', 'rejected', 'void'");
+			$this->whereNotIn("{$tableAlias}.invoice_status", "'draft', 'posted', 'paid', 'rejected', 'void'");
 		} else {
-			$this->whereIn("{$tableAlias}.purchaseorder_status", "'draft', 'closed', 'rejected'")
+			$this->whereNotIn("{$tableAlias}.purchaseorder_status", "'draft', 'closed', 'rejected'")
 				->whereNest('OR')
 				->whereNotEquals("{$lineTableAlias}.reftable_name", "'invoiceitem'")
 				->whereIsNull("{$lineTableAlias}.reftable_name")

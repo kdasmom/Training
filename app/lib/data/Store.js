@@ -50,6 +50,8 @@ Ext.define('NP.lib.data.Store', {
 				}
 	    	});
 
+	    	me.lastExtraParamsLoaded = {};
+
 	    	Ext.apply(me.proxy.extraParams, me.extraParams);
 
 		    if (me.paging === true) {
@@ -102,6 +104,7 @@ Ext.define('NP.lib.data.Store', {
 
     	// Subscribe to before load to reset the isLoaded property to false when new data gets loaded
     	me.on('beforeload', function() {
+    		me.lastExtraParamsLoaded = Ext.clone(me.getExtraParams());
     		me.isLoaded = false;
     	});
 
@@ -109,6 +112,14 @@ Ext.define('NP.lib.data.Store', {
     	me.on('load', function() {
     		me.isLoaded = true;
     	});
+    },
+
+    loadRawData: function(data, append) {
+    	var me = this;
+
+    	me.callParent(arguments);
+    	
+    	me.isLoaded = true;
     },
 
     /**
@@ -161,6 +172,47 @@ Ext.define('NP.lib.data.Store', {
 	setExtraParams: function(val) {
     	this.getProxy().extraParams = val;
     	return this;
+    },
+
+    extraParamsHaveChanged: function() {
+    	var me          = this,
+    		extraParams = me.getExtraParams(),
+    		param,
+    		className;
+
+    	for (param in extraParams) {
+    		if (!(param in me.lastExtraParamsLoaded) || me.lastExtraParamsLoaded[param] !== extraParams[param]) {
+    			if (Ext.isArray(extraParams[param])) {
+    				className = 'Array';
+    			} else if (Ext.isObject(extraParams[param])) {
+    				className = 'Object';
+    			} else {
+    				return true;
+    			}
+
+    			return !Ext[className].equals(extraParams[param], me.lastExtraParamsLoaded[param]);
+    		}
+    	}
+
+    	for (param in me.lastExtraParamsLoaded) {
+    		if (!(param in extraParams)) {
+    			return true;
+    		}
+    	}
+
+    	return false;
+    },
+
+    loadIfChange: function(callback) {
+    	var me = this;
+
+    	callback = callback || Ext.emptyFn;
+
+    	if (me.extraParamsHaveChanged()) {
+    		me.load(callback);
+    	} else {
+    		callback(me.getRange(), null, true);
+    	}
     },
 
     /**

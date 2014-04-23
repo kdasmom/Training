@@ -12,7 +12,7 @@ Ext.define('NP.model.invoice.InvoiceItem', {
 		{ name: 'invoice_id', type: 'int' },
 		{ name: 'invoiceitem_linenum', type: 'int' },
 		{ name: 'glaccount_id', type: 'int' },
-		{ name: 'invoiceitem_description' },
+		{ name: 'invoiceitem_description', type: 'string', defaultValue: '', useNull: false },
 		{ name: 'invoiceitem_quantity', type: 'float', defaultValue: 1.0 },
 		{ name: 'invoiceitem_unitprice', type: 'float', useNull: false },
 		{ name: 'invoiceitem_amount', type: 'float', useNull: false },
@@ -48,11 +48,11 @@ Ext.define('NP.model.invoice.InvoiceItem', {
 		{ name: 'universal_field4', type: 'string', useNull: false },
 		{ name: 'universal_field5', type: 'string', useNull: false },
 		{ name: 'universal_field6', type: 'string', useNull: false },
+		{ name: 'universal_field7', type: 'string', useNull: false },
+		{ name: 'universal_field8', type: 'string', useNull: false },
 		{ name: 'dfsplit_id', type: 'int' },
 		{ name: 'vcitem_number', type: 'string', useNull: false },
 		{ name: 'vcitem_uom', type: 'string', useNull: false },
-		{ name: 'universal_field7', type: 'string', useNull: false },
-		{ name: 'universal_field8', type: 'string', useNull: false },
 		{ name: 'is_from_catalog', type: 'int', defaultValue: 0 },
 		{ name: 'unittype_material_id', type: 'int' },
 		{ name: 'unittype_meas_id', type: 'int' },
@@ -175,6 +175,20 @@ Ext.define('NP.model.invoice.InvoiceItem', {
 			persist     : false,
 			useNull     : false,
 			defaultValue: 0
+		},
+
+		{
+			name: 'is_utility',
+			type: 'int',
+			convert: function(v, rec) {
+				if (v === null) {
+					v = 0;
+					if (rec.get('utilityaccount_id') !== null) {
+						v = 1;
+					}
+				}
+				return v;
+			}
 		}
 	]
 });

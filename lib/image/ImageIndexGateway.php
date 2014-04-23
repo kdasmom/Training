@@ -199,14 +199,16 @@ class ImageIndexGateway extends AbstractGateway {
 	 * @param int    $tablekey_id         The ID of the entity to get images for
 	 * @param string $image_tableref_name The entity type to get the image for; valid values are 'Invoice', 'Purchase Order', 'Receipt', and 'Vendor'
 	 */
-	public function findEntityImages($tablekey_id, $image_tableref_name, $primaryOnly=false) {
+	public function findEntityImages($tablekey_id, $image_tableref_name, $primaryOnly=false, $includeTransferData=false) {
+		$transferCols = ($includeTransferData) ? null : [];
+		
 		$select = Select::get()->allColumns('img')
 								->from(array('img'=>'image_index'))
 								->join(new sql\join\ImageIndexImageSourceJoin())
 								->join(new sql\join\ImageIndexPropertyJoin(array('property_id_alt','property_name'), Select::JOIN_INNER))
 								->join(new sql\join\ImageIndexVendorsiteJoin(array(), Select::JOIN_INNER))
 								->join(new \NP\vendor\sql\join\VendorsiteVendorJoin())
-								->join(new sql\join\ImageIndexImageTransferJoin())
+								->join(new sql\join\ImageIndexImageTransferJoin($transferCols))
 								->join(new sql\join\ImageTransferUserprofileJoin())
 								->join(new sql\join\ImageTransferVendorsiteJoin())
 								->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(

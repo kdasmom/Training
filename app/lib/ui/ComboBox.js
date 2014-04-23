@@ -25,6 +25,9 @@ Ext.define('NP.lib.ui.ComboBox', {
 	 * @cfg {Boolean}                 loadStoreOnFirstQuery Set to true if you want the store to run its load method the first time a query is run on the combo
 	 */
 	loadStoreOnFirstQuery: false,
+
+	useSmartStore: false,
+
 	/**
 	 * @cfg {Array}                   dependentCombos   An array of IDs for combo boxes that depend on this combo; when the value of this combo is changed, the valueField will be added as a parameter to the proxy of the dependent combos specified and reload their stores
 	 */
@@ -202,6 +205,73 @@ Ext.define('NP.lib.ui.ComboBox', {
 				}
 			});
 		}
+
+		if (me.useSmartStore) {
+			me.on('change', function() {
+				if (me.getStore().extraParamsHaveChanged()) {
+					function loadComboStore() {
+						me._queryRunning = true;
+						me.getStore().load();
+					}
+					if (me.getStore().isLoading()) {
+						me.getStore().on('load', function() {
+							loadComboStore();
+						}, me, { single: true });
+					} else {
+						loadComboStore();
+					}
+	            }
+			});
+		}
+	},
+
+	doRawQuery: function() {
+		var me = this;
+
+		if (me.useSmartStore) {
+			me.doQuery(me.getRawValue(), true);
+        } else {
+        	me.callParent();
+        }
+    },
+
+	onTriggerClick: function() {
+		var me    = this,
+            store = me.getStore();
+
+        if (!me.readOnly && me.useSmartStore && !me.isExpanded) {
+	        function expandCombo() {
+                me.onFocus({});
+                me.doQuery(me.allQuery, true);
+                me.inputEl.focus();
+            }
+
+        	if (me.getStore().extraParamsHaveChanged()) {
+        		me.getStore().load(function() {
+                    expandCombo();
+                });
+            } else {
+                me.callParent();
+            }
+	    } else {
+	    	me.callParent();
+	    }
+	},
+
+	onLoad: function(store, records, success) {
+		var me = this,
+			raw;
+
+		if (me.useSmartStore && me._queryRunning) {
+			raw = me.getRawValue();
+		}
+
+		me.callParent(arguments);
+
+		if (me.useSmartStore && me._queryRunning) {
+			me.setRawValue(raw);
+			me._queryRunning = false;
+		}
 	},
 
 	getFocusValue: function() {
@@ -256,5 +326,11 @@ Ext.define('NP.lib.ui.ComboBox', {
 		if (!Ext.isEmpty(this.iconClsField)) {	
 			this.setIconCls();
 		}
+	},
+
+	addExtraParams: function(params) {
+		Ext.apply(this.getStore().getProxy().extraParams, params);
+
+		return this;
 	}
 });

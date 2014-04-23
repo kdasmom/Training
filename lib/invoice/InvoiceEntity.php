@@ -141,7 +141,7 @@ class InvoiceEntity extends \NP\core\AbstractEntity {
 				'digits' => array()
 			),
 			'auditable' => [
-				'table'        => 'invoicepayment_type',
+				'table'        => 'invoicePaymentType',
 				'displayField' => 'invoicepayment_type',
 				'displayName'  => 'Paid By'
 			]
@@ -183,11 +183,15 @@ class InvoiceEntity extends \NP\core\AbstractEntity {
 			'validation' => array(
 				'date' => array('format'=>'Y-m-d H:i:s.u')
 			),
-			'auditable' => []
+			'auditable' => [
+				'displayNameSetting'=>'PN.General.postPeriodTerm',
+				'convert'      => 'convertPeriod'
+			]
 		),
 		'control_amount'	 => array(
 			'auditable' => [
-				'displayName'  => 'Invoice Total'
+				'displayName'  => 'Invoice Total',
+				'convert'      => 'currency'
 			]
 		),
 		'invoice_multiproperty'	 => array(
@@ -211,12 +215,18 @@ class InvoiceEntity extends \NP\core\AbstractEntity {
 		'invoice_cycle_from'	 => array(
 			'validation' => array(
 				'date' => array('format'=>'Y-m-d H:i:s.u')
-			)
+			),
+			'auditable' => [
+				'displayName'  => 'Cycle From'
+			]
 		),
 		'invoice_cycle_to'	 => array(
 			'validation' => array(
 				'date' => array('format'=>'Y-m-d H:i:s.u')
-			)
+			),
+			'auditable' => [
+				'displayName'  => 'Cycle To'
+			]
 		),
 		'vendor_code'	 => array(
 			'validation' => array(
@@ -232,49 +242,65 @@ class InvoiceEntity extends \NP\core\AbstractEntity {
 			'validation' => array(
 				'stringLength' => array('max'=>255)
 			),
-			'auditable' => []
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL1'
+			]
 		),
 		'universal_field2'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
 			),
-			'auditable' => []
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL2'
+			]
 		),
 		'universal_field3'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
 			),
-			'auditable' => []
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL3'
+			]
 		),
 		'universal_field4'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
 			),
-			'auditable' => []
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL4'
+			]
 		),
 		'universal_field5'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
 			),
-			'auditable' => []
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL5'
+			]
 		),
 		'universal_field6'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
 			),
-			'auditable' => []
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL6'
+			]
 		),
 		'universal_field7'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
 			),
-			'auditable' => []
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL7'
+			]
 		),
 		'universal_field8'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
 			),
-			'auditable' => []
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL8'
+			]
 		),
 		'reftablekey_id'	 => array(
 			'validation' => array(
@@ -286,7 +312,8 @@ class InvoiceEntity extends \NP\core\AbstractEntity {
 				'digits' => array()
 			),
 			'auditable' => [
-				'displayName'  => 'Remittance Advice'
+				'displayName'  => 'Remittance Advice',
+				'convert'      => 'convertRemit'
 			]
 		),
 		'vendoraccess_notes'	 => array(
@@ -299,7 +326,9 @@ class InvoiceEntity extends \NP\core\AbstractEntity {
 				'digits' => array()
 			),
 			'auditable' => [
-				'displayName'  => 'Priority'
+				'displayName'  => 'Priority',
+				'table'        => 'PriorityFlag',
+				'displayField' => 'PriorityFlag_Display'
 			]
 		),
 		'invoice_NeededBy_datetm'	 => array(
@@ -323,5 +352,17 @@ class InvoiceEntity extends \NP\core\AbstractEntity {
 		)
 	);
 
+	public function convertRemit($val) {
+		return (empty($val) || $val === 0) ? 'No' : 'Yes';
+	}
+
+	public function convertPeriod($val) {
+		if (!empty($val)) {
+			$val = \DateTime::createFromFormat(\NP\util\Util::getServerDateFormat(), $val);
+			return $val->format('m/Y');
+		}
+
+		return null;
+	}
 }
 ?>

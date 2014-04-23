@@ -30,9 +30,12 @@ Ext.define('NP.view.po.PoGrid', {
 		'NP.view.shared.gridcol.PendingApprovalDays',
 		'NP.view.po.gridcol.SentToVendor',
 		'NP.view.po.gridcol.ReceiptRequired',
+		'NP.view.po.gridcol.ReceivedStatus',
 		'NP.view.po.gridcol.Notes',
 		'NP.view.po.gridcol.BudgetNotes',
-    	'NP.view.shared.gridcol.UniversalField'
+    	'NP.view.shared.gridcol.UniversalField',
+    	'NP.view.po.gridcol.TemplateName',
+    	'NP.view.po.gridcol.CompletedDate'
     ],
 
 	// This is the default list of columns available for Invoice grids
@@ -41,8 +44,8 @@ Ext.define('NP.view.po.PoGrid', {
 				'shared.gridcol.CreatedBy','po.gridcol.Period', 'po.gridcol.Number','shared.gridcol.Amount',
 				'shared.gridcol.PendingDays','po.gridcol.Status','shared.gridcol.PriorityFlag','shared.gridcol.LastApprovedDate',
 				'shared.gridcol.LastApprovedBy','shared.gridcol.RejectedBy','shared.gridcol.RejectedDate',
-				'shared.gridcol.PendingApprovalDays','po.gridcol.SentToVendor','po.gridcol.ReceiptRequired',
-				'po.gridcol.Notes','po.gridcol.BudgetNotes'],
+				'shared.gridcol.PendingApprovalDays','po.gridcol.SentToVendor','po.gridcol.CompletedDate','po.gridcol.ReceiptRequired',
+				'po.gridcol.ReceivedStatus','po.gridcol.Notes','po.gridcol.BudgetNotes'],
     
     /**
      * @cfg {Array} cols         Columns that you want to display on the grid by default

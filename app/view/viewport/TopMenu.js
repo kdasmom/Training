@@ -46,7 +46,8 @@ Ext.define('NP.view.viewport.TopMenu', {
 	    // Purchase Orders
 		if ( NP.lib.core.Config.getSetting('PN.POOptions.POSwitch') == 1 && NP.lib.core.Security.hasPermission(1026) ) {
 			this.items.push({
-				xtype: 'viewport.menu.pomenu'
+				xtype : 'viewport.menu.pomenu',
+				itemId: 'poMenuBtn'
 			}, '-');
 		}
 	    

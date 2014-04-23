@@ -26,7 +26,7 @@ class LocalizationService {
 	 * DEPRECATED, use translate() instead
 	 */
 	public function getMessage($messageName, $locale=null) {
-		$this->translate($messageName, $locale);
+		return $this->translate($messageName, $locale);
 	}
 
 	/**

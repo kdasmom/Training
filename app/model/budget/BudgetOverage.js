@@ -22,7 +22,7 @@ Ext.define('NP.model.budget.BudgetOverage', {
         { name: 'property_id', type: 'int' },
         { name: 'glaccount_id', type: 'int' },
         { name: 'budgetoverage_period', type: 'date' },
-        { name: 'budgetoverage_amount' },
+        { name: 'budgetoverage_amount', type:'float' },
         { name: 'budgetoverage_note' },
         { name: 'budgetoverage_created', type: 'date' },
 
@@ -31,6 +31,10 @@ Ext.define('NP.model.budget.BudgetOverage', {
 
         { name: 'glaccount_number' },
         { name: 'glaccount_name' },
+
+        { name: 'category_name' },
+
+        { name: 'budget_amount', type: 'float' },
 
         { name: 'person_id', type: 'int' },
         { name: 'person_firstname' },

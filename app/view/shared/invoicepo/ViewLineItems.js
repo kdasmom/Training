@@ -14,7 +14,10 @@ Ext.define('NP.view.shared.invoicepo.ViewLineItems', {
     	'NP.store.invoice.InvoiceItems'
     ],
 
-    layout     : 'card',
+    layout     : {
+        type          : 'card',
+        deferredRender: false
+    },
     border     : false,
     bodyPadding: 0,
 
@@ -30,16 +33,24 @@ Ext.define('NP.view.shared.invoicepo.ViewLineItems', {
 
     	var store = Ext.create('NP.store.' + me.type + '.' + capType + 'Items', {
                 service  : capType + 'Service',
-                action   : 'get' + capType + 'Lines',
+                action   : 'getEntityLines',
                 listeners: {
                     add: function(store, recs, index) {
                         me.fireEvent('lineadd', store, recs, index);
+                        me.fireEvent('linechange', 'add', { store: store, recs: recs, index: index });
                     },
                     update: function(store, rec, operation, modifiedFieldNames) {
                         me.fireEvent('lineupdate', store, rec, operation, modifiedFieldNames);
+                        me.fireEvent('linechange', 'update', {
+                            store             : store,
+                            rec               : rec,
+                            operation         : operation,
+                            modifiedFieldNames: modifiedFieldNames
+                        });
                     },
                     remove: function(store, rec, index, isMove) {
                         me.fireEvent('lineremove', store, rec, index, isMove);
+                        me.fireEvent('linechange', 'remove', { store: store, rec: rec, index: index, isMove: isMove });
                     }
                 }
         	});
@@ -52,6 +63,6 @@ Ext.define('NP.view.shared.invoicepo.ViewLineItems', {
 
     	this.callParent(arguments);
 
-        this.addEvents('lineupdate','lineadd','lineremove');
+        this.addEvents('lineupdate','lineadd','lineremove','linechange');
     }
 });

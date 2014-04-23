@@ -315,7 +315,7 @@ class AuditSelect extends Select {
 				->join(new join\AuditLogAuditTypeJoin([]))
 				->join(new join\AuditLogUserJoin([]))
 				->join(new join\AuditLogDelegationUserJoin([]))
-				->whereEquals('aa.auditactivity', "'Modifed'")
+				->whereEquals('aa.auditactivity', "'Modified'")
 				->whereNotEquals(
 					new Expression("ISNULL(al.field_new_value, '')"),
 					new Expression("ISNULL(al.field_old_value, '')")
