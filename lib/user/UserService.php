@@ -83,13 +83,15 @@ class UserService extends AbstractService {
 	 * Returns a role tree starting from a certain role
 	 */
 	public function getRoleTree($role_id=null, $excludeAdmin = null) {
-		$roles = $this->roleGateway->findForTree($excludeAdmin);
+		$roles = $this->roleGateway->findForTree(false);
 		$tree = array();
 
-		$startParent = !$excludeAdmin ? 0 : 1;
+		$startParent = 0;
 		foreach ($roles as $role) {
 			if ($role_id !== null && $role_id === $role['role_id']) {
 				$startParent = $role['tree_parent'];
+			} else if ($excludeAdmin && $role['role_name'] == 'Administrator') {
+				$startParent = $role['tree_id'];
 			}
 			if (!array_key_exists($role['tree_parent'], $tree)) {
 				$tree[$role['tree_parent']] = array();
