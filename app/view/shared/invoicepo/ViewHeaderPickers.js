@@ -30,7 +30,6 @@ Ext.define('NP.view.shared.invoicepo.ViewHeaderPickers', {
                 itemId         : 'entityPropertyCombo',
                 labelAlign     : 'top',
                 allowBlank     : false,
-                disabled       : true,
                 dependentCombos: ['entityVendorCombo'],
                 store          : {
                     type   : 'property.properties',
