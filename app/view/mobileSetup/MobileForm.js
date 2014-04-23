@@ -8,12 +8,13 @@ Ext.define('NP.view.mobileSetup.MobileForm', {
 	alias: 'widget.mobilesetup.mobileform',
 
 	requires: [
-		'NP.lib.core.Security'
+		'NP.lib.core.Security',
+		'NP.lib.core.Translator'
 	],
 
 	userInputLabelText             : 'User',
 	mobilePhoneNumberInputLabelText: 'Mobile Phone Number',
-	phoneNumberInstructions        : '<i>Enter your 10 digit phone number as 7035551212</i>',
+	phoneNumberInstructions        : 'Enter your 10 digit phone number as 7035551212',
 	newPinInputLabelText           : 'New PIN',
 	newPinConfirmInputLabelText    : 'Confirm New PIN',
 	newPinInstructions             : '4 digit PIN required',
@@ -33,7 +34,7 @@ Ext.define('NP.view.mobileSetup.MobileForm', {
 		me.items = [
 			{
 				xtype     : 'textfield',
-				fieldLabel: me.mobilePhoneNumberInputLabelText,
+				fieldLabel: NP.Translator.translate(me.mobilePhoneNumberInputLabelText),
 				name      : 'mobinfo_phone',
 				margin    : '0 0 0 0',
 				maxLength : 10,
@@ -41,10 +42,10 @@ Ext.define('NP.view.mobileSetup.MobileForm', {
 				allowBlank: false
 			},{
 				xtype    : 'displayfield',
-				value    : me.phoneNumberInstructions
+				value    : '<i>' + NP.Translator.translate(me.phoneNumberInstructions) + '</i>'
 			},{
 				xtype     : 'textfield',
-				fieldLabel: me.newPinInputLabelText,
+				fieldLabel: NP.Translator.translate(me.newPinInputLabelText),
 				inputType : 'password',
 				name      : 'mobinfo_pin',
 				maxLength : 4,
@@ -52,10 +53,10 @@ Ext.define('NP.view.mobileSetup.MobileForm', {
 			},{
 				xtype    : 'displayfield',
 				margin   : '-5 0 5 155',
-				value    : me.newPinInstructions
+				value    : '<i>' + NP.Translator.translate(me.newPinInstructions) + '</i>'
 			},{
 				xtype     : 'textfield',
-				fieldLabel: me.newPinConfirmInputLabelText,
+				fieldLabel: NP.Translator.translate(me.newPinConfirmInputLabelText),
 				inputType : 'password',
 				name      : 'mobinfo_pin_confirm',
 				maxLength : 4,
