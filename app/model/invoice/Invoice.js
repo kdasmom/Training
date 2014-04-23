@@ -171,7 +171,7 @@ Ext.define('NP.model.invoice.Invoice', {
         if (
             (status == 'open' && (NP.Security.hasPermission(1032) || NP.Security.hasPermission(6076) || NP.Security.hasPermission(6077)))
             || (status == 'saved' && NP.Security.hasPermission(1068) && me.isModifiable())
-            || (status == 'paid' && NP.Security.hasPermission(2094))
+            || (status == 'paid' && (NP.Security.hasPermission(2094) || NP.Security.hasPermission(6093)))
         ) {
             return true;
         }
@@ -201,9 +201,10 @@ Ext.define('NP.model.invoice.Invoice', {
 	},
 
 	getDisplayStatus: function() {
-		return NP.model.invoice.Invoice.getDisplayStatus(
-			this.get('invoice_status')
-		);
+		var me     = this,
+			status = (me.get('invoice_id') === null) ? 'New' : me.get('invoice_status');
+		
+		return NP.model.invoice.Invoice.getDisplayStatus(status);
 	},
 
 	statics: {

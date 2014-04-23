@@ -20,24 +20,25 @@ Ext.define('NP.view.viewport.menu.POMenu', {
 			items: [
 				// PO Register
 				{
+					itemId: 'poRegisterMenuBtn',
 					text: NP.Translator.translate('PO Register'),
 					menu: {
 						showSeparator: false,
 						items: [
 							// Open
-							{ text: NP.Translator.translate('Open') },
+							{ itemId: 'openPoRegisterMenuBtn', text: NP.Translator.translate('Open') },
 							// Template
-							{ text: NP.Translator.translate('Template') },
+							{ itemId: 'templatePoRegisterMenuBtn', text: NP.Translator.translate('Template') },
 							// Pending
-							{ text: NP.Translator.translate('Pending') },
+							{ itemId: 'pendingPoRegisterMenuBtn', text: NP.Translator.translate('Pending') },
 							// Approved
-							{ text: NP.Translator.translate('Approved') },
+							{ itemId: 'approvedPoRegisterMenuBtn', text: NP.Translator.translate('Approved') },
 							// Invoiced
-							{ text: NP.Translator.translate('Invoiced') },
+							{ itemId: 'invoicedPoRegisterMenuBtn', text: NP.Translator.translate('Invoiced') },
 							// Rejected
-							{ text: NP.Translator.translate('Rejected') },
+							{ itemId: 'rejectedPoRegisterMenuBtn', text: NP.Translator.translate('Rejected') },
 							// Cancelled
-							{ text: NP.Translator.translate('Cancelled') }
+							{ itemId: 'cancelledPoRegisterMenuBtn', text: NP.Translator.translate('Cancelled') }
 						]
 					}
 				}

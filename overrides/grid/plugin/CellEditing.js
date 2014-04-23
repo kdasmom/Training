@@ -1,3 +1,4 @@
+// Modified at line 25 below to add the option of passing in configuration options for the editor
 Ext.define('overrides.grid.plugin.CellEditing', {
 	override: 'Ext.grid.plugin.CellEditing',
 

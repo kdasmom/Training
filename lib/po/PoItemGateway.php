@@ -14,6 +14,41 @@ use NP\core\db\Where;
  */
 class PoItemGateway extends AbstractGateway {
 
+	protected $configService;
+
+	public function setConfigService(\NP\system\ConfigService $configService) {
+		$this->configService = $configService;
+	}
+
+	public function findLines($purchaseorder_id) {
+		$select = new sql\PoItemSelect();
+
+		$select->allColumns('pi')
+				->columnBudgetVariance($this->configService->get('PN.Intl.budgetCompareWithTax', '1'))
+				->join(new sql\join\PoItemPurchaseorderJoin())
+				->join(new sql\join\PoItemInvoiceItemJoin(['invoiceitem_id','invoiceitem_amount','invoice_id']))
+				->join(new \NP\invoice\sql\join\InvoiceItemInvoiceJoin(['invoice_ref'], Select::JOIN_LEFT))
+				->join(new sql\join\PoItemPropertyJoin())
+				->join(new sql\join\PoItemGlAccountJoin())
+				->join(new sql\join\PoItemUnitJoin())
+				->join(new sql\join\PoItemDfSplitJoin())
+				->join(new sql\join\PoItemJobAssociationJoin())
+				->join(new \NP\jobcosting\sql\join\JobAssociationJbContractJoin())
+				->join(new \NP\jobcosting\sql\join\JobAssociationJbChangeOrderJoin())
+				->join(new \NP\jobcosting\sql\join\JobAssociationJbJobCodeJoin())
+				->join(new \NP\jobcosting\sql\join\JobAssociationJbPhaseCodeJoin())
+				->join(new \NP\jobcosting\sql\join\JobAssociationJbCostCodeJoin())
+				->join(new \NP\jobcosting\sql\join\JbContractJbContractBudgetJoin(
+					$this->configService->get('PN.jobcosting.useJobBudgets', '0')
+				))
+				->join(new \NP\shared\sql\join\EntityLineGlAccountYearJoin('poitem'))
+				->join(new \NP\shared\sql\join\EntityLineBudgetJoin('poitem'))
+				->whereEquals('pi.purchaseorder_id', '?')
+				->order('pi.poitem_linenum ASC');
+
+		return $this->adapter->query($select, array($purchaseorder_id));
+	}
+	
 	public function rollPeriod($property_id, $newAccountingPeriod, $oldAccountingPeriod) {
 		$update = new Update();
 		$subSelect = new Select();

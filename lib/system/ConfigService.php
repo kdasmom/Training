@@ -521,8 +521,8 @@ class ConfigService extends AbstractService {
 	 * @param null $configsysval_show
 	 * @return array|bool
 	 */
-	public function getConfigSysValByCat($configsysclient_name = null, $configsysval_load = null, $configsyscat_name = null, $configsysval_show = null) {
-		return $this->configsysGateway->getConfigSysValByCat($configsysclient_name, $configsysval_load, $configsyscat_name, $configsysval_show);
+	public function getConfigSysValByCat($configsysval_load = null, $configsyscat_name = null, $configsysval_show = null) {
+		return $this->configsysGateway->getConfigSysValByCat($configsysval_load, $configsyscat_name, $configsysval_show);
 	}
 
 	/**
@@ -856,22 +856,6 @@ class ConfigService extends AbstractService {
 				}
 				if ($tabindex == self::TABINDEX_CUSTOMFIELD_LINEITEMS) {
 					$this->configSysValGateway->updateCustomField($value, 'CP.PO_CUSTOM_FIELD' . $fid . '_LINEITEM_REQ');
-				}
-				break;
-			case 'field_vef_on_off':
-				if ($tabindex == self::TABINDEX_CUSTOMFIELD_HEADERS) {
-					$this->configSysValGateway->updateCustomField($value, 'CP.VEF_CUSTOM_FIELD' . $fid . '_ON_OFF');
-				}
-				if ($tabindex == self::TABINDEX_CUSTOMFIELD_LINEITEMS) {
-					$this->configSysValGateway->updateCustomField($value, 'CP.VEF_CUSTOM_FIELD' .$fid . '_LINEITEM_ON_OFF');
-				}
-				break;
-			case 'field_vef_req':
-				if ($tabindex == self::TABINDEX_CUSTOMFIELD_HEADERS) {
-					$this->configSysValGateway->updateCustomField($value, 'CP.VEF_CUSTOM_FIELD' . $fid . '_REQ');
-				}
-				if ($tabindex == self::TABINDEX_CUSTOMFIELD_LINEITEMS) {
-					$this->configSysValGateway->updateCustomField($value, 'CP.VEF_CUSTOM_FIELD' . $fid . '_LINEITEM_REQ');
 				}
 				break;
 			case 'field_lbl':

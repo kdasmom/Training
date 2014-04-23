@@ -47,6 +47,7 @@ Ext.define('NP.view.shared.invoicepo.ImagesAddWindow', {
         
         me.items = [{
             xtype     : 'customgrid',
+            border    : false,  
             selType   : 'checkboxmodel',
             tbar      : [
                 { xtype: 'shared.button.cancel', handler: function() { me.close(); } },

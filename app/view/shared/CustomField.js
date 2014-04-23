@@ -69,8 +69,9 @@ Ext.define('NP.view.shared.CustomField', {
 
         var fieldName = this.name + '_internal';
     	var field = {
-			name      : fieldName,
-			allowBlank: this.allowBlank
+            name       : fieldName,
+            allowBlank : this.allowBlank,
+            isFormField: false
 		};
 
     	// Configuration for a text custom field
@@ -142,7 +143,7 @@ Ext.define('NP.view.shared.CustomField', {
     setValue: function(val) {
         // If we're dealing with an autocomplete custom field drop down that's not loaded, we need to make sure
         // the record is in the store, so we can add the setDefaultRec() custom method for that
-        if (this.comboUi == 'autocomplete' && this.type == 'select' && !this.field.getStore().isLoaded) {
+        if (this.type == 'select' && !this.field.getStore().isLoaded) {
             this.field.setDefaultRec(Ext.create('NP.model.system.PnUniversalField', {
                                         universal_field_data: val
                                     }));
@@ -174,5 +175,23 @@ Ext.define('NP.view.shared.CustomField', {
 
 	getSubmitValue: function() {
 		return this.getValue();
-	}
+	},
+
+    /**
+     * Sets the read only state of this field.
+     * @param {Boolean} readOnly Whether the field should be read only.
+     */
+    setReadOnly: function(readOnly) {
+        var me = this,
+            inputEl = me.inputEl;
+        readOnly = !!readOnly;
+        me[readOnly ? 'addCls' : 'removeCls'](me.readOnlyCls);
+        me.readOnly = readOnly;
+        if (inputEl) {
+            inputEl.dom.readOnly = readOnly;
+        } else if (me.rendering) {
+            me.setReadOnlyOnBoxReady = true;
+        }
+        me.fireEvent('writeablechange', me, readOnly);
+    }
 });

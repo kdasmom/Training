@@ -154,7 +154,9 @@ Ext.define('NP.view.shared.Address', {
                     name       : this.prefix + NP.view.shared.Address.ZIP,
                     width      : this.address_zip_width,
                     allowBlank : !this.required,
-                    value      : this.address_zip
+                    value      : this.address_zip,
+                    maxLengthText: 5,
+                    minLengthText: 5
                 },{
                     xtype      : 'textfield',
                     fieldLabel : 'Zip Ext', // This will be hidden after render

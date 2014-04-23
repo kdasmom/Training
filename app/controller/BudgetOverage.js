@@ -135,6 +135,9 @@ Ext.define('NP.controller.BudgetOverage', {
             form.submitWithBindings({
                 service: 'BudgetService',
                 action: 'saveBudgetOverage',
+                extraFields: {
+                    budgetoverage_period: 'budgetoverage_period'
+                },
                 extraParams: {
                     userprofile_id: NP.Security.getUser().get('userprofile_id'),
                     role_id:        NP.Security.getRole().get('role_id')

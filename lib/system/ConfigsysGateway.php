@@ -220,38 +220,40 @@ class ConfigsysGateway extends AbstractGateway {
 	/**
 	 * Retrieve sysvals list
 	 *
-	 * @param $configsysclient_name
 	 * @param $configsysval_load
 	 * @param $configsyscat_name
 	 * @param $configsysval_show
 	 * @return array|bool
 	 */
-	public function getConfigSysValByCat($configsysclient_name, $configsysval_load, $configsyscat_name, $configsysval_show) {
+	public function getConfigSysValByCat($configsysval_load, $configsyscat_name, $configsysval_show) {
 		$select = new Select();
 
 		$select->from(['cv' => 'configsysval'])
 			->columns(['configsysval_id', 'configsysval_val', 'configsysval_active'])
 			->join(['c' => 'configsys'], 'cv.configsys_id = c.configsys_id', ['configsys_id', 'configsyslkp_id', 'configsys_range', 'configsys_tbl', 'configsys_tbl_order_fld', 'configsys_tbl_name_fld', 'configsys_tbl_val_fld', 'configsys_name', 'configsys_displayname', 'configsys_shortname', 'configsys_required', 'configsys_maxlength'], Select::JOIN_INNER)
-			->join(['cl' => 'configsysclient'], 'cv.configsysclient_id = cl.configsysclient_id', [], Select::JOIN_INNER)
 			->join(['ct' => 'configsystype'], 'c.configsystype_id = ct.configsystype_id', ['configsystype_name'], Select::JOIN_LEFT)
 			->join(['cc' => 'configsyscat'], 'c.configsyscat_id = cc.configsyscat_id', [], Select::JOIN_LEFT)
 			->join(['c2' => 'configsys'], 'c.configsys_parent_yesno_id = c2.configsys_id', [], Select::JOIN_LEFT)
-			->join(['cv2' => 'configsysval'], ' c2.configsys_id = cv2.configsys_id', ['parent_configsysval_id' => 'configsysval_id'], Select::JOIN_LEFT)
-			->whereNest('OR')
-			->whereEquals('cc.configsyscat_name', '?')
-			->whereIsNull('?')
-			->whereUnNest()
-			->whereNest('OR')
-			->whereEquals('cv.configsysval_load', '?')
-			->whereIsNull('?')
-			->whereUnNest()
-			->whereNest('OR')
-			->whereEquals('cv.configsysval_show', '?')
-			->whereIsNull('?')
-			->whereUnNest()
-			->whereEquals('cl.configsysclient_name', '?');
+			->join(['cv2' => 'configsysval'], ' c2.configsys_id = cv2.configsys_id', ['parent_configsysval_id' => 'configsysval_id'], Select::JOIN_LEFT);
 
-		return $this->adapter->query($select, [$configsyscat_name, $configsyscat_name, $configsysval_load, $configsysval_load, $configsysval_show, $configsysval_show, $configsysclient_name]);
+		$params = [];
+		
+		if (!empty($configsyscat_name)) {
+			$select->whereEquals('cc.configsyscat_name', '?');
+			$params[] = $configsyscat_name;
+		}
+
+		if (!empty($configsysval_load)) {
+			$select->whereEquals('cv.configsysval_load', '?');
+			$params[] = $configsysval_load;
+		}
+
+		if (!empty($configsysval_show)) {
+			$select->whereEquals('cv.configsysval_show', '?');
+			$params[] = $configsysval_show;
+		}
+
+		return $this->adapter->query($select, $params);
 	}
 
 	/**

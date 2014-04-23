@@ -32,7 +32,7 @@ class InvoiceItemEntity extends \NP\core\AbstractEntity {
 				'digits' => array()
 			),
 			'auditable' => [
-				'table'        => 'glaccount',
+				'table'        => 'glAccount',
 				'displayField' => 'glaccount_name',
 				'displayName'  => 'GL Account'
 			],
@@ -165,49 +165,65 @@ class InvoiceItemEntity extends \NP\core\AbstractEntity {
 			'validation' => array(
 				'stringLength' => array('max'=>255)
 			),
-			'auditable' => []
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL1_LINEITEM'
+			]
 		),
 		'universal_field2'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
 			),
-			'auditable' => []
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL2_LINEITEM'
+			]
 		),
 		'universal_field3'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
 			),
-			'auditable' => []
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL3_LINEITEM'
+			]
 		),
 		'universal_field4'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
 			),
-			'auditable' => []
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL4_LINEITEM'
+			]
 		),
 		'universal_field5'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
 			),
-			'auditable' => []
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL5_LINEITEM'
+			]
 		),
 		'universal_field6'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
 			),
-			'auditable' => []
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL6_LINEITEM'
+			]
 		),
 		'universal_field7'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
 			),
-			'auditable' => []
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL7_LINEITEM'
+			]
 		),
 		'universal_field8'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
 			),
-			'auditable' => []
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL8_LINEITEM'
+			]
 		),
 		'dfsplit_id'	 => array(
 			'validation' => array(
@@ -218,12 +234,18 @@ class InvoiceItemEntity extends \NP\core\AbstractEntity {
 		'vcitem_number'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>100)
-			)
+			),
+			'auditable' => [
+				'displayName' => 'Item Number'
+			]
 		),
 		'vcitem_uom'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>50)
-			)
+			),
+			'auditable' => [
+				'displayName' => 'Unit of Measurement'
+			]
 		),
 		'is_from_catalog'	 => array(
 			'defaultValue' => 0

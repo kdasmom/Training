@@ -12,6 +12,11 @@ use NP\core\db\Expression;
  * @author Thomas Messier
  */
 class InvoicePaymentGateway extends AbstractGateway {
+	protected $configService;
+	
+	public function setConfigService(\NP\system\ConfigService $configService) {
+	    $this->configService = $configService;
+	}
 
 	/**
 	 * Gets all payments for an invoice
@@ -20,15 +25,27 @@ class InvoicePaymentGateway extends AbstractGateway {
 	 * @return array
 	 */
 	public function findForInvoice($invoice_id) {
-		$select = Select::get()->from(['ip'=>'invoicepayment'])
-							->join(new sql\join\InvoicePaymentInvoicePaymentStatusJoin())
-							->join(new sql\join\InvoicePaymentInvoicePaymentVoidJoin())
-							->join(new sql\join\InvoicePaymentInvoicePaymentTypeJoin())
-							->join(new sql\join\InvoicePaymentUserJoin())
-							->join(new \NP\user\sql\join\UserUserroleJoin())
-							->join(new \NP\user\sql\join\UserroleStaffJoin())
-							->join(new \NP\user\sql\join\StaffPersonJoin())
-							->join(new sql\join\InvoicePaymentDelegationUserJoin())
+		$checkLabel = $this->configService->get('PN.Intl.checkName', 'Check');
+		$select = Select::get()->allColumns('ip')
+							->column(new Expression("
+								CASE
+									WHEN ipt.invoicepayment_type = 'Check' THEN '" . str_replace("'", "''", $checkLabel) . "'
+								 	ELSE ipt.invoicepayment_type
+								END
+								+ CASE
+									WHEN ISNULL(ip.invoicepayment_checknum, '') <> '' THEN ' #' + ip.invoicepayment_checknum
+									ELSE ''
+								END
+							"), 'invoicepayment_method')
+							->from(['ip'=>'invoicepayment'])
+								->join(new sql\join\InvoicePaymentInvoicePaymentStatusJoin())
+								->join(new sql\join\InvoicePaymentInvoicePaymentVoidJoin())
+								->join(new sql\join\InvoicePaymentInvoicePaymentTypeJoin())
+								->join(new sql\join\InvoicePaymentUserJoin())
+								->join(new \NP\user\sql\join\UserUserroleJoin())
+								->join(new \NP\user\sql\join\UserroleStaffJoin())
+								->join(new \NP\user\sql\join\StaffPersonJoin())
+								->join(new sql\join\InvoicePaymentDelegationUserJoin())
 							->whereEquals('ip.invoice_id', '?')
 							->order('ip.invoicepayment_number');
 

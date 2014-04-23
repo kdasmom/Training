@@ -149,28 +149,31 @@ Ext.define('NP.view.systemSetup.CustomFieldForm', {
 						hidden: (me.tabindex != 0 || me.fid > 2),
 						items: [
 							{
-								boxLabel: NP.Translator.translate('Date'),
-								name: 'customFieldType',
+								boxLabel  : NP.Translator.translate('Date'),
+								name      : 'customFieldType',
 								inputValue: '1',
-								width: 50,
-								hidden: me.tabindex > 0
+								width     : 50,
+								hidden    : me.tabindex > 0
 							},
 							{
-								boxLabel: NP.Translator.translate('Text'),
-								name: 'customFieldType',
+								boxLabel  : NP.Translator.translate('Text'),
+								name      : 'customFieldType',
 								inputValue: '3',
-								width: 50,
-								hidden: me.tabindex < 2
+								width     : 50,
+								hidden    : me.tabindex < 2
 							},
 							{
-								boxLabel: NP.Translator.translate('DropDown'), name: 'customFieldType', inputValue: '0', width: 80
+								boxLabel  : NP.Translator.translate('DropDown'),
+								name      : 'customFieldType',
+								inputValue: '0',
+								width     : 80
 							},
 							{
-								boxLabel: NP.Translator.translate('Calendar'),
-								name: 'customFieldType',
+								boxLabel  : NP.Translator.translate('Calendar'),
+								name      : 'customFieldType',
 								inputValue: '2',
-								width: 70,
-								hidden: me.tabindex !== 2
+								width     : 70,
+								hidden    : me.tabindex !== 2
 							}
 						],
 						listeners: {

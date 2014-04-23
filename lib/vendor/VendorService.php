@@ -706,8 +706,15 @@ class VendorService extends AbstractService {
      * @param  string $keyword     Keyword to filter list of vendors by
      * @return array               List of vendor records
      */
-    public function getVendorsForInvoice($property_id, $vendor_id=null, $keyword=null) {
-        return $this->vendorGateway->findVendorsForInvoice($property_id, $vendor_id, $keyword);
+    public function getVendorsForInvoice($property_id=null, $vendor_id=null, $useFavorites=true, $keyword=null, $criteria='begins', $pageSize=null, $page=null, $sort="vendor_name") {
+    	if (is_string($useFavorites)) {
+    		if ($useFavorites == 'false') {
+    			$useFavorites = false;
+    		} else {
+    			$useFavorites = true;
+    		}
+    	}
+        return $this->vendorGateway->findVendorsForInvoice($property_id, $vendor_id, $useFavorites, $keyword, $criteria, $pageSize, $page, $sort);
     }
 
     /**
@@ -834,6 +841,31 @@ class VendorService extends AbstractService {
      */
     public function getExpiredInsuranceCerts($countOnly, $pageSize=null, $page=null, $sort="insurance_expdatetm") {
         return $this->insuranceGateway->findExpiredInsuranceCerts($countOnly, $pageSize, $page, $sort);
+    }
+
+    /**
+     * Checks if a vendor has any utility accounts setup
+     */
+    public function isUtilityVendor($vendorsite_id, $property_id=0) {
+    	$Utility_Id = $this->utilityGateway->findValue(['Vendorsite_Id'=>'?'], [$vendorsite_id], 'Utility_Id');
+    	
+    	if ($Utility_Id === null) {
+    		return false;
+    	}
+
+    	if ($property_id) {
+	    	$UtilityAccount_Id = $this->utilityAccountGateway->findValue(
+	    		['Utility_Id'=>'?', 'Property_Id'=>'?', 'utilityaccount_active'=>'?'],
+	    		[$Utility_Id, $property_id, 1],
+	    		'UtilityAccount_Id'
+	    	);
+
+	    	if ($UtilityAccount_Id === null) {
+	    		return false;
+	    	}
+	    }
+
+    	return true;
     }
 
     /**

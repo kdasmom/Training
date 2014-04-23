@@ -339,6 +339,20 @@ class PropertyGateway  extends AbstractGateway {
 		return $this->adapter->query($update, $property_id_list);
 	}
 
+    public function getProperties($properties, $asp_client_id) {
+        $select = 
+            new sql\GetPropertiesSelect($properties, $asp_client_id)
+        ;
+        $result = $this->adapter->query($select);
+
+        for ($i = 0; $i < count($result); $i++) {
+            if (empty($result[$i]['region_name'])) {
+                $result[$i]['region_name'] = 'None';
+            }
+        }
+        return $result;
+    }
+
 	/**
 	 * Retrieve order's properties
 	 *
