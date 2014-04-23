@@ -86,6 +86,8 @@ li.x-boundlist-item {
 .void-btn { background-image: url("images/buttons/void.gif"); }
 .shop-btn { background-image: url("images/buttons/vc_shopping_bag.gif"); }
 .star-btn { background-image: url("images/buttons/star.gif"); }
+.create-from-btn { background-image: url("images/buttons/create_from.gif"); background-repeat: no-repeat; }
+.update-btn { background-image: url("images/buttons/update.gif"); background-repeat: no-repeat; }
 
 .npiss-button .x-btn-inner { padding-left: 24px !important; }
 .nsiss-button .x-btn-inner { padding-left: 34px !important; }

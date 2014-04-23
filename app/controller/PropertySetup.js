@@ -168,6 +168,9 @@ Ext.define('NP.controller.PropertySetup', {
 			// The save button on the property unit form
 			'[xtype="property.unittypeform"] [xtype="shared.button.save"]': {
 				click: this.saveUnitType
+			},
+			'[xtype="property.fiscalcalendarform"] [xtype="shared.button.createfrom"]': {
+				click: this.showDistributor
 			}
 		});
 	},
@@ -530,7 +533,11 @@ Ext.define('NP.controller.PropertySetup', {
 
 	selectFiscalCalendar: function(selModel, recs) {
 		// Show the panel with the cutoff dates
-		var cutoffPanel = selModel.view.up('customgrid').nextNode('[xtype="property.fiscalcalendarform"]');
+		var cutoffPanel = selModel.view.up('customgrid').nextNode('[xtype="property.fiscalcalendarform"]'),
+			calendarPanel = selModel.view.up('customgrid').nextNode('[xtype="property.closingcalendardistibutor"]');
+
+		calendarPanel.hide();
+		cutoffPanel.query('[xtype="shared.button.createfrom"]')[0].show();
 
 		var form = cutoffPanel.getForm();
 
@@ -1023,12 +1030,16 @@ Ext.define('NP.controller.PropertySetup', {
 	addMasterFiscalCal: function(button, e) {
 		this.selectedFiscalCal = null;
 
-		var cutoffPanel = button.nextNode('[xtype="property.fiscalcalendarform"]');
+		var cutoffPanel = button.nextNode('[xtype="property.fiscalcalendarform"]'),
+			calendarPanel = button.nextNode('[xtype="property.closingcalendardistibutor"]');
+
+		cutoffPanel.query('[xtype="shared.button.createfrom"]')[0].hide();
 		cutoffPanel.getForm().reset();
 
 		var fields = cutoffPanel.getForm().getFields();
 		fields.each(function(field) { field.enable(); });
 
+		calendarPanel.hide();
 		cutoffPanel.show();
 	},
 
@@ -1080,5 +1091,22 @@ Ext.define('NP.controller.PropertySetup', {
 				}
 			});
 		}
+	},
+
+	showDistributor: function(button) {
+		var cutoffPanel = button.nextNode('[xtype="property.closingcalendardistibutor"]'),
+			calendarPanel = button.up().up(),
+			me = this;
+
+		cutoffPanel.getForm().reset();
+		cutoffPanel.getForm().findField('calendar_name').setValue(me.selectedFiscalCal.get('fiscalcal_name'));
+
+		cutoffPanel.getForm().findField('Org_fiscalcal_id').getStore().getProxy().extraParams.fiscal_calendar_id = me.selectedFiscalCal.get('fiscalcal_id');
+		cutoffPanel.getForm().findField('Org_fiscalcal_id').getStore().getProxy().extraParams.asp_client_id = me.selectedFiscalCal.get('asp_client_id');
+
+		cutoffPanel.getForm().findField('Org_fiscalcal_id').getStore().load();
+
+		calendarPanel.hide();
+		cutoffPanel.show();
 	}
 });

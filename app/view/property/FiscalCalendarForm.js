@@ -11,7 +11,8 @@ Ext.define('NP.view.property.FiscalCalendarForm', {
     	'NP.view.property.FiscalCalendarGrid',
         'NP.lib.ui.ComboBox',
     	'NP.view.shared.button.Cancel',
-    	'NP.view.shared.button.Save'
+    	'NP.view.shared.button.Save',
+    	'NP.view.shared.button.CreateFrom'
     ],
 
     title      : 'Monthly Cutoffs',
@@ -26,7 +27,12 @@ Ext.define('NP.view.property.FiscalCalendarForm', {
             dock  : 'top',
             items : [
                 { xtype: 'shared.button.save' },
-                { xtype: 'shared.button.cancel' }
+                { xtype: 'shared.button.cancel' },
+				{
+					xtype: 'shared.button.createfrom',
+					text: 'Calendar Distributor',
+					hidden: true
+				}
             ]
         };
 

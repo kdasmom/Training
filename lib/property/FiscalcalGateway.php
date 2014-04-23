@@ -3,6 +3,7 @@
 namespace NP\property;
 
 use NP\core\AbstractGateway;
+use NP\core\db\Expression;
 use NP\core\db\Select;
 use NP\core\Exception;
 
@@ -136,6 +137,36 @@ class FiscalcalGateway extends AbstractGateway {
 		$res = $this->adapter->query($select, $params);
 		
 		return ($res[0]['total']) ? true : false;
+	}
+
+	public function findFiscalCalendarsByType($asp_client_id, $type, $fiscal_calendar_id) {
+		$select = new Select();
+		$subselect = new Select();
+
+		$queryParams = [];
+
+		$subselect->from(['f2' => 'fiscalcal'])
+				->columns(['FISCALCAL_year' => new Expression('f2.FISCALCAL_year - 1')])
+				->where([
+					'fiscalcal_id' => '?',
+					'asp_client_id'	=> '?'
+				]);
+
+		$queryParams = [$fiscal_calendar_id, $asp_client_id];
+
+
+		$select->from(['f' => 'fiscalcal'])
+			->where(
+				[
+					'fiscalcal_type'	=> '?',
+					'asp_client_id'		=> '?',
+					'FISCALCAL_year'	=> $subselect
+				]
+			);
+
+		$queryParams = array_merge( [$type, $asp_client_id], $queryParams);
+
+		return $this->adapter->query($select, $queryParams);
 	}
 
 }

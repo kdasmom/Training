@@ -33,6 +33,24 @@ class FiscalCalService extends AbstractService {
 
 		return $accountingPeriod;
 	}
+
+	/**
+	 * Retrieve list of the fiscal calendars by type and calendar_id
+	 *
+	 * @param string $type
+	 * @param null $fiscal_calendar_id
+	 * @return bool
+	 */
+	public function getFiscalCalendarsByType($type = 'template', $fiscal_calendar_id = null, $asp_client_id = null) {
+		if (!$fiscal_calendar_id) {
+			return false;
+		}
+		return $this->fiscalcalGateway->findFiscalCalendarsByType($asp_client_id, $type, $fiscal_calendar_id);
+	}
+
+	public function fiscalcalDistributor($asp_client_id, $org_fiscalcal_id, $dest_fiscalcal_id) {
+		
+	}
 }
 
 ?>
