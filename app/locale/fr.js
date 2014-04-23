@@ -699,6 +699,28 @@ Ext.define('NP.Locale', {
 	'Associated POs'       : 'Associated POs',
 	'Vendor Code'          : 'Vendor Code',
 	'Cycle From'           : 'Cycle From',
-	'Cycle To'             : 'Cycle To'
+	'Cycle To'             : 'Cycle To',
 
+	/**
+	 * VENDOR SECTION
+	 */
+
+	'Assign GL Accounts'                          : 'Assign GL Accounts',
+	'Vendor Documents'                            : 'Vendor Documents',
+	'General Info and Settings'                   : 'General Info and Settings',
+	'GL Information'                              : 'GL Information',
+	'Insurance Setup'                             : 'Insurance Setup',
+	'Favorite'                                    : 'Favorite',
+	'Type'                                        : 'Type',
+	'Company'                                     : 'Company',
+	'Policy Number'                               : 'Policy Number',
+	'Effective Date'                              : 'Effective Date',
+	'Exp. Date'                                   : 'Exp. Date',
+	'Policy Limit'                                : 'Policy Limit',
+	'Additional Insured'                          : 'Additional Insured',
+	'Property Assignment'                         : 'Property Assignment',
+	'Assign/View Properties'                      : 'Assign/View Properties',
+	'Add / Remove Insurance Property Association' : 'Add / Remove Insurance Property Association',
+	'Select Properties'                           : 'Select Properties',
+	'The assigned GL accounts listed above represent all GL accounts available for use for this vendor. All of these GL accounts may not be available for use if they are not also assigned to the property you are on.' : 'The assigned GL accounts listed above represent all GL accounts available for use for this vendor. All of these GL accounts may not be available for use if they are not also assigned to the property you are on.'
 });

@@ -265,7 +265,7 @@ class ImageService extends AbstractService {
     public function processImageUpload() {
         $file = null;
         $destinationPath = $this->configService->get('PN.Main.FileUploadLocation');
-        
+
         // If destination directory doesn't exist, create it
         if (!is_dir($destinationPath)) {
             mkdir($destinationPath, 0777, true);

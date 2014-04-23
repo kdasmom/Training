@@ -146,7 +146,7 @@ Ext.define('NP.view.shared.Address', {
                     allowBlank    : !this.required,
                     width         : this.address_state_width,
                     value         : this.address_state,
-					editable	  : false,
+					editable	  : true,
 					typeAhead	  : false
                 },{
                     xtype      : 'textfield',

@@ -677,7 +677,7 @@ class VendorGateway extends AbstractGateway {
 	 * @param $keyword
 	 * @return array|bool
 	 */
-	public function findByKeyword($keyword, $sort = 'vendor_name',$category, $status, $asp_client_id, $integration_package_id,  $pageSize=null, $page=1) {
+	public function findByKeyword($keyword, $sort = 'vendor_name',$category, $status, $property_id, $asp_client_id, $integration_package_id,  $pageSize=null, $page=1) {
 		$select = new Select();
 
 		$status = !$status ? "'active', 'inactive'" : $status;
@@ -687,7 +687,7 @@ class VendorGateway extends AbstractGateway {
 						->join(['vs' => 'vendorsite'], 'vs.vendor_id = v.vendor_id', ['vendorsite_id', 'vendorsite_id_alt'])
 						->join(['a' => 'address'], 'a.tablekey_id = vs.vendorsite_id', ['address_line1', 'address_line2', 'address_city', 'address_state', 'address_zip', 'address_zipext'])
 						->join(['i' => 'integrationpackage'], 'i.integration_package_id = v.integration_package_id', ['integration_package_name'])
-						->join(['f' => 'vendorfavorite'], 'f.vendorsite_id = vs.vendorsite_id', ['vendorfavorite_id, property_id'], Select::JOIN_LEFT)
+						->join(['f' => 'vendorfavorite'], 'f.vendorsite_id = vs.vendorsite_id AND f.property_id = ?', ['vendorfavorite_id, property_id'], Select::JOIN_LEFT)
 						->join(['vt' => 'vendortype'], 'vt.vendortype_id = v.vendortype_id', ['vendortype_name'], Select::JOIN_LEFT)
 						->join(['c' => 'country'], 'a.address_country = c.country_id', ['country_name'], Select::JOIN_LEFT)
 						->where(['a.addresstype_id' => '?'])
@@ -704,7 +704,7 @@ class VendorGateway extends AbstractGateway {
 		if ($category == 'top20') {
 
 		}
-		return $this->getPagingArray($select, [AddressGateway::ADDRESS_TYPE_MAILING, $keyword . '%', $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%'] , $pageSize, $page, 'v.vendor_id');
+		return $this->getPagingArray($select, [$property_id, AddressGateway::ADDRESS_TYPE_MAILING, $keyword . '%', $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%', '%' . $keyword . '%'] , $pageSize, $page, 'v.vendor_id');
 	}
 
 	public function findByKeywordWithTaskType($allowExpInsurance) {
@@ -737,13 +737,14 @@ class VendorGateway extends AbstractGateway {
 						'vs_vendor_universalfield1' => 'vendor_universalfield1',
 						'vs_vendorsite_account_number' => 'vendorsite_account_number',
 						'vs_vendorsite_display_account_number_po' => 'vendorsite_display_account_number_po',
+						'vs_vendorsite_DaysNotice_InsuranceExpires' => 'vendorsite_DaysNotice_InsuranceExpires',
 					])
-					->join(['p' => 'phone'], 'p.tablekey_id = vs.vendorsite_id', ['vendorsite_phone_number' => 'phone_number', 'vendorsite_phone_ext' => 'phone_ext', 'vendorsite_phone_id' => 'phone_id'], Select::JOIN_LEFT)
-					->join(['f' => 'phone'], 'f.tablekey_id = vs.vendorsite_id', ['vendorsite_fax_phone_number' => 'phone_number', 'vendorsite_fax_id' => 'phone_id'], Select::JOIN_LEFT)
+					->join(['p' => 'phone'], 'p.tablekey_id = vs.vendorsite_id', ['vendorsite_phone_countrycode' => 'phone_countrycode', 'vendorsite_phone_number' => 'phone_number', 'vendorsite_phone_ext' => 'phone_ext', 'vendorsite_phone_id' => 'phone_id'], Select::JOIN_LEFT)
+					->join(['f' => 'phone'], 'f.tablekey_id = vs.vendorsite_id', ['vendorsite_fax_phone_countrycode' => 'phone_countrycode', 'vendorsite_fax_phone_number' => 'phone_number', 'vendorsite_fax_id' => 'phone_id'], Select::JOIN_LEFT)
 					->join(['a' => 'address'], 'a.tablekey_id = vs.vendorsite_id', ['address_id', 'addresstype_id', 'tablekey_id', 'table_name', 'address_attn', 'address_company', 'address_line1', 'address_line2', 'address_line3', 'address_city', 'address_state', 'address_zip', 'address_zipext', 'address_country', 'address_id_alt'], Select::JOIN_LEFT)
 					->join(['c' => 'contact'], 'c.tablekey_id = vs.vendorsite_id', [], Select::JOIN_LEFT)
 					->join(['ps' => 'person'], 'ps.person_id = c.person_id', ['person_id','asp_client_id', 'person_title', 'person_firstname', 'person_middlename', 'person_lastname', 'person_suffix', 'person_ssn', 'person_gender', 'person_birthdate', 'personmarital_id', 'person_passport_no'], Select::JOIN_LEFT)
-					->join(['pc' => 'phone'], 'pc.tablekey_id = c.contact_id', ['attention_phone_number' => 'phone_number', 'attention_phone_ext' => 'phone_ext', 'attention_phone_id' => 'phone_id'], Select::JOIN_LEFT)
+					->join(['pc' => 'phone'], 'pc.tablekey_id = c.contact_id', ['attention_phone_countrycode' => 'phone_countrycode', 'attention_phone_number' => 'phone_number', 'attention_phone_ext' => 'phone_ext', 'attention_phone_id' => 'phone_id'], Select::JOIN_LEFT)
 					->join(['e' => 'email'], 'e.tablekey_id = vs.vendorsite_id', ['email_id', 'email_address'], Select::JOIN_LEFT)
 					->where(
 								[

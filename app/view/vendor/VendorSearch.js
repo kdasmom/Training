@@ -11,7 +11,6 @@ Ext.define('NP.view.vendor.VendorSearch', {
         'NP.view.shared.button.Search',
         'NP.lib.ui.Grid',
         'NP.view.shared.SearchByAlphabetButtons',
-		'NP.view.vendor.gridcol.ViewVendor',
 		'NP.view.vendor.gridcol.AddToFavorite'
     ],
 
@@ -115,9 +114,6 @@ Ext.define('NP.view.vendor.VendorSearch', {
                         xtype: 'vendor.gridcol.addtofavorite'
                     },
                     {
-                        xtype: 'vendor.gridcol.viewvendor'
-                    },
-                    {
                         text: this.vendorIdColumnTitle,
                         dataIndex: 'vendorsite_id_alt',
                         flex: 1,
@@ -149,7 +145,6 @@ Ext.define('NP.view.vendor.VendorSearch', {
         ];
 
         this.callParent(arguments);
-        this.query('customgrid')[0].addEvents('viewvendor');
     },
 
     vendorSearchByKeyword: function(keyword) {

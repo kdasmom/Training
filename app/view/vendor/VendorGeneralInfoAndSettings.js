@@ -12,13 +12,14 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
 		'NP.lib.ui.ComboBox',
         'NP.view.shared.YesNoField',
 		'NP.view.shared.CustomField',
+		'NP.lib.core.Translator',
 		'NP.store.invoice.InvoicePaymentTypes'
 	],
 
 	padding: 8,
 
 	// For localization
-	title                     : 'General info and settings',
+	title: 'General Info and Settings',
     vendorTypeInputLabel: 'Vendor Type',
     taxPayorTypeInputLabel: 'Tax Payor Type',
     payeeTypeInputLabel: 'Payee Type',
@@ -48,13 +49,13 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
 	submitPosToVendorInputLabel: 'Electronically Submit Pos to Vendor',
 	autoEmailInputLabel: 'Auto email approved PO to vendor',
 
-
-
 	// Custom options
 	opened: false,
 
 	initComponent: function() {
 		var that = this;
+
+		that.title = NP.Translator.translate(that.title);
 
 		var days = [];
 
@@ -71,8 +72,6 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
             width: 500,
 			autoHeight: true
         };
-
-		this.items = [];
 
         this.items = [
 			{
@@ -189,7 +188,7 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
 			},
 			{
 				xtype: 'customcombo',
-				name: 'default_due_datetm',
+				name: 'default_due_date',
 				displayField: 'day',
 				fieldLabel: this.defaultDateSettingsInputLabel,
 				store: daysStore,
@@ -200,7 +199,7 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
 			},
 			{
 				xtype: 'shared.yesnofield',
-				name: 'Finance_Vendor',
+				name: 'finance_vendor',
 				fieldLabel: this.financeVendorInputLabel,
 				hidden: !this.opened
 			},
@@ -282,12 +281,12 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
             {
                 xtype: 'textfield',
                 fieldLabel: this.accountNumberInputLabel,
-                name: 'vendorsite_account_number'
+                name: 'vs_vendorsite_account_number'
             },
             {
                 xtype: 'checkbox',
                 fieldLabel:this.printViewInputLabel,
-                name: 'vendorsite_display_account_number_po'
+                name: 'vs_vendorsite_display_account_number_po'
             },
             {
                 xtype: 'shared.yesnofield',
@@ -363,7 +362,7 @@ Ext.define('NP.view.vendor.VendorGeneralInfoAndSettings', {
 				},
 				{
 					xtype: 'hidden',
-					name: 'default_due_datetm',
+					name: 'default_due_date',
 					value: '30'
 				}
 			);
