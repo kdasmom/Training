@@ -16,6 +16,9 @@ Ext.define('NP.view.shared.VendorAssigner', {
     toTitle     : 'Assigned',
     msgTarget   : 'under',
 	autoLoad    : true,
+	tpl         : '<tpl for=".">' +
+					'<li class="x-boundlist-item" role="option">{vendor_name} ({vendor_id_alt})</li>' +
+				  '</tpl>',
 
 	initComponent: function() {
 		if (!this.store) {

@@ -247,48 +247,45 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 		switch (ruletype) {
 			case 1:  // Purchase Order total amount
 			case 2:  // Invoice total amount
-			case 7:  // InSpecific Vendor - Master Rulevoice Item amount (by GL code)
-			case 8:  // Purchase Order Item Total (by GL code)
-			case 10: // Invoice Item amount (by GL category)
-			case 21: // Invoice Item amount (by Job Code)
-			case 22: // Purchase Order Item Total (by Job Code)
-			case 23: // Receipt Total Amount
-			case 28: // Invoice Total by Pay By - Master Rule
-			case 37: // Receipt Item Total (by GL Code)
-			case 38: // Receipt Item Total (by GL Category)
-			case 35: // PO Item Amount by Department
-			case 36: // Invoice Item Amount by Department
-				sectionLogic = this.getSectionLogic(fieldtitle, ['less', 'greater', 'greater_equal', 'greater_equal_or_less', 'in_range']);
-				break;
-
 			case 3:  // Budget amount (by GL code)
 			case 6:  // Specific Vendor
+			case 7:  // InSpecific Vendor - Master Rulevoice Item amount (by GL code)
+			case 8:  // Purchase Order Item Total (by GL code)
 			case 9:  // Budget amount (by GL category)
+			case 10: // Invoice Item amount (by GL category)
 			case 11: // Purchase Order Item Total (by GL category)
 			case 13: // Yearly Budget amount (by GL Code)
 			case 14: // Yearly Budget amount (by GL Category)
 			case 16: // Specific Vendor - Master Rule
 			case 20: // Converted Invoices – Master
+			case 21: // Invoice Item amount (by Job Code)
+			case 22: // Purchase Order Item Total (by Job Code)
+			case 23: // Receipt Total Amount
 			case 24: // Invoice Item Amount (by Contract Code)
 			case 25: // Purchase Order Item Amount (by Contract Code)
 			case 26: // Invoice Item Amount (by Contract Code) - Master
 			case 27: // Purchase Order Item Amount (by Contract Code) - Master
+			case 28: // Invoice Total by Pay By - Master Rule
 			case 33: // YTD Budget Overage (by GL Code)
 			case 34: // YTD Budget Overage (by GL Category)
-				sectionLogic = this.getSectionLogic(fieldtitle, ['less', 'greater', 'greater_equal', 'greater_equal_or_less']);
+			case 35: // PO Item Amount by Department
+			case 36: // Invoice Item Amount by Department
+			case 37: // Receipt Item Total (by GL Code)
+			case 38: // Receipt Item Total (by GL Category)
+				sectionLogic = this.getSectionLogic(fieldtitle, ['less', 'greater', 'greater_equal', 'greater_equal_or_less', 'in_range']);
 				break;
 
 			case 17: // Vendor Estimate to Invoice Conversion Threshold (Percentage Variance) - Master Rule
 			case 18: // Vendor Estimate to Invoice Conversion Threshold (Total Dollar Amount) - Master Rule
 			case 19: // Vendor Estimate to Invoice Conversion Threshold (Dollar Variance) - Master Rule
-				sectionLogic = this.getSectionLogic(fieldtitle, ['greater', 'greater_equal']);
+				sectionLogic = this.getSectionLogic(fieldtitle, ['greater', 'greater_equal', 'in_range']);
 				break;
 
 			case 29: // YTD Budget % Overage (by GL Coxde)
 			case 31: // MTD Budget % Overage (by GL Code)
 			case 30: // YTD Budget % Overage (by GL Category)
 			case 32: // MTD Budget % Overage (by GL Category)
-				sectionLogic = this.getSectionLogic(fieldtitle, ['less', 'greater', 'greater_equal']);
+				sectionLogic = this.getSectionLogic(fieldtitle, ['less', 'greater', 'greater_equal', 'in_range']);
 				break;
 
 			case 4:  // Delegation
