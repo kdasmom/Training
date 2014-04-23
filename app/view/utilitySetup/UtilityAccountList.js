@@ -49,7 +49,7 @@ Ext.define('NP.view.utilitySetup.UtilityAccountList', {
                 service     : 'GLService',
                 action      : 'getAll'
             }),
-            filterLabelWidth  = 80,
+            filterLabelWidth  = 60,
             filterButtonWidth = 120;
 
         utilityTypesStore.load();
@@ -76,8 +76,9 @@ Ext.define('NP.view.utilitySetup.UtilityAccountList', {
                         xtype                : 'shared.propertycombo',
                         emptyText            : 'All',
                         loadStoreOnFirstQuery: true,
-                        labelWidth           : filterLabelWidth,
-                        minChars             : 1
+                        labelWidth           : 50,
+                        minChars             : 1,
+                        margin               : '0 4 0 4'
                     },{
                         xtype       : 'shared.glcombo',
                         fieldLabel  : 'GL Account',
@@ -100,7 +101,8 @@ Ext.define('NP.view.utilitySetup.UtilityAccountList', {
                         store       : utilityTypesStore,
                         valueField  : 'UtilityType_Id',
                         displayField: 'UtilityType',
-                        emptyText   : 'All'
+                        emptyText   : 'All',
+                        margin      : '0 4 0 4'
                     },{
                         xtype  : 'button',
                         text   : 'Filter',
