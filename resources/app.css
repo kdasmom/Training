@@ -60,6 +60,8 @@ li.x-boundlist-item {
 .print-btn { background-image: url("images/buttons/print.gif"); }
 .process-btn { background-image: url("images/buttons/process.gif"); width: 20px !important; }
 	.process-comp-btn .x-btn-inner { padding-left: 24px !important; }
+.property-btn { background-image: url("images/buttons/property.gif"); }
+	/*.property-comp-btn .x-btn-inner { padding-left: 24px !important; }*/
 .reclass-btn { background-image: url("images/buttons/reclass.gif"); }
 .reject-btn { background-image: url("images/buttons/reject.gif"); }
 .register-blue-btn { background-image: url("images/buttons/register_blue.gif"); }
@@ -150,13 +152,25 @@ li.x-boundlist-item {
 }
 
 /* DISABLED FIELDS */
-.x-item-disabled .x-form-item-label, .x-item-disabled .x-form-field, .x-item-disabled .x-form-cb-label, .x-item-disabled .x-form-trigger {
-    opacity: 0.5;
+.x-item-disabled .x-form-item-label {
+	opacity: 1;
+}
+
+.x-item-disabled .x-form-field, .x-item-disabled .x-form-cb-label, .x-item-disabled .x-form-trigger {
+    opacity: 0.7;
 }
 
 /* READONLY FIELDS */
-.x-form-readonly .x-form-field {
-	opacity: 0.5;
+.x-form-readonly .x-form-field.x-form-text  {
+	opacity         : 1;
+	background-color: #FFF;
+	background-image: url();
+	border-width    : 0;
+	margin          : -2px 0 0 -4px;
+}
+
+.x-form-readonly .x-form-item-label-top {
+	margin-bottom: 2px;
 }
 
 /* CURSOR STYLE */
@@ -167,8 +181,9 @@ li.x-boundlist-item {
 /* GENERIC STYLES */
 .error-text { color: #c0272b; font: normal 11px tahoma, arial, verdana, sans-serif; }
 .valid-text { color: #00cc00; font: normal 11px tahoma, arial, verdana, sans-serif; }
-.align-right { text-align: right; }
+.align-right { text-align: right !important; }
 .action-button { margin-right: 8px; }
+.inline-links, .inline-links:visited { color: blue; cursor: pointer; }
 
 /* IMPORT SECTION */
 .importTemplates a { color: #000; margin-left: 16px; }
@@ -220,6 +235,10 @@ li.x-boundlist-item {
 		text-decoration: underline;
 	}
 
+	#lineItemTable .showBudgetBtn {
+		cursor: pointer;
+	}
+
 	#lineItemTable tfoot th, #lineItemTable tfoot td {
 		text-align: right;
 	}
@@ -258,6 +277,27 @@ li.x-boundlist-item {
 
 	#warningTable .warning_title {
 		font-weight: bold;	
+	}
+
+#budgetDetailWin {
+	border-collapse: collapse;
+}
+	
+	#budgetDetailWin th, #budgetDetailWin td {
+		padding: 2px 8px;
+		font   : normal 11px tahoma, arial, verdana, sans-serif;
+	}
+
+	#budgetDetailWin th {
+		font-weight: bold;
+	}
+
+	#budgetDetailWin th {
+		text-align      : left;
+	}
+
+	#budgetDetailWin thead tr {
+		background-color: #eee;
 	}
 
 /* VENDOR CATALOG SECTION */
@@ -303,21 +343,7 @@ li.x-boundlist-item {
 	margin         : 2px 0 2px 0;
 }
 
-/* Invoice/PO Print Template */
-#entityPrintTable td, #entityPrintLines th, #entityPrintLines td { font-size: 10pt; padding:0; }
-#entityPrintTable td { vertical-align: top; }
-#entityPrintTable #vendorInfo { font-size: 14px; }
-#entityPrintTable #clientShortName { font-size: 20pt; }
-#entityPrintTable #propertyName { font-size: 12pt; }
-#entityPrintTable td.blackLine { height: 1px; background-color: black; }
-#entityPrintTable td.spacer { height:4px; }
-#entityPrintLines {
-	border-collapse: collapse;
-	border-color: black;
-	border-width: 0px 0px 1px 1px;
-	border-style: solid;
+.noicon .x-tree-icon.x-tree-icon-leaf {
+	background-image: none;
+	width: 1px;
 }
-	#entityPrintLines th, #entityPrintLines td { padding: 2px; border-color: black; border-style: solid; }
-	#entityPrintLines th { text-align: left; border-width: 1px 1px 1px 0px; }
-	#entityPrintLines td { border-width: 0px 1px 0px 0px; }
-	#entityPrintLines tfoot td, #entityPrintLines tfoot th { text-align: right; border-width: 1px 1px 1px 0px; }

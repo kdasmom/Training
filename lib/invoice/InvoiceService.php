@@ -2,14 +2,17 @@
 
 namespace NP\invoice;
 
-use NP\shared\AbstractInvoicePoService;
+use NP\shared\AbstractEntityService;
+use NP\core\notification\EmailMessage;
+use NP\core\notification\EmailAttachment;
+use NP\util\Util;
 
 /**
  * Service class for operations related to Invoices
  *
  * @author Thomas Messier
  */
-class InvoiceService extends AbstractInvoicePoService {
+class InvoiceService extends AbstractEntityService {
 	
 	protected $type = 'invoice';
 
@@ -78,9 +81,15 @@ class InvoiceService extends AbstractInvoicePoService {
 			$invoice['has_dummy_accounts'] = false;
 		}
 
+		$invoice['lines'] = $this->invoiceItemGateway->findLines($invoice_id);
+
 		// Get invoice warnings
 		/*** THIS QUERY IS RUNNING SLOW ***/
 		$invoice['warnings'] = $this->getWarnings($invoice);
+
+		$invoice['hold_notes'] = $this->getHoldNotes($invoice_id);
+
+		$invoice['rejection_notes'] = $this->getRejectionNotes($invoice_id);
 
 		return $invoice;
 	}
@@ -271,6 +280,13 @@ class InvoiceService extends AbstractInvoicePoService {
 	 */
 	public function getAssociatedPOs($invoice_id) {
 		return $this->invoiceGateway->findAssociatedPOs($invoice_id);
+	}
+
+	/**
+	 * Gets hold notes for an invoice
+	 */
+	public function getHoldNotes($invoice_id) {
+		return $this->noteGateway->findHoldNotes($invoice_id);
 	}
 
 	/**
@@ -472,6 +488,20 @@ class InvoiceService extends AbstractInvoicePoService {
     	return $this->invoiceGateway->findInvoiceStatistics($property_id);
     }
 
+    /**
+     * Gets an HTML version of an invoice
+     */
+    public function getInvoiceAsHtml($invoice_id, $options=[]) {
+    	$renderer = new InvoiceHtmlRenderer($this->configService, $this->gatewayManager, $this, $invoice_id, $options);
+
+    	ob_start();
+    	$renderer->render();
+    	$html = ob_get_contents();
+    	ob_end_clean();
+
+    	return $html;
+    }
+
 	/**
 	 * Save an invoice payment from the import tool
 	 */
@@ -595,7 +625,10 @@ class InvoiceService extends AbstractInvoicePoService {
 				$this->noteGateway->save($note);
 			}
 
-			// TODO: still need to replicate the call to UPDATE_PN_ACTUALS here
+			// Update job costing contract total as needed
+			if (!count($errors)) {
+				$this->updateContractActuals($invoice_id);
+			}
 		} catch(\Exception $e) {
 			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
 		}
@@ -1090,6 +1123,16 @@ class InvoiceService extends AbstractInvoicePoService {
 
 			// Save invoice if valid
 			if (!count($errors)) {
+				// If dealing with an existing invoice, before saving we want to grab
+				// the data as it is now for audit purposes
+				if ($data['invoice']['invoice_id'] !== null) {
+					$oldInvoice = $this->invoiceGateway->findSingle(
+						'invoice_id = ?',
+						[$invoice->invoice_id]
+					);
+					$oldInvoice = new InvoiceEntity($oldInvoice);
+					$oldLines   = $this->getEntityLines($invoice->invoice_id);
+				}
 				$this->invoiceGateway->save($invoice);
 			}
 
@@ -1113,41 +1156,58 @@ class InvoiceService extends AbstractInvoicePoService {
 			}
 
 			// Save invoice line items
+			$lineIds = [];
 			if (!count($errors)) {
+				// Before modifying lines, we need to grab the job costing contract lines that exist
+				// so we can update them just in case (otherwise, if a contract gets changed, we can't
+				// know after the record is updated which contract budget we need to update)
+				$contractLines = [];
+				// We only do this for existing invoices
+				if ($data['invoice']['invoice_id'] !== null) {
+					$contractLines = $this->jbJobAssociationGateway->findContractLinesByInvoice($invoice->invoice_id);
+				}
 				if (array_key_exists('lines', $data)) {
 					// Loop through line items to add/modify
-					foreach ($data['lines'] as $invoiceitem) {
-						// Assign some values that weren't passed in
-						$invoiceitem['invoice_id']         = $invoice->invoice_id;
-						$invoiceitem['vendorsite_id']      = $invoice->paytablekey_id;
-						$invoiceitem['invoiceitem_period'] = $invoice->invoice_period;
+					foreach ($data['lines'] as $invoiceitem_linenum=>$invoiceitem) {
+						if (!array_key_exists('is_dirty', $invoiceitem) || $invoiceitem['is_dirty']) {
+							// Assign some values that weren't passed in
+							$invoiceitem['invoice_id']          = $invoice->invoice_id;
+							$invoiceitem['vendorsite_id']       = $invoice->paytablekey_id;
+							$invoiceitem['invoiceitem_period']  = $invoice->invoice_period;
+							$invoiceitem['invoiceitem_linenum'] = $invoiceitem_linenum+1;
 
-						// Save the line item
-						$result = $this->saveLine($invoiceitem);
+							// Save the line item
+							$result = $this->saveLine($invoiceitem);
 
-						// Error handling
-						if (!$result['success']) {
-							$errors = array_merge($errors, $result['errors']);
-						}	
+							// Error handling
+							if (!$result['success']) {
+								$errors = array_merge($errors, $result['errors']);
+							}
+						}
+						$lineIds[] = $invoiceitem['invoiceitem_id'];
 					}
 				}
 			}
 
 			// Delete invoice line items
 			if (!count($errors)) {
-				if (array_key_exists('deletedLines', $data)) {
-					// Loop through line items to delete
-					foreach ($data['deletedLines'] as $invoiceitem) {
-						// Delete the line item
-						$result = $this->deleteLine($invoiceitem['invoiceitem_id']);
+				$deletedLines = $this->invoiceItemGateway->getDeletedLines($invoice->invoice_id, $lineIds);
+				// Loop through line items to delete
+				foreach ($deletedLines as $invoiceitem) {
+					// Delete the line item
+					$result = $this->deleteLine($invoiceitem['invoiceitem_id']);
 
-						// Error handling
-						if (!$result['success']) {
-							$errors = array_merge($errors, $result['errors']);
-							break;
-						}
+					// Error handling
+					if (!$result['success']) {
+						$errors = array_merge($errors, $result['errors']);
+						break;
 					}
 				}
+			}
+
+			// Add any missing budgets to this invoice
+			if (!count($errors)) {
+				$this->budgetService->createMissingBudgets('invoice', $invoice->invoice_id);
 			}
 
 			// Retrieve current Tax and Shipping totals for auditing purposes before deleting
@@ -1201,8 +1261,20 @@ class InvoiceService extends AbstractInvoicePoService {
 				$this->updateMultiPropertyStatus($invoice->invoice_id);
 			}
 
-			// TODO: add code to deal with jobcosting contract actuals (UPDATE_PN_ACTUALS)
+			// Audit the changes in the invoice if not new
+			if (!count($errors) && $data['invoice']['invoice_id'] !== null) {
+				$this->auditEntity($invoice->invoice_id, $oldInvoice, $oldLines);
+			}
 
+			// Update job costing contract total as needed
+			if (!count($errors)) {
+				// We need to get contract lines again in case new contracts have been added
+				$newContractLines = $this->jbJobAssociationGateway->findContractLinesByInvoice($invoice->invoice_id);
+				// We combine the old contracts with the new contracts; there may be duplicates, we'll deal with it later
+				$contractLines = array_merge($contractLines, $newContractLines);
+				// Update the contract actuals
+				$this->updateContractActuals($newContractLines);
+			}
 		} catch(\Exception $e) {
 			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
 		}
@@ -1219,6 +1291,41 @@ class InvoiceService extends AbstractInvoicePoService {
 			'invoice_id' => $invoice->invoice_id,
 			'lock_id'    => $invoice->lock_id
 		);
+	}
+
+	/**
+	 * Updates the PN Actual value for a job contract
+	 */
+	public function updateContractActuals($invoice_id) {
+		// We can either pass an invoice_id or an array of job contract lines for an invoice
+		if (!is_array($invoice_id)) {
+			$lines = $this->jbJobAssociationGateway->findContractLinesByInvoice($invoice_id);
+		} else {
+			$lines = $invoice_id;
+		}
+
+		// We'll track the contract budgets that get updated so we can skip duplicates
+		$updated = [];
+		foreach ($lines as $line) {
+			if (!array_key_exists($line['jbcontractbudget_id'], $updated)) {
+				$budget = $this->jbJobAssociationGateway->findContractActualByFilter(
+					$line['jbcontract_id'],
+					$line['jbchangeorder_id'],
+					$line['jbjobcode_id'],
+					$line['jbphasecode_id'],
+					$line['jbcostcode_id']
+				);
+
+				if ($budget !== null) {
+					$this->jbContractBudgetGateway->update([
+						'jbcontractbudget_id'           => $budget['jbcontractbudget_id'],
+						'jbcontractbudget_amt_pnactual' => $budget['invoice_actual']
+					]);
+				}
+
+				$updated[$line['jbcontractbudget_id']] = true;
+			}
+		}
 	}
 
 	/**
@@ -1239,7 +1346,12 @@ class InvoiceService extends AbstractInvoicePoService {
 	private function saveLine($data) {
 		$errors = [];
 		$this->invoiceItemGateway->beginTransaction();
-		
+		$isModifyGl = (
+			$data['invoiceitem_id'] !== null
+			&& array_key_exists('is_modify_gl', $data)
+			&& $data['is_modify_gl']
+		);
+
 		try {
 			// Create the invoice entity with initial data
 			$invoiceItem = new InvoiceItemEntity($data);
@@ -1249,7 +1361,20 @@ class InvoiceService extends AbstractInvoicePoService {
 
 			// Save invoice line if valid
 			if (!count($errors)) {
+				// Before saving, let's get the old line item if necessary for auditing
+				if ($isModifyGl) {
+					$oldLine = $this->invoiceItemGateway->findById($data['invoiceitem_id']);
+				}
+
 				$this->invoiceItemGateway->save($invoiceItem);
+			}
+
+			if (
+				!count($errors) 
+				&& $isModifyGl
+			) {
+				$oldLine = new InvoiceItemEntity($oldLine);
+				$this->auditModifyGl($invoiceItem, $oldLine);
 			}
 
 			// Save job costing info if appropriate
@@ -1462,14 +1587,20 @@ class InvoiceService extends AbstractInvoicePoService {
 				}
 			}
 
+			// Before deleting, we need to get all the contract lines so we can update
+			// job costing contracts following the deletion of records
+			$lines = $this->jbJobAssociationGateway->findContractLinesByInvoice($invoice_id);
+			
 			if (!count($errors)) {
 				$this->unlinkInvoiceFromVendorConnect($invoice_id);
 
 				$this->invoiceGateway->delete('invoice_id = ?', [$invoice_id]);
 			}
 
-			// TODO: add code to deal with jobcosting contract actuals (UPDATE_PN_ACTUALS)
-
+			// Update job costing contract total as needed
+			if (!count($errors)) {
+				$this->updateContractActuals($lines);
+			}
 		} catch(\Exception $e) {
 			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
 		}
@@ -2012,14 +2143,13 @@ class InvoiceService extends AbstractInvoicePoService {
 			);
 
 			$newInvoice = new InvoiceEntity($newInvoice);
-			$fields = InvoiceEntity::getAuditableFields();
-			$hasChange = false;
-			foreach ($fields as $field=>$fieldDef) {
-				if (trim($newInvoice->$field) !== trim($oldInvoice->$field)) {
-					$this->saveAuditReclass($field, $oldInvoice, $newInvoice, $data);
-					$hasChange = true;
-				}
-			}
+
+			$auditor = new InvoiceReclassAuditor(
+				$data['userprofile_id'],
+				$data['delegation_to_userprofile_id'],
+				$data['reclass_notes']
+			);
+			$fieldChanges = $auditor->audit($newInvoice, $oldInvoice);
 
 			$newLines = $this->getEntityLines($invoice_id);
 
@@ -2028,15 +2158,10 @@ class InvoiceService extends AbstractInvoicePoService {
 				$oldLine = new InvoiceItemEntity($oldLines[$i]);
 				$newLine = new InvoiceItemEntity($line);
 
-				foreach ($fields as $field=>$fieldDef) {
-					if (trim($newLine->$field) !== trim($oldLine->$field)) {
-						$this->saveAuditReclass($field, $oldLine, $newLine, $data);
-						$hasChange = true;
-					}
-				}
+				$fieldChanges = array_merge($fieldChanges, $auditor->audit($newInvoice, $oldInvoice));
 			}
 
-			if ($hasChange) {
+			if (count($fieldChanges)) {
 				$approvetype_id = $this->approveTypeGateway->getIdByName('reclassed');
 
 				$approve = new \NP\workflow\ApproveEntity([
@@ -2075,43 +2200,103 @@ class InvoiceService extends AbstractInvoicePoService {
 	}
 
 	/**
-	 * 
+	 * Forwards an invoice by email to a list of emails or users
 	 */
-	public function saveAuditReclass($field, \NP\core\AbstractEntity $oldEntity, \NP\core\AbstractEntity $newEntity, $data) {
-		$invoiceitem_id = null;
-		if ($newEntity->hasField('invoiceitem_id')) {
-			$invoiceitem_id = $newEntity->invoiceitem_id;
-		}
+	public function forwardInvoice($invoice_id, $sender_email, $forward_to, $forward_val, $message, $includes=[]) {
+		$pdfPath = null;
+		$success = false;
+		$errors  = [];
 
-		$old_val = $oldEntity->$field;
-		$new_val = $newEntity->$field;
-
-		if (is_numeric($old_val)) {
-			$old_val = strval($old_val);
-		}
-
-		if (is_numeric($new_val)) {
-			$new_val = strval($new_val);
-		}
-
-		$reclass = new AuditReclassEntity([
-			'userprofile_id'               => $data['userprofile_id'],
-			'delegation_to_userprofile_id' => $data['delegation_to_userprofile_id'],
-			'audit_note'                   => $data['reclass_notes'],
-			'invoice_id'                   => $newEntity->invoice_id,
-			'invoiceitem_id'               => $invoiceitem_id,
-			'field'                        => $field,
-			'old_val'                      => $old_val,
-			'new_val'                      => $new_val
-		]);
+		// Get invoice number for email subject line
+		$invoice_ref = $this->invoiceGateway->findValue(
+			['invoice_id'=>'?'],
+			[$invoice_id],
+			'invoice_ref'
+		);
 		
-		$errors = $this->entityValidator->validate($reclass);
-		
-		if (!count($errors)) {
-			$this->auditReclassGateway->save($reclass);
+		// Get invoice images if applicable
+		$images     = [];
+		$includeAll = in_array('allImages', $includes);
+		if (in_array('mainImage', $includes) || $includeAll) {
+			$images = $this->getImages($invoice_id, !$includeAll, true);
+			if (!$includeAll) {
+				$images = [$images];
+			}
+		}
+
+		// Figure out the email or list of emails to send to
+		if ($forward_to == 'vendor' || $forward_to == 'email') {
+			$users = [['email_address' => $forward_val]];
 		} else {
-			$this->loggingService->log('global', 'Error creating reclass record', $errors);
-			throw new \NP\core\Exception('Error reclassing invoice while creating auditreclass record');
+			$users = $this->userprofileGateway->find(
+				[['in', 'u.userprofile_id', $this->userprofileGateway->createPlaceholders($forward_val)]],
+				$forward_val
+			);
+		}
+
+		// Generate the invoice PDF
+		$pdf = new InvoicePdfRenderer($this->configService, $this->gatewayManager, $this, $invoice_id, $includes);
+		$pdfPath = $this->configService->getClientFolder() . '/web/pdfs/' . $this->securityService->getUserId();
+
+		// If destination directory doesn't exist, create it
+  		if (!is_dir($pdfPath)) {
+  			mkdir($pdfPath, 0777, true);
+  		}
+  		
+		$pdfPath = Util::getUniqueFileName($pdfPath . "/invoice_{$invoice_id}.pdf");
+
+		$pdfPath = $pdfPath['path'];
+		$pdf->save($pdfPath);
+
+		$message = strip_tags(trim($message));
+		foreach ($users as $user) {
+			try {
+				$msg = EmailMessage::getNew(
+										"Invoice Order {$invoice_ref}",
+										strip_tags($message)
+									)
+									->setFrom($sender_email)
+									->setTo($user['email_address'])
+									->attach(EmailAttachment::getNew()->setPath($pdfPath));
+
+
+				foreach($images as $image) {
+					$msg->attach(EmailAttachment::getNew()->setPath($image['transfer_filename']));
+				}
+
+				$this->notificationService->sendEmail($msg);
+				$success = true;
+
+				$forward_id = (array_key_exists('userprofile_id', $user)) ? $user['userprofile_id'] : null;
+				$this->invoicePoForwardGateway->insert([
+					'table_name'                        => 'invoice',
+					'tablekey_id'                       => $invoice_id,
+					'forward_to_email'                  => $sender_email,
+					'forward_to_userprofile_id'         => $forward_id,
+					'forward_from_userprofile_id'       => $this->securityService->getUserId(),
+					'from_delegation_to_userprofile_id' => $this->securityService->getDelegatedUserId(),
+					'forward_message'                   => substr($message, 0, 500)
+				]);
+			} catch(\Exception $e) {
+				$msg = $this->handleUnexpectedError($e);
+				if ($forward_to == 'user') {
+					$errors[] = "{$user['person_firstname']} {$user['person_lastname']}";
+				} else {
+					$errors[] = $user['email_address'];
+				}
+			}
+		}
+
+		if (!$success) {
+			return [
+				'success' => false,
+				'error'   => $msg
+			];
+		} else {
+			return [
+				'success' => true,
+				'errors'  => $errors
+			];
 		}
 	}
 }

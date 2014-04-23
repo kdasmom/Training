@@ -48,7 +48,7 @@ Ext.define('NP.view.invoice.View', {
                 fieldCfg  : { comboUi: 'customcombo', fieldCfg: { useSmartStore: true } }
             },
             { xtype: 'shared.invoicepo.viewlineitems', type: 'invoice' },
-            { xtype: 'invoice.viewnotes' }
+            { xtype: 'invoice.viewnotes', type: 'invoice' }
         ];
 
         if (NP.Security.hasPermission(2094) || NP.Security.hasPermission(6093)) {

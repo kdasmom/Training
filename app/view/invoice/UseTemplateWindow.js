@@ -9,13 +9,12 @@ Ext.define('NP.view.invoice.UseTemplateWindow', {
 
     requires: [
     	'NP.lib.core.Translator',
-    	'NP.lib.core.Net',
-    	'NP.view.invoice.InvoicePrintView'
+    	'NP.lib.core.Net'
     ],
 
     title      : 'Use Template',
-    width      : 640,
-    height     : 480,
+    width      : 800,
+    height     : 600,
     bodyPadding: 8,
     modal      : true,
     layout     : {
@@ -107,24 +106,13 @@ Ext.define('NP.view.invoice.UseTemplateWindow', {
 
 	                    if (recs.length) {
 	                        NP.Net.remoteCall({
-	                            requests: [
-	                                {
-	                                    service   : 'InvoiceService',
-	                                    action    : 'get',
-	                                    invoice_id: recs[0].get('invoice_id')
-	                                },{
-	                                    service   : 'InvoiceService',
-	                                    action    : 'getEntityLines',
-	                                    entity_id: recs[0].get('invoice_id')
-	                                }
-	                            ],
-	                            success: function(results, deferred) {
-	                                var template = Ext.create('NP.view.invoice.InvoicePrintView'),
-	                                    invoice  = results[0];
-
-	                                invoice.lines = results[1];
-
-	                                panel.update(template.apply(invoice));
+	                            requests: {
+                                    service   : 'InvoiceService',
+                                    action    : 'getInvoiceAsHtml',
+                                    invoice_id: recs[0].get('invoice_id')
+                                },
+	                            success: function(result) {
+	                                panel.update(result);
 	                                panel.show();
 	                                useBtn.enable();
 	                            }

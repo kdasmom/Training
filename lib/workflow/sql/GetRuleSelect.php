@@ -5,7 +5,7 @@ use NP\core\db\Select;
 use NP\core\db\Where;
 
 class GetRuleSelect extends Select {
-    public function __construct($ruleid, $asp_client_id) {
+    public function __construct($ruleid) {
         parent::__construct();
 
         $this->columns([
@@ -27,7 +27,6 @@ class GetRuleSelect extends Select {
 
         $where = Where::get()
             ->equals('WF.wfrule_id', $ruleid)
-            ->equals('WF.asp_client_id', $asp_client_id)
         ;
         $this->where($where);
     }
