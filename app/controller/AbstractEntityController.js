@@ -2118,6 +2118,8 @@ Ext.define('NP.controller.AbstractEntityController', {
 		// Make sure the created on field is always readonly
 		if (me.shortName == 'invoice') {
 			me.getEntityView().findField('invoice_createddatetm').setReadOnly(true);
+		} else if (me.shortName == 'po') {
+			me.getEntityView().findField('purchaseorder_created').setReadOnly(true);
 		}
 
 		Ext.resumeLayouts(true);

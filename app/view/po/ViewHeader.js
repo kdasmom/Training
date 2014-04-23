@@ -49,9 +49,10 @@ Ext.define('NP.view.po.ViewHeader', {
     	var me   = this,
     		items = [
 				{
-					xtype     : 'displayfield',
+					xtype     : 'datefield',
 					fieldLabel: this.createdOnLbl,
-					name      : 'purchaseorder_created'
+					name      : 'purchaseorder_created',
+					readOnly  : true
 				},{
 					xtype     : 'displayfield',
 					fieldLabel: this.createdByLbl,
@@ -92,6 +93,8 @@ Ext.define('NP.view.po.ViewHeader', {
 				})
 			});
 		}
+
+		if (NP.Config.getSetting('PN.POOptions.templateAssociation', 'Header'))
 
 		return items;
     },

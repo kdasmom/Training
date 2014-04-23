@@ -111,15 +111,7 @@ Ext.define('NP.controller.Po', {
 
 						var vendorField   = boundForm.findField('vendor_id'),
 							propertyField = boundForm.findField('property_id'),
-							periodField   = boundForm.findField('purchaseorder_period'),
-							createdField  = boundForm.findField('purchaseorder_created');
-
-						createdField.setValue(
-							Ext.Date.format(
-								me.getEntityRecord().get('purchaseorder_created'),
-								NP.Config.getDefaultDateFormat()
-							)
-						);
+							periodField   = boundForm.findField('purchaseorder_period');
 
 						// Set the vendor
 						vendorField.setDefaultRec(Ext.create('NP.model.vendor.Vendor', data));
