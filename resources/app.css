@@ -342,3 +342,8 @@ li.x-boundlist-item {
 	cursor         : pointer;
 	margin         : 2px 0 2px 0;
 }
+
+.noicon .x-tree-icon.x-tree-icon-leaf {
+	background-image: none;
+	width: 1px;
+}

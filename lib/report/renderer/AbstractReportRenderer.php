@@ -171,7 +171,7 @@ abstract class AbstractReportRenderer implements ReportRendererInterface {
 	public function renderBody() {
 		$this->renderColumnHeaders();
 
-		if (sqlsrv_has_rows($this->data)) {
+		if (is_array($this->data) || sqlsrv_has_rows($this->data)) {
 			$this->renderData();
 
 			if ($this->report->getOptions()->showGrandTotal && count($this->subTotalFields)) {
@@ -260,17 +260,19 @@ abstract class AbstractReportRenderer implements ReportRendererInterface {
 		$idx         = 0;
 		$lastRow     = null;
 
-		while( $row = sqlsrv_fetch_array( $this->data, SQLSRV_FETCH_ASSOC) ) {
-			$data = $this->report->getSubData($row);
-			if ($data !== null) {
-				$row = array_merge($row, $data);
+		if (is_array($this->data)) {
+			foreach ($this->data as $row) {
+				$result = $this->renderRowData($row, $idx, $cols);
+				$lastRow = $result['lastRow'];
+				$idx = $result['idx'];
 			}
-			$showRow = $this->report->isRowVisible($row);
+		} else {
+			while ($row = sqlsrv_fetch_array($this->data, SQLSRV_FETCH_ASSOC)) {
 
-			if ($showRow) {
-				$this->renderRecord($row, $idx, $cols);
-				$lastRow = $row;
-				$idx++;
+				$result = $this->renderRowData($row, $idx, $cols);
+
+				$lastRow = $result['lastRow'];
+				$idx = $result['idx'];
 			}
 		}
 
@@ -455,6 +457,22 @@ abstract class AbstractReportRenderer implements ReportRendererInterface {
 
 	protected function parseDate($val) {
 		return \DateTime::createFromFormat('Y-m-d H:i:s.u', $val);
+	}
+
+	private function renderRowData($row, $idx, $cols) {
+		$data = $this->report->getSubData($row);
+		if ($data !== null) {
+			$row = array_merge($row, $data);
+		}
+		$showRow = $this->report->isRowVisible($row);
+
+		if ($showRow) {
+			$this->renderRecord($row, $idx, $cols);
+			$lastRow = $row;
+			$idx++;
+		}
+
+		return ['lastRow' => $lastRow, 'idx' => $idx];
 	}
 
 	public function renderBeforeRow() {}

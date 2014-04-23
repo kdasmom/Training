@@ -12,7 +12,7 @@ use NP\core\db\Select;
  */
 class ModuleGateway extends AbstractGateway {
 
-	public function findForTree() {
+	public function findForTree($modulesList = []) {
 		$select = new Select();
 		$select->columns(array('module_id','module_name'))
 				->from(array('m'=>'module'))
@@ -20,6 +20,10 @@ class ModuleGateway extends AbstractGateway {
 						"t.tablekey_id = m.module_id AND t.table_name = 'module'",
 						array('tree_id','tree_parent'))
 				->order('m.module_name');
+
+		if (is_array($modulesList) && count($modulesList) > 0) {
+			$select->whereIn('module_id', implode(',', $modulesList));
+		}
 
 		return $this->adapter->query($select);
 	}

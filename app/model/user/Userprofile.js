@@ -71,57 +71,5 @@ Ext.define('NP.model.user.Userprofile', {
                 return rec.get('userprofile_username');
             }
         }
-    ],
-
-    validations: [
-        { field: 'userprofile_username', type: 'length', max: 50 },
-        { field: 'userprofile_status', type: 'length', max: 50 },
-        { field: 'userprofile_session', type: 'length', max: 100 },
-        { field: 'oracle_authentication', type: 'length', max: 1 },
-        { field: 'userprofile_password', type: 'length', max: 256 },
-        { field: 'userprofile_password', type: 'password' },
-        { field: 'security_answer1', type: 'length', max: 100 },
-        { field: 'security_answer2', type: 'length', max: 100 },
-        { field: 'security_answer3', type: 'length', max: 100 },
-        { field: 'security_answer4', type: 'length', max: 100 },
-        { field: 'security_answer5', type: 'length', max: 100 },
-        { field: 'security_answer6', type: 'length', max: 600 }
-    ],
-
-    /**
-     * Custom validation function for Userprofile
-     * @return {Ext.data.Errors}
-     */
-    validate: function() {
-        // Call the default validator
-        var errors = this.callParent(arguments);
-
-        // Validate that either none or all security questions are filled
-        var blank = [];
-        
-        for (var i=1; i<=6; i++) {
-            var questionField = 'security_question'+i;
-            var answerField = 'security_answer'+i;
-            var question = this.get(questionField);
-            var answer = this.get(answerField);
-            
-            if (question == null || question == '') {
-                blank.push(questionField);
-            }
-            if (answer == null || answer == '') {
-                blank.push(answerField);
-            }
-        }
-
-        if (blank.length > 0 && blank.length != 12) {
-            Ext.each(blank, function(item) {
-                errors.add({
-                    field: item,
-                    message: 'All security questions and answers must be filled out'
-                });
-            });
-        }
-        
-        return errors;
-    }
+    ]
 });
