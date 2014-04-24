@@ -32,7 +32,7 @@ Ext.define('NP.view.property.ClosingCalendarDistibutor', {
 			items : [
 				{ xtype: 'shared.button.cancel' },
 				{ xtype: 'shared.button.save' },
-				{ xtype: 'shared.button.update', text: 'Assign' }
+				{ xtype: 'shared.button.update', text: 'Assign', hidden: true }
 			]
 		};
 
@@ -62,8 +62,6 @@ Ext.define('NP.view.property.ClosingCalendarDistibutor', {
 						load: function(store, records, successful, eOpts) {
 							if (records.length > 0) {
 								me.query('[xtype="shared.button.update"]')[0].show();
-							} else {
-								me.query('[xtype="shared.button.update"]')[0].hide();
 							}
 						}
 					}
