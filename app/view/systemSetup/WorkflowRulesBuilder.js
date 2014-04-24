@@ -27,7 +27,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 
 		if (me.data) {
 			ruletype = me.data.rule.wfruletype_id;
-			allProperties = me.data.properties.all;
+			allProperties = me.data.allProperties;
 		}
 
 		var storeRuleTypes = Ext.create('NP.store.workflow.WfRuleTypes', {
@@ -141,7 +141,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 
 		if (me.data) {
 			if (this.down('[name="ruleform"]').down('[name="properties"]')) {
-				this.down('[name="ruleform"]').down('[name="properties"]').setValue( me.data.properties.property_list_id );
+				this.down('[name="ruleform"]').down('[name="properties"]').setValue( me.data.property_list_id );
 			}
 			if (this.down('[name="ruleform"]').down('[name="tablekeys"]')) {
 				this.down('[name="ruleform"]').down('[name="tablekeys"]').setValue( me.data.tablekey_list_id );
@@ -437,8 +437,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 		contractsStore.load();
 
 		var allContracts = false;
-		if (me.data) {
-			allContracts = (me.data.tablekey_list_id.length) ? false : true;
+		if (me.data.tablekey_list_id.length == 1) {
+			allContracts = (me.data.tablekey_list_id[0]) ? false : true;
 		}
 
 		return [
@@ -539,7 +539,9 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 
 		if (me.data) {
 			emailSupression = (me.data.rule.runhour != null) ? me.data.rule.runhour : '';
-			wfruleNumber = me.data.rule.wfrule_number;
+			if (Ext.Array.contains([5, 12], me.data.rule.wfruletype_id)) {
+				wfruleNumber = me.data.rule.wfrule_number;
+			}
 		}
 
 		return {
@@ -556,7 +558,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 							name: 'comparisonValue',
 							boxLabel: NP.Translator.translate('Never Suppress Email'),
 							inputValue: '0',
-							checked: (me.data && wfruleNumber == '0') ? true : false
+							checked: (wfruleNumber == '0')
 						},
 						{
 							name: 'comparisonValue',
@@ -565,13 +567,13 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 										'Suppress Email for {supression} hours',
 										{ supression : '<input id="email_suppression_hours" value="' + emailSupression + '" type="text" style="width:70px;" />' }
 									  ),
-							checked: (me.data && !Ext.Array.contains(['-1','0'], wfruleNumber)) ? true : false
+							checked: !Ext.Array.contains(['-1','0'], wfruleNumber)
 						},
 						{
 							name: 'comparisonValue',
 							inputValue: '-1',
 							boxLabel: NP.Translator.translate('Suppress Email for the rest of the period'),
-							checked: (me.data && wfruleNumber == '-1') ? true : false
+							checked: (wfruleNumber == '-1')
 						}
 					],
 					listeners: {

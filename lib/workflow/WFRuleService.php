@@ -27,11 +27,11 @@ class WFRuleService extends AbstractService {
 	 * @param int $id - workflow rule id
 	 * @return array
 	 */
-	public function get($id) {
+	public function get($id, $mode) {
         $asp_client_id = $this->configService->getClientId();
 		$unitAttachDisplay = $this->configService->findSysValueByName('PN.InvoiceOptions.UnitAttachDisplay');
 
-        return $this->wfRuleGateway->getRule($id, $asp_client_id, ['UnitAttachDisplay' => $unitAttachDisplay]);
+        return $this->wfRuleGateway->getRule($id, $asp_client_id, $mode, ['UnitAttachDisplay' => $unitAttachDisplay]);
     }
 
 	/**
@@ -223,7 +223,7 @@ class WFRuleService extends AbstractService {
 
 		return [
 			'success' => true,
-			'ruledata' => $this->get($ruleid)
+			'ruledata' => $this->get($ruleid, 'edit')
 		];
 	}
 
@@ -515,7 +515,6 @@ class WFRuleService extends AbstractService {
 		else {
 			// error
 		}
-		$oktoactivate = true;
 	}
 
 	public function findConflictingRules($wfrule_id) {

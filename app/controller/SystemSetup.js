@@ -429,6 +429,7 @@ Ext.define('NP.controller.SystemSetup', {
 						requests: {
 							service: 'WFRuleService',
 							action : 'get',
+							mode: 'edit',
 							id: ruleid,
 							success: function(data) {
 								if (data) {
@@ -448,6 +449,7 @@ Ext.define('NP.controller.SystemSetup', {
 					requests: {
 						service: 'WFRuleService',
 						action : 'get',
+						mode: 'view',
 						id: ruleid,
 						success: function(data) {
 							if (data) {
