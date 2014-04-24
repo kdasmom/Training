@@ -175,6 +175,12 @@ Ext.define('NP.controller.PropertySetup', {
 			},
 			'[xtype="property.closingcalendardistibutor"] [xtype="shared.button.save"]': {
 				click: this.saveDistributor
+			},
+			'[xtype="property.closingcalendardistibutor"] [xtype="shared.button.update"]': {
+				click: this.saveDistributor
+			},
+			'[xtype="property.closingcalendardistibutor"] [xtype="shared.button.cancel"]': {
+				click: this.closeCalendarDistributor
 			}
 		});
 	},
@@ -1146,13 +1152,22 @@ Ext.define('NP.controller.PropertySetup', {
 						dest_fiscalcal_id: me.selectedFiscalCal.get('fiscalcal_id')
 					},
 					success: function(result) {
-
+						if (result) {
+							NP.Util.showFadingWindow({ html: NP.Translator.translate('Closing Calendar Distributor was saved successfully.') });
+						}
+					},
+					failure: function(response, options) {
+						Ext.MessageBox.alert(NP.Translator.translate('Error'), NP.Translator.translate('Cannot save or assign calendar distributor!'));
 					}
 				}
 			});
 		}
+	},
 
+	closeCalendarDistributor: function(button) {
+		var me = this,
+			calendarpanel = button.up('[xtype="property.closingcalendardistibutor"]');
 
-		console.log(calendarpanel);
+		calendarpanel.hide();
 	}
 });

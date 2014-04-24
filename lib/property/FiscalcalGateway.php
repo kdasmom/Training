@@ -22,7 +22,7 @@ class FiscalcalGateway extends AbstractGateway {
 	 * @param  int $month       Month (1-12) you want the cutoff day for
 	 * @return int              The cutoff day of the month
 	 */
-	public function getCutoffDay($property_id, $year, $month) {
+	public function getCutoffDay($property_id, $year, $month, $asp_client_id = null) {
 		$select = new Select(array('f'=>'fiscalcal'));
 		
 		$select->columns(array())
@@ -34,8 +34,14 @@ class FiscalcalGateway extends AbstractGateway {
 					AND f.fiscalcal_year = ?
 					AND fm.fiscalcalmonth_num = ?
 				");
+		$queryParams = [$property_id, $year, $month];
+
+		if ($asp_client_id) {
+			$select->whereEquals('f.asp_client_id', '?');
+			$queryParams[] = $asp_client_id;
+		}
 		
-		$res = $this->adapter->query($select, array($property_id, $year, $month));
+		$res = $this->adapter->query($select, $queryParams);
 		
 		if (!count($res)) {
 			throw new Exception("No fiscal calendar was found for the year $year and month $month");
@@ -167,6 +173,44 @@ class FiscalcalGateway extends AbstractGateway {
 		$queryParams = array_merge( [$type, $asp_client_id], $queryParams);
 
 		return $this->adapter->query($select, $queryParams);
+	}
+
+	public function getPropertiesForFixcalDistributor($asp_client_id, $org_fiscalcal_id, $dest_fiscalcal_id) {
+		$select = new Select();
+		$subSelectPropertyIn = new Select();
+		$subSelectWhere = new Select();
+
+		$subSelectWhere->from(['f4' => 'fiscalcal'])
+					->columns(['fiscalcal_year'])
+					->where([
+						'fiscalcal_id'	=> '?'
+					]);
+
+		$subSelectPropertyIn->from(['f3' => 'fiscalcal'])
+				->columns(['property_id'])
+				->where([
+					'fiscalcal_year'	=> $subSelectWhere
+				])
+					->whereIsNotNull('property_id');
+
+		$select->from(['f' => 'fiscalcal'])
+				->join(['f2' => 'fiscalcal'], 'f.fiscalcal_name = f2.fiscalcal_name', [], Select::JOIN_INNER)
+				->join(['p' => 'property'], 'f.property_id = p.property_id', [], Select::JOIN_INNER)
+				->columns(['property_id'])
+				->where([
+					'f2.fiscalcal_id'	=> '?'
+				])
+				->whereNotIn('f.property_id', $subSelectPropertyIn);
+
+		return $this->adapter->query($select, [$dest_fiscalcal_id, $org_fiscalcal_id]);
+	}
+
+	public function getFiscalCalByProperty($property_id, $dest_fiscalcal_id) {
+		$selectSaved = $this->find(['fiscalcal_id' => '?'], [$dest_fiscalcal_id], null, ['fiscalcal_name', 'fiscalcal_year']);
+
+		$selectCalendar = $this->find(['fiscalcal_year' => '?', 'property_id' => '?'], [$selectSaved[0]['fiscalcal_year'], $property_id], null, ['fiscalcal_id', 'fiscalcal_year', 'fiscalcal_name']);
+
+		return $selectCalendar;
 	}
 
 }

@@ -4,10 +4,12 @@ namespace NP\property;
 
 use NP\core\AbstractService;
 use NP\core\db\Select;
+use NP\core\Exception;
 use NP\security\SecurityService;
 use NP\invoice\InvoiceService;
 use NP\po\PoService;
 use NP\system\ConfigService;
+use NP\util\Util;
 
 class PropertyService extends AbstractService {
 	
@@ -1220,6 +1222,90 @@ class PropertyService extends AbstractService {
 
 	public function getAllByAdmin($isAdminRole = null, $hasPermission = false) {
 		return $this->propertyGateway->getByAdminRole($isAdminRole, $hasPermission, $this->configService->getClientID());
+	}
+
+	public function saveFiscalcalDistributor($data = []) {
+		if (!$data['org_fiscalcal_id'] || !$data['asp_client_id'] || !$data['dest_fiscalcal_id']) {
+			return false;
+		}
+
+		$properties = $this->fiscalcalGateway->getPropertiesForFixcalDistributor(!$data['asp_client_id'], $data['org_fiscalcal_id'], $data['dest_fiscalcal_id']);
+
+		if (count($properties) > 0) {
+			foreach ($properties as $item) {
+				$calendar = $this->fiscalcalGateway->getFiscalCalByProperty($item['property_id'], $data['dest_fiscalcal_id']);
+				if ($calendar[0]['fiscalcal_id']) {
+//					update fiscal calendar
+					$this->fiscalcalGateway->beginTransaction();
+					try {
+						$this->fiscalcalGateway->update(['fiscalcal_name' => $calendar[0]['fiscalcal_name']], ['fiscalcal_id' => '?', 'asp_client_id'  => '?'], [$calendar[0]['fiscalcal_id'], $data['asp_client_id']]);
+						$accountingPeriod = $this->fiscalCalService->getAccountingPeriod($item['property_id'], $data['asp_client_id']);
+						$months = $this->FiscalCalMonthGateway->find(['fiscalcal_id' => '?'], [$calendar[0]['fiscalcal_id']], null, ['fiscalcalmonth_id', 'fiscalcalmonth_num', 'fiscalcalmonth_cutoff']);
+						$deletedMonths = [];
+
+						if (count($months) > 0) {
+							foreach ($months as $month) {
+								$currentPeriod = mktime(0, 0, 0, $month['fiscalcalmonth_num'], 1, $calendar[0]['fiscalcal_year']);
+								$currentPeriod = new \DateTime(date('Y', $currentPeriod) . '/' . date('n', $currentPeriod) . '/1');
+
+								$dateDiff = $accountingPeriod->diff($currentPeriod);
+
+								if (
+									($dateDiff->invert == 1 && $dateDiff->days > 0) ||
+									(
+										($dateDiff->invert == 0 && $dateDiff->days == 0) &&
+										(
+											date('n', $accountingPeriod->getTimestamp()) > date('n', strtotime('now')) ||
+											$month['fiscalcalmonth_cutoff'] > date('j', strtotime('now'))
+										)
+									)
+								) {
+									$deletedMonths[] = $month['fiscalcalmonth_id'];
+								}
+							}
+						}
+
+						$this->FiscalCalMonthGateway->deleteMonths($deletedMonths);
+
+						$this->FiscalCalMonthGateway->saveFromSelect($data['dest_fiscalcal_id'], $calendar[0]['fiscalcal_id']);
+
+						$this->fiscalcalGateway->commit();
+					} catch (Exception $ex) {
+						$this->fiscalcalGateway->rollback();
+						throw $ex;
+					}
+
+				} else {
+//					create fiscal calendar
+					$fiscalCal = new FiscalCalEntity();
+					$fiscalCal->asp_client_id = $data['asp_client_id'];
+					$fiscalCal->property_id = $item['property_id'];
+					$fiscalCal->fiscalcal_type = 'assigned';
+					$fiscalCal->fiscalcal_year = $calendar['fiscalcal_year'];
+					$fiscalCal->fiscalcal_name = $calendar['fiscalcal_name'];
+					$this->fiscalcalGateway->beginTransaction();
+					try {
+						$this->fiscalcalGateway->save($fiscalCal);
+						$fiscalCalMonth = new FiscalCalMonthEntity();
+
+						$monthcutoff = $this->FiscalCalMonthGateway->find(['fiscalcal_id' => '?'], [$data['dest_fiscalcal_id']], null, ['fiscalcalmonth_num', 'fiscalcalmonth_cutoff']);
+
+						$fiscalCalMonth->fiscalcal_id = $fiscalCal->fiscalcal_id;
+						$fiscalCalMonth->fiscalcalmonth_num = $monthcutoff[0]['fiscalcalmonth_num'];
+						$fiscalCalMonth->fiscalcalmonth_cutoff = $monthcutoff[0]['fiscalcalmonth_cutoff'];
+
+						$this->FiscalCalMonthGateway->save($fiscalCalMonth);
+
+						$this->fiscalcalGateway->commit();
+					} catch (Exception $ex) {
+						$this->fiscalcalGateway->rollback();
+						throw $ex;
+					}
+				}
+			}
+		}
+
+		return true;
 	}
 }
 

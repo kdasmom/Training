@@ -12,14 +12,14 @@ class FiscalCalService extends AbstractService {
 	 * @param  int   $property_id ID of the property
 	 * @return DateTime  The accounting period; returns false if no accounting period is found
 	 */
-	public function getAccountingPeriod($property_id) {
+	public function getAccountingPeriod($property_id, $asp_client_id = null) {
 		$now = time();
 		$today = mktime(0, 0, 0, date('n', $now), date('j', $now), date('Y', $now));
 		$year = date('Y', $now);
 		$month = date('n', $now);
 		// Try to get a cutoff date; if an error is thrown, it's because there's no fiscal calendar for this year
 		try {
-			$cutoffDay = $this->fiscalcalGateway->getCutoffDay($property_id, $year, $month);
+			$cutoffDay = $this->fiscalcalGateway->getCutoffDay($property_id, $year, $month, $asp_client_id);
 		} catch(\NP\core\Exception $e) {
 			return false;
 		}
@@ -46,10 +46,6 @@ class FiscalCalService extends AbstractService {
 			return false;
 		}
 		return $this->fiscalcalGateway->findFiscalCalendarsByType($asp_client_id, $type, $fiscal_calendar_id);
-	}
-
-	public function fiscalcalDistributor($asp_client_id, $org_fiscalcal_id, $dest_fiscalcal_id) {
-		
 	}
 }
 

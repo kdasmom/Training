@@ -47,7 +47,9 @@ Ext.define('NP.view.property.ClosingCalendarDistibutor', {
 				name: 'Org_fiscalcal_id',
 				valueField: 'fiscalcal_id',
 				displayField: 'fiscalcal_name',
+				selectFirstRecord: true,
 				fieldLabel: NP.Translator.translate('Assign to Properties currently using the following closing calendar:'),
+				allowBlank: false,
 				store: Ext.create('NP.store.property.FiscalCals', {
 					service: 'FiscalCalService',
 					action: 'getFiscalCalendarsByType',
