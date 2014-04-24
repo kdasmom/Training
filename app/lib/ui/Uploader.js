@@ -13,7 +13,9 @@
  *              extensions: <list of acceptable file extensions>,
  *              description: <description of these file extensions>
  *          },
- *          service: <path to ajax server side script>
+ *          service: <path to ajax server side script>,
+ *          instructions: <component with instruction text>,
+ *          extraInputs: <array of additional form elements>
  *      }
  *  }).show();
  * 
@@ -37,6 +39,8 @@ Ext.define('NP.lib.ui.Uploader', {
         this.params.files = this.params.files || {};
         this.params.uploadScript = this.params.uploadScript || 'ajax.php';
         this.params.listeners = this.params.listeners || {};
+		this.params.instructions = this.params.instructions || false;
+		this.params.extraInputs = this.params.extraInputs || false;
 
         this.params.files.extensions = this.params.files.extensions || '*.*';
         this.params.files.description = this.params.files.description || 'All files';
@@ -52,24 +56,52 @@ Ext.define('NP.lib.ui.Uploader', {
         this.height = 400;
         this.layout = 'fit';
 
-        var self = this;
+        var self = this,
+			northSection,
+			northSectionItems = [];
+
+		if (this.params.instructions || this.params.extraInputs) {
+			if (this.params.instructions) {
+				northSectionItems.push(this.params.instructions);
+			}
+
+			if (this.params.extraInputs) {
+				northSectionItems.push(
+					{
+						xtype  : 'form',
+						itemId : 'extrainputsform',
+						padding: 8,
+						border : 0,
+						items  : this.params.extraInputs
+					}
+				);
+			}
+
+			northSection = {
+				xtype : 'panel',
+				border: 0,
+				region: 'north',
+				items : northSectionItems
+			}
+		}
 
         this.items = [
             {
-                xtype:  'panel',
+                xtype : 'panel',
                 border: 0,
                 layout: 'border',
 
                 items: [
+					northSection,
                     {
-                        xtype     :     'panel',
-                        border    :    0,
-                        region    :    'center',
+                        xtype     : 'panel',
+                        border    : 0,
+                        region    : 'center',
                         autoScroll: true,
-                        html      :      '<div id="uploadqueue"></div>'
+                        html      : '<div id="uploadqueue"></div>'
                     },
                     {
-                        xtype :  'panel',
+                        xtype : 'panel',
                         layout: 'border',
                         border: 0,
                         region: 'south',
@@ -77,7 +109,7 @@ Ext.define('NP.lib.ui.Uploader', {
 
                         items : [
                             {
-                                xtype :  'panel',
+                                xtype : 'panel',
                                 border: 0,
                                 region: 'center',
                                 html  : '<input id="file_upload" type="file" name="file_upload" />'
@@ -97,6 +129,8 @@ Ext.define('NP.lib.ui.Uploader', {
                                         height: 30,
 
                                         handler: function(){
+											self.addExtraParams();
+
                                             // Uploadify will pass all data from params.form
                                             // and all selected files to the server.
                                             if (self.isUploadifiveSupported()) {
@@ -159,6 +193,16 @@ Ext.define('NP.lib.ui.Uploader', {
 
         this.callParent(arguments);
     },
+
+	addExtraParams: function() {
+		if (this.params.extraInputs) {
+			var formValues = this.queryById('extrainputsform').getValues();
+
+			for (var inputname in formValues) {
+				this.params.form[inputname] = formValues[inputname];
+			}
+		}
+	},
 
     isUploadifiveSupported: function() {
         return window.File && window.FileReader && window.FileList && window.Blob;

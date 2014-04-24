@@ -382,6 +382,18 @@ Ext.define('NP.controller.Images', {
                     service: 'ImageService',
                     action : 'upload'
                 },
+				instructions: {
+					xtype  : 'panel',
+					border : 0,
+					padding: '0 8',
+					html   : NP.Translator.translate('<p>File Upload tool enables you to upload scanned images from your desktop to NexusPayables for indexing and processing.</p><p>Click the Select Files button to open a Browse window. In the Browse window, locate and select the file(s) to upload. Click the Open button. The file(s) will then display under the List tab in this File Upload window. Press the Upload Files button.</p><p>Please Note: Only 50 files can be uploaded at a time. Any number of files over the 50 limit will not be uploaded into the NexusPayables system.</p>')
+				},
+				extraInputs: [
+					{
+						xtype     : 'shared.propertycombo',
+						name      : 'property_id'
+					}
+				],
                 listeners: {
                     close: function() {
                         var grid = self.getCurrentGrid();
