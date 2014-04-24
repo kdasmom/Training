@@ -315,7 +315,7 @@ Ext.define('NP.controller.PropertySetup', {
 								// If operation successful
 								if (result.success) {
 									// Remove the row from the grid
-									grid.getStore().remove(properties);
+									grid.getStore().reload();
 									// Show a friendly message saying action was successful
 									NP.Util.showFadingWindow({ html: successDialogText });
 									// If an error occurs
