@@ -28,6 +28,10 @@ Ext.define('NP.controller.GLAccountSetup', {
         { ref: 'glaccountActivateBtn', selector: '[xtype="gl.glaccountsgrid"] [xtype="shared.button.activate"]' },
         { ref: 'glaccountInactivateBtn', selector: '[xtype="gl.glaccountsgrid"] [xtype="shared.button.inactivate"]' }
     ],
+
+	views: [
+		'NP.view.gl.Main'
+	],
 	
     // For localization
     changesSavedText          : 'Changes saved successfully',
@@ -581,41 +585,6 @@ Ext.define('NP.controller.GLAccountSetup', {
 
 	showReports: function() {
 		var me = this;
-
-		me.currentForm = me.setView('NP.view.report.gl.Form');
-        me.currentForm.getGenerateReportButton().on('click', me.generateReport.bind(me));
-	},
-
-
-
-    generateReport: function() {
-        var me         = this,
-            format     = me.currentForm.getReportFormat(),
-            report     = me.currentForm.getReport();
-
-        if (report.validateForm()) {
-            var reportWinName = 'gl.GlAccount',
-                body          = Ext.getBody(),
-                win           = window.open('about:blank', reportWinName);
-
-            Ext.DomHelper.append(
-                body,
-                '<form id="__reportForm" action="report.php" target="' + reportWinName + '" method="post">' +
-                '<input type="hidden" id="__report" name="report" />' +
-                '<input type="hidden" id="__options" name="options" />' +
-                '<input type="hidden" id="__format" name="format" />' +
-                '<input type="hidden" id="__extraParams" name="extraParams" />' +
-                '</form>'
-            );
-
-            Ext.get('__report').set({ value: 'gl.GlAccount' });
-            Ext.get('__options').set({ value: Ext.JSON.encode(report.getOptions()) });
-            Ext.get('__format').set({ value: format });
-            Ext.get('__extraParams').set({ value: Ext.JSON.encode(report.getExtraParams()) });
-
-            var form = Ext.get('__reportForm');
-            form.dom.submit();
-            Ext.destroy(form);
-        }
-    }
+		me.application.getController('Report').show('gl');
+	}
 });

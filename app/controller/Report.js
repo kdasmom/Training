@@ -10,10 +10,15 @@ Ext.define('NP.controller.Report', {
 
 	stores: [],
 
-	views: ['report.invoice.Form'],
+	views: [
+		'report.invoice.Form',
+		'report.gl.Form'
+	],
 
 	requires: [
-		'NP.view.report.invoice.Summary'
+		'NP.view.report.invoice.Summary',
+		'NP.view.report.gl.GlReport'
+
 	],
 
 	refs: [
@@ -32,8 +37,11 @@ Ext.define('NP.controller.Report', {
 
 	show: function(section) {
 		var me = this;
-
-		me.currentForm = me.setView('NP.view.report.' + section + '.Form');
+		if (section == 'gl') {
+			me.currentForm = me.setView('NP.view.report.' + section + '.Form', {}, '[xtype="gl.reports"]');
+		} else {
+			me.currentForm = me.setView('NP.view.report.' + section + '.Form');
+		}
 		me.currentForm.getGenerateReportButton().on('click', me.generateReport.bind(me));
 	},
 

@@ -19,15 +19,24 @@ Ext.define('NP.view.report.gl.Form', {
 	initComponent: function() {
 		var me = this;
 
-		me.title = NP.Translator.translate('Gl Account Report');
+		me.title = NP.Translator.translate('Gl Account Report Tool');
 
 		me.tbar = [
-			{ xtype: 'shared.button.report', text: NP.Translator.translate('Generate Report') }
+			{
+				xtype: 'shared.button.report',
+				text: NP.Translator.translate('Generate Report')
+			}
 		];
 
 		me.defaults = { labelWidth: 260 };
 
 		me.items = [
+			{
+				xtype: 'hiddenfield',
+				name: 'report_type',
+				itemId: 'report_type',
+				value: 'gl.GlAccount'
+			},
 			{
                 xtype: 'report.reportformatfield',
                 itemId: 'report_format'
@@ -38,6 +47,7 @@ Ext.define('NP.view.report.gl.Form', {
                 editable: false,
                 typeAhead: false,
                 allowBlank: false,
+				selectFirstRecord: true,
                 listeners: {
                     change: function(combo, newValue, oldValue, eOpts) {
                         var store = me.getForm().findField('glaccount_category').getStore();

@@ -7,9 +7,17 @@ Ext.define('NP.view.gl.Reports', {
 	extend: 'Ext.panel.Panel',
 	alias: 'widget.gl.reports',
 
-	title: NP.Translator.translate('Reports'),
+	title: 'Reports',
 
-	margin: 8,
+	requires: [
+		'NP.view.shared.button.Report'
+	],
 
-	html: 'Coming soon'
+	initComponent: function() {
+		var me =  this;
+
+		me.title = NP.Translator.translate(me.title);
+
+		me.callParent(arguments);
+	}
 });
