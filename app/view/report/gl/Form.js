@@ -14,8 +14,14 @@ Ext.define('NP.view.report.gl.Form', {
 		'NP.view.report.ReportFormatField',
         'NP.store.gl.GlAccountTypes',
         'NP.view.shared.IntegrationPackagesCombo',
-        'NP.view.shared.GlAccountAssigner'
+        'NP.view.shared.GlAccountAssigner',
+        'NP.view.shared.GlAccountTypeAssigner'
 	],
+
+	layout: {
+		type: 'vbox',
+		align: 'left'
+	},
 
 	initComponent: function() {
 		var me = this;
@@ -72,21 +78,8 @@ Ext.define('NP.view.report.gl.Form', {
 				}
             },
             {
-                xtype       : 'customcombo',
-                name        : 'glaccounttype_id',
-                queryMode   : 'local',
-                fieldLabel  :  NP.Translator.translate('GL Type'),
-                store       : {
-                    type        : 'gl.glaccounttypes',
-                    service     : 'GLService',
-                    action      : 'getTypes',
-                    autoLoad    : true
-                },
-                typeAhead   : false,
-                multiSelect : true,
-                displayField: 'glaccounttype_name',
-                valueField  : 'glaccounttype_id',
-                emptyText   : NP.Translator.translate('All')
+                xtype       : 'shared.glaccounttypeassigner',
+				width:		600
             },
 			{
 				xtype		: 'shared.glaccountassigner',

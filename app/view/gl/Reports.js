@@ -13,6 +13,8 @@ Ext.define('NP.view.gl.Reports', {
 		'NP.view.shared.button.Report'
 	],
 
+	autoScroll: true, 
+
 	initComponent: function() {
 		var me =  this;
 
