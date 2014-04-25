@@ -54,23 +54,25 @@ class GlAccount extends AbstractReport implements ReportInterface {
 		$select = new Select();
 
 		$select->from(['glcats' => 'glaccount'])
-				->columns([
-					'glcat_id'  => 'glaccount_id',
-					'glcat_number'  => 'glaccount_number',
-					'glcat_name'    => 'glaccount_name',
-					'glaccount_status'  => new Expression("replace(glcode.glaccount_status, '##', '####')"),
-					'glaccounttype_name'    => new Expression("replace(gat.glaccounttype_name, '##', '####')"),
-					'glaccount_usable'      => new Expression("replace(glcats.glaccount_usable, '##', '####')"),
-					'integration_package_name'  => new Expression("replace(ip.integration_package_name, '##', '####')"),
-					'glcode_number'             => new Expression("replace(glcode.glaccount_number, '##', '####')"),
-					'glcode_name'             => new Expression("replace(glcode.glaccount_name, '##', '####')")
-				])
+				->columns(
+					[
+						'glcat_id' => 'glaccount_id',
+						'glcat_number' => 'glaccount_number',
+						'glcat_name'	=> 'glaccount_name',
+						'glaccount_usable'	=> new Expression("replace(glcats.glaccount_usable, '##', '####')"),
+						'integration_package_name'	=> new Expression("replace(ip.integration_package_name, '##', '####')"),
+						'glaccount_status'			=> new Expression("replace(glcode.glaccount_status, '##', '####')"),
+						'glcode_number'				=> new Expression("replace(glcode.glaccount_number, '##', '####')"),
+						'glcode_name'				=> new Expression("replace(glcode.glaccount_name, '##', '####')"),
+						'glaccounttype_name'		=> new Expression("replace(gat.glaccounttype_name, '##', '####')")
+					]
+				)
 				->join(['ip' => 'integrationpackage'], 'glcats.integration_package_id = ip.integration_package_id', [], Select::JOIN_LEFT)
 				->join(['treecats' => 'tree'], "glcats.glaccount_id = treecats.tablekey_id and treecats.table_name = 'glaccount'", [], Select::JOIN_INNER)
 				->join(['treecodes' => 'tree'], "treecats.tree_id = treecodes.tree_parent and treecodes.table_name = 'glaccount'", [], Select::JOIN_INNER)
 				->join(['glcode' => 'glaccount'], "treecodes.tablekey_id = glcode.glaccount_id", ['glcode_id' => 'glaccount_id'], Select::JOIN_INNER)
 				->join(['gat' => 'glaccounttype'], "glcode.glaccounttype_id = gat.glaccounttype_id", ['glaccounttype_id'], Select::JOIN_INNER)
-				->whereIsNotNull('glcats.glaccounttype_id')
+				->whereIsNull('glcats.glaccounttype_id')
 				->order('glcats.' . $extraParams['glaccount_order']);
 
 		if ($extraParams['integration_package_id']) {
@@ -90,6 +92,7 @@ class GlAccount extends AbstractReport implements ReportInterface {
 		if ($extraParams['glaccount_category']) {
 			$select->whereIn('glcats.glaccount_id', implode(',', $extraParams['glaccount_category']));
 		}
+
 
 		$adapter = $this->gatewayManager->get('GlAccountGateway')->getAdapter();
 		return $adapter->getQueryStmt($select, $queryParams);
