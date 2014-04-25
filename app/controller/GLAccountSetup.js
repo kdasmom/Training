@@ -30,7 +30,9 @@ Ext.define('NP.controller.GLAccountSetup', {
     ],
 
 	views: [
-		'NP.view.gl.Main'
+		'NP.view.gl.Main',
+		'NP.view.gl.GLAccountsGrid',
+		'NP.view.gl.GLAccountsForm'
 	],
 	
     // For localization
