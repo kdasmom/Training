@@ -9,7 +9,6 @@ Ext.define('NP.view.property.ClosingCalendarDistibutor', {
 	alias: 'widget.property.closingcalendardistibutor',
 
 	requires: [
-		'NP.view.shared.button.Update',
 		'NP.view.shared.button.Cancel',
 		'NP.view.shared.button.Save'
 	],
@@ -31,8 +30,7 @@ Ext.define('NP.view.property.ClosingCalendarDistibutor', {
 			dock  : 'top',
 			items : [
 				{ xtype: 'shared.button.cancel' },
-				{ xtype: 'shared.button.save' },
-				{ xtype: 'shared.button.update', text: 'Assign', hidden: true }
+				{ xtype: 'shared.button.save' }
 			]
 		};
 
@@ -57,13 +55,6 @@ Ext.define('NP.view.property.ClosingCalendarDistibutor', {
 						type: 'template',
 						fiscal_calendar_id: null,
 						asp_client_id: null
-					},
-					listeners: {
-						load: function(store, records, successful, eOpts) {
-							if (records.length > 0) {
-								me.query('[xtype="shared.button.update"]')[0].show();
-							}
-						}
 					}
 				})
 			}

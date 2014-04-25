@@ -176,9 +176,6 @@ Ext.define('NP.controller.PropertySetup', {
 			'[xtype="property.closingcalendardistibutor"] [xtype="shared.button.save"]': {
 				click: this.saveDistributor
 			},
-			'[xtype="property.closingcalendardistibutor"] [xtype="shared.button.update"]': {
-				click: this.saveDistributor
-			},
 			'[xtype="property.closingcalendardistibutor"] [xtype="shared.button.cancel"]': {
 				click: this.closeCalendarDistributor
 			}
