@@ -28,7 +28,10 @@ Ext.define('NP.view.report.gl.Form', {
 			}
 		];
 
-		me.defaults = { labelWidth: 260 };
+		me.defaults = {
+			labelWidth: 150,
+			width:		350
+		};
 
 		me.items = [
 			{
