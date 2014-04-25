@@ -14,6 +14,7 @@ Ext.define('NP.view.shared.IntegrationPackagesCombo', {
     valueField          : 'integration_package_id',
     width               : 400,
     storeAutoLoad       : false,
+	storelisteners		: {},
 
     initComponent: function() {
         var me = this;
@@ -22,7 +23,8 @@ Ext.define('NP.view.shared.IntegrationPackagesCombo', {
             this.store = Ext.create('NP.store.system.IntegrationPackages', {
                 service : 'ConfigService',
                 action  : 'getIntegrationPackages',
-                autoLoad: me.storeAutoLoad
+                autoLoad: me.storeAutoLoad,
+				listeners: me.storelisteners
             });
         }
 

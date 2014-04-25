@@ -339,7 +339,7 @@ class GlAccountGateway extends AbstractGateway {
 
 		$select->from(['g1' => 'glaccount'])
 				->distinct()
-				->columns(['glaccount_name', 'glaccount_id'])
+				->columns(['glaccount_name', 'glaccount_id', 'glaccount_number'])
 				->join(['t1' => 'tree'], "g1.glaccount_id=t1.tablekey_id and t1.table_name='glaccount'", [])
 				->join(['t2' => 'tree'], "t1.tree_id = t2.tree_parent and t2.table_name='glaccount'", [])
 				->join(['g2' => 'glaccount'], "g2.glaccount_id=t2.tablekey_id", [])

@@ -13,7 +13,8 @@ Ext.define('NP.view.report.gl.Form', {
 		'NP.view.shared.button.Report',
 		'NP.view.report.ReportFormatField',
         'NP.store.gl.GlAccountTypes',
-        'NP.view.shared.IntegrationPackagesCombo'
+        'NP.view.shared.IntegrationPackagesCombo',
+        'NP.view.shared.GlAccountAssigner'
 	],
 
 	initComponent: function() {
@@ -59,7 +60,16 @@ Ext.define('NP.view.report.gl.Form', {
                         });
                         store.reload();
                     }
-                }
+                },
+				storelisteners		: {
+					load: function(store, records, successful, eOpts) {
+						var store = me.getForm().findField('glaccount_category').getStore();
+						Ext.apply(store.getProxy().extraParams, {
+							integration_package_id: records[0].get('integration_package_id')
+						});
+						store.reload();
+					}
+				}
             },
             {
                 xtype       : 'customcombo',
@@ -78,31 +88,18 @@ Ext.define('NP.view.report.gl.Form', {
                 valueField  : 'glaccounttype_id',
                 emptyText   : NP.Translator.translate('All')
             },
-            {
-                xtype     : 'customcombo',
-                name      : 'glaccount_category',
-                fieldLabel: NP.Translator.translate('Gl Category'),
-                store     : {
-                    type       : 'gl.glaccounts',
-                    service    : 'GLService',
-                    action     : 'getReportCategories'
-                },
-                displayField: 'glaccount_name',
-                valueField  : 'glaccount_id',
-                emptyText   : NP.Translator.translate('All'),
-                tpl: new Ext.XTemplate(
-                    '<tpl for="." >',
-                    '<div class="x-boundlist-item">',
-                    '{glaccount_name} ',
-                    '<tpl if="glaccount_status == \'inactive\'">',
-                    '(Inactive)',
-                    '</tpl>',
-                    '</div>',
-                    '</tpl>'),
-                emptyText   : 'All',
-                typeAhead   : false,
-                multiSelect : true
-            },
+			{
+				xtype		: 'shared.glaccountassigner',
+				name			: 'glaccount_category',
+				fieldLabel: NP.Translator.translate('Gl Category'),
+				store     : Ext.create('NP.store.gl.GlAccounts',{
+					service    : 'GLService',
+					action     : 'getReportCategories'
+				}),
+				displayField: 'glaccount_name',
+				valueField  : 'glaccount_id',
+				width:		600
+			},
             {
                 xtype     : 'customcombo',
                 name      : 'glaccount_order',
