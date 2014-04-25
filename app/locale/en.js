@@ -743,5 +743,6 @@ Ext.define('NP.Locale', {
 
 	'Conflicts with these rules'                  : 'Conflicts with these rules',
 	'Edit this rule > Admin_Invoice > {rulename}' : 'Edit this rule > Admin_Invoice > {rulename}',
+	'Deactivate conflicting rules'                : 'Deactivate conflicting rules',
 	'Delete conflicting rules'                    : 'Delete conflicting rules'
 });

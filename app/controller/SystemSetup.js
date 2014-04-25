@@ -1820,17 +1820,24 @@ Ext.define('NP.controller.SystemSetup', {
 				rulesIdList.push(ruledata.conflictingRules[i].wfrule_id);
 			}
 
-			NP.lib.core.Net.remoteCall({
-				requests: {
-					service: 'WFRuleService',
-					action : 'deleteRules',
-					ruleIdList: rulesIdList.join(),
-					success: function() {
-						me.activateWorkflowRule(ruledata.rule.wfrule_id);
-						me.addHistory('SystemSetup:showSystemSetup:WorkflowRules');
+			if (values.nextaction == 'deactivate') {
+				me.changeRuleStatus(rulesIdList, 2);
+				me.activateWorkflowRule(ruledata.rule.wfrule_id);
+				me.addHistory('SystemSetup:showSystemSetup:WorkflowRules');
+			}
+			else {
+				NP.lib.core.Net.remoteCall({
+					requests: {
+						service: 'WFRuleService',
+						action : 'deleteRules',
+						ruleIdList: rulesIdList.join(),
+						success: function() {
+							me.activateWorkflowRule(ruledata.rule.wfrule_id);
+							me.addHistory('SystemSetup:showSystemSetup:WorkflowRules');
+						}
 					}
-				}
-			});
+				});
+			}
 		}
 	},
 

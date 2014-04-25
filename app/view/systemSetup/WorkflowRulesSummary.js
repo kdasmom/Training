@@ -6,25 +6,17 @@ Ext.define('NP.view.systemSetup.WorkflowRulesSummary', {
 
 	initComponent: function() {
 		this.border = false;
-		
-		if (!this.data) {
-			this.ruleSummaryItems = [
-				{
-					xtype  : 'component',
-					html   : NP.Translator.translate('No Rules Applied')
-				}
-			];
-		} else {
-			this.ruleSummaryItems = this.getRuleSummaryItems();
-		}
+
+		this.fieldLabelWidth = 150;
+		this.fieldPadding    = '0 0';
 
 		this.items = [
 			{
-				xtype      : 'fieldset',
-				title      : NP.Translator.translate('Rule Summary'),
+				xtype: 'fieldset',
+				title: NP.Translator.translate('Rule Summary'),
 				defaultType: 'textfield',
-				padding    : '8',
-				items      : this.ruleSummaryItems
+				padding: '8',
+				items: this.getRuleSummaryItems()
 			}
 		];
 
@@ -33,68 +25,66 @@ Ext.define('NP.view.systemSetup.WorkflowRulesSummary', {
 
 
 	getRuleSummaryItems: function() {
-		var items = [
-			// Rule Name
+		var items = [];
+
+		if (!this.data) {
+			return [
+				{
+					xtype: 'component',
+					border: false,
+					html: NP.Translator.translate('No Rules Applied')
+				}
+			];
+		}
+
+		items.push(
 			{
-				xtype: 'panel',
-				border: false,
-				layout: {
-					type: 'hbox',
-					pack: 'start'
-				},
-				items: this.sectionName(this.data)
+				xtype     : 'displayfield',
+				fieldLabel: NP.Translator.translate('Rule Name'),
+				value     : this.data.rule.wfrule_name,
+				labelWidth: this.fieldLabelWidth,
+				padding   : this.fieldPadding
 			}
-		];
+		);
 
 		if (this.data.rule.wfrule_id != -1 && this.data.rule.wfrule_status != 'new') {
 			items.push(
-				// Applied to Properties
 				{
-					xtype: 'panel',
-					border: false,
-					layout: {
-						type: 'hbox',
-						pack: 'start'
-					},
-					items: this.sectionProperties(this.data)
+					xtype     : 'displayfield',
+					fieldLabel: NP.Translator.translate('Applied to Properties'),
+					value     : this.data.rule.allProperties ? NP.Translator.translate('ALL') : NP.Translator.translate('SPECIFIC'),
+					labelWidth: this.fieldLabelWidth,
+					padding   : this.fieldPadding
 				},
-				// Rule Type
 				{
-					xtype: 'panel',
-					border: false,
-					layout: {
-						type: 'hbox',
-						pack: 'start'
-					},
-					items: this.sectionType(this.data)
+					xtype     : 'displayfield',
+					fieldLabel: NP.Translator.translate('Rule Type'),
+					value     : this.data.rule.wfruletype_name,
+					labelWidth: this.fieldLabelWidth,
+					padding   : this.fieldPadding
 				}
 			);
 
-			// Amount
-			if (this.data.rule.wfruletype_name.indexOf('delegation') == -1) {
+			var condition = this.getRuleCondition(this.data);
+			if (condition) {
 				items.push(
 					{
-						xtype: 'panel',
-						border: false,
-						layout: {
-							type: 'hbox',
-							pack: 'start'
-						},
-						items: this.sectionAmount(this.data)
+						xtype     : 'displayfield',
+						fieldLabel: NP.Translator.translate('If Amount'),
+						value     : condition,
+						labelWidth: this.fieldLabelWidth,
+						padding   : this.fieldPadding
 					}
 				);
 			}
 
-			// Originates From
 //			items.push(
 //				{
-//					xtype: 'panel',
-//					border: false,
-//					layout: {
-//						type: 'hbox',
-//						pack: 'start'
-//					},
-//					items: this.sectionOriginates(this.data)
+//					xtype: 'displayfield',
+//					fieldLabel: NP.Translator.translate('Originates From'),
+//					value: this.getRuleOriginates(this.data),
+//					labelWidth: this.fieldLabelWidth,
+//					padding: this.fieldPadding
 //				}
 //			);
 		}
@@ -102,55 +92,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesSummary', {
 		return items;
 	},
 
-	sectionName: function(data) {
-		return [
-			{
-				width: 150,
-				cls: 'header-text',
-				border: false,
-				html: NP.Translator.translate('Rule Name') + ':'
-			},
-			{
-				border: false,
-				html: data.rule.wfrule_name
-			}
-		];
-	},
-
-	sectionProperties: function(data) {
-		return [
-			{
-				width: 150,
-				cls: 'header-text',
-				border: false,
-				html: NP.Translator.translate('Applied to Properties') + ':'
-			},
-			{
-				border: false,
-				html:
-					data.properties.all ?
-						NP.Translator.translate('ALL') :
-						NP.Translator.translate('SPECIFIC')
-			}
-		];
-	},
-
-	sectionType: function(data) {
-		return [
-			{
-				width: 150,
-				border: false,
-				cls: 'header-text',
-				html: NP.Translator.translate('Rule Type') + ':'
-			},
-			{
-				border: false,
-				html: data.rule.wfruletype_name
-			}
-		];
-	},
-
-	sectionAmount: function(data) {
+	getRuleCondition: function(data) {
 		var condition = '';
 
 		if (data.rule.wfrule_operand && data.rule.wfrule_operand != '') {
@@ -167,38 +109,16 @@ Ext.define('NP.view.systemSetup.WorkflowRulesSummary', {
 			condition += ' to ' + data.rule.wfrule_number_end;
 		}
 
-		return [
-			{
-				width: 150,
-				cls: 'header-text',
-				border: false,
-				html: NP.Translator.translate('If Amount') + ':'
-			},
-			{
-				border: false,
-				html: condition
-			}
-		];
+		return condition;
 	},
 
-	sectionOriginates: function(data) {
-//		console.log('data', data);
+	getRuleOriginates: function(data) {
 		var originator = data.rule.originator;
+
 		if (data.rule.originator && data.rule.originator.length && data.rule.onames.length) {
 			originator += ': ' + data.rule.onames
 		}
 
-		return [
-			{
-				width: 150,
-				border: false,
-				cls: 'header-text',
-				html: NP.Translator.translate('Originates From') + ':'
-			},
-			{
-				border: false,
-				html: originator
-			}
-		];
+		return originator;
 	}
 });
