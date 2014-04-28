@@ -21,13 +21,13 @@ class GlAccount extends AbstractReport implements ReportInterface {
 
 		$extraParams = $this->getExtraParams();
 
-		if ($extraParams['glaccount_order'] == 'glaccount_name') {
+		if ($extraParams['glaccount_order'] == 'glcode_name') {
 			$this->addCols([
 				new ReportColumn('GL Name', 'glcode_name', 0.2),
 				new ReportColumn('GL Number', 'glcode_number', 0.15, 'string', 'left')
 			]);
 		}
-		if ($extraParams['glaccount_order'] == 'glaccount_number') {
+		if ($extraParams['glaccount_order'] == 'glcode_number') {
 			$this->addCols([
 				new ReportColumn('GL Number', 'glcode_number', 0.15, 'string', 'left'),
 				new ReportColumn('GL Name', 'glcode_name', 0.2)
@@ -73,7 +73,7 @@ class GlAccount extends AbstractReport implements ReportInterface {
 				->join(['glcode' => 'glaccount'], "treecodes.tablekey_id = glcode.glaccount_id", ['glcode_id' => 'glaccount_id'], Select::JOIN_INNER)
 				->join(['gat' => 'glaccounttype'], "glcode.glaccounttype_id = gat.glaccounttype_id", ['glaccounttype_id'], Select::JOIN_INNER)
 				->whereIsNull('glcats.glaccounttype_id')
-				->order('glcats.' . $extraParams['glaccount_order']);
+				->order($extraParams['glaccount_order']);
 
 		if ($extraParams['integration_package_id']) {
 			$select->whereEquals('glcode.integration_package_id', '?');

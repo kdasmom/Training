@@ -100,8 +100,8 @@ Ext.define('NP.view.report.gl.Form', {
                 store     : Ext.create('Ext.data.Store', {
                     fields: ['name', 'value'],
                     data: [
-                        {name: 'Gl Name', value: 'glaccount_name'},
-                        {name: 'Gl Number', value: 'glaccount_number'}
+                        {name: 'Gl Name', value: 'glcode_name'},
+                        {name: 'Gl Number', value: 'glcode_number'}
                     ]
                 }),
                 displayField: 'name',
