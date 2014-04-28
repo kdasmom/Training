@@ -26,7 +26,7 @@ Ext.define('NP.view.report.gl.Form', {
 	initComponent: function() {
 		var me = this;
 
-		me.title = NP.Translator.translate('Gl Account Report Tool');
+		me.showTitle = false;
 
 		me.tbar = [
 			{

@@ -23,14 +23,14 @@ class GlAccount extends AbstractReport implements ReportInterface {
 
 		if ($extraParams['glaccount_order'] == 'glcode_name') {
 			$this->addCols([
-				new ReportColumn('GL Name', 'glcode_name', 0.2),
-				new ReportColumn('GL Number', 'glcode_number', 0.15, 'string', 'left')
+				new ReportColumn('GL Name', 'glcode_name', 0.2, 'string', 'left'),
+				new ReportColumn('GL Number', 'glcode_number', 0.15, 'string', 'left', [$this, 'renderName'])
 			]);
 		}
 		if ($extraParams['glaccount_order'] == 'glcode_number') {
 			$this->addCols([
 				new ReportColumn('GL Number', 'glcode_number', 0.15, 'string', 'left'),
-				new ReportColumn('GL Name', 'glcode_name', 0.2)
+				new ReportColumn('GL Name', 'glcode_name', 0.2, 'string', 'left', [$this, 'renderName'])
 			]);
 		}
 
@@ -44,6 +44,10 @@ class GlAccount extends AbstractReport implements ReportInterface {
 
 	public function getTitle() {
 		return 'Gl Account Report';
+	}
+
+	public function renderName($val, $record, $report) {
+		return $val;
 	}
 
 	public function getData() {
@@ -92,7 +96,6 @@ class GlAccount extends AbstractReport implements ReportInterface {
 		if ($extraParams['glaccount_category']) {
 			$select->whereIn('glcats.glaccount_id', implode(',', $extraParams['glaccount_category']));
 		}
-
 
 		$adapter = $this->gatewayManager->get('GlAccountGateway')->getAdapter();
 		return $adapter->getQueryStmt($select, $queryParams);
