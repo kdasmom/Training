@@ -74,6 +74,7 @@ Ext.define('NP.view.user.UsersFormDetails', {
 				inputType : 'password',
 				fieldLabel: NP.Translator.translate('Confirm Password'),
                 allowBlank: !this.passwordRequired,
+				padding: this.isMySettings ? '0 0 25 0' : '0',
                 validator: function(val) {
                     var form = that.up('boundform');
                     var password_new = form.findField('userprofile_password').getValue();
@@ -115,7 +116,8 @@ Ext.define('NP.view.user.UsersFormDetails', {
 				xtype     : 'datefield',
 				name      : 'userprofile_enddate',
 				fieldLabel: NP.Translator.translate('End Date'),
-				hidden    : this.isMySettings
+				hidden    : this.isMySettings,
+				padding: !this.isMySettings ? '0 0 25 0' : '0'
     		}
     	);
 
