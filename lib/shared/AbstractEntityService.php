@@ -299,6 +299,26 @@ abstract class AbstractEntityService extends AbstractService {
 		return $this->rejectionHistoryGateway->findRejectionNotes($this->table, $entity_id);
 	}
 
+    /**
+     * Get Template for image index table.
+     * 
+     * @param int $vendorsite_id Vendorsite id. Should not be empty.
+     * @param int $property_id Propery id. Should not be empty.
+     * @param int $utilityaccount_id Utility account ID.
+     * @return [] List of templates.
+     */
+    public function getTemplatesByCriteria($vendorsite_id, $property_id, $utilityaccount_id=null) {
+    	$gtw = "{$this->gateway}Gateway";
+
+    	return $this->$gtw->getTemplatesByCriteria(
+    		$this->securityService->getUserId(),
+    		$this->securityService->getDelegatedUserId(),
+        	$vendorsite_id,
+        	$property_id,
+        	$utilityaccount_id
+        );
+    }
+
 	/**
 	 * Get info 
 	 */
@@ -391,6 +411,117 @@ abstract class AbstractEntityService extends AbstractService {
 		}
 
 		return $data;
+	}
+
+    /**
+     * Gets an HTML version of an entity
+     */
+    public function getEntityAsHtml($entity_id, $options=[]) {
+		$renderer = "NP\\{$this->module}\\" . ucfirst($this->type) . 'HtmlRenderer';
+		$renderer = new $renderer($this->configService, $this->gatewayManager, $this, $entity_id, $options);
+
+    	ob_start();
+    	$renderer->render();
+    	$html = ob_get_contents();
+    	ob_end_clean();
+
+    	return $html;
+    }
+
+	/**
+	 * Applies a template to an existing invoice
+	 */
+	public function applyTemplate($entity_id, $template_id) {
+		$gtw     = "{$this->gateway}Gateway";
+		$itemGtw = "{$this->itemGateway}Gateway";
+
+		$errors = [];
+		$this->$gtw->beginTransaction();
+		
+		try {
+			// Delete all lines from this entity
+			$this->clearLines($entity_id);
+
+			// Get tax and shipping totals
+			$totals = $this->$itemGtw->findTaxAndShippingTotal($template_id);
+
+			// Get all the template lines
+			$lines = $this->getEntityLines($template_id);
+
+			// Loop through template lines to reset key ids
+			foreach ($lines as $i=>$line) {
+				$lines[$i][$this->itemPkField] = null;
+				$lines[$i][$this->pkField]     = $entity_id;
+			}
+
+			// Get the data for the template selected
+			$templateData = [
+				$this->table                   => $this->$gtw->findSingle([$this->pkField => '?'], [$template_id]),
+				'lines'                        => $lines,
+				'tax'                          => $totals['tax'],
+				'shipping'                     => $totals['shipping'],
+				'userprofile_id'               => $this->securityService->getUserId(),
+				'delegation_to_userprofile_id' => $this->securityService->getDelegatedUserId()
+			];
+
+			// Update the entity data with the correct ID
+			$templateData[$this->table][$this->pkField] = $entity_id;
+
+			// Update the entity's status
+			$templateData[$this->table]["{$this->table}_status"] = 'open';
+
+			// If dealing with PO, preserve the PO number
+			if ($this->type == 'po') {
+				$templateData[$this->table]['purchaseorder_ref'] = $this->purchaseOrderGateway->findValue(
+					'purchaseorder_id = ?',
+					[$entity_id],
+					'purchaseorder_ref'
+				);
+			}
+
+			$result = $this->saveEntity($templateData);
+			
+			if (!$result['success']) {
+				$errors = $result['errors'];
+			}
+		} catch(\Exception $e) {
+			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+		
+		if (count($errors)) {
+			$this->$gtw->rollback();
+		} else {
+			$this->$gtw->commit();
+		}
+		
+		return array(
+		    'success' => (count($errors)) ? false : true,
+		    'errors'  => $errors
+		);
+	}
+
+	/**
+	 * Removes all line items from an invoice
+	 */
+	public function clearLines($entity_id) {
+		$itemGtw = "{$this->itemGateway}Gateway";
+
+		$this->$itemGtw->beginTransaction();
+		
+		try {
+			if ($this->type === 'invoice') {
+				// Unlink POs and PO lines from this invoice
+				$this->unlinkPoFromInvoice($entity_id);
+			}
+
+			// Delete all lines
+			$this->$itemGtw->delete([$this->pkField=>'?'], [$entity_id]);
+
+			$this->$itemGtw->commit();
+		} catch(\Exception $e) {
+			$this->$itemGtw->rollback();
+			throw $e;
+		}
 	}
 
 	/**
@@ -1225,7 +1356,7 @@ abstract class AbstractEntityService extends AbstractService {
 		$this->$gtw->beginTransaction();
 		
 		try {
-			$newEntity = $this->invoiceGateway->findSingle(
+			$newEntity = $this->$gtw->findSingle(
 				[$this->pkField => '?'],
 				[$entity_id]
 			);
@@ -1311,5 +1442,595 @@ abstract class AbstractEntityService extends AbstractService {
 				'approvegllog_desc_to'   => $newLine->$descField
 			]);
 		}
+	}
+
+	public function saveEntity($data) {
+		$gtw         = "{$this->gateway}Gateway";
+		$itemGtw     = "{$this->itemGateway}Gateway";
+		$pk          = $this->pkField;
+		$itemPk      = $this->itemPkField;
+		$entityClass = "NP\\{$this->module}\\" . ucfirst($this->gateway) . 'Entity';
+		$vendorKey   = ($this->type == 'invoice') ? 'paytablekey_id' : 'vendorsite_id';
+		$periodKey   = "{$this->table}_period";
+
+		$errors = [];
+		$this->$gtw->beginTransaction();
+		
+		try {
+			$now                          = \NP\util\Util::formatDateForDB();
+			$userprofile_id               = $data['userprofile_id'];
+			$delegation_to_userprofile_id = $data['delegation_to_userprofile_id'];
+
+			// Create the invoice entity with initial data
+			$entity = new $entityClass($data[$this->table]);
+
+			// If paytablekey_id wasn't added, we need to get it based on vendor_id
+			if ($entity->$vendorKey === null) {
+				// Add vendorsite_id to the invoice
+				$entity->$vendorKey = $this->vendorGateway->findVendorsite($data['vendor_id']);
+			}
+
+			// Set a new lock on the entity to prevent other people from updating it simultaneously
+			$entity->lock_id = $this->getLock($entity->$pk) + 1;
+
+			// If delaing with a new PO, set default ship to/bill to
+			if ($this->type == 'po' && $entity->$pk === null) {
+				$headerProp = $this->propertyGateway->findById(
+					$entity->property_id,
+					['property_NexusServices','default_shipto_property_id','default_billto_property_id']
+				);
+
+				$entity->Purchaseorder_ship_propertyID = $headerProp['default_shipto_property_id'];
+				$entity->Purchaseorder_bill_propertyID = $headerProp['default_billto_property_id'];
+
+				$entity->Purchaseorder_shipaddress = $this->getShipToBillToAddress(
+					$headerProp['default_shipto_property_id']
+				);
+
+				$entity->Purchaseorder_billaddress = $this->getShipToBillToAddress(
+					$headerProp['default_billto_property_id'],
+					($headerProp['property_NexusServices'] == 1) ? true : false,
+					$data['vendor_id']
+				);
+			}
+
+			// Validate entity record
+			$errors = $this->entityValidator->validate($entity);
+
+			// Deal with change to vendor on existing invoice if needed
+			if (!count($errors)) {
+				if ($entity->$pk !== null) {
+					$currentEntity = $this->$gtw->findById($entity->$pk);
+					// If vendor has changed, make some changes
+					if ($currentEntity[$vendorKey] !== $entity->$vendorKey) {
+						if ($this->type == 'invoice') {
+							// Delete all hold records
+							$this->invoiceHoldGateway->delete(['invoice_id'=>'?'], [$entity->$pk]);
+						}
+
+						// Delete all approval records
+						$this->approveGateway->delete(
+							['table_name'=>'?', 'tablekey_id'=>'?'],
+							[$this->table, $entity->$pk]
+						);
+
+						// Log the vendor change
+						$approvetype_id = $this->approveTypeGateway->getIdByName('Change Vendor');
+
+						$approve = new \NP\workflow\ApproveEntity([
+							'table_name'                   => $this->table,
+							'tablekey_id'                  => $entity->$pk,
+							'userprofile_id'               => $userprofile_id,
+							'delegation_to_userprofile_id' => $delegation_to_userprofile_id,
+							'approve_message'              => 'Vendor Change',
+							'approvetype_id'               => $approvetype_id,
+							'transaction_id'               => $this->approveGateway->currentId()
+						]);
+
+						$errors = $this->entityValidator->validate($approve);
+						if (!count($errors)) {
+							$this->approveGateway->save($approve);
+						} else {
+							$this->loggingService->log('error', 'Error validating approve entity while changing vendor', $errors);
+							throw new \NP\core\Exception('Error changing vendor on entity');
+						}
+					}
+				}
+			}
+
+			// Save invoice if valid
+			if (!count($errors)) {
+				// If dealing with an existing invoice, before saving we want to grab
+				// the data as it is now for audit purposes
+				if ($data[$this->table][$pk] !== null) {
+					$oldEntity = $this->$gtw->findSingle(
+						"{$pk} = ?",
+						[$entity->$pk]
+					);
+					$oldEntity = new $entityClass($oldEntity);
+					$oldLines   = $this->getEntityLines($entity->$pk);
+				}
+				
+				$this->$gtw->save($entity);
+
+				// If dealing with a new PO, we need to generate the PO number
+				if ($this->type == 'po' && $data[$this->table][$pk] === null) {
+					$this->generatePoRef($entity->purchaseorder_id, $entity->purchaseorder_period, $entity->property_id);
+				}
+			}
+
+			// Save the creator of the entity if new
+			if (!count($errors) && $data[$this->table][$pk] === null) {
+				// Validate author record
+				$author = new \NP\user\RecAuthorEntity([
+					'userprofile_id'               => $userprofile_id,
+					'delegation_to_userprofile_id' => $delegation_to_userprofile_id,
+					'table_name'                   => $this->table,
+					'tablekey_id'                  => $entity->$pk
+				]);
+				$authorErrors = $this->entityValidator->validate($author);
+				if (count($authorErrors)) {
+					$this->loggingService->log('global', 'RecAuthorEntity errors', $authorErrors);
+					$this->loggingService->log('global', $this->table, [$pk => $entity->$pk]);
+					throw new \NP\core\Exception('Unexpected error saving entity author');
+				} else {
+					$this->recAuthorGateway->save($author);
+				}
+			}
+
+			// Save invoice line items
+			$lineIds = [];
+			if (!count($errors)) {
+				// Before modifying lines, we need to grab the job costing contract lines that exist
+				// so we can update them just in case (otherwise, if a contract gets changed, we can't
+				// know after the record is updated which contract budget we need to update)
+				$contractLines = [];
+				// We only do this for existing invoices
+				if ($data[$this->table][$pk] !== null) {
+					$contractLines = $this->jbJobAssociationGateway->findContractLinesByEntity($this->table, $entity->$pk);
+				}
+				if (array_key_exists('lines', $data)) {
+					// Loop through line items to add/modify
+					foreach ($data['lines'] as $linenum=>$item) {
+						if (!array_key_exists('is_dirty', $item) || $item['is_dirty']) {
+							// Assign some values that weren't passed in
+							$item[$pk]                      = $entity->$pk;
+							$item['vendorsite_id']          = $entity->$vendorKey;
+							$item[$periodKey]               = $entity->$periodKey;
+							$item["{$this->table}_linenum"] = $linenum+1;
+
+							// Save the line item
+							$result = $this->saveLine($item);
+
+							// Error handling
+							if (!$result['success']) {
+								$errors = array_merge($errors, $result['errors']);
+							}
+						}
+						$lineIds[] = $item[$itemPk];
+					}
+				}
+			}
+
+			// Delete invoice line items
+			if (!count($errors)) {
+				$deletedLines = $this->$itemGtw->getDeletedLines($entity->$pk, $lineIds);
+				// Loop through line items to delete
+				foreach ($deletedLines as $item) {
+					// Delete the line item
+					$result = $this->deleteLine($item[$itemPk]);
+
+					// Error handling
+					if (!$result['success']) {
+						$errors = array_merge($errors, $result['errors']);
+						break;
+					}
+				}
+			}
+
+			// Add any missing budgets to this invoice
+			if (!count($errors)) {
+				$this->budgetService->createMissingBudgets($this->type, $entity->$pk);
+			}
+
+			// Retrieve current Tax and Shipping totals for auditing purposes before deleting
+			if (!count($errors)) {
+				$oldTotals = $this->$itemGtw->findTaxAndShippingTotal($entity->$pk);
+
+				$this->allocateTaxAndShipping($entity->$pk, $data['tax'], $data['shipping']);
+
+				if ($data[$this->table][$pk] !== null) {
+					// Save audit of changes to tax and shipping
+					$result = $this->auditTaxShippingChanges(
+						$entity->$pk,
+						$oldTotals['tax'],
+						$data['tax'],
+						$oldTotals['shipping'],
+						$data['shipping']
+					);
+
+					if (!$result['success']) {
+						$this->entityValidator->addError(
+							$errors,
+							'global',
+							'Unexpected error trying to audit tax and shipping changes'
+						);
+					}
+				}
+
+				// As a precaution, update the period on all line items to match the header
+				$this->$itemGtw->update(
+					["{$this->itemTable}_period" => $entity->$periodKey],
+					"{$pk} = ?",
+					[$entity->$pk]
+				);
+			}
+
+			if (!count($errors)) {
+				// Create budgets for all line items (if needed)
+				$result = $this->createEntityBudgets($entity->$pk);
+
+				if (!$result['success']) {
+					$this->entityValidator->addError(
+						$errors,
+						'global',
+						'Unexpected error trying to create invoice budgets'
+					);
+				}
+			}
+
+			if (!count($errors)) {
+				// Update the status of the invoice_multiproperty column for the invoice
+				$this->updateMultiPropertyStatus($entity->$pk);
+			}
+
+			// Audit the changes in the invoice if not new
+			if (!count($errors) && $data[$this->table][$pk] !== null) {
+				$this->auditEntity($entity->$pk, $oldEntity, $oldLines);
+			}
+
+			// Update job costing contract total as needed
+			if (!count($errors)) {
+				// We need to get contract lines again in case new contracts have been added
+				$newContractLines = $this->jbJobAssociationGateway->findContractLinesByEntity($this->table, $entity->$pk);
+				// We combine the old contracts with the new contracts; there may be duplicates, we'll deal with it later
+				$contractLines = array_merge($contractLines, $newContractLines);
+				// Update the contract actuals
+				$this->updateContractActuals($newContractLines);
+			}
+		} catch(\Exception $e) {
+			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+		
+		if (count($errors)) {
+			$this->$gtw->rollback();
+		} else {
+			$this->$gtw->commit();
+		}
+		
+		return array(
+			'success' => (count($errors)) ? false : true,
+			'errors'  => $errors,
+			$pk       => $entity->$pk,
+			'lock_id' => $entity->lock_id
+		);
+	}
+
+	/**
+	 * Saves an invoice line item
+	 */
+	private function saveLine($data) {
+		$itemGtw   = "{$this->itemGateway}Gateway";
+		$itemClass = "NP\\{$this->module}\\" . ucfirst($this->itemGateway) . 'Entity';
+		$itemPk    = $this->itemPkField;
+
+		$errors = [];
+		$this->$itemGtw->beginTransaction();
+		$isModifyGl = (
+			$data[$itemPk] !== null
+			&& array_key_exists('is_modify_gl', $data)
+			&& $data['is_modify_gl']
+		);
+
+		try {
+			// Create the invoice entity with initial data
+			$item = new $itemClass($data);
+
+			// Validate invoice record
+			$errors = $this->entityValidator->validate($item);
+
+			// Save invoice line if valid
+			if (!count($errors)) {
+				// Before saving, let's get the old line item if necessary for auditing
+				if ($isModifyGl) {
+					$oldLine = $this->$itemGtw->findById($data[$itemPk]);
+				}
+
+				$this->$itemGtw->save($item);
+			}
+
+			if (
+				!count($errors) 
+				&& $isModifyGl
+			) {
+				$oldLine = new $itemClass($oldLine);
+				$this->auditModifyGl($item, $oldLine);
+			}
+
+			// Save job costing info if appropriate
+			if (!count($errors)) {
+				$data['table_name']  = $this->itemTable;
+				$data['tablekey_id'] = $item->$itemPk;
+				$res = $this->jobCostingService->saveJobCostingInfo($data);
+				$errors = $res['errors'];
+			}
+		} catch(\Exception $e) {
+			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+		
+		if (count($errors)) {
+			$this->$itemGtw->rollback();
+		} else {
+			$this->$itemGtw->commit();
+		}
+		
+		return array(
+		    'success' => (count($errors)) ? false : true,
+		    'errors'  => $errors
+		);
+	}
+
+	/**
+	 * Deletes a single line item
+	 *
+	 * @param  int $invoiceitem_id
+	 * @return array
+	 */
+	protected function deleteLine($item_id) {
+		$itemGtw = "{$this->itemGateway}Gateway";
+		$itemPk  = $this->itemPkField;
+
+		$errors = [];
+		$this->$itemGtw->beginTransaction();
+
+		try {
+			// Delete any job associations if appropriate
+			if ($this->configService->get('pn.jobcosting.jobcostingEnabled', '0') == '1') {
+				$this->unassignJob($item_id);
+			}
+
+			// Delete the invoice line
+			$this->$itemGtw->delete("{$itemPk} = ?", [$item_id]);
+		} catch(\Exception $e) {
+			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+		
+		if (count($errors)) {
+			$this->$itemGtw->rollback();
+		} else {
+			$this->$itemGtw->commit();
+		}
+		
+		return array(
+		    'success' => (count($errors)) ? false : true,
+		    'errors'  => $errors
+		);
+	}
+
+	/**
+	 * Creates any budget that may be missing for an invoice
+	 *
+	 * @param  int $invoice_id
+	 * @return array
+	 */
+	public function createEntityBudgets($entity_id) {
+		$itemGtw = "{$this->itemGateway}Gateway";
+
+		$lines = $this->$itemGtw->find(
+			[$this->pkField => '?'],
+			[$entity_id],
+			null,
+			['property_id','glaccount_id']
+		);
+
+		$errors = [];
+		$this->budgetGateway->beginTransaction();
+		
+		try {
+			foreach ($lines as $line) {
+				$period = $this->fiscalCalService->getAccountingPeriod($line['property_id']);
+
+				$result = $this->budgetService->createBudget(
+					$line['property_id'],
+					$line['glaccount_id'],
+					$period,
+					0,
+					0
+				);
+
+				if (!$result['success']) {
+					throw new \NP\core\Exception("Unexpected error creating invoice budgets");
+				}
+			}	
+		} catch(\Exception $e) {
+			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+		
+		if (count($errors)) {
+			$this->budgetGateway->rollback();
+		} else {
+			$this->budgetGateway->commit();
+		}
+		
+		return array(
+		    'success' => (count($errors)) ? false : true,
+		    'errors'  => $errors
+		);
+	}
+
+	/**
+	 * 
+	 */
+	public function updateMultiPropertyStatus($entity_id) {
+		$gtw = "{$this->gateway}Gateway";
+		$multiproperty = ($this->$gtw->isMultiProp($entity_id)) ? 1 : 0;
+
+		$this->$gtw->update([
+			$this->pkField                => $entity_id,
+			"{$this->table}_multiproperty" => $multiproperty
+		]);
+	}
+
+	/**
+	 * Updates the PN Actual value for a job contract
+	 */
+	public function updateContractActuals($entity_id) {
+		// We can either pass an entity_id or an array of job contract lines for an entity
+		if (!is_array($entity_id)) {
+			$lines = $this->jbJobAssociationGateway->findContractLinesByEntity($this->table, $entity_id);
+		} else {
+			$lines = $entity_id;
+		}
+
+		// We'll track the contract budgets that get updated so we can skip duplicates
+		$updated = [];
+		foreach ($lines as $line) {
+			if (!array_key_exists($line['jbcontractbudget_id'], $updated)) {
+				$budget = $this->jbJobAssociationGateway->findContractActualByFilter(
+					$line['jbcontract_id'],
+					$line['jbchangeorder_id'],
+					$line['jbjobcode_id'],
+					$line['jbphasecode_id'],
+					$line['jbcostcode_id']
+				);
+
+				if ($budget !== null) {
+					$this->jbContractBudgetGateway->update([
+						'jbcontractbudget_id'           => $budget['jbcontractbudget_id'],
+						'jbcontractbudget_amt_pnactual' => $budget['invoice_actual']
+					]);
+				}
+
+				$updated[$line['jbcontractbudget_id']] = true;
+			}
+		}
+	}
+
+	/**
+	 * Deletes an invoice
+	 * @param  int $invoice_id
+	 */
+	public function deleteEntity($entity_id) {
+		$gtw     = "{$this->gateway}Gateway";
+		$itemGtw = "{$this->itemGateway}Gateway";
+
+		$errors = [];
+		$this->$gtw->beginTransaction();
+		
+		$userprofile_id               = $this->securityService->getUserId();
+		$delegation_to_userprofile_id = $this->securityService->getDelegatedUserId();
+
+		try {
+			// Get all lines for this invoice
+			$lines = $this->$itemGtw->find("{$this->pkField} = ?", [$entity_id], null, [$this->itemPkField]);
+			// Loop through line items to delete
+			foreach ($lines as $item) {
+				// Delete the line item
+				$result = $this->deleteLine($item[$this->itemPkField]);
+
+				// Error handling
+				if (!$result['success']) {
+					$errors = array_merge($errors, $result['errors']);
+					break;
+				}
+			}
+
+			if (!count($errors)) {
+				$result = $this->unassignImage($entity_id);
+
+				// Error handling
+				if (!$result['success']) {
+					$this->entityValidator->addError(
+						$errors,
+						'global',
+						'Unexpected error trying to unassign images while deleting an entity'
+					);
+				}
+			}
+
+			if (!count($errors)) {
+				// Remove author record
+				$this->recAuthorGateway->delete('table_name = ? AND tablekey_id = ?', [$this->table, $entity_id]);
+
+				// Remove scheduling data
+				$result = $this->removeScheduling($entity_id);
+
+				// Error handling
+				if (!$result['success']) {
+					$this->entityValidator->addError(
+						$errors,
+						'global',
+						'Unexpected error trying to remove scheduling data for entity'
+					);
+				}
+			}
+
+			// Before deleting, we need to get all the contract lines so we can update
+			// job costing contracts following the deletion of records
+			$lines = $this->jbJobAssociationGateway->findContractLinesByEntity($this->table, $entity_id);
+			
+			if (!count($errors)) {
+				$this->$gtw->delete("{$this->pkField} = ?", [$entity_id]);
+			}
+
+			// Update job costing contract total as needed
+			if (!count($errors)) {
+				$this->updateContractActuals($lines);
+			}
+		} catch(\Exception $e) {
+			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+		
+		if (count($errors)) {
+			$this->$gtw->rollback();
+		} else {
+			$this->$gtw->commit();
+		}
+		
+		return array(
+		    'success' => (count($errors)) ? false : true,
+		    'errors'  => $errors
+		);
+	}
+
+	/**
+	 * Removes any scheduling attached to the invoice (applies to scheduled templates)
+	 * @param  int $invoice_id
+	 */
+	public function removeScheduling($entity_id) {
+		$errors = [];
+		$this->recurringSchedulerGateway->beginTransaction();
+		
+		try {
+			$this->scheduledTasksGateway->deleteByEntity($this->table, $entity_id);
+
+			$this->recurringSchedulerGateway->delete(
+				['table_name'=>'?', 'tablekey_id'=>'?'],
+				[$this->table, $entity_id]
+			);
+		} catch(\Exception $e) {
+			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+		
+		if (count($errors)) {
+			$this->recurringSchedulerGateway->rollback();
+		} else {
+			$this->recurringSchedulerGateway->commit();
+		}
+		
+		return array(
+		    'success' => (count($errors)) ? false : true,
+		    'errors'  => $errors
+		);
 	}
 }

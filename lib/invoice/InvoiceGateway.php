@@ -159,7 +159,7 @@ class InvoiceGateway extends AbstractGateway {
 	 * @param  int $invoice_id
 	 * @return boolean
 	 */
-	public function isInvoiceMultiProp($invoice_id) {
+	public function isMultiProp($invoice_id) {
 		$select = Select::get()
 			->count(true, 'total')
 			->from(['ii'=>'invoiceitem'])

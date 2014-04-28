@@ -461,24 +461,6 @@ class InvoiceService extends AbstractEntityService {
 	}
 
     /**
-     * Get Template for image index table.
-     * 
-     * @param int $vendorsite_id Vendorsite id. Should not be empty.
-     * @param int $property_id Propery id. Should not be empty.
-     * @param int $utilityaccount_id Utility account ID.
-     * @return [] List of templates.
-     */
-    public function getTemplatesByCriteria($vendorsite_id, $property_id, $utilityaccount_id=null) {
-    	return $this->invoiceGateway->getTemplatesByCriteria(
-    		$this->securityService->getUserId(),
-    		$this->securityService->getDelegatedUserId(),
-        	$vendorsite_id,
-        	$property_id,
-        	$utilityaccount_id
-        );
-    }
-
-    /**
      * Gets invoice statistics for a specified property
      *
      * @param  int $property_id
@@ -486,20 +468,6 @@ class InvoiceService extends AbstractEntityService {
      */
     public function getInvoiceStatistics($property_id) {
     	return $this->invoiceGateway->findInvoiceStatistics($property_id);
-    }
-
-    /**
-     * Gets an HTML version of an invoice
-     */
-    public function getInvoiceAsHtml($invoice_id, $options=[]) {
-    	$renderer = new InvoiceHtmlRenderer($this->configService, $this->gatewayManager, $this, $invoice_id, $options);
-
-    	ob_start();
-    	$renderer->render();
-    	$html = ob_get_contents();
-    	ob_end_clean();
-
-    	return $html;
     }
 
 	/**
@@ -1036,390 +1004,14 @@ class InvoiceService extends AbstractEntityService {
 	}
 
 	/**
-	 * Removes all line items from an invoice
+	 * Delete a line item from an invoice (overrides the default function to delete entity lines)
 	 */
-	public function clearLines($invoice_id) {
+	protected function deleteLine($item_id) {
+		$errors  = [];
 		$this->invoiceItemGateway->beginTransaction();
 		
 		try {
-			// Unlink POs and PO lines from this invoice
-			$this->unlinkPoFromInvoice($invoice_id);
-
-			// Delete all lines
-			$this->invoiceItemGateway->delete(['invoice_id'=>'?'], [$invoice_id]);
-
-			$this->invoiceItemGateway->commit();
-		} catch(\Exception $e) {
-			$this->invoiceItemGateway->rollback();
-			throw $e;
-		}
-	}
-
-	/**
-	 * Saves an invoice and invoice line items (if included)
-	 */
-	public function saveInvoice($data) {
-		$errors = [];
-		$this->invoiceGateway->beginTransaction();
-		
-		try {
-			$now                          = \NP\util\Util::formatDateForDB();
-			$userprofile_id               = $data['userprofile_id'];
-			$delegation_to_userprofile_id = $data['delegation_to_userprofile_id'];
-
-			// Create the invoice entity with initial data
-			$invoice = new InvoiceEntity($data['invoice']);
-
-			// If paytablekey_id wasn't added, we need to get it based on vendor_id
-			if ($invoice->paytablekey_id === null) {
-				// Add vendorsite_id to the invoice
-				$invoice->paytablekey_id = $this->vendorGateway->findVendorsite($data['vendor_id']);
-			}
-
-			// Set a new lock on the invoice to prevent other people from updating it simultaneously
-			$invoice->lock_id = $this->getLock($invoice->invoice_id) + 1;
-
-			// Validate invoice record
-			$errors = $this->entityValidator->validate($invoice);
-
-			// Deal with change to vendor on existing invoice if needed
-			if (!count($errors)) {
-				if ($invoice->invoice_id !== null) {
-					$currentInvoice = $this->invoiceGateway->findById($invoice->invoice_id);
-					// If vendor has changed, make some changes
-					if ($currentInvoice['paytablekey_id'] !== $invoice->paytablekey_id) {
-						// Delete all hold records
-						$this->invoiceHoldGateway->delete(['invoice_id'=>'?'], [$invoice->invoice_id]);
-
-						// Delete all approval records
-						$this->approveGateway->delete(
-							['table_name'=>'?', 'tablekey_id'=>'?'],
-							['invoice', $invoice->invoice_id]
-						);
-
-						// Log the vendor change
-						$approvetype_id = $this->approveTypeGateway->getIdByName('Change Vendor');
-
-						$approve = new \NP\workflow\ApproveEntity([
-							'table_name'                   => 'invoice',
-							'tablekey_id'                  => $invoice->invoice_id,
-							'userprofile_id'               => $userprofile_id,
-							'delegation_to_userprofile_id' => $delegation_to_userprofile_id,
-							'approve_message'              => 'Vendor Change',
-							'approvetype_id'               => $approvetype_id,
-							'transaction_id'               => $this->approveGateway->currentId()
-						]);
-
-						$errors = $this->entityValidator->validate($approve);
-						if (!count($errors)) {
-							$this->approveGateway->save($approve);
-						} else {
-							$this->loggingService->log('error', 'Error validating approve entity while changing vendor', $errors);
-							throw new \NP\core\Exception('Error changing vendor on entity');
-						}
-					}
-				}
-			}
-
-			// Save invoice if valid
-			if (!count($errors)) {
-				// If dealing with an existing invoice, before saving we want to grab
-				// the data as it is now for audit purposes
-				if ($data['invoice']['invoice_id'] !== null) {
-					$oldInvoice = $this->invoiceGateway->findSingle(
-						'invoice_id = ?',
-						[$invoice->invoice_id]
-					);
-					$oldInvoice = new InvoiceEntity($oldInvoice);
-					$oldLines   = $this->getEntityLines($invoice->invoice_id);
-				}
-				$this->invoiceGateway->save($invoice);
-			}
-
-			// Save the creator of the invoice if new
-			if (!count($errors) && $data['invoice']['invoice_id'] === null) {
-				// Validate author record
-				$author = new \NP\user\RecAuthorEntity([
-					'userprofile_id'               => $userprofile_id,
-					'delegation_to_userprofile_id' => $delegation_to_userprofile_id,
-					'table_name'                   => 'invoice',
-					'tablekey_id'                  => $invoice->invoice_id
-				]);
-				$authorErrors = $this->entityValidator->validate($author);
-				if (count($authorErrors)) {
-					$this->loggingService->log('global', 'RecAuthorEntity errors', $authorErrors);
-					$this->loggingService->log('global', 'invoice_id', ['invoice_id' => $invoice->invoice_id]);
-					throw new \NP\core\Exception('Unexpected error saving invoice author');
-				} else {
-					$this->recAuthorGateway->save($author);
-				}
-			}
-
-			// Save invoice line items
-			$lineIds = [];
-			if (!count($errors)) {
-				// Before modifying lines, we need to grab the job costing contract lines that exist
-				// so we can update them just in case (otherwise, if a contract gets changed, we can't
-				// know after the record is updated which contract budget we need to update)
-				$contractLines = [];
-				// We only do this for existing invoices
-				if ($data['invoice']['invoice_id'] !== null) {
-					$contractLines = $this->jbJobAssociationGateway->findContractLinesByInvoice($invoice->invoice_id);
-				}
-				if (array_key_exists('lines', $data)) {
-					// Loop through line items to add/modify
-					foreach ($data['lines'] as $invoiceitem_linenum=>$invoiceitem) {
-						if (!array_key_exists('is_dirty', $invoiceitem) || $invoiceitem['is_dirty']) {
-							// Assign some values that weren't passed in
-							$invoiceitem['invoice_id']          = $invoice->invoice_id;
-							$invoiceitem['vendorsite_id']       = $invoice->paytablekey_id;
-							$invoiceitem['invoiceitem_period']  = $invoice->invoice_period;
-							$invoiceitem['invoiceitem_linenum'] = $invoiceitem_linenum+1;
-
-							// Save the line item
-							$result = $this->saveLine($invoiceitem);
-
-							// Error handling
-							if (!$result['success']) {
-								$errors = array_merge($errors, $result['errors']);
-							}
-						}
-						$lineIds[] = $invoiceitem['invoiceitem_id'];
-					}
-				}
-			}
-
-			// Delete invoice line items
-			if (!count($errors)) {
-				$deletedLines = $this->invoiceItemGateway->getDeletedLines($invoice->invoice_id, $lineIds);
-				// Loop through line items to delete
-				foreach ($deletedLines as $invoiceitem) {
-					// Delete the line item
-					$result = $this->deleteLine($invoiceitem['invoiceitem_id']);
-
-					// Error handling
-					if (!$result['success']) {
-						$errors = array_merge($errors, $result['errors']);
-						break;
-					}
-				}
-			}
-
-			// Add any missing budgets to this invoice
-			if (!count($errors)) {
-				$this->budgetService->createMissingBudgets('invoice', $invoice->invoice_id);
-			}
-
-			// Retrieve current Tax and Shipping totals for auditing purposes before deleting
-			if (!count($errors)) {
-				$oldTotals = $this->invoiceItemGateway->findTaxAndShippingTotal($invoice->invoice_id);
-
-				$this->allocateTaxAndShipping($invoice->invoice_id, $data['tax'], $data['shipping']);
-
-				if ($data['invoice']['invoice_id'] !== null) {
-					// Save audit of changes to tax and shipping
-					$result = $this->auditTaxShippingChanges(
-						$invoice->invoice_id,
-						$oldTotals['tax'],
-						$data['tax'],
-						$oldTotals['shipping'],
-						$data['shipping']
-					);
-
-					if (!$result['success']) {
-						$this->entityValidator->addError(
-							$errors,
-							'global',
-							'Unexpected error trying to audit tax and shipping changes'
-						);
-					}
-				}
-
-				// As a precaution, update the period on all line items to match the header
-				$this->invoiceItemGateway->update(
-					['invoiceitem_period' => $invoice->invoice_period],
-					'invoice_id = ?',
-					[$invoice->invoice_id]
-				);
-			}
-
-			if (!count($errors)) {
-				// Create budgets for all line items (if needed)
-				$result = $this->createInvoiceBudgets($invoice->invoice_id);
-
-				if (!$result['success']) {
-					$this->entityValidator->addError(
-						$errors,
-						'global',
-						'Unexpected error trying to create invoice budgets'
-					);
-				}
-			}
-
-			if (!count($errors)) {
-				// Update the status of the invoice_multiproperty column for the invoice
-				$this->updateMultiPropertyStatus($invoice->invoice_id);
-			}
-
-			// Audit the changes in the invoice if not new
-			if (!count($errors) && $data['invoice']['invoice_id'] !== null) {
-				$this->auditEntity($invoice->invoice_id, $oldInvoice, $oldLines);
-			}
-
-			// Update job costing contract total as needed
-			if (!count($errors)) {
-				// We need to get contract lines again in case new contracts have been added
-				$newContractLines = $this->jbJobAssociationGateway->findContractLinesByInvoice($invoice->invoice_id);
-				// We combine the old contracts with the new contracts; there may be duplicates, we'll deal with it later
-				$contractLines = array_merge($contractLines, $newContractLines);
-				// Update the contract actuals
-				$this->updateContractActuals($newContractLines);
-			}
-		} catch(\Exception $e) {
-			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
-		}
-		
-		if (count($errors)) {
-			$this->invoiceGateway->rollback();
-		} else {
-			$this->invoiceGateway->commit();
-		}
-		
-		return array(
-			'success'    => (count($errors)) ? false : true,
-			'errors'     => $errors,
-			'invoice_id' => $invoice->invoice_id,
-			'lock_id'    => $invoice->lock_id
-		);
-	}
-
-	/**
-	 * Updates the PN Actual value for a job contract
-	 */
-	public function updateContractActuals($invoice_id) {
-		// We can either pass an invoice_id or an array of job contract lines for an invoice
-		if (!is_array($invoice_id)) {
-			$lines = $this->jbJobAssociationGateway->findContractLinesByInvoice($invoice_id);
-		} else {
-			$lines = $invoice_id;
-		}
-
-		// We'll track the contract budgets that get updated so we can skip duplicates
-		$updated = [];
-		foreach ($lines as $line) {
-			if (!array_key_exists($line['jbcontractbudget_id'], $updated)) {
-				$budget = $this->jbJobAssociationGateway->findContractActualByFilter(
-					$line['jbcontract_id'],
-					$line['jbchangeorder_id'],
-					$line['jbjobcode_id'],
-					$line['jbphasecode_id'],
-					$line['jbcostcode_id']
-				);
-
-				if ($budget !== null) {
-					$this->jbContractBudgetGateway->update([
-						'jbcontractbudget_id'           => $budget['jbcontractbudget_id'],
-						'jbcontractbudget_amt_pnactual' => $budget['invoice_actual']
-					]);
-				}
-
-				$updated[$line['jbcontractbudget_id']] = true;
-			}
-		}
-	}
-
-	/**
-	 * 
-	 */
-	public function updateMultiPropertyStatus($invoice_id) {
-		$invoice_multiproperty = ($this->invoiceGateway->isInvoiceMultiProp($invoice_id)) ? 1 : 0;
-
-		$this->invoiceGateway->update([
-			'invoice_id'            => $invoice_id,
-			'invoice_multiproperty' => $invoice_multiproperty
-		]);
-	}
-
-	/**
-	 * Saves an invoice line item
-	 */
-	private function saveLine($data) {
-		$errors = [];
-		$this->invoiceItemGateway->beginTransaction();
-		$isModifyGl = (
-			$data['invoiceitem_id'] !== null
-			&& array_key_exists('is_modify_gl', $data)
-			&& $data['is_modify_gl']
-		);
-
-		try {
-			// Create the invoice entity with initial data
-			$invoiceItem = new InvoiceItemEntity($data);
-
-			// Validate invoice record
-			$errors = $this->entityValidator->validate($invoiceItem);
-
-			// Save invoice line if valid
-			if (!count($errors)) {
-				// Before saving, let's get the old line item if necessary for auditing
-				if ($isModifyGl) {
-					$oldLine = $this->invoiceItemGateway->findById($data['invoiceitem_id']);
-				}
-
-				$this->invoiceItemGateway->save($invoiceItem);
-			}
-
-			if (
-				!count($errors) 
-				&& $isModifyGl
-			) {
-				$oldLine = new InvoiceItemEntity($oldLine);
-				$this->auditModifyGl($invoiceItem, $oldLine);
-			}
-
-			// Save job costing info if appropriate
-			if (!count($errors)) {
-				$data['table_name']  = 'invoiceitem';
-				$data['tablekey_id'] = $invoiceItem->invoiceitem_id;
-				$res = $this->jobCostingService->saveJobCostingInfo($data);
-				$errors = $res['errors'];
-			}
-		} catch(\Exception $e) {
-			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
-		}
-		
-		if (count($errors)) {
-			$this->invoiceItemGateway->rollback();
-		} else {
-			$this->invoiceItemGateway->commit();
-		}
-		
-		return array(
-		    'success' => (count($errors)) ? false : true,
-		    'errors'  => $errors
-		);
-	}
-
-	/**
-	 * Deletes a single line item
-	 *
-	 * @param  int $invoiceitem_id
-	 * @return array
-	 */
-	private function deleteLine($invoiceitem_id) {
-		$errors = [];
-		$this->invoiceItemGateway->beginTransaction();
-		
-		try {
-			// Get invoice ID
-			$invoice_id = $this->invoiceItemGateway->findValue(
-				['invoiceitem_id'=>'?'],
-				[$invoiceitem_id],
-				'invoice_id'
-			);
-
-			// Find linked PO items
-			$poitems = $this->invoiceItemGateway->findLinkByItem($invoiceitem_id);
+			$poitems = $this->invoiceItemGateway->findLinkByItem($item_id);
 
 			// Loop through linked items
 			foreach ($poitems as $poitem) {
@@ -1438,7 +1030,7 @@ class InvoiceService extends AbstractEntityService {
 				}
 
 				// Remove association from PO line
-				$result = $this->unlinkPoItem($poitem_id, $invoiceitem_id);
+				$result = $this->unlinkPoItem($poitem_id, $item_id);
 
 				// If unlinking PO item errors, log it and break
 				if (!$result['success']) {
@@ -1451,14 +1043,10 @@ class InvoiceService extends AbstractEntityService {
 				}
 			}
 
-			if (!count($errors)) {
-				// Delete any job associations if appropriate
-				if ($this->configService->get('pn.jobcosting.jobcostingEnabled', '0') == '1') {
-					$this->unassignJob($invoiceitem_id);
-				}
+			if ($result['success']) {
+				$result = parent::deleteLine($item_id);
 
-				// Delete the invoice line
-				$this->invoiceItemGateway->delete('invoiceitem_id = ?', [$invoiceitem_id]);
+				$errors = $result['errors'];
 			}
 		} catch(\Exception $e) {
 			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
@@ -1477,59 +1065,10 @@ class InvoiceService extends AbstractEntityService {
 	}
 
 	/**
-	 * Creates any budget that may be missing for an invoice
-	 *
-	 * @param  int $invoice_id
-	 * @return array
-	 */
-	public function createInvoiceBudgets($invoice_id) {
-		$lines = $this->invoiceItemGateway->find(
-			['invoice_id' => '?'],
-			[$invoice_id],
-			null,
-			['property_id','glaccount_id']
-		);
-
-		$errors = [];
-		$this->budgetGateway->beginTransaction();
-		
-		try {
-			foreach ($lines as $line) {
-				$period = $this->fiscalCalService->getAccountingPeriod($line['property_id']);
-
-				$result = $this->budgetService->createBudget(
-					$line['property_id'],
-					$line['glaccount_id'],
-					$period,
-					0,
-					0
-				);
-
-				if (!$result['success']) {
-					throw new \NP\core\Exception("Unexpected error creating invoice budgets");
-				}
-			}	
-		} catch(\Exception $e) {
-			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
-		}
-		
-		if (count($errors)) {
-			$this->budgetGateway->rollback();
-		} else {
-			$this->budgetGateway->commit();
-		}
-		
-		return array(
-		    'success' => (count($errors)) ? false : true,
-		    'errors'  => $errors
-		);
-	}
-
-	/**
-	 * Deletes an invoice
+	 * Deletes an entity (overrides the main entity delete to run additional operations)
 	 * @param  int $invoice_id
 	 */
-	public function deleteInvoice($invoice_id) {
+	public function deleteEntity($entity_id) {
 		$errors = [];
 		$this->invoiceGateway->beginTransaction();
 		
@@ -1537,70 +1076,18 @@ class InvoiceService extends AbstractEntityService {
 		$delegation_to_userprofile_id = $this->securityService->getDelegatedUserId();
 
 		try {
-			// Get all lines for this invoice
-			$lines = $this->invoiceItemGateway->find('invoice_id = ?', [$invoice_id], null, ['invoiceitem_id']);
-			// Loop through line items to delete
-			foreach ($lines as $invoiceitem) {
-				// Delete the line item
-				$result = $this->deleteLine($invoiceitem['invoiceitem_id']);
-
-				// Error handling
-				if (!$result['success']) {
-					$errors = array_merge($errors, $result['errors']);
-					break;
-				}
-			}
-
-			if (!count($errors)) {
-				$result = $this->unassignImage($invoice_id);
-
-				// Error handling
-				if (!$result['success']) {
-					$this->entityValidator->addError(
-						$errors,
-						'global',
-						'Unexpected error trying to unassign images while deleting an invoice'
-					);
-				}
-			}
-
-			if (!count($errors)) {
-				// Remove author record
-				$this->recAuthorGateway->delete('table_name = ? AND tablekey_id = ?', ['invoice', $invoice_id]);
-
-				// Remove all payment records
-				$this->invoicePaymentGateway->delete('invoice_id = ?', [$invoice_id]);
-				
-				// Remove all hold information
-				$this->invoiceHoldGateway->delete('invoice_id = ?', [$invoice_id]);
-
-				// Remove scheduling data
-				$result = $this->removeScheduling($invoice_id);
-
-				// Error handling
-				if (!$result['success']) {
-					$this->entityValidator->addError(
-						$errors,
-						'global',
-						'Unexpected error trying to remove scheduling data for invoice'
-					);
-				}
-			}
-
-			// Before deleting, we need to get all the contract lines so we can update
-			// job costing contracts following the deletion of records
-			$lines = $this->jbJobAssociationGateway->findContractLinesByInvoice($invoice_id);
+			// Remove all payment records
+			$this->invoicePaymentGateway->delete('invoice_id = ?', [$entity_id]);
 			
-			if (!count($errors)) {
-				$this->unlinkInvoiceFromVendorConnect($invoice_id);
+			// Remove all hold information
+			$this->invoiceHoldGateway->delete('invoice_id = ?', [$entity_id]);
 
-				$this->invoiceGateway->delete('invoice_id = ?', [$invoice_id]);
-			}
+			// Unlink invoice from vendor connect if appropriate
+			$this->unlinkInvoiceFromVendorConnect($entity_id);
 
-			// Update job costing contract total as needed
-			if (!count($errors)) {
-				$this->updateContractActuals($lines);
-			}
+			// Run parent function
+			$result = parent::deleteEntity($entity_id);
+			$errors = $result['errors'];
 		} catch(\Exception $e) {
 			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
 		}
@@ -1609,37 +1096,6 @@ class InvoiceService extends AbstractEntityService {
 			$this->invoiceGateway->rollback();
 		} else {
 			$this->invoiceGateway->commit();
-		}
-		
-		return array(
-		    'success' => (count($errors)) ? false : true,
-		    'errors'  => $errors
-		);
-	}
-
-	/**
-	 * Removes any scheduling attached to the invoice (applies to scheduled templates)
-	 * @param  int $invoice_id
-	 */
-	public function removeScheduling($invoice_id) {
-		$errors = [];
-		$this->recurringSchedulerGateway->beginTransaction();
-		
-		try {
-			$this->scheduledTasksGateway->deleteByInvoice($invoice_id);
-
-			$this->recurringSchedulerGateway->delete(
-				['table_name'=>'?', 'tablekey_id'=>'?'],
-				['invoice', $invoice_id]
-			);
-		} catch(\Exception $e) {
-			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
-		}
-		
-		if (count($errors)) {
-			$this->recurringSchedulerGateway->rollback();
-		} else {
-			$this->recurringSchedulerGateway->commit();
 		}
 		
 		return array(
@@ -1664,57 +1120,6 @@ class InvoiceService extends AbstractEntityService {
 			],
 			'pn_invoice_id = ?',
 			[$invoice_id]
-		);
-	}
-
-	/**
-	 * Applies a template to an existing invoice
-	 */
-	public function applyTemplate($invoice_id, $template_id) {
-		$errors = [];
-		$this->invoiceGateway->beginTransaction();
-		
-		try {
-			// Delete all lines from this invoice
-			$this->clearLines($invoice_id);
-
-			// Get tax and shipping totals
-			$totals = $this->invoiceItemGateway->findTaxAndShippingTotal($template_id);
-
-			// Get the data for the template selected
-			$templateData = [
-				'invoice'  => $this->invoiceGateway->findSingle('invoice_id = ?', [$template_id]),
-				'lines'    => $this->getEntityLines($template_id),
-				'tax'      => $totals['tax'],
-				'shipping' => $totals['shipping'],
-				'userprofile_id'               => $this->securityService->getUserId(),
-				'delegation_to_userprofile_id' => $this->securityService->getDelegatedUserId()
-			];
-
-			// Update the invoice data with the correct invoice ID
-			$templateData['invoice']['invoice_id'] = $invoice_id;
-
-			// Update the invoice's status
-			$templateData['invoice']['invoice_status'] = 'open';
-
-			$result = $this->saveInvoice($templateData);
-			
-			if (!$result['success']) {
-				$errors = $result['errors'];
-			}
-		} catch(\Exception $e) {
-			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
-		}
-		
-		if (count($errors)) {
-			$this->invoiceGateway->rollback();
-		} else {
-			$this->invoiceGateway->commit();
-		}
-		
-		return array(
-		    'success' => (count($errors)) ? false : true,
-		    'errors'  => $errors
 		);
 	}
 
@@ -2135,7 +1540,7 @@ class InvoiceService extends AbstractEntityService {
 			$oldInvoice = new InvoiceEntity($oldInvoice);
 			$oldLines   = $this->getEntityLines($invoice_id);
 
-			$result = $this->saveInvoice($data);
+			$result = $this->saveEntity($data);
 
 			$newInvoice = $this->invoiceGateway->findSingle(
 				'invoice_id = ?',

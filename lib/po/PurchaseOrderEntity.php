@@ -7,6 +7,7 @@ namespace NP\po;
  * @author Thomas Messier
  */
 class PurchaseOrderEntity extends \NP\core\AbstractEntity {
+	protected $auditable = true;
 	
 	protected $fields = array(
 		'purchaseorder_id'	 => array(
@@ -32,7 +33,10 @@ class PurchaseOrderEntity extends \NP\core\AbstractEntity {
 		'vendorsite_id'	 => array(
 			'validation' => array(
 				'digits' => array()
-			)
+			),
+			'auditable' => [
+				'displayName'  => 'Vendor'
+			]
 		),
 		'purchaseorder_status'	 => array(
 			'validation' => array(
@@ -45,6 +49,7 @@ class PurchaseOrderEntity extends \NP\core\AbstractEntity {
 			)
 		),
 		'purchaseorder_created'	 => array(
+			'timestamp' => 'created',
 			'validation' => array(
 				'date' => array('format'=>'Y-m-d H:i:s.u')
 			)
@@ -52,12 +57,20 @@ class PurchaseOrderEntity extends \NP\core\AbstractEntity {
 		'property_id'	 => array(
 			'validation' => array(
 				'digits' => array()
-			)
+			),
+			'auditable' => [
+				'table'        => 'property',
+				'displayField' => 'property_name',
+				'displayName'  => 'Property'
+			]
 		),
 		'purchaseorder_note'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>2000)
-			)
+			),
+			'auditable' => [
+				'displayName'  => 'Note'
+			]
 		),
 		'purchaseorder_closeddatetm'	 => array(
 			'validation' => array(
@@ -82,7 +95,11 @@ class PurchaseOrderEntity extends \NP\core\AbstractEntity {
 		'purchaseorder_period'	 => array(
 			'validation' => array(
 				'date' => array('format'=>'Y-m-d H:i:s.u')
-			)
+			),
+			'auditable' => [
+				'displayNameSetting'=>'PN.General.postPeriodTerm',
+				'convert'      => 'convertPeriod'
+			]
 		),
 		'purchaseorder_multiproperty'	 => array(
 			'validation' => array(
@@ -102,7 +119,10 @@ class PurchaseOrderEntity extends \NP\core\AbstractEntity {
 		'purchaseorder_budgetoverage_note'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>2000)
-			)
+			),
+			'auditable' => [
+				'displayName'  => 'Budget Overage Note'
+			]
 		),
 		'lock_id'	 => array(
 			'validation' => array(
@@ -112,37 +132,100 @@ class PurchaseOrderEntity extends \NP\core\AbstractEntity {
 		'universal_field1'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
-			)
+			),
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL1'
+			]
 		),
 		'universal_field2'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
-			)
+			),
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL2'
+			]
 		),
 		'universal_field3'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
-			)
+			),
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL3'
+			]
+		),
+		'universal_field4'	 => array(
+			'validation' => array(
+				'stringLength' => array('max'=>255)
+			),
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL4'
+			]
+		),
+		'universal_field5'	 => array(
+			'validation' => array(
+				'stringLength' => array('max'=>255)
+			),
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL5'
+			]
+		),
+		'universal_field6'	 => array(
+			'validation' => array(
+				'stringLength' => array('max'=>255)
+			),
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL6'
+			]
+		),
+		'universal_field7'	 => array(
+			'validation' => array(
+				'stringLength' => array('max'=>255)
+			),
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL7'
+			]
+		),
+		'universal_field8'	 => array(
+			'validation' => array(
+				'stringLength' => array('max'=>255)
+			),
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL8'
+			]
 		),
 		'PriorityFlag_ID_Alt'	 => array(
 			'validation' => array(
 				'digits' => array()
-			)
+			),
+			'auditable' => [
+				'displayName'  => 'Priority',
+				'table'        => 'PriorityFlag',
+				'displayField' => 'PriorityFlag_Display'
+			]
 		),
 		'purchaseorder_NeededBy_datetm'	 => array(
 			'validation' => array(
 				'date' => array('format'=>'Y-m-d H:i:s.u')
-			)
+			),
+			'auditable' => [
+				'displayName'  => 'Needed By'
+			]
 		),
 		'Purchaseorder_billaddress'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>500)
-			)
+			),
+			'auditable' => [
+				'displayName'  => 'Bill To Address'
+			]
 		),
 		'Purchaseorder_shipaddress'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>500)
-			)
+			),
+			'auditable' => [
+				'displayName'  => 'Ship To Address'
+			]
 		),
 		'Purchaseorder_bill_propertyID'	 => array(
 			'validation' => array(
@@ -152,31 +235,6 @@ class PurchaseOrderEntity extends \NP\core\AbstractEntity {
 		'Purchaseorder_ship_propertyID'	 => array(
 			'validation' => array(
 				'digits' => array()
-			)
-		),
-		'universal_field4'	 => array(
-			'validation' => array(
-				'stringLength' => array('max'=>255)
-			)
-		),
-		'universal_field5'	 => array(
-			'validation' => array(
-				'stringLength' => array('max'=>255)
-			)
-		),
-		'universal_field6'	 => array(
-			'validation' => array(
-				'stringLength' => array('max'=>255)
-			)
-		),
-		'universal_field7'	 => array(
-			'validation' => array(
-				'stringLength' => array('max'=>255)
-			)
-		),
-		'universal_field8'	 => array(
-			'validation' => array(
-				'stringLength' => array('max'=>255)
 			)
 		),
 		'purchaseorder_rct_req'	 => array(
@@ -212,9 +270,22 @@ class PurchaseOrderEntity extends \NP\core\AbstractEntity {
 		'print_template_id'	 => array(
 			'validation' => array(
 				'digits' => array()
-			)
+			),
+			'auditable' => [
+				'table'        => 'printTemplate',
+				'displayField' => 'print_template_name',
+				'displayName'  => 'PO Terms'
+			]
 		)
 	);
 
+	public function convertPeriod($val) {
+		if (!empty($val)) {
+			$val = \DateTime::createFromFormat(\NP\util\Util::getServerDateFormat(), $val);
+			return $val->format('m/Y');
+		}
+
+		return null;
+	}
 }
 ?>

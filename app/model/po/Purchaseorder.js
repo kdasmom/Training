@@ -17,7 +17,7 @@ Ext.define('NP.model.po.Purchaseorder', {
 		{ name: 'purchaseorder_quote' },
 		{ name: 'purchaseorder_quoteamount' },
 		{ name: 'vendorsite_id', type: 'int' },
-		{ name: 'purchaseorder_status' },
+		{ name: 'purchaseorder_status', defaultValue: 'open' },
 		{ name: 'purchaseorder_datetm', type: 'date' },
 		{ name: 'purchaseorder_created', type: 'date' },
 		{ name: 'property_id', type: 'int' },
@@ -189,5 +189,30 @@ Ext.define('NP.model.po.Purchaseorder', {
 		}
 
 		return false;
+	},
+
+	getDisplayStatus: function() {
+		var me     = this,
+			status = (me.get('purchaseorder_id') === null) ? 'New' : me.get('purchaseorder_status');
+		
+		return NP.model.po.Purchaseorder.getDisplayStatus(status);
+	},
+
+	statics: {
+		getDisplayStatus: function(status) {
+			if (status == 'forapproval') {
+				return 'Pending Approval';
+			} else if (status == 'open') {
+				return 'In Progress';
+			} else if (status == 'saved') {
+				return 'Released';
+			} else if (status == 'draft') {
+				return 'Template';
+			} else if (status == 'closed') {
+				return 'Invoiced';
+			} else {
+				return Ext.util.Format.capitalize(status);
+			}
+		}
 	}
 });

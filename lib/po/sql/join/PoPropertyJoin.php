@@ -12,7 +12,7 @@ use NP\core\db\Select;
  */
 class PoPropertyJoin extends Join {
 	
-	public function __construct($cols=array('property_name,property_id_alt,property_status'), $type=Select::JOIN_INNER, $toAlias='pr', $fromAlias='p') {
+	public function __construct($cols=array('property_name','property_id_alt','property_status','property_NexusServices'), $type=Select::JOIN_INNER, $toAlias='pr', $fromAlias='p') {
 		$this->setTable(array($toAlias=>'property'))
 			->setCondition("{$fromAlias}.property_id = {$toAlias}.property_id")
 			->setCols($cols)

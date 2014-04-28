@@ -174,7 +174,7 @@ Ext.define('NP.view.shared.CustomField', {
     },
 
 	getSubmitValue: function() {
-		return this.getValue();
+		return this.field.getSubmitValue();
 	},
 
     /**

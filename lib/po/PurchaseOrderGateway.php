@@ -13,6 +13,9 @@ use NP\core\db\Select;
 use NP\core\db\Where;
 use NP\core\db\Expression;
 
+use NP\system\sql\AuditSelect;
+use NP\workflow\sql\ApproveSelect;
+
 /**
  * Gateway for the PURCHASEORDER table
  *
@@ -55,8 +58,10 @@ class PurchaseOrderGateway extends AbstractGateway {
 				->join(new sql\join\PoPropertyJoin())
 				->join(new \NP\property\sql\join\PropertyAddressJoin([
 					'property_address_id'      => 'address_id',
+					'property_address_attn'    => 'address_attn',
 					'property_address_line1'   => 'address_line1',
 					'property_address_line2'   => 'address_line2',
+					'property_address_line3'   => 'address_line3',
 					'property_address_city'    => 'address_city',
 					'property_address_state'   => 'address_state',
 					'property_address_country' => 'address_country',
@@ -68,6 +73,9 @@ class PurchaseOrderGateway extends AbstractGateway {
 					'property_phone_ext'         => 'phone_ext',
 					'property_phone_countrycode' => 'phone_countrycode'
 				], Select::JOIN_LEFT, 'php'))
+				->join(new sql\join\PoPrintTemplateJoin())
+				->join(new sql\join\PoShipToPropertyJoin())
+				->join(new sql\join\PoBillToPropertyJoin())
 				->join(new sql\join\PoRecauthorJoin())
 				->join(new \NP\user\sql\join\RecauthorUserprofileJoin(array('userprofile_username')))
 				->where('p.purchaseorder_id = ?');
@@ -324,6 +332,23 @@ class PurchaseOrderGateway extends AbstractGateway {
 		return $this->adapter->query($select);
 	}
 
+	public function isMultiProp($purchaseorder_id) {
+		$select = Select::get()
+			->count(true, 'total')
+			->from(['pi'=>'poitem'])
+				->join(new sql\join\PoItemPurchaseorderJoin())
+			->whereEquals('pi.purchaseorder_id', '?')
+			->whereNotEquals(
+				'pi.property_id',
+				'p.property_id'
+			);
+
+
+		$total = $this->adapter->query($select, [$purchaseorder_id]);
+
+		return (count($total)) ? true : false;
+	}
+
 	public function rollPeriod($property_id, $newAccountingPeriod, $oldAccountingPeriod) {
 		$update = new Update();
 
@@ -361,6 +386,59 @@ class PurchaseOrderGateway extends AbstractGateway {
 
 		return $this->adapter->query($select, [$vendorsite_id, $property_id, 'open']);
 	}
+
+    /**
+     * Get Template for image index table.
+     * 
+     * @param int $vendorsite_id Vendorsite id.
+     * @param int $property_id Propery id.
+     * @return [] List of templates.
+     */
+    public function getTemplatesByCriteria($userprofile_id, $delegation_to_userprofile_id,
+    										$vendorsite_id, $property_id) {
+        if (empty($vendorsite_id)) 
+            return;
+        if (empty($property_id)) 
+            return;
+        
+        $params = [$vendorsite_id];
+
+        $select = new Select();
+        $select = Select::get()
+		            ->columns([
+						'purchaseorder_id',
+						'purchaseorder_ref'
+			        ])
+		            ->from(['p' => 'purchaseorder'])
+		            	->join(new sql\join\PoPropertyJoin(['property_name']))
+		            	->join(new sql\join\PoVendorsiteJoin([]))
+		            	->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(['integration_package_id']))
+		            ->whereEquals('p.purchaseorder_status', '\'draft\'')
+            		->whereEquals('vs.vendorsite_id', '?')
+            		->whereNest('OR')
+		                ->whereEquals('p.property_id', 0)
+        ;
+        
+        if ($this->configService->get('PN.Main.templateByProp', '0') == '1') {
+        	$select->whereEquals('p.property_id', '?');
+        	$params[] = $property_id;
+        } else {
+        	$select->whereIn(
+						'p.property_id',
+						new PropertyFilterSelect(
+	                        new PropertyContext(
+	                            $userprofile_id,
+	                            $delegation_to_userprofile_id,
+	                            'all',
+	                            null
+	                        )
+	                    )
+					);
+        }
+        $select->whereUnnest();
+
+        return $this->adapter->query($select, $params);
+    }
 
 	/**
 	 * 
@@ -497,6 +575,58 @@ class PurchaseOrderGateway extends AbstractGateway {
 
     	return (float)$res[0]['po_total'];
     }
+
+	/**
+	 * Returns history log records for a PO
+	 *
+	 * @param  int    $purchaseorder_id
+	 * @param  int    $pageSize
+	 * @param  int    $page
+	 * @param  string $sort
+	 * @return array
+	 */
+	public function findHistoryLog($purchaseorder_id, $showAudit=false, $pageSize=null, $page=null, $sort="approve_datetm") {
+		// Add approval log records
+		$select = new ApproveSelect();
+		$select->addHistoryLogSpecification()
+				->order("{$sort},transaction_id,approvetype_name");
+
+		// Add parameters for the approval log query
+		$params = ['purchaseorder', $purchaseorder_id];
+
+		// Add log items for images, splits, vendor connect
+		$unions = ['ImageDeleted'=>true,'ImageScanned'=>true,'ImageIndexed'=>true,
+				'ImageAdded'=>true, 'PoCreated'=>false];
+
+		if ($showAudit) {
+			$unions = array_merge($unions, [
+				'SplitAudit'  => true,
+				'PoAudit'     => false,
+				'PoItemAudit' => false
+			]);
+		}
+
+		// Loop through items since they all use the same format/parameters
+		foreach ($unions as $union=>$useTableNameParam) {
+			$fn = "add{$union}Specification";
+			$select->union($this->getAuditSelect()->$fn());
+			if ($useTableNameParam) {
+				$params[] = 'purchaseorder';
+			}
+			$params[] = $purchaseorder_id;
+		}
+
+		// If paging is needed
+		if ($pageSize !== null) {
+			return $this->getPagingArray($select, $params, $pageSize, $page);
+		} else {
+			return $this->adapter->query($select, $params);
+		}
+	}
+
+	private function getAuditSelect() {
+		return new AuditSelect($this->configService);
+	}
 }
 
 ?>

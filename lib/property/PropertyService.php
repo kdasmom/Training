@@ -469,6 +469,13 @@ class PropertyService extends AbstractService {
 	}
 
 	/**
+	 * Gets properties for the Ship To/Bill To drop downs
+	 */
+	public function getShipBillTo($type) {
+		return $this->propertyGateway->findShipBillTo($type);
+	}
+
+	/**
 	 * Checks if a GL account is assigned to a property
 	 * @param  int     $property_id
 	 * @param  int     $glaccount_id

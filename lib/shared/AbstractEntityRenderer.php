@@ -1,35 +1,40 @@
 <?php
 
-namespace NP\invoice;
+namespace NP\shared;
 
 use NP\system\ConfigService;
 use NP\core\GatewayManager;
+use NP\core\AbstractService;
 
 /**
- * Abstract renderer for invoices; should be extended by concrete invoice renderers
+ * Abstract renderer for entities (invoices, POs); should be extended by concrete entity renderers
  *
  * @author Thomas Messier
  */
-abstract class AbstractInvoiceRenderer implements InvoiceRendererInterface {
-	protected $invoiceService, $invoice, $options;
+abstract class AbstractEntityRenderer implements EntityRendererInterface {
+	protected $service, $entity_id, $options, $entity;
 
-	public function __construct(ConfigService $configService, GatewayManager $gatewayManager, InvoiceService $invoiceService, $invoice_id=null, $options=[]) {
+	public function __construct(ConfigService $configService, GatewayManager $gatewayManager, AbstractService $service, $entity_id=null, $options=[]) {
 		$this->configService  = $configService;
-		$this->invoiceService = $invoiceService;
 		$this->gatewayManager = $gatewayManager;
+		$this->service        = $service;
+		$this->entity_id      = $entity_id;
 
-		$this->setInvoice($invoice_id);
+		$this->getEntity();
+
 		$this->setOptions($options);
 	}
 
-	/**
-	 * Sets the invoice to be renderered
-	 */
-	public function setInvoice($invoice_id) {
-		if (!empty($invoice_id)) {
-			$this->invoice = $this->invoiceService->get($invoice_id);
+	public function getEntity() {
+		if (empty($this->entity)) {
+			$this->entity = $this->service->get($this->entity_id);
 		}
+
+		return $this->entity;
 	}
+
+	abstract public function getPrefix();
+	abstract public function getItemPrefix();
 
 	/**
 	 * Sets the options for rendering the invocie
@@ -70,6 +75,7 @@ abstract class AbstractInvoiceRenderer implements InvoiceRendererInterface {
 	}
 
 	abstract function renderBar();
+	abstract function renderSubHeader();
 
 	public function renderCustomFields($data, $type) {
 		if (in_array($type.'Custom', $this->options)) {
@@ -86,20 +92,21 @@ abstract class AbstractInvoiceRenderer implements InvoiceRendererInterface {
 	abstract protected function renderCustomField($data, $customField);
 
 	public function renderLines() {
-		$this->invoice['total']           = 0;
-		$this->invoice['tax_total']       = 0;
-		$this->invoice['shipping_total']  = 0;
-		$this->invoice['retention_total'] = 0;
+		$this->entity['total']           = 0;
+		$this->entity['tax_total']       = 0;
+		$this->entity['shipping_total']  = 0;
+		$this->entity['retention_total'] = 0;
 
-		foreach ($this->invoice['lines'] as $line) {
+		foreach ($this->entity['lines'] as $line) {
 			// Add to totals
-			$this->invoice['total'] += $line['invoiceitem_amount'] + $line['invoiceitem_salestax'] + $line['invoiceitem_shipping'];
-			$this->invoice['tax_total']      += $line['invoiceitem_salestax'];
-			$this->invoice['shipping_total'] += $line['invoiceitem_shipping'];
+			$prefix = $this->getItemPrefix();
+			$this->entity['total'] += $line["{$prefix}_amount"] + $line["{$prefix}_salestax"] + $line["{$prefix}_shipping"];
+			$this->entity['tax_total']      += $line["{$prefix}_salestax"];
+			$this->entity['shipping_total'] += $line["{$prefix}_shipping"];
 
 			$line['jbassociation_retamt'] = (float)$line['jbassociation_retamt'];
 			if (is_numeric($line['jbassociation_retamt'])) {
-				$this->invoice['retention_total'] += $line['jbassociation_retamt'];
+				$this->entity['retention_total'] += $line['jbassociation_retamt'];
 			}
 
 			$this->renderLine($line);
@@ -107,7 +114,7 @@ abstract class AbstractInvoiceRenderer implements InvoiceRendererInterface {
 	}
 
 	protected function getGrossTotal() {
-		return $this->invoice['total'];
+		return $this->entity['total'];
 	}
 
 	protected function getNetTotal() {
@@ -115,21 +122,23 @@ abstract class AbstractInvoiceRenderer implements InvoiceRendererInterface {
 	}
 
 	protected function getRententionTotal() {
-		return $this->invoice['retention_total'];
+		return $this->entity['retention_total'];
 	}
 
 	protected function getTaxTotal() {
-		return $this->invoice['tax_total'];
+		return $this->entity['tax_total'];
 	}
 
 	protected function getShippingTotal() {
-		return $this->invoice['shipping_total'];
+		return $this->entity['shipping_total'];
 	}
 
 	abstract function renderLine($line);
 
-	protected function getDisplayStatus() {
-		$status = $this->invoice['invoice_status'];
+	public function getDisplayStatus() {
+		$prefix = $this->getPrefix();
+
+		$status = $this->entity["{$prefix}_status"];
 		if ($status == 'forapproval') {
 			return 'Pending Approval';
 		} else if ($status == 'open') {
@@ -256,17 +265,5 @@ abstract class AbstractInvoiceRenderer implements InvoiceRendererInterface {
 
 	protected function getSetting($setting, $defaultVal='') {
 		return $this->configService->get($setting, $defaultVal);
-	}
-
-	protected function getHoldReasons() {
-		return $this->gatewayManager->get('NoteGateway')->findHoldNotes($this->invoice['invoice_id']);
-	}
-
-	protected function getPayments() {
-		return $this->invoiceService->getPayments($this->invoice['invoice_id']);
-	}
-
-	protected function getHistory() {
-		return $this->invoiceService->getHistoryLog($this->invoice['invoice_id']);
 	}
 }

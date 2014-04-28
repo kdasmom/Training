@@ -17,29 +17,52 @@ class PoItemEntity extends \NP\core\AbstractEntity {
 		'glaccount_id'	 => array(
 			'validation' => array(
 				'digits' => array()
-			)
+			),
+			'auditable' => [
+				'table'        => 'glAccount',
+				'displayField' => 'glaccount_name',
+				'displayName'  => 'GL Account'
+			],
+			'tableConstraint' => array()
 		),
 		'poitem_description'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>1000)
-			)
+			),
+			'auditable' => [
+				'displayName'  => 'Item Description'
+			]
 		),
-		'poitem_quantity'	 => array(),
+		'poitem_quantity'	 => array(
+			'validation' => array(
+				'numeric' => array()
+			),
+			'auditable' => [
+				'displayName'  => 'Item Quantity'
+			]
+		),
 		'poitem_unitprice'	 => array(
 			'validation' => array(
 				'numeric' => array()
-			)
+			),
+			'auditable' => [
+				'displayName'  => 'Item Unit Price'
+			]
 		),
 		'poitem_amount'	 => array(
 			'validation' => array(
 				'numeric' => array()
-			)
+			),
+			'auditable' => [
+				'displayName'  => 'Item Amount'
+			]
 		),
 		'purchaseorder_id'	 => array(
 			'required' => true,
 			'validation' => array(
 				'digits' => array()
-			)
+			),
+			'tableConstraint' => array()
 		),
 		'poitem_budgetvariance'	 => array(
 			'validation' => array(
@@ -64,17 +87,33 @@ class PoItemEntity extends \NP\core\AbstractEntity {
 		'property_id'	 => array(
 			'validation' => array(
 				'digits' => array()
-			)
+			),
+			'auditable' => [
+				'table'        => 'property',
+				'displayField' => 'property_name',
+				'displayName'  => 'Item Property'
+			],
+			'tableConstraint' => array()
 		),
 		'unit_id'	 => array(
 			'validation' => array(
 				'digits' => array()
-			)
+			),
+			'auditable' => [
+				'table'        => 'unit',
+				'displayField' => 'unit_number',
+				'displayName'  => 'Unit'
+			],
+			'tableConstraint' => array()
 		),
 		'poitem_taxflag'	 => array(
+			'defaultValue' => 'N',
 			'validation' => array(
 				'stringLength' => array('max'=>1)
-			)
+			),
+			'auditable' => [
+				'displayName'  => 'Tax Flag'
+			]
 		),
 		'poitem_description_alt'	 => array(
 			'validation' => array(
@@ -106,32 +145,66 @@ class PoItemEntity extends \NP\core\AbstractEntity {
 		'universal_field1'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
-			)
+			),
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL1_LINEITEM'
+			]
 		),
 		'universal_field2'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
-			)
+			),
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL2_LINEITEM'
+			]
 		),
 		'universal_field3'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
-			)
+			),
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL3_LINEITEM'
+			]
 		),
 		'universal_field4'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
-			)
+			),
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL4_LINEITEM'
+			]
 		),
 		'universal_field5'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
-			)
+			),
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL5_LINEITEM'
+			]
 		),
 		'universal_field6'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>255)
-			)
+			),
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL6_LINEITEM'
+			]
+		),
+		'universal_field7'	 => array(
+			'validation' => array(
+				'stringLength' => array('max'=>255)
+			),
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL7_LINEITEM'
+			]
+		),
+		'universal_field8'	 => array(
+			'validation' => array(
+				'stringLength' => array('max'=>255)
+			),
+			'auditable' => [
+				'displayNameSetting' => 'CP.CUSTOM_FIELD_LABEL8_LINEITEM'
+			]
 		),
 		'poitem_isReceived'	 => array(
 			'validation' => array(
@@ -171,16 +244,6 @@ class PoItemEntity extends \NP\core\AbstractEntity {
 		'vcitem_uom'	 => array(
 			'validation' => array(
 				'stringLength' => array('max'=>50)
-			)
-		),
-		'universal_field7'	 => array(
-			'validation' => array(
-				'stringLength' => array('max'=>255)
-			)
-		),
-		'universal_field8'	 => array(
-			'validation' => array(
-				'stringLength' => array('max'=>255)
 			)
 		),
 		'is_from_catalog'	 => array(),

@@ -12,7 +12,7 @@ use NP\core\db\Select;
  */
 class PoVendorsiteJoin extends Join {
 	
-	public function __construct($cols=array('vendor_id','vendorsite_id','vendorsite_status'), $type=Select::JOIN_INNER, $toAlias='vs', $fromAlias='p') {
+	public function __construct($cols=array('vendor_id','vendorsite_status'), $type=Select::JOIN_INNER, $toAlias='vs', $fromAlias='p') {
 		$this->setTable(array($toAlias=>'vendorsite'))
 			->setCondition("{$fromAlias}.vendorsite_id = {$toAlias}.vendorsite_id")
 			->setCols($cols)

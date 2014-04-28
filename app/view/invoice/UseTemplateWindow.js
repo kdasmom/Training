@@ -9,7 +9,9 @@ Ext.define('NP.view.invoice.UseTemplateWindow', {
 
     requires: [
     	'NP.lib.core.Translator',
-    	'NP.lib.core.Net'
+    	'NP.lib.core.Net',
+    	'NP.store.invoice.Invoices',
+    	'NP.store.po.Purchaseorders'
     ],
 
     title      : 'Use Template',
@@ -23,13 +25,30 @@ Ext.define('NP.view.invoice.UseTemplateWindow', {
     },
 
 	hideTemplateRemoveBtn: true,
-	invoice_id           : '',
+	type                 : null,
+	entity_id            : '',
 	property_id          : null,
 	vendorsite_id        : null,
 	utilityaccount_id    : null,
 
     initComponent: function() {
-    	var me = this;
+    	var me = this,
+    		pk,
+    		templateStore;
+
+    	if (!Ext.Array.contains(['po','invoice'], me.type)) {
+    		throw 'The "type" config option must be set to either "invoice" or "po"';
+    	}
+
+    	if (me.type == 'invoice') {
+			pk            = 'invoice_id';
+			templateStore = 'invoice.invoices';
+			service       = 'InvoiceService';
+    	} else {
+			pk            = 'purchaseorder_id';
+			templateStore = 'po.purchaseorders';
+			service       = 'PoService';
+    	}
 
     	me.title = NP.Translator.translate(me.title);
 
@@ -49,9 +68,9 @@ Ext.define('NP.view.invoice.UseTemplateWindow', {
 	            disabled : true,
 	            listeners: {
 	                click: function() {
-	                	var invoice_id = me.down('[name="invoice_id"]').getValue();
+	                	var entity_id = me.down('[name="entity_id"]').getValue();
 
-	                	me.fireEvent('usetemplate', me, invoice_id);
+	                	me.fireEvent('usetemplate', me, entity_id);
 	                }
 	            }
 	        },{
@@ -59,7 +78,7 @@ Ext.define('NP.view.invoice.UseTemplateWindow', {
 	            xtype    : 'shared.button.delete',
 	            text     : NP.Translator.translate('Remove Selected Template'),
 	            hidden   : me.hideTemplateRemoveBtn,
-	            disabled : (me.invoice_id == '') ? true : false,
+	            disabled : (me.entity_id == '') ? true : false,
 	            listeners: {
 	                click: function() {
 	                	me.fireEvent('removetemplate', me);
@@ -72,12 +91,12 @@ Ext.define('NP.view.invoice.UseTemplateWindow', {
 	        {
 	            xtype            : 'customcombo',
 	            fieldLabel       : NP.Translator.translate('Choose a template'),
-	            name             : 'invoice_id',
-	            valueField       : 'invoice_id',
-	            displayField     : 'template_name',
+	            name             : 'entity_id',
+	            valueField       : pk,
+	            displayField     : (me.type == 'invoice') ? 'template_name' : 'purchaseorder_ref',
 	            store            : {
-	                type       : 'invoice.invoices',
-	                service    : 'InvoiceService',
+	                type       : templateStore,
+	                service    : service,
 	                action     : 'getTemplatesByCriteria',
 	                extraParams : {
 	                    'property_id'      : me.property_id,
@@ -87,12 +106,12 @@ Ext.define('NP.view.invoice.UseTemplateWindow', {
 	                autoLoad: true,
 	                listeners: {
 	                    load: function() {
-	                        var combo = me.down('[name="invoice_id"]'),
+	                        var combo = me.down('[name="entity_id"]'),
 	                            store = combo.getStore(),
 	                            rec;
 
-	                        if (me.invoice_id != '') {
-	                            rec = store.findRecord('invoice_id', me.invoice_id);
+	                        if (me.entity_id != '') {
+	                            rec = store.findRecord(pk, me.entity_id);
 	                            combo.setValue(rec);
 	                            combo.fireEvent('select', combo, [rec]);
 	                        }
@@ -101,15 +120,15 @@ Ext.define('NP.view.invoice.UseTemplateWindow', {
 	            },
 	            listeners        : {
 	                select: function(combo, recs) {
-	                    var panel  = me.down('#invoicePrintView'),
+	                    var panel  = me.down('#entityPrintView'),
 	                        useBtn = me.down('#templateUseBtn');
 
 	                    if (recs.length) {
 	                        NP.Net.remoteCall({
 	                            requests: {
-                                    service   : 'InvoiceService',
-                                    action    : 'getInvoiceAsHtml',
-                                    invoice_id: recs[0].get('invoice_id')
+                                    service   : service,
+                                    action    : 'getEntityAsHtml',
+                                    entity_id : recs[0].get(pk)
                                 },
 	                            success: function(result) {
 	                                panel.update(result);
@@ -126,7 +145,7 @@ Ext.define('NP.view.invoice.UseTemplateWindow', {
 	            }
 	        },{
 	            xtype      : 'panel',
-	            itemId     : 'invoicePrintView',
+	            itemId     : 'entityPrintView',
 	            bodyPadding: 8,
 	            hidden     : true,
 	            flex       : 1,

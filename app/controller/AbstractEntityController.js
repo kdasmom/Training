@@ -18,8 +18,6 @@ Ext.define('NP.controller.AbstractEntityController', {
 		'NP.model.system.RecurringScheduler'
 	],
 	
-	showEntityImage: true,
-
 	/* YOU MUST OVERRIDE THESE VALUES WHEN IMPLEMENTING THE OBJECT */
 	shortName  : null,
 	longName   : null,
@@ -131,13 +129,13 @@ Ext.define('NP.controller.AbstractEntityController', {
 		// Save invoice button
 		control['#' + me.shortName + 'SaveBtn'] = {
 			click: function() {
-				me.onSaveInvoice();
+				me.onSaveEntity();
 			}
 		};
 
 		// Delete invoice button
 		control['#' + me.shortName + 'DeleteBtn'] = {
-			click: me.onDeleteInvoice
+			click: me.onDeleteEntity
 		};
 
 		// View Image button
@@ -276,7 +274,7 @@ Ext.define('NP.controller.AbstractEntityController', {
 		control['[xtype="' + me.shortName + '.view"] [xtype="viewport.imagepanel"]'] = {
 			expand: function() {
 				me.showEntityImage = true;
-				me.loadImage(true);
+				me.loadImage();
 			},
 			collapse: function() {
 				me.showEntityImage = false;
@@ -434,7 +432,7 @@ Ext.define('NP.controller.AbstractEntityController', {
 			{
 				title      : 'Save Invoice',
 				key        : Ext.EventObject.U,
-				fn         : function() { me.onSaveInvoice(); },
+				fn         : function() { me.onSaveEntity(); },
 				scope      : me,
 				conditionFn: function() {
 					return me.query('#' + me.shortName + 'SaveBtn', true).isVisible();
@@ -557,6 +555,114 @@ Ext.define('NP.controller.AbstractEntityController', {
 		Ext.apply(toolbar.displayConditionData, data);
 
 		toolbar.refresh();
+	},
+
+	setPropertyFieldState: function(invoice_status) {
+		var me    = this,
+			field = me.getPropertyCombo();
+
+		// Only allow changing the property field if the entity is new
+		if (me.getEntityRecord().get(me.pk) === null) {
+			field.setReadOnly(false);
+		} else {
+			field.setReadOnly(true);
+		}
+	},
+
+	setReadOnly: function(readonly) {
+		var me           = this,
+			form         = me.getEntityView(),
+			fields       = form.getForm().getFields(),
+			status       = me.getEntityRecord().get(me.longName + '_status'),
+			customShowFn = 'hide',
+			noteShowFn   = 'hide',
+			field,
+			i;
+
+		Ext.suspendLayouts();
+
+		// Loop through all the form fields and make them read-only
+		for (i=0; i<fields.getCount(); i++) {
+			field = fields.getAt(i);
+			// Make sure the field has a setReadOnly function
+			if (field.setReadOnly && field.getItemId() != 'entityPropertyCombo') {
+				// Set the readonly status to the appropriate value
+				field.setReadOnly(readonly);
+				// If the field has no value, hide it
+				if (readonly) {
+					if (Ext.isEmpty(field.getValue())) {
+						field.hide();
+					// Otherwise if the field has a value, show it
+					} else {
+						// If the field is a custom field, take note of the fact that there's a
+						// custom field with a value set (to be used later)
+						if (field.getXType() == 'shared.customfield') {
+							customShowFn = 'show';
+						} else if (field.up('[xtype="shared.invoicepo.viewnotes"]')) {
+							noteShowFn = 'show';
+						}
+						field.show();
+					}
+				}
+			}
+		}
+
+		// If there's no custom field with a value set, hide the whole custom field panel
+		if (readonly) {
+			me.getCmp('shared.customfieldcontainer')[customShowFn]();
+			me.getCmp('shared.invoicepo.viewnotes')[noteShowFn]();
+		}
+
+		// Enable/disable the add and edit line button
+		if (readonly) {
+			me.getLineEditBtn().disable();
+			me.getLineAddBtn().disable();
+		} else {
+			me.getLineEditBtn().enable();
+			if (status == 'paid') {
+				me.getLineAddBtn().disable();
+			} else {
+				me.getLineAddBtn().enable();
+			}
+		}
+
+		// Enable/disable the tax/shipping fields
+		var lineStore = me.getLineDataView().getStore();
+		if (lineStore.getCount()) {
+			me.query('#entity_tax_amount', true).setReadOnly(readonly);
+			me.query('#entity_shipping_amount', true).setReadOnly(readonly);
+		}
+
+		// Make sure the created on field is always readonly
+		if (me.shortName == 'invoice') {
+			me.getEntityView().findField('invoice_createddatetm').setReadOnly(true);
+		} else if (me.shortName == 'po') {
+			me.getEntityView().findField('purchaseorder_created').setReadOnly(true);
+		}
+
+		Ext.resumeLayouts(true);
+	},
+
+	setVendorFieldState: function(status) {
+		var me     = this,
+			field  = me.getVendorCombo(),
+			el     = Ext.get('entityVendorSelectOption'),
+			showFn = 'hide';
+
+		// Only allow changing the property field if the invoice is open or a draft
+		if (status == 'draft' || status == 'open') {
+			field.enable();
+			if (NP.Security.hasPermission(1024) && NP.Security.hasPermission(6065)) {
+				showFn = 'show';
+			}
+		} else {
+			field.disable();
+		}
+
+		if (el) {
+			el.setVisibilityMode(Ext.Element.DISPLAY);
+			el[showFn]();
+		}
 	},
 
 	setRequiredNotes: function() {
@@ -1480,14 +1586,14 @@ Ext.define('NP.controller.AbstractEntityController', {
 		return Ext.ComponentQuery.query('#' + me.getImageRegion() + 'Panel')[0];
 	},
 
-	loadImage: function(showImage) {
+	loadImage: function() {
 		var me           = this,
 			data         = me.getEntityView().getLoadedData(),
             user         = NP.Security.getUser(),
             hideImg      = user.get('userprofile_splitscreen_LoadWithoutImage'),
             splitSize    = user.get('userprofile_splitscreen_size'),
             imageRegion  = me.getImageRegion(),
-            showImage    = showImage || me.showEntityImage || false,
+            showImage    = false,
             sizeProp,
             imagePanel,
             iframeId,
@@ -1500,6 +1606,7 @@ Ext.define('NP.controller.AbstractEntityController', {
 				sizeProp = 'width';
 			}
 	        imagePanel = me.getImagePanel();
+	        imagePanel.show();
 	        
 	        iframeId = me.shortName + '-image-iframe-' + imageRegion;
 			iframeEl = Ext.get(iframeId);
@@ -1510,7 +1617,7 @@ Ext.define('NP.controller.AbstractEntityController', {
 					imagePanel.update('<iframe id="' + iframeId + '" src="about:blank" height="100%" width="100%"></iframe>');
 					iframeEl = Ext.get(iframeId);
 				}
-				if (hideImg != 1 && !showImage && me.showEntityImage) {
+				if ( (!('showEntityImage' in me) && !hideImg) || me.showEntityImage ) {
 		        	imagePanel.expand(false);
 		        	showImage = true;
 		        }
@@ -1524,8 +1631,6 @@ Ext.define('NP.controller.AbstractEntityController', {
 			}
 
 			me.showEntityImage = showImage;
-
-			imagePanel.show();
 		}
 	},
 
@@ -2050,89 +2155,14 @@ Ext.define('NP.controller.AbstractEntityController', {
 		}
 	},
 
-	setReadOnly: function(readonly) {
-		var me           = this,
-			form         = me.getEntityView(),
-			fields       = form.getForm().getFields(),
-			status       = me.getEntityRecord().get(me.longName + '_status'),
-			customShowFn = 'hide',
-			noteShowFn   = 'hide',
-			field,
-			i;
-
-		Ext.suspendLayouts();
-
-		// Loop through all the form fields and make them read-only
-		for (i=0; i<fields.getCount(); i++) {
-			field = fields.getAt(i);
-			// Make sure the field has a setReadOnly function
-			if (field.setReadOnly && field.getItemId() != 'entityPropertyCombo') {
-				// Set the readonly status to the appropriate value
-				field.setReadOnly(readonly);
-				// If the field has no value, hide it
-				if (readonly) {
-					if (Ext.isEmpty(field.getValue())) {
-						field.hide();
-					// Otherwise if the field has a value, show it
-					} else {
-						// If the field is a custom field, take note of the fact that there's a
-						// custom field with a value set (to be used later)
-						if (field.getXType() == 'shared.customfield') {
-							customShowFn = 'show';
-						} else if (field.up('[xtype="invoice.viewnotes"]')) {
-							noteShowFn = 'show';
-						}
-						field.show();
-					}
-				}
-			}
-		}
-
-		// If there's no custom field with a value set, hide the whole custom field panel
-		if (readonly) {
-			me.getCmp('shared.customfieldcontainer')[customShowFn]();
-			me.getCmp('invoice.viewnotes')[noteShowFn]();
-		}
-
-		// Enable/disable the add and edit line button
-		if (readonly) {
-			me.getLineEditBtn().disable();
-			me.getLineAddBtn().disable();
-		} else {
-			me.getLineEditBtn().enable();
-			if (status == 'paid') {
-				me.getLineAddBtn().disable();
-			} else {
-				me.getLineAddBtn().enable();
-			}
-		}
-
-		// Enable/disable the tax/shipping fields; we need to wrap this in deferUntil()
-		// because sometimes the tax/shipping fields haven't yet been rendered
-		var lineStore = me.getLineDataView().getStore();
-		if (lineStore.getCount()) {
-			me.query('#entity_tax_amount', true).setReadOnly(readonly);
-			me.query('#entity_shipping_amount', true).setReadOnly(readonly);
-		}
-
-		// Make sure the created on field is always readonly
-		if (me.shortName == 'invoice') {
-			me.getEntityView().findField('invoice_createddatetm').setReadOnly(true);
-		} else if (me.shortName == 'po') {
-			me.getEntityView().findField('purchaseorder_created').setReadOnly(true);
-		}
-
-		Ext.resumeLayouts(true);
-	},
-
-	onSaveInvoice: function(callback) {
+	onSaveEntity: function(callback) {
 		var me      = this,
 			invoice = me.getEntityRecord();
 
 		// Before saving, make sure invoice hasn't been updated
-		me.saveInvoice(
+		me.saveEntity(
 			me.service,
-			'saveInvoice',
+			'saveEntity',
 			{},
 			false,
 			function(result) {
@@ -2155,7 +2185,7 @@ Ext.define('NP.controller.AbstractEntityController', {
 		);
 	},
 
-	saveInvoice: function(service, action, extraParams, validateAll, callback) {
+	saveEntity: function(service, action, extraParams, validateAll, callback) {
 		var me      = this,
 			form    = me.getEntityView(),
 			invoice = me.getEntityRecord();
@@ -2215,13 +2245,13 @@ Ext.define('NP.controller.AbstractEntityController', {
 		return data;
 	},
 
-	onDeleteInvoice: function() {
+	onDeleteEntity: function() {
 		var me          = this,
-			invoice_id  = me.getEntityRecord().get(me.pk),
+			entity_id   = me.getEntityRecord().get(me.pk),
 			form        = me.getEntityView(),
 			data        = form.getLoadedData(),
-			dialogTitle = me.translate('Delete Invoice?'),
-			dialogText  = me.translate('Are you sure you want to delete this Invoice?');
+			dialogTitle = me.translate('Delete ' + me.displayName + '?'),
+			dialogText  = me.translate('Are you sure you want to delete this ' + me.displayName + '?');
 
 		if (data['image'] !== null) {
 			dialogText += "<br /> You will only be able to view the attached image(s) in the Deleted Images section of Image Management.";
@@ -2234,15 +2264,15 @@ Ext.define('NP.controller.AbstractEntityController', {
 					mask    : form,
 					method  : 'POST',
 					requests: {
-						service                     : me.service,
-						action                      : 'deleteInvoice',
+						service  : me.service,
+						action   : 'deleteEntity',
 						// Params
-						invoice_id                  : invoice_id,
+						entity_id: entity_id,
 						// Callback
-						success: function(result) {
+						success  : function(result) {
 							if (result.success) {
 								NP.Util.showFadingWindow({
-									html: me.translate('The invoice has been deleted')
+									html: me.translate('The ' + me.displayName + ' has been deleted')
 								});
 
 								me.addHistory(me.controller + ':showRegister');
@@ -2525,6 +2555,7 @@ Ext.define('NP.controller.AbstractEntityController', {
 
         var win = Ext.create('NP.view.invoice.UseTemplateWindow', {
             itemId               : me.shortName + 'ApplyTemplateWin',
+            type                 : me.shortName,
             property_id          : property_id,
             vendorsite_id        : vendorsite_id
         });
@@ -2534,7 +2565,7 @@ Ext.define('NP.controller.AbstractEntityController', {
 
     onApplyTemplateSave: function(win, template_id) {
         var me         = this,
-        	invoice_id = me.getEntityRecord().get(me.pk);
+        	entity_id  = me.getEntityRecord().get(me.pk);
 
         me.checkLock(function() {
         	NP.Net.remoteCall({
@@ -2543,7 +2574,7 @@ Ext.define('NP.controller.AbstractEntityController', {
         		requests: {
 					service    : me.service,
 					action     : 'applyTemplate',
-					invoice_id : invoice_id,
+					entity_id  : entity_id,
 					template_id: template_id,
 					success    : function(result) {
 						if (result.success) {
@@ -2553,7 +2584,7 @@ Ext.define('NP.controller.AbstractEntityController', {
 							});
 
 							// Refresh the invoice
-							me.showView(invoice_id);
+							me.showView(entity_id);
 
 							// Close the apply template window
 							win.close();
@@ -2593,7 +2624,7 @@ Ext.define('NP.controller.AbstractEntityController', {
     	var me         = this,
         	invoice_id = me.getEntityRecord().get(me.pk);
 
-        me.onSaveInvoice(function(result) {
+        me.onSaveEntity(function(result) {
         	NP.Net.remoteCall({
         		method  : 'POST',
         		mask    : me.getEntityView(),

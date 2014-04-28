@@ -95,6 +95,7 @@ class PropertyGateway  extends AbstractGateway {
 	public function findByUser($userprofile_id, $delegation_to_userprofile_id, $property_statuses=null, $keyword=null, $includeCodingOnly=false, $cols=null) {
 		$select = Select::get()->columns($cols)
 								->from(array('pr'=>'property'))
+									->join(new \NP\property\sql\join\PropertyAddressJoin())
 								->order("pr.property_name");
 
 		if ($userprofile_id == $delegation_to_userprofile_id) {
@@ -145,6 +146,7 @@ class PropertyGateway  extends AbstractGateway {
 		if ($includeCodingOnly) {
 			$unionSelect = Select::get()->columns($cols)
 										->from(['pr'=>'property'])
+											->join(new \NP\property\sql\join\PropertyAddressJoin())
 										->join(new sql\join\PropertyPropertyUserCodingJoin([]))
 										->whereEquals('pu.userprofile_id', '?');
 			
@@ -654,5 +656,26 @@ class PropertyGateway  extends AbstractGateway {
 		}
 
 		return $this->adapter->query($select, $params);
+	}
+
+	public function findShipBillTo($type) {
+		$type = ucfirst($type);
+		
+		if (!in_array($type, ['Bill','Ship'])) {
+			throw new \NP\core\Exception('Invalid $type argument; $type must be either "ship" or "bill"');
+		}
+
+		$select = Select::get()
+					->columns(['property_id','property_id_alt','property_name','property_status'])
+					->from(['pr'=>'property'])
+						->join(new \NP\property\sql\join\PropertyAddressJoin())
+					->whereIn('pr.property_status', '1,-1')
+					->whereNest('OR')
+						->whereIsNull("pr.property_option{$type}Address")
+						->whereEquals("pr.property_option{$type}Address", 1)
+					->whereUnnest()
+					->order('pr.property_name');
+
+		return $this->adapter->query($select);
 	}
 }

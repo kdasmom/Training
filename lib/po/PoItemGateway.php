@@ -6,6 +6,7 @@ use NP\core\AbstractGateway;
 use NP\core\db\Update;
 use NP\core\db\Select;
 use NP\core\db\Where;
+use NP\core\db\Expression;
 
 /**
  * Gateway for the POITEM table
@@ -47,6 +48,26 @@ class PoItemGateway extends AbstractGateway {
 				->order('pi.poitem_linenum ASC');
 
 		return $this->adapter->query($select, array($purchaseorder_id));
+	}
+
+	/**
+	 * Used when saving a PO to get lines that don't match the lines that were sent for saving so
+	 * they can be deleted
+	 */
+	public function getDeletedLines($purchaseorder_id, $poitem_id_list) {
+		$select = Select::get()
+				->column('poitem_id')
+				->from('poitem')
+				->whereEquals('purchaseorder_id', '?');
+
+		$params = [$purchaseorder_id];
+
+		if (count($poitem_id_list)) {
+			$select->whereNotIn('poitem_id', $this->createPlaceholders($poitem_id_list));
+			$params = array_merge($params, $poitem_id_list);
+		}
+
+		return $this->adapter->query($select, $params);
 	}
 	
 	public function rollPeriod($property_id, $newAccountingPeriod, $oldAccountingPeriod) {
@@ -128,7 +149,7 @@ class PoItemGateway extends AbstractGateway {
 	}
 
 	public function findTaxAndShippingTotal($purchaseorder_id) {
-		return $this->find(
+		$res = $this->find(
 			['purchaseorder_id' => '?'],
 			[$purchaseorder_id],
 			null,
@@ -137,6 +158,8 @@ class PoItemGateway extends AbstractGateway {
 				'shipping' => new Expression("SUM(poitem_shipping)")
 			]
 		);
+
+		return array_pop($res);
 	}
 }
 

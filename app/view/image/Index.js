@@ -1117,10 +1117,11 @@ Ext.define('NP.view.image.Index', {
         var win = Ext.create('NP.view.invoice.UseTemplateWindow', {
             itemId               : 'imageUseTemplateWin',
             hideTemplateRemoveBtn: false,
+            type                 : 'invoice',
             property_id          : property_id,
             vendorsite_id        : vendorsite_id,
             utilityaccount_id    : utilityaccount_id,
-            invoice_id           : image_index_draft_invoice_id
+            entity_id            : image_index_draft_invoice_id
         });
         win.show();
     },

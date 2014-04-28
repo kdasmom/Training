@@ -28,7 +28,7 @@ Ext.define('NP.view.po.Register', {
 			dock: 'top',
 			layout: 'hbox',
 			items: [
-				{ xtype: 'shared.button.new', itemId:'newInvoiceBtn', text: NP.Translator.translate('New PO') },
+				{ xtype: 'shared.button.new', itemId:'newPoBtn', text: NP.Translator.translate('New PO') },
 		    	{ xtype: 'button', text: NP.Translator.translate('PO Reports') },
 		    	{ xtype: 'button', text: NP.Translator.translate('Search') },
 		    	{ xtype: 'button', text: NP.Translator.translate('Receipt Register') },

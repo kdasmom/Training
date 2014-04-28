@@ -398,40 +398,6 @@ Ext.define('NP.controller.Invoice', {
 		});
 	},
 
-	setPropertyFieldState: function(invoice_status) {
-		var me    = this,
-			field = me.getPropertyCombo();
-
-		// Only allow changing the property field if the invoice is new
-		if (me.getEntityRecord().get('invoice_id') === null) {
-			field.setReadOnly(false);
-		} else {
-			field.setReadOnly(true);
-		}
-	},
-
-	setVendorFieldState: function(invoice_status) {
-		var me     = this,
-			field  = me.getVendorCombo(),
-			el     = Ext.get('entityVendorSelectOption'),
-			showFn = 'hide';
-
-		// Only allow changing the property field if the invoice is open or a draft
-		if (invoice_status == 'draft' || invoice_status == 'open') {
-			field.enable();
-			if (NP.Security.hasPermission(1024) && NP.Security.hasPermission(6065)) {
-				showFn = 'show';
-			}
-		} else {
-			field.disable();
-		}
-
-		if (el) {
-			el.setVisibilityMode(Ext.Element.DISPLAY);
-			el[showFn]();
-		}
-	},
-
 	isInvoiceReadOnly: function() {
 		var me      = this,
 			invoice = me.getEntityRecord(),

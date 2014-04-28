@@ -354,7 +354,9 @@ Ext.define('NP.view.po.ViewToolbar', {
                 lineView    = Ext.ComponentQuery.query('[xtype="shared.invoicepo.viewlines"] dataview');
 
             // If views aren't ready or stores haven't loaded, defer the process
-            if (!lineView.length || !lineView[0].getStore().isLoaded) {
+            if (!warningView.length || !lineView.length
+                || !warningView[0].getStore().isLoaded || !lineView[0].getStore().isLoaded
+            ) {
                 // Put a limit on the number of times setTimeout can run just so it doesn't run forever
                 if (tries < 50) {
                     Ext.defer(showBtn, 1000);
@@ -362,11 +364,23 @@ Ext.define('NP.view.po.ViewToolbar', {
                 return false;
             }
 
+            var hasExpiredInsurance = false;
+            if (NP.Config.getSetting('CP.AllowExpiredInsurance', '1') == '0') {
+                var warningStore     = warningView[0].getStore(),
+                    insuranceWarning = warningStore.findExact('warning_type', 'insuranceExpiration');
+                
+                if (insuranceWarning !== -1) {
+                    insuranceWarning = warningStore.getAt(insuranceWarning);
+                    hasExpiredInsurance = insuranceWarning.get('warning_data').expired;
+                }
+            }
+            
             if (
                 me._isVendorValid(data)
                 && data['purchaseorder'].get('purchaseorder_status') == 'open' 
                 && lineView[0].getStore().getCount() > 0
                 && NP.Security.hasPermission(1027)      // New PO permission
+                && !hasExpiredInsurance
             ) {
                 btn.show();
                 return true;

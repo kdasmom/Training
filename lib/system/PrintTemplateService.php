@@ -136,6 +136,13 @@ class PrintTemplateService extends AbstractService {
 		return $this->printTemplateGateway->getAssignedProperties($id);
 	}
 
+	/**
+	 * Get print templates filtered by the specified arguments
+	 */
+	public function getByFilter($property_id=null, $Print_Template_Type='PO', $isActive=1) {
+		return $this->printTemplateGateway->findByFilter($property_id, $Print_Template_Type, $isActive);
+	}
+
 	public function deleteTemplate($id) {
 		if (!$id) {
 			return false;

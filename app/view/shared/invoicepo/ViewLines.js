@@ -403,7 +403,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                 '<tpl if="jbchangeorder_id !== null">' +
                     '<div>' +
                         '<b>{[this.getSetting("PN.jobcosting.changeOrderTerm")]}:</b>' +
-                        ' {[NP.model.jobcosting.JbChangeOrderCode.formatName(values)]}' +
+                        ' {[NP.model.jobcosting.JbChangeOrder.formatName(values)]}' +
                     '</div>' +
                 '</tpl>' +
                 '<tpl if="jbjobcode_id !== null">' +
