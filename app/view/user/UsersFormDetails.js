@@ -140,19 +140,28 @@ Ext.define('NP.view.user.UsersFormDetails', {
 								var allowBlank = that.allowFieldsBlank(),
 									answerField,
 									questionField;
+
 								for (var index = 1; index <= 6; index++) {
 									questionField = that.query('#security_question' + index)[0];
+									answerField = that.query('#security_answer' + index)[0];
+
 									Ext.apply(questionField, {allowBlank: allowBlank});
+									Ext.apply(answerField, {allowBlank: allowBlank});
 
 									if (allowBlank) {
 										questionField.clearInvalid();
-									}
-								}
-								for (var index = 1; index <= 6; index++) {
-									answerField = that.query('#security_answer' + index)[0];
-									Ext.apply(answerField, {allowBlank: allowBlank});
-									if (allowBlank) {
 										answerField.clearInvalid();
+									}
+
+
+								}
+							},
+							blur: function(combobox, event) {
+								for (var index = 1; index <= 6; index++) {
+									questionField = that.query('#security_question' + index)[0];
+
+									if (combobox !== questionField && combobox.getValue() == questionField.getValue()) {
+										combobox.markInvalid(NP.Translator.translate('Security question use the same question as Security Question {number}', {number: index}));
 									}
 								}
 							}
@@ -169,18 +178,16 @@ Ext.define('NP.view.user.UsersFormDetails', {
 								var allowBlank = that.allowFieldsBlank(),
 									answerField,
 									questionField;
+
 								for (var index = 1; index <= 6; index++) {
 									questionField = that.query('#security_question' + index)[0];
+									answerField = that.query('#security_answer' + index)[0];
+
 									Ext.apply(questionField, {allowBlank: allowBlank});
+									Ext.apply(answerField, {allowBlank: allowBlank});
 
 									if (allowBlank) {
 										questionField.clearInvalid();
-									}
-								}
-								for (var index = 1; index <= 6; index++) {
-									answerField = that.query('#security_answer' + index)[0];
-									Ext.apply(answerField, {allowBlank: allowBlank});
-									if (allowBlank) {
 										answerField.clearInvalid();
 									}
 								}
