@@ -117,7 +117,7 @@ class UtilityAccountGateway extends AbstractGateway {
         $select = Select::get()
                         ->from(['ua'=>'utilityaccount'])
                         ->join(new sql\join\UtilityAccountPropertyJoin())
-                        ->join(new sql\join\UtilityAccountUtilityJoin([]))
+                        ->join(new sql\join\UtilityAccountUtilityJoin(['Vendorsite_Id']))
                         ->join(new sql\join\UtilityVendorsiteJoin())
                         ->join(new sql\join\VendorsiteVendorJoin())
                         ->join(new sql\join\UtilityUtilityTypeJoin())

@@ -14,6 +14,11 @@ Ext.define('NP.view.image.grid.DeletedImages', {
             'image.gridcol.Reference',
             'image.gridcol.Amount'
         ];
+
+		this.excludedCols = [
+			'shared.gridcol.PendingDays'
+		];
+
         this.autoscroll = true;
 
         var context = NP.Security.getCurrentContext();

@@ -12,8 +12,12 @@ Ext.define('NP.view.image.grid.Exceptions', {
             'image.gridcol.Amount',
             'image.gridcol.ExceptionBy',
             'image.gridcol.ExceptionDate'
-            
         ];
+
+		this.excludedCols = [
+			'shared.gridcol.PendingDays'
+		];
+
         this.autoscroll = true;
 
         var context = NP.Security.getCurrentContext();
