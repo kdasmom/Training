@@ -16,7 +16,7 @@ Ext.define('NP.view.image.grid.Invoices', {
             'image.gridcol.InvoiceDate',
             'shared.gridcol.PriorityFlag',
             'image.gridcol.Source'
-        ]
+        ];
         this.autoscroll = true;
 
         var context = NP.Security.getCurrentContext();
