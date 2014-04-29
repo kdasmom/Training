@@ -48,11 +48,20 @@ Ext.define('NP.view.systemSetup.WorkflowRulesSummary', {
 		);
 
 		if (this.data.rule.wfrule_id != -1 && this.data.rule.wfrule_status != 'new') {
+			var rulePropertyType;
+
+			if (this.data.rule.region_id !== null) {
+				rulePropertyType = NP.Translator.translate('REGION: {region_name}', { region_name: this.data.rule.region_name });
+			}
+			else {
+				rulePropertyType = this.data.rule.allProperties ? NP.Translator.translate('ALL') : NP.Translator.translate('SPECIFIC');
+			}
+
 			items.push(
 				{
 					xtype     : 'displayfield',
 					fieldLabel: NP.Translator.translate('Applied to Properties'),
-					value     : this.data.rule.allProperties ? NP.Translator.translate('ALL') : NP.Translator.translate('SPECIFIC'),
+					value     : rulePropertyType,
 					labelWidth: this.fieldLabelWidth,
 					padding   : this.fieldPadding
 				},

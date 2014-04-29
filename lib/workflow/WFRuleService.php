@@ -293,7 +293,8 @@ class WFRuleService extends AbstractService {
 			'wfrule_number'        => (isset($data['comparisonValue']) && is_numeric($data['comparisonValue'])) ? $data['comparisonValue'] : null,
 			'wfrule_number_end'    => isset($data['comparisonValueTo']) ? $data['comparisonValueTo'] : null,
 			'wfrule_string'        => $numberType,
-			'isAllPropertiesWF'    => $data['all_properties']
+			'isAllPropertiesWF'    => ($data['all_properties'] == wfRuleGateway::PROPERTY_TYPE_ALL) ? wfRuleGateway::PROPERTY_TYPE_ALL : 0,
+			'region_id'            => isset($data['region_id']) ? $data['region_id'] : null
 		];
 
 		$this->wfRuleGateway->beginTransaction();
@@ -311,17 +312,23 @@ class WFRuleService extends AbstractService {
 			}
 
 			// save wf rule properties
-			if ($data['all_properties']) {
-				$this->wfRuleTargetGateway->addAllPropertiesToRules($ruleid, 'property', $asp_client_id, [1, -1]);
-			}
-			else {
-				if (!is_null($property_keys)) {
-					$this->wfRuleTargetGateway->delete(['wfrule_id' => '?'], [$ruleid]);
+			if ($data['all_properties'] != wfRuleGateway::PROPERTY_TYPE_REGION) {
+				if ($data['all_properties']) {
+					$this->wfRuleTargetGateway->addAllPropertiesToRules($ruleid, 'property', $asp_client_id, [1, -1]);
+				}
+				else {
+					if (!is_null($property_keys)) {
+						$this->wfRuleTargetGateway->delete(['wfrule_id' => '?'], [$ruleid]);
 
-					foreach ($property_keys as $property_key) {
-						$this->SaveWFRuleTarget($ruleid, 'property', $property_key);
+						foreach ($property_keys as $property_key) {
+							$this->SaveWFRuleTarget($ruleid, 'property', $property_key);
+						}
 					}
 				}
+			}
+			else {
+				$this->wfRuleTargetGateway->delete(['wfrule_id' => '?'], [$ruleid]);
+				$this->wfRuleTargetGateway->addPropertiesByRegion($ruleid, $dataSet['region_id']);
 			}
 
 			// save wf rule type options

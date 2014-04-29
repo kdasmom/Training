@@ -18,7 +18,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 	initComponent: function() {
 		var me = this,
 			ruletype = null,
-			allProperties = false;
+			allProperties = false,
+			regionProperties = false;
 
 		me.autoScroll = true;
 		me.defaults = {
@@ -27,7 +28,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 
 		if (me.data) {
 			ruletype = me.data.rule.wfruletype_id;
-			allProperties = me.data.allProperties;
+			allProperties = me.data.rule.allProperties;
+			regionProperties = (me.data.rule.region_id) ? true : false;
 		}
 
 		var storeRuleTypes = Ext.create('NP.store.workflow.WfRuleTypes', {
@@ -67,22 +69,25 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 						fieldLabel: NP.Translator.translate('Properties'),
 						layout: 'hbox',
 						labelWidth: 200,
-						width: 400,
+						width: 500,
 						listeners: {
 							change: function(field, newValue, oldValue, options) {
 								var propertiescontainer = me.down('[name="ruleform"]').down('[name="propertiescontainer"]');
 								propertiescontainer.removeAll();
 
-								if (newValue.all_properties != '1') {
+								if (newValue.all_properties == '0') {
 									propertiescontainer.add( me.getPropertiesSection() );
 									me.down('[name="ruleform"]').down('[name="properties"]').setValue([]);
+								}
+								else if (newValue.all_properties == '2') {
+									propertiescontainer.add( me.getRegionSection() );
 								}
 							}
 						},
 						items: [
 							{
 								boxLabel: NP.Translator.translate('ALL'),
-								checked: allProperties,
+								checked: allProperties && !regionProperties,
 								name: 'all_properties',
 								inputValue: '1'
 							},
@@ -91,7 +96,14 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 								name: 'all_properties',
 								inputValue: '0',
 								padding: '0 0 0 20',
-								checked: !allProperties
+								checked: !allProperties && !regionProperties
+							},
+							{
+								boxLabel: NP.Translator.translate('REGION'),
+								name: 'all_properties',
+								inputValue: '2',
+								padding: '0 0 0 20',
+								checked: regionProperties
 							}
 						]
 					},
@@ -134,9 +146,12 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 
 		this.addRuleTypeFields(ruletype);
 
-		if (!allProperties) {
-			var propertiescontainer = me.down('[name="ruleform"]').down('[name="propertiescontainer"]');
+		var propertiescontainer = me.down('[name="ruleform"]').down('[name="propertiescontainer"]');
+		if (!allProperties && !regionProperties) {
 			propertiescontainer.add( me.getPropertiesSection() );
+		}
+		else if (regionProperties) {
+			propertiescontainer.add( me.getRegionSection() );
 		}
 
 		if (me.data) {
@@ -515,7 +530,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 		var GLCategoryStore = Ext.create('NP.lib.data.Store', {
 			service	 : 'GLService',
 			action	 : 'getBudgetAmountByGlCategory',
-			fields	 : ['glaccount_id', 'glaccount_name', 'glaccount_number'],
+			fields	 : ['glaccount_id', 'glaccount_name', 'glaccount_number']
 		});
 		GLCategoryStore.load();
 
@@ -587,6 +602,25 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 				}
 			]
 		};
+	},
+
+	getRegionSection: function() {
+		var me = this;
+
+		var regionCombo = Ext.create('NP.lib.ui.ComboBox', {
+			store        : 'user.Regions',
+			width        : 480,
+			name         : 'region_id',
+			fieldLabel   : '',
+			labelWidth   : 200,
+			allowBlank   : false,
+			margin       : '0 0 10 205',
+			displayField : 'region_name',
+			valueField   : 'region_id',
+			value        : me.data ? parseInt(me.data.rule.region_id) : null
+		});
+
+		return regionCombo;
 	},
 
 	getSelectOption: function(value) {

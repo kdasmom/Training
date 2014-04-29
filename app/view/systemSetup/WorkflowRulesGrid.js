@@ -62,6 +62,14 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 		gridStore.addExtraParams(this.WFRuleSearchParams);
 		gridStore.load();
 
+//		if (this.WFRuleSearchParams) {
+//			if (this.WFRuleSearchParams.criteria) {
+//					this.WFRuleSearchParams.criteria = this.WFRuleSearchParams.criteria.split(',').map(function(i){
+//						return parseInt(i, 10);
+//					});
+//				}
+//		}
+
 		this.items = [
 			{
 				xtype: 'panel',
@@ -149,20 +157,26 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 
 		this.searchtypeFilter = this.query('[name="searchtype"]')[0];
 
-		if (this.WFRuleSearchParams && this.WFRuleSearchParams.type) {
-			this.changeCriteriaSection( this.WFRuleSearchParams.type, this.WFRuleSearchParams.criteria );
+		if (this.WFRuleSearchParams) {
+//		if (this.WFRuleSearchParams && this.WFRuleSearchParams.type) {
+//			this.changeCriteriaSection( this.WFRuleSearchParams.type, this.WFRuleSearchParams.criteria );
 			this.searchtypeFilter.setValue( this.WFRuleSearchParams.type );
 		}
 	},
 
 	applyFilter: function() {
-		var grid = this.query('customgrid')[0];
-		var currentParams = grid.getStore().getProxy().extraParams;
-		var criteriaFilter = this.query('[name="criteria"]')[0];
+		var criteriaValue,
+			grid = this.query('customgrid')[0],
+			currentParams = grid.getStore().getProxy().extraParams,
+			criteriaFilter = this.query('[name="criteria"]')[0];
+
+		if (this.query('[name="criteria"]')[0]) {
+			criteriaValue = (criteriaFilter.getValue()) ? criteriaFilter.getValue() : null;
+		}
 
 		var newParams = {
 			type     : this.searchtypeFilter.getValue(),
-			criteria : criteriaFilter ? criteriaFilter.getValue() : null
+			criteria : criteriaValue
 		};
 
 		Ext.util.Cookies.set('WFRuleSearchParams', Ext.encode(newParams));
@@ -182,6 +196,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 
 		me.searchtypeFilter.setValue(0);
 		this.query('[name="criteriacontainer"]')[0].removeAll();
+
+		this.WFRuleSearchParams = null;
 
 		this.applyFilter();
 	},
@@ -226,13 +242,27 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 		}
 	},
 
+	getStoreListeners: function(searchType) {
+		var me = this;
+
+		return {
+			load: function() {
+				me.query('[name="criteria"]')[0].setValue( me.getDefaultCriteriaValue(searchType) );
+			}
+		}
+	},
+
 	getPropertyCombobox: function() {
+		var me = this;
+
 		return {
 			xtype                   : 'shared.propertycombo',
-            //multiSelect             : true,
-            name                    : 'criteria',
+			name                    : 'criteria',
+//			multiSelect             : true,
 			loadStoreOnFirstQuery   : true,
-			labelWidth              : this.filterLabelWidth
+			labelWidth              : this.filterLabelWidth,
+			storeAutoLoad           : true,
+			storeListeners          : me.getStoreListeners(1)
 		}
 	},
 
@@ -242,7 +272,9 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
             //multiSelect             : true,
             name                    : 'criteria',
             loadStoreOnFirstQuery   : true,
-            labelWidth              : this.filterLabelWidth
+            labelWidth              : this.filterLabelWidth,
+			storeAutoLoad           : true,
+			storeListeners          : this.getStoreListeners(2)
         };
 	},
 
@@ -253,7 +285,9 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
             name                    : 'criteria',
             valueField              : 'userprofilerole_id',
             loadStoreOnFirstQuery   : true,
-            labelWidth              : this.filterLabelWidth
+            labelWidth              : this.filterLabelWidth,
+			storeAutoLoad           : true,
+			storeListeners          : this.getStoreListeners(3)
         };
 	},
 
@@ -262,7 +296,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
             xtype                   : 'shared.usergroupscombo',
             //multiSelect             : true,
             name                    : 'criteria',
-            loadStoreOnFirstQuery   : true,
+			loadStoreOnFirstQuery   : true,
+			value   				: this.getDefaultCriteriaValue(4),
             labelWidth              : this.filterLabelWidth
         };
 	},
@@ -273,6 +308,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
             //multiSelect             : true,
             name                    : 'criteria',
             loadStoreOnFirstQuery   : true,
+			storeAutoLoad           : true,
+			storeListeners          : this.getStoreListeners(5),
             labelWidth              : this.filterLabelWidth,
             allowBlank              : true
         }
@@ -286,7 +323,20 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
             name                    : 'criteria',
             loadStoreOnFirstQuery   : true,
             labelWidth              : this.filterLabelWidth,
+			value   				: this.getDefaultCriteriaValue(6),
             allowBlank              : true
         }
+	},
+
+	getDefaultCriteriaValue: function(searchType) {
+		var comboboxValue = null;
+
+		if (this.WFRuleSearchParams) {
+			if (this.WFRuleSearchParams.type == searchType) {
+				comboboxValue = this.WFRuleSearchParams.criteria;
+			}
+		}
+
+		return comboboxValue;
 	}
 });

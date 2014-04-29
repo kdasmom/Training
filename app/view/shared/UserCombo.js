@@ -20,6 +20,8 @@ Ext.define('NP.view.shared.UserCombo', {
                                 '<li class="x-boundlist-item" role="option">{person_lastname}, {person_firstname} ({userprofile_username})</li>' +
                             '</tpl>',
     initComponent: function() {
+		var me = this;
+
         if (!this.store) {
             this.store = Ext.create('NP.store.user.Userprofiles', {
                 service : 'UserService',
@@ -30,7 +32,9 @@ Ext.define('NP.view.shared.UserCombo', {
                 sorters: [{
                     property : 'person_lastname',
                     direction: 'ASC'
-                }]
+                }],
+				autoLoad: (me.storeAutoLoad) ? me.storeAutoLoad : false,
+				listeners: (me.storeListeners) ? me.storeListeners : {}
             });
         }
 

@@ -57,11 +57,6 @@ Ext.define('NP.view.systemSetup.WorkflowRulesConflicts', {
 										inputValue: 'edit'
 									},
 									{
-										boxLabel: NP.Translator.translate('Deactivate conflicting rules'),
-										name: 'nextaction',
-										inputValue: 'deactivate'
-									},
-									{
 										boxLabel: NP.Translator.translate('Delete conflicting rules'),
 										name: 'nextaction',
 										inputValue: 'delete'

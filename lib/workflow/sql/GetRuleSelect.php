@@ -17,12 +17,14 @@ class GetRuleSelect extends Select {
 			'wfrule_number_end',
 			'wfrule_string',
 			'wfrule_datetm',
-			'wfruletype_id'
+			'wfruletype_id',
+			'region_id'
 		])
 		->from(['WF' => 'wfrule'])
 			->join(	new join\WFRuleWFRuleTypeJoin2(['wfruletype_name','wfruletype_tablename','type_id_alt'], Select::JOIN_LEFT) )
 			->join( new join\WFRuleUserprofileJoin() )
 			->join( new join\WFRuleHourJoin(['runhour'], Select::JOIN_LEFT) )
+			->join( new join\WFRuleRegionJoin() )
 		->order('WF.wfrule_name');
 
         $where = Where::get()

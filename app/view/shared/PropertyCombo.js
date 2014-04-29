@@ -27,10 +27,14 @@ Ext.define('NP.view.shared.PropertyCombo', {
                     '</tpl>',
 
     initComponent: function() {
+		var me = this;
+
         if (!this.store) {
             this.store = Ext.create('NP.store.property.Properties', {
                            service : 'PropertyService',
-                           action  : 'getAll'
+                           action  : 'getAll',
+							autoLoad : me.storeAutoLoad ? me.storeAutoLoad : false,
+							listeners: me.storeListeners ? me.storeListeners : {}
                         });
         }
 
