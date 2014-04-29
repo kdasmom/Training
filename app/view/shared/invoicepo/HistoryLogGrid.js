@@ -8,7 +8,10 @@ Ext.define('NP.view.shared.invoicepo.HistoryLogGrid', {
     alias: 'widget.shared.invoicepo.historyloggrid',
     
     requires: [
-    	'NP.store.system.HistoryLogs'
+        'NP.lib.core.Translator',
+    	'NP.store.system.HistoryLogs',
+        'NP.view.shared.button.Print',
+        'NP.lib.print.Manager'
     ],
 
     frame      : true,
@@ -20,7 +23,6 @@ Ext.define('NP.view.shared.invoicepo.HistoryLogGrid', {
     type: null,
 
     // For localization
-    title             : 'History Log',
     dateColName       : 'Date/Time',
     messageColName    : 'Message',
     submittedByColName: 'Submitted By',
@@ -38,6 +40,32 @@ Ext.define('NP.view.shared.invoicepo.HistoryLogGrid', {
             action : 'getHistoryLog'
         };
 
+        me.header = {
+            title        : NP.Translator.translate('History Log'),
+            titlePosition: 0,
+            items        : [
+                {
+                    xtype    : 'button',
+                    itemId   : me.type + 'showAuditTrailBtn',
+                    text     : NP.Translator.translate('Show Audit Trail'),
+                    showAudit: 1
+                },{
+                    xtype  : 'shared.button.print',
+                    margin : '0 0 0 4',
+                    handler: function() {
+                        NP.PrintManager.print(me);
+                    }
+                }
+            ]
+        };
+
+        function toUpperRenderer(val) {
+            if (Ext.isString(val)) {
+                return val.toUpperCase();
+            }
+
+            return '';
+        }
 
         me.columns = {
             items    : [
@@ -46,35 +74,49 @@ Ext.define('NP.view.shared.invoicepo.HistoryLogGrid', {
                     text     : me.dateColName,
                     dataIndex: 'approve_datetm',
                     format   : NP.Config.getDefaultDateFormat() + ' h:mA',
-                    width    : '10%'
+                    flex     : 0.1
                 },{
                     text     : me.messageColName,
                     dataIndex: 'message',
-                    width    : '42%'
+                    flex     : 0.42
                 },{
                     text     : me.submittedByColName,
                     dataIndex: 'userprofile_username',
-                    width    : '15%'
+                    flex     : 0.15,
+                    renderer : toUpperRenderer
                 },{
                     text     : me.submittedToColName,
                     dataIndex: 'approver',
-                    width    : '15%'
+                    flex     : 0.15,
+                    renderer : toUpperRenderer
                 },{
                     text     : me.actionColName,
                     dataIndex: 'approvetype_name',
-                    width    : '10%'
+                    flex     : 0.1,
+                    renderer : toUpperRenderer
                 },{
                     text     : me.detailColName,
-                    dataIndex: 'approve_id',
-                    width    : '5%',
-                    renderer : function(val, meta, rec) {
-                        // TODO: add renderer code here
-                        return '';
-                    }
+                    xtype: 'actioncolumn',
+                    getClass: function (v, meta, rec, rowIndex) {
+                        if (rec.get('approve_id') < 1) {
+                            return '';
+                        } else {
+                            return 'view-btn';
+                        }
+                    },
+                    handler: function(gridView, rowIndex, colIndex, item, e, rec) {
+                        if (rec.get('approve_id') > 0) {
+                            me.fireEvent('showdetails', rec);
+                        }
+                    },
+                    align: 'center',
+                    width: 50
                 }
             ]
         };
 
         me.callParent(arguments);
+
+        me.addEvents('showdetails');
     }
 });

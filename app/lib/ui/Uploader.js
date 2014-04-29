@@ -29,6 +29,8 @@ Ext.define('NP.lib.ui.Uploader', {
     extend: 'Ext.window.Window',
     alias:  'widget.uploader',
 
+    requires: ['NP.lib.core.Translator'],
+
     /**
      * Set default values for all required parameters.
      */
@@ -129,14 +131,21 @@ Ext.define('NP.lib.ui.Uploader', {
                                         height: 30,
 
                                         handler: function(){
-											self.addExtraParams();
+                                            if ( $("#uploadqueue > div").size() ) {
+    											self.addExtraParams();
 
-                                            // Uploadify will pass all data from params.form
-                                            // and all selected files to the server.
-                                            if (self.isUploadifiveSupported()) {
-                                                $('#file_upload').uploadifive('upload');
+                                                // Uploadify will pass all data from params.form
+                                                // and all selected files to the server.
+                                                if (self.isUploadifiveSupported()) {
+                                                    $('#file_upload').uploadifive('upload');
+                                                } else {
+                                                    $('#file_upload').uploadify('upload', '*');
+                                                }
                                             } else {
-                                                $('#file_upload').uploadify('upload', '*');
+                                                Ext.MessageBox.alert(
+                                                    NP.Translator.translate('Error'),
+                                                    NP.Translator.translate('You must select at least one file to upload')
+                                                );
                                             }
                                         }
                                     }

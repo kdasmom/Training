@@ -20,7 +20,7 @@ Ext.define('NP.view.report.AbstractReportForm', {
 
 		// Checks if there's a report type field and if so adds a listener to it
 		var report_type = Ext.ComponentQuery.query('#report_type');
-		if (report_type !== null) {
+		if (report_type !== null && report_type.length > 0) {
 			report_type[0].on('select', me.selectReport);
 		}
 
@@ -57,6 +57,8 @@ Ext.define('NP.view.report.AbstractReportForm', {
 
 	// This can be overriden if needed
 	selectReport: function() {
-		this.getReport().setupForm();
+        if (this.getReport) {
+            this.getReport().setupForm();
+        }
 	}
 });

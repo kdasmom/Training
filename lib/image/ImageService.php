@@ -265,7 +265,7 @@ class ImageService extends AbstractService {
     public function processImageUpload() {
         $file = null;
         $destinationPath = $this->configService->get('PN.Main.FileUploadLocation');
-        
+
         // If destination directory doesn't exist, create it
         if (!is_dir($destinationPath)) {
             mkdir($destinationPath, 0777, true);
@@ -418,6 +418,34 @@ class ImageService extends AbstractService {
             }
 
             $tableref_id = $this->imageTablerefGateway->getIdByName($image_tableref_name);
+            $audittype   = str_replace(' ', '', $image_tableref_name);
+
+            $audittype_id                 = $this->audittypeGateway->findIdByType($audittype);
+            $auditactivity_id             = $this->auditactivityGateway->findIdByType('ImgAdded');
+            $userprofile_id               = $this->securityService->getUserId();
+            $delegation_to_userprofile_id = $this->securityService->getDelegatedUserId();
+
+            // Log the image added operation
+            $this->auditlogGateway->logImageAdded(
+                $image_index_id_list,
+                $userprofile_id,
+                $delegation_to_userprofile_id,
+                $entity_id,
+                $auditactivity_id,
+                $audittype_id,
+                $entity['vendorsite_id']
+            );
+
+            // Log the image indexed operation
+            $auditactivity_id = $this->auditactivityGateway->findIdByType('ImgIndex');
+
+            $this->auditlogGateway->logImageIndexed(
+                $image_index_id_list,
+                $entity_id,
+                $auditactivity_id,
+                $audittype_id,
+                $entity['vendorsite_id']
+            );
 
             // Update all images being uploaded to link them to the entity and
             // set them all to NOT be primary
@@ -453,6 +481,16 @@ class ImageService extends AbstractService {
 
                 $new_primary_image = $this->imageIndexGateway->findById($image_index_id_list[0]);
             }
+
+            // Log the image uploaded operation
+            $auditactivity_id = $this->auditactivityGateway->findIdByType('ImgUploaded');
+
+            $this->auditlogGateway->logImageUploaded(
+                $image_index_id_list,
+                $entity_id,
+                $auditactivity_id,
+                $audittype_id
+            );
 
             $this->imageIndexGateway->commit();
         } catch(\Exception $e) {

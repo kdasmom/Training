@@ -184,7 +184,6 @@ Ext.define('NP.view.systemSetup.WorkflowRulesRoutes', {
 			toTitle     : NP.Translator.translate('Assigned Users'),
 			width       : 800,
 			height      : 200,
-			autoLoad    : false,
 			allowBlank  : false,
 			store       : me.userStore
 		}

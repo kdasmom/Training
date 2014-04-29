@@ -407,6 +407,8 @@ Ext.define('NP.view.image.Index', {
      * Prepare markup for Utility section.
      */
     markupUtility: function() {
+        var me = this;
+
         if (NP.Security.hasPermission(6094)) {
             if (NP.Security.hasPermission(6095)) {
                 var options = {
@@ -428,14 +430,6 @@ Ext.define('NP.view.image.Index', {
                                 change: this.checkUtilityAccountNumber.bind(this)
                             }
                         },
-						{
-							xtype: 'hiddenfield',
-							name : 'UtilityAccountPropertyId'
-						},
-						{
-							xtype: 'hiddenfield',
-							name : 'UtilityAccountVendorsiteId'
-						},
                         // Panel: Is Utility Account Valid
                         {
                             xtype : 'displayfield',
@@ -479,8 +473,8 @@ Ext.define('NP.view.image.Index', {
                         }
                     );
 
-                var self = this;
-                options = {
+                var self    = this,
+                    options = {
                     xtype: 'panel',
 
                     border  : 0,
@@ -541,27 +535,39 @@ Ext.define('NP.view.image.Index', {
                 };
             };
 
+            var utilListeners = {};
+            if (!NP.Security.hasPermission(6095)) {
+                utilListeners['select'] = me.onSelectUtilityAccount.bind(me);
+            }
+
             var items = [
                 options,
-
                 // Field: Utility Account Id Alt. This is also Utility Account Id. It should be displayed for multiple
                 // accounts.
                 {
-                    name: 'utilityaccount_id',
-
-                    xtype                : 'customcombo',
-                    fieldLabel           : NP.Translator.translate('Utility Account'),
-                    displayField         : 'long_display_name',
-                    valueField           : 'UtilityAccount_Id',
-                    allowBlank           : false,
-                    store                : Ext.create('NP.store.vendor.UtilityAccounts', {
+                    name        : 'utilityaccount_id',
+                    xtype       : 'customcombo',
+                    fieldLabel  : NP.Translator.translate('Utility Account'),
+                    displayField: 'long_display_name',
+                    valueField  : 'UtilityAccount_Id',
+                    allowBlank  : false,
+                    store       : Ext.create('NP.store.vendor.UtilityAccounts', {
                         service    : 'UtilityService',
                         action     : 'getAccountsByUser',
                         extraParams: {
                             userprofile_id              : NP.Security.getUser().get('userprofile_id'),
                             delegation_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id')
                         }
-                    })
+                    }),
+                    listeners: utilListeners
+                },
+                {
+                    xtype: 'hiddenfield',
+                    name : 'UtilityAccountPropertyId'
+                },
+                {
+                    xtype: 'hiddenfield',
+                    name : 'UtilityAccountVendorsiteId'
                 }
             ];
         }
@@ -702,8 +708,31 @@ Ext.define('NP.view.image.Index', {
         }
 
         utilityStore.load(function() {
-            utilityAccountField.setValue(utilityStore.getAt(0));
+            if (utilityStore.getCount()) {
+                utilityAccountField.select(utilityStore.getAt(0));
+            }
+            me.onSelectUtilityAccount();
         });
+    },
+
+    onSelectUtilityAccount: function() {
+        var me            = this,
+            property_id   = null,
+            vendorsite_id = null,
+            utilField     = me.findField('utilityaccount_id'),
+            utilRec       = null;
+
+        if (utilField.getValue() !== null) {
+            utilRec = utilField.findRecordByValue(utilField.getValue());
+        }
+
+        if (utilRec !== null) {
+            property_id   = utilRec.get('property_id');
+            vendorsite_id = utilRec.get('Vendorsite_Id');
+        }
+
+        me.findField('UtilityAccountPropertyId').setValue(property_id);
+        me.findField('UtilityAccountVendorsiteId').setValue(vendorsite_id);
     },
 
     /***************************************************************************

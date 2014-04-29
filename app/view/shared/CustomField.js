@@ -69,8 +69,9 @@ Ext.define('NP.view.shared.CustomField', {
 
         var fieldName = this.name + '_internal';
     	var field = {
-			name      : fieldName,
-			allowBlank: this.allowBlank
+            name       : fieldName,
+            allowBlank : this.allowBlank,
+            isFormField: false
 		};
 
     	// Configuration for a text custom field
@@ -174,5 +175,23 @@ Ext.define('NP.view.shared.CustomField', {
 
 	getSubmitValue: function() {
 		return this.getValue();
-	}
+	},
+
+    /**
+     * Sets the read only state of this field.
+     * @param {Boolean} readOnly Whether the field should be read only.
+     */
+    setReadOnly: function(readOnly) {
+        var me = this,
+            inputEl = me.inputEl;
+        readOnly = !!readOnly;
+        me[readOnly ? 'addCls' : 'removeCls'](me.readOnlyCls);
+        me.readOnly = readOnly;
+        if (inputEl) {
+            inputEl.dom.readOnly = readOnly;
+        } else if (me.rendering) {
+            me.setReadOnlyOnBoxReady = true;
+        }
+        me.fireEvent('writeablechange', me, readOnly);
+    }
 });

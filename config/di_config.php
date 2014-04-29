@@ -188,6 +188,11 @@ foreach($diDefinition as $classPath=>$dependencies) {
 			$obj->setLocalizationService($di['LocalizationService']);
 		}
 
+		// Inject the notification service via setter injection
+		if ($r->hasMethod('setNotificationService')) {
+			$obj->setNotificationService($di['NotificationService']);
+		}
+
 		// Inject the entity validator via setter injection to all interceptors
 		if ($r->hasMethod('setEntityValidator')) {
 			$obj->setEntityValidator($di['EntityValidator']);

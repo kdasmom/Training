@@ -23,6 +23,7 @@ Ext.define('NP.model.vendor.Insurance', {
 		{ name: 'insurance_policy_effective_datetm', type: 'date' },
 		{ name: 'insurance_policy_limit' },
 		{ name: 'insurance_additional_insured_listed' },
+		{ name: 'insurance_properties_list_id' },
 		{ name: 'insurance_policyreqthru', type: 'date' },
 
 		// These fields are not database columns

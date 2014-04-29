@@ -82,13 +82,16 @@ class UserService extends AbstractService {
 	/**
 	 * Returns a role tree starting from a certain role
 	 */
-	public function getRoleTree($role_id=null) {
-		$roles = $this->roleGateway->findForTree();
+	public function getRoleTree($role_id=null, $excludeAdmin = null) {
+		$roles = $this->roleGateway->findForTree(false);
 		$tree = array();
+
 		$startParent = 0;
 		foreach ($roles as $role) {
 			if ($role_id !== null && $role_id === $role['role_id']) {
 				$startParent = $role['tree_parent'];
+			} else if ($excludeAdmin && $role['role_name'] == 'Administrator') {
+				$startParent = $role['tree_id'];
 			}
 			if (!array_key_exists($role['tree_parent'], $tree)) {
 				$tree[$role['tree_parent']] = array();
@@ -148,6 +151,10 @@ class UserService extends AbstractService {
 	 */
 	public function getUserRegions($userprofile_id, $delegated_to_userprofile_id) {
 		return $this->regionGateway->findByUser($userprofile_id, $delegated_to_userprofile_id);
+	}
+
+	public function getForForward($table_name, $tablekey_id) {
+		return $this->userprofileGateway->findForForward($table_name, $tablekey_id);
 	}
 
 	/**
