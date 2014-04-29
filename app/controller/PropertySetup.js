@@ -553,7 +553,6 @@ Ext.define('NP.controller.PropertySetup', {
 			calendarPanel = selModel.view.up('customgrid').nextNode('[xtype="property.closingcalendardistibutor"]');
 
 		calendarPanel.hide();
-		cutoffPanel.query('[xtype="shared.button.createfrom"]')[0].show();
 
 		var form = cutoffPanel.getForm();
 

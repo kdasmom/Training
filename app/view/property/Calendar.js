@@ -42,7 +42,8 @@ Ext.define('NP.view.property.Calendar', {
 				flex  : 1
 	    	},{
 				xtype      : 'property.fiscalcalendarform',
-				flex       : 1
+				flex       : 1,
+				hideDistributor : false
 	    	},
 			{
 				xtype		: 'property.closingcalendardistibutor',

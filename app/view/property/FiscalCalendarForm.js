@@ -31,7 +31,7 @@ Ext.define('NP.view.property.FiscalCalendarForm', {
 				{
 					xtype: 'shared.button.createfrom',
 					text: 'Calendar Distributor',
-					hidden: true
+					hidden: this.hideDistributor
 				}
             ]
         };
