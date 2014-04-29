@@ -380,12 +380,7 @@ class WfRuleGateway extends AbstractGateway {
 
 		$result = $this->adapter->query($select);
 
-		$conflictingRulesByProperties = [];
-		foreach ($result as $item) {
-			$conflictingRulesByProperties[] = $item['wfrule_id'];
-		}
-
-		return $conflictingRulesByProperties;
+		return Util::valueList($result, 'wfrule_id');
 	}
 
 

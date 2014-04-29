@@ -531,7 +531,7 @@ class WFRuleService extends AbstractService {
 
 		$countDuplicateRules = $this->WfRuleGateway->findCountDuplicateRules($wfrule_id, $rule['wfruletype_id'], $asp_client_id);
 
-		$originatorConflicts = []; //delete
+		$conflictsRules = [];
 
 		if ($countDuplicateRules > 0) {
 			$conflictingRulesByProperties = $this->wfRuleGateway->findConflictingRulesByProperties($rule['wfrule_id'], $rule['wfruletype_id'], $rule['wfrule_operand'], $rule['wfrule_number'], $rule['wfrule_number_end']);
@@ -539,7 +539,6 @@ class WFRuleService extends AbstractService {
 			if (count($conflictingRulesByProperties) > 0)
 			{
 				$routes = $this->wfActionGateway->find('wfrule_id = ?', [$wfrule_id]);
-//				$originatorConflicts = [];
 
 				foreach ($routes as $route) {
 					$originator_tablekey_id = $route['wfaction_originator_tablekey_id'];
@@ -547,33 +546,95 @@ class WFRuleService extends AbstractService {
 
 					if ($originator_tablename == 'role') {
 						$originatorUserRoleConflicts = $this->wfActionGateway->findOriginatorUserRolesConflicts($wfrule_id, $conflictingRulesByProperties, $originator_tablekey_id);
-						$originatorConflicts = array_merge($originatorConflicts, $originatorUserRoleConflicts);
+						$conflictsRules = array_merge($conflictsRules, $originatorUserRoleConflicts);
 					}
 
 					if ($originator_tablename == 'userprofilerole') {
-						$originatorProfileConflicts = $this->wfActionGateway->findOriginatorUserprofileConflicts($wfrule_id, $conflictingRulesByProperties, $originator_tablekey_id);
-						$originatorConflicts = array_merge($originatorConflicts, $originatorProfileConflicts);
+						$originatorConflicts = $this->wfActionGateway->findOriginatorUserprofileConflicts($wfrule_id, $conflictingRulesByProperties, $originator_tablekey_id);
+						$conflictsRules = array_merge($conflictsRules, $originatorConflicts);
 
-						if (!count($originatorConflicts)) {
-//							$userprofile = $this->userprofileGateway->findById($originator_tablekey_id);
-//							$originator_tablekey_id = $userprofile['role_id'];
+						if (!count($conflictsRules)) {
 							$userprofile = $this->wfRuleGateway->findUserProfileById($originator_tablekey_id);
 							$originator_tablekey_id = $userprofile[0]['role_id'];
 						}
 					}
 
-					if (!count($originatorConflicts)) {
+					if (!count($conflictsRules)) {
 						$originatorRoleConflicts = $this->wfActionGateway->findOriginatorRolesConflicts($wfrule_id, $conflictingRulesByProperties, $originator_tablekey_id);
-						$originatorConflicts = array_merge($originatorConflicts, $originatorRoleConflicts);
+						$conflictsRules = array_merge($conflictsRules, $originatorRoleConflicts);
 					}
+				}
+			}
+
+
+			$conflictsRules = array_unique($conflictsRules);
+
+			if (count($conflictsRules)) {
+				switch ($rule['wfruletype_id']) {
+					case WFRuleTypeGateway::BUDGET_AMOUNT_BY_GL_CODE:
+					case WFRuleTypeGateway::INVOICE_BY_GL_CODE:
+					case WFRuleTypeGateway::PURCHASE_ORDER_BY_GL_CODE:
+					case WFRuleTypeGateway::BUDGET_AMOUNT_BY_GL_CATEGORY:
+					case WFRuleTypeGateway::INVOICE_BY_GL_CATEGORY:
+					case WFRuleTypeGateway::PURCHASE_ORDER_BY_GL_CATEGORY:
+					case WFRuleTypeGateway::YEARLY_BUDGET_BY_GL_CODE:
+					case WFRuleTypeGateway::YEARLY_BUDGET_BY_GL_CATEGORY:
+					case WFRuleTypeGateway::YTD_BUDGET_PERCENT_OVERAGE_BY_GL_CODE:
+					case WFRuleTypeGateway::YTD_BUDGET_PERCENT_OVERAGE_BY_GL_CATEGORY:
+					case WFRuleTypeGateway::MTD_BUDGET_PERCENT_OVERAGE_BY_GL_CODE:
+					case WFRuleTypeGateway::MTD_BUDGET_PERCENT_OVERAGE_BY_GL_CATEGORY:
+					case WFRuleTypeGateway::YTD_BUDGET_OVERAGE_BY_GL_CODE:
+					case WFRuleTypeGateway::YTD_BUDGET_OVERAGE_BY_GL_CATEGORY:
+					case WFRuleTypeGateway::RECEIPT_ITEM_TOTAL_BY_GL_CODE:
+					case WFRuleTypeGateway::RECEIPT_ITEM_TOTAL_BY_GL_CATEGORY:
+						$duplicateByOptions = $this->wfRuleScopeGateway->getDuplicateRulesByOptions($wfrule_id, $conflictsRules, 'glaccount');
+						$conflictsRules = \NP\util\Util::valueList($duplicateByOptions, 'wfrule_id');
+						break;
+					case WFRuleTypeGateway::PO_ITEM_AMOUNT_BY_DEPARTMENT:
+					case WFRuleTypeGateway::INVOICE_ITEM_AMOUNT_BY_DEPARTMENT:
+						$duplicateByOptions = $this->wfRuleScopeGateway->getDuplicateRulesByOptions($wfrule_id, $conflictsRules, 'unit');
+						$conflictsRules = \NP\util\Util::valueList($duplicateByOptions, 'wfrule_id');
+						break;
+					case WFRuleTypeGateway::SPECIFIC_VENDOR:
+					case WFRuleTypeGateway::SPECIFIC_VENDOR_MASTER_RULE:
+						$duplicateByOptions = $this->wfRuleScopeGateway->getDuplicateRulesByOptions($wfrule_id, $conflictsRules, 'vendor');
+						$conflictsRules = \NP\util\Util::valueList($duplicateByOptions, 'wfrule_id');
+						break;
+					case WFRuleTypeGateway::INVOICE_BY_CONTRACT_CODE:
+					case WFRuleTypeGateway::PURCHASE_ORDER_BY_CONTRACT_CODE:
+					case WFRuleTypeGateway::INVOICE_BY_CONTRACT_CODE_MASTER:
+					case WFRuleTypeGateway::PURCHASE_ORDER_BY_CONTRACT_CODE_MASTER:
+						$allContractsRes = $this->wfRuleScopeGateway->find("wfrule_id = ? AND table_name = ? AND tablekey_id = ?", [$wfrule_id, "'jbcontract'", 0]);
+						if (count($allContractsRes) == 0) {
+							$duplicateByOptions = $this->wfRuleScopeGateway->getDuplicateRulesByOptions($wfrule_id, $conflictsRules, 'jbcontract');
+							$conflictsRulesByOptions = \NP\util\Util::valueList($duplicateByOptions, 'wfrule_id');
+
+							$rulePlaceHolders = $this->wfRuleScopeGateway->createPlaceholders($conflictsRules);
+							$where = Where::get()->in('wfrule_id', $rulePlaceHolders)
+								->equals('table_name', "'jbcontract'")
+								->equals('tablekey_id', 0);
+							$duplicateByAllContracts = $this->wfRuleScopeGateway->find($where, [$conflictsRules], null, ['wfrule_id']);
+							$conflictsRulesByAllContracts = \NP\util\Util::valueList($duplicateByAllContracts, 'wfrule_id');
+							$conflictsRules = array_merge($conflictsRulesByOptions, $conflictsRulesByAllContracts);
+						}
+						break;
+					case WFRuleTypeGateway::INVOICE_BY_GL_JOB_CODE:
+					case WFRuleTypeGateway::PURCHASE_ORDER_BY_GL_JOB_CODE:
+						$duplicateByOptions = $this->wfRuleScopeGateway->getDuplicateRulesByOptions($wfrule_id, $conflictsRules, 'jbjobcode');
+						$conflictsRules = \NP\util\Util::valueList($duplicateByOptions, 'wfrule_id');
+						break;
+					case WFRuleTypeGateway::INVOICE_TOTAL_BY_PAY_BY:
+						$duplicateByOptions = $this->wfRuleScopeGateway->getDuplicateRulesByOptions($wfrule_id, $conflictsRules, 'invoicepaymenttype');
+						$conflictsRules = \NP\util\Util::valueList($duplicateByOptions, 'wfrule_id');
+						break;
 				}
 			}
 		}
 
-		$originatorConflicts = array_unique($originatorConflicts);
-		$conflictingRules = (count($originatorConflicts)) ? $this->wfRuleGateway->getConflictingRulesById($originatorConflicts) : [];
+		$conflictsRules = array_unique($conflictsRules);
+		$result = (count($conflictsRules)) ? $this->wfRuleGateway->getConflictingRulesById($conflictsRules) : [];
 
-		return $conflictingRules;
+		return $result;
 	}
 
 
