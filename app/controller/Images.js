@@ -652,31 +652,30 @@ Ext.define('NP.controller.Images', {
         Ext.getDom('iframe-panel').src = NP.model.image.ImageIndex.getImageLink(this.current_image_index_id);
     },
 
-    onUseTemplate: function(win, invoice_id) {
-        var me         = this,
-            invoice_id = win.down('[name="invoice_id"]').getValue();
+    onUseTemplate: function(win, entity_id) {
+        var me = this;
 
-        me.onUpdateTemplate(win, invoice_id);
+        me.onUpdateTemplate(win, entity_id);
     },
 
-    onUpdateTemplate: function(win, invoice_id) {
-        var me         = this,
-            form       = me.getCmp('image.index');
+    onUpdateTemplate: function(win, entity_id) {
+        var me   = this,
+            form = me.getCmp('image.index');
 
-        invoice_id = invoice_id || '';
+        entity_id = entity_id || '';
 
-        form.findField('image_index_draft_invoice_id').setValue(invoice_id);
-        me.setTemplateButtonText(invoice_id);
+        form.findField('image_index_draft_invoice_id').setValue(entity_id);
+        me.setTemplateButtonText(entity_id);
         win.close();
     },
 
-    setTemplateButtonText: function(invoice_id) {
+    setTemplateButtonText: function(entity_id) {
         var me         = this,
             form       = me.getCmp('image.index'),
             button     = form.down('#field-use-template'),
             buttonText;
 
-        if (invoice_id == '' || invoice_id === null) {
+        if (entity_id == '' || entity_id === null) {
             buttonText = NP.Translator.translate('Use Template');
         } else {
             buttonText = NP.Translator.translate('View Selected Template');

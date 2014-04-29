@@ -3,9 +3,9 @@
  *
  * @author Thomas Messier
  */
-Ext.define('NP.view.invoice.UseTemplateWindow', {
+Ext.define('NP.view.shared.invoicepo.UseTemplateWindow', {
     extend: 'Ext.window.Window',
-    alias:  'widget.invoice.usetemplatewindow',
+    alias:  'widget.shared.invoicepo.usetemplatewindow',
 
     requires: [
     	'NP.lib.core.Translator',

@@ -24,8 +24,8 @@ Ext.define('NP.controller.Po', {
 	
 	views: ['po.Register','po.View','shared.invoicepo.ImagesManageWindow','shared.invoicepo.ImagesAddWindow',
 			'shared.invoicepo.SplitWindow','shared.invoicepo.RejectWindow','NP.view.vendor.VendorSelectorWindow',
-			'NP.view.shared.invoicepo.ScheduleWindow','NP.view.shared.invoicepo.TemplateWindow'/*,
-			'invoice.UseTemplateWindow'*/],
+			'NP.view.shared.invoicepo.ScheduleWindow','NP.view.shared.invoicepo.TemplateWindow',
+			'shared.invoicepo.UseTemplateWindow'],
 
 	shortName  : 'po',
 	longName   : 'purchaseorder',

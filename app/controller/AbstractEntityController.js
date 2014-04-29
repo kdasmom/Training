@@ -321,6 +321,20 @@ Ext.define('NP.controller.AbstractEntityController', {
 			click: me.onSaveCopy.bind(me)
 		};
 
+		// Clicking on the Save as Template button
+		control['#' + me.shortName + 'SaveTemplateBtn'] = {
+			click: function() {
+				me.onSaveTemplate(false);
+			}
+		};
+
+		// Clicking on the Save as User Template button
+		control['#' + me.shortName + 'SaveUserTemplateBtn'] = {
+			click: function() {
+				me.onSaveTemplate(true);
+			}
+		};
+
 		// Clicking on the Save button in the Schedule window
 		control['#' + me.shortName + 'UseTemplateBtn'] = {
 			click: me.onUseTemplate.bind(me)
@@ -2553,7 +2567,7 @@ Ext.define('NP.controller.AbstractEntityController', {
             return;
         }
 
-        var win = Ext.create('NP.view.invoice.UseTemplateWindow', {
+        var win = Ext.create('NP.view.shared.invoicepo.UseTemplateWindow', {
             itemId               : me.shortName + 'ApplyTemplateWin',
             type                 : me.shortName,
             property_id          : property_id,
@@ -2741,6 +2755,25 @@ Ext.define('NP.controller.AbstractEntityController', {
 				});
 			});
     	}
+    },
+
+    onSaveTemplate: function(isUser) {
+    	var me       = this,
+    		formData = me.getEntityView().getLoadedData(),
+    		title    = (isUser) ? 'Save as User Template' : 'Save as Template',
+    		win;
+
+    	title = NP.Translator.translate(title);
+
+    	win = Ext.create('NP.view.shared.invoicepo.TemplateWindow', {
+			itemId          : me.shortName + 'SaveTemplateWin',
+			title           : title,
+			type            : me.shortName,
+			status          : me.getEntityRecord().get(me.longName + '_status'),
+			showImageOptions: (formData['image'] !== null)
+        });
+
+        win.show();
     },
 
     onCreateCopy: function() {

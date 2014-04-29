@@ -25,7 +25,7 @@ Ext.define('NP.controller.Invoice', {
 	
 	views: ['invoice.Register','invoice.View','invoice.VoidWindow','invoice.HoldWindow',
 			'shared.invoicepo.ImagesManageWindow','shared.invoicepo.ImagesAddWindow',
-			'invoice.UseTemplateWindow','shared.invoicepo.SplitWindow',
+			'shared.invoicepo.UseTemplateWindow','shared.invoicepo.SplitWindow',
 			'shared.invoicepo.RejectWindow','invoice.PaymentWindow','invoice.ReclassWindow',
 			'vendor.VendorSelectorWindow','shared.invoicepo.ScheduleWindow',
 			'shared.invoicepo.TemplateWindow','invoice.ForwardWindow',

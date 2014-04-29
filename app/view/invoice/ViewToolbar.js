@@ -187,13 +187,13 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                         displayCondition: me.isBudgetReportBtnVisible
                     },{
                         text            : 'Save as Template',
-                        itemId          : 'saveTemplateBtn',
+                        itemId          : 'invoiceSaveTemplateBtn',
                         iconCls         : 'template-save-btn',
                         moduleId        : 2008,
                         displayCondition: me.isSaveTemplateBtnVisible.bind(me)
                     },{
                         text            : 'Save as User Template',
-                        itemId          : 'saveUserTemplateBtn',
+                        itemId          : 'invoiceSaveUserTemplateBtn',
                         iconCls         : 'template-save-user-btn',
                         moduleId        : 2006,
                         displayCondition: me.isSaveUserTemplateBtnVisible.bind(me)
@@ -397,11 +397,11 @@ Ext.define('NP.view.invoice.ViewToolbar', {
     },
 
     isSaveTemplateBtnVisible: function(data) {
-        return this._isSaveTemplateBtnVisible(data, 2008, 'saveTemplateBtn');
+        return this._isSaveTemplateBtnVisible(data, 2008, 'invoiceSaveTemplateBtn');
     },
 
     isSaveUserTemplateBtnVisible: function(data) {
-        return this._isSaveTemplateBtnVisible(data, 2006, 'saveUserTemplateBtn');
+        return this._isSaveTemplateBtnVisible(data, 2006, 'invoiceSaveUserTemplateBtn');
     },
 
     _isSaveTemplateBtnVisible: function (data, moduleId, btnId) {

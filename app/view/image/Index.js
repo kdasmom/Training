@@ -20,7 +20,7 @@ Ext.define('NP.view.image.Index', {
         'NP.view.shared.button.SaveAndNext',
         'NP.view.shared.button.SaveAndPrevious',
         'NP.store.system.PriorityFlags',
-        'NP.view.invoice.UseTemplateWindow'
+        'NP.view.shared.invoicepo.UseTemplateWindow'
     ],
 
     locale: {
@@ -1114,7 +1114,7 @@ Ext.define('NP.view.image.Index', {
 
         var utilityaccount_id = this.findField('utilityaccount_id').getValue();
 
-        var win = Ext.create('NP.view.invoice.UseTemplateWindow', {
+        var win = Ext.create('NP.view.shared.invoicepo.UseTemplateWindow', {
             itemId               : 'imageUseTemplateWin',
             hideTemplateRemoveBtn: false,
             type                 : 'invoice',
