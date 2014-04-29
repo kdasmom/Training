@@ -496,7 +496,6 @@ Ext.define('NP.controller.UserManager', {
 		var userField = form.findField('Delegation_To_UserProfile_Id');
 		if (delegation_id) {
 			userField.hide();
-			form.findField('Delegation_StartDate').disable();
 		} else {
 			userField.getStore().addExtraParams({ userprofile_id: userprofile_id });
 			userField.getStore().load();
