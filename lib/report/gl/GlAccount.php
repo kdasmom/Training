@@ -23,8 +23,8 @@ class GlAccount extends AbstractReport implements ReportInterface {
 
 		if ($extraParams['glaccount_order'] == 'glcode_name') {
 			$this->addCols([
-				new ReportColumn('GL Name', 'glcode_name', 0.2, 'string', 'left'),
-				new ReportColumn('GL Number', 'glcode_number', 0.15, 'string', 'left', [$this, 'renderName'])
+				new ReportColumn('GL Name', 'glcode_name', 0.2, 'string', 'left', [$this, 'renderName']),
+				new ReportColumn('GL Number', 'glcode_number', 0.15, 'string', 'left')
 			]);
 		}
 		if ($extraParams['glaccount_order'] == 'glcode_number') {
