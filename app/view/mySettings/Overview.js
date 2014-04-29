@@ -33,8 +33,7 @@ Ext.define('NP.view.mySettings.Overview', {
 	    	'<br /><br />' +
 			'<ul>' +
 				'<li>' + NP.Translator.translate(me.userInfoText) +'</li>' +
-				'<li>' + NP.Translator.translate(me.settingsText, { property: NP.Config.getPropertyLabel() }) +'</li>' +
-				'<li>' + NP.Translator.translate(me.dashboardText) +'</li>';
+				'<li>' + NP.Translator.translate(me.settingsText, { property: NP.Config.getPropertyLabel() }) +'</li>';
 
 		var settingVal = NP.lib.core.Config.getSetting('pn.main.WebDocumentz', 0);
 		if (settingVal == 1 || settingVal == 2) {
@@ -45,6 +44,7 @@ Ext.define('NP.view.mySettings.Overview', {
 				'<li>' + NP.Translator.translate(me.emailNotifText) +'</li>' +
 				'<li>' + NP.Translator.translate(me.mobileSettingsText) +'</li>' +
 				'<li>' + NP.Translator.translate(me.userDelegText) +'</li>' +
+				'<li>' + NP.Translator.translate(me.dashboardText) +'</li>' +
 			'</ul>';
 
 	    me.callParent(arguments);
