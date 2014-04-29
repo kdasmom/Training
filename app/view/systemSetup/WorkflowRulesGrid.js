@@ -62,14 +62,6 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 		gridStore.addExtraParams(this.WFRuleSearchParams);
 		gridStore.load();
 
-//		if (this.WFRuleSearchParams) {
-//			if (this.WFRuleSearchParams.criteria) {
-//					this.WFRuleSearchParams.criteria = this.WFRuleSearchParams.criteria.split(',').map(function(i){
-//						return parseInt(i, 10);
-//					});
-//				}
-//		}
-
 		this.items = [
 			{
 				xtype: 'panel',
@@ -158,7 +150,9 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 		this.searchtypeFilter = this.query('[name="searchtype"]')[0];
 
 		if (this.WFRuleSearchParams) {
-			this.changeCriteriaSection( this.WFRuleSearchParams.type, this.WFRuleSearchParams.criteria );
+			if (this.WFRuleSearchParams.criteria) {
+				this.changeCriteriaSection( this.WFRuleSearchParams.type, this.WFRuleSearchParams.criteria );
+			}
 			this.searchtypeFilter.setValue( this.WFRuleSearchParams.type );
 		}
 	},

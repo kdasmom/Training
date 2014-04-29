@@ -223,12 +223,17 @@ Ext.define('NP.controller.SystemSetup', {
 			'#buttonWorkflowActivate': {
 				click: function() {
 					var wfrule_id = me.getCmp('systemsetup.workflowrulesmodify').data.rule.wfrule_id,
-						grid = this.getWorkflowOriginatesGrid()
+						grid = this.getWorkflowOriginatesGrid(),
 						selectRoutes = false;
 
 					if (me.getCmp('systemsetup.workflowrulesroutes')) {
-						if (me.getCmp('systemsetup.workflowrulesroutes').down('[name="routeform"]').isValid()) {
-							selectRoutes = true;
+						var originatesgroup = me.getCmp('systemsetup.workflowrulesroutes').down('[name="originatesgroup"]').getValue();
+						var forwardgroup = me.getCmp('systemsetup.workflowrulesroutes').down('[name="forwardgroup"]').getValue();
+
+						if (me.getCmp('systemsetup.workflowrulesroutes').down('[name="routeform"]').isValid()
+							&& forwardgroup.forwardto
+							&& originatesgroup.originatesfrom) {
+								selectRoutes = true;
 						}
 					}
 
