@@ -21,6 +21,7 @@ class WFRuleEntity extends \NP\core\AbstractEntity {
         'DTS'               => [],
         'wfrule_number_end' => [],
         'isAllPropertiesWF' => [],
-        'wfrule_lastupdatedby' => []
+        'wfrule_lastupdatedby' => [],
+        'region_id' => []
     ];
 }

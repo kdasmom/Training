@@ -452,7 +452,7 @@ class WfRuleGateway extends AbstractGateway {
 			case self::GLACCOUNTS_CRITERIA:
 				return new sql\SearchByGLAccountSelect($asp_client_id, $criteria, $order);
 			case self::USERS_CRITERIA:
-				return new sql\SearchByUserSelect($asp_client_id, $criteria, $order);
+				return new sql\SearchByUserSelect($criteria, $order);
 			case self::ROLES_CRITERIA:
 				return new sql\SearchByRoleSelect($asp_client_id, $criteria, $order);
 			case self::VENDORS_CRITERIA:

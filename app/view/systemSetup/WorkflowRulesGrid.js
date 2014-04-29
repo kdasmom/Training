@@ -158,8 +158,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 		this.searchtypeFilter = this.query('[name="searchtype"]')[0];
 
 		if (this.WFRuleSearchParams) {
-//		if (this.WFRuleSearchParams && this.WFRuleSearchParams.type) {
-//			this.changeCriteriaSection( this.WFRuleSearchParams.type, this.WFRuleSearchParams.criteria );
+			this.changeCriteriaSection( this.WFRuleSearchParams.type, this.WFRuleSearchParams.criteria );
 			this.searchtypeFilter.setValue( this.WFRuleSearchParams.type );
 		}
 	},

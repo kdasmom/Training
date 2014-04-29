@@ -106,7 +106,8 @@ class WFRuleService extends AbstractService {
             'DTS'            => date('Y-m-d H:i:s'),
             'wfrule_number_end'    => $rule['wfrule_number_end'],
             'isAllPropertiesWF'    => $rule['isAllPropertiesWF'],
-            'wfrule_lastupdatedby' => $rule['wfrule_lastupdatedby']
+            'wfrule_lastupdatedby' => $rule['wfrule_lastupdatedby'],
+            'region_id'            => $rule['region_id']
         ]);
 
         $this->wfRuleGateway->beginTransaction();
