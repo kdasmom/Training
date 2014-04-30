@@ -118,7 +118,8 @@ Ext.define('NP.view.property.PropertiesFormInfo', {
     		{ xtype: 'shared.yesnofield', fieldLabel: me.syncFieldText, name: 'sync' },
             // Accrual Cash
     		{
-    			xtype: 'radiogroup',
+    			xtype: '' +
+					'radiogroup',
     			fieldLabel: me.accrualCashFieldText,
     			defaults: {
     				name: 'cash_accural',
@@ -189,12 +190,14 @@ Ext.define('NP.view.property.PropertiesFormInfo', {
                 name      : fieldData['customfield_name'],
                 number    : fieldData['universal_field_number'],
                 allowBlank: !fieldData['customfield_required'],
-                fieldCfg  : { width: defaultWidth-177, value: fieldData['customfielddata_value'] }
+                comboUi   : 'customcombo',
+                width     : defaultWidth,
+                fieldCfg  : { useSmartStore: true, value: fieldData['customfielddata_value'] }
             });
         });
 
 		if (!me.property_id) {
-			me.items.push({ xtype: 'displayfield', value: NP.Translator.translate('Accounting Info'), padding: '10 0 0 0'});
+			me.items.push({ xtype: 'displayfield', value: '<strong>' + NP.Translator.translate('Accounting Info') + '</strong>', padding: '10 0 0 0'});
 			me.items.push({ xtype: 'property.propertiesformaccounting' });
 		}
 

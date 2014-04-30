@@ -48,6 +48,12 @@ Ext.define('NP.lib.ui.Assigner', {
         });
 
         me.callParent(arguments);
+
+        me.on('afterrender', function() {
+            if (me.store.isLoading()) {
+                me.showLoadingMask();
+            }
+        });
     },
     
     getStore: function() {
@@ -91,10 +97,11 @@ Ext.define('NP.lib.ui.Assigner', {
             displayField: me.displayField,
             valueField  : me.valueField,
             allowBlank  : me.allowBlank,
-            store : store,
-            listConfig: listConfig,
-            flex  : 1,
-            listeners: {
+            store       : store,
+            listConfig  : listConfig,
+            flex        : 1,
+            isFormField : false,
+            listeners   : {
                 itemdblclick: Ext.bind(me.onItemDblClick, me)
             }
         });
@@ -122,15 +129,21 @@ Ext.define('NP.lib.ui.Assigner', {
     },
     
     onBeforeStoreLoad: function() {
+        this.showLoadingMask();
+    },
+
+    showLoadingMask: function() {
         var me   = this;
 
         if (!me.down('container') || !me.down('container').el) {
-            me.on('afterrender', me.onBeforeStoreLoad, me, { single: true });
+            me.on('afterrender', me.showLoadingMask, me, { single: true });
             return;
         }
         
-        me.mask = new Ext.LoadMask({ target: me.down('container') });
-        me.mask.show();
+        if (!me._mask) {
+            me._mask = new Ext.LoadMask({ target: me.down('container') });
+            me._mask.show();
+        }
     },
 
     onStoreLoad: function() {
@@ -164,11 +177,12 @@ Ext.define('NP.lib.ui.Assigner', {
         } else {
             fromStore.add(me.store.getRange());
         }
-        
+
         Ext.resumeLayouts(true);
 
-        if (me.mask && me.mask.destroy) {
-            me.mask.destroy();
+        if (me._mask && me._mask.destroy) {
+            me._mask.destroy();
+            me._mask = null;
         }
     },
 

@@ -41,7 +41,7 @@ Ext.define('NP.controller.Report', {
 		panel = panel || '#contentPanel';
 
 		me.currentForm = me.setView('NP.view.report.' + section + '.Form', {}, panel);
-		
+
 		me.currentForm.getGenerateReportButton().on('click', me.generateReport.bind(me));
 	},
 

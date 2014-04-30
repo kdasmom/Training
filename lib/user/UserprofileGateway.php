@@ -251,7 +251,7 @@ class UserprofileGateway extends AbstractGateway {
 	/**
 	 * 
 	 */
-	public function findByFilter($userprofile_status=null, $property_id=null, $role_id=null, $module_id=null, $pageSize=null, $page=1, $sort='person_lastname') {
+	public function findByFilter($userprofile_status=null, $property_id=null, $role_id=null, $module_id=null, $keyword = null, $pageSize=null, $page=1, $sort='person_lastname') {
 		if ($sort == 'person_lastname ASC') {
 			$sort = 'p.person_lastname, p.person_firstname';
 		} else if ($sort == 'person_lastname DESC') {
@@ -294,12 +294,52 @@ class UserprofileGateway extends AbstractGateway {
 			$params[] = $module_id;
 		}
 
+		if ($keyword) {
+			$select->whereNest('OR')
+				->whereLike('u.userprofile_username', '?')
+				->whereLike('p.person_lastname', '?')
+				->whereLike('p.person_firstname', '?');
+
+			$params = array_merge($params, [$keyword . '%', $keyword . '%', $keyword . '%']);
+		}
+
 		// If paging is needed
 		if ($pageSize !== null) {
 			return $this->getPagingArray($select, $params, $pageSize, $page);
 		} else {
 			return $this->adapter->query($select, $params);
 		}
+	}
+
+	/**
+	 * Returns a list of users to be shown on the Forward Invoice page
+	 */
+	public function findForForward($table_name, $tablekey_id) {
+		$itemTable = ($table_name == 'invoice') ? 'invoiceitem' : 'poitem';
+		$select = $this->getSelect()
+					->whereEquals('u.userprofile_status', '?')
+					->whereEquals('r.is_admin_role', 0)
+					->whereIsNotEmpty('e.email_address')
+					->whereExists(
+						Select::get()->from(array('pu'=>'propertyuserprofile'))
+									->whereEquals('u.userprofile_id', 'pu.userprofile_id')
+									->whereIn(
+										'pu.property_id',
+										Select::get()->column('property_id')
+													->from($itemTable)
+													->whereEquals("{$table_name}_id", '?')
+										->union(
+											Select::get()->column('property_id')
+													->from($table_name)
+													->whereEquals("{$table_name}_id", '?')
+										)
+									)
+					)
+					->order('p.person_lastname, p.person_firstname');
+
+		$params = ['active', $tablekey_id, $tablekey_id];
+
+		return $this->adapter->query($select, $params);
 	}
 
 	/**

@@ -12,15 +12,25 @@ Ext.define('NP.view.shared.RoleAssigner', {
     fieldLabel: 'User Groups',
 
     name        : 'roles',
-    store       : {
-                    type    : 'user.roles',
-                    service : 'UserService',
-                    action  : 'getRoles',
-                    autoLoad: true
-			    },
     displayField: 'role_name',
     valueField  : 'role_id',
     fromTitle   : 'Unassigned',
     toTitle     : 'Assigned',
-    msgTarget   : 'under'
+    msgTarget   : 'under',
+	autoLoad    : true,
+
+	initComponent: function() {
+		var me = this;
+
+		if (!this.store) {
+			this.store = {
+				type     : 'user.roles',
+				service  : 'UserService',
+				action   : 'getRoles',
+				autoLoad : me.autoLoad
+			};
+		}
+
+		this.callParent(arguments);
+	}
 });

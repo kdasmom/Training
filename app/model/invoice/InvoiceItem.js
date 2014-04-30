@@ -12,7 +12,7 @@ Ext.define('NP.model.invoice.InvoiceItem', {
 		{ name: 'invoice_id', type: 'int' },
 		{ name: 'invoiceitem_linenum', type: 'int' },
 		{ name: 'glaccount_id', type: 'int' },
-		{ name: 'invoiceitem_description', type: 'string', defaultValue: '' },
+		{ name: 'invoiceitem_description', type: 'string', defaultValue: '', useNull: false },
 		{ name: 'invoiceitem_quantity', type: 'float', defaultValue: 1.0 },
 		{ name: 'invoiceitem_unitprice', type: 'float', useNull: false },
 		{ name: 'invoiceitem_amount', type: 'float', useNull: false },

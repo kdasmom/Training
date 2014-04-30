@@ -16,6 +16,7 @@ Ext.define('NP.Application', {
 		'overrides.form.field.Base',
 		'overrides.form.field.ComboBox',
 		'overrides.form.field.Number',
+		'overrides.form.field.Text',
 		'overrides.form.Basic',
 		'overrides.form.Panel',
 		'overrides.grid.column.Column',

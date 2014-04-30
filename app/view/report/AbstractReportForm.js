@@ -58,6 +58,8 @@ Ext.define('NP.view.report.AbstractReportForm', {
 
 	// This can be overriden if needed
 	selectReport: function() {
-		this.getReport().setupForm();
+        if (this.getReport) {
+            this.getReport().setupForm();
+        }
 	}
 });

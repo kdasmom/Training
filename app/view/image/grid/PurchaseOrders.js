@@ -13,6 +13,11 @@ Ext.define('NP.view.image.grid.PurchaseOrders', {
             //'image.gridcol.ImageType'
             'image.gridcol.Type'
         ];
+
+		this.excludedCols = [
+			'shared.gridcol.PendingDays'
+		];
+
         this.autoscroll = true;
 
         var context = NP.Security.getCurrentContext();

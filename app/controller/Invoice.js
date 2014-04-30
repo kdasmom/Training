@@ -21,14 +21,16 @@ Ext.define('NP.controller.Invoice', {
 	stores: ['invoice.Invoices','system.PriorityFlags','invoice.InvoicePaymentTypes',
 			'invoice.InvoiceItems','invoice.InvoicePayments','shared.Reasons',
 			'image.ImageIndexes','shared.RejectionNotes','invoice.InvoicePaymentTypes',
-			'invoice.AuditReclasses'],
+			'invoice.AuditReclasses','NP.store.user.Userprofiles'],
 	
 	views: ['invoice.Register','invoice.View','invoice.VoidWindow','invoice.HoldWindow',
 			'shared.invoicepo.ImagesManageWindow','shared.invoicepo.ImagesAddWindow',
 			'invoice.UseTemplateWindow','shared.invoicepo.SplitWindow',
 			'shared.invoicepo.RejectWindow','invoice.PaymentWindow','invoice.ReclassWindow',
-			'NP.view.vendor.VendorSelectorWindow','NP.view.shared.invoicepo.ScheduleWindow',
-			'NP.view.shared.invoicepo.TemplateWindow'],
+			'vendor.VendorSelectorWindow','shared.invoicepo.ScheduleWindow',
+			'shared.invoicepo.TemplateWindow','invoice.ForwardWindow',
+			'shared.invoicepo.ChangePropertyWindow','shared.invoicepo.HistoryDetailWindow',
+			'shared.invoicepo.BudgetDetailWindow'],
 
 	refs: [
 		{ ref: 'paymentGrid', selector: '[xtype="invoice.viewpayments"]' },
@@ -131,6 +133,14 @@ Ext.define('NP.controller.Invoice', {
 
 			'#invoiceReclassSaveBtn': {
 				click: me.onReclassSave
+			},
+
+			'#invoiceForwardBtn': {
+				click: me.onForward
+			},
+
+			'#invoiceForwardSendBtn': {
+				click: me.onForwardSend
 			}
 		});
 
@@ -162,7 +172,28 @@ Ext.define('NP.controller.Invoice', {
 			Ext.apply(viewCfg, {
 				listeners      : {
 					dataloaded: function(boundForm, data) {
-						me.updateEntityViewState();
+						Ext.suspendLayouts();
+
+						// Manually load the lines in; we do this instead of loading a store because there
+						// are a number of things at the header level that depend on the lines. This way
+						// we don't need to defer a whole bunch of processes to wait for lines to load,
+						// which gets a little dirty and unreliable
+						var lineStore = me.getLineDataView().getStore();
+						
+						lineStore.loadRawData(data.lines);
+
+						// Update everything in the view except lines since we updated them manually above
+						me.updateEntityViewState({ lines: true }, false);
+
+						me.setRequiredNotes();
+
+						me.setCycleFieldVisibility();
+
+						me.setInvoiceMaxLen();
+
+						me.loadPayments();
+
+						Ext.resumeLayouts(true);
 
 						// Save to recent records
 						me.application.getController('Favorites').saveToRecentRecord('Invoice - ' + data['invoice_ref']);
@@ -174,7 +205,8 @@ Ext.define('NP.controller.Invoice', {
 		var form = me.setView('NP.view.invoice.View', viewCfg, null, true);
 
 		if (!invoice_id) {
-			// Setup the title, toolbar, property field, and Pay By field
+			// Setup the title, toolbar, property field, and Pay By field; the other things don't matter/
+			// for a new invoice (you don't need to load lines, payments, forwards, etc.)
 			me.updateEntityViewState({ title: true, toolbar: true, property: true, payBy: true }, true);
 		}
 	},
@@ -184,7 +216,8 @@ Ext.define('NP.controller.Invoice', {
 			boundForm  = me.getEntityView(),
 			data       = boundForm.getLoadedData(),
 			invoice    = me.getEntityRecord(),
-			invoice_id = invoice.get('invoice_id');
+			invoice_id = invoice.get('invoice_id'),
+			i;
 
 		items = items || {};
 		include = (arguments.length > 1) ? include : false;
@@ -197,11 +230,6 @@ Ext.define('NP.controller.Invoice', {
 		}
 
 		Ext.suspendLayouts();
-
-		// Check if the invoice needs to be made readonly
-		if (updateOption('readonly')) {
-			me.setReadOnly(me.isInvoiceReadOnly());
-		}
 		
 		// Set the title
 		if (updateOption('title')) {
@@ -218,33 +246,9 @@ Ext.define('NP.controller.Invoice', {
 			var warnings = data['warnings'];
 			me.getWarningsView().getStore().removeAll();
 			if (warnings.length) {
-				me.getWarningsView().getStore().add(warnings);
+				me.getWarningsView().getStore().loadRawData(warnings);
 				me.getWarningsView().up('panel').show();
 			}
-		}
-
-		var lineView     = me.getLineView(),
-			lineStore    = me.getLineDataView().getStore(),
-			paymentGrid  = me.getPaymentGrid(),
-			paymentStore = paymentGrid.getStore();
-
-		// Load the line store
-		if (updateOption('lines')) {
-			lineStore.addExtraParams({ entity_id: invoice_id });
-
-			lineStore.load(function() {
-				me.setCycleFieldVisibility();
-
-				// Only load the payment store after the line store because we need the total amount
-				paymentGrid.totalAmount = lineView.getTotalAmount();
-
-				paymentStore.addExtraParams({ invoice_id: invoice_id });
-				paymentStore.load(function() {
-					if (paymentStore.getCount()) {
-						me.getPaymentGrid().show();
-					}
-				});
-			});
 		}
 
 		var vendorField   = boundForm.findField('vendor_id'),
@@ -278,6 +282,21 @@ Ext.define('NP.controller.Invoice', {
 			me.setPropertyFieldState(invoice.get('invoice_status'));
 		}
 
+		// Load the line store
+		if (updateOption('lines')) {
+			var lineStore = me.getLineDataView().getStore();
+			lineStore.addExtraParams({ entity_id: invoice_id });
+
+			lineStore.load(function() {
+				me.setCycleFieldVisibility();
+
+				me.setRequiredNotes();
+
+				// Only load the payment store after the line store because we need the total amount
+				me.loadPayments();
+			});
+		}
+
 		// Set the value for the period field; we need to do it manually because the BoundForm
 		// tries to set a date object (from the model) on the field, but since we're not dealing
 		// with a date field it doesn't work
@@ -296,6 +315,37 @@ Ext.define('NP.controller.Invoice', {
 				if (payByField.getValue() === null || payByField.getValue() === 0) {
 					me.setDefaultPayBy();
 				}
+			}
+		}
+
+		var notes, noteText;
+		if (updateOption('holdNotes')) {
+			notes    = data['hold_notes'];
+			noteText = [];
+
+			for (i=0; i<notes.length; i++) {
+				if (!Ext.isEmpty(notes[i].note)) {
+					noteText.push(notes[i].note.replace(/[\n]/g, '<br />'));
+				} else {
+					noteText.push(notes[i].reason_text);
+				}
+			}
+
+			if (noteText.length) {
+				boundForm.findField('invoice_onhold_notes').setValue(noteText.join('<br />'));
+			}
+		}
+
+		if (updateOption('rejectionNotes')) {
+			notes    = data['rejection_notes'];
+			noteText = [];
+
+			for (i=0; i<notes.length; i++) {
+				noteText.push(notes[i].rejectionnote_text);
+			}
+
+			if (noteText.length) {
+				boundForm.findField('reject_reason').setValue(noteText.join('<br />'));
 			}
 		}
 
@@ -323,35 +373,40 @@ Ext.define('NP.controller.Invoice', {
 			me.loadImage();
 		}
 
+		// Check if the invoice needs to be made readonly
+		if (updateOption('readonly')) {
+			me.setReadOnly(me.isInvoiceReadOnly());
+		}
+
 		Ext.resumeLayouts(true);
+	},
+
+	loadPayments: function() {
+		var me           = this,
+			lineView     = me.getLineView(),
+			paymentGrid  = me.getPaymentGrid(),
+			paymentStore = paymentGrid.getStore();
+
+		// Only load the payment store after the line store because we need the total amount
+		paymentGrid.totalAmount = lineView.getTotalAmount();
+
+		paymentStore.addExtraParams({ invoice_id: me.getEntityRecord().get('invoice_id') });
+		paymentStore.load(function() {
+			if (paymentStore.getCount()) {
+				paymentGrid.show();
+			}
+		});
 	},
 
 	setPropertyFieldState: function(invoice_status) {
 		var me    = this,
 			field = me.getPropertyCombo();
 
-		// Only allow changing the property field if the invoice is open and user has one of
-		// the following permissions: 'New Invoice', 'Modify Any', 'Modify Only Created';
-		// OR if the invoice is completed, user has 'Invoice Post Approval Modify' permission,
-		// and post approval modify is turned on
-		if (
-			(
-				invoice_status == 'open'
-				&& (
-					me.hasPermission(1032) 
-					|| me.hasPermission(6076) 
-					|| me.hasPermission(6077)
-				)
-			)
-			|| (
-				invoice_status == 'saved' 
-				&& me.hasPermission(1068) 
-				&& me.getSetting('PN.InvoiceOptions.SkipSave') == '0'
-			)
-		) {
-			field.enable();
+		// Only allow changing the property field if the invoice is new
+		if (me.getEntityRecord().get('invoice_id') === null) {
+			field.setReadOnly(false);
 		} else {
-			field.disable();
+			field.setReadOnly(true);
 		}
 	},
 
@@ -383,16 +438,18 @@ Ext.define('NP.controller.Invoice', {
 			status  = invoice.get('invoice_status');
 
 		if (
-			status == "open"
-			|| (
+			(
 				status ==  "draft"
 				&& me.hasPermission(2008)
 			)
 			|| (
-				me.hasPermission(6076)
-				|| (
-					me.hasPermission(6077) 
-					&& NP.Security.getUser().get('userprofile_id') == invoice.get('userprofile_id')
+				status == "open"
+				&& (
+					me.hasPermission(6076)
+					|| (
+						me.hasPermission(6077) 
+						&& NP.Security.getUser().get('userprofile_id') == invoice.get('userprofile_id')
+					)
 				)
 			)
 			|| (status == "saved" && me.hasPermission(1068))
@@ -450,6 +507,30 @@ Ext.define('NP.controller.Invoice', {
 				}
 			}
 		}
+	},
+
+	onPropertyComboSelect: function(propertyCombo, recs) {
+		var me = this;
+
+		me.callParent(arguments);
+
+		if (recs.length) {
+			me.setInvoiceMaxLen();
+		}
+	},
+
+	setInvoiceMaxLen: function() {
+		var me       = this,
+			form     = me.getEntityView(),
+			intPkgId = me.getPropertyRecord().get('integration_package_id');
+			intPkg   = Ext.getStore('system.IntegrationPackages').getById(intPkgId);
+			maxLen   = intPkg.get('invoice_ref_max');
+
+		if (maxLen === null) {
+			maxLen = 100;
+		}
+
+		form.findField('invoice_ref').maxLength = maxLen;
 	},
 
 	changeVendor: function() {
@@ -735,25 +816,29 @@ Ext.define('NP.controller.Invoice', {
 	},
 
 	onChangeLineProperty: function() {
-		var me                = this,
-			grid              = me.getLineGrid(),
-			utilityaccount_id = grid.selectedRec.get('utilityaccount_id'),
-			utilStore         = grid.utilityAccountStore,
-			currentUtilCount  = utilStore.getCount();
+		var me        = this,
+			vendorRec = me.getVendorRecord();
 
-		Ext.suspendLayouts();
+		if (vendorRec.get('is_utility_vendor')) {
+			var grid              = me.getLineGrid(),
+				utilityaccount_id = grid.selectedRec.get('utilityaccount_id'),
+				utilStore         = grid.utilityAccountStore,
+				currentUtilCount  = utilStore.getCount();
 
-		me.callParent();
+			Ext.suspendLayouts();
 
-		// If there's a Utlity Account set in the column, it would not longer be valid with a property change
-		// so clear it
-		if (utilityaccount_id !== null) {
-			me.clearUtilityAccount();
+			me.callParent();
+
+			// If there's a Utlity Account set in the column, it would not longer be valid with a property change
+			// so clear it
+			if (utilityaccount_id !== null) {
+				me.clearUtilityAccount();
+			}
+
+			me.filterUtilityRecords();
+
+			Ext.resumeLayouts(true);
 		}
-
-		me.filterUtilityRecords();
-
-		Ext.resumeLayouts(true);
 	},
 
 	filterUtilityRecords: function() {
@@ -778,6 +863,34 @@ Ext.define('NP.controller.Invoice', {
 
 		// Filter the store (which should then trigger the event handler above once complete)
 		utilStore.filter('property_id', grid.selectedRec.get('property_id'));
+	},
+
+	validateHeader: function(isSubmit) {
+		var me      = this,
+			form    = me.getEntityView(),
+			isValid;
+
+		Ext.suspendLayouts();
+
+		isValid = me.callParent(arguments);
+
+		if (isSubmit) {
+			isValid = form.isValid();
+
+			var totalAmount   = me.getLineView().getTotalAmount(),
+				controlAmount = form.findField('control_amount').getValue();
+
+			if (controlAmount !== null && controlAmount != totalAmount) {
+				form.findField('control_amount').markInvalid(
+					me.translate('Invoice Total must be equal to line total.')
+				);
+				isValid = false;
+			}
+		}
+
+		Ext.resumeLayouts(true);
+
+		return isValid;
 	},
 
 	validateLineItem: function(rec, col, val) {
@@ -1143,6 +1256,71 @@ Ext.define('NP.controller.Invoice', {
 					}
 				}
 			);
+		}
+	},
+
+	onForward: function() {
+		var me    = this,
+	        email = NP.Security.getUser().get('email_address');
+
+		if (!Ext.isEmpty(email)) {
+			var win = Ext.widget('invoice.forwardwindow', {
+				invoice: me.getEntityRecord(),
+				vendor : me.getVendorRecord()
+	        });
+
+        	win.show();
+        } else {
+        	Ext.MessageBox.alert(
+				me.translate('Error'),
+				me.translate('You cannot forward invoices without a valid email address. ' +
+								'Please update your profile with an email address.')
+			);
+        }
+	},
+
+	onForwardSend: function() {
+		var me   = this,
+			win  = me.getCmp('invoice.forwardwindow'),
+			form = win.down('form').getForm();
+
+		if (win.isValid()) {
+			NP.Net.remoteCall({
+				mask    : win,
+				method  : 'POST',
+				requests: {
+					service     : 'InvoiceService',
+					action      : 'forwardInvoice',
+					invoice_id  : win.invoice.get('invoice_id'),
+					sender_email: NP.Security.getUser().get('email_address'),
+					forward_to  : form.findField('forward_to').getGroupValue(),
+					forward_val : win.getForwardValue(),
+					message     : form.findField('message').getValue(),
+					includes    : win.getIncludes(),
+					success     : function(result) {
+						if (result.success) {
+							if (result.errors.length) {
+								Ext.MessageBox.alert(
+									me.translate('Error'),
+									me.translate('Invoice could not be forwarded to the following recipients:<br /><br />') +
+									result.errors.join(',')
+								);
+							} else {
+								NP.Util.showFadingWindow({
+									html: me.translate('Invoice was successfully forwarded.')
+								});
+								win.close();
+							}
+							me.getForwardsGrid().getStore().load();
+						} else {
+							Ext.MessageBox.alert(
+								me.translate('Error'),
+								me.translate(result.error)
+							);
+						}
+					}
+				}
+			});
 		}
 	}
 });

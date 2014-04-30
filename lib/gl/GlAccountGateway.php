@@ -230,7 +230,7 @@ class GlAccountGateway extends AbstractGateway {
         $select->columnsAll()
                 ->joinTree(['tree_id','tree_parent'])
                 ->joinTree2()
-                ->joinCategory(array('glaccount_category' => 'glaccount_name'))
+                ->joinCategory(array('glaccount_category_id' => 'glaccount_id', 'glaccount_category' => 'glaccount_name'))
                 ->joinType(array('glaccounttype_id','glaccounttype_name'))
                 ->joinUpdatedBy(array('glaccount_updateby' => 'userprofile_id', 'userprofile_username'));
 
@@ -348,6 +348,30 @@ class GlAccountGateway extends AbstractGateway {
 				->order('g1.glaccount_name');
 
 		return $this->adapter->query($select, [$integrationPackageId]);
+    }
+
+	public function findBudgetAmountByGlCategory($integration_package_id) {
+		$select = new Select();
+		$select->from(['g'=>'glaccount'])
+			->join(new sql\join\GlAccountTreeJoin())
+			->join(new sql\join\GlAccountIntegrationPackageJoin())
+			->whereEquals('g.integration_package_id', '?')
+			->whereIsNull('glaccounttype_id');
+
+		return $this->adapter->query($select, [$integration_package_id]);
+	}
+
+
+	public function findBudgetAmountByGlCode($integration_package_id, $sort='glaccount_number') {
+		$select = new Select();
+		$select->from(['g'=>'glaccount'])
+			->join(new sql\join\GlAccountTreeJoin())
+			->join(new sql\join\GlAccountIntegrationPackageJoin())
+			->whereEquals('g.integration_package_id', '?')
+			->whereIsNotNull('g.glaccounttype_id')
+			->order('g.'.$sort);
+
+		return $this->adapter->query($select, [$integration_package_id]);
 	}
 
 	/**

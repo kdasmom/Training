@@ -27,21 +27,6 @@ Ext.define('NP.model.contact.Address', {
 		{ name: 'address_id_alt' }
 	],
 
-	validations: [
-		{ field: 'table_name', type: 'length', max: 100 },
-		{ field: 'address_attn', type: 'length', max: 255 },
-		{ field: 'address_company', type: 'length', max: 255 },
-		{ field: 'address_line1', type: 'length', max: 255 },
-		{ field: 'address_line2', type: 'length', max: 255 },
-		{ field: 'address_line3', type: 'length', max: 255 },
-		{ field: 'address_city', type: 'length', max: 100 },
-		{ field: 'address_state', type: 'length', max: 25 },
-		{ field: 'address_zip', type: 'format', matcher: /(\d{5})/ },
-		{ field: 'address_zipext', type: 'format', matcher: /(\d{4})/ },
-		{ field: 'address_country', type: 'length', max: 100 },
-		{ field: 'address_id_alt', type: 'length', max: 50 }
-	],
-
 	getHtml: function() {
 		return NP.model.contact.Address.getHtml(this);
 	},
@@ -62,7 +47,7 @@ Ext.define('NP.model.contact.Address', {
 				}
 			}
 
-			if (city != '' || state != '' || zip) {
+			if (city != '' || state != '' || zip != '') {
 				html += '<div>';
 				if (city != '') {
 					html += city;

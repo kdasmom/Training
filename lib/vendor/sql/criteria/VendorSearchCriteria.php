@@ -27,6 +27,7 @@ class VendorSearchCriteria extends Where {
 							->unnest()
 							->equals('i.asp_client_id', $asp_client_id)
 							->in('v.integration_package_id', $integration_package_id)
-							->in('v.vendor_status', $status);
+							->in('v.vendor_status', $status)
+			;
 	}
 } 

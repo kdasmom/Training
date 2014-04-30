@@ -24,17 +24,33 @@ Ext.define('NP.view.property.PropertiesFormAccounting', {
     		labelWidth: 245
     	};
     	this.items = [
-    		{
-                xtype           : 'numberfield',
-                name            : 'property_salestax',
-                decimalPrecision: 6,
-                fieldLabel      : NP.Translator.translate('{property} {salesTax}', { property: propertyText, salesTax: taxText }),
-                width           : 350,
-                minValue        : 0,
-                maxValue        : 1,
-                step            : 0.01,
-				allowBlank		: false
-    		},
+            {
+                xtype: 'container',
+                padding: '5 0',
+                layout: {
+                    type: 'hbox',
+                    align: 'stretch'
+                },
+                items: [
+                    {
+                        xtype           : 'numberfield',
+                        name            : 'property_salestax',
+                        decimalPrecision: 2,
+                        labelWidth      : 245,
+                        fieldLabel      : NP.Translator.translate('{property} {salesTax}', { property: propertyText, salesTax: taxText }),
+                        width           : 350,
+                        minValue        : 0,
+                        maxValue        : 100,
+                        step            : 0.01,
+                        allowBlank		: false,
+                        allowDecimal    : true
+                    },
+                    {
+                        xtype           : 'displayfield',
+                        value           : '&nbsp;%'
+                    }
+                ]
+            },
     		{
 				xtype     : 'numberfield',
 				name      : 'matching_threshold',

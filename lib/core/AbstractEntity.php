@@ -143,6 +143,9 @@ abstract class AbstractEntity {
 				&& (is_array($field['auditable']))
 			) {
 				$auditableFields[$key] = $field['auditable'];
+				if (array_key_exists('validation', $field) && array_key_exists('date', $field['validation'])) {
+					$auditableFields[$key]['date'] = $field['validation']['date'];
+				}
 			}
 		}
 

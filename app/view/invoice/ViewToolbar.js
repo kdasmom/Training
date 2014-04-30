@@ -9,6 +9,7 @@ Ext.define('NP.view.invoice.ViewToolbar', {
 
     requires: [
         'NP.lib.core.Security',
+        'NP.lib.core.Config',
         'NP.view.shared.button.Cancel',
         'NP.view.shared.button.Process',
         'NP.view.shared.button.Save',
@@ -170,6 +171,11 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                 displayCondition: me.isMenuVisible,
                 menu    : [
                     {
+                        text            : 'Change Property',
+                        itemId          : 'invoiceChangePropertyBtn',
+                        iconCls         : 'property-btn',
+                        displayCondition: me.isChangePropertyBtnVisible
+                    },{
                         text            : 'Print',
                         itemId          : 'invoicePrintBtn',
                         iconCls         : 'print-btn',
@@ -355,6 +361,29 @@ Ext.define('NP.view.invoice.ViewToolbar', {
         );
     },
 
+    isChangePropertyBtnVisible: function(data) {
+        var status = data['invoice'].get('invoice_status');
+        return (
+            data['invoice'].get('invoice_id') !== null
+            && (
+                status == 'draft'
+                || (
+                    status == 'open'
+                    && (
+                        NP.Security.hasPermission(1032)     // New Invoice permission
+                        || NP.Security.hasPermission(6076)  // Modify Any permission
+                        || NP.Security.hasPermission(6077)  // Modify Only Created permission
+                    )
+                )
+                || (
+                    status == 'saved' 
+                    && NP.Security.hasPermission(1068) 
+                    && NP.Config.getSetting('PN.InvoiceOptions.SkipSave') == '0'
+                )
+            )
+        );
+    },
+
     isPrintBtnVisible: function(data) {
         return Ext.Array.contains(['paid','forapproval','submitted','sent','saved','posted','void'], data['invoice'].get('invoice_status'));
     },
@@ -452,11 +481,20 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                 return false;
             }
 
+            var hasExpiredInsurance = false;
+            if (NP.Config.getSetting('CP.AllowExpiredInsurance', '1') == '0') {
+                var warningStore     = warningView[0].getStore(),
+                    insuranceWarning = warningStore.findExact('warning_type', 'insuranceExpiration');
+                if (insuranceWarning !== -1) {
+                    insuranceWarning = warningStore.getAt(insuranceWarning);
+                    hasExpiredInsurance = insuranceWarning.get('warning_data').expired;
+                }
+            }
             if (
                 data['invoice'].get('invoice_status') == 'open' 
                 && lineView[0].getStore().getCount() > 0
-                && warningView[0].getStore().find('warning_type', 'invoiceDuplicate') === -1
-                && NP.Security.hasPermission(2041)
+                && warningStore.findExact('warning_type', 'invoiceDuplicate') === -1
+                && !hasExpiredInsurance
             ) {
                 btn.show();
                 return true;
@@ -504,55 +542,31 @@ Ext.define('NP.view.invoice.ViewToolbar', {
     },
 
     isActivateBtnVisible: function(data) {
-        var btn   = Ext.ComponentQuery.query('#activateBtn')[0],
-            tries = 0;
+        var show = false;
 
-        // We need a function we can defer and recall in case we need to
-        // wait for some views to render or stores to load
-        function showBtn() {
-            tries++;
-            var historyGrid = Ext.ComponentQuery.query('[xtype="shared.invoicepo.historyloggrid"]'),
-                show        = false;
+        if (
+            data['invoice'].get('invoice_status') == 'hold'
+            && NP.Security.hasPermission(6001)          // Invoices On Hold
+        ) {
+            if (NP.Security.hasPermission(6079)) {      // Activate Any
+                show = true;
+            }
+            else if (NP.Security.hasPermission(6078) && data['hold_notes'].length) { // Activate
+                var lastNote = data['hold_notes'].length-1;
 
-            if (
-                data['invoice'].get('invoice_status') == 'hold'
-                && NP.Security.hasPermission(6001)          // Invoices On Hold
-            ) {
-                if (NP.Security.hasPermission(6079)) {      // Activate Any
+                lastNote = data['hold_notes'][lastNote];
+                
+                if (lastNote['userprofile_id'] == NP.Security.getUser().get('userprofile_id')) {
                     show = true;
                 }
-                else if (NP.Security.hasPermission(6078)) { // Activate
-                    // If views aren't ready or stores haven't loaded, defer the process
-                    if (!historyGrid.length || !historyGrid[0].getStore().isLoaded) {
-                        if (tries < 6) {
-                            Ext.defer(showBtn, 750);
-                        }
-                        return false;
-                    }
-
-                    // Get all the hold approval records and make sure the last one set was by the currently
-                    // signed in user
-                    var holds = historyGrid[0].getStore().query('approvetype_name', 'hold');
-
-                    if (
-                        holds.getCount() > 0
-                        && holds.getAt(holds.getCount()-1).get('userprofile_username') == NP.Security.getUser().get('userprofile_username')
-                    ) {
-                        show = true;
-                    }
-                }
-            }
-
-            if (show) {
-                btn.show();
-                return true;
-            } else {
-                btn.hide();
-                return false;
             }
         }
 
-        return showBtn();
+        if (show) {
+            return true;
+        } else {
+            return false;
+        }
     },
 
     isModifyBtnVisible: function(data) {

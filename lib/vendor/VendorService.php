@@ -22,6 +22,7 @@ use NP\image\ImageIndexGateway;
 use NP\invoice\InvoiceGateway;
 use NP\locale\LocalizationService;
 use NP\system\ConfigService;
+use NP\security\SecurityService;
 use NP\system\IntegrationPackageGateway;
 use NP\system\MessageEntity;
 use NP\system\MessageGateway;
@@ -50,6 +51,10 @@ class VendorService extends AbstractService {
 
 	public function setConfigService(ConfigService $configService) {
 		$this->configService = $configService;
+	}
+
+	public function setSecurityService(SecurityService $securityService) {
+		$this->securityService = $securityService;
 	}
 
 	/**
@@ -119,7 +124,7 @@ class VendorService extends AbstractService {
 			$in_app_user = $this->userprofileGateway->isInAppUser($roleId, $userprofileId);
 			$vendorstatus = $in_app_user ? $this->configService->get('PN.VendorOptions.OnApprovalStatus') : 'forapproval';
 
-//				save vendor
+//			save vendor
 			$data['vendor']['vendor_status'] = $vendorstatus;
 			$data['vendorsite']['vendor_status'] = $vendorstatus;
 
@@ -187,6 +192,7 @@ class VendorService extends AbstractService {
 				throw new \NP\core\Exception("Cannot save email");
 			}
 //				save insurances
+
 			$this->saveInsurances($out_vendor_id, $data['insurances'], $data['vendorsite_DaysNotice_InsuranceExpires']);
 //				save recauthor
 			$this->vendorGateway->recauthorSave($data['userprofile_id'], 'vendor', $out_vendor_id);
@@ -202,10 +208,10 @@ class VendorService extends AbstractService {
 					'address_city'		=> is_null($data['address']['address_city']) ? '' : $data['address']['address_city'],
 					'address_state'		=> is_null($data['address']['address_state']) ? '' : $data['address']['address_state'],
 					'address_zip'		=> is_null($data['address']['address_zip']) ? '' : $data['address']['address_zip'],
-					'address_zipext'		=> is_null($data['address']['address_zipext']) ? '' : $data['address']['address_zipext'],
-					'address_country'		=> is_null($data['address']['address_country']) ? '' : $data['address']['address_country'],
-					'person_firstname'		=> is_null($data['person']['person_firstname']) ? '' : $data['person']['person_firstname'],
-					'person_lastname'		=> is_null($data['person']['person_lastname']) ? '' : $data['person']['person_lastname'],
+					'address_zipext'	=> is_null($data['address']['address_zipext']) ? '' : $data['address']['address_zipext'],
+					'address_country'	=> is_null($data['address']['address_country']) ? '' : $data['address']['address_country'],
+					'person_firstname'	=> is_null($data['person']['person_firstname']) ? '' : $data['person']['person_firstname'],
+					'person_lastname'	=> is_null($data['person']['person_lastname']) ? '' : $data['person']['person_lastname'],
 					'phone_number'		=> is_null($data['attention_phone']['phone_number']) ? '' : $data['attention_phone']['phone_number']
 				];
 				$vendorsite_transfer_compare = $this->vendorGateway->transferCompareVendor($data['vendor']['vendor_id'], null, $compare_date);
@@ -246,7 +252,6 @@ class VendorService extends AbstractService {
 	public function saveVendorsite($data, $vendorstatus = null, $vendorId = null, $vendorsiteCode = null) {
 		if (!is_object($data) && isset($data['vendorsite'])) {
 			$vendorsite = new VendorsiteEntity($data['vendorsite']);
-
 			$vendorsite->vendorsite_lastupdate_date = Util::formatDateForDB(new \DateTime());
 			$vendorsite->vendorsite_ship_to_location_id = 1;
 			$vendorsite->vendorsite_bill_to_location_id = 1;
@@ -298,8 +303,12 @@ class VendorService extends AbstractService {
 	 */
 	public function saveVendorRecord($data) {
 		foreach ($data['vendor'] as $key => $item) {
-			if ($key !== 'paydatebasis_code' && $key !== 'paygroup_code')
-			$data['vendor'][$key] = empty($item) ? null : $item;
+			if ($key !== 'paydatebasis_code' &&
+				$key !== 'paygroup_code' &&
+				$key !== 'finance_vendor')
+			{
+				$data['vendor'][$key] = empty($item) ? null : $item;
+			}
 		}
 		if (!is_null($data['vendor']['vendor_id'])) {
 			$data['vendor']['vendor_lastupdate_date'] = Util::formatDateForDB(new \DateTime(date('Y-m-d', strtotime('now'))));
@@ -574,9 +583,9 @@ class VendorService extends AbstractService {
 		}
 
 		return [
-			'success'    						=> (count($errors) > 0) ? false : true,
-			'errors'								=> $errors,
-			'lastInsertEmailId'			=> $email_id
+			'success'			=> (count($errors) > 0) ? false : true,
+			'errors'			=> $errors,
+			'lastInsertEmailId'	=> $email_id
 		];
 	}
 
@@ -610,9 +619,11 @@ class VendorService extends AbstractService {
 			return [];
 		}
 		$asp_client_id = $this->configService->getClientId();
+		$property_id = $this->securityService->getContext();
+		$property_id = $property_id['property_id'];
 
 		if (!$task_type) {
-			return $this->vendorGateway->findByKeyword($keyword, $sort, $category_id, $status, $asp_client_id, $integration_package_id, $pageSize, $page);
+			return $this->vendorGateway->findByKeyword($keyword, $sort, $category_id, $status, $property_id, $asp_client_id, $integration_package_id, $pageSize, $page);
 		} else {
 			$allowExpInsurance = $this->configService->findSysValueByName('CP.AllowExpiredInsurance');
 			return $this->vendorGateway->findByKeywordWithTaskType($allowExpInsurance);
@@ -643,6 +654,12 @@ class VendorService extends AbstractService {
 	public function getCustomFields($vendor_id) {
 		$result['custom_fields'] = $this->configService->getCustomFieldData('vendor', $vendor_id);
 		$result['insurances'] = $this->insuranceGateway->find(['table_name' => '?', 'tablekey_id' => '?'], ['vendor', $vendor_id]);
+
+		// find insurance properties
+		foreach ($result['insurances'] as &$insurance) {
+			$insurance_properties_list = $this->linkInsurancePropertyGateway->find(['insurance_id' => '?'], [$insurance['insurance_id']]);
+			$insurance['insurance_properties_list_id'] = \NP\util\Util::valueList($insurance_properties_list, 'property_id');
+		}
 
 		return $result;
 	}
@@ -1596,10 +1613,13 @@ class VendorService extends AbstractService {
 				'errors'		=> [array('field'=>'global', 'msg'=>'Cannot assign glaccounts', 'extra'=>null)]
 			];
 		}
-		if ($glaccounts == '') {
+
+		$this->vendorGateway->deleteAssignedGlaccounts($vendor_id);
+
+		if ($glaccounts != '') {
 			$this->vendorGateway->deleteAssignedGlaccounts($vendor_id);
-		} else {
-			if (!$this->vendorsiteGateway->assignGlAccounts($glaccounts, $vendor_id)) {
+
+			if (!$this->vendorGlAccountsGateway->assignGlAccounts($glaccounts, $vendor_id)) {
 				return [
 					'success'		=> false,
 					'errors'		=> [array('field'=>'global', 'msg'=>'Cannot assigns glaccounts', 'extra'=>null)]
@@ -1656,14 +1676,15 @@ class VendorService extends AbstractService {
 							'insurance_policynum'					=> $insurance->insurance_policynum[$index],
 							'insurance_policy_effective_datetm'		=> $insurance->insurance_policy_effective_datetm[$index],
 							'insurance_expdatetm'					=> $insurance->insurance_expdatetm[$index],
-							'insurance_policy_limit'					=> $insurance->insurance_policy_limit[$index],
+							'insurance_policy_limit'				=> $insurance->insurance_policy_limit[$index],
 							'insurance_additional_insured_listed'	=> $insurance->insurance_additional_insured_listed[$index],
 							'insurance_id'							=> $insurance->insurance_id[$index],
 							'tablekey_id'							=> $vendor_id,
-							'table_name'								=> 'vendor'
+							'table_name'							=> 'vendor'
 						];
 
-						$result = $this->saveInsurance(['insurance' => $saveInsurance], $vendor_id);
+						$property_id_list = explode(',', $insurance->insurance_properties_list_id[$index]);
+						$result = $this->saveInsurance(['insurance' => $saveInsurance, 'property_id_list' => $property_id_list], $vendor_id);
 
 						if (!$result['success']) {
 							throw new \NP\core\Exception("Cannot save insurance");

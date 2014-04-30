@@ -165,6 +165,13 @@ Ext.define('NP.Locale', {
 	'Save And Add Another': 'Save And Add Another',
 	'Upload'              : 'Upload',
 	'View'                : 'View',
+	'Next Step'           : 'Next Step',
+	'Copy'                : 'Copy',
+	'Create Rule'         : 'Create Rule',
+	'Save & Activate'     : 'Save & Activate',
+	'Close'               : 'Close',
+	'Deactivate'          : 'Deactivate',
+	'Add Forward'         : 'Add Forward',
 
 	/**
 	 * VIEWPORT
@@ -383,7 +390,7 @@ Ext.define('NP.Locale', {
 	'Are you sure you want to activate the selected {properties}?'   : 'Are you sure you want to activate the selected {properties}?',
 	'{properties} were activated'                                    : '{properties} were activated',
 	'There was an error activating {properties}'                     : 'There was an error activating {properties}',
-	'Inactivate'                                                     : 'Inactivate',
+//	'Inactivate'                                                     : 'Inactivate',
 	'Are you sure you want to inactivate the selected {properties}?' : 'Are you sure you want to inactivate the selected {properties}?',
 	'{properties} were inactivated'                                  : '{properties} were inactivated',
 	'There was an error inactivating {properties}'                   : 'There was an error inactivating {properties}',
@@ -674,6 +681,95 @@ Ext.define('NP.Locale', {
 	'Associated POs'       : 'Associated POs',
 	'Vendor Code'          : 'Vendor Code',
 	'Cycle From'           : 'Cycle From',
-	'Cycle To'             : 'Cycle To'
+	'Cycle To'             : 'Cycle To',
 
+	/**
+	 * VENDOR SECTION
+	 */
+
+	'Assign GL Accounts'                          : 'Assign GL Accounts',
+	'Vendor Documents'                            : 'Vendor Documents',
+	'General Info and Settings'                   : 'General Info and Settings',
+	'GL Information'                              : 'GL Information',
+	'Insurance Setup'                             : 'Insurance Setup',
+	'Favorite'                                    : 'Favorite',
+	'Type'                                        : 'Type',
+	'Company'                                     : 'Company',
+	'Policy Number'                               : 'Policy Number',
+	'Effective Date'                              : 'Effective Date',
+	'Exp. Date'                                   : 'Exp. Date',
+	'Policy Limit'                                : 'Policy Limit',
+	'Additional Insured'                          : 'Additional Insured',
+	'Property Assignment'                         : 'Property Assignment',
+	'Assign/View Properties'                      : 'Assign/View Properties',
+	'Add / Remove Insurance Property Association' : 'Add / Remove Insurance Property Association',
+	'Select Properties'                           : 'Select Properties',
+	'The assigned GL accounts listed above represent all GL accounts available for use for this vendor. All of these GL accounts may not be available for use if they are not also assigned to the property you are on.' : 'The assigned GL accounts listed above represent all GL accounts available for use for this vendor. All of these GL accounts may not be available for use if they are not also assigned to the property you are on.',
+	
+	/**
+	 *  WORKFLOW MANAGEMENT
+	 */
+	'Workflow Definitions' : 'Workflow Definitions',
+	'Workflow Rules'       : 'Workflow Rules',
+	'Rule Builder'         : 'Rule Builder',
+	'Rule Summary'         : 'Rule Summary',
+	'Rule Routes'          : 'Rule Routes',
+
+	'Rule Name'              : 'Rule Name',
+	'Rule Type'              : 'Rule Type',
+	'Originates From'        : 'Originates From',
+	'Group/User'             : 'Group/User',
+	'Forward To'             : 'Forward To',
+	'Property'               : 'Property',
+	'Threshold'              : 'Threshold',
+	'Unassigned Users'       : 'Unassigned Users',
+	'Assigned Users'         : 'Assigned Users',
+	'Unassigned User Groups' : 'Unassigned User Groups',
+	'Assigned User Groups'   : 'Assigned User Groups',
+
+	'No Rules Applied'                          : 'No Rules Applied',
+	'If Amount'                                 : 'If Amount',
+	'Applied to Properties'                     : 'Applied to Properties',
+	'ALL Properties'                            : 'ALL Properties',
+	'SPECIFIC Properties'                       : 'SPECIFIC Properties',
+	'Properties'                                : 'Properties',
+	'ALL'                                       : 'ALL',
+	'SPECIFIC'                                  : 'SPECIFIC',
+	'From'                                      : 'From',
+	'To'                                        : 'To',
+	'If variance is'                            : 'If variance is',
+	'If total amount is'                        : 'If total amount is',
+	'Last Update Date'                          : 'Last Update Date',
+	'Email Suppression'                         : 'Email Suppression',
+	'Never Suppress Email'                      : 'Never Suppress Email',
+	'Suppress Email for {supression} hours'     : 'Suppress Email for {supression} hours',
+	'Suppress Email for the rest of the period' : 'Suppress Email for the rest of the period',
+	'Invoice Item Amount (by Contract)'         : 'Invoice Item Amount (by Contract)',
+	'All Contracts'                             : 'All Contracts',
+	'Specific Contracts'                        : 'Specific Contracts',
+
+	'LESS THAN' : 'LESS THAN',
+	'GREATER THAN' : 'GREATER THAN',
+	'GREATER THAN OR EQUAL TO' : 'GREATER THAN OR EQUAL TO',
+	'GREATER THAN EQUAL TO OR LESS THAN' : 'GREATER THAN EQUAL TO OR LESS THAN',
+	'IN RANGE' : 'IN RANGE',
+
+	'--ALL--'                    : '--ALL--',
+	'User Group'                 : 'User Group',
+	'Filter by'                  : 'Filter by',
+	'Workflow Rule - {rulename}' : 'Workflow Rule - {rulename}',
+
+	'Delete Forward?' : 'Delete Forward?',
+	'Are you sure you want to delete this \'Forward\' from this rule?' : 'Are you sure you want to delete this \'Forward\' from this rule?',
+	'Warning!' : 'Warning!',
+	'Originates From/Forward To information must be complete before the rule can be activated. Continue?' : 'Originates From/Forward To information must be complete before the rule can be activated. Continue?',
+
+	'Conflicts with these rules'                  : 'Conflicts with these rules',
+	'Edit this rule > Admin_Invoice > {rulename}' : 'Edit this rule > Admin_Invoice > {rulename}',
+	'Delete conflicting rules'                    : 'Delete conflicting rules',
+
+	/**
+	 * IMAGE MANAGEMENT
+	 */
+	'<p>File Upload tool enables you to upload scanned images from your desktop to NexusPayables for indexing and processing.</p><p>Click the Select Files button to open a Browse window. In the Browse window, locate and select the file(s) to upload. Click the Open button. The file(s) will then display under the List tab in this File Upload window. Press the Upload Files button.</p><p>Please Note: Only 50 files can be uploaded at a time. Any number of files over the 50 limit will not be uploaded into the NexusPayables system.</p>' : '<p>File Upload tool enables you to upload scanned images from your desktop to NexusPayables for indexing and processing.</p><p>Click the Select Files button to open a Browse window. In the Browse window, locate and select the file(s) to upload. Click the Open button. The file(s) will then display under the List tab in this File Upload window. Press the Upload Files button.</p><p>Please Note: Only 50 files can be uploaded at a time. Any number of files over the 50 limit will not be uploaded into the NexusPayables system.</p>'
 });

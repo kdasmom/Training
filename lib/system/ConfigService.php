@@ -521,8 +521,8 @@ class ConfigService extends AbstractService {
 	 * @param null $configsysval_show
 	 * @return array|bool
 	 */
-	public function getConfigSysValByCat($configsysclient_name = null, $configsysval_load = null, $configsyscat_name = null, $configsysval_show = null) {
-		return $this->configsysGateway->getConfigSysValByCat($configsysclient_name, $configsysval_load, $configsyscat_name, $configsysval_show);
+	public function getConfigSysValByCat($configsysval_load = null, $configsyscat_name = null, $configsysval_show = null) {
+		return $this->configsysGateway->getConfigSysValByCat($configsysval_load, $configsyscat_name, $configsysval_show);
 	}
 
 	/**
