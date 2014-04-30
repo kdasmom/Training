@@ -90,8 +90,6 @@ Ext.define('NP.view.mySettings.UserInformation', {
 					]
 				}
 			);
-//            this.items[0].items.push({ xtype: 'mysettings.userpermissions' });
-//            this.items[0].items.push({ xtype: 'mysettings.userpermissions', name: 'coding_properties', id: 'coding_properties', title: codingPropertyLabel });
         }
 
     	this.callParent(arguments);
@@ -101,13 +99,28 @@ Ext.define('NP.view.mySettings.UserInformation', {
         var me          = this,
             isValid     = this.callParent(),
             field       = this.findField('properties'),
-            codingField = this.findField('coding_properties');
+            codingField = this.findField('coding_properties'),
+			questionField, value;
 
         
         if (field && field.getValue().length == 0) {
             field.markInvalid('This field is required.');
             isValid = false;
         }
+
+		for (var index = 1; index <= 6; index++) {
+			questionField = me.query('#security_question' + index)[0];
+			value = questionField.getValue();
+			if (index > 1 && value) {
+				for (var backIndex = 1; backIndex < index; backIndex ++) {
+					if (value == me.query('#security_question' + backIndex)[0].getValue()) {
+						questionField.markInvalid(NP.Translator.translate('Security question use the same question as Security Question {number}', {number: backIndex}));
+						isValid = false;
+						break;
+					}
+				}
+			}
+		}
 
         // Only check this if there are no other errors
         if (isValid) {
