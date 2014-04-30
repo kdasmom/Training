@@ -58,7 +58,7 @@ Ext.define('NP.view.viewport.DelegationPicker', {
                 items : [{
                     xtype            : 'customcombo',
                     fieldLabel       : NP.Translator.translate(signedOnText),
-                    labelWidth       : 120,
+                    labelWidth       : 140,
                     store            : delegationStore,
                     selectFirstRecord: true,
                     displayField     : 'userprofile_username',
@@ -74,7 +74,7 @@ Ext.define('NP.view.viewport.DelegationPicker', {
                                 var viewport = Ext.ComponentQuery.query('viewport')[0];
                                 Ext.destroy(viewport);
                                 Ext.create('NP.view.Viewport');
-                                window.location = '#';
+								window.location = '';
                             });
                         }
                     }
