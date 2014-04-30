@@ -4,6 +4,12 @@ namespace NP\po;
 
 use NP\shared\AbstractEntityService;
 use NP\core\db\Expression;
+use NP\budget\BudgetService;
+use NP\property\FiscalCalService;
+use NP\image\ImageService;
+use NP\jobcosting\JobCostingService;
+use NP\vendor\VendorService;
+use NP\shared\CustomFieldService;
 
 /**
  * Service class for operations related to Purchase Orders
@@ -12,6 +18,16 @@ use NP\core\db\Expression;
  */
 class PoService extends AbstractEntityService {
 	protected $type = 'po';
+	protected $customFieldService;
+
+	public function __construct(FiscalCalService $fiscalCalService,
+								BudgetService $budgetService, ImageService $imageService,
+								JobCostingService $jobCostingService, VendorService $vendorService,
+								CustomFieldService $customFieldService) {
+		parent::__construct($fiscalCalService, $budgetService, $imageService, $jobCostingService, $vendorService);
+
+		$this->customFieldService = $customFieldService;
+	}
 
 	public function get($purchaseorder_id) {
 		$po = $this->purchaseOrderGateway->findPo($purchaseorder_id);

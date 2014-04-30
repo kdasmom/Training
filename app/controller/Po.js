@@ -394,11 +394,15 @@ Ext.define('NP.controller.Po', {
 		panel.removeAll();
 
 		Ext.each(fields, function(field) {
+			// Default field config
 			cfg = {
-				name      : field.customfield_name,
-				fieldLabel: field.customfield_label,
-				allowBlank: (field.customfield_required == 0)
+				name          : field.customfield_name,
+				fieldLabel    : field.customfield_label,
+				allowBlank    : (field.customfield_required == 0),
+				isServiceField: 1
 			};
+
+			// If text field, do this
 			if (field.customfield_type == 'text') {
 				Ext.apply(cfg, {
 					xtype: 'textfield',
@@ -408,36 +412,48 @@ Ext.define('NP.controller.Po', {
 				if (Ext.isNumeric(field.customfield_max_length)) {
 					cfg.maxLength = field.customfield_max_length;
 				}
-			} else if (field.customfield_type == 'date') {
-				if (!Ext.isEmpty(field.customfielddata_value)) {
-					field.customfielddata_value = Ext.Date.parse(field.customfielddata_value, Ext.Date.defaultFormat);
-				}
 
-				Ext.apply(cfg, {
-					xtype: 'datefield',
-					value: field.customfielddata_value
-				});
-			} else if (field.customfield_type == 'select') {
-				Ext.apply(cfg, {
-					xtype        : 'customcombo',
-					displayField : 'universal_field_data',
-					valueField   : 'universal_field_data',
-					value        : field.customfielddata_value,
-					useSmartStore: true,
-					store        : {
-						type   : 'system.pnuniversalfields',
-						service: 'ConfigService',
-						action : 'getCustomFieldOptions',
-						extraParams: {
-							customfield_pn_type   : 'po',
-							universal_field_number: field.universal_field_number,
-							activeOnly            : true
-						}
-					}
-				});
+				panel.add(cfg);
 			}
+			// If date field, do this
+			else if (field.customfield_type == 'date') {
+				var fieldObj = panel.add(
+					Ext.apply(cfg, {
+						xtype: 'datefield'
+					})
+				);
 
-			panel.add(cfg);
+				// Since this is a date field, we need to transform the value into a date object
+				if (!Ext.isEmpty(field.customfielddata_value)) {
+					fieldObj.setValue(Ext.Date.parse(field.customfielddata_value, fieldObj.format));
+				}
+			}
+			// Otherwise, if combo, do this
+			else if (field.customfield_type == 'select') {
+				var fieldObj = panel.add(
+						Ext.apply(cfg, {
+						xtype        : 'customcombo',
+						displayField : 'universal_field_data',
+						valueField   : 'universal_field_data',
+						useSmartStore: true,
+						store        : {
+							type   : 'system.pnuniversalfields',
+							service: 'ConfigService',
+							action : 'getCustomFieldOptions',
+							extraParams: {
+								customfield_pn_type   : 'po',
+								universal_field_number: field.universal_field_number,
+								activeOnly            : true
+							}
+						}
+					})
+				);
+
+				// Set the default value in the store since it doesn't load by default
+				if (!Ext.isEmpty(field.customfielddata_value)) {
+					fieldObj.setDefaultRec({ universal_field_data: field.customfielddata_value });
+				}
+			}
 		});
 
 		panel.show();

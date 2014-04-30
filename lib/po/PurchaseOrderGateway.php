@@ -40,10 +40,7 @@ class PurchaseOrderGateway extends AbstractGateway {
 		$this->securityService = $securityService;
 	}
 
-	/**
-	 * 
-	 */
-	public function findPo($purchaseorder_id) {
+	public function findById($purchaseorder_id, $cols=null) {
 		$select = new sql\PoSelect();
 		$select->allColumns('p')
 				->columnAmount()
@@ -82,6 +79,13 @@ class PurchaseOrderGateway extends AbstractGateway {
 		
 		$res = $this->adapter->query($select, array($purchaseorder_id));
 		return $res[0];
+	}
+
+	/**
+	 * Deprecated: alias for findById
+	 */
+	public function findPo($purchaseorder_id) {
+		return $this->findById($purchaseorder_id);
 	}
 
 	/**

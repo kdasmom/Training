@@ -324,15 +324,20 @@ Ext.define('NP.controller.AbstractEntityController', {
 		// Clicking on the Save as Template button
 		control['#' + me.shortName + 'SaveTemplateBtn'] = {
 			click: function() {
-				me.onSaveTemplate(false);
+				me.onSaveAsTemplate(false);
 			}
 		};
 
 		// Clicking on the Save as User Template button
 		control['#' + me.shortName + 'SaveUserTemplateBtn'] = {
 			click: function() {
-				me.onSaveTemplate(true);
+				me.onSaveAsTemplate(true);
 			}
+		};
+
+		// Clicking on the Save button on the Save Template window
+		control['#' + me.shortName + 'SaveTemplateWin [xtype="shared.button.save"]'] = {
+			click: me.onSaveAsTemplateSave.bind(me)
 		};
 
 		// Clicking on the Save button in the Schedule window
@@ -2208,7 +2213,8 @@ Ext.define('NP.controller.AbstractEntityController', {
 			// Before saving, make sure invoice hasn't been updated
 			me.checkLock(function() {
 				// Get the line items that need to be saved
-				var lines = me.convertLinesToSubmit(),
+				var lines            = me.convertLinesToSubmit(),
+					serviceFieldData = {},
 					tax_amount,
 					shipping_amount;
 
@@ -2220,6 +2226,16 @@ Ext.define('NP.controller.AbstractEntityController', {
 					shipping_amount = 0;
 				}
 
+				// If dealing with a PO, get service field data
+				if (me.shortName == 'po') {
+					var serviceFields = form.query('[isServiceField=1]'),
+						val;
+
+					Ext.each(serviceFields, function(serviceField) {
+						serviceFieldData[serviceField.name] = serviceField.getSubmitValue();
+					});
+				}
+
 				// Form is valid so submit it using the bound model
 				form.submitWithBindings({
 					service: service,
@@ -2229,7 +2245,8 @@ Ext.define('NP.controller.AbstractEntityController', {
 						delegation_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id'),
 						lines                       : lines,
 						tax                         : tax_amount,
-						shipping                    : shipping_amount
+						shipping                    : shipping_amount,
+						service_fields              : serviceFieldData
 					}),
 					extraFields: {
 						vendor_id: 'vendor_id'
@@ -2757,7 +2774,7 @@ Ext.define('NP.controller.AbstractEntityController', {
     	}
     },
 
-    onSaveTemplate: function(isUser) {
+    onSaveAsTemplate: function(isUser) {
     	var me       = this,
     		formData = me.getEntityView().getLoadedData(),
     		title    = (isUser) ? 'Save as User Template' : 'Save as Template',
@@ -2770,10 +2787,21 @@ Ext.define('NP.controller.AbstractEntityController', {
 			title           : title,
 			type            : me.shortName,
 			status          : me.getEntityRecord().get(me.longName + '_status'),
+			isUser          : isUser,
 			showImageOptions: (formData['image'] !== null)
         });
 
         win.show();
+    },
+
+    onSaveAsTemplateSave: function() {
+    	var me             = this,
+			win            = me.getCmp('shared.invoicepo.templatewindow'),
+			include_images = win.down('radiogroup');
+
+    	me.saveFromTemplateWindow('draft', function(result) {
+    		NP.Util.showFadingWindow({ html: NP.Translator.translate('Template has been saved') });
+    	});
     },
 
     onCreateCopy: function() {
@@ -2792,6 +2820,16 @@ Ext.define('NP.controller.AbstractEntityController', {
     },
 
     onSaveCopy: function() {
+		var me             = this,
+			win            = me.getCmp('shared.invoicepo.templatewindow'),
+			include_images = win.down('radiogroup');
+
+    	me.saveFromTemplateWindow(null, function(result) {
+    		NP.Util.showFadingWindow({ html: NP.Translator.translate('Template copy has been saved') });
+    	});
+    },
+
+    saveFromTemplateWindow: function(status, callback) {
     	var me   = this,
 			win  = me.getCmp('shared.invoicepo.templatewindow'),
 			form = win.down('form').getForm();
@@ -2812,17 +2850,19 @@ Ext.define('NP.controller.AbstractEntityController', {
 					action             : 'saveCopy',
 					template_name      : form.findField('template_name').getValue(),
 					entity_id          : me.getEntityRecord().get(me.pk),
-					include_images     : (include_images) ? true : false,
+					include_images     : (include_images == 'saveWith' || include_images == 'saveWithAndContinue'),
 					save_invoice_number: (save_invoice_number) ? save_invoice_number.getValue() : false,
+					isUser             : win.isUser,
+					status             : status,
 					success            : function(result) {
 						if (result.success) {
-							NP.Util.showFadingWindow({ html: NP.Translator.translate('Template copy has been saved') });
-
 							win.close();
 
 							if (include_images === 'saveWith' || include_images === 'saveWithout') {
 								me.addHistory(me.controller + ':showView:' + result.entity_id);
 							}
+
+							callback(result);
 						} else {
 							me.showUnexpectedError();
 						}

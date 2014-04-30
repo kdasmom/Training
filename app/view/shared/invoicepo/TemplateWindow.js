@@ -26,7 +26,6 @@ Ext.define('NP.view.shared.invoicepo.TemplateWindow', {
     // Type can be set to invoice or po
     type: null,
 
-    // Type can be set to invoice or po
     status: null,
 
     initComponent: function() {
@@ -80,7 +79,7 @@ Ext.define('NP.view.shared.invoicepo.TemplateWindow', {
                     checked   : (me.status === 'draft') ? true : false
                 },{
                     boxLabel  : NP.Translator.translate('Save Template without Image'),
-                    inputValue: 'saveWithOut'
+                    inputValue: 'saveWithout'
                 }
             );
 

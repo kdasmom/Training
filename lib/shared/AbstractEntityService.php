@@ -1168,7 +1168,7 @@ abstract class AbstractEntityService extends AbstractService {
 	/**
 	 * Makes a copy of an entity
 	 */
-	public function saveCopy($entity_id, $template_name, $save_invoice_number=false, $include_images=false) {
+	public function saveCopy($entity_id, $template_name, $save_invoice_number=false, $include_images=false, $status=null) {
 		$errors        = [];
 		$new_entity_id = null;
 		$pk            = $this->pkField;
@@ -1183,16 +1183,25 @@ abstract class AbstractEntityService extends AbstractService {
 			$data   = [
 				$this->table                   => $entity,
 				'userprofile_id'               => $this->securityService->getUserId(),
-				'delegation_to_userprofile_id' => $this->securityService->getDelegatedUserId()
+				'delegation_to_userprofile_id' => $this->securityService->getDelegatedUserId(),
+				'vendor_id'                    => $entity['vendor_id']
 			];
 			$data[$this->table][$pk] = null;
 
 			// Set the template name
-			$data[$this->table]['template_name'] = $template_name;
+			if ($this->type == 'invoice') {
+				$data[$this->table]['template_name'] = $template_name;
+			} else {
+				$data[$this->table]['purchaseorder_ref'] = $template_name;
+			}
 
 			// If dealing with an invoice and option to save invoice number is false, clear invoice number
 			if ($this->type == 'invoice' && !$save_invoice_number) {
 				$data[$this->table]['invoice_ref'] = '';
+			}
+
+			if (!empty($status)) {
+				$data[$this->table]["{$this->table}_status"] = $status;
 			}
 
 			// Get all lines for the entity
@@ -1213,8 +1222,7 @@ abstract class AbstractEntityService extends AbstractService {
 				$data['shipping'] += $line["{$this->itemTable}_shipping"];
 			}
 
-			$saveFn = 'save' . ucfirst($this->type);
-			$result = $this->$saveFn($data);
+			$result = $this->saveEntity($data);
 
 			if (!$result['success']) {
 				throw new \NP\core\Exception('Error saving entity while creating entity copy');
@@ -1277,7 +1285,8 @@ abstract class AbstractEntityService extends AbstractService {
 				$imgTransfer->invoiceimage_id   = $imgIndex->Image_Index_Id;
 
 				// Create unique filename for the new image file
-				$imgTransfer->transfer_filename = \NP\util\Util::getUniqueFileName($image['transfer_filename']);
+				$uniqueFileName = \NP\util\Util::getUniqueFileName($image['transfer_filename']);
+				$imgTransfer->transfer_filename = $uniqueFileName['path'];
 
 				// Insert the transfer record
 				$this->imageTransferGateway->insert($imgTransfer);
@@ -1312,23 +1321,13 @@ abstract class AbstractEntityService extends AbstractService {
 		
 		try {
 			// Call the copy function with default arguments
-			$result = $this->saveCopy($entity_id, '', true, true);
+			$result = $this->saveCopy($entity_id, '', true, true, 'open');
 
 			// Check for success before proceeding
 			if (!$result['success']) {
 				$this->loggingService->log('error', 'Error saving entity copy', ['result'=>$result, "{$this->table}_id"=>$entity_id]);
 				throw new \NP\core\Exception('Error while saving a copy of an entity while using a template');
 			}
-
-			// Get the new entity ID
-			$entity_id = $result['entity_id'];
-
-			// Update the entity status to make it open (the copy will have created a template)
-			$this->$gtw->update(
-				["{$this->table}_status" => 'open'],
-				[$this->pkField => '?'],
-				[$entity_id]
-			);
 		} catch(\Exception $e) {
 			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
 		}
@@ -1553,8 +1552,8 @@ abstract class AbstractEntityService extends AbstractService {
 				
 				$this->$gtw->save($entity);
 
-				// If dealing with a new PO, we need to generate the PO number
-				if ($this->type == 'po' && $data[$this->table][$pk] === null) {
+				// If dealing with a new PO that's not a template, we need to generate the PO number
+				if ($this->type == 'po' && $data[$this->table][$pk] === null && $entity->purchaseorder_status != 'draft') {
 					$this->generatePoRef($entity->purchaseorder_id, $entity->purchaseorder_period, $entity->property_id);
 				}
 			}
@@ -1576,6 +1575,11 @@ abstract class AbstractEntityService extends AbstractService {
 				} else {
 					$this->recAuthorGateway->save($author);
 				}
+			}
+
+			// If dealing with a PO, we need to save service fields if any
+			if ($this->type == 'po') {
+				$this->customFieldService->saveCustomFieldData('po', $entity->$pk, $data['service_fields']);
 			}
 
 			// Save invoice line items
