@@ -226,7 +226,7 @@ Ext.define('NP.controller.VendorManager', {
 							'Vendor - ' + data['vendor_name'] + ' (' + data['vendor_id_alt'] + ')'
 						);
 						form.findField('glaccounts').setValue( data['glaccounts'].split(',') );
-						form.findField('vendorsite_DaysNotice_InsuranceExpires').setValue(data['vendorsite_DaysNotice_InsuranceExpires']);
+						form.findField('vendorsite_DaysNotice_InsuranceExpires').setValue(data['vs_vendorsite_DaysNotice_InsuranceExpires']);
 
 						that.vendor_status = data['vendor_status'];
 
@@ -346,7 +346,7 @@ Ext.define('NP.controller.VendorManager', {
                 insurance_policy_limit: values.insurance_policy_limit,
                 insurance_additional_insured_listed: values.insurance_additional_insured_listed,
                 insurance_id: values.insurance_id,
-				insurance_properties_list_id: values.insurance_properties_list_id,
+				insurance_properties_list_id: values.insurance_properties_list_id
             });
         } else {
             if (values.insurancetype_id && values.insurancetype_id.length > 1) {
