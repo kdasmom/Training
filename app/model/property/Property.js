@@ -76,5 +76,9 @@ Ext.define('NP.model.property.Property', {
         var address = Ext.create('NP.model.contact.Address', this.getData());
 
         return address.getHtml();
+    },
+
+    statics: {
+        JAN_OF_CURRENT_YEAR_ORDER       : 13
     }
 });

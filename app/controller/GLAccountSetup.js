@@ -24,8 +24,16 @@ Ext.define('NP.controller.GLAccountSetup', {
         { ref: 'glaccountPrevSaveBtn', selector : '#prevSaveGlacoountBtn' },
         { ref: 'glaccountNextSaveBtn', selector : '#nextSaveGlacoountBtn' },
         { ref: 'categoryGrid', selector: '[xtype="gl.categorygrid"]' },
-        { ref: 'categoryForm', selector: '[xtype="gl.categoryform"]' }
+        { ref: 'categoryForm', selector: '[xtype="gl.categoryform"]' },
+        { ref: 'glaccountActivateBtn', selector: '[xtype="gl.glaccountsgrid"] [xtype="shared.button.activate"]' },
+        { ref: 'glaccountInactivateBtn', selector: '[xtype="gl.glaccountsgrid"] [xtype="shared.button.inactivate"]' }
     ],
+
+	views: [
+		'NP.view.gl.Main',
+		'NP.view.gl.GLAccountsGrid',
+		'NP.view.gl.GLAccountsForm'
+	],
 	
     // For localization
     changesSavedText          : 'Changes saved successfully',
@@ -42,6 +50,8 @@ Ext.define('NP.controller.GLAccountSetup', {
     orderFailureText          : 'Order Category Failure',
     categorySuccessText       : 'Category saved Success',
     categoryFailureText       : 'Category saved Failure',
+    changeStatusSuccessText   : 'Status saved Success',
+    changeStatusFailureText   : 'Status saved Failure',
     glaccount_id_list         : [],
 
 	init: function() {
@@ -114,6 +124,7 @@ Ext.define('NP.controller.GLAccountSetup', {
 			'#glaccountSaveBtn': {
 				click: function () {
                     this.saveGlAccount();
+                    this.addHistory('GLAccountSetup:showGLAccountSetup:GLAccounts:Grid');
                 }
 			},
 			// The save button on the glaccount form
@@ -197,6 +208,22 @@ Ext.define('NP.controller.GLAccountSetup', {
                     var curr = this.glaccount_id_list.indexOf(parseInt(glaccount_id));
                     this.updateGlAccount(this.glaccount_id_list[curr+1]);
                 }
+            },
+            /**
+             * activate glaccounts
+             */
+            '#activateGLAccountsBtn' : {
+                click: function() {
+                    this.changeGlAccountStatus('active');
+                }
+            },
+            /**
+             * inactivate glaccounts
+             */
+            '#inactivateGLAccountsBtn' : {
+                click: function() {
+                    this.changeGlAccountStatus('inactive');
+                }
             }
 		});
 	},
@@ -251,6 +278,8 @@ Ext.define('NP.controller.GLAccountSetup', {
 		this.getGlaccountEditBtn()[fn]();
 		this.getGlaccountDistributeVendorsBtn()[fn]();
 		this.getGlaccountDistributePropertiesBtn()[fn]();
+		this.getGlaccountActivateBtn()[fn]();
+		this.getGlaccountInactivateBtn()[fn]();
 	},
         
     selectedGLAccounts: function(action) {
@@ -468,7 +497,7 @@ Ext.define('NP.controller.GLAccountSetup', {
                         action    : 'saveGlCategory',
                         data      : { glaccount: data, tree_parent: 0 },
                         success   : function(result, deferred) {
-                            grid.getStore().reload();
+                            grid.getStore().load();
 							if (!addNew) {
                             	form.hide();
 							} else {
@@ -517,5 +546,47 @@ Ext.define('NP.controller.GLAccountSetup', {
                 }
             }
         });
-    }
+    },
+
+    /**
+     * Change glaccount status
+     *
+     * @param status
+     */
+    changeGlAccountStatus: function(status) {
+        var me = this,
+            grid = this.getGlaccountGrid(),
+            items = grid.getSelectionModel().getSelection(),
+            glaccount_id_list = [];
+
+        Ext.each(items, function(item) {
+            glaccount_id_list.push(item.get('glaccount_id'));
+        });
+
+        NP.lib.core.Net.remoteCall({
+            method  : 'POST',
+            mask    : grid,
+            requests: {
+                service          : 'GLService',
+                action           : 'changeStatus',
+                glaccounts       : glaccount_id_list,
+                status           : status,
+                success: function(result, deferred) {
+                    grid.getStore().load();
+                    grid.getSelectionModel().deselectAll();
+                    // Show a friendly message saying action was successful
+                    NP.Util.showFadingWindow({ html: me['changeStatusSuccessText'] });
+                },
+                failure: function(response, options, deferred) {
+                    grid.getStore().rejectChanges();
+                    Ext.MessageBox.alert(me.errorDialogTitleText, that['changeStatusFailureText']);
+                }
+            }
+        });
+    },
+
+	showReports: function() {
+		var me = this;
+		me.application.getController('Report').show('gl', '[xtype="gl.reports"]');
+	}
 });

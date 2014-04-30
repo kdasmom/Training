@@ -8,11 +8,12 @@ Ext.define('NP.view.report.AbstractReportForm', {
 
 	border     : false,
 	bodyPadding: 8,
+	showTitle: true,
 	
 	initComponent: function() {
 		var me = this;
 
-		if (!me.title) {
+		if (!me.title && me.showTitle) {
 			throw 'You must define a title for the report form';
 		}
 

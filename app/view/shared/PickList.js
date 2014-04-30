@@ -102,10 +102,15 @@ Ext.define('NP.view.shared.PickList', {
             items : [
                 {
                     xtype: 'shared.button.save',
-                    handler: Ext.bind(that.saveHandler, this, [false])
+                    handler: Ext.bind(that.saveHandler, this, [false, false])
                 },{
                     xtype: 'shared.button.saveandadd',
-                    handler: Ext.bind(that.saveHandler, this, [true])
+                    handler: Ext.bind(that.saveHandler, this, [true, false]),
+					text: 'Save and Create New'
+                },{
+                    xtype: 'shared.button.saveandnext',
+                    handler: Ext.bind(that.saveHandler, this, [false, true]),
+					text: 'Save and Edit Next'
                 },{
                     xtype: 'shared.button.cancel',
                     handler: function() {
@@ -175,12 +180,15 @@ Ext.define('NP.view.shared.PickList', {
 
         var idProperty = NP.Util.getIdProperty(this.modelClass);
         var saveAndAddBtn = this.query('[xtype="shared.button.saveandadd"]')[0];
+        var saveAndNextBtn = this.query('[xtype="shared.button.saveandnext"]')[0];
         if (rec.get(idProperty) === null) {
             title = 'New ' + title;
-            saveAndAddBtn.setText('Save and Create New');
+			saveAndAddBtn.show();
+			saveAndNextBtn.hide();
         } else {
             title = 'Edit ' + title;
-            saveAndAddBtn.setText('Save and Edit Next');
+			saveAndAddBtn.hide();
+			saveAndNextBtn.show();
         }
 
         this.form.setTitle(title);
@@ -198,7 +206,7 @@ Ext.define('NP.view.shared.PickList', {
         this.form.getForm().getFields().getAt(0).focus();
     },
 
-    saveHandler: function(addAnother, callback) {
+    saveHandler: function(addAnother, editNext, callback) {
         var that = this;
 
         callback = callback || Ext.emptyFn;
@@ -230,18 +238,21 @@ Ext.define('NP.view.shared.PickList', {
                         });
                     }
                     that.grid.getStore().commitChanges();
-                    if (addAnother) {
+                    if (editNext) {
                         var idx = that.grid.getStore().find(idProperty, rec.get(idProperty));
                         idx++;
                         if (idx == that.grid.getStore().getCount()) {
                             idx = 0;
                         }
                         that.selectItemHandler(that.grid, that.grid.getStore().getAt(idx), idx);
-                    }
+                    } else {
+						if (addAnother) {
+							that.newHandler();
+						} else {
 
-                    if (!addAnother) {
-                        that.form.hide();
-                    }
+							that.form.hide();
+						}
+					}
 
                     // Show info message
                     NP.Util.showFadingWindow({ html: 'Change saved' });
