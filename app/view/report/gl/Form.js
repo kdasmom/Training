@@ -52,46 +52,31 @@ Ext.define('NP.view.report.gl.Form', {
                 itemId: 'report_format'
             },
             {
-                xtype: 'shared.integrationpackagescombo',
-                storeAutoLoad: true,
-                editable: false,
-                typeAhead: false,
-                allowBlank: false,
-				selectFirstRecord: true,
-                listeners: {
-                    change: function(combo, newValue, oldValue, eOpts) {
-                        var store = me.getForm().findField('glaccount_category').getStore();
-                        Ext.apply(store.getProxy().extraParams, {
-                            integration_package_id: newValue
-                        });
-                        store.reload();
-                    }
-                },
-				storelisteners		: {
-					load: function(store, records, successful, eOpts) {
-						var store = me.getForm().findField('glaccount_category').getStore();
-						Ext.apply(store.getProxy().extraParams, {
-							integration_package_id: records[0].get('integration_package_id')
-						});
-						store.reload();
-					}
-				}
+				xtype            : 'shared.integrationpackagescombo',
+				allowBlank       : false,
+				store            : 'system.IntegrationPackages',
+				listeners        : {
+                    select: me.onSelectIntegrationPackage.bind(me)
+                }
             },
             {
-                xtype       : 'shared.glaccounttypeassigner',
-				width:		600
+				xtype : 'shared.glaccounttypeassigner',
+				width :	800,
+				height: 150
             },
 			{
-				xtype		: 'shared.glaccountassigner',
-				name			: 'glaccount_category',
-				fieldLabel: NP.Translator.translate('Gl Category'),
-				store     : Ext.create('NP.store.gl.GlAccounts',{
-					service    : 'GLService',
-					action     : 'getReportCategories'
-				}),
+				xtype       : 'shared.glaccountassigner',
+				name        : 'glaccount_category',
+				fieldLabel  : NP.Translator.translate('Gl Category'),
 				displayField: 'glaccount_name',
 				valueField  : 'glaccount_id',
-				width:		600
+				width       : 800,
+				height      : 150,
+				tpl         : null,
+				store       : Ext.create('NP.store.gl.GlAccounts',{
+					service    : 'GLService',
+					action     : 'getReportCategories'
+				})
 			},
             {
                 xtype     : 'customcombo',
@@ -126,9 +111,29 @@ Ext.define('NP.view.report.gl.Form', {
 		];
 
 		me.callParent(arguments);
+
+		// Select first integration package as default
+		var intPkgField = me.getForm().findField('integration_package_id');
+		intPkgField.setValue(intPkgField.getStore().getAt(0));
+		me.onSelectIntegrationPackage();
 	},
 
     getReport: function() {
         return Ext.create('NP.view.report.gl.GlReport');
+    },
+
+    onSelectIntegrationPackage: function() {
+        var me       = this,
+        	store    = me.getForm().findField('glaccount_category').getStore(),
+        	intPkgId = me.getForm().findField('integration_package_id').getValue();
+
+        if (intPkgId !== null) {
+            Ext.apply(store.getProxy().extraParams, {
+                integration_package_id: intPkgId
+            });
+            store.load();
+        } else {
+        	store.removeAll();
+        }
     }
 });

@@ -587,6 +587,6 @@ Ext.define('NP.controller.GLAccountSetup', {
 
 	showReports: function() {
 		var me = this;
-		me.application.getController('Report').show('gl');
+		me.application.getController('Report').show('gl', '[xtype="gl.reports"]');
 	}
 });

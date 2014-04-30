@@ -123,6 +123,12 @@ Ext.define('NP.lib.ui.Assigner', {
     
     onBeforeStoreLoad: function() {
         var me   = this;
+
+        if (!me.down('container') || !me.down('container').el) {
+            me.on('afterrender', me.onBeforeStoreLoad, me, { single: true });
+            return;
+        }
+        
         me.mask = new Ext.LoadMask({ target: me.down('container') });
         me.mask.show();
     },
