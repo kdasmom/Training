@@ -40,7 +40,7 @@ Ext.define('NP.view.Viewport', {
 		       		// This displays the NP logo at the top, right below the menu
 			       	{
 				        xtype: 'container',
-				        height: 53,
+				        height: 70,
 				        layout: {
 				            type: 'hbox',
 				            align: 'stretch'
