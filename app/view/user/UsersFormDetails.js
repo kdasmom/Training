@@ -124,6 +124,7 @@ Ext.define('NP.view.user.UsersFormDetails', {
     	// For My Settigns > User Information, add security questions
     	if (this.isMySettings) {
             this.questionStore = Ext.create('NP.store.system.SecurityQuestions');
+			this.questionStore.load();
 
     		// Add the 6 security question/answer fields
 	    	for (var i=1; i<=6; i++) {
