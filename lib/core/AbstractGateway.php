@@ -120,6 +120,13 @@ abstract class AbstractGateway {
 	}
 	
 	/**
+	 * @return string The table alias for this gateway
+	 */
+	public function getTableAlias() {
+		return $this->tableAlias;
+	}
+	
+	/**
 	 * @return string The primary key field name for this gateway
 	 */
 	public function getPk() {

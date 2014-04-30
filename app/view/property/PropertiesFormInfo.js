@@ -190,7 +190,9 @@ Ext.define('NP.view.property.PropertiesFormInfo', {
                 name      : fieldData['customfield_name'],
                 number    : fieldData['universal_field_number'],
                 allowBlank: !fieldData['customfield_required'],
-                fieldCfg  : { width: defaultWidth-177, value: fieldData['customfielddata_value'] }
+                comboUi   : 'customcombo',
+                width     : defaultWidth,
+                fieldCfg  : { useSmartStore: true, value: fieldData['customfielddata_value'] }
             });
         });
 

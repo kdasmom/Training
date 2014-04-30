@@ -263,7 +263,7 @@ class SecurityService extends AbstractService {
 	/**
 	 * Returns a module tree starting from a certain module
 	 */
-	public function getModuleTree($module_id=0, $getAsHierarchy=0, $leafOnly=0, $showCheckboxes=1) {
+	public function getModuleTree($module_id=0, $getAsHierarchy=0, $leafOnly=0, $showCheckboxes=1, $showLeafIcons = 1, $modulesList = []) {
 		$modules = $this->moduleGateway->findForTree();
 		$tree = array();
 		$startParent = 0;
@@ -277,12 +277,12 @@ class SecurityService extends AbstractService {
 			$tree[$module['tree_parent']][] = $module;
 		}
 
-		$tree = $this->buildTree($tree, $startParent, 0, $getAsHierarchy, $leafOnly, $showCheckboxes);
+		$tree = $this->buildTree($tree, $startParent, 0, $getAsHierarchy, $leafOnly, $showCheckboxes, $showLeafIcons);
 
 		return $tree;
 	}
 
-	private function buildTree($tree, $parent, $level=0, $getAsHierarchy=0, $leafOnly=0, $showCheckboxes=1) {
+	private function buildTree($tree, $parent, $level=0, $getAsHierarchy=0, $leafOnly=0, $showCheckboxes=1, $showLeafIcons = 1) {
 		$modules = array();
 		if (array_key_exists($parent, $tree)) {
 			foreach($tree[$parent] as $treeItem) {
@@ -293,12 +293,15 @@ class SecurityService extends AbstractService {
 				$newlevel = $level + 1;
 				$pos = count($modules) - 1;
 				if ($getAsHierarchy) {
-					$modules[$pos]['children'] = $this->buildTree($tree, $treeItem['tree_id'], $newlevel, $getAsHierarchy, $leafOnly, $showCheckboxes);
+					$modules[$pos]['children'] = $this->buildTree($tree, $treeItem['tree_id'], $newlevel, $getAsHierarchy, $leafOnly, $showCheckboxes, $showLeafIcons);
 					if ($showCheckboxes) {
 						$modules[$pos]['checked'] = false;
 					}
 					if (!count($modules[$pos]['children'])) {
 						$modules[$pos]['leaf'] = true;
+						if (!$showLeafIcons) {
+							$modules[$pos]['cls'] = 'noicon';
+						}
 						unset($modules[$pos]['children']);
 					} else {
 						if ($leafOnly) {
@@ -309,7 +312,7 @@ class SecurityService extends AbstractService {
 				} else {
 					$modules[$pos]['level'] = $level;
 					$modules[$pos]['indent_text'] = str_repeat('&nbsp;', $level*5);
-					$modules = array_merge($modules, $this->buildTree($tree, $treeItem['tree_id'], $newlevel, $getAsHierarchy, $leafOnly, $showCheckboxes));
+					$modules = array_merge($modules, $this->buildTree($tree, $treeItem['tree_id'], $newlevel, $getAsHierarchy, $leafOnly, $showCheckboxes, $showLeafIcons));
 				}
 			}
 		}

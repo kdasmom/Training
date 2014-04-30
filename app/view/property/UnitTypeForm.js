@@ -52,7 +52,8 @@ Ext.define('NP.view.property.UnitTypeForm', {
     			},
     			defaults: {
 	    			labelWidth: 150,
-	    			width     : 220
+	    			width     : 220,
+	    			msgTarget : 'qtip'
 	    		},
     			items: [
     				{
@@ -87,7 +88,8 @@ Ext.define('NP.view.property.UnitTypeForm', {
 				decimalPrecision: 2,
 				minValue        : 0,
 				maxValue        : 999999.99,
-				allowBlank		: false
+				allowBlank		: false,
+	    		msgTarget       : 'qtip'
 			};
 			if (idx % 2 == 0) {
 				cellCfg['margin'] = '0 8 0 0';

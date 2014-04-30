@@ -11,22 +11,21 @@ Ext.define('NP.view.vendor.VendorDocumentsForm', {
 		'NP.lib.core.Security',
 		'NP.view.vendor.InvoiceDocuments',
 		'NP.view.vendor.PurchaseOrder',
-		'NP.lib.ui.VerticalTabPanel'
+		'NP.lib.ui.VerticalTabPanel',
+		'NP.lib.core.Translator'
 	],
 
+	title: 'Vendor Documents',
 	padding: 8,
 	layout: 'fit',
 	autoScroll: true,
 //	flex: 1,
 	border: false,
 
-	// For localization
-	title					: 'Vendor documents',
-	invoiceDocumentsTablabel		: 'Invoice',
-	purchaseOrderTabLabel		: 'Purchase Order',
-
 	initComponent: function() {
 		var that = this;
+
+		that.title = NP.Translator.translate(that.title);
 
 		this.items = [{
 			xtype : 'verticaltabpanel',

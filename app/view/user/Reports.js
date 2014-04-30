@@ -9,9 +9,8 @@ Ext.define('NP.view.user.Reports', {
     
     title: 'Reports',
 
-    html: 'Coming soon...',
-
     initComponent: function() {
+        this.title = NP.Translator.translate(this.title);
     	this.callParent(arguments);
     }
 });

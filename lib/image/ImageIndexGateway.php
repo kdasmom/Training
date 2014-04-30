@@ -19,7 +19,7 @@ class ImageIndexGateway extends AbstractGateway {
 
 	public function findImagesToConvert($countOnly, $docTypes=null, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
 		$select = $this->getDashboardSelect($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
-		
+
 		if ($docTypes === null) {
 			$docTypes = 'Invoice,Utility Invoice';
 		}
@@ -41,7 +41,7 @@ class ImageIndexGateway extends AbstractGateway {
 
 	public function findImagesToProcess($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
 		$select = $this->getDashboardSelect($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
-		
+
 		if ($countOnly != 'true') {
 			$select->columnPendingDays();
 		}
@@ -63,7 +63,7 @@ class ImageIndexGateway extends AbstractGateway {
 
 	public function findImageExceptions($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
 		$select = $this->getDashboardSelect($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
-		
+
 		$propertyFilterSelect = new PropertyFilterSelect(new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection));
 
 		// We're going to create a where object to overwrite the entire where clause because
@@ -117,7 +117,7 @@ class ImageIndexGateway extends AbstractGateway {
 
 	protected function getDashboardSelect($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort) {
 		$select = new sql\ImageSelect();
-		
+
 		if ($countOnly == 'true') {
 			$select->count(true, 'totalRecs', 'img.image_index_id');
 		} else {
@@ -201,7 +201,7 @@ class ImageIndexGateway extends AbstractGateway {
 	 */
 	public function findEntityImages($tablekey_id, $image_tableref_name, $primaryOnly=false, $includeTransferData=false) {
 		$transferCols = ($includeTransferData) ? null : [];
-		
+
 		$select = Select::get()->allColumns('img')
 								->from(array('img'=>'image_index'))
 								->join(new sql\join\ImageIndexImageSourceJoin())
@@ -257,7 +257,7 @@ class ImageIndexGateway extends AbstractGateway {
 			return null;
 		}
 	}
-        
+
     public function findImagesToDelete($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=null, $sort="vendor_name") {
 		$select = $this->getDashboardSelect($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
 		$propertyFilterSelect = new PropertyFilterSelect(new PropertyContext($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection));
@@ -283,7 +283,7 @@ class ImageIndexGateway extends AbstractGateway {
 			return $this->adapter->query($select);
 		}
 	}
- 
+
 	/**
 	 * Returns all images that can be added to an entity type with a specific vendor
 	 */
@@ -308,7 +308,7 @@ class ImageIndexGateway extends AbstractGateway {
 
     /**
      * Delete images from database.
-     * 
+     *
      * @param [] $identifiers List of image identifiers to delete.
      * @return [] Execution result.
      */
@@ -325,7 +325,7 @@ class ImageIndexGateway extends AbstractGateway {
 
     /**
      * Mark images as deleted.
-     * 
+     *
      * @param [] $identifiers List of image identifiers to delete.
      * @param int $userprofile_id User profile id who requests delete operation.
      * @return Execution result.
@@ -350,7 +350,7 @@ class ImageIndexGateway extends AbstractGateway {
     public function makePrimary($image_index_id) {
     	$error = null;
     	$this->beginTransaction();
-    	
+
     	try {
     		$image = $this->findById($image_index_id);
 
@@ -376,7 +376,7 @@ class ImageIndexGateway extends AbstractGateway {
 
     /**
      * Revert images: deleted, indexed and so on.
-     * 
+     *
      * @param [] $identifiers List of image identifiers to delete.
      * @return [] Execution result.
      */
@@ -393,7 +393,7 @@ class ImageIndexGateway extends AbstractGateway {
 
     /**
      * Get count of the images by doctype.
-     * 
+     *
      * @param int $invoiceid Invoice id.
      * @param int $doctype Document type id.
      * @return int Count of images.
@@ -421,7 +421,7 @@ class ImageIndexGateway extends AbstractGateway {
 
     /**
      * Get count of the images by tableref.
-     * 
+     *
      * @param int $invoiceid Invoice id.
      * @param int $tableref Tableref id.
      * @return int Count of images.
@@ -449,12 +449,12 @@ class ImageIndexGateway extends AbstractGateway {
 
     /**
      * Get Images by id
-     * 
+     *
      * @param int $image_index_id
      * @return [] List of images.
      */
     public function getImageDetails($image_index_id) {
-        $select = 
+        $select =
         	Select::get()
 	        	->from(['img'=>'image_index'])
 		            ->join(new sql\join\ImageIndexImageSourceJoin())
@@ -477,7 +477,7 @@ class ImageIndexGateway extends AbstractGateway {
 
     /**
      * Find image by table reference and table identifier.
-     * 
+     *
      * @param int $tablekey Target table identifier.
      * @param int $tableref Table reference.
      * @return int Image identifier.
@@ -503,12 +503,12 @@ class ImageIndexGateway extends AbstractGateway {
 
     /**
      * Search image by multiple criterias.
-     * 
+     *
      * @param int $doctype Document type identifier.
      * @param int $searchtype Search type identifier: 1 - Image name, 2 - Scan date, 3 - Vendor.
      * @param string $searchstring Search string.
      * @param type $property_type Context type: Region, Property, Multiple Properties, All Properties.
-     * @param type $property_list Context item: Item identifier(Region id or Property id) or identifiers depending 
+     * @param type $property_list Context item: Item identifier(Region id or Property id) or identifiers depending
      *      on context type.
      * @return [] List of images.
      */
@@ -576,7 +576,7 @@ class ImageIndexGateway extends AbstractGateway {
 
     /**
      * Search for deleted images.
-     * 
+     *
      * @param int $vendor Vendor id.
      * @param int $invoice Invoice number.
      * @param string $deletedby Username of the user who deleted the image.
@@ -612,7 +612,7 @@ class ImageIndexGateway extends AbstractGateway {
     /**
      * Get image parameters.
      * Used in "delete image" mechanism to mark primary image correctly.
-     * 
+     *
      * @param [] $identifiers List of image identifiers.
      * @return [] parameters.
      */
@@ -642,7 +642,7 @@ class ImageIndexGateway extends AbstractGateway {
 
     /**
      * Set primary flag of the image correctly.
-     * 
+     *
      * @param [] $identifiers List of images identifiers.
      * @param [] $params Images parameters.
      */

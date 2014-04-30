@@ -38,11 +38,11 @@ Ext.define('NP.view.shared.invoicepo.ForwardsGrid', {
 
 
         me.columns = {
-            defaults : { width: '24%' },
             items    : [
                 {
                     text     : me.sentFromColName,
                     dataIndex: 'from_person_firstname',
+                    flex     : 0.25,
                     renderer : function(val, meta, rec) {
                         var returnVal = val + ' ' + rec.get('from_person_lastname');
                         if (rec.get('forward_from_userprofile_id') !== rec.get('from_delegation_to_userprofile_id')
@@ -55,10 +55,12 @@ Ext.define('NP.view.shared.invoicepo.ForwardsGrid', {
                     }
                 },{
                     text     : me.sentToEmailColName,
-                    dataIndex: 'forward_to_email'
+                    dataIndex: 'forward_to_email',
+                    flex     : 0.35
                 },{
                     text     : me.sentToColName,
                     dataIndex: 'to_person_firstname',
+                    flex     : 0.25,
                     renderer : function(val, meta, rec) {
                         if (val !== null || rec.get('to_person_lastname') !== null) {
                             return val + ' ' + rec.get('to_person_lastname');
@@ -70,6 +72,7 @@ Ext.define('NP.view.shared.invoicepo.ForwardsGrid', {
                     xtype    : 'datecolumn',
                     text     : me.sentDateColName,
                     dataIndex: 'forward_datetm',
+                    flex     : 0.15,
                     format   : NP.Config.getDefaultDateFormat()
                 }
             ]

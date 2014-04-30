@@ -2,14 +2,14 @@
 
 namespace NP\po;
 
-use NP\shared\AbstractInvoicePoService;
+use NP\shared\AbstractEntityService;
 
 /**
  * Service class for operations related to Purchase Orders
  *
  * @author Thomas Messier
  */
-class PoService extends AbstractInvoicePoService {
+class PoService extends AbstractEntityService {
 	protected $type = 'po';
 
 	public function get($purchaseorder_id) {
@@ -90,7 +90,7 @@ class PoService extends AbstractInvoicePoService {
 		return $warnings;
 	}
 
-	public function getHistoryLog($entity_id, $pageSize=null, $page=null, $sort="approve_datetm") {
+	public function getHistoryLog($entity_id, $showAudit=false, $pageSize=null, $page=null, $sort="approve_datetm") {
 		return [];
 	}
 

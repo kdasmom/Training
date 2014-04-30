@@ -407,6 +407,8 @@ Ext.define('NP.view.image.Index', {
      * Prepare markup for Utility section.
      */
     markupUtility: function() {
+        var me = this;
+
         if (NP.Security.hasPermission(6094)) {
             if (NP.Security.hasPermission(6095)) {
                 var options = {
@@ -471,8 +473,8 @@ Ext.define('NP.view.image.Index', {
                         }
                     );
 
-                var self = this;
-                options = {
+                var self    = this,
+                    options = {
                     xtype: 'panel',
 
                     border  : 0,
@@ -533,27 +535,39 @@ Ext.define('NP.view.image.Index', {
                 };
             };
 
+            var utilListeners = {};
+            if (!NP.Security.hasPermission(6095)) {
+                utilListeners['select'] = me.onSelectUtilityAccount.bind(me);
+            }
+
             var items = [
                 options,
-
                 // Field: Utility Account Id Alt. This is also Utility Account Id. It should be displayed for multiple
                 // accounts.
                 {
-                    name: 'utilityaccount_id',
-
-                    xtype                : 'customcombo',
-                    fieldLabel           : NP.Translator.translate('Utility Account'),
-                    displayField         : 'long_display_name',
-                    valueField           : 'UtilityAccount_Id',
-                    allowBlank           : false,
-                    store                : Ext.create('NP.store.vendor.UtilityAccounts', {
+                    name        : 'utilityaccount_id',
+                    xtype       : 'customcombo',
+                    fieldLabel  : NP.Translator.translate('Utility Account'),
+                    displayField: 'long_display_name',
+                    valueField  : 'UtilityAccount_Id',
+                    allowBlank  : false,
+                    store       : Ext.create('NP.store.vendor.UtilityAccounts', {
                         service    : 'UtilityService',
                         action     : 'getAccountsByUser',
                         extraParams: {
                             userprofile_id              : NP.Security.getUser().get('userprofile_id'),
                             delegation_to_userprofile_id: NP.Security.getDelegatedToUser().get('userprofile_id')
                         }
-                    })
+                    }),
+                    listeners: utilListeners
+                },
+                {
+                    xtype: 'hiddenfield',
+                    name : 'UtilityAccountPropertyId'
+                },
+                {
+                    xtype: 'hiddenfield',
+                    name : 'UtilityAccountVendorsiteId'
                 }
             ];
         }
@@ -600,9 +614,15 @@ Ext.define('NP.view.image.Index', {
                             UtilityAccount_AccountNumber: me.accountNumber,
                             success: function(result) {
                                 if (result.length) {
+									me.findField('UtilityAccountPropertyId').setValue( result[0].property_id );
+									me.findField('UtilityAccountVendorsiteId').setValue( result[0].Vendorsite_Id );
+
                                     validField.update('<span class="valid-text">Valid account number</span>');
                                     me.reloadUtilityAccounts();
                                 } else {
+									me.findField('UtilityAccountPropertyId').setValue();
+									me.findField('UtilityAccountVendorsiteId').setValue();
+
                                     validField.update('<span class="error-text">Invalid account number</span>');
                                     accountField.getStore().removeAll();
                                     accountField.setValue(null);
@@ -670,7 +690,7 @@ Ext.define('NP.view.image.Index', {
      */
     reloadUtilityAccounts: function() {
         var me = this,
-            accountField        = me.findField('UtilityAccount_AccountNumber')
+            accountField        = me.findField('UtilityAccount_AccountNumber'),
             meterField          = me.findField('UtilityAccount_MeterSize'),
             utilityAccountField = me.findField('utilityaccount_id'),
             utilityStore        = utilityAccountField.getStore();
@@ -688,8 +708,31 @@ Ext.define('NP.view.image.Index', {
         }
 
         utilityStore.load(function() {
-            utilityAccountField.setValue(utilityStore.getAt(0));
+            if (utilityStore.getCount()) {
+                utilityAccountField.select(utilityStore.getAt(0));
+            }
+            me.onSelectUtilityAccount();
         });
+    },
+
+    onSelectUtilityAccount: function() {
+        var me            = this,
+            property_id   = null,
+            vendorsite_id = null,
+            utilField     = me.findField('utilityaccount_id'),
+            utilRec       = null;
+
+        if (utilField.getValue() !== null) {
+            utilRec = utilField.findRecordByValue(utilField.getValue());
+        }
+
+        if (utilRec !== null) {
+            property_id   = utilRec.get('property_id');
+            vendorsite_id = utilRec.get('Vendorsite_Id');
+        }
+
+        me.findField('UtilityAccountPropertyId').setValue(property_id);
+        me.findField('UtilityAccountVendorsiteId').setValue(vendorsite_id);
     },
 
     /***************************************************************************
@@ -1095,24 +1138,32 @@ Ext.define('NP.view.image.Index', {
      * Show Use Template window.
      */
     showUseTemplateWindow: function() {
-        var me         = this,
-            property   = me.findField('Property_Id'),
-            vendor     = me.findField('Image_Index_VendorSite_Id'),
+        var me = this,
+			vendorsite_id,
+			property_id,
+			utilityaccount_id,
+			doctype = me.findField('Image_Doctype_Id').getDisplayValue(),
             image_index_draft_invoice_id = me.findField('image_index_draft_invoice_id').getValue();
-        
-        if (!property || !vendor) {
-            Ext.MessageBox.alert('Use Template', 'You must select a property and vendor.');
-            return;
-        }
 
-        var vendorsite_id = vendor.getValue();
-        var property_id = property.getValue();
-        if (!vendorsite_id || !property_id) {
-            Ext.MessageBox.alert('Use Template', 'You must select a property and vendor.');
-            return;
-        }
+		if (doctype.toUpperCase() == 'Utility Invoice'.toUpperCase()) {
+			utilityaccount_id = this.findField('utilityaccount_id').getValue();
 
-        var utilityaccount_id = this.findField('utilityaccount_id').getValue();
+			property_id   = this.findField('UtilityAccountPropertyId').getValue();
+			vendorsite_id = this.findField('UtilityAccountVendorsiteId').getValue();
+
+			if (!utilityaccount_id) {
+				Ext.MessageBox.alert('Use Template', 'You must select a utility account number.');
+				return;
+			}
+		} else {
+			vendorsite_id = me.findField('Image_Index_VendorSite_Id').getValue();
+			property_id   = me.findField('Property_Id').getValue();
+
+			if (!vendorsite_id || !property_id) {
+				Ext.MessageBox.alert('Use Template', 'You must select a property and vendor.');
+				return;
+			}
+		}
 
         var win = Ext.create('NP.view.invoice.UseTemplateWindow', {
             itemId               : 'imageUseTemplateWin',

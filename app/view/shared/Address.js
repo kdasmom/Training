@@ -147,14 +147,16 @@ Ext.define('NP.view.shared.Address', {
                     width         : this.address_state_width,
                     value         : this.address_state,
 					editable	  : true,
-					typeAhead	  : true
+					typeAhead	  : false
                 },{
                     xtype      : 'textfield',
                     fieldLabel : NP.Translator.translate('Zip'),
                     name       : this.prefix + NP.view.shared.Address.ZIP,
                     width      : this.address_zip_width,
                     allowBlank : !this.required,
-                    value      : this.address_zip
+                    value      : this.address_zip,
+                    maxLengthText: 5,
+                    minLengthText: 5
                 },{
                     xtype      : 'textfield',
                     fieldLabel : 'Zip Ext', // This will be hidden after render

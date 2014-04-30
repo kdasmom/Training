@@ -228,7 +228,7 @@ class GlAccountGateway extends AbstractGateway {
         $select->columnsAll()
                 ->joinTree(['tree_id','tree_parent'])
                 ->joinTree2()
-                ->joinCategory(array('glaccount_category' => 'glaccount_name'))
+                ->joinCategory(array('glaccount_category_id' => 'glaccount_id', 'glaccount_category' => 'glaccount_name'))
                 ->joinType(array('glaccounttype_id','glaccounttype_name'))
                 ->joinUpdatedBy(array('glaccount_updateby' => 'userprofile_id', 'userprofile_username'));
 
