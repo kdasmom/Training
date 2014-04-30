@@ -301,7 +301,7 @@ Ext.define('NP.controller.VendorManager', {
 			form.getForm().findField('vendor_active_enddate').hide();
 			form.getForm().findField('default_glaccount_id').hide();
 			form.getForm().findField('default_paymenttype_id').hide();
-			form.getForm().findField('default_due_datetm').hide();
+			form.getForm().findField('default_due_date').hide();
 		}
 
 		this.showFormTab('baseinformation', vendor_id ? true : false, false, search, this.renderTabBar);
