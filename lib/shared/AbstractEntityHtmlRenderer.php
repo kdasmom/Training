@@ -27,8 +27,9 @@ abstract class AbstractEntityHtmlRenderer extends AbstractEntityRenderer impleme
 			'phone_countrycode' => $this->entity['property_phone_countrycode']
 		];
 		
-		echo '<link rel="stylesheet" href="' . $this->configService->getLoginUrl() . '/resources/entity.css" />' .
-			'<table width="100%" id="entityPrintTable">' .
+		$this->renderCssTag();
+
+		echo '<table width="100%" id="entityPrintTable">' .
 			'<tr>' .
     			'<td width="75%">';
 
@@ -48,6 +49,10 @@ abstract class AbstractEntityHtmlRenderer extends AbstractEntityRenderer impleme
 		    '</tr>';
 	}
 
+	public function renderCssTag() {
+		echo '<link rel="stylesheet" href="' . $this->configService->getLoginUrl() . '/resources/entity.css" />';
+	}
+
 	public function renderBar() {
 		echo '<tr><td colspan="2" class="spacer"></td></tr>';
 		echo '<tr><td colspan="2" class="blackLine"></td></tr>';
@@ -57,10 +62,7 @@ abstract class AbstractEntityHtmlRenderer extends AbstractEntityRenderer impleme
 	public function renderSubHeader() {
 		echo '<tr>' .
 				'<td id="vendorInfo">' .
-					"{$this->entity['vendor_name']}" .
-					"<div>Vendor ID: {$this->entity['vendor_id_alt']}</div>" .
-					$this->getAddressHtml($this->entity) .
-	    			"<div>{$this->getFullPhone($this->entity)}</div>" .
+					$this->getVendorHtml() .
 				'</td>' .
 				'<td>';
 		
@@ -73,16 +75,34 @@ abstract class AbstractEntityHtmlRenderer extends AbstractEntityRenderer impleme
 		'</table>';
 	}
 
+	public function getVendorHtml() {
+		return "{$this->entity['vendor_name']}" .
+				"<div>Vendor ID: {$this->entity['vendor_id_alt']}</div>" .
+				$this->getAddressHtml($this->entity) .
+				"<div>{$this->getFullPhone($this->entity)}</div>";
+	}
+
 	abstract public function renderSubHeaderRightCol();
 
-	protected function renderCustomField($data, $customField) {
+	protected function renderCustomField($data, $customField, $type) {
 		echo $this->getIfNotBlank($data['universal_field' . $customField['fieldNumber']], $customField['label']);
 	}
 
 	public function renderLines() {
+		$lineNumHtml = '';
+		if ($this->options['lineNumbers']) {
+			$lineNumHtml = '<th width="50px">Line #</th>';
+		}
+
+		$glHtml = '';
+		if (!$this->options['combineSplit'] && $this->options['glCode']) {
+			$glHtml = '<th width="150px">GL Account</th>';
+		}
+
 		echo '<table width="100%" id="entityPrintLines">' .
 			'<tr>' .
-				'<th width="150px">GL Account</th>' .
+				$lineNumHtml .
+				$glHtml .
 				'<th width="50px">QTY</th>' .
 				'<th width="400px">Description</th>' .
 				'<th width="100px">Item Price</th>' .
@@ -92,12 +112,23 @@ abstract class AbstractEntityHtmlRenderer extends AbstractEntityRenderer impleme
 		parent::renderLines();
 	}
 
-	public function renderLine($line) {
+	public function renderLine($line, $lineNum) {
 		$prefix = $this->getItemPrefix();
+
+		$lineNumHtml = '';
+		if ($this->options['lineNumbers']) {
+			$lineNumHtml = "<td>{$lineNum}</td>";
+		}
+
+		$glHtml = '';
+		if (!$this->options['combineSplit'] && $this->options['glCode']) {
+			$glHtml = "<td>{$line['glaccount_number']}<br />{$line['glaccount_name']}</td>";
+		}
 
 		echo 
 			'<tr>' .
-				"<td>{$line['glaccount_number']}<br />{$line['glaccount_name']}</td>" .
+				$lineNumHtml .
+				$glHtml .
 				'<td>' .
 					$line["{$prefix}_quantity"];
 
@@ -114,14 +145,17 @@ abstract class AbstractEntityHtmlRenderer extends AbstractEntityRenderer impleme
 		}
 
 		echo		"<div>" . $line["{$prefix}_description"] . "</div>" .
-					$this->getIfNotBlank($line["{$prefix}_description_alt"]) .
-					$this->getIfNotBlank($line['vcitem_number'], "Item Number");
+					$this->getIfNotBlank($line["{$prefix}_description_alt"]);
 
-		if (!empty($line['vcitem_uom'])) {
+		if ($this->options['lineItemNum']) {
+			echo $this->getIfNotBlank($line['vcitem_number'], "Item Number");
+		}
+
+		if ($this->options['lineItemUom'] && !empty($line['vcitem_uom'])) {
 			echo	'<div>' .
 						'UOM: ';
 
-			if (array_key_exists('unittype_material_name', $line) && !empty($line['unittype_material_name'])) {
+			if (!$this->options['combineSplit'] && array_key_exists('unittype_material_name', $line) && !empty($line['unittype_material_name'])) {
 				echo	"{$line['unittype_material_name']} ";
 			}
 						
@@ -131,7 +165,9 @@ abstract class AbstractEntityHtmlRenderer extends AbstractEntityRenderer impleme
 					
 		$this->renderCustomFields($line, 'line');
 
-		$this->renderJobCosting($line);
+		if ($this->options['job']) {
+			$this->renderJobCosting($line);
+		}
 
 		echo		$this->getIfNotBlank($line['purchaseorder_ref'], "PO") .
 				'</td>' .
@@ -178,9 +214,18 @@ abstract class AbstractEntityHtmlRenderer extends AbstractEntityRenderer impleme
 	}
 
 	public function renderLineFooter() {
+		$colspan = 3;
+
+		if ($this->options['lineNumbers']) {
+			$colspan++;
+		}
+		if (!$this->options['combineSplit'] && $this->options['glCode']) {
+			$colspan++;
+		}
+
 		echo '<tfoot>' .
         		'<tr>' .
-                '<th colspan="4">' .
+                '<th colspan="' . $colspan . '">' .
                     '<div>' . strtoupper($this->getSetting('PN.General.salesTaxTerm', 'Sales Tax')) . '</div>' .
                     '<div>SHIPPING</div>' .
                     '<div>';
@@ -303,7 +348,7 @@ abstract class AbstractEntityHtmlRenderer extends AbstractEntityRenderer impleme
 		echo '<div class="noteLabel">History Log</div>';
 
 		if ($this->entity["{$prefix}_status"] !== 'draft') {
-			$historyRecs = $this->getHistory();
+			$historyRecs = $this->getHistoryLog();
 			if (count($historyRecs)) {
 				echo '<table cellpadding="0" cellspacing="0" border="0" width="100%" class="logTable">
 						<thead>
@@ -334,6 +379,54 @@ abstract class AbstractEntityHtmlRenderer extends AbstractEntityRenderer impleme
 
 				return;
 			}
+		}
+
+		echo 'No information to display.';
+	}
+
+	public function renderForwards($type) {
+		$prefix = $this->getPrefix();
+
+		echo '<div class="noteLabel">Forwards</div>';
+
+		$forwardRecs = $this->getForwardsLog($type);
+		if (count($forwardRecs)) {
+			echo '<table cellpadding="0" cellspacing="0" border="0" width="100%" class="logTable">
+					<thead>
+						<tr>
+							<th>Sent From</th>
+							<th>Sent To Email</th>
+							<th>Sent To</th>
+							<th>Date Forwarded</th>
+						</tr>
+					</thead>		
+					<tbody>';
+
+			foreach ($forwardRecs as $forward) {
+				$forwardDate = \DateTime::createFromFormat(\NP\util\Util::getServerDateFormat(), $forward['forward_datetm']);
+				$forwardDate = $forwardDate->format($this->getSetting('PN.Intl.DateFormat', 'm/d/Y') . ' H:iA');
+
+				$from = "{$forward['from_person_firstname']} {$forward['from_person_lastname']}";
+				if (
+					$forward['forward_from_userprofile_id'] !== $forward['from_delegation_to_userprofile_id']
+					&& !empty($forward['forward_from_userprofile_id'])
+					&& !empty($forward['from_delegation_to_userprofile_id'])
+				) {
+					$from .= " (done by {$forward['userprofile_username']} on behalf of {$forward['delegation_userprofile_username']})";
+				}
+
+				echo '<tr>' .
+						"<td>{$from}</td>" .
+						"<td>{$forward['forward_to_email']}</td>" .
+						"<td>{$forward['to_person_firstname']} {$forward['to_person_lastname']}</td>" .
+						"<td>{$forwardDate}</td>" .
+					'</tr>';
+			}
+
+			echo	'</tbody>' .
+				'<table>';
+
+			return;
 		}
 
 		echo 'No information to display.';

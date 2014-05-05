@@ -12,7 +12,28 @@ use NP\core\AbstractService;
  * @author Thomas Messier
  */
 abstract class AbstractEntityRenderer implements EntityRendererInterface {
-	protected $service, $entity_id, $options, $entity;
+	protected $service, $entity_id, $entity;
+
+	protected $options = [
+		'notes'        => false,
+		'overageNotes' => false,
+		'holdReason'   => false,
+		'payments'     => false,
+		'history'      => false,
+		'forward'      => false,
+		'headerCustom' => false,
+		'lineCustom'   => false,
+		'lineNumbers'  => false,
+		'combineSplit' => false,
+		'lineItemNum'  => true,
+		'lineItemUom'  => true,
+		'glCode'       => true,
+		'job'          => true,
+		'unit'         => true,
+		'created'      => true,
+		'allImages'    => false,
+		'mainImage'    => false
+	];
 
 	public function __construct(ConfigService $configService, GatewayManager $gatewayManager, AbstractService $service, $entity_id=null, $options=[]) {
 		$this->configService  = $configService;
@@ -20,17 +41,13 @@ abstract class AbstractEntityRenderer implements EntityRendererInterface {
 		$this->service        = $service;
 		$this->entity_id      = $entity_id;
 
-		$this->getEntity();
+		$this->initEntity();
 
 		$this->setOptions($options);
 	}
 
-	public function getEntity() {
-		if (empty($this->entity)) {
-			$this->entity = $this->service->get($this->entity_id);
-		}
-
-		return $this->entity;
+	public function initEntity() {
+		$this->entity = $this->service->get($this->entity_id);
 	}
 
 	abstract public function getPrefix();
@@ -40,7 +57,13 @@ abstract class AbstractEntityRenderer implements EntityRendererInterface {
 	 * Sets the options for rendering the invocie
 	 */
 	public function setOptions($options) {
-		$this->options = $options;
+		foreach ($options as $option) {
+			$this->options[$option] = true;
+		}
+	}
+
+	public function getOptions() {
+		return $this->options;
 	}
 
 	/**
@@ -53,23 +76,23 @@ abstract class AbstractEntityRenderer implements EntityRendererInterface {
 		$this->renderLines();
 		$this->renderLineFooter();
 
-		if (in_array('notes', $this->options)) {
+		if ($this->options['notes']) {
 			$this->renderNotes();
 		}
 		
-		if (in_array('overageNotes', $this->options)) {
+		if ($this->options['overageNotes']) {
 			$this->renderOverageNotes();
 		}
 		
-		if (in_array('holdReason', $this->options)) {
+		if ($this->options['holdReason']) {
 			$this->renderHoldReason();
 		}
 		
-		if (in_array('payments', $this->options)) {
+		if ($this->options['payments']) {
 			$this->renderPayments();
 		}
 		
-		if (in_array('history', $this->options)) {
+		if ($this->options['history']) {
 			$this->renderHistory();
 		}
 	}
@@ -78,18 +101,23 @@ abstract class AbstractEntityRenderer implements EntityRendererInterface {
 	abstract function renderSubHeader();
 
 	public function renderCustomFields($data, $type) {
-		if (in_array($type.'Custom', $this->options)) {
+		if ($this->options["{$type}Custom"]) {
 			$customFields = $this->configService->getInvoicePoCustomFields();
 			$customFields = $customFields[$type]['fields'];
 			foreach ($customFields as $customField) {
-				if ($customField['invOn']) {
-	    			$this->renderCustomField($data, $customField);
+				if (array_key_exists('invoice_id', $data) || array_key_exists('invoiceitem_id', $data)) {
+					$onKey = 'invOn';
+				} else {
+					$onKey = 'poOn';
+				}
+				if ($customField[$onKey]) {
+	    			$this->renderCustomField($data, $customField, $type);
 	    		}
 			}
 		}
 	}
 
-	abstract protected function renderCustomField($data, $customField);
+	abstract protected function renderCustomField($data, $customField, $type);
 
 	public function renderLines() {
 		$this->entity['total']           = 0;
@@ -97,7 +125,7 @@ abstract class AbstractEntityRenderer implements EntityRendererInterface {
 		$this->entity['shipping_total']  = 0;
 		$this->entity['retention_total'] = 0;
 
-		foreach ($this->entity['lines'] as $line) {
+		foreach ($this->entity['lines'] as $lineNum=>$line) {
 			// Add to totals
 			$prefix = $this->getItemPrefix();
 			$this->entity['total'] += $line["{$prefix}_amount"] + $line["{$prefix}_salestax"] + $line["{$prefix}_shipping"];
@@ -109,9 +137,11 @@ abstract class AbstractEntityRenderer implements EntityRendererInterface {
 				$this->entity['retention_total'] += $line['jbassociation_retamt'];
 			}
 
-			$this->renderLine($line);
+			$this->renderLine($line, $lineNum);
 		}
 	}
+
+	abstract function renderLine($line, $lineNum);
 
 	protected function getGrossTotal() {
 		return $this->entity['total'];
@@ -132,8 +162,6 @@ abstract class AbstractEntityRenderer implements EntityRendererInterface {
 	protected function getShippingTotal() {
 		return $this->entity['shipping_total'];
 	}
-
-	abstract function renderLine($line);
 
 	public function getDisplayStatus() {
 		$prefix = $this->getPrefix();
@@ -200,6 +228,12 @@ abstract class AbstractEntityRenderer implements EntityRendererInterface {
 		}
 
 		return $html;
+	}
+
+	abstract protected function getHistoryLog();
+
+	public function getForwardsLog($type) {
+		return $this->gatewayManager->get('InvoicePoForwardGateway')->findByEntity($type, $this->entity_id);
 	}
 
 	protected function getFullPhone($phoneData) {

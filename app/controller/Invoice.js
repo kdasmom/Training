@@ -133,14 +133,6 @@ Ext.define('NP.controller.Invoice', {
 
 			'#invoiceReclassSaveBtn': {
 				click: me.onReclassSave
-			},
-
-			'#invoiceForwardBtn': {
-				click: me.onForward
-			},
-
-			'#invoiceForwardSendBtn': {
-				click: me.onForwardSend
 			}
 		});
 
@@ -245,8 +237,8 @@ Ext.define('NP.controller.Invoice', {
 		if (updateOption('warnings')) {
 			var warnings = data['warnings'];
 			me.getWarningsView().getStore().removeAll();
+			me.getWarningsView().getStore().loadRawData(warnings);
 			if (warnings.length) {
-				me.getWarningsView().getStore().loadRawData(warnings);
 				me.getWarningsView().up('panel').show();
 			}
 		}
@@ -1224,69 +1216,4 @@ Ext.define('NP.controller.Invoice', {
 			);
 		}
 	},
-
-	onForward: function() {
-		var me    = this,
-	        email = NP.Security.getUser().get('email_address');
-
-		if (!Ext.isEmpty(email)) {
-			var win = Ext.widget('invoice.forwardwindow', {
-				invoice: me.getEntityRecord(),
-				vendor : me.getVendorRecord()
-	        });
-
-        	win.show();
-        } else {
-        	Ext.MessageBox.alert(
-				me.translate('Error'),
-				me.translate('You cannot forward invoices without a valid email address. ' +
-								'Please update your profile with an email address.')
-			);
-        }
-	},
-
-	onForwardSend: function() {
-		var me   = this,
-			win  = me.getCmp('invoice.forwardwindow'),
-			form = win.down('form').getForm();
-
-		if (win.isValid()) {
-			NP.Net.remoteCall({
-				mask    : win,
-				method  : 'POST',
-				requests: {
-					service     : 'InvoiceService',
-					action      : 'forwardInvoice',
-					invoice_id  : win.invoice.get('invoice_id'),
-					sender_email: NP.Security.getUser().get('email_address'),
-					forward_to  : form.findField('forward_to').getGroupValue(),
-					forward_val : win.getForwardValue(),
-					message     : form.findField('message').getValue(),
-					includes    : win.getIncludes(),
-					success     : function(result) {
-						if (result.success) {
-							if (result.errors.length) {
-								Ext.MessageBox.alert(
-									me.translate('Error'),
-									me.translate('Invoice could not be forwarded to the following recipients:<br /><br />') +
-									result.errors.join(',')
-								);
-							} else {
-								NP.Util.showFadingWindow({
-									html: me.translate('Invoice was successfully forwarded.')
-								});
-								win.close();
-							}
-							me.getForwardsGrid().getStore().load();
-						} else {
-							Ext.MessageBox.alert(
-								me.translate('Error'),
-								me.translate(result.error)
-							);
-						}
-					}
-				}
-			});
-		}
-	}
 });

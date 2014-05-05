@@ -27,4 +27,8 @@ class PoHtmlRenderer extends AbstractEntityHtmlRenderer implements EntityRendere
 			"{$this->getIfNotBlank($this->entity['purchaseorder_created'], 'Created Date', 'date')}" .
 			"{$this->getIfNotBlank($this->entity['purchaseorder_period'], $this->getSetting('PN.General.postPeriodTerm'), 'date', 'm/Y')}";
 	}
+
+	public function getHistoryLog() {
+		return $this->gatewayManager->get('PurchaseOrderGateway')->findHistoryLog($this->entity_id);
+	}
 }

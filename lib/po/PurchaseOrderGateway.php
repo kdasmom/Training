@@ -47,6 +47,8 @@ class PurchaseOrderGateway extends AbstractGateway {
 				->columnShippingAmount()
 				->columnTaxAmount()
 				->columnCreatedBy()
+				->columnLastApprovedBy()
+				->columnLastApprovedDate()
 				->join(new sql\join\PoVendorsiteJoin())
 				->join(new \NP\vendor\sql\join\VendorsiteVendorJoin(['vendor_name','vendor_id_alt','vendor_status','integration_package_id','default_glaccount_id','default_due_date']))
 				->join(new \NP\vendor\sql\join\VendorGlAccountJoin())

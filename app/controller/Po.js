@@ -25,7 +25,7 @@ Ext.define('NP.controller.Po', {
 	views: ['po.Register','po.View','shared.invoicepo.ImagesManageWindow','shared.invoicepo.ImagesAddWindow',
 			'shared.invoicepo.SplitWindow','shared.invoicepo.RejectWindow','NP.view.vendor.VendorSelectorWindow',
 			'NP.view.shared.invoicepo.ScheduleWindow','NP.view.shared.invoicepo.TemplateWindow',
-			'shared.invoicepo.UseTemplateWindow'],
+			'shared.invoicepo.UseTemplateWindow','po.ForwardWindow'],
 
 	shortName  : 'po',
 	longName   : 'purchaseorder',
@@ -161,8 +161,8 @@ Ext.define('NP.controller.Po', {
 		if (updateOption('warnings')) {
 			var warnings = data['warnings'];
 			me.getWarningsView().getStore().removeAll();
+			me.getWarningsView().getStore().loadRawData(warnings);
 			if (warnings.length) {
-				me.getWarningsView().getStore().loadRawData(warnings);
 				me.getWarningsView().up('panel').show();
 			}
 		}

@@ -28,4 +28,8 @@ class InvoiceHtmlRenderer extends AbstractEntityHtmlRenderer implements EntityRe
 			"{$this->getIfNotBlank($this->entity['invoice_createddatetm'], 'Created Date', 'date')}" .
 			"{$this->getIfNotBlank($this->entity['invoice_period'], $this->getSetting('PN.General.postPeriodTerm'), 'date', 'm/Y')}";
 	}
+
+	public function getHistoryLog() {
+		return $this->gatewayManager->get('InvoiceGateway')->findHistoryLog($this->entity_id);
+	}
 }

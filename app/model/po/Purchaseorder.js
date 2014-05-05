@@ -160,7 +160,8 @@ Ext.define('NP.model.po.Purchaseorder', {
             status  = me.get('purchaseorder_status');
 
         if (
-            (status == 'open' && (NP.Security.hasPermission(1032) || NP.Security.hasPermission(6076) || NP.Security.hasPermission(6077)))
+        	(status == 'draft' && NP.Security.hasPermission(2007))
+            || (status == 'open' && (NP.Security.hasPermission(1032) || NP.Security.hasPermission(6076) || NP.Security.hasPermission(6077)))
             || (status == 'saved' && NP.Security.hasPermission(1068) && me.isModifiable())
             || (status == 'paid' && NP.Security.hasPermission(2094))
         ) {

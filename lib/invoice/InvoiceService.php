@@ -3,8 +3,6 @@
 namespace NP\invoice;
 
 use NP\shared\AbstractEntityService;
-use NP\core\notification\EmailMessage;
-use NP\core\notification\EmailAttachment;
 use NP\util\Util;
 
 /**
@@ -1602,107 +1600,6 @@ class InvoiceService extends AbstractEntityService {
 		    'success' => (count($errors)) ? false : true,
 		    'errors'  => $errors
 		);
-	}
-
-	/**
-	 * Forwards an invoice by email to a list of emails or users
-	 */
-	public function forwardInvoice($invoice_id, $sender_email, $forward_to, $forward_val, $message, $includes=[]) {
-		$pdfPath = null;
-		$success = false;
-		$errors  = [];
-
-		// Get invoice number for email subject line
-		$invoice_ref = $this->invoiceGateway->findValue(
-			['invoice_id'=>'?'],
-			[$invoice_id],
-			'invoice_ref'
-		);
-		
-		// Get invoice images if applicable
-		$images     = [];
-		$includeAll = in_array('allImages', $includes);
-		if (in_array('mainImage', $includes) || $includeAll) {
-			$images = $this->getImages($invoice_id, !$includeAll, true);
-			if (!$includeAll) {
-				$images = [$images];
-			}
-		}
-
-		// Figure out the email or list of emails to send to
-		if ($forward_to == 'vendor' || $forward_to == 'email') {
-			$users = [['email_address' => $forward_val]];
-		} else {
-			$users = $this->userprofileGateway->find(
-				[['in', 'u.userprofile_id', $this->userprofileGateway->createPlaceholders($forward_val)]],
-				$forward_val
-			);
-		}
-
-		// Generate the invoice PDF
-		$pdf = new InvoicePdfRenderer($this->configService, $this->gatewayManager, $this, $invoice_id, $includes);
-		$pdfPath = $this->configService->getClientFolder() . '/web/pdfs/' . $this->securityService->getUserId();
-
-		// If destination directory doesn't exist, create it
-  		if (!is_dir($pdfPath)) {
-  			mkdir($pdfPath, 0777, true);
-  		}
-  		
-		$pdfPath = Util::getUniqueFileName($pdfPath . "/invoice_{$invoice_id}.pdf");
-
-		$pdfPath = $pdfPath['path'];
-		$pdf->save($pdfPath);
-
-		$message = strip_tags(trim($message));
-		foreach ($users as $user) {
-			try {
-				$msg = EmailMessage::getNew(
-										"Invoice Order {$invoice_ref}",
-										strip_tags($message)
-									)
-									->setFrom($sender_email)
-									->setTo($user['email_address'])
-									->attach(EmailAttachment::getNew()->setPath($pdfPath));
-
-
-				foreach($images as $image) {
-					$msg->attach(EmailAttachment::getNew()->setPath($image['transfer_filename']));
-				}
-
-				$this->notificationService->sendEmail($msg);
-				$success = true;
-
-				$forward_id = (array_key_exists('userprofile_id', $user)) ? $user['userprofile_id'] : null;
-				$this->invoicePoForwardGateway->insert([
-					'table_name'                        => 'invoice',
-					'tablekey_id'                       => $invoice_id,
-					'forward_to_email'                  => $sender_email,
-					'forward_to_userprofile_id'         => $forward_id,
-					'forward_from_userprofile_id'       => $this->securityService->getUserId(),
-					'from_delegation_to_userprofile_id' => $this->securityService->getDelegatedUserId(),
-					'forward_message'                   => substr($message, 0, 500)
-				]);
-			} catch(\Exception $e) {
-				$msg = $this->handleUnexpectedError($e);
-				if ($forward_to == 'user') {
-					$errors[] = "{$user['person_firstname']} {$user['person_lastname']}";
-				} else {
-					$errors[] = $user['email_address'];
-				}
-			}
-		}
-
-		if (!$success) {
-			return [
-				'success' => false,
-				'error'   => $msg
-			];
-		} else {
-			return [
-				'success' => true,
-				'errors'  => $errors
-			];
-		}
 	}
 }
 

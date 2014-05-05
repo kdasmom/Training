@@ -196,6 +196,14 @@ Ext.define('NP.controller.AbstractEntityController', {
 			click: me.onRejectSave
 		};
 
+		control['#' + me.shortName + 'ForwardBtn'] = {
+			click: me.onForward
+		};
+
+		control['#' + me.shortName + 'ForwardWin [xtype="shared.button.message"]'] = {
+			click: me.onForwardSend
+		};
+
 		// Clicking on a Register tab
 		control['[xtype="' + me.shortName + '.register"]'] = {
 			tabchange: function(tabPanel, newCard, oldCard, eOpts) {
@@ -3139,5 +3147,71 @@ Ext.define('NP.controller.AbstractEntityController', {
 				}
 			}
 		});
-    }
+    },
+
+	onForward: function() {
+		var me    = this,
+	        email = NP.Security.getUser().get('email_address');
+
+		if (!Ext.isEmpty(email)) {
+			var win = Ext.widget(me.shortName + '.forwardwindow', {
+				itemId: me.shortName + 'ForwardWin',
+				entity: me.getEntityRecord(),
+				vendor: me.getVendorRecord()
+	        });
+
+        	win.show();
+        } else {
+        	Ext.MessageBox.alert(
+				me.translate('Error'),
+				me.translate('You cannot forward invoices without a valid email address. ' +
+								'Please update your profile with an email address.')
+			);
+        }
+	},
+
+	onForwardSend: function() {
+		var me   = this,
+			win  = me.getCmp(me.shortName + '.forwardwindow'),
+			form = win.down('form').getForm();
+
+		if (win.isValid()) {
+			NP.Net.remoteCall({
+				mask    : win,
+				method  : 'POST',
+				requests: {
+					service     : me.service,
+					action      : 'forwardEntity',
+					entity_id   : win.entity.get(me.pk),
+					sender_email: NP.Security.getUser().get('email_address'),
+					forward_to  : form.findField('forward_to').getGroupValue(),
+					forward_val : win.getForwardValue(),
+					message     : form.findField('message').getValue(),
+					includes    : win.getIncludes(),
+					success     : function(result) {
+						if (result.success) {
+							if (result.errors.length) {
+								Ext.MessageBox.alert(
+									me.translate('Error'),
+									me.translate(me.displayName + ' could not be forwarded to the following recipients:<br /><br />') +
+									result.errors.join(',')
+								);
+							} else {
+								NP.Util.showFadingWindow({
+									html: me.translate(me.displayName + ' was successfully forwarded.')
+								});
+								win.close();
+							}
+							me.getForwardsGrid().getStore().load();
+						} else {
+							Ext.MessageBox.alert(
+								me.translate('Error'),
+								me.translate(result.error)
+							);
+						}
+					}
+				}
+			});
+		}
+	}
 });

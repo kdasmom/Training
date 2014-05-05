@@ -4,6 +4,8 @@ namespace NP\shared;
 
 use NP\core\AbstractService;
 use NP\core\db\Expression;
+use NP\core\notification\EmailMessage;
+use NP\core\notification\EmailAttachment;
 use NP\security\SecurityService;
 use NP\budget\BudgetService;
 use NP\property\FiscalCalService;
@@ -2036,5 +2038,111 @@ abstract class AbstractEntityService extends AbstractService {
 		    'success' => (count($errors)) ? false : true,
 		    'errors'  => $errors
 		);
+	}
+
+	/**
+	 * Forwards an entity by email to a list of emails or users
+	 */
+	public function forwardEntity($entity_id, $sender_email, $forward_to, $forward_val, $message, $includes=[]) {
+		$gtw = "{$this->gateway}Gateway";
+		$rendererClass = "NP\\{$this->module}\\" . ucfirst($this->type) . 'PdfRenderer';
+		$pdfPath = null;
+		$success = false;
+		$errors  = [];
+
+		// Get entity number for email subject line
+		$ref = $this->$gtw->findValue(
+			[$this->pkField=>'?'],
+			[$entity_id],
+			"{$this->table}_ref"
+		);
+
+		// Figure out the email or list of emails to send to
+		if ($forward_to == 'vendor' || $forward_to == 'email') {
+			$users = [['email_address' => $forward_val]];
+		} else {
+			$users = $this->userprofileGateway->find(
+				[['in', 'u.userprofile_id', $this->userprofileGateway->createPlaceholders($forward_val)]],
+				$forward_val
+			);
+		}
+
+		// Generate the entity PDF
+		$pdf = new $rendererClass($this->configService, $this->gatewayManager, $this, $entity_id, $includes);
+		$pdfPath = $this->configService->getClientFolder() . '/web/pdfs/' . $this->securityService->getUserId();
+
+		// If destination directory doesn't exist, create it
+  		if (!is_dir($pdfPath)) {
+  			mkdir($pdfPath, 0777, true);
+  		}
+  		
+		$pdfPath = Util::getUniqueFileName($pdfPath . "/{$this->type}_{$entity_id}.pdf");
+
+		$pdfPath = $pdfPath['path'];
+		$pdf->save($pdfPath);
+
+		$message = strip_tags(trim($message));
+
+		// Get entity images if applicable
+		$images      = [];
+		$options     = $pdf->getOptions();
+		$includeAll  = (array_key_exists('allImages', $options) && $options['allImages']);
+		$includeMain = (array_key_exists('mainImage', $options) && $options['mainImage']);
+		if ($includeMain || $includeAll) {
+			$images = $this->getImages($entity_id, !$includeAll, true);
+			if (!$includeAll) {
+				$images = [$images];
+			}
+		}
+
+		foreach ($users as $user) {
+			try {
+				$msg = EmailMessage::getNew(
+										"{$this->title} {$ref}",
+										strip_tags($message)
+									)
+									->setFrom($sender_email)
+									->setTo($user['email_address'])
+									->attach(EmailAttachment::getNew()->setPath($pdfPath));
+
+
+				foreach($images as $image) {
+					$msg->attach(EmailAttachment::getNew()->setPath($image['transfer_filename']));
+				}
+
+				$this->notificationService->sendEmail($msg);
+				$success = true;
+
+				$forward_id = (array_key_exists('userprofile_id', $user)) ? $user['userprofile_id'] : null;
+				$this->invoicePoForwardGateway->insert([
+					'table_name'                        => $this->table,
+					'tablekey_id'                       => $entity_id,
+					'forward_to_email'                  => $user['email_address'],
+					'forward_to_userprofile_id'         => $forward_id,
+					'forward_from_userprofile_id'       => $this->securityService->getUserId(),
+					'from_delegation_to_userprofile_id' => $this->securityService->getDelegatedUserId(),
+					'forward_message'                   => substr($message, 0, 500)
+				]);
+			} catch(\Exception $e) {
+				$msg = $this->handleUnexpectedError($e);
+				if ($forward_to == 'user') {
+					$errors[] = "{$user['person_firstname']} {$user['person_lastname']}";
+				} else {
+					$errors[] = $user['email_address'];
+				}
+			}
+		}
+
+		if (!$success) {
+			return [
+				'success' => false,
+				'error'   => $msg
+			];
+		} else {
+			return [
+				'success' => true,
+				'errors'  => $errors
+			];
+		}
 	}
 }

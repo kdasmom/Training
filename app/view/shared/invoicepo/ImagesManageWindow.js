@@ -45,6 +45,7 @@ Ext.define('NP.view.shared.invoicepo.ImagesManageWindow', {
         
         me.items = [{
             xtype     : 'customgrid',
+            border    : false,
             selType   : 'checkboxmodel',
             viewConfig: { markDirty: false },
             tbar      : [
