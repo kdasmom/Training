@@ -139,7 +139,7 @@ Ext.define('NP.view.user.UsersFormDetails', {
 		    			valueField: 'lookupcode_id',
 		    			width: 600,
 						listeners: {
-							change: function(combobox, nextValue, oldValue) {
+							select: function(combobox, records) {
 								var allowBlank = that.allowFieldsBlank(),
 									answerField,
 									questionField;
