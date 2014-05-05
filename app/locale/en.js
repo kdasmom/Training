@@ -749,5 +749,7 @@ Ext.define('NP.Locale', {
 	'Edit this rule > Admin_Invoice > {rulename}' : 'Edit this rule > Admin_Invoice > {rulename}',
 	'Deactivate conflicting rules'                : 'Deactivate conflicting rules',
 	'Delete conflicting rules'                    : 'Delete conflicting rules',
-	'A rule of similiar kind has already been applied to the properties that you selected.<br/>Please check the scope and properties again!<br/><br/>This rule will not be usable until all conflicts are resolved.' : 'A rule of similiar kind has already been applied to the properties that you selected.<br/>Please check the scope and properties again!<br/><br/>This rule will not be usable until all conflicts are resolved.'
+	'A rule of similiar kind has already been applied to the properties that you selected.<br/>Please check the scope and properties again!<br/><br/>This rule will not be usable until all conflicts are resolved.' : 'A rule of similiar kind has already been applied to the properties that you selected.<br/>Please check the scope and properties again!<br/><br/>This rule will not be usable until all conflicts are resolved.',
+
+	'The "To amount" value must be larger than "From amount" value' : 'The "To amount" value must be larger than "From amount" value'
 });

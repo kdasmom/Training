@@ -733,7 +733,13 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 							labelWidth: 40,
 							width     : 200,
 							allowBlank: false,
-							value     : wfrule_number
+							value     : wfrule_number,
+							validator : function(value) {
+								var comparisonValueTo = me.down('[name="ruleform"]').down('[name="comparisonValueTo"]').getValue();
+
+								return (parseFloat(value) >= parseFloat(comparisonValueTo)) ?
+									NP.Translator.translate('The "To amount" value must be larger than "From amount" value') : true;
+							}
 						},
 						{
 							xtype     : 'numberfield',
@@ -743,7 +749,20 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 							labelWidth: 25,
 							width     : 200,
 							allowBlank: false,
-							value     : wfrule_number_end
+							value     : wfrule_number_end,
+							listeners: {
+								change:  function(field, newValue, oldValue, options) {
+									var comparisonValueField = me.down('[name="ruleform"]').down('[name="comparisonValue"]');
+
+									comparisonValueField.clearInvalid();
+
+									if (parseFloat(newValue) <= parseFloat( comparisonValueField.getValue()) ) {
+										comparisonValueField.markInvalid(
+											NP.Translator.translate('The "To amount" value must be larger than "From amount" value')
+										);
+									}
+								}
+							}
 						}
 					]
 				};
