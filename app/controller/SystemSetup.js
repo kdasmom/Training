@@ -245,7 +245,27 @@ Ext.define('NP.controller.SystemSetup', {
 						});
 					}
 					else {
-						me.activateWorkflowRule(wfrule_id);
+						if (selectRoutes) {
+							var routeform = me.getCmp('systemsetup.workflowrulesroutes').down('[name="routeform"]'),
+								routevalues = routeform.getValues();
+
+							if (routeform.isValid()) {
+								NP.lib.core.Net.remoteCall({
+									method  : 'POST',
+									requests: {
+										service: 'WFRuleService',
+										action : 'saveRoute',
+										data   : routevalues,
+										success: function() {
+											me.activateWorkflowRule(wfrule_id);
+										}
+									}
+								});
+							}
+						}
+						else {
+							me.activateWorkflowRule(wfrule_id);
+						}
 					}
 				}
 			},
@@ -2117,7 +2137,7 @@ Ext.define('NP.controller.SystemSetup', {
 								me.fillFormPicklist({
 									column_pk_data: 0,
 									column_status: 1
-								}, picklistform, picklistview.mode)
+								}, picklistform, picklistview.mode);
 								picklistview.down('[name="picklistcolumns"]').getStore().reload();
 							}
 						}
