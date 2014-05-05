@@ -58,6 +58,7 @@ Ext.define('NP.view.viewport.DelegationPicker', {
                 items : [{
                     xtype            : 'customcombo',
                     fieldLabel       : NP.Translator.translate(signedOnText),
+					labelStyle       : "color: #9fccfa;",
                     labelWidth       : 140,
                     store            : delegationStore,
                     selectFirstRecord: true,
