@@ -110,39 +110,53 @@ Ext.define('NP.view.catalog.SearchForm', {
 				xtype: 'textfield',
 				name: 'keyword',
 				id: 'keyword',
-				margin: '0 0 5 5'
+				margin: '0 0 5 5',
+				enableKeyEvents: true,
+				listeners: {
+					keypress: function(form, e) {
+						if (e.getKey() === Ext.EventObject.ENTER) {
+							that.submitSearchForm()
+						}
+					}
+				}
 			},
 			{
 				xtype: 'button',
 				text: NP.Translator.translate('Search'),
 				margin: '0 0 5 10',
 				handler: function() {
-					if (that.getChildByElement('keyword').getValue().length == 0) {
-						Ext.Msg.alert('Error', 'You must enter a search term.');
-					} else {
-						if (that.advancedSearch) {
-							that.fireEvent(
-								'advancedsearch', 
-								!that.getChildByElement('vccat_id').getValue() ? '' : that.getChildByElement('vccat_id').getValue(),
-								that.getChildByElement('item_name').getValue(),
-								!that.getChildByElement('property_id').getValue() ? '' : that.getChildByElement('property_id').getValue(),
-								that.getChildByElement('keyword').getValue()
-							);
-						} else {
-							that.fireEvent(
-								'searchitems',
-								!that.getChildByElement('vccat_id').getValue() ? '' : that.getChildByElement('vccat_id').getValue(),
-								that.getChildByElement('item_name').getValue(),
-								!that.getChildByElement('property_id').getValue() ? '' : that.getChildByElement('property_id').getValue(),
-								that.getChildByElement('keyword').getValue(),
-								that.advancedSearch ? that.advancedSearch : false
-							);
-						}
-					}
+					that.submitSearchForm()
 				}
 			}
 		];
 
 		this.callParent(arguments);
+	},
+
+	submitSearchForm: function() {
+		var that = this;
+
+		if (that.getChildByElement('keyword').getValue().length == 0) {
+			Ext.Msg.alert('Error', 'You must enter a search term.');
+		} else {
+			if (that.advancedSearch) {
+				that.fireEvent(
+					'advancedsearch',
+					!that.getChildByElement('vccat_id').getValue() ? '' : that.getChildByElement('vccat_id').getValue(),
+					that.getChildByElement('item_name').getValue(),
+					!that.getChildByElement('property_id').getValue() ? '' : that.getChildByElement('property_id').getValue(),
+					that.getChildByElement('keyword').getValue()
+				);
+			} else {
+				that.fireEvent(
+					'searchitems',
+					!that.getChildByElement('vccat_id').getValue() ? '' : that.getChildByElement('vccat_id').getValue(),
+					that.getChildByElement('item_name').getValue(),
+					!that.getChildByElement('property_id').getValue() ? '' : that.getChildByElement('property_id').getValue(),
+					that.getChildByElement('keyword').getValue(),
+					that.advancedSearch ? that.advancedSearch : false
+				);
+			}
+		}
 	}
 });
