@@ -751,5 +751,6 @@ Ext.define('NP.Locale', {
 	'Delete conflicting rules'                    : 'Delete conflicting rules',
 	'A rule of similiar kind has already been applied to the properties that you selected.<br/>Please check the scope and properties again!<br/><br/>This rule will not be usable until all conflicts are resolved.' : 'A rule of similiar kind has already been applied to the properties that you selected.<br/>Please check the scope and properties again!<br/><br/>This rule will not be usable until all conflicts are resolved.',
 
-	'The "To amount" value must be larger than "From amount" value' : 'The "To amount" value must be larger than "From amount" value'
+	'The "To amount" value must be larger than "From amount" value' : 'The "To amount" value must be larger than "From amount" value',
+	'There are conflicts with the following rules: {wfrule_names}'  : 'There are conflicts with the following rules: {wfrule_names}'
 });

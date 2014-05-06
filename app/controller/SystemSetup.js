@@ -550,6 +550,19 @@ Ext.define('NP.controller.SystemSetup', {
 				status: status,
 				success: function(data) {
 					if (data.success) {
+						if (data.rulesWithConflicts.length) {
+							var wfrule_names = [];
+
+							for (var index in data.rulesWithConflicts) {
+								wfrule_names.push( data.rulesWithConflicts[index].wfrule_name );
+							}
+							Ext.MessageBox.alert('Warning',
+								NP.Translator.translate(
+									'There are conflicts with the following rules: {wfrule_names}',
+									{ wfrule_names: '<ul><li>' + wfrule_names.join('</li><li>') + '</li></ul>' }
+								)
+							);
+						}
 						callback(me);
 					}
 				}

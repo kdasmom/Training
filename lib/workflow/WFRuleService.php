@@ -189,19 +189,40 @@ class WFRuleService extends AbstractService {
 	 * @return array
 	 */
 	public function changeStatus($id, $status) {
-        if (!empty($id) && in_array($status, [1, 2])) {
-            foreach ($id as $item) {
-                $this->wfRuleGateway->setRuleStatus($item, $status);
-            }
-            return [
-                'success' => true
-            ];
-        }
-        return [
-            'success' => false,
-            'error'   => 'Incorrect identifiers list or status'
-        ];
-    }
+		if (!empty($id) && in_array($status, [1, 2])) {
+			$rulesWithConflicts = [];
+
+			if ($status == 1) {
+				$rulesWithConflictsIdList = [];
+
+				foreach ($id as $ruleid) {
+					$activateResult = $this->activateRule($ruleid);
+
+					if (!$activateResult['activateStatus']) {
+						$rulesWithConflictsIdList[] = $ruleid;
+					}
+				}
+				if (count($rulesWithConflictsIdList) > 0) {
+					$rulesWithConflicts = $this->wfRuleGateway->find(
+						Where::get()->in('wfrule_id', implode(',', $rulesWithConflictsIdList))
+					);
+				}
+			}
+			else {
+				foreach ($id as $ruleid) {
+					$this->wfRuleGateway->setRuleStatus($ruleid, $status);
+				}
+			}
+			return [
+				'success' => true,
+				'rulesWithConflicts' => $rulesWithConflicts
+			];
+		}
+		return [
+			'success' => false,
+			'error'   => 'Incorrect identifiers list or status'
+		];
+	}
 
     public function search($type = 0, $criteria = null, $page = null, $pageSize = null, $sort = "wfrule_name") {
         $asp_client_id = $this->configService->getClientId();
