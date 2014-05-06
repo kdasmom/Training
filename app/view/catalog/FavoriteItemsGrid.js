@@ -79,7 +79,7 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 				flex: 0.2,
 				renderer: function (val, meta, record) {
 					if (record.raw.vcorder_id) {
-						return val + '<div style="font-style: italic;">Ordered</div>'
+						return val + '<div style="font-style: italic;">' + NP.Translator.translate('In Card') + '</div>'
 					}
 					return val;
 				}
@@ -90,7 +90,7 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 				flex: 0.5,
 				renderer: function(val, meta, rec) {
 					if (!rec.raw.vcitem_status) {
-						val += '<br/><b style="color: red;">This item is no longer available for order</b>';
+						val += '<br/><b style="color: red;">' + NP.Translator.translate('This item is no longer available for order') + '</b>';
 					}
 
 					return val;
