@@ -111,6 +111,7 @@ Ext.define('NP.view.catalog.SearchForm', {
 				name: 'keyword',
 				id: 'keyword',
 				margin: '0 0 5 5',
+				width: 195,
 				enableKeyEvents: true,
 				listeners: {
 					keypress: function(form, e) {
