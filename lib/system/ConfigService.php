@@ -897,6 +897,14 @@ class ConfigService extends AbstractService {
 
 		return $this->pnUniversalFieldGateway->assignGlAccountToTheUniversalFields($field_id, $glaccounts);
 	}
+
+	public function getIntegrationPackagesForTheInvoiceExport($userprofile_id = null) {
+		if (!$userprofile_id) {
+			return [];
+		}
+
+		return $this->intPkgGateway->getIntegrationPackagesForTheInvoiceExport($userprofile_id, $this->getClientId());
+	}
 }
 
 ?>

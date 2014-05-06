@@ -145,7 +145,7 @@ Ext.define('NP.controller.Import', {
             verticalTabPanel.setActiveTab(verticalActiveTab);
             verticalTabPanel.resumeEvents();
         }
-        
+
         if (activeTab != 'overview') {
             this.showFormUpload();
         }
@@ -153,8 +153,12 @@ Ext.define('NP.controller.Import', {
 
     showFormUpload: function() {
         var type = this.getVerticalTabToken(this.getActiveVerticalTab());
-        var importItem = Ext.create('NP.view.importing.types.' + type);
-        this.setView(importItem.getImportForm(), {}, '#' + this.getActiveVerticalTab().getItemId());
+			var importItem = Ext.create('NP.view.importing.types.' + type);
+		if (type !== 'InvoiceExport') {
+			this.setView(importItem.getImportForm(), {}, '#' + this.getActiveVerticalTab().getItemId());
+		} else {
+			this.setView(importItem, {}, '#' + this.getActiveVerticalTab().getItemId());
+		}
     },
 
     showGrid: function() {
