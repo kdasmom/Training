@@ -791,7 +791,7 @@ Ext.define('NP.controller.VendorCatalog', {
 	 */
 	removeTopFilter: function(type, count, vc_id) {
 		if (count == 0) {
-			this.addHistory('VendorCatalog:showCatalogView:' + vc_id);
+			this.addHistory('VendorCatalog:showBrands');
 		} else {
 			var grid = this.getCmp('catalog.favoriteitemsgrid');
 			if (type == 'category') {
