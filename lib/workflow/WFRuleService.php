@@ -207,6 +207,10 @@ class WFRuleService extends AbstractService {
 					if (!count($routes)) {
 						$incompleteRulesIdList[] = $ruleid;
 					}
+
+					if (!count($conflictingRules) && count($routes)) {
+						$this->wfRuleGateway->setRuleStatus($ruleid, $status);
+					}
 				}
 				if (count($rulesWithConflictsIdList) > 0) {
 					$rulesWithConflicts = $this->wfRuleGateway->find(

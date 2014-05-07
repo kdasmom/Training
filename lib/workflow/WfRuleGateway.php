@@ -110,7 +110,7 @@ class WfRuleGateway extends AbstractGateway {
 		}
 
 		foreach ($result['data'] as &$item) {
-//			$item['wfrule_status'] = ($item['wfrule_status'] == 'new') ? 'inactive' : $item['wfrule_status'];
+			$item['wfrule_status'] = ($item['wfrule_status'] == 'new') ? 'inactive' : $item['wfrule_status'];
 			$item['all_properties_selected'] = ($item['count_properties'] == $countProperties) ? true : false;
 		}
 
