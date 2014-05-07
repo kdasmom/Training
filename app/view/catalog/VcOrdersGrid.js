@@ -15,6 +15,8 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 	border: false,
 
 	paging: true,
+	stateful: true,
+	stateId : 'vcorders_grid',
 	changedRecords: {},
 
 	initComponent: function() {
@@ -43,6 +45,7 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 		this.columns = [
 			{
 				xtype: 'shared.gridcol.buttonimg',
+				dataIndex: 'removebutton',
 				renderer: function(val, meta, rec) {
 					return '<div class="remove" style="cursor: pointer;"><img src="resources/images/buttons/delete.gif" title="Remove" alt="Remove" class="remove"/>&nbsp; Remove</div>';
 				},
@@ -68,6 +71,7 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 			{
 				text: NP.Translator.translate('Item details'),
 				xtype: 'actioncolumn',
+				dataIndex:'actioncolumn',
 				getClass: function (v, meta, rec, rowIndex) {
 					if (rec.raw.vc_catalogtype !== 'excel') {
 						return '';
@@ -83,7 +87,7 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 				flex: 0.2
 			},
 			{
-				dataindex: 'vcitem_price',
+				dataIndex: 'vcitem_price',
 				renderer: function(val, meta, rec) {
 					return NP.Util.currencyRenderer(rec.get('vcitem_price'));
 				},
@@ -120,6 +124,7 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 			},
 			{
 				text: NP.Translator.translate('Item to total'),
+				dataIndex: 'itemtototal',
 				renderer: function (val, meta, record) {
 					return NP.Util.currencyRenderer(record.get('vcitem_price') * record.get('vcorder_qty'));
 				},
@@ -144,6 +149,7 @@ Ext.define('NP.view.catalog.VcOrdersGrid', {
 			{
 				flex: 0.2,
 				align: 'center',
+				dataIndex: 'createpo',
 				renderer: function(val, meta, rec) {
 					if (rec.raw.vcitem_status) {
 						return Ext.String.format('<input name="po_' + rec.get('vc_id') + '[]" type="checkbox" value="{0}">',rec.get('vcorder_id'));
