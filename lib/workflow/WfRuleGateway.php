@@ -110,6 +110,7 @@ class WfRuleGateway extends AbstractGateway {
 		}
 
 		foreach ($result['data'] as &$item) {
+//			$item['wfrule_status'] = ($item['wfrule_status'] == 'new') ? 'inactive' : $item['wfrule_status'];
 			$item['all_properties_selected'] = ($item['count_properties'] == $countProperties) ? true : false;
 		}
 
@@ -226,7 +227,7 @@ class WfRuleGateway extends AbstractGateway {
 		if ($status == 1) {
 			$where = Where::get()->equals('wfrule_id', $id);
 			$routes = $this->wfActionGateway->find($where);
-			$status = count($routes)>0 ? 'active' : 'new';
+			$status = count($routes) > 0 ? 'active' : 'new';
 		} elseif ($status == 3) {
 			$status = 'inactive';
 		} else {

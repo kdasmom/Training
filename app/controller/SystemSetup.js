@@ -550,19 +550,36 @@ Ext.define('NP.controller.SystemSetup', {
 				status: status,
 				success: function(data) {
 					if (data.success) {
+						var warningMessage = '';
+
 						if (data.rulesWithConflicts.length) {
 							var wfrule_names = [];
 
 							for (var index in data.rulesWithConflicts) {
 								wfrule_names.push( data.rulesWithConflicts[index].wfrule_name );
 							}
-							Ext.MessageBox.alert('Warning',
-								NP.Translator.translate(
-									'There are conflicts with the following rules: {wfrule_names}',
-									{ wfrule_names: '<ul><li>' + wfrule_names.join('</li><li>') + '</li></ul>' }
-								)
-							);
+							warningMessage += NP.Translator.translate(
+								'There are conflicts with the following rules: {wfrule_names}',
+								{ wfrule_names: '<ul><li>' + wfrule_names.join('</li><li>') + '</li></ul>' }
+							)
 						}
+
+						if (data.incompleteRules.length) {
+							var incomplete_wfrule_names = [];
+
+							for (var index in data.incompleteRules) {
+								incomplete_wfrule_names.push( data.incompleteRules[index].wfrule_name );
+							}
+							warningMessage += NP.Translator.translate(
+								'The following rules are incomplete and cannot be activated: {wfrule_names}',
+								{ wfrule_names: '<ul><li>' + incomplete_wfrule_names.join('</li><li>') + '</li></ul>' }
+							)
+						}
+
+						if (data.rulesWithConflicts.length || data.incompleteRules.length) {
+							Ext.MessageBox.alert('Warning', warningMessage);
+						}
+
 						callback(me);
 					}
 				}
