@@ -449,6 +449,7 @@ class VcItemGateway extends AbstractGateway {
 		$select = new Select();
 
 		$select->distinct()
+			->columns(['vc_id', 'vcitem_type'])
 			->from(['vi' => 'vcitem'])
 			->join(['un' => 'UNSPSC_Commodity'], 'vi.UNSPSC_Commodity_Commodity = un.UNSPSC_Commodity_Commodity', [], Select::JOIN_LEFT)
 			->whereEquals('vi.vcitem_status', '?')
