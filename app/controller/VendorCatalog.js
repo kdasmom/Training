@@ -42,6 +42,7 @@ Ext.define('NP.controller.VendorCatalog', {
 			'[xtype="catalog.jumptocatalogform"] [xtype="button"]': {
 				click: function() {
 					var catalog = this.getCmp('catalog.jumptocatalogform').down('[name="vccat_id"]').getValue();
+					this.getCmp('catalog.searchform').down('[name="vccat_id"]').setValue(catalog);
 					this.addHistory('VendorCatalog:showCatalogView:' + catalog);
 				}
 			},
