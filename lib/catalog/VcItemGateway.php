@@ -410,14 +410,14 @@ class VcItemGateway extends AbstractGateway {
 		$select->whereIn('vi.vc_id', '?');
 		$params[] = !is_array($vc_id) ? $vc_id : implode(',', $vc_id);
 
-		if ($filterItem == 'category' && !$types) {
+		if ($filterItem == 'category') {
 			$select->whereNest('OR')
 				->whereLike('un.UNSPSC_Commodity_FamilyTitle', "'%" . $keyword . "%'")
 				->whereLike('vi.vcitem_category_name', "'%" . $keyword . "%'")
 				->whereUnNest();
 		}
 
-		if ($filterItem == 'brand' && !$types) {
+		if ($filterItem == 'brand') {
 			$select->whereLike('vi.vcitem_manufacturer', "'%" . $keyword . "%'");
 		}
 

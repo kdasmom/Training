@@ -264,7 +264,8 @@ Ext.define('NP.controller.VendorCatalog', {
 			'[xtype="catalog.itemsfilter"]': {
 				removetype: this.removeTypeFilter,
 				removeprice: this.removePriceFilter,
-				removefilter: this.removeTopFilter
+				removefilter: this.removeTopFilter,
+				opencategorypage: this.openCategoryPage
 			},
 			'[xtype="catalog.vclisting"]': {
 				showcatalog: function(vc_id) {
@@ -273,6 +274,15 @@ Ext.define('NP.controller.VendorCatalog', {
 			}
 		});
 
+	},
+
+	openCategoryPage: function(pagetype, vc_id) {
+		if (pagetype == 'brand') {
+			this.addHistory('VendorCatalog:showBrands');
+		}
+		else {
+			this.addHistory('VendorCatalog:showCatalogView:' + vc_id);
+		}
 	},
 
 	showVendorCatalogListing: function() {
@@ -763,9 +773,7 @@ Ext.define('NP.controller.VendorCatalog', {
 	removeTypeFilter: function (type) {
 		var grid = this.getCmp('catalog.favoriteitemsgrid');
 		grid.addExtraParams({
-			types: type,
-			field: null,
-			value: null
+			types: type
 		});
 		grid.reloadFirstPage();
 	},
@@ -790,9 +798,9 @@ Ext.define('NP.controller.VendorCatalog', {
 	 * @param count
 	 * @param vc_id
 	 */
-	removeTopFilter: function(type, count, vc_id) {
+	removeTopFilter: function(type, count, vc_id, pagetype) {
 		if (count == 0) {
-			this.addHistory('VendorCatalog:showBrands');
+			this.openCategoryPage(pagetype, vc_id);
 		} else {
 			var grid = this.getCmp('catalog.favoriteitemsgrid');
 			if (type == 'category') {
