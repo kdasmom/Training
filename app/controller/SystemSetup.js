@@ -275,8 +275,18 @@ Ext.define('NP.controller.SystemSetup', {
 			'#buttonWorkflowDeactivateRule': {
 				click: function() {
 					var wfrule_id = me.getCmp('systemsetup.workflowrulesmodify').down('[name="wfrule_id"]').value;
-					me.changeRuleStatus([wfrule_id], 2);
-					me.addHistory('SystemSetup:showSystemSetup:WorkflowRules');
+
+					NP.lib.core.Net.remoteCall({
+						requests: {
+							service: 'WFRuleService',
+							action : 'changeStatus',
+							id: [wfrule_id],
+							status: 2,
+							success: function() {
+								me.addHistory('SystemSetup:showSystemSetup:WorkflowRules');
+							}
+						}
+					});
 				}
 			},
 			'#buttonWorkflowCopyRules': {
@@ -539,7 +549,12 @@ Ext.define('NP.controller.SystemSetup', {
 	},
 
 	changeRuleStatus: function(identifiers, status, callback) {
-		var me = this;
+		var me = this,
+			mask = new Ext.LoadMask({
+				target: me.getWorkflowScreen()
+			});
+
+		mask.show();
 		callback = callback || Ext.emptyFn;
 
 		NP.lib.core.Net.remoteCall({
@@ -559,7 +574,7 @@ Ext.define('NP.controller.SystemSetup', {
 								wfrule_names.push( data.rulesWithConflicts[index].wfrule_name );
 							}
 							warningMessage += NP.Translator.translate(
-								'There are conflicts with the following rules: {wfrule_names}',
+								'The following rules have conflicts with others: {wfrule_names}',
 								{ wfrule_names: '<ul><li>' + wfrule_names.join('</li><li>') + '</li></ul>' }
 							)
 						}
@@ -575,6 +590,7 @@ Ext.define('NP.controller.SystemSetup', {
 								{ wfrule_names: '<ul><li>' + incomplete_wfrule_names.join('</li><li>') + '</li></ul>' }
 							)
 						}
+						mask.hide();
 
 						if (data.rulesWithConflicts.length || data.incompleteRules.length) {
 							Ext.MessageBox.alert('Warning', warningMessage);
