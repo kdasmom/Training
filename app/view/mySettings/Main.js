@@ -10,6 +10,7 @@ Ext.define('NP.view.mySettings.Main', {
     requires: [
         'NP.lib.core.Config',
         'NP.lib.core.Security',
+		'Ext.form.Label',
     	'NP.view.mySettings.Overview',
     	'NP.view.mySettings.UserInformation',
     	'NP.view.mySettings.Settings',
