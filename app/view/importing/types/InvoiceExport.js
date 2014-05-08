@@ -42,44 +42,52 @@ Ext.define('NP.view.importing.types.InvoiceExport', {
 
 		me.items = [
 			{
-				xtype: 'displayfield',
-				fieldLabel: NP.Translator.translate('Please Note'),
-				labelAlign: 'top',
-				value: '<ul><li>' + NP.Translator.translate('Only invoices for the properties selected that are in the status Submitted for Payment will be exported.') + '</li></<ul>'
-			},
-			{
-				xtype: 'shared.integrationpackagescombo',
-				store: Ext.create('NP.store.system.IntegrationPackages', {
-					service: 'ConfigService',
-					action: 'getIntegrationPackagesForTheInvoiceExport',
-					extraParams: {
-						userprofile_id: NP.Security.getUser().get('userprofile_id')
+				xtype: 'form',
+				border: false,
+				items: [
+					{
+						xtype: 'displayfield',
+						fieldLabel: NP.Translator.translate('Please Note'),
+						labelAlign: 'top',
+						value: '<ul><li>' + NP.Translator.translate('Only invoices for the properties selected that are in the status Submitted for Payment will be exported.') + '</li></<ul>'
 					},
-					autoLoad: true
-				}),
-				listeners: {
-					select: function(combobox, records) {
-						var store = me.query('#properties')[0].getStore();
-						Ext.apply(store.getProxy().extraParams, {
-							integration_package_id: combobox.getValue()
-						});
-						store.load();
+					{
+						xtype: 'shared.integrationpackagescombo',
+						store: Ext.create('NP.store.system.IntegrationPackages', {
+							service: 'ConfigService',
+							action: 'getIntegrationPackagesForTheInvoiceExport',
+							extraParams: {
+								userprofile_id: NP.Security.getUser().get('userprofile_id')
+							},
+							autoLoad: true
+						}),
+						listeners: {
+							select: function(combobox, records) {
+								var store = me.query('#properties')[0].getStore();
+								Ext.apply(store.getProxy().extraParams, {
+									integration_package_id: combobox.getValue()
+								});
+								store.load();
+							}
+						},
+						width: 400,
+						allowBlank: false
+					},
+					{
+						xtype: 'shared.propertyassigner',
+						itemId: 'properties',
+						height: 200,
+						store: Ext.create('NP.store.property.Properties', {
+							service : 'PropertyService',
+							action  : 'getByIntegrationPackage',
+							extraParams: {
+								integration_package_id: null
+							}
+						}),
+						allowBlank: false,
+						width: 600
 					}
-				},
-				width: 400
-			},
-			{
-				xtype: 'shared.propertyassigner',
-				itemId: 'properties',
-				height: 200,
-				store: Ext.create('NP.store.property.Properties', {
-					service : 'PropertyService',
-					action  : 'getByIntegrationPackage',
-					extraParams: {
-						integration_package_id: null
-					}
-				}),
-				width: 600
+				]
 			}
 		];
 

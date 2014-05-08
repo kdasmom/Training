@@ -172,42 +172,66 @@ Ext.define('NP.controller.Import', {
     },
 
     uploadFile: function() {
-        var that = this;
-        
-        var form = this.getActiveVerticalTab().query('form')[0];
-        // If form is valid, submit it
-        if (form.getForm().isValid()) {
-            var fileField = form.query('filefield')[0];
-            var file = fileField.getValue();
-            var formEl = NP.Util.createFormForUpload('#' + this.getActiveVerticalTab().getItemId() + ' form');
-            
-            NP.lib.core.Net.remoteCall({
-                method: 'POST',
-                mask  : this.getActiveVerticalTab(),
-                isUpload: true,
-                form: formEl.id,
-                requests: {
-                    service      : 'ImportService',
-                    action       : 'uploadCSV',
-                    file         : file,
-                    type         : this.getVerticalTabToken(this.getActiveVerticalTab()),
-                    fileFieldName: fileField.getName(),
-                    success      : function(result) {
-                        if (result.success) {
-                            // Save file name
-                            that.file = result.upload_filename;
-                            // Show the preview grid
-                            that.showGrid();
-                        } else {
-                            if (result.errors.length) {
-                                fileField.markInvalid(result.errors);
-                            }
-                        }
-                        Ext.removeNode(formEl);
-                    }
-                }
-            });
-        }
+        var that = this,
+			activeTab = this.getActiveVerticalTab().getItemId();
+
+		var form = this.getActiveVerticalTab().query('form')[0];
+		// If form is valid, submit it
+		if (form.getForm().isValid()) {
+			if (activeTab !== 'InvoiceExportPanel') {
+				var fileField = form.query('filefield')[0];
+				var file = fileField.getValue();
+				var formEl = NP.Util.createFormForUpload('#' + this.getActiveVerticalTab().getItemId() + ' form');
+
+				NP.lib.core.Net.remoteCall({
+					method: 'POST',
+					mask: this.getActiveVerticalTab(),
+					isUpload: true,
+					form: formEl.id,
+					requests: {
+						service: 'ImportService',
+						action: 'uploadCSV',
+						file: file,
+						type: this.getVerticalTabToken(this.getActiveVerticalTab()),
+						fileFieldName: fileField.getName(),
+						success: function (result) {
+							if (result.success) {
+								// Save file name
+								that.file = result.upload_filename;
+								// Show the preview grid
+								that.showGrid();
+							} else {
+								if (result.errors.length) {
+									fileField.markInvalid(result.errors);
+								}
+							}
+							Ext.removeNode(formEl);
+						}
+					}
+				});
+			} else {
+				var reportWinName = 'report_invoice.Export',
+					body          = Ext.getBody(),
+					win           = window.open('about:blank', reportWinName);
+
+				Ext.DomHelper.append(
+					body,
+					'<form id="__reportForm" action="export.php" target="' + reportWinName + '" method="post">' +
+					'<input type="hidden" id="__report" name="report" />' +
+					'<input type="hidden" id="__format" name="format" />' +
+					'<input type="hidden" id="__options" name="options" />' +
+					'<input type="hidden" id="__extraParams" name="extraParams" />' +
+					'</form>'
+				);
+
+				Ext.get('__report').set({ value: 'invoice.Export' });
+				Ext.get('__format').set({ value: 'excel' });
+				Ext.get('__extraParams').set({ value: Ext.JSON.encode(form.getForm().getValues()) });
+				var formExport = Ext.get('__reportForm');
+				formExport.dom.submit();
+				Ext.destroy(formExport);
+			}
+		}
     },
 
     decline: function() {
