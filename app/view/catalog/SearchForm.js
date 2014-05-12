@@ -25,7 +25,14 @@ Ext.define('NP.view.catalog.SearchForm', {
 				extraParams: {
 					catalogType: 'excel'
 				},
-				autoLoad: true
+				autoLoad: true,
+				listeners: {
+					load: function() {
+						if (that.vc_id && !that.advancedSearch) {
+							that.down('[name="vccat_id"]').setValue( parseInt(that.vc_id) );
+						}
+					}
+				}
 			},
 			catPicker = {
 				name        : 'vccat_id',
