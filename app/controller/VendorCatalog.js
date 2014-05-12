@@ -736,9 +736,9 @@ Ext.define('NP.controller.VendorCatalog', {
 					rowHeight       = Ext.get(row).getHeight(),
 					letterRowHeight = Ext.get(letterRow).getHeight();
 
-				var totalHeight = letterindex * letterRowHeight + ((rowIndex - letterindex) * rowHeight);
+				var position = letterindex * letterRowHeight + ((rowIndex - letterindex) * rowHeight);
 
-				grid.getView().getEl().setScrollTop( totalHeight );
+				grid.getView().getEl().setScrollTop( position );
 				break;
 			}
 		}
