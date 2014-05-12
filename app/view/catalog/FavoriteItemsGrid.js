@@ -79,7 +79,7 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 				flex: 0.2,
 				renderer: function (val, meta, record) {
 					if (record.raw.vcorder_id) {
-						return val + '<div style="font-style: italic;">' + NP.Translator.translate('In Card') + '</div>'
+						return val + '<div style="font-style: italic;">' + NP.Translator.translate('In Cart') + '</div>'
 					}
 					return val;
 				}

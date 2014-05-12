@@ -37,6 +37,8 @@ Ext.define('NP.view.catalog.SearchForm', {
 				margin      : '0 0 5 0'
 			};
 
+		this.margin = that.advancedSearch ? '18px 0 0 0' : '0';
+
 		if (that.advancedSearch) {
 			Ext.apply(catPicker, {
 				xtype       : 'listpicker',

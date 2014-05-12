@@ -224,7 +224,7 @@ Ext.define('NP.Locale', {
 	/**
 	 *  VENDOR CATALOG SECTION
 	 */
-	'In Card' : 'In Card',
+	'In Cart' : 'In Cart',
 	'This item is no longer available for order' : 'This item is no longer available for order',
 
 	/**
