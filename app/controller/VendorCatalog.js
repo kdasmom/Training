@@ -725,12 +725,20 @@ Ext.define('NP.controller.VendorCatalog', {
 	 *
 	 * @param text
 	 */
-	focusBrandsGroup: function (text) {
+	focusBrandsGroup: function (text, letterindex) {
 		var grid = this.getCmp('catalog.alphabeticalbrandsgrid');
 		var groups = grid.getStore().getGroups();
 		for (var index in groups) {
 			if (groups[index]['name'] == text) {
-				grid.getView().focusRow(groups[index].children[0]['index']);
+				var rowIndex = groups[index].children[0]['index'],
+					row       = grid.getView().getNode(rowIndex + 1),
+					letterRow = grid.getView().getNode(rowIndex),
+					rowHeight       = Ext.get(row).getHeight(),
+					letterRowHeight = Ext.get(letterRow).getHeight();
+
+				var totalHeight = letterindex * letterRowHeight + ((rowIndex - letterindex) * rowHeight);
+
+				grid.getView().getEl().setScrollTop( totalHeight );
 				break;
 			}
 		}
