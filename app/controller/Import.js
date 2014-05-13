@@ -175,7 +175,9 @@ Ext.define('NP.controller.Import', {
         var that = this,
 			activeTab = this.getActiveVerticalTab().getItemId();
 
-		var form = this.getActiveVerticalTab().query('form')[0];
+		var form = this.getActiveVerticalTab().query('form')[0],
+			values = form.getValues();
+
 		// If form is valid, submit it
 		if (form.getForm().isValid()) {
 			if (activeTab !== 'InvoiceExportPanel') {
@@ -186,7 +188,6 @@ Ext.define('NP.controller.Import', {
 				NP.lib.core.Net.remoteCall({
 					method: 'POST',
 					mask: this.getActiveVerticalTab(),
-					isUpload: true,
 					form: formEl.id,
 					requests: {
 						service: 'ImportService',
@@ -194,6 +195,7 @@ Ext.define('NP.controller.Import', {
 						file: file,
 						type: this.getVerticalTabToken(this.getActiveVerticalTab()),
 						fileFieldName: fileField.getName(),
+						data: JSON.stringify(values),
 						success: function (result) {
 							if (result.success) {
 								// Save file name

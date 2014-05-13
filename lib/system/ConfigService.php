@@ -905,6 +905,14 @@ class ConfigService extends AbstractService {
 
 		return $this->intPkgGateway->getIntegrationPackagesForTheInvoiceExport($userprofile_id, $this->getClientId());
 	}
+
+	public function getHeadersValues() {
+		return $this->configsysGateway->getCustomHeadersAndLineItemsFields(true);
+	}
+
+	public function getLineValues() {
+		return $this->configsysGateway->getCustomHeadersAndLineItemsFields(false, true);
+	}
 }
 
 ?>

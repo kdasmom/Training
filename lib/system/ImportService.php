@@ -202,7 +202,7 @@ class ImportService extends AbstractService
      * @param  string $file A file name
      * @return array     Array with status info on the operation
      */
-    public function uploadCSV($file, $type, $fileFieldName)
+    public function uploadCSV($file, $type, $fileFieldName, $data = false)
     {
         $fileName = null;
         $destinationPath = $this->getUploadPath() . "{$type}/";

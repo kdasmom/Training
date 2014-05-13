@@ -17,11 +17,13 @@ Ext.define('NP.view.importing.types.CustomFieldHeader', {
     
     customField : "Custom Field",
 
-    getGrid: function() {
+	getGrid: function() {
         return {
-            columns: [
-                { text: this.customField, dataIndex: 'CustomField', flex: 1 }                
-            ]
+            columns: {
+				items: [
+					{ text: this.customField, dataIndex: 'CustomField', flex: 1 }
+				]
+			}
         }
     }
 });
