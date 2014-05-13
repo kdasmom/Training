@@ -85,6 +85,31 @@ class PnCustomFieldsGateway extends AbstractGateway {
 			);
 	}
 
+	public function validateCustomField($value, $number) {
+		$select = new Select();
+
+		$select->count()
+			->from(['u' => 'pnuniversalfield'])
+			->where([
+				'universal_field_data'		=> '?',
+				'UNIVERSAL_FIELD_NUMBER'	=> '?',
+				'customfield_pn_type'		=> '?'
+			])
+			->whereNest('OR')
+			->whereNest('AND')
+			->whereEquals('in_customfield_type', '?')
+			->whereNotEquals('islineitem', '?')
+			->whereUnnest()
+			->whereNest('AND')
+			->whereEquals('in_customfield_type', '?')
+			->whereEquals('islineitem', '?')
+			->whereUnnest()
+			->whereUnnest();
+		$result = $this->adapter->query($select, [$value, $number, 'customInvoicePO', 'header', 1, 'lineitem', 1]);
+
+		return $result > 0 ? true : false;
+	}
+
 
 }
 

@@ -161,13 +161,16 @@ Ext.define('NP.controller.Import', {
 		}
     },
 
-    showGrid: function() {
-        var type = this.getActiveVerticalTab().getItemId();
+    showGrid: function(values) {
+        var type = this.getActiveVerticalTab().getItemId(),
+			settings = {
+				file: this.file,
+				type: type.replace('Panel', '')
+			};
 
-        var view = this.setView('NP.view.importing.CSVGrid', {
-                    file: this.file,
-                    type: type.replace('Panel', '')
-                }, '#' + type);
+
+
+        var view = this.setView('NP.view.importing.CSVGrid', settings, '#' + type);
 
         view.query('customgrid')[0].getStore().load();
     },
@@ -197,13 +200,12 @@ Ext.define('NP.controller.Import', {
 						file: file,
 						type: this.getVerticalTabToken(this.getActiveVerticalTab()),
 						fileFieldName: fileField.getName(),
-						data: JSON.stringify(values),
 						success: function (result) {
 							if (result.success) {
 								// Save file name
 								that.file = result.upload_filename;
 								// Show the preview grid
-								that.showGrid();
+								that.showGrid(form.getValues());
 							} else {
 								if (result.errors.length) {
 									fileField.markInvalid(result.errors);

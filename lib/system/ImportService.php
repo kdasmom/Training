@@ -150,7 +150,7 @@ class ImportService extends AbstractService
         return (array_key_exists('action', $config)) ? $config['action'] : "save{$type}FromImport";
     }
 
-    public function validate($data, $type)
+    public function validate($data, $type, $condition = false)
     {
         $entityClass = $this->getImportEntityClass($type);
         $entity = new $entityClass();
@@ -159,7 +159,8 @@ class ImportService extends AbstractService
         $hasError = false;
         foreach ($data as $idx=>$rec) {
             $entity->setFields($rec);
-            $errors = $validator->validate($entity);
+			$errors = $validator->validate($entity);
+
             $data[$idx]['validation_status'] = (count($errors)) ? 'invalid' : 'valid';
             $data[$idx]['validation_errors'] = array();
             foreach ($errors as $error) {
@@ -202,7 +203,7 @@ class ImportService extends AbstractService
      * @param  string $file A file name
      * @return array     Array with status info on the operation
      */
-    public function uploadCSV($file, $type, $fileFieldName, $data = false)
+    public function uploadCSV($file, $type, $fileFieldName)
     {
         $fileName = null;
         $destinationPath = $this->getUploadPath() . "{$type}/";

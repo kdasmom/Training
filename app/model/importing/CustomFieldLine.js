@@ -8,6 +8,7 @@ Ext.define('NP.model.importing.CustomFieldLine', {
 	
 	fields: [
 		{ name: 'CustomField' },
-		{ name: 'validation_status' }
+		{ name: 'validation_status' },
+		{ name: 'validation_errors' }
 	]
 });
