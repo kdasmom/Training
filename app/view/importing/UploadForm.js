@@ -54,6 +54,7 @@ Ext.define('NP.view.importing.UploadForm', {
 					displayField: 'controlpanelitem_value',
 					valueField: 'customfieldnumber',
 					fieldLabel: 'Custom Field Value',
+					allowBlank: false,
 					store: Ext.create('NP.lib.data.Store', {
 						service    	: 'ConfigService',
 						action     	: 'getHeadersValues',
@@ -71,6 +72,7 @@ Ext.define('NP.view.importing.UploadForm', {
 					displayField: 'controlpanelitem_value',
 					valueField: 'customfieldnumber',
 					fieldLabel: 'Custom Field Value',
+					allowBlank: false,
 					store: Ext.create('NP.lib.data.Store', {
 						service    	: 'ConfigService',
 						action     	: 'getLineValues',

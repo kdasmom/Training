@@ -163,11 +163,12 @@ Ext.define('NP.controller.Import', {
 
     showGrid: function() {
         var type = this.getActiveVerticalTab().getItemId();
+
         var view = this.setView('NP.view.importing.CSVGrid', {
                     file: this.file,
                     type: type.replace('Panel', '')
                 }, '#' + type);
-        
+
         view.query('customgrid')[0].getStore().load();
     },
 
@@ -189,6 +190,7 @@ Ext.define('NP.controller.Import', {
 					method: 'POST',
 					mask: this.getActiveVerticalTab(),
 					form: formEl.id,
+					isUpload: true,
 					requests: {
 						service: 'ImportService',
 						action: 'uploadCSV',

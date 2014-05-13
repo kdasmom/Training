@@ -27,7 +27,9 @@ Ext.define('NP.view.importing.CSVGrid', {
         'NP.model.importing.InvoicePayment',
         'NP.model.importing.User',
         'NP.model.importing.UserProperty',
-        'NP.model.importing.Split'
+        'NP.model.importing.Split',
+        'NP.model.importing.CustomFieldHeader',
+        'NP.model.importing.CustomFieldLine'
     ],
 
     border: false,
