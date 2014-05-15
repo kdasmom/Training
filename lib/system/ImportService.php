@@ -297,7 +297,7 @@ class ImportService extends AbstractService
         return $service->$saveFunction($importData);
     }
 
-    public function decline($file, $type)
+    public function decline($file = null, $type = null)
     {
         $path = $this->getUploadPath() . "{$type}/" . $file;
 
