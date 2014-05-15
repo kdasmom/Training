@@ -30,7 +30,8 @@ Ext.define('NP.controller.Import', {
         'importing.types.Property','importing.types.PropertyGL','importing.types.Split',
         'importing.types.Unit','importing.types.UnitType','importing.types.User',
         'importing.types.UserProperty','importing.types.Vendor','importing.types.VendorFavorite',
-        'importing.types.VendorGL','importing.types.VendorInsurance','importing.types.VendorUtility'
+        'importing.types.VendorGL','importing.types.VendorInsurance','importing.types.VendorUtility',
+		'importing.InvoiceExportGrid'
     ],
 
     refs: [
@@ -177,7 +178,8 @@ Ext.define('NP.controller.Import', {
 
     uploadFile: function() {
         var that = this,
-			activeTab = this.getActiveVerticalTab().getItemId();
+			activeTab = this.getActiveVerticalTab().getItemId(),
+			type = this.getVerticalTabToken(this.getActiveVerticalTab());
 
 		var form = this.getActiveVerticalTab().query('form')[0],
 			values = form.getValues();
@@ -187,8 +189,7 @@ Ext.define('NP.controller.Import', {
 			if (activeTab !== 'InvoiceExportPanel') {
 				var fileField = form.query('filefield')[0];
 				var file = fileField.getValue();
-				var formEl = NP.Util.createFormForUpload('#' + this.getActiveVerticalTab().getItemId() + ' form'),
-					type = this.getVerticalTabToken(this.getActiveVerticalTab());
+				var formEl = NP.Util.createFormForUpload('#' + this.getActiveVerticalTab().getItemId() + ' form');
 
 				NP.lib.core.Net.remoteCall({
 					method: 'POST',
@@ -220,26 +221,65 @@ Ext.define('NP.controller.Import', {
 					}
 				});
 			} else {
-				var reportWinName = 'report_invoice.Export',
-					body          = Ext.getBody(),
-					win           = window.open('about:blank', reportWinName);
+				var values = form.getForm().getValues(),
+					view = this.setView('NP.view.importing.InvoiceExportGrid', {}, '#InvoiceExportPanel'),
+					grid = view.query('#invoiceGrid')[0];
 
-				Ext.DomHelper.append(
-					body,
-					'<form id="__reportForm" action="export.php" target="' + reportWinName + '" method="post">' +
-					'<input type="hidden" id="__report" name="report" />' +
-					'<input type="hidden" id="__format" name="format" />' +
-					'<input type="hidden" id="__options" name="options" />' +
-					'<input type="hidden" id="__extraParams" name="extraParams" />' +
-					'</form>'
-				);
+				grid.addExtraParams({
+					integration_package_id: values.integration_package_id,
+					properties: JSON.stringify(values.properties)
+				});
+				grid.getStore().load();
 
-				Ext.get('__report').set({ value: 'invoice.Export' });
-				Ext.get('__format').set({ value: 'excel' });
-				Ext.get('__extraParams').set({ value: Ext.JSON.encode(form.getForm().getValues()) });
-				var formExport = Ext.get('__reportForm');
-				formExport.dom.submit();
-				Ext.destroy(formExport);
+//				NP.lib.core.Net.remoteCall({
+//					method: 'POST',
+//					mask: this.getActiveVerticalTab(),
+//					form: formEl.id,
+//					isUpload: true,
+//					requests: {
+//						service: 'ImportService',
+//						action: 'uploadCSV',
+//						file: file,
+//						type: type,
+//						fileFieldName: fileField.getName(),
+//						success: function (result) {
+//							if (result.success) {
+//								// Save file name
+//								that.file = result.upload_filename;
+//								if (form.getValues()) {
+//									Ext.util.Cookies.set('condition', form.getValues().fieldnumber);
+//								}
+//								// Show the preview grid
+//								that.showGrid(form.getValues());
+//							} else {
+//								if (result.errors.length) {
+//									fileField.markInvalid(result.errors);
+//								}
+//							}
+//							Ext.removeNode(formEl);
+//						}
+//					}
+//				});
+//				var reportWinName = 'report_invoice.Export',
+//					body          = Ext.getBody(),
+//					win           = window.open('about:blank', reportWinName);
+//
+//				Ext.DomHelper.append(
+//					body,
+//					'<form id="__reportForm" action="export.php" target="' + reportWinName + '" method="post">' +
+//					'<input type="hidden" id="__report" name="report" />' +
+//					'<input type="hidden" id="__format" name="format" />' +
+//					'<input type="hidden" id="__options" name="options" />' +
+//					'<input type="hidden" id="__extraParams" name="extraParams" />' +
+//					'</form>'
+//				);
+//
+//				Ext.get('__report').set({ value: 'invoice.Export' });
+//				Ext.get('__format').set({ value: 'excel' });
+//				Ext.get('__extraParams').set({ value: Ext.JSON.encode(form.getForm().getValues()) });
+//				var formExport = Ext.get('__reportForm');
+//				formExport.dom.submit();
+//				Ext.destroy(formExport);
 			}
 		}
     },
