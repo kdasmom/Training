@@ -105,8 +105,8 @@ class Export extends AbstractReport implements ReportInterface {
 					'g.Integration_Package_Id'	=> '?',
 					'p.Sync'	=> '?'
 				])
-				->whereIn('v.vendor_status', "'" . implode(',', ["active", "approved"]) . "'")
-				->whereIn('p.property_id', implode(',', $extraParams['properties']))
+				->whereIn('v.vendor_status', "'" . implode("','", ["active", "approved"]) . "'")
+				->whereIn('p.property_id', implode(',', json_decode($extraParams['properties'])))
 				->order(['p.property_name', 'i.invoice_ref']);
 
 		$adapter = $this->gatewayManager->get('InvoiceGateway')->getAdapter();

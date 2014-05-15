@@ -301,22 +301,53 @@ Ext.define('NP.controller.Import', {
     },
 
     accept: function() {
-        that = this;
-        
-        var grid = Ext.ComponentQuery.query('[xtype="importing.csvgrid"] [xtype="customgrid"]')[0];
-        var items = grid.getStore().getRange();
-        var hasValid = false;
-        Ext.each(items, function(item) {
-            if (item.get('validation_status') == 'valid') {
-                hasValid = true;
-                return false;
-            }
-        });
-        if (hasValid > 0) {
-            that.saveGrid();
-        } else {
-            NP.Util.showFadingWindow({html: 'No valid records to importing.'});
-        }
+        var that = this,
+			hasValid = false,
+			activeTab = this.getActiveVerticalTab().getItemId(),
+			grid;
+
+		if (activeTab !== 'InvoiceExportPanel') {
+			grid = Ext.ComponentQuery.query('[xtype="importing.csvgrid"] [xtype="customgrid"]')[0],
+				items = grid.getStore().getRange();
+
+			Ext.each(items, function (item) {
+				if (item.get('validation_status') == 'valid') {
+					hasValid = true;
+					return false;
+				}
+			});
+			if (hasValid > 0) {
+				that.saveGrid();
+			} else {
+				NP.Util.showFadingWindow({html: 'No valid records to importing.'});
+			}
+		} else {
+			grid = this.query('#invoiceGrid')[0];
+			var extraParams = {
+					integration_package_id: grid.getStore().getProxy().extraParams.integration_package_id,
+					properties: grid.getStore().getProxy().extraParams.properties
+				},
+				reportWinName = 'report_invoice.Export',
+				body          = Ext.getBody(),
+				win           = window.open('about:blank', reportWinName);
+
+			Ext.DomHelper.append(
+				body,
+				'<form id="__reportForm" action="export.php" target="' + reportWinName + '" method="post">' +
+				'<input type="hidden" id="__report" name="report" />' +
+				'<input type="hidden" id="__format" name="format" />' +
+				'<input type="hidden" id="__options" name="options" />' +
+				'<input type="hidden" id="__extraParams" name="extraParams" />' +
+				'</form>'
+			);
+
+			Ext.get('__report').set({ value: 'invoice.Export' });
+			Ext.get('__format').set({ value: 'excel' });
+			Ext.get('__extraParams').set({ value: Ext.JSON.encode(extraParams) });
+			var formExport = Ext.get('__reportForm');
+			formExport.dom.submit();
+			Ext.destroy(formExport);
+		}
     },
 
     saveGrid: function() {
