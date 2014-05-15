@@ -157,9 +157,16 @@ class ImportService extends AbstractService
 
         $validator = $this->getCustomValidator($type);
         $hasError = false;
+
         foreach ($data as $idx=>$rec) {
             $entity->setFields($rec);
 			$errors = $validator->validate($entity);
+			if ($type == 'CustomFieldHeader' || $type == 'CustomFieldLine') {
+				$typeSelect = $type == 'CustomFieldHeader' ? 'header' : 'lineitem';
+				$errors = array_merge($errors, $validator->isUnique($entity, $condition));
+				$userProfileId = $this->securityService->getUserId();
+				$this->configService->processCustomFieldHeaderImport($userProfileId, $entity->CustomField, $typeSelect, $condition);
+			}
 
             $data[$idx]['validation_status'] = (count($errors)) ? 'invalid' : 'valid';
             $data[$idx]['validation_errors'] = array();
@@ -255,17 +262,23 @@ class ImportService extends AbstractService
      * @param  string $file A path to file
      * @return array
      */
-    public function getPreview($file = null, $type)
+    public function getPreview($file = null, $type, $conditionselect = false)
     {
         $data = $this->csvFileToArray($this->getUploadPath() . "{$type}/" . $file, $type);
+
+		if ($type == 'CustomFieldHeader' || $type == 'CustomFieldLine') {
+			$typeImport = 'CustomFieldHeader' ? 'header' : 'lineitem';
+			$userProfileId = $this->securityService->getUserId();
+			$this->configService->initCustomFieldHeaderImport($userProfileId, $typeImport, $conditionselect);
+		}
         
-        return $this->validate($data, $type);
+        return $this->validate($data, $type, $conditionselect);
     }
 
-    public function accept($file, $type)
+    public function accept($file, $type, $condition = false)
     {
         $data = $this->csvFileToArray($this->getUploadPath() . "{$type}/" . $file, $type);
-        $data = $this->validate($data, $type);
+		$data = $this->validate($data, $type, $condition);
         $entityClass = $this->getImportEntityClass($type);
 
         $entity       = new $entityClass($data);

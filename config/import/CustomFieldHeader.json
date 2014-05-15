@@ -1,6 +1,6 @@
 {
     "description": "CustomField Header import",
-    "service": "CustomField",
+    "service": "ConfigService",
     "entity": "NP\\import\\CustomFieldHeaderImportEntity",
     "columns": [
         {"name": "CustomField", "entityField": "CustomField"}

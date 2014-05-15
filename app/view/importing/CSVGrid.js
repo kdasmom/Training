@@ -56,7 +56,20 @@ Ext.define('NP.view.importing.CSVGrid', {
         ];
 
         var importClass = Ext.create('NP.view.importing.types.' + this.type),
-            grid = importClass.getGrid();
+            grid = null,
+			extraparams = {
+				file: this.file,
+				type: this.type
+			};
+
+		if ('values' in this) {
+			Ext.apply(extraparams, {conditionselect: this.values});
+		}
+		if (this.type == 'CustomFieldHeader' || this.type == 'CustomFieldLineItem') {
+			grid = importClass.getGrid(this.values.fieldnumber);
+		} else {
+			grid = importClass.getGrid();
+		}
 
         Ext.applyIf(grid, {
             xtype  : 'customgrid',
@@ -67,7 +80,7 @@ Ext.define('NP.view.importing.CSVGrid', {
                         model  : 'NP.model.importing.' + this.type,
                         service: 'ImportService',
                         action : 'getPreview',
-                        extraParams: { file: this.file, type: this.type }
+                        extraParams: extraparams
                     })
         });
 
@@ -112,5 +125,4 @@ Ext.define('NP.view.importing.CSVGrid', {
 
         this.callParent(arguments);
     }
-
 });

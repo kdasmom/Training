@@ -10,7 +10,8 @@ Ext.define('NP.controller.Import', {
         'NP.lib.core.Util',
         'NP.lib.core.Security',
         'NP.view.shared.button.Inactivate',
-        'NP.view.shared.button.Activate'
+        'NP.view.shared.button.Activate',
+		'Ext.util.Cookies'
     ],
     
     models: [
@@ -165,10 +166,9 @@ Ext.define('NP.controller.Import', {
         var type = this.getActiveVerticalTab().getItemId(),
 			settings = {
 				file: this.file,
-				type: type.replace('Panel', '')
+				type: type.replace('Panel', ''),
+				values: values
 			};
-
-
 
         var view = this.setView('NP.view.importing.CSVGrid', settings, '#' + type);
 
@@ -187,7 +187,8 @@ Ext.define('NP.controller.Import', {
 			if (activeTab !== 'InvoiceExportPanel') {
 				var fileField = form.query('filefield')[0];
 				var file = fileField.getValue();
-				var formEl = NP.Util.createFormForUpload('#' + this.getActiveVerticalTab().getItemId() + ' form');
+				var formEl = NP.Util.createFormForUpload('#' + this.getActiveVerticalTab().getItemId() + ' form'),
+					type = this.getVerticalTabToken(this.getActiveVerticalTab());
 
 				NP.lib.core.Net.remoteCall({
 					method: 'POST',
@@ -198,12 +199,15 @@ Ext.define('NP.controller.Import', {
 						service: 'ImportService',
 						action: 'uploadCSV',
 						file: file,
-						type: this.getVerticalTabToken(this.getActiveVerticalTab()),
+						type: type,
 						fileFieldName: fileField.getName(),
 						success: function (result) {
 							if (result.success) {
 								// Save file name
 								that.file = result.upload_filename;
+								if (form.getValues()) {
+									Ext.util.Cookies.set('condition', form.getValues().fieldnumber);
+								}
 								// Show the preview grid
 								that.showGrid(form.getValues());
 							} else {
@@ -288,6 +292,7 @@ Ext.define('NP.controller.Import', {
                 action : 'accept',
                 file   : this.file,
                 type   : type,
+				condition: Ext.util.Cookies.get('condition') ? Ext.util.Cookies.get('condition') : false,
                 success: function(result) {
                     if (result.success) {
                         // Show friendly message

@@ -8,6 +8,7 @@
 
 namespace NP\import;
 
+use NP\core\AbstractEntity;
 use NP\core\db\Adapter;
 use NP\locale\LocalizationService;
 use NP\system\PnCustomFieldsGateway;
@@ -26,6 +27,16 @@ class CustomFieldLineItemEntityValidator extends AbstractImportEntityValidator {
 		$errors = parent::validate($entity);
 
 
+
+		return $errors;
+	}
+
+	public function isUnique(AbstractEntity $entity, $fieldNumber) {
+		$errors = [];
+
+		if (!$this->customFieldGateway->validateCustomField($entity->CustomField, $fieldNumber, 'lineitem')) {
+			$this->addError($errors, 'CustomField', 'importCustomFieldLineItemError');
+		}
 
 		return $errors;
 	}

@@ -1,6 +1,6 @@
 {
     "description": "CustomField Line import",
-    "service": "CustomField",
+    "service": "ConfigService",
     "entity": "NP\\import\\CustomFieldLineItemImportEntity",
     "columns": [
         {"name": "CustomField", "entityField": "CustomField"}

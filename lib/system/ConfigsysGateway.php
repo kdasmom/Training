@@ -493,6 +493,29 @@ class ConfigsysGateway extends AbstractGateway {
 
 		return $this->adapter->query($select);
 	}
+
+
+	public function getCustomFieldnameByNumber($number, $type) {
+		$select = new Select();
+
+		$select->from(['c' => 'configsys'])
+			->join(['cv' => 'configsysval'], 'c.configsys_id = cv.configsys_id', ['controlpanelitem_value' => 'configsysval_val'], Select::JOIN_INNER)
+			->whereLike('c.configsys_name', "'CP.custom_field_label%'");
+
+		if ($type == 'header') {
+			$select->whereEquals(new Expression("right(c.configsys_name,1)"), '?')
+				->whereNotLike('c.configsys_name', "'%lineitem'");
+		}
+		if ($type == 'lineitem') {
+			$select->whereEquals(new Expression("right(left(c.configsys_name, 22),1)"), '?')
+				->whereNotLike('c.configsys_name', "'%LABEL1_lineitem%'")
+				->whereLike('c.configsys_name', "'%lineitem'");
+		}
+
+		$result = $this->adapter->query($select, [$number]);
+
+		return $result[0]['controlpanelitem_value'];
+	}
 }
 
 ?>
