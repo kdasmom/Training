@@ -73,6 +73,7 @@ Ext.define('NP.view.importing.CSVGrid', {
 
         Ext.applyIf(grid, {
             xtype  : 'customgrid',
+			paging: true,
             title  : this.gridTitle,
             flex: 1,
             stateId: this.type.toLowerCase() + '_import_grid',
