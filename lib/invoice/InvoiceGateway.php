@@ -2,6 +2,7 @@
 
 namespace NP\invoice;
 
+use NP\core\db\Insert;
 use NP\system\ConfigService;
 use NP\property\FiscalCalService;
 use NP\property\RegionGateway;
@@ -1047,6 +1048,39 @@ class InvoiceGateway extends AbstractGateway {
 				->order(['p.property_name', 'i.invoice_ref']);
 
 		return $this->adapter->query($select, ['submitted', $integration_package_id, 1]);
+	}
+
+	public function markAsSent($userprofile_id, $invoices_id = []) {
+		$update = new Update();
+
+		$update->table('invoice')
+				->values([
+					'invoice_status'	=> "'sent'"
+				])
+				->whereIn('invoice_id', implode(',', $invoices_id));
+
+		$result = $this->adapter->query($update);
+
+		$insert = new Insert();
+
+		$insert->into('exim_log')
+				->columns(
+					[
+						'table_name',
+						'tablekey_id_list',
+						'userprofile_id',
+						'EXIM_LOG_description'
+					]
+				)
+				->values(Select::get()->columns([
+					new Expression("?"),
+					new Expression('?'),
+					new Expression('?'),
+					new Expression('?')
+
+				]));
+
+		return $this->adapter->query( $insert, ['invoice', implode(',', $invoices_id), $userprofile_id, 'Marked invoices as sent; action originated from the Invoice Export utility']);
 	}
 }
 

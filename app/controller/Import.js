@@ -87,7 +87,10 @@ Ext.define('NP.controller.Import', {
             // The Upload csv file
             '[xtype="importing.main"] [xtype="shared.button.activate"]': {
                 click: this.accept
-            }
+            },
+			'[xtype="importing.invoiceexportgrid"] [xtype="shared.button.process"]' : {
+				click: this.markInvoicesAsSent
+			}
         });
     },
 
@@ -230,56 +233,6 @@ Ext.define('NP.controller.Import', {
 					properties: JSON.stringify(values.properties)
 				});
 				grid.getStore().load();
-
-//				NP.lib.core.Net.remoteCall({
-//					method: 'POST',
-//					mask: this.getActiveVerticalTab(),
-//					form: formEl.id,
-//					isUpload: true,
-//					requests: {
-//						service: 'ImportService',
-//						action: 'uploadCSV',
-//						file: file,
-//						type: type,
-//						fileFieldName: fileField.getName(),
-//						success: function (result) {
-//							if (result.success) {
-//								// Save file name
-//								that.file = result.upload_filename;
-//								if (form.getValues()) {
-//									Ext.util.Cookies.set('condition', form.getValues().fieldnumber);
-//								}
-//								// Show the preview grid
-//								that.showGrid(form.getValues());
-//							} else {
-//								if (result.errors.length) {
-//									fileField.markInvalid(result.errors);
-//								}
-//							}
-//							Ext.removeNode(formEl);
-//						}
-//					}
-//				});
-//				var reportWinName = 'report_invoice.Export',
-//					body          = Ext.getBody(),
-//					win           = window.open('about:blank', reportWinName);
-//
-//				Ext.DomHelper.append(
-//					body,
-//					'<form id="__reportForm" action="export.php" target="' + reportWinName + '" method="post">' +
-//					'<input type="hidden" id="__report" name="report" />' +
-//					'<input type="hidden" id="__format" name="format" />' +
-//					'<input type="hidden" id="__options" name="options" />' +
-//					'<input type="hidden" id="__extraParams" name="extraParams" />' +
-//					'</form>'
-//				);
-//
-//				Ext.get('__report').set({ value: 'invoice.Export' });
-//				Ext.get('__format').set({ value: 'excel' });
-//				Ext.get('__extraParams').set({ value: Ext.JSON.encode(form.getForm().getValues()) });
-//				var formExport = Ext.get('__reportForm');
-//				formExport.dom.submit();
-//				Ext.destroy(formExport);
 			}
 		}
     },
@@ -379,5 +332,47 @@ Ext.define('NP.controller.Import', {
                 }
             }
         });
-    }
+    },
+
+	markInvoicesAsSent: function() {
+		var me = this,
+			grid = me.query('#invoiceGrid')[0],
+			recCount = grid.getStore().getCount(),
+			extraParams = {
+				integration_package_id: grid.getStore().getProxy().extraParams.integration_package_id,
+				properties: grid.getStore().getProxy().extraParams.properties
+			};
+
+		if (recCount == 0) {
+			Ext.MessageBox.alert(
+				me.translate(NP.Translator.translate('Notice')),
+				me.translate(NP.Translator.translate('No record to mark.'))
+			);
+		} else {
+			var records = grid.getStore().getRange(),
+				sendRecords = [];
+
+			Ext.MessageBox.confirm(NP.Translator.translate('Notice'), NP.Translator.translate('"Once the invoices selected are marked as Sent, they can not be re-exported to Excel.  Please save and validate the Excel file before proceeding.'), function(btn) {
+				if (btn == 'yes') {
+					Ext.each(records, function(record) {
+						sendRecords.push(record.get('invoice_id'));
+					});
+
+					NP.lib.core.Net.remoteCall({
+						mask: grid,
+						requests: {
+							service: 'InvoiceService',
+							action: 'markInvoiceAsSent',
+							invoices: sendRecords,
+							success: function (result) {
+								if (result) {
+									grid.getStore().reload();
+								}
+							}
+						}
+					});
+				}
+			});
+		}
+	}
 });

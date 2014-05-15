@@ -31,7 +31,7 @@ Ext.define('NP.view.importing.types.InvoiceExport', {
 			},
 			{
 				xtype: 'shared.button.upload',
-				title: 'Create File'
+				text: 'Create File'
 			}
 		];
 

@@ -2308,6 +2308,18 @@ class InvoiceService extends AbstractEntityService {
 
 		return $this->invoiceGateway->getPreviewForTheImport($integration_package_id, $properties, $page, $pageSize);
 	}
+
+	public function markInvoiceAsSent($invoices = []) {
+
+		if (count($invoices) == 0) {
+			return false;
+		}
+
+		$userProfileId = $this->securityService->getUserId();
+
+		return $this->invoiceGateway->markAsSent($userProfileId, $invoices);
+
+	}
 }
 
 ?>
