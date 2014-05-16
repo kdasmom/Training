@@ -53,7 +53,7 @@ class Export extends AbstractReport implements ReportInterface {
 	}
 
 	public function getTitle() {
-		return 'Export Invoice';
+		return 'Invoice Export';
 	}
 
 	public function getData() {
@@ -105,6 +105,7 @@ class Export extends AbstractReport implements ReportInterface {
 					'g.Integration_Package_Id'	=> '?',
 					'p.Sync'	=> '?'
 				])
+				->limit(1000)
 				->whereIn('v.vendor_status', "'" . implode("','", ["active", "approved"]) . "'")
 				->whereIn('p.property_id', implode(',', json_decode($extraParams['properties'])))
 				->order(['p.property_name', 'i.invoice_ref']);
