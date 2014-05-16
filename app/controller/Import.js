@@ -290,7 +290,8 @@ Ext.define('NP.controller.Import', {
 				},
 				reportWinName = 'report_invoice.Export',
 				body          = Ext.getBody(),
-				win           = window.open('about:blank', reportWinName);
+				win           = window.open('about:blank', reportWinName),
+				filename = 'invoice_export_' + Ext.Date.format(new Date(), 'Hms');
 
 			Ext.DomHelper.append(
 				body,
@@ -299,12 +300,14 @@ Ext.define('NP.controller.Import', {
 				'<input type="hidden" id="__format" name="format" />' +
 				'<input type="hidden" id="__options" name="options" />' +
 				'<input type="hidden" id="__extraParams" name="extraParams" />' +
+				'<input type="hidden" id="__filename" name="filename" />' +
 				'</form>'
 			);
 
 			Ext.get('__report').set({ value: 'invoice.Export' });
 			Ext.get('__format').set({ value: 'excel' });
 			Ext.get('__extraParams').set({ value: Ext.JSON.encode(extraParams) });
+			Ext.get('__filename').set({ value: 'invoice_export_' + Ext.Date.format(new Date(), 'Hms') });
 			var formExport = Ext.get('__reportForm');
 			formExport.dom.submit();
 			Ext.destroy(formExport);

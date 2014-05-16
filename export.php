@@ -17,6 +17,6 @@ if (!array_key_exists('isRemote', $_POST)) {
 // Deserialize some of the complex variables passed in
 $extraParams = json_decode($_POST["extraParams"], true);
 $options = [];
+$filename = $_POST['filename'];
 
-
-$di['ReportService']->showReport($_POST['report'], $_POST['format'], $options, $extraParams, $_POST['isRemote']);
+$di['ReportService']->showReport($_POST['report'], $_POST['format'], $options, $extraParams, $_POST['isRemote'], $filename);
