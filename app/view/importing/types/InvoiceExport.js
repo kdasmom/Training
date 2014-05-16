@@ -53,13 +53,26 @@ Ext.define('NP.view.importing.types.InvoiceExport', {
 					},
 					{
 						xtype: 'shared.integrationpackagescombo',
+						itemId: 'integrationpackage_id',
+						selectFirstRecord: true,
+						loadStoreOnFirstQuery: true,
 						store: Ext.create('NP.store.system.IntegrationPackages', {
 							service: 'ConfigService',
 							action: 'getIntegrationPackagesForTheInvoiceExport',
 							extraParams: {
 								userprofile_id: NP.Security.getUser().get('userprofile_id')
 							},
-							autoLoad: true
+							autoLoad: true,
+							listeners: {
+								load: function (cboxstore, filters) {
+									var store = me.query('#properties')[0].getStore(),
+										firstrecord = cboxstore.first();
+									Ext.apply(store.getProxy().extraParams, {
+										integration_package_id: firstrecord.get('integration_package_id')
+									});
+									store.load();
+								}
+							}
 						}),
 						listeners: {
 							select: function(combobox, records) {
