@@ -95,6 +95,9 @@ Ext.define('NP.controller.Import', {
 				click: function() {
 					this.addHistory('Import:showImport:overview');
 				}
+			},
+			'[xtype="importing.invoiceexportgrid"] [xtype="shared.button.cancel"]' : {
+				click: this.decline
 			}
         });
     },

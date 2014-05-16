@@ -34,6 +34,7 @@ Ext.define('NP.view.importing.InvoiceExportGrid', {
 
 	initComponent: function() {
 		this.tbar = [
+			{ xtype: 'shared.button.cancel'},
 			{ xtype: 'shared.button.inactivate', text: this.declineBtnText },
 			{ xtype: 'shared.button.activate', text: this.acceptBtnText },
 			{ xtype: 'shared.button.process', text: this.processBtnText }
