@@ -22,6 +22,8 @@ Ext.define('NP.view.importing.InvoiceExportGrid', {
 		type: 'vbox',
 		align: 'stretch'
 	},
+	autoScroll: true,
+
 
 	// For localization
 	acceptBtnText   : 'View/Save File',
@@ -49,7 +51,6 @@ Ext.define('NP.view.importing.InvoiceExportGrid', {
 				itemId: 'invoiceGrid',
 				border: false,
 				autoScroll: true,
-				height: 300,
 				columns: [
 					{
 						xtype: 'datecolumn',
