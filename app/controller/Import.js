@@ -90,6 +90,11 @@ Ext.define('NP.controller.Import', {
             },
 			'[xtype="importing.invoiceexportgrid"] [xtype="shared.button.process"]' : {
 				click: this.markInvoicesAsSent
+			},
+			'[xtype="importing.types.invoiceexport"] [xtype="shared.button.cancel"]' : {
+				click: function() {
+					this.addHistory('Import:showImport:overview');
+				}
 			}
         });
     },
