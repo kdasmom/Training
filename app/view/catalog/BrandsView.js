@@ -59,7 +59,7 @@ Ext.define('NP.view.catalog.BrandsView', {
 						{
 							fn: function()
 							{
-								that.fireEvent('focusonletter',text);
+								that.fireEvent('focusonletter',text, index);
 							}
 						}
 					}

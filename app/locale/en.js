@@ -221,6 +221,11 @@ Ext.define('NP.Locale', {
 	'Receipt Number'        : 'Receipt Number',
 	'PO Number'             : 'PO Number',
 
+	/**
+	 *  VENDOR CATALOG SECTION
+	 */
+	'In Cart' : 'In Cart',
+	'This item is no longer available for order' : 'This item is no longer available for order',
 
 	/**
 	 * INVOICE SECTION
