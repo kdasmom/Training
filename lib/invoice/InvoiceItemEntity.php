@@ -32,7 +32,7 @@ class InvoiceItemEntity extends \NP\core\AbstractEntity {
 				'digits' => array()
 			),
 			'auditable' => [
-				'table'        => 'glaccount',
+				'table'        => 'glAccount',
 				'displayField' => 'glaccount_name',
 				'displayName'  => 'GL Account'
 			],

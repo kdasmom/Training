@@ -1,0 +1,26 @@
+body { font-family: Arial,Helvetica; }
+
+#entityPrintTable td, #entityPrintLines th, #entityPrintLines td, .logTable th, .logTable td { font-size: 10pt; padding:0; }
+#entityPrintTable td { vertical-align: top; }
+#entityPrintTable #vendorInfo { font-size: 14px; }
+#entityPrintTable #clientShortName { font-size: 20pt; }
+#entityPrintTable #propertyName { font-size: 12pt; }
+#entityPrintTable td.blackLine { height: 1px; background-color: black; }
+#entityPrintTable td.spacer { height:4px; }
+#entityPrintLines {
+	border-collapse: collapse;
+	border-color   : black;
+	border-width   : 0px 0px 1px 1px;
+	border-style   : solid;
+	margin-top     : 8px;
+}
+	#entityPrintLines th, #entityPrintLines td { padding: 2px; border-color: black; border-style: solid; }
+	#entityPrintLines th { text-align: left; border-width: 1px 1px 1px 0px; }
+	#entityPrintLines td { border-width: 0px 1px 0px 0px; }
+	#entityPrintLines tfoot td, #entityPrintLines tfoot th { text-align: right; border-width: 1px 1px 1px 0px; }
+
+.noteLabel { font-weight: bold; margin-top: 16px; }
+
+.logTable { border-collapse: collapse; }
+	.logTable th, .logTable td { border: solid 1px; padding: 2px 4px; }
+	.logTable th { text-align: left; background-color: #ccc; }

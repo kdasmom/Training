@@ -91,6 +91,8 @@ Ext.define('NP.view.gl.GLAccountsForm', {
                 fieldLabel  : this.categoryFieldText,
                 itemId      : 'gl_category',
                 name        : 'tree_parent',
+                editable    : false,
+                typeAhead   : false,
                 width       : defaultWidth,
                 store       : {
                                 type   : 'gl.glaccounts',
@@ -119,7 +121,9 @@ Ext.define('NP.view.gl.GLAccountsForm', {
                 }),
                 displayField: 'name',
                 valueField  : 'value',
-                allowBlank  : false
+                allowBlank  : false,
+                editable    : false,
+                typeAhead   : false
             },
             // Types
             {
@@ -135,7 +139,9 @@ Ext.define('NP.view.gl.GLAccountsForm', {
                                 autoLoad: true
                             },
                 fieldLabel  : this.typesFieldText,
-                allowBlank  : false
+                allowBlank  : false,
+                editable    : false,
+                typeAhead   : false
             },                                
            // Vendor Assignment
            {

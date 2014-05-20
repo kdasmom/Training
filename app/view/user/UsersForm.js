@@ -39,7 +39,7 @@ Ext.define('NP.view.user.UsersForm', {
 			border: false,
             items : [
 	    		{ xtype: 'user.usercontactinfo', padding: 8, title: NP.Translator.translate('User Information') },
-				{ xtype: 'user.usersformdetails', passwordRequired: this.passwordRequired },
+				{ xtype: 'user.usersformdetails', passwordRequired: this.passwordRequired, isNewUser: this.isNewUser },
 	    		{ xtype: 'user.usersformpermissions' },
 	    		{ xtype: 'user.usersformemail', itemId: 'userEmailAlertPanel' },
 				{ xtype: 'user.usersfrequentlybasedemailalertsform', itemId: 'userFrequentlyBasedEmailAlertPanel', title: NP.Translator.translate('Frequency-Based Alerts') },
@@ -61,9 +61,12 @@ Ext.define('NP.view.user.UsersForm', {
         var me          = this,
             isValid     = this.callParent(),
             field       = this.findField('properties'),
-            codingField = this.findField('coding_properties');
+            codingField = this.findField('coding_properties'),
+            emailField  = this.findField('email_address'),
+            zipField    = this.findField('address_zip'),
+            zipExtField    = this.findField('address_zipext'),
+            propertiesField = this.findField('properties');
 
-        
         // Only check this if there are no other errors
         if (isValid) {
             var props       = field.getValue()
@@ -75,6 +78,29 @@ Ext.define('NP.view.user.UsersForm', {
                     isValid = false;
                     break;
                 }
+            }
+
+            if (emailField.getValue().length > 0) {
+                var ereg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
+                if (!(isValid = ereg.test(emailField.getValue()))) {
+                    emailField.markInvalid(NP.Translator.translate('Use correct email address, please.'));
+                }
+            }
+            if (zipField.getValue().length > 0) {
+                if (!(isValid = /(\d{5})/.test(zipField.getValue()))) {
+                    zipField.markInvalid(NP.Translator.translate('Zip should contain five digits.'));
+                }
+
+            }
+            if (zipExtField.getValue().length > 0) {
+                if (!(isValid = /(\d{4})/.test(zipExtField.getValue()))) {
+                    zipExtField.markInvalid(NP.Translator.translate('Zip ext should contain four digits.'));
+                }
+            }
+
+            if (propertiesField.getValue().length == 0) {
+                propertiesField.markInvalid(NP.Translator.translate('Please, select permissions.'));
+                isValid = false;
             }
         }
 

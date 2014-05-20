@@ -228,7 +228,6 @@ class ImageIndexEntity extends \NP\core\AbstractEntity {
                 'date' => array('format'=>'Y-m-d H:i:s.u')
             )
         ),
-        'idimageindex'   => array(),
         'image_index_GUID'   => array(
             'validation' => array(
                 'stringLength' => array('max'=>24)

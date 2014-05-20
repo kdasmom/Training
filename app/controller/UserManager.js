@@ -186,7 +186,17 @@ Ext.define('NP.controller.UserManager', {
 			// The Groups form Responsibilities tab
 			'[xtype="user.groupsformpermissions"]': {
 				checkchangecascade: this.checkPermissionBox
-			}
+			},
+            '[xtype="report.user.form"] [xtype="shared.button.cancel"]': {
+                click: function() {
+                    this.addHistory('UserManager:showUserManager:Overview');
+                }
+            },
+            '[xtype="report.user.form"] [xtype="shared.button.back"]': {
+                click: function() {
+                    this.addHistory('UserManager:showUserManager:Overview');
+                }
+            }
 		});
 	},
 	
@@ -347,7 +357,15 @@ Ext.define('NP.controller.UserManager', {
 		        },
 		        extraFields: ['role_id','properties','coding_properties']
 			});
-		}
+
+            Ext.apply(viewCfg, {
+                isNewUser: false
+            });
+		} else {
+            Ext.apply(viewCfg, {
+                isNewUser: true
+            });
+        }
 
 		// Create the view with the configuration defined above
 		var form = that.setView('NP.view.user.UsersForm', viewCfg, '[xtype="user.users"]');
@@ -764,5 +782,14 @@ Ext.define('NP.controller.UserManager', {
 				}
 			}
 		});
-	}
+	},
+
+    /**
+     * show user reports tab
+     */
+    showReports: function() {
+        var me = this;
+
+        me.application.getController('Report').show('user', '[xtype="user.reports"]');
+    }
 });

@@ -3,6 +3,7 @@
 namespace NP\user;
 
 use NP\core\AbstractGateway;
+use NP\core\db\Expression;
 use NP\core\db\Select;
 
 /**
@@ -66,8 +67,10 @@ class RoleGateway extends AbstractGateway {
 		}
 	}
 
-	public function findForTree() {
+	public function findForTree($excludeAdmin = false) {
 		$select = new Select();
+		$queryParams = [];
+
 		$select->columns(array('role_id','role_name'))
 				->from(array('r'=>'role'))
 				->join(array('t'=>'tree'),
@@ -75,7 +78,12 @@ class RoleGateway extends AbstractGateway {
 						array('tree_id','tree_parent'))
 				->order('r.role_name');
 
-		return $this->adapter->query($select);
+		if ($excludeAdmin) {
+			$select->whereNotEquals('r.role_name', '?');
+			$queryParams[] = 'Administrator';
+		}
+
+		return $this->adapter->query($select, $queryParams);
 	}
 
 	/**

@@ -9,13 +9,14 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
 
 	requires: [
 		'NP.lib.core.Security',
-		'NP.lib.ui.ComboBox'
+		'NP.lib.ui.ComboBox',
+		'NP.lib.core.Translator'
 	],
 
 	padding: 8,
 
 	// For localization
-	title                     : 'GL Information',
+	title: 'GL Information',
 	integrationPackageInputLabel: 'Integration Package',
 	vendorNameInputLabel: 'Vendor Name',
 	taxIDInputLabel: 'Tax ID',
@@ -43,6 +44,8 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
 
 	initComponent: function() {
 		var that = this;
+
+		that.title = NP.Translator.translate(that.title);
 
 		this.defaults = {
 			labelWidth: 150
@@ -82,7 +85,8 @@ Ext.define('NP.view.vendor.VendorNameAndInformation', {
 			{
 				xtype: 'textfield',
 				fieldLabel: this.taxIDInputLabel,
-				name: 'vendor_fedid'
+				name: 'vendor_fedid',
+				maxLength: NP.Config.getSetting('PN.Vendor.taxIDLength')
 			},
             {
                 xtype: 'textfield',

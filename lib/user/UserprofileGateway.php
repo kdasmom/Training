@@ -312,6 +312,37 @@ class UserprofileGateway extends AbstractGateway {
 	}
 
 	/**
+	 * Returns a list of users to be shown on the Forward Invoice page
+	 */
+	public function findForForward($table_name, $tablekey_id) {
+		$itemTable = ($table_name == 'invoice') ? 'invoiceitem' : 'poitem';
+		$select = $this->getSelect()
+					->whereEquals('u.userprofile_status', '?')
+					->whereEquals('r.is_admin_role', 0)
+					->whereIsNotEmpty('e.email_address')
+					->whereExists(
+						Select::get()->from(array('pu'=>'propertyuserprofile'))
+									->whereEquals('u.userprofile_id', 'pu.userprofile_id')
+									->whereIn(
+										'pu.property_id',
+										Select::get()->column('property_id')
+													->from($itemTable)
+													->whereEquals("{$table_name}_id", '?')
+										->union(
+											Select::get()->column('property_id')
+													->from($table_name)
+													->whereEquals("{$table_name}_id", '?')
+										)
+									)
+					)
+					->order('p.person_lastname, p.person_firstname');
+
+		$params = ['active', $tablekey_id, $tablekey_id];
+
+		return $this->adapter->query($select, $params);
+	}
+
+	/**
 	 * Check is user in app
 	 *
 	 * @param $role_id

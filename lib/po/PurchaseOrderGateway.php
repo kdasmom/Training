@@ -450,6 +450,53 @@ class PurchaseOrderGateway extends AbstractGateway {
 		// Just use the same function as the one used for Rejected Invoices dashboard
 		return $this->findPosRejected(false, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
 	}
+
+    /**
+     * Gets the total amount allocated to invoices for a certain GL/GL Category, property, and period
+     */
+    public function getTotalAmountByBudget($glaccount_id, $property_id, $start_period, $end_period=null, $isCategory=false) {
+    	$budgetCompareWithTax = $this->configService->get('PN.Intl.budgetCompareWithTax', '1');
+    	$col = 'ISNULL(SUM(ISNULL(pi.poitem_amount, 0) + ISNULL(pi.poitem_shipping, 0)';
+    	if ($budgetCompareWithTax == '1') {
+    		$col .= ' + ISNULL(pi.poitem_salestax, 0)';
+    	}
+    	$col .= '), 0)';
+
+    	$select = Select::get()
+    		->column(
+    			new Expression($col),
+    			'po_total'
+    		)
+    		->from(['p'=>'purchaseorder'])
+    			->join(new sql\join\PurchaseorderPoItemJoin([]))
+    		->whereNotIn('p.purchaseorder_status', "'closed','rejected','draft'")
+    		->whereEquals('pi.property_id', '?')
+    		->whereNest('OR')
+    			->whereNotEquals('pi.reftable_name', "'invoiceitem'")
+    			->whereIsNull('pi.reftable_name')
+    		->whereUnnest();
+
+    	if ($isCategory) {
+    		$select->join(new \NP\gl\sql\join\GlAccountTreeJoin([], Select::JOIN_INNER, 'tr', 'pi'))
+    			->join(new \NP\system\sql\join\TreeTreeParentJoin([]))
+    			->whereEquals('tr2.tablekey_id', '?');
+    	} else {
+    		$select->whereEquals('pi.glaccount_id', '?');
+    	}
+
+		$params = [$property_id, $glaccount_id];
+		if (!empty($end_period)) {
+			$select->whereBetween('pi.poitem_period', '?', '?');
+			array_push($params, $start_period, $end_period);
+		} else {
+			$select->whereEquals('pi.poitem_period', '?');
+			$params[] = $start_period;
+		}
+
+    	$res = $this->adapter->query($select, $params);
+
+    	return (float)$res[0]['po_total'];
+    }
 }
 
 ?>
