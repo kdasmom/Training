@@ -20,6 +20,9 @@ Ext.define('NP.view.catalog.FavoriteItemsGrid', {
 	changedRecords: {},
 	isSearch      : false,
 
+	stateful: true,
+	stateId : 'catalog_items_grid',
+
 	initComponent: function() {
 		var that = this;
 
