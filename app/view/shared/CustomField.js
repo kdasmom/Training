@@ -182,16 +182,7 @@ Ext.define('NP.view.shared.CustomField', {
      * @param {Boolean} readOnly Whether the field should be read only.
      */
     setReadOnly: function(readOnly) {
-        var me = this,
-            inputEl = me.inputEl;
-        readOnly = !!readOnly;
-        me[readOnly ? 'addCls' : 'removeCls'](me.readOnlyCls);
-        me.readOnly = readOnly;
-        if (inputEl) {
-            inputEl.dom.readOnly = readOnly;
-        } else if (me.rendering) {
-            me.setReadOnlyOnBoxReady = true;
-        }
-        me.fireEvent('writeablechange', me, readOnly);
+        var me = this;
+        me.field.setReadOnly(readOnly);
     }
 });

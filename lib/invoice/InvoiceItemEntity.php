@@ -6,9 +6,9 @@ namespace NP\invoice;
  *
  * @author Thomas Messier
  */
-class InvoiceItemEntity extends \NP\core\AbstractEntity {
+class InvoiceItemEntity extends \NP\core\AbstractEntity implements \NP\workflow\WorkflowableInterface {
 	protected $auditable = true;
-
+	
 	protected $fields = array(
 		'invoiceitem_id'	 => array(
 			'validation' => array(
@@ -287,6 +287,14 @@ class InvoiceItemEntity extends \NP\core\AbstractEntity {
 			)
 		)
 	);
+
+	public function getPropertyId() {
+		return $this->property_id;
+	}
+
+	public function getAmount() {
+		return $this->invoiceitem_amount + $this->invoiceitem_shipping + $this->invoiceitem_salestax;
+	}
 
 }
 ?>

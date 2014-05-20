@@ -12,13 +12,9 @@ Ext.define('NP.view.property.PropertiesFormGl', {
         'NP.lib.core.Translator'
        ],
 
-	hideLabel    : true,
-	name         : 'property_gls',
-	displayField : 'glaccount_id',
-	valueField   : 'glaccount_id',
-	msgTarget    : 'under',
-	buttons      : ['add','remove'],
-
+	hideLabel: true,
+	name     : 'property_gls',
+	
 	margin: 8,
 
     initComponent: function() {

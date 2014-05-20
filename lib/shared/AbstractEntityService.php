@@ -198,9 +198,14 @@ abstract class AbstractEntityService extends AbstractService {
 	 * @param  int $invoice_id
 	 * @return array
 	 */
-	public function getEntityLines($entity_id) {
+	public function getEntityLines($entity_id, $combineSplit=null) {
 		$gtw = "{$this->itemGateway}Gateway";
-		return $this->$gtw->findLines($entity_id);
+
+		if (empty($combineSplit)) {
+			return $this->$gtw->findLines($entity_id);
+		} else {
+			return $this->$gtw->findLines($entity_id, $combineSplit);
+		}
 	}
 
     /**
@@ -322,9 +327,19 @@ abstract class AbstractEntityService extends AbstractService {
     }
 
 	/**
-	 * Get info 
+	 * Get budget info for an entity line item
 	 */
 	public function getLineBudgetInfo($item_id, $type='account', $includeYear=false) {
+		$data = $this->getMonthlyLineBudgetInfo($item_id, $type);
+
+		if ($includeYear) {
+			$data = array_merge($data, $this->getYearlyLineBudgetInfo($item_id, $type));
+		}
+
+		return $data;
+	}
+
+	public function getMonthlyLineBudgetInfo($item_id, $type='account') {
 		$itemGtw = "{$this->itemGateway}Gateway";
 		$item = $this->$itemGtw->findById($item_id, [
 			'property_id',
@@ -332,10 +347,9 @@ abstract class AbstractEntityService extends AbstractService {
 			'item_period' => "{$this->itemTable}_period"
 		]);
 
-		$gl                   = $this->glAccountGateway->findById($item['glaccount_id']);
-		$period               = \DateTime::createFromFormat(Util::getServerDateFormat(), $item['item_period']);
-		$budgetCompareWithTax = $this->configService->get('PN.Intl.budgetCompareWithTax', '1');
-
+		$gl     = $this->glAccountGateway->findById($item['glaccount_id']);
+		$period = \DateTime::createFromFormat(Util::getServerDateFormat(), $item['item_period']);
+		
 		$data = [
 			'property_name'  => $this->propertyGateway->findValue('property_id = ?', [$item['property_id']], 'property_name'),
 			'glaccount_name' => ($type == 'account') ? $gl['glaccount_name'] : $gl['glaccount_category'],
@@ -381,36 +395,57 @@ abstract class AbstractEntityService extends AbstractService {
 		$data['month_invoice'] = $invoiceAmount;
 		$data['month_po']      = $poAmount;
 
-		if ($includeYear) {
-			
-			$fiscalYear   = $this->fiscalCalService->getFiscalYear($item['property_id'], $period);
-			$start_period = Util::formatDateForDB($fiscalYear['start']);
-			$end_period   = Util::formatDateForDB($fiscalYear['end']);
+		return $data;
+	}
 
-			$budget = $this->budgetGateway->$fn($glaccount_id, $item['property_id'], $start_period, $end_period);
+	public function getYearlyLineBudgetInfo($item_id, $type='account') {
+		$itemGtw = "{$this->itemGateway}Gateway";
+		$item = $this->$itemGtw->findById($item_id, [
+			'property_id',
+			'glaccount_id',
+			'item_period' => "{$this->itemTable}_period"
+		]);
 
-			$invoiceAmount = $this->invoiceGateway->getTotalAmountByBudget(
-				$glaccount_id,
-				$item['property_id'],
-				$start_period,
-				$end_period,
-				$isCategory
-			);
+		$gl     = $this->glAccountGateway->findById($item['glaccount_id']);
+		$period = \DateTime::createFromFormat(Util::getServerDateFormat(), $item['item_period']);
+		
+		$fiscalYear   = $this->fiscalCalService->getFiscalYear($item['property_id'], $period);
+		$start_period = Util::formatDateForDB($fiscalYear['start']);
+		$end_period   = Util::formatDateForDB($fiscalYear['end']);
 
-			$poAmount = $this->purchaseOrderGateway->getTotalAmountByBudget(
-				$glaccount_id,
-				$item['property_id'],
-				$start_period,
-				$end_period,
-				$isCategory
-			);
+		$isCategory = ($type == 'category') ? true : false;
+		$fn = ($isCategory) ? 'getCategoryBudgetByPeriod' : 'getAccountBudgetByPeriod';
+		$glaccount_id = ($isCategory) ? $gl['glaccount_category_id'] : $gl['glaccount_id'];
 
-			$data['year']         = $fiscalYear['year'];
-			$data['year_budget']  = $budget['budget_amount'];
-			$data['year_actual']  = $budget['actual_amount'];
-			$data['year_invoice'] = $invoiceAmount;
-			$data['year_po']      = $poAmount;
-		}
+		$budget = $this->budgetGateway->$fn($glaccount_id, $item['property_id'], $start_period, $end_period);
+
+		$data = [
+			'property_name'  => $this->propertyGateway->findValue('property_id = ?', [$item['property_id']], 'property_name'),
+			'glaccount_name' => ($type == 'account') ? $gl['glaccount_name'] : $gl['glaccount_category'],
+			'month'          => (int)$period->format('n')
+		];
+
+		$invoiceAmount = $this->invoiceGateway->getTotalAmountByBudget(
+			$glaccount_id,
+			$item['property_id'],
+			$start_period,
+			$end_period,
+			$isCategory
+		);
+
+		$poAmount = $this->purchaseOrderGateway->getTotalAmountByBudget(
+			$glaccount_id,
+			$item['property_id'],
+			$start_period,
+			$end_period,
+			$isCategory
+		);
+
+		$data['year']         = $fiscalYear['year'];
+		$data['year_budget']  = $budget['budget_amount'];
+		$data['year_actual']  = $budget['actual_amount'];
+		$data['year_invoice'] = $invoiceAmount;
+		$data['year_po']      = $poAmount;
 
 		return $data;
 	}
@@ -1195,6 +1230,13 @@ abstract class AbstractEntityService extends AbstractService {
 				$data[$this->table]['template_name'] = $template_name;
 			} else {
 				$data[$this->table]['purchaseorder_ref'] = $template_name;
+
+				// Add service fields to the PO data
+				$customFields = $this->pnCustomFieldsGateway->findCustomFieldData('po', $entity_id);
+				$data['service_fields'] = [];
+				foreach ($customFields as $field) {
+					$data['service_fields'][$field['customfield_name']] = $field['customfielddata_value'];
+				}
 			}
 
 			// If dealing with an invoice and option to save invoice number is false, clear invoice number
@@ -1316,14 +1358,16 @@ abstract class AbstractEntityService extends AbstractService {
 	 * 
 	 */
 	public function useTemplate($entity_id) {
-		$errors = [];
-		$gtw    = "{$this->gateway}Gateway";
+		$errors        = [];
+		$gtw           = "{$this->gateway}Gateway";
+		$new_entity_id = null;
 
 		$this->$gtw->beginTransaction();
 		
 		try {
 			// Call the copy function with default arguments
-			$result = $this->saveCopy($entity_id, '', true, true, 'open');
+			$result        = $this->saveCopy($entity_id, '', true, true, 'open');
+			$new_entity_id = $result['entity_id'];
 
 			// Check for success before proceeding
 			if (!$result['success']) {
@@ -1343,7 +1387,7 @@ abstract class AbstractEntityService extends AbstractService {
 		return array(
 			'success'   => (count($errors)) ? false : true,
 			'errors'    => $errors,
-			'entity_id' => $entity_id
+			'entity_id' => $new_entity_id
 		);
 	}
 
@@ -2043,12 +2087,16 @@ abstract class AbstractEntityService extends AbstractService {
 	/**
 	 * Forwards an entity by email to a list of emails or users
 	 */
-	public function forwardEntity($entity_id, $sender_email, $forward_to, $forward_val, $message, $includes=[]) {
+	public function forwardEntity($entity_id, $sender_email, $forward_to, $forward_val, $message, $includes=[], $forward_table_name=null) {
 		$gtw = "{$this->gateway}Gateway";
 		$rendererClass = "NP\\{$this->module}\\" . ucfirst($this->type) . 'PdfRenderer';
 		$pdfPath = null;
 		$success = false;
 		$errors  = [];
+
+		if (empty($forward_table_name)) {
+			$forward_table_name = $this->table;
+		}
 
 		// Get entity number for email subject line
 		$ref = $this->$gtw->findValue(
@@ -2099,7 +2147,8 @@ abstract class AbstractEntityService extends AbstractService {
 			try {
 				$msg = EmailMessage::getNew(
 										"{$this->title} {$ref}",
-										strip_tags($message)
+										strip_tags($message),
+										'text/plain'
 									)
 									->setFrom($sender_email)
 									->setTo($user['email_address'])
@@ -2115,7 +2164,7 @@ abstract class AbstractEntityService extends AbstractService {
 
 				$forward_id = (array_key_exists('userprofile_id', $user)) ? $user['userprofile_id'] : null;
 				$this->invoicePoForwardGateway->insert([
-					'table_name'                        => $this->table,
+					'table_name'                        => $forward_table_name,
 					'tablekey_id'                       => $entity_id,
 					'forward_to_email'                  => $user['email_address'],
 					'forward_to_userprofile_id'         => $forward_id,

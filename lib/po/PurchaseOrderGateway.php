@@ -535,6 +535,124 @@ class PurchaseOrderGateway extends AbstractGateway {
 		return $this->findPosRejected(false, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
 	}
 
+	public function findTemplatePos($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=1, $sort='vendor_name') {
+		$select = $this->getBaseRegisterSelect($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
+
+		$select->whereEquals('p.purchaseorder_status', "'draft'");
+
+		$params = [\NP\util\Util::formatDateForDB()];
+		
+		// If paging is needed
+		if ($pageSize !== null) {
+			return $this->getPagingArray($select, $params, $pageSize, $page);
+		} else {
+			return $this->adapter->query($select, $params);
+		}
+	}
+
+	public function findPendingPos($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=1, $sort='vendor_name') {
+		$select = $this->getBaseRegisterSelect($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
+
+		$select->columnPendingApprovalDays()
+				->columnPendingApprovalFor()
+				->whereIn('p.purchaseorder_status', "'forapproval','approved'");
+		
+		// If paging is needed
+		if ($pageSize !== null) {
+			return $this->getPagingArray($select, array(), $pageSize, $page);
+		} else {
+			return $this->adapter->query($select);
+		}
+	}
+
+	public function findApprovedPos($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=1, $sort='vendor_name') {
+		$select = $this->getBaseRegisterSelect($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
+
+		$isReceivingOn = $this->configService->get('RECEIVING_ON', '0');
+
+		$select->columnLastApprovedDate()
+				->columnLastApprovedBy()
+				->columnReceivedStatus($isReceivingOn)
+				->columnSentToVendorDate()
+				->whereEquals('p.purchaseorder_status', "'saved'")
+				->whereLessThanOrEqual(
+					'DateDiff(day, p.purchaseorder_created, getdate())',
+					$this->configService->get('PN.POOptions.NumDaysReleasedPO', 0)
+				);
+		
+		// If paging is needed
+		if ($pageSize !== null) {
+			return $this->getPagingArray($select, array(), $pageSize, $page);
+		} else {
+			return $this->adapter->query($select);
+		}
+	}
+
+	public function findInvoicedPos($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=1, $sort='vendor_name') {
+		$select = $this->getBaseRegisterSelect($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
+
+		$isReceivingOn = $this->configService->get('RECEIVING_ON', '0');
+
+		$select->columnLastApprovedDate()
+				->columnLastApprovedBy()
+				->columnReceivedStatus($isReceivingOn)
+				->columnSentToVendorDate()
+				->join(new \NP\property\sql\join\PropertyFiscalcalJoin())
+				->join(new \NP\property\sql\join\FiscalcalFiscalcalMonthJoin())
+				->whereEquals('p.purchaseorder_status', "'closed'")
+				->whereNotExists(
+					Select::get()
+						->from(['pi'=>'poitem'])
+						->whereEquals('pi.purchaseorder_id', 'p.purchaseorder_id')
+						->whereNest('OR')
+							->whereNotEquals('pi.reftable_name', "'invoiceitem'")
+							->whereIsNull('pi.reftable_name')
+							->whereIsNull('pi.reftablekey_id')
+							->whereEquals('pi.reftablekey_id', 0)
+						->whereUnnest()
+				)
+				->whereMerge(new sql\criteria\PoPeriodCriteria());
+		
+		// If paging is needed
+		if ($pageSize !== null) {
+			return $this->getPagingArray($select, array(), $pageSize, $page);
+		} else {
+			return $this->adapter->query($select);
+		}
+	}
+
+	public function findCancelledPos($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize=null, $page=1, $sort='vendor_name') {
+		$select = $this->getBaseRegisterSelect($userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $sort);
+
+		$isReceivingOn = $this->configService->get('RECEIVING_ON', '0');
+
+		$select->columnLastApprovedDate()
+				->columnLastApprovedBy()
+				->columnReceivedStatus($isReceivingOn)
+				->columnSentToVendorDate()
+				->join(new \NP\property\sql\join\PropertyFiscalcalJoin())
+				->join(new \NP\property\sql\join\FiscalcalFiscalcalMonthJoin())
+				->whereEquals('p.purchaseorder_status', "'closed'")
+				->whereNotExists(
+					Select::get()
+						->from(['pi'=>'poitem'])
+						->whereEquals('pi.purchaseorder_id', 'p.purchaseorder_id')
+						->whereNest('OR')
+							->whereNotEquals('pi.reftable_name', "'invoiceitem'")
+							->whereIsNull('pi.reftablekey_id')
+							->whereNotEquals('pi.reftablekey_id', 0)
+						->whereUnnest()
+				)
+				->whereMerge(new sql\criteria\PoPeriodCriteria());
+		
+		// If paging is needed
+		if ($pageSize !== null) {
+			return $this->getPagingArray($select, array(), $pageSize, $page);
+		} else {
+			return $this->adapter->query($select);
+		}
+	}
+
     /**
      * Gets the total amount allocated to invoices for a certain GL/GL Category, property, and period
      */
@@ -632,6 +750,34 @@ class PurchaseOrderGateway extends AbstractGateway {
 
 	private function getAuditSelect() {
 		return new AuditSelect($this->configService);
+	}
+
+	/**
+	 * Checks if a PO is to be submitted electronically
+	 */
+	public function findPoCatalogInfo($purchaseorder_id) {
+		$res = $this->adapter->query(
+			Select::get()
+				->columns([
+					'purchaseorder_status',
+					'property_id',
+					'total_lines'         => Select::get()
+												->count()
+												->from(['pi'=>'poitem'])
+												->whereEquals('pi.purchaseorder_id', 'p.purchaseorder_id'),
+					'total_catalog_lines' => Select::get()
+												->count()
+												->from(['pi'=>'poitem'])
+												->whereEquals('pi.purchaseorder_id', 'p.purchaseorder_id')
+												->whereEquals('pi.is_from_catalog', 1)
+				])
+				->from(['p'=>'purchaseorder'])
+					->join(new sql\join\PoVendorsiteJoin())
+				->whereEquals('p.purchaseorder_id', '?'),
+			[$purchaseorder_id]
+		);
+
+		return $res[0];
 	}
 }
 

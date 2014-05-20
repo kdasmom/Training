@@ -10,6 +10,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
     requires: [
         'NP.lib.core.Config',
         'NP.lib.core.Security',
+        'NP.lib.core.Translator',
         'NP.lib.core.Util',
         'Ext.view.View',
         'NP.view.shared.button.New',
@@ -171,6 +172,10 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                     }
 
                     return null;
+                },
+
+                translate: function(text) {
+                    return NP.Translator.translate(text);
                 }
             })
         }];
@@ -322,50 +327,85 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                     ' {vcitem_uom}' +
                 '</div>' +
             '</tpl>' + 
-            me.buildCustomFields() +
-            '<tpl if="property_id !== this.getEntityRecord().get(\'property_id\')">' +
-                '<b>{[this.getSetting(\'PN.Main.PropertyLabel\', \'Property\')]}:</b> ' +
-                '{property_name}' +
-                '<tpl if="this.getPropertyInvalidPeriod(invoiceitem_id)">' +
-                    '&nbsp;<img src="resources/images/calendar_warning.gif" title="{property_name} is in period {[this.getPropertyInvalidPeriod(values.invoiceitem_id)]}" />' +
-                '</tpl>' +
+            me.buildCustomFields();
+
+        html +=
+                '<tpl if="property_id !== this.getEntityRecord().get(\'property_id\')">' +
+                    '<b>{[this.getSetting(\'PN.Main.PropertyLabel\', \'Property\')]}:</b> ' +
+                    '{property_name}';
+
+        if (me.type == 'invoice') {
+            html += '<tpl if="this.getPropertyInvalidPeriod(invoiceitem_id)">' +
+                        '&nbsp;<img src="resources/images/calendar_warning.gif" title="{property_name} is in period {[this.getPropertyInvalidPeriod(values.invoiceitem_id)]}" />' +
+                    '</tpl>';
+        }
+
+        html +=
             '</tpl>' +
-            '<tpl if="unit_id !== null">' +
+            '<tpl if="unit_id !== null && unit_id != 0">' +
                 '<div>' +
                     '<b>{[this.getSetting("PN.InvoiceOptions.UnitAttachDisplay")]}:</b>' +
                     ' {unit_number}' +
                 '</div>' +
             '</tpl>';
 
-            if (me.type == 'invoice') {
-                html += '<tpl if="purchaseorder_id !== null">' +
-                    '<div>' +
-                        '<b>PO:</b> ' +
-                        '<a class="poRefBtn">{purchaseorder_ref}</a>' +
-                        '<tpl if="poitem_amount &gt; 0">' +
-                            ' - <i>{[NP.Util.currencyRenderer(values.poitem_amount)]}</i>' +
-                        '</tpl>' +
-                    '</div>' +
-                '</tpl>';
-            } else if (me.type == 'po') {
-                html += '<tpl if="invoice_id !== null">' +
-                    '<div>' +
-                        '<b>Invoice:</b> ' +
-                        '<a class="invoiceRefBtn">{invoice_ref}</a>' +
-                        '<tpl if="invoiceitem_amount &gt; 0">' +
-                            ' - <i>{[NP.Util.currencyRenderer(values.invoiceitem_amount)]}</i>' +
-                        '</tpl>' +
-                    '</div>' +
-                '</tpl>';
-            }
-
-            html += '<tpl if="dfsplit_id !== null">' +
-                        '<div>' +
-                            '<b>Default Split:</b> {dfsplit_name}' +
-                        '</div>' +
+        if (me.type == 'invoice') {
+            html += '<tpl if="purchaseorder_id !== null">' +
+                '<div>' +
+                    '<b>PO:</b> ' +
+                    '<a class="poRefBtn">{purchaseorder_ref}</a>' +
+                    '<tpl if="poitem_amount &gt; 0">' +
+                        ' - <i>{[NP.Util.currencyRenderer(values.poitem_amount)]}</i>' +
                     '</tpl>' +
-                    me.buildJobCosting() +
-                '</td>';
+                '</div>' +
+            '</tpl>';
+        } else if (me.type == 'po') {
+            html += '<tpl if="invoice_id !== null">' +
+                '<div>' +
+                    '<b>Invoice:</b> ' +
+                    '<a class="invoiceRefBtn">{invoice_ref}</a>' +
+                    '<tpl if="invoiceitem_amount &gt; 0">' +
+                        ' - <i>{[NP.Util.currencyRenderer(values.invoiceitem_amount)]}</i>' +
+                    '</tpl>' +
+                '</div>' +
+            '</tpl>' +
+            '<tpl if="poitem_isReceived == 1">' +
+                '<div>' +
+                    '<b>Receipt:</b> ' +
+                    '<a class="receiptRefBtn">{receipt_ref}</a> {receipt_creator} {[Ext.Date.format(values.receipt_createdt, NP.Config.getDefaultDateFormat())]}' +
+                '</div>' +
+            '</tpl>';
+        }
+
+        html += '<tpl if="dfsplit_id !== null">' +
+                    '<div>' +
+                        '<b>Default Split:</b> {dfsplit_name}' +
+                    '</div>' +
+                '</tpl>';
+                me.buildJobCosting();
+
+        if (me.type == 'po') {
+            html += '<tpl if="this.getEntityRecord().get(\'purchaseorder_status\') == \'saved\' && Ext.isEmpty(reftable_name) && Ext.isEmpty(reftablekey_id)">' +
+                        '<tpl if="this.getEntityRecord().isModifiable() && NP.Security.hasPermission(2045) && (poitem_isReceived !== 1 || this.arrayContains(rctitem_status, \'open\',\'rejected\') == true)">' +
+                            '<div>' +
+                                '<a class="cancelLineBtn">{[this.translate(\'Cancel\')]}</a>' +
+                            '</div>' +
+                        '</tpl>' +
+                    '<tpl elseif="this.arrayContains(this.getEntityRecord().get(\''+me.longType+'_status\'), \'closed\',\'saved\') == true && reftable_name == \'invoiceitem\' && reftablekey_id == 0">' +
+                        '<div>' +
+                            '<i>' +
+                                '<tpl if="Ext.isEmpty(cancel_userprofile_username)">' +
+                                    '{[this.translate(\'This line item is cancelled\')]}' +
+                                '<tpl else>' +
+                                    '{[this.translate(\'Cancelled by\')]}: {cancel_userprofile_username} {[Ext.Date.format(values.poitem_cancel_dt, NP.Config.getDefaultDateFormat())]}' +
+                                '</tpl>' +
+                            '</i>' +
+                            ' &nbsp; <a class="restoreLineBtn">{[this.translate(\'Restore\')]}</a>' +
+                        '</div>' +
+                    '</tpl>';
+        }
+
+        html += '</td>';
 
         return html;
     },
@@ -433,12 +473,20 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
     },
 
     buildGlCol: function() {
-        var me = this;
-        return '<td>' +
+        var me = this,
+            html;
+
+        html = '<td>' +
                 '<div>' +
-                    '{glaccount_number}' +
-                    '<tpl if="this.arrayContains(this.getEntityRecord().get(\''+me.longType+'_status\'), \'saved\',\'paid\',\'submitted\',\'sent\') == false">' +
-                        '<tpl if="this.showBudgetComparison()">' +
+                    '{glaccount_number}';
+
+        if (me.type == 'invoice') {
+            html += '<tpl if="this.arrayContains(this.getEntityRecord().get(\''+me.longType+'_status\'), \'saved\',\'paid\',\'submitted\',\'sent\') == false">';
+        } else {
+            html += '<tpl if="this.getEntityRecord().get(\''+me.longType+'_status\') !== \'draft\'">';
+        }
+        
+        html +=         '<tpl if="this.showBudgetComparison()">' +
                             '&nbsp;' +
                             '<tpl if="budget_variance < 0">' +
                                 '<img src="resources/images/budget_warning.gif" class="showBudgetBtn" />' +
@@ -456,7 +504,6 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                         '<div>{jbjobcode_name}</div>' +
                     '</tpl>' +
                     '<tpl if="this.showBudgetComparison()">' +
-                        // TODO: listen to clickshowjcbudget event and build detail popup
                         '&nbsp;<a class="showJcBudgetBtn">' +
                         '<tpl if="jbcontractbudget_amt - (jbcontractbudget_amt_actual + jbcontractbudget_amt_pnactual) < 0">' +
                             '<img src="resources/images/budget_warning.gif" />' +
@@ -467,6 +514,8 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                     '</tpl>' +
                 '</tpl>' +
             '</td>';
+
+        return html;
     },
 
     buildBudgetCol: function() {
@@ -504,8 +553,10 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
     },
 
     buildAmountCol: function() {
-        var me = this;
-        return '<td align="right">' +
+        var me = this,
+            html;
+
+        html = '<td align="right">' +
                 '{[this.renderCurrency(values.'+me.fieldPrefix+'_amount)]}' +
                 '<tpl if="this.isLineEditable()">' +
                     '<div>' +
@@ -521,8 +572,10 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                                 '<a href="#" class="editLineBtn">Edit</a>' +
                             '</tpl>' +
                         '</tpl>' +
-                    '</div>' +
-                    '<div>' +
+                    '</div>';
+
+        if (me.type == 'invoice') {
+            html += '<div>' +
                         '<tpl if="this.getEntityRecord().get(\''+me.longType+'_status\') != \'paid\'">' +
                             '<a class="deleteLineBtn">Delete</a> ' +
                         '</tpl>' +
@@ -536,8 +589,30 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
                     '<div>' +
                         '<a class="modifyGlBtn">Modify&nbsp;GL</a>' +
                     '</div>' +
-                '</tpl>' +
-            '</td>';
+                '</tpl>';
+        } else if (me.type == 'po') {
+            html += '</tpl>' +
+                '<tpl if="' + 
+                    '(' +
+                        'this.getEntityRecord().get(\'purchaseorder_status\') == \'saved\' ' +
+                        '&& invoice_id === null ' +
+                        '&& NP.Security.hasPermission(6031)' +
+                    ')' +
+                    ' || (' +
+                        'this.getEntityRecord().get(\'purchaseorder_status\') == \'forapproval\' ' +
+                        '&& this.getFormDataVal(\'is_approver\') ' +
+                        '&& NP.Security.hasPermission(6005)' +
+                    ')' +
+                '">' +
+                    '<div>' +
+                        '<a class="modifyGlBtn">Modify&nbsp;GL</a>' +
+                    '</div>' +
+                '</tpl>';
+        }
+        
+        html += '</td>';
+
+        return html;
     },
 
     buildFooter: function() {
@@ -590,13 +665,15 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
 
         me.addEvents('clicksplitline','clickeditline','clickeditsplit','clickmodifygl',
                         'clicklinkline','clickdeleteline','clickporef','clickshowbudget',
-                        'clickshowjcbudget');
+                        'clickshowjcbudget','clickinvoiceref','clickreceiptref','clickcancelline',
+                        'clickrestoreline');
 
         // Add a generic event handler on the body element to make things more efficient
         me.mon(Ext.getBody(), 'click', function(e, target) {
             var clickedEl  = Ext.get(target),
                 btnClasses = ['splitLineBtn','editLineBtn','editSplitBtn','modifyGlBtn','linkLineBtn',
-                                'deleteLineBtn','poRefBtn','showBudgetBtn','showJcBudgetBtn'];
+                                'deleteLineBtn','poRefBtn','showBudgetBtn','showJcBudgetBtn',
+                                'invoiceRefBtn','receiptRefBtn','cancelLineBtn','restoreLineBtn'];
             
             for (var i=0; i<btnClasses.length; i++) {
                 var btnClass = btnClasses[i];

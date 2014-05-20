@@ -69,6 +69,53 @@ class ReceiptService extends AbstractService {
 		return $this->receiptGateway->findReceiptsPendingPost($countOnly, $userprofile_id, $delegated_to_userprofile_id, $contextType, $contextSelection, $pageSize, $page, $sort);
 	}
 
+	/**
+	 * Cancels a line receipt
+	 */
+	public function cancelReceiptLine($rctitem_id) {
+		$errors = [];
+		$this->rctItemGateway->beginTransaction();
+		
+		try {
+			// Update the receipt line status to cancelled
+			$this->rctItemGateway->update([
+				'rctitem_id'     => $rctitem_id,
+				'rctitem_status' => 'cancelled'
+			]);
+
+			// Get receipt data
+			$receipt = $this->rctItemGateway->findValue('rctitem_id = ?', [$rctitem_id], ['receipt_id','poitem_id']);
+
+			// If there are no remaining line items that aren't cancelled, then update receipt status
+			$uncancelled = $this->findUncancelledLines($receipt['receipt_id']);
+			if (count($uncancelled) == 0) {
+				$this->receiptGateway->update([
+					'receipt_id'     => $receipt['receipt_id'],
+					'receipt_status' => 'cancelled'
+				]);
+			}
+
+			// Update poitem receipt flag
+			$this->poItemGateway->update([
+				'poitem_id'         => $receipt['poitem_id'],
+				'poitem_isReceived' => 0
+			]);
+		} catch(\Exception $e) {
+			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+		
+		if (count($errors)) {
+			$this->rctItemGateway->rollback();
+		} else {
+			$this->rctItemGateway->commit();
+		}
+		
+		return array(
+		    'success' => (count($errors)) ? false : true,
+		    'errors'  => $errors
+		);
+	}
+
 }
 
 ?>

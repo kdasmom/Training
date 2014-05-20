@@ -378,6 +378,31 @@ class UserprofileGateway extends AbstractGateway {
 
         return $this->adapter->query($select);
     }
+
+    /**
+     * Gets the parent role for a given user
+     */
+    public function findUserParentRole($userprofile_id) {
+    	$res = $this->adapter->query(
+    		Select::get()
+    			->columns([])
+    			->from(['ur'=>'userprofilerole'])
+    				->join(
+    					['t'=>'tree'],
+    					"t.tablekey_id = ur.role_id AND t.table_name = 'role'",
+    					[]
+    				)
+    				->join(
+    					['t2'=>'tree'],
+						't.tree_parent = t2.tree_id',
+						array('parent_role_id'=>'tablekey_id')
+					)
+				->whereEquals('ur.userprofile_id', '?'),
+    		[$userprofile_id]
+    	);
+
+    	return $res[0]['parent_role_id'];
+    }
 }
 
 ?>

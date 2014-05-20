@@ -6,8 +6,10 @@ namespace NP\po;
  *
  * @author Thomas Messier
  */
-class PurchaseOrderEntity extends \NP\core\AbstractEntity {
+class PurchaseOrderEntity extends \NP\core\AbstractEntity implements \NP\workflow\WorkflowableInterface {
 	protected $auditable = true;
+
+	protected $lines;
 	
 	protected $fields = array(
 		'purchaseorder_id'	 => array(
@@ -286,6 +288,41 @@ class PurchaseOrderEntity extends \NP\core\AbstractEntity {
 		}
 
 		return null;
+	}
+
+	public function setLines($lines) {
+		$this->lines = [];
+		foreach ($lines as $line) {
+			if (!($line instanceOf PoItemEntity)) {
+				$line = new PoItemEntity($line);
+			}
+			$this->lines[] = $line;
+		}
+	}
+
+	public function getLines() {
+		if ($this->lines === null) {
+			throw new \NP\core\Exception('Lines have not been instantiated for this invoice. Use setLines() before calling this method');
+		}
+		return $this->lines;
+	}
+
+	public function getPropertyId() {
+		return $this->property_id;
+	}
+
+	public function getAmount() {
+		$lines = $this->getLines();
+		$total = 0;
+		foreach ($lines as $line) {
+			$total += $line->getAmount();
+		}
+
+		return $total;
+	}
+
+	public function getApplicableRuleTypes() {
+		return ['purchaseorder','poitem','budget','vendor'];
 	}
 }
 ?>

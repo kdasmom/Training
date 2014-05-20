@@ -14,20 +14,24 @@ Ext.define('NP.view.shared.invoicepo.AbstractForwardWindow', {
     	'NP.view.shared.button.Cancel',
         'NP.view.shared.button.Message',
         'NP.view.shared.UserAssigner',
-        'NP.store.user.Userprofiles'
+        'NP.store.user.Userprofiles',
+        'NP.view.shared.YesNoField'
     ],
 
     layout     : 'fit',
     width      : 800,
-    height     : 450,
+    height     : 475,
     border     : false,
     modal      : true,
     minimizable: false,
     autoScroll : true,
+    isVendorFwd: false,
 
     initComponent: function() {
-    	var me         = this,
-            labelWidth = 150;
+    	var me = this;
+
+        // Set a default width for fields to be used in all functions
+        me.labelWidth = 150;
 
         me.title = NP.Translator.translate(me.getDisplayName() + ' Forward');
 
@@ -47,70 +51,7 @@ Ext.define('NP.view.shared.invoicepo.AbstractForwardWindow', {
                         type : 'vbox',
                         align: 'stretch'
                     },
-                    items: [
-                        {
-                            xtype     : 'displayfield',
-                            fieldLabel: NP.Translator.translate('Current Email Address'),
-                            labelWidth: labelWidth,
-                            value     : NP.Security.getUser().get('email_address')
-                        },{
-                            xtype     : 'displayfield',
-                            fieldLabel: NP.Translator.translate(me.getDisplayName() + ' Number'),
-                            labelWidth: labelWidth,
-                            value     : me.entity.get(me.getLongName() + '_ref')
-                        },{
-                            xtype     : 'radiogroup',
-                            fieldLabel: NP.Translator.translate('Forward To'),
-                            labelWidth: labelWidth,
-                            defaults  : { name: 'forward_to' },
-                            items     : [
-                                { boxLabel: NP.Translator.translate('User'), inputValue: 'user', checked: true },
-                                { boxLabel: NP.Translator.translate('Email Address'), inputValue: 'email' },
-                                { boxLabel: NP.Translator.translate('Vendor'), inputValue: 'vendor' }
-                            ],
-                            listeners: {
-                                change: me.changeForwardTo.bind(me)
-                            }
-                        },{
-                            xtype   : 'container',
-                            itemId  : me.getShortName() + 'ForwardCard',
-                            layout  : 'card',
-                            defaults: { labelAlign: 'top' },
-                            items   : [
-                                {
-                                    xtype     : 'shared.userassigner',
-                                    height    : 150,
-                                    allowBlank: false,
-                                    store     : {
-                                        type   : 'user.userprofiles',
-                                        service: 'UserService',
-                                        action : 'getForForward',
-                                        extraParams: {
-                                            table_name : me.getLongName(),
-                                            tablekey_id: me.entity.get(me.getLongName() + '_id')
-                                        },
-                                        sorters: [{
-                                            property: 'person_lastname'
-                                        }],
-                                        autoLoad: true
-                                    }
-                                },{
-                                    xtype     : 'textfield',
-                                    name      : 'email_address',
-                                    fieldLabel: NP.Translator.translate('Email'),
-                                    vtype     : 'email'
-                                }
-                            ]
-                        },{
-                            xtype     : 'textarea',
-                            name      : 'message',
-                            fieldLabel: NP.Translator.translate('Message'),
-                            labelAlign: 'top',
-                            margin    : '16 0 0 0',
-                            allowBlank: false,
-                            maxLength : 2000
-                        }
-                    ]
+                    items: me.getLeftColumn()
                 },
                 me.getRightColumn()
             ]
@@ -127,6 +68,129 @@ Ext.define('NP.view.shared.invoicepo.AbstractForwardWindow', {
                 me.mon(uncheckEl, 'click', me.checkBoxClick.bind(me));
             }
         });
+    },
+
+    getLeftColumn: function() {
+        var me  = this,
+            col = [
+                {
+                    xtype     : 'displayfield',
+                    fieldLabel: NP.Translator.translate('Current Email Address'),
+                    labelWidth: me.labelWidth,
+                    value     : NP.Security.getUser().get('email_address')
+                },{
+                    xtype     : 'displayfield',
+                    fieldLabel: NP.Translator.translate(me.getDisplayName() + ' Number'),
+                    labelWidth: me.labelWidth,
+                    value     : me.entity.get(me.getLongName() + '_ref')
+                }
+            ];
+
+        if (me.isVendorFwd) {
+            col.push(
+                {
+                    xtype     : 'displayfield',
+                    fieldLabel: NP.Translator.translate('Vendor Name'),
+                    labelWidth: me.labelWidth,
+                    value     : me.vendor.get('vendor_name')
+                },{
+                    xtype: 'hidden',
+                    name : 'forward_to',
+                    value: 'vendor'
+                }
+            );
+        } else {
+            col.push({
+                xtype     : 'radiogroup',
+                fieldLabel: NP.Translator.translate('Forward To'),
+                labelWidth: me.labelWidth,
+                defaults  : { name: 'forward_to' },
+                columns   : [50,105,70],
+                items     : [
+                    { boxLabel: NP.Translator.translate('User'), inputValue: 'user', checked: true },
+                    { boxLabel: NP.Translator.translate('Email Address'), inputValue: 'email' },
+                    { boxLabel: NP.Translator.translate('Vendor'), inputValue: 'vendor' }
+                ],
+                listeners: {
+                    change: me.changeForwardTo.bind(me)
+                }
+            });
+        }
+
+        col.push(me.getRecipientOptions());
+
+        if (me.isVendorFwd) {
+            col.push({
+                xtype     : 'shared.yesnofield',
+                fieldLabel: NP.Translator.translate('Combine split lines'),
+                labelWidth: me.labelWidth,
+                name      : 'combine_split',
+                value     : 0
+            });
+        } else {
+            col.push({
+                xtype: 'hidden',
+                name : 'combine_split',
+                value: 0
+            });
+        }
+
+        col.push({
+            xtype     : 'textarea',
+            name      : 'message',
+            fieldLabel: NP.Translator.translate('Message'),
+            labelAlign: 'top',
+            margin    : '16 0 0 0',
+            allowBlank: false,
+            maxLength : 2000
+        });
+
+        return col;
+    },
+
+    getRecipientOptions: function() {
+        var me         = this,
+            emailField = {
+                xtype     : 'textfield',
+                name      : 'email_address',
+                fieldLabel: NP.Translator.translate('Email'),
+                labelWidth: me.labelWidth,
+                vtype     : 'email',
+                allowBlank: (me.isVendorFwd) ? false : true,
+                value     : (me.isVendorFwd) ? me.vendor.get('email_address') : ''
+            };
+
+        if (me.isVendorFwd) {
+            return emailField;
+        } else {
+            return {
+                xtype     : 'container',
+                itemId    : me.getShortName() + 'ForwardCard',
+                layout    : 'card',
+                defaults  : { labelAlign: 'top' },
+                items     : [
+                    {
+                        xtype     : 'shared.userassigner',
+                        height    : 150,
+                        allowBlank: false,
+                        store     : {
+                            type   : 'user.userprofiles',
+                            service: 'UserService',
+                            action : 'getForForward',
+                            extraParams: {
+                                table_name : me.getLongName(),
+                                tablekey_id: me.entity.get(me.getLongName() + '_id')
+                            },
+                            sorters: [{
+                                property: 'person_lastname'
+                            }],
+                            autoLoad: true
+                        }
+                    },
+                    emailField
+                ]
+            };
+        }
     },
 
     getRightColumn: function() {
@@ -187,10 +251,32 @@ Ext.define('NP.view.shared.invoicepo.AbstractForwardWindow', {
         });
     },
 
+    getCombineSplit: function() {
+        var me           = this,
+            combineSplit = me.down('form').getForm().findField('combine_split');
+
+        if (combineSplit.getGroupValue) {
+            return combineSplit.getGroupValue();
+        } else {
+            return combineSplit.getValue();
+        }
+    },
+
+    getForwardTo: function() {
+        var me        = this,
+            forwardTo = me.down('form').getForm().findField('forward_to');
+
+        if (forwardTo.getGroupValue) {
+            return forwardTo.getGroupValue();
+        } else {
+            return forwardTo.getValue();
+        }
+    },
+
     getForwardValue: function() {
         var me         = this,
             form       = me.down('form').getForm(),
-            forwardTo  = form.findField('forward_to').getGroupValue(),
+            forwardTo  = me.getForwardTo(),
             val;
 
         if (forwardTo == 'user') {
@@ -203,31 +289,30 @@ Ext.define('NP.view.shared.invoicepo.AbstractForwardWindow', {
     },
 
     getIncludes: function() {
-        var me       = this,
-            includes = me.down('[name="include_group"]');
+        var me            = this,
+            includes      = me.down('[name="include_group"]'),
+            includeSubmit = [];
 
         if (includes) {
             includes = includes.getValue();
             if (includes.include) {
                 if (Ext.isArray(includes.include)) {
-                    return includes.include;
+                    includeSubmit = includes.include;
                 } else {
-                    return [includes.include];
+                    includeSubmit = [includes.include];
                 }
             }
         }
 
-        return [];
+        if (me.getCombineSplit() == 1) {
+            includeSubmit.push('combineSplit');
+        }
+
+        return includeSubmit;
     },
 
     isValid: function() {
-        var me         = this,
-            form       = me.down('form').getForm(),
-            isValid    = form.isValid(),
-            emailField = form.findField('email_address'),
-            forwardTo  = form.findField('forward_to').getGroupValue();
-
-        return isValid;
+        return this.down('form').getForm().isValid();
     },
 
     getDisplayName: function() {

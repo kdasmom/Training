@@ -32,6 +32,34 @@ class PnCustomFieldDataGateway extends AbstractGateway {
 		return ($res[0]['total'] > 0);
 	}
 
+	public function findCustomFieldValue($customfield_name, $customfielddata_table_id, $customfield_status=1) {
+		$select = Select::get()
+					->column('customfielddata_value')
+					->from(['cfd'=>'pncustomfielddata'])
+						->join(
+							['cf'=>'pncustomfields'],
+							'cfd.customfield_id = cf.customfield_id',
+							[]
+						)
+					->whereEquals('cf.customfield_name', '?')
+					->whereEquals('cfd.customfielddata_table_id', '?');
+
+		$params = [$customfield_name, $customfielddata_table_id];
+
+		if (!empty($customfield_status)) {
+			$select->whereEquals('cf.customfield_status', '?');
+			$params[] = $customfield_status;
+		}
+
+		$res = $this->adapter->query($select, $params);
+
+		if (count($res)) {
+			return $res[0]['customfielddata_value'];
+		} else {
+			return null;
+		}
+	}
+
 	/**
 	 * Gets service fields and values for a PO
 	 */

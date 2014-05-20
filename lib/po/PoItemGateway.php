@@ -21,33 +21,130 @@ class PoItemGateway extends AbstractGateway {
 		$this->configService = $configService;
 	}
 
-	public function findLines($purchaseorder_id) {
-		$select = new sql\PoItemSelect();
+	public function findLines($purchaseorder_id, $combineSplit=false) {
+		$params = [$purchaseorder_id];
 
-		$select->allColumns('pi')
-				->columnBudgetVariance($this->configService->get('PN.Intl.budgetCompareWithTax', '1'))
-				->join(new sql\join\PoItemPurchaseorderJoin())
-				->join(new sql\join\PoItemInvoiceItemJoin(['invoiceitem_id','invoiceitem_amount','invoice_id']))
-				->join(new \NP\invoice\sql\join\InvoiceItemInvoiceJoin(['invoice_ref'], Select::JOIN_LEFT))
-				->join(new sql\join\PoItemPropertyJoin())
-				->join(new sql\join\PoItemGlAccountJoin())
-				->join(new sql\join\PoItemUnitJoin())
-				->join(new sql\join\PoItemDfSplitJoin())
-				->join(new sql\join\PoItemJobAssociationJoin())
-				->join(new \NP\jobcosting\sql\join\JobAssociationJbContractJoin())
-				->join(new \NP\jobcosting\sql\join\JobAssociationJbChangeOrderJoin())
-				->join(new \NP\jobcosting\sql\join\JobAssociationJbJobCodeJoin())
-				->join(new \NP\jobcosting\sql\join\JobAssociationJbPhaseCodeJoin())
-				->join(new \NP\jobcosting\sql\join\JobAssociationJbCostCodeJoin())
-				->join(new \NP\jobcosting\sql\join\JbContractJbContractBudgetJoin(
-					$this->configService->get('PN.jobcosting.useJobBudgets', '0')
-				))
-				->join(new \NP\shared\sql\join\EntityLineGlAccountYearJoin('poitem'))
-				->join(new \NP\shared\sql\join\EntityLineBudgetJoin('poitem'))
-				->whereEquals('pi.purchaseorder_id', '?')
-				->order('pi.poitem_linenum ASC');
+		// If not combining lines, do "normal" query getting most info for the line item
+		if (!$combineSplit) {
+			$select = new sql\PoItemSelect();
 
-		return $this->adapter->query($select, array($purchaseorder_id));
+			$select->allColumns('pi')
+					->columnBudgetVariance($this->configService->get('PN.Intl.budgetCompareWithTax', '1'))
+					->join(new sql\join\PoItemPurchaseorderJoin())
+					->join(new sql\join\PoItemInvoiceItemJoin(['invoiceitem_id','invoiceitem_amount','invoice_id']))
+					->join(new \NP\invoice\sql\join\InvoiceItemInvoiceJoin(['invoice_ref'], Select::JOIN_LEFT))
+					->join(new sql\join\PoItemRctItemJoin(['rctitem_status']))
+					->join(new sql\join\RctItemReceiptJoin(['receipt_ref','receipt_createdt','receipt_status']))
+					->join(new sql\join\ReceiptUserprofileJoin(['receipt_creator'=>'userprofile_username']))
+					->join(
+						['upc'=>'userprofile'],
+						'pi.poitem_cancel_userprofile_id = upc.userprofile_id',
+						['cancel_userprofile_username'=>'userprofile_username'],
+						Select::JOIN_LEFT
+					)
+					->join(new sql\join\PoItemPropertyJoin())
+					->join(new sql\join\PoItemGlAccountJoin())
+					->join(new sql\join\PoItemUnitJoin())
+					->join(new sql\join\PoItemDfSplitJoin())
+					->join(new sql\join\PoItemJobAssociationJoin())
+					->join(new \NP\jobcosting\sql\join\JobAssociationJbContractJoin())
+					->join(new \NP\jobcosting\sql\join\JobAssociationJbChangeOrderJoin())
+					->join(new \NP\jobcosting\sql\join\JobAssociationJbJobCodeJoin())
+					->join(new \NP\jobcosting\sql\join\JobAssociationJbPhaseCodeJoin())
+					->join(new \NP\jobcosting\sql\join\JobAssociationJbCostCodeJoin())
+					->join(new \NP\jobcosting\sql\join\JbContractJbContractBudgetJoin(
+						$this->configService->get('PN.jobcosting.useJobBudgets', '0')
+					))
+					->join(new \NP\shared\sql\join\EntityLineGlAccountYearJoin('poitem'))
+					->join(new \NP\shared\sql\join\EntityLineBudgetJoin('poitem'))
+					->whereEquals('pi.purchaseorder_id', '?')
+					->order('pi.poitem_linenum ASC');
+		}
+		// Otherwise, when combining lines, retrieve "simple" list so that group by works properly
+		// (must exclude property, GL, etc.)
+		else {
+			$select = Select::get()
+						->columns([
+							'poitem_description', 
+							'poitem_description_alt', 
+							'poitem_unitprice',
+							'vcitem_number',
+							'vcorder_aux_part_id',
+							'vcitem_uom',
+							'universal_field1',
+							'universal_field2',
+							'universal_field3',
+							'universal_field4',
+							'universal_field5',
+							'universal_field6',
+							'universal_field7',
+							'universal_field8',
+							'poitem_amount',
+							'poitem_shipping',
+							'poitem_salestax',
+							'poitem_quantity'
+						])
+						->from('poitem')
+						->whereEquals('purchaseorder_id', '?')
+						->whereEquals('poitem_split', 0)
+						->union(
+							Select::get()
+								->columns([
+									'poitem_description', 
+									'poitem_description_alt', 
+									'poitem_unitprice',
+									'vcitem_number',
+									'vcorder_aux_part_id',
+									'vcitem_uom',
+									new Expression('pc.universal_field1'),
+									new Expression('pc.universal_field2'),
+									new Expression('pc.universal_field3'),
+									new Expression('pc.universal_field4'),
+									new Expression('pc.universal_field5'),
+									new Expression('pc.universal_field6'),
+									new Expression('pc.universal_field7'),
+									new Expression('pc.universal_field8'),
+									'poitem_amount' => new Expression('SUM(pi.poitem_amount)'),
+									'poitem_shipping' => new Expression('SUM(pi.poitem_shipping)'),
+									'poitem_salestax' => new Expression('SUM(pi.poitem_salestax)'),
+									'poitem_quantity' => new Expression('SUM(pi.poitem_quantity)')
+								])
+								->from(['pi'=>'poitem'])
+									->join(
+										[
+											'pc' => Select::get()
+													->columns([
+														'universal_field1',
+														'universal_field2',
+														'universal_field3',
+														'universal_field4',
+														'universal_field5',
+														'universal_field6',
+														'universal_field7',
+														'universal_field8',
+														'poitem_linenum'
+													])
+													->from('poitem')
+													->whereEquals('purchaseorder_id', '?')
+													->order('poitem_linenum')
+													->limit(1)
+										],
+										null,
+										[],
+										Select::JOIN_CROSS
+									)
+								->whereEquals('pi.purchaseorder_id', '?')
+								->whereEquals('pi.poitem_split', 1)
+								->group('pi.poitem_description, pi.poitem_description_alt, pi.poitem_unitprice, pi.vcitem_number,
+										pi.vcorder_aux_part_id, pi.vcitem_uom, pc.universal_field1, pc.universal_field2,
+										pc.universal_field3, pc.universal_field4, pc.universal_field5, pc.universal_field6,
+										pc.universal_field7, pc.universal_field8')
+						);
+
+			array_push($params, $purchaseorder_id, $purchaseorder_id);
+		}
+
+		return $this->adapter->query($select, $params);
 	}
 
 	/**
@@ -160,6 +257,49 @@ class PoItemGateway extends AbstractGateway {
 		);
 
 		return array_pop($res);
+	}
+
+	public function findLinkedItems($purchaseorder_id) {
+		return $this->adapter->query(
+			Select::get()
+				->from('poitem')
+				->whereEquals('purchaseorder_id', '?')
+				->whereEquals('reftable_name', "'invoiceitem'")
+				->whereNotEquals('reftablekey_id', 0)
+				->whereIsNotNull('reftablekey_id'),
+			[$purchaseorder_id]
+		);
+	}
+
+	public function findUnlinkedItems($purchaseorder_id) {
+		return $this->adapter->query(
+			Select::get()
+				->from('poitem')
+				->whereEquals('purchaseorder_id', '?')
+				->whereIsNull('reftable_name')
+				->whereIsNull('reftablekey_id'),
+			[$purchaseorder_id]
+		);
+	}
+
+	/**
+	 * Finds lines on an PO that would be invalid if the property were changed to
+	 * the property passed in
+	 */
+	public function findInvalidLinesForProperty($purchaseorder_id, $property_id) {
+		$select = Select::get()
+					->column('poitem_id')
+					->from(['pi'=>'poitem'])
+						->join(new sql\join\PoItemPurchaseorderJoin())
+					->whereEquals('pi.purchaseorder_id', '?')
+					->whereEquals('pi.property_id', 'p.property_id')
+					->whereExists(
+						Select::get()->from(['pg'=>'propertyglaccount'])
+									->whereEquals('pg.glaccount_id', 'pi.glaccount_id')
+									->whereEquals('pg.property_id', '?')
+					);
+
+		return $this->adapter->query($select, [$purchaseorder_id, $property_id]);
 	}
 }
 

@@ -5,13 +5,63 @@ use NP\core\AbstractService;
 
 use NP\system\ConfigService;
 use NP\security\SecurityService;
+use NP\invoice\InvoiceService;
+use NP\po\PoService;
+use NP\po\ReceiptService;
+use NP\notification\NotificationService;
 
 use NP\workflow\WfRuleGateway;
 use NP\user\UserprofileGateway;
 use NP\core\db\Where;
 
 class WFRuleService extends AbstractService {
-    protected $configService, $securityService;
+    protected $configService, $securityService, $invoiceService, $poService, $receiptService, $notificationService;
+
+    protected $ruleTypeMap = [
+		1  => 'TotalAmount',
+		2  => 'TotalAmount',
+		3  => 'BudgetByGl',
+		4  => 'Delegation',
+		5  => 'ApprovalNotifcation',
+		6  => 'Vendor',
+		7  => 'ItemByGl',
+		8  => 'ItemByGl',
+		9  => 'BudgetByGlCategory',
+		10 => 'ItemByGlCategory',
+		11 => 'ItemByGlCategory',
+		12 => 'BudgetOverageNotification',
+		13 => 'YearlyBudgetByGl',
+		14 => 'YearlyBudgetByGlCategory',
+		15 => 'OptionalWorkflow',
+		16 => 'Vendor',
+		20 => 'ConvertedInvoice',
+		21 => 'ItemByJob',
+		22 => 'ItemByJob',
+		23 => 'TotalAmount',
+		24 => 'ItemByContract',
+		25 => 'ItemByContract',
+		26 => 'ItemByContract',
+		27 => 'ItemByContract',
+		28 => 'InvoiceTotalByPayBy',
+		29 => 'YtdBudgetPctByGl',
+		30 => 'YtdBudgetPctByGlCategory',
+		31 => 'MtdBudgetPctByGl',
+		32 => 'MtdBudgetPctByGlCategory',
+		33 => 'YtdBudgetByGl',
+		34 => 'YtdBudgetByGlCategory',
+		35 => 'ItemByDept',
+		36 => 'ItemByDept',
+		37 => 'ItemByGl',
+		38 => 'ItemByGlCategory'
+    ];
+
+    public function __construct(InvoiceService $invoiceService, PoService $poService, ReceiptService $receiptService,
+    							NotificationService $notificationService) {
+		$this->invoiceService      = $invoiceService;
+		$this->poService           = $poService;
+		$this->receiptService      = $receiptService;
+		$this->notificationService = $notificationService;
+    }
 
     public function setConfigService(ConfigService $configService) {
         $this->configService = $configService;
@@ -592,5 +642,553 @@ class WFRuleService extends AbstractService {
 		}
 
 		return $units;
+	}
+
+	public function requiresApproval($table_name, $tablekey_id) {
+		$userprofile_id = $this->securityService->getUserId();
+
+		// Determine the property classes to use based on the entity type
+		$entityVars = $this->getEntityVars($table_name);
+
+		$entityData = $this->$entityVars['service']->get($tablekey_id);
+		$entity = new $entityVars['class']($entityData);
+		$entity->setLines($entityData['lines']);
+		$rules = $this->getActiveRules($entity, $userprofile_id, true);
+
+		return (count($rules) > 0);
+	}
+
+	public function getActiveRules(\NP\workflow\WorkflowableInterface $entity, $userprofile_id, $firstOnly=false) {
+		// Get rules that are applicable to this particular entity and user
+		$rules = $this->wfRuleGateway->findPossibleRules($entity, $userprofile_id);
+
+		// Track rules that test active
+		$activeRules = [];
+
+		$fields      = array_keys($entity->getFields());
+		$pkField     = $fields[0];
+		$tablekey_id = $entity->$pkField;
+		$table_name  = str_replace('_id', '', $pkField);
+
+		// Check if any master rule has already been approved for this entity
+		$hasMasterApproval = $this->approveGateway->hasMasterRuleApproval($table_name, $tablekey_id);
+
+		// Loop through rules
+		foreach ($rules as $rule) {
+			// Only check the rule if there has been no master rule approval or if the rule
+			// is a master rule
+			if (!$hasMasterApproval || $rule['ismaster'] == 1) {
+				// Get properties assigned to the rule
+				$properties  = $this->wfRuleTargetGateway->find('wfrule_id = ?', [$rule['wfrule_id']], null, ['tablekey_id']);
+				$properties  = \NP\util\Util::valueList($properties, 'tablekey_id', true);
+
+				// Create rule entity object
+				$ruleEntity  = new WFRuleEntity($rule);
+
+				// Create rule type object
+				$ruleType = $this->ruleTypeMap[$rule['type_id_alt']];
+				$ruleType = "NP\\workflow\\ruletype\\{$ruleType}";
+
+				if ($entity instanceOf \NP\po\PoEntity) {
+					$entityService = $this->poService;
+				} else if ($entity instanceOf \NP\invoice\InvoiceEntity) {
+					$entityService = $this->invoiceService;
+				} else if ($entity instanceOf \NP\receipt\ReceiptEntity) {
+					$entityService = $this->receiptService;
+				}
+
+				$ruleType = new $ruleType($this->gatewayManager, $this->configService, $entityService);
+
+				// Get the scope and add it to the rule entity
+				$scope = $ruleType->getScope($rule['wfrule_id']);
+				$ruleEntity->setScope($scope);
+
+				// Determine entity(ies) you're going to test against the rules (header or lines)
+				$entities = ($ruleType->isLineRule()) ? $entity->getLines() : [$entity];
+
+				// Loop through entities (if dealing with header, will always be just one)
+				foreach ($entities as $obj) {
+					// Test rule against the entity
+					if (array_key_exists($obj->property_id, $properties) && $ruleType->isActive($obj, $ruleEntity)) {
+						// If workflow is needed, add to the list of rules
+						$activeRules[] = [
+							'rule'     => $ruleEntity,
+							'ruleType' => $ruleType,
+							'entity'   => $obj
+						];
+						if ($firstOnly) {
+							return $activeRules;
+						}
+					}
+				}
+			}
+		}
+
+		// Return all active rules
+		return $activeRules;
+	}
+
+	private function getEntityVars($table_name) {
+		if ($table_name == 'purchaseorder') {
+			$entityClass = 'NP\\po\\PurchaseOrderEntity';
+			$service     = 'poService';
+			$displayName = 'Purchase Order';
+			$gateway     = 'PurchaseOrder';
+		} else if ($table_name == 'invoice') {
+			$entityClass = 'NP\\invoice\\InvoiceEntity';
+			$service     = 'invoiceService';
+			$displayName = 'Invoice';
+			$gateway     = $displayName;
+		} else if ($table_name == 'receipt') {
+			$entityClass = 'NP\\receipt\\ReceiptEntity';
+			$service     = 'receiptService';
+			$displayName = 'Receipt';
+			$gateway     = $displayName;
+		}
+
+		return [
+			'class'       => $entityClass,
+			'service'     => $service,
+			'displayName' => $displayName,
+			'gateway'     => "{$gateway}Gateway"
+		];
+	}
+
+	/**
+	 * Submits an entity for approval
+	 */
+	public function submitForApproval($table_name, $tablekey_id, $userprofile_id=null, $delegation_to_userprofile_id=null, $isAuto=false, $nestLevel=0) {
+		if ($userprofile_id === null) {
+			$userprofile_id = $this->securityService->getUserId();
+		}
+
+		if ($delegation_to_userprofile_id === null) {
+			$delegation_to_userprofile_id = $this->securityService->getDelegatedUserId();
+		}
+
+		// Determine the property classes to use based on the entity type
+		$entityVars = $this->getEntityVars($table_name);
+
+		$errors = [];
+		$this->approveGateway->beginTransaction();
+		
+		try {
+			$entityData = $this->$entityVars['service']->get($tablekey_id);
+			$entity     = new $entityVars['class']($entityData);
+			$entity->setLines($entityData['lines']);
+
+			$rules = $this->getActiveRules($entity, $userprofile_id, true);
+
+			foreach ($rules as $rule) {
+				$rule_id = $rule['rule']->wfrule_id;
+				$routes  = $this->wfActionGateway->findRoutesByRuleAndUser($rule_id, $userprofile_id);
+				foreach ($routes as $route) {
+					if ($route['wfaction_nextlevel'] == 'Y') {
+						$route['wfaction_receipient_tablename']   = 'role';
+						$route['wfaction_receipient_tablekey_id'] = $this->userprofileGateway->findUserParentRole($userprofile_id);
+					}
+
+					// Add the approve record
+					$approvetype_id = $this->approveTypeGateway->getIdByName('submitted');
+
+					$msg = $rule['ruleType']->getDescription();
+					$msg = str_replace('{entity}', $entityVars['displayName'], $msg);
+					
+					$unit_id = null;
+					if (array_key_exists('unit_id', $rule['entity']->getFields())) {
+						$unit_id = $rule['entity']->unit_id;
+					}
+
+					$glaccount_id = null;
+					if (array_key_exists('glaccount_id', $rule['entity']->getFields())) {
+						$glaccount_id = $rule['entity']->glaccount_id;
+					}
+
+					$wfruletarget_id = $this->wfRuleTargetGateway->findValue(
+						['wfrule_id' => '?', 'tablekey_id' => '?'],
+						[$rule_id, $rule['entity']->property_id],
+						'wfruletarget_id'
+					);
+
+					$approve = new \NP\workflow\ApproveEntity([
+						'table_name'                   => $table_name,
+						'tablekey_id'                  => $tablekey_id,
+						'userprofile_id'               => $userprofile_id,
+						'delegation_to_userprofile_id' => $delegation_to_userprofile_id,
+						'approve_message'              => $msg,
+						'approvetype_id'               => $approvetype_id,
+						'wfrule_id'                    => $rule_id,
+						'forwardto_tablename'          => $route['wfaction_receipient_tablename'],
+						'forwardto_tablekeyid'         => $route['wfaction_receipient_tablekey_id'],
+						'wfaction_id'                  => $route['wfaction_id'],
+						'glaccount_id'                 => $glaccount_id,
+						'wftarget_id'                  => $wfruletarget_id,
+						'unit_id'                      => $unit_id,
+						'transaction_id'               => $this->approveGateway->currentId()
+					]);
+
+					$errors = $this->entityValidator->validate($approve);
+					if (!count($errors)) {
+						$this->approveGateway->save($approve);
+					} else {
+						$this->loggingService->log('error', 'Error validating approve entity while submitting entity for approval', $errors);
+						throw new \NP\core\Exception('Error submitting entity for approval');
+					}
+				}
+			}
+
+			$gtw         = $entityVars['gateway'];
+			$pkField     = "{$table_name}_id";
+			$statusField = "{$table_name}_status";
+
+			// Update the entity status to forapproval
+			$this->$gtw->update([
+				$pkField     => $tablekey_id,
+				$statusField => 'forapproval'
+			]);
+
+			// See if anything that got submitted can be auto-approved
+			if ($this->configService->get('PN.Main.AutoApprove', '0') == 1) {
+				$skipSave = $this->configService->get('PN.InvoiceOptions.SKIPSAVE', '0');
+				$status   = $this->$gtw->findValue([$pkField => '?'], [$tablekey_id], $statusField);
+
+				// Conditions for doing auto-approval
+				if (
+					(
+						$table_name == 'invoice'
+						&& !(
+							($skipSave == 0 && $status == 'saved')
+							|| ($skipSave == 1 && $status == 'submitted')
+						)
+					)
+					|| (
+						$table_name == 'purchaseorder'
+						&& $status != 'saved'
+					)
+				) {
+					$approvers = $this->approveGateway->findAutoApprovers($table_name, $tablekey_id);
+					$this->loggingService->log('global', 'auto approvers', ['auto'=>$approvers]);
+					foreach ($approvers as $approver) {
+						$result = $this->approve($table_name, $tablekey_id, $approver['userprofile_id'], $approver['delegation_to_userprofile_id'], true, $nestLevel);
+						if (!$result['success']) {
+							throw new \NP\core\Exception('Error auto approving an entity');
+						}
+					}
+				}
+			}
+		} catch(\Exception $e) {
+			$errors[] = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+		
+		if (count($errors)) {
+			$this->approveGateway->rollback();
+		} else {
+			$this->approveGateway->commit();
+		}
+		
+		return array(
+		    'success' => (count($errors)) ? false : true,
+		    'errors'  => $errors
+		);
+	}
+
+	/**
+	 * Approves an entity for the current user
+	 */
+	public function approve($table_name, $tablekey_id, $userprofile_id=null, $delegation_to_userprofile_id=null, $isAuto=false, $nestLevel=0) {
+		if ($userprofile_id === null) {
+			$userprofile_id = $this->securityService->getUserId();
+		}
+
+		if ($delegation_to_userprofile_id === null) {
+			$delegation_to_userprofile_id = $this->securityService->getDelegatedUserId();
+		}
+
+		// Get all approvable items by the current user for this entity
+		$approvables = $this->approveGateway->findApprovableRecords(
+			$table_name,
+			$tablekey_id,
+			$userprofile_id,
+			$delegation_to_userprofile_id
+		);
+
+		$approvetype_id = $this->approveTypeGateway->getIdByName('approved');
+
+		$errors = [];
+		$this->approveGateway->beginTransaction();
+		
+		try {
+			// Loop through approvable items to approve them one by one
+			foreach ($approvables as $approvable) {
+				$msg = '';
+				if ($userprofile_id != $delegation_to_userprofile_id) {
+					$user    = $this->userprofileGateway->findById($userprofile_id, ['userprofile_username']);
+					$delUser = $this->userprofileGateway->findById($delegation_to_userprofile_id, ['userprofile_username']);
+
+					$msg = " ({$user['userprofile_username']} approved on behalf of {$delUser['userprofile_username']})";
+				}
+
+				$approve = new \NP\workflow\ApproveEntity([
+					'table_name'                   => $table_name,
+					'tablekey_id'                  => $tablekey_id,
+					'userprofile_id'               => $userprofile_id,
+					'delegation_to_userprofile_id' => $delegation_to_userprofile_id,
+					'approve_message'              => $msg,
+					'approvetype_id'               => $approvetype_id,
+					'budget_id'                    => $approvable['budget_id'],
+					'budget_variance'              => $approvable['budget_variance'],
+					'wfrule_id'                    => $approvable['wfrule_id'],
+					'auto_approve'                 => ($isAuto) ? 1 : 0,
+					'glaccount_id'                 => $approvable['glaccount_id'],
+					'wftarget_id'                  => $approvable['wftarget_id'],
+					'transaction_id'               => $this->approveGateway->currentId()
+				]);
+
+				$errors = $this->entityValidator->validate($approve);
+				if (!count($errors)) {
+					$this->approveGateway->save($approve);
+				} else {
+					$this->loggingService->log('error', 'Error validating approve entity while submitting entity for approval', $errors);
+					throw new \NP\core\Exception('Error submitting entity for approval');
+				}
+
+				$this->approveGateway->update([
+					'approve_id'     => $approvable['approve_id'],
+					'approve_status' => 'inactive'
+				]);
+			}
+
+			// Add a status alert for approving the entity
+			if ($table_name == 'purchaseorder') {
+				$this->notificationService->addStatusAlert($tablekey_id, 'Status Alert: PO Approved');
+			} else if ($table_name == 'invoice') {
+				$this->notificationService->addStatusAlert($tablekey_id, 'Invoice Approved');
+			}
+
+			// If this isn't an auto-approval, submit the entity for approval again
+			// based on the current user
+			$this->loggingService->log('global', 'nest level', ['nestLevel'=>$nestLevel]);
+			if (!$isAuto) {
+				// Minimize the amount of recursion in case an infinite loop happens due to a bug
+				// We don't want the server to crash on account of that
+				if ($nestLevel <= 15) {
+					$nestLevel++;
+					$result = $this->submitForApproval($table_name, $tablekey_id, $userprofile_id, $delegation_to_userprofile_id, $isAuto, $nestLevel);
+					if (!$result['success']) {
+						throw new \NP\core\Exception('Error submitting entity for approval after approving it');
+					}
+				} else {
+					throw new \NP\core\Exception('Too much recursion approving an entity, must be a bug in workflow');
+				}
+			}
+
+			// If entity is fully approved, change it to a new status
+			if (!$this->approveGateway->hasPendingApprovals($table_name, $tablekey_id)) {
+				// If dealing with a PO, release the PO
+				if ($table_name == 'purchaseorder') {
+					$this->poService->releasePo($tablekey_id);
+				}
+				// If dealing with an invoice, status change depends on setting
+				else if ($table_name == 'invoice') {
+					$skipSave = $this->configService->get('PN.InvoiceOptions.SKIPSAVE', '0');
+					if ($skipSave == 1) {
+						$this->invoiceGateway->update([
+							'invoice_id'            => $tablekey_id,
+							'invoice_status'        => 'submitted',
+							'invoice_submitteddate' => \NP\util\Util::formatDateForDB()
+						]);
+					} else {
+						$this->invoiceGateway->update([
+							'invoice_id'     => $tablekey_id,
+							'invoice_status' => 'saved'
+						]);
+					}
+
+					// Add a status alert for completing the invoice
+					$this->notificationService->addStatusAlert($tablekey_id, 'Status Alert: Invoice Completed');
+				}
+			}
+		} catch(\Exception $e) {
+			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+		
+		if (count($errors)) {
+			$this->approveGateway->rollback();
+		} else {
+			$this->approveGateway->commit();
+		}
+		
+		return array(
+		    'success' => (count($errors)) ? false : true,
+		    'errors'  => $errors
+		);
+	}
+
+	/**
+	 * Rejects an entity
+	 */
+	public function reject($table_name, $tablekey_id, $rejectionnote_id, $reject_note) {
+		$entityVars = $this->getEntityVars($table_name);
+		$gtw        = $entityVars['gateway'];
+
+		$errors = [];
+		$this->$gtw->beginTransaction();
+		
+		try {
+			$now                          = \NP\util\Util::formatDateForDB();
+			$userprofile_id               = $this->securityService->getUserId();
+			$delegation_to_userprofile_id = $this->securityService->getDelegatedUserId();
+
+			$entity = $this->$gtw->findSingle(
+				"{$table_name}_id = ?",
+				[$tablekey_id],
+				["{$table_name}_status","{$table_name}_reject_note"]
+			);
+			$newStatus = 'rejected';
+
+			// If there's an existing note, prepend it to the new one
+			$entity_reject_note = $entity["{$table_name}_reject_note"];
+			if (!empty($entity_reject_note)) {
+				$reject_note = "{$entity_reject_note}<br />$reject_note";
+			}
+
+			// Update the invoice record with the new status and note
+			$this->$gtw->update([
+				"{$table_name}_id"          => $tablekey_id,
+				"{$table_name}_status"      => $newStatus,
+				"{$table_name}_reject_note" => $reject_note
+			]);
+
+			// Audit the status change
+			$this->$entityVars['service']->audit([
+				'tablekey_id'                  => $tablekey_id,
+				'userprofile_id'               => $userprofile_id,
+				'delegation_to_userprofile_id' => $delegation_to_userprofile_id,
+				'field_name'                   => "{$table_name}_status",
+				'field_new_value'              => $entity["{$table_name}_status"],
+				'field_old_value'              => $newStatus
+			], $table_name, $newStatus);
+
+			$approvetype_id = $this->approveTypeGateway->getIdByName('rejected');
+
+			// If entity is pending approval, run this
+			if ($entity["{$table_name}_status"] == 'forapproval') {
+				$msg = 'Invoice Rejected';
+				if ($userprofile_id != $delegation_to_userprofile_id) {
+					$user    = $this->userprofileGateway->findById($userprofile_id, ['userprofile_username']);
+					$delUser = $this->userprofileGateway->findById($delegation_to_userprofile_id, ['userprofile_username']);
+
+					$msg = " ({$user['userprofile_username']} approved on behalf of {$delUser['userprofile_username']})";
+				}
+
+				// Save an approve record
+				$approve = new \NP\workflow\ApproveEntity([
+					'table_name'                   => $table_name,
+					'tablekey_id'                  => $tablekey_id,
+					'userprofile_id'               => $userprofile_id,
+					'delegation_to_userprofile_id' => $delegation_to_userprofile_id,
+					'approve_message'              => $msg,
+					'approvetype_id'               => $approvetype_id,
+					'transaction_id'               => $this->approveGateway->currentId()
+				]);
+
+				$errors = $this->entityValidator->validate($approve);
+				if (count($errors)) {
+					$this->loggingService->log('global', 'Invalid approve record', $errors);
+					throw new \NP\core\Exception('Error saving approve record while post rejecting an invoice');
+				}
+
+				$this->approveGateway->save($approve);
+
+				$submit_approvetype_id = $this->approveTypeGateway->getIdByName('submitted');
+				$this->approveGateway->update(
+					['approve_status' => 'inactive'],
+					[
+						'table_name'     => '?',
+						'tablekey_id'    => '?',
+						'approvetype_id' => $submit_approvetype_id
+					],
+					[$table_name, $tablekey_id]
+				);
+			}
+			// If entity is not pending (only happens with invoices), this is a post approve rejection
+			else {
+				// Save an approve record
+				$approve = new \NP\workflow\ApproveEntity([
+					'table_name'                   => $table_name,
+					'tablekey_id'                  => $tablekey_id,
+					'userprofile_id'               => $userprofile_id,
+					'delegation_to_userprofile_id' => $delegation_to_userprofile_id,
+					'approve_message'              => $reject_note,
+					'approvetype_id'               => $approvetype_id,
+					'transaction_id'               => $this->approveGateway->currentId()
+				]);
+
+				$errors = $this->entityValidator->validate($approve);
+				if (count($errors)) {
+					$this->loggingService->log('global', 'Invalid approve record', $errors);
+					throw new \NP\core\Exception('Error saving approve record while post rejecting an invoice');
+				}
+
+				$this->approveGateway->save($approve);
+			}
+
+			// Save a message (TM NOTE: no idea why this is needed or where it's used)
+			$messagetype_id = $this->messageGateway->findMessageType('alert');
+			$message = new \NP\system\MessageEntity([
+				'messagetype_id'     => $messagetype_id,
+				'table_name'         => $table_name,
+				'tablekey_id'        => $tablekey_id,
+				'message_text'       => $reject_note,
+				'message_flagstatus' => 'rejected'
+			]);
+
+			$errors = $this->entityValidator->validate($message);
+			if (count($errors)) {
+				$this->loggingService->log('global', 'Invalid message record', $errors);
+				throw new \NP\core\Exception('Error saving message record while post rejecting an invoice');
+			}
+
+			$this->messageGateway->save($message);
+
+			// Save a rejection history record (again, not sure why we need records in so many tables)
+			$rejection = new \NP\shared\RejectionHistoryEntity([
+				'rejectionnote_id'           => $rejectionnote_id,
+				'table_name'                 => $table_name,
+				'tablekey_id'                => $tablekey_id,
+				'userprofile_id'             => $userprofile_id
+			]);
+
+			$errors = $this->entityValidator->validate($rejection);
+			if (count($errors)) {
+				$this->loggingService->log('global', 'Invalid rejectionhistory record', $errors);
+				throw new \NP\core\Exception('Error saving rejectionhistory record while post rejecting an invoice');
+			}
+
+			$this->rejectionHistoryGateway->save($rejection);
+
+			// Audit the note change
+			$this->$entityVars['service']->audit([
+				'tablekey_id'                  => $tablekey_id,
+				'userprofile_id'               => $userprofile_id,
+				'delegation_to_userprofile_id' => $delegation_to_userprofile_id,
+				'field_name'                   => "{$table_name}_reject_note",
+				'field_new_value'              => $reject_note,
+				'field_old_value'              => $entity["{$table_name}_reject_note"]
+			], $table_name, 'modified');
+		} catch(\Exception $e) {
+			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+		
+		if (count($errors)) {
+			$this->$gtw->rollback();
+		} else {
+			$this->$gtw->commit();
+		}
+		
+		return array(
+		    'success' => (count($errors)) ? false : true,
+		    'errors'  => $errors
+		);
 	}
 }

@@ -105,10 +105,6 @@ Ext.define('NP.controller.Invoice', {
 				click: me.onActivateInvoice.bind(me)
 			},
 
-			'#invoiceSubmitForPaymentBtn': {
-				click: me.onSubmitForPayment
-			},
-
 			'#applyPaymentBtn': {
 				click: me.onApplyPayment
 			},
@@ -133,6 +129,30 @@ Ext.define('NP.controller.Invoice', {
 
 			'#invoiceReclassSaveBtn': {
 				click: me.onReclassSave
+			},
+
+			'#invoiceProcessBtn': {
+				click: function() {
+					me.onProcess(false);
+				}
+			},
+
+			'#invoiceProcessAndNextBtn': {
+				click: function() {
+					me.onProcess(true);
+				}
+			},
+
+			'#invoiceSubmitForPaymentBtn': {
+				click: function() {
+					me.onSubmitForPayment(false);
+				}
+			},
+
+			'#invoiceSubmitForPaymentAndNextBtn': {
+				click: function() {
+					me.onSubmitForPayment(true);
+				}
 			}
 		});
 
@@ -356,7 +376,7 @@ Ext.define('NP.controller.Invoice', {
 		}
 
 		// Load reclass records and figure out whether or not to show the grid
-		if (updateOption('forwards')) {
+		if (updateOption('reclass')) {
 			me.loadReclass();
 		}
 
@@ -568,14 +588,17 @@ Ext.define('NP.controller.Invoice', {
 		var me           = this,
 			invoice_id   = me.getEntityRecord().get('invoice_id'),
 			reclassGrid  = me.getReclassGrid(),
-			reclassStore = reclassGrid.getStore();
+			reclassStore;
 
-		reclassStore.addExtraParams({ invoice_id: invoice_id });
-		reclassStore.load(function() {
-			if (reclassStore.getCount()) {
-				reclassGrid.show();
-			}
-		});
+		if (reclassGrid) {
+			reclassStore = reclassGrid.getStore();
+			reclassStore.addExtraParams({ invoice_id: invoice_id });
+			reclassStore.load(function() {
+				if (reclassStore.getCount()) {
+					reclassGrid.show();
+				}
+			});
+		}
 	},
 
 	onOpenUtilityAccountEditor: function(editor, rec, field) {
@@ -1002,7 +1025,7 @@ Ext.define('NP.controller.Invoice', {
 		}
 	},
 
-	onSubmitForPayment: function() {
+	onSubmitForPayment: function(andNext) {
 		var me         = this,
 			invoice_id = me.getEntityRecord().get('invoice_id');
 
@@ -1038,6 +1061,10 @@ Ext.define('NP.controller.Invoice', {
 				}
 			}
 		);
+	},
+
+	onProcess: function(andNext) {
+
 	},
 
 	onApplyPayment: function() {

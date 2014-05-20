@@ -41,6 +41,7 @@ li.x-boundlist-item {
 .favorites-add-btn { background-image: url("images/buttons/favorites_add.gif"); width: 20px !important; }
 .favorites-cmp-btn .x-btn-inner { padding-left: 24px !important; }
 .favorites-empty-btn { background-image: url("images/buttons/favorites_empty.png"); }
+.final-review-btn { background-image: url("images/buttons/final_review.gif"); }
 .go-btn { background-image: url("images/buttons/go.gif"); width: 33px !important; }
 .hold-activate-btn { background-image: url("images/buttons/hold_activate.gif"); }
 .hourglass-btn { background-image: url("images/buttons/hourglass.gif"); }
@@ -49,6 +50,7 @@ li.x-boundlist-item {
 .image-view-btn { background-image: url("images/buttons/image_view.gif"); }
 .inactivate-btn { background-image: url("images/buttons/inactivate.gif"); }
 .link-btn { background-image: url("images/buttons/link.gif"); }
+.mark-received-btn { background-image: url("images/buttons/mark_received.gif"); }
 .message-btn { background-image: url("images/buttons/message.gif"); width: 19px !important; background-repeat: no-repeat; }
 	.message-comp-btn .x-btn-inner { padding-left: 23px !important; }
 .new-btn { background-image: url("images/buttons/new.gif"); }
@@ -163,7 +165,7 @@ li.x-boundlist-item {
 }
 
 /* READONLY FIELDS */
-.x-form-readonly .x-form-field.x-form-text  {
+.entityViewPanel .x-form-readonly .x-form-field.x-form-text  {
 	opacity         : 1;
 	background-color: #FFF;
 	background-image: url();
@@ -171,7 +173,7 @@ li.x-boundlist-item {
 	margin          : -2px 0 0 -4px;
 }
 
-.x-form-readonly .x-form-item-label-top {
+.entityViewPanel .x-form-readonly .x-form-item-label-top {
 	margin-bottom: 2px;
 }
 

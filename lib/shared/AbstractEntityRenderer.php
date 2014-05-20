@@ -47,7 +47,13 @@ abstract class AbstractEntityRenderer implements EntityRendererInterface {
 	}
 
 	public function initEntity() {
-		$this->entity = $this->service->get($this->entity_id);
+		// We check if the value is true to prevent a call to the invoice service function with an invalid
+		// argument, since there's no option to combine splits for invoices
+		if ($this->options['combineSplit']) {
+			$this->entity = $this->service->get($this->entity_id, true);
+		} else {
+			$this->entity = $this->service->get($this->entity_id);
+		}
 	}
 
 	abstract public function getPrefix();

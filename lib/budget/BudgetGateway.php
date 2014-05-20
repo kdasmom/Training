@@ -386,12 +386,18 @@ class BudgetGateway extends AbstractGateway {
 		}
 
 		$res = $this->adapter->query($select, $params);
-		$res = $res[0];
+		
+		$actual_amount = 0;
+		$budget_amount = 0;
+		if (count($res)) {
+			$actual_amount = (float)$res[0]['actual_amount'];
+			$budget_amount = (float)$res[0]['budget_amount'];
+		}
 
-		$res['actual_amount'] = (float)$res['actual_amount'];
-		$res['budget_amount'] = (float)$res['budget_amount'];
-
-		return $res;
+		return [
+			'actual_amount' => $actual_amount,
+			'budget_amount' => $budget_amount
+		];
 	}
 
 	/**

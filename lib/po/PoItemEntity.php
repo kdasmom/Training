@@ -6,8 +6,9 @@ namespace NP\po;
  *
  * @author Thomas Messier
  */
-class PoItemEntity extends \NP\core\AbstractEntity {
-	
+class PoItemEntity extends \NP\core\AbstractEntity implements \NP\workflow\WorkflowableInterface {
+	protected $auditable = true;
+
 	protected $fields = array(
 		'poitem_id'	 => array(
 			'validation' => array(
@@ -263,6 +264,14 @@ class PoItemEntity extends \NP\core\AbstractEntity {
 			)
 		)
 	);
+
+	public function getPropertyId() {
+		return $this->property_id;
+	}
+
+	public function getAmount() {
+		return $this->poitem_amount + $this->poitem_shipping + $this->poitem_salestax;
+	}
 
 }
 ?>

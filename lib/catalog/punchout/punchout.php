@@ -21,7 +21,7 @@ return
 			<UserAgent>Nexus Systems Catalog Module</UserAgent>
 		</Sender>
 	</Header>
-	<Request deploymentMode="test">
+	<Request deploymentMode="' . $deploymentMode . '">
 		<PunchOutSetupRequest operation="create">
 			<BuyerCookie>' . $vc_id . '_' . $purchaseorder_id . '_' . $asp_client_id .'_' . $userprofile_id . '</BuyerCookie>
 			<Extrinsic name="UniqueName">' . $asp_client_id .'_' . $userprofile_id . '</Extrinsic>

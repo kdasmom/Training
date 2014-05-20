@@ -10,7 +10,6 @@ Ext.define('NP.view.shared.GlAccountAssigner', {
 
     fieldLabel: 'Assign GL accounts',
     name        : 'glaccounts',
-    displayField: 'glaccount_name',
     valueField  : 'glaccount_id',
     fromTitle   : 'Unassigned',
     toTitle     : 'Assigned',
@@ -19,6 +18,10 @@ Ext.define('NP.view.shared.GlAccountAssigner', {
     height: 200,
 
     initComponent: function() {
+        if (!this.displayField) {
+            this.displayField = (NP.Config.getSetting('PN.Budget.GLDisplayOrder', 'Number') == 'Name') ? 'glaccount_name' : 'glaccount_number';
+        }
+
         if (!this.store) {
             this.store = Ext.create('NP.store.gl.GlAccounts', {
                 service           : 'GLService',

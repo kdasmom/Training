@@ -103,6 +103,37 @@ Ext.define('NP.view.po.ViewHeader', {
 			});
 		}
 
+		if (NP.Config.getSetting('CP.RECEIVING_ON', '0') == 1) {
+			items.push({
+				xtype        : 'customcombo',
+				fieldLabel   : NP.Translator.translate('Receipt Required'),
+				name         : 'purchaseorder_rct_req',
+				displayField : 'name',
+				valueField   : 'val',
+				hidden       : true,
+				store        : Ext.create('Ext.data.Store', {
+								fields: ['name','val'],
+								data: [{ name: 'Yes', val: 1 }, { name: 'No', val: 0 }]
+							})
+			});
+
+			if (NP.Config.getSetting('RECEIVING_FINALREVIEW', '0') == 1) {
+				items.push({
+					xtype     : 'displayfield',
+					fieldLabel: NP.Translator.translate('Final Review'),
+					name      : 'purchaseorder_rct_canReceive',
+					hidden    : true,
+					renderer  : function(val) {
+						if (val == 1) {
+							return 'Yes';
+						}
+
+						return 'No';
+					}
+				});
+			}
+		}
+
 		if (NP.Config.getSetting('PN.POOptions.templateAssociation', '') == 'Header') {
 			items.push({
 				xtype        : 'customcombo',

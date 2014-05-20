@@ -7,9 +7,6 @@ Ext.define('NP.lib.ui.Assigner', {
     
     requires: ['NP.lib.ui.ListPicker','Ext.data.AbstractStore'],
     
-    displayField: 'name',
-    valueField  : 'id',
-    
     layout: 'fit',
 
     allowBlank: true,
@@ -140,7 +137,7 @@ Ext.define('NP.lib.ui.Assigner', {
             return;
         }
         
-        if (!me._mask) {
+        if (!me._mask && me.store.isLoading()) {
             me._mask = new Ext.LoadMask({ target: me.down('container') });
             me._mask.show();
         }
@@ -179,7 +176,7 @@ Ext.define('NP.lib.ui.Assigner', {
         }
 
         Ext.resumeLayouts(true);
-
+console.log('Destroying mask', me, me._mask);
         if (me._mask && me._mask.destroy) {
             me._mask.destroy();
             me._mask = null;

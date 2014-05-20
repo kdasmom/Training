@@ -48,7 +48,7 @@ Ext.define('NP.view.po.ForwardWindow', {
     getRightColumn: function() {
         var me = this;
 
-        if (!Ext.isEmpty(me.entity.get('print_template_id'))) {
+        if (Ext.isEmpty(me.entity.get('print_template_id'))) {
             return {
                 xtype: 'hiddenfield',
                 name : 'print_template_id',

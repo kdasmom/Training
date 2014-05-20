@@ -86,7 +86,7 @@ Ext.define('NP.view.shared.CustomFieldContainer', {
 						xtype : 'container',
 						flex  : 1,
 						layout: 'form',
-						margin: (colItemCount != maxPerCol) ? '0 8 0 32' : 0,
+						margin: (me.items.length == 0) ? '0 32 0 0' : 0,
 						items : colItems
 		        	});
 		        }

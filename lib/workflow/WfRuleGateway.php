@@ -576,4 +576,30 @@ class WfRuleGateway extends AbstractGateway {
 				return new sql\SearchByRuleTypeSelect($asp_client_id, $criteria, $order);
 		}
 	}
+
+	/**
+	 * Finds rules that could apply to a certain user for a certain property
+	 */
+	public function findPossibleRules(\NP\workflow\WorkflowableInterface $entity, $userprofile_id) {
+		$property_id = $entity->getPropertyId();
+		$ruleTypes   = $entity->getApplicableRuleTypes();
+
+		$params = [$userprofile_id, $userprofile_id];
+		$params = array_merge($params, $ruleTypes);
+
+		return $this->adapter->query(
+			Select::get()
+				->from(['wr'=>'wfrule'])
+					->join(new sql\join\WfRuleWfRuleTypeJoin(['type_id_alt','ismaster']))
+				->whereEquals('wr.wfrule_status', "'active'")
+				->whereExists(
+					new sql\WfActionOriginatorSelect('wr.wfrule_id')
+				)
+				->whereIn('wrt.wfruletype_tablename', $this->createPlaceholders($ruleTypes))
+				->order('wrt.ismaster DESC'),
+			$params
+		);
+	}
 }
+
+?>

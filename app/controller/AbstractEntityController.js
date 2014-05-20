@@ -90,6 +90,14 @@ Ext.define('NP.controller.AbstractEntityController', {
 			clickdeleteline: me.onDeleteLineClick.bind(me),
 			// Clicking on the PO number link
 			clickporef     : me.onPoRefClick.bind(me),
+			// Clicking on an invoice number link
+			clickinvoiceref: me.onInvoiceRefClick.bind(me),
+			// Clicking on a receipt number link
+			clickreceiptref: me.onReceiptRefClick.bind(me),
+			// Clicking on the Cancel link on a line 
+			clickcancelline: me.onCancelLine.bind(me),
+			// Clicking on the Restore link on a line
+			clickrestoreline: me.onRestoreLine.bind(me),
 			// Clicking on the Modify GL link
 			clickmodifygl  : me.onEditLineClick.bind(me),
 			// Clicking on the Show Budget link
@@ -197,7 +205,9 @@ Ext.define('NP.controller.AbstractEntityController', {
 		};
 
 		control['#' + me.shortName + 'ForwardBtn'] = {
-			click: me.onForward
+			click: function() {
+				me.onForward(false);
+			}
 		};
 
 		control['#' + me.shortName + 'ForwardWin [xtype="shared.button.message"]'] = {
@@ -390,6 +400,34 @@ Ext.define('NP.controller.AbstractEntityController', {
 
 		control['#' + me.shortName + 'BudgetDetailWindow [xtype="shared.button.search"]'] = {
 			click: me.onViewBudgetDetailsBy.bind(me)
+		};
+
+		control['#' + me.shortName + 'ReadyForProcessingBtn'] = {
+			click: me.onReadyForProcessing.bind(me)
+		};
+
+		control['#' + me.shortName + 'SubmitForApprovalBtn'] = {
+			click: function() {
+				me.onSubmitForApproval(false);
+			}
+		};
+
+		control['#' + me.shortName + 'SubmitForApprovalAndNextBtn'] = {
+			click: function() {
+				me.onSubmitForApproval(true);
+			}
+		};
+
+		control['#' + me.shortName + 'SubmitAndRouteBtn'] = {
+			click: me.onSubmitAndRoute
+		};
+
+		control['#' + me.shortName + 'RouteBtn'] = {
+			click: me.onRoute
+		};
+
+		control['#' + me.shortName + 'ApproveBtn'] = {
+			click: me.onApprove
 		};
 
 		me.control(control);
@@ -615,9 +653,11 @@ Ext.define('NP.controller.AbstractEntityController', {
 			if (field.setReadOnly && field.getItemId() != 'entityPropertyCombo') {
 				// Set the readonly status to the appropriate value
 				field.setReadOnly(readonly);
-				// If the field has no value, hide it
+				
 				if (readonly) {
+					// If the field has no value, hide it
 					if (Ext.isEmpty(field.getValue())) {
+						field.hideMode = 'display';
 						field.hide();
 					// Otherwise if the field has a value, show it
 					} else {
@@ -634,9 +674,31 @@ Ext.define('NP.controller.AbstractEntityController', {
 			}
 		}
 
-		// If there's no custom field with a value set, hide the whole custom field panel
+		// If there's no custom field or note with a value set, hide the whole panel
 		if (readonly) {
-			me.getCmp('shared.customfieldcontainer')[customShowFn]();
+			var customContainer = me.getCmp('shared.customfieldcontainer');
+			customContainer[customShowFn]();
+
+			// Check custom field columns for values
+			if (customShowFn) {
+				var cols = customContainer.query('container[flex=1]'),
+					hasVisible;
+
+				Ext.each(cols, function(col) {
+					hasVisible = false;
+					col.items.each(function(field) {
+						if (field.isVisible()) {
+							hasVisible = true;
+							return false;
+						}
+					});
+
+					if (!hasVisible) {
+						col.hide();
+					}
+				});
+			}
+
 			me.getCmp('shared.invoicepo.viewnotes')[noteShowFn]();
 		}
 
@@ -1117,12 +1179,19 @@ Ext.define('NP.controller.AbstractEntityController', {
 		
 		// Check if we're dealing with Modify GL
 		if (
-			me.getEntityRecord().get(me.longName + '_status') == 'forapproval'
-			&& data
-			&& data.is_approver
-			&& (
-				me.shortName == 'invoice' && NP.Security.hasPermission(3001)
-				|| me.shortName == 'po' && NP.Security.hasPermission(6005)
+			(
+				me.getEntityRecord().get(me.longName + '_status') == 'forapproval'
+				&& data
+				&& data.is_approver
+				&& (
+					me.shortName == 'invoice' && NP.Security.hasPermission(3001)
+					|| me.shortName == 'po' && NP.Security.hasPermission(6005)
+				)
+			) || (
+				me.shortName == 'po'
+				&& me.getEntityRecord().get(me.longName + '_status') == 'saved'
+                && e.record.get('invoice_id') === null
+                && NP.Security.hasPermission(6031)
 			)
 		) {
 			e.record.is_modify_gl = true;
@@ -1626,6 +1695,10 @@ Ext.define('NP.controller.AbstractEntityController', {
             iframeId,
             iframeEl;
 
+        if (!splitSize) {
+        	splitSize = 50;
+        }
+
 		if (data['image'] !== null) {
 			if (Ext.Array.contains(['north','south'], imageRegion)) {
 				sizeProp = 'height';
@@ -1639,7 +1712,7 @@ Ext.define('NP.controller.AbstractEntityController', {
 			iframeEl = Ext.get(iframeId);
 			if (!iframeEl) {
 				imagePanel[sizeProp] = splitSize + '%';
-
+				
 				if (hideImg != 1 || showImage) {
 					imagePanel.update('<iframe id="' + iframeId + '" src="about:blank" height="100%" width="100%"></iframe>');
 					iframeEl = Ext.get(iframeId);
@@ -1872,7 +1945,68 @@ Ext.define('NP.controller.AbstractEntityController', {
 	},
 
 	onPoRefClick: function(rec) {
+		var me = this;
 		me.addHistory('Po:showView:' + rec.get('purchaseorder_id'));
+	},
+
+	onInvoiceRefClick: function(rec) {
+		var me = this;
+		me.addHistory('Invoice:showView:' + rec.get('invoice_id'));
+	},
+
+	onReceiptRefClick: function(rec) {
+		var me = this;
+		me.addHistory('Receipt:showView:' + rec.get('receipt_id'));
+	},
+
+	onCancelLine: function(rec) {
+		var me = this;
+
+		NP.Net.remoteCall({
+			method  : 'POST',
+    		mask    : me.getLineView(),
+			requests: {
+				service  : me.service,
+				action   : 'cancelLine',
+				poitem_id: rec.get('poitem_id'),
+				success  : function(result) {
+					if (result.success) {
+						if (result['purchaseorder_status'] != me.getEntityRecord().get('purchaseorder_status')) {
+							me.showView(me.getEntityRecord().get(me.pk));
+						} else {
+							me.updateEntityViewState({ toolbar: true, lines: true }, true);
+						}
+					} else {
+						me.showUnexpectedError();
+					}
+				}
+			}
+		});
+	},
+
+	onRestoreLine: function(rec) {
+		var me = this;
+
+		NP.Net.remoteCall({
+    		method  : 'POST',
+    		mask    : me.getLineView(),
+			requests: {
+				service  : me.service,
+				action   : 'restoreLine',
+				poitem_id: rec.get('poitem_id'),
+				success  : function(result) {
+					if (result.success) {
+						if (result['purchaseorder_status'] != me.getEntityRecord().get('purchaseorder_status')) {
+							me.showView(me.getEntityRecord().get(me.pk));
+						} else {
+							me.updateEntityViewState({ toolbar: true, lines: true, historyLog: true }, true);
+						}
+					} else {
+						me.showUnexpectedError();
+					}
+				}
+			}
+		});
 	},
 
 	onSplitLineClick: function(lineRec) {
@@ -2202,7 +2336,6 @@ Ext.define('NP.controller.AbstractEntityController', {
 					if (invoice.get(me.pk) === null) {
 						me.addHistory(me.controller + ':showView:' + result[me.pk]);
 					} else {
-						me.getEntityRecord().set('lock_id', result.lock_id);
 						me.getLineGrid().getStore().commitChanges();
 
 						// TODO: need to account for UI changes that may be required on a save
@@ -2213,12 +2346,11 @@ Ext.define('NP.controller.AbstractEntityController', {
 	},
 
 	saveEntity: function(service, action, extraParams, validateAll, callback) {
-		var me      = this,
-			form    = me.getEntityView(),
-			invoice = me.getEntityRecord();
+		var me   = this,
+			form = me.getEntityView();
 
 		if (me.onLineSaveClick() && me.validateHeader(validateAll)) {
-			// Before saving, make sure invoice hasn't been updated
+			// Before saving, make sure entity hasn't been updated
 			me.checkLock(function() {
 				// Get the line items that need to be saved
 				var lines            = me.convertLinesToSubmit(),
@@ -2260,6 +2392,10 @@ Ext.define('NP.controller.AbstractEntityController', {
 						vendor_id: 'vendor_id'
 					},
 					success: function(result) {
+						me.getEntityRecord().set('lock_id', result.lock_id);
+
+						me.buildViewToolbar(form.getLoadedData());
+
 						callback(result);
 					}
 				});
@@ -2734,7 +2870,7 @@ Ext.define('NP.controller.AbstractEntityController', {
 
     onReject: function() {
     	var win = Ext.widget('shared.invoicepo.rejectwindow', {
-    		type: me.shortName
+			type  : this.shortName
     	});
 
     	win.show();
@@ -2744,9 +2880,9 @@ Ext.define('NP.controller.AbstractEntityController', {
     	var me            = this,
     		win           = me.getCmp('shared.invoicepo.rejectwindow'),
     		form          = win.down('form'),
-    		invoice_id    = me.getEntityRecord().get(me.pk),
+    		entity_id     = me.getEntityRecord().get(me.pk),
     		reasonField   = win.down('[name="rejectionnote_id"]'),
-			noteField     = win.down('[name="invoice_reject_note"]');
+			noteField     = win.down('[name="reject_note"]');
 
     	if (form.isValid()) {
     		me.checkLock(function() {
@@ -2754,20 +2890,21 @@ Ext.define('NP.controller.AbstractEntityController', {
 					method  : 'POST',
 					mask    : form,
 					requests: {
-						service            : me.service,
+						service            : 'WFRuleService',
 						action             : 'reject',
-						invoice_id         : invoice_id,
+						table_name         : me.longName,
+						tablekey_id        : entity_id,
 						rejectionnote_id   : reasonField.getValue(),
-						invoice_reject_note: noteField.getValue(),
+						reject_note        : noteField.getValue(),
 						success            : function(result) {
 							if (result.success) {
 								NP.Util.showFadingWindow({
-									html: me.translate('The invoice has been rejected')
+									html: me.translate('The ' + me.displayName + ' has been rejected')
 								});
 
 								Ext.suspendLayouts();
 
-								me.showView(invoice_id);
+								me.showView(entity_id);
 
 								Ext.resumeLayouts(true);
 
@@ -3149,15 +3286,16 @@ Ext.define('NP.controller.AbstractEntityController', {
 		});
     },
 
-	onForward: function() {
+	onForward: function(isVendorFwd) {
 		var me    = this,
 	        email = NP.Security.getUser().get('email_address');
 
 		if (!Ext.isEmpty(email)) {
 			var win = Ext.widget(me.shortName + '.forwardwindow', {
-				itemId: me.shortName + 'ForwardWin',
-				entity: me.getEntityRecord(),
-				vendor: me.getVendorRecord()
+				itemId     : me.shortName + 'ForwardWin',
+				entity     : me.getEntityRecord(),
+				vendor     : me.getVendorRecord(),
+				isVendorFwd: isVendorFwd
 	        });
 
         	win.show();
@@ -3180,15 +3318,15 @@ Ext.define('NP.controller.AbstractEntityController', {
 				mask    : win,
 				method  : 'POST',
 				requests: {
-					service     : me.service,
-					action      : 'forwardEntity',
-					entity_id   : win.entity.get(me.pk),
-					sender_email: NP.Security.getUser().get('email_address'),
-					forward_to  : form.findField('forward_to').getGroupValue(),
-					forward_val : win.getForwardValue(),
-					message     : form.findField('message').getValue(),
-					includes    : win.getIncludes(),
-					success     : function(result) {
+					service      : me.service,
+					action       : 'forwardEntity',
+					entity_id    : win.entity.get(me.pk),
+					sender_email : NP.Security.getUser().get('email_address'),
+					forward_to   : win.getForwardTo(),
+					forward_val  : win.getForwardValue(),
+					message      : form.findField('message').getValue(),
+					includes     : win.getIncludes(),
+					success      : function(result) {
 						if (result.success) {
 							if (result.errors.length) {
 								Ext.MessageBox.alert(
@@ -3213,5 +3351,193 @@ Ext.define('NP.controller.AbstractEntityController', {
 				}
 			});
 		}
+	},
+
+	onReadyForProcessing: function() {
+		var me      = this,
+			data    = me.getEntityView().getLoadedData(),
+			buttons = [],
+			msg,
+			releaseText,
+			dialog;
+
+		// First, validate and save the entity
+		me.saveEntity(
+			me.service,
+			'saveEntity',
+			{},
+			true,
+			function(result) {
+				// Check what can be done with the entity by the current user
+				NP.Net.remoteCall({
+					mask    : me.getEntityView(),
+					requests: {
+						service    : 'WFRuleService',
+						action     : 'requiresApproval',
+						table_name : me.longName,
+						tablekey_id: me.getEntityRecord().get(me.pk),
+						success    : function(result) {
+							// If entity requires approval, do this
+							if (result) {
+								// Set the message to display
+								msg = NP.Translator.translate('This ' + me.displayName + ' requires approval.');
+
+								// Set the buttons to show
+								buttons.push(
+									{
+										itemId: me.shortName + 'SubmitForApprovalBtn',
+										text  : NP.Translator.translate('Submit For Approval')
+									}
+									// TODO: add and next functionality when appropriate
+									/*,{
+										itemId: me.shortName + 'SubmitForApprovalAndNextBtn',
+										text  : NP.Translator.translate('Submit For Approval and Next')
+									}*/
+								);
+
+								if (data['has_optional_rule']) {
+									buttons.push({
+										itemId: me.shortName + 'SubmitAndRouteBtn',
+										text  : NP.Translator.translate('Submit and Route Manually')
+									});
+								}
+							}
+							// If approval is not needed, do this
+							else {
+								// Set the message to display
+								msg = NP.Translator.translate('This ' + me.displayName + ' does not require approval.');
+
+								if (me.shortName == 'po') {
+									releaseText = 'Release';
+
+									// Set the buttons to show
+									buttons.push(
+										{
+											itemId: me.shortName + 'ReleaseBtn',
+											text  : NP.Translator.translate(releaseText)
+										}
+										// TODO: add and next functionality when appropriate
+										/*,{
+											itemId: me.shortName + 'ReleaseAndNextBtn',
+											text  : NP.Translator.translate(releaseText + ' and Next')
+										}*/
+									);
+								} else if (me.shortName == 'invoice') {
+									var lineDataView = me.getLineDataView();
+									if (lineDataView.getNetAmount() < 0) {
+										releaseText = 'Credit';
+									} else {
+										releaseText = 'Payment';
+									}
+
+									if (NP.Config.getSetting('PN.InvoiceOptions.SKIPSAVE', '0') == 1) {
+										// Set the buttons to show
+										buttons.push(
+											{
+												itemId: me.shortName + 'SubmitForPaymentBtn',
+												text  : NP.Translator.translate('Submit For ' + releaseText)
+											}
+											// TODO: add and next functionality when appropriate
+											/*,{
+												itemId: me.shortName + 'SubmitForPaymentAndNextBtn',
+												text  : NP.Translator.translate('Submit For ' + releaseText + ' and Next')
+											}*/
+										);
+									} else {
+										// Set the buttons to show
+										buttons.push(
+											{
+												itemId: me.shortName + 'ProcessBtn',
+												text  : NP.Translator.translate('Process ' + releaseText)
+											},{
+												itemId: me.shortName + 'ProcessAndNextBtn',
+												text  : NP.Translator.translate('Process ' + releaseText + ' and Next')
+											}
+										);
+									}
+								}
+
+								if (data['has_optional_rule']) {
+									buttons.push({
+										itemId: me.shortName + 'RouteBtn',
+										text  : NP.Translator.translate('Route Manually')
+									});
+								}
+							}
+
+							msg += '<br /><br />' + NP.Translator.translate('You now have the following options:');
+
+							var dialog = Ext.create('Ext.window.MessageBox', {
+								itemId: 'readyForProcessingDlg',
+								buttons    : buttons,
+								buttonAlign: 'center'
+							});
+
+							dialog.show({
+								title : NP.Translator.translate('Processing'),
+								width : 480,
+								msg   : msg
+							});
+						}
+					}
+				});
+			}
+		);
+	},
+
+	onSubmitForApproval: function(andNext) {
+		var me = this,
+			id = me.getEntityRecord().get(me.pk);
+
+		// Release the PO
+		NP.Net.remoteCall({
+			method  : 'POST',
+			mask    : me.getEntityView(),
+			requests: {
+				service    : 'WFRuleService',
+				action     : 'submitForApproval',
+				table_name : me.longName,
+				tablekey_id: id,
+				success    : function(result) {
+					if (result.success) {
+						Ext.ComponentQuery.query('#readyForProcessingDlg')[0].destroy();
+						me.showView(id);
+					} else {
+						me.showUnexpectedError();
+					}
+				}
+			}
+		});
+	},
+
+	onSubmitAndRoute: function() {
+
+	},
+
+	onRoute: function() {
+
+	},
+
+	onApprove: function() {
+		var me = this,
+			id = me.getEntityRecord().get(me.pk);
+
+		NP.Net.remoteCall({
+			method  : 'POST',
+			mask    : me.getEntityView(),
+			requests: {
+				service    : 'WFRuleService',
+				action     : 'approve',
+				table_name : me.longName,
+				tablekey_id: id,
+				success    : function(result) {
+					if (result.success) {
+						me.showView(id);
+					} else {
+						me.showUnexpectedError();
+					}
+				}
+			}
+		});
 	}
 });

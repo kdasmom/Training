@@ -56,6 +56,32 @@ Ext.define('NP.controller.Po', {
 
 			'[xtype="po.viewshippingbilling"] [xtype="shared.propertycombo"]': {
 				select: me.onSelectBillToShipTo
+			},
+
+			'#finalReviewBtn': {
+				click: me.onFinalReview
+			},
+
+			'#poCancelBtn': {
+				click: me.onCancelPo
+			},
+
+			'#poForwardToVendorBtn': {
+				click: function() {
+					me.onForward(true);
+				}
+			},
+
+			'#poReleaseBtn': {
+				click: function() {
+					me.onRelease(false);
+				}
+			},
+
+			'#poReleaseAndNextBtn': {
+				click: function() {
+					me.onRelease(true);
+				}
 			}
 		});
 
@@ -215,6 +241,23 @@ Ext.define('NP.controller.Po', {
 			}
 		}
 
+		if (updateOption('receivable')) {
+			var showRcFieldFn = 'hide',
+				allowBlank    = true;
+			if (NP.Config.getSetting('CP.RECEIVING_ON', '0') == 1) {
+				if (data['purchaseorder_status'] == 'saved') {
+					showRcFieldFn = 'show';
+					allowBlank    = false;
+				}
+
+				boundForm.findField('purchaseorder_rct_req')[showRcFieldFn]();
+				boundForm.findField('purchaseorder_rct_req').setAllowBlank(allowBlank);
+				if (NP.Config.getSetting('RECEIVING_FINALREVIEW', '0') == 1) {
+					boundForm.findField('purchaseorder_rct_canReceive')[showRcFieldFn]();
+				}
+			}
+		}
+
 		if (updateOption('shipBill')) {
 			Ext.each(['ship','bill'], function(type) {
 				if (data['Purchaseorder_' + type + '_propertyID'] !== null) {
@@ -301,27 +344,37 @@ Ext.define('NP.controller.Po', {
 		view.setTitle(title);
 	},
 
-	setReadOnly: function() {
+	setReadOnly: function(readonly) {
 		var me               = this,
 			form             = me.getEntityView(),
-			shipBillReadOnly = !(NP.Security.hasPermission(6013));
+			shipBillReadOnly = (me.isPoReadOnly() || !NP.Security.hasPermission(6013)),
+			rctReadOnly      = (me.isPoReadOnly() || !NP.Security.hasPermission(6027)); // TODO: add hasReceipt() to condition
 
 		Ext.suspendLayouts();
 
-		me.callParent();
+		me.callParent(arguments);
 		
 		form.findField('Purchaseorder_ship_propertyID').setReadOnly(shipBillReadOnly);
 		form.findField('Purchaseorder_shipaddress').setReadOnly(shipBillReadOnly);
 		form.findField('Purchaseorder_bill_propertyID').setReadOnly(shipBillReadOnly);
 		form.findField('Purchaseorder_billaddress').setReadOnly(shipBillReadOnly);
 
+		form.findField('purchaseorder_rct_req').setReadOnly(rctReadOnly);
+
 		Ext.resumeLayouts(true);
 	},
 
 	isPoReadOnly: function() {
-		var me      = this,
-			po      = me.getEntityRecord(),
-			status  = po.get('purchaseorder_status');
+		var me           = this,
+			po           = me.getEntityRecord(),
+			status       = po.get('purchaseorder_status'),
+			isModifiable = (
+				me.hasPermission(6074) 			// Modify Any permission
+				|| (
+					me.hasPermission(6075) 		// Modify Only Created permission
+					&& NP.Security.getUser().get('userprofile_id') == po.get('userprofile_id')
+				)
+			);
 
 		if (
 			(
@@ -333,10 +386,14 @@ Ext.define('NP.controller.Po', {
 				&& me.hasPermission(2007)		// PO Templates permission
 			)
 			|| (
-				me.hasPermission(6074) 			// Modify Any permission
-				|| (
-					me.hasPermission(6075) 		// Modify Only Created permission
-					&& NP.Security.getUser().get('userprofile_id') == po.get('userprofile_id')
+				isModifiable
+				// TODO: add no_allocated_items condition here
+				&& (
+					status == 'rejected'
+					|| (
+						status == 'saved'
+						&& me.hasPermission(2045)
+					)
 				)
 			)
 			|| (
@@ -459,5 +516,75 @@ Ext.define('NP.controller.Po', {
 		panel.show();
 
 		Ext.resumeLayouts(true);
+	},
+
+	onFinalReview: function() {
+		var me = this;
+
+		NP.Net.remoteCall({
+			requests: {
+				service         : 'PoService',
+				action          : 'doFinalReview',
+				purchaseorder_id: me.getEntityRecord().get('purchaseorder_id'),
+				success         : function(result) {
+					NP.Util.showFadingWindow({
+						html: me.translate('Final Review was successfully applied.')
+					});
+
+					me.buildViewToolbar(me.getEntityView().getLoadedData());
+				}
+			}
+		});
+	},
+
+	onCancelPo: function() {
+		var me          = this,
+			id          = me.getEntityRecord().get('purchaseorder_id'),
+			dialogTitle = me.translate('Cancel PO?'),
+			dialogText  = me.translate('This action will cancel all remaining items on this purchase order. Are you sure you want to proceed?');
+
+		Ext.MessageBox.confirm(dialogTitle, dialogText, function(btn) {
+			// If user clicks Yes, proceed with cancelling
+			if (btn == 'yes') {
+				NP.Net.remoteCall({
+					requests: {
+						service         : 'PoService',
+						action          : 'cancelPo',
+						purchaseorder_id: id,
+						success         : function(result) {
+							NP.Util.showFadingWindow({
+								html: me.translate('PO was successfully cancelled.')
+							});
+
+							me.showView(id);
+						}
+					}
+				});
+			}
+		});
+	},
+
+	onRelease: function(andNext) {
+		var me = this,
+			id = me.getEntityRecord().get(me.pk);
+
+		// Release the PO
+		NP.Net.remoteCall({
+			method  : 'POST',
+			mask    : me.getEntityView(),
+			requests: {
+				service         : 'PoService',
+				action          : 'releasePo',
+				purchaseorder_id: id,
+				success         : function(result) {
+					if (result.success) {
+						Ext.ComponentQuery.query('#readyForProcessingDlg')[0].close();
+						me.showView(id);
+					} else {
+						me.showUnexpectedError();
+					}
+				}
+			}
+		});
 	}
 });

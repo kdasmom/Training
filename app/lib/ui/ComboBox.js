@@ -225,6 +225,17 @@ Ext.define('NP.lib.ui.ComboBox', {
 		}
 	},
 
+	initEvents: function() {
+		var me = this;
+
+		me.callParent(arguments);
+
+		// Override default behavior that doesn't expand combo on click when editable is true
+		if (me.editable) {
+            me.mon(me.inputEl, 'click', me.onTriggerClick, me);
+        }
+	},
+
 	doRawQuery: function() {
 		var me = this;
 

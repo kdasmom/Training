@@ -88,7 +88,7 @@ Ext.define('NP.view.po.Register', {
 		invoicedCols.push('po.gridcol.SentToVendor','po.gridcol.CompletedDate');
 
 		// Setup columns for Cancelled grid
-		cancelledCols = openCols.slice(0);
+		cancelledCols = baseCols.slice(0);
 		cancelledCols.push('po.gridcol.CreatedDate','shared.gridcol.CreatedBy');
 
 		grids.push(

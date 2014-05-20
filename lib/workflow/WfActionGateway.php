@@ -212,4 +212,10 @@ class WfActionGateway extends AbstractGateway {
 
 		return $rulesIdList;
 	}
+
+	public function findRoutesByRuleAndUser($wfrule_id, $userprofile_id) {
+		$select = new sql\WfActionOriginatorSelect('?');
+
+		return $this->adapter->query($select, [$wfrule_id, $userprofile_id, $userprofile_id]);
+	}
 }

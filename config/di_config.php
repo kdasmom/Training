@@ -73,7 +73,7 @@ $diDefinition = array(
 	'NP\invoice\InvoiceService'                      => array('FiscalCalService','BudgetService','ImageService','JobCostingService','VendorService'),
 	'NP\invoice\InvoiceServiceInterceptor',
 	'NP\locale\LocalizationService'                  => array('locale','LoggingService'),
-	'NP\notification\NotificationService'            => array('Config','Emailer'),
+	'NP\notification\NotificationService'            => array('ConfigService','Emailer'),
 	'NP\po\PurchaseOrderGateway'                     => array('Adapter','RoleGateway'),
 	'NP\po\PoService'                                => array('FiscalCalService','BudgetService','ImageService','JobCostingService','VendorService','CustomFieldService'),
 	'NP\po\ReceiptGateway'                           => array('Adapter','RoleGateway'),
@@ -89,6 +89,7 @@ $diDefinition = array(
 	'NP\vendor\validation\VendorEntityValidator'     => array('LocalizationService','Adapter', 'VendorGateway', 'ConfigService'),
 	'NP\vendor\VendorService'                        => array('VendorEntityValidator'),
 	'NP\workflow\WfRuleGateway'                      => array('Adapter','UserprofileroleGateway','VendorGateway','WfActionGateway'),
+	'NP\workflow\WFRuleService'                      => array('InvoiceService','PoService','ReceiptService','NotificationService'),
 );
 
 // Now we're gonna figure out some automatic definitions for gateways and services
