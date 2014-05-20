@@ -40,6 +40,7 @@ Ext.define('NP.Application', {
 		'Viewport',
 		'BudgetOverage',
 		'Favorites',
+		'GLAccountSetup',
 		'CatalogMaintenance',
 		'Images',
 		'Import',

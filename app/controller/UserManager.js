@@ -799,6 +799,6 @@ Ext.define('NP.controller.UserManager', {
     showReports: function() {
         var me = this;
 
-        me.application.getController('Report').show('user');
+        me.application.getController('Report').show('user', '[xtype="user.reports"]');
     }
 });

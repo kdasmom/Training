@@ -121,7 +121,8 @@ Ext.define('NP.controller.PropertySetup', {
 				click: this.savePropertyCalendarCutoffs
 			},
 			// The save button on the master closing calendar form
-			'[xtype="property.calendar"] [xtype="shared.button.save"]': {
+//			'[xtype="property.calendar"] [xtype="shared.button.save"]': {
+			'[xtype="property.fiscalcalendarform"] [xtype="shared.button.save"]': {
 				click: this.saveCalendarCutoffs
 			},
 			// The add fiscal calendar button
@@ -168,6 +169,15 @@ Ext.define('NP.controller.PropertySetup', {
 			// The save button on the property unit form
 			'[xtype="property.unittypeform"] [xtype="shared.button.save"]': {
 				click: this.saveUnitType
+			},
+			'[xtype="property.fiscalcalendarform"] [xtype="shared.button.createfrom"]': {
+				click: this.showDistributor
+			},
+			'[xtype="property.closingcalendardistibutor"] [xtype="shared.button.save"]': {
+				click: this.saveDistributor
+			},
+			'[xtype="property.closingcalendardistibutor"] [xtype="shared.button.cancel"]': {
+				click: this.closeCalendarDistributor
 			}
 		});
 	},
@@ -223,14 +233,6 @@ Ext.define('NP.controller.PropertySetup', {
 		var property_status = grid.query('[name="property_status"]')[0].getValue();
 		grid.addExtraParams({ property_status: property_status });
 		grid.reloadFirstPage();
-
-		// Change the buttons that show in the toolbar
-		var inactivateBtn = grid.query('[xtype="shared.button.inactivate"]')[0];
-		var activateBtn = grid.query('[xtype="shared.button.activate"]')[0];
-		var holdBtn = grid.query('[xtype="shared.button.hourglass"]')[0];
-		inactivateBtn.hide();
-		activateBtn.hide();
-		holdBtn.hide();
 	},
 
 	viewProperty: function(grid, rec, item, index, e) {
@@ -281,47 +283,53 @@ Ext.define('NP.controller.PropertySetup', {
 	},
 
 	gridAction: function(action, confirmDialogTitle, confirmDialogText, successDialogText, failureDialogText) {
-		var that = this;
+		var that = this,
+			grid = that.getCmp('property.properties').query('customgrid')[0],
+			properties = grid.getSelectionModel().getSelection(),
+			property_id_list = [];
 
-		// Show a confirmation dialog
-		Ext.MessageBox.confirm(confirmDialogTitle, confirmDialogText, function(btn) {
-			// If user clicks Yes, perform action
-			if (btn == 'yes') {
-				// Get the properties that were checked on the grid
-				var grid = that.getCmp('property.properties').query('customgrid')[0];
-				var properties = grid.getSelectionModel().getSelection();
-				var property_id_list = [];
-				Ext.each(properties, function(property) {
-					property_id_list.push(property.get('property_id'));
-				});
+		if (properties.length > 0) {
 
-				// Make ajax request to perform action
-				NP.lib.core.Net.remoteCall({
-					mask: grid,
-					requests: {
-						service: 'PropertyService',
-						action : action,
-						userprofile_id: NP.Security.getUser().get('userprofile_id'),
-						property_id_list: property_id_list,
-						success: function(result) {
-							// If operation successful
-							if (result.success) {
-								// Remove the row from the grid
-								grid.getStore().remove(properties);
-								// Show a friendly message saying action was successful
-								NP.Util.showFadingWindow({ html: successDialogText });
-							// If an error occurs
-							} else {
+			// Show a confirmation dialog
+			Ext.MessageBox.confirm(confirmDialogTitle, confirmDialogText, function (btn) {
+				// If user clicks Yes, perform action
+				if (btn == 'yes') {
+					// Get the properties that were checked on the grid
+
+					Ext.each(properties, function (property) {
+						property_id_list.push(property.get('property_id'));
+					});
+
+					// Make ajax request to perform action
+					NP.lib.core.Net.remoteCall({
+						mask: grid,
+						requests: {
+							service: 'PropertyService',
+							action: action,
+							userprofile_id: NP.Security.getUser().get('userprofile_id'),
+							property_id_list: property_id_list,
+							success: function (result) {
+								// If operation successful
+								if (result.success) {
+									// Remove the row from the grid
+									grid.getStore().reload();
+									// Show a friendly message saying action was successful
+									NP.Util.showFadingWindow({ html: successDialogText });
+									// If an error occurs
+								} else {
+									Ext.MessageBox.alert(that.errorDialogTitleText, failureDialogText);
+								}
+							},
+							failure: function (response, options) {
 								Ext.MessageBox.alert(that.errorDialogTitleText, failureDialogText);
 							}
-						},
-						failure: function(response, options) {
-							Ext.MessageBox.alert(that.errorDialogTitleText, failureDialogText);
 						}
-					}
-				});
-			}
-		});
+					});
+				}
+			});
+		} else {
+			Ext.MessageBox.alert(NP.Translator.translate('Error'), NP.Translator.translate('Select the one property at least, please!'));
+		}
 	},
 
 	showPropertiesForm: function(property_id) {
@@ -391,6 +399,9 @@ Ext.define('NP.controller.PropertySetup', {
 									var intPkgField = form.findField('integration_package_id');
 									var intPkgNameField = form.findField('integration_package_name');
 									intPkgNameField.setValue(intPkgField.getRawValue());
+
+                                    var propertySalesTax = form.findField('property_salestax');
+                                    propertySalesTax.setValue(parseFloat(data.property_salestax) * 100);
 								}
 					        },
 							property_id: property_id
@@ -451,6 +462,7 @@ Ext.define('NP.controller.PropertySetup', {
 			    		}
 
 			    		var fiscalCalField = form.findField('fiscalcal_id');
+			    		var monthField = form.findField('fiscaldisplaytype_value');
 			    		fiscalCalField.getStore().load();
 			    		fiscalCalField.show();
 
@@ -499,6 +511,14 @@ Ext.define('NP.controller.PropertySetup', {
 
 					// Resume layouts now that fields and tabs have been updated
 					Ext.resumeLayouts(true);
+					if (!property_id) {
+						monthField.getStore().each(function(record) {
+							if (record.get('fiscaldisplaytype_order') == NP.model.property.Property.JAN_OF_CURRENT_YEAR_ORDER) {
+								monthField.setValue(record.get('fiscaldisplaytype_id'));
+								return;
+							}
+						})
+					}
 				},
 				failure: function(response, options) {}
 			}
@@ -529,7 +549,10 @@ Ext.define('NP.controller.PropertySetup', {
 
 	selectFiscalCalendar: function(selModel, recs) {
 		// Show the panel with the cutoff dates
-		var cutoffPanel = selModel.view.up('customgrid').nextNode('[xtype="property.fiscalcalendarform"]');
+		var cutoffPanel = selModel.view.up('customgrid').nextNode('[xtype="property.fiscalcalendarform"]'),
+			calendarPanel = selModel.view.up('customgrid').nextNode('[xtype="property.closingcalendardistibutor"]');
+
+		calendarPanel.hide();
 
 		var form = cutoffPanel.getForm();
 
@@ -808,6 +831,7 @@ Ext.define('NP.controller.PropertySetup', {
 		form.setTitle('Add ' + NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit'));
 		form.getForm().reset();
 		this.activeUnitRecord = null;
+		form.getForm().findField('unittype_id').getStore().reload();
 
 		if (form.isHidden()) {
 			form.show();
@@ -1021,12 +1045,16 @@ Ext.define('NP.controller.PropertySetup', {
 	addMasterFiscalCal: function(button, e) {
 		this.selectedFiscalCal = null;
 
-		var cutoffPanel = button.nextNode('[xtype="property.fiscalcalendarform"]');
+		var cutoffPanel = button.nextNode('[xtype="property.fiscalcalendarform"]'),
+			calendarPanel = button.nextNode('[xtype="property.closingcalendardistibutor"]');
+
+		cutoffPanel.query('[xtype="shared.button.createfrom"]')[0].hide();
 		cutoffPanel.getForm().reset();
 
 		var fields = cutoffPanel.getForm().getFields();
 		fields.each(function(field) { field.enable(); });
 
+		calendarPanel.hide();
 		cutoffPanel.show();
 	},
 
@@ -1078,5 +1106,64 @@ Ext.define('NP.controller.PropertySetup', {
 				}
 			});
 		}
+	},
+
+	/**
+	 * show distributor form
+	 *
+	 * @param button
+	 */
+	showDistributor: function(button) {
+		var cutoffPanel = button.nextNode('[xtype="property.closingcalendardistibutor"]'),
+			calendarPanel = button.up().up(),
+			me = this;
+
+		cutoffPanel.getForm().reset();
+		cutoffPanel.getForm().findField('calendar_name').setValue(me.selectedFiscalCal.get('fiscalcal_name'));
+
+		cutoffPanel.getForm().findField('Org_fiscalcal_id').getStore().getProxy().extraParams.fiscal_calendar_id = me.selectedFiscalCal.get('fiscalcal_id');
+		cutoffPanel.getForm().findField('Org_fiscalcal_id').getStore().getProxy().extraParams.asp_client_id = me.selectedFiscalCal.get('asp_client_id');
+
+		cutoffPanel.getForm().findField('Org_fiscalcal_id').getStore().load();
+
+		calendarPanel.hide();
+		cutoffPanel.show();
+	},
+
+	saveDistributor: function(button) {
+		var me = this,
+			calendarpanel = button.up('[xtype="property.closingcalendardistibutor"]'),
+			form = calendarpanel.getForm();
+
+		if (form.isValid) {
+
+			NP.lib.core.Net.remoteCall({
+				method  : 'POST',
+				requests: {
+					service: 'PropertyService',
+					action : 'saveFiscalcalDistributor',
+					data: {
+						asp_client_id: me.selectedFiscalCal.get('asp_client_id'),
+						org_fiscalcal_id: form.findField('Org_fiscalcal_id').getValue(),
+						dest_fiscalcal_id: me.selectedFiscalCal.get('fiscalcal_id')
+					},
+					success: function(result) {
+						if (result) {
+							NP.Util.showFadingWindow({ html: NP.Translator.translate('Closing Calendar Distributor was saved successfully.') });
+						}
+					},
+					failure: function(response, options) {
+						Ext.MessageBox.alert(NP.Translator.translate('Error'), NP.Translator.translate('Cannot save or assign calendar distributor!'));
+					}
+				}
+			});
+		}
+	},
+
+	closeCalendarDistributor: function(button) {
+		var me = this,
+			calendarpanel = button.up('[xtype="property.closingcalendardistibutor"]');
+
+		calendarpanel.hide();
 	}
 });

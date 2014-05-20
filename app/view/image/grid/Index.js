@@ -11,6 +11,11 @@ Ext.define('NP.view.image.grid.Index', {
             'vendor.gridcol.VendorName',
             'image.gridcol.ScanSource'
         ];
+
+		this.excludedCols = [
+			'shared.gridcol.PendingDays'
+		];
+
         this.autoscroll = true;
 
         var context = NP.Security.getCurrentContext();

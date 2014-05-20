@@ -250,10 +250,10 @@ class ImageService extends AbstractService {
      * 
      * @return 
      */
-    public function upload() {
+    public function upload($property_id = null) {
         $upload = $this->processImageUpload();
         if ($upload['success']) {
-            return $this->create($upload['file']);
+            return $this->create($upload['file'], $property_id);
         } else {
             return $upload;
         }
@@ -332,7 +332,7 @@ class ImageService extends AbstractService {
      * 
      * @param [] $file Object contains necessary details about uploaded file.
      */
-    private function create($file) {
+    private function create($file, $property_id = null) {
         $errors = [];
         $this->imageIndexGateway->beginTransaction();
         
@@ -344,7 +344,8 @@ class ImageService extends AbstractService {
             $entityData = [
                 'Image_Index_Name'         => $file['filename'],
                 'asp_client_id'            => $this->configService->getClientId(),
-                'Image_Index_Date_Entered' => $now
+                'Image_Index_Date_Entered' => $now,
+				'Property_Id'              => $property_id
             ];
             
             $imageIndex = new ImageIndexEntity($entityData);
