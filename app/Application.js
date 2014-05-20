@@ -15,6 +15,7 @@ Ext.define('NP.Application', {
 		'overrides.data.Validations',
 		'overrides.form.field.Base',
 		'overrides.form.field.ComboBox',
+		'overrides.form.field.File',
 		'overrides.form.field.Number',
 		'overrides.form.field.Text',
 		'overrides.form.Basic',

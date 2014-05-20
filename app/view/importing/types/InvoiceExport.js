@@ -98,7 +98,7 @@ Ext.define('NP.view.importing.types.InvoiceExport', {
 							}
 						}),
 						allowBlank: false,
-						width: 600
+						width: 800
 					}
 				]
 			}

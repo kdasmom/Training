@@ -7,7 +7,10 @@ Ext.define('NP.view.importing.UploadForm', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.importing.uploadform',
     
-    requires: ['NP.view.shared.button.Upload'],
+    requires: [
+    	'NP.lib.core.Translator',
+    	'NP.view.shared.button.Upload'
+    ],
     
     border: false,
     bodyPadding: 8,
@@ -58,16 +61,18 @@ Ext.define('NP.view.importing.UploadForm', {
 		if (this.entityName == 'Custom Field Header') {
 			formitems.push(
 				{
-					xtype: 'customcombo',
-					name: 'fieldnumber',
+					xtype       : 'customcombo',
+					name        : 'fieldnumber',
 					displayField: 'controlpanelitem_value',
-					valueField: 'customfieldnumber',
-					fieldLabel: 'Custom Field Value',
-					allowBlank: false,
-					store: Ext.create('NP.lib.data.Store', {
-						service    	: 'ConfigService',
-						action     	: 'getHeadersValues',
-						fields: ['customfieldnumber', 'controlpanelitem_value'],
+					valueField  : 'customfieldnumber',
+					fieldLabel  : NP.Translator.translate('Custom Field Value'),
+					labelWidth  : 140,
+					width       : 600,
+					allowBlank  : false,
+					store       : Ext.create('NP.lib.data.Store', {
+						service : 'ConfigService',
+						action  : 'getHeadersValues',
+						fields  : ['customfieldnumber', 'controlpanelitem_value'],
 						autoLoad: true
 					})
 				}
@@ -76,16 +81,18 @@ Ext.define('NP.view.importing.UploadForm', {
 		if (this.entityName == 'Custom Field Line') {
 			formitems.push(
 				{
-					xtype: 'customcombo',
-					name: 'fieldnumber',
+					xtype       : 'customcombo',
+					name        : 'fieldnumber',
 					displayField: 'controlpanelitem_value',
-					valueField: 'customfieldnumber',
-					fieldLabel: 'Custom Field Value',
-					allowBlank: false,
-					store: Ext.create('NP.lib.data.Store', {
-						service    	: 'ConfigService',
-						action     	: 'getLineValues',
-						fields: ['customfieldnumber', 'controlpanelitem_value'],
+					valueField  : 'customfieldnumber',
+					fieldLabel  : NP.Translator.translate('Custom Field Value'),
+					labelWidth  : 140,
+					width       : 600,
+					allowBlank  : false,
+					store       : Ext.create('NP.lib.data.Store', {
+						service : 'ConfigService',
+						action  : 'getLineValues',
+						fields  : ['customfieldnumber', 'controlpanelitem_value'],
 						autoLoad: true
 					})
 				}
@@ -95,7 +102,7 @@ Ext.define('NP.view.importing.UploadForm', {
 		formitems.push(
 			{
 				xtype: 'component',
-				html: '<p>Select a valid CSV file to upload:</p>'
+				html: '<p>' + NP.Translator.translate('Select a valid CSV file to upload:') + '</p>'
 			}
 		);
 		formitems.push(
