@@ -114,7 +114,7 @@ Ext.define('NP.view.mySettings.UserInformation', {
 			if (index > 1 && value) {
 				for (var backIndex = 1; backIndex < index; backIndex ++) {
 					if (value == me.query('#security_question' + backIndex)[0].getValue()) {
-						questionField.markInvalid(NP.Translator.translate('Security question use the same question as Security Question {number}', {number: backIndex}));
+						questionField.markInvalid(NP.Translator.translate('Cannot use the same security question more than once.'));
 						isValid = false;
 						break;
 					}
