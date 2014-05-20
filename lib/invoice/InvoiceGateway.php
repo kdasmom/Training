@@ -2,6 +2,7 @@
 
 namespace NP\invoice;
 
+use NP\core\db\Insert;
 use NP\system\ConfigService;
 use NP\property\FiscalCalService;
 use NP\property\RegionGateway;
@@ -1017,6 +1018,70 @@ class InvoiceGateway extends AbstractGateway {
 
     	return (float)$res[0]['invoice_total'];
     }
+
+	public function getPreviewForTheImport($integration_package_id, $properties, $page, $pageSize) {
+		$select = new Select();
+
+		$select->from(['i' => 'invoice'])
+				->columns([
+					'invoice_id',
+					'invoice_ref',
+					'invoice_datetm',
+					'invoice_id',
+					'invoice_total'	=> new Expression("
+						ISNULL((SELECT SUM(ISNULL(inv.invoiceitem_amount,0) + ISNULL(inv.invoiceitem_shipping,0) + ISNULL(inv.invoiceitem_salestax,0))
+						FROM INVOICEITEM inv
+						WHERE inv.invoice_id = i.invoice_id),0)")
+					])
+				->join(['p' => 'property'], 'i.property_id = p.property_id', ['property_id_alt', 'property_name'])
+				->join(['vs' => 'vendorsite'], 'vs.vendorsite_id = i.paytablekey_id', [])
+				->join(['v' => 'vendor'], 'v.vendor_id = vs.vendor_id', ['vendor_id_alt', 'vendor_name'])
+				->where([
+					'i.invoice_status'	=> '?',
+					'p.Integration_Package_Id'	=> '?',
+					'p.Sync'	=> '?'
+				])
+				->whereIn('v.vendor_status', "'" . implode("','", ["active", "approved"]) . "'")
+				->whereIn('p.property_id', implode(',', $properties))
+				->limit(1000)
+				->offset($pageSize * ($page - 1))
+				->order(['p.property_name', 'i.invoice_ref']);
+
+		return $this->adapter->query($select, ['submitted', $integration_package_id, 1]);
+	}
+
+	public function markAsSent($userprofile_id, $invoices_id = []) {
+		$update = new Update();
+
+		$update->table('invoice')
+				->values([
+					'invoice_status'	=> "'sent'"
+				])
+				->whereIn('invoice_id', implode(',', $invoices_id));
+
+		$result = $this->adapter->query($update);
+
+		$insert = new Insert();
+
+		$insert->into('exim_log')
+				->columns(
+					[
+						'table_name',
+						'tablekey_id_list',
+						'userprofile_id',
+						'EXIM_LOG_description'
+					]
+				)
+				->values(Select::get()->columns([
+					new Expression("?"),
+					new Expression('?'),
+					new Expression('?'),
+					new Expression('?')
+
+				]));
+
+		return $this->adapter->query( $insert, ['invoice', implode(',', $invoices_id), $userprofile_id, 'Marked invoices as sent; action originated from the Invoice Export utility']);
+	}
 }
 
 ?>

@@ -2299,6 +2299,27 @@ class InvoiceService extends AbstractEntityService {
 			];
 		}
 	}
+
+	public function getPreviewForTheService($integration_package_id = null, $properties = null, $page = null, $pageSize = null) {
+		if (!$integration_package_id || !$properties) {
+			return false;
+		}
+		$properties = json_decode($properties);
+
+		return $this->invoiceGateway->getPreviewForTheImport($integration_package_id, $properties, $page, $pageSize);
+	}
+
+	public function markInvoiceAsSent($invoices = []) {
+
+		if (count($invoices) == 0) {
+			return false;
+		}
+
+		$userProfileId = $this->securityService->getUserId();
+
+		return $this->invoiceGateway->markAsSent($userProfileId, $invoices);
+
+	}
 }
 
 ?>

@@ -28,9 +28,11 @@ Ext.define('NP.view.importing.types.CustomFieldLine', {
 
     getGrid: function() {
         return {
-            columns: [
-                { text: this.customField, dataIndex: 'CustomField', flex: 1 }                
-            ]
+            columns:{
+				items:[
+					{ text: this.customField, dataIndex: 'CustomField', flex: 1 }
+				]
+			}
         }
     }
 });

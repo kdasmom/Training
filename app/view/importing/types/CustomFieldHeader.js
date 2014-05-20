@@ -17,11 +17,34 @@ Ext.define('NP.view.importing.types.CustomFieldHeader', {
     
     customField : "Custom Field",
 
-    getGrid: function() {
+	getGrid: function(value) {
         return {
-            columns: [
-                { text: this.customField, dataIndex: 'CustomField', flex: 1 }                
-            ]
+			columns: {
+				items: [
+					{
+						text: this.setColumnType(value),
+						dataIndex: 'CustomField'
+					}
+				]
+			}
         }
-    }
+    },
+
+	setColumnType: function(value) {
+		var me = this;
+
+		NP.lib.core.Net.remoteCall({
+			requests: {
+				service: 'ConfigService',
+				action : 'getCustomFieldName',
+				customfield_number     : value,
+				type: 'header',
+				success: function(success) {
+					me.customField = success;
+				}
+			}
+		});
+
+		return me.customField;
+	}
 });

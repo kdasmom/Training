@@ -27,7 +27,10 @@ Ext.define('NP.view.importing.CSVGrid', {
         'NP.model.importing.InvoicePayment',
         'NP.model.importing.User',
         'NP.model.importing.UserProperty',
-        'NP.model.importing.Split'
+        'NP.model.importing.Split',
+        'NP.model.importing.CustomFieldHeader',
+        'NP.model.importing.CustomFieldLine',
+		'Ext.grid.column.RowNumberer'
     ],
 
     border: false,
@@ -48,16 +51,40 @@ Ext.define('NP.view.importing.CSVGrid', {
     rowNumColText   : 'Row #',
 
     initComponent: function() {
-        this.tbar = [
-            { xtype: 'shared.button.inactivate', text: this.declineBtnText },
-            { xtype: 'shared.button.activate', text: this.acceptBtnText }
-        ];
+		var buttons = [];
+
+		if (this.type == 'CustomFieldHeader' || this.type == 'CustomFieldLine') {
+			buttons = [
+				{
+					xtype: 'shared.button.cancel'
+				}
+			]
+		}
+
+		buttons.push({ xtype: 'shared.button.inactivate', text: this.declineBtnText });
+		buttons.push({ xtype: 'shared.button.activate', text: this.acceptBtnText });
+
+        this.tbar = buttons;
 
         var importClass = Ext.create('NP.view.importing.types.' + this.type),
-            grid = importClass.getGrid();
+            grid = null,
+			extraparams = {
+				file: this.file,
+				type: this.type
+			};
+
+		if ('values' in this) {
+			Ext.apply(extraparams, {conditionselect: this.values});
+		}
+		if (this.type == 'CustomFieldHeader' || this.type == 'CustomFieldLineItem') {
+			grid = importClass.getGrid(this.values.fieldnumber);
+		} else {
+			grid = importClass.getGrid();
+		}
 
         Ext.applyIf(grid, {
             xtype  : 'customgrid',
+			paging: true,
             title  : this.gridTitle,
             flex: 1,
             stateId: this.type.toLowerCase() + '_import_grid',
@@ -65,7 +92,7 @@ Ext.define('NP.view.importing.CSVGrid', {
                         model  : 'NP.model.importing.' + this.type,
                         service: 'ImportService',
                         action : 'getPreview',
-                        extraParams: { file: this.file, type: this.type }
+                        extraParams: extraparams
                     })
         });
 
@@ -110,5 +137,4 @@ Ext.define('NP.view.importing.CSVGrid', {
 
         this.callParent(arguments);
     }
-
 });

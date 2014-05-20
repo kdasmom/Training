@@ -5,9 +5,10 @@
  */
 Ext.define('NP.model.importing.CustomFieldHeader', {
 	extend: 'Ext.data.Model',
-	
+
 	fields: [
 		{ name: 'CustomField' },
-		{ name: 'validation_status' }
+		{ name: 'validation_status' },
+		{ name: 'validation_errors' }
 	]
 });
