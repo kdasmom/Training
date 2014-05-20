@@ -73,7 +73,9 @@ Ext.define('NP.controller.MySettings', {
 				dataloaded: function(formPanel, data) {
 					// Select properties in item selector
 					var userProps = Ext.getStore('user.Properties').getRange();
-					formPanel.getForm().findField('properties').setValue(userProps);
+					if (NP.lib.core.Security.hasPermission(4)) {
+						formPanel.getForm().findField('properties').setValue(userProps);
+					}
 				}
 			},
 			// 
