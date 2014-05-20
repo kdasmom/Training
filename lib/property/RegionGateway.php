@@ -55,7 +55,7 @@ class RegionGateway  extends AbstractGateway {
 
 		return $this->adapter->query($select, $params);
 	}
-	
+
 }
 
 ?>

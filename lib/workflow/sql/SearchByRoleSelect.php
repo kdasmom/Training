@@ -18,6 +18,7 @@ class SearchByRoleSelect extends Select {
 					'wfrule_string',
 					'wfrule_number_end',
 					'wfrule_number',
+					'region_id',
 					'count_properties' => new GetCountRulePropertiesSubselect()
 				])
 			->from(['WF' => 'wfrule'])

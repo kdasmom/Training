@@ -124,4 +124,25 @@ class WfRuleTargetGateway extends AbstractGateway {
 
 		return $this->adapter->query($delete);
 	}
+
+	/**
+	 * Add properties by region id
+	 *
+	 * @param $wfrule_id (int) - Workflow rule id
+	 * @param $region_id (int) - region id
+	 */
+	public function addPropertiesByRegion($wfrule_id, $region_id) {
+		$insert = new Insert();
+		$select = new Select();
+
+		$insert->into('wfruletarget')
+				->columns(array('wfrule_id', 'table_name', 'tablekey_id'))
+				->values(
+					$select->columns([new Expression($wfrule_id), new Expression("'property'"), 'property_id'])
+						   ->from('property')
+						   ->whereEquals('region_id', $region_id)
+				);
+
+		return $this->adapter->query($insert, [$region_id]);
+	}
 }

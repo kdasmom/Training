@@ -54,7 +54,7 @@ class VendorGateway extends AbstractGateway {
 	 */
 	public function findAll($vendor_status='active', $integration_package_id=null, $keyword=null, $pageSize=null, $page=1, $sort='vendor_name') {
 		$select = $this->getSelect()
-						->columns(['vendor_id','vendor_name'])
+						->columns(['vendor_id','vendor_name','vendor_id_alt'])
 						->whereEquals('v.vendor_status', '?')
 						->order($sort);
 
