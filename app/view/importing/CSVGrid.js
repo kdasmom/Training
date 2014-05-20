@@ -29,7 +29,8 @@ Ext.define('NP.view.importing.CSVGrid', {
         'NP.model.importing.UserProperty',
         'NP.model.importing.Split',
         'NP.model.importing.CustomFieldHeader',
-        'NP.model.importing.CustomFieldLine'
+        'NP.model.importing.CustomFieldLine',
+		'Ext.grid.column.RowNumberer'
     ],
 
     border: false,
@@ -50,10 +51,20 @@ Ext.define('NP.view.importing.CSVGrid', {
     rowNumColText   : 'Row #',
 
     initComponent: function() {
-        this.tbar = [
-            { xtype: 'shared.button.inactivate', text: this.declineBtnText },
-            { xtype: 'shared.button.activate', text: this.acceptBtnText }
-        ];
+		var buttons = [];
+
+		if (this.type == 'CustomFieldHeader' || this.type == 'CustomFieldLine') {
+			buttons = [
+				{
+					xtype: 'shared.button.cancel'
+				}
+			]
+		}
+
+		buttons.push({ xtype: 'shared.button.inactivate', text: this.declineBtnText });
+		buttons.push({ xtype: 'shared.button.activate', text: this.acceptBtnText });
+
+        this.tbar = buttons;
 
         var importClass = Ext.create('NP.view.importing.types.' + this.type),
             grid = null,

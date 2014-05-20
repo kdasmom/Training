@@ -16,11 +16,20 @@ Ext.define('NP.view.importing.UploadForm', {
 
     initComponent: function() {
         var instructions = '<b>Please Note:</b>',
-			me = this;
+			me = this,
+			buttons = [];
 
-        this.tbar = [
-            {xtype: 'shared.button.upload'}
-        ];
+		if (this.entityName == 'Custom Field Header' || this.entityName == 'Custom Field Line') {
+			buttons = [
+				{
+					xtype: 'shared.button.cancel'
+				}
+			];
+		}
+
+		buttons.push({xtype: 'shared.button.upload'});
+
+        this.tbar = buttons;
 
         if ('instructions' in this) {
             if (!Ext.isEmpty(this.instructions)) {

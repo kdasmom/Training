@@ -81,7 +81,6 @@ Ext.define('NP.controller.Import', {
             },
             // The Decline button on the GL Category tab
             '[xtype="importing.main"] [xtype="shared.button.inactivate"]': {
-                // Run this whenever the upload button is clicked
                 click: this.decline
             },
             // The Upload csv file
@@ -98,6 +97,16 @@ Ext.define('NP.controller.Import', {
 			},
 			'[xtype="importing.invoiceexportgrid"] [xtype="shared.button.cancel"]' : {
 				click: this.decline
+			},
+			//cancel upload for the custom field
+//			'[xtype="importing.main"] [xtype="shared.button.cancel"]': {
+			'[xtype="importing.csvgrid"] [xtype="shared.button.cancel"]': {
+				click: this.decline
+			},
+			'[xtype="importing.uploadform"] [xtype="shared.button.cancel"]': {
+				click: function() {
+					this.addHistory('Import:showImport:overview');
+				}
 			}
         });
     },
