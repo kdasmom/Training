@@ -83,6 +83,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesModify', {
 //		Ext.suspendLayouts();
 
 		sectionsContainer.removeAll();
+		sectionsContainer.add( me.conflictWarningSection() );
 		sectionsContainer.add( me.ruleSummarySection() );
 		sectionsContainer.add( me.conflictSection() );
 
@@ -173,5 +174,22 @@ Ext.define('NP.view.systemSetup.WorkflowRulesModify', {
 			border: false,
 			data: me.data
 		}
-	}
+	},
+
+	conflictWarningSection: function() {
+		return {
+			xtype: 'fieldset',
+			title: NP.Translator.translate('Warning!'),
+			style: {
+				border: '1px solid red'
+			},
+			padding: '8',
+			items: [
+				{
+					xtype: 'component',
+					html : NP.Translator.translate('A rule of similiar kind has already been applied to the properties that you selected.<br/>Please check the scope and properties again!<br/><br/>This rule will not be usable until all conflicts are resolved.')
+				}
+			]
+		}
+	},
 });

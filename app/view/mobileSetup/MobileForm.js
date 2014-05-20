@@ -49,12 +49,10 @@ Ext.define('NP.view.mobileSetup.MobileForm', {
 				inputType : 'password',
 				name      : 'mobinfo_pin',
 				maxLength : 4,
-				regex     : /^\d{4}$/
-			},{
-				xtype    : 'displayfield',
-				margin   : '-5 0 5 155',
-				value    : '<i>' + NP.Translator.translate(me.newPinInstructions) + '</i>'
-			},{
+				regex     : /^\d{4}$/,
+				afterSubTpl: '<i>' + NP.Translator.translate(me.newPinInstructions) + '</i>'
+			},
+			{
 				xtype     : 'textfield',
 				fieldLabel: NP.Translator.translate(me.newPinConfirmInputLabelText),
 				inputType : 'password',

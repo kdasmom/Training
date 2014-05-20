@@ -45,7 +45,8 @@ Ext.define('NP.view.catalog.TopBar', {
 							},
 							{
 								xtype: 'catalog.searchform',
-								advancedSearch: me.advancedSearch
+								advancedSearch: me.advancedSearch,
+								vc_id: me.vc_id
 							}
 						]
 					},

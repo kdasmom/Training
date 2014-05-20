@@ -50,7 +50,8 @@ Ext.define('NP.view.user.UserDelegationGrid', {
             action     : 'getDelegations',
             paging     : true,
             extraParams: {
-            	toOrFrom: this.toOrFrom
+            	toOrFrom: this.toOrFrom,
+				sort: 'delegation_startdate desc'
             }
         });
 

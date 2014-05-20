@@ -53,4 +53,27 @@ class WfRuleScopeGateway extends AbstractGateway {
 
 		return $this->adapter->query($insert, $tablekeys);
 	}
+
+	/**
+	 *
+	 * @param int $wfrule_id
+	 * @param array $conflictRulesIdList
+	 * @param string $tablename
+	 * @return array
+	 */
+	public function getDuplicateRulesByOptions($wfrule_id, $conflictRulesIdList, $tablename) {
+		$select = new Select();
+
+		$rulePlaceHolders = $this->createPlaceholders($conflictRulesIdList);
+
+		$select->distinct()->columns(['wfrule_id'])
+				->from(['ws' => 'wfrulescope'])
+				->join(['wsc' => 'wfrulescope'], 'ws.tablekey_id = wsc.tablekey_id', [])
+					->whereEquals('wsc.wfrule_id', $wfrule_id)
+					->whereEquals('ws.table_name', "'{$tablename}'")
+					->whereEquals('wsc.table_name', "'{$tablename}'")
+					->whereIn('ws.wfrule_id', $rulePlaceHolders);
+
+		return $this->adapter->query($select, $conflictRulesIdList);
+	}
 }

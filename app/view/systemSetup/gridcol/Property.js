@@ -13,8 +13,14 @@ Ext.define('NP.view.systemSetup.gridcol.Property', {
     },
 
 	renderer : function(val, meta, rec) {
-		return rec.data.all_properties_selected ?
-			NP.Translator.translate('ALL') :
-			NP.Translator.translate('SPECIFIC');
+		var rulePropertyType = NP.Translator.translate('REGION');
+
+		if (rec.data.region_id == null) {
+			rulePropertyType = rec.data.all_properties_selected ?
+				NP.Translator.translate('ALL') :
+				NP.Translator.translate('SPECIFIC');
+		}
+
+		return rulePropertyType;
 	}
 });
