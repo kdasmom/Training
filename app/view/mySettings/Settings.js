@@ -48,7 +48,8 @@ Ext.define('NP.view.mySettings.Settings', {
 				displayField: 'property_name',
 				valueField  : 'property_id',
 				store       : 'user.Properties',
-				emptyText   : 'All ' + NP.Config.getPropertyLabel(true)
+				emptyText   : NP.Translator.translate('System Default'),
+				afterSubTpl : '<i>' + NP.Translator.translate('Will be ignored if Region is selected') + '</i>'
     		},{
     			xtype       : 'customcombo',
     			fieldLabel  : 'Preferred ' + NP.Config.getSetting('PN.main.RegionLabel', 'Region'),
@@ -56,7 +57,8 @@ Ext.define('NP.view.mySettings.Settings', {
 			    displayField: 'region_name',
 			    valueField  : 'region_id',
 			    store       : 'user.Regions',
-				emptyText   : 'Use ' + NP.Config.getPropertyLabel()
+				emptyText   : 'Use ' + NP.Config.getPropertyLabel(),
+				afterSubTpl : '<i>' + NP.Translator.translate('Leave blank to use Property') + '</i>'
     		},{
     			xtype       : 'customcombo',
     			fieldLabel  : 'Default Dashboard',

@@ -191,20 +191,35 @@ class WFRuleService extends AbstractService {
 	public function changeStatus($id, $status) {
 		if (!empty($id) && in_array($status, [1, 2])) {
 			$rulesWithConflicts = [];
+			$incompleteRules= [];
 
 			if ($status == 1) {
 				$rulesWithConflictsIdList = [];
+				$incompleteRulesIdList = [];
 
 				foreach ($id as $ruleid) {
-					$activateResult = $this->activateRule($ruleid);
-
-					if (!$activateResult['activateStatus']) {
+					$conflictingRules = $this->findConflictingRules($ruleid);
+					if (count($conflictingRules)) {
 						$rulesWithConflictsIdList[] = $ruleid;
+					}
+
+					$routes = $this->GetRuleRoutes($ruleid);
+					if (!count($routes)) {
+						$incompleteRulesIdList[] = $ruleid;
+					}
+
+					if (!count($conflictingRules) && count($routes)) {
+						$this->wfRuleGateway->setRuleStatus($ruleid, $status);
 					}
 				}
 				if (count($rulesWithConflictsIdList) > 0) {
 					$rulesWithConflicts = $this->wfRuleGateway->find(
 						Where::get()->in('wfrule_id', implode(',', $rulesWithConflictsIdList))
+					);
+				}
+				if (count($incompleteRulesIdList) > 0) {
+					$incompleteRules = $this->wfRuleGateway->find(
+						Where::get()->in('wfrule_id', implode(',', $incompleteRulesIdList))
 					);
 				}
 			}
@@ -214,8 +229,9 @@ class WFRuleService extends AbstractService {
 				}
 			}
 			return [
-				'success' => true,
-				'rulesWithConflicts' => $rulesWithConflicts
+				'success'            => true,
+				'rulesWithConflicts' => $rulesWithConflicts,
+				'incompleteRules'    => $incompleteRules
 			];
 		}
 		return [
@@ -258,22 +274,18 @@ class WFRuleService extends AbstractService {
 
 
 	public function activateRule($ruleid) {
-		$activateStatus = false;
-
 		$routes = $this->GetRuleRoutes($ruleid);
 		$conflictingRules = $this->findConflictingRules($ruleid);
 
 		if (!count($conflictingRules) && count($routes)) {
-			$activateStatus = true;
 			$dataSet = [
-				'wfrule_id' => $ruleid,
+				'wfrule_id'     => $ruleid,
 				'wfrule_status' => 'active'
 			];
 			$this->wfRuleGateway->save($dataSet);
 		}
 
 		return [
-			'activateStatus'   => $activateStatus,
 			'conflictingRules' => $conflictingRules
 		];
 	}

@@ -239,7 +239,7 @@ Ext.define('NP.lib.ui.ComboBox', {
 		var me    = this,
             store = me.getStore();
 
-        if (me.useSmartStore && !me.isExpanded) {
+        if (!me.readOnly && me.useSmartStore && !me.isExpanded) {
 	        function expandCombo() {
                 me.onFocus({});
                 me.doQuery(me.allQuery, true);

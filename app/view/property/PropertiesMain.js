@@ -268,9 +268,9 @@ Ext.define('NP.view.property.PropertiesMain', {
                     margin: '0 5 0 5'
                 },
                 { xtype: 'tbseparator' },
-                { xtype: 'shared.button.inactivate', hidden: true },
-                { xtype: 'shared.button.activate', hidden: true },
-                { xtype: 'shared.button.hourglass', text: NP.Translator.translate('Place On Hold'), hidden: true }
+                { xtype: 'shared.button.inactivate', hidden: false },
+                { xtype: 'shared.button.activate', hidden: false},
+                { xtype: 'shared.button.hourglass', text: NP.Translator.translate('Place On Hold'), hidden: false}
             ]
         }];
 

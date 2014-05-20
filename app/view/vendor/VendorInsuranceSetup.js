@@ -10,13 +10,14 @@ Ext.define('NP.view.vendor.VendorInsuranceSetup', {
 	requires: [
 		'NP.lib.core.Security',
 		'NP.lib.ui.ComboBox',
-		'NP.view.vendor.InsuranceForm'
+		'NP.view.vendor.InsuranceForm',
+		'NP.lib.core.Translator'
 	],
 
 	padding: 8,
 
 	// For localization
-	title                     : 'Insurance setup',
+	title: 'Insurance Setup',
     addInsuranceBtnText: 'Add',
     daysNoticeLabelText: 'How many days notice prior to expiration for Expired Insurance Certificates Warning?',
 	overflowX: 'scroll',
@@ -27,8 +28,9 @@ Ext.define('NP.view.vendor.VendorInsuranceSetup', {
     startIndex: 0,
 
 	initComponent: function() {
-
 		var that = this;
+
+		that.title = NP.Translator.translate(that.title);
 
 		this.defaults = {
 			labelWidth: 150
@@ -73,9 +75,10 @@ Ext.define('NP.view.vendor.VendorInsuranceSetup', {
 				models: [{classPath: 'vendor.Insurance'}]
 			},
 			startIndex: that.startIndex,
-			modelData: model
+			modelData: model,
+			itemId: 'vendorinsurances' + that.startIndex
 		};
-		insForm = Ext.create('NP.view.vendor.InsuranceForm', insConf);
+		var insForm = Ext.create('NP.view.vendor.InsuranceForm', insConf);
 
 		if (model) {
 			insForm.setModel('vendor.Insurance', Ext.create('NP.model.vendor.Insurance', model));

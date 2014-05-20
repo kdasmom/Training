@@ -186,7 +186,17 @@ Ext.define('NP.controller.UserManager', {
 			// The Groups form Responsibilities tab
 			'[xtype="user.groupsformpermissions"]': {
 				checkchangecascade: this.checkPermissionBox
-			}
+			},
+            '[xtype="report.user.form"] [xtype="shared.button.cancel"]': {
+                click: function() {
+                    this.addHistory('UserManager:showUserManager:Overview');
+                }
+            },
+            '[xtype="report.user.form"] [xtype="shared.button.back"]': {
+                click: function() {
+                    this.addHistory('UserManager:showUserManager:Overview');
+                }
+            }
 		});
 	},
 	
@@ -347,7 +357,15 @@ Ext.define('NP.controller.UserManager', {
 		        },
 		        extraFields: ['role_id','properties','coding_properties']
 			});
-		}
+
+            Ext.apply(viewCfg, {
+                isNewUser: false
+            });
+		} else {
+            Ext.apply(viewCfg, {
+                isNewUser: true
+            });
+        }
 
 		// Create the view with the configuration defined above
 		var form = that.setView('NP.view.user.UsersForm', viewCfg, '[xtype="user.users"]');
@@ -442,9 +460,19 @@ Ext.define('NP.controller.UserManager', {
 	    	});
 	    	viewCfg.listeners = {
 	    		dataloaded: function(boundForm, data) {
+					var stopDate=data['Delegation_StopDate'].split(" "),
+						startDate = data['Delegation_StartDate'].split(" "),
+						days=stopDate[0].split("-"),
+						time=stopDate[1].split(":"),
+						date = new Date(days[0],(days[1]-1),days[2],time[0],time[1],time[2]);
+
+					boundForm.findField('Delegation_StopDate').setValue(date);
+
+					days=startDate[0].split("-");
+					time=startDate[1].split(":");
+					date = new Date(days[0],(days[1]-1),days[2],time[0],time[1],time[2]);
+					boundForm.findField('Delegation_StartDate').setValue(date);
 					boundForm.findField('Delegation_To_UserProfile_Id').setRawValue(data['Delegation_To_UserProfile_Id']);
-					boundForm.findField('Delegation_StartDate').setValue(new Date(data['Delegation_StartDate']));
-					boundForm.findField('Delegation_StopDate').setValue(new Date(data['Delegation_StopDate']));
 				}
 			};
 	    }
@@ -478,7 +506,6 @@ Ext.define('NP.controller.UserManager', {
 		var userField = form.findField('Delegation_To_UserProfile_Id');
 		if (delegation_id) {
 			userField.hide();
-			form.findField('Delegation_StartDate').disable();
 		} else {
 			userField.getStore().addExtraParams({ userprofile_id: userprofile_id });
 			userField.getStore().load();
@@ -764,5 +791,14 @@ Ext.define('NP.controller.UserManager', {
 				}
 			}
 		});
-	}
+	},
+
+    /**
+     * show user reports tab
+     */
+    showReports: function() {
+        var me = this;
+
+        me.application.getController('Report').show('user', '[xtype="user.reports"]');
+    }
 });

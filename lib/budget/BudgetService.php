@@ -88,16 +88,17 @@ class BudgetService extends AbstractService {
         );
     }
 
-    public function createMissingBudgets($entityType) {
+    public function createMissingBudgets($entityType, $entity_id=null) {
         $this->budgetGateway->beginTransaction();
 
         try {
-            $this->glAccountYearGateway->createMissingGlAccountYears($entityType);
-            $this->budgetGateway->createMissingBudgets($entityType);
+            $this->glAccountYearGateway->createMissingGlAccountYears($entityType, $entity_id);
+            $this->budgetGateway->createMissingBudgets($entityType, $entity_id);
 
             $this->budgetGateway->commit();
         } catch(\Exception $e) {
             $this->budgetGateway->rollback();
+            throw $e;
         }
     }
 

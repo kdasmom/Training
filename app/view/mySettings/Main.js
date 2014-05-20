@@ -10,6 +10,7 @@ Ext.define('NP.view.mySettings.Main', {
     requires: [
         'NP.lib.core.Config',
         'NP.lib.core.Security',
+		'Ext.form.Label',
     	'NP.view.mySettings.Overview',
     	'NP.view.mySettings.UserInformation',
     	'NP.view.mySettings.Settings',
@@ -30,9 +31,7 @@ Ext.define('NP.view.mySettings.Main', {
 	    		xtype: 'mysettings.userinformation'
 	    	},{
 	    		xtype: 'mysettings.settings'
-	    	},{
-                xtype: 'mysettings.dashboard'
-            }
+	    	}
     	];
 
     	var settingVal = NP.Config.getSetting('pn.main.WebDocumentz', 0);
@@ -56,6 +55,7 @@ Ext.define('NP.view.mySettings.Main', {
         }
 
 		this.items.push({ xtype: 'user.userdelegation', itemId:'mySettingsDelegation' });
+		this.items.push({ xtype: 'mysettings.dashboard' });
 
     	this.callParent(arguments);
     }

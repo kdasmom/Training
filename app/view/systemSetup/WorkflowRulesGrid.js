@@ -124,7 +124,18 @@ Ext.define('NP.view.systemSetup.WorkflowRulesGrid', {
 				border  : false,
 				paging  : true,
 				flex    : 1,
-				selModel: Ext.create('Ext.selection.CheckboxModel'),
+				selModel: Ext.create('Ext.selection.CheckboxModel', {
+					checkOnly : true,
+					renderer: function(value, metaData, record, rowIndex, colIndex, store, view) {
+						var html = '';
+
+						if (record.get('wfrule_status') == 'active' || record.get('wfrule_status') == 'deactive') {
+							html = '<div class="' + Ext.baseCSSPrefix + 'grid-row-checker"> </div>';
+						}
+
+						return html;
+					}
+				}),
 				stateful: true,
 				stateId : 'workflow_rules_grid',
 				store   : gridStore,

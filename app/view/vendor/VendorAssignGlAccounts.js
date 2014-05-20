@@ -10,23 +10,24 @@ Ext.define('NP.view.vendor.VendorAssignGlAccounts', {
 	requires: [
 		'NP.lib.core.Security',
 		'NP.lib.ui.ComboBox',
-        'NP.view.shared.GlAccountAssigner'
+        'NP.view.shared.GlAccountAssigner',
+		'NP.lib.core.Translator'
 	],
 
 	padding: 8,
 
+	title: 'Assign GL Accounts',
     layout: {
         type: 'vbox',
         align: 'stretch'
     },
 
-	// For localization
-	title                     : 'Assign GL accounts',
-
 	// Custom options
 
 	initComponent: function() {
 		var that = this;
+
+		that.title = NP.Translator.translate(that.title);
 
         var glaccountsStore = Ext.create('NP.store.gl.GlAccounts', {
             service           : 'GLService',
@@ -41,12 +42,18 @@ Ext.define('NP.view.vendor.VendorAssignGlAccounts', {
 			labelWidth: 150
 		};
 
-        this.items = [{
-            xtype    : 'shared.glaccountassigner',
-            store    : glaccountsStore,
-            flex     : 1,
-            hideLabel: true
-        }];
+        this.items = [
+			{
+				xtype: 'displayfield',
+				value: NP.Translator.translate('The assigned GL accounts listed above represent all GL accounts available for use for this vendor. All of these GL accounts may not be available for use if they are not also assigned to the property you are on.')
+			},
+			{
+				xtype    : 'shared.glaccountassigner',
+				store    : glaccountsStore,
+				flex     : 1,
+				hideLabel: true
+			}
+		];
 
         this.callParent(arguments);
 	}

@@ -21,7 +21,7 @@ Ext.define('NP.controller.VendorManager', {
 
     views: ['vendor.VendorsManager','vendor.VendorForm','vendor.VendorImageUploadForm',
     		'vendor.InsuranceUploadForm','vendor.VendorRejectWindow','vendor.VendorSearch',
-    		'vendor.AddImagesWindow'],
+    		'vendor.AddImagesWindow', 'vendor.PropertyAssignerWindow'],
 
     refs: [
     	{ ref: 'vendorForm', selector: '[xtype="vendor.vendorform"]' }
@@ -78,31 +78,29 @@ Ext.define('NP.controller.VendorManager', {
             },
 
             '[xtype="vendor.vendorsearch"] customgrid': {
-                viewvendor: this.viewVendor,
-				itemclick: function (grid, rec, item, index, e, eOpts) {
-					if (e.target.tagName == 'IMG') {
-						var el = Ext.get(e.target);
-						if (el.hasCls('view-vendor')) {
-							this.addHistory('VendorManager:showVendorForm:' + rec.get('vendor_id') + ':' + rec.get('vendor_status') + ':' + true);
-						} else{
-							var op = 'add';
-							if (el.hasCls('favorite-remove')) {
-								op = 'remove';
-							}
-							NP.lib.core.Net.remoteCall({
-								requests: {
-									service: 'VendorService',
-									action : 'updateFavorite',
-									vendorsite_id    : rec.get('vendorsite_id'),
-									property_id: NP.Security.getCurrentContext().property_id,
-									op: op,
-									success: function(result, deferred) {
-										var page = grid.getStore().currentPage;
-										grid.getStore().reload();
-									}
-								}
-							})
+                itemclick: function (grid, rec, item, index, e, eOpts) {
+					var el = Ext.get(e.target);
+					if (el.hasCls('favorite-action') || el.up('.favorite-action') !== null) {
+						var op = 'add';
+						if (el.hasCls('favorite-remove') || el.up('.favorite-remove') !== null) {
+							op = 'remove';
 						}
+						NP.lib.core.Net.remoteCall({
+							method  : 'POST',
+							requests: {
+								service      : 'VendorService',
+								action       : 'updateFavorite',
+								vendorsite_id: rec.get('vendorsite_id'),
+								property_id  : NP.Security.getCurrentContext().property_id,
+								op           : op,
+								success      : function(result, deferred) {
+									var page = grid.getStore().currentPage;
+									grid.getStore().reload();
+								}
+							}
+						});
+					} else{
+						this.addHistory('VendorManager:showVendorForm:' + rec.get('vendor_id') + ':' + rec.get('vendor_status') + ':' + true);
 					}
 				}
             },
@@ -121,6 +119,21 @@ Ext.define('NP.controller.VendorManager', {
 
 			'[xtype="vendor.vendorgeneralinfoandsettings"] [name="default_glaccount_id"]': {
 				select: this.onSelectDefaultGl
+			},
+
+			'[xtype="vendor.propertyassignerwindow"] [xtype="shared.button.cancel"]': {
+				click: function() {
+					this.getCmp('vendor.propertyassignerwindow').destroy();
+				}
+			},
+			'[xtype="vendor.propertyassignerwindow"] [xtype="shared.button.save"]': {
+				click: function() {
+					var form = Ext.ComponentQuery.query('[xtype="vendor.propertyassignerwindow"] form')[0];
+					var values = form.getValues();
+
+					this.query('#insurance_properties_list_id' + values.startIndex)[0].setValue( values.insuranceProperties );
+					this.getCmp('vendor.propertyassignerwindow').destroy();
+				}
 			}
 		});
 
@@ -212,6 +225,8 @@ Ext.define('NP.controller.VendorManager', {
 						that.application.getController('Favorites').saveToRecentRecord(
 							'Vendor - ' + data['vendor_name'] + ' (' + data['vendor_id_alt'] + ')'
 						);
+						form.findField('glaccounts').setValue( data['glaccounts'].split(',') );
+						form.findField('vendorsite_DaysNotice_InsuranceExpires').setValue(data['vendorsite_DaysNotice_InsuranceExpires']);
 
 						that.vendor_status = data['vendor_status'];
 
@@ -330,7 +345,8 @@ Ext.define('NP.controller.VendorManager', {
                 insurance_expdatetm: values.insurance_expdatetm,
                 insurance_policy_limit: values.insurance_policy_limit,
                 insurance_additional_insured_listed: values.insurance_additional_insured_listed,
-                insurance_id: values.insurance_id
+                insurance_id: values.insurance_id,
+				insurance_properties_list_id: values.insurance_properties_list_id,
             });
         } else {
             if (values.insurancetype_id && values.insurancetype_id.length > 1) {
@@ -343,7 +359,8 @@ Ext.define('NP.controller.VendorManager', {
                         insurance_expdatetm: values.insurance_expdatetm[index],
                         insurance_policy_limit: values.insurance_policy_limit[index],
                         insurance_additional_insured_listed: values.insurance_additional_insured_listed[index],
-                        insurance_id: values.insurance_id[index]
+                        insurance_id: values.insurance_id[index],
+						insurance_properties_list_id: values.insurance_properties_list_id[index]
                     });
                 }
             }
@@ -390,16 +407,6 @@ Ext.define('NP.controller.VendorManager', {
      */
     showVendorSearchForm: function() {
         this.setView('NP.view.vendor.VendorSearch');
-    },
-
-    /**
-     *  view vendor from search form
-     * @param grid
-     * @param rec
-     * @param rowIndex
-     */
-    viewVendor: function(grid, rec, rowIndex) {
-		this.addHistory('VendorManager:showVendorForm:' + rec.internalId + ':' + rec.get('vendor_status'));
     },
 
 	showBarCallback: function(appcount, isReject, insurance) {
@@ -1157,7 +1164,8 @@ Ext.define('NP.controller.VendorManager', {
 				insurance_expdatetm: values.insurance_expdatetm,
 				insurance_policy_limit: values.insurance_policy_limit,
 				insurance_additional_insured_listed: values.insurance_additional_insured_listed,
-				insurance_id: values.insurance_id
+				insurance_id: values.insurance_id,
+				insurance_properties_list_id: values.insurance_properties_list_id
 			});
 		} else {
 			if (values.insurancetype_id && values.insurancetype_id.length > 1) {
@@ -1170,7 +1178,8 @@ Ext.define('NP.controller.VendorManager', {
 						insurance_expdatetm: values.insurance_expdatetm[index],
 						insurance_policy_limit: values.insurance_policy_limit[index],
 						insurance_additional_insured_listed: values.insurance_additional_insured_listed[index],
-						insurance_id: values.insurance_id[index]
+						insurance_id: values.insurance_id[index],
+						insurance_properties_list_id: values.insurance_properties_list_id[index]
 					});
 				}
 			}

@@ -13,7 +13,7 @@ class UserprofileSelect extends Select {
 	
 	public function __construct() {
 		parent::__construct();
-		$this->from(array('u'=>'userprofile'));
+		$this->from(array('u' => 'userprofile'));
 	}
 	
 	/**
@@ -68,10 +68,8 @@ class UserprofileSelect extends Select {
 	 * @param  string[] $cols                 Columns to retrieve from the ROLE table
 	 * @return \NP\user\sql\UserprofileSelect Returns caller object for easy chaining
 	 */
-	public function joinRole($cols=array()) {
-		return $this->join(array('r' => 'role'),
-						'ur.role_id = r.role_id',
-						$cols);
+	public function joinRole($cols=array(), $toAlias = 'r', $fromAlias = 'ur', $type = Select::JOIN_INNER) {
+		return $this->join(array($toAlias => 'role'), "{$fromAlias}.role_id = {$toAlias}.role_id", $cols, $type);
 	}
 	
 	/**
@@ -80,10 +78,10 @@ class UserprofileSelect extends Select {
 	 * @param  string[] $cols                 Columns to retrieve from the STAFF table
 	 * @return \NP\user\sql\UserprofileSelect Returns caller object for easy chaining
 	 */
-	public function joinStaff($cols=array()) {
-		return $this->join(array('s' => 'staff'),
-						'ur.tablekey_id = s.staff_id',
-						$cols);
+	public function joinStaff($cols=array(), $toAlias = 's', $fromAlias = 'ur', $type = Select::JOIN_INNER) {
+		return $this->join(array($toAlias => 'staff'),
+						"{$fromAlias}.tablekey_id = {$toAlias}.staff_id",
+						$cols, $type);
 	}
 	
 	/**
@@ -104,10 +102,12 @@ class UserprofileSelect extends Select {
 	 * @param  string[] $cols                 Columns to retrieve from the EMAIL table
 	 * @return \NP\user\sql\UserprofileSelect Returns caller object for easy chaining
 	 */
-	public function joinEmail($cols=array()) {
-		return $this->join(array('e' => 'email'),
-						"s.staff_id = e.tablekey_id AND e.table_name = 'staff'",
-						$cols);
+	public function joinEmail($cols=array(), $toAlias = 'e', $fromAlias = 's', $type = Select::JOIN_INNER, $tablename = 'staff') {
+		if ($tablename) {
+			return $this->join(array($toAlias => 'email'), "{$fromAlias}.staff_id = {$toAlias}.tablekey_id AND {$toAlias}.table_name = '" . $tablename . "'", $cols, $type);
+		} else {
+			return $this->join(array($toAlias => 'email'), "{$fromAlias}.staff_id = {$toAlias}.tablekey_id", $cols, $type);
+		}
 	}
 	
 	/**

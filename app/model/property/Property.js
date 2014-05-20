@@ -60,5 +60,9 @@ Ext.define('NP.model.property.Property', {
         { name: 'updated_by_userprofile_username' },     // for last_updated_by,
 
         { name: 'integration_package_name' }
-    ]
+    ],
+
+	statics: {
+		JAN_OF_CURRENT_YEAR_ORDER		: 13
+	}
 });

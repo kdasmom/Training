@@ -18,11 +18,5 @@ Ext.define('NP.model.user.Userprofilerole', {
 		{ name: 'role_id', type: 'int' },
 		{ name: 'tablekey_id', type: 'int' },
 		{ name: 'userprofilerole_status', defaultValue: 'active' }
-	],
-
-	validations: [
-		{ field: 'role_id', type: 'presence' },
-		{ field: 'userprofilerole_status', type: 'presence' },
-		{ field: 'userprofilerole_status', type: 'length', max: 50 }
 	]
 });

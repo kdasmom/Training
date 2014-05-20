@@ -50,7 +50,6 @@ Ext.define('NP.model.image.ImageIndex', {
 		{ name: 'image_index_indexed_datetm', type: 'date' },
 		{ name: 'image_index_indexed_by', type: 'int' },
 		{ name: 'image_index_deleted_datetm', type: 'date' },
-		{ name: 'idimageindex' },
 		{ name: 'image_index_GUID' },
 		{ name: 'image_index_deleted_by', type: 'int' },
 		{ name: 'utilityaccount_id', type: 'int' },

@@ -2,7 +2,7 @@
 
 use Phinx\Migration\AbstractMigration;
 
-class AddRegionIdField extends AbstractMigration
+class AddRegionIdCol extends AbstractMigration
 {
 	/**
 	 * Migrate Up.
@@ -10,7 +10,7 @@ class AddRegionIdField extends AbstractMigration
 	public function up()
 	{
 		$this->table('WFRULE')
-			->addColumn('region_id', 'int', array('null'=>true))
+			->addColumn('region_id', 'integer', array('null'=>true))
 			->update();
 	}
 

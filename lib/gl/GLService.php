@@ -47,6 +47,14 @@ class GLService extends AbstractService {
     public function getCategories($integration_package_id=null, $activeOnly=false, $getInUseOnly=false) {
         return $this->glAccountGateway->getCategories($integration_package_id, $activeOnly, $getInUseOnly);
     }
+
+	public function getReportCategories($integration_package_id = null) {
+		if (!$integration_package_id) {
+			return [];
+		}
+
+		return $this->glAccountGateway->getReportCategories($integration_package_id);
+	}
         
     /**
      * Retrieves all GL Accounts for grid GL Account Setup
@@ -601,5 +609,13 @@ class GLService extends AbstractService {
 		$propertyAccountUse = $this->configService->getCPSettings('CP.PROPERTYGLACCOUNT_USE,CP.PHRASE_PREDICT_GL_LINE,CP.PO_ITEM_DESCRIPTION_REQ,CP.INVOICE_ITEM_DESCRIPTION_REQ', '0,0,0,0');
 
 		return $this->glAccountGateway->getGLUI($property_id, $vendorsite_id, $propertyAccountUse['PROPERTYGLACCOUNT_USE'], $GLCodeSort = false);
+	}
+
+	public function changeStatus($glaccounts = [], $status = null) {
+		if (!$glaccounts || count($glaccounts) == 0 || !$status) {
+			return false;
+		}
+
+		return $this->glAccountGateway->updateStatus($glaccounts, $status);
 	}
 }

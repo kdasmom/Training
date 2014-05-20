@@ -7,5 +7,12 @@ Ext.define('NP.view.shared.button.SaveAndNext', {
 
 	text        : 'Save and Next',
 	iconCls     : 'save-and-next-btn',
-	componentCls: 'save-and-btn'
+	componentCls: 'save-and-btn',
+
+
+	initComponent: function() {
+		this.text = NP.Translator.translate(this.text);
+
+		this.callParent(arguments);
+	}
 });

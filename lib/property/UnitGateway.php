@@ -12,6 +12,7 @@ use NP\core\db\Update;
  * @author Thomas Messier
  */
 class UnitGateway extends AbstractGateway {
+	protected $tableAlias = 'u';
 
 	/**
 	 * Override getSelect() function to add a join to the default data retrieval

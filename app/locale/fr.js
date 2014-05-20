@@ -699,6 +699,10 @@ Ext.define('NP.Locale', {
 	'Associated POs'       : 'Associated POs',
 	'Vendor Code'          : 'Vendor Code',
 	'Cycle From'           : 'Cycle From',
-	'Cycle To'             : 'Cycle To'
+	'Cycle To'             : 'Cycle To',
 
+	/**
+	 * IMAGE MANAGEMENT
+	 */
+	'<p>File Upload tool enables you to upload scanned images from your desktop to NexusPayables for indexing and processing.</p><p>Click the Select Files button to open a Browse window. In the Browse window, locate and select the file(s) to upload. Click the Open button. The file(s) will then display under the List tab in this File Upload window. Press the Upload Files button.</p><p>Please Note: Only 50 files can be uploaded at a time. Any number of files over the 50 limit will not be uploaded into the NexusPayables system.</p>' : '<p>File Upload tool enables you to upload scanned images from your desktop to NexusPayables for indexing and processing.</p><p>Click the Select Files button to open a Browse window. In the Browse window, locate and select the file(s) to upload. Click the Open button. The file(s) will then display under the List tab in this File Upload window. Press the Upload Files button.</p><p>Please Note: Only 50 files can be uploaded at a time. Any number of files over the 50 limit will not be uploaded into the NexusPayables system.</p>'
 });

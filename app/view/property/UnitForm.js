@@ -40,6 +40,8 @@ Ext.define('NP.view.property.UnitForm', {
 				xtype       : 'customcombo',
 				fieldLabel  : NP.Translator.translate('Type'),
 				name        : 'unittype_id',
+				editable	: false,
+				typeAhead	: false,
 				displayField: 'unittype_name',
 				valueField  : 'unittype_id',
 				allowBlank  : false,

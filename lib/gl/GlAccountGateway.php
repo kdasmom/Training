@@ -5,6 +5,8 @@ namespace NP\gl;
 use NP\core\AbstractGateway;
 use NP\core\db\Expression;
 use NP\core\db\Select;
+use NP\core\db\Update;
+use NP\core\db\Where;
 use NP\system\ConfigService;
 
 use NP\core\db\Adapter;
@@ -228,7 +230,7 @@ class GlAccountGateway extends AbstractGateway {
         $select->columnsAll()
                 ->joinTree(['tree_id','tree_parent'])
                 ->joinTree2()
-                ->joinCategory(array('glaccount_category' => 'glaccount_name'))
+                ->joinCategory(array('glaccount_category_id' => 'glaccount_id', 'glaccount_category' => 'glaccount_name'))
                 ->joinType(array('glaccounttype_id','glaccounttype_name'))
                 ->joinUpdatedBy(array('glaccount_updateby' => 'userprofile_id', 'userprofile_username'));
 
@@ -330,6 +332,22 @@ class GlAccountGateway extends AbstractGateway {
 		}
 
         return $this->adapter->query($select, $params);
+    }
+
+	public function getReportCategories($integrationPackageId) {
+		$select = new Select();
+
+		$select->from(['g1' => 'glaccount'])
+				->distinct()
+				->columns(['glaccount_name', 'glaccount_id', 'glaccount_number'])
+				->join(['t1' => 'tree'], "g1.glaccount_id=t1.tablekey_id and t1.table_name='glaccount'", [])
+				->join(['t2' => 'tree'], "t1.tree_id = t2.tree_parent and t2.table_name='glaccount'", [])
+				->join(['g2' => 'glaccount'], "g2.glaccount_id=t2.tablekey_id", [])
+				->whereIsNull('g1.glaccounttype_id')
+				->whereEquals('g1.integration_package_id', '?')
+				->order('g1.glaccount_name');
+
+		return $this->adapter->query($select, [$integrationPackageId]);
     }
 
 	public function findBudgetAmountByGlCategory($integration_package_id) {
@@ -473,6 +491,19 @@ class GlAccountGateway extends AbstractGateway {
 
         return $this->adapter->query($select, [$property_id, $period]);
     }
+
+	public function updateStatus($glaccounts, $status) {
+		$update = new Update();
+
+		$where = new Where();
+		$where->in('glaccount_id', implode(',', $glaccounts));
+
+		$update->table('glaccount')
+			->values(['glaccount_status' => "?"])
+			->where($where);
+
+		return $this->adapter->query($update, [$status]);
+	}
 }
 
 ?>

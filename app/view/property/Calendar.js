@@ -10,6 +10,7 @@ Ext.define('NP.view.property.Calendar', {
     requires: [
     	'NP.view.property.FiscalCalendarGrid',
     	'NP.view.property.FiscalCalendarForm',
+    	'NP.view.property.ClosingCalendarDistibutor',
     	'NP.view.shared.button.New'
     ],
 
@@ -41,8 +42,13 @@ Ext.define('NP.view.property.Calendar', {
 				flex  : 1
 	    	},{
 				xtype      : 'property.fiscalcalendarform',
-				flex       : 1
-	    	}
+				flex       : 1,
+				hideDistributor : false
+	    	},
+			{
+				xtype		: 'property.closingcalendardistibutor',
+				flex		: 1
+			}
 		];
 
     	this.callParent(arguments);
