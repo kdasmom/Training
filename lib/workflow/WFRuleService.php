@@ -301,7 +301,6 @@ class WFRuleService extends AbstractService {
 
 		// get number type
 		switch ($data['ruletypeid']) {
-			case WFRuleTypeGateway::VENDOR_ESTIMATE_TOTAL_DOLLAR_AMOUNT:
 			case WFRuleTypeGateway::YTD_BUDGET_PERCENT_OVERAGE_BY_GL_CODE:
 			case WFRuleTypeGateway::YTD_BUDGET_PERCENT_OVERAGE_BY_GL_CATEGORY:
 			case WFRuleTypeGateway::MTD_BUDGET_PERCENT_OVERAGE_BY_GL_CODE:
