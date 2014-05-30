@@ -443,8 +443,10 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 		contractsStore.load();
 
 		var allContracts = false;
-		if (me.data.tablekey_list_id.length == 1) {
-			allContracts = (me.data.tablekey_list_id[0]) ? false : true;
+		if (me.data) {
+			if (me.data.tablekey_list_id.length == 1) {
+				allContracts = (me.data.tablekey_list_id[0]) ? false : true;
+			}
 		}
 
 		return [
