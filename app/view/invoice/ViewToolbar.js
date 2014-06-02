@@ -489,10 +489,11 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                 return false;
             }
 
-            var hasExpiredInsurance = false;
+            var hasExpiredInsurance = false,
+                warningStore        = warningView[0].getStore();
+            
             if (NP.Config.getSetting('CP.AllowExpiredInsurance', '1') == '0') {
-                var warningStore     = warningView[0].getStore(),
-                    insuranceWarning = warningStore.findExact('warning_type', 'insuranceExpiration');
+                var insuranceWarning = warningStore.findExact('warning_type', 'insuranceExpiration');
                 if (insuranceWarning !== -1) {
                     insuranceWarning = warningStore.getAt(insuranceWarning);
                     hasExpiredInsurance = insuranceWarning.get('warning_data').expired;
