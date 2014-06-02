@@ -176,7 +176,7 @@ Ext.define('NP.lib.ui.Assigner', {
         }
 
         Ext.resumeLayouts(true);
-console.log('Destroying mask', me, me._mask);
+
         if (me._mask && me._mask.destroy) {
             me._mask.destroy();
             me._mask = null;

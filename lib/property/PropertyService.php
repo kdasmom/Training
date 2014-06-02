@@ -110,7 +110,7 @@ class PropertyService extends AbstractService {
 			\NP\core\db\Where::buildCriteria($wheres),
 			$params,
 			"property_name",
-			array('property_id','property_id_alt','property_name','property_status')
+			array('property_id','property_id_alt','property_name','property_salestax','property_status')
 		);
 	}
 

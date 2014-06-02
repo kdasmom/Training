@@ -321,6 +321,10 @@ class PurchaseOrderEntity extends \NP\core\AbstractEntity implements \NP\workflo
 		return $total;
 	}
 
+	public function getPeriod() {
+		return $this->purchaseorder_period;
+	}
+
 	public function getApplicableRuleTypes() {
 		return ['purchaseorder','poitem','budget','vendor'];
 	}

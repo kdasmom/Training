@@ -99,11 +99,13 @@ Ext.define('NP.view.po.ViewToolbar', {
                 displayCondition: me.isDeleteBtnVisible.bind(me)
             },{
                 text            : NP.Translator.translate('Approve and Route Manually'),
+                itemId          : 'poApproveAndRouteBtn',
                 iconCls         : 'route-btn',
                 moduleId        : 1026,
                 displayCondition: me.isRouteBtnVisible.bind(me)
             },{
                 text            : NP.Translator.translate('Pass and Route Manually'),
+                itemId          : 'poPassAndRouteBtn',
                 iconCls         : 'route-btn',
                 moduleId        : 6003,
                 displayCondition: me.isRouteBtnVisible.bind(me)

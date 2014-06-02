@@ -326,130 +326,6 @@ abstract class AbstractEntityService extends AbstractService {
         );
     }
 
-	/**
-	 * Get budget info for an entity line item
-	 */
-	public function getLineBudgetInfo($item_id, $type='account', $includeYear=false) {
-		$data = $this->getMonthlyLineBudgetInfo($item_id, $type);
-
-		if ($includeYear) {
-			$data = array_merge($data, $this->getYearlyLineBudgetInfo($item_id, $type));
-		}
-
-		return $data;
-	}
-
-	public function getMonthlyLineBudgetInfo($item_id, $type='account') {
-		$itemGtw = "{$this->itemGateway}Gateway";
-		$item = $this->$itemGtw->findById($item_id, [
-			'property_id',
-			'glaccount_id',
-			'item_period' => "{$this->itemTable}_period"
-		]);
-
-		$gl     = $this->glAccountGateway->findById($item['glaccount_id']);
-		$period = \DateTime::createFromFormat(Util::getServerDateFormat(), $item['item_period']);
-		
-		$data = [
-			'property_name'  => $this->propertyGateway->findValue('property_id = ?', [$item['property_id']], 'property_name'),
-			'glaccount_name' => ($type == 'account') ? $gl['glaccount_name'] : $gl['glaccount_category'],
-			'month'          => (int)$period->format('n')
-		];
-		
-		$data['package_type_name'] = $this->propertyGateway->findSingle(
-			'pr.property_id = ?',
-			[$item['property_id']],
-			[],
-			null,
-			[
-				new \NP\property\sql\join\PropertyIntPkgJoin([]),
-				new \NP\system\sql\join\IntPkgIntPkgTypeJoin()
-			]
-		);
-		$data['package_type_name'] = $data['package_type_name']['Integration_Package_Type_Display_Name'];
-
-		$isCategory = ($type == 'category') ? true : false;
-		$fn = ($isCategory) ? 'getCategoryBudgetByPeriod' : 'getAccountBudgetByPeriod';
-		$glaccount_id = ($isCategory) ? $gl['glaccount_category_id'] : $gl['glaccount_id'];
-
-		$budget = $this->budgetGateway->$fn($glaccount_id, $item['property_id'], $item['item_period']);
-
-		$invoiceAmount = $this->invoiceGateway->getTotalAmountByBudget(
-			$glaccount_id,
-			$item['property_id'],
-			$item['item_period'],
-			null,
-			$isCategory
-		);
-
-		$poAmount = $this->purchaseOrderGateway->getTotalAmountByBudget(
-			$glaccount_id,
-			$item['property_id'],
-			$item['item_period'],
-			null,
-			$isCategory
-		);
-
-		$data['month_budget']  = $budget['budget_amount'];
-		$data['month_actual']  = $budget['actual_amount'];
-		$data['month_invoice'] = $invoiceAmount;
-		$data['month_po']      = $poAmount;
-
-		return $data;
-	}
-
-	public function getYearlyLineBudgetInfo($item_id, $type='account') {
-		$itemGtw = "{$this->itemGateway}Gateway";
-		$item = $this->$itemGtw->findById($item_id, [
-			'property_id',
-			'glaccount_id',
-			'item_period' => "{$this->itemTable}_period"
-		]);
-
-		$gl     = $this->glAccountGateway->findById($item['glaccount_id']);
-		$period = \DateTime::createFromFormat(Util::getServerDateFormat(), $item['item_period']);
-		
-		$fiscalYear   = $this->fiscalCalService->getFiscalYear($item['property_id'], $period);
-		$start_period = Util::formatDateForDB($fiscalYear['start']);
-		$end_period   = Util::formatDateForDB($fiscalYear['end']);
-
-		$isCategory = ($type == 'category') ? true : false;
-		$fn = ($isCategory) ? 'getCategoryBudgetByPeriod' : 'getAccountBudgetByPeriod';
-		$glaccount_id = ($isCategory) ? $gl['glaccount_category_id'] : $gl['glaccount_id'];
-
-		$budget = $this->budgetGateway->$fn($glaccount_id, $item['property_id'], $start_period, $end_period);
-
-		$data = [
-			'property_name'  => $this->propertyGateway->findValue('property_id = ?', [$item['property_id']], 'property_name'),
-			'glaccount_name' => ($type == 'account') ? $gl['glaccount_name'] : $gl['glaccount_category'],
-			'month'          => (int)$period->format('n')
-		];
-
-		$invoiceAmount = $this->invoiceGateway->getTotalAmountByBudget(
-			$glaccount_id,
-			$item['property_id'],
-			$start_period,
-			$end_period,
-			$isCategory
-		);
-
-		$poAmount = $this->purchaseOrderGateway->getTotalAmountByBudget(
-			$glaccount_id,
-			$item['property_id'],
-			$start_period,
-			$end_period,
-			$isCategory
-		);
-
-		$data['year']         = $fiscalYear['year'];
-		$data['year_budget']  = $budget['budget_amount'];
-		$data['year_actual']  = $budget['actual_amount'];
-		$data['year_invoice'] = $invoiceAmount;
-		$data['year_po']      = $poAmount;
-
-		return $data;
-	}
-
     /**
      * Gets an HTML version of an entity
      */
@@ -641,7 +517,7 @@ abstract class AbstractEntityService extends AbstractService {
     	
     	try {
     		// Add an the image to the system
-			$result         = $this->imageService->upload($this->title, $entity_id);
+			$result         = $this->imageService->upload();
 			$file           = $result['file'];
 			$image_index_id = $result['image_index_id'];
 			$errors         = $result['errors'];
@@ -1655,10 +1531,21 @@ abstract class AbstractEntityService extends AbstractService {
 							// Error handling
 							if (!$result['success']) {
 								$errors = array_merge($errors, $result['errors']);
+								break;
+							} else {
+								$data['lines'][$linenum][$itemPk] = $result['item_id'];
 							}
 						}
-						$lineIds[] = $item[$itemPk];
+						$lineIds[] = $data['lines'][$linenum][$itemPk];
 					}
+				}
+			}
+
+			// Link PO items if appropriate
+			if ($this->type == 'invoice' && !count($errors)) {
+				$result = $this->processLinkedPoLines($data['lines']);
+				if (!$result['success']) {
+					$errors = $result['errors'];
 				}
 			}
 
@@ -1826,7 +1713,8 @@ abstract class AbstractEntityService extends AbstractService {
 		
 		return array(
 		    'success' => (count($errors)) ? false : true,
-		    'errors'  => $errors
+		    'errors'  => $errors,
+		    'item_id' => $item->$itemPk
 		);
 	}
 
@@ -2193,5 +2081,75 @@ abstract class AbstractEntityService extends AbstractService {
 				'errors'  => $errors
 			];
 		}
+	}
+
+	/**
+	 * Cancels a line on a PO
+	 */
+	public function cancelLine($poitem_id) {
+		$errors = [];
+		$now    = \NP\util\Util::formatDateForDB();
+		$this->poItemGateway->beginTransaction();
+		
+		try {
+			$this->poItemGateway->update([
+				'poitem_id'                    => $poitem_id,
+				'reftable_name'                => 'invoiceitem',
+				'reftablekey_id'               => 0,
+				'poitem_cancel_userprofile_id' => $this->securityService->getUserId(),
+				'poitem_cancel_dt'             => $now
+			]);
+
+			$purchaseorder_id = $this->poItemGateway->findValue(
+				'poitem_id = ?',
+				[$poitem_id],
+				'purchaseorder_id'
+			);
+
+			$status = $this->purchaseOrderGateway->findValue(
+				'purchaseorder_id = ?',
+				[$purchaseorder_id],
+				'purchaseorder_status'
+			);
+
+			$unlinked = $this->poItemGateway->findUnlinkedItems($purchaseorder_id);
+
+			if (count($unlinked) == 0) {
+				$status = 'closed';
+				// If there are no more linked items, cancel the PO
+				$this->purchaseOrderGateway->update([
+					'purchaseorder_id'     => $purchaseorder_id,
+					'purchaseorder_status' => $status
+				]);
+			}
+
+			$rctitem_id = $this->rctItemGateway->findValue(
+				['rctitem_status'=>"'open'", 'poitem_id'=>'?'],
+				[$poitem_id],
+				'rctitem_id'
+			);
+
+			if (!empty($rctitem_id)) {
+				$result = $this->cancelReceiptLine($rctitem_id);
+
+				if (!$result['success']) {
+					$errors = $result['errors'];
+				}
+			}
+		} catch(\Exception $e) {
+			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+		
+		if (count($errors)) {
+			$this->poItemGateway->rollback();
+		} else {
+			$this->poItemGateway->commit();
+		}
+		
+		return array(
+			'success'              => (count($errors)) ? false : true,
+			'errors'               => $errors,
+			'purchaseorder_status' => $status
+		);
 	}
 }

@@ -16,6 +16,7 @@ Ext.define('NP.model.workflow.WfRule', {
 		{ name: 'wfrule_operand' },
 		{ name: 'wfrule_string' },
 		{ name: 'wfrule_number_end' },
-		{ name: 'wfrule_number' }
+		{ name: 'wfrule_number' },
+		{ name: 'region_id' }
     ]
 });

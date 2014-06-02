@@ -273,5 +273,9 @@ class PoItemEntity extends \NP\core\AbstractEntity implements \NP\workflow\Workf
 		return $this->poitem_amount + $this->poitem_shipping + $this->poitem_salestax;
 	}
 
+	public function getPeriod() {
+		return $this->poitem_period;
+	}
+
 }
 ?>

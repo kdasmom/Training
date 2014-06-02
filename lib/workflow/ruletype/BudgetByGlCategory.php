@@ -23,7 +23,12 @@ class BudgetByGlCategory extends BudgetByGl implements RuleTypeInterface {
 		}
 
 		if ($suppressBudgetGl == '0' && array_key_exists($entity->glaccount_id, $scope)) {
-			$budgetInfo = $this->entityService->getMonthlyLineBudgetInfo($entity->$itemField, 'category');
+			$budgetInfo = $this->entityService->getMonthlyLineBudgetInfo(
+				$entity->property_id,
+				$entity->glaccount_id,
+				$entity->getPeriod(),
+				'category'
+			);
 			$variance   = ($budgetInfo['month_actual'] + $budgetInfo['month_invoice'] + $budgetInfo['month_po']) - $budgetInfo['month_budget'];
 
 			$gl             = $this->gatewayManager->get('GlAccountGateway')->findById($entity->glaccount_id, []);

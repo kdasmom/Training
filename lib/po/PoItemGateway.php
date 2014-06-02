@@ -26,39 +26,7 @@ class PoItemGateway extends AbstractGateway {
 
 		// If not combining lines, do "normal" query getting most info for the line item
 		if (!$combineSplit) {
-			$select = new sql\PoItemSelect();
-
-			$select->allColumns('pi')
-					->columnBudgetVariance($this->configService->get('PN.Intl.budgetCompareWithTax', '1'))
-					->join(new sql\join\PoItemPurchaseorderJoin())
-					->join(new sql\join\PoItemInvoiceItemJoin(['invoiceitem_id','invoiceitem_amount','invoice_id']))
-					->join(new \NP\invoice\sql\join\InvoiceItemInvoiceJoin(['invoice_ref'], Select::JOIN_LEFT))
-					->join(new sql\join\PoItemRctItemJoin(['rctitem_status']))
-					->join(new sql\join\RctItemReceiptJoin(['receipt_ref','receipt_createdt','receipt_status']))
-					->join(new sql\join\ReceiptUserprofileJoin(['receipt_creator'=>'userprofile_username']))
-					->join(
-						['upc'=>'userprofile'],
-						'pi.poitem_cancel_userprofile_id = upc.userprofile_id',
-						['cancel_userprofile_username'=>'userprofile_username'],
-						Select::JOIN_LEFT
-					)
-					->join(new sql\join\PoItemPropertyJoin())
-					->join(new sql\join\PoItemGlAccountJoin())
-					->join(new sql\join\PoItemUnitJoin())
-					->join(new sql\join\PoItemDfSplitJoin())
-					->join(new sql\join\PoItemJobAssociationJoin())
-					->join(new \NP\jobcosting\sql\join\JobAssociationJbContractJoin())
-					->join(new \NP\jobcosting\sql\join\JobAssociationJbChangeOrderJoin())
-					->join(new \NP\jobcosting\sql\join\JobAssociationJbJobCodeJoin())
-					->join(new \NP\jobcosting\sql\join\JobAssociationJbPhaseCodeJoin())
-					->join(new \NP\jobcosting\sql\join\JobAssociationJbCostCodeJoin())
-					->join(new \NP\jobcosting\sql\join\JbContractJbContractBudgetJoin(
-						$this->configService->get('PN.jobcosting.useJobBudgets', '0')
-					))
-					->join(new \NP\shared\sql\join\EntityLineGlAccountYearJoin('poitem'))
-					->join(new \NP\shared\sql\join\EntityLineBudgetJoin('poitem'))
-					->whereEquals('pi.purchaseorder_id', '?')
-					->order('pi.poitem_linenum ASC');
+			$select = $this->getPoLineSelect();
 		}
 		// Otherwise, when combining lines, retrieve "simple" list so that group by works properly
 		// (must exclude property, GL, etc.)
@@ -145,6 +113,44 @@ class PoItemGateway extends AbstractGateway {
 		}
 
 		return $this->adapter->query($select, $params);
+	}
+
+	private function getPoLineSelect() {
+		$select = new sql\PoItemSelect();
+
+		$select->allColumns('pi')
+				->columnBudgetVariance($this->configService->get('PN.Intl.budgetCompareWithTax', '1'))
+				->join(new sql\join\PoItemPurchaseorderJoin())
+				->join(new sql\join\PoItemInvoiceItemJoin(['invoiceitem_id','invoiceitem_amount','invoice_id']))
+				->join(new \NP\invoice\sql\join\InvoiceItemInvoiceJoin(['invoice_ref'], Select::JOIN_LEFT))
+				->join(new sql\join\PoItemRctItemJoin(['rctitem_status']))
+				->join(new sql\join\RctItemReceiptJoin(['receipt_ref','receipt_createdt','receipt_status']))
+				->join(new sql\join\ReceiptUserprofileJoin(['receipt_creator'=>'userprofile_username']))
+				->join(
+					['upc'=>'userprofile'],
+					'pi.poitem_cancel_userprofile_id = upc.userprofile_id',
+					['cancel_userprofile_username'=>'userprofile_username'],
+					Select::JOIN_LEFT
+				)
+				->join(new sql\join\PoItemPropertyJoin(['property_name','property_id_alt','property_salestax','property_status']))
+				->join(new sql\join\PoItemGlAccountJoin())
+				->join(new sql\join\PoItemUnitJoin())
+				->join(new sql\join\PoItemDfSplitJoin())
+				->join(new sql\join\PoItemJobAssociationJoin())
+				->join(new \NP\jobcosting\sql\join\JobAssociationJbContractJoin())
+				->join(new \NP\jobcosting\sql\join\JobAssociationJbChangeOrderJoin())
+				->join(new \NP\jobcosting\sql\join\JobAssociationJbJobCodeJoin())
+				->join(new \NP\jobcosting\sql\join\JobAssociationJbPhaseCodeJoin())
+				->join(new \NP\jobcosting\sql\join\JobAssociationJbCostCodeJoin())
+				->join(new \NP\jobcosting\sql\join\JbContractJbContractBudgetJoin(
+					$this->configService->get('PN.jobcosting.useJobBudgets', '0')
+				))
+				->join(new \NP\shared\sql\join\EntityLineGlAccountYearJoin('poitem'))
+				->join(new \NP\shared\sql\join\EntityLineBudgetJoin('poitem'))
+				->whereEquals('pi.purchaseorder_id', '?')
+				->order('pi.poitem_linenum ASC');
+
+		return $select;
 	}
 
 	/**
@@ -300,6 +306,27 @@ class PoItemGateway extends AbstractGateway {
 					);
 
 		return $this->adapter->query($select, [$purchaseorder_id, $property_id]);
+	}
+
+	public function findPoLinkableLines($purchaseorder_id, $receiptRequired) {
+		$select = $this->getPoLineSelect();
+
+		$select->whereIsEmpty('pi.reftable_name');
+
+		if ($receiptRequired == 1) {
+			$select->whereEquals('ri.rctitem_status', "'approved'");
+		}
+
+		return $this->adapter->query($select, [$purchaseorder_id]);
+	}
+
+	public function findUnlinkedLines($purchaseorder_id, $cols=null) {
+		$select = $this->getSelect()
+					->columns($cols)
+					->whereEquals('purchaseorder_id', '?')
+					->whereIsEmpty('reftable_name');
+
+		return $this->adapter->query($select, [$purchaseorder_id]);
 	}
 }
 

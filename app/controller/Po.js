@@ -25,7 +25,7 @@ Ext.define('NP.controller.Po', {
 	views: ['po.Register','po.View','shared.invoicepo.ImagesManageWindow','shared.invoicepo.ImagesAddWindow',
 			'shared.invoicepo.SplitWindow','shared.invoicepo.RejectWindow','NP.view.vendor.VendorSelectorWindow',
 			'NP.view.shared.invoicepo.ScheduleWindow','NP.view.shared.invoicepo.TemplateWindow',
-			'shared.invoicepo.UseTemplateWindow','po.ForwardWindow'],
+			'shared.invoicepo.UseTemplateWindow','po.ForwardWindow','shared.invoicepo.RouteWindow'],
 
 	shortName  : 'po',
 	longName   : 'purchaseorder',
@@ -44,8 +44,9 @@ Ext.define('NP.controller.Po', {
 				edit           : me.onAfterLineGridEdit.bind(me),
 				changequantity : me.onChangeQuantity.bind(me),
 				changeunitprice: me.onChangeUnitPrice.bind(me),
-				changeamount   : me.onChangeAmount.bind(me),
-				tablastfield   : me.onLineAddClick
+				tablastfield   : me.onLineAddClick,
+				selecttaxable  : me.onSelectTaxable.bind(me),
+				clickdeleteline: me.onDeleteLineClick.bind(me)
 			},
 
 			'[xtype="po.view"] [xtype="shared.invoicepo.viewlineitems"]': {
@@ -143,13 +144,8 @@ Ext.define('NP.controller.Po', {
 		var form = me.setView('NP.view.po.View', viewCfg, null, true);
 
 		if (!purchaseorder_id) {
-			// Set the title
-			me.setPoViewTitle();
-
-			me.buildViewToolbar();
-
-			// Enable the property field when dealing with a new invoice
-			form.findField('property_id').enable();
+			// Setup the title, toolbar, property and vendor field
+			me.updateEntityViewState({ title: true, toolbar: true, property: true, vendor: true }, true);
 		}
 	},
 
@@ -198,21 +194,37 @@ Ext.define('NP.controller.Po', {
 			periodField   = boundForm.findField('purchaseorder_period');
 
 		if (updateOption('vendor')) {
-			// Set the vendor
-			vendorField.setDefaultRec(Ext.create('NP.model.vendor.Vendor', data));
+			var property_id = NP.Security.getCurrentContext().property_id;
+
+			if (purchaseorder_id !== null) {
+				// Set the vendor
+				vendorField.setDefaultRec(Ext.create('NP.model.vendor.Vendor', data));
+				
+				me.setVendorDisplay();
+				me.setVendorFieldState(data['purchaseorder_status']);
+
+				property_id = data['property_id'];
+			}
+
 			vendorField.addExtraParams({
-				property_id: data['property_id']
+				property_id: property_id
 			});
-			me.setVendorDisplay();
-			me.setVendorFieldState(data['purchaseorder_status']);
 		}
 
 		if (updateOption('property')) {
 			if (purchaseorder_id !== null) {
 				// Set the property
 				propertyField.setDefaultRec(Ext.create('NP.model.property.Property', data));
-				// Add valid periods to the invoice period store
+				// Add valid periods to the PO period store
 				me.populatePeriods(data['accounting_period'], data['purchaseorder_period']);
+			} else {
+				var propRec = Ext.getStore('property.AllProperties').getById(
+					NP.Security.getCurrentContext().property_id
+				);
+				// Set the property
+				propertyField.setDefaultRec(propRec);
+
+				me.onPropertyComboSelect(me.getPropertyCombo(), [propRec]);
 			}
 			me.setPropertyFieldState(po.get('purchaseorder_status'));
 		}

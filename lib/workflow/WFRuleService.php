@@ -77,11 +77,11 @@ class WFRuleService extends AbstractService {
 	 * @param int $id - workflow rule id
 	 * @return array
 	 */
-	public function get($id) {
+	public function get($id, $mode) {
         $asp_client_id = $this->configService->getClientId();
 		$unitAttachDisplay = $this->configService->findSysValueByName('PN.InvoiceOptions.UnitAttachDisplay');
 
-        return $this->wfRuleGateway->getRule($id, $asp_client_id, ['UnitAttachDisplay' => $unitAttachDisplay]);
+        return $this->wfRuleGateway->getRule($id, $asp_client_id, $mode, ['UnitAttachDisplay' => $unitAttachDisplay]);
     }
 
 	/**
@@ -156,7 +156,8 @@ class WFRuleService extends AbstractService {
             'DTS'            => date('Y-m-d H:i:s'),
             'wfrule_number_end'    => $rule['wfrule_number_end'],
             'isAllPropertiesWF'    => $rule['isAllPropertiesWF'],
-            'wfrule_lastupdatedby' => $rule['wfrule_lastupdatedby']
+            'wfrule_lastupdatedby' => $rule['wfrule_lastupdatedby'],
+            'region_id'            => $rule['region_id']
         ]);
 
         $this->wfRuleGateway->beginTransaction();
@@ -238,19 +239,56 @@ class WFRuleService extends AbstractService {
 	 * @return array
 	 */
 	public function changeStatus($id, $status) {
-        if (!empty($id) && in_array($status, [1, 2])) {
-            foreach ($id as $item) {
-                $this->wfRuleGateway->setRuleStatus($item, $status);
-            }
-            return [
-                'success' => true
-            ];
-        }
-        return [
-            'success' => false,
-            'error'   => 'Incorrect identifiers list or status'
-        ];
-    }
+		if (!empty($id) && in_array($status, [1, 2])) {
+			$rulesWithConflicts = [];
+			$incompleteRules= [];
+
+			if ($status == 1) {
+				$rulesWithConflictsIdList = [];
+				$incompleteRulesIdList = [];
+
+				foreach ($id as $ruleid) {
+					$conflictingRules = $this->findConflictingRules($ruleid);
+					if (count($conflictingRules)) {
+						$rulesWithConflictsIdList[] = $ruleid;
+					}
+
+					$routes = $this->GetRuleRoutes($ruleid);
+					if (!count($routes)) {
+						$incompleteRulesIdList[] = $ruleid;
+					}
+
+					if (!count($conflictingRules) && count($routes)) {
+						$this->wfRuleGateway->setRuleStatus($ruleid, $status);
+					}
+				}
+				if (count($rulesWithConflictsIdList) > 0) {
+					$rulesWithConflicts = $this->wfRuleGateway->find(
+						Where::get()->in('wfrule_id', implode(',', $rulesWithConflictsIdList))
+					);
+				}
+				if (count($incompleteRulesIdList) > 0) {
+					$incompleteRules = $this->wfRuleGateway->find(
+						Where::get()->in('wfrule_id', implode(',', $incompleteRulesIdList))
+					);
+				}
+			}
+			else {
+				foreach ($id as $ruleid) {
+					$this->wfRuleGateway->setRuleStatus($ruleid, $status);
+				}
+			}
+			return [
+				'success'            => true,
+				'rulesWithConflicts' => $rulesWithConflicts,
+				'incompleteRules'    => $incompleteRules
+			];
+		}
+		return [
+			'success' => false,
+			'error'   => 'Incorrect identifiers list or status'
+		];
+	}
 
     public function search($type = 0, $criteria = null, $page = null, $pageSize = null, $sort = "wfrule_name") {
         $asp_client_id = $this->configService->getClientId();
@@ -273,7 +311,7 @@ class WFRuleService extends AbstractService {
 
 		return [
 			'success' => true,
-			'ruledata' => $this->get($ruleid)
+			'ruledata' => $this->get($ruleid, 'edit')
 		];
 	}
 
@@ -286,22 +324,18 @@ class WFRuleService extends AbstractService {
 
 
 	public function activateRule($ruleid) {
-		$activateStatus = false;
-
 		$routes = $this->GetRuleRoutes($ruleid);
 		$conflictingRules = $this->findConflictingRules($ruleid);
 
 		if (!count($conflictingRules) && count($routes)) {
-			$activateStatus = true;
 			$dataSet = [
-				'wfrule_id' => $ruleid,
+				'wfrule_id'     => $ruleid,
 				'wfrule_status' => 'active'
 			];
 			$this->wfRuleGateway->save($dataSet);
 		}
 
 		return [
-			'activateStatus'   => $activateStatus,
 			'conflictingRules' => $conflictingRules
 		];
 	}
@@ -343,7 +377,8 @@ class WFRuleService extends AbstractService {
 			'wfrule_number'        => (isset($data['comparisonValue']) && is_numeric($data['comparisonValue'])) ? $data['comparisonValue'] : null,
 			'wfrule_number_end'    => isset($data['comparisonValueTo']) ? $data['comparisonValueTo'] : null,
 			'wfrule_string'        => $numberType,
-			'isAllPropertiesWF'    => $data['all_properties']
+			'isAllPropertiesWF'    => ($data['all_properties'] == wfRuleGateway::PROPERTY_TYPE_ALL) ? wfRuleGateway::PROPERTY_TYPE_ALL : 0,
+			'region_id'            => isset($data['region_id']) ? $data['region_id'] : null
 		];
 
 		$this->wfRuleGateway->beginTransaction();
@@ -361,17 +396,23 @@ class WFRuleService extends AbstractService {
 			}
 
 			// save wf rule properties
-			if ($data['all_properties']) {
-				$this->wfRuleTargetGateway->addAllPropertiesToRules($ruleid, 'property', $asp_client_id, [1, -1]);
-			}
-			else {
-				if (!is_null($property_keys)) {
-					$this->wfRuleTargetGateway->delete(['wfrule_id' => '?'], [$ruleid]);
+			if ($data['all_properties'] != wfRuleGateway::PROPERTY_TYPE_REGION) {
+				if ($data['all_properties']) {
+					$this->wfRuleTargetGateway->addAllPropertiesToRules($ruleid, 'property', $asp_client_id, [1, -1]);
+				}
+				else {
+					if (!is_null($property_keys)) {
+						$this->wfRuleTargetGateway->delete(['wfrule_id' => '?'], [$ruleid]);
 
-					foreach ($property_keys as $property_key) {
-						$this->SaveWFRuleTarget($ruleid, 'property', $property_key);
+						foreach ($property_keys as $property_key) {
+							$this->SaveWFRuleTarget($ruleid, 'property', $property_key);
+						}
 					}
 				}
+			}
+			else {
+				$this->wfRuleTargetGateway->delete(['wfrule_id' => '?'], [$ruleid]);
+				$this->wfRuleTargetGateway->addPropertiesByRegion($ruleid, $dataSet['region_id']);
 			}
 
 			// save wf rule type options
@@ -565,7 +606,6 @@ class WFRuleService extends AbstractService {
 		else {
 			// error
 		}
-		$oktoactivate = true;
 	}
 
 	public function findConflictingRules($wfrule_id) {
@@ -575,7 +615,7 @@ class WFRuleService extends AbstractService {
 
 		$countDuplicateRules = $this->WfRuleGateway->findCountDuplicateRules($wfrule_id, $rule['wfruletype_id'], $asp_client_id);
 
-		$originatorConflicts = []; //delete
+		$conflictsRules = [];
 
 		if ($countDuplicateRules > 0) {
 			$conflictingRulesByProperties = $this->wfRuleGateway->findConflictingRulesByProperties($rule['wfrule_id'], $rule['wfruletype_id'], $rule['wfrule_operand'], $rule['wfrule_number'], $rule['wfrule_number_end']);
@@ -583,7 +623,6 @@ class WFRuleService extends AbstractService {
 			if (count($conflictingRulesByProperties) > 0)
 			{
 				$routes = $this->wfActionGateway->find('wfrule_id = ?', [$wfrule_id]);
-//				$originatorConflicts = [];
 
 				foreach ($routes as $route) {
 					$originator_tablekey_id = $route['wfaction_originator_tablekey_id'];
@@ -591,33 +630,95 @@ class WFRuleService extends AbstractService {
 
 					if ($originator_tablename == 'role') {
 						$originatorUserRoleConflicts = $this->wfActionGateway->findOriginatorUserRolesConflicts($wfrule_id, $conflictingRulesByProperties, $originator_tablekey_id);
-						$originatorConflicts = array_merge($originatorConflicts, $originatorUserRoleConflicts);
+						$conflictsRules = array_merge($conflictsRules, $originatorUserRoleConflicts);
 					}
 
 					if ($originator_tablename == 'userprofilerole') {
-						$originatorProfileConflicts = $this->wfActionGateway->findOriginatorUserprofileConflicts($wfrule_id, $conflictingRulesByProperties, $originator_tablekey_id);
-						$originatorConflicts = array_merge($originatorConflicts, $originatorProfileConflicts);
+						$originatorConflicts = $this->wfActionGateway->findOriginatorUserprofileConflicts($wfrule_id, $conflictingRulesByProperties, $originator_tablekey_id);
+						$conflictsRules = array_merge($conflictsRules, $originatorConflicts);
 
-						if (!count($originatorConflicts)) {
-//							$userprofile = $this->userprofileGateway->findById($originator_tablekey_id);
-//							$originator_tablekey_id = $userprofile['role_id'];
+						if (!count($conflictsRules)) {
 							$userprofile = $this->wfRuleGateway->findUserProfileById($originator_tablekey_id);
 							$originator_tablekey_id = $userprofile[0]['role_id'];
 						}
 					}
 
-					if (!count($originatorConflicts)) {
+					if (!count($conflictsRules)) {
 						$originatorRoleConflicts = $this->wfActionGateway->findOriginatorRolesConflicts($wfrule_id, $conflictingRulesByProperties, $originator_tablekey_id);
-						$originatorConflicts = array_merge($originatorConflicts, $originatorRoleConflicts);
+						$conflictsRules = array_merge($conflictsRules, $originatorRoleConflicts);
 					}
+				}
+			}
+
+
+			$conflictsRules = array_unique($conflictsRules);
+
+			if (count($conflictsRules)) {
+				switch ($rule['wfruletype_id']) {
+					case WFRuleTypeGateway::BUDGET_AMOUNT_BY_GL_CODE:
+					case WFRuleTypeGateway::INVOICE_BY_GL_CODE:
+					case WFRuleTypeGateway::PURCHASE_ORDER_BY_GL_CODE:
+					case WFRuleTypeGateway::BUDGET_AMOUNT_BY_GL_CATEGORY:
+					case WFRuleTypeGateway::INVOICE_BY_GL_CATEGORY:
+					case WFRuleTypeGateway::PURCHASE_ORDER_BY_GL_CATEGORY:
+					case WFRuleTypeGateway::YEARLY_BUDGET_BY_GL_CODE:
+					case WFRuleTypeGateway::YEARLY_BUDGET_BY_GL_CATEGORY:
+					case WFRuleTypeGateway::YTD_BUDGET_PERCENT_OVERAGE_BY_GL_CODE:
+					case WFRuleTypeGateway::YTD_BUDGET_PERCENT_OVERAGE_BY_GL_CATEGORY:
+					case WFRuleTypeGateway::MTD_BUDGET_PERCENT_OVERAGE_BY_GL_CODE:
+					case WFRuleTypeGateway::MTD_BUDGET_PERCENT_OVERAGE_BY_GL_CATEGORY:
+					case WFRuleTypeGateway::YTD_BUDGET_OVERAGE_BY_GL_CODE:
+					case WFRuleTypeGateway::YTD_BUDGET_OVERAGE_BY_GL_CATEGORY:
+					case WFRuleTypeGateway::RECEIPT_ITEM_TOTAL_BY_GL_CODE:
+					case WFRuleTypeGateway::RECEIPT_ITEM_TOTAL_BY_GL_CATEGORY:
+						$duplicateByOptions = $this->wfRuleScopeGateway->getDuplicateRulesByOptions($wfrule_id, $conflictsRules, 'glaccount');
+						$conflictsRules = \NP\util\Util::valueList($duplicateByOptions, 'wfrule_id');
+						break;
+					case WFRuleTypeGateway::PO_ITEM_AMOUNT_BY_DEPARTMENT:
+					case WFRuleTypeGateway::INVOICE_ITEM_AMOUNT_BY_DEPARTMENT:
+						$duplicateByOptions = $this->wfRuleScopeGateway->getDuplicateRulesByOptions($wfrule_id, $conflictsRules, 'unit');
+						$conflictsRules = \NP\util\Util::valueList($duplicateByOptions, 'wfrule_id');
+						break;
+					case WFRuleTypeGateway::SPECIFIC_VENDOR:
+					case WFRuleTypeGateway::SPECIFIC_VENDOR_MASTER_RULE:
+						$duplicateByOptions = $this->wfRuleScopeGateway->getDuplicateRulesByOptions($wfrule_id, $conflictsRules, 'vendor');
+						$conflictsRules = \NP\util\Util::valueList($duplicateByOptions, 'wfrule_id');
+						break;
+					case WFRuleTypeGateway::INVOICE_BY_CONTRACT_CODE:
+					case WFRuleTypeGateway::PURCHASE_ORDER_BY_CONTRACT_CODE:
+					case WFRuleTypeGateway::INVOICE_BY_CONTRACT_CODE_MASTER:
+					case WFRuleTypeGateway::PURCHASE_ORDER_BY_CONTRACT_CODE_MASTER:
+						$allContractsRes = $this->wfRuleScopeGateway->find("wfrule_id = ? AND table_name = ? AND tablekey_id = ?", [$wfrule_id, "'jbcontract'", 0]);
+						if (count($allContractsRes) == 0) {
+							$duplicateByOptions = $this->wfRuleScopeGateway->getDuplicateRulesByOptions($wfrule_id, $conflictsRules, 'jbcontract');
+							$conflictsRulesByOptions = \NP\util\Util::valueList($duplicateByOptions, 'wfrule_id');
+
+							$rulePlaceHolders = $this->wfRuleScopeGateway->createPlaceholders($conflictsRules);
+							$where = Where::get()->in('wfrule_id', $rulePlaceHolders)
+								->equals('table_name', "'jbcontract'")
+								->equals('tablekey_id', 0);
+							$duplicateByAllContracts = $this->wfRuleScopeGateway->find($where, [$conflictsRules], null, ['wfrule_id']);
+							$conflictsRulesByAllContracts = \NP\util\Util::valueList($duplicateByAllContracts, 'wfrule_id');
+							$conflictsRules = array_merge($conflictsRulesByOptions, $conflictsRulesByAllContracts);
+						}
+						break;
+					case WFRuleTypeGateway::INVOICE_BY_GL_JOB_CODE:
+					case WFRuleTypeGateway::PURCHASE_ORDER_BY_GL_JOB_CODE:
+						$duplicateByOptions = $this->wfRuleScopeGateway->getDuplicateRulesByOptions($wfrule_id, $conflictsRules, 'jbjobcode');
+						$conflictsRules = \NP\util\Util::valueList($duplicateByOptions, 'wfrule_id');
+						break;
+					case WFRuleTypeGateway::INVOICE_TOTAL_BY_PAY_BY:
+						$duplicateByOptions = $this->wfRuleScopeGateway->getDuplicateRulesByOptions($wfrule_id, $conflictsRules, 'invoicepaymenttype');
+						$conflictsRules = \NP\util\Util::valueList($duplicateByOptions, 'wfrule_id');
+						break;
 				}
 			}
 		}
 
-		$originatorConflicts = array_unique($originatorConflicts);
-		$conflictingRules = (count($originatorConflicts)) ? $this->wfRuleGateway->getConflictingRulesById($originatorConflicts) : [];
+		$conflictsRules = array_unique($conflictsRules);
+		$result = (count($conflictsRules)) ? $this->wfRuleGateway->getConflictingRulesById($conflictsRules) : [];
 
-		return $conflictingRules;
+		return $result;
 	}
 
 
@@ -777,63 +878,62 @@ class WFRuleService extends AbstractService {
 			$entity     = new $entityVars['class']($entityData);
 			$entity->setLines($entityData['lines']);
 
-			$rules = $this->getActiveRules($entity, $userprofile_id, true);
+			// Find rules that apply for this entity and user
+			$rules = $this->getActiveRules($entity, $userprofile_id, false);
 
+			// Loop through rules that were triggered
 			foreach ($rules as $rule) {
 				$rule_id = $rule['rule']->wfrule_id;
+
+				// Get routes for the current rule
 				$routes  = $this->wfActionGateway->findRoutesByRuleAndUser($rule_id, $userprofile_id);
+
+				// Loop through routes
 				foreach ($routes as $route) {
+					// If set to route to next level, figure out which role is the next level up
 					if ($route['wfaction_nextlevel'] == 'Y') {
 						$route['wfaction_receipient_tablename']   = 'role';
 						$route['wfaction_receipient_tablekey_id'] = $this->userprofileGateway->findUserParentRole($userprofile_id);
 					}
 
-					// Add the approve record
+					// Get the submitted approve type to be used on the approve record
 					$approvetype_id = $this->approveTypeGateway->getIdByName('submitted');
 
+					// Get the message from the rule type
 					$msg = $rule['ruleType']->getDescription();
 					$msg = str_replace('{entity}', $entityVars['displayName'], $msg);
 					
+					// Determine the unit_id if appropriate
 					$unit_id = null;
 					if (array_key_exists('unit_id', $rule['entity']->getFields())) {
 						$unit_id = $rule['entity']->unit_id;
 					}
 
+					// Determine the glaccount_id if appropriate
 					$glaccount_id = null;
 					if (array_key_exists('glaccount_id', $rule['entity']->getFields())) {
 						$glaccount_id = $rule['entity']->glaccount_id;
 					}
 
+					// Determine the wfruletarget_id if appropriate
 					$wfruletarget_id = $this->wfRuleTargetGateway->findValue(
 						['wfrule_id' => '?', 'tablekey_id' => '?'],
 						[$rule_id, $rule['entity']->property_id],
 						'wfruletarget_id'
 					);
 
-					$approve = new \NP\workflow\ApproveEntity([
-						'table_name'                   => $table_name,
-						'tablekey_id'                  => $tablekey_id,
-						'userprofile_id'               => $userprofile_id,
-						'delegation_to_userprofile_id' => $delegation_to_userprofile_id,
-						'approve_message'              => $msg,
-						'approvetype_id'               => $approvetype_id,
-						'wfrule_id'                    => $rule_id,
-						'forwardto_tablename'          => $route['wfaction_receipient_tablename'],
-						'forwardto_tablekeyid'         => $route['wfaction_receipient_tablekey_id'],
-						'wfaction_id'                  => $route['wfaction_id'],
-						'glaccount_id'                 => $glaccount_id,
-						'wftarget_id'                  => $wfruletarget_id,
-						'unit_id'                      => $unit_id,
-						'transaction_id'               => $this->approveGateway->currentId()
-					]);
-
-					$errors = $this->entityValidator->validate($approve);
-					if (!count($errors)) {
-						$this->approveGateway->save($approve);
-					} else {
-						$this->loggingService->log('error', 'Error validating approve entity while submitting entity for approval', $errors);
-						throw new \NP\core\Exception('Error submitting entity for approval');
-					}
+					$this->addRoute(
+						$table_name, $tablekey_id, $userprofile_id, $delegation_to_userprofile_id, 
+						$route['wfaction_receipient_tablename'], $route['wfaction_receipient_tablekey_id'],
+						[
+							'approve_message' => $msg,
+							'wfrule_id'       => $rule_id,
+							'wfaction_id'     => $wfaction_id,
+							'glaccount_id'    => $glaccount_id,
+							'wftarget_id'     => $wfruletarget_id,
+							'unit_id'         => $unit_id
+						]
+					);
 				}
 			}
 
@@ -848,34 +948,7 @@ class WFRuleService extends AbstractService {
 			]);
 
 			// See if anything that got submitted can be auto-approved
-			if ($this->configService->get('PN.Main.AutoApprove', '0') == 1) {
-				$skipSave = $this->configService->get('PN.InvoiceOptions.SKIPSAVE', '0');
-				$status   = $this->$gtw->findValue([$pkField => '?'], [$tablekey_id], $statusField);
-
-				// Conditions for doing auto-approval
-				if (
-					(
-						$table_name == 'invoice'
-						&& !(
-							($skipSave == 0 && $status == 'saved')
-							|| ($skipSave == 1 && $status == 'submitted')
-						)
-					)
-					|| (
-						$table_name == 'purchaseorder'
-						&& $status != 'saved'
-					)
-				) {
-					$approvers = $this->approveGateway->findAutoApprovers($table_name, $tablekey_id);
-					$this->loggingService->log('global', 'auto approvers', ['auto'=>$approvers]);
-					foreach ($approvers as $approver) {
-						$result = $this->approve($table_name, $tablekey_id, $approver['userprofile_id'], $approver['delegation_to_userprofile_id'], true, $nestLevel);
-						if (!$result['success']) {
-							throw new \NP\core\Exception('Error auto approving an entity');
-						}
-					}
-				}
-			}
+			$this->autoApprove($table_name, $tablekey_id, $userprofile_id, $delegation_to_userprofile_id, $nestLevel);
 		} catch(\Exception $e) {
 			$errors[] = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
 		}
@@ -912,6 +985,7 @@ class WFRuleService extends AbstractService {
 			$delegation_to_userprofile_id
 		);
 
+		// Get the "approved" approve type for the approve record
 		$approvetype_id = $this->approveTypeGateway->getIdByName('approved');
 
 		$errors = [];
@@ -920,6 +994,8 @@ class WFRuleService extends AbstractService {
 		try {
 			// Loop through approvable items to approve them one by one
 			foreach ($approvables as $approvable) {
+				// If this is being approved via delegation, we save a different message on
+				// the approve record
 				$msg = '';
 				if ($userprofile_id != $delegation_to_userprofile_id) {
 					$user    = $this->userprofileGateway->findById($userprofile_id, ['userprofile_username']);
@@ -928,6 +1004,7 @@ class WFRuleService extends AbstractService {
 					$msg = " ({$user['userprofile_username']} approved on behalf of {$delUser['userprofile_username']})";
 				}
 
+				// Create the approve entity used to save the approve record
 				$approve = new \NP\workflow\ApproveEntity([
 					'table_name'                   => $table_name,
 					'tablekey_id'                  => $tablekey_id,
@@ -944,6 +1021,7 @@ class WFRuleService extends AbstractService {
 					'transaction_id'               => $this->approveGateway->currentId()
 				]);
 
+				// Validate and save the approve record
 				$errors = $this->entityValidator->validate($approve);
 				if (!count($errors)) {
 					$this->approveGateway->save($approve);
@@ -952,6 +1030,7 @@ class WFRuleService extends AbstractService {
 					throw new \NP\core\Exception('Error submitting entity for approval');
 				}
 
+				// Inactivate the submitted workflow rule that was just approved
 				$this->approveGateway->update([
 					'approve_id'     => $approvable['approve_id'],
 					'approve_status' => 'inactive'
@@ -967,12 +1046,12 @@ class WFRuleService extends AbstractService {
 
 			// If this isn't an auto-approval, submit the entity for approval again
 			// based on the current user
-			$this->loggingService->log('global', 'nest level', ['nestLevel'=>$nestLevel]);
 			if (!$isAuto) {
 				// Minimize the amount of recursion in case an infinite loop happens due to a bug
 				// We don't want the server to crash on account of that
 				if ($nestLevel <= 15) {
 					$nestLevel++;
+					// Submit entity for approval by the user who just approved it
 					$result = $this->submitForApproval($table_name, $tablekey_id, $userprofile_id, $delegation_to_userprofile_id, $isAuto, $nestLevel);
 					if (!$result['success']) {
 						throw new \NP\core\Exception('Error submitting entity for approval after approving it');
@@ -991,6 +1070,8 @@ class WFRuleService extends AbstractService {
 				// If dealing with an invoice, status change depends on setting
 				else if ($table_name == 'invoice') {
 					$skipSave = $this->configService->get('PN.InvoiceOptions.SKIPSAVE', '0');
+
+					// Status we are going to set the invoice to depends on the SKIPSAVE setting
 					if ($skipSave == 1) {
 						$this->invoiceGateway->update([
 							'invoice_id'            => $tablekey_id,
@@ -1190,5 +1271,181 @@ class WFRuleService extends AbstractService {
 		    'success' => (count($errors)) ? false : true,
 		    'errors'  => $errors
 		);
+	}
+
+	/**
+	 * Submit an entity for approval and also 
+	 */
+	public function submitForApprovalAndRoute($table_name, $tablekey_id, $users) {
+		$errors = [];
+		$this->approveGateway->beginTransaction();
+		
+		try {
+			$result = $this->route($table_name, $tablekey_id, $users);
+
+			if (!$result['success']) {
+				$this->loggingService->log('error', 'Error manually routing entity to users', $result['errors']);
+				throw new \NP\core\Exception('Error submitting for approval and routing');
+			}
+
+			$result = $this->submitForApproval($table_name, $tablekey_id);
+			if (!$result['success']) {
+				$this->loggingService->log('error', 'Error submitting entity for approval', $result['errors']);
+				throw new \NP\core\Exception('Error submitting for approval and routing');
+			}
+		} catch(\Exception $e) {
+			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+		
+		if (count($errors)) {
+			$this->approveGateway->rollback();
+		} else {
+			$this->approveGateway->commit();
+		}
+		
+		return array(
+		    'success' => (count($errors)) ? false : true,
+		    'errors'  => $errors
+		);
+	}
+
+	/**
+	 * Manually routes an entity to one or more users
+	 */
+	public function route($table_name, $tablekey_id, $users) {
+		$userprofile_id               = $this->securityService->getUserId();
+		$delegation_to_userprofile_id = $this->securityService->getDelegatedUserId();
+		$entityVars                   = $this->getEntityVars($table_name);
+
+		$wfaction = $this->wfActionGateway->findTriggeredOptionalRuleAction($userprofile_id);
+
+		$errors = [];
+		$this->approveGateway->beginTransaction();
+		
+		try {
+			$gtw         = $entityVars['gateway'];
+			$pkField     = "{$table_name}_id";
+			$statusField = "{$table_name}_status";
+
+			$this->$gtw->update([
+				$pkField     => $tablekey_id,
+				$statusField => 'forapproval'
+			]);
+
+			foreach ($users as $userprofilerole_id) {
+				$this->addRoute(
+					$table_name, $tablekey_id, $userprofile_id, $delegation_to_userprofile_id, 
+					'userprofilerole', $userprofilerole_id,
+					[
+						'wfrule_id'       => ($wfaction !== null) ? $wfaction['wfrule_id'] : null,
+						'wfaction_id'     => ($wfaction !== null) ? $wfaction['wfaction_id'] : null,
+						'approve_message' => "{$entityVars['displayName']} optional workflow."
+					]
+				);
+			}
+		} catch(\Exception $e) {
+			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+		
+		if (count($errors)) {
+			$this->approveGateway->rollback();
+		} else {
+			$this->approveGateway->commit();
+		}
+		
+		return array(
+		    'success' => (count($errors)) ? false : true,
+		    'errors'  => $errors
+		);
+	}
+
+	/**
+	 * Routes an entity to one or more specified users
+	 */
+	private function addRoute(
+		$table_name, $tablekey_id, $userprofile_id, $delegation_to_userprofile_id, 
+		$forwardto_tablename, $forwardto_tablekeyid, $data
+	) {
+		// Get the submitted approve type to be used on the approve record
+		$approvetype_id = $this->approveTypeGateway->getIdByName('submitted');
+
+		// Create the approve entity to be used to save the new record
+		$approve = new \NP\workflow\ApproveEntity([
+			'table_name'                   => $table_name,
+			'tablekey_id'                  => $tablekey_id,
+			'approvetype_id'               => $approvetype_id,
+			'userprofile_id'               => $userprofile_id,
+			'delegation_to_userprofile_id' => $delegation_to_userprofile_id,
+			'forwardto_tablename'          => $forwardto_tablename,
+			'forwardto_tablekeyid'         => $forwardto_tablekeyid,
+			'transaction_id'               => $this->approveGateway->currentId(),
+			'approve_message'              => (array_key_exists('approve_message', $data)) ? $data['approve_message'] : null,
+			'wfrule_id'                    => (array_key_exists('wfrule_id', $data)) ? $data['wfrule_id'] : null,
+			'wfaction_id'                  => (array_key_exists('wfaction_id', $data)) ? $data['wfaction_id'] : null,
+			'glaccount_id'                 => (array_key_exists('glaccount_id', $data)) ? $data['glaccount_id'] : null,
+			'wftarget_id'                  => (array_key_exists('wftarget_id', $data)) ? $data['wftarget_id'] : null,
+			'unit_id'                      => (array_key_exists('unit_id', $data)) ? $data['unit_id'] : null
+		]);
+
+		$errors = $this->entityValidator->validate($approve);
+		if (count($errors)) {
+			throw new \NP\core\Exception('Error adding route');
+		}
+
+		$this->approveGateway->save($approve);
+
+		// TODO: Generate email for route (replicate APPROVAL_EMAIL)
+
+	}
+
+	private function autoApprove($table_name, $tablekey_id, $userprofile_id, $delegation_to_userprofile_id, $nestLevel) {
+		// Determine the property classes to use based on the entity type
+		$entityVars = $this->getEntityVars($table_name);
+
+		$gtw         = $entityVars['gateway'];
+		$pkField     = "{$table_name}_id";
+		$statusField = "{$table_name}_status";
+
+		if ($this->configService->get('PN.Main.AutoApprove', '0') == 1) {
+			$errors = [];
+			$this->approveGateway->beginTransaction();
+			
+			try {
+				$skipSave = $this->configService->get('PN.InvoiceOptions.SKIPSAVE', '0');
+				$status   = $this->$gtw->findValue([$pkField => '?'], [$tablekey_id], $statusField);
+
+				// Conditions for doing auto-approval
+				if (
+					(
+						$table_name == 'invoice'
+						&& !(
+							($skipSave == 0 && $status == 'saved')
+							|| ($skipSave == 1 && $status == 'submitted')
+						)
+					)
+					|| (
+						$table_name == 'purchaseorder'
+						&& $status != 'saved'
+					)
+				) {
+					// Find all possible auto approvers
+					$approvers = $this->approveGateway->findAutoApprovers($table_name, $tablekey_id);
+					
+					// Loop trough auto approvers
+					foreach ($approvers as $approver) {
+						// Auto approve entity with that user
+						$result = $this->approve($table_name, $tablekey_id, $approver['userprofile_id'], $approver['delegation_to_userprofile_id'], true, $nestLevel);
+						if (!$result['success']) {
+							throw new \NP\core\Exception('Error auto approving an entity');
+						}
+					}
+				}
+
+				$this->approveGateway->commit();
+			} catch(\Exception $e) {
+				$this->approveGateway->rollback();
+				throw $e;
+			}
+		}
 	}
 }

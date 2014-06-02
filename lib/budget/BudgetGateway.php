@@ -434,6 +434,27 @@ class BudgetGateway extends AbstractGateway {
 
 		return $res;
 	}
+
+	public function findBudgetByPeriod($property_id, $glaccount_id, $period) {
+		if ($period instanceOf \DateTime) {
+			$period = \NP\util\Util::formatDateForDB($period);
+		}
+
+		$select = Select::get()
+					->columns([])
+					->from(['gy'=>'glaccountyear'])
+						->join(new sql\join\GlAccountYearBudgetJoin(null))
+					->whereEquals('gy.property_id', '?')
+					->whereEquals('b.budget_period', '?');
+
+
+		$res = $this->adapter->query($select, [$property_id, $period]);
+		if (count($res)) {
+			return $res[0];
+		}
+
+		return null;
+	}
 }
 
 ?>

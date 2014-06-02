@@ -296,5 +296,9 @@ class InvoiceItemEntity extends \NP\core\AbstractEntity implements \NP\workflow\
 		return $this->invoiceitem_amount + $this->invoiceitem_shipping + $this->invoiceitem_salestax;
 	}
 
+	public function getPeriod() {
+		return $this->invoiceitem_period;
+	}
+
 }
 ?>

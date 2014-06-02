@@ -897,6 +897,55 @@ class ConfigService extends AbstractService {
 
 		return $this->pnUniversalFieldGateway->assignGlAccountToTheUniversalFields($field_id, $glaccounts);
 	}
+
+	public function getIntegrationPackagesForTheInvoiceExport($userprofile_id = null) {
+		if (!$userprofile_id) {
+			return [];
+		}
+
+		return $this->intPkgGateway->getIntegrationPackagesForTheInvoiceExport($userprofile_id, $this->getClientId());
+	}
+
+	public function getHeadersValues() {
+		return $this->configsysGateway->getCustomHeadersAndLineItemsFields(true);
+	}
+
+	public function getLineValues() {
+		return $this->configsysGateway->getCustomHeadersAndLineItemsFields(false, true);
+	}
+
+	public function saveCustomFieldHeaderFromImport($data) {
+
+		$userProfileId = $this->securityService->getUserId();
+		$result = $this->pnCustomFieldsGateway->saveCustomFieldFromImport($userProfileId, 'header');
+
+		return ['success' => $result];
+	}
+
+	public function saveCustomFieldLineFromImport($data) {
+
+		$userProfileId = $this->securityService->getUserId();
+		$result = $this->pnCustomFieldsGateway->saveCustomFieldFromImport($userProfileId, 'lineitem');
+
+		return ['success' => $result];
+	}
+
+	public function processCustomFieldHeaderImport($userprofile_id, $customfield_value, $customfield_type, $customfield_number) {
+		$customfield_name = $this->configsysGateway->getCustomFieldnameByNumber($customfield_number, $customfield_type);
+		$this->pnCustomFieldsGateway->customFieldImportProcess($userprofile_id, $customfield_value, $customfield_type, $customfield_number, $customfield_name, true);
+	}
+
+	public function initCustomFieldHeaderImport($userprofile_id, $customfield_type, $customfield_number) {
+		$customfield_name = $this->configsysGateway->getCustomFieldnameByNumber($customfield_number, $customfield_type);
+		$customfield_value = !$customfield_name ? 'Custom Field ' . $customfield_number . ' Value' : $customfield_name . ' Value';
+		$this->pnCustomFieldsGateway->customFieldImportProcess($userprofile_id, $customfield_value, $customfield_type, $customfield_number, $customfield_name);
+
+	}
+
+	public function getCustomFieldName($customfield_number = [], $type) {
+		$customfield_name = $this->configsysGateway->getCustomFieldnameByNumber($customfield_number, $type);
+		return $customfield_name;
+	}
 }
 
 ?>

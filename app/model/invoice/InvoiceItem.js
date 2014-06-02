@@ -64,6 +64,7 @@ Ext.define('NP.model.invoice.InvoiceItem', {
 		// These fields are not database columns
 		{ name: 'property_id_alt' },
 		{ name: 'property_name' },
+		{ name: 'property_salestax', type: 'float' },
 
 		{ name: 'glaccount_number' },
 		{ name: 'glaccount_name' },
@@ -189,6 +190,9 @@ Ext.define('NP.model.invoice.InvoiceItem', {
 				}
 				return v;
 			}
-		}
+		},
+
+		// Linking method (close or open; used when linking POs)
+		{ name: 'link_method' }
 	]
 });

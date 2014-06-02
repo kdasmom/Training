@@ -13,7 +13,12 @@ class YtdBudgetPctByGl extends AbstractRuleType implements RuleTypeInterface {
 
 	public function isActive(\NP\workflow\WorkflowableInterface $entity, \NP\workflow\WFRuleEntity $rule) {
 		if (array_key_exists($entity->glaccount_id, $scope)) {
-			$budgetInfo = $this->entityService->getYearlyLineBudgetInfo($entity->$itemField, $this->type);
+			$budgetInfo = $this->entityService->getYearlyLineBudgetInfo(
+				$entity->property_id,
+				$entity->glaccount_id,
+				$entity->getPeriod(),
+				$this->type
+			);
 			$open_total = $budgetInfo['year_actual'] + $budgetInfo['year_invoice'] + $budgetInfo['year_po'];
 
 			$overage = $open_total - $budgetInfo['year_budget'];

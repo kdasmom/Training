@@ -9,4 +9,5 @@ namespace NP\workflow;
 interface WorkflowableInterface {
 	public function getAmount();
 	public function getPropertyId();
+	public function getPeriod();
 }

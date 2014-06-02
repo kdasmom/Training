@@ -985,6 +985,15 @@ class UserService extends AbstractService {
 	}
 
 	/**
+	 * Finds all users that can be manually routed to for a specific property
+	 */
+	public function getValidRouteApprovers($property_id, $table_name) {
+		$userprofile_id = $this->securityService->getUserId();
+
+		return $this->userprofileGateway->findValidRouteApprovers($property_id, $table_name, $userprofile_id);
+	}
+
+	/**
 	 * Saves a role
 	 *
 	 * @param  array $data A data set of role information to be saved 

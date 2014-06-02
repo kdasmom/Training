@@ -208,10 +208,12 @@ Ext.define('NP.lib.data.Store', {
 
     	callback = callback || Ext.emptyFn;
 
-    	if (me.extraParamsHaveChanged()) {
-    		me.load(callback);
+    	if (!me.isLoaded || me.extraParamsHaveChanged()) {
+    		me.load(function(recs, operation, success) {
+    			callback(true, recs, operation, success);
+    		});
     	} else {
-    		callback(me.getRange(), null, true);
+    		callback(false, me.getRange(), null, true);
     	}
     },
 
@@ -231,5 +233,21 @@ Ext.define('NP.lib.data.Store', {
     		service: service,
 			action : action
     	});
+    },
+
+    getByInternalId: function(internalId) {
+    	var me  = this,
+    		len = me.getCount(),
+    		rec,
+    		i;
+
+    	for (i=0; i<len; i++) {
+            rec = me.getAt(i);
+            if (rec.internalId == internalId) {
+                return rec;
+            }
+        }
+
+        return null;
     }
 });

@@ -177,6 +177,13 @@ li.x-boundlist-item {
 	margin-bottom: 2px;
 }
 
+.x-form-file-field .x-form-text {
+	background  : url("images/form/text-bg.gif") repeat-x scroll 0 0 #FFFFFF !important;
+	border-color: #B5B8C8;
+	border-width: 1px !important;
+	color       : #000000;
+}
+
 /* CURSOR STYLE */
 .pointer { cursor: pointer; }
 .no-pointer { cursor: auto !important; }

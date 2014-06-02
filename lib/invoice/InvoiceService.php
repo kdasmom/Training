@@ -41,13 +41,15 @@ class InvoiceService extends AbstractEntityService {
 				$invoice_id,
 				$this->securityService->getUserId()
 			);
-			$invoice['has_optional_rule'] = $this->wfRuleGateway->hasOptionalRule(
-				$invoice['property_id'],
-				$this->securityService->getUserId()
-			);
 		} else {
 			$invoice['is_approver'] = false;
 		}
+
+		// Check if the optional workflow rule applies for this invoice
+		$invoice['has_optional_rule'] = $this->wfRuleGateway->hasOptionalRule(
+			$invoice['property_id'],
+			$this->securityService->getUserId()
+		);
 
 		$invoice['is_utility_vendor'] = ($this->vendorService->isUtilityVendor($invoice['vendorsite_id'])) ? 1 : 0;
 
@@ -55,9 +57,22 @@ class InvoiceService extends AbstractEntityService {
 		/*** THIS QUERY IS RUNNING SLOW ***/
 		$invoice['image'] = $this->imageIndexGateway->findEntityImages($invoice_id, 'Invoice', true);
 		
-		// Get linkable POs
+		// Get linkable POs (only do it if invoice is right status and there are right permissions)
 		/*** THIS QUERY IS RUNNING SLOW ***/
-		$invoice['has_linkable_pos'] = (count($this->getLinkablePOs($invoice_id))) ? true : false;
+		$invoice['linkable_pos'] = [];
+		if (
+			$invoice['invoice_status'] == 'open'
+			&& (
+				$this->securityService->hasPermission(6076)
+				|| (
+					$this->securityService->hasPermission(6077) 
+					&& $this->securityService->getUserId() == $invoice['userprofile_id']
+				)
+			)
+			&& $this->securityService->hasPermission(2038)
+		) {
+			$invoice['linkable_pos'] = $this->getLinkablePOs($invoice_id);
+		}
 
 		// Check if there are any schedules if invoice is a draft
 		if ($invoice['invoice_status'] == 'draft') {
@@ -1041,7 +1056,7 @@ class InvoiceService extends AbstractEntityService {
 				}
 			}
 
-			if ($result['success']) {
+			if (!count($errors)) {
 				$result = parent::deleteLine($item_id);
 
 				$errors = $result['errors'];
@@ -1471,6 +1486,267 @@ class InvoiceService extends AbstractEntityService {
 		    'success' => (count($errors)) ? false : true,
 		    'errors'  => $errors
 		);
+	}
+
+	/**
+	 * Forwards an invoice by email to a list of emails or users
+	 */
+	public function forwardInvoice($invoice_id, $sender_email, $forward_to, $forward_val, $message, $includes=[]) {
+		$pdfPath = null;
+		$success = false;
+		$errors  = [];
+
+		// Get invoice number for email subject line
+		$invoice_ref = $this->invoiceGateway->findValue(
+			['invoice_id'=>'?'],
+			[$invoice_id],
+			'invoice_ref'
+		);
+		
+		// Get invoice images if applicable
+		$images     = [];
+		$includeAll = in_array('allImages', $includes);
+		if (in_array('mainImage', $includes) || $includeAll) {
+			$images = $this->getImages($invoice_id, !$includeAll, true);
+			if (!$includeAll) {
+				$images = [$images];
+			}
+		}
+
+		// Figure out the email or list of emails to send to
+		if ($forward_to == 'vendor' || $forward_to == 'email') {
+			$users = [['email_address' => $forward_val]];
+		} else {
+			$users = $this->userprofileGateway->find(
+				[['in', 'u.userprofile_id', $this->userprofileGateway->createPlaceholders($forward_val)]],
+				$forward_val
+			);
+		}
+
+		// Generate the invoice PDF
+		$pdf = new InvoicePdfRenderer($this->configService, $this->gatewayManager, $this, $invoice_id, $includes);
+		$pdfPath = $this->configService->getClientFolder() . '/web/pdfs/' . $this->securityService->getUserId();
+
+		// If destination directory doesn't exist, create it
+  		if (!is_dir($pdfPath)) {
+  			mkdir($pdfPath, 0777, true);
+  		}
+  		
+		$pdfPath = Util::getUniqueFileName($pdfPath . "/invoice_{$invoice_id}.pdf");
+
+		$pdfPath = $pdfPath['path'];
+		$pdf->save($pdfPath);
+
+		$message = strip_tags(trim($message));
+		foreach ($users as $user) {
+			try {
+				$msg = EmailMessage::getNew(
+										"Invoice Order {$invoice_ref}",
+										strip_tags($message)
+									)
+									->setFrom($sender_email)
+									->setTo($user['email_address'])
+									->attach(EmailAttachment::getNew()->setPath($pdfPath));
+
+
+				foreach($images as $image) {
+					$msg->attach(EmailAttachment::getNew()->setPath($image['transfer_filename']));
+				}
+
+				$this->notificationService->sendEmail($msg);
+				$success = true;
+
+				$forward_id = (array_key_exists('userprofile_id', $user)) ? $user['userprofile_id'] : null;
+				$this->invoicePoForwardGateway->insert([
+					'table_name'                        => 'invoice',
+					'tablekey_id'                       => $invoice_id,
+					'forward_to_email'                  => $sender_email,
+					'forward_to_userprofile_id'         => $forward_id,
+					'forward_from_userprofile_id'       => $this->securityService->getUserId(),
+					'from_delegation_to_userprofile_id' => $this->securityService->getDelegatedUserId(),
+					'forward_message'                   => substr($message, 0, 500)
+				]);
+			} catch(\Exception $e) {
+				$msg = $this->handleUnexpectedError($e);
+				if ($forward_to == 'user') {
+					$errors[] = "{$user['person_firstname']} {$user['person_lastname']}";
+				} else {
+					$errors[] = $user['email_address'];
+				}
+			}
+		}
+
+		if (!$success) {
+			return [
+				'success' => false,
+				'error'   => $msg
+			];
+		} else {
+			return [
+				'success' => true,
+				'errors'  => $errors
+			];
+		}
+	}
+
+	public function getPreviewForTheService($integration_package_id = null, $properties = null, $page = null, $pageSize = null) {
+		if (!$integration_package_id || !$properties) {
+			return false;
+		}
+		$properties = json_decode($properties);
+
+		return $this->invoiceGateway->getPreviewForTheImport($integration_package_id, $properties, $page, $pageSize);
+	}
+
+	public function markInvoiceAsSent($invoices = []) {
+
+		if (count($invoices) == 0) {
+			return false;
+		}
+
+		$userProfileId = $this->securityService->getUserId();
+
+		return $this->invoiceGateway->markAsSent($userProfileId, $invoices);
+
+	}
+
+	/**
+	 * This changes the invoice status to process for payment
+	 */
+	public function processPayment($invoice_id) {
+		$errors = [];
+		$this->invoiceGateway->beginTransaction();
+		
+		try {
+			// Change the invoice status
+			$this->invoiceGateway->update([
+				'invoice_id'     => $invoice_id,
+				'invoice_status' => 'saved'
+			]);
+
+			$approvetype_id = $this->approveTypeGateway->getIdByName('SELF APPROVED');
+
+			$approve = new \NP\workflow\ApproveEntity([
+				'table_name'                   => 'invoice',
+				'tablekey_id'                  => $invoice_id,
+				'userprofile_id'               => $this->securityService->getUserId(),
+				'delegation_to_userprofile_id' => $this->securityService->getDelegatedUserId(),
+				'approve_message'              => 'This invoice has been processed.',
+				'approvetype_id'               => $approvetype_id,
+				'transaction_id'               => $this->approveGateway->currentId()
+			]);
+
+			$errors = $this->entityValidator->validate($approve);
+			if (!count($errors)) {
+				$this->approveGateway->save($approve);
+			}
+		} catch(\Exception $e) {
+			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
+		}
+		
+		if (count($errors)) {
+			$this->invoiceGateway->rollback();
+		} else {
+			$this->invoiceGateway->commit();
+		}
+		
+		return array(
+		    'success' => (count($errors)) ? false : true,
+		    'errors'  => $errors
+		);
+	}
+
+
+	protected function processLinkedPoLines($lines) {
+		$pos = [];
+
+		// Loop through all lines to identify the lines that we need to deal with
+		// and group them by PO
+		foreach ($lines as $line) {
+			if ($line['link_method'] !== null && $line['reftablekey_id'] !== null) {
+				if (!array_key_exists($line['purchaseorder_id'], $pos)) {
+					$pos[$line['purchaseorder_id']] = [];
+				}
+				$pos[$line['purchaseorder_id']][] = $line;
+			}
+		}
+
+		// Loop through POs that are linked
+		foreach ($pos as $purchaseorder_id=>$lines) {
+			// Loop through each invoice line linked to a PO
+			foreach ($lines as $invoiceitem) {
+				// Get the link method and invoice_id (all invoice lines for a link will have the same value)
+				$link_method = $invoiceitem['link_method'];
+				$invoice_id  = $invoiceitem['invoice_id'];
+
+				// Get linked PO line
+				$poitem  = $this->poItemGateway->findById($invoiceitem['reftablekey_id']);
+
+				// Get the difference in quantity
+				$qtyDiff = $poitem['poitem_quantity'] - $invoiceitem['invoiceitem_quantity'];
+
+				// If the invoice line has less items than the PO, we need to do a split
+				if ($qtyDiff > 0 && $poitem['poitem_isReceived'] != 1) {
+					// Update the original line quantity and link it to invoice item
+					$newQty      = $invoiceitem['invoiceitem_quantity'];
+					$newAmount   = ($poitem['poitem_amount'] / $poitem['poitem_quantity']) * $newQty;
+					$newTax      = ($poitem['poitem_salestax'] / $poitem['poitem_quantity']) * $newQty;
+					$newShipping = ($poitem['poitem_shipping'] / $poitem['poitem_quantity']) * $newQty;
+
+					$this->poItemGateway->update([
+						'poitem_id'       => $poitem['poitem_id'],
+						'poitem_quantity' => $newQty,
+						'poitem_amount'   => $newAmount,
+						'poitem_salestax' => $newTax,
+						'poitem_shipping' => $newShipping,
+						'poitem_split'    => 1,
+						'reftable_name'   => 'invoiceitem',
+						'reftablekey_id'  => $invoiceitem['invoiceitem_id']
+					]);
+
+					// We want to create a split line with the remaining quantity,
+					// so we clear a few fields and add the quantity
+					$poitem['poitem_id']         = null;
+					$poitem['poitem_amount']     = $poitem['poitem_amount'] - $newAmount;
+					$poitem['poitem_salestax']   = $poitem['poitem_salestax'] - $newTax;
+					$poitem['poitem_shipping']   = $poitem['poitem_shipping'] - $newShipping;
+					$poitem['poitem_quantity']   = $qtyDiff;
+					$poitem['poitem_split']      = 1;
+					$poitem['reftable_name']     = null;
+					$poitem['reftablekey_id']    = null;
+
+					// Save split line with remaining quantity
+					$poItemEntity = new \NP\po\PoItemEntity($poitem);
+
+					$this->poItemGateway->insert($poItemEntity);
+				}
+			}
+
+			// Associate the invoice and PO if needed
+			$relation = $this->invoicePoRelationGateway->find(
+				['Invoice_Id'=>'?', 'PurchaseOrder_Id'=>'?'],
+				[$invoice_id, $purchaseorder_id]
+			);
+
+			if (!count($relation)) {
+				$this->invoicePoRelationGateway->insert([
+					'Invoice_Id'           => $invoice_id,
+					'PurchaseOrder_Id'     => $purchaseorder_id,
+					'InvoicePORelation_DT' => \NP\util\Util::formatDateForDB()
+				]);
+			}
+
+			// If we've chosen to close the PO, cancel all open lines
+			if ($link_method == 'close') {
+				// Get open PO lines
+				$poLines = $this->poItemGateway->findUnlinkedLines($purchaseorder_id, ['poitem_id']);
+
+				// Loop through lines and cancel each one
+				foreach ($poLines as $poLine) {
+					$this->cancelLine($poLine['poitem_id']);
+				}
+			}
+		}
 	}
 }
 

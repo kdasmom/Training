@@ -293,7 +293,7 @@ class PurchaseOrderGateway extends AbstractGateway {
 		// Build the query for getting linkable POs
 		$propertyContext = new PropertyContext(
 			$this->securityService->getUserId(),
-			$this->securityService->getUserId(),
+			$this->securityService->getDelegatedUserId(),
 			'all',
 			null
 		);
@@ -302,36 +302,40 @@ class PurchaseOrderGateway extends AbstractGateway {
 		$select = new sql\PoSelect();
 		$select->columns(array(
 						'purchaseorder_id',
-						'purchaseorder_ref'
+						'purchaseorder_ref',
+						'purchaseorder_created'
 					))
 				->columnAmount()
-				->join(new sql\join\PoPropertyJoin())
-				->join(new sql\join\PoVendorsiteJoin())
-				->join(new \NP\vendor\sql\join\VendorsiteVendorJoin())
+					->join(new sql\join\PoPropertyJoin())
+					->join(new sql\join\PoVendorsiteJoin([]))
+					->join(new \NP\vendor\sql\join\VendorsiteVendorJoin())
 				->whereEquals('p.purchaseorder_status', "'saved'")
 				->whereIn(
 					'p.property_id',
 					$propertyFilterSelect
-				);
-		
-		// Only do this if receiving is on
-		if ($this->configService->get('CP.RECEIVING_DEFAULT', '0') == '1') {
-			$select->whereIsNotNull(
-				Select::get()->column('rctitem_id')
-							->from(array('rcti'=>'rctitem'))
-							->whereEquals('rcti.rctitem_status', "'approved'")
-							->whereIn(
-								'rcti.poitem_id',
-								Select::get()->column('poitem_id')
-											->from(array('pi'=>'poitem'))
-											->whereEquals('pi.purchaseorder_id', 'p.purchaseorder_id')
-							)
-							->limit(1)
-			);
-		}
+				)
+				->whereNest('OR')
+					->whereNotEquals(
+						new Expression("isNull(p.purchaseorder_rct_req, {$this->configService->get('CP.RECEIVING_DEFAULT', 0)})"),
+						1
+					)
+					->whereIsNotNull(
+						Select::get()->column('rctitem_id')
+									->from(array('rcti'=>'rctitem'))
+									->whereEquals('rcti.rctitem_status', "'approved'")
+									->whereIn(
+										'rcti.poitem_id',
+										Select::get()->column('poitem_id')
+													->from(array('pi'=>'poitem'))
+													->whereEquals('pi.purchaseorder_id', 'p.purchaseorder_id')
+													->whereIsEmpty('pi.reftable_name')
+									)
+									->limit(1)
+						)
+				->whereUnnest();
 
 		// Only do this finance_vendor is not set to 1 or the user doesn't have finance vendor permissions
-		if ($invoiceVendor[0]['finance_vendor'] != 1 || !$this->securityService->hasPermission($securityService)) {
+		if ($invoiceVendor[0]['finance_vendor'] != 1 || !$this->securityService->hasPermission(2037)) {
 			$select->whereEquals('p.vendorsite_id', $invoiceVendor[0]['vendorsite_id']);
 		}
 

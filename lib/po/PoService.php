@@ -51,13 +51,15 @@ class PoService extends AbstractEntityService {
 				$purchaseorder_id,
 				$this->securityService->getUserId()
 			);
-			$po['has_optional_rule'] = $this->wfRuleGateway->hasOptionalRule(
-				$po['property_id'],
-				$this->securityService->getUserId()
-			);
 		} else {
 			$po['is_approver'] = false;
 		}
+
+		// Checks if user has optional workflow rule for the property
+		$po['has_optional_rule'] = $this->wfRuleGateway->hasOptionalRule(
+			$po['property_id'],
+			$this->securityService->getUserId()
+		);
 
 		// Get invoice images
 		/*** THIS QUERY IS RUNNING SLOW ***/
@@ -370,6 +372,25 @@ class PoService extends AbstractEntityService {
 	}
 
 	/**
+	 * Get lines on a PO that are linkable to an invoice
+	 */
+	public function getLinkableLines($purchaseorder_id) {
+		// Check if receipt is required on the PO
+		$receiptRequired = $this->purchaseOrderGateway->findValue(
+			'p.purchaseorder_id = ?',
+			[$purchaseorder_id],
+			'purchaseorder_rct_req'
+		);
+
+		// If receipt required isn't set on PO for some reason, use default setting
+		if ($receiptRequired === null) {
+			$receiptRequired = $this->configService->get('CP.RECEIVING_DEFAULT', '0');
+		}
+
+		return $this->poItemGateway->findPoLinkableLines($purchaseorder_id, $receiptRequired);
+	}
+
+	/**
 	 * Do final review for a PO
 	 */
 	public function doFinalReview($purchaseorder_id) {
@@ -489,76 +510,6 @@ class PoService extends AbstractEntityService {
 		    'success' => (count($errors)) ? false : true,
 		    'errors'  => $errors
 		];
-	}
-
-	/**
-	 * Cancels a line on a PO
-	 */
-	public function cancelLine($poitem_id) {
-		$errors = [];
-		$now    = \NP\util\Util::formatDateForDB();
-		$this->poItemGateway->beginTransaction();
-		
-		try {
-			$this->poItemGateway->update([
-				'poitem_id'                    => $poitem_id,
-				'reftable_name'                => 'invoiceitem',
-				'reftablekey_id'               => 0,
-				'poitem_cancel_userprofile_id' => $this->securityService->getUserId(),
-				'poitem_cancel_dt'             => $now
-			]);
-
-			$purchaseorder_id = $this->poItemGateway->findValue(
-				'poitem_id = ?',
-				[$poitem_id],
-				'purchaseorder_id'
-			);
-
-			$status = $this->purchaseOrderGateway->findValue(
-				'purchaseorder_id = ?',
-				[$purchaseorder_id],
-				'purchaseorder_status'
-			);
-
-			$unlinked = $this->poItemGateway->findUnlinkedItems($purchaseorder_id);
-
-			if (count($unlinked) == 0) {
-				$status = 'closed';
-				// If there are no more linked items, cancel the PO
-				$this->purchaseOrderGateway->update([
-					'purchaseorder_id'     => $purchaseorder_id,
-					'purchaseorder_status' => $status
-				]);
-			}
-
-			$rctitem_id = $this->rctItemGateway->findValue(
-				['rctitem_status'=>"'open'", 'poitem_id'=>'?'],
-				[$poitem_id],
-				'rctitem_id'
-			);
-
-			if (!empty($rctitem_id)) {
-				$result = $this->cancelReceiptLine($rctitem_id);
-
-				if (!$result['success']) {
-					$errors = $result['errors'];
-				}
-			}
-		} catch(\Exception $e) {
-			$errors[]  = array('field' => 'global', 'msg' => $this->handleUnexpectedError($e));
-		}
-		
-		if (count($errors)) {
-			$this->poItemGateway->rollback();
-		} else {
-			$this->poItemGateway->commit();
-		}
-		
-		return array(
-			'success'              => (count($errors)) ? false : true,
-			'errors'               => $errors,
-			'purchaseorder_status' => $status
-		);
 	}
 
 	/**

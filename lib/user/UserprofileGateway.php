@@ -403,6 +403,35 @@ class UserprofileGateway extends AbstractGateway {
 
     	return $res[0]['parent_role_id'];
     }
+
+    public function findValidRouteApprovers($property_id, $table_name, $exclude_userprofile_id) {
+		$module_id = ($table_name == 'invoice') ? 1053 : 1055;
+
+		return $this->adapter->query(
+			Select::get()
+				->columns(['userprofile_id','userprofile_username'])
+				->from(['u'=>'userprofile'])
+					->join(new \NP\user\sql\join\UserUserroleJoin())
+					->join(new \NP\user\sql\join\UserroleStaffJoin([]))
+					->join(new \NP\user\sql\join\StaffPersonJoin())
+				->whereEquals('u.userprofile_status', "'active'")
+				->whereNotEquals('u.userprofile_id', '?')
+				->whereExists(
+					Select::get()
+						->from(['pu'=>'propertyuserprofile'])
+						->whereEquals('pu.userprofile_id', 'u.userprofile_id')
+						->whereEquals('pu.property_id', '?')
+				)
+				->whereExists(
+					Select::get()
+						->from(['mp'=>'modulepriv'])
+						->whereEquals('mp.tablekey_id', 'ur.role_id')
+						->whereEquals('mp.module_id', '?')
+				)
+				->order('pe.person_lastname, pe.person_firstname'),
+			[$exclude_userprofile_id, $property_id, $module_id]
+		);
+	}
 }
 
 ?>

@@ -5,7 +5,7 @@
  */
 Ext.define('NP.controller.SystemSetup', {
 	extend: 'NP.lib.core.AbstractController',
-	
+
 	requires: [
 	    'NP.lib.core.Security',
 	    'NP.lib.core.Net',
@@ -63,7 +63,7 @@ Ext.define('NP.controller.SystemSetup', {
 		{ ref: 'WorkflowConflictingRulesGrid',selector: '[xtype="systemsetup.workflowconflictingrulesgrid"]'}
 	],
 	settingsActiveTab: 'general',
-	
+
 	init: function() {
 		Ext.log('SystemSetup controller initialized');
 
@@ -223,9 +223,21 @@ Ext.define('NP.controller.SystemSetup', {
 			'#buttonWorkflowActivate': {
 				click: function() {
 					var wfrule_id = me.getCmp('systemsetup.workflowrulesmodify').data.rule.wfrule_id,
-						grid = this.getWorkflowOriginatesGrid();
+						grid = this.getWorkflowOriginatesGrid(),
+						selectRoutes = false;
 
-					if (!grid.store.getCount()) {
+					if (me.getCmp('systemsetup.workflowrulesroutes')) {
+						var originatesgroup = me.getCmp('systemsetup.workflowrulesroutes').down('[name="originatesgroup"]').getValue();
+						var forwardgroup = me.getCmp('systemsetup.workflowrulesroutes').down('[name="forwardgroup"]').getValue();
+
+						if (me.getCmp('systemsetup.workflowrulesroutes').down('[name="routeform"]').isValid()
+							&& forwardgroup.forwardto
+							&& originatesgroup.originatesfrom) {
+								selectRoutes = true;
+						}
+					}
+
+					if (!grid.store.getCount() && !selectRoutes) {
 						Ext.MessageBox.confirm(me.ignoreSaveRouteTitle, me.ignoreSaveRouteText, function(btn) {
 							if (btn == 'yes') {
 								me.activateWorkflowRule(wfrule_id);
@@ -233,7 +245,27 @@ Ext.define('NP.controller.SystemSetup', {
 						});
 					}
 					else {
-						me.activateWorkflowRule(wfrule_id);
+						if (selectRoutes) {
+							var routeform = me.getCmp('systemsetup.workflowrulesroutes').down('[name="routeform"]'),
+								routevalues = routeform.getValues();
+
+							if (routeform.isValid()) {
+								NP.lib.core.Net.remoteCall({
+									method  : 'POST',
+									requests: {
+										service: 'WFRuleService',
+										action : 'saveRoute',
+										data   : routevalues,
+										success: function() {
+											me.activateWorkflowRule(wfrule_id);
+										}
+									}
+								});
+							}
+						}
+						else {
+							me.activateWorkflowRule(wfrule_id);
+						}
 					}
 				}
 			},
@@ -243,8 +275,18 @@ Ext.define('NP.controller.SystemSetup', {
 			'#buttonWorkflowDeactivateRule': {
 				click: function() {
 					var wfrule_id = me.getCmp('systemsetup.workflowrulesmodify').down('[name="wfrule_id"]').value;
-					me.changeRuleStatus([wfrule_id], 2);
-					me.addHistory('SystemSetup:showSystemSetup:WorkflowRules');
+
+					NP.lib.core.Net.remoteCall({
+						requests: {
+							service: 'WFRuleService',
+							action : 'changeStatus',
+							id: [wfrule_id],
+							status: 2,
+							success: function() {
+								me.addHistory('SystemSetup:showSystemSetup:WorkflowRules');
+							}
+						}
+					});
 				}
 			},
 			'#buttonWorkflowCopyRules': {
@@ -429,6 +471,7 @@ Ext.define('NP.controller.SystemSetup', {
 						requests: {
 							service: 'WFRuleService',
 							action : 'get',
+							mode: 'edit',
 							id: ruleid,
 							success: function(data) {
 								if (data) {
@@ -448,6 +491,7 @@ Ext.define('NP.controller.SystemSetup', {
 					requests: {
 						service: 'WFRuleService',
 						action : 'get',
+						mode: 'view',
 						id: ruleid,
 						success: function(data) {
 							if (data) {
@@ -505,7 +549,12 @@ Ext.define('NP.controller.SystemSetup', {
 	},
 
 	changeRuleStatus: function(identifiers, status, callback) {
-		var me = this;
+		var me = this,
+			mask = new Ext.LoadMask({
+				target: me.getWorkflowScreen()
+			});
+
+		mask.show();
 		callback = callback || Ext.emptyFn;
 
 		NP.lib.core.Net.remoteCall({
@@ -516,6 +565,37 @@ Ext.define('NP.controller.SystemSetup', {
 				status: status,
 				success: function(data) {
 					if (data.success) {
+						var warningMessage = '';
+
+						if (data.rulesWithConflicts.length) {
+							var wfrule_names = [];
+
+							for (var index in data.rulesWithConflicts) {
+								wfrule_names.push( data.rulesWithConflicts[index].wfrule_name );
+							}
+							warningMessage += NP.Translator.translate(
+								'The following rules have conflicts with others: {wfrule_names}',
+								{ wfrule_names: '<ul><li>' + wfrule_names.join('</li><li>') + '</li></ul>' }
+							)
+						}
+
+						if (data.incompleteRules.length) {
+							var incomplete_wfrule_names = [];
+
+							for (var index in data.incompleteRules) {
+								incomplete_wfrule_names.push( data.incompleteRules[index].wfrule_name );
+							}
+							warningMessage += NP.Translator.translate(
+								'The following rules are incomplete and cannot be activated: {wfrule_names}',
+								{ wfrule_names: '<ul><li>' + incomplete_wfrule_names.join('</li><li>') + '</li></ul>' }
+							)
+						}
+						mask.hide();
+
+						if (data.rulesWithConflicts.length || data.incompleteRules.length) {
+							Ext.MessageBox.alert('Warning', warningMessage);
+						}
+
 						callback(me);
 					}
 				}
@@ -655,10 +735,10 @@ Ext.define('NP.controller.SystemSetup', {
 
 		// If no active tab is passed, default to Open
 		if (!activeTab) activeTab = 'Overview';
-			
+
 		// Check if the tab to be selected is already active, if it isn't make it the active tab
 		var tab = that.getCmp('systemsetup.' + activeTab.toLowerCase());
-			
+
 		// Set the active tab if it hasn't been set yet
 		if (tab.getXType() != tabPanel.getActiveTab().getXType()) {
 				tabPanel.suspendEvents(false);
@@ -689,7 +769,7 @@ Ext.define('NP.controller.SystemSetup', {
 			me['show' + subpanel](id, copy);
 		}
 	},
-	
+
 	/**
 	 * Displays the page for the Password Configuration tab
 	 */
@@ -721,7 +801,7 @@ Ext.define('NP.controller.SystemSetup', {
 
 		if (form.getForm().isValid()) {
 			var values = form.getValues();
-			
+
 			NP.lib.core.Net.remoteCall({
 				requests: {
 					service	: 'ConfigService',
@@ -768,7 +848,7 @@ Ext.define('NP.controller.SystemSetup', {
 
 	showDfSplitGrid: function() {
 		this.setView('NP.view.systemSetup.DefaultSplitGrid', {}, '[xtype="systemsetup.defaultsplits"]');
-		
+
 		this.getDefaultSplitGrid().getStore().load();
 	},
 
@@ -897,7 +977,7 @@ Ext.define('NP.controller.SystemSetup', {
 		var deleteBtn = Ext.ComponentQuery.query('#deleteSplitFormBtn')[0];
 
 		Ext.suspendLayouts();
-		
+
 		// Only do this if we're editing a user
 		if (dfsplit_id) {
 			copyBtn.show();
@@ -1215,7 +1295,7 @@ Ext.define('NP.controller.SystemSetup', {
 	saveClientLogo: function() {
 		var me   = this,
 			form = me.getCmp('systemsetup.loginpage');
-		
+
 		// If form is valid, submit it
 		if (form.getForm().isValid()) {
 			var formEl = NP.Util.createFormForUpload('[xtype="systemsetup.loginpage"]');
@@ -1231,7 +1311,7 @@ Ext.define('NP.controller.SystemSetup', {
 						if (result.success) {
 							// Update the image
 							form.setLogoFile(result['logo_file']);
-							
+
 							// Show friendly message
 							NP.Util.showFadingWindow({
 								html: NP.Translator.translate('Logo was successfully saved')
@@ -1264,12 +1344,12 @@ Ext.define('NP.controller.SystemSetup', {
 					userprofile_id: NP.Security.getUser().get('userprofile_id'),
 					data: values,
 					success: function(result) {
-						if (result.activateStatus) {
-							me.addHistory('SystemSetup:showSystemSetup:WorkflowRules');
-						}
-						else {
+						if (result.conflictingRules.length > 0) {
 							me.getCmp('systemsetup.workflowrulesmodify').data.conflictingRules = result.conflictingRules;
 							me.getCmp('systemsetup.workflowrulesmodify').stepConflicts();
+						}
+						else {
+							me.addHistory('SystemSetup:showSystemSetup:WorkflowRules');
 						}
 					}
 				}
@@ -1567,7 +1647,7 @@ Ext.define('NP.controller.SystemSetup', {
 					success: function(success) {
 						if (success.success) {
 							NP.Util.showFadingWindow({ html: 'Settings were saved successfully' });
-							
+
 							for (var index in data) {
 								var configsysval_id = index.split('_')[1],
 									configsys_field = form.getForm().findField('configsys_name_' + configsysval_id),
@@ -1575,7 +1655,7 @@ Ext.define('NP.controller.SystemSetup', {
 
 								if (configsys_field) {
 									configsys_name = configsys_field.getValue();
-								
+
 									NP.Config.setSetting(configsys_name, data[index]);
 								}
 							}
@@ -1597,12 +1677,12 @@ Ext.define('NP.controller.SystemSetup', {
 				action: 'activateRule',
 				ruleid: ruleid,
 				success: function(result) {
-					if (result.activateStatus) {
-						me.addHistory('SystemSetup:showSystemSetup:WorkflowRules');
-					}
-					else {
+					if (result.conflictingRules.length > 0) {
 						me.getCmp('systemsetup.workflowrulesmodify').data.conflictingRules = result.conflictingRules;
 						me.getCmp('systemsetup.workflowrulesmodify').stepConflicts();
+					}
+					else {
+						me.addHistory('SystemSetup:showSystemSetup:WorkflowRules');
 					}
 				}
 			}
@@ -1758,7 +1838,7 @@ Ext.define('NP.controller.SystemSetup', {
 							var key          = (data['islineitem']) ? 'line' : 'header',
 								customFields = NP.Config.getCustomFields(),
 								num          = data['universal_field_number'];
-							
+
 							customFields[key].fields[num].invOn = (data['field_inv_on_off']) ? true : false;
 							customFields[key].fields[num].invRequired = (data['field_inv_req']) ? true : false;
 							customFields[key].fields[num].poOn = (data['field_po_on_off']) ? true : false;
@@ -1918,7 +1998,7 @@ Ext.define('NP.controller.SystemSetup', {
 	 */
 	fillPicklistForm: function(column, values) {
 		var field;
-		
+
 		if (column.dropdown_flag == 1) {
 			field = {
 				xtype: 'customcombo',
@@ -2103,7 +2183,7 @@ Ext.define('NP.controller.SystemSetup', {
 								me.fillFormPicklist({
 									column_pk_data: 0,
 									column_status: 1
-								}, picklistform, picklistview.mode)
+								}, picklistform, picklistview.mode);
 								picklistview.down('[name="picklistcolumns"]').getStore().reload();
 							}
 						}
@@ -2260,7 +2340,7 @@ Ext.define('NP.controller.SystemSetup', {
 		// We need to jump through hoops to set the proper borders on the title
 		function setBorders() {
 			var header = me.getCmp('systemsetup.printtemplatetab').getHeader();
-			
+
 			if (header) {
 				Ext.suspendLayouts();
 
@@ -2423,7 +2503,7 @@ Ext.define('NP.controller.SystemSetup', {
 			isWithAttachment = tab.down('[name="template_attachment"]').getValue();
 
 			tabpanel.up().down('[name="uploadattachment"]').show();
-			
+
 			if (isWithAttachment == 1) {
 				tabpanel.up().down('[name="viewAttachmentBtn"]').show();
 				tabpanel.up().down('[name="deleteAttachmentBtn"]').show();

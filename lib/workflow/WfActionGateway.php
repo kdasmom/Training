@@ -8,9 +8,18 @@ use NP\core\db\Select;
 use NP\core\db\Delete;
 use NP\core\db\Where;
 use NP\workflow\WFRuleTypeGateway;
+use NP\user\UserprofileRoleGateway;
 
 class WfActionGateway extends AbstractGateway {
 	protected $table = 'wfaction';
+
+	protected $userprofileRoleGateway;
+
+	public function __construct(Adapter $adapter, UserprofileRoleGateway $userprofileRoleGateway) {
+		$this->userprofileRoleGateway = $userprofileRoleGateway;
+		
+		parent::__construct($adapter);
+	}
 
 	public function copy($ruleid, $targetid) {
 		$select = Select::get()
@@ -217,5 +226,35 @@ class WfActionGateway extends AbstractGateway {
 		$select = new sql\WfActionOriginatorSelect('?');
 
 		return $this->adapter->query($select, [$wfrule_id, $userprofile_id, $userprofile_id]);
+	}
+
+	public function findTriggeredOptionalRuleAction($userprofile_id) {
+		$user = $this->userprofileRoleGateway->findById($userprofile_id);
+
+		$res = $this->adapter->query(
+			Select::get()
+				->from(['wa'=>'wfaction'])
+					->join(new sql\join\WfActionWfRuleJoin())
+					->join(new sql\join\WfRuleWfRuleTypeJoin([]))
+				->whereEquals('wrt.wfruletype_name', "'Optional Workflow'")
+				->whereNest('OR')
+					->whereNest()
+						->whereEquals('wa.wfaction_originator_tablename', "'role'")
+						->whereEquals('wa.wfaction_originator_tablekey_id', '?')
+					->whereUnnest()
+					->whereNest()
+						->whereEquals('wa.wfaction_originator_tablename', "'userprofilerole_id'")
+						->whereEquals('wa.wfaction_originator_tablekey_id', '?')
+					->whereUnnest()
+				->whereUnnest()
+				->limit(1),
+			[$user['role_id'], $user['userprofilerole_id']]
+		);
+
+		if (count($res)) {
+			return $res[0];
+		}
+
+		return null;
 	}
 }

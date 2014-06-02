@@ -52,14 +52,12 @@ Ext.define('NP.controller.AbstractEntityController', {
 			{ ref: 'lineDataView', selector: '[xtype="shared.invoicepo.viewlines"] dataview' },
 			{ ref: 'taxField', selector: '#entity_tax_amount' },
 			{ ref: 'shippingField', selector: '#entity_shipping_amount' },
-			{ ref: 'lineGrid', selector: '[xtype="shared.invoicepo.viewlinegrid"]' },
 			{ ref: 'forwardsGrid', selector: '[xtype="shared.invoicepo.forwardsgrid"]' },
 			{ ref: 'historyLogGrid', selector: '[xtype="shared.invoicepo.historyloggrid"]' },
 			{ ref: 'warningsView', selector: '[xtype="shared.invoicepo.viewwarnings"] dataview' },
 			{ ref: 'lineGridPropertyCombo',selector: '#lineGridPropertyCombo' },
 			{ ref: 'lineGridGlCombo', selector: '#lineGridGlCombo' },
 			{ ref: 'lineGridUnitCombo', selector: '#lineGridUnitCombo' },
-			{ ref: 'lineAddBtn', selector: '#' + me.shortName + 'LineViewAddBtn' },
 			{ ref: 'lineEditBtn', selector: '#' + me.shortName + 'LineEditBtn' },
 			{ ref: 'splitWindow', selector: '[xtype="shared.invoicepo.splitwindow"]' },
 			{ ref: 'splitGrid', selector: '[xtype="shared.invoicepo.splitwindow"] customgrid' },
@@ -107,11 +105,17 @@ Ext.define('NP.controller.AbstractEntityController', {
 			changeshippingtotal: me.onChangeShippingTotal.bind(me)
 		};
 
+		// Split window
+		control['#' + me.shortName + 'SplitWin'] = {
+			close: me.onCloseSplitWindow.bind(me)
+		};
+
 		// Split grid
 		control['#' + me.shortName + 'SplitWin customgrid'] = {
 			beforeedit      : me.onBeforeLineGridEdit.bind(me),
 			changepercentage: me.onChangeSplitPercentage.bind(me),
-			changeamount    : me.onChangeSplitAmount.bind(me)
+			changeamount    : me.onChangeSplitAmount.bind(me),
+			tablastfield    : me.onAddSplitLine.bind(me)
 		};
 
 		// Split combo box in the split window
@@ -289,24 +293,25 @@ Ext.define('NP.controller.AbstractEntityController', {
 		};
 
 		// Invoice image panel
-		control['[xtype="' + me.shortName + '.view"] [xtype="viewport.imagepanel"]'] = {
+		control['[xtype="viewport.imagepanel"]'] = {
 			expand: function() {
-				me.showEntityImage = true;
-				me.loadImage();
+				var token = Ext.History.getToken().split(':');
+				if (token[0] == me.controller) {
+					me.showEntityImage = true;
+					me.loadImage();
+				}
 			},
 			collapse: function() {
-				me.showEntityImage = false;
+				var token = Ext.History.getToken().split(':');
+				if (token[0] == me.controller) {
+					me.showEntityImage = false;
+				}
 			}
 		};
 
 		// History log grid
 		control['[xtype="' + me.shortName + '.view"] [xtype="shared.invoicepo.historyloggrid"]'] = {
 			showdetails: me.onShowHistoryDetail.bind(me)
-		};
-
-		// Clicking the Edit button on the line item list
-		control['#' + me.shortName + 'LineViewAddBtn'] = {
-			click: me.onLineViewAddClick.bind(me)
 		};
 
 		// Clicking the Edit button on the line item list
@@ -325,6 +330,7 @@ Ext.define('NP.controller.AbstractEntityController', {
 		};
 
 		// Clicking on the Undo Changes button
+		// TODO: permanently remove this once confirmed this functionality is not needed
 		control['#' + me.shortName + 'LineCancelBtn'] = {
 			click: me.onLineCancelClick.bind(me)
 		};
@@ -426,6 +432,10 @@ Ext.define('NP.controller.AbstractEntityController', {
 			click: me.onRoute
 		};
 
+		control['#' + me.shortName + 'RouteSaveBtn'] = {
+			click: me.onRouteSave
+		};
+
 		control['#' + me.shortName + 'ApproveBtn'] = {
 			click: me.onApprove
 		};
@@ -445,7 +455,7 @@ Ext.define('NP.controller.AbstractEntityController', {
 				return false;
 			}
 
-		NP.Keys.addShortcut(me.controller + ':showView:\\d+', [
+		NP.Keys.addShortcut(me.controller + ':showView(:\\d+)?', [
 			// Shortcut for clicking the Edit button on line item panel
 			{
 				title      : 'Edit Lines',
@@ -456,14 +466,17 @@ Ext.define('NP.controller.AbstractEntityController', {
 					return !me.query('#' + me.shortName + 'LineEditBtn', true).isDisabled();
 				}
 			},
-			// Shortcut for clicking the Add button on line item grid
+			// Shortcut for clicking the Add Line button on line item grid
 			{
-				title      : 'Add Line',
+				title      : 'Add Lines',
 				key        : Ext.EventObject.A,
-				fn         : function() { me.onLineViewAddClick(); },
+				fn         : me.onLineAddClick,
 				scope      : me,
 				conditionFn: function() {
-					return !me.query('#' + me.shortName + 'LineViewAddBtn', true).isDisabled();
+					return (
+						editCondition()
+						&& !me.query('#' + me.shortName + 'LineAddBtn', true).isDisabled()
+					);
 				}
 			},
 			// Shortcut for going to the next line item in the grid
@@ -501,6 +514,16 @@ Ext.define('NP.controller.AbstractEntityController', {
 				scope      : me,
 				conditionFn: function() {
 					return me.query('#' + me.shortName + 'SaveBtn', true).isVisible();
+				}
+			},
+			// Shortcut for processing invoice
+			{
+				title      : 'Ready for Processing',
+				key        : Ext.EventObject.Y,
+				fn         : me.onReadyForProcessing,
+				scope      : me,
+				conditionFn: function() {
+					return me.query('#' + me.shortName + 'ReadyForProcessingBtn', true).isVisible();
 				}
 			}
 		]);
@@ -557,18 +580,13 @@ Ext.define('NP.controller.AbstractEntityController', {
 			accountingPeriod = accounting_period,
 			startPeriod,
 			endPeriod,
-			currentPeriod,
-			entityPeriod;
+			currentPeriod;
 
 		if (Ext.isString(accountingPeriod)) {
 			accountingPeriod = Ext.Date.parse(accountingPeriod, 'Y-m-d');
 		}
 		startPeriod = accountingPeriod,
 		endPeriod   = accountingPeriod
-
-		if (arguments.length === 1) {
-			entityPeriod = null;
-		}
 
 		if (periodBack > 0) {
 			startPeriod = Ext.Date.add(startPeriod, Ext.Date.MONTH, periodBack);
@@ -584,12 +602,15 @@ Ext.define('NP.controller.AbstractEntityController', {
 			currentPeriod = Ext.Date.add(currentPeriod, Ext.Date.MONTH, 1);
 		}
 
-		if (entityPeriod !== null) {
-			entityPeriod = Ext.Date.parse(entity_period, NP.Config.getServerDateFormat());
-			if (entityPeriod < startPeriod) {
-				periods.unshift(entityPeriod);
-			} else if (entityPeriod > endPeriod) {
-				periods.push(entityPeriod);
+		if (arguments.length > 1) {
+			if (!Ext.isDate(entity_period)) {
+				entity_period = Ext.Date.parse(entity_period, NP.Config.getServerDateFormat());
+			}
+			
+			if (entity_period < startPeriod) {
+				periods.unshift(entity_period);
+			} else if (entity_period > endPeriod) {
+				periods.push(entity_period);
 			}
 		}
 
@@ -600,6 +621,10 @@ Ext.define('NP.controller.AbstractEntityController', {
 				accounting_period        : Ext.Date.format(period, NP.Config.getServerDateFormat())
 			});
 		});
+
+		if (entity_period) {
+			periodField.setValue(Ext.Date.format(entity_period, NP.Config.getServerDateFormat()));
+		}
 	},
 
 	buildViewToolbar: function(data) {
@@ -705,14 +730,8 @@ Ext.define('NP.controller.AbstractEntityController', {
 		// Enable/disable the add and edit line button
 		if (readonly) {
 			me.getLineEditBtn().disable();
-			me.getLineAddBtn().disable();
 		} else {
 			me.getLineEditBtn().enable();
-			if (status == 'paid') {
-				me.getLineAddBtn().disable();
-			} else {
-				me.getLineAddBtn().enable();
-			}
 		}
 
 		// Enable/disable the tax/shipping fields
@@ -777,6 +796,111 @@ Ext.define('NP.controller.AbstractEntityController', {
 		return me.getEntityView().getModel(me.shortName + '.' + me.modelClass);
 	},
 
+	getVendorRecord: function() {
+		var me          = this,
+			vendorField = me.getVendorCombo();
+
+		if (vendorField.getValue() !== null) {
+			return vendorField.findRecordByValue(vendorField.getValue());
+		}
+
+		return null;
+	},
+
+	getPropertyRecord: function() {
+		var me          = this,
+			propField   = me.getPropertyCombo();
+
+		if (propField.getValue() !== null) {
+			return propField.findRecordByValue(propField.getValue());
+		}
+
+		return null;
+	},
+
+	getLineGrid: function() {
+		var me   = this,
+			grid = me.query('#splitGrid', true);
+
+		if (grid === null) {
+			grid = me.getCmp('shared.invoicepo.viewlinegrid');
+		}
+		return grid;
+	},
+
+	onPropertyComboSelect: function(propertyCombo, recs) {
+		var me            = this,
+			form          = me.getEntityView(),
+			vendorCombo   = me.getVendorCombo(),
+			periodField   = form.findField(me.longName + '_period'),
+			currentPeriod = me.getEntityRecord().get(me.longName + '_period'),
+			property_id   = null;
+		
+		// Remove all periods from the period store
+		periodField.getStore().removeAll();
+
+		if (recs.length) {
+			property_id = recs[0].get('property_id');
+
+			vendorCombo.enable();
+			NP.Net.remoteCall({
+				requests: {
+					service    : 'PropertyService',
+					action     : 'getAccountingPeriod',
+					property_id: property_id,
+					success    : function(result) {
+						var period = Ext.Date.parse(result['date'], NP.Config.getServerSmallDateFormat());
+						if (currentPeriod === null) {
+							currentPeriod = period;
+						}
+						me.populatePeriods(period, currentPeriod);
+					}
+				}
+			});
+		} else {
+			vendorCombo.disable();
+		}
+
+		me.getEntityRecord().set('property_id', property_id);
+	},
+
+	onVendorComboSelect: function(callback) {
+		var me          = this,
+			entity_id   = me.getEntityRecord().get(me.pk),
+			vendorField = me.getVendorCombo(),
+			dialogTitle = me.translate('Change Vendor?'),
+			dialogText  = me.translate('Please note, when changing the vendor, all line items and previous approvals will be deleted from this ' + me.displayName + '. Are you sure you want to proceed?');
+
+		callback = callback || Ext.emptyFn;
+
+		function restoreVendor() {
+			var vendorStore = vendorField.getStore(),
+				idx         = vendorStore.indexOf(me.selectedVendor),
+				fn          = (idx === -1) ? 'setDefaultRec' : 'setValue';
+			
+			vendorField.suspendEvents(false);
+			
+			vendorField[fn](me.selectedVendor);
+
+			vendorField.resumeEvents();
+		}
+
+		if (me.selectedVendor) {
+			Ext.MessageBox.confirm(dialogTitle, dialogText, function(btn) {
+				// If user clicks Yes, proceed with deleting
+				if (btn == 'yes') {
+					me.changeVendor();
+
+					callback();
+				} else {
+					restoreVendor();
+				}
+			});
+		} else {
+			me.changeVendor();
+		}
+	},
+
 	onVendorSelectClick: function() {
 		var me  = this,
 			win = Ext.create('NP.view.vendor.VendorSelectorWindow', {
@@ -817,24 +941,73 @@ Ext.define('NP.controller.AbstractEntityController', {
 		});
 	},
 
-	onLineViewAddClick: function() {
-		var me = this;
+	changeVendor: function() {
+		var me          = this,
+			entity      = me.getEntityRecord(),
+			form        = me.getEntityView(),
+			formData    = form.getLoadedData(),
+			vendor      = me.getVendorRecord(),
+			lineStore   = me.getLineGrid().getStore(),
+			vendorField = (me.shortName == 'invoice') ? 'paytablekey_id' : 'vendorsite_id';
 
-		me.getLineMainView().getLayout().setActiveItem(1);
+		Ext.suspendLayouts();
 
-		me.onLineAddClick();
+		// Set the vendor field on the entity record
+		entity.set(vendorField, vendor.get('vendorsite_id'));
+
+		// Show the vendor info
+		me.setVendorDisplay();
+
+		// Remove all line items (can't call removeAll, otherwise we lose list of added/removed/modified records)
+		lineStore.remove(lineStore.getRange());
+		
+		// Enable the add and edit line item button
+		me.getLineEditBtn().enable();
+
+		Ext.resumeLayouts(true);
+	},
+
+	setVendorDisplay: function() {
+		var me            = this,
+			vendorDisplay = Ext.ComponentQuery.query('#vendorDisplay')[0],
+			vendorField   = me.getVendorCombo();
+
+		me.selectedVendor = vendorField.getValue();
+
+		if (vendorField.getValue() !== null) {
+			var vendor = me.getVendorRecord();
+			me.selectedVendor = vendor;
+
+			vendorDisplay.update(
+				'<b>' + vendor.get('vendor_name') + 
+				' (' + vendor.get('vendor_id_alt') + ')</b>' +
+				vendor.getAddressHtml() +
+				'<div>' + vendor.getFullPhone() + '</div>'
+			);
+
+			vendorDisplay.show();
+		} else {
+			vendorDisplay.hide();
+		}
 	},
 
 	onLineEditClick: function() {
+		var me = this;
+
+		me.showLineEdit(0);
+	},
+
+	showLineEdit: function(row) {
 		var me    = this,
 			grid  = me.getLineGrid(),
 			store = grid.getStore();
 
 		me.getLineMainView().getLayout().setActiveItem(1);
+		me.getLineDataView().suspendViewUpdates();
 
-		if (store.getCount()) {
+		if (store.getCount()-1 >= row) {
 			Ext.defer(function() {
-				grid.getPlugin('cellediting').startEditByPosition({ row: 0, column: 1 });
+				grid.getPlugin('cellediting').startEditByPosition({ row: row, column: 1 });
 			}, 50);
 		}
 	},
@@ -899,7 +1072,7 @@ Ext.define('NP.controller.AbstractEntityController', {
 
 		grid.selectedRec = rec;
 
-		if (vendorRec.get('is_utility_vendor') === 1) {
+		if (me.type == 'invoice' && vendorRec.get('is_utility_vendor') === 1) {
 			me.filterUtilityRecords();
 		}
 
@@ -934,12 +1107,18 @@ Ext.define('NP.controller.AbstractEntityController', {
 	onLineSaveClick: function() {
 		var me          = this,
 			cellEditing = me.getLineGrid().getPlugin('cellediting'),
-			isValid     = me.validateLineItems();
-		
+			isValid;
+
+		me.removeBlankLines();
+
+		isValid = me.validateLineItems();
+
 		if (isValid) {
 			if (cellEditing.editing) {
 				cellEditing.completeEdit();
 			}
+			me.getLineDataView().resumeViewUpdates();
+			me.getLineDataView().refresh();
 			me.getLineMainView().getLayout().setActiveItem(0);
 		} else {
 			NP.Util.showFadingWindow({
@@ -949,6 +1128,23 @@ Ext.define('NP.controller.AbstractEntityController', {
 		}
 
 		return isValid;
+	},
+
+	/**
+	 * Removes any line that's been added (probably as a result of tabbing at the end of another line)
+	 * that is blank, meaning hasn't been modified at all (as indicated by the record's "dirty" flag)
+	 */
+	removeBlankLines: function() {
+		var me    = this,
+			store = me.getLineGrid().getStore();
+
+		// Loop through all lines in the store
+		store.each(function(rec) {
+			// If record is new and isn't dirty, assume it's a blank line and remove it
+			if (rec.get(me.itemPk) === null && !rec.dirty) {
+				store.remove(rec);
+			}
+		});
 	},
 
 	validateHeader: function(isSubmit) {
@@ -1083,7 +1279,7 @@ Ext.define('NP.controller.AbstractEntityController', {
 				}
 
 				if (error != null) {
-					me.getLineMainView().getLayout().setActiveItem(1);
+					me.showLineEdit(0);
 
 					// We'll use the deferUntil() utility function because in cases where the grid
 					// was never shown, the getCell() call will fail until the grid has been fully
@@ -1106,6 +1302,7 @@ Ext.define('NP.controller.AbstractEntityController', {
 		return valid;
 	},
 
+	// TODO: permanently remove this once confirmed this functionality is not needed
 	onLineCancelClick: function() {
 		var me = this;
 		
@@ -1116,7 +1313,11 @@ Ext.define('NP.controller.AbstractEntityController', {
 		var me    = this,
 			field = e.column.getEditor(),
 			grid  = e.grid,
-			data  = me.getEntityView().getLoadedData();
+			data  = null;
+
+		if (me.getEntityRecord().get(me.pk) !== null) {
+			data = me.getEntityView().getLoadedData();
+		}
 
 		grid.selectedRec = e.record;
 		me.originalRecValue = e.record.copy();
@@ -1144,8 +1345,10 @@ Ext.define('NP.controller.AbstractEntityController', {
 		}
 
 		if (e.field == me.itemPrefix + '_quantity' || e.field == me.itemPrefix + '_unitprice' 
-				|| e.field == me.itemPrefix + '_amount' || e.field == me.itemPrefix + '_description') {
+				|| e.field == me.itemPrefix + '_amount') {
 			me.onOpenInvalidSplitField(editor, e.record, field);
+		} else if (e.field == me.itemPrefix + '_description') {
+			me.onOpenDescriptionEditor(editor, e.grid, e.record, field);
 		} else if (e.field == 'property_id') {
 			me.onOpenPropertyEditor(editor, e.grid, e.record, field);
 		} else if (e.field == 'glaccount_id') {
@@ -1219,6 +1422,32 @@ Ext.define('NP.controller.AbstractEntityController', {
 				fieldInner.setReadOnly(false);
 			}
 		}, { args: [rec, field] });
+	},
+
+	onOpenDescriptionEditor: function(editor, grid, rec, field) {
+		var me = this;
+		
+		me.onOpenInvalidSplitField(editor, rec, field);
+
+		if (rec.get('property_id') !== null) {
+			var propRec     = me.getStore('property.AllProperties').getById(rec.get('property_id')),
+				intPkgStore = Ext.getStore('system.IntegrationPackages'),
+				intPkg      = intPkgStore.getById(propRec.get('integration_package_id'));
+
+			function setMaxLength(field, maxLen) {
+				if (!field.getEl()) {
+					Ext.defer(function() {
+						setMaxLength(field, maxLen);
+					}, 100);
+
+					return;
+				}
+
+				field.getEl().down('input').set({ maxlength: maxLen });
+			}
+
+			setMaxLength(field, intPkg.get('lineitem_description_max'));
+		}
 	},
 
 	onOpenPropertyEditor: function(editor, grid, rec, field) {
@@ -1518,6 +1747,10 @@ Ext.define('NP.controller.AbstractEntityController', {
             	var field = modifiedFieldNames[i];
             	if (field == 'property_id') {
             		me.onChangeLineProperty();
+            	} else if (field == 'glaccount_id') {
+            		me.onChangeLineGl();
+            	} else if (field == me.itemPrefix + '_amount') {
+            		me.onChangeAmount();
             	} else if (field == me.itemPrefix + '_taxflag') {
             		if (rec.get(me.itemPrefix + '_taxflag') == 'N') {
             			rec.set(me.itemPrefix + '_salestax', 0);
@@ -1542,7 +1775,9 @@ Ext.define('NP.controller.AbstractEntityController', {
 
 		Ext.suspendLayouts();
 
-		me.buildViewToolbar(me.getEntityView().getLoadedData());
+		if (me.getEntityRecord().get(me.pk) !== null) {
+			me.buildViewToolbar(me.getEntityView().getLoadedData());
+		}
 
 		if (me.query('#entity_tax_amount').length) {
         	me.onChangeShippingTotal();
@@ -1574,7 +1809,7 @@ Ext.define('NP.controller.AbstractEntityController', {
 		if (glaccount_id !== null) {
 			// Reload the GL Account store
 			me.setGlExtraParams();
-			grid.glStore.load(function() {
+			grid.glStore.loadIfChange(function() {
 				// If the current grid value doesn't exist in the store, clear it
 				if (grid.glStore.getById(glaccount_id) === null) {
 					grid.selectedRec.set({
@@ -1593,6 +1828,95 @@ Ext.define('NP.controller.AbstractEntityController', {
 			unit_id_alt: null,
 			unit_number: null
 		});
+
+		me.recalculateVariance(grid.selectedRec);
+    },
+
+    onChangeLineGl: function() {
+    	var me = this;
+
+    	me.recalculateVariance(me.getLineGrid().selectedRec);
+    },
+
+    recalculateVariance: function(rec) {
+    	var me           = this,
+    		lineStore    = me.getLineGrid().getStore(),
+    		property_id  = rec.get('property_id'),
+    		glaccount_id = rec.get('glaccount_id'),
+    		period       = me.getEntityView().findField(me.longName + '_period').getValue();
+
+    	// You can't calculate a variance without property or GL selected
+    	if (property_id === null || glaccount_id === null) {
+    		return;
+    	}
+
+    	NP.Net.remoteCall({
+    		requests: {
+				service     : 'BudgetService',
+				action      : 'getMonthlyLineBudgetInfo',
+				property_id : rec.get('property_id'),
+				glaccount_id: rec.get('glaccount_id'),
+				period      : period,
+				type        : 'account',
+				success     : function(result) {
+					var variance = result.month_budget - (result.month_actual + result.month_invoice + result.month_po);
+
+					me.adjustVariances(rec, variance);
+				}
+			}
+    	});
+    },
+
+    adjustVariances: function(selRec, variance) {
+    	var me        = this,
+    		lineStore = me.getLineGrid().getStore(),
+    		amtField  = me.itemPrefix + '_amount',
+    		lines     = lineStore.queryBy(function(rec) {
+	    		if (rec.get('property_id') === selRec.get('property_id') && rec.get('glaccount_id') === selRec.get('glaccount_id')) {
+	    			return true;
+	    		}
+	    		return false;
+	    	});
+
+	    Ext.suspendLayouts();
+
+    	// First pass through is to adjust the variance in case there are lines that
+		// haven't yet been saved to the DB (new or modified)
+		lines.each(function(rec) {
+			// If new unsaved line or line with new budget (modified GL or property)
+			// decrement its amount from the budget
+			if (rec.get(me.itemPk) === null || 'property_id' in rec.modified || 'glaccount_id' in rec.modified) {
+				rec.lastModifiedAmt = rec.get(amtField);
+				variance -= rec.get(amtField);
+			}
+			// If existing line with modified amount, adjust the amounts by
+			// factoring out the original value and then including the modified one
+			else if (amtField in rec.modified) {
+				// If this is the first modification, we don't have a lastModifiedAmt property
+				// Just use the built-in modified property
+				if (!rec.lastModifiedAmt) {
+					rec.lastModifiedAmt = rec.modified[amtField];
+				}
+				// Decrement the last amount from the variance to get this line basically out
+				// of the occasion
+				variance += rec.lastModifiedAmt;
+				// Store the new amount as the last modified so that it can be used next time
+				// this function runs
+				rec.lastModifiedAmt = rec.get(amtField);
+
+				// Factor in the new amount into the variance
+				variance -= rec.get(amtField);
+			}
+		});
+
+		// Second pass is to update the variance on all lines
+		lines.each(function(rec) {
+			rec.set('budget_variance', variance)
+		});
+
+		me.setRequiredNotes();
+
+		Ext.resumeLayouts(true);
     },
 
 	onChangeTaxTotal: function() {
@@ -1638,10 +1962,12 @@ Ext.define('NP.controller.AbstractEntityController', {
 
 	onChangeQuantity: function(grid, field) {
 		var me        = this,
-			unitPrice = grid.selectedRec.get(me.itemPrefix + '_unitprice'),
+			rec       = me.getLineGrid().selectedRec,
+			unitPrice = rec.get(me.itemPrefix + '_unitprice'),
 			qty       = field.getValue();
 
-		grid.selectedRec.set(me.itemPrefix + '_amount', qty * unitPrice);
+		rec.set(me.itemPrefix + '_amount', qty * unitPrice);
+		me.adjustVariances(rec, rec.get('budget_variance'));
 	},
 
 	onChangeUnitPrice: function(grid, field) {
@@ -1652,12 +1978,15 @@ Ext.define('NP.controller.AbstractEntityController', {
 		grid.selectedRec.set(me.itemPrefix + '_amount', qty * unitPrice);
 	},
 
-	onChangeAmount: function(grid, field) {
-		var me        = this,
-			qty   = grid.selectedRec.get(me.itemPrefix + '_quantity'),
-			amount = field.getValue();
+	onChangeAmount: function() {
+		var me     = this,
+			rec    = me.getLineGrid().selectedRec,
+			qty    = rec.get(me.itemPrefix + '_quantity'),
+			amount = rec.get(me.itemPrefix + '_amount');
 
-		grid.selectedRec.set(me.itemPrefix + '_unitprice', amount / qty);
+		rec.set(me.itemPrefix + '_unitprice', amount / qty);
+
+		me.adjustVariances(rec, rec.get('budget_variance'));
 	},
 
 	getImageRegion: function() {
@@ -1710,18 +2039,18 @@ Ext.define('NP.controller.AbstractEntityController', {
 	        
 	        iframeId = me.shortName + '-image-iframe-' + imageRegion;
 			iframeEl = Ext.get(iframeId);
+
 			if (!iframeEl) {
 				imagePanel[sizeProp] = splitSize + '%';
 				
-				if (hideImg != 1 || showImage) {
-					imagePanel.update('<iframe id="' + iframeId + '" src="about:blank" height="100%" width="100%"></iframe>');
-					iframeEl = Ext.get(iframeId);
-				}
-				if ( (!('showEntityImage' in me) && !hideImg) || me.showEntityImage ) {
-		        	imagePanel.expand(false);
-		        	showImage = true;
-		        }
+				imagePanel.update('<iframe id="' + iframeId + '" src="about:blank" height="100%" width="100%"></iframe>');
+				iframeEl = Ext.get(iframeId);
 		    }
+
+		    if ( (!('showEntityImage' in me) && !hideImg) || me.showEntityImage ) {
+	        	imagePanel.expand(false);
+	        	showImage = true;
+	        }
 
 		    if (showImage) {
 		    	var src = 'showImage.php?image_index_id=' + data['image']['Image_Index_Id'];
@@ -1744,71 +2073,6 @@ Ext.define('NP.controller.AbstractEntityController', {
 		Ext.resumeLayouts(true);
 	},
 
-	onPropertyComboSelect: function(propertyCombo, recs) {
-		var me            = this,
-			form          = me.getEntityView(),
-			vendorCombo   = me.getVendorCombo(),
-			periodField   = form.findField(me.longName + '_period'),
-			currentPeriod = me.getEntityRecord().get(me.longName + '_period');
-		
-		// Remove all periods from the period store
-		periodField.getStore().removeAll();
-
-		if (recs.length) {
-			vendorCombo.enable();
-			NP.Net.remoteCall({
-				requests: {
-					service    : 'PropertyService',
-					action     : 'getAccountingPeriod',
-					property_id: recs[0].get('property_id'),
-					success    : function(result) {
-						var period = Ext.Date.parse(result['date'], NP.Config.getServerSmallDateFormat());
-						me.populatePeriods(period, currentPeriod);
-					}
-				}
-			});
-		} else {
-			vendorCombo.disable();
-		}
-	},
-
-	onVendorComboSelect: function(callback) {
-		var me          = this,
-			entity_id   = me.getEntityRecord().get(me.pk),
-			vendorField = me.getVendorCombo(),
-			dialogTitle = me.translate('Change Vendor?'),
-			dialogText  = me.translate('Please note, when changing the vendor, all line items and previous approvals will be deleted from this ' + me.displayName + '. Are you sure you want to proceed?');
-
-		callback = callback || Ext.emptyFn;
-
-		function restoreVendor() {
-			var vendorStore = vendorField.getStore(),
-				idx         = vendorStore.indexOf(me.selectedVendor),
-				fn          = (idx === -1) ? 'setDefaultRec' : 'setValue';
-			
-			vendorField.suspendEvents(false);
-			
-			vendorField[fn](me.selectedVendor);
-
-			vendorField.resumeEvents();
-		}
-
-		if (me.selectedVendor) {
-			Ext.MessageBox.confirm(dialogTitle, dialogText, function(btn) {
-				// If user clicks Yes, proceed with deleting
-				if (btn == 'yes') {
-					me.changeVendor();
-
-					callback();
-				} else {
-					restoreVendor();
-				}
-			});
-		} else {
-			me.changeVendor();
-		}
-	},
-
 	showUnexpectedError: function() {
 		var me = this;
 
@@ -1816,79 +2080,6 @@ Ext.define('NP.controller.AbstractEntityController', {
 			me.translate('Error'),
 			me.translate('An unexpected error occurred. Please try again.')
 		);
-	},
-
-	changeVendor: function() {
-		var me          = this,
-			entity      = me.getEntityRecord(),
-			form        = me.getEntityView(),
-			formData    = form.getLoadedData(),
-			vendor      = me.getVendorRecord(),
-			lineStore   = me.getLineGrid().getStore(),
-			vendorField = (me.shortName == 'invoice') ? 'paytablekey_id' : 'vendorsite_id';
-
-		Ext.suspendLayouts();
-
-		// Set the vendor field on the entity record
-		entity.set(vendorField, vendor.get('vendorsite_id'));
-
-		// Show the vendor info
-		me.setVendorDisplay();
-
-		// Remove all line items (can't call removeAll, otherwise we lose list of added/removed/modified records)
-		lineStore.remove(lineStore.getRange());
-		
-		// Enable the add and edit line item button
-		me.getLineEditBtn().enable();
-		me.getLineAddBtn().enable();
-
-		Ext.resumeLayouts(true);
-	},
-
-	getVendorRecord: function() {
-		var me          = this,
-			vendorField = me.getVendorCombo();
-
-		if (vendorField.getValue() !== null) {
-			return vendorField.findRecordByValue(vendorField.getValue());
-		}
-
-		return null;
-	},
-
-	getPropertyRecord: function() {
-		var me          = this,
-			propField   = me.getPropertyCombo();
-
-		if (propField.getValue() !== null) {
-			return propField.findRecordByValue(propField.getValue());
-		}
-
-		return null;
-	},
-
-	setVendorDisplay: function() {
-		var me            = this,
-			vendorDisplay = Ext.ComponentQuery.query('#vendorDisplay')[0],
-			vendorField   = me.getVendorCombo();
-
-		me.selectedVendor = vendorField.getValue();
-
-		if (vendorField.getValue() !== null) {
-			var vendor = me.getVendorRecord();
-			me.selectedVendor = vendor;
-
-			vendorDisplay.update(
-				'<b>' + vendor.get('vendor_name') + 
-				' (' + vendor.get('vendor_id_alt') + ')</b>' +
-				vendor.getAddressHtml() +
-				'<div>' + vendor.getFullPhone() + '</div>'
-			);
-
-			vendorDisplay.show();
-		} else {
-			vendorDisplay.hide();
-		}
 	},
 
 	checkLock: function(callback) {
@@ -1926,22 +2117,24 @@ Ext.define('NP.controller.AbstractEntityController', {
 	},
 
 	onDeleteLineClick: function(lineRec) {
-		var me        = this,
-			lineStore = me.getLineDataView().getStore();
+		var me         = this,
+			lineStore  = me.getLineDataView().getStore(),
+			taxField   = me.query('#entity_tax_amount', true),
+			currentTax = taxField.getValue(),
+			taxable    = lineRec.get(me.itemPrefix + '_taxflag');
 
 		lineStore.remove(lineRec);
+
+		if (taxable == 'Y') {
+			taxField.setValue((currentTax - lineRec.get(me.itemPrefix + '_salestax')).toFixed(2));
+		}
 	},
 
 	onEditLineClick: function(lineRec) {
-		var me   = this,
-			grid = me.getLineGrid(),
-			row  = grid.getStore().indexOf(lineRec);
+		var me  = this,
+			row = me.getLineGrid().getStore().indexOf(lineRec);
 
-		this.getLineMainView().getLayout().setActiveItem(1);
-
-		Ext.defer(function() {
-			grid.getPlugin('cellediting').startEditByPosition({ row: row, column: 1 });
-		}, 50);
+		me.showLineEdit(row);
 	},
 
 	onPoRefClick: function(rec) {
@@ -2016,6 +2209,8 @@ Ext.define('NP.controller.AbstractEntityController', {
 								type: me.shortName
 							});
 
+		this.getLineDataView().suspendViewUpdates();
+
 		win.show(null, function() {
 			var splitComboStore = me.getSplitCombo().getStore(),
 				splitStore      = me.getSplitGrid().getStore();
@@ -2046,10 +2241,12 @@ Ext.define('NP.controller.AbstractEntityController', {
 
 				var newRec = lineRec.copy();
 				newRec.set('split_percentage', 100);
+				newRec.openLineInternalId = lineRec.internalId;
 				splitStore.add(newRec);
 			} else {
 				var splitRecs = me.getSplitLines(me.openSplitLineRec),
-					totalQty  = 0;
+					totalQty  = 0,
+					newRec;
 
 				splitRecs.each(function(splitRec) {
 					totalQty += splitRec.get(me.itemPrefix + '_quantity');
@@ -2058,15 +2255,19 @@ Ext.define('NP.controller.AbstractEntityController', {
 				win.down('#splitTotalQty').setValue(totalQty);
 
 				splitRecs.each(function(splitRec) {
-					splitStore.add(splitRec.copy());
+					newRec = splitRec.copy();
+					newRec.openLineInternalId = splitRec.internalId;
+					splitStore.add(newRec);
 				});
 			}
+
+			me.getSplitGrid().getPlugin('cellediting').startEditByPosition({ row: 0, column: 1 });
 		});
 	},
 
 	getSplitLines: function(rec) {
 		var me         = this,
-			lineStore  = me.getLineGrid().getStore(),
+			lineStore  = me.query('#' + me.shortName + 'LineGrid', true).getStore(),
 			desc       = rec.get(me.itemPrefix + '_description'),
 			unitPrice  = rec.get(me.itemPrefix + '_unitprice'),
 			recs;
@@ -2194,12 +2395,16 @@ Ext.define('NP.controller.AbstractEntityController', {
 	},
 
 	onAddSplitLine: function() {
-		var me = this,
-			rec = me.openSplitLineRec.copy();
+		var me   = this,
+			grid = me.getSplitGrid(),
+			rec  = me.openSplitLineRec.copy();
 
 		rec.set(me.itemPk, null);
 
-		me.getSplitGrid().getStore().add(rec);
+		grid.getStore().add(rec);
+		me.onRecalculateSplit();
+		rec.commit();
+		grid.getPlugin('cellediting').startEditByPosition({ row: grid.getStore().getCount()-1, column: 1 });
 	},
 
 	calculateAllocation: function() {
@@ -2252,7 +2457,7 @@ Ext.define('NP.controller.AbstractEntityController', {
 			var splitStore   = me.getSplitGrid().getStore(),
 				totalRecs    = splitStore.getCount(),
 				lineDataView = me.getLineDataView(),
-				lineStore    = me.getLineGrid().getStore(),
+				lineStore    = me.query('#' + me.shortName + 'LineGrid', true).getStore(),
 				desc         = Ext.ComponentQuery.query('#splitDescription')[0].getValue(),
 				rec,
 				lineRec,
@@ -2263,8 +2468,14 @@ Ext.define('NP.controller.AbstractEntityController', {
 			// If dealing with a new split, we need to check if the record we originally split
 			// is still there
 			if (me.isNewSplit) {
-				rec = splitStore.getById(me.openSplitLineRec.get(me.itemPk));
-				if (!rec) {
+				rec = splitStore.findBy(function(innerRec) {
+					if (innerRec.openLineInternalId == me.openSplitLineRec.internalId) {
+						return true;
+					}
+					return false;
+				});
+
+				if (rec === -1) {
 					lineStore.remove(me.openSplitLineRec);
 				}
 			// When editing a split, we need to loop through the original lines and see
@@ -2273,9 +2484,14 @@ Ext.define('NP.controller.AbstractEntityController', {
 				var oldRecs = me.getSplitLines(me.openSplitLineRec);
 
 				oldRecs.each(function(lineRec) {
-					var item_id = lineRec.get(me.itemPk);
-					rec = splitStore.getById(item_id);
-					if (item_id === null || rec === null) {
+					rec = splitStore.findBy(function(innerRec) {
+						if (innerRec.openLineInternalId == lineRec.internalId) {
+							return true;
+						}
+						return false;
+					});
+					
+					if (rec === -1) {
 						lineStore.remove(lineRec);
 					}
 				});
@@ -2288,10 +2504,12 @@ Ext.define('NP.controller.AbstractEntityController', {
 			for (i=0; i<totalRecs; i++) {
 				lineRec = null;
 				rec = splitStore.getAt(i);
+				
 				// Look for the split grid record in the line grid
-				if (rec.get(me.itemPk) !== null) {
-					lineRec = lineStore.getById(rec.get(me.itemPk));
+				if (rec.openLineInternalId) {
+					lineRec = lineStore.getByInternalId(rec.openLineInternalId);
 				}
+
 				// If the record exists, we want to update it
 				if (lineRec) {
 					var data = rec.getData();
@@ -2314,6 +2532,11 @@ Ext.define('NP.controller.AbstractEntityController', {
 			// Close the window now that we've processed everything
 			me.getSplitWindow().close();
 		}
+	},
+
+	onCloseSplitWindow: function() {
+		this.getLineDataView().resumeViewUpdates();
+		this.getLineDataView().refresh();
 	},
 
 	onSaveEntity: function(callback) {
@@ -3265,23 +3488,71 @@ Ext.define('NP.controller.AbstractEntityController', {
 	},
 
     loadBudgetDetails: function(rec, type) {
-    	var me  = this,
-    		win = me.getCmp('shared.invoicepo.budgetdetailwindow');
+    	var me          = this,
+    		win         = me.getCmp('shared.invoicepo.budgetdetailwindow'),
+    		period      = me.getEntityView().findField(me.longName + '_period').getValue(),
+    		includeYear = (NP.Config.getSetting('PN.Budget.DisplayAnnual', '0') == 1),
+    		amtField    = me.itemPrefix + '_amount',
+    		reqs;
 		
     	type = type || 'account';
 
+    	reqs = [{
+			service     : 'BudgetService',
+			action      : 'getMonthlyLineBudgetInfo',
+			property_id : rec.get('property_id'),
+			glaccount_id: rec.get('glaccount_id'),
+			period      : period,
+			type        : type
+		}];
+
+		if (includeYear) {
+			reqs.push({
+				service     : 'BudgetService',
+				action      : 'getYearlyLineBudgetInfo',
+				property_id : rec.get('property_id'),
+				glaccount_id: rec.get('glaccount_id'),
+				period      : period,
+				type        : type
+			});
+		}
+
     	NP.Net.remoteCall({
     		mask    : win,
-			requests: {
-				service    : me.service,
-				action     : 'getLineBudgetInfo',
-				item_id    : rec.get(me.itemPk),
-				type       : type,
-				includeYear: (NP.Config.getSetting('PN.Budget.DisplayAnnual', '0') == 1),
-				success    : function(result) {
-					result.gl_label = (type == 'account') ? 'Code' : 'Category';
-					win.updateContent(result);
+			requests: reqs,
+			success : function(results) {
+				var budgetInfo = results[0];
+				if (includeYear) {
+					Ext.apply(budgetInfo, results[1]);
 				}
+
+				budgetInfo.gl_label = (type == 'account') ? 'Code' : 'Category';
+
+				// We need to add invoices that aren't yet in the database or have been changed
+				var lineStore = me.getLineGrid().getStore();
+				
+				lineStore.each(function(lineRec) {
+					if (
+						rec.get('property_id') === lineRec.get('property_id')
+						&& rec.get('glaccount_id') === lineRec.get('glaccount_id')
+					) {
+						if (lineRec.get(me.itemPk) === null || 'property_id' in lineRec.modified || 'glaccount_id' in lineRec.modified) {
+							budgetInfo['month_' + me.shortName] += lineRec.get(me.itemPrefix + '_amount');
+							if (includeYear) {
+								budgetInfo['year_' + me.shortName] += lineRec.get(me.itemPrefix + '_amount');
+							}
+						} else if (amtField in lineRec.modified) {
+							budgetInfo['month_' + me.shortName] -= lineRec.modified[amtField];
+							budgetInfo['month_' + me.shortName] += lineRec.get(amtField);
+							if (includeYear) {
+								budgetInfo['year_' + me.shortName] -= lineRec.modified[amtField];
+								budgetInfo['year_' + me.shortName] += lineRec.get(amtField);
+							}
+						}
+					}
+				});
+
+				win.updateContent(budgetInfo);
 			}
 		});
     },
@@ -3424,7 +3695,7 @@ Ext.define('NP.controller.AbstractEntityController', {
 									);
 								} else if (me.shortName == 'invoice') {
 									var lineDataView = me.getLineDataView();
-									if (lineDataView.getNetAmount() < 0) {
+									if (lineDataView.tpl.getNetAmount() < 0) {
 										releaseText = 'Credit';
 									} else {
 										releaseText = 'Payment';
@@ -3449,10 +3720,12 @@ Ext.define('NP.controller.AbstractEntityController', {
 											{
 												itemId: me.shortName + 'ProcessBtn',
 												text  : NP.Translator.translate('Process ' + releaseText)
-											},{
+											}
+											// TODO: add and next functionality when appropriate
+											/*,{
 												itemId: me.shortName + 'ProcessAndNextBtn',
 												text  : NP.Translator.translate('Process ' + releaseText + ' and Next')
-											}
+											}*/
 										);
 									}
 								}
@@ -3511,11 +3784,63 @@ Ext.define('NP.controller.AbstractEntityController', {
 	},
 
 	onSubmitAndRoute: function() {
+		var me = this;
 
+		me.showRouteWindow('submit');
 	},
 
 	onRoute: function() {
+		var me = this;
 
+		me.showRouteWindow('route');
+	},
+
+	showRouteWindow: function(action) {
+		var me  = this,
+			win = Ext.create('NP.view.shared.invoicepo.RouteWindow', {
+					itemId     : me.shortName + 'RouteWindow',
+					type       : me.shortName,
+					property_id: me.getPropertyRecord().get('property_id'),
+					action     : action
+				});
+
+		win.show();
+	},
+
+	onRouteSave: function() {
+		var me        = this,
+			entity_id = me.getEntityRecord().get(me.pk),
+			win       = me.getCmp('shared.invoicepo.routewindow'),
+			msgBox    = me.query('#readyForProcessingDlg', true),
+			action    = (win.action == 'route') ? 'route' : 'submitForApprovalAndRoute';
+
+		if (win.isValid()) {
+			NP.Net.remoteCall({
+				mask    : win,
+				method  : 'POST',
+				requests: {
+					service    : 'WFRuleService',
+					action     : action,
+					table_name : me.longName,
+					tablekey_id: entity_id,
+					users      : win.getSelectedUsers(),
+					success    : function(result) {
+						if (result.success) {
+							win.close();
+							msgBox.destroy();
+
+							NP.Util.showFadingWindow({
+								html  : me.translate(me.displayName + ' has been routed for approval.')
+							});
+
+							me.showView(entity_id);
+						} else {
+							me.showUnexpectedError();
+						}
+					}
+				}
+			});
+		}
 	},
 
 	onApprove: function() {
@@ -3539,5 +3864,20 @@ Ext.define('NP.controller.AbstractEntityController', {
 				}
 			}
 		});
+	},
+
+	onSelectTaxable: function(combo, recs) {
+		var me         = this,
+			taxable    = false,
+			taxField   = me.query('#entity_tax_amount', true),
+			currentTax = taxField.getValue(),
+			lineRec    = me.getLineGrid().selectedRec,
+			taxAmount  = lineRec.get('property_salestax') * lineRec.get(me.itemPrefix + '_amount');
+
+		if (recs.length && recs[0].get('value') == 'Y') {
+			taxField.setValue((currentTax + taxAmount).toFixed(2));
+		} else {
+			taxField.setValue((currentTax - taxAmount).toFixed(2));
+		}
 	}
 });

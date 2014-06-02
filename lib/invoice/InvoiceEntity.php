@@ -398,6 +398,10 @@ class InvoiceEntity extends \NP\core\AbstractEntity implements \NP\workflow\Work
 		return $total;
 	}
 
+	public function getPeriod() {
+		return $this->invoice_period;
+	}
+
 	public function getApplicableRuleTypes() {
 		return ['invoice','invoiceitem','budget','vendor'];
 	}

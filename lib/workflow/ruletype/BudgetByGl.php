@@ -23,7 +23,12 @@ class BudgetByGl extends AbstractRuleType implements RuleTypeInterface {
 		}
 
 		if ($suppressBudgetGl == '0' && array_key_exists($entity->glaccount_id, $scope)) {
-			$budgetInfo = $this->entityService->getMonthlyLineBudgetInfo($entity->$itemField, 'account');
+			$budgetInfo = $this->entityService->getMonthlyLineBudgetInfo(
+				$entity->property_id,
+				$entity->glaccount_id,
+				$entity->getPeriod(),
+				'account'
+			);
 			$variance   = ($budgetInfo['month_actual'] + $budgetInfo['month_invoice'] + $budgetInfo['month_po']) - $budgetInfo['month_budget'];
 
 			$overage_amount = $this->getOverage($entity->glaccount_id, $entity->property_id, $entity->$periodField);

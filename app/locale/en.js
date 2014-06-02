@@ -221,6 +221,11 @@ Ext.define('NP.Locale', {
 	'Receipt Number'        : 'Receipt Number',
 	'PO Number'             : 'PO Number',
 
+	/**
+	 *  VENDOR CATALOG SECTION
+	 */
+	'In Cart' : 'In Cart',
+	'This item is no longer available for order' : 'This item is no longer available for order',
 
 	/**
 	 * INVOICE SECTION
@@ -726,6 +731,8 @@ Ext.define('NP.Locale', {
 	'Assigned Users'         : 'Assigned Users',
 	'Unassigned User Groups' : 'Unassigned User Groups',
 	'Assigned User Groups'   : 'Assigned User Groups',
+	'Job Codes'              : 'Job Codes',
+	'Pay By Types'           : 'Pay By Types',
 
 	'No Rules Applied'                          : 'No Rules Applied',
 	'If Amount'                                 : 'If Amount',
@@ -735,6 +742,8 @@ Ext.define('NP.Locale', {
 	'Properties'                                : 'Properties',
 	'ALL'                                       : 'ALL',
 	'SPECIFIC'                                  : 'SPECIFIC',
+	'REGION'                                    : 'REGION',
+	'REGION: {region_name}'                     : 'REGION: {region_name}',
 	'From'                                      : 'From',
 	'To'                                        : 'To',
 	'If variance is'                            : 'If variance is',
@@ -766,7 +775,14 @@ Ext.define('NP.Locale', {
 
 	'Conflicts with these rules'                  : 'Conflicts with these rules',
 	'Edit this rule > Admin_Invoice > {rulename}' : 'Edit this rule > Admin_Invoice > {rulename}',
+
+	'Deactivate conflicting rules'                : 'Deactivate conflicting rules',
 	'Delete conflicting rules'                    : 'Delete conflicting rules',
+	'A rule of similiar kind has already been applied to the properties that you selected.<br/>Please check the scope and properties again!<br/><br/>This rule will not be usable until all conflicts are resolved.' : 'A rule of similiar kind has already been applied to the properties that you selected.<br/>Please check the scope and properties again!<br/><br/>This rule will not be usable until all conflicts are resolved.',
+
+	'The "To amount" value must be larger than "From amount" value'              : 'The "To amount" value must be larger than "From amount" value',
+	'The following rules have conflicts with others: {wfrule_names}'             : 'The following rules have conflicts with others: {wfrule_names}',
+	'The following rules are incomplete and cannot be activated: {wfrule_names}' : 'The following rules are incomplete and cannot be activated: {wfrule_names}',
 
 	/**
 	 * IMAGE MANAGEMENT

@@ -107,6 +107,7 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                 displayCondition: me.isVoidBtnVisible.bind(me)
             },{
                 text            : 'Approve and Route Manually',
+                itemId          : 'invoiceApproveAndRouteBtn',
                 iconCls         : 'route-btn',
                 moduleId        : 1031,
                 displayCondition: me.isRouteBtnVisible.bind(me)
@@ -148,11 +149,6 @@ Ext.define('NP.view.invoice.ViewToolbar', {
                 itemId          : 'invoiceImageManageBtn',
                 iconCls         : 'image-manage-btn',
                 displayCondition: me.isManageImagesBtnVisible.bind(me)
-            },{
-                text            : 'Link to PO',
-                iconCls         : 'link-btn',
-                moduleId        : 2038,
-                displayCondition: me.isLinkPoBtnVisible.bind(me)
             },{
                 text            : 'Forward',
                 itemId          : 'invoiceForwardBtn',
@@ -364,15 +360,6 @@ Ext.define('NP.view.invoice.ViewToolbar', {
 
     isManageImagesBtnVisible: function(data) {
         return (data['image'] !== null);
-    },
-
-    isLinkPoBtnVisible: function(data) {
-        return (
-            !this.isInvoiceReadOnly()
-            && data['invoice'].get('invoice_status') == 'open'
-            && data['invoice'].get('invoice_id') != null
-            && data['has_linkable_pos']
-        );
     },
 
     isChangePropertyBtnVisible: function(data) {

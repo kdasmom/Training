@@ -52,6 +52,8 @@ $diDefinition = array(
 	'NP\budget\BudgetService'                        => array('SoapService','FiscalCalService'),
 	'NP\core\Config'                                 => array('config','reloadCache','WinCache','SiteService','ConfigsysGateway'),
 	'NP\gl\GLService'                                => array('FiscalCalService'),
+	'NP\import\CustomFieldHeaderEntityValidator'     => array('LocalizationService','Adapter','PnCustomFieldsGateway'),
+	'NP\import\CustomFieldLineItemEntityValidator'   => array('LocalizationService','Adapter','PnCustomFieldsGateway'),
 	'NP\import\GLActualImportEntityValidator'        => array('LocalizationService','Adapter','IntegrationPackageGateway','GlAccountGateway','PropertyGateway','Config','SoapService'),
 	'NP\import\GLBudgetImportEntityValidator'        => array('LocalizationService','Adapter','IntegrationPackageGateway','GlAccountGateway','PropertyGateway','Config','SoapService'),
 	'NP\import\GLCategoryImportEntityValidator'      => array('LocalizationService','Adapter','IntegrationPackageGateway','GlAccountGateway'),
@@ -88,6 +90,7 @@ $diDefinition = array(
 	'NP\user\UserService'                            => array('SecurityService','NotificationService'),
 	'NP\vendor\validation\VendorEntityValidator'     => array('LocalizationService','Adapter', 'VendorGateway', 'ConfigService'),
 	'NP\vendor\VendorService'                        => array('VendorEntityValidator'),
+	'NP\workflow\WfActionGateway'                    => array('Adapter','UserprofileroleGateway'),
 	'NP\workflow\WfRuleGateway'                      => array('Adapter','UserprofileroleGateway','VendorGateway','WfActionGateway'),
 	'NP\workflow\WFRuleService'                      => array('InvoiceService','PoService','ReceiptService','NotificationService'),
 );

@@ -13,7 +13,12 @@ class MtdBudgetPctByGl extends AbstractRuleType implements RuleTypeInterface {
 
 	public function isActive(\NP\workflow\WorkflowableInterface $entity, \NP\workflow\WFRuleEntity $rule) {
 		if (array_key_exists($entity->glaccount_id, $scope)) {
-			$budgetInfo = $this->entityService->getMonthlyLineBudgetInfo($entity->$itemField, $this->type);
+			$budgetInfo = $this->entityService->getMonthlyLineBudgetInfo(
+				$entity->property_id,
+				$entity->glaccount_id,
+				$entity->getPeriod(),
+				$this->type
+			);
 			$open_total = $budgetInfo['month_actual'] + $budgetInfo['month_invoice'] + $budgetInfo['month_po'];
 
 			$overage = $open_total - $budgetInfo['month_budget'];

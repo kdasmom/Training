@@ -20,10 +20,14 @@ Ext.define('NP.view.shared.VendorAutoComplete', {
     minChars     : 1,
 
     initComponent: function() {
+		var me = this;
+
         if (!this.store) {
             this.store = Ext.create('NP.store.vendor.Vendors', {
                             service     : 'VendorService',
-                            action      : 'getAll'
+                            action      : 'getAll',
+							autoLoad : me.storeAutoLoad ? me.storeAutoLoad : false,
+							listeners: me.storeListeners ? me.storeListeners : {}
                         });
         }
 

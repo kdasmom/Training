@@ -17,7 +17,9 @@ Ext.define('NP.view.shared.invoicepo.SplitWindow', {
         'NP.store.system.DfSplits',
         'NP.view.shared.gridcol.UniversalField',
         'NP.view.shared.CustomField',
-        'NP.store.invoice.InvoiceItems'
+        'NP.store.invoice.InvoiceItems',
+        'NP.store.po.PoItems',
+        'NP.view.shared.invoicepo.ViewLineGrid'
     ],
 
     layout     : {
@@ -37,7 +39,7 @@ Ext.define('NP.view.shared.invoicepo.SplitWindow', {
     type: null,             // Needs to be set to 'invoice' or 'po'
 
     initComponent: function() {
-    	var me = this;;
+    	var me = this;
 
         me.itemId = me.type + 'SplitWin';
 
@@ -151,6 +153,47 @@ Ext.define('NP.view.shared.invoicepo.SplitWindow', {
     },
 
     getGrid: function() {
+        var me    = this,
+            store = (me.type == 'invoice') ? 'invoice.invoiceitems' : 'po.poitems';
+
+        return {
+            xtype          : 'shared.invoicepo.viewlinegrid',
+            itemId         : 'splitGrid',
+            type           : me.type,
+            isSplitGrid    : true,
+            stateful       : false,
+            sortableColumns: false,
+            flex           : 1,
+            border         : false,
+            store          : {
+                type: store,
+                listeners: {
+                    add: function(store, recs, index) {
+                        me.fireEvent('lineadd', store, recs, index);
+                        me.fireEvent('linechange', 'add', { store: store, recs: recs, index: index });
+                    },
+                    update: function(store, rec, operation, modifiedFieldNames) {
+                        me.fireEvent('lineupdate', store, rec, operation, modifiedFieldNames);
+                        me.fireEvent('linechange', 'update', {
+                            store             : store,
+                            rec               : rec,
+                            operation         : operation,
+                            modifiedFieldNames: modifiedFieldNames
+                        });
+                    },
+                    remove: function(store, rec, index, isMove) {
+                        me.fireEvent('lineremove', store, rec, index, isMove);
+                        me.fireEvent('linechange', 'remove', { store: store, rec: rec, index: index, isMove: isMove });
+                    }
+                }
+            },
+            tbar           : [{
+                xtype : 'shared.button.new',
+                itemId: 'splitLineAddBtn',
+                text  : NP.Translator.translate('Add Line')
+            }]
+        };
+        /*
         var me            = this,
             customFields  = NP.Config.getCustomFields().line.fields,
             propertyStore = Ext.create('NP.store.property.Properties', {
@@ -370,5 +413,6 @@ Ext.define('NP.view.shared.invoicepo.SplitWindow', {
         gridCfg.unitStore     = unitStore;
 
         return gridCfg;
+        */
     }
 });
