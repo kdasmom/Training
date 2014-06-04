@@ -9,6 +9,7 @@ class RemoveVendorestWfruleTypes extends AbstractMigration
 	 */
 	public function up()
 	{
+		$this->execute("DELETE FROM wfrule where wfruletype_id IN (SELECT wfruletype_id FROM wfruletype WHERE wfruletype_tablename = 'vendorest')");
 		$this->execute("DELETE FROM wfruletype WHERE wfruletype_tablename = 'vendorest'");
 	}
 
