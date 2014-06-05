@@ -128,7 +128,7 @@ class UserService extends AbstractService {
 	 * @param  int   $delegated_to_userprofile_id The user ID of the user logged in, independent of delegation
 	 * @return array                              Array of property records
 	 */
-	public function getUserProperties($userprofile_id, $delegated_to_userprofile_id, $property_statuses=null, $keyword=null, $includeCodingOnly=false, $cols=array('property_id','property_id_alt','property_name','property_status','integration_package_id')) {
+	public function getUserProperties($userprofile_id, $delegated_to_userprofile_id, $property_statuses=null, $keyword=null, $includeCodingOnly=false, $cols=array('property_id','property_id_alt','property_name','property_status','integration_package_id','property_NexusServices')) {
 		return $this->propertyGateway->findByUser($userprofile_id, $delegated_to_userprofile_id, $property_statuses, $keyword, $includeCodingOnly, $cols);
 	}
 
@@ -982,6 +982,15 @@ class UserService extends AbstractService {
 	 */
 	public function getRolesByModule($module_id=null, $pageSize=null, $page=1, $sort='role_name') {
 		return $this->roleGateway->findRolesByModule($module_id, $pageSize, $page, $sort);
+	}
+
+	/**
+	 * Finds all users that can be manually routed to for a specific property
+	 */
+	public function getValidRouteApprovers($property_id, $table_name) {
+		$userprofile_id = $this->securityService->getUserId();
+
+		return $this->userprofileGateway->findValidRouteApprovers($property_id, $table_name, $userprofile_id);
 	}
 
 	/**

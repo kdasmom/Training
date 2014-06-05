@@ -7,7 +7,8 @@ Ext.define('NP.model.po.Purchaseorder', {
 	extend: 'Ext.data.Model',
 	
 	requires: [
-		'NP.lib.core.Config'
+		'NP.lib.core.Config',
+		'NP.lib.core.Translator'
 	],
 
 	idProperty: 'purchaseorder_id',
@@ -17,7 +18,7 @@ Ext.define('NP.model.po.Purchaseorder', {
 		{ name: 'purchaseorder_quote' },
 		{ name: 'purchaseorder_quoteamount' },
 		{ name: 'vendorsite_id', type: 'int' },
-		{ name: 'purchaseorder_status' },
+		{ name: 'purchaseorder_status', defaultValue: 'open' },
 		{ name: 'purchaseorder_datetm', type: 'date' },
 		{ name: 'purchaseorder_created', type: 'date' },
 		{ name: 'property_id', type: 'int' },
@@ -55,6 +56,8 @@ Ext.define('NP.model.po.Purchaseorder', {
 		{ name: 'universal_field8' },
 
 		// These fields are not database columns
+		{ name: 'is_cancelled', type: 'int', defaultValue: 0 },
+
 		{ name: 'vendor_id', type: 'int' },
 		{ name: 'vendor_id_alt' },
 		{ name: 'vendor_name' },
@@ -69,6 +72,8 @@ Ext.define('NP.model.po.Purchaseorder', {
 		{ name: 'PriorityFlag_Display' },
 		
 		{ name: 'received_status'},
+		
+		{ name: 'sent_to_vendor_datetm', type: 'date' },
 
 		{ name: 'entity_amount', type: 'float' },
 		{ name: 'created_by' },
@@ -128,11 +133,11 @@ Ext.define('NP.model.po.Purchaseorder', {
     isModifiable: function() {
         var me = this;
 
-        if (NP.Security.hasPermission(6076)) {
+        if (NP.Security.hasPermission(6074)) {
             return true;
         }
 
-        if (NP.Security.hasPermission(6077) 
+        if (NP.Security.hasPermission(6075) 
                 && NP.Security.getUser().get('userprofile_id') == me.get('userprofile_id')) {
             return true;
         }
@@ -146,8 +151,7 @@ Ext.define('NP.model.po.Purchaseorder', {
 
 		if (
 			(status == 'open' && me.isModifiable())
-			|| (status == 'saved' && NP.Security.hasPermission(1068))
-			|| (status == 'paid' && NP.Security.hasPermission(2094))
+			|| (status == 'saved' && NP.Security.hasPermission(6011))
 		) {
 			return true;
 		}
@@ -160,7 +164,8 @@ Ext.define('NP.model.po.Purchaseorder', {
             status  = me.get('purchaseorder_status');
 
         if (
-            (status == 'open' && (NP.Security.hasPermission(1032) || NP.Security.hasPermission(6076) || NP.Security.hasPermission(6077)))
+        	(status == 'draft' && NP.Security.hasPermission(2007))
+            || (status == 'open' && (NP.Security.hasPermission(1032) || NP.Security.hasPermission(6076) || NP.Security.hasPermission(6077)))
             || (status == 'saved' && NP.Security.hasPermission(1068) && me.isModifiable())
             || (status == 'paid' && NP.Security.hasPermission(2094))
         ) {
@@ -178,16 +183,45 @@ Ext.define('NP.model.po.Purchaseorder', {
 			(
 				status == 'open' 
 				&& (
-					NP.Security.hasPermission(1032) 
-					|| NP.Security.hasPermission(6076) 
-					|| NP.Security.hasPermission(6077)
+					NP.Security.hasPermission(1027) 
+					|| NP.Security.hasPermission(6074) 
+					|| NP.Security.hasPermission(6075)
 				)
 			)
-			|| (status == 'saved' && NP.Security.hasPermission(1068))
+			|| (status == 'saved' && NP.Security.hasPermission(6011))
 		) {
 			return true;
 		}
 
 		return false;
+	},
+
+	getDisplayStatus: function() {
+		var me     = this,
+			status = (me.get('purchaseorder_id') === null) ? 'New' : me.get('purchaseorder_status');
+		
+		return NP.model.po.Purchaseorder.getDisplayStatus(status, me.get('is_cancelled'));
+	},
+
+	statics: {
+		getDisplayStatus: function(status, is_cancelled) {
+			if (is_cancelled == 1) {
+				status = 'Cancelled';
+			} else if (status == 'forapproval') {
+				status = 'Pending Approval';
+			} else if (status == 'open') {
+				status = 'In Progress';
+			} else if (status == 'saved') {
+				status = 'Released';
+			} else if (status == 'draft') {
+				status = 'Template';
+			} else if (status == 'closed') {
+				status = 'Invoiced';
+			} else {
+				status = Ext.util.Format.capitalize(status);
+			}
+
+			return NP.Translator.translate(status);
+		}
 	}
 });

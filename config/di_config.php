@@ -1,6 +1,6 @@
 <?php
 
-require_once("vendor/pimple/pimple/lib/Pimple.php");
+require_once(__DIR__ . "/../vendor/pimple/pimple/lib/Pimple.php");
 
 $reloadCache = false;
 if (array_key_exists("reloadconfiguration", $_GET)) {
@@ -75,11 +75,11 @@ $diDefinition = array(
 	'NP\invoice\InvoiceService'                      => array('FiscalCalService','BudgetService','ImageService','JobCostingService','VendorService'),
 	'NP\invoice\InvoiceServiceInterceptor',
 	'NP\locale\LocalizationService'                  => array('locale','LoggingService'),
-	'NP\notification\NotificationService'            => array('Config','Emailer'),
+	'NP\notification\NotificationService'            => array('ConfigService','Emailer'),
 	'NP\po\PurchaseOrderGateway'                     => array('Adapter','RoleGateway'),
-	'NP\po\PoService'                                => array('FiscalCalService','BudgetService','ImageService','JobCostingService','VendorService'),
+	'NP\po\PoService'                                => array('FiscalCalService','BudgetService','ImageService','JobCostingService','VendorService','CustomFieldService'),
 	'NP\po\ReceiptGateway'                           => array('Adapter','RoleGateway'),
-	'NP\property\PropertyService'                    => array('SecurityService','InvoiceService','PoService','FiscalCalService','UnitTypeMeasGateway'),
+	'NP\property\PropertyService'                    => array('SecurityService','InvoiceService','PoService','FiscalCalService','CustomFieldService'),
 	'NP\report\ReportService'                        => array('reportUrl'),
 	'NP\security\SecurityService'                    => array('config','SiteService','SessionService'),
 	'NP\system\ConfigService'                        => array('Config','SecurityService','SiteService','IntegrationPackageGateway', 'ConfigsysGateway', 'ConfigSysValGateway', 'PnUniversalFieldGateway', 'PnCustomFieldsGateway'),
@@ -90,7 +90,9 @@ $diDefinition = array(
 	'NP\user\UserService'                            => array('SecurityService','NotificationService'),
 	'NP\vendor\validation\VendorEntityValidator'     => array('LocalizationService','Adapter', 'VendorGateway', 'ConfigService'),
 	'NP\vendor\VendorService'                        => array('VendorEntityValidator'),
+	'NP\workflow\WfActionGateway'                    => array('Adapter','UserprofileroleGateway'),
 	'NP\workflow\WfRuleGateway'                      => array('Adapter','UserprofileroleGateway','VendorGateway','WfActionGateway'),
+	'NP\workflow\WFRuleService'                      => array('InvoiceService','PoService','ReceiptService','NotificationService'),
 );
 
 // Now we're gonna figure out some automatic definitions for gateways and services

@@ -121,5 +121,36 @@ class PrintTemplateGateway extends AbstractGateway {
 		return $this->adapter->query($select, [$id]);
 	}
 
+	public function findByFilter($property_id=null, $Print_Template_Type='PO', $isActive=1) {
+		$select = Select::get()
+						->from(['pt'=>'print_templates'])
+						->order('pt.Print_Template_Name');
 
+		$params = [];
+
+		if (!empty($property_id)) {
+			$select->whereExists(
+				Select::get()
+					->from(['ptp'=>'print_template_property'])
+					->whereEquals('ptp.print_template_id', 'pt.print_template_id')
+					->whereNest('OR')
+						->whereEquals('ptp.property_id', '?')
+						->whereEquals('ptp.property_id', -1)
+					->whereUnnest()
+			);
+			$params[] = $property_id;
+		}
+
+		if (!empty($Print_Template_Type)) {
+			$select->whereEquals('pt.Print_Template_Type', '?');
+			$params[] = $Print_Template_Type;
+		}
+
+		if (!empty($isActive)) {
+			$select->whereEquals('pt.isActive', '?');
+			$params[] = $isActive;
+		}
+
+		return $this->adapter->query($select, $params);
+	}
 } 

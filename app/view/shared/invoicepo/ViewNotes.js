@@ -3,9 +3,9 @@
  *
  * @author Thomas Messier
  */
-Ext.define('NP.view.invoice.ViewNotes', {
+Ext.define('NP.view.shared.invoicepo.ViewNotes', {
     extend: 'Ext.panel.Panel',
-    alias: 'widget.invoice.viewnotes',
+    alias: 'widget.shared.invoicepo.viewnotes',
 
     requires: [
     	'NP.lib.core.Config',

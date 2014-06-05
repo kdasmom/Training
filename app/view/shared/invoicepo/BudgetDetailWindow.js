@@ -12,7 +12,8 @@ Ext.define('NP.view.shared.invoicepo.BudgetDetailWindow', {
         'NP.lib.core.Translator',
     	'NP.view.shared.button.Cancel',
         'NP.view.shared.button.Search',
-        'NP.model.gl.GlAccount'
+        'NP.model.gl.GlAccount',
+        'NP.lib.ui.Grid'
     ],
 
     layout     : 'fit',
@@ -24,110 +25,110 @@ Ext.define('NP.view.shared.invoicepo.BudgetDetailWindow', {
     showYearly: false,
 
     initComponent: function() {
-    	var me = this;
+    	var me = this,
+            cols;
 
         me.title = NP.Translator.translate('Budget Details');
 
-        me.tbar = [
-            { xtype: 'shared.button.cancel', handler: function() { me.close(); } },
-            { xtype: 'shared.button.search', text: '', type: 'account' }
+        cols = [
+            {
+                dataIndex: 'name',
+                flex     : 4
+            },{
+                dataIndex: 'month',
+                flex     : 1,
+                align    : 'right',
+                renderer : NP.Util.currencyRenderer
+            }
         ];
 
-        me.xTemplate = new Ext.XTemplate(me.buildTpl());
+        if (me.showYearly) {
+            cols.push({
+                dataIndex: 'year',
+                flex     : 1,
+                align    : 'right',
+                renderer : NP.Util.currencyRenderer
+            });
+        }
+
+        me.gridStore = Ext.create('Ext.data.Store', {
+            fields: [
+                { name: 'name' },
+                { name: 'month', type: 'float' },
+                { name: 'year', type: 'float' }
+            ]
+        });
 
         me.items = [{
-            xtype     : 'panel',
-            itemId    : 'budgetDetailPanel',
-            border    : false,
-            autoScroll: true,
-            html      : ''
+            xtype           : 'customgrid',
+            sortableColumns : false,
+            enableColumnHide: false,
+            enableColumnMove: false,
+            border          : false,
+            tbar            : [
+                { xtype: 'shared.button.cancel', handler: function() { me.close(); } },
+                { xtype: 'shared.button.search', text: '', type: 'account' }
+            ],
+            store  : me.gridStore,
+            columns: cols
         }];
 
+
     	me.callParent(arguments);
+
+        me.grid = me.down('customgrid');
     },
 
     updateContent: function(data) {
-        var me      = this,
-            btnText = (data.gl_label == 'Code') ? 'Category' : 'Code';
+        var me           = this,
+            btnText      = (data.gl_label == 'Code') ? 'Category' : 'Code',
+            storeData    = [],
+            totalYear    = 0,
+            yearVariance = 0,
+            cols         = me.grid.columnManager.getColumns();
 
         me.down('[xtype="shared.button.search"]').setText(NP.Translator.translate('View By ' + btnText));
-        me.down('#budgetDetailPanel').update(me.xTemplate.apply(data));
-    },
+        //me.down('#budgetDetailPanel').update(me.xTemplate.apply(data));
 
-    buildTpl: function() {
-        var me = this,
-            html;
-
-        html = '<table width="100%" id="budgetDetailWin">' +
-            '<thead>' +
-            '<tr>' +
-                '<th>{property_name} - {gl_label}: {glaccount_name}</th>' +
-                '<th class="align-right">{month}</th>';
-
+        cols[0].setText(data['property_name'] + ' - ' + data['gl_label'] + ': ' + data['glaccount_name']);
+        cols[1].setText(data['month']);
         if (me.showYearly) {
-            html += '<th class="align-right">{year}</th>';
+            cols[2].setText(data['year']);
         }
 
-        html += '</tr>' +
-            '</thead>' +
-            '<tbody>' +
-            '<tr>' +
-                '<td>{package_type_name} Actual</td>' +
-                '<td class="align-right">{[NP.Util.currencyRenderer(values.month_actual)]}</td>';
-
         if (me.showYearly) {
-            html += '<td class="align-right">{[NP.Util.currencyRenderer(values.year_actual)]}</td>';
+            totalYear    = data['year_actual'] + data['year_po'] + data['year_invoice'];
+            yearVariance = data['year_budget'] - (data['year_actual'] + data['year_po'] + data['year_invoice']);
         }
 
-        html += '</tr>' +
-            '<tr>' +
-                '<td>+ PN Open POs</td>' +
-                '<td class="align-right">{[NP.Util.currencyRenderer(values.month_po)]}</td>';
+        storeData.push(
+            {
+                name : data['package_type_name'] + ' ' + NP.Translator.translate('Actual'),
+                month: data['month_actual'],
+                year : data['year_actual']
+            },{
+                name : NP.Translator.translate('+ PN Open POs'),
+                month: data['month_po'],
+                year : data['year_po']
+            },{
+                name : NP.Translator.translate('+ PN Open Invoices'),
+                month: data['month_invoice'],
+                year : data['year_invoice']
+            },{
+                name : NP.Translator.translate('= Forecast Total'),
+                month: data['month_actual'] + data['month_po'] + data['month_invoice'],
+                year : totalYear
+            },{
+                name : NP.Translator.translate('Budget'),
+                month: data['month_budget'],
+                year : data['year_budget']
+            },{
+                name : NP.Translator.translate('Variance'),
+                month: data['month_budget'] - (data['month_actual'] + data['month_po'] + data['month_invoice']),
+                year : yearVariance
+            }
+        );
 
-        if (me.showYearly) {
-            html += '<td class="align-right">{[NP.Util.currencyRenderer(values.year_po)]}</td>';
-        }
-
-        html += '</tr>' +
-            '<tr>' +
-                '<td>+ PN Open Invoices</td>' +
-                '<td class="align-right">{[NP.Util.currencyRenderer(values.month_invoice)]}</td>';
-
-        if (me.showYearly) {
-            html += '<td class="align-right">{[NP.Util.currencyRenderer(values.year_invoice)]}</td>';
-        }
-
-        html += '</tr>' +
-            '<tr>' +
-                '<td>= Forecast Total</td>' +
-                '<td class="align-right">{[NP.Util.currencyRenderer(values.month_actual + values.month_po + values.month_invoice)]}</td>';
-
-        if (me.showYearly) {
-            html += '<td class="align-right">{[NP.Util.currencyRenderer(values.year_actual + values.year_po + values.year_invoice)]}</td>';
-        }
-
-        html += '</tr>' +
-            '<tr>' +
-                '<td>Budget</td>' +
-                '<td class="align-right">{[NP.Util.currencyRenderer(values.month_budget)]}</td>';
-
-        if (me.showYearly) {
-            html += '<td class="align-right">{[NP.Util.currencyRenderer(values.year_budget)]}</td>';
-        }
-
-        html += '</tr>' +
-            '<tr>' +
-                '<td>Variance</td>' +
-                '<td class="align-right">{[NP.Util.currencyRenderer(values.month_budget - (values.month_actual + values.month_po + values.month_invoice))]}</td>';
-
-        if (me.showYearly) {
-            html += '<td class="align-right">{[NP.Util.currencyRenderer(values.year_budget - (values.year_actual + values.year_po + values.year_invoice))]}</td>';
-        }
-
-        html += '</tr>' +
-            '</tbody>' +
-            '</table>';
-
-        return html;
+        me.gridStore.loadRawData(storeData);
     }
 });

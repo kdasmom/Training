@@ -10,7 +10,7 @@ namespace NP\invoice;
 
 require_once('/vendor/phpwkhtmltopdf/WkHtmlToPdf.php');
 
-class InvoicePdfRenderer extends InvoiceHtmlRenderer implements InvoiceRendererInterface {
+class InvoicePdfRenderer extends InvoiceHtmlRenderer implements EntityRendererInterface {
 	
 	public function save($filename) {
 		// Get a PDF

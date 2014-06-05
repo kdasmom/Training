@@ -7,12 +7,19 @@ Ext.define('NP.view.shared.YesNoField', {
 	extend: 'Ext.form.RadioGroup',
     alias: 'widget.shared.yesnofield',
 
+    requires: ['NP.lib.core.Translator'],
+
 	yesLabel: 'Yes',
 	noLabel : 'No',
 
+    columns: [45,45],
+
     initComponent: function() {
-    	var yesChecked = true;
-    	var noChecked = false;
+        this.yesLabel = NP.Translator.translate(this.yesLabel);
+        this.noLabel  = NP.Translator.translate(this.noLabel);
+
+    	var yesChecked = true,
+    	    noChecked  = false;
     	
     	if ('value' in this) {
     		if (this.value == 0) {

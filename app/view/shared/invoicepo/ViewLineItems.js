@@ -58,7 +58,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineItems', {
         me.defaults = { type: me.type, store: store };
     	me.items = [
             { xtype: 'shared.invoicepo.viewlines', type: me.type },
-            { xtype: 'shared.invoicepo.viewlinegrid', type: me.type }
+            { xtype: 'shared.invoicepo.viewlinegrid', type: me.type, itemId: me.type + 'LineGrid' }
     	];
 
     	this.callParent(arguments);

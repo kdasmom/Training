@@ -29,7 +29,7 @@ class InvoiceItemGateway extends AbstractGateway {
 				->join(new sql\join\InvoiceItemInvoiceJoin())
 				->join(new sql\join\InvoiceItemPoItemJoin(['poitem_id','poitem_amount','purchaseorder_id']))
 				->join(new \NP\po\sql\join\PoItemPurchaseorderJoin(['purchaseorder_ref'], Select::JOIN_LEFT))
-				->join(new sql\join\InvoiceItemPropertyJoin())
+				->join(new sql\join\InvoiceItemPropertyJoin(['property_name','property_id_alt','property_salestax','property_status']))
 				->join(new sql\join\InvoiceItemGlAccountJoin())
 				->join(new sql\join\InvoiceItemUnitJoin())
 				->join(new sql\join\InvoiceItemDfSplitJoin())

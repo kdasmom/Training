@@ -4,7 +4,7 @@ namespace NP\contact;
 /**
  * Entity class for Address
  *
- * @author 
+ * @author Thomas Messier
  */
 class AddressEntity extends \NP\core\AbstractEntity {
 	
@@ -88,5 +88,59 @@ class AddressEntity extends \NP\core\AbstractEntity {
 		)
 	);
 
+	/**
+	 * Returns a formatted full address
+	 */
+	public static function getFullAddress($address, $countryGateway) {
+		$formatted = '';
+
+		for ($i=1; $i<=3; $i++) {
+			$field = "address_line{$i}";
+			if (!empty($address[$field])) {
+				if (!empty($formatted)) {
+					$formatted .= "\n";
+				}
+				$formatted .= $address[$field];
+			}
+		}
+
+		if (!empty($address['address_city']) || !empty($address['address_state']) || !empty($address['address_zip'])) {
+			if (!empty($formatted)) {
+				$formatted .= "\n";
+			}
+			if (!empty($address['address_city'])) {
+				$formatted .= $address['address_city'];
+				if (!empty($address['address_state'])) {
+					$formatted .= ', ';
+				} else if (!empty($address['address_zip'])) {
+					$formatted .= ' ';
+				}
+			}
+			if (!empty($address['address_state'])) {
+				$formatted .= $address['address_state'];
+				if (!empty($address['address_zip'])) {
+					$formatted .= ' ';
+				}
+			}
+			if (!empty($address['address_zip'])) {
+				$formatted .= $address['address_zip'];
+				if (!empty($address['address_zipext'])) {
+					$formatted .= '-' . $address['address_zipext'];
+				}
+			}
+		}
+
+		if (!empty($address['address_country'])) {
+			$country = $countryGateway->findValue('country_id = ?', [$address['address_country']], 'country_name');
+			if ($country !== null) {
+				if (!empty($formatted)) {
+					$formatted .= "\n";
+				}
+				$formatted .= $country;
+			}
+		}
+
+		return $formatted;
+	}
 }
 ?>

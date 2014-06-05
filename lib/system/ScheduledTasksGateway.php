@@ -18,7 +18,7 @@ class ScheduledTasksGateway extends AbstractGateway {
 	 * Delete all tasks related to a certain invoice
 	 * @param  int $invoice_id
 	 */
-	public function deleteByInvoice($invoice_id) {
+	public function deleteByEntity($table_name, $tablekey_id) {
 		return $this->delete(
 			Where::get()->in(
 				'recurring_scheduler_id',
@@ -27,7 +27,7 @@ class ScheduledTasksGateway extends AbstractGateway {
 							->whereEquals('table_name', '?')
 							->whereEquals('tablekey_id', '?')
 			),
-			['invoice', $invoice_id]
+			[$table_name, $tablekey_id]
 		);
 	}
 }

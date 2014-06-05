@@ -16,17 +16,29 @@ class JbJobAssociationGateway extends AbstractGateway {
 	/**
 	 * 
 	 */
-	public function findContractLinesByInvoice($invoice_id) {
+	public function findContractLinesByEntity($table_name, $entity_id) {
+		if ($table_name == 'invoice') {
+			$entityJoinClass  = "NP\invoice\sql\join\InvoiceItemInvoiceJoin";
+			$itemJobJoinClass = "NP\invoice\sql\join\InvoiceItemJobAssociationJoin";
+			$itemTable        = 'invoiceitem';
+			$pk               = 'i.invoice_id';
+		} else if ($table_name == 'purchaseorder') {
+			$entityJoinClass  = "NP\po\sql\join\PoItemPurchaseorderJoin";
+			$itemJobJoinClass = "NP\po\sql\join\PoItemJobAssociationJoin";
+			$itemTable        = 'poitem';
+			$pk               = 'p.purchaseorder_id';
+		}
+
 		$select = Select::get()
 					->distinct()
 					->columns([])
-					->from(['ii'=>'invoiceitem'])
-						->join(new \NP\invoice\sql\join\InvoiceItemInvoiceJoin([]))
-						->join(new \NP\invoice\sql\join\InvoiceItemJobAssociationJoin(null, Select::JOIN_INNER))
+					->from([substr($pk, 0, 1) . 'i'=>$itemTable])
+						->join(new $entityJoinClass([]))
+						->join(new $itemJobJoinClass(null, Select::JOIN_INNER))
 						->join(new sql\join\JobAssociationJbContractBudgetJoin())
-					->whereEquals('i.invoice_id', '?');
+					->whereEquals($pk, '?');
 
-		return $this->adapter->query($select, [$invoice_id]);
+		return $this->adapter->query($select, [$entity_id]);
 	}
 
 	/**

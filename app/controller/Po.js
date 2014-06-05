@@ -13,18 +13,19 @@ Ext.define('NP.controller.Po', {
 		'NP.lib.core.Translator',
 		'NP.lib.core.Util',
 		'NP.lib.ui.Uploader',
-		'NP.lib.core.KeyManager'
+		'NP.lib.core.KeyManager',
+		'NP.store.system.PnUniversalFields'
 	],
 	
-	models: ['po.PoItem'],
+	models: ['po.PoItem','NP.model.system.PrintTemplate'],
 
 	stores: ['po.Purchaseorders','system.PriorityFlags','po.PoItems','shared.Reasons',
 			'image.ImageIndexes','shared.RejectionNotes'],
 	
 	views: ['po.Register','po.View','shared.invoicepo.ImagesManageWindow','shared.invoicepo.ImagesAddWindow',
 			'shared.invoicepo.SplitWindow','shared.invoicepo.RejectWindow','NP.view.vendor.VendorSelectorWindow',
-			'NP.view.shared.invoicepo.ScheduleWindow','NP.view.shared.invoicepo.TemplateWindow'/*,
-			'invoice.UseTemplateWindow'*/],
+			'NP.view.shared.invoicepo.ScheduleWindow','NP.view.shared.invoicepo.TemplateWindow',
+			'shared.invoicepo.UseTemplateWindow','po.ForwardWindow','shared.invoicepo.RouteWindow'],
 
 	shortName  : 'po',
 	longName   : 'purchaseorder',
@@ -43,14 +44,45 @@ Ext.define('NP.controller.Po', {
 				edit           : me.onAfterLineGridEdit.bind(me),
 				changequantity : me.onChangeQuantity.bind(me),
 				changeunitprice: me.onChangeUnitPrice.bind(me),
-				changeamount   : me.onChangeAmount.bind(me),
-				tablastfield   : me.onLineAddClick
+				tablastfield   : me.onLineAddClick,
+				selecttaxable  : me.onSelectTaxable.bind(me),
+				clickdeleteline: me.onDeleteLineClick.bind(me)
 			},
 
 			'[xtype="po.view"] [xtype="shared.invoicepo.viewlineitems"]': {
 				lineadd   : me.onStoreAddLine,
 				lineupdate: me.onStoreUpdateLine,
 				lineremove: me.onStoreRemoveLine
+			},
+
+			'[xtype="po.viewshippingbilling"] [xtype="shared.propertycombo"]': {
+				select: me.onSelectBillToShipTo
+			},
+
+			'#finalReviewBtn': {
+				click: me.onFinalReview
+			},
+
+			'#poCancelBtn': {
+				click: me.onCancelPo
+			},
+
+			'#poForwardToVendorBtn': {
+				click: function() {
+					me.onForward(true);
+				}
+			},
+
+			'#poReleaseBtn': {
+				click: function() {
+					me.onRelease(false);
+				}
+			},
+
+			'#poReleaseAndNextBtn': {
+				click: function() {
+					me.onRelease(true);
+				}
 			}
 		});
 
@@ -84,70 +116,21 @@ Ext.define('NP.controller.Po', {
 					dataloaded: function(boundForm, data) {
 						Ext.suspendLayouts();
 
-						// Check if the PO needs to be made readonly
-						me.setReadOnly(me.isPoReadOnly());
+						// Manually load the lines in; we do this instead of loading a store because there
+						// are a number of things at the header level that depend on the lines. This way
+						// we don't need to defer a whole bunch of processes to wait for lines to load,
+						// which gets a little dirty and unreliable
+						var lineStore = me.getLineDataView().getStore();
 						
-						// Set the title
-						//me.setPoViewTitle();
+						lineStore.loadRawData(data.lines);
 
-						// Build the toolbar
-						me.buildViewToolbar(data);
-						
-						// Show warnings if any
-						var warnings = data['warnings'];
-						if (warnings.length) {
-							me.getWarningsView().getStore().add(warnings);
-							me.getWarningsView().up('panel').show();
-						}
+						// Update everything in the view except lines since we updated them manually above
+						me.updateEntityViewState({ lines: true }, false);
 
-						var lineView     = me.getLineView(),
-							lineStore    = me.getLineDataView().getStore();
+						// Show the Ship To/Bill To panel
+						me.getCmp('po.viewshippingbilling').show();
 
-						// Add purchaseorder_id to the line and payment stores
-						lineStore.addExtraParams({ entity_id: purchaseorder_id });
-
-						// Load the line store
-						lineStore.load();
-
-						var vendorField   = boundForm.findField('vendor_id'),
-							propertyField = boundForm.findField('property_id'),
-							periodField   = boundForm.findField('purchaseorder_period'),
-							createdField  = boundForm.findField('purchaseorder_created');
-
-						createdField.setValue(
-							Ext.Date.format(
-								me.getEntityRecord().get('purchaseorder_created'),
-								NP.Config.getDefaultDateFormat()
-							)
-						);
-
-						// Set the vendor
-						vendorField.setDefaultRec(Ext.create('NP.model.vendor.Vendor', data));
-						vendorField.addExtraParams({
-							property_id: data['property_id']
-						});
-						me.setVendorDisplay();
-
-						// Set the property
-						propertyField.setDefaultRec(Ext.create('NP.model.property.Property', data));
-						// Add valid periods to the invoice period store
-						me.populatePeriods(data['accounting_period'], data['purchaseorder_period']);
-						me.setPropertyFieldState(data['purchaseorder_status']);
-
-						// Set the value for the period field; we need to do it manually because the BoundForm
-						// tries to set a date object (from the model) on the field, but since we're not dealing
-						// with a date field it doesn't work
-						periodField.setValue(data['purchaseorder_period']);
-
-						// Initiate some stores that depend on an purchaseorder_id
-						Ext.each(['HistoryLogGrid','ForwardsGrid'], function(viewName) {
-							var store = me['get'+viewName]().getStore();
-							store.addExtraParams({ entity_id: purchaseorder_id });
-							store.load();
-						});
-
-						// Load image if needed
-						me.loadImage();
+						me.setRequiredNotes();
 
 						Ext.resumeLayouts(true);
 
@@ -161,49 +144,249 @@ Ext.define('NP.controller.Po', {
 		var form = me.setView('NP.view.po.View', viewCfg, null, true);
 
 		if (!purchaseorder_id) {
-			// Set the title
-			//me.setPoViewTitle();
-
-			me.buildViewToolbar();
-
-			// Enable the property field when dealing with a new invoice
-			form.findField('property_id').enable();
+			// Setup the title, toolbar, property and vendor field
+			me.updateEntityViewState({ title: true, toolbar: true, property: true, vendor: true }, true);
 		}
 	},
 
-	setPropertyFieldState: function(purchaseorder_status) {
-		var me    = this,
-			field = me.getPropertyCombo();
+	updateEntityViewState: function(items, include) {
+		var me               = this,
+			boundForm        = me.getEntityView(),
+			data             = boundForm.getLoadedData(),
+			po               = me.getEntityRecord(),
+			purchaseorder_id = po.get('purchaseorder_id'),
+			i;
 
-		// Only allow changing the property field if the invoice is open and user has one of
-		// the following permissions: 'New Invoice', 'Modify Any', 'Modify Only Created';
-		// OR if the invoice is completed, user has 'Invoice Post Approval Modify' permission,
-		// and post approval modify is turned on
-		if (
-			(
-				purchaseorder_status == 'open'
-				&& (
-					me.hasPermission(1032) 
-					|| me.hasPermission(6076) 
-					|| me.hasPermission(6077)
-				)
-			)
-			|| (
-				purchaseorder_status == 'saved' 
-				&& me.hasPermission(1068) 
-				&& me.getSetting('PN.InvoiceOptions.SkipSave') == '0'
-			)
-		) {
-			field.enable();
-		} else {
-			field.disable();
-		}		
+		items = items || {};
+		include = (arguments.length > 1) ? include : false;
+
+		function updateOption(option) {
+			return (
+				(include && (option in items))
+				|| (!include && !(option in items))
+			);
+		}
+
+		Ext.suspendLayouts();
+		
+		// Set the title
+		if (updateOption('title')) {
+			me.setPoViewTitle();
+		}
+
+		// Build the toolbar
+		if (updateOption('toolbar')) {
+			me.buildViewToolbar(data);
+		}
+		
+		// Show warnings if any
+		if (updateOption('warnings')) {
+			var warnings = data['warnings'];
+			me.getWarningsView().getStore().removeAll();
+			me.getWarningsView().getStore().loadRawData(warnings);
+			if (warnings.length) {
+				me.getWarningsView().up('panel').show();
+			}
+		}
+
+		var vendorField   = boundForm.findField('vendor_id'),
+			propertyField = boundForm.findField('property_id'),
+			periodField   = boundForm.findField('purchaseorder_period');
+
+		if (updateOption('vendor')) {
+			var property_id = NP.Security.getCurrentContext().property_id;
+
+			if (purchaseorder_id !== null) {
+				// Set the vendor
+				vendorField.setDefaultRec(Ext.create('NP.model.vendor.Vendor', data));
+				
+				me.setVendorDisplay();
+				me.setVendorFieldState(data['purchaseorder_status']);
+
+				property_id = data['property_id'];
+			}
+
+			vendorField.addExtraParams({
+				property_id: property_id
+			});
+		}
+
+		if (updateOption('property')) {
+			if (purchaseorder_id !== null) {
+				// Set the property
+				propertyField.setDefaultRec(Ext.create('NP.model.property.Property', data));
+				// Add valid periods to the PO period store
+				me.populatePeriods(data['accounting_period'], data['purchaseorder_period']);
+			} else {
+				var propRec = Ext.getStore('property.AllProperties').getById(
+					NP.Security.getCurrentContext().property_id
+				);
+				// Set the property
+				propertyField.setDefaultRec(propRec);
+
+				me.onPropertyComboSelect(me.getPropertyCombo(), [propRec]);
+			}
+			me.setPropertyFieldState(po.get('purchaseorder_status'));
+		}
+
+		if (updateOption('terms')) {
+			if (NP.Config.getSetting('PN.POOptions.templateAssociation', '') == 'Header') {
+				var termField = boundForm.findField('print_template_id');
+
+				if (data['print_template_id'] !== null) {
+					// Set the template
+					termField.setDefaultRec(Ext.create('NP.model.system.PrintTemplate', {
+						Print_Template_Id: data['print_template_id'],
+						Print_Template_Name: data['Print_Template_Name']
+					}));
+				}
+
+				termField.addExtraParams({
+					property_id: data['property_id']
+				});
+			}
+		}
+
+		if (updateOption('serviceFields')) {
+			if (data['is_service_vendor']) {
+				me.displayServiceFields(data['service_fields']);
+			}
+		}
+
+		if (updateOption('receivable')) {
+			var showRcFieldFn = 'hide',
+				allowBlank    = true;
+			if (NP.Config.getSetting('CP.RECEIVING_ON', '0') == 1) {
+				if (data['purchaseorder_status'] == 'saved') {
+					showRcFieldFn = 'show';
+					allowBlank    = false;
+				}
+
+				boundForm.findField('purchaseorder_rct_req')[showRcFieldFn]();
+				boundForm.findField('purchaseorder_rct_req').setAllowBlank(allowBlank);
+				if (NP.Config.getSetting('RECEIVING_FINALREVIEW', '0') == 1) {
+					boundForm.findField('purchaseorder_rct_canReceive')[showRcFieldFn]();
+				}
+			}
+		}
+
+		if (updateOption('shipBill')) {
+			Ext.each(['ship','bill'], function(type) {
+				if (data['Purchaseorder_' + type + '_propertyID'] !== null) {
+					var shipBillField = boundForm.findField('Purchaseorder_' + type + '_propertyID');
+					// Set the field
+					shipBillField.setDefaultRec(Ext.create('NP.model.property.Property', {
+						property_id    : data['Purchaseorder_' + type + '_propertyID'],
+						property_name  : data[type + '_property_name'],
+						property_status: data[type + '_property_status']
+					}));
+				}
+			});
+		}
+
+		// Load the line store
+		if (updateOption('lines')) {
+			var lineStore = me.getLineDataView().getStore();
+			lineStore.addExtraParams({ entity_id: purchaseorder_id });
+
+			lineStore.load(function() {
+				me.setRequiredNotes();
+			});
+		}
+
+		// Set the value for the period field; we need to do it manually because the BoundForm
+		// tries to set a date object (from the model) on the field, but since we're not dealing
+		// with a date field it doesn't work
+		if (updateOption('period')) {
+			periodField.setValue(data['purchaseorder_period']);
+		}
+
+		if (updateOption('rejectionNotes')) {
+			notes    = data['rejection_notes'];
+			noteText = [];
+
+			for (i=0; i<notes.length; i++) {
+				noteText.push(notes[i].rejectionnote_text);
+			}
+
+			if (noteText.length) {
+				boundForm.findField('reject_reason').setValue(noteText.join('<br />'));
+			}
+		}
+
+		// Initiate history log store
+		if (updateOption('historyLog')) {
+			var historyStore = me.getHistoryLogGrid().getStore();
+			historyStore.addExtraParams({ entity_id: purchaseorder_id });
+			historyStore.load();
+		}
+
+		// Initiate forwards log store
+		if (updateOption('forwards')) {
+			var forwardsStore = me.getForwardsGrid().getStore();
+			forwardsStore.addExtraParams({ entity_id: purchaseorder_id });
+			forwardsStore.load();
+		}
+
+		// Load image if needed
+		if (updateOption('image')) {
+			me.loadImage();
+		}
+
+		// Check if the invoice needs to be made readonly
+		if (updateOption('readonly')) {
+			me.setReadOnly(me.isPoReadOnly());
+		}
+
+		Ext.resumeLayouts(true);
+	},
+
+	setPoViewTitle: function() {
+		var me    = this,
+			view  = me.getEntityView(),
+			po    = me.getEntityRecord(),
+			title = NP.Translator.translate('Purchase Order: ');
+
+		if (po.get('purchaseorder_id') !== null) {
+			title += po.get('purchaseorder_ref') + ' - ';
+		}
+
+		title += po.getDisplayStatus();
+
+		view.setTitle(title);
+	},
+
+	setReadOnly: function(readonly) {
+		var me               = this,
+			form             = me.getEntityView(),
+			shipBillReadOnly = (me.isPoReadOnly() || !NP.Security.hasPermission(6013)),
+			rctReadOnly      = (me.isPoReadOnly() || !NP.Security.hasPermission(6027)); // TODO: add hasReceipt() to condition
+
+		Ext.suspendLayouts();
+
+		me.callParent(arguments);
+		
+		form.findField('Purchaseorder_ship_propertyID').setReadOnly(shipBillReadOnly);
+		form.findField('Purchaseorder_shipaddress').setReadOnly(shipBillReadOnly);
+		form.findField('Purchaseorder_bill_propertyID').setReadOnly(shipBillReadOnly);
+		form.findField('Purchaseorder_billaddress').setReadOnly(shipBillReadOnly);
+
+		form.findField('purchaseorder_rct_req').setReadOnly(rctReadOnly);
+
+		Ext.resumeLayouts(true);
 	},
 
 	isPoReadOnly: function() {
-		var me      = this,
-			po      = me.getEntityRecord(),
-			status  = po.get('purchaseorder_status');
+		var me           = this,
+			po           = me.getEntityRecord(),
+			status       = po.get('purchaseorder_status'),
+			isModifiable = (
+				me.hasPermission(6074) 			// Modify Any permission
+				|| (
+					me.hasPermission(6075) 		// Modify Only Created permission
+					&& NP.Security.getUser().get('userprofile_id') == po.get('userprofile_id')
+				)
+			);
 
 		if (
 			(
@@ -215,10 +398,14 @@ Ext.define('NP.controller.Po', {
 				&& me.hasPermission(2007)		// PO Templates permission
 			)
 			|| (
-				me.hasPermission(6074) 			// Modify Any permission
-				|| (
-					me.hasPermission(6075) 		// Modify Only Created permission
-					&& NP.Security.getUser().get('userprofile_id') == po.get('userprofile_id')
+				isModifiable
+				// TODO: add no_allocated_items condition here
+				&& (
+					status == 'rejected'
+					|| (
+						status == 'saved'
+						&& me.hasPermission(2045)
+					)
 				)
 			)
 			|| (
@@ -233,5 +420,183 @@ Ext.define('NP.controller.Po', {
 		}
 
 		return true;
+	},
+
+	onSelectBillToShipTo: function(combo, recs) {
+		var me      = this,
+			type    = combo.getStore().getExtraParams().type,
+			field   = me.getEntityView().findField('Purchaseorder_' + type + 'address'),
+			val     = '';
+
+		if (recs.length) {
+			var rec          = recs[0],
+				address_attn = rec.get('address_attn'),
+				property     = me.getPropertyRecord(),
+				address      = rec.getAddressHtml();
+
+			if (!Ext.isEmpty(address_attn)) {
+				val = address_attn + '\n';
+			}
+			val += rec.get('property_name') + '\n';
+
+			if (type == 'bill' && property.get('property_NexusServices') == 1) {
+				val += 'NXS #: ' + me.getVendorRecord().get('vendor_id_alt') + 
+							' - ' + property.get('property_id_alt') + '\n';
+			}
+
+			address = address.replace(/<div>/g, '').replace(/<\/div>/g, '\n').replace(/\n$/, '');
+
+			val += address;
+		}
+
+		field.setValue(val);
+	},
+
+	displayServiceFields: function(fields) {
+		var me    = this,
+			form  = me.getEntityView(),
+			panel = form.down('#poServiceFieldContainer'),
+			cfg;
+
+		Ext.suspendLayouts();
+
+		panel.removeAll();
+
+		Ext.each(fields, function(field) {
+			// Default field config
+			cfg = {
+				name          : field.customfield_name,
+				fieldLabel    : field.customfield_label,
+				allowBlank    : (field.customfield_required == 0),
+				isServiceField: 1
+			};
+
+			// If text field, do this
+			if (field.customfield_type == 'text') {
+				Ext.apply(cfg, {
+					xtype: 'textfield',
+					value: field.customfielddata_value
+				});
+
+				if (Ext.isNumeric(field.customfield_max_length)) {
+					cfg.maxLength = field.customfield_max_length;
+				}
+
+				panel.add(cfg);
+			}
+			// If date field, do this
+			else if (field.customfield_type == 'date') {
+				var fieldObj = panel.add(
+					Ext.apply(cfg, {
+						xtype: 'datefield'
+					})
+				);
+
+				// Since this is a date field, we need to transform the value into a date object
+				if (!Ext.isEmpty(field.customfielddata_value)) {
+					fieldObj.setValue(Ext.Date.parse(field.customfielddata_value, fieldObj.format));
+				}
+			}
+			// Otherwise, if combo, do this
+			else if (field.customfield_type == 'select') {
+				var fieldObj = panel.add(
+						Ext.apply(cfg, {
+						xtype        : 'customcombo',
+						displayField : 'universal_field_data',
+						valueField   : 'universal_field_data',
+						useSmartStore: true,
+						store        : {
+							type   : 'system.pnuniversalfields',
+							service: 'ConfigService',
+							action : 'getCustomFieldOptions',
+							extraParams: {
+								customfield_pn_type   : 'po',
+								universal_field_number: field.universal_field_number,
+								activeOnly            : true
+							}
+						}
+					})
+				);
+
+				// Set the default value in the store since it doesn't load by default
+				if (!Ext.isEmpty(field.customfielddata_value)) {
+					fieldObj.setDefaultRec({ universal_field_data: field.customfielddata_value });
+				}
+			}
+		});
+
+		panel.show();
+
+		Ext.resumeLayouts(true);
+	},
+
+	onFinalReview: function() {
+		var me = this;
+
+		NP.Net.remoteCall({
+			requests: {
+				service         : 'PoService',
+				action          : 'doFinalReview',
+				purchaseorder_id: me.getEntityRecord().get('purchaseorder_id'),
+				success         : function(result) {
+					NP.Util.showFadingWindow({
+						html: me.translate('Final Review was successfully applied.')
+					});
+
+					me.buildViewToolbar(me.getEntityView().getLoadedData());
+				}
+			}
+		});
+	},
+
+	onCancelPo: function() {
+		var me          = this,
+			id          = me.getEntityRecord().get('purchaseorder_id'),
+			dialogTitle = me.translate('Cancel PO?'),
+			dialogText  = me.translate('This action will cancel all remaining items on this purchase order. Are you sure you want to proceed?');
+
+		Ext.MessageBox.confirm(dialogTitle, dialogText, function(btn) {
+			// If user clicks Yes, proceed with cancelling
+			if (btn == 'yes') {
+				NP.Net.remoteCall({
+					requests: {
+						service         : 'PoService',
+						action          : 'cancelPo',
+						purchaseorder_id: id,
+						success         : function(result) {
+							NP.Util.showFadingWindow({
+								html: me.translate('PO was successfully cancelled.')
+							});
+
+							me.showView(id);
+						}
+					}
+				});
+			}
+		});
+	},
+
+	onRelease: function(andNext) {
+		var me = this,
+			id = me.getEntityRecord().get(me.pk);
+
+		// Release the PO
+		NP.Net.remoteCall({
+			method  : 'POST',
+			mask    : me.getEntityView(),
+			requests: {
+				service         : 'PoService',
+				action          : 'releasePo',
+				purchaseorder_id: id,
+				success         : function(result) {
+					if (result.success) {
+						Ext.ComponentQuery.query('#readyForProcessingDlg')[0].close();
+						me.showView(id);
+					} else {
+						me.showUnexpectedError();
+					}
+				}
+			}
+		});
 	}
 });

@@ -5,6 +5,7 @@ namespace NP\budget;
 use NP\core\AbstractService;
 use NP\property\FiscalCalService;
 use NP\util\SoapService;
+use NP\util\Util;
 
 /**
  * Service class for operations related to Budgets
@@ -209,6 +210,105 @@ class BudgetService extends AbstractService {
         }
 
         return $success;
+    }
+
+    public function getMonthlyLineBudgetInfo($property_id, $glaccount_id, $period, $type='account') {
+        $gl     = $this->glAccountGateway->findById($glaccount_id);
+        $period = \DateTime::createFromFormat(Util::getServerDateFormat(), $period);
+        
+        $data = [
+            'property_name'  => $this->propertyGateway->findValue('property_id = ?', [$property_id], 'property_name'),
+            'glaccount_name' => ($type == 'account') ? $gl['glaccount_name'] : $gl['glaccount_category'],
+            'month'          => (int)$period->format('n')
+        ];
+        
+        $data['package_type_name'] = $this->propertyGateway->findSingle(
+            'pr.property_id = ?',
+            [$property_id],
+            [],
+            null,
+            [
+                new \NP\property\sql\join\PropertyIntPkgJoin([]),
+                new \NP\system\sql\join\IntPkgIntPkgTypeJoin()
+            ]
+        );
+        $data['package_type_name'] = $data['package_type_name']['Integration_Package_Type_Display_Name'];
+
+        $isCategory = ($type == 'category') ? true : false;
+        $fn = ($isCategory) ? 'getCategoryBudgetByPeriod' : 'getAccountBudgetByPeriod';
+        $glaccount_id = ($isCategory) ? $gl['glaccount_category_id'] : $gl['glaccount_id'];
+
+        $period = Util::formatDateForDB($period);
+        
+        $budget = $this->budgetGateway->$fn($glaccount_id, $property_id, $period);
+
+        $invoiceAmount = $this->invoiceGateway->getTotalAmountByBudget(
+            $glaccount_id,
+            $property_id,
+            $period,
+            null,
+            $isCategory
+        );
+
+        $poAmount = $this->purchaseOrderGateway->getTotalAmountByBudget(
+            $glaccount_id,
+            $property_id,
+            $period,
+            null,
+            $isCategory
+        );
+
+        $data['month_budget']  = $budget['budget_amount'];
+        $data['month_actual']  = $budget['actual_amount'];
+        $data['month_invoice'] = $invoiceAmount;
+        $data['month_po']      = $poAmount;
+
+        return $data;
+    }
+
+    public function getYearlyLineBudgetInfo($property_id, $glaccount_id, $period, $type='account') {
+        $gl     = $this->glAccountGateway->findById($glaccount_id);
+        $period = \DateTime::createFromFormat(Util::getServerDateFormat(), $period);
+        
+        $fiscalYear   = $this->fiscalCalService->getFiscalYear($property_id, $period);
+        $start_period = Util::formatDateForDB($fiscalYear['start']);
+        $end_period   = Util::formatDateForDB($fiscalYear['end']);
+
+        $isCategory = ($type == 'category') ? true : false;
+        $fn = ($isCategory) ? 'getCategoryBudgetByPeriod' : 'getAccountBudgetByPeriod';
+        $glaccount_id = ($isCategory) ? $gl['glaccount_category_id'] : $gl['glaccount_id'];
+
+        $budget = $this->budgetGateway->$fn($glaccount_id, $property_id, $start_period, $end_period);
+
+        $data = [
+            'property_name'  => $this->propertyGateway->findValue('property_id = ?', [$property_id], 'property_name'),
+            'glaccount_name' => ($type == 'account') ? $gl['glaccount_name'] : $gl['glaccount_category'],
+            'month'          => (int)$period->format('n')
+        ];
+
+        $invoiceAmount = $this->invoiceGateway->getTotalAmountByBudget(
+            $glaccount_id,
+            $property_id,
+            $start_period,
+            $end_period,
+            $isCategory
+        );
+
+        $poAmount = $this->purchaseOrderGateway->getTotalAmountByBudget(
+            $glaccount_id,
+            $property_id,
+            $start_period,
+            $end_period,
+            $isCategory
+        );
+
+        $data['year']         = $fiscalYear['year'];
+        $data['year_budget']  = $budget['budget_amount'];
+        $data['year_actual']  = $budget['actual_amount'];
+        $data['year_invoice'] = $invoiceAmount;
+        $data['year_po']      = $poAmount;
+
+        return $data;
     }
 
     /**

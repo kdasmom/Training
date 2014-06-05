@@ -213,6 +213,31 @@ class AuditSelect extends Select {
 	/**
 	 * 
 	 */
+	public function addPoCreatedSpecification() {
+		$nullExp = new Expression('NULL');
+
+		return $this->columns([
+						'approve_id'           => new Expression('-1'),
+						'approve_datetm'       => 'purchaseorder_created',
+						'approvetype_name'     => new Expression("'Created'"),
+						'message'              => $this->getMessageCol('PO was created', 'ra'),
+						'userprofile_username' => new Expression('u.userprofile_username'),
+						'forwardto_tablename'  => $nullExp,
+						'forwardto_tablekeyid' => $nullExp,
+						'glaccount_number'     => $nullExp,
+						'approver'             => $nullExp,
+						'transaction_id'       => $nullExp
+					])
+					->from(['p'=>'purchaseorder'])
+						->join(new \NP\po\sql\join\PoRecauthorJoin([]))
+						->join(new \NP\user\sql\join\RecauthorUserprofileJoin([]))
+						->join(new \NP\user\sql\join\RecauthorDelegationUserJoin([]))
+					->whereEquals('p.purchaseorder_id', '?');
+	}
+
+	/**
+	 * 
+	 */
 	public function addInvoiceActivatedSpecification() {
 		$nullExp = new Expression('NULL');
 
@@ -280,6 +305,16 @@ class AuditSelect extends Select {
 					->whereEquals('at.audittype', "'Invoice'");
 	}
 
+	public function addPoAuditSpecification() {
+		$fields     = \NP\po\PurchaseOrderEntity::getAuditableFields();
+
+		$message = $this->getAuditMessageCol($fields);
+
+		return $this->addBaseAuditSelect($message)
+					->whereEquals('al.tablekey_id', '?')
+					->whereEquals('at.audittype', "'PurchaseOrder'");
+	}
+
 	public function addInvoiceItemAuditSpecification() {
 		$fields  = \NP\invoice\InvoiceItemEntity::getAuditableFields();
 		$fields  = array_merge($fields, \NP\jobcosting\JbJobAssociationEntity::getAuditableFields());
@@ -293,6 +328,22 @@ class AuditSelect extends Select {
 						Select::get()->column('invoiceitem_id')
 									->from('invoiceitem')
 									->whereEquals('invoice_id', '?')
+					);
+	}
+
+	public function addPoItemAuditSpecification() {
+		$fields  = \NP\po\PoItemEntity::getAuditableFields();
+		$fields  = array_merge($fields, \NP\jobcosting\JbJobAssociationEntity::getAuditableFields());
+
+		$message = $this->getAuditMessageCol($fields);
+
+		return $this->addBaseAuditSelect($message)
+					->whereEquals('at.audittype', "'POItem'")
+					->whereIn(
+						'al.tablekey_id',
+						Select::get()->column('poitem_id')
+									->from('poitem')
+									->whereEquals('purchaseorder_id', '?')
 					);
 	}
 

@@ -24,6 +24,7 @@ Ext.define('NP.Application', {
 		'overrides.grid.plugin.CellEditing',
 		'overrides.util.Format',
 		'overrides.util.Sorter',
+		'overrides.view.AbstractView',
 		'overrides.Component',
 		'overrides.JSON',
 		'Ext.util.History',

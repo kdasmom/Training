@@ -23,6 +23,8 @@ abstract class AbstractEntity {
 	 */
 	protected $fields;
 
+	public $rawLoadedData = [];
+
 	/**
 	 * Set this field to true if some of this entity's fields are auditable (changes to fields are saved)
 	 * in the auditlog table
@@ -43,6 +45,7 @@ abstract class AbstractEntity {
 		if ($this->fields === null) {
 			throw new \NP\core\Exception("You must define fields for the entity in the \$fields property.");
 		}
+
 		foreach($this->fields as $field=>$definition) {
 			if (array_key_exists($field, $data)) {
 				$this->values[$field] = $data[$field];
@@ -54,6 +57,8 @@ abstract class AbstractEntity {
 				}
 			}
 		}
+
+		$this->rawLoadedData = $data;
 	}
 
 	/**

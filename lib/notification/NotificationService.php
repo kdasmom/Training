@@ -6,7 +6,7 @@ use NP\core\AbstractService;
 use NP\core\validation\EntityValidator;
 use NP\core\notification\EmailerInterface;
 use NP\core\notification\EmailMessage;
-use NP\core\Config;
+use NP\system\ConfigService;
 
 /**
  * Service class for operations related to Notifications, email or otherwise
@@ -15,11 +15,15 @@ use NP\core\Config;
  */
 class NotificationService extends AbstractService {
 
-	protected $config, $emailer;
+	protected $config, $emailer, $securityService;
 
-	public function __construct(Config $config, EmailerInterface $emailer) {
-		$this->config                = $config;
-		$this->emailer               = $emailer;
+	public function __construct(ConfigService $configService, EmailerInterface $emailer) {
+		$this->configService = $configService;
+		$this->emailer       = $emailer;
+	}
+
+	public function setSecurityService(\NP\security\SecurityService $securityService) {
+		$this->securityService = $securityService;
 	}
 	
 	public function sendEmail($message, $from=null, $to=null, $subject=null, $contentType='text/html') {
@@ -30,12 +34,12 @@ class NotificationService extends AbstractService {
 		}
 
 		// Only send the email if notifications are enabled
-		if ($this->config->getConfig('notificationsEnabled', true)) {
+		if ($this->configService->getConfig('notificationsEnabled', true)) {
 			$this->emailer->send($message);
 		}
 
 		// If mail logging is on, log this message
-		if ( in_array('mail', $this->config->getConfig('enabledNamespaces', array())) ) {
+		if ( in_array('mail', $this->configService->getConfig('enabledNamespaces', array())) ) {
 			$from = $message->getFrom();
 			if (is_array($from)) {
 				$from = implode(';', $from);
@@ -205,6 +209,134 @@ class NotificationService extends AbstractService {
 			'success' => ($error == '') ? true : false,
 			'error'   => $error
 		);
+	}
+
+	public function addStatusAlert($entity_id, $emailalerttype_name) {
+		$emailalerttype = $this->emailAlertTypeGateway->findSingle(
+			'emailalerttype_name = ?',
+			[$emailalerttype_name],
+			['emailalerttype_id_alt','emailalerttype_category']
+		);
+		$emailalerttype_id_alt = $emailalerttype['emailalerttype_id_alt'];
+		$category              = $emailalerttype['emailalerttype_category'];
+
+		if ($category == 'PO') {
+			$table_name = 'purchaseorder';
+			$entity      = $this->purchaseOrderGateway->findById($entity_id);
+			$statusData  = $this->getPoStatusData($emailalerttype_name);
+			$displayName = 'Purchase Order';
+		} else {
+			$table_name  = strtolower($category);
+			$gtw         = "{$table_name}Gateway";
+			$entity      = $this->$gtw->findById($entity_id);
+			$statusData  = $this->getInvoiceStatusData($emailalerttype_name);
+			$displayName = ucfirst($table_name);
+		}
+
+		$entity_ref  = $entity["{$table_name}_ref"];
+		
+		if ($this->emailAlertGateway->hasEmailAlert($entity['userprofile_id'], $emailalerttype_id_alt)) {
+			$user = $this->userprofileGateway->findById($entity['userprofile_id']);
+			
+			if (filter_var($user['email_address'], FILTER_VALIDATE_EMAIL)) {
+				$subject = "{$displayName}s have been {$statusData['state']}";
+
+				$person_name = 'NexusPayables User';
+				if (!empty($user['person_firstname']) || !empty($user['person_lastname'])) {
+					$person_name = "{$user['person_firstname']} {$user['person_lastname']}";
+				}
+
+				$html =
+					"Dear {$person_name}
+					<br /><br />
+					{$displayName} {$entity_ref} has been {$statusData['state']}.  Please log in to
+					{$this->configService->getLoginUrl()} to view the {$displayName}";
+
+				if ($statusData['tab'] !== null) {
+					$html .= "on the {$displayName} Register {$statusData['tab']} tab";
+				}
+
+				$html .= '.
+					<br /><br />
+					Thank you very much,<br />
+					NexusPayables Support';
+
+				$this->addEmailMessage($user['email_address'], $subject, $html, $table_name);
+			}
+		}
+	}
+
+	public function getPoStatusData($emailalerttype_name) {
+		$tab = null;
+		if ($emailalerttype_name == 'Status Alert: PO Modification') {
+			$tab = 'Open';
+			$state = 'modified';
+		} else if ($emailalerttype_name == 'Status Alert: PO Released') {
+			$tab = 'Approved';
+			$state = 'released';
+		} else if ($emailalerttype_name == 'Status Alert: PO Rejection') {
+			$tab = 'Rejected';
+			$state = 'rejected';
+		} else if ($emailalerttype_name == 'Status Alert: PO Approved') {
+			$state = 'approved';
+		}
+
+		return [
+			'state' => $state,
+			'tab'   => $tab
+		];
+	}
+
+	public function getInvoiceStatusData($emailalerttype_name) {
+		$tab = null;
+		if ($emailalerttype_name == 'Status Alert: Invoice Modification') {
+			$tab = 'Open';
+			$state = 'modified';
+		} else if ($emailalerttype_name == 'Status Alert: Invoice Completed') {
+			$state = 'completed';
+		} else if ($emailalerttype_name == 'Status Alert: Invoice Rejection') {
+			$tab = 'Rejected';
+			$state = 'rejected';
+		} else if ($emailalerttype_name == 'Invoice Approved') {
+			$state = 'approved';
+		}
+
+		return [
+			'state' => $state,
+			'tab'   => $tab
+		];
+	}
+
+	/**
+	 * Adds an email message to be sent by the email scheduled task
+	 */
+	public function addEmailMessage($toEmail, $subject, $body, $emailmessage_type) {
+		$fromEmail = $this->configService->get('PN.Main.FromEmail');
+
+		// Check if an unsent message that's the same as this one already exists
+		$emailmessage_id = $this->emailMessageGateway->findValue(
+			[
+				'EmailMessage_To'      => '?',
+				'EmailMessage_From'    => '?',
+				'EmailMessage_Subject' => '?',
+				'EmailMessage_Status'  => 0
+			],
+			[$toEmail, $fromEmail, $subject],
+			'EmailMessage_id'
+		);
+
+		// If message doesn't exist, create it
+		if ($emailmessage_id === null) {
+			$this->emailMessageGateway->insert([
+				'EmailMessage_To'      => $toEmail,
+				'EmailMessage_From'    => $fromEmail,
+				'EmailMessage_Subject' => $subject,
+				'EmailMessage_Body'    => $body,
+				'EmailMessage_Status'  => 0,
+				'EmailMessage_Type'    => $emailmessage_type,
+				'userprofile_id'       => $this->securityService->getUserId()
+			]);
+		}
 	}
 }
 

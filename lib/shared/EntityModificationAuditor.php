@@ -73,6 +73,13 @@ class EntityModificationAuditor extends AbstractEntityAuditor {
 			}
 		}
 
+		if (array_key_exists('displayNameSetting', $fieldDef)) {
+			$newFieldName = $this->configService->get($fieldDef['displayNameSetting'], '');
+			if (!empty($newFieldName)) {
+				$field = $newFieldName;
+			}
+		}
+
 		if (array_key_exists('convert', $fieldDef)) {
 			$fn = $fieldDef['convert'];
 			if ($fn == 'currency') {

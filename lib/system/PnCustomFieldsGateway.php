@@ -35,22 +35,6 @@ class PnCustomFieldsGateway extends AbstractGateway {
 	public function getCustomFieldValues($fid) {
 		$select = new Select();
 
-		/**
-		 * Select
-		right(customfield_name, 1) as controlpanelitem_number,
-		customfield_name as controlpanelitem_name,
-		customfield_required as controlpanelitem_required,
-		customfield_label,
-		customfield_status as po_on_off,
-		customfield_status,
-		customfield_type,
-		customfield_max_length,
-		universal_field_number,
-		customfield_required as po_req,
-		customfield_pn_type
-		From PnCustomFields
-		Where customfield_id = <cfqueryparam value="#request.fid#"
-		 */
 		$select->from(['pc' => 'pncustomfields'])
 			->columns(
 				[
@@ -71,9 +55,6 @@ class PnCustomFieldsGateway extends AbstractGateway {
 
 		return $this->adapter->query($select, [$fid]);
 	}
-
-
-
 
 	public function updateCustomField($data) {
 		$update = new Update();
@@ -202,7 +183,6 @@ class PnCustomFieldsGateway extends AbstractGateway {
 
 		return $this->adapter->query($delete, [$userprofile_id]);
 	}
-
 
 }
 

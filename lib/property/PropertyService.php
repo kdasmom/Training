@@ -9,20 +9,22 @@ use NP\security\SecurityService;
 use NP\invoice\InvoiceService;
 use NP\po\PoService;
 use NP\system\ConfigService;
+use NP\shared\CustomFieldService;
 use NP\util\Util;
 
 class PropertyService extends AbstractService {
 	
 	protected $securityService, $invoiceService, $poService, $configService,
-			$fiscalCalService, $unitTypeMeasGateway;
+			$fiscalCalService, $customFieldService;
 	
 	public function __construct(SecurityService $securityService, InvoiceService $invoiceService,
-								PoService $poService, FiscalCalService $fiscalCalService, UnitTypeMeasGateway $unitTypeMeasGateway) {
+								PoService $poService, FiscalCalService $fiscalCalService,
+								CustomFieldService $customFieldService) {
 		$this->securityService            = $securityService;
 		$this->invoiceService             = $invoiceService;
 		$this->poService                  = $poService;
 		$this->fiscalCalService           = $fiscalCalService;
-		$this->unitTypeMeasGateway			= $unitTypeMeasGateway;
+		$this->customFieldService         = $customFieldService;
 	}
 
 	/**
@@ -108,7 +110,7 @@ class PropertyService extends AbstractService {
 			\NP\core\db\Where::buildCriteria($wheres),
 			$params,
 			"property_name",
-			array('property_id','property_id_alt','property_name','property_status')
+			array('property_id','property_id_alt','property_name','property_salestax','property_status')
 		);
 	}
 
@@ -471,6 +473,13 @@ class PropertyService extends AbstractService {
 	}
 
 	/**
+	 * Gets properties for the Ship To/Bill To drop downs
+	 */
+	public function getShipBillTo($type) {
+		return $this->propertyGateway->findShipBillTo($type);
+	}
+
+	/**
 	 * Checks if a GL account is assigned to a property
 	 * @param  int     $property_id
 	 * @param  int     $glaccount_id
@@ -593,26 +602,7 @@ class PropertyService extends AbstractService {
 				}
 
 				// Save property custom field data
-				$customFields = $this->pnCustomFieldsGateway->findCustomFieldData('property', $property->property_id);
-				foreach ($customFields as $field) {
-					$formFieldName = $field['customfield_name'];
-					// Build the data array
-					$fieldData = array(
-						'customfielddata_id'           => $field['customfielddata_id'],
-						'customfield_id'               => $field['customfield_id'],
-						'customfielddata_table_id'     => $property->property_id,
-						'customfielddata_value'        => $data[$formFieldName],
-						'customfielddata_lastupdatedt' => $now,
-						'customfielddata_lastupdateby' => $data['userprofile_id']
-					);
-					// If the custom field data is new, also give it a created date and user
-					if ($field['customfielddata_id'] === null) {
-						$fieldData['customfielddata_createdt']  = $now;
-						$fieldData['customfielddata_createdby'] = $data['userprofile_id'];
-					}
-					// Save the custom field data
-					$this->pnCustomFieldDataGateway->save($fieldData);
-				}
+				$this->customFieldService->saveCustomFieldData('property', $property->property_id, $data);
 
 				// Save GL assignments if any
 				if (array_key_exists('property_gls', $data) && is_array($data['property_gls'])) {

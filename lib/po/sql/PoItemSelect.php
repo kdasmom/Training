@@ -28,11 +28,11 @@ class PoItemSelect extends Select {
 		$poSubSelect = new EntityLinePeriodSpendingSelect('purchaseorder', $budgetCompareWithTax, 'poitem');
 		
 		return $this->column(new Expression("
-			b.budget_amount
+			ISNULL(b.budget_amount, 0)
 			- (
-				(" . $invoiceSubSelect->toString() . " )
-				+ ( " . $poSubSelect->toString() . " )
-				+ b.oracle_actual
+				ISNULL((" . $invoiceSubSelect->toString() . " ), 0)
+				+ ISNULL(( " . $poSubSelect->toString() . " ), 0)
+				+ ISNULL(b.oracle_actual, 0)
 			)
 		"), 'budget_variance');
 	}
