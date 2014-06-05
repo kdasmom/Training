@@ -44,7 +44,7 @@ class VendorService extends AbstractService {
 	const VENDOR_STATUS_REJECTED = 'rejected';
 
 	protected $configService, $vendorEntityValidator;
-	
+
 	public function __construct(VendorEntityValidator $vendorEntityValidator) {
 		$this->vendorEntityValidator = $vendorEntityValidator;
 	}
@@ -693,12 +693,12 @@ class VendorService extends AbstractService {
 			$this->pnCustomFieldDataGateway->save($fieldData);
 		}
 	}
-    
+
     public function getVendorBySiteId($vendorsite_id) {
         $res = $this->vendorGateway->find('vs.vendorsite_id = ?', array($vendorsite_id));
         return $res[0];
     }
-    
+
     /**
      * Get vendors that will show up on the vendor drop down of the invoice view page
      *
@@ -730,7 +730,7 @@ class VendorService extends AbstractService {
             return [];
         }
     }
-       
+
     /**
      * Get all vendors in the application
      *
@@ -750,9 +750,9 @@ class VendorService extends AbstractService {
     public function getTopVendors($numberOfVendors=5) {
     	return $this->vendorGateway->findTopVendors($numberOfVendors);
     }
-    
+
     /**
-     * Retrieves vendor records by integration package, 
+     * Retrieves vendor records by integration package,
      *
      * @param  int          $integration_package_id
      * @param  string|array $vendor_status          Vendor status or array of statuses
@@ -775,7 +775,7 @@ class VendorService extends AbstractService {
 	                    $params[] = $vendor_status_val;
 	                }
 	            }
-            }       
+            }
 
             if ($keyword !== null) {
                 $wheres[] = new sql\criteria\VendorKeywordCriteria();
@@ -848,7 +848,7 @@ class VendorService extends AbstractService {
      */
     public function isUtilityVendor($vendorsite_id, $property_id=0) {
     	$Utility_Id = $this->utilityGateway->findValue(['Vendorsite_Id'=>'?'], [$vendorsite_id], 'Utility_Id');
-    	
+
     	if ($Utility_Id === null) {
     		return false;
     	}
@@ -884,7 +884,7 @@ class VendorService extends AbstractService {
             array($data[0]['integration_package_name'])
         );
         $integration_package_id = $intPkg[0]['integration_package_id'];
-        
+
         try {
             $sessionKey = $this->soapService->login();
 
@@ -1011,7 +1011,7 @@ class VendorService extends AbstractService {
 
         if (!count($errors)) {
             $this->insuranceGateway->beginTransaction();
-            
+
             try {
                 $id = $this->insuranceGateway->save($insurance);
 
@@ -1199,7 +1199,7 @@ class VendorService extends AbstractService {
                 array('property_id_alt'=>'?', 'integration_package_id'=>'?'),
                 array($row['property_id_alt'], $integration_package_id)
             );
-            
+
             // If insurance record is to be updated, figure out ID
             $rec = $this->insuranceGateway->find(
                 array('table_name'=>'?', 'tablekey_id'=>'?', 'insurance_policynum'=>'?'),
@@ -1217,7 +1217,7 @@ class VendorService extends AbstractService {
                 'insurance'        => $row,
                 'property_id_list' => array($prop[0]['property_id'])
             );
-            
+
             // Save the row
             $result = $this->saveInsurance($insuranceData);
 
@@ -1691,7 +1691,7 @@ class VendorService extends AbstractService {
 						];
 
 						$property_id_list = explode(',', $insurance->insurance_properties_list_id[$index]);
-						$result = $this->saveInsurance(['insurance' => $saveInsurance, 'property_id_list' => $property_id_list], $vendor_id);
+						$result = $this->saveInsurance(['insurance' => $saveInsurance, 'property_id_list' => $property_id_list]);
 
 						if (!$result['success']) {
 							throw new \NP\core\Exception("Cannot save insurance");
@@ -1702,7 +1702,8 @@ class VendorService extends AbstractService {
 				} else {
 					$insurance->tablekey_id = $vendor_id;
 					$insurance->table_name = 'vendor';
-					$result = $this->saveInsurance(['insurance' => (array)$insurance], $vendor_id);
+					$property_id_list = explode(',', $insurance->insurance_properties_list_id);
+					$result = $this->saveInsurance(['insurance' => (array)$insurance, 'property_id_list' => $property_id_list]);
 					if (!$result['success']) {
 						throw new \NP\core\Exception("Cannot save insurance");
 					}
