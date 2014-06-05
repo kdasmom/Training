@@ -172,7 +172,7 @@ Ext.define('NP.view.user.UsersGrid', {
                         dataIndex: 'userprofile_updated_datetm',
                         flex: 1,
                         renderer: function(val, meta, rec) {
-                            val = Ext.Date.format(val, NP.Config.getDefaultDateFormat() + ' h:iA');
+                            val = Ext.Date.format(val, NP.Config.getDefaultDateTimeFormat());
                             if (rec.get('userprofile_updated_by') !== null) {
                                 val += ' (' + rec.get('updated_by_userprofile_username') + ')'
                             }
