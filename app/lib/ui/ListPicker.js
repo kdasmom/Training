@@ -101,9 +101,12 @@ Ext.define('NP.lib.ui.ListPicker', {
                     var typedLen  = me.typedText.length,
                         listStore = boundList.getStore(),
                         matchRow  = listStore.findBy(function(rec) {
-                            var recVal = rec.get(me.displayField).toLowerCase();
-                            if (recVal.substring(0, typedLen) == me.typedText) {
-                                return true;
+                            var recVal = rec.get(me.displayField);
+                            if (recVal.toLowerCase) {
+                                recVal = recVal.toLowerCase();
+                                if (recVal.substring(0, typedLen) == me.typedText) {
+                                    return true;
+                                }
                             }
                         });
                     

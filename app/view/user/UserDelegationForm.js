@@ -87,12 +87,9 @@ Ext.define('NP.view.user.UserDelegationForm', {
         var now = new Date();
         now = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         var startDate = this.findField('Delegation_StartDate');
-        // Only do this validation for a new delegation
-        if (delegation.get('Delegation_Id') == null) {
-            if (startDate.getValue() < now) {
-                startDate.markInvalid('The Start Date must be today or later.');
-            }
-        }
+		if (startDate.getValue() < now) {
+			startDate.markInvalid('The Start Date must be today or later.');
+		}
         var stopDate = this.findField('Delegation_StopDate');
         if (stopDate.getValue() < now) {
             stopDate.markInvalid('The Stop Date must be today or later.');

@@ -1,10 +1,10 @@
 {
     "description": "CustomField Header import",
-    "service": "CustomField",
-    "entity": "NP\\system\\CustomField",
+    "service": "ConfigService",
+    "entity": "NP\\import\\CustomFieldHeaderImportEntity",
     "columns": [
-        {"name": "CustomField", "entityField": "CustomField"},
+        {"name": "CustomField", "entityField": "CustomField"}
     ],
     "customValidation": true,
-    "customValidationClass": "CustomFieldEntityValidator"
+    "customValidationClass": "CustomFieldHeaderEntityValidator"
 }

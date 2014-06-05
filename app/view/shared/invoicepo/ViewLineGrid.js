@@ -12,6 +12,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
         'NP.lib.core.Translator',
         'Ext.grid.plugin.CellEditing',
         'Ext.grid.plugin.DragDrop',
+        'Ext.grid.feature.Summary',
         'Ext.grid.column.Action',
         'NP.lib.ui.AutoComplete',
         'NP.view.shared.button.New',
@@ -44,6 +45,8 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
 
     stateful       : true,
     
+    isSplitGrid    : false,
+
     initComponent: function() {
         var me           = this,
             customFields = NP.Config.getCustomFields().line.fields,
@@ -62,42 +65,62 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
             }
         });
 
-        me.tbar = [
-            {
-                xtype : 'shared.button.new',
-                itemId: me.type + 'LineAddBtn',
-                text  : NP.Translator.translate('Add Line')
-            },{
-                xtype : 'shared.button.save',
-                itemId: me.type + 'LineSaveBtn',
-                text  : NP.Translator.translate('Done With Changes')
-            }/*
-            TODO: permanently remove this once confirmed this functionality is not needed
-            ,{
-                xtype : 'shared.button.cancel',
-                itemId: me.type + 'LineCancelBtn',
-                text  : NP.Translator.translate('Undo Changes')
-            }*/
-        ];
+        if (!me.isSplitGrid) {
+            me.features = [{ ftype: 'summary' }];
 
-        // We need the invoice status to determine if the row is deletable or not, but we
-        // can't get it until the data has loaded
-        if (me.type == 'invoice') {
-            me.on('render', function() {
-                entityView = me.up('[xtype="'+me.type+'.view"]');
-                entityView.on('dataloaded', function(form, data) {
-                    entityStatus = data['invoice_status'];
+            me.tbar = [
+                {
+                    xtype : 'shared.button.new',
+                    itemId: me.type + 'LineAddBtn',
+                    text  : NP.Translator.translate('Add Line')
+                },{
+                    xtype : 'shared.button.save',
+                    itemId: me.type + 'LineSaveBtn',
+                    text  : NP.Translator.translate('Done With Changes')
+                }/*
+                TODO: permanently remove this once confirmed this functionality is not needed
+                ,{
+                    xtype : 'shared.button.cancel',
+                    itemId: me.type + 'LineCancelBtn',
+                    text  : NP.Translator.translate('Undo Changes')
+                }*/
+            ];
 
-                    if (entityStatus == 'paid') {
-                        me.down('#' + me.type + 'LineAddBtn').disable();
+            if (me.type == 'invoice') {
+                me.tbar.push(
+                    {
+                        xtype : 'shared.button.save',
+                        itemId: 'saveLinkPoAndCloseBtn',
+                        text  : NP.Translator.translate('Save and Close PO'),
+                        hidden: true
+                    },{
+                        xtype : 'shared.button.save',
+                        itemId: 'saveLinkPoAndKeepOpenBtn',
+                        text  : NP.Translator.translate('Save and Keep Remaining PO Items Open'),
+                        hidden: true
                     }
+                );
+            }
 
-                    var vendorRec = me.getVendorRecord();
-                    if (vendorRec && vendorRec.get('is_utility_vendor')) {
-                        me.configureGrid();
-                    }
+            // We need the invoice status to determine if the row is deletable or not, but we
+            // can't get it until the data has loaded
+            if (me.type == 'invoice') {
+                me.on('render', function() {
+                    entityView = me.up('[xtype="'+me.type+'.view"]');
+                    entityView.on('dataloaded', function(form, data) {
+                        entityStatus = data['invoice_status'];
+
+                        if (entityStatus == 'paid') {
+                            me.down('#' + me.type + 'LineAddBtn').disable();
+                        }
+
+                        var vendorRec = me.getVendorRecord();
+                        if (vendorRec && vendorRec.get('is_utility_vendor')) {
+                            me.configureGrid();
+                        }
+                    });
                 });
-            });
+            }
         }
 
         // Set the CellEditing plugin on the grid
@@ -170,28 +193,84 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     }
                 },
                 handler: function(view, rowIndex, colIndex, item, e, rec, row) {
-                    if (me.type == 'invoice' && entityStatus != 'paid') {
-                        me.getStore().removeAt(rowIndex);
+                    if (me.type != 'invoice' || entityStatus != 'paid') {
+                        me.fireEvent('clickdeleteline', rec);
                     }
                 }
-            },
-            // Quantity column
-            me.getQtyCol(),
-            // Description column
-            {
-                text     : NP.Translator.translate('Description'),
-                dataIndex: me.itemPrefix + '_description',
-                hideable : false,
-                width    : 300,
+            }
+        ];
+
+        // Allocation Percentage column
+        if (me.isSplitGrid) {
+            me.columns.push({
+                xtype    : 'numbercolumn',
+                text     : NP.Translator.translate('Allocation %'),
+                dataIndex: 'split_percentage',
+                format   : '0,000.0000',
+                width    : 100,
                 editor   : {
-                    xtype        : 'textfield',
-                    selectOnFocus: true
+                    xtype           : 'numberfield',
+                    selectOnFocus   : true,
+                    decimalPrecision: 4,
+                    listeners       : {
+                        blur : function(field, e) {
+                            me.fireEvent('changepercentage', me, field, e);
+                        }
+                    }
                 }
-            },
-            // Unit Price column
-            me.getUnitPriceCol(),
-            // Amount column
-            me.getAmountCol(),
+            });
+        }
+
+        if (!me.isSplitGrid) {
+            me.columns.push(
+                // Quantity column
+                me.getQtyCol(),
+                // Description column
+                {
+                    text     : NP.Translator.translate('Description'),
+                    dataIndex: me.itemPrefix + '_description',
+                    hideable : false,
+                    width    : 300,
+                    editor   : {
+                        xtype        : 'textfield',
+                        selectOnFocus: true,
+                        editorCfg    : {
+                            completeOnEnter: false
+                        }
+                    }
+                },
+                // Unit Price column
+                me.getUnitPriceCol()
+            );
+        }
+
+        // Amount column
+        me.columns.push(me.getAmountCol());
+
+        // Balance column
+        if (me.isSplitGrid) {
+            me.columns.push({
+                xtype    : 'numbercolumn',
+                text     : NP.Translator.translate('Balance'),
+                dataIndex: 'split_balance',
+                width    : 100,
+                renderer : function(val, meta, rec, rowIndex, colIndex, store) {
+                    var win       = me.up('[xtype="shared.invoicepo.splitwindow"]'),
+                        unitPrice = win.down('#splitUnitPrice').getValue(),
+                        qty       = win.down('#splitTotalQty').getValue(),
+                        total     = qty * unitPrice;
+                    
+                    var balance = total;
+                    for (var i=0; i<=rowIndex; i++) {
+                        balance -= store.getAt(i).get('invoiceitem_amount');
+                    }
+
+                    return Ext.util.Format.number(balance, '0,000.000000');
+                }
+            });
+        }
+
+        me.columns.push(
             // Property column
             {
                 text     : NP.Config.getPropertyLabel(),
@@ -217,6 +296,9 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     selectOnFocus   : true,
                     store           : me.propertyStore,
                     useSmartStore   : true,
+                    editorCfg       : {
+                        completeOnEnter: false
+                    },
                     updateLineFields: {
                         property_id  : 'property_id',
                         property_name: 'property_id_alt',
@@ -257,12 +339,15 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                         glaccount_number: 'glaccount_number',
                         glaccount_name  : 'glaccount_name'
                     },
+                    editorCfg: {
+                        completeOnEnter: false
+                    },
                     listeners: {
                         select: me.onLineComboSelect.bind(me)
                     }
                 }
             }
-        ];
+        );
 
         // Unit column
         if (NP.Config.getSetting('PN.InvoiceOptions.AllowUnitAttach') == '1') {
@@ -309,6 +394,9 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                         unit_id_alt: 'unit_id_alt',
                         unit_number: 'unit_number'
                     },
+                    editorCfg: {
+                        completeOnEnter: false
+                    },
                     listeners: {
                         select: me.onLineComboSelect.bind(me)
                     }
@@ -317,29 +405,42 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
         }
 
         // Tax column
-        me.columns.push({
-            text     : NP.Translator.translate('Tax?'),
-            dataIndex: me.itemPrefix + '_taxflag',
-            width    : 50,
-            renderer : function(val) {
-                if (val === 'Y') {
-                    return 'Yes';
-                } else {
-                    return 'No';
-                }
-            },
-            editor: {
-                xtype : 'customcombo',
-                store : {
-                    type        : 'store',
-                    fields      : [{ name: 'name' }, { name: 'value' }],
-                    data        : [{ name: 'Yes', value: 'Y' }, { name: 'No', value: 'N' }]
+        if (!me.isSplitGrid) {
+            me.columns.push({
+                text     : NP.Translator.translate('Tax?'),
+                dataIndex: me.itemPrefix + '_taxflag',
+                width    : 50,
+                renderer : function(val) {
+                    if (val === 'Y') {
+                        return 'Yes';
+                    } else {
+                        return 'No';
+                    }
                 },
-                displayField : 'name',
-                valueField   : 'value',
-                selectOnFocus: true
-            }
-        });
+                editor: {
+                    xtype : 'customcombo',
+                    store : {
+                        type        : 'store',
+                        fields      : [{ name: 'name' }, { name: 'value' }],
+                        data        : [
+                            { name: NP.Translator.translate('Yes'), value: 'Y' },
+                            { name: NP.Translator.translate('No'), value: 'N' }
+                        ]
+                    },
+                    displayField : 'name',
+                    valueField   : 'value',
+                    selectOnFocus: true,
+                    editorCfg    : {
+                        completeOnEnter: false
+                    },
+                    listeners: {
+                        select: function(combo, recs) {
+                            me.fireEvent('selecttaxable', combo, recs);
+                        }
+                    }
+                }
+            });
+        }
 
         // Custom field columns
         for (var i=1; i<=8; i++) {
@@ -361,6 +462,9 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                         isLineItem: 1,
                         number    : i,
                         allowBlank: !customField[typeShort + 'Required'],
+                        editorCfg : {
+                            completeOnEnter: false
+                        },
                         fieldCfg  : {
                             selectOnFocus   : true,
                             validateOnBlur  : false,
@@ -372,7 +476,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
             }
         }
 
-        if (NP.Config.getSetting('VC_isOn', '0') == 1) {
+        if (!me.isSplitGrid && NP.Config.getSetting('VC_isOn', '0') == 1) {
             me.columns.push(
                 // Item Number column
                 {
@@ -382,7 +486,10 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     editor   : {
                         xtype        : 'textfield',
                         selectOnFocus: true,
-                        maxLength    : 100
+                        maxLength    : 100,
+                        editorCfg    : {
+                            completeOnEnter: false
+                        }
                     }
                 },
                 // UOM column
@@ -393,7 +500,10 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     editor   : {
                         xtype        : 'textfield',
                         selectOnFocus: true,
-                        maxLength    : 50
+                        maxLength    : 50,
+                        editorCfg    : {
+                            completeOnEnter: false
+                        }
                     }
                 }
             );
@@ -401,7 +511,8 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
 
         // Job costing columns (if JC is turned on)
         if (
-            NP.Config.getSetting('pn.jobcosting.jobcostingEnabled', '0') == '1'
+            !me.isSplitGrid
+            && NP.Config.getSetting('pn.jobcosting.jobcostingEnabled', '0') == '1'
             && (
                 (me.type == 'invoice' && NP.Security.hasPermission(2047))
                 || (me.type == 'po' && NP.Security.hasPermission(2049))
@@ -435,6 +546,9 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                             jbcontract_name: 'jbcontract_name',
                             jbcontract_desc: 'jbcontract_desc'
                         },
+                        editorCfg: {
+                            completeOnEnter: false
+                        },
                         listeners: {
                             select: me.onLineComboSelect.bind(me)
                         }
@@ -466,6 +580,9 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                             jbchangeorder_id  : 'jbchangeorder_id',
                             jbchangeorder_name: 'jbchangeorder_name',
                             jbchangeorder_desc: 'jbchangeorder_desc'
+                        },
+                        editorCfg: {
+                            completeOnEnter: false
                         },
                         listeners: {
                             select: me.onLineComboSelect.bind(me)
@@ -499,6 +616,9 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                             jbjobcode_name: 'jbjobcode_name',
                             jbjobcode_desc: 'jbjobcode_desc'
                         },
+                        editorCfg: {
+                            completeOnEnter: false
+                        },
                         listeners: {
                             select: me.onLineComboSelect.bind(me)
                         }
@@ -530,6 +650,9 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                             jbphasecode_id  : 'jbphasecode_id',
                             jbphasecode_name: 'jbphasecode_name',
                             jbphasecode_desc: 'jbphasecode_desc'
+                        },
+                        editorCfg: {
+                            completeOnEnter: false
                         },
                         listeners: {
                             select: me.onLineComboSelect.bind(me)
@@ -563,6 +686,9 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                             jbcostcode_name: 'jbcostcode_name',
                             jbcostcode_desc: 'jbcostcode_desc'
                         },
+                        editorCfg: {
+                            completeOnEnter: false
+                        },
                         listeners: {
                             select: me.onLineComboSelect.bind(me)
                         }
@@ -573,15 +699,19 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
             if (NP.Config.getSetting('pn.jobcosting.useRetention', '0') == '1') {
                 // Retention column
                 me.columns.push({
-                    xtype    : 'numbercolumn',
-                    text     : NP.Translator.translate('Retention'),
-                    dataIndex: 'jbassociation_retamt',
-                    format   : '0,000.00',
-                    width    : 75,
-                    editor   : {
+                    xtype      : 'numbercolumn',
+                    text       : NP.Translator.translate('Retention'),
+                    dataIndex  : 'jbassociation_retamt',
+                    format     : '0,000.00',
+                    width      : 75,
+                    summaryType: 'sum',
+                    editor     : {
                         xtype           : 'numberfield',
                         selectOnFocus   : true,
-                        decimalPrecision: 2
+                        decimalPrecision: 2,
+                        editorCfg       : {
+                            completeOnEnter: false
+                        }
                     }
                 });
             }
@@ -592,7 +722,26 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
         me.callParent(arguments);
 
         me.addEvents('selectutilityaccount','changequantity','changeunitprice',
-                    'changeamount','tablastfield');
+                    'changeamount','tablastfield','selecttaxable','clickdeleteline');
+
+        if (me.type == 'invoice') {
+            me.on('activate', me.setButtonVisibility.bind(me));
+        }
+    },
+
+    setButtonVisibility: function() {
+        var me          = this,
+            showLinkPo  = (me.linkPoId) ? 'show' : 'hide',
+            showAddSave = (me.linkPoId) ? 'hide' : 'show';
+
+        Ext.suspendLayouts();
+
+        me.down('#' + me.type + 'LineAddBtn')[showAddSave]();
+        me.down('#' + me.type + 'LineSaveBtn')[showAddSave]();
+        me.down('#saveLinkPoAndCloseBtn')[showLinkPo]();
+        me.down('#saveLinkPoAndKeepOpenBtn')[showLinkPo]();
+
+        Ext.resumeLayouts();
     },
 
     getQtyCol: function() {
@@ -605,6 +754,9 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
             allowBlank      : false,
             validateOnBlur  : false,
             validateOnChange: false,
+            editorCfg       : {
+                completeOnEnter: false
+            },
             listeners       : {
                 blur: function(field, e) {
                     me.fireEvent('changequantity', me, field, e);
@@ -613,13 +765,14 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
         });
 
         return {
-            xtype    : 'numbercolumn',
-            text     : NP.Translator.translate('QTY'),
-            dataIndex: me.itemPrefix + '_quantity',
-            hideable : false,
-            renderer : me.moneyRenderer,
-            width    : 100,
-            editor   : me.qtyEditor
+            xtype      : 'numbercolumn',
+            text       : NP.Translator.translate('QTY'),
+            dataIndex  : me.itemPrefix + '_quantity',
+            hideable   : false,
+            renderer   : me.moneyRenderer,
+            width      : 100,
+            editor     : me.qtyEditor,
+            summaryType: 'sum'
         };
     },
 
@@ -634,6 +787,9 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
             allowBlank      : false,
             validateOnBlur  : false,
             validateOnChange: false,
+            editorCfg       : {
+                completeOnEnter: false
+            },
             listeners       : {
                 blur: function(field, e) {
                     me.fireEvent('changeunitprice', me, field, e);
@@ -642,13 +798,14 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
         });
 
         return {
-            xtype    : 'numbercolumn',
-            text     : NP.Translator.translate('Unit Price'),
-            dataIndex: me.itemPrefix + '_unitprice',
-            hideable : false,
-            renderer : me.moneyRenderer,
-            width    : 100,
-            editor   : me.unitPriceEditor
+            xtype      : 'numbercolumn',
+            text       : NP.Translator.translate('Unit Price'),
+            dataIndex  : me.itemPrefix + '_unitprice',
+            hideable   : false,
+            renderer   : me.moneyRenderer,
+            width      : 100,
+            editor     : me.unitPriceEditor,
+            summaryType: 'sum'
         }
     },
 
@@ -663,6 +820,9 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
             allowBlank      : false,
             validateOnBlur  : false,
             validateOnChange: false,
+            editorCfg       : {
+                completeOnEnter: false
+            },
             listeners       : {
                 blur: function(field, e) {
                     me.fireEvent('changeamount', me, field, e);
@@ -671,13 +831,14 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
         });
 
         return {
-            xtype    : 'numbercolumn',
-            text     : NP.Translator.translate('Amount'),
-            dataIndex: me.itemPrefix + '_amount',
-            hideable : false,
-            renderer : me.moneyRenderer,
-            width    : 100,
-            editor   : me.amountEditor
+            xtype      : 'numbercolumn',
+            text       : NP.Translator.translate('Amount'),
+            dataIndex  : me.itemPrefix + '_amount',
+            hideable   : false,
+            renderer   : me.moneyRenderer,
+            width      : 100,
+            editor     : me.amountEditor,
+            summaryType: 'sum'
         }
     },
 
@@ -743,6 +904,9 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                     UtilityType_Id              : 'UtilityType_Id',
                     UtilityType                 : 'UtilityType'
                 },
+                editorCfg    : {
+                    completeOnEnter: false
+                },
                 listeners    : {
                     select: function(combo, recs) {
                         me.onLineComboSelect(combo, recs);
@@ -778,6 +942,9 @@ Ext.define('NP.view.shared.invoicepo.ViewLineGrid', {
                 updateLineFields: {
                     UtilityColumn_UsageType_Id  : 'utilitycolumn_usagetype_id',
                     UtilityColumn_UsageType_Name: 'UtilityColumn_UsageType_Name'
+                },
+                editorCfg    : {
+                    completeOnEnter: false
                 },
                 listeners    : {
                     select: me.onLineComboSelect.bind(me)

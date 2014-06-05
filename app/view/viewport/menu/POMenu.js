@@ -79,7 +79,10 @@ Ext.define('NP.view.viewport.menu.POMenu', {
 		
 		// New PO
 		if ( NP.lib.core.Security.hasPermission(1027) ) {
-			this.menu.items.push({ text: NP.Translator.translate('New PO') });
+			this.menu.items.push({
+				itemId: 'newPoMenuBtn',
+				text  : NP.Translator.translate('New PO')
+			});
 		}
 		
 		// Search POs

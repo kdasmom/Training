@@ -29,7 +29,6 @@ Ext.define('NP.lib.core.KeyManager', {
 
 	addShortcut: function(token, key, fn, cfg) {
 		var me  = this,
-			len = token.split(':').length,
 			item;
 
 		// If key is an array, we're actually defining multiple different keys for a token
@@ -54,11 +53,8 @@ Ext.define('NP.lib.core.KeyManager', {
 			if (!(item.key in me.shortcuts[item.useAlt])) {
 				me.shortcuts[item.useAlt][item.key] = {};
 			}
-			if (!(len in me.shortcuts[item.useAlt][item.key])) {
-				me.shortcuts[item.useAlt][item.key][len] = {};
-			}
 			
-			me.shortcuts[item.useAlt][item.key][len][token] = {
+			me.shortcuts[item.useAlt][item.key][token] = {
 				fn         : item.fn,
 				scope      : item.scope,
 				argsFn     : item.argsFn,
@@ -83,8 +79,7 @@ Ext.define('NP.lib.core.KeyManager', {
 			shortcuts,
 			scutToken,
 			scut,
-			token,
-			len;
+			token;
 
 		if (e.getKey() == Ext.EventObject.ESC && me.win) {
 			me.closeShortcutWindow();
@@ -97,18 +92,15 @@ Ext.define('NP.lib.core.KeyManager', {
 					if (e.getKey() in shortcuts) {
 						shortcuts = shortcuts[e.getKey()];
 						token     = me.getPageToken();
-						len       = token.split(':').length;
-						if (len in shortcuts) {
-							shortcuts = shortcuts[len];
-							for (scutToken in shortcuts) {
-								if (token.match(new RegExp(scutToken, 'i')) !== null) {
-									scut = shortcuts[scutToken];
+						
+						for (scutToken in shortcuts) {
+							if (token.match(new RegExp(scutToken, 'i')) !== null) {
+								scut = shortcuts[scutToken];
 
-									if (scut.conditionFn()) {
-										scut.fn.apply(scut.scope, scut.argsFn());
-										e.preventDefault();
-										return false;
-									}
+								if (scut.conditionFn()) {
+									scut.fn.apply(scut.scope, scut.argsFn());
+									e.preventDefault();
+									return false;
 								}
 							}
 						}
@@ -121,7 +113,7 @@ Ext.define('NP.lib.core.KeyManager', {
 	getPageToken: function() {
 		var token = Ext.History.getToken().split(':');
 
-		token.splice(token.length-3, 2);
+		token.splice(token.length-2, 2);
 		
 		return token.join(':');
 	},

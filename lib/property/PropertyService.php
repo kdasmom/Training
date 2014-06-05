@@ -4,23 +4,27 @@ namespace NP\property;
 
 use NP\core\AbstractService;
 use NP\core\db\Select;
+use NP\core\Exception;
 use NP\security\SecurityService;
 use NP\invoice\InvoiceService;
 use NP\po\PoService;
 use NP\system\ConfigService;
+use NP\shared\CustomFieldService;
+use NP\util\Util;
 
 class PropertyService extends AbstractService {
 	
 	protected $securityService, $invoiceService, $poService, $configService,
-			$fiscalCalService, $unitTypeMeasGateway;
+			$fiscalCalService, $customFieldService;
 	
 	public function __construct(SecurityService $securityService, InvoiceService $invoiceService,
-								PoService $poService, FiscalCalService $fiscalCalService, UnitTypeMeasGateway $unitTypeMeasGateway) {
+								PoService $poService, FiscalCalService $fiscalCalService,
+								CustomFieldService $customFieldService) {
 		$this->securityService            = $securityService;
 		$this->invoiceService             = $invoiceService;
 		$this->poService                  = $poService;
 		$this->fiscalCalService           = $fiscalCalService;
-		$this->unitTypeMeasGateway			= $unitTypeMeasGateway;
+		$this->customFieldService         = $customFieldService;
 	}
 
 	/**
@@ -106,7 +110,7 @@ class PropertyService extends AbstractService {
 			\NP\core\db\Where::buildCriteria($wheres),
 			$params,
 			"property_name",
-			array('property_id','property_id_alt','property_name','property_status')
+			array('property_id','property_id_alt','property_name','property_salestax','property_status')
 		);
 	}
 
@@ -469,6 +473,13 @@ class PropertyService extends AbstractService {
 	}
 
 	/**
+	 * Gets properties for the Ship To/Bill To drop downs
+	 */
+	public function getShipBillTo($type) {
+		return $this->propertyGateway->findShipBillTo($type);
+	}
+
+	/**
 	 * Checks if a GL account is assigned to a property
 	 * @param  int     $property_id
 	 * @param  int     $glaccount_id
@@ -495,9 +506,12 @@ class PropertyService extends AbstractService {
 		try {
 			// Get entities
 			$property  = new PropertyEntity($data['property']);
+			$property->property_salestax = $property->property_salestax / 100;
 			$address   = new \NP\contact\AddressEntity($data['address']);
 			$phone     = new \NP\contact\PhoneEntity($data['phone']);
 			$fax       = new \NP\contact\PhoneEntity($data['fax_phone']);
+
+			$property->last_updated_by = $data['userprofile_id'];
 
 			// Run validation
 			$errors    = $this->entityValidator->validate($property);
@@ -588,26 +602,7 @@ class PropertyService extends AbstractService {
 				}
 
 				// Save property custom field data
-				$customFields = $this->pnCustomFieldsGateway->findCustomFieldData('property', $property->property_id);
-				foreach ($customFields as $field) {
-					$formFieldName = $field['customfield_name'];
-					// Build the data array
-					$fieldData = array(
-						'customfielddata_id'           => $field['customfielddata_id'],
-						'customfield_id'               => $field['customfield_id'],
-						'customfielddata_table_id'     => $property->property_id,
-						'customfielddata_value'        => $data[$formFieldName],
-						'customfielddata_lastupdatedt' => $now,
-						'customfielddata_lastupdateby' => $data['userprofile_id']
-					);
-					// If the custom field data is new, also give it a created date and user
-					if ($field['customfielddata_id'] === null) {
-						$fieldData['customfielddata_createdt']  = $now;
-						$fieldData['customfielddata_createdby'] = $data['userprofile_id'];
-					}
-					// Save the custom field data
-					$this->pnCustomFieldDataGateway->save($fieldData);
-				}
+				$this->customFieldService->saveCustomFieldData('property', $property->property_id, $data);
 
 				// Save GL assignments if any
 				if (array_key_exists('property_gls', $data) && is_array($data['property_gls'])) {
@@ -711,6 +706,10 @@ class PropertyService extends AbstractService {
 	 */
 	public function saveUnit($data) {
 		$unit = new UnitEntity($data);
+		if (!$unit->unit_status) {
+			$unit->unit_status = 'active';
+		}
+
 		$errors    = $this->entityValidator->validate($unit);
 
 		if (!count($errors)) {
@@ -1213,6 +1212,90 @@ class PropertyService extends AbstractService {
 
 	public function getAllByAdmin($isAdminRole = null, $hasPermission = false) {
 		return $this->propertyGateway->getByAdminRole($isAdminRole, $hasPermission, $this->configService->getClientID());
+	}
+
+	public function saveFiscalcalDistributor($data = []) {
+		if (!$data['org_fiscalcal_id'] || !$data['asp_client_id'] || !$data['dest_fiscalcal_id']) {
+			return false;
+		}
+
+		$properties = $this->fiscalcalGateway->getPropertiesForFixcalDistributor(!$data['asp_client_id'], $data['org_fiscalcal_id'], $data['dest_fiscalcal_id']);
+
+		if (count($properties) > 0) {
+			foreach ($properties as $item) {
+				$calendar = $this->fiscalcalGateway->getFiscalCalByProperty($item['property_id'], $data['dest_fiscalcal_id']);
+				if ($calendar[0]['fiscalcal_id']) {
+//					update fiscal calendar
+					$this->fiscalcalGateway->beginTransaction();
+					try {
+						$this->fiscalcalGateway->update(['fiscalcal_name' => $calendar[0]['fiscalcal_name']], ['fiscalcal_id' => '?', 'asp_client_id'  => '?'], [$calendar[0]['fiscalcal_id'], $data['asp_client_id']]);
+						$accountingPeriod = $this->fiscalCalService->getAccountingPeriod($item['property_id'], $data['asp_client_id']);
+						$months = $this->FiscalCalMonthGateway->find(['fiscalcal_id' => '?'], [$calendar[0]['fiscalcal_id']], null, ['fiscalcalmonth_id', 'fiscalcalmonth_num', 'fiscalcalmonth_cutoff']);
+						$deletedMonths = [];
+
+						if (count($months) > 0) {
+							foreach ($months as $month) {
+								$currentPeriod = mktime(0, 0, 0, $month['fiscalcalmonth_num'], 1, $calendar[0]['fiscalcal_year']);
+								$currentPeriod = new \DateTime(date('Y', $currentPeriod) . '/' . date('n', $currentPeriod) . '/1');
+
+								$dateDiff = $accountingPeriod->diff($currentPeriod);
+
+								if (
+									($dateDiff->invert == 1 && $dateDiff->days > 0) ||
+									(
+										($dateDiff->invert == 0 && $dateDiff->days == 0) &&
+										(
+											date('n', $accountingPeriod->getTimestamp()) > date('n', strtotime('now')) ||
+											$month['fiscalcalmonth_cutoff'] > date('j', strtotime('now'))
+										)
+									)
+								) {
+									$deletedMonths[] = $month['fiscalcalmonth_id'];
+								}
+							}
+						}
+
+						$this->FiscalCalMonthGateway->deleteMonths($deletedMonths);
+
+						$this->FiscalCalMonthGateway->saveFromSelect($data['dest_fiscalcal_id'], $calendar[0]['fiscalcal_id']);
+
+						$this->fiscalcalGateway->commit();
+					} catch (Exception $ex) {
+						$this->fiscalcalGateway->rollback();
+						throw $ex;
+					}
+
+				} else {
+//					create fiscal calendar
+					$fiscalCal = new FiscalCalEntity();
+					$fiscalCal->asp_client_id = $data['asp_client_id'];
+					$fiscalCal->property_id = $item['property_id'];
+					$fiscalCal->fiscalcal_type = 'assigned';
+					$fiscalCal->fiscalcal_year = $calendar['fiscalcal_year'];
+					$fiscalCal->fiscalcal_name = $calendar['fiscalcal_name'];
+					$this->fiscalcalGateway->beginTransaction();
+					try {
+						$this->fiscalcalGateway->save($fiscalCal);
+						$fiscalCalMonth = new FiscalCalMonthEntity();
+
+						$monthcutoff = $this->FiscalCalMonthGateway->find(['fiscalcal_id' => '?'], [$data['dest_fiscalcal_id']], null, ['fiscalcalmonth_num', 'fiscalcalmonth_cutoff']);
+
+						$fiscalCalMonth->fiscalcal_id = $fiscalCal->fiscalcal_id;
+						$fiscalCalMonth->fiscalcalmonth_num = $monthcutoff[0]['fiscalcalmonth_num'];
+						$fiscalCalMonth->fiscalcalmonth_cutoff = $monthcutoff[0]['fiscalcalmonth_cutoff'];
+
+						$this->FiscalCalMonthGateway->save($fiscalCalMonth);
+
+						$this->fiscalcalGateway->commit();
+					} catch (Exception $ex) {
+						$this->fiscalcalGateway->rollback();
+						throw $ex;
+					}
+				}
+			}
+		}
+
+		return true;
 	}
 }
 

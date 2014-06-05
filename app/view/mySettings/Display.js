@@ -30,6 +30,13 @@ Ext.define('NP.view.mySettings.Display', {
 
     	this.defaults = { layout: 'hbox', labelWidth: 200 };
     	this.items = [
+			{
+				xtype: 'displayfield',
+				labelAlign: 'top',
+				fieldLabel: NP.Translator.translate('Please Note'),
+				value: NP.Translator.translate('Default display selections do not affect the Quick Index page'),
+				padding: '0 0 15 0'
+			},
     		{
     			xtype: 'radiogroup',
     			itemId: 'userprofile_splitscreen_size',

@@ -36,8 +36,8 @@ class ReportService extends AbstractService {
 	 * @param NP\report\ReportOptions	$options     Report options (see AbstractReport class for available options)
 	 * @param array 					$extraParams Any additional parameters you want to pass to the report
 	 */
-	public function showReport($report, $format='html', $options, $extraParams=[], $isRemote=0) {
-		$this->setHeaders($format);
+	public function showReport($report, $format='html', $options, $extraParams=[], $isRemote=0, $filename = null) {
+		$this->setHeaders($format, $filename);
 
 		// If we have a remote report server, make an HTTP request
 		if ($this->url !== null && $isRemote == 0) {
@@ -106,7 +106,7 @@ class ReportService extends AbstractService {
 	 *
 	 * @param string $format The report format; valid options are 'pdf' and 'excel'
 	 */
-	private function setHeaders($format) {
+	private function setHeaders($format, $filename = null) {
 		if ($format == 'pdf') {
 			$mime = 'application/pdf';
 			$ext = 'pdf';
@@ -117,8 +117,14 @@ class ReportService extends AbstractService {
 			return;
 		}
 
+		$reportname = 'report';
+
+		if ($filename) {
+			$reportname = $filename;
+		}
+
 		header("Content-Type: {$mime}");
-		header('Content-Disposition: attachment;filename="report.' . $ext . '"');
+		header('Content-Disposition: attachment;filename="' . $reportname . '.' . $ext . '"');
 		header("Expires: ".gmdate("D, d M Y H:i:s", mktime(date("H")+2, date("i"), date("s"), date("m"), date("d"), date("Y")))." GMT");
 		header("Last-Modified: ".gmdate("D, d M Y H:i:s")." GMT");
 		header("Cache-Control: no-cache, must-revalidate");

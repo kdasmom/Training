@@ -24,11 +24,13 @@ Ext.define('NP.view.systemSetup.WorkflowRulesView', {
 	border     : false,
 
 	initComponent: function() {
-		var me = this;
+		var me = this,
+			fieldLabelWidth = 150,
+			fieldPadding    = '0 10';
 
 		this.layout = {
-			type: 'vbox',
-			pack: 'start',
+			type : 'vbox',
+			pack : 'start',
 			align: 'stretch'
 		};
 		this.defaults = {
@@ -39,185 +41,134 @@ Ext.define('NP.view.systemSetup.WorkflowRulesView', {
 
 		this.title = NP.Translator.translate('Workflow Rule - {rulename}', {rulename: this.data.rule.wfrule_name});
 
+		var properties = [];
+		for (var key in this.data.properties) {
+			properties.push({
+				html: this.data.properties[key].region_name + ' - ' + this.data.properties[key].property_name
+			});
+		}
+
 		this.items = [
 			{
-				xtype: 'panel',
-				layout: {
-					type: 'hbox',
-					pack: 'start'
-				},
-				defaults: {
-					border: 0
-				},
-				items: this.sectionType(this.data)
-			},
-			// Row 3 - Properties
-			{
-				xtype: 'panel',
-				layout: {
-					type: 'hbox',
-					pack: 'start'
-				},
-				defaults: {
-					border: 0
-				},
-				items: this.sectionProperties(this.data)
-			},
-			// Last Update Date/Time Stamp UserID of User
-			{
-				xtype: 'panel',
-				layout: {
-					type: 'hbox',
-					pack: 'start'
-				},
-				defaults: {
-					border: 0
-				},
-				items: [
-					{
-						width: 200,
-						cls: 'header-text',
-						html: NP.Translator.translate('Last Update Date') + ':'
-					},
-					{
-						border: false,
-						html: Ext.Date.format(Ext.Date.parse(me.data.rule.wfrule_datetm, NP.Config.getServerDateFormat()), NP.Config.getDefaultDateFormat() + ' h:iA') + ' (' + me.data.rule.userprofile_username + ')'
-					}
-				]
+				xtype     : 'displayfield',
+				fieldLabel: NP.Translator.translate('Rule Type'),
+				value     : me.data.rule.wfruletype_name,
+				labelWidth: fieldLabelWidth,
+				padding   : fieldPadding
 			}
 		];
 
-		// Row 4 - Details
-		var showDetails =
-			this.data.rule.wfruletype_id &&
-			this.data.rule.wfruletype_id != 15 &&
-			this.data.rule.wfruletype_name.indexOf('delegation') == -1
-		;
-		showDetails && 
-			this.items.push(
-				{
-					xtype: 'panel',
-					layout: {
-						type: 'hbox',
-						pack: 'start'
-					},
-					defaults: {
-						border: 0
-					},
-					items: this.sectionDetails(this.data)
-				}
-			)
-		;
+		if (this.data.rule.region_id !== null) {
+			this.items.push({
+				xtype     : 'displayfield',
+				fieldLabel: NP.Translator.translate('Applied to Properties'),
+				value     : NP.Translator.translate('REGION: {region_name}', { region_name: this.data.rule.region_name }),
+				labelWidth: fieldLabelWidth,
+				padding   : fieldPadding
+			});
+		}
+		else
+		{
+			if (!this.data.rule.allProperties) {
+				this.items.push(
+					{
+						xtype     : 'fieldcontainer',
+						fieldLabel: NP.Translator.translate('Applied to Properties'),
+						labelWidth: fieldLabelWidth,
+						padding   : fieldPadding,
+						items     : [
+							{
+								xtype: 'component',
+								border: false,
+								padding: '5 0 0 0',
+								html: NP.Translator.translate('SPECIFIC Properties')
+							},
+							{
+								border: false,
+								data: this.data.properties,
+								tpl: [
+									'<ul>',
+										'<tpl for=".">',
+											'<li>{property_name}</li>',
+										'</tpl>',
+									'</ul>'
+								]
+							}
+						]
+					}
+				);
+			}
+			else {
+				this.items.push({
+					xtype     : 'displayfield',
+					fieldLabel: NP.Translator.translate('Applied to Properties'),
+					value     : NP.Translator.translate('ALL Properties'),
+					labelWidth: fieldLabelWidth,
+					padding   : fieldPadding
+				});
+			}
+		}
 
-		// Row 5 - Routing
-		var showRouting =
-			this.data.rule.wfruletype_id &&
-			this.data.rule.wfruletype_id != 4
-		;
-		showRouting && 
+
+
+		this.items.push(
+			{
+				xtype     : 'displayfield',
+				fieldLabel: NP.Translator.translate('Last Update Date'),
+				value     : Ext.Date.format(Ext.Date.parse(me.data.rule.wfrule_datetm, NP.Config.getServerDateFormat()), NP.Config.getDefaultDateFormat() + ' h:iA') + ' (' + me.data.rule.userprofile_username + ')',
+				labelWidth: fieldLabelWidth,
+				padding   : fieldPadding
+			}
+		);
+
+		if (this.data.rule.wfruletype_id != 15 && this.data.rule.wfruletype_id != 4) {
 			this.items.push(
 				{
-					xtype: 'panel',
-					layout: {
-						type: 'hbox',
-						pack: 'start'
-					},
-					defaults: {
-						border: 0
-					},
-					items: this.sectionRouting(this.data)
+					xtype     : 'fieldcontainer',
+					fieldLabel: NP.Translator.translate('Details'),
+					labelWidth: fieldLabelWidth,
+					padding   : fieldPadding,
+					items     : this.sectionDetails(this.data)
 				}
-			)
-		;
+			);
+		}
+
+		if (this.data.rule.wfruletype_id != 4) {
+			this.items.push(
+				{
+					xtype     : 'fieldcontainer',
+					fieldLabel: NP.Translator.translate('Routing'),
+					labelWidth: fieldLabelWidth,
+					padding   : fieldPadding,
+					items     : this.sectionRouting(this.data)
+				}
+			);
+		}
 
 		this.tbar = [
 			{ xtype: 'shared.button.cancel', itemId: 'buttonWorkflowBackToMain' },
 			{ xtype: 'shared.button.edit',   itemId: 'buttonWorkflowEditRule' },
-			{ xtype: 'shared.button.print',  itemId: 'buttonWorkflowPrint' },
-		]
+			{ xtype: 'shared.button.print',  itemId: 'buttonWorkflowPrint' }
+		];
 
 		this.callParent(arguments);
-	},
-
-	sectionType: function(data) {
-		return [
-			{
-				width: 200,
-				cls: 'header-text',
-				html: NP.Translator.translate('Rule Type:')
-			},
-			{
-				html: data.rule.wfruletype_name
-			}
-		];
-	},
-
-	sectionProperties: function(data) {
-		var properties = [];
-		for (var key in data.properties.properties) {
-			properties.push({
-				html: 
-					data.properties.properties[key].region_name
-					+ ' - ' +
-					data.properties.properties[key].property_name
-			});
-		}
-
-		return [
-			{
-				width: 200,
-				xtype: 'panel',
-				cls: 'header-text',
-				html: NP.Translator.translate('Applied to Properties') + ':'
-			},
-			{
-				xtype: 'shared.ExpandableSection',
-				opener:
-					data.properties.all ?
-						NP.Translator.translate('ALL Properties') :
-						NP.Translator.translate('SPECIFIC Properties')
-				,
-				itemId: 'expandableProperties',
-				values: properties
-			}
-		];
 	},
 
 	sectionDetails: function(data) {
 		var details = [];
 
 		if (data.rule.wfruletype_id == 5 || data.rule.wfruletype_id == 12) {
-			details.push({
-				xtype: 'panel',
-				items: [
-					{
-						xtype: 'text',
-						text: NP.Translator.translate('Email Frequency') + ':'
-					}
-				]
-			});
-//TODO: Цикл по rule hours и трехколоночная таблица с часами
+			var supression;
 
-			details.push({
-				xtype: 'panel',
-				items: [
-					{
-						xtype: 'text',
-						text: NP.Translator.translate('Email Suppression') + ':'
-					}
-				]
-			});
-
-			var supression = data.rule.wfrule_number || 0;
-			switch (supression) {
-				case 0:
+			switch (data.rule.wfrule_number) {
+				case '0':
 					supression = NP.Translator.translate('Never Suppress Email');
 					break;
-				case 1:
+				case '-1':
 					supression = NP.Translator.translate('Suppress Email for the rest of the period');
 					break;
 				default:
-					supression = NP.Translator.translate('Suppress Email for {supression} hours', {supression: supression});
+					supression = NP.Translator.translate('Suppress Email for {supression} hours', {supression: data.rule.runhour});
 			}
 
 			details.push({
@@ -225,7 +176,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesView', {
 				items: [
 					{
 						xtype: 'text',
-						text: supression
+						text: NP.Translator.translate('Email Suppression') + ': ' + supression
 					}
 				]
 			});
@@ -250,10 +201,10 @@ Ext.define('NP.view.systemSetup.WorkflowRulesView', {
 			if (wfrule_string == 'actual') {
 				description += data.rule.wfrule_number + ' ';
 				if (wfrule_operand == 'in range') {
-					description += data.rule.wfrule_number_end + ' ';
+					description += ' to ' + data.rule.wfrule_number_end + ' ';
 				}
 			} else if (wfrule_string == 'percentage') {
-				description += data.rule.wfrule_number;
+				description += data.rule.wfrule_number + '%';
 			} else {
 				description += data.rule.wfrule_string;
 			}
@@ -275,8 +226,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesView', {
 			for (var key in data.categories) {
 				codes.push({
 					html:
-						data.categories[key].integration_package_name + ' - ' + 
-							data.categories[key].glaccount_name + 
+						data.categories[key].integration_package_name + ' - ' +
+							data.categories[key].glaccount_name +
 							' (' + data.categories[key].glaccount_number + ')'
 				});
 			}
@@ -291,14 +242,16 @@ Ext.define('NP.view.systemSetup.WorkflowRulesView', {
 
 		// Departments
 		if ([35, 36].indexOf(data.rule.wfruletype_id) > -1) {
+			var unittext = NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit');
 			var units = [];
+
 			for (var key in data.units) {
 				units.push({html: data.units[key].property_name + ' - ' + data.units[key].unit_number});
 			}
 
 			details.push({
 				xtype: 'shared.ExpandableSection',
-				opener: NP.Config.getSetting('PN.InvoiceOptions.UnitAttachDisplay', 'Unit') + ':',
+				opener: NP.Translator.translate('Departments') + ':',
 				itemId: 'expandableUnits',
 				values: units
 			});
@@ -310,7 +263,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesView', {
 			for (var key in data.categories) {
 				categories.push({
 					html:
-						data.categories[key].integration_package_name + ' - ' + 
+						data.categories[key].integration_package_name + ' - ' +
 							data.categories[key].glaccount_name
 				});
 			}
@@ -323,22 +276,76 @@ Ext.define('NP.view.systemSetup.WorkflowRulesView', {
 			});
 		}
 
-		// Job Contracts
-		if ([24, 25, 26, 27].indexOf(data.rule.wfruletype_id) > -1) {
-			var contracts = [];
-			for (var key in data.contracts) {
-				contracts.push({
-					html:
-						data.contracts[key].jbcontract_name + ' - ' + 
-							'(' + data.contracts[key].jbcontract_desc + ')'
-				});
+		// Job Codes
+		if ([21, 22].indexOf(data.rule.wfruletype_id) > -1) {
+			var jobcode,
+				jobcodes = [];
+
+			for (var key in data.jobcodes) {
+				jobcode = data.jobcodes[key].jbjobcode_name;
+				if (data.jobcodes[key].jbjobcode_desc != '') {
+					jobcode = jobcode + ' (' + data.jobcodes[key].jbjobcode_desc + ')';
+				}
+
+				jobcodes.push({	html: jobcode });
 			}
 
 			details.push({
 				xtype: 'shared.ExpandableSection',
-				opener: NP.Translator.translate('Job Contracts') + ':',
-				itemId: 'expandableJobContracts',
-				values: contracts
+				opener: NP.Translator.translate('Job Codes') + ':',
+				itemId: 'expandableJobCodes',
+				values: jobcodes
+			});
+		}
+
+		// Job Contracts
+		if ([24, 25, 26, 27].indexOf(data.rule.wfruletype_id) > -1) {
+			if (data.contracts.length) {
+				var contract,
+					contracts = [];
+
+				for (var key in data.contracts) {
+					contract = data.contracts[key].jbcontract_name;
+					if (data.contracts[key].jbcontract_desc != '') {
+						contract = contract + ' - (' + data.contracts[key].jbcontract_desc + ')';
+					}
+
+					contracts.push({ html: contract	});
+				}
+
+				details.push({
+					xtype: 'shared.ExpandableSection',
+					opener: NP.Translator.translate('Job Contracts') + ':',
+					itemId: 'expandableJobContracts',
+					values: contracts
+				});
+			}
+			else {
+				details.push({
+					xtype: 'panel',
+					items: [
+						{
+							xtype: 'text',
+							text: NP.Translator.translate('Job Contracts') + ': ' + NP.Translator.translate('All')
+						}
+					]
+				});
+			}
+		}
+
+		// Invoice payment types
+		if (data.rule.wfruletype_id == 28) {
+			var invoicepaymenttypes = [];
+
+			for (var key in data.invoicepaymenttypes) {
+				invoicepaymenttypes.push({ html: data.invoicepaymenttypes[key].invoicepayment_type });
+			}
+
+			details.push({
+				xtype: 'shared.ExpandableSection',
+				opener: NP.Translator.translate('Pay By Types') + ':',
+				itemId: 'expandablePaymentTypes',
+				values: invoicepaymenttypes
 			});
 		}
 
@@ -361,28 +368,18 @@ Ext.define('NP.view.systemSetup.WorkflowRulesView', {
 
 		return [
 			{
-				width: 200,
-				xtype: 'panel',
-				items: [
-					{
-						xtype: 'text',
-						cls: 'header-text',
-						text: NP.Translator.translate('Details') + ':'
-					}
-				]
-			},
-			{
 				xtype: 'panel',
 				layout: {
 					type: 'vbox',
 					pack: 'start'
 				},
+				border: false,
 				defaults: {
 					border: 0
 				},
 				items: details
 			}
-		]
+		];
 	},
 
 	sectionRouting: function(data) {
@@ -403,15 +400,16 @@ Ext.define('NP.view.systemSetup.WorkflowRulesView', {
 			}
 		}
 
-		var routes = [
+		return [
 			{
 				xtype: 'panel',
 				layout: {
 					type: 'hbox',
 					pack: 'start'
 				},
+				border: false,
 				defaults: {
-					border: 0
+					border: false
 				},
 				items: [
 					{ html: originator },
@@ -422,30 +420,5 @@ Ext.define('NP.view.systemSetup.WorkflowRulesView', {
 				]
 			}
 		];
-
-		return [
-			{
-				width: 200,
-				xtype: 'panel',
-				items: [
-					{
-						xtype: 'text',
-						cls: 'header-text',
-						text: NP.Translator.translate('Routing') + ':'
-					}
-				]
-			},
-			{
-				xtype: 'panel',
-				layout: {
-					type: 'vbox',
-					pack: 'start'
-				},
-				defaults: {
-					border: 0
-				},
-				items: routes
-			}
-		]
 	}
 });

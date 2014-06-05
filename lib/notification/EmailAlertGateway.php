@@ -96,6 +96,39 @@ class EmailAlertGateway extends AbstractGateway {
 
 		$this->adapter->query($insert, array($to_role_id, $from_role_id, 1));
 	}
+
+	/**
+	 * Checks if a certain user has a certain alert type assigned
+	 */
+	public function hasEmailAlert($userprofile_id, $emailalerttype_id_alt) {
+		$res = $this->adapter->query(
+			Select::get()
+				->from(['ea'=>'emailalert'])
+				->whereEquals('ea.emailalert_type', '?')
+				->whereEquals('ea.isActive', 1)
+				->whereNest('OR')
+					->whereEquals('ea.userprofile_id', '?')
+					->whereNest('AND')
+						->whereEquals(
+							'ea.role_id',
+							Select::get()
+								->column('role_id')
+								->from('userprofilerole')
+								->whereEquals('userprofile_id', '?')
+						)
+						->whereNotExists(
+							Select::get()
+								->from('emailalert')
+								->whereEquals('userprofile_id', '?')
+								->whereEquals('isActive', 0)
+						)
+					->whereUnnest()
+				->whereUnnest(),
+			[$emailalerttype_id_alt, $userprofile_id, $userprofile_id, $userprofile_id]
+		);
+
+		return (count($res) > 0);
+	}
 }
 
 ?>

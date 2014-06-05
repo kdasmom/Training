@@ -869,6 +869,13 @@ class VendorService extends AbstractService {
     }
 
     /**
+     * Checks if a vendor is a service vendor
+     */
+    public function isServiceVendor($vendor_id) {
+    	return $this->pnCustomFieldDataGateway->isServiceVendor($vendor_id);
+    }
+
+    /**
      * Saves a collection of vendors imported from a file through the import tool
      */
     public function saveVendorFromImport($data) {

@@ -18,7 +18,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 	initComponent: function() {
 		var me = this,
 			ruletype = null,
-			allProperties = false;
+			allProperties = false,
+			regionProperties = false;
 
 		me.autoScroll = true;
 		me.defaults = {
@@ -27,7 +28,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 
 		if (me.data) {
 			ruletype = me.data.rule.wfruletype_id;
-			allProperties = me.data.properties.all;
+			allProperties = me.data.rule.allProperties;
+			regionProperties = (me.data.rule.region_id) ? true : false;
 		}
 
 		var storeRuleTypes = Ext.create('NP.store.workflow.WfRuleTypes', {
@@ -67,22 +69,25 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 						fieldLabel: NP.Translator.translate('Properties'),
 						layout: 'hbox',
 						labelWidth: 200,
-						width: 400,
+						width: 500,
 						listeners: {
 							change: function(field, newValue, oldValue, options) {
 								var propertiescontainer = me.down('[name="ruleform"]').down('[name="propertiescontainer"]');
 								propertiescontainer.removeAll();
 
-								if (newValue.all_properties != '1') {
+								if (newValue.all_properties == '0') {
 									propertiescontainer.add( me.getPropertiesSection() );
 									me.down('[name="ruleform"]').down('[name="properties"]').setValue([]);
+								}
+								else if (newValue.all_properties == '2') {
+									propertiescontainer.add( me.getRegionSection() );
 								}
 							}
 						},
 						items: [
 							{
 								boxLabel: NP.Translator.translate('ALL'),
-								checked: allProperties,
+								checked: allProperties && !regionProperties,
 								name: 'all_properties',
 								inputValue: '1'
 							},
@@ -91,7 +96,14 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 								name: 'all_properties',
 								inputValue: '0',
 								padding: '0 0 0 20',
-								checked: !allProperties
+								checked: !allProperties && !regionProperties
+							},
+							{
+								boxLabel: NP.Translator.translate('REGION'),
+								name: 'all_properties',
+								inputValue: '2',
+								padding: '0 0 0 20',
+								checked: regionProperties
 							}
 						]
 					},
@@ -134,14 +146,17 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 
 		this.addRuleTypeFields(ruletype);
 
-		if (!allProperties) {
-			var propertiescontainer = me.down('[name="ruleform"]').down('[name="propertiescontainer"]');
+		var propertiescontainer = me.down('[name="ruleform"]').down('[name="propertiescontainer"]');
+		if (!allProperties && !regionProperties) {
 			propertiescontainer.add( me.getPropertiesSection() );
+		}
+		else if (regionProperties) {
+			propertiescontainer.add( me.getRegionSection() );
 		}
 
 		if (me.data) {
 			if (this.down('[name="ruleform"]').down('[name="properties"]')) {
-				this.down('[name="ruleform"]').down('[name="properties"]').setValue( me.data.properties.property_list_id );
+				this.down('[name="ruleform"]').down('[name="properties"]').setValue( me.data.property_list_id );
 			}
 			if (this.down('[name="ruleform"]').down('[name="tablekeys"]')) {
 				this.down('[name="ruleform"]').down('[name="tablekeys"]').setValue( me.data.tablekey_list_id );
@@ -160,9 +175,6 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 			case 2:  // Invoice total amount
 			case 4:  // Delegation
 			case 15: // Optional Workflow
-			case 17: // Vendor Estimate to Invoice Conversion Threshold (Percentage Variance) - Master Rule
-			case 18: // Vendor Estimate to Invoice Conversion Threshold (Total Dollar Amount) - Master Rule
-			case 19: // Vendor Estimate to Invoice Conversion Threshold (Dollar Variance) - Master Rule
 			case 20: // Converted Invoices – Master
 			case 23: // Receipt Total Amount
 				break;
@@ -247,48 +259,39 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 		switch (ruletype) {
 			case 1:  // Purchase Order total amount
 			case 2:  // Invoice total amount
-			case 7:  // InSpecific Vendor - Master Rulevoice Item amount (by GL code)
-			case 8:  // Purchase Order Item Total (by GL code)
-			case 10: // Invoice Item amount (by GL category)
-			case 21: // Invoice Item amount (by Job Code)
-			case 22: // Purchase Order Item Total (by Job Code)
-			case 23: // Receipt Total Amount
-			case 28: // Invoice Total by Pay By - Master Rule
-			case 37: // Receipt Item Total (by GL Code)
-			case 38: // Receipt Item Total (by GL Category)
-			case 35: // PO Item Amount by Department
-			case 36: // Invoice Item Amount by Department
-				sectionLogic = this.getSectionLogic(fieldtitle, ['less', 'greater', 'greater_equal', 'greater_equal_or_less', 'in_range']);
-				break;
-
 			case 3:  // Budget amount (by GL code)
 			case 6:  // Specific Vendor
+			case 7:  // InSpecific Vendor - Master Rulevoice Item amount (by GL code)
+			case 8:  // Purchase Order Item Total (by GL code)
 			case 9:  // Budget amount (by GL category)
+			case 10: // Invoice Item amount (by GL category)
 			case 11: // Purchase Order Item Total (by GL category)
 			case 13: // Yearly Budget amount (by GL Code)
 			case 14: // Yearly Budget amount (by GL Category)
 			case 16: // Specific Vendor - Master Rule
 			case 20: // Converted Invoices – Master
+			case 21: // Invoice Item amount (by Job Code)
+			case 22: // Purchase Order Item Total (by Job Code)
+			case 23: // Receipt Total Amount
 			case 24: // Invoice Item Amount (by Contract Code)
 			case 25: // Purchase Order Item Amount (by Contract Code)
 			case 26: // Invoice Item Amount (by Contract Code) - Master
 			case 27: // Purchase Order Item Amount (by Contract Code) - Master
+			case 28: // Invoice Total by Pay By - Master Rule
 			case 33: // YTD Budget Overage (by GL Code)
 			case 34: // YTD Budget Overage (by GL Category)
-				sectionLogic = this.getSectionLogic(fieldtitle, ['less', 'greater', 'greater_equal', 'greater_equal_or_less']);
-				break;
-
-			case 17: // Vendor Estimate to Invoice Conversion Threshold (Percentage Variance) - Master Rule
-			case 18: // Vendor Estimate to Invoice Conversion Threshold (Total Dollar Amount) - Master Rule
-			case 19: // Vendor Estimate to Invoice Conversion Threshold (Dollar Variance) - Master Rule
-				sectionLogic = this.getSectionLogic(fieldtitle, ['greater', 'greater_equal']);
+			case 35: // PO Item Amount by Department
+			case 36: // Invoice Item Amount by Department
+			case 37: // Receipt Item Total (by GL Code)
+			case 38: // Receipt Item Total (by GL Category)
+				sectionLogic = this.getSectionLogic(fieldtitle, ['less', 'greater', 'greater_equal', 'greater_equal_or_less', 'in_range']);
 				break;
 
 			case 29: // YTD Budget % Overage (by GL Coxde)
 			case 31: // MTD Budget % Overage (by GL Code)
 			case 30: // YTD Budget % Overage (by GL Category)
 			case 32: // MTD Budget % Overage (by GL Category)
-				sectionLogic = this.getSectionLogic(fieldtitle, ['less', 'greater', 'greater_equal']);
+				sectionLogic = this.getSectionLogic(fieldtitle, ['less', 'greater', 'greater_equal', 'in_range']);
 				break;
 
 			case 4:  // Delegation
@@ -441,7 +444,9 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 
 		var allContracts = false;
 		if (me.data) {
-			allContracts = (me.data.tablekey_list_id.length) ? false : true;
+			if (me.data.tablekey_list_id.length == 1) {
+				allContracts = (me.data.tablekey_list_id[0]) ? false : true;
+			}
 		}
 
 		return [
@@ -518,7 +523,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 		var GLCategoryStore = Ext.create('NP.lib.data.Store', {
 			service	 : 'GLService',
 			action	 : 'getBudgetAmountByGlCategory',
-			fields	 : ['glaccount_id', 'glaccount_name', 'glaccount_number'],
+			fields	 : ['glaccount_id', 'glaccount_name', 'glaccount_number']
 		});
 		GLCategoryStore.load();
 
@@ -542,7 +547,9 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 
 		if (me.data) {
 			emailSupression = (me.data.rule.runhour != null) ? me.data.rule.runhour : '';
-			wfruleNumber = me.data.rule.wfrule_number;
+			if (Ext.Array.contains([5, 12], me.data.rule.wfruletype_id)) {
+				wfruleNumber = me.data.rule.wfrule_number;
+			}
 		}
 
 		return {
@@ -559,7 +566,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 							name: 'comparisonValue',
 							boxLabel: NP.Translator.translate('Never Suppress Email'),
 							inputValue: '0',
-							checked: (me.data && wfruleNumber == '0') ? true : false
+							checked: (wfruleNumber == '0')
 						},
 						{
 							name: 'comparisonValue',
@@ -568,13 +575,13 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 										'Suppress Email for {supression} hours',
 										{ supression : '<input id="email_suppression_hours" value="' + emailSupression + '" type="text" style="width:70px;" />' }
 									  ),
-							checked: (me.data && !Ext.Array.contains(['-1','0'], wfruleNumber)) ? true : false
+							checked: !Ext.Array.contains(['-1','0'], wfruleNumber)
 						},
 						{
 							name: 'comparisonValue',
 							inputValue: '-1',
 							boxLabel: NP.Translator.translate('Suppress Email for the rest of the period'),
-							checked: (me.data && wfruleNumber == '-1') ? true : false
+							checked: (wfruleNumber == '-1')
 						}
 					],
 					listeners: {
@@ -588,6 +595,25 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 				}
 			]
 		};
+	},
+
+	getRegionSection: function() {
+		var me = this;
+
+		var regionCombo = Ext.create('NP.lib.ui.ComboBox', {
+			store        : 'user.Regions',
+			width        : 480,
+			name         : 'region_id',
+			fieldLabel   : '',
+			labelWidth   : 200,
+			allowBlank   : false,
+			margin       : '0 0 10 205',
+			displayField : 'region_name',
+			valueField   : 'region_id',
+			value        : me.data ? parseInt(me.data.rule.region_id) : null
+		});
+
+		return regionCombo;
 	},
 
 	getSelectOption: function(value) {
@@ -700,7 +726,13 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 							labelWidth: 40,
 							width     : 200,
 							allowBlank: false,
-							value     : wfrule_number
+							value     : wfrule_number,
+							validator : function(value) {
+								var comparisonValueTo = me.down('[name="ruleform"]').down('[name="comparisonValueTo"]').getValue();
+
+								return (parseFloat(value) >= parseFloat(comparisonValueTo)) ?
+									NP.Translator.translate('The "To amount" value must be larger than "From amount" value') : true;
+							}
 						},
 						{
 							xtype     : 'numberfield',
@@ -710,7 +742,20 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 							labelWidth: 25,
 							width     : 200,
 							allowBlank: false,
-							value     : wfrule_number_end
+							value     : wfrule_number_end,
+							listeners: {
+								change:  function(field, newValue, oldValue, options) {
+									var comparisonValueField = me.down('[name="ruleform"]').down('[name="comparisonValue"]');
+
+									comparisonValueField.clearInvalid();
+
+									if (parseFloat(newValue) <= parseFloat( comparisonValueField.getValue()) ) {
+										comparisonValueField.markInvalid(
+											NP.Translator.translate('The "To amount" value must be larger than "From amount" value')
+										);
+									}
+								}
+							}
 						}
 					]
 				};

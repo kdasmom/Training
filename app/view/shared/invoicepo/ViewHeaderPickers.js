@@ -30,7 +30,7 @@ Ext.define('NP.view.shared.invoicepo.ViewHeaderPickers', {
                 itemId         : 'entityPropertyCombo',
                 labelAlign     : 'top',
                 allowBlank     : false,
-                dependentCombos: ['entityVendorCombo'],
+                dependentCombos: ['entityVendorCombo','poview_print_template_id'],
                 store          : {
                     type   : 'property.properties',
                     service: 'UserService',
@@ -50,6 +50,15 @@ Ext.define('NP.view.shared.invoicepo.ViewHeaderPickers', {
                 name         : 'vendor_id',
                 valueField   : 'vendor_id',
                 displayField : 'vendor_name',
+                tpl          : '<tpl for=".">' +
+                                    '<li class="x-boundlist-item" role="option">{vendor_name}' +
+                                        '<tpl if="NP.Config.getSetting(\'PN.VendorOptions.VendorFavDisplayCode\', \'0\') == 0">' +
+                                            ' ({address_city}/{address_zip})' +
+                                        '<tpl else>' +
+                                            ' ({vendor_id_alt})' +
+                                        '</tpl>' +
+                                    '</li>' +
+                                '</tpl>',
                 allowBlank   : false,
                 disabled     : true,
                 useSmartStore: true,

@@ -239,21 +239,17 @@ Ext.define('NP.controller.VendorManager', {
 						var formCustom = formPanel.down('[xtype="vendor.vendorgeneralinfoandsettings"]');
 						var formInsurances = formPanel.down('[xtype="vendor.vendorinsurancesetup"]');
 						Ext.Array.each(customFieldData, function(fieldData) {
-							formCustom.add(
-								{
-									xtype     : 'shared.customfield',
-									fieldLabel: fieldData['customfield_label'],
-									entityType: fieldData['customfield_pn_type'],
-									type      : fieldData['customfield_type'],
-									name      : fieldData['customfield_name'],
-									number    : fieldData['universal_field_number'],
-									allowBlank: !fieldData['customfield_required'],
-									fieldCfg  : {value: parseInt(fieldData['customfielddata_value'])},
-									value: parseInt(fieldData['customfielddata_value'])
-								});
-						});
-						Ext.Array.each(customFieldData, function(field) {
-							form.findField(field['customfield_name']).setValue(parseInt(field['customfielddata_value']));
+							formCustom.add({
+								xtype     : 'shared.customfield',
+								fieldLabel: fieldData['customfield_label'],
+								entityType: fieldData['customfield_pn_type'],
+								type      : fieldData['customfield_type'],
+								name      : fieldData['customfield_name'],
+								number    : fieldData['universal_field_number'],
+								allowBlank: !fieldData['customfield_required']
+							});
+
+							form.findField(fieldData['customfield_name']).setValue((fieldData['customfielddata_value'] == 'on'));
 						});
 
 						Ext.Array.each(data['insurances'], function(insurance) {
@@ -368,7 +364,7 @@ Ext.define('NP.controller.VendorManager', {
 
 		var customFields = {};
 		Ext.Array.each(form.customFieldData, function(fieldData) {
-			customFields[fieldData['customfield_name']] = form.findField(fieldData['customfield_name']).getValue();
+			customFields[fieldData['customfield_name']] = form.findField(fieldData['customfield_name']).getSubmitValue();
 		});
 
         if (form.isValid()) {

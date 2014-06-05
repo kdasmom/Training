@@ -60,7 +60,8 @@ Ext.define('NP.view.catalog.CatalogView', {
 		me.items = [
 			{
 				xtype         : 'catalog.topbar',
-				advancedSearch: me.advancedSearch
+				advancedSearch: me.advancedSearch,
+				vc_id         : me.vc_id
 			}
 		];
 

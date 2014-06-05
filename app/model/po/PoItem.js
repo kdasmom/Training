@@ -86,6 +86,15 @@ Ext.define('NP.model.po.PoItem', {
 
 		{ name: 'invoiceitem_amount', type: 'float', useNull: false },
 
+		{ name: 'cancel_userprofile_username' },
+
+		{ name: 'receipt_ref' },
+		{ name: 'receipt_creator' },
+		{ name: 'receipt_createdt', type: 'date' },
+		{ name: 'receipt_status' },
+
+		{ name: 'rctitem_status' },
+
 		{ name: 'dfsplit_name' },
 
 		{

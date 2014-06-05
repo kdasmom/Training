@@ -169,7 +169,8 @@ Ext.define('NP.model.invoice.Invoice', {
             status  = me.get('invoice_status');
 
         if (
-            (status == 'open' && (NP.Security.hasPermission(1032) || NP.Security.hasPermission(6076) || NP.Security.hasPermission(6077)))
+        	(status == 'draft' && NP.Security.hasPermission(2008))
+            || (status == 'open' && (NP.Security.hasPermission(1032) || NP.Security.hasPermission(6076) || NP.Security.hasPermission(6077)))
             || (status == 'saved' && NP.Security.hasPermission(1068) && me.isModifiable())
             || (status == 'paid' && (NP.Security.hasPermission(2094) || NP.Security.hasPermission(6093)))
         ) {

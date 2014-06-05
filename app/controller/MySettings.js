@@ -73,7 +73,9 @@ Ext.define('NP.controller.MySettings', {
 				dataloaded: function(formPanel, data) {
 					// Select properties in item selector
 					var userProps = Ext.getStore('user.Properties').getRange();
-					formPanel.getForm().findField('properties').setValue(userProps);
+					if (NP.lib.core.Security.hasPermission(4)) {
+						formPanel.getForm().findField('properties').setValue(userProps);
+					}
 				}
 			},
 			// 
@@ -145,7 +147,7 @@ Ext.define('NP.controller.MySettings', {
 		var tabPanel = that.setView('NP.view.mySettings.Main');
 
 		// If no active tab is passed, default to Open
-		if (!activeTab) activeTab = 'Overview';
+		if (!activeTab) activeTab = 'UserInformation';
 		
 		// Check if the tab to be selected is already active, if it isn't make it the active tab
 		var tab = that['get' + activeTab + 'Tab']();

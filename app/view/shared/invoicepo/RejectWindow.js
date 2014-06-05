@@ -37,11 +37,6 @@ Ext.define('NP.view.shared.invoicepo.RejectWindow', {
 
         me.title = NP.Translator.translate('Reject');
 
-        me.tbar = [
-            { xtype: 'shared.button.cancel', handler: function() { me.close(); } },
-            { itemId: me.type + 'RejectSaveBtn', xtype: 'shared.button.save' }
-        ];
-
         me.items = [{
             xtype      : 'form',
             bodyPadding: 8,
@@ -49,6 +44,10 @@ Ext.define('NP.view.shared.invoicepo.RejectWindow', {
                 type : 'vbox',
                 align: 'stretch'
             },
+            tbar: [
+                { xtype: 'shared.button.cancel', handler: function() { me.close(); } },
+                { itemId: me.type + 'RejectSaveBtn', xtype: 'shared.button.save' }
+            ],
             items      : [
                 {
                     xtype       : 'customcombo',
@@ -67,7 +66,7 @@ Ext.define('NP.view.shared.invoicepo.RejectWindow', {
                     allowBlank: false
                 },{
                     xtype     : 'textarea',
-                    name      : 'invoice_reject_note',
+                    name      : 'reject_note',
                     fieldLabel: NP.Translator.translate('Rejection Note'),
                     labelAlign: 'top',
                     flex      : 1,

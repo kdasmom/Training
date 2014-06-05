@@ -19,11 +19,16 @@ Ext.define('NP.view.shared.GlCombo', {
     tpl                 : '<tpl for=".">' +
                             '<li class="x-boundlist-item" role="option">{[NP.model.gl.GlAccount.formatName(values.glaccount_number, values.glaccount_name)]}</li>' +
                         '</tpl>',
+
     initComponent: function() {
+		var me = this;
+
         if (!this.store) {
             this.store = Ext.create('NP.store.gl.GlAccounts', {
                            service : 'GLService',
-                           action  : 'getByIntegrationPackage'
+                           action  : 'getByIntegrationPackage',
+						   autoLoad: (me.storeAutoLoad) ? me.storeAutoLoad : false,
+				           listeners: (me.storeListeners) ? me.storeListeners : {}
                         });
         }
 

@@ -12,9 +12,9 @@ Ext.define('NP.view.invoice.View', {
         'NP.view.invoice.ViewToolbar',
         'NP.view.shared.invoicepo.ViewWarnings',
         'NP.view.invoice.ViewHeader',
-        'NP.view.shared.CustomFieldContainer',
+        //'NP.view.shared.CustomFieldContainer',
         'NP.view.shared.invoicepo.ViewLineItems',
-        'NP.view.invoice.ViewNotes',
+        'NP.view.shared.invoicepo.ViewNotes',
         'NP.view.invoice.ViewReclass',
         'NP.view.invoice.ViewPayments',
         'NP.view.shared.invoicepo.ForwardsGrid',
@@ -26,11 +26,9 @@ Ext.define('NP.view.invoice.View', {
         align: 'stretch'
     },
 
+    border    : false,
     autoScroll: true,
     defaults  : { cls: 'entityViewPanel', frame: true },
-
-    // For localization
-    title: 'Invoice',
 
     initComponent: function() {
         var me    = this;
@@ -40,15 +38,17 @@ Ext.define('NP.view.invoice.View', {
         me.items = [
             { xtype: 'shared.invoicepo.viewwarnings', type: 'invoice' },
             { xtype: 'invoice.viewheader' },
+            /*
+            TODO: remove this once confirmed that we want to keep custom fields in header
             {
                 xtype     : 'shared.customfieldcontainer',
-                title     : 'Custom Fields',
+                title     : NP.Translator.translate('Custom Fields'),
                 type      : 'invoice',
                 isLineItem: 0,
                 fieldCfg  : { comboUi: 'customcombo', fieldCfg: { useSmartStore: true } }
-            },
+            },*/
             { xtype: 'shared.invoicepo.viewlineitems', type: 'invoice' },
-            { xtype: 'invoice.viewnotes', type: 'invoice' }
+            { xtype: 'shared.invoicepo.viewnotes', type: 'invoice' }
         ];
 
         if (NP.Security.hasPermission(2094) || NP.Security.hasPermission(6093)) {

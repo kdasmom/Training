@@ -73,7 +73,7 @@ Ext.define('NP.view.shared.invoicepo.HistoryLogGrid', {
                     xtype    : 'datecolumn',
                     text     : me.dateColName,
                     dataIndex: 'approve_datetm',
-                    format   : NP.Config.getDefaultDateFormat() + ' h:mA',
+                    format   : NP.Config.getDefaultDateTimeFormat(),
                     flex     : 0.1
                 },{
                     text     : me.messageColName,

@@ -75,16 +75,17 @@ class PropertyFilterSelect extends Select {
 				$where->equals('__deleg.userprofile_id', $propertyContext->getUserId())
 					->equals('__deleg.delegation_to_userprofile_id', $propertyContext->getDelegationToUserId())
 					->equals('__deleg.delegation_status', 1)
-					->equals('__deleg.delegation_startdate', Util::formatDateForDB())
-					->equals('__deleg.delegation_stopdate', Util::formatDateForDB())
+					->equals('__deleg.delegation_startdate', "'" . Util::formatDateForDB() . "'")
+					->equals('__deleg.delegation_stopdate', "'" . Util::formatDateForDB() . "'")
 					->exists($subSelect);
 
 				// Create the basic SELECT statement, omitting the WHERE because it will be modified if dealing with region
 				$this->from(array('__deleg'=>'delegation'))
-						->column('property_id')
+//						->column('property_id')
+						->columns([])
 						->join(array('__delegProp'=>'delegationprop'),
 							'__deleg.delegation_id = __delegProp.delegation_id',
-							array())
+							array('property_id'))
 						->join(array('__prop'=>'property'),
 							'__delegProp.property_id = __prop.property_id',
 							array());

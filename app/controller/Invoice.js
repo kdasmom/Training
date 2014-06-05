@@ -25,12 +25,12 @@ Ext.define('NP.controller.Invoice', {
 	
 	views: ['invoice.Register','invoice.View','invoice.VoidWindow','invoice.HoldWindow',
 			'shared.invoicepo.ImagesManageWindow','shared.invoicepo.ImagesAddWindow',
-			'invoice.UseTemplateWindow','shared.invoicepo.SplitWindow',
+			'shared.invoicepo.UseTemplateWindow','shared.invoicepo.SplitWindow',
 			'shared.invoicepo.RejectWindow','invoice.PaymentWindow','invoice.ReclassWindow',
 			'vendor.VendorSelectorWindow','shared.invoicepo.ScheduleWindow',
 			'shared.invoicepo.TemplateWindow','invoice.ForwardWindow',
 			'shared.invoicepo.ChangePropertyWindow','shared.invoicepo.HistoryDetailWindow',
-			'shared.invoicepo.BudgetDetailWindow'],
+			'shared.invoicepo.BudgetDetailWindow','shared.invoicepo.RouteWindow'],
 
 	refs: [
 		{ ref: 'paymentGrid', selector: '[xtype="invoice.viewpayments"]' },
@@ -54,8 +54,9 @@ Ext.define('NP.controller.Invoice', {
 				selectutilityaccount: me.onSelectUtilityAccount.bind(me),
 				changequantity      : me.onChangeQuantity.bind(me),
 				changeunitprice     : me.onChangeUnitPrice.bind(me),
-				changeamount        : me.onChangeAmount.bind(me),
-				tablastfield        : me.onLineAddClick
+				tablastfield        : me.onLineAddClick,
+				selecttaxable       : me.onSelectTaxable.bind(me),
+				clickdeleteline     : me.onDeleteLineClick.bind(me)
 			},
 
 			'[xtype="invoice.view"] [xtype="shared.invoicepo.viewlineitems"]': {
@@ -105,10 +106,6 @@ Ext.define('NP.controller.Invoice', {
 				click: me.onActivateInvoice.bind(me)
 			},
 
-			'#invoiceSubmitForPaymentBtn': {
-				click: me.onSubmitForPayment
-			},
-
 			'#applyPaymentBtn': {
 				click: me.onApplyPayment
 			},
@@ -135,12 +132,40 @@ Ext.define('NP.controller.Invoice', {
 				click: me.onReclassSave
 			},
 
-			'#invoiceForwardBtn': {
-				click: me.onForward
+			'#invoiceProcessBtn': {
+				click: function() {
+					me.onProcess(false);
+				}
 			},
 
-			'#invoiceForwardSendBtn': {
-				click: me.onForwardSend
+			'#invoiceProcessAndNextBtn': {
+				click: function() {
+					me.onProcess(true);
+				}
+			},
+
+			'#invoiceSubmitForPaymentBtn': {
+				click: function() {
+					me.onSubmitForPayment(false);
+				}
+			},
+
+			'#invoiceSubmitForPaymentAndNextBtn': {
+				click: function() {
+					me.onSubmitForPayment(true);
+				}
+			},
+
+			'#linkPoBtn': {
+				click: me.onLinkPo
+			},
+
+			'#saveLinkPoAndCloseBtn': {
+				click: me.onLinkPoAndClose
+			},
+
+			'#saveLinkPoAndKeepOpenBtn': {
+				click: me.onLinkPoAndKeepOpen
 			}
 		});
 
@@ -207,7 +232,7 @@ Ext.define('NP.controller.Invoice', {
 		if (!invoice_id) {
 			// Setup the title, toolbar, property field, and Pay By field; the other things don't matter/
 			// for a new invoice (you don't need to load lines, payments, forwards, etc.)
-			me.updateEntityViewState({ title: true, toolbar: true, property: true, payBy: true }, true);
+			me.updateEntityViewState({ title: true, toolbar: true, property: true, vendor: true, payBy: true }, true);
 		}
 	},
 
@@ -245,8 +270,8 @@ Ext.define('NP.controller.Invoice', {
 		if (updateOption('warnings')) {
 			var warnings = data['warnings'];
 			me.getWarningsView().getStore().removeAll();
+			me.getWarningsView().getStore().loadRawData(warnings);
 			if (warnings.length) {
-				me.getWarningsView().getStore().loadRawData(warnings);
 				me.getWarningsView().up('panel').show();
 			}
 		}
@@ -256,13 +281,21 @@ Ext.define('NP.controller.Invoice', {
 			periodField   = boundForm.findField('invoice_period');
 
 		if (updateOption('vendor')) {
-			// Set the vendor
-			vendorField.setDefaultRec(Ext.create('NP.model.vendor.Vendor', data));
+			var property_id = NP.Security.getCurrentContext().property_id;
+
+			if (invoice_id !== null) {
+				// Set the vendor
+				vendorField.setDefaultRec(Ext.create('NP.model.vendor.Vendor', data));
+				
+				me.setVendorDisplay();
+				me.setVendorFieldState(data['invoice_status']);
+
+				property_id = data['property_id'];
+			}
+
 			vendorField.addExtraParams({
-				property_id: data['property_id']
+				property_id: property_id
 			});
-			me.setVendorDisplay();
-			me.setVendorFieldState(data['invoice_status']);
 		}
 
 		if (updateOption('utility')) {
@@ -278,8 +311,32 @@ Ext.define('NP.controller.Invoice', {
 				propertyField.setDefaultRec(Ext.create('NP.model.property.Property', data));
 				// Add valid periods to the invoice period store
 				me.populatePeriods(data['accounting_period'], data['invoice_period']);
+			} else {
+				var propRec = Ext.getStore('property.AllProperties').getById(
+					NP.Security.getCurrentContext().property_id
+				);
+				// Set the property
+				propertyField.setDefaultRec(propRec);
+
+				me.onPropertyComboSelect(me.getPropertyCombo(), [propRec]);
 			}
 			me.setPropertyFieldState(invoice.get('invoice_status'));
+		}
+
+		// Setup linkable POs
+		if (updateOption('linkablePos')) {
+			// If linkable POs exist, proceed
+			if (data['linkable_pos'].length) {
+				// Populate the linkable PO field
+				var linkStore = boundForm.findField('link_purchaseorder_id').getStore();
+				linkStore.loadRawData(data['linkable_pos']);
+
+				// Show all the components related to linkable POs
+				var linkFields = me.query('[xtype="shared.invoicepo.viewlines"] [isLinkableField=true]');
+				Ext.each(linkFields, function(field) {
+					field.show();
+				});
+			}
 		}
 
 		// Load the line store
@@ -364,7 +421,7 @@ Ext.define('NP.controller.Invoice', {
 		}
 
 		// Load reclass records and figure out whether or not to show the grid
-		if (updateOption('forwards')) {
+		if (updateOption('reclass')) {
 			me.loadReclass();
 		}
 
@@ -398,40 +455,6 @@ Ext.define('NP.controller.Invoice', {
 		});
 	},
 
-	setPropertyFieldState: function(invoice_status) {
-		var me    = this,
-			field = me.getPropertyCombo();
-
-		// Only allow changing the property field if the invoice is new
-		if (me.getEntityRecord().get('invoice_id') === null) {
-			field.setReadOnly(false);
-		} else {
-			field.setReadOnly(true);
-		}
-	},
-
-	setVendorFieldState: function(invoice_status) {
-		var me     = this,
-			field  = me.getVendorCombo(),
-			el     = Ext.get('entityVendorSelectOption'),
-			showFn = 'hide';
-
-		// Only allow changing the property field if the invoice is open or a draft
-		if (invoice_status == 'draft' || invoice_status == 'open') {
-			field.enable();
-			if (NP.Security.hasPermission(1024) && NP.Security.hasPermission(6065)) {
-				showFn = 'show';
-			}
-		} else {
-			field.disable();
-		}
-
-		if (el) {
-			el.setVisibilityMode(Ext.Element.DISPLAY);
-			el[showFn]();
-		}
-	},
-
 	isInvoiceReadOnly: function() {
 		var me      = this,
 			invoice = me.getEntityRecord(),
@@ -462,10 +485,11 @@ Ext.define('NP.controller.Invoice', {
 	},
 
 	setInvoiceViewTitle: function() {
-		var me   = this,
-			view = me.getEntityView();
+		var me     = this,
+			view   = me.getEntityView(),
+			header = view.down('[xtype="invoice.viewheader"]');
 
-		view.setTitle(me.translate('Invoice: ' + view.getModel('invoice.Invoice').getDisplayStatus()));
+		header.setTitle(me.translate('Invoice: ' + view.getModel('invoice.Invoice').getDisplayStatus()));
 	},
 
 	setDefaultPayBy: function() {
@@ -490,14 +514,14 @@ Ext.define('NP.controller.Invoice', {
 			rec          = me.getVendorRecord(),
 			offset;
 
-		if (dueDateField.getValue() === null) {
+		if (rec !== null && dueDateField.getValue() === null) {
 			if (rec !== null && rec.get('default_due_date') !== null) {
 				offset = rec.get('default_due_date');
 			} else {
 				offset = parseInt(NP.Config.getSetting('CP.INVOICE_DEFAULT_DUE_DATE_OFFSET', '0'));
 			}
 
-			if (offset > 0) {
+			if (offset >= 0) {
 				var invDate = form.findField('invoice_datetm').getValue(),
 					dueDate;
 
@@ -610,14 +634,17 @@ Ext.define('NP.controller.Invoice', {
 		var me           = this,
 			invoice_id   = me.getEntityRecord().get('invoice_id'),
 			reclassGrid  = me.getReclassGrid(),
-			reclassStore = reclassGrid.getStore();
+			reclassStore;
 
-		reclassStore.addExtraParams({ invoice_id: invoice_id });
-		reclassStore.load(function() {
-			if (reclassStore.getCount()) {
-				reclassGrid.show();
-			}
-		});
+		if (reclassGrid) {
+			reclassStore = reclassGrid.getStore();
+			reclassStore.addExtraParams({ invoice_id: invoice_id });
+			reclassStore.load(function() {
+				if (reclassStore.getCount()) {
+					reclassGrid.show();
+				}
+			});
+		}
 	},
 
 	onOpenUtilityAccountEditor: function(editor, rec, field) {
@@ -819,15 +846,15 @@ Ext.define('NP.controller.Invoice', {
 		var me        = this,
 			vendorRec = me.getVendorRecord();
 
+		Ext.suspendLayouts();
+
+		me.callParent();
+
 		if (vendorRec.get('is_utility_vendor')) {
 			var grid              = me.getLineGrid(),
 				utilityaccount_id = grid.selectedRec.get('utilityaccount_id'),
 				utilStore         = grid.utilityAccountStore,
 				currentUtilCount  = utilStore.getCount();
-
-			Ext.suspendLayouts();
-
-			me.callParent();
 
 			// If there's a Utlity Account set in the column, it would not longer be valid with a property change
 			// so clear it
@@ -836,9 +863,9 @@ Ext.define('NP.controller.Invoice', {
 			}
 
 			me.filterUtilityRecords();
-
-			Ext.resumeLayouts(true);
 		}
+
+		Ext.resumeLayouts(true);
 	},
 
 	filterUtilityRecords: function() {
@@ -1044,7 +1071,7 @@ Ext.define('NP.controller.Invoice', {
 		}
 	},
 
-	onSubmitForPayment: function() {
+	onSubmitForPayment: function(andNext) {
 		var me         = this,
 			invoice_id = me.getEntityRecord().get('invoice_id');
 
@@ -1080,6 +1107,35 @@ Ext.define('NP.controller.Invoice', {
 				}
 			}
 		);
+	},
+
+	onProcess: function(andNext) {
+		var me     = this,
+			id     = me.getEntityRecord().get(me.pk),
+			msgBox = me.query('#readyForProcessingDlg', true);
+
+		NP.Net.remoteCall({
+			requests: {
+				service   : 'InvoiceService',
+				action    : 'processPayment',
+				invoice_id: id,
+				success   : function(result) {
+					if (result.success) {
+						msgBox.destroy();
+
+						// Show info message
+						NP.Util.showFadingWindow({ html: me.translate('Invoice status has been changed so that payment is processed.') });
+
+						me.showView(id);
+					} else {
+						Ext.MessageBox.alert(
+							me.translate('Error'),
+							me.translate(result.errors[0].msg)
+						);
+					}
+				}
+			}
+		});
 	},
 
 	onApplyPayment: function() {
@@ -1259,68 +1315,112 @@ Ext.define('NP.controller.Invoice', {
 		}
 	},
 
-	onForward: function() {
-		var me    = this,
-	        email = NP.Security.getUser().get('email_address');
+	onLinkPo: function() {
+		var me        = this,
+			form      = me.getEntityView(),
+			linkField = form.findField('link_purchaseorder_id'),
+			id        = linkField.getValue(),
+			newField,
+			field,
+			row,
+			i;
 
-		if (!Ext.isEmpty(email)) {
-			var win = Ext.widget('invoice.forwardwindow', {
-				invoice: me.getEntityRecord(),
-				vendor : me.getVendorRecord()
-	        });
-
-        	win.show();
-        } else {
-        	Ext.MessageBox.alert(
-				me.translate('Error'),
-				me.translate('You cannot forward invoices without a valid email address. ' +
-								'Please update your profile with an email address.')
-			);
-        }
-	},
-
-	onForwardSend: function() {
-		var me   = this,
-			win  = me.getCmp('invoice.forwardwindow'),
-			form = win.down('form').getForm();
-
-		if (win.isValid()) {
+		// Make sure user has selected a PO from combo
+		if (id === null) {
+			NP.Util.showFadingWindow({
+				html: me.translate('You must select a PO from the list')
+			});
+		}
+		// If PO was selected, proceed
+		else {
+			// Ajax request to get PO lines
 			NP.Net.remoteCall({
-				mask    : win,
-				method  : 'POST',
+				mask    : form,
 				requests: {
-					service     : 'InvoiceService',
-					action      : 'forwardInvoice',
-					invoice_id  : win.invoice.get('invoice_id'),
-					sender_email: NP.Security.getUser().get('email_address'),
-					forward_to  : form.findField('forward_to').getGroupValue(),
-					forward_val : win.getForwardValue(),
-					message     : form.findField('message').getValue(),
-					includes    : win.getIncludes(),
-					success     : function(result) {
-						if (result.success) {
-							if (result.errors.length) {
-								Ext.MessageBox.alert(
-									me.translate('Error'),
-									me.translate('Invoice could not be forwarded to the following recipients:<br /><br />') +
-									result.errors.join(',')
-								);
-							} else {
-								NP.Util.showFadingWindow({
-									html: me.translate('Invoice was successfully forwarded.')
-								});
-								win.close();
+					service         : 'PoService',
+					action          : 'getLinkableLines',
+					purchaseorder_id: id,
+					success         : function(lines) {
+						// Get the number of the first new row
+						row = me.getLineGrid().getStore().getCount();
+
+						// Loop through records returned
+						for (i=0; i<lines.length; i++) {
+							// Only add a line if it's not already linked to another invoice
+							if (lines[i].invoice_id === null) {
+								// Loop through each field and if the name is different for equivalent
+								// invoice line field, rename
+								for (field in lines[i]) {
+									newField = field.replace('poitem', 'invoiceitem');
+									if (newField !== field) {
+										lines[i][newField] = lines[i][field];
+									}
+								}
+
+								// Link the invoice line to the PO line
+								lines[i]['reftable_name']       = 'poitem';
+								lines[i]['reftablekey_id']      = lines[i]['poitem_id'];
+
+								// Set correct line number
+								lines[i]['invoiceitem_linenum'] = row + i;
+
+								// Reset the line ID to null
+								lines[i]['invoiceitem_id'] = null;
 							}
-							me.getForwardsGrid().getStore().load();
-						} else {
-							Ext.MessageBox.alert(
-								me.translate('Error'),
-								me.translate(result.error)
-							);
 						}
+
+						// Add the data to the store
+						lines = me.getLineGrid().getStore().add(lines);
+
+						// Change to grid view
+						me.getLineGrid().linkPoId    = id;
+						me.getLineGrid().linkPoLines = lines;
+						me.showLineEdit(row);
 					}
 				}
 			});
+		}
+	},
+
+	onLinkPoAndClose: function() {
+		var me = this;
+
+		me.linkPo('close');
+	},
+
+	onLinkPoAndKeepOpen: function() {
+		var me = this;
+
+		me.linkPo('open');
+	},
+
+	linkPo: function(link_method) {
+		var me        = this,
+			lineGrid  = me.getLineGrid(),
+			id        = lineGrid.linkPoId,
+			linkField = me.getEntityView().findField('link_purchaseorder_id'),
+			linkStore = linkField.getStore();
+
+		if (me.onLineSaveClick()) {
+			// Remove PO from options to link
+			linkStore.remove(linkStore.getById(id));
+			linkField.clearValue();
+
+			// If there are no more linkable POs, hide the fields
+			if (linkStore.getCount() === 0) {
+				var linkFields = me.query('[xtype="shared.invoicepo.viewlines"] [isLinkableField=true]');
+				Ext.each(linkFields, function(field) {
+					field.hide();
+				});
+			}
+
+			// Set the linking method on each line
+			for (var i=0; i<lineGrid.linkPoLines.length; i++) {
+				lineGrid.linkPoLines[i].set('link_method', link_method);
+			}
+
+			lineGrid.linkPoId    = null;
+			lineGrid.linkPoLines = null;
 		}
 	}
 });

@@ -225,6 +225,17 @@ Ext.define('NP.lib.ui.ComboBox', {
 		}
 	},
 
+	initEvents: function() {
+		var me = this;
+
+		me.callParent(arguments);
+
+		// Override default behavior that doesn't expand combo on click when editable is true
+		if (me.editable) {
+            me.mon(me.inputEl, 'click', me.onTriggerClick, me);
+        }
+	},
+
 	doRawQuery: function() {
 		var me = this;
 
@@ -283,13 +294,15 @@ Ext.define('NP.lib.ui.ComboBox', {
 	},
 
 	setDefaultRec: function(rec) {
+		var val = (rec.get) ? rec.get(this.valueField) : rec[this.valueField];
+
 		// Add the current value to the store, otherwise you have an empty store
 		this.getStore().add(rec);
 		
 		// Suspend events briefly to prevent change events from firing
 		this.suspendEvents(false);
 		// Set the current value
-		this.setValue( rec.get(this.valueField) );
+		this.setValue(val);
 		// Re-enable events
 		this.resumeEvents();
 

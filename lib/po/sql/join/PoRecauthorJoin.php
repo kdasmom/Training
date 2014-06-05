@@ -12,7 +12,7 @@ use NP\core\db\Select;
  */
 class PoRecauthorJoin extends Join {
 	
-	public function __construct($cols=array('recauthor_id'), $type=Select::JOIN_LEFT, $toAlias='ra', $fromAlias='p') {
+	public function __construct($cols=array('recauthor_id','userprofile_id'), $type=Select::JOIN_LEFT, $toAlias='ra', $fromAlias='p') {
 		$this->setTable(array($toAlias=>'recauthor'))
 			->setCondition("{$fromAlias}.purchaseorder_id = {$toAlias}.tablekey_id AND {$toAlias}.table_name = 'purchaseorder'")
 			->setCols($cols)

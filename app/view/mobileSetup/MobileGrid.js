@@ -101,13 +101,19 @@ Ext.define('NP.view.mobileSetup.MobileGrid', {
                 xtype: 'datecolumn',
                 text: this.activeDateColText,
                 dataIndex: 'mobinfo_activated_datetm',
-                flex: 1
+                flex: 1,
+				renderer : function (val, meta, record) {
+					return Ext.Date.format(record.get('mobinfo_activated_datetm'), NP.Config.getDefaultDateTimeFormat());
+				}
             },
             {
                 xtype: 'datecolumn',
                 text: this.inactiveDateColText,
                 dataIndex: 'mobinfo_deactivated_datetm',
-                flex: 1
+                flex: 1,
+				renderer : function (val, meta, record) {
+					return Ext.Date.format(record.get('mobinfo_activated_datetm'), NP.Config.getDefaultDateTimeFormat());
+				}
             }
         ];
         this.selModel = Ext.create('Ext.selection.CheckboxModel');

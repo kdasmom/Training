@@ -7,7 +7,7 @@ use NP\core\AbstractGateway;
 /**
  * Gateway for the EMAILALERTTYPE table
  *
- * @author 
+ * @author Thomas Messier
  */
 class EmailAlertTypeGateway extends AbstractGateway {}
 

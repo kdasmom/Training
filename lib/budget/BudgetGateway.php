@@ -386,12 +386,18 @@ class BudgetGateway extends AbstractGateway {
 		}
 
 		$res = $this->adapter->query($select, $params);
-		$res = $res[0];
+		
+		$actual_amount = 0;
+		$budget_amount = 0;
+		if (count($res)) {
+			$actual_amount = (float)$res[0]['actual_amount'];
+			$budget_amount = (float)$res[0]['budget_amount'];
+		}
 
-		$res['actual_amount'] = (float)$res['actual_amount'];
-		$res['budget_amount'] = (float)$res['budget_amount'];
-
-		return $res;
+		return [
+			'actual_amount' => $actual_amount,
+			'budget_amount' => $budget_amount
+		];
 	}
 
 	/**
@@ -427,6 +433,27 @@ class BudgetGateway extends AbstractGateway {
 		$res['budget_amount'] = (float)$res['budget_amount'];
 
 		return $res;
+	}
+
+	public function findBudgetByPeriod($property_id, $glaccount_id, $period) {
+		if ($period instanceOf \DateTime) {
+			$period = \NP\util\Util::formatDateForDB($period);
+		}
+
+		$select = Select::get()
+					->columns([])
+					->from(['gy'=>'glaccountyear'])
+						->join(new sql\join\GlAccountYearBudgetJoin(null))
+					->whereEquals('gy.property_id', '?')
+					->whereEquals('b.budget_period', '?');
+
+
+		$res = $this->adapter->query($select, [$property_id, $period]);
+		if (count($res)) {
+			return $res[0];
+		}
+
+		return null;
 	}
 }
 

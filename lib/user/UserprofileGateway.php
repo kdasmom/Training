@@ -378,6 +378,60 @@ class UserprofileGateway extends AbstractGateway {
 
         return $this->adapter->query($select);
     }
+
+    /**
+     * Gets the parent role for a given user
+     */
+    public function findUserParentRole($userprofile_id) {
+    	$res = $this->adapter->query(
+    		Select::get()
+    			->columns([])
+    			->from(['ur'=>'userprofilerole'])
+    				->join(
+    					['t'=>'tree'],
+    					"t.tablekey_id = ur.role_id AND t.table_name = 'role'",
+    					[]
+    				)
+    				->join(
+    					['t2'=>'tree'],
+						't.tree_parent = t2.tree_id',
+						array('parent_role_id'=>'tablekey_id')
+					)
+				->whereEquals('ur.userprofile_id', '?'),
+    		[$userprofile_id]
+    	);
+
+    	return $res[0]['parent_role_id'];
+    }
+
+    public function findValidRouteApprovers($property_id, $table_name, $exclude_userprofile_id) {
+		$module_id = ($table_name == 'invoice') ? 1053 : 1055;
+
+		return $this->adapter->query(
+			Select::get()
+				->columns(['userprofile_id','userprofile_username'])
+				->from(['u'=>'userprofile'])
+					->join(new \NP\user\sql\join\UserUserroleJoin())
+					->join(new \NP\user\sql\join\UserroleStaffJoin([]))
+					->join(new \NP\user\sql\join\StaffPersonJoin())
+				->whereEquals('u.userprofile_status', "'active'")
+				->whereNotEquals('u.userprofile_id', '?')
+				->whereExists(
+					Select::get()
+						->from(['pu'=>'propertyuserprofile'])
+						->whereEquals('pu.userprofile_id', 'u.userprofile_id')
+						->whereEquals('pu.property_id', '?')
+				)
+				->whereExists(
+					Select::get()
+						->from(['mp'=>'modulepriv'])
+						->whereEquals('mp.tablekey_id', 'ur.role_id')
+						->whereEquals('mp.module_id', '?')
+				)
+				->order('pe.person_lastname, pe.person_firstname'),
+			[$exclude_userprofile_id, $property_id, $module_id]
+		);
+	}
 }
 
 ?>

@@ -5,6 +5,7 @@
 
 Ext.define('NP.store.system.PrintTemplates', {
 	extend: 'NP.lib.data.Store',
+	alias : 'store.system.printtemplates',
 
 	model: 'NP.model.system.PrintTemplate'
 });

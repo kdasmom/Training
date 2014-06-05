@@ -59,6 +59,26 @@ Ext.define('NP.model.property.Property', {
 
         { name: 'updated_by_userprofile_username' },     // for last_updated_by,
 
-        { name: 'integration_package_name' }
-    ]
+        { name: 'integration_package_name' },
+
+        { name: 'address_attn', useNull: false },
+        { name: 'address_line1', useNull: false },
+        { name: 'address_line2', useNull: false },
+        { name: 'address_line3', useNull: false },
+        { name: 'address_city', useNull: false },
+        { name: 'address_state', useNull: false },
+        { name: 'address_zip', useNull: false },
+        { name: 'address_zipext', useNull: false },
+        { name: 'address_country', type: 'int' }
+    ],
+
+    getAddressHtml: function() {
+        var address = Ext.create('NP.model.contact.Address', this.getData());
+
+        return address.getHtml();
+    },
+
+    statics: {
+        JAN_OF_CURRENT_YEAR_ORDER       : 13
+    }
 });

@@ -24,3 +24,55 @@ body { font-family: Arial,Helvetica; }
 .logTable { border-collapse: collapse; }
 	.logTable th, .logTable td { border: solid 1px; padding: 2px 4px; }
 	.logTable th { text-align: left; background-color: #ccc; }
+
+.page-break {
+	display         : block;
+	clear           : both;
+	page-break-after: always;
+}
+
+.infoblock {
+	width         : 100%;
+	margin        : 0 auto;
+	padding-bottom: 8px;
+}
+
+.clientheader p{
+	width      : 100%;
+	margin     : 1em auto;
+	font-family: Arial, Helvetica, Verdana, sans-serif;			
+}
+
+.heading{ padding:3px; }
+.graybg{ background-color: #ddd; }
+
+.po_data { width: #int(100/headerObjCount)#%; }
+.po_data *{ font-size: 12px; padding-top: 2px; }
+
+.boxes{ 
+	height: 2em; clear:both; overflow: hidden; width: 100%; 
+	border-right: 1px solid #666;
+}
+.boxes span{ 
+	height: 2.75em;
+	text-align:left; 
+	float:left; 
+	font-size:inherit; 
+	border-left: 1px solid #666;
+	border-bottom: 1px solid #666;
+	width:<cfoutput>#int(100/max(headerObjCount,1)) - 1#</cfoutput>%;
+}
+.boxes .heading{ border-top: 1px solid #666; } 
+.boxes .content{ height: 100%; }
+
+.header .heading,
+.header .content{
+	border: 1px solid #999;
+	padding: 3px;
+	font-size: 18px;
+	text-align: left;
+}
+.header .content{ border-top: none; padding-top: 5px; }
+
+.fleft { float:left; margin:0; width:auto; }
+.cleared { clear:both; margin:0; }

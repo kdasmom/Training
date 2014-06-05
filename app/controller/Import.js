@@ -10,7 +10,8 @@ Ext.define('NP.controller.Import', {
         'NP.lib.core.Util',
         'NP.lib.core.Security',
         'NP.view.shared.button.Inactivate',
-        'NP.view.shared.button.Activate'
+        'NP.view.shared.button.Activate',
+		'Ext.util.Cookies'
     ],
     
     models: [
@@ -29,7 +30,8 @@ Ext.define('NP.controller.Import', {
         'importing.types.Property','importing.types.PropertyGL','importing.types.Split',
         'importing.types.Unit','importing.types.UnitType','importing.types.User',
         'importing.types.UserProperty','importing.types.Vendor','importing.types.VendorFavorite',
-        'importing.types.VendorGL','importing.types.VendorInsurance','importing.types.VendorUtility'
+        'importing.types.VendorGL','importing.types.VendorInsurance','importing.types.VendorUtility',
+		'importing.InvoiceExportGrid'
     ],
 
     refs: [
@@ -79,13 +81,33 @@ Ext.define('NP.controller.Import', {
             },
             // The Decline button on the GL Category tab
             '[xtype="importing.main"] [xtype="shared.button.inactivate"]': {
-                // Run this whenever the upload button is clicked
                 click: this.decline
             },
             // The Upload csv file
             '[xtype="importing.main"] [xtype="shared.button.activate"]': {
                 click: this.accept
-            }
+            },
+			'[xtype="importing.invoiceexportgrid"] [xtype="shared.button.process"]' : {
+				click: this.markInvoicesAsSent
+			},
+			'[xtype="importing.types.invoiceexport"] [xtype="shared.button.cancel"]' : {
+				click: function() {
+					this.addHistory('Import:showImport:overview');
+				}
+			},
+			'[xtype="importing.invoiceexportgrid"] [xtype="shared.button.cancel"]' : {
+				click: this.decline
+			},
+			//cancel upload for the custom field
+//			'[xtype="importing.main"] [xtype="shared.button.cancel"]': {
+			'[xtype="importing.csvgrid"] [xtype="shared.button.cancel"]': {
+				click: this.decline
+			},
+			'[xtype="importing.uploadform"] [xtype="shared.button.cancel"]': {
+				click: function() {
+					this.addHistory('Import:showImport:overview');
+				}
+			}
         });
     },
 
@@ -145,7 +167,7 @@ Ext.define('NP.controller.Import', {
             verticalTabPanel.setActiveTab(verticalActiveTab);
             verticalTabPanel.resumeEvents();
         }
-        
+
         if (activeTab != 'overview') {
             this.showFormUpload();
         }
@@ -153,57 +175,83 @@ Ext.define('NP.controller.Import', {
 
     showFormUpload: function() {
         var type = this.getVerticalTabToken(this.getActiveVerticalTab());
-        var importItem = Ext.create('NP.view.importing.types.' + type);
-        this.setView(importItem.getImportForm(), {}, '#' + this.getActiveVerticalTab().getItemId());
+			var importItem = Ext.create('NP.view.importing.types.' + type);
+		if (type !== 'InvoiceExport') {
+			this.setView(importItem.getImportForm(), {}, '#' + this.getActiveVerticalTab().getItemId());
+		} else {
+			this.setView(importItem, {}, '#' + this.getActiveVerticalTab().getItemId());
+		}
     },
 
-    showGrid: function() {
-        var type = this.getActiveVerticalTab().getItemId();
-        var view = this.setView('NP.view.importing.CSVGrid', {
-                    file: this.file,
-                    type: type.replace('Panel', '')
-                }, '#' + type);
-        
+    showGrid: function(values) {
+        var type = this.getActiveVerticalTab().getItemId(),
+			settings = {
+				file: this.file,
+				type: type.replace('Panel', ''),
+				values: values
+			};
+
+        var view = this.setView('NP.view.importing.CSVGrid', settings, '#' + type);
+
         view.query('customgrid')[0].getStore().load();
     },
 
     uploadFile: function() {
-        var that = this;
-        
-        var form = this.getActiveVerticalTab().query('form')[0];
-        // If form is valid, submit it
-        if (form.getForm().isValid()) {
-            var fileField = form.query('filefield')[0];
-            var file = fileField.getValue();
-            var formEl = NP.Util.createFormForUpload('#' + this.getActiveVerticalTab().getItemId() + ' form');
-            
-            NP.lib.core.Net.remoteCall({
-                method: 'POST',
-                mask  : this.getActiveVerticalTab(),
-                isUpload: true,
-                form: formEl.id,
-                requests: {
-                    service      : 'ImportService',
-                    action       : 'uploadCSV',
-                    file         : file,
-                    type         : this.getVerticalTabToken(this.getActiveVerticalTab()),
-                    fileFieldName: fileField.getName(),
-                    success      : function(result) {
-                        if (result.success) {
-                            // Save file name
-                            that.file = result.upload_filename;
-                            // Show the preview grid
-                            that.showGrid();
-                        } else {
-                            if (result.errors.length) {
-                                fileField.markInvalid(result.errors);
-                            }
-                        }
-                        Ext.removeNode(formEl);
-                    }
-                }
-            });
-        }
+        var that = this,
+			activeTab = this.getActiveVerticalTab().getItemId(),
+			type = this.getVerticalTabToken(this.getActiveVerticalTab());
+
+		var form = this.getActiveVerticalTab().query('form')[0],
+			values = form.getValues();
+
+		// If form is valid, submit it
+		if (form.getForm().isValid()) {
+			if (activeTab !== 'InvoiceExportPanel') {
+				var fileField = form.query('filefield')[0];
+				var file = fileField.getValue();
+				var formEl = NP.Util.createFormForUpload('#' + this.getActiveVerticalTab().getItemId() + ' form');
+
+				NP.lib.core.Net.remoteCall({
+					method: 'POST',
+					mask: this.getActiveVerticalTab(),
+					form: formEl.id,
+					isUpload: true,
+					requests: {
+						service: 'ImportService',
+						action: 'uploadCSV',
+						file: file,
+						type: type,
+						fileFieldName: fileField.getName(),
+						success: function (result) {
+							if (result.success) {
+								// Save file name
+								that.file = result.upload_filename;
+								if (form.getValues()) {
+									Ext.util.Cookies.set('condition', form.getValues().fieldnumber);
+								}
+								// Show the preview grid
+								that.showGrid(form.getValues());
+							} else {
+								if (result.errors.length) {
+									fileField.markInvalid(result.errors);
+								}
+							}
+							Ext.removeNode(formEl);
+						}
+					}
+				});
+			} else {
+				var values = form.getForm().getValues(),
+					view = this.setView('NP.view.importing.InvoiceExportGrid', {}, '#InvoiceExportPanel'),
+					grid = view.query('#invoiceGrid')[0];
+
+				grid.addExtraParams({
+					integration_package_id: values.integration_package_id,
+					properties: JSON.stringify(values.properties)
+				});
+				grid.getStore().load();
+			}
+		}
     },
 
     decline: function() {
@@ -223,22 +271,56 @@ Ext.define('NP.controller.Import', {
     },
 
     accept: function() {
-        that = this;
-        
-        var grid = Ext.ComponentQuery.query('[xtype="importing.csvgrid"] [xtype="customgrid"]')[0];
-        var items = grid.getStore().getRange();
-        var hasValid = false;
-        Ext.each(items, function(item) {
-            if (item.get('validation_status') == 'valid') {
-                hasValid = true;
-                return false;
-            }
-        });
-        if (hasValid > 0) {
-            that.saveGrid();
-        } else {
-            NP.Util.showFadingWindow({html: 'No valid records to importing.'});
-        }
+        var that = this,
+			hasValid = false,
+			activeTab = this.getActiveVerticalTab().getItemId(),
+			grid;
+
+		if (activeTab !== 'InvoiceExportPanel') {
+			grid = Ext.ComponentQuery.query('[xtype="importing.csvgrid"] [xtype="customgrid"]')[0],
+				items = grid.getStore().getRange();
+
+			Ext.each(items, function (item) {
+				if (item.get('validation_status') == 'valid') {
+					hasValid = true;
+					return false;
+				}
+			});
+			if (hasValid > 0) {
+				that.saveGrid();
+			} else {
+				NP.Util.showFadingWindow({html: 'No valid records to importing.'});
+			}
+		} else {
+			grid = this.query('#invoiceGrid')[0];
+			var extraParams = {
+					integration_package_id: grid.getStore().getProxy().extraParams.integration_package_id,
+					properties: grid.getStore().getProxy().extraParams.properties
+				},
+				reportWinName = 'report_invoice.Export',
+				body          = Ext.getBody(),
+				win           = window.open('about:blank', reportWinName),
+				filename = 'invoice_export_' + Ext.Date.format(new Date(), 'Hms');
+
+			Ext.DomHelper.append(
+				body,
+				'<form id="__reportForm" action="export.php" target="' + reportWinName + '" method="post">' +
+				'<input type="hidden" id="__report" name="report" />' +
+				'<input type="hidden" id="__format" name="format" />' +
+				'<input type="hidden" id="__options" name="options" />' +
+				'<input type="hidden" id="__extraParams" name="extraParams" />' +
+				'<input type="hidden" id="__filename" name="filename" />' +
+				'</form>'
+			);
+
+			Ext.get('__report').set({ value: 'invoice.Export' });
+			Ext.get('__format').set({ value: 'excel' });
+			Ext.get('__extraParams').set({ value: Ext.JSON.encode(extraParams) });
+			Ext.get('__filename').set({ value: 'invoice_export_' + Ext.Date.format(new Date(), 'Hms') });
+			var formExport = Ext.get('__reportForm');
+			formExport.dom.submit();
+			Ext.destroy(formExport);
+		}
     },
 
     saveGrid: function() {
@@ -254,6 +336,7 @@ Ext.define('NP.controller.Import', {
                 action : 'accept',
                 file   : this.file,
                 type   : type,
+				condition: Ext.util.Cookies.get('condition') ? Ext.util.Cookies.get('condition') : false,
                 success: function(result) {
                     if (result.success) {
                         // Show friendly message
@@ -269,5 +352,47 @@ Ext.define('NP.controller.Import', {
                 }
             }
         });
-    }
+    },
+
+	markInvoicesAsSent: function() {
+		var me = this,
+			grid = me.query('#invoiceGrid')[0],
+			recCount = grid.getStore().getCount(),
+			extraParams = {
+				integration_package_id: grid.getStore().getProxy().extraParams.integration_package_id,
+				properties: grid.getStore().getProxy().extraParams.properties
+			};
+
+		if (recCount == 0) {
+			Ext.MessageBox.alert(
+				me.translate(NP.Translator.translate('Notice')),
+				me.translate(NP.Translator.translate('No record to mark.'))
+			);
+		} else {
+			var records = grid.getStore().getRange(),
+				sendRecords = [];
+
+			Ext.MessageBox.confirm(NP.Translator.translate('Notice'), NP.Translator.translate('"Once the invoices selected are marked as Sent, they can not be re-exported to Excel.  Please save and validate the Excel file before proceeding.'), function(btn) {
+				if (btn == 'yes') {
+					Ext.each(records, function(record) {
+						sendRecords.push(record.get('invoice_id'));
+					});
+
+					NP.lib.core.Net.remoteCall({
+						mask: grid,
+						requests: {
+							service: 'InvoiceService',
+							action: 'markInvoiceAsSent',
+							invoices: sendRecords,
+							success: function (result) {
+								if (result) {
+									grid.getStore().reload();
+								}
+							}
+						}
+					});
+				}
+			});
+		}
+	}
 });

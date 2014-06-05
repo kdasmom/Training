@@ -177,6 +177,30 @@ class VcGateway extends AbstractGateway {
 
 		return $this->adapter->query($select, [$property_id, $vc_id]);
 	}
+
+	/**
+	 * Finds the catalog that needs to be used when electronically submitting a PO
+	 */
+	public function findCatalogForPoSubmit($vendor_id, $property_id) {
+		$res = $this->adapter->query(
+			Select::get()
+				->column('vc_id')
+				->from('vc')
+					->join(new sql\join\VcLinkVcVendorJoin())
+					->join(new sql\join\VcLinkVcPropertyJoin())
+				->whereEquals('lvv.vendor_id', '?')
+				->whereEquals('lvp.property_id', '?')
+				->whereIsNotEmpty('vc.vc_posubmit_url')
+				->limit(1),
+			[$vendor_id, $property_id]
+		);
+
+		if (count($res)) {
+			$res[0]['vc_id'];
+		} else {
+			return null;
+		}
+	}
 }
 
 ?>

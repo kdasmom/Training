@@ -40,7 +40,12 @@ Ext.define('NP.view.catalog.ItemsFilter', {
 				tpl: new Ext.XTemplate(
 					'<tpl for=".">',
 					'<div style="margin-bottom: 10px; float: left; clear: both; width: 100%; cursor: pointer;" class="item">',
-					'<span>{title} <a href="javascript: void(0)" style="float: right;">x</a> </span>',
+						'<span>',
+							'{title} ',
+							'<a href="javascript: void(0)" style="float: right;">',
+								'<tpl if="type == \'category\'">Back to catalog<tpl else>x</tpl>',
+							'</a>',
+						'</span>',
 					'</div>',
 					'</tpl>'
 				),
@@ -57,25 +62,25 @@ Ext.define('NP.view.catalog.ItemsFilter', {
 				listeners: {
 					itemclick: function (dataview, record, item, index, e, eOpts) {
 						this.getStore().remove(record);
-
 						var count = this.getStore().getCount();
 						var type = record.get('type');
-						me.fireEvent('removefilter', type, count, me.vc_id);
+
 						if (count > 0) {
 							if (type == 'type') {
-								me.down('[name="typeslabel"]').show();
-								var store = me.down('[name="itemstypesview"]').getStore();
-								Ext.apply(store.getProxy().extraParams, {
-									field: vc_id,
-									value: vc_id
-								});
-								store.reload();
+								me.fireEvent('removefilter', type, count, me.vc_id, me.filterField);
 								me.down('[name="itemstypesview"]').show();
 							}
-							if (type == 'price') {
+							else if (type == 'price') {
+								me.fireEvent('removefilter', type, count, me.vc_id, me.filterField);
 								me.down('[name="priceslabel"]').show();
 								me.down('[name="itemspricesview"]').show();
 							}
+							else if (type == 'category') {
+								me.fireEvent('opencategorypage', me.filterField, me.vc_id);
+							}
+						}
+						else {
+							me.fireEvent('opencategorypage', me.filterField, me.vc_id);
 						}
 					}
 				}
@@ -112,21 +117,11 @@ Ext.define('NP.view.catalog.ItemsFilter', {
 						store: me.itemTypeStore,
 						listeners: {
 							itemclick: function (dataview, record, item, index, e, eOpts) {
-								var recorddel = null;
 								var store = me.down('[name="selectedItems"]').getStore();
 
 								this.hide();
-								me.down('[name="typeslabel"]').hide();
 								me.fireEvent('removetype', record.get('vcitem_type'));
 								store.add({type: 'type', title: record.get('vcitem_type')});
-								store.each(function(record){
-									if (record.get('type') == 'category') {
-										recorddel = record;
-									}
-								});
-								if (recorddel) {
-									store.remove(recorddel);
-								}
 							}
 						}
 					},

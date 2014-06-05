@@ -163,7 +163,7 @@ Ext.define('NP.lib.core.Config', function() {
 		 * @return {String}
 		 */
 		getDefaultDateFormat: function() {
-			return 'm/d/Y';
+			return NP.Config.getSetting('PN.Intl.DateFormat', 'm/d/Y');
 		},
 		
 		/**
@@ -171,7 +171,7 @@ Ext.define('NP.lib.core.Config', function() {
 		 * @return {String}
 		 */
 		getDefaultDateTimeFormat: function() {
-			return 'm/d/Y g:ia';
+			return NP.Config.getDefaultDateFormat() + ' h:ia';
 		},
 
 		/**

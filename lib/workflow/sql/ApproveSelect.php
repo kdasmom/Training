@@ -25,14 +25,7 @@ class ApproveSelect extends Select {
 
 		return $this->columns([
 			'approve_id',
-			new Expression("
-				CASE 
-					/* make the approvals look like they happen before the submit */
-					WHEN at.approvetype_name = 'approved' THEN DateAdd(second, -10, a.approve_datetm)
-					WHEN at.approvetype_name = 'passed' and a.auto_approve <> 1 THEN DateAdd(second, -10, a.approve_datetm)
-					ELSE approve_datetm
-				END AS approve_datetm
-			"),
+			'approve_datetm',
 			new Expression("
 				CASE
 					WHEN a.auto_approve = 1 THEN 'AUTO-APPROVED'
@@ -87,7 +80,7 @@ class ApproveSelect extends Select {
 		->join(new join\ApproveUserJoin([]))
 		->join(new join\ApproveDelegationUserJoin([]))
 		->join(new join\ApproveRuleJoin([]))
-		->join(new join\WfRuleWfRuleTypeJoin([]))
+		->join(new join\WfRuleWfRuleTypeJoin([], Select::JOIN_LEFT))
 		->join(new join\ApproveBudgetJoin([]))
 		->join(new \NP\gl\sql\join\BudgetGlAccountJoin([], Select::JOIN_LEFT))
 		->whereEquals('a.table_name', '?')

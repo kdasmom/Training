@@ -11,6 +11,7 @@ Ext.define('NP.view.invoice.ViewHeader', {
     	'NP.lib.core.Config',
     	'NP.lib.core.Translator',
     	'NP.view.shared.invoicepo.ViewHeaderPickers',
+    	'NP.view.shared.CustomFieldContainer',
     	'NP.store.system.PriorityFlags',
     	'NP.store.invoice.InvoicePaymentTypes',
     	'Ext.layout.container.Form',
@@ -37,18 +38,49 @@ Ext.define('NP.view.invoice.ViewHeader', {
     	me.items = [
     		{
 				xtype : 'shared.invoicepo.viewheaderpickers',
-				flex  : 1
+				flex  : 2
     		},{
-				xtype   : 'container',
-				flex    : 1,
-				margin  : '0 16 0 0',
-				defaults: { labelWidth: 130, validateOnBlur: false, validateOnChange: false },
-				items   : me.buildCol2Items()
-    		},{
-				xtype   : 'container',
-				flex    : 1,
-				defaults: { labelWidth: 130, validateOnBlur: false, validateOnChange: false },
-				items   : me.buildCol3Items()
+    			xtype: 'container',
+    			flex : 3,
+    			layout: {
+    				type : 'vbox',
+    				align: 'stretch'
+    			},
+    			items: [
+    				{
+    					xtype: 'container',
+    					layout: {
+							type : 'hbox',
+							align: 'stretch'
+					    },
+					    defaults: { layout: 'form' },
+					    items   : [
+					    	{
+								xtype   : 'container',
+								flex    : 1,
+								margin  : '0 16 0 0',
+								defaults: { labelWidth: 130, validateOnBlur: false, validateOnChange: false },
+								items   : me.buildCol2Items()
+				    		},{
+								xtype   : 'container',
+								flex    : 1,
+								defaults: { labelWidth: 130, validateOnBlur: false, validateOnChange: false },
+								items   : me.buildCol3Items()
+				    		}
+					    ]
+    				},{
+						xtype      : 'shared.customfieldcontainer',
+						type       : 'invoice',
+						labelAlign : 'left',
+						border     : false,
+						isLineItem : 0,
+						margin     : 0,
+						padding    : 0,
+						bodyPadding: 0,
+						fieldCfg   : { labelWidth: 130, comboUi: 'customcombo', fieldCfg: { useSmartStore: true } },
+						flex       : 1
+		            }
+    			]
     		}
     	];
 
@@ -56,25 +88,8 @@ Ext.define('NP.view.invoice.ViewHeader', {
     },
 
     buildCol2Items: function() {
-    	var me   = this,
-    		items = [
-				{
-					xtype     : 'datefield',
-					fieldLabel: this.createdOnLbl,
-					name      : 'invoice_createddatetm',
-					readOnly  : true
-				},{
-					xtype     : 'displayfield',
-					fieldLabel: this.createdByLbl,
-					name      : 'userprofile_username'
-				},{
-					xtype         : 'checkbox',
-					fieldLabel    : this.remitAdviceLbl,
-					name          : 'remit_advice',
-					inputValue    : 1,
-					uncheckedValue: 0
-				}
-			];
+    	var me    = this,
+    		items = [];
 
 		if (NP.Security.hasPermission(6007)) {
 			items.push(
@@ -92,6 +107,25 @@ Ext.define('NP.view.invoice.ViewHeader', {
 				}
 			);
 		}
+
+		items.push(
+			{
+				xtype     : 'datefield',
+				fieldLabel: this.createdOnLbl,
+				name      : 'invoice_createddatetm',
+				readOnly  : true
+			},{
+				xtype     : 'displayfield',
+				fieldLabel: this.createdByLbl,
+				name      : 'userprofile_username'
+			},{
+				xtype         : 'checkbox',
+				fieldLabel    : this.remitAdviceLbl,
+				name          : 'remit_advice',
+				inputValue    : 1,
+				uncheckedValue: 0
+			}
+		);
 
 		if (NP.Config.getSetting('CP.INVOICE_PAY_BY_FIELD', '0') == '1') {
 			items.push({

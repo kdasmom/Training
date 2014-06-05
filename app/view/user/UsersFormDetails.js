@@ -72,7 +72,7 @@ Ext.define('NP.view.user.UsersFormDetails', {
 				xtype     : 'textfield',
 				name      : 'userprofile_password_confirm',
 				inputType : 'password',
-				fieldLabel: NP.Translator.translate('Confirm Password'),
+				fieldLabel: NP.Translator.translate('Confirm New Password'),
                 allowBlank: !this.passwordRequired,
                 validator: function(val) {
                     var form = that.up('boundform');
@@ -83,7 +83,15 @@ Ext.define('NP.view.user.UsersFormDetails', {
                         return NP.Translator.translate('The password fields need to match');
                     }
                 }
-    		},{
+    		},
+			{
+				xtype: 'displayfield',
+				fieldLabel: NP.Translator.translate('Position'),
+				hidden: !this.isMySettings,
+				value: this.isMySettings ? NP.Security.getRole().get('role_name') : '',
+				padding: this.isMySettings ? '0 0 25 0' : '0'
+			},
+			{
 				xtype     : 'customcombo',
 				name      : 'role_id',
 				fieldLabel: NP.Translator.translate('Position'),
@@ -92,7 +100,6 @@ Ext.define('NP.view.user.UsersFormDetails', {
 					service: 'UserService',
 					action: 'getRoleTree',
 					extraParams: {
-//						excludeAdmin: true
 						excludeAdmin: !this.isNewUser ? 0 : 1
 					},
 					autoLoad: true
@@ -116,13 +123,15 @@ Ext.define('NP.view.user.UsersFormDetails', {
 				xtype     : 'datefield',
 				name      : 'userprofile_enddate',
 				fieldLabel: NP.Translator.translate('End Date'),
-				hidden    : this.isMySettings
+				hidden    : this.isMySettings,
+				padding: !this.isMySettings ? '0 0 25 0' : '0'
     		}
     	);
 
     	// For My Settigns > User Information, add security questions
     	if (this.isMySettings) {
             this.questionStore = Ext.create('NP.store.system.SecurityQuestions');
+			this.questionStore.load();
 
     		// Add the 6 security question/answer fields
 	    	for (var i=1; i<=6; i++) {
@@ -131,18 +140,60 @@ Ext.define('NP.view.user.UsersFormDetails', {
 		    			xtype: 'customcombo',
 		    			fieldLabel: NP.Translator.translate('Security Question') + ' ' + i,
 		    			name: 'security_question' + i,
+						itemId: 'security_question' + i,
 		    			store: this.questionStore,
 		    			displayField: 'lookupcode_description',
 		    			valueField: 'lookupcode_id',
 		    			width: 600,
-                        allowBlank: false
+						listeners: {
+							select: function(combobox, records) {
+								var allowBlank = that.allowFieldsBlank(),
+									answerField,
+									questionField;
+
+								for (var index = 1; index <= 6; index++) {
+									questionField = that.query('#security_question' + index)[0];
+									answerField = that.query('#security_answer' + index)[0];
+
+									Ext.apply(questionField, {allowBlank: allowBlank});
+									Ext.apply(answerField, {allowBlank: allowBlank});
+
+									if (allowBlank) {
+										questionField.clearInvalid();
+										answerField.clearInvalid();
+									}
+
+
+								}
+							}
+						}
 		    		},{
 		    			xtype: 'textfield',
 		    			fieldLabel: NP.Translator.translate('Answer') + ' ' + i,
 		    			name: 'security_answer' + i,
+		    			itemId: 'security_answer' + i,
 		    			width: 600,
-                        allowBlank: false,
-                        maxLengthText: 100
+                        maxLengthText: 100,
+						listeners: {
+							blur: function(textfield, event) {
+								var allowBlank = that.allowFieldsBlank(),
+									answerField,
+									questionField;
+
+								for (var index = 1; index <= 6; index++) {
+									questionField = that.query('#security_question' + index)[0];
+									answerField = that.query('#security_answer' + index)[0];
+
+									Ext.apply(questionField, {allowBlank: allowBlank});
+									Ext.apply(answerField, {allowBlank: allowBlank});
+
+									if (allowBlank) {
+										questionField.clearInvalid();
+										answerField.clearInvalid();
+									}
+								}
+							}
+						}
 		    		}
 	    		);
 	    	}
@@ -153,5 +204,33 @@ Ext.define('NP.view.user.UsersFormDetails', {
     	this.on('afterrender', function(el) {
     		this.queryById('pwdExplanationField').labelCell.setVisibilityMode(Ext.dom.Element.VISIBILITY).setVisible(false);
         }, this);
-    }
+    },
+
+	/**
+	 * Check require fields or not
+	 *
+	 * @returns {boolean}
+	 */
+	allowFieldsBlank: function() {
+		var me = this,
+			answersCount = 0,
+			questionsCount = 0;
+
+
+		for (var index = 1; index <= 6; index++) {
+			if (me.query('#security_question' + index)[0].getValue()) {
+				questionsCount++;
+			}
+			if (me.query('#security_answer' + index)[0].getValue() && me.query('#security_answer' + index)[0].getValue().length) {
+				answersCount++;
+			}
+		}
+
+		if (answersCount ==0 && questionsCount == 0) {
+			return true;
+		}
+
+		return false;
+
+	}
 });
