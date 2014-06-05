@@ -9,7 +9,17 @@ class RemoveVendorestWfruleTypes extends AbstractMigration
 	 */
 	public function up()
 	{
-		$this->execute("DELETE FROM wfrule where wfruletype_id IN (SELECT wfruletype_id FROM wfruletype WHERE wfruletype_tablename = 'vendorest')");
+		$selectWFRulesSQL = "SELECT wfrule_id FROM wfrule WHERE wfruletype_id IN (SELECT wfruletype_id FROM wfruletype WHERE wfruletype_tablename = 'vendorest')";
+
+		// Remove all related records
+		$this->execute("DELETE FROM wfaction WHERE wfrule_id IN ({$selectWFRulesSQL})");
+		$this->execute("DELETE FROM wfrulehour WHERE wfrule_id IN ({$selectWFRulesSQL})");
+		$this->execute("DELETE FROM wfrulerelation WHERE wfrule_id IN ({$selectWFRulesSQL})");
+		$this->execute("DELETE FROM wfrulescope WHERE wfrule_id IN ({$selectWFRulesSQL})");
+		$this->execute("DELETE FROM wfruletarget WHERE wfrule_id IN ({$selectWFRulesSQL})");
+		// Remove wf rules
+		$this->execute("DELETE FROM wfrule WHERE wfruletype_id IN (SELECT wfruletype_id FROM wfruletype WHERE wfruletype_tablename = 'vendorest')");
+		// Remove wf rule types relating to Vendor Estimates
 		$this->execute("DELETE FROM wfruletype WHERE wfruletype_tablename = 'vendorest'");
 	}
 
