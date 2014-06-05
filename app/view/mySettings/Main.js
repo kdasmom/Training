@@ -25,9 +25,7 @@ Ext.define('NP.view.mySettings.Main', {
     
     initComponent: function() {
     	this.items = [
-    		{
-	    		xtype: 'mysettings.overview'
-	    	},{
+			{
 	    		xtype: 'mysettings.userinformation'
 	    	},{
 	    		xtype: 'mysettings.settings'
@@ -56,6 +54,7 @@ Ext.define('NP.view.mySettings.Main', {
 
 		this.items.push({ xtype: 'user.userdelegation', itemId:'mySettingsDelegation' });
 		this.items.push({ xtype: 'mysettings.dashboard' });
+		this.items.push({ xtype: 'mysettings.overview' });
 
     	this.callParent(arguments);
     }
