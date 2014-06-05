@@ -72,7 +72,7 @@ Ext.define('NP.view.user.UsersFormDetails', {
 				xtype     : 'textfield',
 				name      : 'userprofile_password_confirm',
 				inputType : 'password',
-				fieldLabel: NP.Translator.translate('Confirm Password'),
+				fieldLabel: NP.Translator.translate('Confirm New Password'),
                 allowBlank: !this.passwordRequired,
 				padding: this.isMySettings ? '0 0 25 0' : '0',
                 validator: function(val) {
