@@ -112,7 +112,7 @@ Ext.define('NP.view.systemSetup.DefaultSplitGrid', {
                         dataIndex: 'dfsplit_update_datetm',
                         flex     : 2,
                         renderer : function(val, meta, rec) {
-                            val = Ext.Date.format(val, NP.Config.getDefaultDateTimeFormat());
+                            val = Ext.Date.format(val, NP.Config.getDefaultDateFormat() + ' h:iA');
                             if (rec.get('dfsplit_update_userprofile') !== null) {
                                 val += ' (' + rec.get('userprofile_username') + ')'
                             }

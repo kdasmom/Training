@@ -175,6 +175,9 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 			case 2:  // Invoice total amount
 			case 4:  // Delegation
 			case 15: // Optional Workflow
+			case 17: // Vendor Estimate to Invoice Conversion Threshold (Percentage Variance) - Master Rule
+			case 18: // Vendor Estimate to Invoice Conversion Threshold (Total Dollar Amount) - Master Rule
+			case 19: // Vendor Estimate to Invoice Conversion Threshold (Dollar Variance) - Master Rule
 			case 20: // Converted Invoices – Master
 			case 23: // Receipt Total Amount
 				break;
@@ -285,6 +288,12 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 			case 37: // Receipt Item Total (by GL Code)
 			case 38: // Receipt Item Total (by GL Category)
 				sectionLogic = this.getSectionLogic(fieldtitle, ['less', 'greater', 'greater_equal', 'greater_equal_or_less', 'in_range']);
+				break;
+
+			case 17: // Vendor Estimate to Invoice Conversion Threshold (Percentage Variance) - Master Rule
+			case 18: // Vendor Estimate to Invoice Conversion Threshold (Total Dollar Amount) - Master Rule
+			case 19: // Vendor Estimate to Invoice Conversion Threshold (Dollar Variance) - Master Rule
+				sectionLogic = this.getSectionLogic(fieldtitle, ['greater', 'greater_equal', 'in_range']);
 				break;
 
 			case 29: // YTD Budget % Overage (by GL Coxde)
@@ -443,10 +452,8 @@ Ext.define('NP.view.systemSetup.WorkflowRulesBuilder', {
 		contractsStore.load();
 
 		var allContracts = false;
-		if (me.data) {
-			if (me.data.tablekey_list_id.length == 1) {
-				allContracts = (me.data.tablekey_list_id[0]) ? false : true;
-			}
+		if (me.data.tablekey_list_id.length == 1) {
+			allContracts = (me.data.tablekey_list_id[0]) ? false : true;
 		}
 
 		return [

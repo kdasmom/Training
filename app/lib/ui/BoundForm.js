@@ -67,77 +67,61 @@ Ext.define('NP.lib.ui.BoundForm', {
 			this.loadedData = null;
 		} else {
 			// Do the data binding once the form has been shown
-			this.on(this.bind.evt, this.onDataBindEvent, this);
-			
-			// If using a show event but the component is already visible
-			if (this.bind.evt == 'show') {
-				Ext.defer(function() {
-					if (that.isVisible()) {
-						if (that.rendered) {
-							that.onDataBindEvent();
-						} else {
-							that.on('render', that.onDataBindEvent, that, { single: true });
+			this.on(this.bind.evt, function() {
+				// Create a loading mask
+				var mask = new Ext.LoadMask({ target: that });
+
+				// Build the request object 
+				var req = {
+					service    : this.bind.service,
+					action     : this.bind.action,
+					success    : function(result) {
+						// Save the data loaded
+						that.loadedData = result;
+
+						that.fireEvent('beforemodelupdate', that, result);
+
+						// If data is returned, set the field values on the models
+						if (result !== null) {
+							that.updateModels(result);
 						}
+
+						that.fireEvent('beforefieldupdate', that, result);
+						
+						// Copy the model data to the form fields
+						that.updateBoundFields();
+
+						// Set the fields that are not part of models if any
+						if (that.bind.extraFields) {
+							Ext.Array.each(that.bind.extraFields, function(fieldName) {
+								var field = that.findField(fieldName);
+
+								// If the field exists and a value was returned for it, set its value too
+								if (field && result[fieldName]) {
+									field.setValue(result[fieldName]);
+								}
+							});
+						}
+
+						// Fire the dataloaded even which signals the data for the bound form is done loading
+						that.fireEvent('dataloaded', that, result);
+
+						// Remove the loading mask
+						mask.destroy();
 					}
-				}, 100);
-			}
+				};
+				// Add extra parameters to the request if any
+				Ext.applyIf(req, this.bind.extraParams);
+
+				// Show the mask
+				mask.show();
+
+				// Run the ajax request
+				NP.lib.core.Net.remoteCall({
+					requests: req
+				});
+			});
 		}
-	},
-
-	onDataBindEvent: function() {
-		// Create a loading mask
-		var that = this,
-			mask = new Ext.LoadMask({ target: that });
-
-		// Build the request object 
-		var req = {
-			service    : this.bind.service,
-			action     : this.bind.action,
-			success    : function(result) {
-				// Save the data loaded
-				that.loadedData = result;
-
-				that.fireEvent('beforemodelupdate', that, result);
-
-				// If data is returned, set the field values on the models
-				if (result !== null) {
-					that.updateModels(result);
-				}
-
-				that.fireEvent('beforefieldupdate', that, result);
-				
-				// Copy the model data to the form fields
-				that.updateBoundFields();
-
-				// Set the fields that are not part of models if any
-				if (that.bind.extraFields) {
-					Ext.Array.each(that.bind.extraFields, function(fieldName) {
-						var field = that.findField(fieldName);
-
-						// If the field exists and a value was returned for it, set its value too
-						if (field && result[fieldName]) {
-							field.setValue(result[fieldName]);
-						}
-					});
-				}
-
-				// Fire the dataloaded even which signals the data for the bound form is done loading
-				that.fireEvent('dataloaded', that, result);
-
-				// Remove the loading mask
-				mask.destroy();
-			}
-		};
-		// Add extra parameters to the request if any
-		Ext.applyIf(req, this.bind.extraParams);
-
-		// Show the mask
-		mask.show();
-
-		// Run the ajax request
-		NP.lib.core.Net.remoteCall({
-			requests: req
-		});
 	},
 
 	/**

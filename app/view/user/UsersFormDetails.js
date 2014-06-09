@@ -72,8 +72,9 @@ Ext.define('NP.view.user.UsersFormDetails', {
 				xtype     : 'textfield',
 				name      : 'userprofile_password_confirm',
 				inputType : 'password',
-				fieldLabel: NP.Translator.translate('Confirm New Password'),
+				fieldLabel: NP.Translator.translate('Confirm Password'),
                 allowBlank: !this.passwordRequired,
+				padding: this.isMySettings ? '0 0 25 0' : '0',
                 validator: function(val) {
                     var form = that.up('boundform');
                     var password_new = form.findField('userprofile_password').getValue();
@@ -83,15 +84,7 @@ Ext.define('NP.view.user.UsersFormDetails', {
                         return NP.Translator.translate('The password fields need to match');
                     }
                 }
-    		},
-			{
-				xtype: 'displayfield',
-				fieldLabel: NP.Translator.translate('Position'),
-				hidden: !this.isMySettings,
-				value: this.isMySettings ? NP.Security.getRole().get('role_name') : '',
-				padding: this.isMySettings ? '0 0 25 0' : '0'
-			},
-			{
+    		},{
 				xtype     : 'customcombo',
 				name      : 'role_id',
 				fieldLabel: NP.Translator.translate('Position'),

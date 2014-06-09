@@ -244,7 +244,7 @@ Ext.define('NP.view.gl.GLAccountsGrid', {
                         text: this.lastUpdatedColText,
                         dataIndex: 'glaccount_updatetm',
                         renderer: function(val, meta, rec) {
-                              var returnVal = Ext.Date.format(val, NP.Config.getDefaultDateTimeFormat());
+                              var returnVal = Ext.Date.format(val, NP.Config.getDefaultDateFormat() + ' h:iA');
                               if (rec.get('userprofile_username') != null) {
                                   returnVal += ' (' + rec.get('userprofile_username') + ')'
                               }

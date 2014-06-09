@@ -13,6 +13,6 @@ Ext.define('NP.view.systemSetup.gridcol.LastUpdated', {
     },
 
     renderer: function(val, meta, rec) {
-		return Ext.Date.format(rec.data.wfrule_datetm, NP.Config.getDefaultDateTimeFormat()) + ' (' + rec.data.userprofile_username + ')';
+		return Ext.Date.format(rec.data.wfrule_datetm, NP.Config.getDefaultDateFormat() + ' h:iA') + ' (' + rec.data.userprofile_username + ')';
     }
 });

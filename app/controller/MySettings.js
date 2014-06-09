@@ -147,7 +147,7 @@ Ext.define('NP.controller.MySettings', {
 		var tabPanel = that.setView('NP.view.mySettings.Main');
 
 		// If no active tab is passed, default to Open
-		if (!activeTab) activeTab = 'UserInformation';
+		if (!activeTab) activeTab = 'Overview';
 		
 		// Check if the tab to be selected is already active, if it isn't make it the active tab
 		var tab = that['get' + activeTab + 'Tab']();

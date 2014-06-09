@@ -115,7 +115,7 @@ Ext.define('NP.view.systemSetup.WorkflowRulesView', {
 			{
 				xtype     : 'displayfield',
 				fieldLabel: NP.Translator.translate('Last Update Date'),
-				value     : Ext.Date.format(Ext.Date.parse(me.data.rule.wfrule_datetm, NP.Config.getServerDateFormat()), NP.Config.getDefaultDateTimeFormat()) + ' (' + me.data.rule.userprofile_username + ')',
+				value     : Ext.Date.format(Ext.Date.parse(me.data.rule.wfrule_datetm, NP.Config.getServerDateFormat()), NP.Config.getDefaultDateFormat() + ' h:iA') + ' (' + me.data.rule.userprofile_username + ')',
 				labelWidth: fieldLabelWidth,
 				padding   : fieldPadding
 			}
