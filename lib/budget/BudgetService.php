@@ -224,9 +224,9 @@ class BudgetService extends AbstractService {
         $success = true;
 
         try {
-           $this->budgetOverageGateway->find(
+           $this->budgetOverageGateway->delete($id)(
                 [
-                    'property_id'           => '?'
+                    'property_id'  => '?'
                 ],
                 [
                     $id
