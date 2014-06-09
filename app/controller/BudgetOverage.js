@@ -27,6 +27,7 @@ Ext.define('NP.controller.BudgetOverage', {
 
     //  for localization
     saveSuccessText      : 'Your changes were saved.',
+    saveDuplicateText    : 'There is already a Budget Overage amount set up for that property, GL code, and period.',
     deleteDialogTitleText: 'Delete budget overage?',
     deleteDialogText     : 'Are you sure you want to delete this budget overage?',
     deleteSuccessText    : 'Budget overage successfully deleted',
@@ -142,9 +143,16 @@ Ext.define('NP.controller.BudgetOverage', {
                     userprofile_id: NP.Security.getUser().get('userprofile_id'),
                     role_id:        NP.Security.getRole().get('role_id')
                 },
-                success: function(result) {
-                    NP.Util.showFadingWindow({ html: that.saveSuccessText });
-                    that.application.addHistory('BudgetOverage:showBudgetOverage');
+                success: function(result) 
+                {
+                        NP.Util.showFadingWindow({ html: that.saveSuccessText });
+                        that.application.addHistory('BudgetOverage:showBudgetOverage');
+                },
+                failure: function(result) {
+                   if (result.errors == 'repeatRec') 
+                    {
+                        Ext.MessageBox.alert('Error',  that.saveDuplicateText);
+                    }
                 }
             });
         }

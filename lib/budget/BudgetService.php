@@ -176,12 +176,32 @@ class BudgetService extends AbstractService {
             $budgetoverage->role_id        = $data['role_id'];
         }
         $budgetoverage->budgetoverage_period = $data['budgetoverage_period'];
+        $property_id = $data['budgetoverage']['property_id'];
+        $glaccount_id = $data['budgetoverage']['glaccount_id'];
 
         $errors = $this->entityValidator->validate($budgetoverage);
 
         if (count($errors) == 0) {
             try {
-                $this->budgetOverageGateway->save($budgetoverage);
+                //make sure there is no repeat records
+                $budgetOverageRecs = $this->budgetOverageGateway->find(
+                [
+                    'property_id'           => '?',
+                    'glaccount_id'          =>  '?',
+                    'budgetoverage_period'  =>  '?'
+                ],
+                [
+                    $property_id, 
+                    $glaccount_id, 
+                    $budgetoverage->budgetoverage_period
+                ]
+        );
+                if ($budgetOverageRecs) {
+                   $errors = "repeatRec";
+                }
+                else {
+                    $this->budgetOverageGateway->save($budgetoverage);
+                }
             } catch(\Exception $e) {
                 // Add a global error to the error array
                 $errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
