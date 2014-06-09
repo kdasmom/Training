@@ -224,7 +224,14 @@ class BudgetService extends AbstractService {
         $success = true;
 
         try {
-            $this->budgetOverageGateway->commit();
+           $this->budgetOverageGateway->find(
+                [
+                    'property_id'           => '?'
+                ],
+                [
+                    $id
+                ]
+        );
         } catch(\Exception $e) {
             $success = false;
         }
