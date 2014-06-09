@@ -29,8 +29,6 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
     
     type       : null,
 
-    // For localization
-
     initComponent: function() {
         var me = this;
         
@@ -43,7 +41,7 @@ Ext.define('NP.view.shared.invoicepo.ViewLines', {
             {
                 xtype   : 'shared.button.edit',
                 itemId  : me.type + 'LineEditBtn',
-                text    : NP.Translator.translate('Edit Lines'),
+                text    : NP.Translator.translate('Add/Edit Lines'),
                 disabled: true
             }
         ];

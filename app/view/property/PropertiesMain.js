@@ -91,7 +91,7 @@ Ext.define('NP.view.property.PropertiesMain', {
                     text : 'Last Updated',
                     dataIndex: 'last_updated_datetm',
                     renderer: function(val, meta, rec) {
-                        var returnVal = Ext.Date.format(val, NP.Config.getDefaultDateFormat() + ' h:iA');
+                        var returnVal = Ext.Date.format(val, NP.Config.getDefaultDateTimeFormat());
                         if (rec.get('last_updated_by') != null) {
                             returnVal += ' (' + rec.get('updated_by_userprofile_username') + ')'
                         }
