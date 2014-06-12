@@ -184,22 +184,46 @@ class BudgetService extends AbstractService {
         if (count($errors) == 0) {
             try {
                 //make sure there is no repeat records
-                $budgetOverageRecs = $this->budgetOverageGateway->find(
-                [
-                    'property_id'           => '?',
-                    'glaccount_id'          =>  '?',
-                    'budgetoverage_period'  =>  '?'
-                ],
-                [
-                    $property_id, 
-                    $glaccount_id, 
-                    $budgetoverage->budgetoverage_period
-                ]
-        );
-                if ($budgetOverageRecs) {
-                   $errors = "repeatRec";
+                 if ($budgetoverage->budgetoverage_id == null) {
+                    $budgetOverageRecs = $this->budgetOverageGateway->find(
+                    [  
+                        ['equals', 'property_id', '?'],
+                        ['equals', 'glaccount_id', '?'],
+                        ['equals', 'budgetoverage_period', '?'],
+                    ]
+                    ,
+                    [
+                        $property_id, 
+                        $glaccount_id, 
+                        $budgetoverage->budgetoverage_period,
+                    ]
+                    );
                 }
                 else {
+
+                     $budgetOverageRecs = $this->budgetOverageGateway->find(
+                    [  
+                        ['equals', 'property_id', '?'],
+                        ['equals', 'glaccount_id', '?'],
+                        ['equals', 'budgetoverage_period', '?'],
+                        ['notEquals', 'budgetoverage_id', '?']
+                    ]
+                    ,
+                    [
+                        $property_id, 
+                        $glaccount_id, 
+                        $budgetoverage->budgetoverage_period,
+                        $budgetoverage->budgetoverage_id
+                        
+                        ]
+                    );
+                }
+                if ($budgetOverageRecs)
+                {
+                    $errors = "repeatRec";
+                }
+                else 
+                {
                     $this->budgetOverageGateway->save($budgetoverage);
                 }
             } catch(\Exception $e) {
@@ -224,9 +248,9 @@ class BudgetService extends AbstractService {
         $success = true;
 
         try {
-           $this->budgetOverageGateway->delete($id)(
+           $this->budgetOverageGateway->delete(
                 [
-                    'property_id'  => '?'
+                    'budgetoverage_id'  => '?'
                 ],
                 [
                     $id
