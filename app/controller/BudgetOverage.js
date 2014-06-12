@@ -107,7 +107,7 @@ Ext.define('NP.controller.BudgetOverage', {
                         periodStore  = periodField.getStore(),
                         periodRecVal = boundForm.getModel('budget.BudgetOverage').get('budgetoverage_period'),
                         periodName   = Ext.Date.format(periodRecVal, 'm/Y'),
-                        periodVal    = Ext.Date.format(periodRecVal, 'm/d/Y');
+                        periodVal    = Ext.Date.format(periodRecVal, NP.Config.getServerDateFormat());
                     
                     if (periodStore.find('period_name', periodName) === -1) {
                         periodStore.add({
