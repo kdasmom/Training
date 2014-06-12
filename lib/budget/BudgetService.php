@@ -183,47 +183,32 @@ class BudgetService extends AbstractService {
 
         if (count($errors) == 0) {
             try {
-                //make sure there is no repeat records
-                 if ($budgetoverage->budgetoverage_id == null) {
-                    $budgetOverageRecs = $this->budgetOverageGateway->find(
-                    [  
-                        ['equals', 'property_id', '?'],
-                        ['equals', 'glaccount_id', '?'],
-                        ['equals', 'budgetoverage_period', '?'],
-                    ]
-                    ,
-                    [
-                        $property_id, 
-                        $glaccount_id, 
-                        $budgetoverage->budgetoverage_period,
-                    ]
-                    );
-                }
-                else {
+                // Base criteria
+                $where = [  
+                    ['equals', 'property_id', '?'],
+                    ['equals', 'glaccount_id', '?'],
+                    ['equals', 'budgetoverage_period', '?']
+                ];
+                
+                // Base criteria values
+                $params = [
+                    $property_id, 
+                    $glaccount_id, 
+                    $budgetoverage->budgetoverage_period
+                ];
 
-                     $budgetOverageRecs = $this->budgetOverageGateway->find(
-                    [  
-                        ['equals', 'property_id', '?'],
-                        ['equals', 'glaccount_id', '?'],
-                        ['equals', 'budgetoverage_period', '?'],
-                        ['notEquals', 'budgetoverage_id', '?']
-                    ]
-                    ,
-                    [
-                        $property_id, 
-                        $glaccount_id, 
-                        $budgetoverage->budgetoverage_period,
-                        $budgetoverage->budgetoverage_id
-                        
-                        ]
-                    );
+                // If dealing with an existing record, add to the query criteria
+                if ($budgetoverage->budgetoverage_id !== null) {
+                    $where[]  = ['notEquals', 'budgetoverage_id', '?'];
+                    $params[] = $budgetoverage->budgetoverage_id;
                 }
-                if ($budgetOverageRecs)
-                {
+
+                // Check for duplicates
+                $budgetOverageRecs = $this->budgetOverageGateway->find($where, $params);
+
+                if (count($budgetOverageRecs)) {
                     $errors = "repeatRec";
-                }
-                else 
-                {
+                } else {
                     $this->budgetOverageGateway->save($budgetoverage);
                 }
             } catch(\Exception $e) {
