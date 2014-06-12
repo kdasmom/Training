@@ -176,12 +176,41 @@ class BudgetService extends AbstractService {
             $budgetoverage->role_id        = $data['role_id'];
         }
         $budgetoverage->budgetoverage_period = $data['budgetoverage_period'];
+        $property_id = $data['budgetoverage']['property_id'];
+        $glaccount_id = $data['budgetoverage']['glaccount_id'];
 
         $errors = $this->entityValidator->validate($budgetoverage);
 
         if (count($errors) == 0) {
             try {
-                $this->budgetOverageGateway->save($budgetoverage);
+                // Base criteria
+                $where = [  
+                    ['equals', 'property_id', '?'],
+                    ['equals', 'glaccount_id', '?'],
+                    ['equals', 'budgetoverage_period', '?']
+                ];
+                
+                // Base criteria values
+                $params = [
+                    $property_id, 
+                    $glaccount_id, 
+                    $budgetoverage->budgetoverage_period
+                ];
+
+                // If dealing with an existing record, add to the query criteria
+                if ($budgetoverage->budgetoverage_id !== null) {
+                    $where[]  = ['notEquals', 'budgetoverage_id', '?'];
+                    $params[] = $budgetoverage->budgetoverage_id;
+                }
+
+                // Check for duplicates
+                $budgetOverageRecs = $this->budgetOverageGateway->find($where, $params);
+
+                if (count($budgetOverageRecs)) {
+                    $errors = "repeatRec";
+                } else {
+                    $this->budgetOverageGateway->save($budgetoverage);
+                }
             } catch(\Exception $e) {
                 // Add a global error to the error array
                 $errors[] = array('field'=>'global', 'msg'=>$this->handleUnexpectedError($e), 'extra'=>null);
@@ -204,7 +233,14 @@ class BudgetService extends AbstractService {
         $success = true;
 
         try {
-            $this->budgetOverageGateway->commit();
+           $this->budgetOverageGateway->delete(
+                [
+                    'budgetoverage_id'  => '?'
+                ],
+                [
+                    $id
+                ]
+        );
         } catch(\Exception $e) {
             $success = false;
         }
